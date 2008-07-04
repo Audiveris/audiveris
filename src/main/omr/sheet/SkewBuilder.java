@@ -25,6 +25,7 @@ import omr.lag.ScrollLagView;
 import omr.lag.SectionBoard;
 import omr.lag.SectionView;
 import omr.lag.SectionsBuilder;
+
 import static omr.selection.SelectionTag.*;
 
 import omr.step.StepException;
@@ -133,8 +134,10 @@ public class SkewBuilder
         minSectionLength = scale.toPixels(constants.minSectionLength);
 
         // Retrieve the horizontal lag of runs
-        sLag = new GlyphLag("sLag", new HorizontalOrientation());
-        sLag.setVertexClass(StickSection.class);
+        sLag = new GlyphLag(
+            "sLag",
+            StickSection.class,
+            new HorizontalOrientation());
 
         SectionsBuilder<GlyphLag, GlyphSection> lagBuilder;
         lagBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
@@ -188,6 +191,20 @@ public class SkewBuilder
     public void displayChart ()
     {
         writePlot();
+    }
+
+    //--------------//
+    // isMajorChunk //
+    //--------------//
+    private boolean isMajorChunk (StickSection section)
+    {
+        // Check section length
+        // Check /quadratic mean/ section thickness
+        int     length = section.getLength();
+        boolean result = (length >= minSectionLength) &&
+                         ((section.getWeight() / length) <= maxThickness);
+
+        return result;
     }
 
     //---------------//
@@ -336,20 +353,6 @@ public class SkewBuilder
                     sLag.getLastVertexId(),
                     sheet.getSelection(SKEW_SECTION),
                     sheet.getSelection(SKEW_SECTION_ID))));
-    }
-
-    //--------------//
-    // isMajorChunk //
-    //--------------//
-    private boolean isMajorChunk (StickSection section)
-    {
-        // Check section length
-        // Check /quadratic mean/ section thickness
-        int     length = section.getLength();
-        boolean result = (length >= minSectionLength) &&
-                         ((section.getWeight() / length) <= maxThickness);
-
-        return result;
     }
 
     //-----------//
@@ -502,10 +505,6 @@ public class SkewBuilder
         @Override
         public void colorize ()
         {
-            if (logger.isFineEnabled()) {
-                logger.fine("colorize");
-            }
-
             // Default colors for lag sections
             super.colorize();
 
