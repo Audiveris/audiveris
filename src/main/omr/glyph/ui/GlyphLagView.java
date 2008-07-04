@@ -24,8 +24,8 @@ import omr.math.Line.UndefinedLineException;
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 
-import omr.sheet.PixelPoint;
-import omr.sheet.PixelRectangle;
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 
 import omr.stick.Stick;
 
@@ -248,7 +248,7 @@ public class GlyphLagView
         if (specificGlyphs.size() > 0) {
             found = lag.lookupGlyphs(specificGlyphs, rect);
         } else {
-            found = lag.lookupGlyphs(lag.getActiveGlyphs(), rect);
+            found = lag.lookupGlyphs(rect);
         }
 
         return found;
@@ -361,6 +361,34 @@ public class GlyphLagView
         }
     }
 
+    //-----------------//
+    // renderGlyphArea //
+    //-----------------//
+    /**
+     * Render the box area of a glyph, using inverted color
+     *
+     * @param glyph the glyph whose area is to be rendered
+     * @param g the graphic context
+     * @param z the display zoom
+     * @return true if the glyph area has actually been rendered
+     */
+    protected boolean renderGlyphArea (Glyph    glyph,
+                                       Graphics g,
+                                       Zoom     z)
+    {
+        // Check the clipping
+        Rectangle box = new Rectangle(glyph.getContourBox());
+        z.scale(box);
+
+        if (box.intersects(g.getClipBounds())) {
+            g.fillRect(box.x, box.y, box.width, box.height);
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     //-------------//
     // renderItems //
     //-------------//
@@ -383,7 +411,7 @@ public class GlyphLagView
                 g.setXORMode(Color.darkGray);
 
                 for (Glyph glyph : glyphs) {
-                    glyph.renderBoxArea(g, z);
+                    renderGlyphArea(glyph, g, z);
 
                     // Draw circle arc here ?
                     if (glyph.getShape() == Shape.SLUR) {
