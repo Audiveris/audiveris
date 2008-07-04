@@ -19,8 +19,8 @@
      
 <actions>
 
-    <!-- 
-    <action domain="SCORE" section="END" class="MyClass" method="dumpCurrentScore" />
-     -->
+    <action domain="Text" section="IMPORT" class="omr.glyph.ui.TextAreaBrowser" method="retrieveTextAreas" />
+    <action domain="Text" section="EDIT"   class="omr.glyph.ui.TextAreaBrowser" method="showHorizontalHistogram" />
+    <action domain="Text" section="EDIT"   class="omr.glyph.ui.TextAreaBrowser" method="showVerticalHistogram" />
      
 </actions>
