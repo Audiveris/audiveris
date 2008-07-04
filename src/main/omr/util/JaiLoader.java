@@ -1,8 +1,7 @@
 
 package omr.util;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
 
 /**
  * Class <code>JaiLoader</code> is designed to speed up the load time
@@ -23,14 +22,10 @@ public class JaiLoader
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(JaiLoader.class);
 
-    /** A latch which reflects whether JAI has been initialized **/
-    private static final CountDownLatch latch = new CountDownLatch(1);
-
-    static {
-        Executor executor = OmrExecutors.getLowExecutor();
-        executor.execute(
-            new SignallingRunnable(latch, new JaiLoaderRunnable()));
-    }
+    /** A future which reflects whether JAI has been initialized **/
+    private static final Future<?> loading = OmrExecutors.getLowExecutor()
+                                                         .submit(
+        new JaiLoaderRunnable());
 
     //~ Constructors -----------------------------------------------------------
 
@@ -41,14 +36,6 @@ public class JaiLoader
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * On the first call, starts the initialization.
-     *
-     */
-    public static void preload ()
-    {
-    }
-
-    /**
      * Blocks until the JAI class has been initialized.
      * If initialization has not yet begun, begins initialization.
      *
@@ -56,10 +43,18 @@ public class JaiLoader
     public static void ensureLoaded ()
     {
         try {
-            latch.await();
-        } catch (InterruptedException e) {
-            logger.severe("JAI loading interrupted", e);
+            loading.get();
+        } catch (Exception e) {
+            logger.severe("JAI loading failed", e);
         }
+    }
+
+    /**
+     * On the first call, starts the initialization.
+     *
+     */
+    public static void preload ()
+    {
     }
 
     //~ Inner Classes ----------------------------------------------------------
