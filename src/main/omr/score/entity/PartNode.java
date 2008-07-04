@@ -52,7 +52,7 @@ public abstract class PartNode
      *
      * @param container the (direct) container of the node
      */
-    public PartNode (ScoreNode container)
+    public PartNode (SystemNode container)
     {
         super(container);
 
@@ -68,25 +68,13 @@ public abstract class PartNode
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
     //------------------//
     // getContextString //
     //------------------//
     @Override
     public String getContextString ()
     {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append(super.getContextString());
-
+        StringBuilder sb = new StringBuilder(super.getContextString());
         sb.append("P")
           .append(part.getId());
 
@@ -117,6 +105,15 @@ public abstract class PartNode
     public Staff getStaff ()
     {
         return staff;
+    }
+
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
     }
 
     //------------------//

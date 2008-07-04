@@ -69,7 +69,7 @@ public abstract class MeasureNode
      *
      * @param container the (direct) container of the node
      */
-    public MeasureNode (ScoreNode container)
+    public MeasureNode (PartNode container)
     {
         super(container);
 
@@ -91,15 +91,12 @@ public abstract class MeasureNode
     @Override
     public String getContextString ()
     {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append(getPart().getContextString());
-
+        StringBuilder sb = new StringBuilder(super.getContextString());
         sb.append("M")
           .append(getMeasure().getId());
 
         if (getStaff() != null) {
-            sb.append("T")
+            sb.append("F")
               .append(getStaff().getId());
         }
 
