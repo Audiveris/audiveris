@@ -19,8 +19,8 @@ import omr.score.common.SystemPoint;
 import static omr.score.entity.Note.Step.*;
 import omr.score.visitor.ScoreVisitor;
 
-import omr.sheet.PixelPoint;
-import omr.sheet.PixelRectangle;
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
@@ -103,7 +103,6 @@ public class KeySignature
      * The glyph(s) that compose the key signature, a collection which is kept
      * sorted on glyph abscissa.
      */
-    @Children
     private SortedSet<Glyph> glyphs = new TreeSet<Glyph>();
 
     //~ Constructors -----------------------------------------------------------
@@ -410,14 +409,7 @@ public class KeySignature
               .append(getCenter());
             sb.append(" pitch=")
               .append(getPitchPosition());
-            sb.append(" glyphs[");
-
-            for (Glyph glyph : glyphs) {
-                sb.append("#")
-                  .append(glyph.getId());
-            }
-
-            sb.append("]");
+            sb.append(Glyph.toString(glyphs));
         } catch (Exception e) {
             sb.append(" INVALID");
         }
@@ -582,7 +574,7 @@ public class KeySignature
                                 ks.copyKey(keysig);
                             } catch (Exception ex) {
                                 ///logger.warning("Cannot copy key", ex);
-                                omr.util.Dumper.dump(ks);
+                                ks.addError("Cannot copy key");
                             }
 
                             // TBD deassign glyphs that do not contribute to the key ?
@@ -641,7 +633,7 @@ public class KeySignature
                                             int    measureIndex,
                                             int    systemStaffIndex)
     {
-        return system.getContextString() + "M" + (measureIndex + 1) + "T" +
+        return system.getContextString() + "M" + (measureIndex + 1) + "F" +
                staffOf(system, systemStaffIndex)
                    .getId();
     }
@@ -1046,24 +1038,24 @@ public class KeySignature
     {
         if ((glyphs != null) && (glyphs.size() > 0)) {
             // Check we have only sharps or only flats
-            Shape shape = null;
+            Shape shp = null;
 
             for (Glyph glyph : glyphs) {
-                if ((shape != null) && (glyph.getShape() != shape)) {
+                if ((shp != null) && (glyph.getShape() != shp)) {
                     if (logger.isFineEnabled()) {
                         logger.fine("Inconsistent key signature " + this);
                     }
 
                     return;
                 } else {
-                    shape = glyph.getShape();
+                    shp = glyph.getShape();
                 }
             }
 
             // Number and shape determine key signature
-            if (shape == SHARP) {
+            if (shp == SHARP) {
                 key = glyphs.size();
-            } else if (shape == FLAT) {
+            } else if (shp == FLAT) {
                 key = -glyphs.size();
             } else {
                 addError("Weird key signature " + this);
