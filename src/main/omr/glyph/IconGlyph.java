@@ -13,11 +13,7 @@ import omr.lag.JunctionAllPolicy;
 import omr.lag.SectionsBuilder;
 import omr.lag.VerticalOrientation;
 
-import omr.score.common.PagePoint;
 import omr.score.ui.ScoreConstants;
-
-import omr.sheet.PixelPoint;
-import omr.sheet.Scale;
 
 import omr.ui.icon.SymbolIcon;
 import omr.ui.icon.SymbolPicture;
@@ -73,13 +69,14 @@ public class IconGlyph
         super(ScoreConstants.INTER_LINE);
 
         try {
-            // Build a dedicated SymbolPicture
+            /** Build a dedicated SymbolPicture */
             SymbolPicture picture = new SymbolPicture(icon, descReduction);
 
-            // Build related vertical lag
-            GlyphLag vLag = new GlyphLag("iLag", new VerticalOrientation());
-            vLag.setVertexClass(GlyphSection.class);
-
+            /** Build related vertical lag */
+            GlyphLag vLag = new GlyphLag(
+                "iLag",
+                GlyphSection.class,
+                new VerticalOrientation());
             SectionsBuilder<GlyphLag, GlyphSection> lagBuilder;
             lagBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
                 vLag,
@@ -105,7 +102,7 @@ public class IconGlyph
             int       y = box.y;
 
             // Mass center
-            centroid = getCentroid();
+            getCentroid();
 
             // Number of connected stems
             if (icon.getStemNumber() != null) {
@@ -156,14 +153,5 @@ public class IconGlyph
     public SymbolIcon getIcon ()
     {
         return icon;
-    }
-
-    //--------//
-    // equals //
-    //--------//
-    @Override
-    public boolean equals (Object obj)
-    {
-        return super.equals(obj);
     }
 }
