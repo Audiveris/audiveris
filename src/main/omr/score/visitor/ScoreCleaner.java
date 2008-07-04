@@ -11,7 +11,6 @@ package omr.score.visitor;
 
 import omr.glyph.Glyph;
 
-import omr.score.Score;
 import omr.score.entity.Measure;
 import omr.score.entity.System;
 import omr.score.entity.SystemPart;
@@ -87,7 +86,10 @@ public class ScoreCleaner
     public boolean visit (SystemPart systemPart)
     {
         if (systemPart.isDummy()) {
-            systemPart.getParent().getChildren().remove(systemPart);
+            systemPart.getParent()
+                      .getChildren()
+                      .remove(systemPart);
+
             return false;
         } else {
             // Remove slurs and wedges
