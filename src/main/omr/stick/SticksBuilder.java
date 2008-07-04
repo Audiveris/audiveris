@@ -148,6 +148,19 @@ public class SticksBuilder
 
     //~ Methods ----------------------------------------------------------------
 
+    //-----------//
+    // getSticks //
+    //-----------//
+    /**
+     * Returns the collection of sticks found in this area
+     *
+     * @return the sticks found
+     */
+    public List<Stick> getSticks ()
+    {
+        return sticks;
+    }
+
     //--------------//
     // createSticks //
     //--------------//
@@ -286,6 +299,17 @@ public class SticksBuilder
     }
 
     //-------//
+    // reset //
+    //-------//
+    /**
+     * Used to reset the ids of stick areas (for debugging mainly)
+     */
+    public static void reset ()
+    {
+        globalId = 0;
+    }
+
+    //-------//
     // merge //
     //-------//
     /**
@@ -297,9 +321,9 @@ public class SticksBuilder
      * @param maxDeltaPos   maximum distance in position
      * @param maxDeltaSlope maximum difference in slope
      */
-    public void merge (int    maxDeltaCoord,
-                       int    maxDeltaPos,
-                       double maxDeltaSlope)
+    protected void merge (int    maxDeltaCoord,
+                          int    maxDeltaPos,
+                          double maxDeltaSlope)
     {
         if (logger.isFineEnabled()) {
             logger.fine(
@@ -337,8 +361,7 @@ public class SticksBuilder
                     break;
                 }
 
-                if (StickUtil.areExtensions(
-                    stick,
+                if (stick.isExtensionOf(
                     other,
                     maxDeltaCoord,
                     maxDeltaPos,
@@ -369,28 +392,99 @@ public class SticksBuilder
         }
     }
 
-    //-------//
-    // reset //
-    //-------//
+    //---------//
+    // isClose //
+    //---------//
     /**
-     * Used to reset the ids of stick areas (for debugging mainly)
+     * Check that the section would not thicken too much the stick being built,
+     * and whose members are passed as parameter
+     *
+     * @param members      the members to compute distance to
+     * @param section      the section to check
+     * @param maxThickness the maximum resulting stick thickness
+     *
+     * @return true if OK
      */
-    public static void reset ()
+    private boolean isClose (Collection<GlyphSection> members,
+                             GlyphSection             section,
+                             int                      maxThickness)
     {
-        globalId = 0;
+        // Just to speed up
+        final int start = section.getStart();
+        final int stop = section.getStop();
+        final int firstPos = section.getFirstPos();
+        final int lastPos = section.getLastPos();
+
+        // Check real stick thickness so far
+        for (GlyphSection sct : members) {
+            // Check overlap in abscissa with section at hand
+            if (Math.max(start, sct.getStart()) <= Math.min(
+                stop,
+                sct.getStop())) {
+                // Check global thickness
+                int thick;
+
+                if (sct.getFirstPos() > firstPos) {
+                    thick = sct.getLastPos() - firstPos + 1;
+                } else {
+                    thick = lastPos - sct.getFirstPos() + 1;
+                }
+
+                if (thick > maxThickness) {
+                    if (logger.isFineEnabled()) {
+                        logger.fine(
+                            "Too thick real line (" + thick + ") " + section);
+                    }
+
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
-    //-----------//
-    // getSticks //
-    //-----------//
+    //-------------//
+    // isDiscarded //
+    //-------------//
     /**
-     * Returns the collection of sticks found in this area
+     * Checks whether a given section has been discarded
      *
-     * @return the sticks found
+     * @param section the section to check
+     *
+     * @return true if actually discarded
      */
-    public List<Stick> getSticks ()
+    private boolean isDiscarded (StickSection section)
     {
-        return sticks;
+        StickRelation relation = section.getRelation();
+
+        return (relation != null) && (relation.role == DISCARDED);
+    }
+
+    //--------//
+    // isFree //
+    //--------//
+    private boolean isFree (StickSection section)
+    {
+        StickRelation relation = section.getRelation();
+
+        return (relation == null) || (relation.role == null);
+    }
+
+    //------------//
+    // isTooThick //
+    //------------//
+    /**
+     * Check whether the given section is too thick (thicker than the allowed
+     * maxThickness).
+     *
+     * @param section the section to check
+     *
+     * @return true if section is too thick
+     */
+    private boolean isTooThick (GlyphSection section)
+    {
+        return section.getRunNb() > maxThickness;
     }
 
     //-----------//
@@ -575,101 +669,6 @@ public class SticksBuilder
             relation.role = DISCARDED;
             section.setGlyph(null);
         }
-    }
-
-    //---------//
-    // isClose //
-    //---------//
-    /**
-     * Check that the section would not thicken too much the stick being built,
-     * and whose members are passed as parameter
-     *
-     * @param members      the members to compute distance to
-     * @param section      the section to check
-     * @param maxThickness the maximum resulting stick thickness
-     *
-     * @return true if OK
-     */
-    private boolean isClose (Collection<GlyphSection> members,
-                             GlyphSection             section,
-                             int                      maxThickness)
-    {
-        // Just to speed up
-        final int start = section.getStart();
-        final int stop = section.getStop();
-        final int firstPos = section.getFirstPos();
-        final int lastPos = section.getLastPos();
-
-        // Check real stick thickness so far
-        for (GlyphSection sct : members) {
-            // Check overlap in abscissa with section at hand
-            if (Math.max(start, sct.getStart()) <= Math.min(
-                stop,
-                sct.getStop())) {
-                // Check global thickness
-                int thick;
-
-                if (sct.getFirstPos() > firstPos) {
-                    thick = sct.getLastPos() - firstPos + 1;
-                } else {
-                    thick = lastPos - sct.getFirstPos() + 1;
-                }
-
-                if (thick > maxThickness) {
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            "Too thick real line (" + thick + ") " + section);
-                    }
-
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    //-------------//
-    // isDiscarded //
-    //-------------//
-    /**
-     * Checks whether a given section has been discarded
-     *
-     * @param section the section to check
-     *
-     * @return true if actually discarded
-     */
-    private boolean isDiscarded (StickSection section)
-    {
-        StickRelation relation = section.getRelation();
-
-        return (relation != null) && (relation.role == DISCARDED);
-    }
-
-    //--------//
-    // isFree //
-    //--------//
-    private boolean isFree (StickSection section)
-    {
-        StickRelation relation = section.getRelation();
-
-        return (relation == null) || (relation.role == null);
-    }
-
-    //------------//
-    // isTooThick //
-    //------------//
-    /**
-     * Check whether the given section is too thick (thicker than the allowed
-     * maxThickness).
-     *
-     * @param section the section to check
-     *
-     * @return true if section is too thick
-     */
-    private boolean isTooThick (GlyphSection section)
-    {
-        return section.getRunNb() > maxThickness;
     }
 
     //------//
