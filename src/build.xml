@@ -384,10 +384,6 @@
             <fileset dir="${basedir}"  
                      includes="build.xml, src/**, config/**, icons/**, www/**, train/*.def, nb/jp/**"
                      excludes="${dist.excludes},www/docs/api/**,www/branding/**,nb/jp/dist/**"/>
-            <fileset dir="${user.home}/.audiveris"
-                     includes="build.properties"/>
-            <fileset dir="${user.home}/.audiveris"
-                     includes="run.properties"/>
         </zip>
 
     </target>
@@ -482,5 +478,12 @@
 	    </fileset>
 	</copy>
     </target>
+    
+    <!-- ======= -->
+    <!--  U M L  -->
+    <!-- ======= -->
+    <target name="uml"
+            depends="-uml"
+	    description="Generation of UML drawings"/>
     
 </project>
