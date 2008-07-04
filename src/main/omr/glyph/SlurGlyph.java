@@ -182,6 +182,11 @@ public class SlurGlyph
             logger.finest("Seed section is " + seedSection);
         }
 
+        // If no significant section has been found, just give up
+        if (seedSection == null) {
+            return null;
+        }
+
         List<GlyphSection> kept = new ArrayList<GlyphSection>();
         List<GlyphSection> left = new ArrayList<GlyphSection>();
 
@@ -413,7 +418,11 @@ public class SlurGlyph
             Circle circle = computeCircle(seed);
 
             if (!circle.isValid(getMaxCircleDistance())) {
-                fixSpuriousSlur(seed, system);
+                try {
+                    fixSpuriousSlur(seed, system);
+                } catch (Exception ex) {
+                    logger.warning("Error in fixing slur", ex);
+                }
             } else if (logger.isFineEnabled()) {
                 logger.finest("Valid slur " + seed.getId());
             }
