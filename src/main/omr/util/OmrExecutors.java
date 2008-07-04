@@ -38,13 +38,13 @@ public class OmrExecutors
 
     /** Number of processors available */
     private static final int cpuNb = Runtime.getRuntime()
-                                            .availableProcessors() + 1;
+                                            .availableProcessors();
 
-    /** Pool with high priority */
-    private static volatile ExecutorService highExecutor;
+    /** Indicates that high pool has been launched */
+    private static volatile boolean highsLaunched = false;
 
-    /** Pool with low priority */
-    private static volatile ExecutorService lowExecutor;
+    /** Indicates that low pool has been launched */
+    private static volatile boolean lowsLaunched = false;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -65,17 +65,7 @@ public class OmrExecutors
      */
     public static ExecutorService getHighExecutor ()
     {
-        if (highExecutor == null) {
-            synchronized (OmrExecutors.class) {
-                if (highExecutor == null) {
-                    highExecutor = Executors.newFixedThreadPool(
-                        cpuNb + 1,
-                        new HighFactory());
-                }
-            }
-        }
-
-        return highExecutor;
+        return Highs.executor;
     }
 
     //----------------//
@@ -88,24 +78,14 @@ public class OmrExecutors
      */
     public static ExecutorService getLowExecutor ()
     {
-        if (lowExecutor == null) {
-            synchronized (OmrExecutors.class) {
-                if (lowExecutor == null) {
-                    lowExecutor = Executors.newFixedThreadPool(
-                        cpuNb + 1,
-                        new LowFactory());
-                }
-            }
-        }
-
-        return lowExecutor;
+        return Lows.executor;
     }
 
     //-----------------//
     // getNumberOfCpus //
     //-----------------//
     /**
-     * Report the number of processors available
+     * Report the number of "processors" available
      *
      * @return the number of CPUs
      */
@@ -117,16 +97,19 @@ public class OmrExecutors
     //----------//
     // shutdown //
     //----------//
+    /**
+     * Gracefully shut down  all the executors launched
+     */
     public static void shutdown ()
     {
-        if (lowExecutor != null) {
+        if (lowsLaunched) {
             logger.info("Shutting down low executors");
-            shutdownAndAwaitTermination(lowExecutor);
+            shutdownAndAwaitTermination(getLowExecutor());
         }
 
-        if (highExecutor != null) {
+        if (highsLaunched) {
             logger.info("Shutting down high executors");
-            shutdownAndAwaitTermination(highExecutor);
+            shutdownAndAwaitTermination(getHighExecutor());
         }
     }
 
@@ -176,43 +159,6 @@ public class OmrExecutors
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //---------//
-    // Factory //
-    //---------//
-    private abstract static class Factory
-        implements ThreadFactory
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        protected final ThreadGroup group;
-
-        //~ Constructors -------------------------------------------------------
-
-        Factory ()
-        {
-            SecurityManager s = System.getSecurityManager();
-            group = (s != null) ? s.getThreadGroup()
-                    : Thread.currentThread()
-                            .getThreadGroup();
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ThreadFactory.class)
-        public Thread newThread (Runnable r)
-        {
-            Thread t = new Thread(group, r, getThreadName(), 0);
-
-            if (t.isDaemon()) {
-                t.setDaemon(false);
-            }
-
-            return t;
-        }
-
-        protected abstract String getThreadName ();
-    }
-
     //-----------//
     // Constants //
     //-----------//
@@ -232,65 +178,89 @@ public class OmrExecutors
             "Time to wait for terminating tasks");
     }
 
-    //-------------//
-    // HighFactory //
-    //-------------//
-    private static class HighFactory
-        extends Factory
+    //---------//
+    // Factory //
+    //---------//
+    private static class Factory
+        implements ThreadFactory
     {
         //~ Instance fields ----------------------------------------------------
 
-        private final AtomicInteger highThreadNumber = new AtomicInteger(1);
+        private final ThreadGroup   group;
+        private final String        threadPrefix;
+        private final int           threadPriority;
+        private final AtomicInteger threadNumber = new AtomicInteger(0);
+
+        //~ Constructors -------------------------------------------------------
+
+        Factory (String threadPrefix,
+                 int    threadPriority)
+        {
+            SecurityManager s = System.getSecurityManager();
+            group = (s != null) ? s.getThreadGroup()
+                    : Thread.currentThread()
+                            .getThreadGroup();
+            this.threadPrefix = threadPrefix;
+            this.threadPriority = threadPriority;
+        }
 
         //~ Methods ------------------------------------------------------------
 
-        @Override
+        @Implement(ThreadFactory.class)
         public Thread newThread (Runnable r)
         {
-            Thread t = super.newThread(r);
+            Thread t = new Thread(group, r, getOneThreadName(), 0);
 
-            if (t.getPriority() != Thread.NORM_PRIORITY) {
-                t.setPriority(Thread.NORM_PRIORITY);
+            if (t.isDaemon()) {
+                t.setDaemon(false);
+            }
+
+            if (t.getPriority() != threadPriority) {
+                t.setPriority(threadPriority);
             }
 
             return t;
         }
 
-        @Override
-        protected String getThreadName ()
+        private String getOneThreadName ()
         {
-            return "high-thread-" + highThreadNumber.getAndIncrement();
+            return threadPrefix + "-thread-" + threadNumber.incrementAndGet();
         }
     }
 
-    //------------//
-    // LowFactory //
-    //------------//
-    private static class LowFactory
-        extends Factory
+    //-------//
+    // Highs //
+    //-------//
+    /** Pool with high priority */
+    private static class Highs
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Static fields/initializers -----------------------------------------
 
-        private final AtomicInteger lowThreadNumber = new AtomicInteger(1);
+        public static ExecutorService executor;
 
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public Thread newThread (Runnable r)
-        {
-            Thread t = super.newThread(r);
-
-            if (t.getPriority() != Thread.MIN_PRIORITY) {
-                t.setPriority(Thread.MIN_PRIORITY);
-            }
-
-            return t;
+        static {
+            executor = Executors.newFixedThreadPool(
+                cpuNb + 1,
+                new Factory("high", Thread.NORM_PRIORITY));
+            highsLaunched = true;
         }
+    }
 
-        @Override
-        protected String getThreadName ()
-        {
-            return "low-thread-" + lowThreadNumber.getAndIncrement();
+    //------//
+    // Lows //
+    //------//
+    /** Pool with low priority */
+    private static class Lows
+    {
+        //~ Static fields/initializers -----------------------------------------
+
+        public static final ExecutorService executor;
+
+        static {
+            executor = Executors.newFixedThreadPool(
+                cpuNb + 1,
+                new Factory("low", Thread.MIN_PRIORITY));
+            lowsLaunched = true;
         }
     }
 }
