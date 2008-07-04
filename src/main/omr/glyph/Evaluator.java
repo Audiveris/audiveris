@@ -9,18 +9,22 @@
 //
 package omr.glyph;
 
+import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.math.Moments;
 import omr.math.NeuralNetwork;
 
-import omr.sheet.PixelRectangle;
+import omr.score.common.PixelRectangle;
+
 import omr.sheet.Scale;
 
 import omr.stick.Stick;
 
 import omr.util.Logger;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -81,8 +85,6 @@ public abstract class Evaluator
         }
     };
 
-    /** Descriptive labels for glyph characteristics */
-    private static volatile String[] labels;
 
     //~ Enumerations -----------------------------------------------------------
 
@@ -143,27 +145,7 @@ public abstract class Evaluator
      */
     public static String getParameterLabel (int index)
     {
-        if (labels == null) {
-            synchronized (Evaluator.class) {
-                if (labels == null) {
-                    labels = new String[inSize];
-
-                    // We take all the first moments
-                    for (int i = 0; i < inMoments; i++) {
-                        labels[i] = Moments.getLabel(i);
-                    }
-
-                    // We append flags and step position
-                    int i = inMoments;
-                    /* 10 */ labels[i++] = "ledger";
-                    /* 11 */ labels[i++] = "stemNb";
-
-                    ////* 12 */ labels[i++] = "pitch";
-                }
-            }
-        }
-
-        return labels[index];
+        return LabelsHolder.labels[index];
     }
 
     //-----------//
@@ -328,6 +310,20 @@ public abstract class Evaluator
             if (glyph.getLeftStem() == null) {
                 return null;
             }
+        } else if ((Shape.TEXT == shape) || (Shape.CHARACTER == shape)) {
+            // Check reasonable height (Cannot be too tall when close to staff)
+            double maxHeight = (Math.abs(glyph.getPitchPosition()) >= constants.minTitlePitchPosition.getValue())
+                               ? constants.maxTitleHeight.getValue()
+                               : constants.maxLyricHeight.getValue();
+
+            if (glyph.getNormalizedHeight() >= maxHeight) {
+                return null;
+            }
+
+            // Check there is no huge horizontal gap between parts
+            if (hugeGapBetweenParts(glyph)) {
+                return null;
+            }
         } else if (Shape.BEAM_HOOK == shape) {
             // Check we have exactly 1 stem
             if (glyph.getStemNumber() != 1) {
@@ -377,6 +373,54 @@ public abstract class Evaluator
         } else {
             return 0d;
         }
+    }
+
+    //-----------//
+    // hugeGapIn //
+    //-----------//
+    /**
+     * Browse the collection of provided glyphs to make sure there is no huge
+     * horizontal gap included
+     * @param glyphs the collection of glyphs that compose the text candidate
+     * @param sheet needed for scale of the context
+     * @return true if gap found
+     */
+    private boolean hugeGapBetweenParts (Glyph compound)
+    {
+        if (compound.getParts()
+                    .size() == 0) {
+            return false;
+        }
+
+        // Sort glyphs by abscissa 
+        List<Glyph> glyphs = new ArrayList(compound.getParts());
+        Collections.sort(glyphs);
+
+        final Scale scale = new Scale(glyphs.get(0).getInterline());
+        final int   maxGap = scale.toPixels(constants.maxTextGap);
+        int         gapStart = 0;
+        Glyph       prev = null;
+
+        for (Glyph glyph : glyphs) {
+            PixelRectangle box = glyph.getContourBox();
+
+            if (prev != null) {
+                if ((box.x - gapStart) > maxGap) {
+                    if (logger.isFineEnabled()) {
+                        logger.fine(
+                            "huge gap detected between glyphs #" +
+                            prev.getId() + " & " + glyph.getId());
+                    }
+
+                    return true;
+                }
+            }
+
+            prev = glyph;
+            gapStart = (box.x + box.width) - 1;
+        }
+
+        return false;
     }
 
     //----------------//
@@ -437,5 +481,43 @@ public abstract class Evaluator
         Scale.Fraction     maxClefHeight = new Scale.Fraction(
             9d,
             "Maximum normalized height for a clef");
+        Scale.Fraction     maxTitleHeight = new Scale.Fraction(
+            4d,
+            "Maximum normalized height for a text");
+        Scale.Fraction     maxLyricHeight = new Scale.Fraction(
+            2.5d,
+            "Maximum normalized height for a text");
+        Constant.Double    minTitlePitchPosition = new Constant.Double(
+            "PitchPosition",
+            15d,
+            "Minimum absolute pitch position for a title");
+        Scale.Fraction     maxTextGap = new Scale.Fraction(
+            5.0,
+            "Maximum value for a horizontal gap between glyphs of the same text");
+    }
+
+    //--------------//
+    // LabelsHolder //
+    //--------------//
+    /** Descriptive strings for glyph characteristics */
+    private static class LabelsHolder
+    {
+        //~ Static fields/initializers -----------------------------------------
+
+        public static final String[] labels = new String[inSize];
+
+        static {
+            // We take all the first moments
+            for (int i = 0; i < inMoments; i++) {
+                labels[i] = Moments.getLabel(i);
+            }
+
+            // We append flags and step position
+            int i = inMoments;
+            /* 10 */ labels[i++] = "ledger";
+            /* 11 */ labels[i++] = "stemNb";
+
+            ////* 12 */ labels[i++] = "pitch";
+        }
     }
 }
