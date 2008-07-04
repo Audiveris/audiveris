@@ -12,6 +12,7 @@ package omr.glyph.ui;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphModel;
 import omr.glyph.Shape;
+import omr.glyph.TextType;
 
 import omr.math.Moments;
 
@@ -187,7 +188,7 @@ class SymbolGlyphBoard
 
         // Additional combo for text type
         paramAction = new ParamAction();
-        textCombo = new JComboBox(Glyph.TextType.values());
+        textCombo = new JComboBox(TextType.values());
         textCombo.addActionListener(paramAction);
         textCombo.setToolTipText("Type of the Text");
 
@@ -256,8 +257,11 @@ class SymbolGlyphBoard
             // Text Information
             if (textCombo != null) {
                 selfUpdatingText = true;
+                textCombo.setSelectedItem(TextType.NoType);
 
-                if ((glyph != null) && (glyph.getShape() == Shape.TEXT)) {
+                if ((glyph != null) &&
+                    (glyph.getShape() != null) &&
+                    (glyph.getShape().isText())) {
                     textCombo.setEnabled(true);
                     textField.setEnabled(true);
 
@@ -398,7 +402,7 @@ class SymbolGlyphBoard
                 // Read text information
                 if (logger.isFineEnabled()) {
                     logger.fine(
-                        "Text='" + textField.getText() + "' Type=" +
+                        "Text='" + textField.getText().trim() + "' Type=" +
                         textCombo.getSelectedItem());
                 }
 
@@ -406,7 +410,7 @@ class SymbolGlyphBoard
                             .getSymbolsBuilder()
                             .assignText(
                     glyphs,
-                    (Glyph.TextType) textCombo.getSelectedItem(),
+                    (TextType) textCombo.getSelectedItem(),
                     textField.getText(),
                     true);
             }
