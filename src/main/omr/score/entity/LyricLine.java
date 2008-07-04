@@ -49,7 +49,6 @@ public class LyricLine
     private Integer y;
 
     /** The x-ordered collection of lyric items */
-    @Children
     private final SortedSet<LyricItem> items = new TreeSet<LyricItem>();
 
     //~ Constructors -----------------------------------------------------------
@@ -65,6 +64,34 @@ public class LyricLine
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //------------------//
+    // getFollowingLine //
+    //------------------//
+    /**
+     * Retrieve the corresponding lyric line in the next part, if any
+     *
+     * @return the next lyric line, or null
+     */
+    public LyricLine getFollowingLine ()
+    {
+        LyricLine  nextLine = null;
+
+        // Check existence of similar line in following system part
+        SystemPart nextPart = (SystemPart) getPart()
+                                               .getFollowing();
+
+        if (nextPart != null) {
+            // Retrieve the same lyric line in the next (system) part
+            if (nextPart.getLyrics()
+                        .size() >= id) {
+                nextLine = (LyricLine) nextPart.getLyrics()
+                                               .get(id - 1);
+            }
+        }
+
+        return nextLine;
+    }
 
     //-------//
     // setId //
@@ -83,63 +110,25 @@ public class LyricLine
     }
 
     //------------------//
-    // getFollowingLine //
-    //------------------//
-    /**
-     * Retrieve the corresponding lyric line in the next part, if any
-     *
-     * @return the next lyric line, or null
-     */
-    public LyricLine getFollowingLine ()
-    {
-        LyricLine nextLine = null;
-
-        // Check existence of similar line in previous system
-        System nextSystem = (System) getSystem()
-                                         .getNextSibling();
-
-        if (nextSystem != null) {
-            // We assume all systems have the same number of parts
-            SystemPart nextPart = (SystemPart) nextSystem.getParts()
-                                                         .get(
-                getPart().getId() - 1);
-
-            // Retrieve the same lyric line in the next (system) part
-            if (nextPart.getLyrics()
-                        .size() >= id) {
-                nextLine = (LyricLine) nextPart.getLyrics()
-                                               .get(id - 1);
-            }
-        }
-
-        return nextLine;
-    }
-
-    //------------------//
     // getPrecedingLine //
     //------------------//
     /**
-     * Retrieve the corresponding lyric line in the p^receding part, if any
+     * Retrieve the corresponding lyric line in the preceding part, if any
      *
      * @return the preceding lyric line, or null
      */
     public LyricLine getPrecedingLine ()
     {
-        LyricLine  precedingLine = null;
-
         // Check existence of similar line in preceding system part
         SystemPart part = getPart();
 
-        while ((part = part.getPreceding()) != null) {
-            // Retrieve the same lyric line in the previous (system) part
-            if (part.getLyrics()
-                    .size() >= id) {
-                precedingLine = (LyricLine) part.getLyrics()
-                                                .get(id - 1);
-            }
+        if ((part != null) && (part.getLyrics()
+                                   .size() >= id)) {
+            return (LyricLine) part.getLyrics()
+                                   .get(id - 1);
         }
 
-        return precedingLine;
+        return null;
     }
 
     //------//
@@ -267,13 +256,13 @@ public class LyricLine
         return sb.toString();
     }
 
-    //-------------------------//
-    // connectSyllablesToNotes //
-    //-------------------------//
-    void connectSyllablesToNotes ()
+    //--------------//
+    // mapSyllables //
+    //--------------//
+    void mapSyllables ()
     {
         for (LyricItem item : items) {
-            item.connectToNote();
+            item.mapToNote();
         }
     }
 
@@ -298,7 +287,7 @@ public class LyricLine
     private void addItem (LyricItem item)
     {
         items.add(item);
-        item.setLine(this);
+        item.setLyricLine(this);
 
         // Force recomputation of line mean ordinate
         y = null;
