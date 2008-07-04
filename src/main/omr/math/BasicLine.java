@@ -319,7 +319,6 @@ public class BasicLine
     public void reset ()
     {
         a = b = c = Double.NaN;
-        ;
         n = 0;
         sx = sy = sx2 = sy2 = sxy = 0d;
 
@@ -332,40 +331,44 @@ public class BasicLine
     @Override
     public String toString ()
     {
-        if (dirty) {
-            compute();
+        try {
+            if (dirty) {
+                compute();
+            }
+
+            StringBuffer sb = new StringBuffer();
+
+            if (isRatherVertical) {
+                sb.append("{VLine ");
+            } else {
+                sb.append("{HLine ");
+            }
+
+            if (a >= 0) {
+                sb.append(" ");
+            }
+
+            sb.append((float) a)
+              .append("*x ");
+
+            if (b >= 0) {
+                sb.append("+");
+            }
+
+            sb.append((float) b)
+              .append("*y ");
+
+            if (c >= 0) {
+                sb.append("+");
+            }
+
+            sb.append((float) c)
+              .append("}");
+
+            return sb.toString();
+        } catch (UndefinedLineException ex) {
+            return "INVALID LINE";
         }
-
-        StringBuffer sb = new StringBuffer();
-
-        if (isRatherVertical) {
-            sb.append("{VLine ");
-        } else {
-            sb.append("{HLine ");
-        }
-
-        if (a >= 0) {
-            sb.append(" ");
-        }
-
-        sb.append((float) a)
-          .append("*x ");
-
-        if (b >= 0) {
-            sb.append("+");
-        }
-
-        sb.append((float) b)
-          .append("*y ");
-
-        if (c >= 0) {
-            sb.append("+");
-        }
-
-        sb.append((float) c)
-          .append("}");
-
-        return sb.toString();
     }
 
     //-----//
