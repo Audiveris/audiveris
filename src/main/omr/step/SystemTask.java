@@ -14,7 +14,6 @@ import omr.sheet.SystemInfo;
 
 import omr.util.Logger;
 import omr.util.OmrExecutors;
-import omr.util.SignallingRunnable;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -69,6 +68,37 @@ public abstract class SystemTask
     public abstract void doSystem (SystemInfo system)
         throws StepException;
 
+    //--------//
+    // isDone //
+    //--------//
+    /**
+     * Check whether processing for this system has been done/started
+     * @param system the provided system
+     * @return true if done/started, false otherwise
+     */
+    public synchronized boolean isDone (SystemInfo system)
+    {
+        Boolean result = systemDone.get(system);
+
+        return (result != null) && result;
+    }
+
+    //-----------//
+    // getResult //
+    //-----------//
+    /**
+     * Make sure this step has been run for the given system
+     * @param system the system for which processing may be required
+     * @throws StepException raised if processing failed
+     */
+    public void getResult (SystemInfo system)
+        throws StepException
+    {
+        if (!isDone(system)) {
+            doSystem(system);
+        }
+    }
+
     //---------//
     // doFinal //
     //---------//
@@ -98,12 +128,12 @@ public abstract class SystemTask
         }
 
         // Processing per system
-        //        if (OmrExecutors.useParallelism() &&
-        //            (OmrExecutors.getNumberOfCpus() > 1)) {
-        //            doitParallel();
-        //        } else {
-        doitSerial();
-        //        }
+        if (OmrExecutors.useParallelism() &&
+            (OmrExecutors.getNumberOfCpus() > 1)) {
+            doitParallel();
+        } else {
+            doitSerial();
+        }
 
         // Final actions
         doFinal();
@@ -131,68 +161,39 @@ public abstract class SystemTask
         systemDone.put(system, Boolean.valueOf(true));
     }
 
-    //-----------//
-    // getResult //
-    //-----------//
-    /**
-     * Make sure this step has been run for the given system
-     * @param system the system for which processing may be required
-     * @throws StepException raised if processing failed
-     */
-    public void getResult (SystemInfo system)
-        throws StepException
-    {
-        if (!isDone(system)) {
-            doSystem(system);
-        }
-    }
-
-    //--------//
-    // isDone //
-    //--------//
-    /**
-     * Check whether processing for this system has been done/started
-     * @param system the provided system
-     * @return true if done/started, false otherwise
-     */
-    public synchronized boolean isDone (SystemInfo system)
-    {
-        Boolean result = systemDone.get(system);
-
-        return (result != null) && result;
-    }
-
     //--------------//
     // doitParallel //
     //--------------//
     private void doitParallel ()
     {
-        Executor       executor = OmrExecutors.getHighExecutor();
-        CountDownLatch doneSignal = new CountDownLatch(
-            sheet.getSystems().size());
-
-        for (SystemInfo info : sheet.getSystems()) {
-            final SystemInfo   system = info;
-            SignallingRunnable work = new SignallingRunnable(
-                doneSignal,
-                new Runnable() {
-                        public void run ()
-                        {
-                            try {
-                                doSystem(system);
-                            } catch (StepException ex) {
-                                logger.warning("Step aborted on system", ex);
-                            }
-                        }
-                    });
-            executor.execute(work);
-        }
-
-        // Wait for end of work
         try {
-            doneSignal.await();
+            Collection<Callable<Void>> tasks = new ArrayList<Callable<Void>>(
+                sheet.getSystems().size());
+
+            for (SystemInfo info : sheet.getSystems()) {
+                final SystemInfo system = info;
+                tasks.add(
+                    new Callable<Void>() {
+                            public Void call ()
+                                throws Exception
+                            {
+                                try {
+                                    doSystem(system);
+                                } catch (StepException ex) {
+                                    logger.warning(
+                                        "Step aborted on system",
+                                        ex);
+                                }
+
+                                return null;
+                            }
+                        });
+            }
+
+            OmrExecutors.getLowExecutor()
+                        .invokeAll(tasks);
         } catch (InterruptedException ex) {
-            ex.printStackTrace();
+            logger.warning("doitParallel got interrupted", ex);
         }
     }
 
@@ -203,6 +204,12 @@ public abstract class SystemTask
         throws StepException
     {
         for (SystemInfo system : sheet.getSystems()) {
+            if (logger.isFineEnabled()) {
+                logger.info(
+                    this.getClass().getSimpleName() + " doSystem #" +
+                    system.getId());
+            }
+
             doSystem(system);
         }
     }

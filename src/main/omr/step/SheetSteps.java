@@ -30,9 +30,11 @@ import omr.sheet.SystemInfo;
 import static omr.step.Step.*;
 
 import omr.util.Logger;
+import omr.util.OmrExecutors;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.Callable;
 
 import javax.swing.*;
 
@@ -56,7 +58,7 @@ public class SheetSteps
     private final Sheet sheet;
 
     /** The tasks that relate to each step */
-    private final SortedMap<Step, SheetTask> tasks = new TreeMap<Step, SheetTask>();
+    private final Map<Step, SheetTask> tasks = new LinkedHashMap<Step, SheetTask>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -211,13 +213,10 @@ public class SheetSteps
         }
 
         // Determine impacted systems, from the collection of modified glyphs
-        SortedSet<SystemInfo> impactedSystems;
-
-        if (glyphs != null) {
-            impactedSystems = sheet.getImpactedSystems(glyphs, shapes);
-        } else {
-            impactedSystems = new TreeSet<SystemInfo>(sheet.getSystems());
-        }
+        final SortedSet<SystemInfo> impactedSystems = (glyphs != null)
+                                                      ? sheet.getImpactedSystems(
+            glyphs,
+            shapes) : new TreeSet<SystemInfo>(sheet.getSystems());
 
         if (logger.isFineEnabled()) {
             logger.fine(
@@ -225,58 +224,85 @@ public class SheetSteps
                 SystemInfo.toString(impactedSystems));
         }
 
-        // The re-processing is done sequentially (though LEAVES & CLEANUP could
-        // be done on several systems in parallel)
+        // Prepare the reprocessing of the impacted systems
+        Collection<Callable<Void>> work = new ArrayList<Callable<Void>>();
+
         for (SystemInfo info : impactedSystems) {
             final SystemInfo system = info;
-            system.getScoreSystem()
-                  .cleanupNode();
-
-            try {
-                if (isDone(LEAVES)) {
-                    doSystem(LEAVES, system);
-                }
-
-                if (isDone(CLEANUP)) {
-                    doSystem(CLEANUP, system);
-                }
-
-                if (isDone(SCORE)) {
-                    doSystem(SCORE, system);
-                }
-            } catch (StepException ex) {
-                ex.printStackTrace();
-            }
-        }
-
-        // Final cross-system translation tasks
-        if (isDone(SCORE)) {
-            sheet.getScoreBuilder()
-                 .buildFinal(
-                (impactedSystems.size() > 0) ? impactedSystems.first() : null);
-        }
-
-        // Always refresh views if any
-        if (Main.getGui() != null) {
-            SwingUtilities.invokeLater(
-                new Runnable() {
-                        public void run ()
+            work.add(
+                new Callable<Void>() {
+                        public Void call ()
+                            throws Exception
                         {
-                            if (isDone(VERTICALS)) {
-                                getTask(VERTICALS)
-                                    .displayUI();
+                            system.getScoreSystem()
+                                  .cleanupNode();
+
+                            try {
+                                if (isDone(LEAVES)) {
+                                    doSystem(LEAVES, system);
+                                }
+
+                                if (isDone(CLEANUP)) {
+                                    doSystem(CLEANUP, system);
+                                }
+
+                                if (isDone(SCORE)) {
+                                    doSystem(SCORE, system);
+                                }
+                            } catch (StepException ex) {
+                                ex.printStackTrace();
                             }
 
-                            if (isDone(SYMBOLS)) {
-                                getTask(SYMBOLS)
-                                    .displayUI();
-                            }
-
-                            // Kludge, to put the Glyphs tab on top of all others.
-                            sheet.getAssembly()
-                                 .selectTab("Glyphs");
+                            return null;
                         }
                     });
+        }
+
+        try {
+            OmrExecutors.getLowExecutor()
+                        .invokeAll(work);
+
+            // Final cross-system translation tasks
+            if (isDone(SCORE)) {
+                Runnable finalWork = new Runnable() {
+                    public void run ()
+                    {
+                        SystemInfo firstSystem = (impactedSystems.size() > 0)
+                                                 ? impactedSystems.first() : null;
+                        sheet.getScoreBuilder()
+                             .buildFinal(firstSystem);
+                    }
+                };
+
+                OmrExecutors.getLowExecutor()
+                            .submit(finalWork)
+                            .get();
+            }
+
+            // Always refresh views if any
+            if (Main.getGui() != null) {
+                SwingUtilities.invokeLater(
+                    new Runnable() {
+                            public void run ()
+                            {
+                                if (isDone(VERTICALS)) {
+                                    getTask(VERTICALS)
+                                        .displayUI();
+                                }
+
+                                if (isDone(SYMBOLS)) {
+                                    getTask(SYMBOLS)
+                                        .displayUI();
+                                }
+
+                                // Kludge, to put the Glyphs tab on top of all others.
+                                sheet.getAssembly()
+                                     .selectTab("Glyphs");
+                            }
+                        });
+            }
+        } catch (Exception ex) {
+            logger.warning("Last steps failed", ex);
         }
     }
 
@@ -381,6 +407,7 @@ public class SheetSteps
                  .extractNewSystemGlyphs(system);
             sheet.getGlyphInspector()
                  .processGlyphs(system, GlyphInspector.getCleanupMaxDoubt());
+            system.retrieveTextGlyphs();
             done(system);
         }
     }
