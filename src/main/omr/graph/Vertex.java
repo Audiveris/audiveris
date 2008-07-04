@@ -11,6 +11,8 @@ package omr.graph;
 
 import omr.util.Logger;
 
+import net.jcip.annotations.NotThreadSafe;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +29,10 @@ import javax.xml.bind.annotation.*;
  *
  * <p>NOTA: This plain Vertex type has no room for user-defined data, if such
  * feature is needed then a proper subtype of Vertex should be used.
+ * 
+ * <p>This class is not thread-safe, because it is not intended to be used by
+ * several threads simultaneously. However, the graph structure which contains
+ * instances of vertices is indeed thread-safe.
  *
  * @param <D> type for enclosing digraph precise subtype
  * @param <V> type for Vertex precise subtype
@@ -34,6 +40,7 @@ import javax.xml.bind.annotation.*;
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
+@NotThreadSafe
 @XmlAccessorType(XmlAccessType.NONE)
 public class Vertex<D extends Digraph, V extends Vertex<D, V>>
 {
@@ -142,86 +149,6 @@ public class Vertex<D extends Digraph, V extends Vertex<D, V>>
         target.sources.add(source);
     }
 
-    //---------//
-    // addView //
-    //---------//
-    /**
-     * Add the related view of this vertex
-     *
-     * @param view the view to be linked
-     */
-    public void addView (VertexView view)
-    {
-        getViews()
-            .add(view);
-
-        //        System.out.println(
-        //            getGraph().getName() + ": added view #" + (getViews().size() - 1) +
-        //            " to vertex #" + id);
-    }
-
-    //------------//
-    // clearViews //
-    //------------//
-    /**
-     * Get rid of all views for this vertex
-     */
-    public void clearViews ()
-    {
-        getViews()
-            .clear();
-    }
-
-    //--------//
-    // delete //
-    //--------//
-    /**
-     * Delete this vertex. This implies also the removal of all its incoming and
-     * outgoing edges.
-     */
-    public void delete ()
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("deleting vertex " + this);
-        }
-
-        // Remove in vertices of the vertex
-        for (V source : sources) {
-            source.targets.remove(this);
-        }
-
-        // Remove out vertices of the vertex
-        for (V target : targets) {
-            target.sources.remove(this);
-        }
-
-        // Remove from graph
-        graph.removeVertex(this); // Compiler warning here
-    }
-
-    //------//
-    // dump //
-    //------//
-    /**
-     * Prints on standard output a detailed information about this vertex.
-     */
-    public void dump ()
-    {
-        // The vertex
-        System.out.print(" ");
-        System.out.println(this);
-
-        // The in edges
-        for (V vertex : sources) {
-            System.out.println("  - edge from " + vertex);
-        }
-
-        // The out edges
-        for (V vertex : targets) {
-            System.out.println("  + edge to   " + vertex);
-        }
-    }
-
     //----------//
     // getGraph //
     //----------//
@@ -310,11 +237,84 @@ public class Vertex<D extends Digraph, V extends Vertex<D, V>>
      */
     public VertexView getView (int index)
     {
-        //        System.out.println(
-        //            getGraph().getName() + ": getting view #" + index +
-        //            " from vertex #" + id + " size=" + getViews().size());
         return getViews()
                    .get(index);
+    }
+
+    //---------//
+    // addView //
+    //---------//
+    /**
+     * Add the related view of this vertex
+     *
+     * @param view the view to be linked
+     */
+    public void addView (VertexView view)
+    {
+        getViews()
+            .add(view);
+    }
+
+    //------------//
+    // clearViews //
+    //------------//
+    /**
+     * Get rid of all views for this vertex
+     */
+    public void clearViews ()
+    {
+        getViews()
+            .clear();
+    }
+
+    //--------//
+    // delete //
+    //--------//
+    /**
+     * Delete this vertex. This implies also the removal of all its incoming and
+     * outgoing edges.
+     */
+    public void delete ()
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("deleting vertex " + this);
+        }
+
+        // Remove in vertices of the vertex
+        for (V source : sources) {
+            source.targets.remove(this);
+        }
+
+        // Remove out vertices of the vertex
+        for (V target : targets) {
+            target.sources.remove(this);
+        }
+
+        // Remove from graph
+        graph.removeVertex(this); // Compiler warning here
+    }
+
+    //------//
+    // dump //
+    //------//
+    /**
+     * Prints on standard output a detailed information about this vertex.
+     */
+    public void dump ()
+    {
+        // The vertex
+        System.out.print(" ");
+        System.out.println(this);
+
+        // The in edges
+        for (V vertex : sources) {
+            System.out.println("  - edge from " + vertex);
+        }
+
+        // The out edges
+        for (V vertex : targets) {
+            System.out.println("  + edge to   " + vertex);
+        }
     }
 
     //------------//
