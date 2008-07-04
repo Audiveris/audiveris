@@ -181,7 +181,7 @@ public class MidiReceiver
             if (agent.getStatus() == MidiAgent.Status.PLAYING) {
                 // Get the current midi tick value
                 long midiTick = agent.getPositionInTicks();
-                
+
                 // Have we moved since last call?
                 if (midiTick != currentMidiTick) {
                     currentMidiTick = midiTick;
@@ -412,16 +412,8 @@ public class MidiReceiver
     private void showSlot ()
     {
         if (score != null) {
-            final ScoreView.MyPanel view = (ScoreView.MyPanel) score.getView()
-                                                                    .getScrollPane()
-                                                                    .getView();
-            SwingUtilities.invokeLater(
-                new Runnable() {
-                        public void run ()
-                        {
-                            view.highLight(currentMeasure, currentSlot);
-                        }
-                    });
+            score.getView()
+                 .highLight(currentMeasure, currentSlot);
         }
     }
 }
