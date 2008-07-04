@@ -9,13 +9,19 @@
 //
 package omr.sheet;
 
+import omr.score.common.PixelRectangle;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphSection;
+import omr.glyph.TextArea;
+import omr.glyph.TextGlyphLine;
+
+import omr.lag.HorizontalOrientation;
 
 import omr.score.entity.System;
 
 import omr.util.Logger;
 
+import java.awt.Rectangle;
 import java.util.*;
 
 /**
@@ -40,14 +46,14 @@ public class SystemInfo
     /** Related sheet */
     private final Sheet sheet;
 
+    /** Related System in Score hierarchy */
+    private System scoreSystem;
+
     /** Staves of this system */
     private final List<StaffInfo> staves = new ArrayList<StaffInfo>();
 
     /** Parts in this system */
     private final List<PartInfo> parts = new ArrayList<PartInfo>();
-
-    /** Related System in Score hierarchy */
-    private System scoreSystem;
 
     ///   HORIZONTALS   ////////////////////////////////////////////////////////
 
@@ -64,6 +70,9 @@ public class SystemInfo
 
     /** Active glyphs in this system */
     private final SortedSet<Glyph> glyphs = new TreeSet<Glyph>();
+
+    /** Ordered collection of lines of text glyphs */
+    private SortedSet<TextGlyphLine> textLines = new TreeSet<TextGlyphLine>();
 
     ////////////////////////////////////////////////////////////////////////////
 
@@ -303,16 +312,16 @@ public class SystemInfo
         return maxLedgerWidth;
     }
 
-    //-------------------------------//
-    // getModifiableVerticalSections //
-    //-------------------------------//
+    //----------------------------//
+    // getMutableVerticalSections //
+    //----------------------------//
     /**
-     * Report the (modifiable)collection of vertical sections in the system
+     * Report the (modifiable) collection of vertical sections in the system
      * related area
      *
      * @return the area vertical sections
      */
-    public Collection<GlyphSection> getModifiableVerticalSections ()
+    public Collection<GlyphSection> getMutableVerticalSections ()
     {
         return vSections;
     }
@@ -713,5 +722,93 @@ public class SystemInfo
         sb.append("]");
 
         return sb.toString();
+    }
+
+    //----------//
+    // getSheet //
+    //----------//
+    public Sheet getSheet ()
+    {
+        return sheet;
+    }
+
+    //--------------//
+    // getTextLines //
+    //--------------//
+    /**
+     * Report the various lines of text retrieved in this system, ordered by
+     * their ordinate. Each such line contains one or more sentences that are
+     * sequences of text glyphs.
+     * @return the (perhaps empty) ordered collection of text lines found
+     */
+    public SortedSet<TextGlyphLine> getTextLines ()
+    {
+        return textLines;
+    }
+
+    //-----------------//
+    // alignTextGlyphs //
+    //-----------------//
+    /**
+     * Align the various text glyphs in horizontal text lines
+     */
+    public void alignTextGlyphs ()
+    {
+        try {
+            // Keep the previous work! No textLines.clear();
+            for (Glyph glyph : getGlyphsCopy()) {
+                if ((glyph.getShape() != null) && glyph.getShape()
+                                                       .isText()) {
+                    TextGlyphLine.feed(glyph, this, textLines);
+                }
+            }
+
+            // (Re)assign an id to each line
+            if (logger.isFineEnabled()) {
+                logger.fine("System#" + id);
+            }
+
+            int index = 0;
+
+            for (TextGlyphLine line : textLines) {
+                line.setId(++index);
+
+                if (logger.isFineEnabled()) {
+                    logger.fine(line.toString());
+                }
+
+                line.processGlyphs();
+            }
+        } catch (Error error) {
+            logger.warning("Error in TextArea.alignTexts: " + error);
+        } catch (Exception ex) {
+            logger.warning("Exception in TextArea.alignTexts", ex);
+        }
+    }
+
+    //--------------------//
+    // retrieveTextGlyphs //
+    //--------------------//
+    /**
+     * Retrieve the various glyphs and series of glyphs that could represent
+     * text portions in the system at hand
+     */
+    public void retrieveTextGlyphs ()
+    {
+        TextArea area = new TextArea(
+            null,
+            sheet.getVerticalLag().createAbsoluteRoi(
+                new Rectangle(
+                    0,
+                    areaTop,
+                    sheet.getWidth(),
+                    areaBottom - areaTop + 1)),
+            new HorizontalOrientation());
+
+        // Subdivide the area, to find and build text glyphs (words most likely)
+        area.subdivide(sheet);
+
+        // Process alignments of text items
+        alignTextGlyphs();
     }
 }
