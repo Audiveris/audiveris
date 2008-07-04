@@ -41,7 +41,7 @@ public class CLI
     private final String[] args;
 
     /** The parameters to fill */
-    private final Parameters parameters = new Parameters();
+    private final Parameters parameters;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -59,120 +59,22 @@ public class CLI
     {
         this.toolName = toolName;
         this.args = args;
+
+        parameters = parse();
     }
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------//
-    // parse //
-    //-------//
+    //---------------//
+    // getParameters //
+    //---------------//
     /**
-     * Parese the CLI arguments and return the filled parameters
+     * Parse the CLI arguments and return the populated parameters structure
      *
-     * @return the filled parameters, or null if failed
+     * @return the parsed parameters, or null if failed
      */
-    public Parameters parse ()
+    public Parameters getParameters ()
     {
-        // Status of the finite state machine
-        final int STEP = 0;
-        final int SHEET = 1;
-        final int SCRIPT = 2;
-        boolean   paramNeeded = false; // Are we expecting a param?
-        int       status = SHEET; // By default
-        String    currentCommand = null;
-
-        // Parse all arguments from command line
-        for (int i = 0; i < args.length; i++) {
-            String token = args[i];
-
-            if (token.startsWith("-")) {
-                // This is a command
-                // Check that we were not expecting param(s)
-                if (paramNeeded) {
-                    printCommandLine();
-                    stopUsage(
-                        "Found no parameter after command '" + currentCommand +
-                        "'");
-
-                    return null;
-                }
-
-                if (token.equalsIgnoreCase("-help")) {
-                    stopUsage(null);
-
-                    return null;
-                } else if (token.equalsIgnoreCase("-batch")) {
-                    parameters.batchMode = true;
-                    paramNeeded = false;
-                } else if (token.equalsIgnoreCase("-step")) {
-                    status = STEP;
-                    paramNeeded = true;
-                } else if (token.equalsIgnoreCase("-sheet")) {
-                    status = SHEET;
-                    paramNeeded = true;
-                } else if (token.equalsIgnoreCase("-script")) {
-                    status = SCRIPT;
-                    paramNeeded = true;
-                } else {
-                    printCommandLine();
-                    stopUsage("Unknown command '" + token + "'");
-
-                    return null;
-                }
-
-                // Remember the current command
-                currentCommand = token;
-            } else {
-                // This is a parameter
-                switch (status) {
-                case STEP :
-                    // Read a step name
-                    parameters.targetStep = Step.valueOf(token.toUpperCase());
-
-                    if (parameters.targetStep == null) {
-                        printCommandLine();
-                        stopUsage(
-                            "Step name expected, found '" + token +
-                            "' instead");
-
-                        return null;
-                    }
-
-                    // By default, sheets are now expected
-                    status = SHEET;
-                    paramNeeded = false;
-
-                    break;
-
-                case SHEET :
-                    addRef(token, parameters.sheetNames);
-                    paramNeeded = false;
-
-                    break;
-
-                case SCRIPT :
-                    addRef(token, parameters.scriptNames);
-                    paramNeeded = false;
-
-                    break;
-                }
-            }
-        }
-
-        // Additional error checking
-        if (paramNeeded) {
-            printCommandLine();
-            stopUsage(
-                "Expecting a parameter after command '" + currentCommand + "'");
-
-            return null;
-        }
-
-        // Results
-        if (logger.isFineEnabled()) {
-            logger.fine("CLI parameters:" + parameters);
-        }
-
         return parameters;
     }
 
@@ -195,6 +97,13 @@ public class CLI
     //--------//
     // addRef //
     //--------//
+    /**
+     * Add a reference to a provided list, while handling indirections if needed
+     * @param ref the reference to add, which can be a plain name (which is
+     * simply added to the list) or an indirection (a name starting by the '@'
+     * character) which denotes a file of references to be recursively added
+     * @param list the collection of references to be augmented
+     */
     private void addRef (String       ref,
                          List<String> list)
     {
@@ -221,16 +130,132 @@ public class CLI
             } catch (FileNotFoundException ex) {
                 logger.warning("Cannot find file '" + pack + "'");
             }
-        } else
-        // Plain file name
-        if (ref.length() > 0) {
+        } else if (ref.length() > 0) {
+            // Plain file name
             list.add(ref);
         }
+    }
+
+    //-------//
+    // parse //
+    //-------//
+    /**
+     * Parse the CLI arguments and populate the parameters structure
+     *
+     * @return the populated parameters, or null if failed
+     */
+    private Parameters parse ()
+    {
+        // Status of the finite state machine
+        final int  STEP = 0;
+        final int  SHEET = 1;
+        final int  SCRIPT = 2;
+        boolean    paramNeeded = false; // Are we expecting a param?
+        int        status = SHEET; // By default
+        String     currentCommand = null;
+        Parameters params = new Parameters();
+
+        // Parse all arguments from command line
+        for (int i = 0; i < args.length; i++) {
+            String token = args[i];
+
+            if (token.startsWith("-")) {
+                // This is a command
+                // Check that we were not expecting param(s)
+                if (paramNeeded) {
+                    printCommandLine();
+                    stopUsage(
+                        "Found no parameter after command '" + currentCommand +
+                        "'");
+
+                    return null;
+                }
+
+                if (token.equalsIgnoreCase("-help")) {
+                    stopUsage(null);
+
+                    return null;
+                } else if (token.equalsIgnoreCase("-batch")) {
+                    params.batchMode = true;
+                    paramNeeded = false;
+                } else if (token.equalsIgnoreCase("-step")) {
+                    status = STEP;
+                    paramNeeded = true;
+                } else if (token.equalsIgnoreCase("-sheet")) {
+                    status = SHEET;
+                    paramNeeded = true;
+                } else if (token.equalsIgnoreCase("-script")) {
+                    status = SCRIPT;
+                    paramNeeded = true;
+                } else {
+                    printCommandLine();
+                    stopUsage("Unknown command '" + token + "'");
+
+                    return null;
+                }
+
+                // Remember the current command
+                currentCommand = token;
+            } else {
+                // This is a parameter
+                switch (status) {
+                case STEP :
+                    // Read a step name
+                    params.targetStep = Step.valueOf(token.toUpperCase());
+
+                    if (params.targetStep == null) {
+                        printCommandLine();
+                        stopUsage(
+                            "Step name expected, found '" + token +
+                            "' instead");
+
+                        return null;
+                    }
+
+                    // By default, sheets are now expected
+                    status = SHEET;
+                    paramNeeded = false;
+
+                    break;
+
+                case SHEET :
+                    addRef(token, params.sheetNames);
+                    paramNeeded = false;
+
+                    break;
+
+                case SCRIPT :
+                    addRef(token, params.scriptNames);
+                    paramNeeded = false;
+
+                    break;
+                }
+            }
+        }
+
+        // Additional error checking
+        if (paramNeeded) {
+            printCommandLine();
+            stopUsage(
+                "Expecting a parameter after command '" + currentCommand + "'");
+
+            return null;
+        }
+
+        // Results
+        if (logger.isFineEnabled()) {
+            logger.fine("CLI parameters:" + params);
+        }
+
+        return params;
     }
 
     //------------------//
     // printCommandLine //
     //------------------//
+    /**
+     * Printout the command line with its actual parameters
+     */
     private void printCommandLine ()
     {
         System.err.println(toolName);
@@ -240,6 +265,11 @@ public class CLI
     //-----------//
     // stopUsage //
     //-----------//
+    /**
+     * Printout a message if any, followed by the general syntax for the
+     * command line
+     * @param msg the message to print if non null
+     */
     private void stopUsage (String msg)
     {
         // Print message if any
@@ -278,14 +308,31 @@ public class CLI
     //------------//
     // Parameters //
     //------------//
+    /**
+     * A structure that collects the various parameters to be parsed from the
+     * command line
+     */
     public static class Parameters
     {
         //~ Instance fields ----------------------------------------------------
 
-        boolean      batchMode = false;
-        Step         targetStep = Step.LOAD;
-        List<String> sheetNames = new ArrayList<String>();
-        List<String> scriptNames = new ArrayList<String>();
+        /** Flag that indicates a batch mode */
+        boolean batchMode = false;
+
+        /** The desired step if any (-step XXX) */
+        Step targetStep = Step.LOAD;
+
+        /** The list of sheet file names to load */
+        final List<String> sheetNames = new ArrayList<String>();
+
+        /** The list of script file names to execute */
+        final List<String> scriptNames = new ArrayList<String>();
+
+        //~ Constructors -------------------------------------------------------
+
+        private Parameters ()
+        {
+        }
 
         //~ Methods ------------------------------------------------------------
 
