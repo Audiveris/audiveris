@@ -9,6 +9,8 @@
 //
 package omr.sheet;
 
+import omr.score.common.PixelDimension;
+import omr.score.common.PixelPoint;
 import omr.check.Check;
 import omr.check.CheckSuite;
 import omr.check.Checkable;
@@ -336,9 +338,7 @@ public class BarsChecker
 
         // Measures building (Sticks are already sorted by increasing abscissa)
         for (Iterator<Stick> bit = bars.iterator(); bit.hasNext();) {
-            Stick      bar = bit.next();
-
-            ///logger.fine(bar.toString());
+            Stick bar = bit.next();
 
             // Determine the system this bar line belongs to
             SystemInfo systemInfo = getSystemOf(bar, sheet);
@@ -532,6 +532,17 @@ public class BarsChecker
     private void retrieveBarLines ()
         throws StepException
     {
+        // Sort vertical sticks according to their abscissa
+        Collections.sort(
+            clutter,
+            new Comparator<Stick>() {
+                    public int compare (Stick o1,
+                                        Stick o2)
+                    {
+                        return Integer.signum(o1.getMidPos() - o2.getMidPos());
+                    }
+                });
+
         if (logger.isFineEnabled()) {
             logger.fine(
                 clutter.size() + " sticks to check: " +
@@ -616,12 +627,21 @@ public class BarsChecker
             }
         }
 
+        // Print all bars found
+        if (logger.isFineEnabled()) {
+            logger.fine("Bars found:");
+
+            for (Stick bar : bars) {
+                logger.fine(bar.toString());
+            }
+        }
+
         // Sanity check on the systems found
         for (int i = 0; i < systemStarts.length; i++) {
             if (logger.isFineEnabled()) {
                 logger.fine(
-                    "staff=" + i + " system=" + systemStarts[i] + " part=" +
-                    partStarts[i]);
+                    "staff=" + i + " systemStart=" + systemStarts[i] +
+                    " partStart=" + partStarts[i]);
             }
 
             if (systemStarts[i] == -1) {
