@@ -11,7 +11,11 @@ package omr.graph;
 
 import omr.util.Logger;
 
+import net.jcip.annotations.ThreadSafe;
+
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Class <code>Digraph</code> handles a directed graph, a structure containing
@@ -33,6 +37,7 @@ import java.util.*;
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
+@ThreadSafe
 public class Digraph<D extends Digraph<D, V>, V extends Vertex>
 {
     //~ Static fields/initializers ---------------------------------------------
@@ -42,30 +47,21 @@ public class Digraph<D extends Digraph<D, V>, V extends Vertex>
 
     //~ Instance fields --------------------------------------------------------
 
-    /**
-     * All Vertices of the graph, handled by a map: Id -> Vertex
-     */
-    private final SortedMap<Integer, V> vertices = new TreeMap<Integer, V>();
-
-    /**
-     * All Views on this graph, handled by a sequential collection
-     */
-    private List<DigraphView> views = new ArrayList<DigraphView>();
-
-    /**
-     * Name for debugging
-     */
+    /** Name of this instance, meant to ease debugging */
     private final String name;
 
-    /**
-     * Global id to uniquely identify a vertex
-     */
-    private int globalVertexId = 0;
+    /** Related Vertex (sub)class, to create vertices of the proper type */
+    private final Class<?extends V> vertexClass;
 
-    /**
-     * Related Vertex (sub)class, to create vertices of the proper type
-     */
-    private Class<?extends V> vertexClass;
+    /** All Vertices of the graph, handled by a map: Id -> Vertex */
+    private final ConcurrentHashMap<Integer, V> vertices = new ConcurrentHashMap<Integer, V>();
+
+    /** Global id to uniquely identify a vertex */
+    private final AtomicInteger globalVertexId = new AtomicInteger(0);
+
+    /** All Views on this graph, handled by a sequential collection */
+    private final List<DigraphView> views = Collections.synchronizedList(
+        new ArrayList<DigraphView>());
 
     //~ Constructors -----------------------------------------------------------
 
@@ -75,10 +71,17 @@ public class Digraph<D extends Digraph<D, V>, V extends Vertex>
     /**
      * Default constructor.
      * @param name the distinguished name for this instance
+     * @param vertexClass precise class to be used when instantiating vertices
      */
-    public Digraph (String name)
+    public Digraph (String            name,
+                    Class<?extends V> vertexClass)
     {
+        if (vertexClass == null) {
+            throw new IllegalArgumentException("null vertex class");
+        }
+
         this.name = name;
+        this.vertexClass = vertexClass;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -89,14 +92,14 @@ public class Digraph<D extends Digraph<D, V>, V extends Vertex>
     /**
      * Give access to the last id assigned to a vertex in this graph. This may
      * be greater than the number of vertices currently in the graph, because of
-     * potential deletion of vertices (Vertex Id is never reused).
+     * potential deletion of vertices (a Vertex Id is never reused).
      *
      * @return id of the last vertex created
      * @see #getVertexCount
      */
     public int getLastVertexId ()
     {
-        return globalVertexId;
+        return globalVertexId.get();
     }
 
     //---------//
@@ -127,24 +130,6 @@ public class Digraph<D extends Digraph<D, V>, V extends Vertex>
     }
 
     //----------------//
-    // setVertexClass //
-    //----------------//
-    /**
-     * Assigned the vertexClass (needed to create new vertices in the graph).
-     * This is meant to complement the default constructor.
-     *
-     * @param vertexClass the class to be used when instantiating vertices
-     */
-    public void setVertexClass (Class<?extends V> vertexClass)
-    {
-        if (vertexClass == null) {
-            throw new IllegalArgumentException("null vertex class");
-        } else {
-            this.vertexClass = vertexClass;
-        }
-    }
-
-    //----------------//
     // getVertexCount //
     //----------------//
     /**
@@ -162,26 +147,13 @@ public class Digraph<D extends Digraph<D, V>, V extends Vertex>
     // getVertices //
     //-------------//
     /**
-     * Export the unmodifiable collection of vertices of the graph.
+     * Export an unmodifiable and non-sorted collection of vertices of the graph
      *
      * @return the unmodifiable collection of vertices
      */
     public Collection<V> getVertices ()
     {
         return Collections.unmodifiableCollection(vertices.values());
-    }
-
-    //-----------------//
-    // getVerticesCopy //
-    //-----------------//
-    /**
-     * Export a copy of the collection of vertices of the graph.
-     *
-     * @return a copy collection of vertices
-     */
-    public synchronized Collection<V> getVerticesCopy ()
-    {
-        return new ArrayList(vertices.values());
     }
 
     //----------//
@@ -207,15 +179,15 @@ public class Digraph<D extends Digraph<D, V>, V extends Vertex>
      *
      * @param vertex the newly created vertex
      */
-    public synchronized void addVertex (V vertex)
+    public void addVertex (V vertex)
     {
         if (vertex == null) {
             throw new IllegalArgumentException("Cannot add a null vertex");
         }
 
-        vertices.put(++globalVertexId, vertex);
-        vertex.setId(globalVertexId);
         vertex.setGraph(this); // Compiler warning here
+        vertex.setId(globalVertexId.incrementAndGet()); // Atomic increment
+        vertices.put(vertex.getId(), vertex); // Atomic insertion
     }
 
     //---------//
@@ -347,7 +319,7 @@ public class Digraph<D extends Digraph<D, V>, V extends Vertex>
      *
      * @param vertex the vertex to be removed
      */
-    synchronized void removeVertex (V vertex)
+    void removeVertex (V vertex)
     {
         if (logger.isFineEnabled()) {
             logger.fine("remove " + vertex);
@@ -358,7 +330,7 @@ public class Digraph<D extends Digraph<D, V>, V extends Vertex>
                 "Trying to remove a null vertex");
         }
 
-        if (vertices.remove(vertex.getId()) == null) {
+        if (vertices.remove(vertex.getId()) == null) { // Atomic removal
             throw new RuntimeException(
                 "Trying to remove an unknown vertex: " + vertex);
         }
