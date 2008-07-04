@@ -13,16 +13,16 @@ import omr.check.Checkable;
 import omr.check.Result;
 import omr.check.SuccessResult;
 
+import omr.lag.HorizontalOrientation;
 import omr.lag.Section;
 import omr.lag.SectionView;
 
 import omr.math.Moments;
 
-import omr.sheet.PixelPoint;
-import omr.sheet.PixelRectangle;
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 
 import omr.ui.icon.SymbolIcon;
-import omr.ui.view.Zoom;
 
 import omr.util.Implement;
 import omr.util.Logger;
@@ -65,127 +65,108 @@ public class Glyph
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Glyph.class);
 
-    //~ Enumerations -----------------------------------------------------------
-
-    /** Gives some indication about the role of a textual element */
-    public static enum TextType {
-        //~ Enumeration constant initializers ----------------------------------
-
-
-        /** Part or whole line of lyrics */
-        Lyrics,
-        /** Title of the work */
-        Title, 
-        /** Indication */
-        Direction, 
-        /** Number of the work */
-        Number, 
-        /** Part name */
-        Name, 
-        /** Composer, Lyricist, Arranger, ... */
-        Creator, 
-        /** Copyrights */
-        Rights;
-    }
-
     //~ Instance fields --------------------------------------------------------
-
-    /** Instance identifier (Unique in the containing GlyphLag) */
-    @XmlAttribute
-    protected int id;
-
-    /** Interline of the containing staff (or sheet) */
-    @XmlAttribute
-    protected final int interline;
 
     /** The containing glyph lag */
     protected GlyphLag lag;
+
+    /** Instance identifier (Unique in the containing GlyphLag) */
+    @XmlAttribute
+    private int id;
+
+    /** Interline of the containing staff (or sheet) */
+    @XmlAttribute
+    private final int interline;
 
     /**
      * Sections that compose this glyph. The collection is kept sorted
      * on GlyphSection order
      */
     @XmlElement(name = "section")
-    protected SortedSet<GlyphSection> members = new TreeSet<GlyphSection>();
+    private SortedSet<GlyphSection> members = new TreeSet<GlyphSection>();
 
     /**
      * Display box (always properly oriented), so that rectangle width is
      * aligned with display horizontal and rectangle height with display
      * vertical
      */
-    protected Rectangle contourBox;
+    private Rectangle contourBox;
 
     /** Total weight of this glyph */
-    protected Integer weight;
+    private Integer weight;
 
     /** Result of analysis wrt this glyph */
-    protected Result result;
+    private Result result;
 
     /** A signature to retrieve this glyph */
     private GlyphSignature signature;
 
-    // Below are properties to be retrieved in the glyph original if any
-
     /** Contained leaves and stems */
-    protected Set<Glyph> leaves = new HashSet<Glyph>();
+    private Set<Glyph> leaves = new HashSet<Glyph>();
 
     /** Link to the glyph this one is a leaf of */
-    protected Glyph leafOf;
+    private Glyph leafOf;
 
     /** Contained parts, if this glyph is a compound */
-    private Set<Glyph> parts = new HashSet<Glyph>();
+    private Set<Glyph> parts = new LinkedHashSet<Glyph>();
 
-    /** Link to the compound this one is a part of */
-    protected Glyph partOf;
+    /** Link to the compound, if any, this one is a part of */
+    private Glyph partOf;
 
     /** Current recognized shape of this glyph */
-    protected Shape shape;
+    private Shape shape;
 
     /** Doubt in the assigned shape */
-    protected double doubt = Evaluation.NO_DOUBT;
+    private double doubt = Evaluation.NO_DOUBT;
 
     /** Number of stems it is connected to (0, 1, 2) */
-    protected int stemNumber;
+    private int stemNumber;
 
     /** Stem attached on left if any */
-    protected Glyph leftStem;
+    private Glyph leftStem;
 
     /** Stem attached on right if any */
-    protected Glyph rightStem;
+    private Glyph rightStem;
 
     /** Position with respect to nearest staff. Key references are : 0 for
        middle line (B), -2 for top line (F) and +2 for bottom line (E)  */
-    protected double pitchPosition;
+    private double pitchPosition;
 
     /** Is there a ledger nearby ? */
-    protected boolean withLedger;
+    private boolean withLedger;
 
     /** Computed moments of this glyph */
-    protected Moments moments;
+    private Moments moments;
 
-    /**  Centroid coordinates */
-    protected PixelPoint centroid;
+    /**  Mass center coordinates */
+    private PixelPoint centroid;
 
     /**  Box center coordinates */
-    protected PixelPoint center;
+    private PixelPoint center;
 
     /**
      * Bounding rectangle, defined as union of all member section bounds so
      * this implies that it has the same orientation as the sections
      */
-    protected Rectangle bounds;
+    private Rectangle bounds;
+
+    /** Related text area parameters */
+    private TextArea textArea;
 
     /** Text content if any */
-    protected String textContent;
+    private String textContent;
 
-    /** Text type if any */
-    protected TextType textType;
+    /** Dummy text content as placeholder, if any */
+    private String pseudoContent;
+
+    /** Containing text sentence if any */
+    private Sentence sentence;
 
     /** Set of forbidden shapes, if any */
-    protected Set<Shape> forbiddenShapes;
+    private Set<Shape> forbiddenShapes;
 
     /** Set of translation(s) of this glyph on the score side */
-    protected Collection<Object> translations = new ArrayList<Object>();
+    private Collection<Object> translations = new ArrayList<Object>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -214,9 +195,530 @@ public class Glyph
 
     //~ Methods ----------------------------------------------------------------
 
+    //---------//
+    // isKnown //
+    //---------//
+    /**
+     * A glyph is considered as known if it has a registered shape other than
+     * NOISE (Notice that CLUTTER as well as NO_LEGAL_SHAPE are considered as
+     * being known).
+     *
+     * @return true if known
+     */
+    public boolean isKnown ()
+    {
+        return (shape != null) && (shape != Shape.NOISE);
+    }
+
+    //--------//
+    // setLag //
+    //--------//
+    /**
+     * The setter for glyph lag. Used with care, by {@link GlyphLag} and {@link
+     * omr.glyph.ui.GlyphVerifier}
+     *
+     * @param lag the containing lag
+     */
+    public void setLag (GlyphLag lag)
+    {
+        this.lag = lag;
+    }
+
+    //--------//
+    // getLag //
+    //--------//
+    /**
+     * Report the containing lag
+     *
+     * @return the containing lag
+     */
+    public GlyphLag getLag ()
+    {
+        return lag;
+    }
+
+    //-------------//
+    // setLeftStem //
+    //-------------//
+    /**
+     * Assign the stem on left
+     *
+     * @param leftStem stem glyph
+     */
+    public void setLeftStem (Glyph leftStem)
+    {
+        this.leftStem = leftStem;
+    }
+
+    //-------------//
+    // getLeftStem //
+    //-------------//
+    /**
+     * Report the stem attached on left side, if any
+     *
+     * @return stem on left, or null
+     */
+    public Glyph getLeftStem ()
+    {
+        return leftStem;
+    }
+
+    //---------------//
+    // isManualShape //
+    //---------------//
+    /**
+     * Report whether the shape of this glyph has been manually assigned (and
+     * thus can only be modified by explicit user action)
+     *
+     * @return true if shape manually assigned
+     */
+    public boolean isManualShape ()
+    {
+        return getDoubt() == Evaluation.MANUAL_NO_DOUBT;
+    }
+
+    //------------//
+    // getMembers //
+    //------------//
+    /**
+     * Report the collection of member sections.
+     *
+     * @return member sections
+     */
+    public Collection<GlyphSection> getMembers ()
+    {
+        return members;
+    }
+
+    //------------//
+    // getMoments //
+    //------------//
+    /**
+     * Report the glyph moments, which are lazily computed
+     *
+     * @return the glyph moments
+     */
+    public Moments getMoments ()
+    {
+        if (moments == null) {
+            computeMoments();
+        }
+
+        return moments;
+    }
+
+    //---------------------//
+    // getNormalizedHeight //
+    //---------------------//
+    /**
+     * Report the height of this glyph, after normalization to sheet interline
+     * @return the height value, expressed as an interline fraction
+     */
+    public double getNormalizedHeight ()
+    {
+        return getMoments()
+                   .getHeight();
+    }
+
+    //---------------------//
+    // getNormalizedWeight //
+    //---------------------//
+    /**
+     * Report the weight of this glyph, after normalization to sheet interline
+     * @return the weight value, expressed as an interline square fraction
+     */
+    public double getNormalizedWeight ()
+    {
+        return getMoments()
+                   .getWeight();
+    }
+
+    //--------------------//
+    // getNormalizedWidth //
+    //--------------------//
+    /**
+     * Report the width of this glyph, after normalization to sheet interline
+     * @return the width value, expressed as an interline fraction
+     */
+    public double getNormalizedWidth ()
+    {
+        return getMoments()
+                   .getWidth();
+    }
+
+    //-----------//
+    // setPartOf //
+    //-----------//
+    /**
+     * Record the link from this glyph as part of a larger compound
+     *
+     * @param compound the containing compound
+     */
+    public void setPartOf (Glyph compound)
+    {
+        partOf = compound;
+    }
+
+    //----------//
+    // setParts //
+    //----------//
+    /**
+     * Record the parts that compose this compound gmyph
+     *
+     * @param parts the contained parts
+     */
+    public void setParts (Collection<?extends Glyph> parts)
+    {
+        if (this.parts != parts) {
+            this.parts.clear();
+            this.parts.addAll(parts);
+        }
+    }
+
+    //----------//
+    // getParts //
+    //----------//
+    /**
+     * Report the parts, if any, that compose this compound
+     * @return the set of glyphs
+     */
+    public Set<Glyph> getParts ()
+    {
+        return parts;
+    }
+
+    //------------------//
+    // setPitchPosition //
+    //------------------//
+    /**
+     * Setter for the pitch position, with respect to the containing
+     * staff
+     *
+     * @param pitchPosition the pitch position wrt the staff
+     */
+    public void setPitchPosition (double pitchPosition)
+    {
+        this.pitchPosition = pitchPosition;
+    }
+
+    //------------------//
+    // getPitchPosition //
+    //------------------//
+    /**
+     * Report the pitchPosition feature (position relative to the staff)
+     *
+     * @return the pitchPosition value
+     */
+    @XmlElement(name = "pitch-position")
+    public double getPitchPosition ()
+    {
+        return pitchPosition;
+    }
+
+    //-----------//
+    // setResult //
+    //-----------//
+    /**
+     * Record the analysis result in the glyph itself
+     *
+     * @param result the assigned result
+     */
+    @Implement(Checkable.class)
+    public void setResult (Result result)
+    {
+        this.result = result;
+    }
+
+    //-----------//
+    // getResult //
+    //-----------//
+    /**
+     * Report the result found during analysis of this glyph
+     *
+     * @return the analysis result
+     */
+    public Result getResult ()
+    {
+        return result;
+    }
+
+    //--------------//
+    // setRightStem //
+    //--------------//
+    /**
+     * Assign the stem on right
+     *
+     * @param rightStem stem glyph
+     */
+    public void setRightStem (Glyph rightStem)
+    {
+        this.rightStem = rightStem;
+    }
+
+    //--------------//
+    // getRightStem //
+    //--------------//
+    /**
+     * Report the stem attached on right side, if any
+     *
+     * @return stem on right, or null
+     */
+    public Glyph getRightStem ()
+    {
+        return rightStem;
+    }
+
+    //-------------//
+    // getSentence //
+    //-------------//
+    /**
+     * Report the sentence, if any, this (text) glyph is a component of
+     * @return the containing sentence, or null
+     */
+    public Sentence getSentence ()
+    {
+        return sentence;
+    }
+
+    //----------//
+    // setShape //
+    //----------//
+    /**
+     * Setter for the glyph shape, assumed to be based on structural data
+     *
+     * @param shape the assigned shape, which may be null
+     */
+    public void setShape (Shape shape)
+    {
+        setShape(shape, Evaluation.NO_DOUBT);
+    }
+
+    //----------//
+    // setShape //
+    //----------//
+    /**
+     * Setter for the glyph shape, with related doubt
+     *
+     * @param shape the assigned shape
+     * @param doubt the related doubt
+     */
+    public void setShape (Shape  shape,
+                          double doubt)
+    {
+        // Blacklist the old shape if any
+        Shape oldShape = getShape();
+
+        if (oldShape != null) {
+            forbidShape(oldShape);
+
+            // No text, no sentence
+            if (oldShape.isText() &&
+                (sentence != null) &&
+                ((shape == null) || !shape.isText())) {
+                sentence.removeItem(this);
+            }
+        }
+
+        // Remove the new shape from the blacklist if any
+        if (shape != null) {
+            allowShape(shape);
+        }
+
+        // Remember the new shape
+        this.shape = shape;
+        this.doubt = doubt;
+    }
+
+    //----------//
+    // getShape //
+    //----------//
+    /**
+     * Report the registered glyph shape
+     *
+     * @return the glyph shape, which may be null
+     */
+    public Shape getShape ()
+    {
+        return shape;
+    }
+
+    //------------------//
+    // isShapeForbidden //
+    //------------------//
+    /**
+     * Check whether a shape is forbidden for this glyph
+     * @param shape the shape to check
+     * @return true if the provided shape is one of the forbidden shapes for
+     * this glyph
+     */
+    public boolean isShapeForbidden (Shape shape)
+    {
+        return (forbiddenShapes != null) && forbiddenShapes.contains(shape);
+    }
+
+    //--------------//
+    // getSignature //
+    //--------------//
+    /**
+     * Report a signature that should allow to detect glyph identity
+     *
+     * @return the glyph signature
+     */
+    public GlyphSignature getSignature ()
+    {
+        if (signature == null) {
+            signature = new GlyphSignature(this);
+        }
+
+        return signature;
+    }
+
+    //--------//
+    // isStem //
+    //--------//
+    /**
+     * Convenient method which tests if the glyph is a Stem
+     *
+     * @return true if glyph shape is a Stem
+     */
+    public boolean isStem ()
+    {
+        return getShape() == Shape.COMBINING_STEM;
+    }
+
+    //---------------//
+    // setStemNumber //
+    //---------------//
+    /**
+     * Remember the number of stems near by
+     *
+     * @param stemNumber the number of stems
+     */
+    public void setStemNumber (int stemNumber)
+    {
+        this.stemNumber = stemNumber;
+    }
+
+    //---------------//
+    // getStemNumber //
+    //---------------//
+    /**
+     * Report the number of stems the glyph is close to
+     *
+     * @return the number of stems near by, typically 0, 1 or 2.
+     */
+    @XmlElement(name = "stem-number")
+    public int getStemNumber ()
+    {
+        return stemNumber;
+    }
+
+    //--------------//
+    // isSuccessful //
+    //--------------//
+    /**
+     * Convenient method to check whether the glyph is successfully recognized
+     * @return true if the glyph is successfully recognized
+     */
+    public boolean isSuccessful ()
+    {
+        return result instanceof SuccessResult;
+    }
+
+    //-----------------//
+    // getSymbolsAfter //
+    //-----------------//
+    /**
+     * Return the known glyphs stuck on last side of the stick (this is relevant
+     * mainly for a stem glyph)
+     *
+     * @param predicate the predicate to apply on each glyph
+     * @param goods the set of correct glyphs (perhaps empty)
+     * @param bads the set of non-correct glyphs (perhaps empty)
+     */
+    public void getSymbolsAfter (Predicate<Glyph> predicate,
+                                 Set<Glyph>       goods,
+                                 Set<Glyph>       bads)
+    {
+        for (GlyphSection section : members) {
+            for (GlyphSection sct : section.getTargets()) {
+                if (sct.isGlyphMember()) {
+                    Glyph glyph = sct.getGlyph();
+
+                    if (glyph != this) {
+                        if (predicate.check(glyph)) {
+                            goods.add(glyph);
+                        } else {
+                            bads.add(glyph);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    //------------------//
+    // getSymbolsBefore //
+    //------------------//
+    /**
+     * Return the known glyphs stuck on first side of the stick (this is
+     * relevant mainly for a stem glyph)
+     *
+     * @param predicate the predicate to apply on each glyph
+     * @param goods the set of correct glyphs (perhaps empty)
+     * @param bads the set of non-correct glyphs (perhaps empty)
+     */
+    public void getSymbolsBefore (Predicate<Glyph> predicate,
+                                  Set<Glyph>       goods,
+                                  Set<Glyph>       bads)
+    {
+        for (GlyphSection section : members) {
+            for (GlyphSection sct : section.getSources()) {
+                if (sct.isGlyphMember()) {
+                    Glyph glyph = sct.getGlyph();
+
+                    if (glyph != this) {
+                        if (predicate.check(glyph)) {
+                            goods.add(glyph);
+                        } else {
+                            bads.add(glyph);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    //-------------//
+    // getTextArea //
+    //-------------//
+    /**
+     * Report the text area that contains this glyph
+     * @return the text area for this glyph
+     */
+    public TextArea getTextArea ()
+    {
+        if (textArea == null) {
+            try {
+                textArea = new TextArea(
+                    null,
+                    lag.createAbsoluteRoi(getContourBox()),
+                    new HorizontalOrientation());
+            } catch (Exception ex) {
+                logger.warning("Cannot create TextArea for glyph " + this);
+            }
+        }
+
+        return textArea;
+    }
+
     //----------------//
     // setTextContent //
     //----------------//
+    /**
+     * Assign a text meaning to the glyph
+     * @param textContent the string value for this text glyph
+     */
     public void setTextContent (String textContent)
     {
         this.textContent = textContent;
@@ -225,30 +727,55 @@ public class Glyph
     //----------------//
     // getTextContent //
     //----------------//
+    /**
+     * Report the text content (the string value) of this text glyph if any
+     * @return the text meaning of this glyph if any, either entered manually
+     * of via an OCR function
+     */
     public String getTextContent ()
     {
         return textContent;
     }
 
-    //-------------//
-    // setTextType //
-    //-------------//
-    public void setTextType (TextType textType)
+    //--------------//
+    // getTextStart //
+    //--------------//
+    /**
+     * Report the starting point of this text glyph, which is the left side
+     * abscissa and the baseline ordinate
+     * @return the starting point of the text glyph, specified in pixels
+     */
+    public PixelPoint getTextStart ()
     {
-        this.textType = textType;
+        return new PixelPoint(getContourBox().x, getTextArea().getBaseline());
     }
 
     //-------------//
     // getTextType //
     //-------------//
+    /**
+     * Convenient method that report the text type of the sentence, if any, that
+     * contains this text glyph
+     * @return the text type of the enclosing sentence, or null
+     */
     public TextType getTextType ()
     {
-        return textType;
+        if (sentence != null) {
+            return sentence.getTextType();
+        } else {
+            return null;
+        }
     }
 
     //----------//
     // shapesOf //
     //----------//
+    /**
+     * Report the set of shapes that appear in at least one of the provided
+     * glyphs
+     * @param glyphs the provided collection of glyphs
+     * @return the shapes assigned among these glyphs
+     */
     public static Collection<Shape> shapesOf (Collection<Glyph> glyphs)
     {
         Set<Shape> shapes = new HashSet<Shape>();
@@ -445,458 +972,6 @@ public class Glyph
         return interline;
     }
 
-    //---------//
-    // isKnown //
-    //---------//
-    /**
-     * A glyph is considered as known if it has a registered shape other than
-     * NOISE (Notice that CLUTTER as well as NO_LEGAL_SHAPE are considered as
-     * being known).
-     *
-     * @return true if known
-     */
-    public boolean isKnown ()
-    {
-        return (shape != null) && (shape != Shape.NOISE);
-    }
-
-    //--------//
-    // setLag //
-    //--------//
-    /**
-     * The setter for glyph lag. Used with care, by {@link GlyphLag} and {@link
-     * omr.glyph.ui.GlyphVerifier}
-     *
-     * @param lag the containing lag
-     */
-    public void setLag (GlyphLag lag)
-    {
-        this.lag = lag;
-    }
-
-    //--------//
-    // getLag //
-    //--------//
-    /**
-     * Report the containing lag
-     *
-     * @return the containing lag
-     */
-    public GlyphLag getLag ()
-    {
-        return lag;
-    }
-
-    //-------------//
-    // setLeftStem //
-    //-------------//
-    /**
-     * Assign the stem on left
-     *
-     * @param leftStem stem glyph
-     */
-    public void setLeftStem (Glyph leftStem)
-    {
-        this.leftStem = leftStem;
-    }
-
-    //-------------//
-    // getLeftStem //
-    //-------------//
-    /**
-     * Report the stem attached on left side, if any
-     *
-     * @return stem on left, or null
-     */
-    public Glyph getLeftStem ()
-    {
-        return leftStem;
-    }
-
-    //---------------//
-    // isManualShape //
-    //---------------//
-    /**
-     * Report whether the shape of this glyph has been manually assigned (and
-     * thus can only be modified by explicit user action)
-     *
-     * @return true if shape manually assigned
-     */
-    public boolean isManualShape ()
-    {
-        return getDoubt() == Evaluation.MANUAL_NO_DOUBT;
-    }
-
-    //------------//
-    // getMembers //
-    //------------//
-    /**
-     * Report the collection of member sections.
-     *
-     * @return member sections
-     */
-    public Collection<GlyphSection> getMembers ()
-    {
-        return members;
-    }
-
-    //------------//
-    // setMoments //
-    //------------//
-    public void setMoments (Moments moments)
-    {
-        this.moments = moments;
-    }
-
-    //------------//
-    // getMoments //
-    //------------//
-    /**
-     * Report the glyph moments, which are lazily computed
-     *
-     * @return the glyph moments
-     */
-    public Moments getMoments ()
-    {
-        if (moments == null) {
-            computeMoments();
-        }
-
-        return moments;
-    }
-
-    //---------------------//
-    // getNormalizedHeight //
-    //---------------------//
-    public double getNormalizedHeight ()
-    {
-        return getMoments()
-                   .getHeight();
-    }
-
-    //---------------------//
-    // getNormalizedWeight //
-    //---------------------//
-    public double getNormalizedWeight ()
-    {
-        return getMoments()
-                   .getWeight();
-    }
-
-    //--------------------//
-    // getNormalizedWidth //
-    //--------------------//
-    public double getNormalizedWidth ()
-    {
-        return getMoments()
-                   .getWidth();
-    }
-
-    //-----------//
-    // setPartOf //
-    //-----------//
-    /**
-     * Record the link from this glyph as part of a larger compound
-     *
-     * @param compound the containing compound
-     */
-    public void setPartOf (Glyph compound)
-    {
-        partOf = compound;
-    }
-
-    //----------//
-    // setParts //
-    //----------//
-    /**
-     * Record the parts that compose this compound gmyph
-     *
-     * @param parts the contained parts
-     */
-    public void setParts (Collection<?extends Glyph> parts)
-    {
-        if (this.parts != parts) {
-            this.parts.clear();
-            this.parts.addAll(parts);
-        }
-    }
-
-    //----------//
-    // getParts //
-    //----------//
-    public Set<Glyph> getParts ()
-    {
-        return parts;
-    }
-
-    //------------------//
-    // setPitchPosition //
-    //------------------//
-    /**
-     * Setter for the pitch position, with respect to the containing
-     * staff
-     *
-     * @param pitchPosition the pitch position wrt the staff
-     */
-    public void setPitchPosition (double pitchPosition)
-    {
-        this.pitchPosition = pitchPosition;
-    }
-
-    //------------------//
-    // getPitchPosition //
-    //------------------//
-    /**
-     * Report the pitchPosition feature (position relative to the staff)
-     *
-     * @return the pitchPosition value
-     */
-    @XmlElement(name = "pitch-position")
-    public double getPitchPosition ()
-    {
-        return pitchPosition;
-    }
-
-    //-----------//
-    // setResult //
-    //-----------//
-    /**
-     * Record the analysis result in the glyph itself
-     *
-     * @param result the assigned result
-     */
-    @Implement(Checkable.class)
-    public void setResult (Result result)
-    {
-        this.result = result;
-    }
-
-    //-----------//
-    // getResult //
-    //-----------//
-    /**
-     * Report the result found during analysis of this glyph
-     *
-     * @return the analysis result
-     */
-    public Result getResult ()
-    {
-        return result;
-    }
-
-    //--------------//
-    // setRightStem //
-    //--------------//
-    /**
-     * Assign the stem on right
-     *
-     * @param rightStem stem glyph
-     */
-    public void setRightStem (Glyph rightStem)
-    {
-        this.rightStem = rightStem;
-    }
-
-    //--------------//
-    // getRightStem //
-    //--------------//
-    /**
-     * Report the stem attached on right side, if any
-     *
-     * @return stem on right, or null
-     */
-    public Glyph getRightStem ()
-    {
-        return rightStem;
-    }
-
-    //----------//
-    // setShape //
-    //----------//
-    /**
-     * Setter for the glyph shape, assumed to be based on structural data
-     *
-     * @param shape the assigned shape, which may be null
-     */
-    public void setShape (Shape shape)
-    {
-        setShape(shape, Evaluation.NO_DOUBT);
-    }
-
-    //----------//
-    // setShape //
-    //----------//
-    /**
-     * Setter for the glyph shape, with related doubt
-     *
-     * @param shape the assigned shape
-     * @param doubt the related doubt
-     */
-    public void setShape (Shape  shape,
-                          double doubt)
-    {
-        // Blacklist the previous shape if any
-        if (getShape() != null) {
-            forbidShape(getShape());
-        }
-
-        // Now remove the assigned shape from the blacklist if any
-        allowShape(shape);
-
-        this.shape = shape;
-        this.doubt = doubt;
-    }
-
-    //----------//
-    // getShape //
-    //----------//
-    /**
-     * Report the registered glyph shape
-     *
-     * @return the glyph shape, which may be null
-     */
-    public Shape getShape ()
-    {
-        return shape;
-    }
-
-    //------------------//
-    // isShapeForbidden //
-    //------------------//
-    public boolean isShapeForbidden (Shape shape)
-    {
-        return (forbiddenShapes != null) && forbiddenShapes.contains(shape);
-    }
-
-    //--------------//
-    // getSignature //
-    //--------------//
-    /**
-     * Report a signature that should allow to detect glyph identity
-     *
-     * @return the glyph signature
-     */
-    public GlyphSignature getSignature ()
-    {
-        if (signature == null) {
-            signature = new GlyphSignature(this);
-        }
-
-        return signature;
-    }
-
-    //--------//
-    // isStem //
-    //--------//
-    /**
-     * Convenient method which tests if the glyph is a Stem
-     *
-     * @return true if glyph shape is a Stem
-     */
-    public boolean isStem ()
-    {
-        return getShape() == Shape.COMBINING_STEM;
-    }
-
-    //---------------//
-    // setStemNumber //
-    //---------------//
-    /**
-     * Remember the number of stems near by
-     *
-     * @param stemNumber the number of stems
-     */
-    public void setStemNumber (int stemNumber)
-    {
-        this.stemNumber = stemNumber;
-    }
-
-    //---------------//
-    // getStemNumber //
-    //---------------//
-    /**
-     * Report the number of stems the glyph is close to
-     *
-     * @return the number of stems near by, typically 0, 1 or 2.
-     */
-    @XmlElement(name = "stem-number")
-    public int getStemNumber ()
-    {
-        return stemNumber;
-    }
-
-    //--------------//
-    // isSuccessful //
-    //--------------//
-    public boolean isSuccessful ()
-    {
-        return result instanceof SuccessResult;
-    }
-
-    //-----------------//
-    // getSymbolsAfter //
-    //-----------------//
-    /**
-     * Return the known glyphs stuck on last side of the stick (this is relevant
-     * mainly for a stem glyph)
-     *
-     * @param predicate the predicate to apply on each glyph
-     * @param goods the set of correct glyphs (perhaps empty)
-     * @param bads the set of non-correct glyphs (perhaps empty)
-     */
-    public void getSymbolsAfter (Predicate<Glyph> predicate,
-                                 Set<Glyph>       goods,
-                                 Set<Glyph>       bads)
-    {
-        for (GlyphSection section : members) {
-            for (GlyphSection sct : section.getTargets()) {
-                if (sct.isGlyphMember()) {
-                    Glyph glyph = sct.getGlyph();
-
-                    if (glyph != this) {
-                        if (predicate.check(glyph)) {
-                            goods.add(glyph);
-                        } else {
-                            bads.add(glyph);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    //------------------//
-    // getSymbolsBefore //
-    //------------------//
-    /**
-     * Return the known glyphs stuck on first side of the stick (this is
-     * relevant mainly for a stem glyph)
-     *
-     * @param predicate the predicate to apply on each glyph
-     * @param goods the set of correct glyphs (perhaps empty)
-     * @param bads the set of non-correct glyphs (perhaps empty)
-     */
-    public void getSymbolsBefore (Predicate<Glyph> predicate,
-                                  Set<Glyph>       goods,
-                                  Set<Glyph>       bads)
-    {
-        for (GlyphSection section : members) {
-            for (GlyphSection sct : section.getSources()) {
-                if (sct.isGlyphMember()) {
-                    Glyph glyph = sct.getGlyph();
-
-                    if (glyph != this) {
-                        if (predicate.check(glyph)) {
-                            goods.add(glyph);
-                        } else {
-                            bads.add(glyph);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     //------------------//
     // setTrainingShape //
     //------------------//
@@ -933,6 +1008,10 @@ public class Glyph
     //--------------//
     // isTranslated //
     //--------------//
+    /**
+     * Report whether this glyph is translated to a score entity
+     * @return true if this glyph is translated to score
+     */
     public boolean isTranslated ()
     {
         return !translations.isEmpty();
@@ -941,6 +1020,10 @@ public class Glyph
     //----------------//
     // setTranslation //
     //----------------//
+    /**
+     * Assign a unique score translation for this glyph
+     * @param entity the score entity that is a translation of this glyph
+     */
     public void setTranslation (Object entity)
     {
         translations.clear();
@@ -950,6 +1033,10 @@ public class Glyph
     //-----------------//
     // getTranslations //
     //-----------------//
+    /**
+     * Report the collection of score entities this glyph contributes to
+     * @return the collection of entities that are translations of this glyph
+     */
     public Collection<Object> getTranslations ()
     {
         return translations;
@@ -1064,6 +1151,10 @@ public class Glyph
     //----------------//
     // addTranslation //
     //----------------//
+    /**
+     * Add a score entity as a translation for this glyph
+     * @param entity the counterpart of this glyph on the score side
+     */
     public void addTranslation (Object entity)
     {
         translations.add(entity);
@@ -1072,6 +1163,10 @@ public class Glyph
     //------------//
     // allowShape //
     //------------//
+    /**
+     * Remove the provided shape from the collection of forbidden shaped, if any
+     * @param shape the shape to allow
+     */
     public void allowShape (Shape shape)
     {
         if (forbiddenShapes != null) {
@@ -1082,6 +1177,9 @@ public class Glyph
     //-------------------//
     // clearTranslations //
     //-------------------//
+    /**
+     * Remove all the links to score entities
+     */
     public void clearTranslations ()
     {
         translations.clear();
@@ -1145,7 +1243,7 @@ public class Glyph
         return this.getId() - other.getId();
     }
 
-    //public boolean 
+    //public boolean
 
     //----------------//
     // computeMoments //
@@ -1258,16 +1356,11 @@ public class Glyph
         System.out.println("   centroid=" + getCentroid());
         System.out.println("   bounds=" + getBounds());
         System.out.println("   forbiddenShapes=" + forbiddenShapes);
+        System.out.println("   textArea=" + textArea);
+        System.out.println("   textContent=" + textContent);
+        System.out.println("   pseudoContent=" + getPseudoContent());
+        System.out.println("   sentence=" + sentence);
         System.out.println("   translations=" + translations);
-    }
-
-    //--------//
-    // equals //
-    //--------//
-    @Override
-    public boolean equals (Object obj)
-    {
-        return super.equals(obj);
     }
 
     //------------//
@@ -1283,31 +1376,6 @@ public class Glyph
         for (GlyphSection section : members) {
             SectionView view = (SectionView) section.getView(viewIndex);
             view.resetColor();
-        }
-    }
-
-    //---------------//
-    // renderBoxArea //
-    //---------------//
-    /**
-     * Render the box area of the glyph, using inverted color
-     *
-     * @param g the graphic context
-     * @param z the display zoom
-     */
-    public boolean renderBoxArea (Graphics g,
-                                  Zoom     z)
-    {
-        // Check the clipping
-        Rectangle box = new Rectangle(getContourBox());
-        z.scale(box);
-
-        if (box.intersects(g.getClipBounds())) {
-            g.fillRect(box.x, box.y, box.width, box.height);
-
-            return true;
-        } else {
-            return false;
         }
     }
 
@@ -1399,6 +1467,10 @@ public class Glyph
             return getAreaCenter();
         }
 
+        if (shape.isText()) {
+            return getTextStart();
+        }
+
         SymbolIcon icon = (SymbolIcon) shape.getIcon();
 
         if (icon != null) {
@@ -1416,6 +1488,42 @@ public class Glyph
 
         // Default
         return getAreaCenter();
+    }
+
+    //------------------//
+    // getPseudoContent //
+    //------------------//
+    /**
+     * Report a dummy content for this glyph (for lack of know content)
+     * @return an artificial text content, based on the enclosing sentence type
+     */
+    public String getPseudoContent ()
+    {
+        if (pseudoContent == null) {
+            if (sentence != null) {
+                final int nbChar = (int) Math.rint(
+                    ((double) getContourBox().width) / sentence.getTextHeight());
+
+                if (getTextType() != null) {
+                    pseudoContent = getTextType()
+                                        .getStringHolder(nbChar);
+                }
+            }
+        }
+
+        return pseudoContent;
+    }
+
+    //--------------------//
+    // resetPseudoContent //
+    //--------------------//
+    /**
+     * Invalidate the glyph pseudo content, as a consequence of a sentence type
+     * change, to force its re-evaluation later
+     */
+    public void resetPseudoContent ()
+    {
+        pseudoContent = null;
     }
 
     //----------//
@@ -1492,14 +1600,6 @@ public class Glyph
         return sb.toString();
     }
 
-    //----------//
-    // setDoubt //
-    //----------//
-    protected void setDoubt (double doubt)
-    {
-        this.doubt = doubt;
-    }
-
     //-----------//
     // getPrefix //
     //-----------//
@@ -1514,14 +1614,51 @@ public class Glyph
         return "Glyph";
     }
 
-    //----------//
-    // pullFrom //
-    //----------//
-    void pullFrom (Glyph glyph)
+    //-------------//
+    // setSentence //
+    //-------------//
+    /**
+     * Define the enclosing sentence for this (text) glyph
+     * @param sentence the enclosing sentence
+     */
+    void setSentence (Sentence sentence)
+    {
+        this.sentence = sentence;
+    }
+
+    //-------------//
+    // setTextArea //
+    //-------------//
+    /**
+     * Define the related text area for this glyph
+     * @param textArea the related text area which can provide horizontal and
+     * vertical histograms
+     */
+    void setTextArea (TextArea textArea)
+    {
+        this.textArea = textArea;
+    }
+
+    //---------------------//
+    // copyStemInformation //
+    //---------------------//
+    /**
+     * Forward stem-related information from the provided glyph
+     * @param glyph the glyph whose stem information has to be used
+     */
+    void copyStemInformation (Glyph glyph)
     {
         setLeftStem(glyph.getLeftStem());
         setRightStem(glyph.getRightStem());
         setStemNumber(glyph.getStemNumber());
+    }
+
+    //------------//
+    // setMoments //
+    //------------//
+    private void setMoments (Moments moments)
+    {
+        this.moments = moments;
     }
 
     //----------------//
