@@ -53,6 +53,16 @@ public class Section<L extends Lag, S extends Section<L, S>>
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Section.class);
 
+    /** A section comparator, using section id */
+    public static final Comparator<Section> idComparator = new Comparator<Section>() {
+        public int compare (Section s1,
+                            Section s2)
+        {
+            return Integer.signum(s1.getId() - s2.getId());
+        }
+    };
+
+
     //~ Instance fields --------------------------------------------------------
 
     /** Position of first run */
