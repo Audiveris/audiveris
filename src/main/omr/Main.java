@@ -165,6 +165,19 @@ public class Main
         return new File(homeFolder, "config");
     }
 
+    //------------------------//
+    // getDocumentationFolder //
+    //------------------------//
+    /**
+     * Report the folder where documentations files are stored
+     *
+     * @return the directory for documentation files
+     */
+    public static File getDocumentationFolder ()
+    {
+        return new File(homeFolder, "www");
+    }
+
     //--------//
     // getGui //
     //--------//
@@ -467,8 +480,8 @@ public class Main
     //---------//
     private void process (String[] args)
     {
-        // First parse the provided arguments if any
-        parameters = new CLI(toolName, args).parse();
+        // First get the provided arguments if any
+        parameters = new CLI(toolName, args).getParameters();
 
         if (parameters == null) {
             logger.warning("Invalid CLI parameters, exiting ...");
@@ -525,7 +538,7 @@ public class Main
         //~ Instance fields ----------------------------------------------------
 
         /** Selection of locale country code (2 letters), or empty */
-        Constant.String localeCountry = new Constant.String(
+        private final Constant.String localeCountry = new Constant.String(
             "",
             "Locale country to be used in the whole application (US, FR, ...)");
     }
