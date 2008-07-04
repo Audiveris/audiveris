@@ -42,9 +42,6 @@ public class Barline
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Barline.class);
 
-    /** Map of signature -> bar shape */
-    private static volatile Map<String, Shape> sigs;
-
     //~ Instance fields --------------------------------------------------------
 
     /** Precise bar line shape */
@@ -163,8 +160,7 @@ public class Barline
     {
         if (shape == null) {
             // Use the map of signatures
-            shape = getSignatures()
-                        .get(getSignature());
+            shape = Signatures.map.get(getSignature());
         }
 
         return shape;
@@ -457,30 +453,29 @@ public class Barline
         return signature;
     }
 
-    //---------------//
-    // getSignatures //
-    //---------------//
-    private static Map<String, Shape> getSignatures ()
+    //~ Inner Classes ----------------------------------------------------------
+
+    //------------//
+    // Signatures //
+    //------------//
+    private static class Signatures
     {
-        if (sigs == null) {
-            synchronized (Barline.class) {
-                if (sigs == null) {
-                    sigs = new HashMap<String, Shape>();
-                    sigs.put("N", Shape.SINGLE_BARLINE);
-                    sigs.put("NN", Shape.DOUBLE_BARLINE);
-                    sigs.put("NK", Shape.FINAL_BARLINE);
-                    sigs.put("KN", Shape.REVERSE_FINAL_BARLINE);
-                    sigs.put("ONK", Shape.RIGHT_REPEAT_SIGN);
-                    sigs.put("KNO", Shape.LEFT_REPEAT_SIGN);
+        //~ Static fields/initializers -----------------------------------------
 
-                    sigs.put("ONKNO", Shape.BACK_TO_BACK_REPEAT_SIGN);
-                    sigs.put("NKNO", Shape.BACK_TO_BACK_REPEAT_SIGN); // For convenience
-                    sigs.put("ONKN", Shape.BACK_TO_BACK_REPEAT_SIGN); // For convenience
-                    sigs.put("NKN", Shape.BACK_TO_BACK_REPEAT_SIGN); // For convenience
-                }
-            }
+        public static final Map<String, Shape> map = new HashMap<String, Shape>();
+
+        static {
+            map.put("N", Shape.SINGLE_BARLINE);
+            map.put("NN", Shape.DOUBLE_BARLINE);
+            map.put("NK", Shape.FINAL_BARLINE);
+            map.put("KN", Shape.REVERSE_FINAL_BARLINE);
+            map.put("ONK", Shape.RIGHT_REPEAT_SIGN);
+            map.put("KNO", Shape.LEFT_REPEAT_SIGN);
+
+            map.put("ONKNO", Shape.BACK_TO_BACK_REPEAT_SIGN);
+            map.put("NKNO", Shape.BACK_TO_BACK_REPEAT_SIGN); // For convenience
+            map.put("ONKN", Shape.BACK_TO_BACK_REPEAT_SIGN); // For convenience
+            map.put("NKN", Shape.BACK_TO_BACK_REPEAT_SIGN); // For convenience
         }
-
-        return sigs;
     }
 }
