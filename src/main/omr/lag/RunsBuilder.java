@@ -11,11 +11,11 @@ package omr.lag;
 
 import omr.util.Logger;
 import omr.util.OmrExecutors;
-import omr.util.SignallingRunnable;
 
 import java.awt.Rectangle;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * Class <code>RunsBuilder</code> is in charge of building a collection of runs,
@@ -95,28 +95,29 @@ public class RunsBuilder
                                      final int cMin,
                                      final int cMax)
     {
-        Executor       executor = OmrExecutors.getHighExecutor();
-        CountDownLatch doneSignal = new CountDownLatch(pMax - pMin + 1);
-
-        // Browse one dimension
-        for (int p = pMin; p <= pMax; p++) {
-            final int          pp = p;
-            SignallingRunnable work = new SignallingRunnable(
-                doneSignal,
-                new Runnable() {
-                        public void run ()
-                        {
-                            processPosition(pp, cMin, cMax);
-                        }
-                    });
-            executor.execute(work);
-        }
-
-        // Wait for end of work
         try {
-            doneSignal.await();
+            // Browse one dimension
+            List<Callable<Void>> tasks = new ArrayList<Callable<Void>>(
+                pMax - pMin + 1);
+
+            for (int p = pMin; p <= pMax; p++) {
+                final int pp = p;
+                tasks.add(
+                    new Callable<Void>() {
+                            public Void call ()
+                                throws Exception
+                            {
+                                processPosition(pp, cMin, cMax);
+
+                                return null;
+                            }
+                        });
+            }
+
+            OmrExecutors.getHighExecutor()
+                        .invokeAll(tasks);
         } catch (InterruptedException ex) {
-            ex.printStackTrace();
+            logger.warning("ParallelRuns got interrupted", ex);
         }
     }
 
@@ -208,6 +209,34 @@ public class RunsBuilder
     {
         //~ Methods ------------------------------------------------------------
 
+        //--------//
+        // isFore //
+        //--------//
+        /**
+         * This method is used to check if the grey level corresponds to a
+         * foreground pixel.
+         *
+         * @param level pixel level of grey
+         *
+         * @return true if pixel is foreground, false otherwise
+         */
+        boolean isFore (int level);
+
+        //----------//
+        // getLevel //
+        //----------//
+        /**
+         * This method is used to report the grey level of the pixel read at
+         * location (coord, pos).
+         *
+         * @param coord x for horizontal runs, y for vertical runs
+         * @param pos   y for horizontal runs, x for vertical runs
+         *
+         * @return the pixel grey value (from 0 for black up to 255 for white)
+         */
+        int getLevel (int coord,
+                      int pos);
+
         //---------//
         // backRun //
         //---------//
@@ -238,34 +267,6 @@ public class RunsBuilder
                       int pos,
                       int length,
                       int cumul);
-
-        //----------//
-        // getLevel //
-        //----------//
-        /**
-         * This method is used to report the grey level of the pixel read at
-         * location (coord, pos).
-         *
-         * @param coord x for horizontal runs, y for vertical runs
-         * @param pos   y for horizontal runs, x for vertical runs
-         *
-         * @return the pixel grey value (from 0 for black up to 255 for white)
-         */
-        int getLevel (int coord,
-                      int pos);
-
-        //--------//
-        // isFore //
-        //--------//
-        /**
-         * This method is used to check if the grey level corresponds to a
-         * foreground pixel.
-         *
-         * @param level pixel level of grey
-         *
-         * @return true if pixel is foreground, false otherwise
-         */
-        boolean isFore (int level);
 
         //-----------//
         // terminate //
