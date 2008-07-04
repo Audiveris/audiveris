@@ -202,9 +202,7 @@ public class Actions
              it.hasNext();) {
             ActionDescriptor desc = it.next();
 
-            if (desc.domain != null) {
-                desc.domain = desc.domain.toUpperCase();
-            } else {
+            if (desc.domain == null) {
                 logger.warning("No domain specified for " + desc);
                 it.remove();
 
