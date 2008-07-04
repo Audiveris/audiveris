@@ -311,7 +311,10 @@ class GlyphBrowser
         }
 
         // Reset model
-        vLag = new GlyphLag("tLag", new VerticalOrientation());
+        vLag = new GlyphLag(
+            "tLag",
+            GlyphSection.class,
+            new VerticalOrientation());
         vLag.setSectionSelection(localSectionSelection);
         localSectionSelection.addObserver(vLag);
         vLag.setRunSelection(localRunSelection);
@@ -468,7 +471,7 @@ class GlyphBrowser
                 Glyph  glyph = navigator.getGlyph(gName);
                 g.setColor(Color.black);
                 g.setXORMode(Color.darkGray);
-                glyph.renderBoxArea(g, getZoom());
+                renderGlyphArea(glyph, g, getZoom());
             }
         }
 
