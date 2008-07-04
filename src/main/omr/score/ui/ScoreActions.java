@@ -20,7 +20,6 @@ import static omr.plugin.PluginType.*;
 import omr.score.Score;
 import omr.score.entity.ScorePart;
 import omr.score.midi.MidiAgent;
-import omr.score.midi.MidiAgent.UnavailableException;
 
 import omr.selection.SelectionObserver;
 
@@ -194,6 +193,24 @@ public class ScoreActions
         return "ScoreActions";
     }
 
+    //-------------------//
+    // setRebuildAllowed //
+    //-------------------//
+    public void setRebuildAllowed (boolean value)
+    {
+        boolean oldValue = this.rebuildAllowed;
+        this.rebuildAllowed = value;
+        firePropertyChange("rebuildAllowed", oldValue, value);
+    }
+
+    //------------------//
+    // isRebuildAllowed //
+    //------------------//
+    public boolean isRebuildAllowed ()
+    {
+        return rebuildAllowed;
+    }
+
     //-------------//
     // browseScore //
     //-------------//
@@ -204,10 +221,8 @@ public class ScoreActions
     @Action(enabledProperty = "scoreAvailable")
     public void browseScore (ActionEvent e)
     {
-        JFrame frame = ScoreController.getCurrentScore()
-                                      .viewScore();
         Main.getInstance()
-            .show(frame);
+            .show(ScoreController.getCurrentScore().getBrowserFrame());
     }
 
     //------------------//
@@ -230,7 +245,7 @@ public class ScoreActions
                 if (agent.getScore() == score) {
                     agent.reset();
                 }
-            } catch (UnavailableException ex) {
+            } catch (Exception ex) {
                 logger.warning("Cannot reset Midi sequence", ex);
             }
         }
@@ -278,6 +293,18 @@ public class ScoreActions
         return new StoreTask();
     }
 
+    //---------------//
+    // toggleRebuild //
+    //---------------//
+    /**
+     * Action that toggles thr rebuild of score on every user edition
+     * @param e the event that triggered this action
+     */
+    @Action(selectedProperty = "rebuildAllowed")
+    public void toggleRebuild (ActionEvent e)
+    {
+    }
+
     //----------------------//
     // setDefaultParameters //
     //----------------------//
@@ -299,36 +326,6 @@ public class ScoreActions
         score.setVelocity(score.getDefaultVelocity());
 
         return true;
-    }
-
-    //-------------------//
-    // setRebuildAllowed //
-    //-------------------//
-    public void setRebuildAllowed (boolean value)
-    {
-        boolean oldValue = this.rebuildAllowed;
-        this.rebuildAllowed = value;
-        firePropertyChange("rebuildAllowed", oldValue, value);
-    }
-
-    //------------------//
-    // isRebuildAllowed //
-    //------------------//
-    public boolean isRebuildAllowed ()
-    {
-        return rebuildAllowed;
-    }
-
-    //---------------//
-    // toggleRebuild //
-    //---------------//
-    /**
-     * Action that toggles thr rebuild of score on every user edition
-     * @param e the event that triggered this action
-     */
-    @Action(selectedProperty = "rebuildAllowed")
-    public void toggleRebuild (ActionEvent e)
-    {
     }
 
     //~ Inner Classes ----------------------------------------------------------
