@@ -14,14 +14,12 @@ import omr.glyph.Evaluator;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphInspector;
 import omr.glyph.Shape;
-import omr.glyph.SlurGlyph;
 import omr.glyph.SymbolsBuilder;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 
 import omr.sheet.Sheet;
-import omr.sheet.SystemInfo;
 
 import omr.util.Implement;
 

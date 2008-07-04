@@ -547,10 +547,7 @@ public class GlyphRepository
 
         // Create the core directory if needed
         File coreDir = coreFolder;
-
-        if (!coreDir.mkdirs()) {
-            logger.warning("Could not create directory " + coreDir);
-        }
+        coreDir.mkdirs();
 
         // Empty the directory
         FileUtil.deleteAll(coreDir.listFiles());
