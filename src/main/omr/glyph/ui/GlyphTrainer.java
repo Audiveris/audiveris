@@ -146,7 +146,7 @@ public class GlyphTrainer
                         public void windowClosing (WindowEvent e)
                         {
                             // Store latest constant values
-                            ConstantManager.storeResource();
+                            ConstantManager.getInstance().storeResource();
 
                             // That's all folks !
                             System.exit(0);
