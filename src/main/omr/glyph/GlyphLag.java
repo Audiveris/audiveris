@@ -22,6 +22,7 @@ import omr.util.Logger;
 
 import java.awt.Rectangle;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Class <code>GlyphLag</code> is a lag of {@link GlyphSection} instances which
@@ -84,14 +85,14 @@ public class GlyphLag
      */
     private volatile SortedSet<Glyph> activeGlyphs;
 
-    /** Selection on glyph, output where found glyph is written */
+    /** Output Selection where found glyph is written */
     private Selection glyphSelection;
 
-    /** Selection on glyphs, output where found glyphs are written */
+    /** Output Selection where found glyphs are written */
     private Selection glyphSetSelection;
 
     /** Global id to uniquely identify a glyph */
-    private int globalGlyphId = 0;
+    private AtomicInteger globalGlyphId = new AtomicInteger(0);
 
     //~ Constructors -----------------------------------------------------------
 
@@ -102,94 +103,17 @@ public class GlyphLag
      * Create a glyph lag, with a pre-defined orientation
      *
      * @param name the distinguished name for this instance
+     * @param sectionClass the precise class for instantiating sections
      * @param orientation the desired orientation of the lag
      */
-    public GlyphLag (String   name,
-                     Oriented orientation)
+    public GlyphLag (String                       name,
+                     Class<?extends GlyphSection> sectionClass,
+                     Oriented                     orientation)
     {
-        super(name, orientation);
+        super(name, sectionClass, orientation);
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //----------//
-    // addGlyph //
-    //----------//
-    /**
-     * Add a glyph in the graph, making sure we do not duplicate an existing
-     * glyph (a glyph being really defined by the set of its member sections)
-     *
-     * @param glyph the glyph to add to the lag
-     * @return the actual glyph (existing or brand new)
-     */
-    public Glyph addGlyph (Glyph glyph)
-    {
-        // First check this glyph does not already exist
-        Glyph original = originals.get(glyph.getSignature());
-
-        if ((original != null) && (original != glyph)) {
-            // Reuse the existing glyph
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "new avatar of #" + original.getId() + " members =" +
-                    Section.toString(glyph.getMembers()) + " original=" +
-                    Section.toString(original.getMembers()));
-            }
-
-            glyph = original;
-        } else {
-            // Create a brand new glyph
-            final int id = generateId();
-            allGlyphs.put(id, glyph);
-            glyph.setId(id);
-            glyph.setLag(this);
-            originals.put(glyph.getSignature(), glyph);
-
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "Registered glyph #" + glyph.getId() + " as original");
-            }
-        }
-
-        // Make all its sections point to it
-        for (GlyphSection section : glyph.getMembers()) {
-            section.setGlyph(glyph);
-        }
-
-        return glyph;
-    }
-
-    //------//
-    // dump //
-    //------//
-    /**
-     * Prints out major internal info about this glyph lag.
-     *
-     * @param title a specific title to be used for the dump
-     */
-    @Override
-    public void dump (String title)
-    {
-        // Normal dump of all sections
-        ///super.dump(title);
-
-        // Dump of active glyphs
-        System.out.println(
-            "\nActive glyphs (" + getActiveGlyphs().size() + ") :");
-
-        for (Glyph glyph : getActiveGlyphs()) {
-            System.out.println(glyph.toString());
-        }
-
-        // Dump of inactive glyphs
-        Collection<Glyph> inactives = new ArrayList<Glyph>(getAllGlyphs());
-        inactives.removeAll(getActiveGlyphs());
-        System.out.println("\nInactive glyphs (" + inactives.size() + ") :");
-
-        for (Glyph glyph : inactives) {
-            System.out.println(glyph.toString());
-        }
-    }
 
     //-----------------//
     // getActiveGlyphs //
@@ -240,43 +164,6 @@ public class GlyphLag
         return allGlyphs.get(id);
     }
 
-    //--------------//
-    // lookupGlyphs //
-    //--------------//
-    /**
-     * Look up in a collection of glyphs for <b>all</b> glyphs contained in a
-     * provided rectangle
-     *
-     * @param collection the collection of glyphs to be browsed
-     * @param rect the coordinates rectangle
-     *
-     * @return the glyphs found, which may be an empty list
-     */
-    public List<Glyph> lookupGlyphs (Collection<?extends Glyph> collection,
-                                     Rectangle                  rect)
-    {
-        List<Glyph> list = new ArrayList<Glyph>();
-
-        //for (Glyph glyph : glyphs.values()) {
-        for (Glyph glyph : collection) {
-            boolean inRect = true;
-            sectionTest:
-            for (GlyphSection section : glyph.getMembers()) {
-                if (!rect.contains(section.getContourBox())) {
-                    inRect = false;
-
-                    break sectionTest;
-                }
-            }
-
-            if (inRect) {
-                list.add(glyph);
-            }
-        }
-
-        return list;
-    }
-
     //-------------------//
     // setGlyphSelection //
     //-------------------//
@@ -301,6 +188,149 @@ public class GlyphLag
     public void setGlyphSetSelection (Selection glyphSetSelection)
     {
         this.glyphSetSelection = glyphSetSelection;
+    }
+
+    //-------------//
+    // getOriginal //
+    //-------------//
+    /**
+     * Return the original glyph, if any, that the provided glyph duplicates
+     * @param glyph the provided glyph
+     * @return the original for this glyph, if any, otherwise null
+     */
+    public Glyph getOriginal (Glyph glyph)
+    {
+        return originals.get(glyph.getSignature());
+    }
+
+    //----------//
+    // addGlyph //
+    //----------//
+    /**
+     * Add a glyph in the graph, making sure we do not duplicate an existing
+     * glyph (a glyph being really defined by the set of its member sections)
+     *
+     * @param glyph the glyph to add to the lag
+     * @return the actual glyph (existing or brand new)
+     */
+    public Glyph addGlyph (Glyph glyph)
+    {
+        // First check this glyph does not already exist
+        Glyph original = getOriginal(glyph);
+
+        if ((original != null) && (original != glyph)) {
+            // Reuse the existing glyph
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "new avatar of #" + original.getId() + " members =" +
+                    Section.toString(glyph.getMembers()) + " original=" +
+                    Section.toString(original.getMembers()));
+            }
+
+            glyph = original;
+        } else {
+            // Create a brand new glyph
+            final int id = generateId();
+            allGlyphs.put(id, glyph);
+            glyph.setId(id);
+            glyph.setLag(this);
+            originals.put(glyph.getSignature(), glyph);
+
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "Registered glyph #" + glyph.getId() + " as original");
+            }
+        }
+
+        // Make all its sections point to it
+        for (GlyphSection section : glyph.getMembers()) {
+            section.setGlyph(glyph);
+        }
+
+        return glyph;
+    }
+
+    //------//
+    // dump //
+    //------//
+    /**
+     * Print out major internal info about this glyph lag.
+     *
+     * @param title a specific title to be used for the dump
+     */
+    @Override
+    public void dump (String title)
+    {
+        // Normal dump of all sections
+        ///super.dump(title);
+
+        // Dump of active glyphs
+        System.out.println(
+            "\nActive glyphs (" + getActiveGlyphs().size() + ") :");
+
+        for (Glyph glyph : getActiveGlyphs()) {
+            System.out.println(glyph.toString());
+        }
+
+        // Dump of inactive glyphs
+        Collection<Glyph> inactives = new ArrayList<Glyph>(getAllGlyphs());
+        inactives.removeAll(getActiveGlyphs());
+        System.out.println("\nInactive glyphs (" + inactives.size() + ") :");
+
+        for (Glyph glyph : inactives) {
+            System.out.println(glyph.toString());
+        }
+    }
+
+    //--------------//
+    // lookupGlyphs //
+    //--------------//
+    /**
+     * Look up in a collection of glyphs for <b>all</b> glyphs contained in a
+     * provided rectangle
+     *
+     * @param collection the collection of glyphs to be browsed
+     * @param rect the coordinates rectangle
+     *
+     * @return the glyphs found, which may be an empty list
+     */
+    public List<Glyph> lookupGlyphs (Collection<?extends Glyph> collection,
+                                     Rectangle                  rect)
+    {
+        List<Glyph> list = new ArrayList<Glyph>();
+
+        for (Glyph glyph : collection) {
+            boolean inRect = true;
+            sectionTest: 
+            for (GlyphSection section : glyph.getMembers()) {
+                if (!rect.contains(section.getContourBox())) {
+                    inRect = false;
+
+                    break sectionTest;
+                }
+            }
+
+            if (inRect) {
+                list.add(glyph);
+            }
+        }
+
+        return list;
+    }
+
+    //--------------//
+    // lookupGlyphs //
+    //--------------//
+    /**
+     * Look up for <b>all</b> active glyphs contained in a provided rectangle
+     *
+     * @param rect the coordinates rectangle
+     *
+     * @return the glyphs found, which may be an empty list
+     */
+    public List<Glyph> lookupGlyphs (Rectangle rect)
+    {
+        return lookupGlyphs(getActiveGlyphs(), rect);
     }
 
     //----------//
@@ -365,9 +395,7 @@ public class GlyphLag
                         // Look for enclosed active glyphs
                         if ((glyphSetSelection != null) &&
                             (glyphSetSelection.countObservers() > 0)) {
-                            List<Glyph> glyphsFound = lookupGlyphs(
-                                getActiveGlyphs(),
-                                rect);
+                            List<Glyph> glyphsFound = lookupGlyphs(rect);
 
                             if (glyphsFound.size() > 0) {
                                 glyphSelection.setEntity(
@@ -501,9 +529,9 @@ public class GlyphLag
     //------------//
     // generateId //
     //------------//
-    private synchronized int generateId ()
+    private int generateId ()
     {
-        return ++globalGlyphId;
+        return globalGlyphId.incrementAndGet();
     }
 
     //----------------//
