@@ -10,8 +10,6 @@
 package omr.lag;
 
 import omr.util.BaseTestCase;
-
-import junit.framework.*;
 import static junit.framework.Assert.*;
 
 import java.awt.Point;
@@ -33,6 +31,9 @@ public class LagTest
 
     //~ Methods ----------------------------------------------------------------
 
+    //------------------------//
+    // testCreateSectionNoRun //
+    //------------------------//
     public void testCreateSectionNoRun ()
     {
         try {
@@ -59,9 +60,11 @@ public class LagTest
         List<MySection> sections = new ArrayList<MySection>();
         sections.add(s2);
         sections.add(s3);
+        Collections.sort(sections, Section.idComparator);
 
-        Collection<MySection> lagSections = new ArrayList<MySection>(
+        List<MySection> lagSections = new ArrayList<MySection>(
             vLag.getSections());
+        Collections.sort(lagSections, Section.idComparator);
         assertEquals("Retrieved sections.", sections, lagSections);
     }
 
@@ -115,6 +118,9 @@ public class LagTest
             new Rectangle(100, 180, 21, 2));
     }
 
+    //----------------//
+    // testHSwitchRef //
+    //----------------//
     public void testHSwitchRef ()
     {
         Point cp = new Point(12, 34);
@@ -164,6 +170,29 @@ public class LagTest
         assertTrue("vLag is vertical", vLag.isVertical());
     }
 
+    //---------------//
+    // testVLagHisto //
+    //---------------//
+    public void testVLagHisto ()
+    {
+        List<List<Run>> runs = new ArrayList<List<Run>>();
+        vLag.setRuns(runs);
+
+        MySection s1 = vLag.createSection(1, createRun(runs, 1, 2, 5));
+        s1.append(createRun(runs, 2, 0, 3));
+        s1.append(createRun(runs, 3, 1, 2));
+        s1.append(createRun(runs, 4, 1, 1));
+        s1.append(createRun(runs, 5, 1, 6));
+        s1.drawAscii();
+
+        MyLag.Roi roi = vLag.createAbsoluteRoi(new Rectangle(0, 0, 6, 7));
+        int[]     histoV = roi.getHistogram(new VerticalOrientation());
+        dump(histoV, "histoV");
+
+        int[] histoH = roi.getHistogram(new HorizontalOrientation());
+        dump(histoH, "histoH");
+    }
+
     //--------------//
     // testVSection //
     //--------------//
@@ -203,13 +232,11 @@ public class LagTest
     //-------//
     // setUp //
     //-------//
+    @Override
     protected void setUp ()
     {
         vLag = new MyLag("My Vertical Lag", new VerticalOrientation());
-        vLag.setVertexClass(MySection.class);
-
         hLag = new MyLag("My Horizontal Lag", new HorizontalOrientation());
-        hLag.setVertexClass(MySection.class);
     }
 
     //------------------//
@@ -235,6 +262,26 @@ public class LagTest
         assertEquals("Bad Start", s.getStart(), 100);
         assertEquals("Bad Stop", s.getStop(), 120);
         assertEquals("Bad Weight", s.getWeight(), 30);
+    }
+
+    //-----------//
+    // createRun //
+    //-----------//
+    private Run createRun (List<List<Run>> runs,
+                           int             alignment,
+                           int             start,
+                           int             length)
+    {
+        Run run = new Run(start, length, 127);
+
+        for (int ali = runs.size(); ali <= alignment; ali++) {
+            runs.add(new ArrayList<Run>());
+        }
+
+        runs.get(alignment)
+            .add(run);
+
+        return run;
     }
 
     //------//
@@ -283,21 +330,50 @@ public class LagTest
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
-
-    public static class MyLag
-        extends Lag<MyLag, MySection>
+    //------//
+    // dump //
+    //------//
+    private void dump (int[]  ints,
+                       String title)
     {
-        protected MyLag (String   name,
-                         Oriented orientation)
-        {
-            super(name, orientation);
+        System.out.println("\n" + title);
+
+        for (int i = 0; i < ints.length; i++) {
+            System.out.print(i + ":");
+
+            for (int k = 0; k < ints[i]; k++) {
+                System.out.print("x");
+            }
+
+            System.out.println();
         }
     }
 
+    //~ Inner Classes ----------------------------------------------------------
+
+    //-------//
+    // MyLag //
+    //-------//
+    public static class MyLag
+        extends Lag<MyLag, MySection>
+    {
+        //~ Constructors -------------------------------------------------------
+
+        protected MyLag (String   name,
+                         Oriented orientation)
+        {
+            super(name, MySection.class, orientation);
+        }
+    }
+
+    //-----------//
+    // MySection //
+    //-----------//
     public static class MySection
         extends Section<MyLag, MySection>
     {
+        //~ Constructors -------------------------------------------------------
+
         public MySection ()
         {
         }
