@@ -130,7 +130,8 @@ public class SheetManager
             logger.fine("setSelectedSheet : " + sheet);
         }
 
-        getSelection().setEntity(sheet, null);
+        getSelection()
+            .setEntity(sheet, null);
     }
 
     //------------------//
@@ -147,7 +148,8 @@ public class SheetManager
             logger.fine("getSelectedSheet : " + getSelection().getEntity());
         }
 
-        return (Sheet) getSelection().getEntity();
+        return (Sheet) getSelection()
+                           .getEntity();
     }
 
     //--------------//
@@ -165,15 +167,7 @@ public class SheetManager
             logger.fine("getSelection called");
         }
 
-        if (selection == null) {
-            synchronized (SheetManager.class) {
-                if (selection == null) {
-                    selection = Selection.makeSheetSelection();
-                }
-            }
-        }
-
-        return selection;
+        return SelectionHolder.selection;
     }
 
     //-----------//
@@ -225,8 +219,10 @@ public class SheetManager
         }
 
         // Remove from selection if needed
-        if (getSelection().getEntity() == sheet) {
-            getSelection().setEntity(null, null);
+        if (getSelection()
+                .getEntity() == sheet) {
+            getSelection()
+                .setEntity(null, null);
         }
     }
 
@@ -313,5 +309,17 @@ public class SheetManager
         if (changeListener != null) {
             changeListener.stateChanged(changeEvent);
         }
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //-----------------//
+    // SelectionHolder //
+    //-----------------//
+    private static class SelectionHolder
+    {
+        //~ Static fields/initializers -----------------------------------------
+
+        public static final Selection selection = Selection.makeSheetSelection();
     }
 }
