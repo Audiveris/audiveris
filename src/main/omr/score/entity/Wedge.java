@@ -15,8 +15,8 @@ import omr.glyph.Shape;
 import omr.score.common.SystemPoint;
 import omr.score.visitor.ScoreVisitor;
 
-import omr.sheet.PixelPoint;
-import omr.sheet.PixelRectangle;
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 
 import omr.util.Logger;
 
