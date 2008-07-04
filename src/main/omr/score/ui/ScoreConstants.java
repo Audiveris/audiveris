@@ -34,6 +34,9 @@ public class ScoreConstants
     /** Height in pixels above/under a staff display */
     public static final int STAFF_MARGIN_HEIGHT = constants.staffMarginHeight.getValue();
 
+    /** Width in pixels before/after a staff display */
+    public static final int STAFF_MARGIN_WIDTH = constants.staffMarginWidth.getValue();
+
     /** Horizontal offset in pixels of the score origin */
     public static final int SCORE_INIT_X = constants.scoreInitX.getValue();
 
@@ -93,13 +96,16 @@ public class ScoreConstants
             300,
             "Horizontal offset of the score origin");
         PixelCount       scoreInitY = new PixelCount(
-            500,
+            300,
             "Vertical offset of the score origin");
         PixelCount       staffAreaheight = new PixelCount(
             100,
             "Height of a staff display");
         PixelCount       staffMarginHeight = new PixelCount(
-            40,
-            "Height above/under a staff display : ");
+            100,
+            "Margin above/under a staff display");
+        PixelCount       staffMarginWidth = new PixelCount(
+            100,
+            "Margin before/after a staff display");
     }
 }
