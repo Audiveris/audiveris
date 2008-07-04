@@ -9,8 +9,6 @@
 //
 package omr.ui;
 
-import omr.Main;
-
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 import static omr.plugin.Dependency.*;
@@ -98,39 +96,6 @@ public class SheetController
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //-------//
-    // close //
-    //-------//
-    /**
-     * Remove the specified view from the tabbed pane
-     *
-     * @param assembly the sheet assembly to close
-     */
-    public void close (SheetAssembly assembly)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("closing " + assembly.toString());
-        }
-
-        // Check whether the script has been written correctly
-        final Sheet sheet = assembly.getSheet();
-        ScriptActions.checkStored(sheet.getScript());
-
-        int sheetIndex = component.indexOfComponent(assembly.getComponent());
-
-        if (sheetIndex != -1) {
-            // Remove from assemblies
-            assemblies.remove(sheetIndex);
-            // Remove from tabs
-            component.remove(sheetIndex);
-        }
-
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "closed " + assembly.toString() + " assemblies=" + assemblies);
-        }
-    }
 
     //--------------//
     // getComponent //
@@ -227,6 +192,39 @@ public class SheetController
             return sheetIndex;
         } else {
             return -1; // Index of the empty tab
+        }
+    }
+
+    //-------//
+    // close //
+    //-------//
+    /**
+     * Remove the specified view from the tabbed pane
+     *
+     * @param assembly the sheet assembly to close
+     */
+    public void close (SheetAssembly assembly)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("closing " + assembly.toString());
+        }
+
+        // Check whether the script has been written correctly
+        final Sheet sheet = assembly.getSheet();
+        ScriptActions.checkStored(sheet.getScript());
+
+        int sheetIndex = component.indexOfComponent(assembly.getComponent());
+
+        if (sheetIndex != -1) {
+            // Remove from assemblies
+            assemblies.remove(sheetIndex);
+            // Remove from tabs
+            component.remove(sheetIndex);
+        }
+
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                "closed " + assembly.toString() + " assemblies=" + assemblies);
         }
     }
 
