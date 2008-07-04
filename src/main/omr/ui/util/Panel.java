@@ -64,7 +64,7 @@ public class Panel
     public Panel ()
     {
         // XXX Uncomment following line for FormDebugPanel XXX
-        //setPaintInBackground(constants.paintGrid.getValue());
+        //setPaintInBackground(true);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -287,7 +287,7 @@ public class Panel
     protected void paintComponent (Graphics g)
     {
         // XXX Uncomment following line for FormDebugPanel XXX
-        //setPaintInBackground(constants.paintGrid.getValue());
+        //setPaintInBackground(true);
         super.paintComponent(g);
     }
 
