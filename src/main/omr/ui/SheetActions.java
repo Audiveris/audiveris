@@ -223,6 +223,23 @@ public class SheetActions
         }
     }
 
+    //--------------//
+    // recordGlyphs //
+    //--------------//
+    @Action(enabledProperty = "sheetAvailable")
+    public Task recordGlyphs ()
+    {
+        int answer = JOptionPane.showConfirmDialog(
+            null,
+            "Are you sure of all the symbols of this sheet ?");
+
+        if (answer == JOptionPane.YES_OPTION) {
+            return new RecordGlyphsTask();
+        } else {
+            return null;
+        }
+    }
+
     //------------//
     // zoomHeight //
     //------------//
@@ -275,23 +292,6 @@ public class SheetActions
 
         assembly.getSelectedView()
                 .fitWidth();
-    }
-
-    //--------------//
-    // recordGlyphs //
-    //--------------//
-    @Action(enabledProperty = "sheetAvailable")
-    public Task recordGlyphs ()
-    {
-        int answer = JOptionPane.showConfirmDialog(
-            null,
-            "Are you sure of all the symbols of this sheet ?");
-
-        if (answer == JOptionPane.YES_OPTION) {
-            return new RecordGlyphsTask();
-        } else {
-            return null;
-        }
     }
 
     //~ Inner Classes ----------------------------------------------------------
