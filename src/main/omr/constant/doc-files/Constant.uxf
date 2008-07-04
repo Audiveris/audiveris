@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><umlet_diagram><help_text>//Uncomment the following line to change the fontsize:
+//fontsize=14
+
+//Welcome to UMLet!
+
+// *Double-click on UML elements to add them to the diagram.
+// *Edit element properties by modifying the text in this panel.
+// *Edit the files in the 'palettes' directory to store your own element palettes.
+// *Press Del or Backspace to remove elements from the diagram.
+// *Hold down Ctrl key to select multiple elements.
+// *Press c to copy the UML diagram to the system clipboard.
+// * This text will be stored with each diagram. Feel free to use the area for notes.
+</help_text><element><type>com.umlet.element.custom.Database</type><coordinates><x>600</x><y>220</y><w>120</w><h>50</h></coordinates><panel_attributes>User Properties</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.custom.Database</type><coordinates><x>600</x><y>290</y><w>120</w><h>50</h></coordinates><panel_attributes>Default Properties</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>450</x><y>370</y><w>170</w><h>40</h></coordinates><panel_attributes>lt=&lt;[&lt;] -</panel_attributes><additional_attributes>20;20;150;20</additional_attributes></element><element><type>com.umlet.element.custom.Database</type><coordinates><x>600</x><y>360</y><w>120</w><h>50</h></coordinates><panel_attributes>Source Code</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>530</x><y>260</y><w>90</w><h>80</h></coordinates><panel_attributes>lt=&lt;[&lt;] -</panel_attributes><additional_attributes>20;20;70;60</additional_attributes></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>530</x><y>230</y><w>90</w><h>40</h></coordinates><panel_attributes>lt=&lt;[&lt;] - [&gt;]&gt;</panel_attributes><additional_attributes>20;20;70;20</additional_attributes></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>420</x><y>280</y><w>40</w><h>80</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;-</panel_attributes><additional_attributes>20;20;20;60</additional_attributes></element><element><type>com.umlet.element.base.Class</type><coordinates><x>410</x><y>230</y><w>140</w><h>70</h></coordinates><panel_attributes>ConstantManager
+</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Class</type><coordinates><x>410</x><y>30</y><w>100</w><h>40</h></coordinates><panel_attributes>UnitTreeTable</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>240</x><y>20</y><w>190</w><h>40</h></coordinates><panel_attributes>lt=&lt;-</panel_attributes><additional_attributes>20;20;170;20</additional_attributes></element><element><type>com.umlet.element.base.Class</type><coordinates><x>160</x><y>30</y><w>100</w><h>30</h></coordinates><panel_attributes>UnitManager</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>340</x><y>260</y><w>40</w><h>100</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;-&gt;</panel_attributes><additional_attributes>20;20;20;80</additional_attributes></element><element><type>com.umlet.element.base.Class</type><coordinates><x>330</x><y>340</y><w>140</w><h>190</h></coordinates><panel_attributes>Constant
+--
+String quantityUnit
+String defaultString
+String description
+--
+String unit
+String name
+String qualifiedName
+--
+String initialString
+String currentString
+Object cachedValue</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Class</type><coordinates><x>290</x><y>230</y><w>100</w><h>50</h></coordinates><panel_attributes>ConstantSet
+--
+String unit</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Class</type><coordinates><x>290</x><y>170</y><w>70</w><h>40</h></coordinates><panel_attributes>Logger
+--
+level</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>60</x><y>110</y><w>140</w><h>120</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;-&gt;</panel_attributes><additional_attributes>20;100;20;20;120;20</additional_attributes></element><element><type>com.umlet.element.base.Class</type><coordinates><x>20</x><y>210</y><w>100</w><h>30</h></coordinates><panel_attributes>PackageNode</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>190</x><y>40</y><w>40</w><h>100</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;</panel_attributes><additional_attributes>20;20;20;80</additional_attributes></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>100</x><y>130</y><w>130</w><h>110</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>110;20;20;90</additional_attributes></element><element><type>com.umlet.element.base.Class</type><coordinates><x>170</x><y>210</y><w>70</w><h>30</h></coordinates><panel_attributes>UnitNode</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>190</x><y>130</y><w>40</w><h>100</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>20;20;20;80</additional_attributes></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>220</x><y>180</y><w>90</w><h>60</h></coordinates><panel_attributes>lt=&lt;-</panel_attributes><additional_attributes>70;20;20;40</additional_attributes></element><element><type>com.umlet.element.base.Class</type><coordinates><x>180</x><y>120</y><w>60</w><h>30</h></coordinates><panel_attributes>/Node/</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>220</x><y>200</y><w>90</w><h>60</h></coordinates><panel_attributes>lt=&lt;-</panel_attributes><additional_attributes>70;40;20;20</additional_attributes></element></umlet_diagram>
