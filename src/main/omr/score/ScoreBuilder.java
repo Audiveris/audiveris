@@ -10,8 +10,12 @@
 package omr.score;
 
 import omr.glyph.Glyph;
+import omr.glyph.Sentence;
 import omr.glyph.Shape;
+import omr.glyph.TextType;
 
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 import omr.score.common.SystemPoint;
 import omr.score.common.SystemRectangle;
 import omr.score.entity.Arpeggiate;
@@ -43,8 +47,6 @@ import omr.score.visitor.ScoreCleaner;
 import omr.score.visitor.ScoreFixer;
 import omr.score.visitor.ScoreTimeFixer;
 
-import omr.sheet.PixelPoint;
-import omr.sheet.PixelRectangle;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
@@ -52,8 +54,6 @@ import omr.util.Logger;
 import omr.util.TreeNode;
 
 import java.util.*;
-
-import javax.sound.midi.MidiUnavailableException;
 
 /**
  * Class <code>ScoreBuilder</code> is in charge of translating each relevant
@@ -72,10 +72,10 @@ public class ScoreBuilder
     //~ Instance fields --------------------------------------------------------
 
     /** The score we are populating */
-    private Score score;
+    private final Score score;
 
     /** The related sheet */
-    private Sheet sheet;
+    private final Sheet sheet;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -90,6 +90,11 @@ public class ScoreBuilder
     public ScoreBuilder (Score score,
                          Sheet sheet)
     {
+        if (score == null) {
+            throw new IllegalArgumentException(
+                "ScoreBuilder needs a non-null score");
+        }
+
         this.score = score;
         this.sheet = sheet;
     }
@@ -108,7 +113,7 @@ public class ScoreBuilder
     public void buildFinal (SystemInfo fromInfo)
     {
         if (logger.isFineEnabled()) {
-            logger.fine("buildFinal from " + fromInfo);
+            logger.fine("buildFinal starting from " + fromInfo);
         }
 
         // Get the (sub) list of all systems for final processing
@@ -120,6 +125,7 @@ public class ScoreBuilder
 
         for (SystemInfo systemInfo : systems) {
             System system = systemInfo.getScoreSystem();
+
             system.fillMissingParts();
             system.retrieveSlurConnections();
             system.accept(new ScoreFixer());
@@ -134,12 +140,14 @@ public class ScoreBuilder
                 MidiAgent.getInstance()
                          .reset();
             }
-        } catch (MidiUnavailableException ex) {
+        } catch (Exception ex) {
             logger.warning("Cannot access Midi agent", ex);
         }
 
         // Update score view if any
         if (score.getView() != null) {
+            score.getView()
+                 .computeModelSize();
             score.getView()
                  .repaint();
         }
@@ -278,6 +286,7 @@ public class ScoreBuilder
         public void translateSystem ()
         {
             // First, cleanup the system, staves, measures, barlines, ...
+            // and clear glyph (& sentence) translations
             system.accept(new ScoreCleaner());
 
             // Translations in proper order
@@ -397,6 +406,47 @@ public class ScoreBuilder
         }
 
         //~ Inner Classes ------------------------------------------------------
+
+        //        //----------------//
+        //        // translateTexts //
+        //        //----------------//
+        //        /**
+        //         * Drive the translation at system level of text glyphs. Since these
+        //         * glyphs must be processed by sentences, we need this special version
+        //         * rather than the general translate() method.
+        //         */
+        //        private void translateTexts ()
+        //        {
+        //            Translator translator = new TextTranslator();
+        //
+        //            // Browse the system collection of TextGlyphLines that contain
+        //            // sentences of text glyphs
+        //            for (TextGlyphLine line : system.getInfo()
+        //                                            .getTextLines()) {
+        //                logger.info("Translating " + line);
+        //
+        //                // Loop on contained sentences
+        //                for (Sentence sentence : line.getSentences()) {
+        //                    logger.info("Translating " + sentence);
+        //
+        //                    // We are supposed to know the text type for the sentence
+        //                    // Lyrics are really long sentences, and we can translate
+        //                    // them item by item
+        //                    // Any other sentence must be translated as a whole entity
+        //                    for (Glyph glyph : sentence.getGlyphs()) {
+        //                        logger.info("Translating text glyph" + glyph);
+        //
+        //                        // Determine part/staff/measure containment
+        //                        translator.computeLocation(glyph);
+        //                        // Perform the translation on this glyph
+        //                        translator.translate(glyph);
+        //                    }
+        //                }
+        //            }
+        //
+        //            // Processing at end of system if any
+        //            translator.completeSystem();
+        //        }
 
         //------------//
         // Translator //
@@ -905,7 +955,7 @@ public class ScoreBuilder
             public void completeSystem ()
             {
                 try {
-                  KeySignature.verifySystemKeys(system);
+                    KeySignature.verifySystemKeys(system);
                 } catch (Exception ex) {
                     logger.warning("Error verifying keys for " + system, ex);
                 }
@@ -1101,9 +1151,8 @@ public class ScoreBuilder
 
             public boolean isRelevant (Glyph glyph)
             {
-                Shape shape = glyph.getShape();
-
-                return shape == Shape.TEXT;
+                return glyph.getShape()
+                            .isText(); // TEXT or CHARACTER
             }
 
             @Override
@@ -1112,7 +1161,7 @@ public class ScoreBuilder
                 for (TreeNode node : system.getParts()) {
                     SystemPart part = (SystemPart) node;
                     part.populateLyricLines();
-                    part.connectSyllablesToNotes();
+                    part.mapSyllables();
                 }
             }
 
@@ -1124,10 +1173,12 @@ public class ScoreBuilder
                     systemBox.x + (systemBox.width / 2),
                     systemBox.y + systemBox.height);
 
-                if (glyph.getTextType() == Glyph.TextType.Lyrics) {
-                    // Take the staff just above
+                if (glyph.getTextType() == TextType.Lyrics) {
+                    // Take the staff just above, if any
                     currentStaff = system.getStaffAbove(currentCenter);
-                } else {
+                }
+
+                if (currentStaff == null) {
                     currentStaff = system.getStaffAt(currentCenter);
                 }
 
@@ -1136,15 +1187,15 @@ public class ScoreBuilder
 
             public void translate (Glyph glyph)
             {
-                Text.populate(
-                    glyph,
-                    currentPart,
-                    currentCenter,
-                    
-                    // Take the left edge for x and the base line for y
-                    new SystemPoint(
-                        systemBox.x,
-                        systemBox.y + systemBox.height));
+                Sentence sentence = glyph.getSentence();
+
+                // Translate the sentence here
+                // Using the left edge for x and the baseline for y
+                if (sentence != null) {
+                    Text.populate(sentence, sentence.getLocation());
+                } else {
+                    logger.warning("No sentence for glyph #" + glyph.getId());
+                }
             }
         }
 
