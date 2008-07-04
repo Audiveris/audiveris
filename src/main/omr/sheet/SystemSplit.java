@@ -9,20 +9,12 @@
 //
 package omr.sheet;
 
-import omr.glyph.Glyph;
 import omr.glyph.GlyphSection;
-
-import omr.stick.Stick;
 
 import omr.util.Dumper;
 
 import java.awt.Rectangle;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Class <code>SystemSplit</code> is a set of methods dedicated to split
@@ -74,7 +66,7 @@ public class SystemSplit
         }
 
         // Bottom of last system
-        prevSystem.setAreaBottom(Integer.MAX_VALUE);
+        prevSystem.setAreaBottom(sheet.getHeight());
     }
 
     //------//
@@ -174,7 +166,7 @@ public class SystemSplit
             new Adapter<GlyphSection>() {
                     public Collection<GlyphSection> getTarget (SystemInfo system)
                     {
-                        return system.getModifiableVerticalSections();
+                        return system.getMutableVerticalSections();
                     }
 
                     public int getXMin (GlyphSection section)
