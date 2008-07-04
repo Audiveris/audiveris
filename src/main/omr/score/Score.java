@@ -15,8 +15,6 @@ import omr.constant.ConstantSet;
 import omr.score.common.PagePoint;
 import omr.score.common.ScorePoint;
 import omr.score.common.UnitDimension;
-import omr.score.entity.Child;
-import omr.score.entity.Children;
 import omr.score.entity.ScoreNode;
 import omr.score.entity.ScorePart;
 import omr.score.entity.Staff;
@@ -73,7 +71,6 @@ public class Score
     private File imageFile;
 
     /** Link with image */
-    @Child
     private Sheet sheet;
 
     /** The related file radix (name w/o extension) */
@@ -92,7 +89,6 @@ public class Score
     private Integer durationDivisor;
 
     /** ScorePart list for the whole score */
-    @Children
     private List<ScorePart> partList;
 
     /** The most recent system pointed at */
@@ -109,6 +105,9 @@ public class Score
 
     /** Potential measure range, if not all score is to be played */
     private MeasureRange measureRange;
+
+    /** Browser tree on this score */
+    private ScoreTree scoreTree;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -171,6 +170,24 @@ public class Score
         System lastSystem = getLastSystem();
 
         return lastSystem.getStartTime() + lastSystem.getActualDuration();
+    }
+
+    //-----------------//
+    // getBrowserFrame //
+    //-----------------//
+    /**
+     * Create a dedicated frame, where all score elements can be browsed in the
+     * tree hierarchy
+     * @return the created frame
+     */
+    public JFrame getBrowserFrame ()
+    {
+        if (scoreTree == null) {
+            // Build the ScoreTree on the score
+            scoreTree = new ScoreTree(this);
+        }
+
+        return scoreTree.getFrame();
     }
 
     //-----------------//
@@ -393,33 +410,6 @@ public class Score
     public void setPartList (List<ScorePart> partList)
     {
         this.partList = partList;
-    }
-
-    //--------------------//
-    // createPartListFrom //
-    //--------------------//
-    /**
-     * Create the list of score parts, based on the provided reference system
-     *
-     * @param refSystem the system taken as reference
-     */
-    public void createPartListFrom (System refSystem)
-    {
-        // Build a ScorePart list based on the parts of the ref system
-        int index = 0;
-        partList = new ArrayList<ScorePart>();
-
-        for (TreeNode node : refSystem.getParts()) {
-            SystemPart sp = (SystemPart) node;
-            Staff      firstStaff = sp.getFirstStaff();
-            ScorePart  scorePart = new ScorePart(
-                sp,
-                this,
-                ++index,
-                firstStaff.getTopLeft().y - refSystem.getTopLeft().y);
-            scorePart.setName("Part_" + index);
-            partList.add(scorePart);
-        }
     }
 
     //-------------//
@@ -652,9 +642,41 @@ public class Score
             view.close();
         }
 
+        // Close tree if any
+        if (scoreTree != null) {
+            scoreTree.close();
+        }
+
         // Close Midi interface if needed
         ScoreManager.getInstance()
                     .midiClose(this);
+    }
+
+    //--------------------//
+    // createPartListFrom //
+    //--------------------//
+    /**
+     * Create the list of score parts, based on the provided reference system
+     *
+     * @param refSystem the system taken as reference
+     */
+    public void createPartListFrom (System refSystem)
+    {
+        // Build a ScorePart list based on the parts of the ref system
+        int index = 0;
+        partList = new ArrayList<ScorePart>();
+
+        for (TreeNode node : refSystem.getParts()) {
+            SystemPart sp = (SystemPart) node;
+            Staff      firstStaff = sp.getFirstStaff();
+            ScorePart  scorePart = new ScorePart(
+                sp,
+                this,
+                ++index,
+                firstStaff.getTopLeft().y - refSystem.getTopLeft().y);
+            scorePart.setName("Part_" + index);
+            partList.add(scorePart);
+        }
     }
 
     //------//
@@ -868,20 +890,6 @@ public class Score
         } else {
             return "{Score }";
         }
-    }
-
-    //-----------//
-    // viewScore //
-    //-----------//
-    /**
-     * Create a dedicated frame, where all score elements can be browsed in the
-     * tree hierarchy
-     * @return the created frame
-     */
-    public JFrame viewScore ()
-    {
-        // Build the ScoreTree on the score
-        return ScoreTree.makeFrame(getRadix(), this);
     }
 
     //~ Inner Classes ----------------------------------------------------------
