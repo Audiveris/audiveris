@@ -119,6 +119,10 @@ public class GlyphsBuilder
         for (Glyph glyph : parts) {
             compound.addGlyphSections(glyph, /* linkSections => */
                                       false);
+
+            if (compound.getLag() == null) {
+                compound.setLag(glyph.getLag());
+            }
         }
 
         // Register (a copy of) the parts in the compound itself
@@ -209,7 +213,7 @@ public class GlyphsBuilder
 
         if (oldGlyph != glyph) {
             // Perhaps some members to carry over
-            oldGlyph.pullFrom(glyph);
+            oldGlyph.copyStemInformation(glyph);
         }
 
         system.addGlyph(oldGlyph);
@@ -324,7 +328,7 @@ public class GlyphsBuilder
     public int retrieveSystemGlyphs (SystemInfo system)
     {
         int               nb = 0;
-        Set<GlyphSection> visitedSections = new HashSet<GlyphSection>();
+        Set<GlyphSection> visitedSections = new LinkedHashSet<GlyphSection>();
 
         // Browse the various unrecognized sections
         for (GlyphSection section : system.getVerticalSections()) {
