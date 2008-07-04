@@ -10,7 +10,6 @@
 package omr.score.entity;
 
 import omr.glyph.Glyph;
-import omr.glyph.Shape;
 
 import omr.score.common.SystemPoint;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
@@ -59,19 +58,19 @@ public class Measure
     private Barline barline;
 
     /** Child: Potential one time signature per staff */
-    private TimeSigList timesigs;
+    private Container timesigs;
 
     /** Children: possibly several clefs per staff */
-    private ClefList clefs;
+    private Container clefs;
 
     /** Children: possibly several KeySignature's per staff */
-    private KeySigList keysigs;
+    private Container keysigs;
 
     /** Children: possibly several Chord's per staff */
-    private ChordList chords;
+    private Container chords;
 
     /** Children: possibly several Beam's per staff */
-    private BeamList beams;
+    private Container beams;
 
     /** Left abscissa (in units, wrt system left side) of this measure */
     private Integer leftX;
@@ -80,15 +79,12 @@ public class Measure
     private int id;
 
     /** Identified time slots within the measure */
-    @Children
     private SortedSet<Slot> slots;
 
     /** Chords of just whole rest (thus handled outside slots) */
-    @Children
     private List<Chord> wholeChords;
 
     /** Groups of beams in this measure */
-    @Children
     private List<BeamGroup> beamGroups;
 
     /** Start time of this measure since beginning of the system */
@@ -104,7 +100,6 @@ public class Measure
     private Integer excess;
 
     /** Voices within this measure, sorted by increasing voice id */
-    @Children
     private List<Voice> voices;
 
     //~ Constructors -----------------------------------------------------------
@@ -270,6 +265,50 @@ public class Measure
         return found;
     }
 
+    //--------------//
+    // getClefAfter //
+    //--------------//
+    /**
+     * Report the first clef, if any, defined after this measure point
+     * (looking in end of the measure, then in next measures, then in
+     * next systems) while staying in the same logical staff
+     *
+     * @param point the point after which to look
+     * @return the first clef defined, or null
+     */
+    public Clef getClefAfter (SystemPoint point)
+    {
+        // Which staff we are in
+        Clef clef = null;
+        int  staffId = getPart()
+                           .getStaffAt(point)
+                           .getId();
+
+        // Look in this measure, with same staff, going forward
+        for (TreeNode cn : getClefs()) {
+            clef = (Clef) cn;
+
+            if ((clef.getStaff()
+                     .getId() == staffId) &&
+                (clef.getCenter().x >= point.x)) {
+                return clef;
+            }
+        }
+
+        // Look in all following measures, with the same staff id
+        Measure measure = this;
+
+        while ((measure = measure.getFollowing()) != null) {
+            clef = measure.getFirstMeasureClef(staffId);
+
+            if (clef != null) {
+                return clef;
+            }
+        }
+
+        return null; // No clef later defined
+    }
+
     //---------------//
     // getClefBefore //
     //---------------//
@@ -316,50 +355,6 @@ public class Measure
         return null; // No clef previously defined
     }
 
-    //--------------//
-    // getClefAfter //
-    //--------------//
-    /**
-     * Report the first clef, if any, defined after this measure point
-     * (looking in end of the measure, then in next measures, then in
-     * next systems) while staying in the same logical staff
-     *
-     * @param point the point after which to look
-     * @return the first clef defined, or null
-     */
-    public Clef getClefAfter (SystemPoint point)
-    {
-        // Which staff we are in
-        Clef clef = null;
-        int  staffId = getPart()
-                           .getStaffAt(point)
-                           .getId();
-
-        // Look in this measure, with same staff, going forward
-        for (TreeNode cn : getClefs()) {
-            clef = (Clef) cn;
-
-            if ((clef.getStaff()
-                     .getId() == staffId) &&
-                (clef.getCenter().x >= point.x)) {
-                return clef;
-            }
-        }
-
-        // Look in all following measures, with the same staff id
-        Measure measure = this;
-
-        while ((measure = measure.getFollowing()) != null) {
-            clef = measure.getFirstMeasureClef(staffId);
-
-            if (clef != null) {
-                return clef;
-            }
-        }
-
-        return null; // No clef later defined
-    }
-
     //-------------//
     // getClefList //
     //-------------//
@@ -368,7 +363,7 @@ public class Measure
      *
      * @return the clef list node
      */
-    public ClefList getClefList ()
+    public Container getClefList ()
     {
         return clefs;
     }
@@ -579,6 +574,58 @@ public class Measure
         }
     }
 
+    //---------------------//
+    // getFirstMeasureClef //
+    //---------------------//
+    /**
+     * Report the first clef (if any) in this measure, tagged  with the provided
+     * staff
+     *
+     * @param staffId the imposed related staff id
+     * @return the first clef, or null
+     */
+    public Clef getFirstMeasureClef (int staffId)
+    {
+        // Going forward
+        for (TreeNode cn : getClefs()) {
+            Clef clef = (Clef) cn;
+
+            if (clef.getStaff()
+                    .getId() == staffId) {
+                return clef;
+            }
+        }
+
+        return null;
+    }
+
+    //--------------//
+    // getFollowing //
+    //--------------//
+    /**
+     * Report the following measure of this one, either in this system / part,
+     * or in the following system /part.
+     *
+     * @return the following measure, or null if none
+     */
+    public Measure getFollowing ()
+    {
+        Measure nextMeasure = (Measure) getNextSibling();
+
+        if (nextMeasure != null) {
+            return nextMeasure;
+        }
+
+        SystemPart followingPart = getPart()
+                                       .getFollowing();
+
+        if (followingPart != null) {
+            return followingPart.getFirstMeasure();
+        } else {
+            return null;
+        }
+    }
+
     //-------//
     // setId //
     //-------//
@@ -682,7 +729,7 @@ public class Measure
      *
      * @return the single instance of KeySigList
      */
-    public KeySigList getKeySigList ()
+    public Container getKeySigList ()
     {
         return keysigs;
     }
@@ -717,31 +764,6 @@ public class Measure
                           .size() - 1; ic >= 0; ic--) {
             Clef clef = (Clef) getClefs()
                                    .get(ic);
-
-            if (clef.getStaff()
-                    .getId() == staffId) {
-                return clef;
-            }
-        }
-
-        return null;
-    }
-
-    //---------------------//
-    // getFirstMeasureClef //
-    //---------------------//
-    /**
-     * Report the first clef (if any) in this measure, tagged  with the provided
-     * staff
-     *
-     * @param staffId the imposed related staff id
-     * @return the first clef, or null
-     */
-    public Clef getFirstMeasureClef (int staffId)
-    {
-        // Going forward
-        for (TreeNode cn : getClefs()) {
-            Clef clef = (Clef) cn;
 
             if (clef.getStaff()
                     .getId() == staffId) {
@@ -808,6 +830,14 @@ public class Measure
     }
 
     //----------//
+    // setLeftX //
+    //----------//
+    public void setLeftX (int val)
+    {
+        leftX = new Integer(val);
+    }
+
+    //----------//
     // getLeftX //
     //----------//
     /**
@@ -831,14 +861,6 @@ public class Measure
         }
 
         return leftX;
-    }
-
-    //----------//
-    // setLeftX //
-    //----------//
-    public void setLeftX (int val)
-    {
-        leftX = new Integer(val);
     }
 
     //------------//
@@ -944,33 +966,6 @@ public class Measure
         }
     }
 
-    //--------------//
-    // getFollowing //
-    //--------------//
-    /**
-     * Report the following measure of this one, either in this system / part,
-     * or in the following system /part.
-     *
-     * @return the following measure, or null if none
-     */
-    public Measure getFollowing ()
-    {
-        Measure nextMeasure = (Measure) getNextSibling();
-
-        if (nextMeasure != null) {
-            return nextMeasure;
-        }
-
-        SystemPart followingPart = getPart()
-                                       .getFollowing();
-
-        if (followingPart != null) {
-            return followingPart.getFirstMeasure();
-        } else {
-            return null;
-        }
-    }
-
     //----------//
     // getSlots //
     //----------//
@@ -1023,7 +1018,7 @@ public class Measure
      *
      * @return the node of TimeSignature instances
      */
-    public TimeSigList getTimeSigList ()
+    public Container getTimeSigList ()
     {
         return timesigs;
     }
@@ -1265,6 +1260,38 @@ public class Measure
         }
     }
 
+    //----------//
+    // setDummy //
+    //----------//
+    public void setDummy (boolean dummy)
+    {
+        this.dummy = dummy;
+    }
+
+    //------------//
+    // setPartial //
+    //------------//
+    public void setPartial (boolean partial)
+    {
+        this.partial = partial;
+    }
+
+    //--------------//
+    // setTemporary //
+    //--------------//
+    public void setTemporary (boolean temporary)
+    {
+        this.temporary = temporary;
+    }
+
+    //-------------//
+    // isTemporary //
+    //-------------//
+    public boolean isTemporary ()
+    {
+        return temporary;
+    }
+
     //-------------//
     // buildVoices //
     //-------------//
@@ -1327,7 +1354,7 @@ public class Measure
     {
         // Remove all direct children except barlines
         for (Iterator it = children.iterator(); it.hasNext();) {
-            ScoreNode node = (ScoreNode) it.next();
+            VisitableNode node = (VisitableNode) it.next();
 
             if (!(node instanceof Barline)) {
                 it.remove();
@@ -1342,11 +1369,11 @@ public class Measure
         setPartial(false);
 
         // (Re)Allocate specific children lists
-        clefs = new ClefList(this);
-        keysigs = new KeySigList(this);
-        timesigs = new TimeSigList(this);
-        chords = new ChordList(this);
-        beams = new BeamList(this);
+        clefs = new Container(this, "Clefs");
+        keysigs = new Container(this, "KeySigs");
+        timesigs = new Container(this, "TimeSigs");
+        chords = new Container(this, "Chords");
+        beams = new Container(this, "Beams");
 
         //        dynamics = new DynamicList(this);
         //        lyriclines = new LyricList(this);
@@ -1357,14 +1384,6 @@ public class Measure
         beamGroups = new ArrayList<BeamGroup>();
         wholeChords = new ArrayList<Chord>();
         voices = new ArrayList<Voice>();
-    }
-
-    //----------------//
-    // resetStartTime //
-    //----------------//
-    public void resetStartTime ()
-    {
-        startTime = null;
     }
 
     //-----------------------//
@@ -1543,6 +1562,14 @@ public class Measure
         }
     }
 
+    //----------------//
+    // resetStartTime //
+    //----------------//
+    public void resetStartTime ()
+    {
+        startTime = null;
+    }
+
     //----------//
     // toString //
     //----------//
@@ -1620,126 +1647,5 @@ public class Measure
         }
 
         return String.format("%-5s", Note.quarterValueOf(measureDur));
-    }
-
-    //----------//
-    // setDummy //
-    //----------//
-    public void setDummy (boolean dummy)
-    {
-        this.dummy = dummy;
-    }
-
-    //-------------//
-    // isTemporary //
-    //-------------//
-    public boolean isTemporary ()
-    {
-        return temporary;
-    }
-
-    //--------------//
-    // setTemporary //
-    //--------------//
-    public void setTemporary (boolean temporary)
-    {
-        this.temporary = temporary;
-    }
-
-    //------------//
-    // setPartial //
-    //------------//
-    public void setPartial (boolean partial)
-    {
-        this.partial = partial;
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
-
-    //----------//
-    // ClefList //
-    //----------//
-    /**
-     * A dummy MeasureNode to hook all Clef instances to the containing Measure
-     */
-    public static class ClefList
-        extends MeasureNode
-    {
-        //~ Constructors -------------------------------------------------------
-
-        ClefList (Measure measure)
-        {
-            super(measure);
-        }
-    }
-
-    //------------//
-    // KeySigList //
-    //------------//
-    /**
-     * A dummy MeasureNode to hook all KeySignature instances to the containing
-     * Measure
-     */
-    public static class KeySigList
-        extends MeasureNode
-    {
-        //~ Constructors -------------------------------------------------------
-
-        KeySigList (Measure measure)
-        {
-            super(measure);
-        }
-    }
-
-    //-------------//
-    // TimeSigList //
-    //-------------//
-    /**
-     * A dummy MeasureNode to hook all TimeSignature instances to the containing
-     * Measure
-     */
-    public static class TimeSigList
-        extends MeasureNode
-    {
-        //~ Constructors -------------------------------------------------------
-
-        TimeSigList (Measure measure)
-        {
-            super(measure);
-        }
-    }
-
-    //----------//
-    // BeamList //
-    //----------//
-    /**
-     * A dummy MeasureNode to hook all Beam instances to the containing Measure
-     */
-    private static class BeamList
-        extends MeasureNode
-    {
-        //~ Constructors -------------------------------------------------------
-
-        BeamList (Measure measure)
-        {
-            super(measure);
-        }
-    }
-
-    //-----------//
-    // ChordList //
-    //-----------//
-    /**
-     * A dummy MeasureNode to hook all Chord instances to the containing Measure
-     */
-    private static class ChordList
-        extends MeasureNode
-    {
-        //~ Constructors -------------------------------------------------------
-
-        ChordList (Measure measure)
-        {
-            super(measure);
-        }
     }
 }
