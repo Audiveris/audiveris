@@ -16,6 +16,7 @@ import omr.score.Score;
 import omr.score.ScoreSheetBridge;
 import omr.score.common.PagePoint;
 import omr.score.common.ScorePoint;
+import omr.score.common.ScoreRectangle;
 import omr.score.common.SystemPoint;
 import omr.score.common.UnitDimension;
 import omr.score.entity.Measure;
@@ -40,6 +41,7 @@ import omr.ui.view.Zoom;
 import omr.ui.view.ZoomedPanel;
 
 import omr.util.Logger;
+import omr.util.TreeNode;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -73,26 +75,26 @@ public class ScoreView
 
     //~ Instance fields --------------------------------------------------------
 
-    /** The info zone */
-    private final JLabel info = new JLabel("Score");
-
-    /** The displayed panel */
-    private final MyPanel panel;
-
-    /** The scroll pane + info zone */
-    private final Panel compound = new Panel();
-
     /** The related score */
     private final Score score;
-
-    /** The scroll pane */
-    private final ScrollView pane;
 
     /** Display zoom */
     private final Zoom zoom = new Zoom(0.5d);
 
     /** Mouse rubber */
     private final Rubber rubber = new Rubber(zoom);
+
+    /** The displayed view */
+    private final MyPanel view = new MyPanel(zoom, rubber);
+
+    /** The scroll pane */
+    private final ScrollView scrollPane = new ScrollView(view);
+
+    /** The info zone */
+    private final JLabel info = new JLabel("Score");
+
+    /** The scroll pane + info zone */
+    private final Panel compoundPanel = new Panel();
 
     /** Related popup menu */
     private final ScoreMenu scoreMenu;
@@ -113,21 +115,18 @@ public class ScoreView
             logger.fine("new ScoreView on " + score);
         }
 
-        panel = new MyPanel(zoom, rubber);
-        pane = new ScrollView(panel);
-
         // Explicitly register the display to Score Selection
         Sheet     sheet = score.getSheet();
         Selection locationSelection = sheet.getSelection(
             SelectionTag.SCORE_RECTANGLE);
-        panel.setLocationSelection(locationSelection);
-        locationSelection.addObserver(panel);
+        view.setLocationSelection(locationSelection);
+        locationSelection.addObserver(view);
 
         // Layout
         info.setHorizontalAlignment(SwingConstants.LEFT);
-        compound.setLayout(new BorderLayout());
-        compound.add(pane.getComponent(), BorderLayout.CENTER);
-        compound.add(info, BorderLayout.SOUTH);
+        compoundPanel.setLayout(new BorderLayout());
+        compoundPanel.add(scrollPane.getComponent(), BorderLayout.CENTER);
+        compoundPanel.add(info, BorderLayout.SOUTH);
 
         // Cross referencing between score and its view
         this.score = score;
@@ -160,7 +159,7 @@ public class ScoreView
      */
     public Component getComponent ()
     {
-        return compound;
+        return compoundPanel;
     }
 
     //----------//
@@ -174,19 +173,6 @@ public class ScoreView
     public Score getScore ()
     {
         return score;
-    }
-
-    //---------------//
-    // getScrollPane //
-    //---------------//
-    /**
-     * Report the underlying ScrollView
-     *
-     * @return the Scroll Pane
-     */
-    public ScrollView getScrollPane ()
-    {
-        return pane;
     }
 
     //-------//
@@ -221,22 +207,45 @@ public class ScoreView
      */
     public void computeModelSize ()
     {
-        // Should be a visitor !!! TBD
+        ScoreRectangle scoreContour = null;
 
-        // Determine the X value of the whole set of systems
-        int totalWidth = 0;
+        for (TreeNode node : score.getSystems()) {
+            System         system = (System) node;
+            ScoreRectangle absSystemContour = system.toScoreRectangle(
+                system.getContour());
 
-        for (Iterator it = score.getChildren()
-                                .iterator(); it.hasNext();) {
-            System system = (System) it.next();
-            totalWidth += (system.getDimension().width + INTER_SYSTEM);
+            if (scoreContour == null) {
+                scoreContour = absSystemContour;
+            } else {
+                Rectangle r = scoreContour.union(absSystemContour);
+                scoreContour = new ScoreRectangle(r.x, r.y, r.width, r.height);
+            }
         }
 
-        // Total size of this panel (for proper scrolling)
-        int h = (SCORE_INIT_X + STAFF_MARGIN_HEIGHT) +
-                (score.getMaxStaffNumber() * STAFF_AREA_HEIGHT);
-        panel.setModelSize(
-            new Dimension(SCORE_INIT_X + totalWidth + INTER_SYSTEM, 2 * h));
+        view.setModelSize(
+            new Dimension(scoreContour.width, scoreContour.height));
+        zoom.fireStateChanged();
+    }
+
+    //-----------//
+    // highLight //
+    //-----------//
+    /**
+     * Highlight the corresponding slot within the score display, using the
+     * values of measure and slot.
+     * @param measure the measure that contains the highlighted slot
+     * @param slot the slot to highlight
+     */
+    public void highLight (final Measure measure,
+                           final Slot    slot)
+    {
+        SwingUtilities.invokeLater(
+            new Runnable() {
+                    public void run ()
+                    {
+                        view.highLight(measure, slot);
+                    }
+                });
     }
 
     //---------//
@@ -244,8 +253,8 @@ public class ScoreView
     //---------//
     public void repaint ()
     {
-        pane.getComponent()
-            .repaint();
+        scrollPane.getComponent()
+                  .repaint();
     }
 
     //----------//
