@@ -40,9 +40,6 @@ public class ViewParameters
     /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Singleton */
-    private static ViewParameters INSTANCE;
-
     //~ Methods ----------------------------------------------------------------
 
     //-------------//
@@ -50,15 +47,7 @@ public class ViewParameters
     //-------------//
     public static ViewParameters getInstance ()
     {
-        if (INSTANCE == null) {
-            synchronized (ViewParameters.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = new ViewParameters();
-                }
-            }
-        }
-
-        return INSTANCE;
+        return Holder.INSTANCE;
     }
 
     //-------------------//
@@ -191,5 +180,15 @@ public class ViewParameters
         final Constant.Boolean circlePainting = new Constant.Boolean(
             true,
             "Should the slur circles be painted");
+    }
+
+    //--------//
+    // Holder //
+    //--------//
+    private static class Holder
+    {
+        //~ Static fields/initializers -----------------------------------------
+
+        public static final ViewParameters INSTANCE = new ViewParameters();
     }
 }
