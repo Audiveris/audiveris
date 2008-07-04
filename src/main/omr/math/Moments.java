@@ -9,7 +9,7 @@
 //
 package omr.math;
 
-import omr.sheet.PixelPoint;
+import omr.score.common.PixelPoint;
 
 import omr.util.Logger;
 
