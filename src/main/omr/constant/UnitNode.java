@@ -55,7 +55,7 @@ public class UnitNode
      *
      * @param set the ConstantSet to be assigned
      */
-    void setConstantSet (ConstantSet set)
+    public void setConstantSet (ConstantSet set)
     {
         this.set = set;
     }
@@ -68,7 +68,7 @@ public class UnitNode
      *
      * @return the ConstantSet instance, or null
      */
-    ConstantSet getConstantSet ()
+    public ConstantSet getConstantSet ()
     {
         return set;
     }
@@ -81,7 +81,7 @@ public class UnitNode
      *
      * @param logger the Logger instance
      */
-    void setLogger (Logger logger)
+    public void setLogger (Logger logger)
     {
         this.logger = logger;
     }
@@ -94,7 +94,7 @@ public class UnitNode
      *
      * @return the Logger instance, or null
      */
-    Logger getLogger ()
+    public Logger getLogger ()
     {
         return logger;
     }

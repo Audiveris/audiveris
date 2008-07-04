@@ -11,10 +11,10 @@ package omr.constant;
 
 import omr.util.Logger;
 
+import net.jcip.annotations.ThreadSafe;
+
 import java.lang.reflect.Field;
-import java.util.Collections;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * This abstract class handles a set of Constants as a whole. In particular,
@@ -27,12 +27,15 @@ import java.util.TreeMap;
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
+@ThreadSafe
 public abstract class ConstantSet
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    ///private static final Logger logger = Logger.getLogger(ConstantSet.class);
+    private static final Logger logger = Logger.getLogger(ConstantSet.class);
+
+    //~ Instance fields --------------------------------------------------------
 
     /**  Name of the containing unit/class */
     private final String unit;
@@ -44,7 +47,7 @@ public abstract class ConstantSet
      * to {@link #getMap} method, since all the enclosed constants must have
      * been constructed beforehand.
      */
-    private SortedMap<String, Constant> map;
+    private volatile SortedMap<String, Constant> map;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -52,18 +55,91 @@ public abstract class ConstantSet
     // ConstantSet //
     //-------------//
     /**
-     * Registers this ConstantSet at ConstantSetMAnager
+     * A new ConstantSet instance is created, and registered at the UnitManager
+     * singleton, but its map of internal constants will need to be built later.
      */
     public ConstantSet ()
     {
-        this.unit = getClass()
-                        .getDeclaringClass()
-                        .getName();
+        unit = getClass()
+                   .getDeclaringClass()
+                   .getName();
+
+        //        System.out.println(
+        //            "\n" + Thread.currentThread().getName() +
+        //            ": Creating ConstantSet " + unit);
+
+        // Register this instance
         UnitManager.getInstance()
                    .addSet(this);
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-------------//
+    // getConstant //
+    //-------------//
+    /**
+     * Report a constant knowing its name in the constant set
+     *
+     * @param name the desired name
+     *
+     * @return the proper constant, or null if not found
+     */
+    public Constant getConstant (String name)
+    {
+        return getMap()
+                   .get(name);
+    }
+
+    //-------------//
+    // getConstant //
+    //-------------//
+    /**
+     * Report a constant knowing its index in the constant set
+     *
+     * @param i the desired index value
+     *
+     * @return the proper constant
+     */
+    public Constant getConstant (int i)
+    {
+        return Collections.list(Collections.enumeration(getMap().values()))
+                          .get(i);
+    }
+
+    //------------//
+    // isModified //
+    //------------//
+    /**
+     * Predicate to check whether at least one of the constant of the set has
+     * been modified
+     *
+     * @return the modification status of the whole set
+     */
+    public boolean isModified ()
+    {
+        for (Constant constant : getMap()
+                                     .values()) {
+            if (constant.isModified()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * Report the name of the enclosing unit
+     *
+     * @return unit name
+     */
+    public String getName ()
+    {
+        return unit;
+    }
 
     //------//
     // dump //
@@ -89,24 +165,30 @@ public abstract class ConstantSet
     }
 
     //------------//
-    // isModified //
+    // initialize //
     //------------//
     /**
-     * Predicate to check whether at least one of the constant of the set has
-     * been modified
-     *
-     * @return the modification status of the whole set
+     * Make sure this ConstantSet has properly been initialized (its map of
+     * constants has been built)
+     * @return true if initialized correctly, false otherwise
      */
-    public boolean isModified ()
+    public boolean initialize ()
     {
-        for (Constant constant : getMap()
-                                     .values()) {
-            if (constant.isModified()) {
-                return true;
-            }
-        }
+        return getMap() != null;
+    }
 
-        return false;
+    //------//
+    // size //
+    //------//
+    /**
+     * Report the number of constants in this constant set
+     *
+     * @return the size of the constant set
+     */
+    public int size ()
+    {
+        return getMap()
+                   .size();
     }
 
     //----------//
@@ -136,42 +218,10 @@ public abstract class ConstantSet
         return sb.toString();
     }
 
-    //-------------//
-    // getConstant //
-    //-------------//
-    /**
-     * Report a constant knowing its name in the constant set
-     *
-     * @param name the desired name
-     *
-     * @return the proper constant, or null if not found
-     */
-    Constant getConstant (String name)
-    {
-        return getMap()
-                   .get(name);
-    }
-
-    //-------------//
-    // getConstant //
-    //-------------//
-    /**
-     * Report a constant knowing its index in the constant set
-     *
-     * @param i the desired index value
-     *
-     * @return the proper constant
-     */
-    Constant getConstant (int i)
-    {
-        return Collections.list(Collections.enumeration(getMap().values()))
-                          .get(i);
-    }
-
     //--------//
     // getMap //
     //--------//
-    SortedMap<String, Constant> getMap ()
+    private SortedMap<String, Constant> getMap ()
     {
         if (map == null) {
             // Initialize map content
@@ -179,33 +229,6 @@ public abstract class ConstantSet
         }
 
         return map;
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * Report the name of the enclosing unit
-     *
-     * @return unit name
-     */
-    String getName ()
-    {
-        return unit;
-    }
-
-    //------//
-    // size //
-    //------//
-    /**
-     * Report the number of constants in this constant set
-     *
-     * @return the size of the constant set
-     */
-    int size ()
-    {
-        return getMap()
-                   .size();
     }
 
     //---------//
@@ -217,47 +240,43 @@ public abstract class ConstantSet
      */
     private void initMap ()
     {
-        ///System.out.println("*** ConstantSet.initMap " + unit);
-        map = new TreeMap<String, Constant>();
+        SortedMap<String, Constant> tempMap = new TreeMap<String, Constant>();
 
         // Retrieve values of all fields
         Class cl = getClass();
 
-        for (Field field : cl.getDeclaredFields()) {
-            field.setAccessible(true);
+        try {
+            for (Field field : cl.getDeclaredFields()) {
+                field.setAccessible(true);
 
-            String name = field.getName();
+                String name = field.getName();
 
-            try {
-                // Make sure that we have only Constants in this
-                // ConstantSet
+                // Make sure that we have only Constants in this ConstantSet
                 Object obj = field.get(this);
+
+                // Not yet allocated, no big deal, we'll get back to it later
+                if (obj == null) {
+                    ///logger.warning("ConstantSet not fully allocated yet");
+
+                    return;
+                }
 
                 if (obj instanceof Constant) {
                     Constant constant = (Constant) obj;
-                    constant.setUnit(unit);
-                    constant.setName(name);
-                    map.put(name, constant);
+                    constant.setUnitAndName(unit, name);
+                    tempMap.put(name, constant);
                 } else {
-                    Logger.getLogger(ConstantSet.class)
-                          .severe(
+                    logger.severe(
                         "ConstantSet in unit '" + unit +
                         "' contains a non Constant field '" + name + "' obj= " +
                         obj);
                 }
-            } catch (IllegalAccessException ex) {
-                // Cannot occur in fact, thanks to setAccessible
             }
-        }
 
-        //        // Dump the current constant values for this unit, if so asked for
-        //        if (logger.isFineEnabled() ||
-        //            (new Constant.Boolean(
-        //            unit,
-        //            "constantValues",
-        //            false,
-        //            "Debugging flag for ConstantSet").getValue())) {
-        //            dump();
-        //        }
+            // Assign the constructed map atomically
+            map = tempMap;
+        } catch (Exception ex) {
+            logger.warning("Error initializing map of ConstantSet " + this, ex);
+        }
     }
 }

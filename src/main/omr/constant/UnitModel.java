@@ -388,7 +388,7 @@ public class UnitModel
     // getValueAt //
     //------------//
     /**
-     * Report the valu of a cell
+     * Report the value of a cell
      *
      * @param node the desired node
      * @param col the related column

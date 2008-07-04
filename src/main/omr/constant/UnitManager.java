@@ -11,26 +11,26 @@ package omr.constant;
 
 import omr.util.Logger;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.StringTokenizer;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import net.jcip.annotations.ThreadSafe;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * Class <code>UnitManager</code> manages all units (aka classes), for which we
  * have either a ConstantSet, or a Logger, or both.
  *
  * <p>To help {@link UnitTreeTable} display the whole tree of UnitNodes,
- * UnitManager pre-loads all the classes known to contain a ConstantSet or a
+ * UnitManager can pre-load all the classes known to contain a ConstantSet or a
  * Logger. This list is kept up-to-date and stored as a property
+ *
+ * <p>This class is meant to be thread-safe.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
+@ThreadSafe
 public class UnitManager
 {
     //~ Static fields/initializers ---------------------------------------------
@@ -39,7 +39,7 @@ public class UnitManager
     private static final String UNIT = UnitManager.class.getName();
 
     /** The single instance of this class */
-    private static UnitManager INSTANCE;
+    private static final UnitManager INSTANCE = new UnitManager();
 
     /** Separator used in property that concatenates all unit names */
     private static final String SEPARATOR = ";";
@@ -53,13 +53,13 @@ public class UnitManager
     private final PackageNode root = new PackageNode("<root>", null);
 
     /** Map of PackageNodes and UnitNodes */
-    private final SortedMap<String, Node> mapOfNodes = new TreeMap<String, Node>();
+    private final ConcurrentHashMap<String, Node> mapOfNodes = new ConcurrentHashMap<String, Node>();
 
     /** Set of names of ConstantSets that still need to be initialized */
-    private final Set<String> dirtySets = new HashSet<String>();
+    private final ConcurrentSkipListSet<String> dirtySets = new ConcurrentSkipListSet<String>();
 
     /**
-     * Lists of all units known as containing a constantset This is kept
+     * Lists of all units known as containing a constantset. This is kept
      * up-to-date and saved as a property.
      */
     private Constant.String units;
@@ -72,14 +72,10 @@ public class UnitManager
     //-------------//
     // UnitManager //
     //-------------//
-    private UnitManager (String main)
+    /** This is a singleton */
+    private UnitManager ()
     {
         mapOfNodes.put("<root>", root);
-
-        // Pre-load all known units with a ConstantSet and/or Logger
-        if (main != null) {
-            preLoadUnits(main);
-        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -88,39 +84,41 @@ public class UnitManager
     // getInstance //
     //-------------//
     /**
-     * Report the single instance of this package, after creating it with
-     * default parameters if needed
+     * Report the single instance of this package
      *
      * @return the single instance
      */
     public static UnitManager getInstance ()
     {
-        if (INSTANCE == null) {
-            INSTANCE = new UnitManager(null);
-        }
-
         return INSTANCE;
     }
 
-    //-------------//
-    // getInstance //
-    //-------------//
+    //---------//
+    // getNode //
+    //---------//
     /**
-     * Report the single instance of this package, after creating it with
-     * default parameters if needed
+     * Retrieves a node object, knowing its path name
      *
-     * @param main the name of the main class
-     * @return the single instance
+     * @param path fully qyalified node name
+     *
+     * @return the node object, or null if not found
      */
-    public static UnitManager getInstance (String main)
+    public Node getNode (String path)
     {
-        if (INSTANCE == null) {
-            INSTANCE = new UnitManager(main);
-        } else {
-            INSTANCE.preLoadUnits(main);
-        }
+        return mapOfNodes.get(path);
+    }
 
-        return INSTANCE;
+    //---------//
+    // getRoot //
+    //---------//
+    /**
+     * Return the PackageNode at the root of the node hierarchy
+     *
+     * @return the root PackageNode
+     */
+    public PackageNode getRoot ()
+    {
+        return root;
     }
 
     //-----------//
@@ -130,13 +128,33 @@ public class UnitManager
      * Add a Logger, which like addSet means perhaps adding a UnitNode if not
      * already allocated and setting its Logger reference to the provided Logger
      *
-     * @param logger the Logger ro add to the hierarchy
+     * @param logger the Logger to add to the hierarchy
      */
     public void addLogger (Logger logger)
     {
         //log ("addLogger logger=" + logger.getName());
         retrieveUnit(logger.getName())
             .setLogger(logger);
+    }
+
+    //--------//
+    // addSet //
+    //--------//
+    /**
+     * Add a ConstantSet, which means perhaps adding a UnitNode if not already
+     * allocated and setting its ConstantSet reference to the provided
+     * ConstantSet.
+     *
+     * @param set the ConstantSet to add to the hierarchy
+     */
+    public void addSet (ConstantSet set)
+    {
+        ///log ("addSet set=" + set.getName());
+        retrieveUnit(set.getName())
+            .setConstantSet(set);
+
+        // Register this name in the dirty ones
+        dirtySets.add(set.getName());
     }
 
     //---------------//
@@ -166,21 +184,54 @@ public class UnitManager
 
         dumpStrings("constants", constants);
 
-        SortedSet<String> props = new TreeSet<String>();
-
-        for (Object obj : ConstantManager.getUserProperties()
-                                         .keySet()) {
-            props.add((String) obj);
-        }
-
-        for (Object obj : ConstantManager.getDefaultProperties()
-                                         .keySet()) {
-            props.add((String) obj);
-        }
-
-        dumpStrings("properties", props);
+        Collection<String> props = ConstantManager.getInstance()
+                                                  .getAllProperties();
         props.removeAll(constants);
-        dumpStrings("orphan properties", props);
+        dumpStrings("Non set-enclosed properties", props);
+
+        dumpStrings(
+            "Unused User properties",
+            ConstantManager.getInstance().getUnusedUserProperties());
+
+        dumpStrings(
+            "Unused Default properties",
+            ConstantManager.getInstance().getUnusedDefaultProperties());
+
+        dumpStrings(
+            "Useless Default properties",
+            ConstantManager.getInstance().getUselessDefaultProperties());
+    }
+
+    //----------------//
+    // checkDirtySets //
+    //----------------//
+    /**
+     * Go through all registered to-be-initialized sets, and initialize them,
+     * then clear the set of such dirty sets
+     */
+    public void checkDirtySets ()
+    {
+        int rookies = 0;
+
+        // We use (and clear) the collection of rookies
+        for (Iterator<String> it = dirtySets.iterator(); it.hasNext();) {
+            String name = it.next();
+            rookies++;
+
+            //            System.out.println(
+            //                Thread.currentThread().getName() + ": checkDirtySets. name=" +
+            //                name);
+            UnitNode unit = (UnitNode) getNode(name);
+
+            if (unit.getConstantSet()
+                    .initialize()) {
+                it.remove();
+            }
+        }
+
+        //        System.out.println(
+        //            Thread.currentThread().getName() + ": checkDirtySets. rookies:" +
+        //            rookies);
     }
 
     //--------------//
@@ -190,7 +241,7 @@ public class UnitManager
      * Dumps on the standard output the current value of all Constants of all
      * ConstantSets.
      */
-    public synchronized void dumpAllUnits ()
+    public void dumpAllUnits ()
     {
         System.out.println("\nUnitManager. All Units:");
         System.out.println("=======================");
@@ -198,15 +249,6 @@ public class UnitManager
         for (Node node : mapOfNodes.values()) {
             if (node instanceof UnitNode) {
                 UnitNode    unit = (UnitNode) node;
-
-                //                // Logger?
-                //                Logger logger = unit.getLogger();
-                //
-                //                if (logger != null) {
-                //                    System.out.println(
-                //                        "\n[" + unit.getName() + "] Logger -> " +
-                //                        logger.getEffectiveLevel());
-                //                }
 
                 // ConstantSet?
                 ConstantSet set = unit.getConstantSet();
@@ -218,197 +260,16 @@ public class UnitManager
         }
     }
 
-    //---------//
-    // getNode //
-    //---------//
-    /**
-     * Retrieves a node object, knowing its path name
-     *
-     * @param path fully qyalified node name
-     *
-     * @return the node object, or null if not found
-     */
-    synchronized Node getNode (String path)
-    {
-        return mapOfNodes.get(path);
-    }
-
-    //---------//
-    // getRoot //
-    //---------//
-    /**
-     * Return the PackageNode at the root of the node hierarchy
-     *
-     * @return the root PackageNode
-     */
-    PackageNode getRoot ()
-    {
-        return root;
-    }
-
-    //--------//
-    // addSet //
-    //--------//
-    /**
-     * Add a ConstantSet, which means perhaps adding a UnitNode if not already
-     * allocated and setting its ConstantSet reference to the provided
-     * ConstantSet.
-     *
-     * @param set the ConstantSet to add to the hierarchy
-     */
-    void addSet (ConstantSet set)
-    {
-        //log ("addSet set=" + set.getName());
-        retrieveUnit(set.getName())
-            .setConstantSet(set);
-
-        // Register this name in the dirty ones
-        synchronized (dirtySets) {
-            dirtySets.add(set.getName());
-        }
-    }
-
-    //---------//
-    // addUnit //
-    //---------//
-    /**
-     * Include a Unit in the hierarchy
-     *
-     * @param unit the Unit to include
-     */
-    synchronized void addUnit (UnitNode unit)
-    {
-        //log ("addUnit unit=" + unit.getName());
-        // Update the hierarchy. Include it in the map, as well as all needed
-        // intermediate package nodes if any is needed.
-        String name = unit.getName();
-        Node   node = getNode(name);
-
-        if (node == null) {
-            // Nothing existed before, add this node and its needed
-            // parents
-            //log ("addUnit new unit: " + name);
-            mapOfNodes.put(name, unit);
-            updateParents(unit);
-
-            if (storeIt) {
-                // Make this unit name permanent
-                storeUnits();
-            }
-        } else if (node instanceof PackageNode) {
-            logger.severe("Unit with same name as package " + name);
-        } else if (node instanceof UnitNode) {
-            logger.severe("duplicate Unit " + name);
-        }
-    }
-
-    //----------------//
-    // checkDirtySets //
-    //----------------//
-    /**
-     * Go through all registered to-be-initialized sets, and initialize them,
-     * then clear the set of such dirty sets
-     */
-    void checkDirtySets ()
-    {
-        // We use the collection of rookies
-        synchronized (dirtySets) {
-            for (String name : dirtySets) {
-                UnitNode unit = (UnitNode) getNode(name);
-                unit.getConstantSet()
-                    .getMap();
-            }
-
-            // We're done!
-            dirtySets.clear();
-        }
-    }
-
-    //---------------//
-    // updateParents //
-    //---------------//
-    /**
-     * Update the chain of parents of a Unit, by walking up all the package
-     * names found in the fully qualified Unit name, creating PackageNodes when
-     * needed, or adding a new child to an existing PackageNode.
-     *
-     * @param unit the Unit whose chain of parents is to be updated
-     */
-    synchronized void updateParents (UnitNode unit)
-    {
-        String name = unit.getName();
-        int    length = name.length();
-        Node   prev = unit;
-
-        for (int i = name.lastIndexOf('.', length - 1); i >= 0;
-             i = name.lastIndexOf('.', i - 1)) {
-            String sub = name.substring(0, i);
-            Node   obj = mapOfNodes.get(sub);
-
-            // Create a provision node for a future parent.
-            if (obj == null) {
-                //log("No parent " + sub + " found. Creating PackageNode.");
-                PackageNode pn = new PackageNode(sub, prev);
-                mapOfNodes.put(sub, pn);
-                prev = pn;
-            } else if (obj instanceof PackageNode) {
-                //log("PackageNode  " + sub + " found. adding child");
-                ((PackageNode) obj).addChild(prev);
-
-                return;
-            } else {
-                Exception e = new IllegalStateException(
-                    "unexpected node type " + obj.getClass() + " in map.");
-                e.printStackTrace();
-
-                return;
-            }
-        }
-
-        // No intermediate parent found, so hook it to the root itself
-        getRoot()
-            .addChild(prev);
-    }
-
-    //-------------//
-    // dumpStrings //
-    //-------------//
-    private void dumpStrings (String             title,
-                              Collection<String> strings)
-    {
-        System.out.println("\n" + title + ":");
-
-        for (int i = 0; i < title.length(); i++) {
-            System.out.print("-");
-        }
-
-        System.out.println();
-
-        for (String string : strings) {
-            System.out.println(string);
-        }
-    }
-
-    //-----//
-    // log //
-    //-----//
-    /**
-     * Poor-man implementation of a log feature, since the normal Logger stuff
-     * is not yet available
-     */
-    private static void log (String msg)
-    {
-        System.out.println("UnitManager:: " + msg);
-    }
-
     //--------------//
     // preLoadUnits //
     //--------------//
     /**
      * Allows to preload the names of the various nodes in the hierarchy, by
-     * simply extracting names stored at previous runs.
+     * simply extracting names stored at previous runs. This will load the
+     * classes not already loaded. This method is meant to be used by the UI
+     * which let the user browse and modify the whole collection of constants.
      */
-    private void preLoadUnits (String main)
+    public void preLoadUnits (String main)
     {
         //log("pre-loading units");
         String unitName;
@@ -450,6 +311,63 @@ public class UnitManager
         //log("all units have been pre-loaded from " + main);
     }
 
+    //---------//
+    // addUnit //
+    //---------//
+    /**
+     * Include a Unit in the hierarchy
+     *
+     * @param unit the Unit to include
+     */
+    private void addUnit (UnitNode unit)
+    {
+        //log ("addUnit unit=" + unit.getName());
+        // Update the hierarchy. Include it in the map, as well as all needed
+        // intermediate package nodes if any is needed.
+        String name = unit.getName();
+
+        // Add this node and its parents as needed
+        if (mapOfNodes.putIfAbsent(name, unit) == null) {
+            updateParents(unit);
+
+            if (storeIt) {
+                // Make this unit name permanent
+                storeUnits();
+            }
+        }
+    }
+
+    //-------------//
+    // dumpStrings //
+    //-------------//
+    private void dumpStrings (String             title,
+                              Collection<String> strings)
+    {
+        System.out.println("\n" + title + ":");
+
+        for (int i = 0; i < title.length(); i++) {
+            System.out.print("-");
+        }
+
+        System.out.println();
+
+        for (String string : strings) {
+            System.out.println(string);
+        }
+    }
+
+    //-----//
+    // log //
+    //-----//
+    /**
+     * Poor-man implementation of a log feature, since the normal Logger stuff
+     * is not yet available
+     */
+    private static void log (String msg)
+    {
+        System.out.println("UnitManager:: " + msg);
+    }
+
     //--------------//
     // retrieveUnit //
     //--------------//
@@ -487,7 +405,7 @@ public class UnitManager
      * Build a string by concatenating all node names and store it to disk for
      * subsequent runs.
      */
-    private synchronized void storeUnits ()
+    private void storeUnits ()
     {
         //log("storing units");
 
@@ -510,5 +428,56 @@ public class UnitManager
         units.setValue(buf.toString());
 
         //log(units.getName() + "=" + units.getValue());
+    }
+
+    //---------------//
+    // updateParents //
+    //---------------//
+    /**
+     * Update the chain of parents of a Unit, by walking up all the package
+     * names found in the fully qualified Unit name, creating PackageNodes when
+     * needed, or adding a new child to an existing PackageNode.
+     *
+     * @param unit the Unit whose chain of parents is to be updated
+     */
+    private void updateParents (UnitNode unit)
+    {
+        String name = unit.getName();
+        int    length = name.length();
+        Node   child = unit;
+
+        for (int i = name.lastIndexOf('.', length - 1); i >= 0;
+             i = name.lastIndexOf('.', i - 1)) {
+            String parent = name.substring(0, i);
+            Node   obj = mapOfNodes.get(parent);
+
+            // Create a provision node for a future parent.
+            if (obj == null) {
+                //log("No parent " + sub + " found. Creating PackageNode.");
+                PackageNode pn = new PackageNode(parent, child);
+
+                if (mapOfNodes.putIfAbsent(parent, pn) != null) {
+                    // Already done by someone else, give up
+                    return;
+                }
+
+                child = pn;
+            } else if (obj instanceof PackageNode) {
+                //log("PackageNode  " + sub + " found. adding child");
+                ((PackageNode) obj).addChild(child);
+
+                return;
+            } else {
+                Exception e = new IllegalStateException(
+                    "unexpected node type " + obj.getClass() + " in map.");
+                e.printStackTrace();
+
+                return;
+            }
+        }
+
+        // No intermediate parent found, so hook it to the root itself
+        getRoot()
+            .addChild(child);
     }
 }

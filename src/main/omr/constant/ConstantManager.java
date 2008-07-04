@@ -13,16 +13,20 @@ import omr.Main;
 
 import omr.util.Logger;
 
+import net.jcip.annotations.ThreadSafe;
+
 import java.io.*;
 import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Class <code>ConstantManager</code> manages the whole population of Constants,
- * including their mapping to properties, their storing on disk and their
- * reloading from disk.
+ * Class <code>ConstantManager</code> manages the persistency of the whole
+ * population of Constants, including their mapping to properties, their storing
+ * on disk and their reloading from disk.
  *
  * <p/> The actual value of an application "constant", as returned by the method
- * {@link Constant#currentString}, is determined in the following order, any
+ * {@link Constant#getCurrentString}, is determined in the following order, any
  * definition overriding the previous ones:
  *
  * <ol> <li> First, <b>SOURCE</b> values are always provided within
@@ -43,12 +47,12 @@ import java.util.*;
  * is defined as a Constant.Integer, a subtype of Constant meant to host Integer
  * values</li>
  *
- * <li><code>"Pixels"</code> specifes the unit used. Here we are counting in
+ * <li><code>"Pixels"</code> specifies the unit used. Here we are counting in
  * pixels.</li>
  *
  * <li><code>15</code> is the constant value. This is the value used by the
  * application, provided it is not overridden in the DEFAULT or USER properties
- * files.</li>
+ * files, or later via a dedicated GUI tool.</li>
  *
  * <li><code>"Minimum number of pixels per interline"</code> is the constant
  * description, which will be used as a tool tip in the GUI interface in charge
@@ -93,7 +97,7 @@ import java.util.*;
  * is closed. Doing so, the disk values are always kept in synch with the
  * program values, <b>provided the application is normally closed rather than
  * killed</b>. It can also be stored programmatically by calling the
- * <code>storeResource</code> method.
+ * {@link #storeResource} method.
  *
  * <p> Only the USER property file is written, the SOURCE values in the source
  * code, or the potential overriding DEFAULT values, are not altered. Moreover,
@@ -105,6 +109,7 @@ import java.util.*;
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
+@ThreadSafe
 public class ConstantManager
 {
     //~ Static fields/initializers ---------------------------------------------
@@ -113,32 +118,158 @@ public class ConstantManager
     private static final Logger logger = Logger.getLogger(
         ConstantManager.class);
 
-    /** Default properties */
-    private static Properties defaultProperties = new Properties();
-
     /** Default properties file name */
-    private static String DEFAULT_FILE_NAME = "run.default.properties";
-
-    /** User properties */
-    private static volatile Properties userProperties = null;
+    private static final String DEFAULT_FILE_NAME = "run.default.properties";
 
     /** User properties file name */
-    private static String USER_FILE_NAME = System.getProperty("user.home") +
-                                           (Main.MAC_OS_X
-                                            ? "/Library/Preferences/Audiveris/run.properties"
-                                            : "/.audiveris/run.properties");
+    private static final String USER_FILE_NAME = System.getProperty(
+        "user.home") +
+                                                 (Main.MAC_OS_X
+                                                  ? "/Library/Preferences/Audiveris/run.properties"
+                                                  : "/.audiveris/run.properties");
+
+    /** The singleton */
+    private static final ConstantManager INSTANCE = new ConstantManager();
+
+    //~ Instance fields --------------------------------------------------------
+
+    /**
+     * Map of all constants created in the application, regardless whether these
+     * constants are enclosed in a ConstantSet or defined as standalone entities
+     */
+    protected final ConcurrentHashMap<String, Constant> constants = new ConcurrentHashMap<String, Constant>();
+
+    /** Default properties */
+    private final DefaultHolder defaultHolder = new DefaultHolder(
+        new File(Main.getConfigFolder(), DEFAULT_FILE_NAME));
+
+    /** User properties */
+    private final UserHolder userHolder = new UserHolder(
+        new File(USER_FILE_NAME),
+        defaultHolder);
 
     //~ Constructors -----------------------------------------------------------
 
     //-----------------//
     // ConstantManager //
     //-----------------//
-    // Not meant to be instantiated, we stay static
     private ConstantManager ()
     {
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the singleton of this class
+     * @return the only ConstantManager instance
+     */
+    public static ConstantManager getInstance ()
+    {
+        return INSTANCE;
+    }
+
+    //------------------//
+    // getAllProperties //
+    //------------------//
+    /**
+     * Report the whole collection of properties (coming from DEFAULT and USER
+     * sources) backed up on disk
+     * @return the collection of constant properties
+     */
+    public Collection<String> getAllProperties ()
+    {
+        SortedSet<String> props = new TreeSet<String>(defaultHolder.getKeys());
+        props.addAll(userHolder.getKeys());
+
+        return props;
+    }
+
+    //----------------------------//
+    // getUnusedDefaultProperties //
+    //----------------------------//
+    /**
+     * Report the collection of DEFAULT properties that do not relate to any
+     * known application Constant
+     * @return the potential old stuff in DEFAULT properties
+     */
+    public Collection<String> getUnusedDefaultProperties ()
+    {
+        return defaultHolder.getUnusedKeys();
+    }
+
+    //-------------------------//
+    // getUnusedUserProperties //
+    //-------------------------//
+    /**
+     * Report the collection of USER properties that do not relate to any
+     * known application Constant
+     * @return the potential old stuff in USER properties
+     */
+    public Collection<String> getUnusedUserProperties ()
+    {
+        return userHolder.getUnusedKeys();
+    }
+
+    //-----------------------------//
+    // getUselessDefaultProperties //
+    //-----------------------------//
+    /**
+     * Report the collection of used DEFAULT properties but whose content is
+     * equal to the source value (and are thus useless)
+     * @return the useless items in DEFAULT properties
+     */
+    public Collection<String> getUselessDefaultProperties ()
+    {
+        return defaultHolder.getUselessKeys();
+    }
+
+    //-------------//
+    // addConstant //
+    //-------------//
+    /**
+     * Register a brand new constant with a provided name to retrieve
+     * a predefined value loaded from disk backup if any
+     * @param constant the Constant instance to register
+     * @return the loaded value if any, otherwise null
+     */
+    public String addConstant (String   qName,
+                               Constant constant)
+    {
+        if (qName == null) {
+            throw new IllegalArgumentException(
+                "Attempt to add a constant with no qualified name");
+        }
+
+        Constant old = constants.putIfAbsent(qName, constant);
+
+        if ((old != null) && (old != constant)) {
+            throw new IllegalArgumentException(
+                "Attempt to duplicate constant " + qName);
+        }
+
+        return userHolder.getProperty(qName);
+    }
+
+    //----------------//
+    // removeConstant //
+    //----------------//
+    /**
+     * Remove a constant
+     * @param constant the constant to remove
+     * @return the removed Constant, or null if not found
+     */
+    public Constant removeConstant (Constant constant)
+    {
+        if (constant.getQualifiedName() == null) {
+            throw new IllegalArgumentException(
+                "Attempt to remove a constant with no qualified name defined");
+        }
+
+        return constants.remove(constant.getQualifiedName());
+    }
 
     //---------------//
     // storeResource //
@@ -148,182 +279,229 @@ public class ConstantManager
      * specifically, only the values set OUTSIDE the original Default parts are
      * stored, and they are stored in the user property file.
      */
-    public static void storeResource ()
+    public void storeResource ()
     {
-        // First purge USER properties that are equal to DEFAULT properties
-        purgeUserProperties();
-
-        // Then, save the remaining USER values
-        try {
-            if (logger.isFineEnabled()) {
-                logger.fine("Store constants into " + USER_FILE_NAME);
-            }
-
-            // First make sure the directory exists (Brenton patch)
-            if (new File(USER_FILE_NAME).getParentFile()
-                                        .mkdirs()) {
-                logger.info("Creating " + USER_FILE_NAME);
-            }
-
-            // Then write down the user properties
-            FileOutputStream out = new FileOutputStream(USER_FILE_NAME);
-            userProperties.store(
-                out,
-                " User Audiveris run properties file. Do not edit");
-            out.close();
-        } catch (FileNotFoundException ex) {
-            logger.warning(
-                "User property file " + USER_FILE_NAME +
-                " not found or not writable");
-        } catch (IOException ex) {
-            logger.warning(
-                "Error while storing the User property file " + USER_FILE_NAME);
-        }
+        userHolder.store();
     }
 
-    //-------------//
-    // setProperty //
-    //-------------//
-    /**
-     * Meant to be called by <code>Constant</code> class, to update the property
-     * value that relates to the given constant.
-     *
-     * @param qualifiedName name of the constant
-     * @param val           the new value
-     */
-    static void setProperty (String qualifiedName,
-                             String val)
-    {
-        getUserProperties()
-            .setProperty(qualifiedName, val);
-    }
-
-    //-------------//
-    // getProperty //
-    //-------------//
-    /**
-     * Meant to be called by <code>Constant</code> class, to retrieve the
-     * property value that relates to the constant.
-     *
-     * @param qualifiedName name of the constant
-     *
-     * @return the property value as a string
-     */
-    static String getProperty (String qualifiedName)
-    {
-        return getUserProperties()
-                   .getProperty(qualifiedName);
-    }
+    //~ Inner Classes ----------------------------------------------------------
 
     //----------------//
-    // removeProperty //
+    // AbstractHolder //
     //----------------//
-    static void removeProperty (String qualifiedName)
+    private class AbstractHolder
     {
-        getUserProperties()
-            .remove(qualifiedName);
-    }
+        //~ Instance fields ----------------------------------------------------
 
-    //-------------------//
-    // getUserProperties //
-    //-------------------//
-    /**
-     * Make sure the properties have been loaded
-     *
-     * @return The global properties
-     */
-    public static Properties getUserProperties ()
-    {
-        if (userProperties == null) {
-            synchronized (ConstantManager.class) {
-                if (userProperties == null) {
-                    loadResource();
+        protected final File file;
+        protected Properties properties;
+
+        //~ Constructors -------------------------------------------------------
+
+        public AbstractHolder (File file)
+        {
+            this.file = file;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        public Collection<String> getKeys ()
+        {
+            Collection<String> strings = new ArrayList<String>();
+
+            for (Object obj : properties.keySet()) {
+                strings.add((String) obj);
+            }
+
+            return strings;
+        }
+
+        public String getProperty (String key)
+        {
+            return properties.getProperty(key);
+        }
+
+        public Collection<String> getUnusedKeys ()
+        {
+            SortedSet<String> props = new TreeSet<String>();
+
+            for (Object obj : properties.keySet()) {
+                if (!constants.containsKey(obj)) {
+                    props.add((String) obj);
                 }
+            }
+
+            return props;
+        }
+
+        public Collection<String> getUselessKeys ()
+        {
+            SortedSet<String> props = new TreeSet<String>();
+
+            for (Entry<Object, Object> entry : properties.entrySet()) {
+                Constant constant = constants.get(entry.getKey());
+
+                if ((constant != null) &&
+                    constant.getDefaultString()
+                            .equals(entry.getValue())) {
+                    props.add((String) entry.getKey());
+                }
+            }
+
+            return props;
+        }
+
+        public void load ()
+        {
+            try {
+                FileInputStream in = new FileInputStream(file);
+                properties.load(in);
+                in.close();
+
+//                System.out.println(
+//                    Thread.currentThread().getName() + ": " +
+//                    "Loaded constants from " + file.getAbsolutePath());
+            } catch (FileNotFoundException ex) {
+                // This is not at all a fatal error, let the user know this.
+                logger.info(
+                    "[" + ConstantManager.class.getName() + "]" +
+                    " No property file " + file);
+            } catch (IOException ex) {
+                logger.severe(
+                    "Error loading constants file " + file.getAbsolutePath());
             }
         }
 
-        return userProperties;
-    }
-    public static Properties getDefaultProperties ()
-    {
-        if (defaultProperties == null) {
-            synchronized (ConstantManager.class) {
-                if (defaultProperties == null) {
-                    loadResource();
+        public void store ()
+        {
+            // First purge properties
+            cleanup();
+
+            // Then, save the remaining values
+            try {
+                if (logger.isFineEnabled()) {
+                    logger.fine("Store constants into " + file);
                 }
+
+                // First make sure the directory exists (Brenton patch)
+                if (file.getParentFile()
+                        .mkdirs()) {
+                    logger.info("Creating " + file);
+                }
+
+                // Then write down the properties
+                FileOutputStream out = new FileOutputStream(file);
+                properties.store(
+                    out,
+                    " Audiveris properties file. Do not edit");
+                out.close();
+            } catch (FileNotFoundException ex) {
+                logger.warning(
+                    "Property file " + file.getAbsolutePath() +
+                    " not found or not writable");
+            } catch (IOException ex) {
+                logger.warning(
+                    "Error while storing the property file " +
+                    file.getAbsolutePath());
             }
         }
 
-        return defaultProperties;
+        protected void cleanup ()
+        {
+        }
     }
 
-    //--------------//
-    // loadResource //
-    //--------------//
+    //---------------//
+    // DefaultHolder //
+    //---------------//
+    private class DefaultHolder
+        extends AbstractHolder
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public DefaultHolder (File file)
+        {
+            super(file);
+            properties = new Properties();
+            load();
+        }
+    }
+
+    //------------//
+    // UserHolder //
+    //------------//
     /**
      * Triggers the loading of property files, first the default, then the user
      * values if any. Any modification made at run-time will be saved in the
      * user part.
      */
-    private static void loadResource ()
+    private class UserHolder
+        extends AbstractHolder
     {
-        // Load DEFAULT properties from the config folder
-        File defaultFile = new File(Main.getConfigFolder(), DEFAULT_FILE_NAME);
+        //~ Instance fields ----------------------------------------------------
 
-        try {
-            ///System.out.println("Loading default constants from " + defaultFile.getAbsolutePath() + "...");
-            InputStream in = new FileInputStream(defaultFile);
-            defaultProperties.load(in);
-            in.close();
+        private final AbstractHolder defaultHolder;
 
-            ///logger.info("Loaded default constants from " + defaultFile);
-        } catch (Exception ex) {
-            logger.severe("Error while loading DEFAULT file " + defaultFile);
+        //~ Constructors -------------------------------------------------------
+
+        public UserHolder (File           file,
+                           AbstractHolder defaultHolder)
+        {
+            super(file);
+            this.defaultHolder = defaultHolder;
+            properties = new Properties(defaultHolder.properties);
+            load();
         }
 
-        // Create program properties with default properties as default
-        userProperties = new Properties(defaultProperties);
+        //~ Methods ------------------------------------------------------------
 
-        // Now load properties from last invocation, if any
-        try {
-            FileInputStream in = new FileInputStream(USER_FILE_NAME);
-            userProperties.load(in);
-            in.close();
+        /**
+         * Remove from the USER collection the properties that are already in
+         * the DEFAULT collection with identical value, and insert properties
+         * that need to reflect the current values which differ from DEFAULT or
+         * from source.
+         */
+        @Override
+        public void cleanup ()
+        {
+            // Browse all constant entries
+            for (Entry<String, Constant> entry : constants.entrySet()) {
+                final String   key = entry.getKey();
+                final Constant constant = entry.getValue();
 
-            ///logger.info("Loaded user constants from file " + USER_FILE_NAME);
-        } catch (FileNotFoundException ex) {
-            // This is not at all a fatal error, let the user know this.
-            logger.info(
-                "[" + ConstantManager.class.getName() + "]" +
-                " No User property file " + USER_FILE_NAME);
-        } catch (IOException ex) {
-            logger.severe(
-                "Error while loading the User property file " + USER_FILE_NAME);
-        }
-    }
+                final String   current = constant.getCurrentString();
+                final String   def = defaultHolder.getProperty(key);
+                final String   source = constant.getDefaultString();
 
-    //---------------------//
-    // purgeUserProperties //
-    //---------------------//
-    private static void purgeUserProperties ()
-    {
-        // Browse the content of userProperties
-        for (Iterator it = userProperties.keySet()
-                                         .iterator(); it.hasNext();) {
-            java.lang.String key = (java.lang.String) it.next();
+                //                logger.info(
+                //                    constant.getQualifiedName() + " source:" +
+                //                    constant.getDefaultString() + " current:" +
+                //                    constant.getCurrentString());
+                if ((def != null) && current.equals(def)) {
+                    if (properties.remove(key) != null) {
+                        if (logger.isFineEnabled()) {
+                            logger.fine(
+                                "Removing User value for key: " + key + " = " +
+                                current);
+                        }
+                    }
+                } else if (!current.equals(source)) {
+                    if (logger.isFineEnabled()) {
+                        logger.fine(
+                            "Writing User value for key: " + key + " = " +
+                            current);
+                    }
 
-            // Does this key exist and with same value in USER & DEFAULT parts
-            java.lang.String value = userProperties.getProperty(key);
-            java.lang.String defaultValue = defaultProperties.getProperty(key);
-
-            if ((defaultValue != null) && value.equals(defaultValue)) {
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "Removing identical User" +
-                        " and Default value for key : " + key + " = " + value);
+                    properties.setProperty(key, current);
+                } else {
+                    if (properties.remove(key) != null) {
+                        if (logger.isFineEnabled()) {
+                            logger.fine(
+                                "Removing User value for key: " + key + " = " +
+                                current);
+                        }
+                    }
                 }
-
-                it.remove();
             }
         }
     }

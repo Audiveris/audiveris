@@ -11,14 +11,10 @@ package omr.constant;
 
 import omr.ui.treetable.JTreeTable;
 
-import omr.util.Logger;
-
 import java.awt.*;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumnModel;
+import javax.swing.table.*;
 import javax.swing.tree.TreePath;
 
 /**

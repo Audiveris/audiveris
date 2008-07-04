@@ -10,8 +10,7 @@
 package omr.constant;
 
 import java.util.Comparator;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * Class <code>PackageNode</code> represents a package in the hierarchy of
@@ -31,7 +30,7 @@ public class PackageNode
      * The children, composed of either other <code>PackageNode</code> or
      * <code>ConstantSet</code>.
      */
-    private final SortedSet<Node> children = new TreeSet<Node>(
+    private final ConcurrentSkipListSet<Node> children = new ConcurrentSkipListSet<Node>(
         new Comparator<Node>() {
                 public int compare (Node n1,
                                     Node n2)

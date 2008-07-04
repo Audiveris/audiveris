@@ -12,6 +12,10 @@ package omr.constant;
 import omr.util.Implement;
 import omr.util.Logger;
 
+import net.jcip.annotations.ThreadSafe;
+
+import java.util.concurrent.atomic.AtomicReference;
+
 /**
  * This abstract class handles the mapping between one application variable and
  * a property name and value. It is meant essentially to handle any kind of
@@ -22,15 +26,17 @@ import omr.util.Logger;
  * the current value of any given Constant is determined at run-time.
  *
  * <p> The class <code>Constant</code> is not meant to be used directly (it is
- * abstract), but rather through any of its subclasses :
+ * abstract), but rather through any of its subclasses:
  *
- * <ul> <li> {@link Constant.Boolean} </li> <li> {@link Constant.Color}
- * </li> <li> {@link Constant.Double} </li> <li> {@link Constant.Integer}
- * </li> <li> {@link Constant.String} </li> </ul> </p>
+ * <ul> <li> {@link Constant.Angle} </li> <li> {@link Constant.Boolean} </li>
+ * <li> {@link Constant.Color} </li> <li> {@link Constant.Double} </li> <li>
+ * {@link Constant.Integer} </li> <li> {@link Constant.Ratio} </li>
+ * <li> {@link Constant.String} </li> </ul> </p>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
+@ThreadSafe
 public abstract class Constant
 {
     //~ Static fields/initializers ---------------------------------------------
@@ -40,32 +46,38 @@ public abstract class Constant
 
     //~ Instance fields --------------------------------------------------------
 
+    // Data assigned at construction time
+    //-----------------------------------
+
+    /** Unit (if relevant) used by the quantity measured */
+    private final java.lang.String quantityUnit;
+
     /** Default value to be used if needed */
     private final java.lang.String defaultString;
 
     /** Semantic */
     private final java.lang.String description;
 
-    /** Initial Value (for reset) */
-    private java.lang.String initialString;
+    // Data assigned at ConstantSet initMap time
+    //------------------------------------------
 
-    /** Constant name */
-    private java.lang.String name;
-
-    /** Fully qualified Constant name */
-    private java.lang.String qualifiedName;
-
-    /** Unit (if relevant) of the quantity measured */
-    private java.lang.String quantityUnit;
-
-    /** Requiring unit (module) */
+    /** Enclosing unit (module) */
     private java.lang.String unit;
 
-    /** Current Value */
-    private volatile java.lang.String currentString;
+    /** Name of the Constant */
+    private volatile java.lang.String name;
 
-    /** Current Value (optimized) */
-    private volatile Object cachedValue;
+    /** Fully qualified Constant name (unit.name) */
+    private volatile java.lang.String qualifiedName;
+
+    // Data modified at any time
+    //--------------------------
+
+    /** Initial Value (used for reset) Assigned once */
+    private java.lang.String initialString;
+
+    /** Current data */
+    private AtomicReference<Tuple> tuple = new AtomicReference<Tuple>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -77,37 +89,67 @@ public abstract class Constant
      * external property is not yet defined.
      *
      * @param quantityUnit  Unit used as base for measure, if relevant
-     * @param defaultString Default value, expressed in a string literal
+     * @param defaultString Default value, expressed by a string literal which
+     * cannot be null
      * @param description A quick description of the purpose of this constant
      */
     protected Constant (java.lang.String quantityUnit,
                         java.lang.String defaultString,
                         java.lang.String description)
     {
-        this.quantityUnit = quantityUnit;
-        this.description = description;
-        this.defaultString = defaultString;
+        if (defaultString == null) {
+            logger.warning(
+                "*** Constant with no defaultString. Description: " +
+                description);
+            throw new IllegalArgumentException(
+                "Any constant must have a default String");
+        }
 
-        // Pure debugging (which cannot use Debug ...)
-        //         System.out.println("new Constant" +
-        //                            " quantityUnit=" + quantityUnit +
-        //                            " defaultString=" + defaultString +
-        //                            " description=" + description);
+        this.quantityUnit = quantityUnit;
+        this.defaultString = defaultString;
+        this.description = description;
+
+        //        System.out.println(
+        //            Thread.currentThread().getName() + ": " + "-- Creating Constant: " +
+        //            description);
     }
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------//
-    // setValue //
-    //----------//
+    //------------------//
+    // getCurrentString //
+    //------------------//
     /**
-     * Allows to modify the current value of the constant; This abstract method
-     * is actually defined in each subclass, to enforce validation of the
-     * provided string with respect to the target constant type.
+     * Get the current value, as a String type. This is package private.
      *
-     * @param string the new value, as a string to be checked
+     * @return the String view of the value
      */
-    public abstract void setValue (java.lang.String string);
+    public java.lang.String getCurrentString ()
+    {
+        return getTuple().currentString;
+    }
+
+    //------------------//
+    // getDefaultString //
+    //------------------//
+    public java.lang.String getDefaultString ()
+    {
+        return defaultString;
+    }
+
+    //----------------//
+    // isDefaultValue //
+    //----------------//
+    /**
+     * Report whether the current constant value is the default one (not altered
+     * by either properties read from disk, of value changed later
+     * @return true if still the default, false otherwise
+     */
+    public boolean isDefaultValue ()
+    {
+        return getCurrentString()
+                   .equals(defaultString);
+    }
 
     //----------------//
     // getDescription //
@@ -133,13 +175,10 @@ public abstract class Constant
      *
      * @return The modification status
      */
-    public synchronized boolean isModified ()
+    public boolean isModified ()
     {
-        if (currentString == null) {
-            return false;
-        } else {
-            return !currentString.equals(initialString);
-        }
+        return !getCurrentString()
+                    .equals(initialString);
     }
 
     //---------//
@@ -150,7 +189,7 @@ public abstract class Constant
      *
      * @return the constant name
      */
-    public synchronized java.lang.String getName ()
+    public java.lang.String getName ()
     {
         return name;
     }
@@ -163,7 +202,7 @@ public abstract class Constant
      *
      * @return the constant qualified name
      */
-    public synchronized java.lang.String getQualifiedName ()
+    public java.lang.String getQualifiedName ()
     {
         return qualifiedName;
     }
@@ -185,7 +224,7 @@ public abstract class Constant
     // getShortTypeName //
     //------------------//
     /**
-     * Report the last part of the type name of the constant
+     * Report the very last part of the type name of the constant
      *
      * @return the type name (last part)
      */
@@ -204,44 +243,84 @@ public abstract class Constant
         }
     }
 
+    //----------//
+    // setValue //
+    //----------//
+    /**
+     * Modify the current value of the constant; this abstract method is
+     * actually defined in each subclass, to enforce validation of the provided
+     * string with respect to the target constant type.
+     *
+     * @param string the new value, as a string to be checked
+     */
+    public abstract void setValue (java.lang.String string);
+
+    //---------//
+    // setUnit //
+    //---------//
+    /**
+     * (package access) Allows to record the unit and name of the constant
+     *
+     * @param unit the unit (class name) this constant belongs to
+     * @param name the constant name
+     */
+    public void setUnitAndName (java.lang.String unit,
+                                java.lang.String name)
+    {
+        //        System.out.println(
+        //            Thread.currentThread().getName() + ": " + "Assigning unit:" + unit +
+        //            " name:" + name);
+        this.unit = unit;
+        this.name = name;
+
+        final java.lang.String qName = (unit != null) ? (unit + "." + name) : name;
+
+        // We can now try to register that constant
+        try {
+            java.lang.String prop = ConstantManager.getInstance()
+                                                   .addConstant(qName, this);
+
+            // Now we can assign a first current value
+            if (prop != null) {
+                // Use property value
+                setTuple(prop, decode(prop));
+            } else {
+                // Use source value
+                setTuple(defaultString, decode(defaultString));
+            }
+
+            // Very last thing
+            qualifiedName = qName;
+
+            //            System.out.println(
+            //                Thread.currentThread().getName() + ": " + "Done unit:" + unit +
+            //                " name:" + name);
+        } catch (Exception ex) {
+            logger.warning("Error registering constant " + qName, ex);
+        }
+    }
+
     //--------//
     // remove //
     //--------//
     /**
      * Remove a given constant from memory
      */
-    public synchronized void remove ()
+    public void remove ()
     {
-        // Remove the underlying property
-        ConstantManager.removeProperty(qualifiedName);
+        ConstantManager.getInstance()
+                       .removeConstant(this);
     }
 
     //-------//
     // reset //
     //-------//
     /**
-     * Forget any modification eventually made, and reset to the initial value.
+     * Forget any modification made, and reset to the initial value.
      */
     public void reset ()
     {
-        setString(initialString);
-    }
-
-    //-----------//
-    // toBoolean //
-    //-----------//
-    /**
-     * Gets the current value, as a boolean type.
-     *
-     * @return the boolean view of the value
-     */
-    public boolean toBoolean ()
-    {
-        if (cachedValue == null) {
-            cachedValue = java.lang.Boolean.valueOf(getCurrentString());
-        }
-
-        return ((java.lang.Boolean) cachedValue).booleanValue();
+        setTuple(initialString, decode(initialString));
     }
 
     //----------//
@@ -259,266 +338,98 @@ public abstract class Constant
         return name;
     }
 
-    //-----------//
-    // setString //
-    //-----------//
+    //--------//
+    // decode //
+    //--------//
     /**
-     * Modifies the current parameter value, with no validity check of the
-     * string
-     *
-     * @param val The new value (as a string)
+     * Convert a given string to the proper object value, as implemented by each
+     * subclass
+     * @param str the encoded string
+     * @return the decoded object
      */
-    protected synchronized void setString (java.lang.String val)
+    protected abstract Object decode (java.lang.String str);
+
+    //----------------//
+    // getCachedValue //
+    //----------------//
+    /**
+     * Report the current value of the constant
+     * @return the (cached) current value
+     */
+    protected Object getCachedValue ()
+    {
+        return getTuple().cachedValue;
+    }
+
+    //----------//
+    // setTuple //
+    //----------//
+    /**
+     * Modifies the current parameter data in an atomic way, and remember the
+     * very first value (the initial string).
+     *
+     * @param str The new value (as a string)
+     * @param val The new value (as an object)
+     */
+    protected void setTuple (java.lang.String str,
+                             Object           val)
+    {
+        while (true) {
+            Tuple old = tuple.get();
+            Tuple temp = new Tuple(str, val);
+
+            if (old == null) {
+                if (tuple.compareAndSet(null, temp)) {
+                    initialString = str;
+
+                    return;
+                }
+            } else {
+                tuple.set(temp);
+
+                return;
+            }
+        }
+    }
+
+    //----------//
+    // getTuple //
+    //----------//
+    /**
+     * Report the current tuple data, which may imply to trigger the assignment
+     * of qualified name to the constant, in order to get property data
+     * @return the current tuple data
+     */
+    private Tuple getTuple ()
     {
         checkInitialized();
 
-        currentString = val;
-        cachedValue = null; // To force update
-
-        // Update the underlying property
-        if (qualifiedName != null) {
-            ConstantManager.setProperty(qualifiedName, val);
-        } else {
-            System.out.println(
-                "*** Constant " + this + " Cannot setString " + val);
-        }
-    }
-
-    //--------//
-    // toByte //
-    //--------//
-    /**
-     * Gets the current value, as a byte type.
-     *
-     * @return the byte view of the value
-     */
-    protected byte toByte ()
-    {
-        if (cachedValue == null) {
-            cachedValue = new Byte(getCurrentString());
-        }
-
-        return ((Byte) cachedValue).byteValue();
-    }
-
-    //--------//
-    // toChar //
-    //--------//
-    /**
-     * Gets the current value, as a character type.
-     *
-     * @return the character view of the value
-     */
-    protected char toChar ()
-    {
-        if (cachedValue == null) {
-            cachedValue = Character.valueOf(getCurrentString().charAt(0));
-        }
-
-        return ((Character) cachedValue).charValue();
-    }
-
-    //---------//
-    // toColor //
-    //---------//
-    /**
-     * Gets the current value, as a Color type.
-     *
-     * @return the Color view of the value, which can be null
-     */
-    protected java.awt.Color toColor ()
-    {
-        if (cachedValue == null) {
-            java.lang.String str = getCurrentString();
-
-            if (str != null) {
-                cachedValue = java.awt.Color.decode(str);
-            }
-        }
-
-        return (java.awt.Color) cachedValue;
-    }
-
-    //----------//
-    // toDouble //
-    //----------//
-    /**
-     * Gets the current value, as a double type.
-     *
-     * @return the double view of the value
-     */
-    protected double toDouble ()
-    {
-        if (cachedValue == null) {
-            java.lang.String cs = getCurrentString();
-
-            if (cs != null) {
-                cachedValue = new java.lang.Double(cs);
-            } else {
-                logger.warning(
-                    "toDouble. no currentString for " + this,
-                    new Throwable("toDouble stack"));
-            }
-        }
-
-        return ((java.lang.Double) cachedValue).doubleValue();
-    }
-
-    //---------//
-    // toFloat //
-    //---------//
-    /**
-     * Gets the current value, as a float type.
-     *
-     * @return the float view of the value
-     */
-    protected float toFloat ()
-    {
-        if (cachedValue == null) {
-            cachedValue = new Float(getCurrentString());
-        }
-
-        return ((Float) cachedValue).floatValue();
-    }
-
-    //-------//
-    // toInt //
-    //-------//
-    /**
-     * Gets the current value, as a int type.
-     *
-     * @return the int view of the value
-     */
-    protected int toInt ()
-    {
-        if (cachedValue == null) {
-            cachedValue = new java.lang.Integer(getCurrentString());
-        }
-
-        return ((java.lang.Integer) cachedValue).intValue();
-    }
-
-    //--------//
-    // toLong //
-    //--------//
-    /**
-     * Gets the current value, as a long type.
-     *
-     * @return the long view of the value
-     */
-    protected long toLong ()
-    {
-        if (cachedValue == null) {
-            cachedValue = new Long(getCurrentString());
-        }
-
-        return ((Long) cachedValue).longValue();
-    }
-
-    //---------//
-    // toShort //
-    //---------//
-    /**
-     * Gets the current value, as a short type.
-     *
-     * @return the short view of the value
-     */
-    protected short toShort ()
-    {
-        if (cachedValue == null) {
-            cachedValue = new Short(getCurrentString());
-        }
-
-        return ((Short) cachedValue).shortValue();
-    }
-
-    //------------------//
-    // getCurrentString //
-    //-----------------//
-    /**
-     * Gets the current value, as a String type. This is package private.
-     *
-     * @return the String view of the value
-     */
-    java.lang.String getCurrentString ()
-    {
-        if (currentString == null) {
-            synchronized (this) {
-                if (currentString == null) {
-                    checkInitialized();
-                    currentString = ConstantManager.getProperty(qualifiedName);
-
-                    if (currentString == null) { // Not defined by property files
-
-                        if (defaultString != null) {
-                            if (logger.isFineEnabled()) {
-                                logger.fine(
-                                    "Property " + qualifiedName + " = " +
-                                    currentString + " -> " + defaultString);
-                            }
-
-                            currentString = defaultString; // Use default
-                        }
-                    } else if (logger.isFineEnabled()) {
-                        logger.fine(
-                            "Property " + qualifiedName + " = " +
-                            currentString);
-                    }
-
-                    // Save this initial value string
-                    initialString = currentString;
-                }
-            }
-        }
-
-        return currentString;
-    }
-
-    //---------//
-    // setName //
-    //---------//
-    /**
-     * (package access) Allows to record the name of the constant
-     *
-     * @param name the constant name
-     */
-    synchronized void setName (java.lang.String name)
-    {
-        this.name = name;
-
-        if (unit != null) {
-            this.qualifiedName = unit + "." + name;
-        } else {
-            this.qualifiedName = name;
-        }
-    }
-
-    //---------//
-    // setUnit //
-    //---------//
-    /**
-     * (package access) Allows to record the containing unit of the constant
-     *
-     * @param unit the unit (class name) this constant belongs to
-     */
-    synchronized void setUnit (java.lang.String unit)
-    {
-        this.unit = unit;
-
-        if (name != null) {
-            name = unit + "." + name;
-        }
+        return tuple.get();
     }
 
     //------------------//
     // checkInitialized //
     //------------------//
+    /**
+     * Check the unit+name have been assigned to this constant object. They are
+     * mandatory to link the constant to the persistency mechanism.
+     */
     private final void checkInitialized ()
     {
+        int i = 0;
+
         // Make sure everything is initialized properly
-        if (name == null) {
+        while (qualifiedName == null) {
+            i++;
             UnitManager.getInstance()
                        .checkDirtySets();
+        }
+
+        // For monitoring/debugging only
+        if (i > 1) {
+            System.out.println(
+                "*** " + Thread.currentThread().getName() +
+                " checkInitialized loop:" + i);
         }
     }
 
@@ -528,7 +439,7 @@ public abstract class Constant
     // Angle //
     //-------//
     /**
-     * A subclass of Double, meant to store a angle (in radians).
+     * A subclass of Double, meant to store an angle (in radians).
      */
     public static class Angle
         extends Constant.Double
@@ -592,7 +503,7 @@ public abstract class Constant
          */
         public void setValue (boolean val)
         {
-            setString(java.lang.Boolean.toString(val));
+            setTuple(java.lang.Boolean.toString(val), val);
         }
 
         /**
@@ -602,7 +513,13 @@ public abstract class Constant
          */
         public boolean getValue ()
         {
-            return toBoolean();
+            return ((java.lang.Boolean) getCachedValue()).booleanValue();
+        }
+
+        @Override
+        protected Object decode (java.lang.String str)
+        {
+            return java.lang.Boolean.valueOf(str);
         }
     }
 
@@ -631,8 +548,7 @@ public abstract class Constant
                       java.lang.String description)
         {
             super(null, defaultValue, description);
-            setUnit(unit);
-            setName(name);
+            setUnitAndName(unit, name);
         }
 
         /**
@@ -680,9 +596,13 @@ public abstract class Constant
          */
         public void setValue (java.awt.Color val)
         {
-            // TBD : find a more readable format such as #RRGGBB
-            //setString(java.lang.Integer.toString(val.getRGB(), 16));
-            setString(java.lang.Integer.toString(val.getRGB()));
+            setTuple(
+                java.lang.String.format(
+                    "#%02x%02x%02x",
+                    val.getRed(),
+                    val.getGreen(),
+                    val.getBlue()),
+                val);
         }
 
         /**
@@ -692,7 +612,13 @@ public abstract class Constant
          */
         public java.awt.Color getValue ()
         {
-            return toColor();
+            return (java.awt.Color) getCachedValue();
+        }
+
+        @Override
+        protected Object decode (java.lang.String str)
+        {
+            return java.awt.Color.decode(str);
         }
     }
 
@@ -745,7 +671,7 @@ public abstract class Constant
          */
         public void setValue (double val)
         {
-            setString(java.lang.Double.toString(val));
+            setTuple(java.lang.Double.toString(val), val);
         }
 
         /**
@@ -755,7 +681,13 @@ public abstract class Constant
          */
         public double getValue ()
         {
-            return toDouble();
+            return ((java.lang.Double) getCachedValue()).doubleValue();
+        }
+
+        @Override
+        protected Object decode (java.lang.String str)
+        {
+            return new java.lang.Double(str);
         }
     }
 
@@ -808,7 +740,7 @@ public abstract class Constant
          */
         public void setValue (int val)
         {
-            setString(java.lang.Integer.toString(val));
+            setTuple(java.lang.Integer.toString(val), val);
         }
 
         /**
@@ -818,7 +750,13 @@ public abstract class Constant
          */
         public int getValue ()
         {
-            return toInt();
+            return (java.lang.Integer) getCachedValue();
+        }
+
+        @Override
+        protected Object decode (java.lang.String str)
+        {
+            return new java.lang.Integer(str);
         }
     }
 
@@ -871,8 +809,7 @@ public abstract class Constant
                        java.lang.String description)
         {
             this(defaultValue, description);
-            setUnit(unit);
-            setName(name);
+            setUnitAndName(unit, name);
         }
 
         /**
@@ -897,7 +834,7 @@ public abstract class Constant
         @Implement(Constant.class)
         public void setValue (java.lang.String val)
         {
-            setString(val);
+            setTuple(val, val);
         }
 
         /**
@@ -908,7 +845,48 @@ public abstract class Constant
          */
         public java.lang.String getValue ()
         {
-            return getCurrentString();
+            return (java.lang.String) getCachedValue();
+        }
+
+        @Override
+        protected Object decode (java.lang.String str)
+        {
+            return str;
+        }
+    }
+
+    //-------//
+    // Tuple //
+    //-------//
+    /**
+     * Class used to handle the tuple currentString + currentValue in an atomic
+     * way
+     */
+    private static class Tuple
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final java.lang.String currentString;
+        final Object           cachedValue;
+
+        //~ Constructors -------------------------------------------------------
+
+        public Tuple (java.lang.String currentString,
+                      Object           cachedValue)
+        {
+            /** Current string Value */
+            this.currentString = currentString;
+
+            /** Current cached Value (optimized) */
+            this.cachedValue = cachedValue;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public java.lang.String toString ()
+        {
+            return currentString;
         }
     }
 }
