@@ -12,7 +12,6 @@ package omr.glyph;
 
 import omr.Main;
 
-import omr.glyph.Glyph.TextType;
 import omr.glyph.ui.SymbolsEditor;
 
 import omr.score.entity.Note;
@@ -210,7 +209,7 @@ public class SymbolsBuilder
      *
      * @param glyphs the impacted glyphs
      * @param textType the type(role) of this textual element
-     * @param textContent the content as a string
+     * @param textContent the content as a string (if not empty)
      * @param record true if this task must be recorded
      */
     public void assignText (Collection<Glyph> glyphs,
@@ -220,8 +219,17 @@ public class SymbolsBuilder
     {
         // Do the job
         for (Glyph glyph : glyphs) {
-            glyph.setTextType(textType);
-            glyph.setTextContent(textContent);
+            // Assign text type
+            Sentence sentence = glyph.getSentence();
+
+            if (sentence != null) {
+                sentence.setTextType(textType);
+            }
+
+            // Assign text only if it is not empty
+            if ((textContent != null) && (textContent.length() > 0)) {
+                glyph.setTextContent(textContent);
+            }
         }
 
         // Record this task in the sheet script
@@ -335,6 +343,12 @@ public class SymbolsBuilder
                     glyph.getId());
             }
 
+            // If glyph is a compound, deassign also the parts
+            for (Glyph p : glyph.getParts()) {
+                assignGlyphShape(p, null, false);
+            }
+
+            // Deassign the glyph itself
             assignGlyphShape(glyph, null, false);
 
             break;
