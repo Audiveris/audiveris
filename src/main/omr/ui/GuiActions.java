@@ -42,6 +42,10 @@ import org.jdesktop.application.ResourceMap;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -136,10 +140,13 @@ public class GuiActions
     {
         if (optionsFrame == null) {
             // Preload constant units
-            UnitManager.getInstance(Main.class.getName());
+            UnitManager.getInstance()
+                       .preLoadUnits(Main.class.getName());
 
             optionsFrame = new JFrame();
             optionsFrame.setName("optionsFrame");
+            optionsFrame.setDefaultCloseOperation(
+                WindowConstants.DISPOSE_ON_CLOSE);
             optionsFrame.getContentPane()
                         .setLayout(new BorderLayout());
 
@@ -247,8 +254,29 @@ public class GuiActions
     @Action(enabledProperty = "browserSupported")
     public void showManual (ActionEvent e)
     {
-        WebBrowser.getBrowser()
-                  .launch(constants.operationUrl.getValue());
+        try {
+            File file = new File(
+                Main.getDocumentationFolder(),
+                constants.manualUrl.getValue());
+            logger.info("file=" + file);
+
+            URI uri = file.toURI();
+            logger.info("uri=" + uri);
+
+            URL url = uri.toURL();
+            logger.info("url=" + url);
+
+            String str = url + "?manual=operation";
+            ///str = "file:///u:/soft/audiveris/www/docs/manual/index.html?manual=operation";
+            ///str = "file:///u:/soft/audiveris";
+            str = "u:/soft/audiveris/www/docs/manual/index.html"; // BOF !!!
+            logger.info("str=" + str);
+
+            WebBrowser.getBrowser()
+                      .launch(str);
+        } catch (MalformedURLException ex) {
+            logger.warning("Error in documentation URL", ex);
+        }
     }
 
     //------------//
@@ -530,8 +558,8 @@ public class GuiActions
         Constant.String webSiteUrl = new Constant.String(
             "https://audiveris.dev.java.net",
             "URL of Audiveris home page");
-        Constant.String operationUrl = new Constant.String(
-            "https://audiveris.dev.java.net/nonav/docs/manual/index.html?manual=operation",
-            "URL of Audiveris operation manual");
+        Constant.String manualUrl = new Constant.String(
+            "/docs/manual/index.html",
+            "URL of local Audiveris manual");
     }
 }
