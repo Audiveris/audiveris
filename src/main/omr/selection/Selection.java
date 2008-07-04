@@ -14,6 +14,7 @@ import omr.constant.ConstantSet;
 
 import omr.util.Logger;
 
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -158,7 +159,7 @@ public class Selection
         if (logger.isFineEnabled()) {
             logger.fine(
                 indent() + this + hintString(hint) + notifyString(notify) +
-                " set to " + entity + " by " +
+                " set to " + getString(entity) + " by " +
                 new Throwable().getStackTrace()[2]);
         }
 
@@ -179,7 +180,7 @@ public class Selection
     {
         if (logger.isFineEnabled()) {
             logger.fine(
-                indent() + this + " " + entity + " read by " +
+                indent() + this + " " + getString(entity) + " read by " +
                 new Throwable().getStackTrace()[1]);
         }
 
@@ -487,6 +488,32 @@ public class Selection
         return sb.toString();
     }
 
+    //-----------//
+    // getString //
+    //-----------//
+    private String getString (Object entity)
+    {
+        if (entity instanceof Rectangle) {
+            Rectangle     r = (Rectangle) entity;
+            StringBuilder sb = new StringBuilder();
+            sb.append("Rect[x:")
+              .append(r.x)
+              .append(",y:")
+              .append(r.y)
+              .append(",w:")
+              .append(r.width)
+              .append(",h:")
+              .append(r.height)
+              .append("]");
+
+            return sb.toString();
+        } else if (entity != null) {
+            return entity.toString();
+        } else {
+            return "null";
+        }
+    }
+
     //------------//
     // hintString //
     //------------//
@@ -558,6 +585,14 @@ public class Selection
         {
             this.observer = observer;
             this.name = name;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public String toString ()
+        {
+            return "{SelectionObserver " + name + "}";
         }
     }
 }
