@@ -12,15 +12,16 @@ package omr.score.entity;
 import omr.score.Score;
 import omr.score.common.PagePoint;
 import omr.score.common.PageRectangle;
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 import omr.score.common.ScorePoint;
+import omr.score.common.ScoreRectangle;
 import omr.score.common.SystemPoint;
 import omr.score.common.SystemRectangle;
 import omr.score.common.UnitDimension;
 import static omr.score.ui.ScoreConstants.*;
 import omr.score.visitor.ScoreVisitor;
 
-import omr.sheet.PixelPoint;
-import omr.sheet.PixelRectangle;
 import omr.sheet.SystemInfo;
 
 import omr.util.Logger;
@@ -29,6 +30,7 @@ import omr.util.TreeNode;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Class <code>System</code> encapsulates a system in a score.
@@ -46,15 +48,30 @@ public class System
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(System.class);
 
+    //~ Enumerations -----------------------------------------------------------
+
+    /** Relative vertical position with respect to the system staves */
+    public enum StaffPosition {
+        //~ Enumeration constant initializers ----------------------------------
+
+
+        /** Above the first staff of the first (real)part */
+        above,
+        /** Somewhere within the staves of this system */
+        within, 
+        /** Below the last staff of the last part */
+        below;
+    }
+
     //~ Instance fields --------------------------------------------------------
 
     /** Id for debug */
     private final int id;
 
-    /** Top left corner of the system */
+    /** Top left corner of the system in the containing page */
     private PagePoint topLeft;
 
-    /** Actual display origin */
+    /** Actual display origin in the score view */
     private ScorePoint displayOrigin;
 
     /** Related info from sheet analysis */
@@ -68,6 +85,12 @@ public class System
 
     /** Duration of this system */
     private Integer actualDuration;
+
+    /** Flag the fact that data has been modified and view must be updated */
+    private AtomicBoolean systemDirty = new AtomicBoolean(false);
+
+    /** Contour of all system entities to be displayed, origin being topLeft */
+    private volatile SystemRectangle systemContour;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -133,21 +156,27 @@ public class System
     }
 
     //------------------//
-    // getContextString //
+    // getAndResetDirty //
     //------------------//
-    @Override
-    public String getContextString ()
+    public boolean getAndResetDirty ()
     {
-        return "S" + getId();
+        return systemDirty.getAndSet(false);
     }
 
-    //--------------//
-    // promoteChild //
-    //--------------//
-    public void promoteChild ()
+    //------------//
+    // setContour //
+    //------------//
+    public void setContour (SystemRectangle systemContour)
     {
-        TreeNode node = children.remove(children.size() - 1);
-        children.add(0, node);
+        this.systemContour = systemContour;
+    }
+
+    //------------//
+    // getContour //
+    //------------//
+    public SystemRectangle getContour ()
+    {
+        return systemContour;
     }
 
     //--------------//
@@ -181,6 +210,14 @@ public class System
     public UnitDimension getDimension ()
     {
         return dimension;
+    }
+
+    //----------//
+    // setDirty //
+    //----------//
+    public void setDirty ()
+    {
+        systemDirty.set(true);
     }
 
     //------------------//
@@ -238,28 +275,6 @@ public class System
             SystemPart part = (SystemPart) node;
 
             if (!part.isDummy()) {
-                return part;
-            }
-        }
-
-        return null;
-    }
-
-    //---------//
-    // getPart //
-    //---------//
-    /**
-     * Report the part with the provided id, if any
-     *
-     * @param id the id of the desired part
-     * @return the part found or null
-     */
-    public SystemPart getPart (int id)
-    {
-        for (TreeNode node : getParts()) {
-            SystemPart part = (SystemPart) node;
-
-            if (part.getId() == id) {
                 return part;
             }
         }
@@ -328,6 +343,42 @@ public class System
         }
 
         return lastTime;
+    }
+
+    //----------------//
+    // isLeftOfStaves //
+    //----------------//
+    /**
+     * Report whether the provided system point is on the left side of the
+     * staves (on left of the starting barline)
+     * @param sysPt the system point to check
+     * @return true if on left
+     */
+    public boolean isLeftOfStaves (SystemPoint sysPt)
+    {
+        return sysPt.x < 0;
+    }
+
+    //---------//
+    // getPart //
+    //---------//
+    /**
+     * Report the part with the provided id, if any
+     *
+     * @param id the id of the desired part
+     * @return the part found or null
+     */
+    public SystemPart getPart (int id)
+    {
+        for (TreeNode node : getParts()) {
+            SystemPart part = (SystemPart) node;
+
+            if (part.getId() == id) {
+                return part;
+            }
+        }
+
+        return null;
     }
 
     //-----------//
@@ -436,6 +487,36 @@ public class System
         return best;
     }
 
+    //------------------//
+    // getStaffPosition //
+    //------------------//
+    /**
+     * Report the vertical position of the provided system point with respect to
+     * the system staves
+     * @param sysPt the system point whose ordinate is to be checked
+     * @return the StaffPosition value
+     */
+    public StaffPosition getStaffPosition (SystemPoint sysPt)
+    {
+        Staff     firstStaff = getFirstRealPart()
+                                   .getFirstStaff();
+
+        PagePoint pagPt = toPagePoint(sysPt);
+
+        if (pagPt.y < firstStaff.getTopLeft().y) {
+            return StaffPosition.above;
+        }
+
+        Staff lastStaff = getLastPart()
+                              .getLastStaff();
+
+        if (pagPt.y > (lastStaff.getTopLeft().y + lastStaff.getHeight())) {
+            return StaffPosition.below;
+        } else {
+            return StaffPosition.within;
+        }
+    }
+
     //--------------//
     // getStartTime //
     //--------------//
@@ -505,6 +586,26 @@ public class System
     {
         actualDuration = null;
         startTime = null;
+    }
+
+    //------------------//
+    // fillMissingParts //
+    //------------------//
+    /**
+     * Check for missing parts in this system, and if needed create dummy parts
+     * filled with whole rests
+     */
+    public void fillMissingParts ()
+    {
+        // Check we have all the defined parts in this system
+        for (ScorePart scorePart : getScore()
+                                       .getPartList()) {
+            if (getPart(scorePart.getId()) == null) {
+                getFirstRealPart()
+                    .createDummyPart(scorePart.getId());
+                sortPartsOnId();
+            }
+        }
     }
 
     //--------//
@@ -694,8 +795,8 @@ public class System
     public ScorePoint toScorePoint (PagePoint pagPt)
     {
         return new ScorePoint(
-            (displayOrigin.x + pagPt.x) - topLeft.x,
-            (displayOrigin.y + pagPt.y) - topLeft.y);
+            displayOrigin.x + (pagPt.x - topLeft.x),
+            displayOrigin.y + (pagPt.y - topLeft.y));
     }
 
     //--------------//
@@ -713,6 +814,16 @@ public class System
     public ScorePoint toScorePoint (SystemPoint sysPt)
     {
         return toScorePoint(toPagePoint(sysPt));
+    }
+
+    //------------------//
+    // toScoreRectangle //
+    //------------------//
+    public ScoreRectangle toScoreRectangle (SystemRectangle sysRect)
+    {
+        ScorePoint org = toScorePoint(new SystemPoint(sysRect.x, sysRect.y));
+
+        return new ScoreRectangle(org.x, org.y, sysRect.width, sysRect.height);
     }
 
     //----------//
@@ -796,30 +907,26 @@ public class System
         PageRectangle pagRect = getScale()
                                     .toUnits(pixRect);
 
+        return toSystemRectangle(pagRect);
+    }
+
+    //-------------------//
+    // toSystemRectangle //
+    //-------------------//
+    /**
+     * Compute the system rectangle that correspond to a given page rectangle,
+     * which is basically a translation using the coordinates of the system
+     * topLeft corner.
+     *
+     * @param pagRect the rectangle in the page
+     * @return the system rectangle
+     */
+    public SystemRectangle toSystemRectangle (PageRectangle pagRect)
+    {
         return new SystemRectangle(
             pagRect.x - topLeft.x,
             pagRect.y - topLeft.y,
             pagRect.width,
             pagRect.height);
-    }
-
-    //------------------//
-    // fillMissingParts //
-    //------------------//
-    /**
-     * Check for missing parts in this system, and if needed create dummy parts
-     * filled with whole rests
-     */
-    public void fillMissingParts ()
-    {
-        // Check we have all the defined parts in this system
-        for (ScorePart scorePart : getScore()
-                                       .getPartList()) {
-            if (getPart(scorePart.getId()) == null) {
-                getFirstRealPart()
-                    .createDummyPart(scorePart.getId());
-                sortPartsOnId();
-            }
-        }
     }
 }
