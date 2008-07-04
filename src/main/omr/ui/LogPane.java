@@ -201,7 +201,7 @@ public class LogPane
 
         Constant.Integer msgQueueSize = new Constant.Integer(
             "Messages",
-            1000,
+            10000,
             "Size of message queue");
         Constant.Integer fontSize = new Constant.Integer(
             "Points",
