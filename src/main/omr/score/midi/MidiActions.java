@@ -20,7 +20,6 @@ import omr.score.MeasureRange;
 import omr.score.Score;
 import omr.score.ScoreManager;
 import static omr.score.midi.MidiAgent.Status.*;
-import omr.score.midi.MidiAgent.UnavailableException;
 import omr.score.ui.ScoreActions;
 import omr.score.ui.ScoreDependent;
 
@@ -66,9 +65,6 @@ public class MidiActions
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(MidiActions.class);
 
-    /** Singleton */
-    private static volatile MidiActions INSTANCE;
-
     //~ Instance fields --------------------------------------------------------
 
     // Companion Midi Agent
@@ -102,15 +98,7 @@ public class MidiActions
     //-------------//
     public static MidiActions getInstance ()
     {
-        if (INSTANCE == null) {
-            synchronized (MidiActions.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = new MidiActions();
-                }
-            }
-        }
-
-        return INSTANCE;
+        return Holder.INSTANCE;
     }
 
     //-----------------//
@@ -347,6 +335,22 @@ public class MidiActions
         }
     }
 
+    //----------//
+    // getAgent //
+    //----------//
+    private MidiAgent getAgent ()
+    {
+        if (agent == null) {
+            try {
+                agent = MidiAgent.getInstance();
+            } catch (Exception ex) {
+                logger.severe("Cannot get MidiAgent", ex);
+            }
+        }
+
+        return agent;
+    }
+
     //-----------------//
     // getCurrentScore //
     //-----------------//
@@ -363,22 +367,6 @@ public class MidiActions
         } else {
             return sheet.getScore();
         }
-    }
-
-    //----------//
-    // getAgent //
-    //----------//
-    private MidiAgent getAgent ()
-    {
-        if (agent == null) {
-            try {
-                agent = MidiAgent.getInstance();
-            } catch (UnavailableException ex) {
-                logger.severe("Cannot get MidiAgent", ex);
-            }
-        }
-
-        return agent;
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -462,7 +450,7 @@ public class MidiActions
                     MidiAgent agent = MidiAgent.getInstance();
                     agent.setScore(score);
                     agent.play(measureRange);
-                } catch (UnavailableException ex) {
+                } catch (Exception ex) {
                     logger.warning("Cannot play", ex);
                 }
             }
@@ -565,5 +553,15 @@ public class MidiActions
         Constant.String defaultMidiDirectory = new Constant.String(
             "",
             "Default directory for writing Midi files");
+    }
+
+    //--------//
+    // Holder //
+    //--------//
+    private static class Holder
+    {
+        //~ Static fields/initializers -----------------------------------------
+
+        public static final MidiActions INSTANCE = new MidiActions();
     }
 }

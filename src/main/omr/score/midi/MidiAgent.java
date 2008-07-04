@@ -49,9 +49,6 @@ public class MidiAgent
     /** Type used when writing Midi files */
     public static final int MIDI_FILE_TYPE = 1;
 
-    /** The only instance of this class */
-    private static volatile MidiAgent INSTANCE;
-
     //~ Enumerations -----------------------------------------------------------
 
     /**
@@ -99,10 +96,8 @@ public class MidiAgent
      * Create a Midi Agent
      *
      * @param score the related score
-     * @exception MidiUnavailableException if Midi resources can't be found
      */
     private MidiAgent ()
-        throws MidiUnavailableException
     {
         player = new OmrPlayer();
         receiver = new MidiReceiver(this);
@@ -117,25 +112,11 @@ public class MidiAgent
     /**
      * Report the single instance of this singleton class (after creating it if
      * necessary)
-     * @return the single instance of MidiAgent
-     * @throws omr.score.midi.MidiAgent.UnavailableException
+     * @return the single instance of MidiAgent (or null if failed)
      */
     public static MidiAgent getInstance ()
-        throws UnavailableException
     {
-        if (INSTANCE == null) {
-            synchronized (MidiAgent.class) {
-                if (INSTANCE == null) {
-                    try {
-                        INSTANCE = new MidiAgent();
-                    } catch (MidiUnavailableException ex) {
-                        throw new UnavailableException(ex.getMessage());
-                    }
-                }
-            }
-        }
-
-        return INSTANCE;
+        return Holder.INSTANCE;
     }
 
     //----------//
@@ -282,7 +263,7 @@ public class MidiAgent
             if (logger.isFineEnabled()) {
                 logger.fine("Midi agent loaded.");
             }
-        } catch (MidiUnavailableException ex) {
+        } catch (Exception ex) {
             logger.warning("Could not preload the Midi Agent", ex);
         }
     }
@@ -447,22 +428,14 @@ public class MidiAgent
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //----------------------//
-    // UnavailableException //
-    //----------------------//
-    /**
-     * Specific exception class, to avoid the need for users to import Midi
-     * exception
-     */
-    public static class UnavailableException
-        extends MidiUnavailableException
+    //--------//
+    // Holder //
+    //--------//
+    private static class Holder
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Static fields/initializers -----------------------------------------
 
-        public UnavailableException (String message)
-        {
-            super(message);
-        }
+        public static final MidiAgent INSTANCE = new MidiAgent();
     }
 
     //-----------//
