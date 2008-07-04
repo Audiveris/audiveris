@@ -161,6 +161,30 @@ public class Logger
         setLevel(Level.parse(levelStr.toUpperCase()));
     }
 
+    //-----//
+    // log //
+    //-----//
+    /**
+     * Overridden version, just to insert the name of the calling thread
+     * @param level A message level identifier
+     * @param msg The string message
+     */
+    @Override
+    public void log (Level  level,
+                     String msg)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        if (constants.printThreadName.getValue()) {
+            sb.append(Thread.currentThread().getName())
+              .append(": ");
+        }
+
+        sb.append(msg);
+
+        super.log(level, sb.toString());
+    }
+
     //-----------//
     // logAssert //
     //-----------//
@@ -286,8 +310,11 @@ public class Logger
     {
         //~ Instance fields ----------------------------------------------------
 
-        Constant.Boolean printStackOnWarning = new Constant.Boolean(
+        final Constant.Boolean printStackOnWarning = new Constant.Boolean(
             false,
             "Should we print out the stack of any warning logged with exception?");
+        final Constant.Boolean printThreadName = new Constant.Boolean(
+            false,
+            "Should we print out the name of the originating thread?");
     }
 }
