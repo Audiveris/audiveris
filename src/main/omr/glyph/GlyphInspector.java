@@ -49,9 +49,6 @@ public class GlyphInspector
     /** Related glyph builder */
     private final GlyphsBuilder builder;
 
-    /** Underlying lag */
-    private final GlyphLag vLag;
-
     /** Predicate to filter only reliable symbols attached to a stem */
     private final Predicate<Glyph> reliableStemSymbols = new Predicate<Glyph>() {
         public boolean check (Glyph glyph)
@@ -83,8 +80,6 @@ public class GlyphInspector
     {
         this.sheet = sheet;
         this.builder = builder;
-
-        vLag = sheet.getVerticalLag();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -289,13 +284,21 @@ public class GlyphInspector
             Glyph compound = builder.buildCompound(neighbors);
 
             if (adapter.isValid(compound)) {
-                builder.insertGlyph(compound);
+                // If this compound duplicates an original glyph, 
+                // make sure the shape was not forbidden in the original
+                Glyph original = sheet.getVerticalLag()
+                                      .getOriginal(compound);
 
-                if (logger.isFineEnabled()) {
-                    logger.fine("Inserted compound " + compound);
+                if ((original == null) ||
+                    !original.isShapeForbidden(compound.getShape())) {
+                    compound = builder.insertGlyph(compound);
+
+                    if (logger.isFineEnabled()) {
+                        logger.fine("Inserted compound " + compound);
+                    }
+
+                    return compound;
                 }
-
-                return compound;
             }
         }
 
