@@ -32,10 +32,7 @@ import javax.swing.*;
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-public enum Shape
-{
-    //~ Static variables/initializers ------------------------------------------
-
+public enum Shape {
     // =========================================================================
     // Physical shapes, whose physical characteristics can be stored for
     // evaluator training.
@@ -43,396 +40,530 @@ public enum Shape
 
     // Garbage
     //
-        /*-----*/ NOISE("Too small stuff"),
-        /*-----*/ STRUCTURE("Structure of items"),
 
+    /*-----*/ NOISE("Too small stuff"),
+    /*-----*/ STRUCTURE("Structure of items"), 
     // Pure physical stuff
     //
-        /*-----*/ CLUTTER("Pure clutter"),
-        /*-----*/ DOT("General dot shape"),
-        /*-----*/ DASH("General dash shape"),
 
-        // Bars
-        //
-        /*1D109*/ DAL_SEGNO("Repeat from the sign"),
-        /*1D10A*/ DA_CAPO("Repeat from the beginning"),
-        /*1D10B*/ SEGNO("Sign"),
-        /*1D10C*/ CODA("Closing section"),
-        /*1D10D*/ // REPEATED_FIGURE_1,
-        /*1D10E*/ // REPEATED_FIGURE_2,
-        /*1D10F*/ // REPEATED_FIGURE_3,
-        /*1D110*/ FERMATA("Fermata"),
-        /*1D111*/ FERMATA_BELOW("Fermata Below"),
-        /*1D112*/ BREATH_MARK("Breath Mark"),
-        /*1D113*/ CAESURA("Caesura"),
-        /*1D114*/ BRACE("Brace"),
-        /*1D115*/ BRACKET("Bracket"),
+    /*-----*/ CLUTTER("Pure clutter"), 
+    /*-----*/ DOT("General dot shape"), 
+    /*-----*/ DASH("General dash shape"), 
+    /*-----*/ CHARACTER("A letter"), 
+    /*-----*/ TEXT("Sequence of letters & spaces"), 
+    // Bars
+    //
 
-        // Staves
-        //
-        /*1D116*/ // ONE_LINE_STAFF,
-        /*1D117*/ // TWO_LINE_STAFF,
-        /*1D118*/ // THREE_LINE_STAFF,
-        /*1D119*/ // FOUR_LINE_STAFF,
-        /*1D11A*/ // FIVE_LINE_STAFF,
-        /*1D11B*/ // SIX_LINE_STAFF,
+    /*1D109*/ DAL_SEGNO("Repeat from the sign"), 
+    /*1D10A*/ DA_CAPO("Repeat from the beginning"), 
+    /*1D10B*/ SEGNO("Sign"), 
+    /*1D10C*/ CODA("Closing section"), 
+    /*1D10D*/
+    // REPEATED_FIGURE_1,
+    /*1D10E*/
+    // REPEATED_FIGURE_2,
+    /*1D10F*/
+    // REPEATED_FIGURE_3,
 
-        // Tablature
-        //
-        /*1D11C*/ // SIX_STRING_FRETBOARD,
-        /*1D11D*/ // FOUR_STRING_FRETBOARD,
+    /*1D110*/ FERMATA("Fermata"), 
+    /*1D111*/ FERMATA_BELOW("Fermata Below"), 
+    /*1D112*/ BREATH_MARK("Breath Mark"), 
+    /*1D113*/ CAESURA("Caesura"), 
+    /*1D114*/ BRACE("Brace"), 
+    /*1D115*/ BRACKET("Bracket"), 
+    // Staves
+    //
+    /*1D116*/
+    // ONE_LINE_STAFF,
+    /*1D117*/
+    // TWO_LINE_STAFF,
+    /*1D118*/
+    // THREE_LINE_STAFF,
+    /*1D119*/
+    // FOUR_LINE_STAFF,
+    /*1D11A*/
+    // FIVE_LINE_STAFF,
+    /*1D11B*/
+    // SIX_LINE_STAFF,
 
-        // Clefs
-        //
-        /*1D11E*/ G_CLEF("Treble Clef"),
-        /*1D11F*/ G_CLEF_OTTAVA_ALTA("Ottava Alta"),
-        /*1D120*/ G_CLEF_OTTAVA_BASSA("Ottava Bassa"),
-        /*1D121*/ C_CLEF("Ut Clef"),
-        /*1D122*/ F_CLEF("Bass Clef"),
-        /*1D123*/ F_CLEF_OTTAVA_ALTA("Bass Clef Ottava Alta"),
-        /*1D124*/ F_CLEF_OTTAVA_BASSA("Bass Clef Ottava Bassa"),
-        /*1D125*/ // DRUM_CLEF_1,
-        /*1D126*/ // DRUM_CLEF_2,
+    // Tablature
+    //
+    /*1D11C*/
+    // SIX_STRING_FRETBOARD,
+    /*1D11D*/
+    // FOUR_STRING_FRETBOARD,
 
-        // Accidentals
-        //
-        /*1D127*/ FLAT("Minus one half step"),
-        /*1D128*/ NATURAL("Natural value"),
-        /*1D129*/ SHARP("Plus one half step"),
-        /*1D12A*/ DOUBLE_SHARP("Double Sharp"),
-        /*1D12B*/ DOUBLE_FLAT("Double Flat"),
-        /*1D12C*/ // FLAT_UP,
-        /*1D12D*/ // FLAT_DOWN,
-        /*1D12E*/ // NATURAL_UP,
-        /*1D12F*/ // NATURAL_DOWN,
-        /*1D130*/ // SHARP_UP,
-        /*1D131*/ // SHARP_DOWN,
-        /*1D132*/ // QUARTER_TONE_SHARP,
-        /*1D133*/ // QUARTER_TONE_FLAT,
+    // Clefs
+    //
 
-        // Time signatures
-        //
-        /*-----*/ TIME_ZERO("Digit 0"),
-        /*-----*/ TIME_ONE("Digit 1"),
-        /*-----*/ TIME_TWO("Digit 2"),
-        /*-----*/ TIME_THREE("Digit 3"),
-        /*-----*/ TIME_FOUR("Digit 4"),
-        /*-----*/ TIME_FIVE("Digit 5"),
-        /*-----*/ TIME_SIX("Digit 6"),
-        /*-----*/ TIME_SEVEN("Digit 7"),
-        /*-----*/ TIME_EIGHT("Digit 8"),
-        /*-----*/ TIME_NINE("Digit 9"),
-        /*-----*/ TIME_TWELVE("Number 12"),
-        /*-----*/ TIME_SIXTEEN("Number 16"),
-        /*-----*/ TIME_FOUR_FOUR("Rational 4/4"),
-        /*-----*/ TIME_TWO_TWO("Rational 2/2"),
-        /*-----*/ TIME_TWO_FOUR("Rational 2/4"),
-        /*-----*/ TIME_THREE_FOUR("Rational 3/4"),
-        /*-----*/ TIME_SIX_EIGHT("Rational 6/8"),
-        /*1D134*/ COMMON_TIME("Alpha = 4/4"),
-        /*1D135*/ CUT_TIME("Semi-Alpha = 2/4"),
+    /*1D11E*/ G_CLEF("Treble Clef"), 
+    /*1D11F*/ G_CLEF_OTTAVA_ALTA("Ottava Alta"), 
+    /*1D120*/ G_CLEF_OTTAVA_BASSA("Ottava Bassa"), 
+    /*1D121*/ C_CLEF("Ut Clef"), 
+    /*1D122*/ F_CLEF("Bass Clef"), 
+    /*1D123*/ F_CLEF_OTTAVA_ALTA("Bass Clef Ottava Alta"), 
 
-        // Octaves
-        //
-        /*1D136*/ OTTAVA_ALTA("8 va"),
-        /*1D137*/ OTTAVA_BASSA("8 vb"),
-        /*1D138*/ // QUINDICESIMA_ALTA,
-        /*1D139*/ // QUINDICESIMA_BASSA,
+    /*1D124*/ F_CLEF_OTTAVA_BASSA("Bass Clef Ottava Bassa"), 
 
-        // Rests
-        //
-        /*1D13A*/ MULTI_REST("Rest for multiple measures"),
-        /*1D13B*/ WHOLE_OR_HALF_REST("Same shape for whole or half Rest"),
-//        /*1D13B*/ WHOLE_REST("Rest for whole measure"),
-//        /*1D13C*/ HALF_REST("Rest for a 1/2"),
-        /*1D13D*/ QUARTER_REST("Rest for a 1/4"),
-        /*1D13E*/ EIGHTH_REST("Rest for a 1/8"),
-        /*1D13F*/ SIXTEENTH_REST("Rest for a 1/16"),
-        /*1D140*/ THIRTY_SECOND_REST("Rest for a 1/32"),
-        /*1D141*/ SIXTY_FOURTH_REST("Rest for a 1/64"),
-        /*1D142*/ ONE_HUNDRED_TWENTY_EIGHTH_REST("Rest for a 1/128"),
+    /*1D125*/
+    // DRUM_CLEF_1,
+    /*1D126*/
+    // DRUM_CLEF_2,
 
-        // Noteheads
-        //
-        /*1D143*/ // X_NOTEHEAD,
-        /*1D144*/ // PLUS_NOTEHEAD,
-        /*1D145*/ // CIRCLE_X_NOTEHEAD,
-        /*1D146*/ // SQUARE_NOTEHEAD_WHITE,
-        /*1D147*/ // SQUARE_NOTEHEAD_BLACK,
-        /*1D148*/ // TRIANGLE_NOTEHEAD_UP_WHITE,
-        /*1D149*/ // TRIANGLE_NOTEHEAD_UP_BLACK,
-        /*1D14A*/ // TRIANGLE_NOTEHEAD_LEFT_WHITE,
-        /*1D14B*/ // TRIANGLE_NOTEHEAD_LEFT_BLACK,
-        /*1D14C*/ // TRIANGLE_NOTEHEAD_RIGHT_WHITE,
-        /*1D14D*/ // TRIANGLE_NOTEHEAD_RIGHT_BLACK,
-        /*1D14E*/ // TRIANGLE_NOTEHEAD_DOWN_WHITE,
-        /*1D14F*/ // TRIANGLE_NOTEHEAD_DOWN_BLACK,
-        /*1D150*/ // TRIANGLE_NOTEHEAD_UP_RIGHT_WHITE,
-        /*1D151*/ // TRIANGLE_NOTEHEAD_UP_RIGHT_BLACK,
-        /*1D152*/ // MOON_NOTEHEAD_WHITE,
-        /*1D153*/ // MOON_NOTEHEAD_BLACK,
-        /*1D154*/ // TRIANGLEROUND_NOTEHEAD_DOWN_WHITE,
-        /*1D155*/ // TRIANGLEROUND_NOTEHEAD_DOWN_BLACK,
-        /*1D156*/ // PARENTHESIS_NOTEHEAD,
-        /*1D157*/ VOID_NOTEHEAD("Hollow node head for halves"),
-        /*-----*/ VOID_NOTEHEAD_2("Pack of two hollow node heads for halves"),
-        /*-----*/ VOID_NOTEHEAD_3("Pack of three hollow node heads for halves"),
-        /*1D158*/ NOTEHEAD_BLACK("Filled node head for quarters and less"),
-        /*-----*/ NOTEHEAD_BLACK_2("Pack of two filled node heads for quarters and less"),
-        /*-----*/ NOTEHEAD_BLACK_3("Pack of three filled node heads for quarters and less"),
-        /*1D159*/ // NULL_NOTEHEAD,
-        /*1D15A*/ // CLUSTER_NOTEHEAD_WHITE,
-        /*1D15B*/ // CLUSTER_NOTEHEAD_BLACK,
+    // Accidentals
+    //
 
-        // Notes
-        //
-        /*1D15C*/ BREVE("Double Whole"), // ||O||
-        /*1D15D*/ WHOLE_NOTE("Hollow node head for wholes"),
-        /*-----*/ WHOLE_NOTE_2("Pack of two hollow node heads for wholes"),
-        /*-----*/ WHOLE_NOTE_3("Pack of three hollow node heads for wholes"),
-        /*1D15E*/ // HALF_NOTE, //= 1D157 + 1D165
-        /*1D15F*/ // QUARTER_NOTE, //= 1D158 +1D165
-        /*1D160*/ // EIGHTH_NOTE, //= 1D15F + 1D16E
-        /*1D161*/ // SIXTEENTH_NOTE, //= 1D15F + 1D16F
-        /*1D162*/ // THIRTY_SECOND_NOTE, //= 1D15F + 1D170
-        /*1D163*/ // SIXTY_FOURTH_NOTE, //= 1D15F + 1D171
-        /*1D164*/ // ONE_HUNDRED_TWENTY_EIGHTH_NOTE, //= 1D15F + 1D172
+    /*1D127*/ FLAT("Minus one half step"), 
+    /*1D128*/ NATURAL("Natural value"), 
+    /*1D129*/ SHARP("Plus one half step"), 
+    /*1D12A*/ DOUBLE_SHARP("Double Sharp"), 
+    /*1D12B*/ DOUBLE_FLAT("Double Flat"), 
+    /*1D12C*/
+    // FLAT_UP,
+    /*1D12D*/
+    // FLAT_DOWN,
+    /*1D12E*/
+    // NATURAL_UP,
+    /*1D12F*/
+    // NATURAL_DOWN,
+    /*1D130*/
+    // SHARP_UP,
+    /*1D131*/
+    // SHARP_DOWN,
+    /*1D132*/
+    // QUARTER_TONE_SHARP,
+    /*1D133*/
+    // QUARTER_TONE_FLAT,
 
-        // Tremolos
-        //
-        /*1D167*/ // COMBINING_TREMOLO_1,
-        /*1D168*/ // COMBINING_TREMOLO_2,
-        /*1D169*/ // COMBINING_TREMOLO_3,
-        /*1D16A*/ // FINGERED_TREMOLO_1,
-        /*1D16B*/ // FINGERED_TREMOLO_2,
-        /*1D16C*/ // FINGERED_TREMOLO_3,
+    // Time signatures
+    //
 
-        // Flags
-        //
-        /*1D16E*/ COMBINING_FLAG_1("Single flag down"),
-        /*1D16F*/ COMBINING_FLAG_2("Double flag down"),
-        /*1D170*/ COMBINING_FLAG_3("Triple flag down"),
-        /*1D171*/ COMBINING_FLAG_4("Quadruple flag down"),
-        /*1D172*/ COMBINING_FLAG_5("Quintuple flag down"),
+    /*-----*/ TIME_ZERO("Digit 0"), 
+    /*-----*/ TIME_ONE("Digit 1"), 
+    /*-----*/ TIME_TWO("Digit 2"), 
+    /*-----*/ TIME_THREE("Digit 3"), 
+    /*-----*/ TIME_FOUR("Digit 4"), 
+    /*-----*/ TIME_FIVE("Digit 5"), 
+    /*-----*/ TIME_SIX("Digit 6"), 
+    /*-----*/ TIME_SEVEN("Digit 7"), 
+    /*-----*/ TIME_EIGHT("Digit 8"), 
+    /*-----*/ TIME_NINE("Digit 9"), 
+    /*-----*/ TIME_TWELVE("Number 12"), 
+    /*-----*/ TIME_SIXTEEN("Number 16"), 
+    /*-----*/ TIME_FOUR_FOUR("Rational 4/4"), 
+    /*-----*/ TIME_TWO_TWO("Rational 2/2"), 
+    /*-----*/ TIME_TWO_FOUR("Rational 2/4"), 
+    /*-----*/ TIME_THREE_FOUR("Rational 3/4"), 
+    /*-----*/ TIME_SIX_EIGHT("Rational 6/8"), 
+    /*1D134*/ COMMON_TIME("Alpha = 4/4"), 
+    /*1D135*/ CUT_TIME("Semi-Alpha = 2/4"), 
+    // Octaves
+    //
 
-        /*-----*/ COMBINING_FLAG_1_UP("Single flag up"),
-        /*-----*/ COMBINING_FLAG_2_UP("Double flag up"),
-        /*-----*/ COMBINING_FLAG_3_UP("Triple flag up"),
-        /*-----*/ COMBINING_FLAG_4_UP("Quadruple flag up"),
-        /*-----*/ COMBINING_FLAG_5_UP("Quintuple flag up"),
+    /*1D136*/ OTTAVA_ALTA("8 va"), 
+    /*1D137*/ OTTAVA_BASSA("8 vb"), 
+    /*1D138*/
+    // QUINDICESIMA_ALTA,
+    /*1D139*/
+    // QUINDICESIMA_BASSA,
 
-        // Connected head and flags
-        //
-        /*-----*/ HEAD_AND_FLAG_1("Black notehead with single flag down"),
-        /*-----*/ HEAD_AND_FLAG_2("Black notehead with double flag down"),
-        /*-----*/ HEAD_AND_FLAG_3("Black notehead with triple flag down"),
-        /*-----*/ HEAD_AND_FLAG_4("Black notehead with quadruple flag down"),
-        /*-----*/ HEAD_AND_FLAG_5("Black notehead with quintuple flag down"),
+    // Rests
+    //
 
-        /*-----*/ HEAD_AND_FLAG_1_UP("Black notehead with single flag up"),
-        /*-----*/ HEAD_AND_FLAG_2_UP("Black notehead with double flag up"),
-        /*-----*/ HEAD_AND_FLAG_3_UP("Black notehead with triple flag up"),
-        /*-----*/ HEAD_AND_FLAG_4_UP("Black notehead with quadruple flag up"),
-        /*-----*/ HEAD_AND_FLAG_5_UP("Black notehead with quintuple flag up"),
+    /*1D13A*/ MULTI_REST("Rest for multiple measures"), 
 
-        // Beams and slurs
-        //
-        /*-----*/ BEAM("Beam between two stems"),
-        /*-----*/ BEAM_2("Pack of 2 beams"),
-        /*-----*/ BEAM_3("Pack of 3 beams"),
-        /*-----*/ BEAM_HOOK("Hook of a beam attached on one stem"),
-        /*-----*/ SLUR("Slur tying notes"),
-        /*1D173*/ // BEGIN_BEAM,
-        /*1D174*/ // END_BEAM,
-        /*1D175*/ // BEGIN_TIE,
-        /*1D176*/ // END_TIE,
-        /*1D177*/ // BEGIN_SLUR,
-        /*1D178*/ // END_SLUR,
-        /*1D179*/ // BEGIN_PHRASE,
-        /*1D17A*/ // END_PHRASE,
+    /*1D13B*/ WHOLE_OR_HALF_REST("Same shape for whole or half Rest"), 
 
-        // Articulation
-        //
-        /*1D17B*/ // COMBINING_ACCENT,
-        /*1D17C*/ // COMBINING_STACCATO,
-        /*1D17D*/ // COMBINING_TENUTO,
-        /*1D17E*/ // COMBINING_STACCATISSIMO,
-        /*1D17F*/ // COMBINING_MARCATO,
-        /*1D180*/ // COMBINING_MARCATO_STACCATO,
-        /*1D181*/ // COMBINING_ACCENT_STACCATO,
-        /*1D182*/ // COMBINING_LOURE,
-        /*-----*/ ARPEGGIATO,
-        /*1D183*/ // ARPEGGIATO_UP,
-        /*1D184*/ // ARPEGGIATO_DOWN,
+    //        /*1D13B*/ WHOLE_REST("Rest for whole measure"),
+    //        /*1D13C*/ HALF_REST("Rest for a 1/2"),
 
-        /*1D185*/ // COMBINING_DOIT,
-        /*1D186*/ // COMBINING_RIP,
-        /*1D187*/ // COMBINING_FLIP,
-        /*1D188*/ // COMBINING_SMEAR,
-        /*1D189*/ // COMBINING_BEND,
-        /*1D18A*/ // COMBINING_DOUBLE_TONGUE,
-        /*1D18B*/ // COMBINING_TRIPLE_TONGUE,
-        /*1D18C*/ // RINFORZANDO,
-        /*1D18D*/ // SUBITO,
-        /*1D18E*/ // Z,
+    /*1D13D*/ QUARTER_REST("Rest for a 1/4"), 
+    /*1D13E*/ EIGHTH_REST("Rest for a 1/8"), 
+    /*1D13F*/ SIXTEENTH_REST("Rest for a 1/16"), 
+    /*1D140*/ THIRTY_SECOND_REST("Rest for a 1/32"), 
 
-        // Dynamics
-        //
-        /*-----*/ DYNAMICS_CHAR_M,
-        /*-----*/ DYNAMICS_CHAR_R,
-        /*-----*/ DYNAMICS_CHAR_S,
-        /*-----*/ DYNAMICS_CHAR_Z,
-        //
-        /*-----*/ DYNAMICS_F,
-        /*-----*/ DYNAMICS_FF,
-        /*-----*/ DYNAMICS_FFF,
-        /*-----*/ DYNAMICS_FFFF,
-        /*-----*/ DYNAMICS_FFFFF,
-        /*-----*/ DYNAMICS_FFFFFF,
-        /*-----*/ DYNAMICS_FP,
-        /*-----*/ DYNAMICS_FZ,
-        /*-----*/ DYNAMICS_MF,
-        /*-----*/ DYNAMICS_MP,
-        /*-----*/ DYNAMICS_P,
-        /*-----*/ DYNAMICS_PP,
-        /*-----*/ DYNAMICS_PPP,
-        /*-----*/ DYNAMICS_PPPP,
-        /*-----*/ DYNAMICS_PPPPP,
-        /*-----*/ DYNAMICS_PPPPPP,
-        /*-----*/ DYNAMICS_RF,
-        /*-----*/ DYNAMICS_RFZ,
-        /*-----*/ DYNAMICS_SF,
-        /*-----*/ DYNAMICS_SFFZ,
-        /*-----*/ DYNAMICS_SFP,
-        /*-----*/ DYNAMICS_SFPP,
-        /*-----*/ DYNAMICS_SFZ,
-        //
-        /*1D192*/ CRESCENDO,                            // <
-        /*1D193*/ DECRESCENDO,                          // >
+    /*1D141*/ SIXTY_FOURTH_REST("Rest for a 1/64"), 
 
-        // Ornaments
-        //
-        /*1D194*/ GRACE_NOTE_SLASH("Grace Note with a Slash"),
-        /*1D195*/ GRACE_NOTE_NO_SLASH("Grace Note with no Slash"),
-        /*1D196*/ TR,
-        /*1D197*/ TURN,
-        /*1D198*/ INVERTED_TURN,
-        /*1D199*/ TURN_SLASH,
-        /*1D19A*/ TURN_UP,
-        /*-----*/ MORDENT,              // Lower
-        /*-----*/ INVERTED_MORDENT,     // Upper
-        /*1D19B*/ // ORNAMENT_STROKE_1,
-        /*1D19C*/ // ORNAMENT_STROKE_2,
-        /*1D19D*/ // ORNAMENT_STROKE_3,
-        /*1D19E*/ // ORNAMENT_STROKE_4,
-        /*1D19F*/ // ORNAMENT_STROKE_5,
-        /*1D1A0*/ // ORNAMENT_STROKE_6,
-        /*1D1A1*/ // ORNAMENT_STROKE_7,
-        /*1D1A2*/ // ORNAMENT_STROKE_8,
-        /*1D1A3*/ // ORNAMENT_STROKE_9,
-        /*1D1A4*/ // ORNAMENT_STROKE_10,
-        /*1D1A5*/ // ORNAMENT_STROKE_11,
+    /*1D142*/ ONE_HUNDRED_TWENTY_EIGHTH_REST("Rest for a 1/128"), 
 
-        // Analytics
-        //
-        /*1D1A6*/ // HAUPTSTIMME,
-        /*1D1A7*/ // NEBENSTIMME,
-        /*1D1A8*/ // END_OF_STIMME,
-        /*1D1A9*/ // DEGREE_SLASH,
+    // Noteheads
+    //
+    /*1D143*/
+    // X_NOTEHEAD,
+    /*1D144*/
+    // PLUS_NOTEHEAD,
+    /*1D145*/
+    // CIRCLE_X_NOTEHEAD,
+    /*1D146*/
+    // SQUARE_NOTEHEAD_WHITE,
+    /*1D147*/
+    // SQUARE_NOTEHEAD_BLACK,
+    /*1D148*/
+    // TRIANGLE_NOTEHEAD_UP_WHITE,
+    /*1D149*/
+    // TRIANGLE_NOTEHEAD_UP_BLACK,
+    /*1D14A*/
+    // TRIANGLE_NOTEHEAD_LEFT_WHITE,
+    /*1D14B*/
+    // TRIANGLE_NOTEHEAD_LEFT_BLACK,
+    /*1D14C*/
+    // TRIANGLE_NOTEHEAD_RIGHT_WHITE,
+    /*1D14D*/
+    // TRIANGLE_NOTEHEAD_RIGHT_BLACK,
+    /*1D14E*/
+    // TRIANGLE_NOTEHEAD_DOWN_WHITE,
+    /*1D14F*/
+    // TRIANGLE_NOTEHEAD_DOWN_BLACK,
+    /*1D150*/
+    // TRIANGLE_NOTEHEAD_UP_RIGHT_WHITE,
+    /*1D151*/
+    // TRIANGLE_NOTEHEAD_UP_RIGHT_BLACK,
+    /*1D152*/
+    // MOON_NOTEHEAD_WHITE,
+    /*1D153*/
+    // MOON_NOTEHEAD_BLACK,
+    /*1D154*/
+    // TRIANGLEROUND_NOTEHEAD_DOWN_WHITE,
+    /*1D155*/
+    // TRIANGLEROUND_NOTEHEAD_DOWN_BLACK,
+    /*1D156*/
+    // PARENTHESIS_NOTEHEAD,
 
-        // Instrumentation
-        //
-        /*1D1AA*/ // COMBINING_DOWN_BOW,
-        /*1D1AB*/ // COMBINING_UP_BOW,
-        /*1D1AC*/ // COMBINING_HARMONIC,
-        /*1D1AD*/ // COMBINING_SNAP_PIZZICATO,
+    /*1D157*/ VOID_NOTEHEAD("Hollow node head for halves"), 
 
-        // Tuplets
-        //
-        /*-----*/ TUPLET_THREE,         // 3
-        /*-----*/ TUPLET_SIX,           // 6
+    /*-----*/ VOID_NOTEHEAD_2("Pack of two hollow node heads for halves"), 
 
-        // Pedals
-        //
-        /*1D1AE*/ PEDAL_MARK,           // Ped
-        /*1D1AF*/ PEDAL_UP_MARK,        // *
-        /*1D1B0*/ // HALF_PEDAL_MARK,
+    /*-----*/ VOID_NOTEHEAD_3("Pack of three hollow node heads for halves"), 
 
+    /*1D158*/ NOTEHEAD_BLACK("Filled node head for quarters and less"), 
 
-        // =====================================================================
-         // Pure Logical shapes, that cannot be inferred only from their
-         // physical characteristics.
-         // ====================================================================
+    /*-----*/ NOTEHEAD_BLACK_2("Pack of two filled node heads for quarters and less"), 
 
-        // Bars
-        //
-        /*1D100*/ SINGLE_BARLINE("Single thin bar line"),
-        /*1D101*/ DOUBLE_BARLINE("Double thin bar line"),
-        /*1D102*/ FINAL_BARLINE("Thin / Thick bar line"),
-        /*1D103*/ REVERSE_FINAL_BARLINE("Thick / Thin bar line"),
-        /*1D104*/ // DASHED_BARLINE,
-        /*1D105*/ // SHORT_BARLINE,
-        /*1D106*/ LEFT_REPEAT_SIGN("Thick / Thin bar line + REPEAT_DOTS"),
-        /*1D107*/ RIGHT_REPEAT_SIGN("REPEAT_DOTS + Thin / Thick bar line"),
-        /*-----*/ BACK_TO_BACK_REPEAT_SIGN("REPEAT_DOTS + Thin / Thick / Thin + REPEAT_DOTS"),
-        /*-----*/ THICK_BAR_LINE("Thick bar line"),
-        /*-----*/ THIN_BAR_LINE("Thin bar line"),
-        /*1D108*/ REPEAT_DOTS("Vertical dots"),
+    /*-----*/ NOTEHEAD_BLACK_3("Pack of three filled node heads for quarters and less"), 
 
-        // Augmentation dot
-        /*1D16D*/ COMBINING_AUGMENTATION_DOT("Augmentation Dot"),
+    /*1D159*/
+    // NULL_NOTEHEAD,
+    /*1D15A*/
+    // CLUSTER_NOTEHEAD_WHITE,
+    /*1D15B*/
+    // CLUSTER_NOTEHEAD_BLACK,
 
-        /*-----*/ TEXT("Sequence of letters & spaces"),
+    // Notes
+    //
 
-        // Alternate ending indication
-        /*-----*/ ENDING("Alternate ending"),
+    /*1D15C*/ BREVE("Double Whole"), WHOLE_NOTE("Hollow node head for wholes"), 
 
-        // Miscellaneous
-        //
-        /*-----*/ LEDGER("Ledger"),
-        /*-----*/ STAFF_LINE("Staff Line"),
-        /*-----*/ ENDING_HORIZONTAL("Horizontal part of ending"),
-        /*-----*/ ENDING_VERTICAL("Vertical part of ending"),
+    /*-----*/ WHOLE_NOTE_2("Pack of two hollow node heads for wholes"),
 
-        // Stems
-        //
-        /*1D165*/ COMBINING_STEM,
-        /*1D166*/ // COMBINING_SPRECHGESANG_STEM,
+    /*-----*/ WHOLE_NOTE_3("Pack of three hollow node heads for wholes"), 
 
-        // Key signatures
-        //
-        /*-----*/ KEY_FLAT_7("Seven Flats"),    // -7
-        /*-----*/ KEY_FLAT_6("Six Flats"),      // -6
-        /*-----*/ KEY_FLAT_5("Five Flats"),     // -5
-        /*-----*/ KEY_FLAT_4("Four Flats"),     // -4
-        /*-----*/ KEY_FLAT_3("Three Flats"),    // -3
-        /*-----*/ KEY_FLAT_2("Two Flats"),      // -2
-        /*-----*/ KEY_FLAT_1("One Flat"),       // -1
-        //
-        /*-----*/ KEY_SHARP_1("One Sharp"),     // +1
-        /*-----*/ KEY_SHARP_2("Two Sharps"),    // +2
-        /*-----*/ KEY_SHARP_3("Three Sharps"),  // +3
-        /*-----*/ KEY_SHARP_4("Four Sharps"),   // +4
-        /*-----*/ KEY_SHARP_5("Five Sharps"),   // +5
-        /*-----*/ KEY_SHARP_6("Six Sharps"),    // +6
-        /*-----*/ KEY_SHARP_7("Seven Sharps"),  // +7
+    /*1D15E*/
+    // HALF_NOTE, //= 1D157 + 1D165
+    /*1D15F*/
+    // QUARTER_NOTE, //= 1D158 +1D165
+    /*1D160*/
+    // EIGHTH_NOTE, //= 1D15F + 1D16E
+    /*1D161*/
+    // SIXTEENTH_NOTE, //= 1D15F + 1D16F
+    /*1D162*/
+    // THIRTY_SECOND_NOTE, //= 1D15F + 1D170
+    /*1D163*/
+    // SIXTY_FOURTH_NOTE, //= 1D15F + 1D171
+    /*1D164*/
+    // ONE_HUNDRED_TWENTY_EIGHTH_NOTE, //= 1D15F + 1D172
 
-        /*-----*/ CHARACTER("A letter"),
+    // Tremolos
+    //
+    /*1D167*/
+    // COMBINING_TREMOLO_1,
+    /*1D168*/
+    // COMBINING_TREMOLO_2,
+    /*1D169*/
+    // COMBINING_TREMOLO_3,
+    /*1D16A*/
+    // FINGERED_TREMOLO_1,
+    /*1D16B*/
+    // FINGERED_TREMOLO_2,
+    /*1D16C*/
+    // FINGERED_TREMOLO_3,
 
-        /*1D13B*/ WHOLE_REST("Rest for whole measure", WHOLE_OR_HALF_REST),
-        /*1D13C*/ HALF_REST("Rest for a 1/2", WHOLE_OR_HALF_REST),
+    // Flags
+    //
 
-        /** This shape is a kludge to get proper icon, to be improved */
-        /*-----*/ MULTI_REST_DISPLAY,
+    /*1D16E*/ COMBINING_FLAG_1("Single flag down"), 
 
-        /*-----*/ FORWARD,
+    /*1D16F*/ COMBINING_FLAG_2("Double flag down"), 
 
-        /**
-         * Specific value, meaning that we have not been able to determine a
-         * legal shape
-         */
-        /*-----*/ NO_LEGAL_SHAPE("No Legal Shape");
+    /*1D170*/ COMBINING_FLAG_3("Triple flag down"), 
 
+    /*1D171*/ COMBINING_FLAG_4("Quadruple flag down"), 
+
+    /*1D172*/ COMBINING_FLAG_5("Quintuple flag down"), 
+
+    /*-----*/ COMBINING_FLAG_1_UP("Single flag up"), 
+
+    /*-----*/ COMBINING_FLAG_2_UP("Double flag up"), 
+
+    /*-----*/ COMBINING_FLAG_3_UP("Triple flag up"), 
+
+    /*-----*/ COMBINING_FLAG_4_UP("Quadruple flag up"), 
+
+    /*-----*/ COMBINING_FLAG_5_UP("Quintuple flag up"), 
+
+    // Connected head and flags
+    //
+
+    /*-----*/ HEAD_AND_FLAG_1("Black notehead with single flag down"), 
+
+    /*-----*/ HEAD_AND_FLAG_2("Black notehead with double flag down"), 
+
+    /*-----*/ HEAD_AND_FLAG_3("Black notehead with triple flag down"), 
+
+    /*-----*/ HEAD_AND_FLAG_4("Black notehead with quadruple flag down"), 
+
+    /*-----*/ HEAD_AND_FLAG_5("Black notehead with quintuple flag down"), 
+
+    /*-----*/ HEAD_AND_FLAG_1_UP("Black notehead with single flag up"), 
+
+    /*-----*/ HEAD_AND_FLAG_2_UP("Black notehead with double flag up"), 
+
+    /*-----*/ HEAD_AND_FLAG_3_UP("Black notehead with triple flag up"), 
+
+    /*-----*/ HEAD_AND_FLAG_4_UP("Black notehead with quadruple flag up"), 
+
+    /*-----*/ HEAD_AND_FLAG_5_UP("Black notehead with quintuple flag up"), 
+
+    // Beams and slurs
+    //
+
+    /*-----*/ BEAM("Beam between two stems"), 
+    /*-----*/ BEAM_2("Pack of 2 beams"), 
+    /*-----*/ BEAM_3("Pack of 3 beams"), 
+
+    /*-----*/ BEAM_HOOK("Hook of a beam attached on one stem"), 
+
+    /*-----*/ SLUR("Slur tying notes"), 
+    /*1D173*/
+    // BEGIN_BEAM,
+    /*1D174*/
+    // END_BEAM,
+    /*1D175*/
+    // BEGIN_TIE,
+    /*1D176*/
+    // END_TIE,
+    /*1D177*/
+    // BEGIN_SLUR,
+    /*1D178*/
+    // END_SLUR,
+    /*1D179*/
+    // BEGIN_PHRASE,
+    /*1D17A*/
+    // END_PHRASE,
+
+    // Articulation
+    //
+    /*1D17B*/
+    // COMBINING_ACCENT,
+    /*1D17C*/
+    // COMBINING_STACCATO,
+    /*1D17D*/
+    // COMBINING_TENUTO,
+    /*1D17E*/
+    // COMBINING_STACCATISSIMO,
+    /*1D17F*/
+    // COMBINING_MARCATO,
+    /*1D180*/
+    // COMBINING_MARCATO_STACCATO,
+    /*1D181*/
+    // COMBINING_ACCENT_STACCATO,
+    /*1D182*/
+    // COMBINING_LOURE,
+
+    /*-----*/ ARPEGGIATO, 
+    /*1D183*/
+    // ARPEGGIATO_UP,
+    /*1D184*/
+    // ARPEGGIATO_DOWN,
+
+    /*1D185*/
+    // COMBINING_DOIT,
+    /*1D186*/
+    // COMBINING_RIP,
+    /*1D187*/
+    // COMBINING_FLIP,
+    /*1D188*/
+    // COMBINING_SMEAR,
+    /*1D189*/
+    // COMBINING_BEND,
+    /*1D18A*/
+    // COMBINING_DOUBLE_TONGUE,
+    /*1D18B*/
+    // COMBINING_TRIPLE_TONGUE,
+    /*1D18C*/
+    // RINFORZANDO,
+    /*1D18D*/
+    // SUBITO,
+    /*1D18E*/
+    // Z,
+
+    // Dynamics
+    //
+
+    /*-----*/ DYNAMICS_CHAR_M, 
+    /*-----*/ DYNAMICS_CHAR_R, 
+    /*-----*/ DYNAMICS_CHAR_S, 
+    /*-----*/ DYNAMICS_CHAR_Z, 
+    //
+
+    /*-----*/ DYNAMICS_F, 
+    /*-----*/ DYNAMICS_FF, 
+    /*-----*/ DYNAMICS_FFF, 
+    /*-----*/ DYNAMICS_FFFF, 
+    /*-----*/ DYNAMICS_FFFFF, 
+    /*-----*/ DYNAMICS_FFFFFF, 
+    /*-----*/ DYNAMICS_FP, 
+    /*-----*/ DYNAMICS_FZ, 
+    /*-----*/ DYNAMICS_MF, 
+    /*-----*/ DYNAMICS_MP, 
+    /*-----*/ DYNAMICS_P, 
+    /*-----*/ DYNAMICS_PP, 
+    /*-----*/ DYNAMICS_PPP, 
+    /*-----*/ DYNAMICS_PPPP, 
+    /*-----*/ DYNAMICS_PPPPP, 
+    /*-----*/ DYNAMICS_PPPPPP, 
+    /*-----*/ DYNAMICS_RF, 
+    /*-----*/ DYNAMICS_RFZ, 
+    /*-----*/ DYNAMICS_SF, 
+    /*-----*/ DYNAMICS_SFFZ, 
+    /*-----*/ DYNAMICS_SFP, 
+    /*-----*/ DYNAMICS_SFPP, 
+    /*-----*/ DYNAMICS_SFZ, 
+    //
+
+    /*1D192*/ CRESCENDO, DECRESCENDO, 
+    // Ornaments
+    //
+
+    /*1D194*/ GRACE_NOTE_SLASH("Grace Note with a Slash"),
+
+    /*1D195*/ GRACE_NOTE_NO_SLASH("Grace Note with no Slash"), 
+    /*1D196*/ TR, 
+    /*1D197*/ TURN, 
+    /*1D198*/ INVERTED_TURN, 
+    /*1D199*/ TURN_SLASH, 
+    /*1D19A*/ TURN_UP, 
+    /*-----*/ MORDENT, INVERTED_MORDENT, 
+    // Analytics
+    //
+    /*1D1A6*/
+    // HAUPTSTIMME,
+    /*1D1A7*/
+    // NEBENSTIMME,
+    /*1D1A8*/
+    // END_OF_STIMME,
+    /*1D1A9*/
+    // DEGREE_SLASH,
+
+    // Instrumentation
+    //
+    /*1D1AA*/
+    // COMBINING_DOWN_BOW,
+    /*1D1AB*/
+    // COMBINING_UP_BOW,
+    /*1D1AC*/
+    // COMBINING_HARMONIC,
+    /*1D1AD*/
+    // COMBINING_SNAP_PIZZICATO,
+
+    // Tuplets
+    //
+
+    /*-----*/ TUPLET_THREE,TUPLET_SIX, 
+    // Pedals
+    //
+
+    /*1D1AE*/ PEDAL_MARK,PEDAL_UP_MARK, 
+    // =====================================================================
+    // Pure Logical shapes, that cannot be inferred only from their
+    // physical characteristics.
+    // ====================================================================
+
+    // Bars
+    //
+
+    /*1D100*/ SINGLE_BARLINE("Single thin bar line"),
+
+    /*1D101*/ DOUBLE_BARLINE("Double thin bar line"), 
+
+    /*1D102*/ FINAL_BARLINE("Thin / Thick bar line"), 
+
+    /*1D103*/ REVERSE_FINAL_BARLINE("Thick / Thin bar line"), 
+
+    /*1D104*/
+    // DASHED_BARLINE,
+    /*1D105*/
+    // SHORT_BARLINE,
+
+    /*1D106*/ LEFT_REPEAT_SIGN("Thick / Thin bar line + REPEAT_DOTS"), 
+
+    /*1D107*/ RIGHT_REPEAT_SIGN("REPEAT_DOTS + Thin / Thick bar line"), 
+
+    /*-----*/ BACK_TO_BACK_REPEAT_SIGN(
+        "REPEAT_DOTS + Thin / Thick / Thin + REPEAT_DOTS"), 
+
+    /*-----*/ THICK_BAR_LINE("Thick bar line"), 
+    /*-----*/ THIN_BAR_LINE("Thin bar line"), 
+    /*1D108*/ REPEAT_DOTS("Vertical dots"), 
+
+    // Augmentation dot
+
+    /*1D16D*/ COMBINING_AUGMENTATION_DOT("Augmentation Dot"), 
+
+    // Alternate ending indication
+
+    /*-----*/ ENDING("Alternate ending"), 
+    // Miscellaneous
+    //
+
+    /*-----*/ LEDGER("Ledger"), 
+    /*-----*/ STAFF_LINE("Staff Line"), 
+    /*-----*/ ENDING_HORIZONTAL("Horizontal part of ending"), 
+
+    /*-----*/ ENDING_VERTICAL("Vertical part of ending"), 
+    // Stems
+    //
+
+    /*1D165*/ COMBINING_STEM, 
+    /*1D166*/
+    // COMBINING_SPRECHGESANG_STEM,
+
+    // Key signatures
+    //
+
+    /*-----*/ KEY_FLAT_7("Seven Flats"), KEY_FLAT_6("Six Flats"), 
+    KEY_FLAT_5("Five Flats"),KEY_FLAT_4("Four Flats"), 
+    KEY_FLAT_3("Three Flats"),KEY_FLAT_2("Two Flats"), KEY_FLAT_1("One Flat"),
+    KEY_SHARP_1("One Sharp"),
+    KEY_SHARP_2("Two Sharps"),
+    KEY_SHARP_3("Three Sharps"),
+    KEY_SHARP_4("Four Sharps"),
+    KEY_SHARP_5("Five Sharps"),
+    KEY_SHARP_6("Six Sharps"),
+    KEY_SHARP_7("Seven Sharps"),
+
+    /*1D13B*/ WHOLE_REST("Rest for whole measure", WHOLE_OR_HALF_REST),
+
+    /*1D13C*/ HALF_REST("Rest for a 1/2", WHOLE_OR_HALF_REST), 
+    /** This shape is a kludge to get proper icon, to be improved */
+
+    /*-----*/ MULTI_REST_DISPLAY, 
+    /*-----*/ FORWARD, 
+    /**
+     * Specific value, meaning that we have not been able to determine a
+     * legal shape
+     */
+
+    /*-----*/ NO_LEGAL_SHAPE("No Legal Shape");
     /**
      * First physical shape an evaluator should be able to recognize based on
      * their physical characteristics. For example a DOT is a DOT. Also, a DOT
@@ -456,27 +587,23 @@ public enum Shape
     /** Color for glyphs tested as OK (color used temporarily) */
     public static final Color okColor = Color.green;
 
-    //~ Instance variables -----------------------------------------------------
-
     /** Explanation of the glyph shape */
-    private final String   description;
+    private final String description;
 
     /** Related temporary display color */
-    private Color          color;
+    private Color color;
 
     /** Related permanent display color */
     private Constant.Color constantColor;
 
     /** Potential related icon */
-    private Icon    icon;
+    private Icon icon;
 
     /** Potential related shape to be used for training */
     private Shape trainingShape;
 
     /** Remember the fact that this shape has no related icon */
     private boolean hasNoIcon;
-
-    //~ Constructors -----------------------------------------------------------
 
     //-------//
     // Shape //
@@ -498,13 +625,11 @@ public enum Shape
     // Shape //
     //-------//
     Shape (String description,
-           Shape trainingShape)
+           Shape  trainingShape)
     {
         this.description = description;
         this.trainingShape = trainingShape;
     }
-
-    //~ Methods ----------------------------------------------------------------
 
     /**
      * Report whether the impact of this shape persists across system (actually
@@ -514,11 +639,10 @@ public enum Shape
      *
      * @return true if persistent, false otherwise
      */
-    public boolean isPersistent()
+    public boolean isPersistent ()
     {
-        return Clefs.contains(this) ||
-                Times.contains(this) ||
-                Accidentals.contains(this);
+        return Clefs.contains(this) || Times.contains(this) ||
+               Accidentals.contains(this);
     }
 
     //-------------//
@@ -529,7 +653,7 @@ public enum Shape
      *
      * @return true if trainable, false otherwise
      */
-    public boolean isTrainable()
+    public boolean isTrainable ()
     {
         return ordinal() <= LastPhysicalShape.ordinal();
     }
@@ -545,7 +669,7 @@ public enum Shape
      */
     public boolean isWellKnown ()
     {
-       return (this != NO_LEGAL_SHAPE) && !Garbage.getShapes()
+        return (this != NO_LEGAL_SHAPE) && !Garbage.getShapes()
                                                    .contains(this);
     }
 
@@ -558,9 +682,22 @@ public enum Shape
      *
      * @return true if whole or multi rest
      */
-    public boolean isWholeRest()
+    public boolean isWholeRest ()
     {
-        return this == WHOLE_REST || this == MULTI_REST;
+        return (this == WHOLE_REST) || (this == MULTI_REST);
+    }
+
+    //--------//
+    // isText //
+    //--------//
+    /**
+     * Check whether the shape is a text or a character
+     *
+     * @return true if text or character
+     */
+    public boolean isText ()
+    {
+        return (this == TEXT) || (this == CHARACTER);
     }
 
     //----------------//
@@ -616,11 +753,11 @@ public enum Shape
         constantColor = new Constant.Color(
             getClass().getName(), // Unit
             name() + ".color", // Name
-            null, // DefaultValue
+            "#000000", // DefaultValue: Black
             "Color code for shape " + name());
 
         // Assign the shape display color
-        if (constantColor.getValue() != null) {
+        if (!constantColor.isDefaultValue()) {
             // Use the shape specific color
             setColor(constantColor.getValue());
         } else {
@@ -712,7 +849,7 @@ public enum Shape
     //------------------//
     // getTrainingShape //
     //------------------//
-    public Shape getTrainingShape()
+    public Shape getTrainingShape ()
     {
         if (trainingShape != null) {
             return trainingShape;
@@ -801,12 +938,10 @@ public enum Shape
      */
     public static class Range
     {
-        // Map for all defined ranges
-        private static volatile Map<String, Range> rangeMap;
-        private String                    name; // Name of the range
-        private final EnumSet<Shape>      shapes; // Contained shapes
-        private Color                     color; // For current color
-        private Constant.Color            constantColor; // For specific color
+        private String               name; // Name of the range
+        private final EnumSet<Shape> shapes; // Contained shapes
+        private Color                color; // For current color
+        private Constant.Color       constantColor; // For specific color
 
         //-------//
         // Range //
@@ -899,27 +1034,29 @@ public enum Shape
          */
         public static Range valueOf (String str)
         {
-            // Build the range map in a lazy way
-            if (rangeMap == null) {
-                synchronized(Range.class) {
-                    if (rangeMap == null) {
-                        rangeMap = new HashMap<String, Range>();
+            return Ranges.map.get(str);
+        }
 
-                        for (Field field : Shape.class.getDeclaredFields()) {
-                            if (field.getType() == Range.class) {
-                                try {
-                                    Range range = (Range) field.get(null);
-                                    rangeMap.put(field.getName(), range);
-                                } catch (IllegalAccessException ex) {
-                                    ex.printStackTrace();
-                                }
-                            }
+        //--------//
+        // Ranges //
+        //--------//
+        /** Build the range map in a lazy way */
+        private static class Ranges
+        {
+            public static Map<String, Range> map = new HashMap<String, Range>();
+
+            static {
+                for (Field field : Shape.class.getDeclaredFields()) {
+                    if (field.getType() == Range.class) {
+                        try {
+                            Range range = (Range) field.get(null);
+                            map.put(field.getName(), range);
+                        } catch (IllegalAccessException ex) {
+                            ex.printStackTrace();
                         }
                     }
                 }
             }
-
-            return rangeMap.get(str);
         }
 
         //---------------//
@@ -970,11 +1107,11 @@ public enum Shape
             constantColor = new Constant.Color(
                 getClass().getName(), // Unit
                 name + ".color", // Name
-                null, // DefaultValue
+                "#000000", // DefaultValue: black
                 "Color code for range " + name);
 
             // Assign the range display color
-            if (constantColor.getValue() != null) {
+            if (!constantColor.isDefaultValue()) {
                 // Use the range specific color
                 setColor(constantColor.getValue());
             } else {
@@ -986,40 +1123,61 @@ public enum Shape
 
     // Predefined shape ranges
     //
-    public static final Range Garbage       = new Range(EnumSet.range(NOISE, STRUCTURE));
-    public static final Range Physicals     = new Range(EnumSet.range(CLUTTER, DASH));
-    //
-    public static final Range Bars          = new Range(EnumSet.range(DAL_SEGNO, BRACKET));
-    public static final Range Clefs         = new Range(EnumSet.range(G_CLEF, F_CLEF_OTTAVA_BASSA));
-    public static final Range Accidentals   = new Range(EnumSet.range(FLAT, DOUBLE_FLAT));
-    public static final Range Times         = new Range(EnumSet.range(TIME_ZERO, CUT_TIME));
-    public static final Range Octaves       = new Range(EnumSet.range(OTTAVA_ALTA, OTTAVA_BASSA));
-    public static final Range Rests         = new Range(EnumSet.of(MULTI_REST,
-                                                                   WHOLE_REST,
-                                                                   HALF_REST,
-                                                                   QUARTER_REST,
-                                                                   EIGHTH_REST,
-                                                                   SIXTEENTH_REST,
-                                                                   THIRTY_SECOND_REST,
-                                                                   SIXTY_FOURTH_REST,
-                                                                   ONE_HUNDRED_TWENTY_EIGHTH_REST));
-    public static final Range NoteHeads     = new Range(EnumSet.range(VOID_NOTEHEAD, NOTEHEAD_BLACK_3));
-    public static final Range Notes         = new Range(EnumSet.range(BREVE, WHOLE_NOTE_3));
-    public static final Range Stems         = new Range(EnumSet.range(COMBINING_STEM, COMBINING_STEM));
-    public static final Range Flags         = new Range(EnumSet.range(COMBINING_FLAG_1, COMBINING_FLAG_5_UP));
-    public static final Range HeadAndFlags  = new Range(EnumSet.range(HEAD_AND_FLAG_1, HEAD_AND_FLAG_5_UP));
-    public static final Range Beams         = new Range(EnumSet.range(BEAM, SLUR));
-    public static final Range Articulations = new Range(EnumSet.range(ARPEGGIATO, ARPEGGIATO));
-    public static final Range Dynamics      = new Range(EnumSet.range(DYNAMICS_CHAR_M, DECRESCENDO));
-    public static final Range Ornaments     = new Range(EnumSet.range(GRACE_NOTE_SLASH, INVERTED_MORDENT));
-    public static final Range Tuplets       = new Range(EnumSet.range(TUPLET_THREE, TUPLET_SIX));
-    public static final Range Pedals        = new Range(EnumSet.range(PEDAL_MARK, PEDAL_UP_MARK));
-    //
-    public static final Range Barlines      = new Range(EnumSet.range(SINGLE_BARLINE, THIN_BAR_LINE));
-    public static final Range Logicals      = new Range(EnumSet.range(REPEAT_DOTS, ENDING));
+    public static final Range Garbage = new Range(
+        EnumSet.range(NOISE, STRUCTURE));
+    public static final Range Physicals = new Range(
+        EnumSet.range(CLUTTER, TEXT));
 
-    // Assign proper name to all ranges and proper color to their contained
-    // shapes
+    //
+    public static final Range Bars = new Range(
+        EnumSet.range(DAL_SEGNO, BRACKET));
+    public static final Range Clefs = new Range(
+        EnumSet.range(G_CLEF, F_CLEF_OTTAVA_BASSA));
+    public static final Range Accidentals = new Range(
+        EnumSet.range(FLAT, DOUBLE_FLAT));
+    public static final Range Times = new Range(
+        EnumSet.range(TIME_ZERO, CUT_TIME));
+    public static final Range Octaves = new Range(
+        EnumSet.range(OTTAVA_ALTA, OTTAVA_BASSA));
+    public static final Range Rests = new Range(
+        EnumSet.of(
+            MULTI_REST,
+            WHOLE_REST,
+            HALF_REST,
+            QUARTER_REST,
+            EIGHTH_REST,
+            SIXTEENTH_REST,
+            THIRTY_SECOND_REST,
+            SIXTY_FOURTH_REST,
+            ONE_HUNDRED_TWENTY_EIGHTH_REST));
+    public static final Range NoteHeads = new Range(
+        EnumSet.range(VOID_NOTEHEAD, NOTEHEAD_BLACK_3));
+    public static final Range Notes = new Range(
+        EnumSet.range(BREVE, WHOLE_NOTE_3));
+    public static final Range Stems = new Range(
+        EnumSet.range(COMBINING_STEM, COMBINING_STEM));
+    public static final Range Flags = new Range(
+        EnumSet.range(COMBINING_FLAG_1, COMBINING_FLAG_5_UP));
+    public static final Range HeadAndFlags = new Range(
+        EnumSet.range(HEAD_AND_FLAG_1, HEAD_AND_FLAG_5_UP));
+    public static final Range Beams = new Range(EnumSet.range(BEAM, SLUR));
+    public static final Range Articulations = new Range(
+        EnumSet.range(ARPEGGIATO, ARPEGGIATO));
+    public static final Range Dynamics = new Range(
+        EnumSet.range(DYNAMICS_CHAR_M, DECRESCENDO));
+    public static final Range Ornaments = new Range(
+        EnumSet.range(GRACE_NOTE_SLASH, INVERTED_MORDENT));
+    public static final Range Tuplets = new Range(
+        EnumSet.range(TUPLET_THREE, TUPLET_SIX));
+    public static final Range Pedals = new Range(
+        EnumSet.range(PEDAL_MARK, PEDAL_UP_MARK));
+
+    //
+    public static final Range Barlines = new Range(
+        EnumSet.range(SINGLE_BARLINE, THIN_BAR_LINE));
+    public static final Range Logicals = new Range(
+        EnumSet.range(REPEAT_DOTS, ENDING));
+
     static {
         for (Field field : Shape.class.getDeclaredFields()) {
             if (field.getType() == Range.class) {
@@ -1036,6 +1194,7 @@ public enum Shape
                 }
             }
         }
+
         WHOLE_OR_HALF_REST.createShapeColor(Rests.getColor());
     }
 
