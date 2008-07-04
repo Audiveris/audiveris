@@ -86,9 +86,6 @@ public class LineBuilder
     /** (local) scale at staff level */
     private Scale staffScale;
 
-    /** Related sheet */
-    private Sheet sheet;
-
     /** Just a sequential id for debug */
     private int id;
 
@@ -100,6 +97,9 @@ public class LineBuilder
 
     /** Abscissa of right side */
     private int right = Integer.MIN_VALUE;
+
+    /** Patcher for line stick */
+    private final LineCleaner lineCleaner;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -136,8 +136,12 @@ public class LineBuilder
             constants.maxSlope.getValue(), // max stick slope
             true); // closeTest
 
-        this.sheet = sheet;
         this.staffScale = staffScale;
+
+        lineCleaner = new LineCleaner(
+            hLag,
+            sheet.getPicture(),
+            sheet.getScale().toPixels(constants.extensionMinLength));
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -252,16 +256,8 @@ public class LineBuilder
      */
     public void cleanup ()
     {
-        final int extensionMinLength = sheet.getScale()
-                                            .toPixels(
-            constants.extensionMinLength);
-
         for (Stick stick : sticks) {
-            StickUtil.cleanup(
-                stick,
-                lag,
-                extensionMinLength,
-                sheet.getPicture());
+            lineCleaner.cleanupStick(stick);
         }
     }
 
@@ -703,6 +699,16 @@ public class LineBuilder
 
         //~ Methods ------------------------------------------------------------
 
+        //----------//
+        // isInArea //
+        //----------//
+        @Override
+        public boolean isInArea (GlyphSection section)
+        {
+            return (section.getFirstPos() >= yMin) &&
+                   (section.getLastPos() <= yMax);
+        }
+
         //--------//
         // backup //
         //--------//
@@ -719,16 +725,6 @@ public class LineBuilder
         public boolean hasNext ()
         {
             return vi.hasNext();
-        }
-
-        //----------//
-        // isInArea //
-        //----------//
-        @Override
-        public boolean isInArea (GlyphSection section)
-        {
-            return (section.getFirstPos() >= yMin) &&
-                   (section.getLastPos() <= yMax);
         }
 
         //------//

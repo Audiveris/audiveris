@@ -43,7 +43,7 @@ import static omr.selection.SelectionTag.*;
 import omr.step.StepException;
 
 import omr.stick.Stick;
-import omr.stick.StickUtil;
+import omr.stick.LineCleaner;
 
 import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
@@ -53,6 +53,9 @@ import omr.ui.view.Zoom;
 import omr.util.Implement;
 import omr.util.Logger;
 
+import org.jdesktop.application.AbstractBean;
+import org.jdesktop.application.Action;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -61,8 +64,6 @@ import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.JCheckBoxMenuItem;
-import org.jdesktop.application.AbstractBean;
-import org.jdesktop.application.Action;
 
 /**
  * Class <code>HorizontalsBuilder</code> is in charge of retrieving horizontal
@@ -138,6 +139,9 @@ public class HorizontalsBuilder
     /** The collection of all horizontal items */
     private final List<Dash> allDashes = new ArrayList<Dash>();
 
+    /** Patcher for the ledger sticks */
+    private final LineCleaner lineCleaner;
+
     //~ Constructors -----------------------------------------------------------
 
     //--------------------//
@@ -150,6 +154,11 @@ public class HorizontalsBuilder
     {
         // Reuse the horizontal lag of runs (from staff lines)
         super(sheet, sheet.getHorizontalLag());
+
+        lineCleaner = new LineCleaner(
+            sheet.getHorizontalLag(),
+            sheet.getPicture(),
+            sheet.getScale().toPixels(constants.extensionMinPointNb));
 
         info = new Horizontals();
     }
@@ -202,16 +211,8 @@ public class HorizontalsBuilder
     //---------//
     private void cleanup (List<?extends Dash> dashes)
     {
-        final int extensionMinPointNb = sheet.getScale()
-                                             .toPixels(
-            constants.extensionMinPointNb);
-
         for (Dash dash : dashes) {
-            StickUtil.cleanup(
-                dash.getStick(),
-                lag,
-                extensionMinPointNb,
-                sheet.getPicture());
+            lineCleaner.cleanupStick(dash.getStick());
         }
     }
 
@@ -433,17 +434,54 @@ public class HorizontalsBuilder
 
     //~ Inner Classes ----------------------------------------------------------
 
+    //--------------//
+    // LedgerAction //
+    //--------------//
+    /**
+     * Class <code>LedgerAction</code> toggles the display of original ledger
+     * pixels
+     */
+    @Deprecated
+    @Plugin(type = PluginType.LINE_VIEW, item = JCheckBoxMenuItem.class)
+    public static class LedgerAction
+        extends AbstractAction
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public LedgerAction ()
+        {
+            putValue(
+                "SwingSelectedKey",
+                constants.displayLedgerLines.getValue());
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Implement(ActionListener.class)
+        public void actionPerformed (ActionEvent e)
+        {
+            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
+            constants.displayLedgerLines.setValue(item.isSelected());
+
+            // Trigger a repaint if needed
+            Sheet currentSheet = SheetManager.getSelectedSheet();
+
+            if (currentSheet != null) {
+                HorizontalsBuilder builder = currentSheet.getHorizontalsBuilder();
+
+                if ((builder != null) && (builder.lagView != null)) {
+                    builder.lagView.repaint();
+                }
+            }
+        }
+    }
+
     //------------------//
     // LedgerParameters //
     //------------------//
     public static class LedgerParameters
         extends AbstractBean
     {
-        //~ Static fields/initializers -----------------------------------------
-
-        /** Singleton */
-        private static volatile LedgerParameters INSTANCE;
-
         //~ Methods ------------------------------------------------------------
 
         //-------------//
@@ -451,15 +489,7 @@ public class HorizontalsBuilder
         //-------------//
         public static LedgerParameters getInstance ()
         {
-            if (INSTANCE == null) {
-                synchronized (LedgerParameters.class) {
-                    if (INSTANCE == null) {
-                        INSTANCE = new LedgerParameters();
-                    }
-                }
-            }
-
-            return INSTANCE;
+            return Holder.INSTANCE;
         }
 
         //-----------------//
@@ -505,47 +535,14 @@ public class HorizontalsBuilder
                 }
             }
         }
-    }
 
-    //--------------//
-    // LedgerAction //
-    //--------------//
-    /**
-     * Class <code>LedgerAction</code> toggles the display of original ledger
-     * pixels
-     */
-    @Deprecated
-    @Plugin(type = PluginType.LINE_VIEW, item = JCheckBoxMenuItem.class)
-    public static class LedgerAction
-        extends AbstractAction
-    {
-        //~ Constructors -------------------------------------------------------
+        //~ Inner Classes ------------------------------------------------------
 
-        public LedgerAction ()
+        private static class Holder
         {
-            putValue(
-                "SwingSelectedKey",
-                constants.displayLedgerLines.getValue());
-        }
+            //~ Static fields/initializers -------------------------------------
 
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
-            constants.displayLedgerLines.setValue(item.isSelected());
-
-            // Trigger a repaint if needed
-            Sheet currentSheet = SheetManager.getSelectedSheet();
-
-            if (currentSheet != null) {
-                HorizontalsBuilder builder = currentSheet.getHorizontalsBuilder();
-
-                if ((builder != null) && (builder.lagView != null)) {
-                    builder.lagView.repaint();
-                }
-            }
+            public static final LedgerParameters INSTANCE = new LedgerParameters();
         }
     }
 
@@ -664,10 +661,10 @@ public class HorizontalsBuilder
             "Low Maximum staff distance for a horizontal");
         Scale.Fraction   maxThicknessHigh = new Scale.Fraction(
             0.3,
-            " High Maximum thickness of an interesting stick");
+            "High Maximum thickness of an interesting stick");
         Scale.Fraction   maxThicknessLow = new Scale.Fraction(
             0.3,
-            " Low Maximum thickness of an interesting stick");
+            "Low Maximum thickness of an interesting stick");
         Check.Grade      minCheckResult = new Check.Grade(
             0.50,
             "Minimum result for suite of check");
