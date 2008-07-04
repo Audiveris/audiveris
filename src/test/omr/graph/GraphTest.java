@@ -95,7 +95,6 @@ public class GraphTest
         createVertices();
 
         MyDigraph g2 = new MyDigraph();
-        g2.setVertexClass(MyVertex.class);
 
         MyVertex v = g2.createVertex();
 
@@ -254,23 +253,6 @@ public class GraphTest
         }
     }
 
-    //--------------------------//
-    // testNullVertexAllocation //
-    //--------------------------//
-    //@Test
-    public void testNullVertexAllocation ()
-    {
-        try {
-            MyVertex v = graph.createVertex();
-            fail(
-                "Exception should be raised" +
-                " when attempting to createx a vertex" +
-                " with no vertex class defined");
-        } catch (Exception expected) {
-            checkException(expected);
-        }
-    }
-
     //----------------------//
     // testRemoveNullVertex //
     //----------------------//
@@ -283,22 +265,6 @@ public class GraphTest
             graph.removeVertex(null);
             fail("Exception should be raised" + " when removing a null vertex");
         } catch (Exception expected) {
-            checkException(expected);
-        }
-    }
-
-    //------------------------//
-    // testSetNullVertexClass //
-    //------------------------//
-    //@Test
-    public void testSetNullVertexClass ()
-    {
-        try {
-            graph.setVertexClass(null);
-            fail(
-                "Exception should be raised" +
-                " when setting a null vertex class");
-        } catch (IllegalArgumentException expected) {
             checkException(expected);
         }
     }
@@ -359,7 +325,6 @@ public class GraphTest
 
     private void createVertices ()
     {
-        graph.setVertexClass(MyVertex.class);
         v1 = graph.createVertex();
         v2 = graph.createVertex();
         v3 = graph.createVertex();
@@ -372,7 +337,7 @@ public class GraphTest
     {
         public MyDigraph ()
         {
-            super("MyDigraph");
+            super("MyDigraph", MyVertex.class);
         }
 
         @Override
