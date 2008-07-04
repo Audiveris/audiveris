@@ -18,7 +18,7 @@ import omr.selection.SelectionHint;
 import omr.selection.SelectionObserver;
 import omr.selection.SelectionTag;
 
-import omr.sheet.PixelPoint;
+import omr.score.common.PixelPoint;
 import omr.sheet.Sheet;
 
 import omr.util.Implement;
