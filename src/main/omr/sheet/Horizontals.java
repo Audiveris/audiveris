@@ -9,8 +9,6 @@
 //
 package omr.sheet;
 
-import omr.stick.Stick;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,9 +24,10 @@ public class Horizontals
 {
     //~ Instance fields --------------------------------------------------------
 
+    /** The collection of endings found */
     private final List<Ending> endings = new ArrayList<Ending>();
 
-    /** The whole list of horizontals (ledgers, legato signs, endings) found */
+    /** The collection of ledgers found */
     private final List<Ledger> ledgers = new ArrayList<Ledger>();
 
     //~ Constructors -----------------------------------------------------------
