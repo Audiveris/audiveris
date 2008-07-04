@@ -16,6 +16,7 @@ import omr.score.entity.Beam;
 import omr.score.entity.Chord;
 import omr.score.entity.Clef;
 import omr.score.entity.Coda;
+import omr.score.entity.DirectionStatement;
 import omr.score.entity.Dynamics;
 import omr.score.entity.Fermata;
 import omr.score.entity.KeySignature;
@@ -32,14 +33,16 @@ import omr.score.entity.Slur;
 import omr.score.entity.Staff;
 import omr.score.entity.System;
 import omr.score.entity.SystemPart;
+import omr.score.entity.Text;
 import omr.score.entity.TimeSignature;
 import omr.score.entity.Tuplet;
+import omr.score.entity.VisitableNode;
 import omr.score.entity.Wedge;
-import omr.score.entity.Words;
 
 /**
  * Class <code>AbstractScoreVisitor</code> provides a default implementation of
- * the ScoreVisitor interface
+ * the ScoreVisitor interface, where by default all visit() methods are void and
+ * return true (to allow automatic visit of the children of each node).
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -105,6 +108,14 @@ public class AbstractScoreVisitor
     // visit Coda //
     //------------//
     public boolean visit (Coda coda)
+    {
+        return true;
+    }
+
+    //--------------------------//
+    // visit DirectionStatement //
+    //--------------------------//
+    public boolean visit (DirectionStatement words)
     {
         return true;
     }
@@ -245,6 +256,14 @@ public class AbstractScoreVisitor
         return true;
     }
 
+    //------------//
+    // visit Text //
+    //------------//
+    public boolean visit (Text text)
+    {
+        return true;
+    }
+
     //---------------------//
     // visit TimeSignature //
     //---------------------//
@@ -261,18 +280,18 @@ public class AbstractScoreVisitor
         return true;
     }
 
-    //-------------//
-    // visit Wedge //
-    //-------------//
-    public boolean visit (Wedge wedge)
+    //---------------------//
+    // visit VisitableNode //
+    //---------------------//
+    public boolean visit (VisitableNode node)
     {
         return true;
     }
 
     //-------------//
-    // visit Words //
+    // visit Wedge //
     //-------------//
-    public boolean visit (Words words)
+    public boolean visit (Wedge wedge)
     {
         return true;
     }
