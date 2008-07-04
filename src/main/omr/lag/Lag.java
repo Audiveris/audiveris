@@ -86,12 +86,14 @@ public class Lag<L extends Lag<L, S>, S extends Section>
     /**
      * Constructor with specified orientation
      * @param name the distinguished name for this instance
+     * @param sectionClass the class to be used when instantiating sections
      * @param orientation the desired orientation of the lag
      */
-    protected Lag (String   name,
-                   Oriented orientation)
+    protected Lag (String            name,
+                   Class<?extends S> sectionClass,
+                   Oriented          orientation)
     {
-        super(name);
+        super(name, sectionClass);
         this.orientation = orientation;
     }
 
@@ -241,6 +243,14 @@ public class Lag<L extends Lag<L, S>, S extends Section>
     public boolean isVertical ()
     {
         return orientation.isVertical();
+    }
+
+    //-------------------//
+    // createAbsoluteRoi //
+    //-------------------//
+    public Roi createAbsoluteRoi (Rectangle absoluteContour)
+    {
+        return new Roi(orientation.switchRef(absoluteContour, null));
     }
 
     //---------------//
@@ -569,5 +579,117 @@ public class Lag<L extends Lag<L, S>, S extends Section>
     void setRuns (List<List<Run>> runs)
     {
         this.runs = runs;
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //-----//
+    // Roi //
+    //-----//
+    /**
+     * Region of Interest
+     */
+    public class Roi
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Region of interest within the containing lag */
+        private final Rectangle contour;
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Define a region of interest within the lag
+         * @param contour the contour of the region of interest, specified in
+         * the usual (coord, pos) form
+         */
+        public Roi (Rectangle contour)
+        {
+            this.contour = contour;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        public Rectangle getAbsoluteContour ()
+        {
+            return orientation.switchRef(contour, null);
+        }
+
+        public Rectangle getContour ()
+        {
+            return contour;
+        }
+
+        /**
+         * Report the histogram obtained in the provided projection orientation
+         * @param projection the orientation of the projection
+         * @return the computed histogram
+         */
+        public int[] getHistogram (Oriented projection)
+        {
+            int[] histo;
+
+            if ((orientation.isVertical() && projection.isVertical()) ||
+                (!orientation.isVertical() && !projection.isVertical())) {
+                // Same orientations : we project along the runs
+                histo = new int[contour.height];
+                Arrays.fill(histo, 0);
+
+                int bucket = 0;
+
+                for (List<Run> alignedRuns : runs.subList(
+                    contour.y,
+                    contour.y + contour.height)) {
+                    for (Run run : alignedRuns) {
+                        final int iMin = Math.max(contour.x, run.getStart());
+                        final int iMax = Math.min(
+                            (contour.x + contour.width) - 1,
+                            run.getStop());
+
+                        if (iMin <= iMax) {
+                            histo[bucket] += (iMax - iMin + 1);
+                        }
+                    }
+
+                    bucket++;
+                }
+            } else {
+                // Different orientations : we project across the runs
+                histo = new int[contour.width];
+                Arrays.fill(histo, 0);
+
+                for (List<Run> alignedRuns : runs.subList(
+                    contour.y,
+                    contour.y + contour.height)) {
+                    for (Run run : alignedRuns) {
+                        final int iMin = Math.max(contour.x, run.getStart());
+                        final int iMax = Math.min(
+                            (contour.x + contour.width) - 1,
+                            run.getStop());
+
+                        for (int i = iMin; i <= iMax; i++) {
+                            histo[i - contour.x]++;
+                        }
+                    }
+                }
+            }
+
+            return histo;
+        }
+
+        /**
+         * Report the containing lag
+         * @return the containing lag
+         */
+        public Lag getLag ()
+        {
+            return Lag.this;
+        }
+
+        @Override
+        public String toString ()
+        {
+            return "Roi absContour:" + getAbsoluteContour();
+        }
     }
 }
