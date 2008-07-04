@@ -19,7 +19,12 @@ import omr.util.Logger;
 import java.util.*;
 
 /**
- * Class <code>GlyphModel</code> is a common basis for glyph handling.
+ * Class <code>GlyphModel</code> is a common basis for glyph handling, used by
+ * any user interface which needs to act on the actual glyph data. 
+ * 
+ * <p>Nota: Since it triggers updates of user selections, it is supposed to be 
+ * used from within a user action. If not, glyphs should be accessed directly
+ * instead, through the 'setShape()' method in 'Glyph' class.
  *
  * <dl>
  * <dt><b>Selection Outputs:</b></dt><ul>
