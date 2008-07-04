@@ -202,30 +202,7 @@ public class SheetAssembly
         // Position score view as the higher part of the splitPane
         splitPane.setTopComponent(scoreView.getComponent());
         splitPane.setDividerLocation(constants.scoreSheetDivider.getValue());
-
-        // Needed to make the scroll bars visible
-        scoreView.getScrollPane()
-                 .getView()
-                 .getZoom()
-                 .fireStateChanged();
-
-        component.invalidate();
-        component.validate();
-        component.repaint();
-
         this.scoreView = scoreView;
-
-        // Pre-position vertical scroll bar to its middle (50 for 0 - 100)
-        SwingUtilities.invokeLater(
-            new Runnable() {
-                    public void run ()
-                    {
-                        scoreView.getScrollPane()
-                                 .getComponent()
-                                 .getVerticalScrollBar()
-                                 .setValue(50);
-                    }
-                });
     }
 
     //-----------------//
