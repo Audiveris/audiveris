@@ -12,24 +12,40 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
+import omr.glyph.Sentence;
 
 import omr.score.common.SystemPoint;
 import omr.score.common.SystemRectangle;
+import omr.score.visitor.ScoreVisitor;
 
 import omr.util.Logger;
 
 import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.geom.Rectangle2D;
 
 /**
- * Class <code>Text</code> handles any textual score entity
+ * Class <code>Text</code> handles any textual score entity.
+ *
+ * <p><b>Nota</b>: There is exactly one Text entity per sentence, except for
+ * lyric items for which we build one LyricItem (subclass of Text) for each
+ * textual glyph. The reason is that, except for lyrics, only the full sentence
+ * is meaningful: for example "Ludwig van Beethoven" is meaningful as a Creator
+ * Text, but the various glyphs "Ludwig", "van", "Beethoven" are not.
+ * For lyrics, since we can have very long sentences, and since the positioning
+ * of every syllable must done with precision, we handle one LyricItem Text
+ * entity per isolated textual glyph.</p>
+ *
+ * <p>Working at the sentence level also allows a better accuracy in the setting
+ * of parameters (such as baseline or font) for the whole sentence.</p>
+ *
+ * <h4>Synoptic of Text Translation:<br/>
+ *    <img src="doc-files/TextTranslation.jpg"/>
+ * </h4>
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
 public abstract class Text
+    extends PartNode
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -40,33 +56,18 @@ public abstract class Text
     private static final Logger logger = Logger.getLogger(Text.class);
 
     /** The font used for text entities */
-    protected static Font lyricFont = new Font(
-        constants.lyricFontName.getValue(),
+    protected static Font textFont = new Font(
+        constants.textFontName.getValue(),
         Font.PLAIN,
-        constants.lyricFontSize.getValue());
-
-    /** A common graphics entity, just to get font metrics, TO BE IMPROVED! */
-    protected static Graphics graphics = omr.Main.getGui()
-                                                 .getFrame()
-                                                 .getGraphics();
-
-    /** Font metrics */
-    protected static FontMetrics fontMetrics = graphics.getFontMetrics(
-        lyricFont);
+        constants.textFontSize.getValue());
 
     //~ Instance fields --------------------------------------------------------
 
-    /** The containing system part */
-    protected final SystemPart systemPart;
+    /** The containing sentence */
+    private final Sentence sentence;
 
-    /** The item location (left side, base line) */
+    /** The item location (x is left side, y is baseline) */
     protected final SystemPoint location;
-
-    /** The item center */
-    protected final SystemPoint center;
-
-    /** The carried text */
-    protected final String content;
 
     /** The bounding box of the content in the score */
     protected final SystemRectangle box;
@@ -82,28 +83,38 @@ public abstract class Text
     /**
      * Creates a new Text object.
      *
-     * @param systemPart the related system part
-     * @param center the center of this text within the containing system
-     * @param location the reference point of this text within the system
-     * @param content the related string
-     * @param box the bounding box in units
+     * @param sentence the larger sentence
      */
-    public Text (SystemPart      systemPart,
-                 SystemPoint     center,
-                 SystemPoint     location,
-                 String          content,
-                 SystemRectangle box)
+    public Text (Sentence sentence)
     {
-        this.systemPart = systemPart;
-        this.center = center;
-        this.location = location;
-        this.content = content;
-        this.box = box;
+        this(sentence, sentence.getLocation());
+    }
 
-        systemPart.addText(this);
+    //------//
+    // Text //
+    //------//
+    /**
+     * Creates a new Text object, with a specific location, different from the
+     * sentence location
+     *
+     * @param sentence the larger sentence
+     * @param location specific location
+     */
+    public Text (Sentence    sentence,
+                 SystemPoint location)
+    {
+        super(sentence.getSystemPart());
+        this.sentence = sentence;
+        this.location = location;
+
+        box = sentence.getSystemContour();
 
         // Proper font
-        determineFont();
+        determineActualFont();
+
+        if (logger.isFineEnabled()) {
+            logger.fine("Created " + this);
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -111,14 +122,55 @@ public abstract class Text
     //------------//
     // getContent //
     //------------//
+    /**
+     * Report the current string value of this text
+     * @return the string value of this text
+     */
     public String getContent ()
     {
-        return content;
+        String str = sentence.getTextContent();
+
+        if (str == null) {
+            str = sentence.getContentFromItems();
+        }
+
+        return str;
+    }
+
+    //--------------------//
+    // getDefaultFontSize //
+    //--------------------//
+    /**
+     * Report the font size to be exported for the lyrics
+     *
+     * @return the exported lyric font size
+     */
+    public static int getDefaultFontSize ()
+    {
+        return (int) Math.rint(textFont.getSize2D() / 1.8);
+    }
+
+    //-------------//
+    // getFontSize //
+    //-------------//
+    /**
+     * Report the font size to be exported for this text
+     *
+     * @return the exported font size
+     */
+    public int getFontSize ()
+    {
+        return (int) Math.rint(displayFont.getSize2D() / 1.8);
     }
 
     //-------------//
     // getLocation //
     //-------------//
+    /**
+     * Report the starting point of this text, with abscissa as the left side of
+     * the text and ordinate as the text baseline
+     * @return the (left,baseline) starting point in the containing system
+     */
     public SystemPoint getLocation ()
     {
         return location;
@@ -127,9 +179,25 @@ public abstract class Text
     //--------------//
     // getLyricFont //
     //--------------//
+    /**
+     * Report the font to be used for handling text
+     * @return the default text font
+     */
     public static Font getLyricFont ()
     {
-        return lyricFont;
+        return textFont;
+    }
+
+    //-------------//
+    // getSentence //
+    //-------------//
+    /**
+     * Report the sentence that relates to this text
+     * @return the related sentence
+     */
+    public Sentence getSentence ()
+    {
+        return sentence;
     }
 
     //----------//
@@ -145,102 +213,117 @@ public abstract class Text
         return box.width;
     }
 
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
     //----------//
     // populate //
     //----------//
     /**
      * Allocate the proper score entity (or entities) that correspond to this
-     * textual glyph. This word or sequence of words may be: <ul>
+     * textual sentence. This word or sequence of words may be: <ul>
      * <li>a Direction</li>
      * <li>a part Name</li>
      * <li>a part Number</li>
-     * <li>a Creator/li>
-     * <li>a Copyright/li>
-     * <li>one or several Lyric items</li>
+     * <li>a Creator</li>
+     * <li>a Copyright</li>
+     * <li>one or several LyricItem entities</li>
      *
-     * @param glyph the textual glyph
-     * @param systemPart its containing system part
-     * @param center its box center
+     * @param sentence the whole sentence
      * @param location its starting reference wrt containing system
      */
-    public static void populate (Glyph       glyph,
-                                 SystemPart  systemPart,
-                                 SystemPoint center,
+    public static void populate (Sentence    sentence,
                                  SystemPoint location)
     {
-        if (glyph.getTextType() != null) {
-            SystemRectangle box = systemPart.getSystem()
-                                            .toSystemRectangle(
-                glyph.getContourBox());
+        final SystemPart systemPart = sentence.getSystemPart();
+        final System     system = systemPart.getSystem();
 
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "Populating text glyph#" + glyph.getId() + " " +
-                    glyph.getTextType() + " \"" + glyph.getTextContent() +
-                    "\"");
-            }
+        if (sentence.getTextType() == null) {
+            systemPart.addError(
+                sentence.getGlyphs().first(),
+                "Sentence with no text type defined");
 
-            String str = glyph.getTextContent();
+            return;
+        }
 
-            switch (glyph.getTextType()) {
-            case Lyrics :
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                "Populating " + sentence + " " + sentence.getTextType() +
+                " \"" + sentence.getTextContent() + "\"");
+        }
+
+        switch (sentence.getTextType()) {
+        case Lyrics :
+
+            // Create as many lyric items as needed
+            for (Glyph item : sentence.getGlyphs()) {
+                SystemRectangle itemBox = system.toSystemRectangle(
+                    item.getContourBox());
+                String          itemStr = item.getTextContent();
+
+                if (itemStr == null) {
+                    int nbChar = (int) Math.rint(
+                        (double) itemBox.width / sentence.getTextHeight());
+                    itemStr = sentence.getTextType()
+                                      .getStringHolder(nbChar);
+                }
+
                 LyricItem.createLyricItems(
-                    glyph,
-                    systemPart,
-                    location,
-                    str,
-                    box);
-
-                break;
-
-            case Title :
-                glyph.setTranslation(
-                    new TitleText(systemPart, center, location, str, box));
-
-                break;
-
-            case Direction :
-
-                Measure measure = systemPart.getMeasureAt(location);
-                glyph.setTranslation(
-                    new Words(
-                        measure,
-                        location,
-                        measure.getEventChord(location),
-                        glyph,
-                        new DirectionText(
-                            systemPart,
-                            center,
-                            location,
-                            str,
-                            box)));
-
-                break;
-
-            case Number :
-                glyph.setTranslation(
-                    new NumberText(systemPart, center, location, str, box));
-
-                break;
-
-            case Name :
-                glyph.setTranslation(
-                    new NameText(systemPart, center, location, str, box));
-
-                break;
-
-            case Creator :
-                glyph.setTranslation(
-                    new CreatorText(systemPart, center, location, str, box));
-
-                break;
-
-            case Rights :
-                glyph.setTranslation(
-                    new RightsText(systemPart, center, location, str, box));
-
-                break;
+                    sentence,
+                    item,
+                    new SystemPoint(itemBox.x, location.y),
+                    itemStr,
+                    system.toSystemRectangle(item.getContourBox()));
             }
+
+            break;
+
+        case Title :
+            sentence.setGlyphsTranslation(new TitleText(sentence));
+
+            break;
+
+        case Direction :
+
+            Measure measure = systemPart.getMeasureAt(location);
+            sentence.setGlyphsTranslation(
+                new DirectionStatement(
+                    measure,
+                    location,
+                    measure.getEventChord(location),
+                    sentence,
+                    new DirectionText(sentence)));
+
+            break;
+
+        case Number :
+            sentence.setGlyphsTranslation(new NumberText(sentence));
+
+            break;
+
+        case Name :
+            sentence.setGlyphsTranslation(new NameText(sentence));
+
+            break;
+
+        case Creator :
+            sentence.setGlyphsTranslation(new CreatorText(sentence));
+
+            break;
+
+        case Rights :
+            sentence.setGlyphsTranslation(new RightsText(sentence));
+
+            break;
+
+        default :
+            sentence.setGlyphsTranslation(new DefaultText(sentence));
         }
     }
 
@@ -257,50 +340,49 @@ public abstract class Text
         return displayFont;
     }
 
-    //-------------//
-    // getFontSize //
-    //-------------//
-    /**
-     * Report the font size to be exported for this text
-     *
-     * @return the exported font size
-     */
-    public int getFontSize ()
-    {
-        return (int) Math.rint(displayFont.getSize2D() / 1.8);
-    }
-
-    //------------------//
-    // getLyricFontSize //
-    //------------------//
-    /**
-     * Report the font size to be exported for the lyrics
-     *
-     * @return the exported lyric font size
-     */
-    public static int getLyricFontSize ()
-    {
-        return (int) Math.rint(lyricFont.getSize2D() / 1.8);
-    }
-
     //----------//
     // toString //
     //----------//
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString ()
     {
         StringBuilder sb = new StringBuilder();
         sb.append("{Text ")
-          .append(internalsString())
-          .append(" \"")
-          .append(content)
-          .append("\" loc[")
+          .append(sentence.getTextType())
+          .append(internalsString());
+
+        if (getContent() != null) {
+            sb.append(" \"")
+              .append(getContent())
+              .append("\"");
+        }
+
+        sb.append(" loc[")
           .append(location.x)
           .append(",")
           .append(location.y)
-          .append("]}");
+          .append("]");
+
+        sb.append(" S#")
+          .append(this.getSystem().getId());
+        sb.append("}");
 
         return sb.toString();
+    }
+
+    //---------------------//
+    // determineActualFont //
+    //---------------------//
+    /**
+     * Determine the proper font size
+     */
+    protected void determineActualFont ()
+    {
+        displayFont = textFont.deriveFont(
+            new Float(0.95f * sentence.getTextHeight()));
     }
 
     //-----------------//
@@ -312,22 +394,9 @@ public abstract class Text
      *
      * @return the string of internals
      */
-    protected abstract String internalsString ();
-
-    //---------------//
-    // determineFont //
-    //---------------//
-    /**
-     * Determine the proper font size, based on the ratio between the width of
-     * the underlying glyph and the theoretical length of this text in the
-     * default font
-     */
-    protected void determineFont ()
+    protected String internalsString ()
     {
-        Rectangle2D rect = fontMetrics.getStringBounds(content, graphics);
-        double      fontRatio = getWidth() / rect.getWidth();
-        displayFont = lyricFont.deriveFont(
-            new Float((fontRatio * lyricFont.getSize()) / 2));
+        return ""; // By default
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -335,6 +404,7 @@ public abstract class Text
     //-------------//
     // CreatorText //
     //-------------//
+    /** Subclass of Text, dedicated to a Creator (composer, lyricist, ...) */
     public static class CreatorText
         extends Text
     {
@@ -356,13 +426,9 @@ public abstract class Text
 
         //~ Constructors -------------------------------------------------------
 
-        public CreatorText (SystemPart      systemPart,
-                            SystemPoint     center,
-                            SystemPoint     location,
-                            String          content,
-                            SystemRectangle box)
+        public CreatorText (Sentence sentence)
         {
-            super(systemPart, center, location, content, box);
+            super(sentence);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -381,143 +447,109 @@ public abstract class Text
         protected String internalsString ()
         {
             if (creatorType != null) {
-                return "creator " + creatorType;
+                return " " + creatorType;
             } else {
-                return "creator";
+                return "";
             }
+        }
+    }
+
+    //-------------//
+    // DefaultText //
+    //-------------//
+    /**
+     * Subclass of Text, with no precise role assigned.
+     * Perhaps, we could get rid of this class
+     */
+    public static class DefaultText
+        extends Text
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public DefaultText (Sentence sentence)
+        {
+            super(sentence);
         }
     }
 
     //---------------//
     // DirectionText //
     //---------------//
+    /** Subclass of Text, dedicated to a Direction instruction */
     public static class DirectionText
         extends Text
     {
         //~ Constructors -------------------------------------------------------
 
-        public DirectionText (SystemPart      systemPart,
-                              SystemPoint     center,
-                              SystemPoint     location,
-                              String          content,
-                              SystemRectangle box)
+        public DirectionText (Sentence sentence)
         {
-            super(systemPart, center, location, content, box);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        protected String internalsString ()
-        {
-            return "direction";
+            super(sentence);
         }
     }
 
     //----------//
     // NameText //
     //----------//
+    /** Subclass of Text, dedicated to a part Name */
     public static class NameText
         extends Text
     {
         //~ Constructors -------------------------------------------------------
 
-        public NameText (SystemPart      systemPart,
-                         SystemPoint     center,
-                         SystemPoint     location,
-                         String          content,
-                         SystemRectangle box)
+        public NameText (Sentence sentence)
         {
-            super(systemPart, center, location, content, box);
+            super(sentence);
 
-            systemPart.getScorePart()
-                      .setName(content);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        protected String internalsString ()
-        {
-            return "name";
+            if (getContent() != null) {
+                sentence.getSystemPart()
+                        .getScorePart()
+                        .setName(getContent());
+            }
         }
     }
 
     //------------//
     // NumberText //
     //------------//
+    /** Subclass of Text, dedicated to a score Number */
     public static class NumberText
         extends Text
     {
         //~ Constructors -------------------------------------------------------
 
-        public NumberText (SystemPart      systemPart,
-                           SystemPoint     center,
-                           SystemPoint     location,
-                           String          content,
-                           SystemRectangle box)
+        public NumberText (Sentence sentence)
         {
-            super(systemPart, center, location, content, box);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        protected String internalsString ()
-        {
-            return "number";
+            super(sentence);
         }
     }
 
     //------------//
     // RightsText //
     //------------//
+    /** Subclass of Text, dedicated to a copyright statement */
     public static class RightsText
         extends Text
     {
         //~ Constructors -------------------------------------------------------
 
-        public RightsText (SystemPart      systemPart,
-                           SystemPoint     center,
-                           SystemPoint     location,
-                           String          content,
-                           SystemRectangle box)
+        public RightsText (Sentence sentence)
         {
-            super(systemPart, center, location, content, box);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        protected String internalsString ()
-        {
-            return "rights";
+            super(sentence);
         }
     }
 
     //-----------//
     // TitleText //
     //-----------//
+    /** Subclass of Text, dedicated to a score Title */
     public static class TitleText
         extends Text
     {
         //~ Constructors -------------------------------------------------------
 
-        public TitleText (SystemPart      systemPart,
-                          SystemPoint     center,
-                          SystemPoint     location,
-                          String          content,
-                          SystemRectangle box)
+        public TitleText (Sentence sentence)
         {
-            super(systemPart, center, location, content, box);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        protected String internalsString ()
-        {
-            return "title";
+            super(sentence);
         }
     }
 
@@ -529,11 +561,11 @@ public abstract class Text
     {
         //~ Instance fields ----------------------------------------------------
 
-        Constant.Integer lyricFontSize = new Constant.Integer(
+        Constant.Integer textFontSize = new Constant.Integer(
             "points",
             17,
             "Standard font point size for lyrics");
-        Constant.String  lyricFontName = new Constant.String(
+        Constant.String  textFontName = new Constant.String(
             "Sans Serif",
             "Standard font name for lyrics");
     }
