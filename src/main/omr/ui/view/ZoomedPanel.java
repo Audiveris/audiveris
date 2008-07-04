@@ -435,7 +435,7 @@ public class ZoomedPanel
         //~ Instance fields ----------------------------------------------------
 
         PixelCount focusMargin = new PixelCount(
-            20,
+            50,
             "Margin visible around a focus");
     }
 }
