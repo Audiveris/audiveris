@@ -9,6 +9,7 @@
 //
 package omr.sheet;
 
+import omr.score.common.PixelDimension;
 import omr.Main;
 
 import omr.check.CheckBoard;
@@ -138,7 +139,9 @@ public class BarsBuilder
      */
     public BarsBuilder (Sheet sheet)
     {
-        super(sheet, new GlyphLag("vLag", new VerticalOrientation()));
+        super(
+            sheet,
+            new GlyphLag("vLag", StickSection.class, new VerticalOrientation()));
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -187,8 +190,6 @@ public class BarsBuilder
 
         try {
             // Populate the vertical lag of runs
-            lag.setVertexClass(StickSection.class);
-
             SectionsBuilder<GlyphLag, GlyphSection> lagBuilder;
             lagBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
                 lag,
@@ -398,70 +399,99 @@ public class BarsBuilder
         }
     }
 
-    //------------------//
-    // defineScoreParts //
-    //------------------//
-    /**
-     * From system part, define the score parts
-     * @throws StepException
-     */
-    private void defineScoreParts ()
-        throws StepException
+    //----------//
+    // getBarOf //
+    //----------//
+    private Stick getBarOf (Glyph glyph)
     {
-        // Take the best representative system
-        System refSystem = chooseRefSystem()
-                               .getScoreSystem();
-
-        // Build the ScorePart list based on the parts of the ref system
-        score.createPartListFrom(refSystem);
-
-        // Now examine each system as compared with the ref system
-        // We browse through the parts "bottom up"
-        List<ScorePart> partList = score.getPartList();
-        final int       nbScoreParts = partList.size();
-
-        for (SystemInfo systemInfo : sheet.getSystems()) {
-            System system = systemInfo.getScoreSystem();
-            logger.fine(system.toString());
-
-            List<TreeNode> systemParts = system.getParts();
-            final int      nbp = systemParts.size();
-
-            for (int ip = 0; ip < nbp; ip++) {
-                ScorePart  global = partList.get(nbScoreParts - 1 - ip);
-                SystemPart sp = (SystemPart) systemParts.get(nbp - 1 - ip);
-                sp.setScorePart(global);
-                sp.setId(global.getId());
+        for (Stick bar : bars) {
+            if (bar == glyph) {
+                return bar;
             }
         }
+
+        logger.warning("Cannot find bar for " + glyph);
+
+        return null;
     }
 
     //-----------------//
-    // chooseRefSystem //
+    // setSystemBraces //
     //-----------------//
-    private SystemInfo chooseRefSystem ()
-        throws StepException
+    /**
+     * Pass the braces symbols found for one system
+     *
+     * @param braces list of braces for this system
+     */
+    private void setSystemBraces (System      system,
+                                  List<Glyph> braces)
     {
-        // Look for the first largest system (according to its number of parts)
-        int        NbOfParts = 0;
-        SystemInfo refSystem = null;
-
-        for (SystemInfo systemInfo : sheet.getSystems()) {
-            int nb = systemInfo.getScoreSystem()
-                               .getParts()
-                               .size();
-
-            if (nb > NbOfParts) {
-                NbOfParts = nb;
-                refSystem = systemInfo;
-            }
-        }
-
-        if (refSystem == null) {
-            throw new StepException("No system found");
-        }
-
-        return refSystem;
+        //        // Map Staff -> its containing staves ensemble (= ScorePart)
+        //        Map<Staff, List<Staff>> ensembles = new HashMap<Staff, List<Staff>>();
+        //
+        //        // Inspect each brace in turn
+        //        for (Glyph brace : braces) {
+        //            List<Staff> ensemble = new ArrayList<Staff>();
+        //
+        //            // Inspect all staves for this brace
+        //            for (TreeNode node : system.getStaves()) {
+        //                Staff staff = (Staff) node;
+        //
+        //                if (checker.isStaffEmbraced(staff, brace)) {
+        //                    ensemble.add(staff);
+        //                    ensembles.put(staff, ensemble);
+        //                }
+        //            }
+        //
+        //            if (ensemble.size() == 0) {
+        //                logger.warning(
+        //                    "Brace with no embraced staves at all: " + brace.getId());
+        //            }
+        //        }
+        //
+        //        // Now build the parts by looking back at all staves
+        //        List<SystemPart> parts = new ArrayList<SystemPart>();
+        //        List<Staff>      currentEnsemble = null;
+        //
+        //        for (TreeNode node : system.getStaves()) {
+        //            Staff       staff = (Staff) node;
+        //            List<Staff> ensemble = ensembles.get(staff);
+        //
+        //            if (ensemble == null) {
+        //                // Standalone staff, a part by itself
+        //                parts.add(new SystemPart(Arrays.asList(staff)));
+        //            } else {
+        //                // Staff is in a part
+        //                if (ensemble != currentEnsemble) {
+        //                    parts.add(new SystemPart(ensemble));
+        //                } else {
+        //                    // Nothing to do
+        //                }
+        //            }
+        //
+        //            currentEnsemble = ensemble;
+        //        }
+        //
+        //        // Dump this system parts
+        //        if (logger.isFineEnabled()) {
+        //            StringBuilder sb = new StringBuilder();
+        //
+        //            for (SystemPart part : parts) {
+        //                sb.append("[");
+        //
+        //                for (Staff staff : part.getStaves()) {
+        //                    sb.append(" ")
+        //                      .append(staff.getStaffIndex());
+        //                }
+        //
+        //                sb.append("] ");
+        //            }
+        //
+        //            logger.fine(system + " Parts: " + sb);
+        //        }
+        //
+        //        // Assign the parts to the system
+        //        system.setParts(parts);
     }
 
     //--------------------//
@@ -642,6 +672,34 @@ public class BarsBuilder
         }
     }
 
+    //-----------------//
+    // chooseRefSystem //
+    //-----------------//
+    private SystemInfo chooseRefSystem ()
+        throws StepException
+    {
+        // Look for the first largest system (according to its number of parts)
+        int        NbOfParts = 0;
+        SystemInfo refSystem = null;
+
+        for (SystemInfo systemInfo : sheet.getSystems()) {
+            int nb = systemInfo.getScoreSystem()
+                               .getParts()
+                               .size();
+
+            if (nb > NbOfParts) {
+                NbOfParts = nb;
+                refSystem = systemInfo;
+            }
+        }
+
+        if (refSystem == null) {
+            throw new StepException("No system found");
+        }
+
+        return refSystem;
+    }
+
     //-------------//
     // createScore //
     //-------------//
@@ -661,6 +719,44 @@ public class BarsBuilder
         // Mutual referencing
         score.setSheet(sheet);
         sheet.setScore(score);
+    }
+
+    //------------------//
+    // defineScoreParts //
+    //------------------//
+    /**
+     * From system part, define the score parts
+     * @throws StepException
+     */
+    private void defineScoreParts ()
+        throws StepException
+    {
+        // Take the best representative system
+        System refSystem = chooseRefSystem()
+                               .getScoreSystem();
+
+        // Build the ScorePart list based on the parts of the ref system
+        score.createPartListFrom(refSystem);
+
+        // Now examine each system as compared with the ref system
+        // We browse through the parts "bottom up"
+        List<ScorePart> partList = score.getPartList();
+        final int       nbScoreParts = partList.size();
+
+        for (SystemInfo systemInfo : sheet.getSystems()) {
+            System system = systemInfo.getScoreSystem();
+            logger.fine(system.toString());
+
+            List<TreeNode> systemParts = system.getParts();
+            final int      nbp = systemParts.size();
+
+            for (int ip = 0; ip < nbp; ip++) {
+                ScorePart  global = partList.get(nbScoreParts - 1 - ip);
+                SystemPart sp = (SystemPart) systemParts.get(nbp - 1 - ip);
+                sp.setScorePart(global);
+                sp.setId(global.getId());
+            }
+        }
     }
 
     //--------------//
@@ -701,22 +797,6 @@ public class BarsBuilder
         ScrollLagView slv = new ScrollLagView(lagView);
         sheet.getAssembly()
              .addViewTab("Bars", slv, boardsPane);
-    }
-
-    //----------//
-    // getBarOf //
-    //----------//
-    private Stick getBarOf (Glyph glyph)
-    {
-        for (Stick bar : bars) {
-            if (bar == glyph) {
-                return bar;
-            }
-        }
-
-        logger.warning("Cannot find bar for " + glyph);
-
-        return null;
     }
 
     //---------------//
@@ -847,85 +927,6 @@ public class BarsBuilder
                 }
             }
         }
-    }
-
-    //-----------------//
-    // setSystemBraces //
-    //-----------------//
-    /**
-     * Pass the braces symbols found for one system
-     *
-     * @param braces list of braces for this system
-     */
-    private void setSystemBraces (System      system,
-                                  List<Glyph> braces)
-    {
-        //        // Map Staff -> its containing staves ensemble (= ScorePart)
-        //        Map<Staff, List<Staff>> ensembles = new HashMap<Staff, List<Staff>>();
-        //
-        //        // Inspect each brace in turn
-        //        for (Glyph brace : braces) {
-        //            List<Staff> ensemble = new ArrayList<Staff>();
-        //
-        //            // Inspect all staves for this brace
-        //            for (TreeNode node : system.getStaves()) {
-        //                Staff staff = (Staff) node;
-        //
-        //                if (checker.isStaffEmbraced(staff, brace)) {
-        //                    ensemble.add(staff);
-        //                    ensembles.put(staff, ensemble);
-        //                }
-        //            }
-        //
-        //            if (ensemble.size() == 0) {
-        //                logger.warning(
-        //                    "Brace with no embraced staves at all: " + brace.getId());
-        //            }
-        //        }
-        //
-        //        // Now build the parts by looking back at all staves
-        //        List<SystemPart> parts = new ArrayList<SystemPart>();
-        //        List<Staff>      currentEnsemble = null;
-        //
-        //        for (TreeNode node : system.getStaves()) {
-        //            Staff       staff = (Staff) node;
-        //            List<Staff> ensemble = ensembles.get(staff);
-        //
-        //            if (ensemble == null) {
-        //                // Standalone staff, a part by itself
-        //                parts.add(new SystemPart(Arrays.asList(staff)));
-        //            } else {
-        //                // Staff is in a part
-        //                if (ensemble != currentEnsemble) {
-        //                    parts.add(new SystemPart(ensemble));
-        //                } else {
-        //                    // Nothing to do
-        //                }
-        //            }
-        //
-        //            currentEnsemble = ensemble;
-        //        }
-        //
-        //        // Dump this system parts
-        //        if (logger.isFineEnabled()) {
-        //            StringBuilder sb = new StringBuilder();
-        //
-        //            for (SystemPart part : parts) {
-        //                sb.append("[");
-        //
-        //                for (Staff staff : part.getStaves()) {
-        //                    sb.append(" ")
-        //                      .append(staff.getStaffIndex());
-        //                }
-        //
-        //                sb.append("] ");
-        //            }
-        //
-        //            logger.fine(system + " Parts: " + sb);
-        //        }
-        //
-        //        // Assign the parts to the system
-        //        system.setParts(parts);
     }
 
     //~ Inner Classes ----------------------------------------------------------
