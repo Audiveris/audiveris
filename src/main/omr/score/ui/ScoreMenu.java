@@ -24,7 +24,6 @@ import omr.score.entity.SystemPart;
 import omr.score.midi.MidiActions;
 import omr.score.midi.MidiActions.PlayAction;
 import omr.score.midi.MidiAgent;
-import omr.score.midi.MidiAgent.UnavailableException;
 
 import omr.selection.Selection;
 import omr.selection.SelectionTag;
@@ -455,7 +454,7 @@ public class ScoreMenu
                 new MidiActions.PlayTask(
                     score,
                     new MeasureRange(score, measure.getId(), measure.getId())).execute();
-            } catch (UnavailableException ex) {
+            } catch (Exception ex) {
                 logger.warning("Cannot play measure", ex);
             }
         }
