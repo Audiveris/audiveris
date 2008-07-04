@@ -9,7 +9,7 @@
 package omr.script;
 
 import omr.glyph.Glyph;
-import omr.glyph.Glyph.TextType;
+import omr.glyph.TextType;
 
 import omr.sheet.Sheet;
 
@@ -41,6 +41,9 @@ public class TextTask
 
     //~ Constructors -----------------------------------------------------------
 
+    //----------//
+    // TextTask //
+    //----------//
     /**
      * Creates a new TextTask object.
      *
@@ -58,7 +61,7 @@ public class TextTask
     }
 
     //----------//
-    // PlayTask //
+    // TextTask //
     //----------//
     /** No-arg constructor needed by JAXB */
     private TextTask ()
