@@ -15,7 +15,7 @@ import omr.score.common.SystemPoint;
 import static omr.score.ui.ScoreConstants.*;
 import omr.score.visitor.ScoreVisitor;
 
-import omr.sheet.PixelPoint;
+import omr.score.common.PixelPoint;
 import omr.sheet.StaffInfo;
 
 import omr.util.Logger;
