@@ -11,6 +11,8 @@ package omr.util;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * Class <code>Dumper</code> is a debugging utility that reports, in a brute
@@ -81,6 +83,9 @@ public abstract class Dumper
      */
     protected Class cl;
 
+    /** Maximum number of collection items printed */
+    private final int MAX_COLLECTION_INDEX = 9;
+
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -99,6 +104,56 @@ public abstract class Dumper
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-----------------//
+    // isClassRelevant //
+    //-----------------//
+    /**
+     * Predicate to determine if a given class is worth being printed. This
+     * method could be overridden to reflect customized policy. Note that when
+     * walking up the inheritance tree, the browsing is stopped as soon as a
+     * non-relevant class is encountered.
+     *
+     * @param cl the class at stake
+     *
+     * @return true if found relevant
+     */
+    public static boolean isClassRelevant (Class cl)
+    {
+        //        return (cl != null) && !cl.getName()
+        //                                  .startsWith("java.") &&
+        //               !cl.getName()
+        //                  .startsWith("javax.");
+        return (cl != null) && cl.getName()
+                                 .startsWith("omr.");
+    }
+
+    //-----------------//
+    // isFieldRelevant //
+    //-----------------//
+    /**
+     * Predicate to determine if a given field is worth being printed. This
+     * method could be overridden to reflect customized policy.
+     *
+     * @param field the field at stake
+     *
+     * @return true if found relevant
+     */
+    public static boolean isFieldRelevant (Field field)
+    {
+        // We don't print static field since the Dumper is meant for instances
+        if (Modifier.isStatic(field.getModifiers())) {
+            return false;
+        }
+
+        // We don't print non-user visible entities
+        if (field.getName()
+                 .indexOf('$') != -1) {
+            return false;
+        }
+
+        return true;
+    }
 
     //------//
     // dump //
@@ -225,52 +280,6 @@ public abstract class Dumper
         return sb.toString();
     }
 
-    //-----------------//
-    // isClassRelevant //
-    //-----------------//
-    /**
-     * Predicate to determine if a given class is worth being printed. This
-     * method could be overridden to reflect customized policy. Note that when
-     * walking up the inheritance tree, the browsing is stopped as soon as a
-     * non-relevant class is encountered.
-     *
-     * @param cl the class at stake
-     *
-     * @return true if found relevant
-     */
-    protected boolean isClassRelevant (Class cl)
-    {
-        return (cl != null) && !cl.getName()
-                                  .startsWith("java.");
-    }
-
-    //-----------------//
-    // isFieldRelevant //
-    //-----------------//
-    /**
-     * Predicate to determine if a given field is worth being printed. This
-     * method could be overridden to reflect customized policy.
-     *
-     * @param field the field at stake
-     *
-     * @return true if found relevant
-     */
-    protected boolean isFieldRelevant (Field field)
-    {
-        // We don't print static field since the Dumper is meant for instances
-        if (Modifier.isStatic(field.getModifiers())) {
-            return false;
-        }
-
-        // We don't print non-user visible entities
-        if (field.getName()
-                 .indexOf('$') != -1) {
-            return false;
-        }
-
-        return true;
-    }
-
     //------------------//
     // printClassEpilog //
     //------------------//
@@ -291,6 +300,33 @@ public abstract class Dumper
     {
     }
 
+    //----------------------//
+    // printCollectionValue //
+    //----------------------//
+    protected void printCollectionValue (Collection col)
+    {
+        sb.append("[");
+
+        int i = 0;
+
+        for (Object obj : col) {
+            if (i++ > 0) {
+                sb.append(",<br/>");
+            }
+
+            // Safeguard action when the object is a big collection
+            if (i > MAX_COLLECTION_INDEX) {
+                sb.append(" ... " + col.size() + " items");
+
+                break;
+            } else {
+                sb.append(obj);
+            }
+        }
+
+        sb.append("]");
+    }
+
     //------------//
     // printField //
     //------------//
@@ -307,7 +343,13 @@ public abstract class Dumper
         if (value == null) {
             sb.append("null");
         } else {
-            sb.append(value.toString());
+            if (value instanceof Collection) {
+                printCollectionValue((Collection) value);
+            } else if (value instanceof Map) {
+                printCollectionValue(((Map) value).entrySet());
+            } else {
+                sb.append(value.toString());
+            }
         }
     }
 
