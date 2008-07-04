@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                         U n i t D i m e n s i o n                          //
+//                        P i x e l D i m e n s i o n                         //
 //                                                                            //
 //  Copyright (C) Herve Bitteur 2000-2007. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
@@ -10,9 +10,9 @@
 package omr.score.common;
 
 /**
- * Class <code>UnitDimension</code> is a simple Dimension that is meant to
+ * Class <code>PixelDimension</code> is a simple Dimension that is meant to
  * represent a dimension in a sheet, with its components (width and height)
- * specified in units, so the name.
+ * specified in pixels, so the name.
  *
  * <p> This specialization is used to take benefit of compiler checks, to
  * prevent the use of dimensions with incorrect meaning or units. </p>
@@ -20,34 +20,34 @@ package omr.score.common;
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-public class UnitDimension
+public class PixelDimension
     extends SimpleDimension
 {
     //~ Constructors -----------------------------------------------------------
 
-    //---------------//
-    // UnitDimension //
-    //---------------//
+    //----------------//
+    // PixelDimension //
+    //----------------//
     /**
-     * Creates an instance of <code>UnitDimension</code> with a width of zero
+     * Creates an instance of <code>PixelDimension</code> with a width of zero
      * and a height of zero.
      */
-    public UnitDimension ()
+    public PixelDimension ()
     {
     }
 
-    //---------------//
-    // UnitDimension //
-    //---------------//
+    //----------------//
+    // PixelDimension //
+    //----------------//
     /**
-     * Constructs a <code>UnitDimension</code> and initializes it to the
+     * Constructs a <code>PixelDimension</code> and initializes it to the
      * specified width and specified height.
      *
      * @param width the specified width
      * @param height the specified height
      */
-    public UnitDimension (int width,
-                          int height)
+    public PixelDimension (int width,
+                           int height)
     {
         super(width, height);
     }

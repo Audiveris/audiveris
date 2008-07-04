@@ -9,22 +9,20 @@
 //
 package omr.score.common;
 
-import java.awt.*;
 
 /**
  * Class <code>PageRectangle</code> is a simple Rectangle that is meant to
- * represent a rectangle in a sheet, with its components (width and height)
- * specified in units, so the name.
+ * represent a rectangle in a page, with its origin at the top left corner with
+ * its components (width and height) specified in units.
  *
  * <p> This specialization is used to take benefit of compiler checks, to
  * prevent the use of rectangles with incorrect meaning or units. </p>
- *
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class PageRectangle
-    extends Rectangle
+    extends SimpleRectangle
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -45,7 +43,6 @@ public class PageRectangle
     /**
      * Constructs a <code>PageRectangle</code> and initializes it with the
      * specified data.
-     *
      *
      * @param x the specified x
      * @param y the specified y

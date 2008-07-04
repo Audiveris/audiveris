@@ -9,7 +9,6 @@
 //
 package omr.score.common;
 
-import java.awt.*;
 
 /**
  * Class <code>PagePoint</code> is a simple Point that is meant to represent a
@@ -23,7 +22,7 @@ import java.awt.*;
  * @version $Id$
  */
 public class PagePoint
-    extends Point
+    extends SimplePoint
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -50,16 +49,5 @@ public class PagePoint
                       int y)
     {
         super(x, y);
-    }
-
-    //~ Methods ----------------------------------------------------------------
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        return "PagePoint[x=" + x + ",y=" + y + "]";
     }
 }
