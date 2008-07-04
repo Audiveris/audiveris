@@ -21,8 +21,8 @@ import omr.score.common.SystemRectangle;
 import omr.score.ui.ScoreConstants;
 import omr.score.visitor.ScoreVisitor;
 
-import omr.sheet.PixelPoint;
-import omr.sheet.PixelRectangle;
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 import omr.sheet.Scale;
 
 import omr.util.Logger;
