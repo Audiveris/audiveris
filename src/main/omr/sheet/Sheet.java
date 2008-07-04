@@ -22,8 +22,6 @@ import omr.glyph.ui.SymbolsEditor;
 
 import omr.score.Score;
 import omr.score.ScoreBuilder;
-import omr.score.entity.Child;
-import omr.score.entity.Children;
 import omr.score.entity.SystemNode;
 import omr.score.visitor.ScoreColorizer;
 import omr.score.visitor.ScoreVisitor;
@@ -77,7 +75,6 @@ public class Sheet
     private File imageFile;
 
     /** The related picture */
-    @Child
     private Picture picture;
 
     /** Global scale for this sheet */
@@ -87,7 +84,6 @@ public class Sheet
     private Skew skew;
 
     /** Retrieved staves */
-    @Children
     private List<StaffInfo> staves;
 
     /** Horizontal entities */
