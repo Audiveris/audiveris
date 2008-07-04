@@ -41,9 +41,6 @@ public class PaintingParameters
     /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Singleton */
-    private static PaintingParameters INSTANCE;
-
     //~ Methods ----------------------------------------------------------------
 
     //-------------//
@@ -51,15 +48,7 @@ public class PaintingParameters
     //-------------//
     public static PaintingParameters getInstance ()
     {
-        if (INSTANCE == null) {
-            synchronized (PaintingParameters.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = new PaintingParameters();
-                }
-            }
-        }
-
-        return INSTANCE;
+        return Holder.INSTANCE;
     }
 
     //-----------------//
@@ -266,5 +255,15 @@ public class PaintingParameters
         final Constant.Boolean markPainting = new Constant.Boolean(
             true,
             "Should the marks be painted");
+    }
+
+    //--------//
+    // Holder //
+    //--------//
+    private static class Holder
+    {
+        //~ Static fields/initializers -----------------------------------------
+
+        public static final PaintingParameters INSTANCE = new PaintingParameters();
     }
 }
