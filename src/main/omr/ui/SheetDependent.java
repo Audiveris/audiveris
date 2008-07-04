@@ -64,7 +64,7 @@ public abstract class SheetDependent
     // getName //
     //---------//
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Implement(SelectionObserver.class)
     public String getName ()
