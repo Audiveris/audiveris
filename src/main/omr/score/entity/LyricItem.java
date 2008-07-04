@@ -11,9 +11,11 @@ package omr.score.entity;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
+import omr.glyph.Sentence;
 
 import omr.score.common.SystemPoint;
 import omr.score.common.SystemRectangle;
+import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
 
@@ -23,8 +25,8 @@ import omr.util.TreeNode;
 import java.util.Comparator;
 
 /**
- * Class <code>LyricItem</code> is one item of a lyric line (Syllable, Hyphen,
- * Extension, Elision)
+ * Class <code>LyricItem</code> is specific subclass of Text, meant for one
+ * item of a lyric line (Syllable, Hyphen, Extension, Elision)
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -55,7 +57,7 @@ public class LyricItem
         public int compare (LyricItem o1,
                             LyricItem o2)
         {
-            return o1.line.getId() - o2.line.getId();
+            return o1.lyricLine.getId() - o2.lyricLine.getId();
         }
     };
 
@@ -101,7 +103,19 @@ public class LyricItem
     private SyllabicType syllabicType;
 
     /** The containing lyric line */
-    private LyricLine line;
+    private LyricLine lyricLine;
+
+    /**
+     * The carried text for this item
+     * (only a part of the containing sentence, as opposed to other texts)
+     */
+    private String content;
+
+    /** Width (in units) of the item */
+    private final int width;
+
+    /** The glyph which contributed to the creation of this lyric item */
+    private final Glyph seed;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -111,19 +125,22 @@ public class LyricItem
     /**
      * Creates a new LyricItem object.
      *
-     * @param systemPart The containing system part
-     * @param center The center of this item wrt system
+     * @param sentence The containing sentence
      * @param location The starting point (left side, base line) wrt system
-     * @param content The underlying text
-     * @param box The bounding box
+     * @param seed The glyph was initiated the creation of this lyric item
+     * @param width The width (in units) of the related item
+     * @param content The underlying text for this lyric item
      */
-    public LyricItem (SystemPart      systemPart,
-                      SystemPoint     center,
-                      SystemPoint     location,
-                      String          content,
-                      SystemRectangle box)
+    private LyricItem (Sentence    sentence,
+                       SystemPoint location,
+                       Glyph       seed,
+                       int         width,
+                       String      content)
     {
-        super(systemPart, center, location, content, box);
+        super(sentence, location);
+        this.seed = seed;
+        this.width = width;
+        this.content = content;
 
         // Kind can be infered from content?
         char c = content.charAt(0);
@@ -140,6 +157,27 @@ public class LyricItem
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //------------//
+    // getContent //
+    //------------//
+    /**
+     * Report the current string value of this text (just the lyric item)
+     * @return the string value of this text
+     */
+    @Override
+    public String getContent ()
+    {
+        return content;
+    }
+
+    //--------------//
+    // getLyricLine //
+    //--------------//
+    public LyricLine getLyricLine ()
+    {
+        return lyricLine;
+    }
 
     //-----------------//
     // setSyllabicType //
@@ -163,14 +201,14 @@ public class LyricItem
     /**
      * With the provided content, create one or several lyric items
      *
+     * @param sentence the containing sentence
      * @param glyph the underlying glyph
-     * @param systemPart The containing system part
      * @param location The starting point (left side, base line) wrt system
-     * @param content The underlying text, which may comprise several syllables
+     * @param content Text of the glyph, which may comprise several syllables
      * @param box The bounding box of the glyph
      */
-    public static void createLyricItems (Glyph           glyph,
-                                         SystemPart      systemPart,
+    public static void createLyricItems (Sentence        sentence,
+                                         Glyph           glyph,
                                          SystemPoint     location,
                                          String          content,
                                          SystemRectangle box)
@@ -193,16 +231,13 @@ public class LyricItem
                 box.y,
                 (int) Math.rint(word.length() * ratio),
                 box.height);
-            SystemPoint     ref = new SystemPoint(
-                itemBox.x + (itemBox.width / 2),
-                location.y);
 
             if (logger.isFineEnabled()) {
                 logger.fine(word + " at " + loc + " start=" + start);
             }
 
             glyph.addTranslation(
-                new LyricItem(systemPart, ref, loc, word, itemBox));
+                new LyricItem(sentence, loc, glyph, itemBox.width, word));
         }
     }
 
@@ -222,12 +257,13 @@ public class LyricItem
         return itemKind;
     }
 
-    //---------//
-    // getLine //
-    //---------//
-    public LyricLine getLine ()
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
     {
-        return line;
+        return visitor.visit(this);
     }
 
     //-----------//
@@ -241,64 +277,6 @@ public class LyricItem
 
         // Comparison is based on abscissa only
         return Integer.signum(location.x - other.location.x);
-    }
-
-    //---------------//
-    // connectToNote //
-    //---------------//
-    public void connectToNote ()
-    {
-        // We connect only syllables
-        if (itemKind != ItemKind.Syllable) {
-            return;
-        }
-
-        SystemPart part = line.getPart();
-        int        maxDx = part.getScale()
-                               .toUnits(constants.maxItemDx);
-
-        for (TreeNode mNode : part.getMeasures()) {
-            Measure measure = (Measure) mNode;
-
-            // Select only possible measures
-            if ((measure.getLeftX() - maxDx) > center.x) {
-                break;
-            }
-
-            if ((measure.getBarline()
-                        .getRightX() + maxDx) < center.x) {
-                continue;
-            }
-
-            // Look for best aligned chord in proper staff
-            int   bestDx = Integer.MAX_VALUE;
-            Chord bestChord = null;
-
-            for (Chord chord : measure.getChordsAbove(location)) {
-                if (chord.getStaff() == line.getStaff()) {
-                    int dx = Math.abs(chord.getHeadLocation().x - center.x);
-
-                    if (bestDx > dx) {
-                        bestDx = dx;
-                        bestChord = chord;
-                    }
-                }
-            }
-
-            if (bestDx <= maxDx) {
-                for (TreeNode nNode : bestChord.getNotes()) {
-                    Note note = (Note) nNode;
-
-                    if (!note.isRest()) {
-                        note.addSyllable(this);
-                    }
-
-                    return;
-                }
-            }
-        }
-
-        logger.warning("Could not find note for " + this);
     }
 
     //--------------------//
@@ -322,16 +300,75 @@ public class LyricItem
         }
     }
 
-    //---------------//
-    // determineFont //
-    //---------------//
+    //-----------//
+    // mapToNote //
+    //----------//
+    public void mapToNote ()
+    {
+        // We connect only syllables
+        if (itemKind != ItemKind.Syllable) {
+            return;
+        }
+
+        int        centerX = location.x + (width / 2);
+        SystemPart part = lyricLine.getPart();
+        int        maxDx = part.getScale()
+                               .toUnits(constants.maxItemDx);
+
+        for (TreeNode mNode : part.getMeasures()) {
+            Measure measure = (Measure) mNode;
+
+            // Select only possible measures
+            if ((measure.getLeftX() - maxDx) > centerX) {
+                break;
+            }
+
+            if ((measure.getBarline()
+                        .getRightX() + maxDx) < centerX) {
+                continue;
+            }
+
+            // Look for best aligned chord in proper staff
+            int   bestDx = Integer.MAX_VALUE;
+            Chord bestChord = null;
+
+            for (Chord chord : measure.getChordsAbove(location)) {
+                if (chord.getStaff() == lyricLine.getStaff()) {
+                    int dx = Math.abs(chord.getHeadLocation().x - centerX);
+
+                    if (bestDx > dx) {
+                        bestDx = dx;
+                        bestChord = chord;
+                    }
+                }
+            }
+
+            if (bestDx <= maxDx) {
+                for (TreeNode nNode : bestChord.getNotes()) {
+                    Note note = (Note) nNode;
+
+                    if (!note.isRest()) {
+                        note.addSyllable(this);
+                    }
+
+                    return;
+                }
+            }
+        }
+
+        addError(seed, "Could not find note for " + this);
+    }
+
+    //---------------------//
+    // determineActualFont //
+    //---------------------//
     /**
      * For lyric items, we force the size of the related font
      */
     @Override
-    protected void determineFont ()
+    protected void determineActualFont ()
     {
-        displayFont = lyricFont;
+        displayFont = textFont;
     }
 
     //-----------------//
@@ -341,8 +378,6 @@ public class LyricItem
     protected String internalsString ()
     {
         StringBuilder sb = new StringBuilder();
-
-        sb.append("lyric");
 
         if (itemKind != null) {
             sb.append(" ")
@@ -357,12 +392,12 @@ public class LyricItem
         return sb.toString();
     }
 
-    //---------//
-    // setLine //
-    //---------//
-    void setLine (LyricLine line)
+    //--------------//
+    // setLyricLine //
+    //--------------//
+    void setLyricLine (LyricLine line)
     {
-        this.line = line;
+        this.lyricLine = line;
     }
 
     //~ Inner Classes ----------------------------------------------------------
