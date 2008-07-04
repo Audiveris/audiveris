@@ -9,14 +9,17 @@
 //
 package omr.score.visitor;
 
+import omr.glyph.Sentence;
+
 import omr.score.Score;
 import omr.score.common.ScorePoint;
+import omr.score.common.SystemRectangle;
 import omr.score.entity.Measure;
 import omr.score.entity.Staff;
 import omr.score.entity.System;
+import omr.score.entity.Text;
 import static omr.score.ui.ScoreConstants.*;
 
-import omr.util.Dumper;
 import omr.util.Logger;
 
 import java.awt.Point;
@@ -38,6 +41,14 @@ public class ScoreFixer
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScoreFixer.class);
 
+    //~ Instance fields --------------------------------------------------------
+
+    /** Flag to indicate pass number on the system children */
+    private boolean firstSystemPass = true;
+
+    /** Contour of the current system */
+    private SystemRectangle systemContour;
+
     //~ Constructors -----------------------------------------------------------
 
     //------------//
@@ -51,71 +62,6 @@ public class ScoreFixer
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //-------------//
-    // visit Score //
-    //-------------//
-    @Override
-    public boolean visit (Score score)
-    {
-        score.acceptChildren(this);
-
-        return false;
-    }
-
-    //--------------//
-    // visit System //
-    //--------------//
-    @Override
-    public boolean visit (System system)
-    {
-        // Is there a Previous System ?
-        System     prevSystem = (System) system.getPreviousSibling();
-        ScorePoint origin = new ScorePoint();
-
-        // Ordinate offset
-        origin.y = SCORE_INIT_Y +
-                   system.getFirstRealPart()
-                         .getScorePart()
-                         .getDisplayOrdinate();
-
-        if (prevSystem == null) {
-            // Very first system in the score
-            origin.x = SCORE_INIT_X;
-        } else {
-            // Not the first system
-            origin.x = (prevSystem.getDisplayOrigin().x +
-                       prevSystem.getDimension().width) - 1 + INTER_SYSTEM;
-        }
-
-        system.setDisplayOrigin(origin);
-
-        if (logger.isFineEnabled()) {
-            Dumper.dump(system, "Computed");
-        }
-
-        system.acceptChildren(this);
-
-        return false;
-    }
-
-    //-------------//
-    // visit Staff //
-    //-------------//
-    @Override
-    public boolean visit (Staff staff)
-    {
-        // Display origin for the staff
-        System system = staff.getSystem();
-        Point  sysorg = system.getDisplayOrigin();
-        staff.setDisplayOrigin(
-            new ScorePoint(
-                sysorg.x,
-                sysorg.y +
-                (staff.getTopLeft().y - staff.getSystem().getTopLeft().y)));
-
-        return true;
-    }
 
     //---------------//
     // visit Measure //
@@ -147,6 +93,119 @@ public class ScoreFixer
         } else {
             // Very first measure
             measure.setId(measure.isImplicit() ? 0 : 1);
+        }
+
+        return true;
+    }
+
+    //-------------//
+    // visit Score //
+    //-------------//
+    @Override
+    public boolean visit (Score score)
+    {
+        score.acceptChildren(this);
+
+        return false;
+    }
+
+    //--------------//
+    // visit System //
+    //--------------//
+    @Override
+    public boolean visit (System system)
+    {
+        // Initialize system contours with staves contours and margins
+        int height = system.getLastPart()
+                           .getLastStaff()
+                           .getTopLeft().y -
+                     system.getFirstPart()
+                           .getFirstStaff()
+                           .getTopLeft().y;
+        systemContour = new SystemRectangle(
+            0,
+            0,
+            system.getDimension().width + (2 * STAFF_MARGIN_WIDTH),
+            height + STAFF_HEIGHT + (2 * STAFF_MARGIN_HEIGHT));
+
+        // First pass on contained entities to retrieve contours
+        firstSystemPass = true;
+        system.acceptChildren(this);
+
+        // Write down the system contour
+        if (logger.isFineEnabled()) {
+            logger.fine(system + " contour:" + systemContour);
+        }
+
+        system.setContour(systemContour);
+
+        // Is there a Previous System ?
+        System     prevSystem = (System) system.getPreviousSibling();
+        ScorePoint origin = new ScorePoint();
+
+        if (prevSystem == null) {
+            // Very first system in the score
+            origin.x = -systemContour.x + STAFF_MARGIN_WIDTH;
+            origin.y = -systemContour.y + STAFF_MARGIN_HEIGHT +
+                       system.getFirstPart()
+                             .getScorePart()
+                             .getDisplayOrdinate();
+        } else {
+            // Not the first system
+            origin.x = (prevSystem.getDisplayOrigin().x +
+                       prevSystem.getDimension().width) + INTER_SYSTEM;
+            origin.y = (prevSystem.getDisplayOrigin().y +
+                       prevSystem.getFirstPart().getFirstStaff().getTopLeft().y) -
+                       prevSystem.getFirstRealPart()
+                                 .getFirstStaff()
+                                 .getTopLeft().y;
+        }
+
+        system.setDisplayOrigin(origin);
+
+        // Second pass on contained entities to set display origins
+        firstSystemPass = false;
+        system.acceptChildren(this);
+
+        return false;
+    }
+
+    //-------------//
+    // visit Staff //
+    //-------------//
+    @Override
+    public boolean visit (Staff staff)
+    {
+        if (!firstSystemPass) {
+            // Display origin for the staff
+            System system = staff.getSystem();
+            Point  sysorg = system.getDisplayOrigin();
+            staff.setDisplayOrigin(
+                new ScorePoint(
+                    sysorg.x,
+                    sysorg.y +
+                    (staff.getTopLeft().y - staff.getSystem().getTopLeft().y)));
+        }
+
+        return true;
+    }
+
+    //------------//
+    // visit Text //
+    //------------//
+    @Override
+    public boolean visit (Text text)
+    {
+        if (firstSystemPass) {
+            // Extends system contour if needed
+            Sentence sentence = text.getSentence();
+
+            if (sentence != null) {
+                systemContour.add(sentence.getSystemContour());
+
+                //                logger.info("adding sentence " + sentence);
+                //                logger.info("systemContour=" + systemContour);
+            }
         }
 
         return true;
