@@ -29,9 +29,6 @@ public class ScriptManager
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScriptManager.class);
 
-    /** The singleton */
-    private static ScriptManager INSTANCE;
-
     /** File extension for script files */
     public static final String SCRIPT_EXTENSION = ".script";
 
@@ -62,15 +59,7 @@ public class ScriptManager
      */
     public static ScriptManager getInstance ()
     {
-        if (INSTANCE == null) {
-            synchronized (ScriptManager.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = new ScriptManager();
-                }
-            }
-        }
-
-        return INSTANCE;
+        return Holder.INSTANCE;
     }
 
     //------//
@@ -146,5 +135,17 @@ public class ScriptManager
         }
 
         return jaxbContext;
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //--------//
+    // Holder //
+    //--------//
+    private static class Holder
+    {
+        //~ Static fields/initializers -----------------------------------------
+
+        public static final ScriptManager INSTANCE = new ScriptManager();
     }
 }
