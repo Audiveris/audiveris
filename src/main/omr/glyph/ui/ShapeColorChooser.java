@@ -106,6 +106,8 @@ public class ShapeColorChooser
         if (frame == null) {
             frame = new JFrame();
             frame.setName("shapeColorChooserFrame");
+            frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+
             frame.add(new ShapeColorChooser().component);
 
             // Resources injection
