@@ -19,7 +19,7 @@ import omr.lag.SectionView;
 import omr.math.BasicLine;
 import omr.math.Line;
 
-import omr.sheet.PixelPoint;
+import omr.score.common.PixelPoint;
 
 import omr.ui.view.Zoom;
 
@@ -137,7 +137,7 @@ public class Stick
 
         if (logger.isFineEnabled()) {
             logger.fine(
-                "Stick" + id + " " + area + " getAlienPixelsIn=" + count);
+                "Stick" + getId() + " " + area + " getAlienPixelsIn=" + count);
         }
 
         return count;
@@ -327,6 +327,53 @@ public class Stick
         return (double) getWeight() / (double) surface;
     }
 
+    //---------------//
+    // isExtensionOf //
+    //---------------//
+    /**
+     * Checks whether a provided stick can be considered as an extension of this
+     * one.  Due to some missing points, a long stick can be broken into several
+     * smaller ones, that we must check for this.  This is checked before
+     * actually merging them.
+     *
+     * @param other           the other stick
+     * @param maxDeltaCoord Max gap in coordinate (x for horizontal)
+     * @param maxDeltaPos   Max gap in position (y for horizontal)
+     * @param maxDeltaSlope Max difference in slope
+     *
+     * @return The result of the test
+     */
+    public boolean isExtensionOf (Stick  other,
+                                  int    maxDeltaCoord,
+                                  int    maxDeltaPos,
+                                  double maxDeltaSlope)
+    {
+        // Check that a pair of start/stop is compatible
+        if ((Math.abs(other.getStart() - getStop()) <= maxDeltaCoord) ||
+            (Math.abs(other.getStop() - getStart()) <= maxDeltaCoord)) {
+            // Check that a pair of positions is compatible
+            if ((Math.abs(
+                other.getLine().yAt(other.getStart()) -
+                getLine().yAt(other.getStop())) <= maxDeltaPos) ||
+                (Math.abs(
+                other.getLine().yAt(other.getStop()) -
+                getLine().yAt(other.getStart())) <= maxDeltaPos)) {
+                // Check that slopes are compatible (a useless test ?)
+                if (Math.abs(other.getLine().getSlope() - getLine().getSlope()) <= maxDeltaSlope) {
+                    return true;
+                } else if (logger.isFineEnabled()) {
+                    logger.fine("isExtensionOf:  Incompatible slopes");
+                }
+            } else if (logger.isFineEnabled()) {
+                logger.fine("isExtensionOf:  Incompatible positions");
+            }
+        } else if (logger.isFineEnabled()) {
+            logger.fine("isExtensionOf:  Incompatible coordinates");
+        }
+
+        return false;
+    }
+
     //-------------//
     // getFirstPos //
     //-------------//
@@ -353,7 +400,7 @@ public class Stick
     {
         int stuck = 0;
 
-        for (GlyphSection section : members) {
+        for (GlyphSection section : getMembers()) {
             Run sectionRun = section.getFirstRun();
 
             for (GlyphSection sct : section.getSources()) {
@@ -392,7 +439,7 @@ public class Stick
     {
         int stuck = 0;
 
-        for (GlyphSection section : members) {
+        for (GlyphSection section : getMembers()) {
             Run sectionRun = section.getLastRun();
 
             for (GlyphSection sct : section.getTargets()) {
@@ -473,6 +520,10 @@ public class Stick
     //---------------//
     // getStartPoint //
     //---------------//
+    /**
+     * Report the point at the beginning of the approximating line
+     * @return the starting point of the stick line
+     */
     public PixelPoint getStartPoint ()
     {
         Point start = lag.switchRef(
@@ -517,6 +568,10 @@ public class Stick
     //--------------//
     // getStopPoint //
     //--------------//
+    /**
+     * Report the point at the end of the approximating line
+     * @return the ending point of the line
+     */
     public PixelPoint getStopPoint ()
     {
         Point stop = lag.switchRef(
@@ -610,7 +665,7 @@ public class Stick
                           Color color)
     {
         if (lag == this.lag) {
-            colorize(viewIndex, members, color);
+            colorize(viewIndex, getMembers(), color);
         }
     }
 
@@ -657,7 +712,7 @@ public class Stick
     //        // Compute (horizontal) distances
     //        Line line = getLine();
     //
-    //        for (GlyphSection section : members) {
+    //        for (GlyphSection section : getMembers()) {
     //            int pos = section.getFirstPos(); // Abscissa for vertical
     //
     //            for (Run run : section.getRuns()) {
@@ -731,7 +786,7 @@ public class Stick
     {
         line = new BasicLine();
 
-        for (GlyphSection section : members) {
+        for (GlyphSection section : getMembers()) {
             StickSection ss = (StickSection) section;
             line.includeLine(ss.getLine());
         }
@@ -770,26 +825,28 @@ public class Stick
             System.out.println();
         }
 
-        System.out.println(
-            toString() + " pointNb=" + line.getNumberOfPoints() + " start=" +
-            getStart() + " stop=" + getStop() + " midPos=" + getMidPos());
+        StringBuilder sb = new StringBuilder(toString());
+
+        if (line != null) {
+            sb.append(" pointNb=")
+              .append(line.getNumberOfPoints());
+        }
+
+        sb.append(" start=")
+          .append(getStart());
+        sb.append(" stop=")
+          .append(getStop());
+        sb.append(" midPos=")
+          .append(getMidPos());
+        System.out.println(sb);
 
         if (withContent) {
-            System.out.println("-members:" + members.size());
+            System.out.println("-members:" + getMembers().size());
 
-            for (GlyphSection sct : members) {
+            for (GlyphSection sct : getMembers()) {
                 System.out.println(" " + sct.toString());
             }
         }
-    }
-
-    //--------//
-    // equals //
-    //--------//
-    @Override
-    public boolean equals (Object obj)
-    {
-        return super.equals(obj);
     }
 
     //-------------//
@@ -891,12 +948,12 @@ public class Stick
         StringBuffer sb = new StringBuffer(256);
         sb.append(super.toString());
 
-        if (result != null) {
+        if (getResult() != null) {
             sb.append(" ")
-              .append(result);
+              .append(getResult());
         }
 
-        if (this.getMembers()
+        if (getMembers()
                 .size() > 0) {
             sb.append(" th=")
               .append(getThickness());
