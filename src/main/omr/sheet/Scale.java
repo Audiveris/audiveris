@@ -9,6 +9,9 @@
 //
 package omr.sheet;
 
+import omr.score.common.PixelRectangle;
+import omr.score.common.PixelDimension;
+import omr.score.common.PixelPoint;
 import omr.constant.Constant;
 
 import omr.score.common.PagePoint;
@@ -448,11 +451,11 @@ public class Scale
     {
         StringBuilder sb = new StringBuilder();
         sb.append("{Scale")
-          .append(" iL=")
+          .append(" interline=")
           .append(interline)
-          .append(" mB=")
+          .append(" mainBack=")
           .append(mainBack)
-          .append(" mF=")
+          .append(" mainFore=")
           .append(mainFore)
           .append("}");
 
