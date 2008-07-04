@@ -12,6 +12,7 @@ package omr.score.visitor;
 import omr.glyph.Shape;
 
 import omr.score.Score;
+import omr.score.entity.Dynamics;
 import omr.score.entity.TimeSignature;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
 
@@ -88,6 +89,18 @@ public class ScoreChecker
             }
         } catch (InvalidTimeSignature its) {
         }
+
+        return true;
+    }
+
+    //----------------//
+    // visit Dynamics //
+    //----------------//
+    @Override
+    public boolean visit (Dynamics dynamics)
+    {
+        // Check that each dynamics shape can be computed
+        dynamics.getShape();
 
         return true;
     }
