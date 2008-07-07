@@ -27,6 +27,7 @@ import omr.sheet.SheetManager;
 
 import omr.ui.ScoreBoard;
 
+import omr.util.BasicTask;
 import omr.util.Implement;
 import omr.util.Logger;
 
@@ -439,15 +440,8 @@ public class ScoreActions
     // RebuildTask //
     //-------------//
     private static class RebuildTask
-        extends Task<Void, Void>
+        extends BasicTask
     {
-        //~ Constructors -------------------------------------------------------
-
-        RebuildTask ()
-        {
-            super(Main.getInstance());
-        }
-
         //~ Methods ------------------------------------------------------------
 
         @Override
@@ -471,15 +465,8 @@ public class ScoreActions
     // StoreTask //
     //-----------//
     private static class StoreTask
-        extends Task<Void, Void>
+        extends BasicTask
     {
-        //~ Constructors -------------------------------------------------------
-
-        StoreTask ()
-        {
-            super(Main.getInstance());
-        }
-
         //~ Methods ------------------------------------------------------------
 
         @Override

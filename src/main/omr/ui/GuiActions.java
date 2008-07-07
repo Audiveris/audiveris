@@ -38,6 +38,7 @@ import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
+import org.jdesktop.application.Task;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -136,57 +137,9 @@ public class GuiActions
      * @param e the event that triggered this action
      */
     @Action
-    public void defineOptions (ActionEvent e)
+    public Task defineOptions (ActionEvent e)
     {
-        if (optionsFrame == null) {
-            // Preload constant units
-            UnitManager.getInstance()
-                       .preLoadUnits(Main.class.getName());
-
-            optionsFrame = new JFrame();
-            optionsFrame.setName("optionsFrame");
-            optionsFrame.setDefaultCloseOperation(
-                WindowConstants.DISPOSE_ON_CLOSE);
-            optionsFrame.getContentPane()
-                        .setLayout(new BorderLayout());
-
-            JToolBar toolBar = new JToolBar(JToolBar.HORIZONTAL);
-            optionsFrame.getContentPane()
-                        .add(toolBar, BorderLayout.NORTH);
-
-            JButton dumpButton = new JButton(
-                new AbstractAction() {
-                        public void actionPerformed (ActionEvent e)
-                        {
-                            UnitManager.getInstance()
-                                       .dumpAllUnits();
-                        }
-                    });
-            dumpButton.setName("optionsDumpButton");
-            toolBar.add(dumpButton);
-
-            JButton checkButton = new JButton(
-                new AbstractAction() {
-                        public void actionPerformed (ActionEvent e)
-                        {
-                            UnitManager.getInstance()
-                                       .checkAllUnits();
-                        }
-                    });
-            checkButton.setName("optionsCheckButton");
-            toolBar.add(checkButton);
-
-            UnitModel  cm = new UnitModel();
-            JTreeTable jtt = new UnitTreeTable(cm);
-            optionsFrame.getContentPane()
-                        .add(new JScrollPane(jtt));
-
-            // Resources injection
-            resource.injectComponents(optionsFrame);
-        }
-
-        Main.getInstance()
-            .show(optionsFrame);
+        return new OptionsTask();
     }
 
     //-------------------//
@@ -561,5 +514,84 @@ public class GuiActions
         Constant.String manualUrl = new Constant.String(
             "/docs/manual/index.html",
             "URL of local Audiveris manual");
+    }
+
+    //-------------//
+    // OptionsTask //
+    //-------------//
+    private static class OptionsTask
+        extends Task<JFrame, Void>
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public OptionsTask ()
+        {
+            super(Main.getInstance());
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        protected JFrame doInBackground ()
+            throws Exception
+        {
+            if (optionsFrame == null) {
+                // Preload constant units
+                UnitManager.getInstance()
+                           .preLoadUnits(Main.class.getName());
+
+                optionsFrame = new JFrame();
+                optionsFrame.setName("optionsFrame");
+                optionsFrame.setDefaultCloseOperation(
+                    WindowConstants.DISPOSE_ON_CLOSE);
+                optionsFrame.getContentPane()
+                            .setLayout(new BorderLayout());
+
+                JToolBar toolBar = new JToolBar(JToolBar.HORIZONTAL);
+                optionsFrame.getContentPane()
+                            .add(toolBar, BorderLayout.NORTH);
+
+                JButton dumpButton = new JButton(
+                    new AbstractAction() {
+                            public void actionPerformed (ActionEvent e)
+                            {
+                                UnitManager.getInstance()
+                                           .dumpAllUnits();
+                            }
+                        });
+                dumpButton.setName("optionsDumpButton");
+                toolBar.add(dumpButton);
+
+                JButton checkButton = new JButton(
+                    new AbstractAction() {
+                            public void actionPerformed (ActionEvent e)
+                            {
+                                UnitManager.getInstance()
+                                           .checkAllUnits();
+                            }
+                        });
+                checkButton.setName("optionsCheckButton");
+                toolBar.add(checkButton);
+
+                UnitModel  cm = new UnitModel();
+                JTreeTable jtt = new UnitTreeTable(cm);
+                optionsFrame.getContentPane()
+                            .add(new JScrollPane(jtt));
+
+                // Resources injection
+                resource.injectComponents(optionsFrame);
+            }
+
+            return optionsFrame;
+        }
+
+        @Override
+        protected void succeeded (JFrame frame)
+        {
+            if (frame != null) {
+                Main.getInstance()
+                    .show(frame);
+            }
+        }
     }
 }

@@ -53,6 +53,7 @@ import omr.score.entity.Wedge;
 import omr.score.midi.MidiAbstractions;
 import static omr.score.visitor.MusicXML.*;
 
+import omr.util.BasicTask;
 import omr.util.Logger;
 import omr.util.TreeNode;
 
@@ -83,6 +84,13 @@ public class ScoreExporter
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScoreExporter.class);
+
+    /** A future which reflects whether JAXB has been initialized **/
+    private static final LoadTask loading = new LoadTask();
+
+    static {
+        loading.execute();
+    }
 
     //~ Instance fields --------------------------------------------------------
 
@@ -127,6 +135,13 @@ public class ScoreExporter
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //---------//
+    // preload //
+    //---------//
+    public static void preload ()
+    {
+    }
 
     //-----------------//
     // setMeasureRange //
@@ -205,26 +220,6 @@ public class ScoreExporter
         //  Finally, marshal the proxy
         Marshalling.marshal(scorePartwise, node, /* Signature => */
                             true);
-    }
-
-    //--------------------//
-    // preloadJaxbContext //
-    //--------------------//
-    /**
-     * This method allows to preload the JaxbContext, so that it is immediately
-     * available when the interactive user needs it.
-     */
-    public static void preloadJaxbContext ()
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("pre-loading JaxbContext for ScorerExporter...");
-        }
-
-        try {
-            Marshalling.getContext();
-        } catch (JAXBException ex) {
-            logger.warning("Error preloading JaxbContext", ex);
-        }
     }
 
     //- All Visiting Methods ---------------------------------------------------
@@ -2088,6 +2083,40 @@ public class ScoreExporter
     }
 
     //~ Inner Classes ----------------------------------------------------------
+
+    //----------//
+    // LoadTask //
+    //----------//
+    public static class LoadTask
+        extends BasicTask
+    {
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        protected Void doInBackground ()
+            throws InterruptedException
+        {
+            if (logger.isFineEnabled()) {
+                logger.fine("Pre-loading JAXB ...");
+            }
+
+            try {
+                long startTime = java.lang.System.currentTimeMillis();
+                Marshalling.getContext();
+
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "JAXB Loaded in " +
+                        (java.lang.System.currentTimeMillis() - startTime) +
+                        "ms");
+                }
+            } catch (JAXBException ex) {
+                logger.warning("Error preloading JaxbContext", ex);
+            }
+
+            return null;
+        }
+    }
 
     //---------//
     // Current //

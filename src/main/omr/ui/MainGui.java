@@ -29,6 +29,7 @@ import omr.sheet.SheetManager;
 import omr.step.Step;
 import omr.step.StepMenu;
 
+import omr.ui.SheetActions.OpenTask;
 import omr.ui.icon.IconManager;
 import omr.ui.util.MemoryMeter;
 import omr.ui.util.Panel;
@@ -583,8 +584,13 @@ public class MainGui
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            String fileName = e.getActionCommand();
-            Step.LOAD.performParallel(null, new File(fileName));
+            File file = new File(e.getActionCommand());
+
+            if (file.exists()) {
+                new OpenTask(file).execute();
+            } else {
+                logger.warning("File not found " + file);
+            }
         }
     }
 
@@ -606,7 +612,8 @@ public class MainGui
         public void willExit (EventObject e)
         {
             // Store latest constant values on disk
-            ConstantManager.getInstance().storeResource();
+            ConstantManager.getInstance()
+                           .storeResource();
         }
     }
 }

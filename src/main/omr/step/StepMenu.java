@@ -12,6 +12,7 @@ package omr.step;
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 
+import omr.util.BasicTask;
 import omr.util.Implement;
 import omr.util.Logger;
 
@@ -113,8 +114,17 @@ public class StepMenu
         @Implement(AbstractAction.class)
         public void actionPerformed (ActionEvent e)
         {
-            Sheet sheet = SheetManager.getSelectedSheet();
-            step.performParallel(sheet, null);
+            final Sheet sheet = SheetManager.getSelectedSheet();
+            new BasicTask() {
+                    @Override
+                    protected Void doInBackground ()
+                        throws Exception
+                    {
+                        step.perform(sheet, null);
+
+                        return null;
+                    }
+                }.execute();
         }
     }
 

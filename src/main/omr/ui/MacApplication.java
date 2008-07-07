@@ -120,7 +120,7 @@ public class MacApplication
                 worker.execute();
             } else {
                 // Actually load the sheet picture
-                Step.LOAD.performParallel(null, new File(filename));
+                Step.LOAD.perform(null, new File(filename));
             }
         }
 

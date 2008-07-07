@@ -127,13 +127,8 @@ public abstract class SystemTask
             logger.fine(step + " SystemTask doit ...");
         }
 
-        // Processing per system
-        if (OmrExecutors.useParallelism() &&
-            (OmrExecutors.getNumberOfCpus() > 1)) {
-            doitParallel();
-        } else {
-            doitSerial();
-        }
+        // Processing system per system
+        doitPerSystem();
 
         // Final actions
         doFinal();
@@ -161,11 +156,14 @@ public abstract class SystemTask
         systemDone.put(system, Boolean.valueOf(true));
     }
 
-    //--------------//
-    // doitParallel //
-    //--------------//
-    private void doitParallel ()
+    //---------------//
+    // doitPerSystem //
+    //---------------//
+    private void doitPerSystem ()
     {
+        final String classSimpleName = getClass()
+                                           .getSimpleName();
+
         try {
             Collection<Callable<Void>> tasks = new ArrayList<Callable<Void>>(
                 sheet.getSystems().size());
@@ -178,6 +176,12 @@ public abstract class SystemTask
                                 throws Exception
                             {
                                 try {
+                                    if (logger.isFineEnabled()) {
+                                        logger.fine(
+                                            classSimpleName + " doSystem #" +
+                                            system.getId());
+                                    }
+
                                     doSystem(system);
                                 } catch (StepException ex) {
                                     logger.warning(
@@ -194,23 +198,6 @@ public abstract class SystemTask
                         .invokeAll(tasks);
         } catch (InterruptedException ex) {
             logger.warning("doitParallel got interrupted", ex);
-        }
-    }
-
-    //------------//
-    // doitSerial //
-    //------------//
-    private void doitSerial ()
-        throws StepException
-    {
-        for (SystemInfo system : sheet.getSystems()) {
-            if (logger.isFineEnabled()) {
-                logger.info(
-                    this.getClass().getSimpleName() + " doSystem #" +
-                    system.getId());
-            }
-
-            doSystem(system);
         }
     }
 }

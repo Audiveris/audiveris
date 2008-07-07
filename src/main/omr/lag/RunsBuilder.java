@@ -74,13 +74,12 @@ public class RunsBuilder
         final int pMax = (rect.y + rect.height) - 1;
 
         // Should we process columns in parallel or sequentially?
-        if (OmrExecutors.useParallelism() &&
-            (OmrExecutors.getNumberOfCpus() > 1)) {
-            createParallelRuns(pMin, pMax, cMin, cMax);
-        } else {
-            createSequentialRuns(pMin, pMax, cMin, cMax);
-        }
-
+        //        if (OmrExecutors.useParallelism() &&
+        //            (OmrExecutors.getNumberOfCpus() > 1)) {
+        createParallelRuns(pMin, pMax, cMin, cMax);
+        //        } else {
+        //            createSequentialRuns(pMin, pMax, cMin, cMax);
+        //        }
         reader.terminate();
     }
 
@@ -121,22 +120,22 @@ public class RunsBuilder
         }
     }
 
-    //----------------------//
-    // createSequentialRuns //
-    //----------------------//
-    /**
-     * Sequential version
-     */
-    private void createSequentialRuns (int pMin,
-                                       int pMax,
-                                       int cMin,
-                                       int cMax)
-    {
-        // Browse one dimension at a time
-        for (int p = pMin; p <= pMax; p++) {
-            processPosition(p, cMin, cMax);
-        }
-    }
+//    //----------------------//
+//    // createSequentialRuns //
+//    //----------------------//
+//    /**
+//     * Sequential version
+//     */
+//    private void createSequentialRuns (int pMin,
+//                                       int pMax,
+//                                       int cMin,
+//                                       int cMax)
+//    {
+//        // Browse one dimension at a time
+//        for (int p = pMin; p <= pMax; p++) {
+//            processPosition(p, cMin, cMax);
+//        }
+//    }
 
     //-----------------//
     // processPosition //

@@ -206,6 +206,10 @@ public class SheetSteps
                                  Collection<Shape> shapes,
                                  boolean           imposed)
     {
+        if (SwingUtilities.isEventDispatchThread()) {
+            logger.severe("updateLastSteps run on EDT");
+        }
+
         // Check whether the update must really be done
         if (!imposed && !ScoreActions.getInstance()
                                      .isRebuildAllowed()) {

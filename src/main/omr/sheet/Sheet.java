@@ -46,6 +46,7 @@ import omr.ui.MainGui;
 import omr.ui.PixelBoard;
 import omr.ui.SheetAssembly;
 
+import omr.util.BasicTask;
 import omr.util.FileUtil;
 import omr.util.Logger;
 
@@ -1446,11 +1447,22 @@ public class Sheet
     //-----------------//
     // updateLastSteps //
     //-----------------//
-    public void updateLastSteps (Collection<Glyph> glyphs,
-                                 Collection<Shape> shapes)
+    public void updateLastSteps (final Collection<Glyph> glyphs,
+                                 final Collection<Shape> shapes)
     {
-        sheetSteps.updateLastSteps(glyphs, shapes, /* imposed => */
-                                   false);
+        class UpdateTask
+            extends BasicTask
+        {
+            @Override
+            protected Void doInBackground ()
+                throws InterruptedException
+            {
+                sheetSteps.updateLastSteps(glyphs, shapes, false); //Not imposed
+
+                return null;
+            }
+        }
+        new UpdateTask().execute();
     }
 
     //-------------------//

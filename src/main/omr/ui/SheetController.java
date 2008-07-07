@@ -290,35 +290,6 @@ public class SheetController
         }
     }
 
-    //-------------//
-    // selectSheet //
-    //-------------//
-    /**
-     * User dialog, to allow the selection and load of a sheet image file.
-     */
-    private void selectSheet ()
-    {
-        File file = UIUtilities.fileChooser(
-            false,
-            component,
-            new File(constants.defaultSheetDirectory.getValue()),
-            new FileFilter(
-                "Major image files",
-                new String[] { ".bmp", ".gif", ".jpg", ".png", ".tif" }));
-
-        if (file != null) {
-            if (file.exists()) {
-                // Actually load the sheet picture
-                Step.LOAD.performParallel(null, file);
-
-                // Remember (even across runs) the parent directory
-                constants.defaultSheetDirectory.setValue(file.getParent());
-            } else {
-                logger.warning("File not found " + file);
-            }
-        }
-    }
-
     //------------------//
     // sheetTabSelected //
     //------------------//

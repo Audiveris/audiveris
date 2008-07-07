@@ -13,6 +13,7 @@ import omr.score.Score;
 import omr.score.ui.ScoreActions;
 import omr.score.visitor.ScoreExporter;
 
+import omr.util.BasicTask;
 import omr.util.Logger;
 
 import com.xenoage.player.Player;
@@ -48,6 +49,13 @@ public class MidiAgent
 
     /** Type used when writing Midi files */
     public static final int MIDI_FILE_TYPE = 1;
+
+    /** A future which reflects whether Midi Agent has been initialized **/
+    private static final LoadTask loading = new LoadTask();
+
+    static {
+        loading.execute();
+    }
 
     //~ Enumerations -----------------------------------------------------------
 
@@ -117,6 +125,13 @@ public class MidiAgent
     public static MidiAgent getInstance ()
     {
         return Holder.INSTANCE;
+    }
+
+    //---------//
+    // preload //
+    //---------//
+    public static void preload ()
+    {
     }
 
     //----------//
@@ -242,29 +257,6 @@ public class MidiAgent
             status = Status.PLAYING;
             MidiActions.getInstance()
                        .updateActions();
-        }
-    }
-
-    //--------------//
-    // preloadAgent //
-    //--------------//
-    /**
-     * A convenient method to preload the instance of MidiAgent class
-     */
-    public static void preloadAgent ()
-    {
-        try {
-            if (logger.isFineEnabled()) {
-                logger.fine("preloading the Midi agent...");
-            }
-
-            getInstance();
-
-            if (logger.isFineEnabled()) {
-                logger.fine("Midi agent loaded.");
-            }
-        } catch (Exception ex) {
-            logger.warning("Could not preload the Midi Agent", ex);
         }
     }
 
@@ -427,6 +419,39 @@ public class MidiAgent
     }
 
     //~ Inner Classes ----------------------------------------------------------
+
+    //----------//
+    // LoadTask //
+    //----------//
+    public static class LoadTask
+        extends BasicTask
+    {
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        protected Void doInBackground ()
+            throws InterruptedException
+        {
+            try {
+                if (logger.isFineEnabled()) {
+                    logger.fine("Pre-loading Midi Agent ...");
+                }
+
+                long startTime = System.currentTimeMillis();
+                getInstance();
+
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "Midi Agent Loaded in " +
+                        (System.currentTimeMillis() - startTime) + "ms");
+                }
+            } catch (Exception ex) {
+                logger.warning("Could not preload the Midi Agent", ex);
+            }
+
+            return null;
+        }
+    }
 
     //--------//
     // Holder //

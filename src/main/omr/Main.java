@@ -22,14 +22,12 @@ import omr.ui.MainGui;
 import omr.ui.OmrUIDefaults;
 
 import omr.util.Clock;
-import omr.util.Implement;
 import omr.util.JaiLoader;
 import omr.util.Logger;
 import omr.util.OmrExecutors;
 
 import org.jdesktop.application.Application;
 import org.jdesktop.application.SingleFrameApplication;
-import org.jdesktop.swingworker.SwingWorker;
 
 import java.io.*;
 import java.util.*;
@@ -338,52 +336,52 @@ public class Main
     @Override
     protected void ready ()
     {
-        // Background task : Preload JAI
+        // Launch background pre-loading tasks
         JaiLoader.preload();
+        ScoreExporter.preload();
+        MidiAgent.preload();
 
-        // Background task : JaxbContext
-        OmrExecutors.getLowExecutor()
-                    .execute(
-            new Runnable() {
-                    @Implement(Runnable.class)
-                    public void run ()
-                    {
-                        ScoreExporter.preloadJaxbContext();
-                    }
-                });
+        // Launch desired step on each sheet in parallel
+        for (String name : parameters.sheetNames) {
+            final File file = new File(name);
+            OmrExecutors.getLowExecutor()
+                        .submit(
+                new Runnable() {
+                        public void run ()
+                        {
+                            parameters.targetStep.perform(null, file);
+                        }
+                    });
+        }
 
-        // Background task : Midi Sequencer
-        OmrExecutors.getLowExecutor()
-                    .execute(
-            new Runnable() {
-                    @Implement(Runnable.class)
-                    public void run ()
-                    {
-                        MidiAgent.preloadAgent();
-                    }
-                });
+        // Launch desired scripts in parallel
+        for (String name : parameters.scriptNames) {
+            final String scriptName = name;
+            OmrExecutors.getLowExecutor()
+                        .submit(
+                new Runnable() {
+                        public void run ()
+                        {
+                            long start = System.currentTimeMillis();
+                            File file = new File(scriptName);
+                            logger.info("Loading script file " + file + " ...");
 
-        // Perform sheet and script actions
-        if ((parameters.sheetNames.size() > 0) ||
-            (parameters.scriptNames.size() > 0)) {
-            final SwingWorker<Object, Object> worker = new SwingWorker<Object, Object>() {
-                @Override
-                protected Object doInBackground ()
-                {
-                    try {
-                        OmrExecutors.getLowExecutor()
-                                    .invokeAll(getTasks());
-                    } catch (InterruptedException ex) {
-                        logger.warning(
-                            "Error while running sheets & scripts",
-                            ex);
-                    }
+                            try {
+                                final Script script = ScriptManager.getInstance()
+                                                                   .load(
+                                    new FileInputStream(file));
+                                script.run();
 
-                    return null;
-                }
-            };
-
-            worker.execute();
+                                long stop = System.currentTimeMillis();
+                                logger.info(
+                                    "Script file " + file + " run in " +
+                                    (stop - start) + " ms");
+                            } catch (FileNotFoundException ex) {
+                                logger.warning(
+                                    "Cannot find script file " + file);
+                            }
+                        }
+                    });
         }
     }
 
@@ -395,63 +393,6 @@ public class Main
     {
         gui = new MainGui(this.getMainFrame());
         show(gui.getFrame());
-    }
-
-    //----------//
-    // getTasks //
-    //----------//
-    private Collection getTasks ()
-    {
-        List<Callable> callables = new ArrayList<Callable>();
-
-        // Browse desired sheets in parallel
-        for (String name : parameters.sheetNames) {
-            final File file = new File(name);
-
-            // Perform desired step on each sheet in parallel
-            callables.add(
-                Executors.callable(
-                    new Runnable() {
-                            public void run ()
-                            {
-                                parameters.targetStep.performSerial(null, file);
-                            }
-                        }));
-        }
-
-        // Browse desired scripts in parallel
-        for (String name : parameters.scriptNames) {
-            // Run each script in parallel
-            final String scriptName = name;
-            callables.add(
-                Executors.callable(
-                    new Runnable() {
-                            public void run ()
-                            {
-                                long start = System.currentTimeMillis();
-                                File file = new File(scriptName);
-                                logger.info(
-                                    "Loading script file " + file + " ...");
-
-                                try {
-                                    final Script script = ScriptManager.getInstance()
-                                                                       .load(
-                                        new FileInputStream(file));
-                                    script.run();
-
-                                    long stop = System.currentTimeMillis();
-                                    logger.info(
-                                        "Script file " + file + " run in " +
-                                        (stop - start) + " ms");
-                                } catch (FileNotFoundException ex) {
-                                    logger.warning(
-                                        "Cannot find script file " + file);
-                                }
-                            }
-                        }));
-        }
-
-        return callables;
     }
 
     //-------------//

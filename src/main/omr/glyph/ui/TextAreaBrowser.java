@@ -9,8 +9,6 @@
 //
 package omr.glyph.ui;
 
-import omr.Main;
-
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.TextArea;
@@ -27,6 +25,7 @@ import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 import omr.sheet.SystemInfo;
 
+import omr.util.BasicTask;
 import omr.util.Logger;
 
 import org.jdesktop.application.Action;
@@ -269,15 +268,8 @@ public class TextAreaBrowser
     // TextAreasTask //
     //---------------//
     private static class TextAreasTask
-        extends Task<Void, Void>
+        extends BasicTask
     {
-        //~ Constructors -------------------------------------------------------
-
-        TextAreasTask ()
-        {
-            super(Main.getInstance());
-        }
-
         //~ Methods ------------------------------------------------------------
 
         @Override
@@ -286,18 +278,6 @@ public class TextAreaBrowser
         {
             Sheet sheet = SheetManager.getSelectedSheet();
             alignTexts(sheet);
-            //            TextArea area = new TextArea(
-            //                null,
-            //                sheet.getVerticalLag().createAbsoluteRoi(
-            //                    new Rectangle(0, 0, sheet.getWidth(), sheet.getHeight())),
-            //                new HorizontalOrientation());
-            //            // subdivide
-            //            area.subdivide(sheet);
-            //
-            //            // Align text glyphs
-            //            for (SystemInfo info : sheet.getSystems()) {
-            //                info.alignTextGlyphs();
-            //            }
             sheet.getSheetSteps()
                  .updateLastSteps(null, null, true);
 

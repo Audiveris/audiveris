@@ -31,6 +31,7 @@ import omr.step.Step;
 import omr.ui.util.FileFilter;
 import omr.ui.util.UIUtilities;
 
+import omr.util.BasicTask;
 import omr.util.Implement;
 import omr.util.Logger;
 
@@ -351,6 +352,39 @@ public class SheetActions
         }
     }
 
+    //----------//
+    // OpenTask //
+    //----------//
+    public static class OpenTask
+        extends BasicTask
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        private final File file;
+
+        //~ Constructors -------------------------------------------------------
+
+        OpenTask (File file)
+        {
+            this.file = file;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        protected Void doInBackground ()
+            throws InterruptedException
+        {
+            // Actually load the sheet picture
+            Step.LOAD.perform(null, file);
+
+            // Remember (even across runs) the parent directory
+            constants.defaultSheetDirectory.setValue(file.getParent());
+
+            return null;
+        }
+    }
+
     //--------------//
     // RecordAction //
     //--------------//
@@ -464,53 +498,12 @@ public class SheetActions
             "Valid image file extensions, whitespace-separated");
     }
 
-    //----------//
-    // OpenTask //
-    //----------//
-    private static class OpenTask
-        extends Task<Void, Void>
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        private final File file;
-
-        //~ Constructors -------------------------------------------------------
-
-        OpenTask (File file)
-        {
-            super(Main.getInstance());
-            this.file = file;
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        protected Void doInBackground ()
-            throws InterruptedException
-        {
-            // Actually load the sheet picture
-            Step.LOAD.performSerial(null, file);
-
-            // Remember (even across runs) the parent directory
-            constants.defaultSheetDirectory.setValue(file.getParent());
-
-            return null;
-        }
-    }
-
     //------------------//
     // RecordGlyphsTask //
     //------------------//
     private static class RecordGlyphsTask
-        extends Task<Void, Void>
+        extends BasicTask
     {
-        //~ Constructors -------------------------------------------------------
-
-        RecordGlyphsTask ()
-        {
-            super(Main.getInstance());
-        }
-
         //~ Methods ------------------------------------------------------------
 
         @Override

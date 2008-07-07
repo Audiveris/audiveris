@@ -240,7 +240,7 @@ public class OmrExecutors
 
         static {
             executor = Executors.newFixedThreadPool(
-                cpuNb + 1,
+                useParallelism() ? (cpuNb + 1) : 1,
                 new Factory("high", Thread.NORM_PRIORITY));
             highsLaunched = true;
         }
@@ -258,7 +258,7 @@ public class OmrExecutors
 
         static {
             executor = Executors.newFixedThreadPool(
-                cpuNb + 1,
+                useParallelism() ? (cpuNb + 1) : 1,
                 new Factory("low", Thread.MIN_PRIORITY));
             lowsLaunched = true;
         }

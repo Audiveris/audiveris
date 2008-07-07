@@ -8,8 +8,6 @@
 //----------------------------------------------------------------------------//
 package omr.score.midi;
 
-import omr.Main;
-
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 import static omr.plugin.Dependency.*;
@@ -35,6 +33,7 @@ import omr.ui.MainGui;
 import omr.ui.util.FileFilter;
 import omr.ui.util.UIUtilities;
 
+import omr.util.BasicTask;
 import omr.util.Implement;
 import omr.util.Logger;
 
@@ -418,7 +417,7 @@ public class MidiActions
      * Asynchronous task to play the provided score
      */
     public static class PlayTask
-        extends Task<Void, Void>
+        extends BasicTask
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -430,7 +429,6 @@ public class MidiActions
         public PlayTask (Score        score,
                          MeasureRange measureRange)
         {
-            super(Main.getInstance());
             this.score = score;
             this.measureRange = measureRange;
         }
@@ -506,7 +504,7 @@ public class MidiActions
      * Asynchronous task to write the provided score into a midi file
      */
     public static class WriteTask
-        extends Task<Void, Void>
+        extends BasicTask
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -518,7 +516,6 @@ public class MidiActions
         WriteTask (Score score,
                    File  midiFile)
         {
-            super(Main.getInstance());
             this.score = score;
             this.midiFile = midiFile;
         }

@@ -189,17 +189,17 @@ public enum Step {
         }
     }
 
-    //---------------//
-    // performSerial //
-    //---------------//
+    //---------//
+    // perform //
+    //---------//
     /**
-     * Trigger the execution of this step serially
+     * Trigger the execution of this step
      *
      * @param sheet the sheet on which analysis is performed
      * @param param a potential parameter (depending on the processing)
      */
-    public void performSerial (Sheet  sheet,
-                               Object param)
+    public void perform (Sheet  sheet,
+                         Object param)
     {
         try {
             if (monitor != null) {
@@ -210,28 +210,6 @@ public enum Step {
         } catch (Exception ex) {
             logger.warning("Error in processing " + this, ex);
         }
-    }
-
-    //-----------------//
-    // performParallel //
-    //-----------------//
-    /**
-     * Trigger the execution of this step in parallel
-     *
-     * @param sheet the sheet on which analysis is performed
-     * @param param a potential parameter (depending on the processing)
-     */
-    public void performParallel (final Sheet  sheet,
-                                 final Object param)
-    {
-        OmrExecutors.getLowExecutor()
-                    .execute(
-            new Runnable() {
-                    public void run ()
-                    {
-                        performSerial(sheet, param);
-                    }
-                });
     }
 
     //--------//

@@ -1,16 +1,23 @@
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                             J a i L o a d e r                              //
+//                                                                            //
+//  Copyright (C) Brenton Partridge 2000-2007. All rights reserved.           //
+//  This software is released under the GNU General Public License.           //
+//  Contact author at herve.bitteur@laposte.net to report bugs & suggestions. //
+//----------------------------------------------------------------------------//
 package omr.util;
 
-import java.util.concurrent.Future;
 
 /**
- * Class <code>JaiLoader</code> is designed to speed up the load time
- * of the first <code>Picture</code> by allowing the <code>JAI</code> class to be
+ * Class <code>JaiLoader</code> is designed to speed up the load time of the
+ * first <code>Picture</code> by allowing the <code>JAI</code> class to be
  * preloaded. Because, in some implementations, the <code>JAI</code> class must
  * load a number of renderers, its static initialization can take a long time.
  * On the first call to any static method in this class, this initialization
- * will begin in a low-priority thread, and any call to <code>ensureLoaded</code>
- * is guaranteed to block until the initialization is complete.
+ * will begin in a low-priority thread, and any call to
+ * <code>ensureLoaded</code> is guaranteed to block until the initialization is
+ * complete.
  *
  * @author Brenton Partridge
  * @version $Id$
@@ -23,9 +30,11 @@ public class JaiLoader
     private static final Logger logger = Logger.getLogger(JaiLoader.class);
 
     /** A future which reflects whether JAI has been initialized **/
-    private static final Future<?> loading = OmrExecutors.getLowExecutor()
-                                                         .submit(
-        new JaiLoaderRunnable());
+    private static final LoadTask loading = new LoadTask();
+
+    static {
+        loading.execute();
+    }
 
     //~ Constructors -----------------------------------------------------------
 
@@ -35,6 +44,9 @@ public class JaiLoader
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------------//
+    // ensureLoaded //
+    //--------------//
     /**
      * Blocks until the JAI class has been initialized.
      * If initialization has not yet begun, begins initialization.
@@ -49,9 +61,11 @@ public class JaiLoader
         }
     }
 
+    //---------//
+    // preload //
+    //---------//
     /**
      * On the first call, starts the initialization.
-     *
      */
     public static void preload ()
     {
@@ -59,30 +73,32 @@ public class JaiLoader
 
     //~ Inner Classes ----------------------------------------------------------
 
-    /**
-     * Actually initializes the <code>JAI</code> class.
-     */
-    private static class JaiLoaderRunnable
-        implements Runnable
+    //----------//
+    // LoadTask //
+    //----------//
+    public static class LoadTask
+        extends BasicTask
     {
-        //~ Constructors -------------------------------------------------------
-
-        private JaiLoaderRunnable ()
-        {
-        }
-
         //~ Methods ------------------------------------------------------------
 
-        public void run ()
+        @Override
+        protected Void doInBackground ()
+            throws InterruptedException
         {
+            if (logger.isFineEnabled()) {
+                logger.fine("Pre-loading JAI ...");
+            }
+
             long startTime = System.currentTimeMillis();
             javax.media.jai.JAI.getBuildVersion();
 
             if (logger.isFineEnabled()) {
                 logger.fine(
-                    "Loaded JAI in " +
+                    "JAI Loaded in " +
                     (System.currentTimeMillis() - startTime) + "ms");
             }
+
+            return null;
         }
     }
 }

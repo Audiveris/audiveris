@@ -128,14 +128,6 @@ public class StepMonitor
                          Sheet  sheet,
                          Object param)
     {
-        //        // Post the request
-        //        executor.execute(
-        //            new Runnable() {
-        //                    public void run ()
-        //                    {
-        //                        // This is supposed to run in the background, so...
-        //                        Thread.currentThread()
-        //                              .setPriority(Thread.MIN_PRIORITY);
         if (logger.isFineEnabled()) {
             logger.fine(
                 step + " Executing sheet=" + sheet + " param=" + param +

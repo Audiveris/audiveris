@@ -24,6 +24,7 @@ import omr.ui.SheetActions;
 import omr.ui.util.FileFilter;
 import omr.ui.util.UIUtilities;
 
+import omr.util.BasicTask;
 import omr.util.Implement;
 import omr.util.Logger;
 
@@ -260,7 +261,7 @@ public class ScriptActions
     // LoadScriptTask //
     //----------------//
     private static class LoadScriptTask
-        extends Task<Void, Void>
+        extends BasicTask
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -270,7 +271,6 @@ public class ScriptActions
 
         LoadScriptTask (File file)
         {
-            super(Main.getInstance());
             this.file = file;
         }
 
@@ -307,7 +307,7 @@ public class ScriptActions
     // StoreScriptTask //
     //-----------------//
     private static class StoreScriptTask
-        extends Task<Void, Void>
+        extends BasicTask
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -319,7 +319,6 @@ public class ScriptActions
         StoreScriptTask (Script script,
                          File   file)
         {
-            super(Main.getInstance());
             this.script = script;
             this.file = file;
         }
