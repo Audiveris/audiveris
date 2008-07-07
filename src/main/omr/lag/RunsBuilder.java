@@ -81,7 +81,8 @@ public class RunsBuilder
     // createParallelRuns //
     //--------------------//
     /**
-     * Parallel version
+     * This method handles the pixels run either in a parallel or a serial way,
+     * according to the possibilities of the high OMR executor.
      */
     private void createParallelRuns (int       pMin,
                                      int       pMax,
@@ -117,6 +118,12 @@ public class RunsBuilder
     //-----------------//
     // processPosition //
     //-----------------//
+    /**
+     * Process the pixels in position 'p' between coordinates 'cMin' & 'cMax'
+     * @param p the position in the pixels array (x for vertical)
+     * @param cMin the starting coordinate (y for vertical)
+     * @param cMax the ending coordinate
+     */
     private void processPosition (int p,
                                   int cMin,
                                   int cMax)
