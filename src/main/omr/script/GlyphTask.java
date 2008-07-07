@@ -10,6 +10,7 @@
 package omr.script;
 
 import omr.glyph.Glyph;
+import omr.glyph.GlyphSignature;
 
 import omr.sheet.Sheet;
 
@@ -38,7 +39,7 @@ public abstract class GlyphTask
     protected List<Glyph> glyphs;
 
     /** The signatures of these glyphs */
-    protected Collection<Integer> sigs;
+    protected Collection<GlyphSignature> sigs;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -83,12 +84,12 @@ public abstract class GlyphTask
 
             glyphs = new ArrayList<Glyph>();
 
-            for (Integer id : sigs) {
+            for (GlyphSignature sig : sigs) {
                 Glyph glyph = sheet.getVerticalLag()
-                                   .getGlyph(id);
+                                   .getOriginal(sig);
 
                 if (glyph == null) {
-                    logger.warning("Cannot find glyph #" + id);
+                    logger.warning("Cannot find glyph for " + sig);
                 } else {
                     glyphs.add(glyph);
                 }
@@ -116,7 +117,7 @@ public abstract class GlyphTask
     //---------------//
     // setGlyphsSigs //
     //---------------//
-    private void setGlyphsSigs (Collection<Integer> sigs)
+    private void setGlyphsSigs (Collection<GlyphSignature> sigs)
     {
         if (logger.isFineEnabled()) {
             logger.fine(
@@ -133,18 +134,18 @@ public abstract class GlyphTask
     // getGlyphsSigs //
     //---------------//
     @XmlElement(name = "glyph")
-    private Collection<Integer> getGlyphsSigs ()
+    private Collection<GlyphSignature> getGlyphsSigs ()
     {
         if (logger.isFineEnabled()) {
             logger.fine("getGlyphsSigs this.sigs=" + this.sigs);
         }
 
         if (sigs == null) {
-            sigs = new ArrayList<Integer>();
+            sigs = new ArrayList<GlyphSignature>();
 
             if (glyphs != null) {
                 for (Glyph glyph : glyphs) {
-                    sigs.add(glyph.getId());
+                    sigs.add(glyph.getSignature());
                 }
             }
         }

@@ -200,7 +200,21 @@ public class GlyphLag
      */
     public Glyph getOriginal (Glyph glyph)
     {
-        return originals.get(glyph.getSignature());
+        return getOriginal(glyph.getSignature());
+    }
+
+    //-------------//
+    // getOriginal //
+    //-------------//
+    /**
+     * Return the original glyph, if any,  that corresponds to the provided
+     * signature
+     * @param signature the provided signature
+     * @return the original glyph for this signature, if any, otherwise null
+     */
+    public Glyph getOriginal (GlyphSignature signature)
+    {
+        return originals.get(signature);
     }
 
     //----------//

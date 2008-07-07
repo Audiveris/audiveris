@@ -10,8 +10,15 @@
 package omr.glyph;
 
 import omr.util.Implement;
+import omr.util.PointFacade;
+import omr.util.RectangleFacade;
 
 import java.awt.Rectangle;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class <code>GlyphSignature</code> is used to implement a map of glyphs,
@@ -20,16 +27,19 @@ import java.awt.Rectangle;
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "glyph-signature")
 public class GlyphSignature
     implements Comparable<GlyphSignature>
 {
     //~ Instance fields --------------------------------------------------------
 
     /** Glyph weight */
+    @XmlElement
     private final int weight;
 
     /** Glyph contour box */
-    private final Rectangle contourBox;
+    private Rectangle contourBox;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -45,6 +55,18 @@ public class GlyphSignature
     {
         weight = glyph.getWeight();
         contourBox = glyph.getContourBox();
+    }
+
+    //----------------//
+    // GlyphSignature //
+    //----------------//
+    /**
+     * Needed by JAXB
+     */
+    private GlyphSignature ()
+    {
+        weight = 0;
+        contourBox = null;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -103,5 +125,26 @@ public class GlyphSignature
           .append("}");
 
         return sb.toString();
+    }
+
+    //------------------//
+    // setXmlContourBox //
+    //------------------//
+    @XmlElement(name = "contour-box")
+    private void setXmlContourBox (RectangleFacade xr)
+    {
+        contourBox = xr.getRectangle();
+    }
+
+    //------------------//
+    // getXmlContourBox //
+    //------------------//
+    private RectangleFacade getXmlContourBox ()
+    {
+        if (contourBox != null) {
+            return new RectangleFacade(contourBox);
+        } else {
+            return null;
+        }
     }
 }
