@@ -398,7 +398,7 @@ class SymbolGlyphBoard
             Selection   glyphSetSelection = inputSelectionList.get(1);
             List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
 
-            if (glyphs != null) {
+            if (glyphs != null && !glyphs.isEmpty()) {
                 // Read text information
                 if (logger.isFineEnabled()) {
                     logger.fine(

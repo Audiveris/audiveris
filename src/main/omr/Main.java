@@ -21,6 +21,7 @@ import omr.script.ScriptManager;
 import omr.ui.MainGui;
 import omr.ui.OmrUIDefaults;
 
+import omr.util.BasicTask;
 import omr.util.Clock;
 import omr.util.JaiLoader;
 import omr.util.Logger;
@@ -344,44 +345,47 @@ public class Main
         // Launch desired step on each sheet in parallel
         for (String name : parameters.sheetNames) {
             final File file = new File(name);
-            OmrExecutors.getLowExecutor()
-                        .submit(
-                new Runnable() {
-                        public void run ()
-                        {
-                            parameters.targetStep.perform(null, file);
-                        }
-                    });
+            new BasicTask() {
+                    @Override
+                    protected Void doInBackground ()
+                        throws Exception
+                    {
+                        parameters.targetStep.perform(null, file);
+
+                        return null;
+                    }
+                }.execute();
         }
 
         // Launch desired scripts in parallel
         for (String name : parameters.scriptNames) {
             final String scriptName = name;
-            OmrExecutors.getLowExecutor()
-                        .submit(
-                new Runnable() {
-                        public void run ()
-                        {
-                            long start = System.currentTimeMillis();
-                            File file = new File(scriptName);
-                            logger.info("Loading script file " + file + " ...");
+            new BasicTask() {
+                    @Override
+                    protected Void doInBackground ()
+                        throws Exception
+                    {
+                        long start = System.currentTimeMillis();
+                        File file = new File(scriptName);
+                        logger.info("Loading script file " + file + " ...");
 
-                            try {
-                                final Script script = ScriptManager.getInstance()
-                                                                   .load(
-                                    new FileInputStream(file));
-                                script.run();
+                        try {
+                            final Script script = ScriptManager.getInstance()
+                                                               .load(
+                                new FileInputStream(file));
+                            script.run();
 
-                                long stop = System.currentTimeMillis();
-                                logger.info(
-                                    "Script file " + file + " run in " +
-                                    (stop - start) + " ms");
-                            } catch (FileNotFoundException ex) {
-                                logger.warning(
-                                    "Cannot find script file " + file);
-                            }
+                            long stop = System.currentTimeMillis();
+                            logger.info(
+                                "Script file " + file + " run in " +
+                                (stop - start) + " ms");
+                        } catch (FileNotFoundException ex) {
+                            logger.warning("Cannot find script file " + file);
                         }
-                    });
+
+                        return null;
+                    }
+                }.execute();
         }
     }
 

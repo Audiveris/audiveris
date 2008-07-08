@@ -10,7 +10,6 @@
 package omr.glyph;
 
 import omr.util.Implement;
-import omr.util.PointFacade;
 import omr.util.RectangleFacade;
 
 import java.awt.Rectangle;
@@ -55,6 +54,19 @@ public class GlyphSignature
     {
         weight = glyph.getWeight();
         contourBox = glyph.getContourBox();
+    }
+
+    /**
+     * Just for debugging, to be able to forge a signature
+     *
+     * @param weight
+     * @param contourBox
+     */
+    public GlyphSignature (int       weight,
+                           Rectangle contourBox)
+    {
+        this.weight = weight;
+        this.contourBox = contourBox;
     }
 
     //----------------//
@@ -110,6 +122,46 @@ public class GlyphSignature
         return 0; // Equal
     }
 
+    @Override
+    public boolean equals (Object obj)
+    {
+        if (obj == this) {
+            return true;
+        }
+
+        if (obj instanceof GlyphSignature) {
+            GlyphSignature that = (GlyphSignature) obj;
+
+            return (weight == that.weight) &&
+                   (contourBox.x == that.contourBox.x) &&
+                   (contourBox.y == that.contourBox.y) &&
+                   (contourBox.width == that.contourBox.width) &&
+                   (contourBox.height == that.contourBox.height);
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode ()
+    {
+        int hash = 7;
+        hash = (41 * hash) + this.weight;
+
+        return hash;
+    }
+
+    //    @Override
+    //    public int hashCode ()
+    //    {
+    //        int hash = 5;
+    //        hash = (11 * hash) + this.weight;
+    //        hash = (11 * hash) +
+    //               ((this.contourBox != null) ? this.contourBox.hashCode() : 0);
+    //
+    //        return hash;
+    //    }
+
     //----------//
     // toString //
     //----------//
@@ -118,10 +170,16 @@ public class GlyphSignature
     {
         StringBuilder sb = new StringBuilder();
         sb.append("{Sig ")
-          .append("w")
+          .append("weight=")
           .append(weight)
-          .append(" ")
-          .append(contourBox)
+          .append(" Rectangle[x=")
+          .append(contourBox.x)
+          .append(",y=")
+          .append(contourBox.y)
+          .append(",width=")
+          .append(contourBox.width)
+          .append(",height=")
+          .append(contourBox.height)
           .append("}");
 
         return sb.toString();

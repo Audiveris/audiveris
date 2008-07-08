@@ -22,6 +22,7 @@ import omr.util.Logger;
 
 import java.awt.Rectangle;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -56,7 +57,7 @@ public class GlyphLag
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(GlyphSection.class);
+    private static final Logger logger = Logger.getLogger(GlyphLag.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -64,20 +65,20 @@ public class GlyphLag
      * Smart glyph map, usable across several glyph extractions, to ensure glyph
      * unicity. A glyph is never removed, it can be active or inactive.
      */
-    private final SortedMap<GlyphSignature, Glyph> originals = new TreeMap<GlyphSignature, Glyph>();
+    private final ConcurrentHashMap<GlyphSignature, Glyph> originals = new ConcurrentHashMap<GlyphSignature, Glyph>();
 
     /**
      * Collection of all glyphs ever inserted in this GlyphLag, indexed by
      * glyph id. No glyph is ever removed from this map.
      */
-    private final SortedMap<Integer, Glyph> allGlyphs = new TreeMap<Integer, Glyph>();
+    private final ConcurrentHashMap<Integer, Glyph> allGlyphs = new ConcurrentHashMap<Integer, Glyph>();
 
     /**
      * Current map of section -> glyphs. This defines the glyphs that are
      * currently active, since there is at least one section pointing to them
      * (and the sections collection is immutable).
      */
-    private final SortedMap<GlyphSection, Glyph> glyphMap = new TreeMap<GlyphSection, Glyph>();
+    private final ConcurrentHashMap<GlyphSection, Glyph> glyphMap = new ConcurrentHashMap<GlyphSection, Glyph>();
 
     /**
      * Collection of active glyphs. This is derived from the glyphMap, to give
@@ -245,14 +246,15 @@ public class GlyphLag
         } else {
             // Create a brand new glyph
             final int id = generateId();
-            allGlyphs.put(id, glyph);
             glyph.setId(id);
             glyph.setLag(this);
             originals.put(glyph.getSignature(), glyph);
+            allGlyphs.put(id, glyph);
 
             if (logger.isFineEnabled()) {
                 logger.fine(
-                    "Registered glyph #" + glyph.getId() + " as original");
+                    "Registered glyph #" + glyph.getId() + " as original " +
+                    glyph.getSignature());
             }
         }
 

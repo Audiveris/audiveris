@@ -886,13 +886,15 @@ public class Glyph
     public PixelRectangle getContourBox ()
     {
         if (contourBox == null) {
+            Rectangle box = null;
             for (Section section : members) {
-                if (contourBox == null) {
-                    contourBox = new Rectangle(section.getContourBox());
+                if (box == null) {
+                    box = new Rectangle(section.getContourBox());
                 } else {
-                    contourBox.add(section.getContourBox());
+                    box.add(section.getContourBox());
                 }
             }
+            contourBox = box;
         }
 
         if (contourBox != null) {
