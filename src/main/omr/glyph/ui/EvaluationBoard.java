@@ -20,8 +20,6 @@ import omr.glyph.GlyphModel;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Shape;
 
-import omr.script.AssignTask;
-
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 import omr.selection.SelectionTag;
@@ -34,6 +32,7 @@ import omr.ui.util.Panel;
 
 import omr.util.Implement;
 import omr.util.Logger;
+import static omr.util.Synchronicity.*;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.factories.FormFactory;
@@ -326,22 +325,6 @@ class EvaluationBoard
 
         //~ Methods ------------------------------------------------------------
 
-        // Triggered by button
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            // Assign current glyph with selected shape
-            if (glyphModel != null) {
-                Selection glyphSelection = sheet.getSelection(
-                    SelectionTag.VERTICAL_GLYPH);
-                Glyph     glyph = (Glyph) glyphSelection.getEntity();
-                Shape     shape = Shape.valueOf(button.getText());
-
-                // Actually assign the shape
-                glyphModel.assignGlyphShape(glyph, shape, true);
-            }
-        }
-
         public void setEval (Evaluation eval,
                              boolean    barred)
         {
@@ -387,6 +370,22 @@ class EvaluationBoard
             } else {
                 grade.setVisible(false);
                 comp.setVisible(false);
+            }
+        }
+
+        // Triggered by button
+        @Implement(ActionListener.class)
+        public void actionPerformed (ActionEvent e)
+        {
+            // Assign current glyph with selected shape
+            if (glyphModel != null) {
+                Selection glyphSelection = sheet.getSelection(
+                    SelectionTag.VERTICAL_GLYPH);
+                Glyph     glyph = (Glyph) glyphSelection.getEntity();
+                Shape     shape = Shape.valueOf(button.getText());
+
+                // Actually assign the shape
+                glyphModel.assignGlyphShape(ASYNC, glyph, shape, true);
             }
         }
     }

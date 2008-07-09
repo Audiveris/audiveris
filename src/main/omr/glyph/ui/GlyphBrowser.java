@@ -37,6 +37,7 @@ import omr.ui.view.Zoom;
 import omr.util.BlackList;
 import omr.util.Implement;
 import omr.util.Logger;
+import omr.util.Synchronicity;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -372,8 +373,9 @@ class GlyphBrowser
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public void deassignGlyphShape (Glyph   glyph,
-                                        boolean record)
+        public void deassignGlyphShape (Synchronicity processing,
+                                        Glyph         glyph,
+                                        boolean       record)
         {
             deleteGlyph(); // Using current glyph
         }

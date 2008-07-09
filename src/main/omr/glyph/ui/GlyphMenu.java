@@ -21,7 +21,9 @@ import omr.selection.SelectionHint;
 
 import omr.sheet.Sheet;
 
+import omr.util.BasicTask;
 import omr.util.Implement;
+import static omr.util.Synchronicity.*;
 
 import java.awt.event.*;
 import java.util.*;
@@ -112,13 +114,14 @@ public class GlyphMenu
             assignMenu,
             new ActionListener() {
                     @Implement(ActionListener.class)
-                    public void actionPerformed (ActionEvent e)
+                    public void actionPerformed (final ActionEvent e)
                     {
                         JMenuItem source = (JMenuItem) e.getSource();
                         symbolsBuilder.assignSetShape(
+                            ASYNC,
                             getCurrentGlyphs(),
                             Shape.valueOf(source.getText()),
-                            false, // compound
+                            false,
                             true); // record
                     }
                 });
@@ -147,9 +150,10 @@ public class GlyphMenu
                     {
                         JMenuItem source = (JMenuItem) e.getSource();
                         symbolsBuilder.assignSetShape(
+                            ASYNC,
                             getCurrentGlyphs(),
                             Shape.valueOf(source.getText()),
-                            true, // compound
+                            true,
                             true); // record
                     }
                 });
@@ -352,7 +356,7 @@ public class GlyphMenu
 
             // Actually deassign the whole set
             List<Glyph> glyphs = getCurrentGlyphs();
-            symbolsBuilder.deassignSetShape(glyphs, true);
+            symbolsBuilder.deassignSetShape(ASYNC, glyphs, true);
 
             // Update focus on current glyph, if reused in a compound
             Glyph newGlyph = glyph.getFirstSection()
@@ -459,7 +463,7 @@ public class GlyphMenu
             Glyph     glyph = getCurrentGlyph();
 
             if (glyph != null) {
-                symbolsBuilder.assignGlyphShape(glyph, shape, true);
+                symbolsBuilder.assignGlyphShape(ASYNC, glyph, shape, true);
             }
         }
 
@@ -527,7 +531,11 @@ public class GlyphMenu
             Glyph glyph = getCurrentGlyph();
 
             if ((glyph != null) && (glyph == proposedGlyph)) {
-                symbolsBuilder.assignGlyphShape(glyph, proposedShape, true);
+                symbolsBuilder.assignGlyphShape(
+                    ASYNC,
+                    glyph,
+                    proposedShape,
+                    true);
             }
         }
 

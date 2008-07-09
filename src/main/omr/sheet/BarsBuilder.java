@@ -9,7 +9,6 @@
 //
 package omr.sheet;
 
-import omr.score.common.PixelDimension;
 import omr.Main;
 
 import omr.check.CheckBoard;
@@ -36,6 +35,7 @@ import omr.lag.SectionsBuilder;
 import omr.lag.VerticalOrientation;
 
 import omr.score.Score;
+import omr.score.common.PixelDimension;
 import omr.score.common.UnitDimension;
 import omr.score.entity.Barline;
 import omr.score.entity.Measure;
@@ -60,8 +60,11 @@ import omr.stick.StickSection;
 import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
 
+import omr.util.BasicTask;
 import omr.util.Dumper;
 import omr.util.Logger;
+import omr.util.Synchronicity;
+import static omr.util.Synchronicity.*;
 import omr.util.TreeNode;
 
 import java.awt.*;
@@ -169,6 +172,49 @@ public class BarsBuilder
             sheet.getScore()
                  .getView()
                  .repaint();
+        }
+    }
+
+    //------------------//
+    // assignGlyphShape //
+    //------------------//
+    /**
+     * Assign a (barline) Shape to a glyph, which means adding a barline to the
+     * system/measure structure
+     *
+     * @param processing request to run (a)synchronously
+     * @param glyph the glyph to be assigned
+     * @param shape the assigned shape, which may be null
+     * @param record not used
+     */
+    @Override
+    public void assignGlyphShape (Synchronicity processing,
+                                  Glyph         glyph,
+                                  Shape         shape,
+                                  boolean       record)
+    {
+        if (glyph != null) {
+            //if (logger.isFineEnabled()) {
+            logger.info(
+                "Bars. shape " + shape + " assigned to glyph #" +
+                glyph.getId());
+
+            //}
+            //
+            //            // First, do a manual assignment of the shape to the glyph
+            //            glyph.setShape(shape, Evaluation.MANUAL_NO_DOUBT);
+            //
+            //            // Remember the latest shape assigned
+            //            if (shape != null) {
+            //                latestShapeAssigned = shape;
+            //            }
+            //
+            //            // Update immediately the glyph info as displayed
+            //            if (sheet != null) {
+            //                sheet.getSelection(
+            //                    lag.isVertical() ? VERTICAL_GLYPH : HORIZONTAL_GLYPH)
+            //                     .setEntity(glyph, SelectionHint.GLYPH_MODIFIED);
+            //            }
         }
     }
 
@@ -294,90 +340,105 @@ public class BarsBuilder
      * @param record true if this action is to be recorded in the script
      */
     @Override
-    public void deassignGlyphShape (Glyph   glyph,
-                                    boolean record)
+    public void deassignGlyphShape (Synchronicity processing,
+                                    final Glyph   glyph,
+                                    final boolean record)
     {
-        if ((glyph.getShape() == Shape.THICK_BAR_LINE) ||
-            (glyph.getShape() == Shape.THIN_BAR_LINE)) {
-            Stick bar = getBarOf(glyph);
+        if (processing == ASYNC) {
+            new BasicTask() {
+                    @Override
+                    protected Void doInBackground ()
+                        throws Exception
+                    {
+                        deassignGlyphShape(SYNC, glyph, record);
 
-            if (bar == null) {
-                return;
-            } else {
-                logger.info("Deassigning a " + glyph.getShape());
-            }
+                        return null;
+                    }
+                }.execute();
+        } else {
+            if ((glyph.getShape() == Shape.THICK_BAR_LINE) ||
+                (glyph.getShape() == Shape.THIN_BAR_LINE)) {
+                Stick bar = getBarOf(glyph);
 
-            // Related stick has to be freed
-            bar.setShape(null);
-            bar.setResult(CANCELLED);
+                if (bar == null) {
+                    return;
+                } else {
+                    logger.info("Deassigning a " + glyph.getShape());
+                }
 
-            // Remove from the internal all-bars list
-            bars.remove(bar);
+                // Related stick has to be freed
+                bar.setShape(null);
+                bar.setResult(CANCELLED);
 
-            // Remove from the containing SystemInfo
-            SystemInfo system = checker.getSystemOf(bar, sheet);
+                // Remove from the internal all-bars list
+                bars.remove(bar);
 
-            if (system == null) {
-                return;
-            }
+                // Remove from the containing SystemInfo
+                SystemInfo system = checker.getSystemOf(bar, sheet);
 
-            // Remove from the containing Measure
-            System scoreSystem = system.getScoreSystem();
+                if (system == null) {
+                    return;
+                }
 
-            for (TreeNode pNode : scoreSystem.getParts()) {
-                SystemPart part = (SystemPart) pNode;
+                // Remove from the containing Measure
+                System scoreSystem = system.getScoreSystem();
 
-                if (checker.isPartEmbraced(part, bar)) {
-                    for (Iterator mit = part.getMeasures()
-                                            .iterator(); mit.hasNext();) {
-                        Measure measure = (Measure) mit.next();
+                for (TreeNode pNode : scoreSystem.getParts()) {
+                    SystemPart part = (SystemPart) pNode;
 
-                        for (Iterator sit = measure.getBarline()
-                                                   .getSticks()
-                                                   .iterator(); sit.hasNext();) {
-                            Stick stick = (Stick) sit.next();
+                    if (checker.isPartEmbraced(part, bar)) {
+                        for (Iterator mit = part.getMeasures()
+                                                .iterator(); mit.hasNext();) {
+                            Measure measure = (Measure) mit.next();
 
-                            if (stick == bar) {
-                                // Remove the bar stick
-                                if (logger.isFineEnabled()) {
-                                    logger.fine(
-                                        "Removing " + stick + " from " +
-                                        measure);
-                                }
+                            for (Iterator sit = measure.getBarline()
+                                                       .getSticks()
+                                                       .iterator();
+                                 sit.hasNext();) {
+                                Stick stick = (Stick) sit.next();
 
-                                sit.remove();
-
-                                // Remove measure as well ?
-                                if (measure.getBarline()
-                                           .getSticks()
-                                           .size() == 0) {
+                                if (stick == bar) {
+                                    // Remove the bar stick
                                     if (logger.isFineEnabled()) {
-                                        logger.fine("Removing " + measure);
+                                        logger.fine(
+                                            "Removing " + stick + " from " +
+                                            measure);
                                     }
 
-                                    mit.remove();
-                                }
+                                    sit.remove();
 
-                                break;
+                                    // Remove measure as well ?
+                                    if (measure.getBarline()
+                                               .getSticks()
+                                               .size() == 0) {
+                                        if (logger.isFineEnabled()) {
+                                            logger.fine("Removing " + measure);
+                                        }
+
+                                        mit.remove();
+                                    }
+
+                                    break;
+                                }
                             }
                         }
                     }
                 }
+
+                assignGlyphShape(SYNC, glyph, null, false);
+
+                // Update score internal data
+                score.accept(new ScoreFixer());
+
+                // Update the view accordingly
+                if (lagView != null) {
+                    lagView.colorize();
+                    lagView.repaint();
+                }
+            } else {
+                BarsBuilder.logger.warning(
+                    "No deassign meant for " + glyph.getShape() + " glyph");
             }
-
-            assignGlyphShape(glyph, null, false);
-
-            // Update score internal data
-            score.accept(new ScoreFixer());
-
-            // Update the view accordingly
-            if (lagView != null) {
-                lagView.colorize();
-                lagView.repaint();
-            }
-        } else {
-            BarsBuilder.logger.warning(
-                "No deassign meant for " + glyph.getShape() + " glyph");
         }
     }
 
@@ -391,11 +452,25 @@ public class BarsBuilder
      * @param record true if this action is to be recorded in the script
      */
     @Override
-    public void deassignSetShape (Collection<Glyph> glyphs,
-                                  boolean           record)
+    public void deassignSetShape (Synchronicity           processing,
+                                  final Collection<Glyph> glyphs,
+                                  final boolean           record)
     {
-        for (Glyph glyph : glyphs) {
-            deassignGlyphShape(glyph, false);
+        if (processing == ASYNC) {
+            new BasicTask() {
+                    @Override
+                    protected Void doInBackground ()
+                        throws Exception
+                    {
+                        deassignSetShape(SYNC, glyphs, record);
+
+                        return null;
+                    }
+                }.execute();
+        } else {
+            for (Glyph glyph : glyphs) {
+                deassignGlyphShape(SYNC, glyph, false);
+            }
         }
     }
 
@@ -1024,9 +1099,7 @@ public class BarsBuilder
                 sheet.getSelection(SelectionTag.SHEET_RECTANGLE));
 
             // Glyph set
-            Selection glyphSetSelection = sheet.getSelection(
-                SelectionTag.GLYPH_SET);
-            setGlyphSetSelection(glyphSetSelection);
+            setGlyphSetSelection(sheet.getSelection(SelectionTag.GLYPH_SET));
             glyphSetSelection.addObserver(this);
 
             // Glyph id
@@ -1043,9 +1116,6 @@ public class BarsBuilder
         public void colorize ()
         {
             super.colorize();
-
-            // Determine my view index in the lag views
-            final int viewIndex = lag.viewIndexOf(this);
 
             // All remaining vertical sticks clutter
             for (Stick stick : clutter) {

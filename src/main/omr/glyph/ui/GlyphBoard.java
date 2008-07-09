@@ -29,6 +29,7 @@ import omr.ui.util.Panel;
 import omr.util.Implement;
 import omr.util.Logger;
 import omr.util.Predicate;
+import static omr.util.Synchronicity.*;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
@@ -478,14 +479,14 @@ public class GlyphBoard
         @Implement(ChangeListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            if (glyphModel != null) {
+            if ((glyphModel != null) && (inputSelectionList.size() > 0)) {
                 if (inputSelectionList.size() > 1) {
                     // We have selections for glyph and for glyph set
                     Selection   glyphSelection = inputSelectionList.get(0);
                     Glyph       glyph = (Glyph) glyphSelection.getEntity();
                     Selection   glyphSetSelection = inputSelectionList.get(1);
                     List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity();
-                    glyphModel.deassignSetShape(glyphs, true);
+                    glyphModel.deassignSetShape(ASYNC, glyphs, true);
 
                     // Update focus on current glyph, even if reused in a compound
                     Glyph newGlyph = glyph.getFirstSection()
@@ -497,7 +498,7 @@ public class GlyphBoard
                     // We have selection for glyph only
                     Glyph glyph = (Glyph) inputSelectionList.get(0)
                                                             .getEntity();
-                    glyphModel.deassignGlyphShape(glyph, true);
+                    glyphModel.deassignGlyphShape(ASYNC, glyph, true);
                 }
             }
         }

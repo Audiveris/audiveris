@@ -48,9 +48,12 @@ import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
 import static omr.ui.field.SpinnerUtilities.*;
 
+import omr.util.BasicTask;
 import omr.util.Implement;
 import omr.util.Logger;
 import omr.util.Predicate;
+import omr.util.Synchronicity;
+import static omr.util.Synchronicity.*;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -133,15 +136,16 @@ public class VerticalsBuilder
      * @param record true if this action is to be recorded in the script
      */
     @Override
-    public void deassignGlyphShape (Glyph   glyph,
-                                    boolean record)
+    public void deassignGlyphShape (Synchronicity processing,
+                                    final Glyph   glyph,
+                                    final boolean record)
     {
         Shape shape = glyph.getShape();
 
         switch (shape) {
         case COMBINING_STEM :
             sheet.getSymbolsBuilder()
-                 .deassignGlyphShape(glyph, false);
+                 .deassignGlyphShape(processing, glyph, false);
 
             break;
 
@@ -159,11 +163,12 @@ public class VerticalsBuilder
      * @param record true if this action is to be recorded in the script
      */
     @Override
-    public void deassignSetShape (Collection<Glyph> glyphs,
+    public void deassignSetShape (Synchronicity     processing,
+                                  Collection<Glyph> glyphs,
                                   boolean           record)
     {
         sheet.getSymbolsBuilder()
-             .deassignSetShape(glyphs, false);
+             .deassignSetShape(processing, glyphs, false);
     }
 
     //---------//

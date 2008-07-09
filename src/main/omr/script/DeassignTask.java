@@ -14,6 +14,7 @@ import omr.glyph.Glyph;
 import omr.sheet.Sheet;
 
 import omr.step.StepException;
+import static omr.util.Synchronicity.*;
 
 import java.util.Collection;
 
@@ -63,7 +64,7 @@ public class DeassignTask
     {
         super.run(sheet);
         sheet.getSymbolsBuilder()
-             .deassignSetShape(glyphs, true);
+             .deassignSetShape(SYNC, glyphs, true);
     }
 
     //-----------------//

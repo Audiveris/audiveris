@@ -21,17 +21,18 @@ import omr.math.Circle;
 import omr.math.Line;
 import omr.math.Line.UndefinedLineException;
 
-import omr.selection.Selection;
-import omr.selection.SelectionHint;
-
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
+
+import omr.selection.Selection;
+import omr.selection.SelectionHint;
 
 import omr.stick.Stick;
 
 import omr.ui.view.Zoom;
 
 import omr.util.Logger;
+import static omr.util.Synchronicity.*;
 
 import java.awt.*;
 import java.awt.geom.CubicCurve2D;
@@ -224,7 +225,7 @@ public class GlyphLagView
     public void deassignGlyph (Glyph glyph)
     {
         if (model != null) {
-            model.deassignGlyphShape(glyph, true);
+            model.deassignGlyphShape(ASYNC, glyph, true);
         }
     }
 
