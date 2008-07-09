@@ -30,6 +30,7 @@ import static omr.ui.field.SpinnerUtilities.*;
 import omr.util.Implement;
 import omr.util.Logger;
 import omr.util.Predicate;
+import static omr.util.Synchronicity.*;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -398,7 +399,7 @@ class SymbolGlyphBoard
             Selection   glyphSetSelection = inputSelectionList.get(1);
             List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
 
-            if (glyphs != null && !glyphs.isEmpty()) {
+            if ((glyphs != null) && !glyphs.isEmpty()) {
                 // Read text information
                 if (logger.isFineEnabled()) {
                     logger.fine(
@@ -409,6 +410,7 @@ class SymbolGlyphBoard
                 SheetManager.getSelectedSheet()
                             .getSymbolsBuilder()
                             .assignText(
+                    ASYNC,
                     glyphs,
                     (TextType) textCombo.getSelectedItem(),
                     textField.getText(),

@@ -272,31 +272,45 @@ public class SymbolsBuilder
      * @param textContent the content as a string (if not empty)
      * @param record true if this task must be recorded
      */
-    public void assignText (Collection<Glyph> glyphs,
-                            TextType          textType,
-                            String            textContent,
-                            boolean           record)
+    public void assignText (Synchronicity           processing,
+                            final Collection<Glyph> glyphs,
+                            final TextType          textType,
+                            final String            textContent,
+                            final boolean           record)
     {
-        // Do the job
-        for (Glyph glyph : glyphs) {
-            // Assign text type
-            Sentence sentence = glyph.getSentence();
+        if (processing == ASYNC) {
+            new BasicTask() {
+                    @Override
+                    protected Void doInBackground ()
+                        throws Exception
+                    {
+                        assignText(SYNC, glyphs, textType, textContent, record);
 
-            if (sentence != null) {
-                sentence.setTextType(textType);
+                        return null;
+                    }
+                }.execute();
+        } else {
+            // Do the job
+            for (Glyph glyph : glyphs) {
+                // Assign text type
+                Sentence sentence = glyph.getSentence();
+
+                if (sentence != null) {
+                    sentence.setTextType(textType);
+                }
+
+                // Assign text only if it is not empty
+                if ((textContent != null) && (textContent.length() > 0)) {
+                    glyph.setTextContent(textContent);
+                }
             }
 
-            // Assign text only if it is not empty
-            if ((textContent != null) && (textContent.length() > 0)) {
-                glyph.setTextContent(textContent);
+            // Record this task in the sheet script
+            if (record) {
+                sheet.getScript()
+                     .addTask(new TextTask(textType, textContent, glyphs));
+                sheet.updateLastSteps(glyphs, new ArrayList<Shape>()); // No shapes
             }
-        }
-
-        // Record this task in the sheet script
-        if (record) {
-            sheet.getScript()
-                 .addTask(new TextTask(textType, textContent, glyphs));
-            sheet.updateLastSteps(glyphs, new ArrayList<Shape>()); // No shapes
         }
     }
 

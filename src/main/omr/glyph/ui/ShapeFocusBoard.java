@@ -268,11 +268,8 @@ class ShapeFocusBoard
                 // Use glyph assigned shape as current shape, if not null
                 Glyph glyph = (Glyph) selection.getEntity();
 
-                if (glyph.getShape() != null) {
+                if ((glyph != null) && (glyph.getShape() != null)) {
                     setCurrentShape(glyph.getShape());
-
-                    //                } else if (glyph.getOldShape() == currentShape) {
-                    //                    setCurrentShape(currentShape);
                 }
             }
 
