@@ -15,6 +15,7 @@ import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphModel;
 import omr.glyph.Shape;
+import static omr.script.ScriptRecording.*;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
@@ -486,7 +487,7 @@ public class GlyphBoard
                     Glyph       glyph = (Glyph) glyphSelection.getEntity();
                     Selection   glyphSetSelection = inputSelectionList.get(1);
                     List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity();
-                    glyphModel.deassignSetShape(ASYNC, glyphs, true);
+                    glyphModel.deassignSetShape(ASYNC, glyphs, RECORDING);
 
                     // Update focus on current glyph, even if reused in a compound
                     Glyph newGlyph = glyph.getFirstSection()
@@ -498,7 +499,7 @@ public class GlyphBoard
                     // We have selection for glyph only
                     Glyph glyph = (Glyph) inputSelectionList.get(0)
                                                             .getEntity();
-                    glyphModel.deassignGlyphShape(ASYNC, glyph, true);
+                    glyphModel.deassignGlyphShape(ASYNC, glyph, RECORDING);
                 }
             }
         }

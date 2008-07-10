@@ -35,6 +35,9 @@ import omr.lag.SectionBoard;
 
 import omr.score.visitor.SheetPainter;
 
+import omr.script.ScriptRecording;
+import static omr.script.ScriptRecording.*;
+
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 import omr.selection.SelectionTag;
@@ -48,7 +51,6 @@ import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
 import static omr.ui.field.SpinnerUtilities.*;
 
-import omr.util.BasicTask;
 import omr.util.Implement;
 import omr.util.Logger;
 import omr.util.Predicate;
@@ -133,19 +135,19 @@ public class VerticalsBuilder
      * This method is limited to deassignment of stems
      *
      * @param glyph the glyph to deassign
-     * @param record true if this action is to be recorded in the script
+     * @param record request to record this action in the script
      */
     @Override
-    public void deassignGlyphShape (Synchronicity processing,
-                                    final Glyph   glyph,
-                                    final boolean record)
+    public void deassignGlyphShape (Synchronicity         processing,
+                                    final Glyph           glyph,
+                                    final ScriptRecording record)
     {
         Shape shape = glyph.getShape();
 
         switch (shape) {
         case COMBINING_STEM :
             sheet.getSymbolsBuilder()
-                 .deassignGlyphShape(processing, glyph, false);
+                 .deassignGlyphShape(processing, glyph, record);
 
             break;
 
@@ -165,10 +167,10 @@ public class VerticalsBuilder
     @Override
     public void deassignSetShape (Synchronicity     processing,
                                   Collection<Glyph> glyphs,
-                                  boolean           record)
+                                  ScriptRecording   record)
     {
         sheet.getSymbolsBuilder()
-             .deassignSetShape(processing, glyphs, false);
+             .deassignSetShape(processing, glyphs, record);
     }
 
     //---------//

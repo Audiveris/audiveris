@@ -9,6 +9,8 @@
 //
 package omr.glyph;
 
+import omr.script.ScriptRecording;
+
 import omr.selection.SelectionHint;
 import static omr.selection.SelectionTag.*;
 
@@ -140,12 +142,12 @@ public class GlyphModel
      * @param processing specify whether we should run (a)synchronously
      * @param glyph the glyph to be assigned
      * @param shape the assigned shape, which may be null
-     * @param record true if this action is to be recorded in the script
+     * @param record specify whether the action must be recorded in the script
      */
-    public void assignGlyphShape (Synchronicity processing,
-                                  final Glyph   glyph,
-                                  final Shape   shape,
-                                  final boolean record)
+    public void assignGlyphShape (Synchronicity         processing,
+                                  final Glyph           glyph,
+                                  final Shape           shape,
+                                  final ScriptRecording record)
     {
         if (processing == ASYNC) {
             new BasicTask() {
@@ -195,13 +197,13 @@ public class GlyphModel
      * @param shape the shape to be assigned
      * @param compound flag to build one compound, rather than assign each
      *                 individual glyph
-     * @param record true if this action is to be recorded in the script
+     * @param record specify whether the action must be recorded in the script
      */
     public void assignSetShape (Synchronicity     processing,
                                 Collection<Glyph> glyphs,
                                 Shape             shape,
                                 boolean           compound,
-                                boolean           record)
+                                ScriptRecording   record)
     {
         // Empty by default
         logger.warning("No assignSetShape in current model for " + shape);
@@ -215,11 +217,11 @@ public class GlyphModel
      *
      * @param processing specify whether we should run (a)synchronously
      * @param glyph the glyph to deassign
-     * @param record true if this action is to be recorded in the script
+     * @param record specify whether the action must be recorded in the script
      */
-    public void deassignGlyphShape (Synchronicity processing,
-                                    Glyph         glyph,
-                                    boolean       record)
+    public void deassignGlyphShape (Synchronicity   processing,
+                                    Glyph           glyph,
+                                    ScriptRecording record)
     {
         // Empty by default
         logger.warning(
@@ -234,11 +236,11 @@ public class GlyphModel
      *
      * @param processing specify whether we should run (a)synchronously
      * @param glyphs the collection of glyphs to be de-assigned
-     * @param record true if this action is to be recorded in the script
+     * @param record specify whether the action must be recorded in the script
      */
     public void deassignSetShape (Synchronicity     processing,
                                   Collection<Glyph> glyphs,
-                                  boolean           record)
+                                  ScriptRecording   record)
     {
         // Empty by default
         logger.warning("No deassignSetShape in current model");

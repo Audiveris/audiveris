@@ -24,6 +24,8 @@ import omr.math.Line.UndefinedLineException;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
+import omr.script.ScriptRecording;
+
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 
@@ -225,7 +227,7 @@ public class GlyphLagView
     public void deassignGlyph (Glyph glyph)
     {
         if (model != null) {
-            model.deassignGlyphShape(ASYNC, glyph, true);
+            model.deassignGlyphShape(ASYNC, glyph, ScriptRecording.RECORDING);
         }
     }
 

@@ -15,13 +15,13 @@ import omr.glyph.Glyph;
 import omr.glyph.GlyphInspector;
 import omr.glyph.Shape;
 import omr.glyph.SymbolsBuilder;
+import static omr.script.ScriptRecording.*;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 
 import omr.sheet.Sheet;
 
-import omr.util.BasicTask;
 import omr.util.Implement;
 import static omr.util.Synchronicity.*;
 
@@ -122,7 +122,7 @@ public class GlyphMenu
                             getCurrentGlyphs(),
                             Shape.valueOf(source.getText()),
                             false,
-                            true); // record
+                            RECORDING);
                     }
                 });
         popup.add(assignMenu);
@@ -154,7 +154,7 @@ public class GlyphMenu
                             getCurrentGlyphs(),
                             Shape.valueOf(source.getText()),
                             true,
-                            true); // record
+                            RECORDING);
                     }
                 });
         popup.add(compoundMenu);
@@ -356,7 +356,7 @@ public class GlyphMenu
 
             // Actually deassign the whole set
             List<Glyph> glyphs = getCurrentGlyphs();
-            symbolsBuilder.deassignSetShape(ASYNC, glyphs, true);
+            symbolsBuilder.deassignSetShape(ASYNC, glyphs, RECORDING);
 
             // Update focus on current glyph, if reused in a compound
             Glyph newGlyph = glyph.getFirstSection()
@@ -463,7 +463,7 @@ public class GlyphMenu
             Glyph     glyph = getCurrentGlyph();
 
             if (glyph != null) {
-                symbolsBuilder.assignGlyphShape(ASYNC, glyph, shape, true);
+                symbolsBuilder.assignGlyphShape(ASYNC, glyph, shape, RECORDING);
             }
         }
 
@@ -498,7 +498,7 @@ public class GlyphMenu
         public void actionPerformed (ActionEvent e)
         {
             List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning            
-            symbolsBuilder.fixLargeSlurs(glyphs, true);
+            symbolsBuilder.fixLargeSlurs(glyphs, RECORDING);
         }
 
         public void update ()
@@ -535,7 +535,7 @@ public class GlyphMenu
                     ASYNC,
                     glyph,
                     proposedShape,
-                    true);
+                    RECORDING);
             }
         }
 

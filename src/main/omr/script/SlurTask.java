@@ -10,6 +10,7 @@
 package omr.script;
 
 import omr.glyph.Glyph;
+import static omr.script.ScriptRecording.*;
 
 import omr.sheet.Sheet;
 
@@ -62,7 +63,7 @@ public class SlurTask
     {
         super.run(sheet);
         sheet.getSymbolsBuilder()
-             .fixLargeSlurs(glyphs, true);
+             .fixLargeSlurs(glyphs, RECORDING);
     }
 
     //-----------------//

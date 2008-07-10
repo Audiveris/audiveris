@@ -10,6 +10,7 @@
 package omr.script;
 
 import omr.glyph.Glyph;
+import static omr.script.ScriptRecording.*;
 
 import omr.sheet.Sheet;
 
@@ -64,7 +65,7 @@ public class DeassignTask
     {
         super.run(sheet);
         sheet.getSymbolsBuilder()
-             .deassignSetShape(SYNC, glyphs, true);
+             .deassignSetShape(SYNC, glyphs, RECORDING);
     }
 
     //-----------------//

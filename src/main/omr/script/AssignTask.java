@@ -11,6 +11,7 @@ package omr.script;
 
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
+import static omr.script.ScriptRecording.*;
 
 import omr.sheet.Sheet;
 
@@ -85,7 +86,7 @@ public class AssignTask
     {
         super.run(sheet);
         sheet.getSymbolsBuilder()
-             .assignSetShape(SYNC, glyphs, shape, compound, true);
+             .assignSetShape(SYNC, glyphs, shape, compound, RECORDING);
     }
 
     //-----------------//

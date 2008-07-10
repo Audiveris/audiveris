@@ -22,6 +22,8 @@ import omr.glyph.GlyphSection;
 import omr.lag.ScrollLagView;
 import omr.lag.VerticalOrientation;
 
+import omr.script.ScriptRecording;
+
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 import static omr.selection.SelectionHint.*;
@@ -373,9 +375,9 @@ class GlyphBrowser
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public void deassignGlyphShape (Synchronicity processing,
-                                        Glyph         glyph,
-                                        boolean       record)
+        public void deassignGlyphShape (Synchronicity   processing,
+                                        Glyph           glyph,
+                                        ScriptRecording record)
         {
             deleteGlyph(); // Using current glyph
         }

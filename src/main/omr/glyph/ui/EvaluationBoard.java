@@ -19,6 +19,7 @@ import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphModel;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Shape;
+import static omr.script.ScriptRecording.*;
 
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
@@ -385,7 +386,7 @@ class EvaluationBoard
                 Shape     shape = Shape.valueOf(button.getText());
 
                 // Actually assign the shape
-                glyphModel.assignGlyphShape(ASYNC, glyph, shape, true);
+                glyphModel.assignGlyphShape(ASYNC, glyph, shape, RECORDING);
             }
         }
     }

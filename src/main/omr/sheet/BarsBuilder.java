@@ -47,6 +47,9 @@ import omr.score.ui.ScoreConstants;
 import omr.score.visitor.ScoreFixer;
 import omr.score.visitor.SheetPainter;
 
+import omr.script.ScriptRecording;
+import static omr.script.ScriptRecording.*;
+
 import omr.selection.Selection;
 import omr.selection.SelectionHint;
 import omr.selection.SelectionTag;
@@ -74,7 +77,8 @@ import java.util.List;
 /**
  * Class <code>BarsBuilder</code> handles the vertical lines that are recognized
  * as bar lines. This class uses a dedicated companion named {@link
- * omr.sheet.BarsChecker} which handles physical checks.
+ * omr.sheet.BarsChecker} which handles only physical checks, while
+ * <code>BarsBuilder</code> handles additional logical tests.
  *
  * <p> Input is provided by a list of vertical sticks retrieved from the
  * vertical lag.
@@ -185,13 +189,13 @@ public class BarsBuilder
      * @param processing request to run (a)synchronously
      * @param glyph the glyph to be assigned
      * @param shape the assigned shape, which may be null
-     * @param record not used
+     * @param record specify whether the action must be recorded in the script
      */
     @Override
-    public void assignGlyphShape (Synchronicity processing,
-                                  Glyph         glyph,
-                                  Shape         shape,
-                                  boolean       record)
+    public void assignGlyphShape (Synchronicity   processing,
+                                  Glyph           glyph,
+                                  Shape           shape,
+                                  ScriptRecording record)
     {
         if (glyph != null) {
             //if (logger.isFineEnabled()) {
@@ -336,13 +340,14 @@ public class BarsBuilder
      * itself if this (false) bar was the only ending bar left for the
      * Measure. The related stick must also be assigned a failure result.
      *
+     * @param processing specify whether the method should run (a)synchronously
      * @param glyph the (false) bar glyph to deassign
-     * @param record true if this action is to be recorded in the script
+     * @param record specify whether the action must be recorded in the script
      */
     @Override
-    public void deassignGlyphShape (Synchronicity processing,
-                                    final Glyph   glyph,
-                                    final boolean record)
+    public void deassignGlyphShape (Synchronicity         processing,
+                                    final Glyph           glyph,
+                                    final ScriptRecording record)
     {
         if (processing == ASYNC) {
             new BasicTask() {
@@ -425,7 +430,7 @@ public class BarsBuilder
                     }
                 }
 
-                assignGlyphShape(SYNC, glyph, null, false);
+                assignGlyphShape(SYNC, glyph, null, NO_RECORDING);
 
                 // Update score internal data
                 score.accept(new ScoreFixer());
@@ -448,13 +453,14 @@ public class BarsBuilder
     /**
      * Remove a set of bars
      *
+     * @param record specify whether the method must run (a)synchronously
      * @param glyphs the collection of glyphs to be de-assigned
-     * @param record true if this action is to be recorded in the script
+     * @param record specify whether the action must be recorded in the script
      */
     @Override
     public void deassignSetShape (Synchronicity           processing,
                                   final Collection<Glyph> glyphs,
-                                  final boolean           record)
+                                  final ScriptRecording   record)
     {
         if (processing == ASYNC) {
             new BasicTask() {
@@ -469,7 +475,7 @@ public class BarsBuilder
                 }.execute();
         } else {
             for (Glyph glyph : glyphs) {
-                deassignGlyphShape(SYNC, glyph, false);
+                deassignGlyphShape(SYNC, glyph, NO_RECORDING);
             }
         }
     }
