@@ -584,7 +584,7 @@ public class GlyphMenu
         public void actionPerformed (ActionEvent e)
         {
             List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
-            symbolsBuilder.stemSegment(glyphs, true); // isShort
+            symbolsBuilder.stemSegment(ASYNC, glyphs, true); // isShort
         }
 
         @Override
@@ -656,9 +656,10 @@ public class GlyphMenu
         public void actionPerformed (ActionEvent e)
         {
             List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
-            symbolsBuilder.stemSegment(glyphs, false); // isShort
+            symbolsBuilder.stemSegment(ASYNC, glyphs, false); // isShort
         }
 
+        @Override
         public void update ()
         {
             putValue(NAME, "Look for verticals");

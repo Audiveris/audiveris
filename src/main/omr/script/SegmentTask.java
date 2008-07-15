@@ -15,6 +15,7 @@ import omr.glyph.Glyph;
 import omr.sheet.Sheet;
 
 import omr.step.StepException;
+import static omr.util.Synchronicity.*;
 
 import java.util.Collection;
 
@@ -68,7 +69,7 @@ public class SegmentTask
     {
         super.run(sheet);
         sheet.getSymbolsBuilder()
-             .stemSegment(glyphs, isShort);
+             .stemSegment(SYNC, glyphs, isShort);
     }
 
     //-----------------//

@@ -469,12 +469,12 @@ public class GlyphsBuilder
 
         int stemNb = 0;
 
-        if (checkStemIntersect(system.getGlyphs(), glyph, /* onLeft => */
+        if (checkStemIntersect(system.getGlyphsCopy(), glyph, /* onLeft => */
                                true)) {
             stemNb++;
         }
 
-        if (checkStemIntersect(system.getGlyphs(), glyph, /* onLeft => */
+        if (checkStemIntersect(system.getGlyphsCopy(), glyph, /* onLeft => */
                                false)) {
             stemNb++;
         }

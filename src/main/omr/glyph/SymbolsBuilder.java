@@ -519,8 +519,8 @@ public class SymbolsBuilder
     //---------------//
     // fixLargeSlurs //
     //---------------//
-    public void fixLargeSlurs (List<Glyph> glyphs,
-                               ScriptRecording     record)
+    public void fixLargeSlurs (List<Glyph>     glyphs,
+                               ScriptRecording record)
     {
         // Safer
         if ((glyphs == null) || glyphs.isEmpty()) {
@@ -572,28 +572,48 @@ public class SymbolsBuilder
     //-------------//
     // stemSegment //
     //-------------//
-    public void stemSegment (Collection<Glyph> givenGlyphs,
-                             boolean           isShort)
+    /**
+     * 
+     * @param processing specify whether the method must be run (a)synchronously
+     * @param givenGlyphs glyphs to segment in order to retrieve stems
+     * @param isShort looking for short (or standard) stems
+     */
+    public void stemSegment (Synchronicity     processing,
+                             final Collection<Glyph> givenGlyphs,
+                             final boolean           isShort)
     {
-        // Record this task in the sheet script
-        sheet.getScript()
-             .addTask(new SegmentTask(isShort, givenGlyphs));
+        if (processing == ASYNC) {
+            new BasicTask() {
+                    @Override
+                    protected Void doInBackground ()
+                        throws Exception
+                    {
+                        stemSegment(SYNC, givenGlyphs, isShort);
 
-        // Use a copy of glyphs selection
-        Collection<Glyph> glyphs = new ArrayList<Glyph>(givenGlyphs);
-        Collection<Shape> shapes = Glyph.shapesOf(glyphs);
+                        return null;
+                    }
+                }.execute();
+        } else {
+            // Record this task in the sheet script
+            sheet.getScript()
+                 .addTask(new SegmentTask(isShort, givenGlyphs));
 
-        deassignSetShape(SYNC, glyphs, NO_RECORDING);
+            // Use a copy of glyphs selection
+            Collection<Glyph> glyphs = new ArrayList<Glyph>(givenGlyphs);
+            Collection<Shape> shapes = Glyph.shapesOf(glyphs);
 
-        for (Glyph glyph : glyphs) {
-            SystemInfo system = sheet.getSystemAtY(glyph.getContourBox().y);
-            sheet.getVerticalsBuilder()
-                 .stemSegment(
-                Collections.singletonList(glyph),
-                system,
-                isShort);
+            deassignSetShape(SYNC, glyphs, NO_RECORDING);
+
+            for (Glyph glyph : glyphs) {
+                SystemInfo system = sheet.getSystemAtY(glyph.getContourBox().y);
+                sheet.getVerticalsBuilder()
+                     .stemSegment(
+                    Collections.singletonList(glyph),
+                    system,
+                    isShort);
+            }
+
+            sheet.updateLastSteps(glyphs, shapes);
         }
-
-        sheet.updateLastSteps(glyphs, shapes);
     }
 }

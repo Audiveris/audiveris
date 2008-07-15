@@ -70,7 +70,10 @@ public class Segno
                                  SystemPoint point)
     {
         Slot slot = measure.getClosestSlot(point);
-        glyph.setTranslation(
-            new Segno(measure, point, slot.getChordBelow(point), glyph));
+
+        if (slot != null) {
+            glyph.setTranslation(
+                new Segno(measure, point, slot.getChordBelow(point), glyph));
+        }
     }
 }
