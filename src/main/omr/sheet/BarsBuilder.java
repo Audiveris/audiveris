@@ -104,10 +104,6 @@ public class BarsBuilder
         "Bar-NotSystemAligned");
     private static final FailureResult NOT_STAFF_ALIGNED = new FailureResult(
         "Bar-NotStaffAligned");
-    private static final FailureResult SHORTER_THAN_STAFF_HEIGHT = new FailureResult(
-        "Bar-ShorterThanStaffHeight");
-    private static final FailureResult THICK_BAR_NOT_ALIGNED = new FailureResult(
-        "Bar-ThickBarNotAligned");
     private static final FailureResult CANCELLED = new FailureResult(
         "Bar-Cancelled");
 
@@ -202,23 +198,6 @@ public class BarsBuilder
             logger.info(
                 "Bars. shape " + shape + " assigned to glyph #" +
                 glyph.getId());
-
-            //}
-            //
-            //            // First, do a manual assignment of the shape to the glyph
-            //            glyph.setShape(shape, Evaluation.MANUAL_NO_DOUBT);
-            //
-            //            // Remember the latest shape assigned
-            //            if (shape != null) {
-            //                latestShapeAssigned = shape;
-            //            }
-            //
-            //            // Update immediately the glyph info as displayed
-            //            if (sheet != null) {
-            //                sheet.getSelection(
-            //                    lag.isVertical() ? VERTICAL_GLYPH : HORIZONTAL_GLYPH)
-            //                     .setEntity(glyph, SelectionHint.GLYPH_MODIFIED);
-            //            }
         }
     }
 
@@ -268,16 +247,6 @@ public class BarsBuilder
             // Define score parts
             defineScoreParts();
 
-            // Remove clutter glyphs from lag (they will be handled as specific
-            // glyphs in the user view).
-            for (Stick stick : clutter) {
-                stick.destroy( /* cutSections => */
-                false);
-            }
-
-            // Erase bar pixels from picture (not used for the time being)
-            //////eraseBars();
-
             // Update score internal data
             score.accept(new ScoreFixer());
 
@@ -286,28 +255,7 @@ public class BarsBuilder
             }
 
             // Report number of systems & measures retrieved
-            StringBuilder sb = new StringBuilder();
-            sb.append(sheet.getSystems().size())
-              .append(" systems");
-
-            int nb = score.getLastSystem()
-                          .getLastPart()
-                          .getLastMeasure()
-                          .getId();
-
-            if (nb > 0) {
-                sb.append(", ")
-                  .append(nb)
-                  .append(" measure");
-
-                if (nb > 1) {
-                    sb.append("s");
-                }
-            } else {
-                sb.append(", no measure found");
-            }
-
-            logger.info(sb.toString());
+            reportResults();
 
             // Split everything, including horizontals, per system
             SystemSplit.computeSystemLimits(sheet);
@@ -363,23 +311,21 @@ public class BarsBuilder
         } else {
             if ((glyph.getShape() == Shape.THICK_BAR_LINE) ||
                 (glyph.getShape() == Shape.THIN_BAR_LINE)) {
-                Stick bar = getBarOf(glyph);
+                logger.info("Deassigning a " + glyph.getShape());
 
-                if (bar == null) {
-                    return;
-                } else {
-                    logger.info("Deassigning a " + glyph.getShape());
-                }
+                Stick bar = (Stick) glyph;
 
                 // Related stick has to be freed
                 bar.setShape(null);
                 bar.setResult(CANCELLED);
 
                 // Remove from the internal all-bars list
-                bars.remove(bar);
+                if (!bars.remove(bar)) {
+                    return;
+                }
 
                 // Remove from the containing SystemInfo
-                SystemInfo system = checker.getSystemOf(bar, sheet);
+                SystemInfo system = checker.getSystemOf(bar);
 
                 if (system == null) {
                     return;
@@ -600,7 +546,7 @@ public class BarsBuilder
                     Measure           measure = (Measure) mit.next();
 
                     // Check that all staves in this part are concerned with
-                    // one stick of the barline
+                    // at least one stick of the barline
                     Collection<Staff> staves = new ArrayList<Staff>();
 
                     for (TreeNode node : part.getStaves()) {
@@ -1008,6 +954,35 @@ public class BarsBuilder
                 }
             }
         }
+    }
+
+    //---------------//
+    // reportResults //
+    //---------------//
+    private void reportResults ()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(sheet.getSystems().size())
+          .append(" systems");
+
+        int nb = score.getLastSystem()
+                      .getLastPart()
+                      .getLastMeasure()
+                      .getId();
+
+        if (nb > 0) {
+            sb.append(", ")
+              .append(nb)
+              .append(" measure");
+
+            if (nb > 1) {
+                sb.append("s");
+            }
+        } else {
+            sb.append(", no measure found");
+        }
+
+        logger.info(sb.toString());
     }
 
     //~ Inner Classes ----------------------------------------------------------

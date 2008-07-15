@@ -176,7 +176,7 @@ public class Barline
      */
     public Collection<Stick> getSticks ()
     {
-        return (sticks == null) ? Collections.<Stick>emptySet() : sticks;
+        return sticks;
     }
 
     //--------//

@@ -108,10 +108,10 @@ public class Sheet
     private BarsBuilder barsBuilder;
 
     /** A glyph extractor for this sheet */
-    private GlyphsBuilder glyphBuilder;
+    private volatile GlyphsBuilder glyphBuilder;
 
     /** A glyph inspector for this sheet */
-    private GlyphInspector glyphInspector;
+    private volatile GlyphInspector glyphInspector;
 
     /** Horizontal lag (built by LINES/LinesBuilder) */
     private GlyphLag hLag;

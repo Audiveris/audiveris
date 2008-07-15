@@ -217,11 +217,9 @@ public class BarsChecker
      * Report the SystemInfo that contains the given bar.
      *
      * @param bar the given bar
-     * @param sheet the sheet context
      * @return the containing SystemInfo, null if not found
      */
-    public SystemInfo getSystemOf (Stick bar,
-                                   Sheet sheet)
+    public SystemInfo getSystemOf (Stick bar)
     {
         Context context = contexts.get(bar);
 
@@ -238,12 +236,6 @@ public class BarsChecker
 
         if (botIdx == -1) {
             botIdx = topIdx;
-        }
-
-        Score score = sheet.getScore();
-
-        if (score == null) {
-            return null;
         }
 
         for (Iterator it = score.getSystems()
@@ -341,7 +333,7 @@ public class BarsChecker
             Stick bar = bit.next();
 
             // Determine the system this bar line belongs to
-            SystemInfo systemInfo = getSystemOf(bar, sheet);
+            SystemInfo systemInfo = getSystemOf(bar);
 
             if (systemInfo == null) { // Should not occur, but that's safer
                 logger.warning("Bar not belonging to any system");
