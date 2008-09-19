@@ -179,6 +179,7 @@ public class Digraph<D extends Digraph<D, V>, V extends Vertex>
      *
      * @param vertex the newly created vertex
      */
+    @SuppressWarnings("unchecked")
     public void addVertex (V vertex)
     {
         if (vertex == null) {

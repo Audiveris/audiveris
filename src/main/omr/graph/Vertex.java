@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.*;
  *
  * <p>NOTA: This plain Vertex type has no room for user-defined data, if such
  * feature is needed then a proper subtype of Vertex should be used.
- * 
+ *
  * <p>This class is not thread-safe, because it is not intended to be used by
  * several threads simultaneously. However, the graph structure which contains
  * instances of vertices is indeed thread-safe.
@@ -101,6 +101,7 @@ public class Vertex<D extends Digraph, V extends Vertex<D, V>>
      * Create a Vertex in a graph.
      * @param graph The containing graph where this vertex is to be hosted
      */
+    @SuppressWarnings("unchecked")
     protected Vertex (D graph)
     {
         if (logger.isFineEnabled()) {
@@ -274,6 +275,7 @@ public class Vertex<D extends Digraph, V extends Vertex<D, V>>
      * Delete this vertex. This implies also the removal of all its incoming and
      * outgoing edges.
      */
+    @SuppressWarnings("unchecked")
     public void delete ()
     {
         if (logger.isFineEnabled()) {
