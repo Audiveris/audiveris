@@ -11,8 +11,8 @@ package omr.glyph;
 
 import omr.script.ScriptRecording;
 
+import omr.selection.GlyphEvent;
 import omr.selection.SelectionHint;
-import static omr.selection.SelectionTag.*;
 
 import omr.sheet.Sheet;
 
@@ -20,6 +20,8 @@ import omr.util.BasicTask;
 import omr.util.Logger;
 import omr.util.Synchronicity;
 import static omr.util.Synchronicity.*;
+
+import org.bushe.swing.event.EventService;
 
 import java.util.*;
 
@@ -30,12 +32,6 @@ import java.util.*;
  * <p>Nota: Since it triggers updates of user selections, it is supposed to be
  * used from within a user action. If not, glyphs should be accessed directly
  * instead, through the 'setShape()' method in 'Glyph' class.
- *
- * <dl>
- * <dt><b>Selection Outputs:</b></dt><ul>
- * <li>*_GLYPH (flagged with GLYPH_INIT hint)
- * </ul>
- * </dl>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -133,6 +129,21 @@ public class GlyphModel
         return sheet;
     }
 
+    //--------------------//
+    // getLocationService //
+    //--------------------//
+    /**
+     * Report the event service to use for SheetLocationEvent
+     * When no sheet is available, override this method to point to another 
+     * service
+     * @return the event service to use for SheetLocationEvent
+     */
+    public EventService getLocationService ()
+    {
+        return getSheet()
+                   .getEventService();
+    }
+
     //------------------//
     // assignGlyphShape //
     //------------------//
@@ -178,9 +189,12 @@ public class GlyphModel
 
                 // Update immediately the glyph info as displayed
                 if (sheet != null) {
-                    sheet.getSelection(
-                        lag.isVertical() ? VERTICAL_GLYPH : HORIZONTAL_GLYPH)
-                         .setEntity(glyph, SelectionHint.GLYPH_MODIFIED);
+                    lag.publish(
+                        new GlyphEvent(
+                            this,
+                            SelectionHint.GLYPH_MODIFIED,
+                            null,
+                            glyph));
                 }
             }
         }
