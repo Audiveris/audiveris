@@ -13,9 +13,6 @@ import omr.Main;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
-import static omr.plugin.Dependency.*;
-import omr.plugin.Plugin;
-import static omr.plugin.PluginType.*;
 
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
@@ -25,19 +22,16 @@ import omr.ui.util.FileFilter;
 import omr.ui.util.UIUtilities;
 
 import omr.util.BasicTask;
-import omr.util.Implement;
 import omr.util.Logger;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
-import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 
 /**
@@ -187,56 +181,6 @@ public class ScriptActions
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
-    //------------//
-    // LoadAction //
-    //------------//
-    /**
-     * Class <code>LoadAction</code> let the user select and load a script file
-     * @deprecated
-     */
-    @Deprecated
-    @Plugin(type = SHEET_SCRIPT)
-    public static class LoadAction
-        extends AbstractAction
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            Task task = getInstance()
-                            .loadScript(e);
-
-            if (task != null) {
-                task.execute();
-            }
-        }
-    }
-
-    //-------------//
-    // StoreAction //
-    //-------------//
-    /**
-     * Class <code>StoreAction</code> handles the storing of the currently
-     * selected script.
-     * @deprecated
-     */
-    @Deprecated
-    @Plugin(type = SHEET_SCRIPT, dependency = SHEET_AVAILABLE)
-    public static class StoreAction
-        extends AbstractAction
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            getInstance()
-                .storeScript(e)
-                .execute();
-        }
-    }
 
     //-----------//
     // Constants //
