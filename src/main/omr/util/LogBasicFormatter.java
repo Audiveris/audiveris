@@ -32,13 +32,16 @@ public class LogBasicFormatter
     private static final String format = "{0,time}";
 
     /** Should we print time in log */
-    private static final boolean PRINT_TIME = true;
+    private static final boolean PRINT_TIME = false;
 
-    /** Should we print Class name in log */
-    private static final boolean PRINT_CLASS = true;
+    /** Should we print the calling frame in log */
+    private static final boolean PRINT_FRAME = true;
 
-    /** Should we print Method name in log */
-    private static final boolean PRINT_METHOD = true;
+    /** Classes to skip when retrieving the actual caller of the log */
+    private static final Class[] logClasses = new Class[] {
+                                                  java.util.logging.Logger.class,
+                                                  omr.util.Logger.class
+                                              };
 
     //~ Instance fields --------------------------------------------------------
 
@@ -58,7 +61,6 @@ public class LogBasicFormatter
     public synchronized String format (LogRecord record)
     {
         StringBuilder sb = new StringBuilder(256);
-        sb.append(" ");
 
         // First line (if any)
         if (PRINT_TIME) {
@@ -75,20 +77,12 @@ public class LogBasicFormatter
             sb.append(text);
         }
 
-        if (PRINT_CLASS) {
-            sb.append(" ");
+        if (PRINT_FRAME) {
+            StackTraceElement frame = ClassUtil.getCallingFrame(logClasses);
 
-            if (record.getSourceClassName() != null) {
-                sb.append(record.getSourceClassName());
-            } else {
-                sb.append(record.getLoggerName());
-            }
-        }
-
-        if (PRINT_METHOD) {
-            if (record.getSourceMethodName() != null) {
-                sb.append(" ");
-                sb.append(record.getSourceMethodName());
+            if (frame != null) {
+                sb.append(" ")
+                  .append(frame);
             }
         }
 
@@ -97,7 +91,7 @@ public class LogBasicFormatter
             sb.append(" -- ");
         }
 
-        // Second line
+        // Second part
         String message = formatMessage(record);
 
         //sb.append(record.getLevel().getLocalizedName());
@@ -113,6 +107,14 @@ public class LogBasicFormatter
                   .printStackTrace(pw);
             pw.close();
             sb.append(sw.toString());
+
+            //            Throwable cause = record.getThrown()
+            //                                    .getCause();
+            //
+            //            if (cause != null) {
+            //                sb.append(" cause:")
+            //                  .append(cause.getMessage());
+            //            }
         }
 
         return sb.toString();
