@@ -96,6 +96,7 @@ public class TreeNode
      *
      * @return the children
      */
+    @SuppressWarnings("unchecked")
     public synchronized List<TreeNode> getChildrenCopy ()
     {
         if (logger.isFineEnabled()) {
