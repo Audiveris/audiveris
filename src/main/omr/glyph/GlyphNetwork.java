@@ -141,7 +141,7 @@ public class GlyphNetwork
             network.run(ins, null, outs);
 
             for (int s = 0; s < outSize; s++) {
-                Shape shape = specificShapeCheck(Shape.values()[s], glyph);
+                Shape shape = GlyphChecks.specificCheck(Shape.values()[s], glyph);
 
                 if (shape != null) {
                     evals[s] = new Evaluation(shape, 1d / outs[s]);
@@ -398,6 +398,7 @@ public class GlyphNetwork
      * @param mode the starting mode of the trainer (scratch, replay or
      * incremental)
      */
+    @SuppressWarnings("unchecked")
     public void train (List<Glyph>  glyphs,
                        Monitor      monitor,
                        StartingMode mode)

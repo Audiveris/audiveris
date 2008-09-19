@@ -106,7 +106,7 @@ public class GlyphRegression
 
             for (int s = 0; s < outSize; s++) {
                 ShapeDesc desc = shapeDescs[s];
-                Shape     shape = specificShapeCheck(desc.shape, glyph);
+                Shape     shape = GlyphChecks.specificCheck(desc.shape, glyph);
 
                 if (shape != null) {
                     evals[s] = new Evaluation(shape, desc.distance(ins));
