@@ -38,10 +38,8 @@ import omr.score.visitor.SheetPainter;
 import omr.script.ScriptRecording;
 import static omr.script.ScriptRecording.*;
 
-import omr.selection.Selection;
-import omr.selection.SelectionHint;
-import omr.selection.SelectionTag;
-import static omr.selection.SelectionTag.*;
+import omr.selection.GlyphEvent;
+import omr.selection.UserEvent;
 
 import omr.step.StepException;
 
@@ -56,6 +54,8 @@ import omr.util.Logger;
 import omr.util.Predicate;
 import omr.util.Synchronicity;
 import static omr.util.Synchronicity.*;
+
+import org.bushe.swing.event.EventService;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -82,6 +82,13 @@ public class VerticalsBuilder
     private static final Logger logger = Logger.getLogger(
         VerticalsBuilder.class);
 
+    /** Events this entity is interested in */
+    private static final Collection<Class<?extends UserEvent>> eventClasses = new ArrayList<Class<?extends UserEvent>>();
+
+    static {
+        eventClasses.add(GlyphEvent.class);
+    }
+
     // Success codes
     private static final SuccessResult STEM = new SuccessResult("Stem");
 
@@ -102,7 +109,7 @@ public class VerticalsBuilder
     //~ Instance fields --------------------------------------------------------
 
     /** Related user display if any */
-    private MyGlyphLagView view;
+    private MyView view;
 
     /** Global sheet scale */
     private final Scale scale;
@@ -288,7 +295,7 @@ public class VerticalsBuilder
     private void displayFrame ()
     {
         // Specific rubber display
-        view = new MyGlyphLagView(lag);
+        view = new MyView(lag);
         view.colorize();
 
         // Create a hosting frame for the view
@@ -301,21 +308,11 @@ public class VerticalsBuilder
             new BoardsPane(
                 sheet,
                 view,
-                new PixelBoard(unit),
-                new RunBoard(unit, sheet.getSelection(VERTICAL_RUN)),
-                new SectionBoard(
-                    unit,
-                    lag.getLastVertexId(),
-                    sheet.getSelection(VERTICAL_SECTION),
-                    sheet.getSelection(VERTICAL_SECTION_ID)),
-                new GlyphBoard(
-                    unit,
-                    this,
-                    null, // TO BE CHECKED : specific glyphs
-                    sheet.getSelection(VERTICAL_GLYPH),
-                    sheet.getSelection(VERTICAL_GLYPH_ID),
-                    sheet.getSelection(GLYPH_SET)),
-                new MyCheckBoard(unit, sheet.getSelection(VERTICAL_GLYPH))));
+                new PixelBoard(unit, sheet),
+                new RunBoard(unit, lag),
+                new SectionBoard(unit, lag.getLastVertexId(), lag),
+                new GlyphBoard(unit, this, null),
+                new MyCheckBoard(unit, lag.getEventService(), eventClasses)));
     }
 
     //-------------------//
@@ -626,61 +623,70 @@ public class VerticalsBuilder
     {
         //~ Constructors -------------------------------------------------------
 
-        public MyCheckBoard (String    unit,
-                             Selection inputSelection)
+        public MyCheckBoard (String                                unit,
+                             EventService                          eventService,
+                             Collection<Class<?extends UserEvent>> eventList)
         {
-            super(unit, null, inputSelection);
+            super(unit, null, eventService, eventList);
         }
 
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public void update (Selection     selection,
-                            SelectionHint hint)
+        public void onEvent (UserEvent event)
         {
-            Object entity = selection.getEntity();
+            if (event instanceof GlyphEvent) {
+                GlyphEvent glyphEvent = (GlyphEvent) event;
+                Glyph      glyph = glyphEvent.getData();
 
-            if (entity instanceof Stick) {
-                try {
-                    Stick      stick = (Stick) entity;
-                    SystemInfo system = sheet.getSystemAtY(
-                        stick.getContourBox().y);
-                    // Get a fresh suite
-                    setSuite(new StemCheckSuite(system, true));
-                    tellObject(stick);
-                } catch (StepException ex) {
-                    logger.warning("Glyph cannot be processed");
+                if (glyph instanceof Stick) {
+                    try {
+                        Stick      stick = (Stick) glyph;
+                        SystemInfo system = sheet.getSystemOf(stick);
+                        // Get a fresh suite
+                        setSuite(new StemCheckSuite(system, true));
+                        tellObject(stick);
+                    } catch (StepException ex) {
+                        logger.warning("Glyph cannot be processed");
+                    }
+                } else {
+                    tellObject(null);
                 }
-            } else {
-                tellObject(null);
             }
         }
     }
 
-    //----------------//
-    // MyGlyphLagView //
-    //----------------//
-    private class MyGlyphLagView
+    //--------------------//
+    // MySectionPredicate //
+    //--------------------//
+    private static class MySectionPredicate
+        implements Predicate<GlyphSection>
+    {
+        //~ Methods ------------------------------------------------------------
+
+        public boolean check (GlyphSection section)
+        {
+            // We process section for which glyph is null, NOISE, STRUCTURE
+            boolean result = (section.getGlyph() == null) ||
+                             !section.getGlyph()
+                                     .isWellKnown();
+
+            return result;
+        }
+    }
+
+    //--------//
+    // MyView //
+    //--------//
+    private class MyView
         extends GlyphLagView
     {
         //~ Constructors -------------------------------------------------------
 
-        public MyGlyphLagView (GlyphLag lag)
+        public MyView (GlyphLag lag)
         {
             super(lag, null, null, VerticalsBuilder.this, null);
             setName("VerticalsBuilder-MyView");
-
-            // Pixel
-            setLocationSelection(
-                sheet.getSelection(SelectionTag.SHEET_RECTANGLE));
-
-            // Glyph
-            glyphSelection = sheet.getSelection(SelectionTag.VERTICAL_GLYPH);
-            glyphSelection.addObserver(this);
-
-            // Glyph set
-            glyphSetSelection = sheet.getSelection(SelectionTag.GLYPH_SET);
-            glyphSetSelection.addObserver(this);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -715,25 +721,6 @@ public class VerticalsBuilder
             sheet.accept(new SheetPainter(g, getZoom()));
 
             super.renderItems(g);
-        }
-    }
-
-    //--------------------//
-    // MySectionPredicate //
-    //--------------------//
-    private static class MySectionPredicate
-        implements Predicate<GlyphSection>
-    {
-        //~ Methods ------------------------------------------------------------
-
-        public boolean check (GlyphSection section)
-        {
-            // We process section for which glyph is null, NOISE, STRUCTURE
-            boolean result = (section.getGlyph() == null) ||
-                             !section.getGlyph()
-                                     .isWellKnown();
-
-            return result;
         }
     }
 
