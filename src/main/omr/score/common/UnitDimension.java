@@ -9,6 +9,7 @@
 //
 package omr.score.common;
 
+
 /**
  * Class <code>UnitDimension</code> is a simple Dimension that is meant to
  * represent a dimension in a sheet, with its components (width and height)
