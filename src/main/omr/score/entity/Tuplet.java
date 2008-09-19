@@ -112,8 +112,8 @@ public class Tuplet
             Beam beam = (Beam) node;
 
             // Check abscissa range
-            if ((beam.getLeft().x <= point.x) &&
-                (beam.getRight().x >= point.x)) {
+            if ((beam.getLeftPoint().x <= point.x) &&
+                (beam.getRightPoint().x >= point.x)) {
                 // Take closest in ordinate
                 final int dist = Math.abs(beam.getCenter().y - point.y);
 
