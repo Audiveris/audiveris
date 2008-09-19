@@ -10,9 +10,6 @@
 package omr.glyph.ui;
 
 import omr.Main;
-
-import omr.plugin.Plugin;
-import omr.plugin.PluginType;
 import static omr.selection.SelectionHint.*;
 
 import omr.util.Implement;
@@ -140,14 +137,6 @@ public class GlyphVerifier
             .show(frame);
     }
 
-    //----------------//
-    // dumpSelections //
-    //----------------//
-    public void dumpSelections ()
-    {
-        glyphBrowser.dumpSelections();
-    }
-
     //--------//
     // verify //
     //--------//
@@ -262,24 +251,6 @@ public class GlyphVerifier
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
-    //----------------//
-    // MaterialAction //
-    //----------------//
-    @Deprecated
-    @Plugin(type = PluginType.TRAINING)
-    public static class MaterialAction
-        extends AbstractAction
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            GlyphVerifier.getInstance()
-                         .setVisible(true);
-        }
-    }
 
     //----------//
     // Selector //

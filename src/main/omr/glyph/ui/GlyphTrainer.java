@@ -16,9 +16,6 @@ import omr.constant.ConstantManager;
 import omr.glyph.GlyphNetwork;
 import static omr.glyph.Shape.*;
 
-import omr.plugin.Plugin;
-import omr.plugin.PluginType;
-
 import omr.ui.util.Panel;
 import omr.ui.util.UILookAndFeel;
 
@@ -84,7 +81,7 @@ public class GlyphTrainer
 
     /** Current task */
     private final Task task = new Task();
-    
+
     /** Frame title */
     private String frameTitle;
 
@@ -146,7 +143,8 @@ public class GlyphTrainer
                         public void windowClosing (WindowEvent e)
                         {
                             // Store latest constant values
-                            ConstantManager.getInstance().storeResource();
+                            ConstantManager.getInstance()
+                                           .storeResource();
 
                             // That's all folks !
                             System.exit(0);
@@ -230,26 +228,6 @@ public class GlyphTrainer
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
-    //---------------//
-    // TrainerAction //
-    //---------------//
-    /**
-     * Class <code>TrainerAction</code> launches the window dedicated to the
-     * training of the neural network
-     */
-    @Plugin(type = PluginType.TRAINING)
-    public static class TrainerAction
-        extends AbstractAction
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            GlyphTrainer.launch();
-        }
-    }
 
     //------//
     // Task //
