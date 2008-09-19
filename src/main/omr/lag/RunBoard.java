@@ -9,28 +9,26 @@
 //
 package omr.lag;
 
-import omr.selection.Selection;
-import omr.selection.SelectionHint;
+import omr.selection.RunEvent;
+import omr.selection.UserEvent;
 
 import omr.ui.Board;
 import omr.ui.field.LIntegerField;
 import omr.ui.util.Panel;
 
+import omr.util.Implement;
 import omr.util.Logger;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
 
-import java.util.Collections;
+import org.bushe.swing.event.EventSubscriber;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * Class <code>RunBoard</code> is dedicated to display of Run information.
- *
- * <dl>
- * <dt><b>Selection Inputs:</b></dt><ul>
- * <li>*_RUN
- * </ul>
- * </dl>
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -42,6 +40,13 @@ public class RunBoard
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(RunBoard.class);
+
+    /** Events this entity is interested in */
+    private static final Collection<Class<?extends UserEvent>> eventClasses = new ArrayList<Class<?extends UserEvent>>();
+
+    static {
+        eventClasses.add(RunEvent.class);
+    }
 
     //~ Instance fields --------------------------------------------------------
 
@@ -71,42 +76,39 @@ public class RunBoard
     /**
      * Create a Run Board
      * @param unitName name of the owning unit
-     * @param input the selection where run input is handled
+     * @param lag the related lag
      */
-    public RunBoard (String    unitName,
-                     Selection input)
+    public RunBoard (String unitName,
+                     Lag    lag)
     {
-        super(Board.Tag.RUN, unitName + "-RunBoard");
-        setInputSelectionList(Collections.singletonList(input));
+        super(
+            Board.Tag.RUN,
+            unitName + "-RunBoard",
+            lag.getEventService(),
+            eventClasses);
         defineLayout();
     }
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------//
-    // update //
-    //--------//
+    //---------//
+    // onEvent //
+    //---------//
     /**
      * Call-back triggered when Run Selection has been modified
      *
-     * @param selection the notified Selection
-     * @param hint potential notification hint
+     * @param event the notified event
      */
-    public void update (Selection     selection,
-                        SelectionHint hint)
+    @Implement(EventSubscriber.class)
+    public void onEvent (UserEvent event)
     {
-        Object entity = selection.getEntity();
-
         if (logger.isFineEnabled()) {
-            logger.fine("RunBoard " + selection.getTag() + ": " + entity);
+            logger.fine("RunBoard: " + event);
         }
 
-        switch (selection.getTag()) {
-        case SKEW_RUN : // Run of initial skewed lag
-        case HORIZONTAL_RUN : // Run of horizontal lag
-        case VERTICAL_RUN : // Run of vertical lag
-
-            Run run = (Run) entity;
+        if (event instanceof RunEvent) {
+            final RunEvent runEvent = (RunEvent) event;
+            final Run      run = runEvent.run;
 
             if (run != null) {
                 rStart.setValue(run.getStart());
@@ -115,11 +117,6 @@ public class RunBoard
             } else {
                 emptyFields(getComponent());
             }
-
-            break;
-
-        default :
-            logger.severe("Unexpected selection event from " + selection);
         }
     }
 

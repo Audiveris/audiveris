@@ -13,13 +13,19 @@ import omr.constant.Constant;
 
 import omr.graph.DigraphView;
 
-import omr.selection.Selection;
-import omr.selection.SelectionHint;
+import omr.selection.RunEvent;
+import omr.selection.SectionEvent;
+import omr.selection.SectionIdEvent;
+import omr.selection.SheetLocationEvent;
+import omr.selection.UserEvent;
 
 import omr.ui.view.RubberZoomedPanel;
 import omr.ui.view.Zoom;
 
 import omr.util.Logger;
+
+import org.bushe.swing.event.EventService;
+import org.bushe.swing.event.EventSubscriber;
 
 import java.awt.*;
 import java.util.*;
@@ -38,18 +44,6 @@ import java.util.*;
  * <p><b>Nota</b>: For the time being, we've chosen to not draw the
  * edges/junctions but just the vertices/sections.
  *
- * <dl>
- * <dt><b>Selection Inputs:</b></dt><ul>
- * <li>PIXEL Location (if LOCATION_INIT or LOCATION_ADD & specifics)
- * <li>*_SECTION_ID (if specifics)
- * </ul>
- *
- * <dt><b>Selection Outputs:</b></dt><ul>
- * <li>*_RUN
- * <li>*_SECTION
- * </ul>
- * </dl>
- *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  *
@@ -58,12 +52,19 @@ import java.util.*;
  */
 public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     extends RubberZoomedPanel
-    implements DigraphView
+    implements DigraphView, EventSubscriber<UserEvent>
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(LagView.class);
+
+    /** (Lag) events this entity is interested in */
+    private static final Collection<Class<?extends UserEvent>> eventClasses = new ArrayList<Class<?extends UserEvent>>();
+
+    static {
+        eventClasses.add(SectionIdEvent.class);
+    }
 
     // Color used when rendering specific sections
     private static final Color       SPECIFIC_COLOR = Color.yellow;
@@ -85,12 +86,6 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     /** Index of this view in the ordered list of views of the related lag */
     protected final int viewIndex;
 
-    /** Output selection for specific run if any */
-    protected Selection runSelection;
-
-    /** Output selection for specific section if any */
-    protected Selection sectionSelection;
-
     //~ Constructors -----------------------------------------------------------
 
     //---------//
@@ -100,10 +95,12 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
      * Create a view on the provided lag, building the related section view.
      *
      * @param lag              the lag to be displayed
+     * @param locationService the service which notifies location events
      * @param specificSections the collection of 'specific' sections, or null
      * @param showingSpecifics (ref of) a flag for showing specifics or not
      */
     public LagView (L                lag,
+                    EventService     locationService,
                     Collection<S>    specificSections,
                     Constant.Boolean showingSpecifics)
     {
@@ -134,6 +131,14 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         // Colorize all sections of the lag
         viewIndex = lag.viewIndexOf(this);
         colorize();
+
+        // Subscribe to lag events
+        for (Class<?extends UserEvent> eventClass : eventClasses) {
+            lag.subscribeStrongly(eventClass, this);
+        }
+
+        // Subscribe to location events
+        locationService.subscribeStrongly(SheetLocationEvent.class, this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -149,6 +154,24 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     public L getLag ()
     {
         return lag;
+    }
+
+    //--------------//
+    // getModelSize //
+    //--------------//
+    /**
+     * Return the overall dimension of the lag graph (zooming put apart).
+     *
+     * @return the global bounding box of the lag
+     */
+    @Override
+    public Dimension getModelSize ()
+    {
+        if (super.getModelSize() != null) {
+            return super.getModelSize();
+        } else {
+            return lagContour.getSize();
+        }
     }
 
     //----------------//
@@ -175,23 +198,6 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
 
         // Now look into 'normal' sections
         return lag.getVertexById(id);
-    }
-
-    //-----------------------//
-    // setSpecificSelections //
-    //-----------------------//
-    /**
-     * Inject dependency on where this lag view should write Run and Section
-     * information regarding specific sections.
-     *
-     * @param runSelection the Run selection
-     * @param sectionSelection the Section selection
-     */
-    public void setSpecificSelections (Selection runSelection,
-                                       Selection sectionSelection)
-    {
-        this.runSelection = runSelection;
-        this.sectionSelection = sectionSelection;
     }
 
     //---------//
@@ -277,32 +283,6 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         return lag.lookupSection(lag.getVertices(), pt);
     }
 
-    //    //---------------//
-    //    // lookupSection //
-    //    //---------------//
-    //    /**
-    //     * Given an absolute rectangle, retrieve the first contained section if any,
-    //     * first looking into the specifics if view is currently displaying them,
-    //     * then looking into the standard sections
-    //     *
-    //     * @param rect the given Rectangle
-    //     *
-    //     * @return the (first) section found, or null otherwise
-    //     */
-    //    public S lookupSection (Rectangle rect)
-    //    {
-    //        if (showingSpecifics) {
-    //            // Look up in specifics first
-    //            S section = lookupSection(specificSections, rect);
-    //
-    //            if (section != null) {
-    //                return section;
-    //            }
-    //        }
-    //
-    //        return lookupSection(lag.getVertices(), rect);
-    //    }
-    //
     //-----------------------//
     // lookupSpecificSection //
     //-----------------------//
@@ -319,19 +299,96 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         return lag.lookupSection(specificSections, pt);
     }
 
-    //------------------------//
-    // notifySpecificsVisible //
-    //------------------------//
-    public void notifySpecificsVisible ()
+    //---------//
+    // onEvent //
+    //---------//
+    /**
+     * Notification about selection objects. In addition to normal view
+     * behavior(making location visible), use the specific sections if any to
+     * retrieve Run and Section, based on location or identity.
+     *
+     * @param event the notified event
+     */
+    @Override
+    public void onEvent (UserEvent event)
     {
-        // Since search rules are modified, invalidate cache
-        lag.invalidateLookupCache();
+        ///logger.info("LagView. selection=" + selection + " hint=" + hint);
 
-        // Force update
-        locationSelection.reNotifyObservers(null);
+        // Default behavior : making point visible & drawing the markers
+        super.onEvent(event);
 
-        repaint();
+        // Check for specific section if any
+        if ((showingSpecifics != null) && showingSpecifics.getValue()) {
+            if (event instanceof SheetLocationEvent) {
+                SheetLocationEvent sheetLocation = (SheetLocationEvent) event;
+
+                // Default behavior : making point visible & drawing the markers
+                super.onEvent(sheetLocation);
+
+                Rectangle rect = sheetLocation.getData();
+
+                if (rect != null) {
+                    Point pt = rect.getLocation();
+                    lag.invalidateLookupCache();
+
+                    S section = lookupSpecificSection(pt);
+
+                    if (section != null) {
+                        lag.publish(
+                            new SectionEvent<S>(
+                                this,
+                                sheetLocation.hint,
+                                section));
+
+                        Point apt = lag.switchRef(pt, null);
+                        lag.publish(
+                            new RunEvent(this, section.getRunAt(apt.y)));
+                    }
+                }
+            } else if (event instanceof SectionIdEvent) {
+                // Lookup a specific section with proper ID
+                SectionIdEvent idEvent = (SectionIdEvent) event;
+                Integer        id = idEvent.id;
+
+                if ((id != null) & (id != 0)) {
+                    for (S section : specificSections) {
+                        if (section.getId() == id) {
+                            lag.publish(
+                                new SectionEvent<S>(
+                                    this,
+                                    idEvent.hint,
+                                    section));
+                            lag.publish(new RunEvent(this, null));
+
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
+
+    //
+    //    //------------------------//
+    //    // notifySpecificsVisible //
+    //    //------------------------//
+    //    public void notifySpecificsVisible ()
+    //    {
+    //        // Since search rules are modified, invalidate cache
+    //        lag.invalidateLookupCache();
+    //
+    //        // Force update
+    //        SheetLocationEvent locationEvent = (SheetLocationEvent) locationSelection.getEntity();
+    //        PixelRectangle     location = (locationEvent != null)
+    //                                      ? locationEvent.getData() : null;
+    //
+    //        if (location != null) {
+    //            locationSelection.setEntity(
+    //                new SheetLocationEvent(this, null, null, location));
+    //        }
+    //
+    //        repaint();
+    //    }
 
     //--------//
     // render //
@@ -352,97 +409,6 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
 
         // Paint additional items, such as recognized items, etc...
         renderItems(g);
-    }
-
-    //--------//
-    // update //
-    //--------//
-    /**
-     * Notification about selection objects. In addition to normal view
-     * behavior(making location visible), use the specific sections if any to
-     * retrieve Run and Section, based on location or identity.
-     *
-     * @param selection the notified selection
-     * @param hint the processing hint if any
-     */
-    @Override
-    public void update (Selection     selection,
-                        SelectionHint hint)
-    {
-        ///logger.info("LagView. selection=" + selection + " hint=" + hint);
-
-        // Default behavior : making point visible & drawing the markers
-        super.update(selection, hint);
-
-        // Check for specific section if any
-        if ((showingSpecifics != null) &&
-            showingSpecifics.getValue() &&
-            (sectionSelection != null)) {
-            switch (selection.getTag()) {
-            case SHEET_RECTANGLE :
-
-                if ((hint == SelectionHint.LOCATION_ADD) ||
-                    (hint == SelectionHint.LOCATION_INIT)) {
-                    Rectangle rect = (Rectangle) selection.getEntity();
-
-                    if (rect != null) {
-                        Point pt = rect.getLocation();
-                        lag.invalidateLookupCache();
-
-                        S section = lookupSpecificSection(pt);
-
-                        if (section != null) {
-                            sectionSelection.setEntity(section, hint);
-
-                            Point apt = lag.switchRef(pt, null);
-                            runSelection.setEntity(
-                                section.getRunAt(apt.y),
-                                hint);
-                        }
-                    }
-                }
-
-                break;
-
-            case SKEW_SECTION_ID :
-            case HORIZONTAL_SECTION_ID :
-            case VERTICAL_SECTION_ID :
-
-                // Lookup a specific section with proper ID
-                int id = (Integer) selection.getEntity();
-
-                for (S section : specificSections) {
-                    if (section.getId() == id) {
-                        sectionSelection.setEntity(section, hint);
-                        runSelection.setEntity(null, hint);
-
-                        break;
-                    }
-                }
-
-                break;
-
-            default :
-            }
-        }
-    }
-
-    //--------------//
-    // getModelSize //
-    //--------------//
-    /**
-     * Return the overall dimension of the lag graph (zooming put apart).
-     *
-     * @return the global bounding box of the lag
-     */
-    @Override
-    public Dimension getModelSize ()
-    {
-        if (super.getModelSize() != null) {
-            return super.getModelSize();
-        } else {
-            return lagContour.getSize();
-        }
     }
 
     //----------------//
@@ -479,6 +445,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
      */
     protected void renderItems (Graphics g)
     {
+        // Empty
     }
 
     //-------------------//

@@ -12,8 +12,10 @@ package omr.lag;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.selection.Selection;
+import omr.selection.SectionEvent;
+import omr.selection.SectionIdEvent;
 import omr.selection.SelectionHint;
+import omr.selection.UserEvent;
 
 import omr.stick.StickRelation;
 import omr.stick.StickSection;
@@ -23,14 +25,18 @@ import omr.ui.field.LIntegerField;
 import static omr.ui.field.SpinnerUtilities.*;
 import omr.ui.util.Panel;
 
+import omr.util.Implement;
 import omr.util.Logger;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
 
+import org.bushe.swing.event.EventSubscriber;
+
 import java.awt.*;
 import java.awt.event.*;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -40,17 +46,6 @@ import javax.swing.event.*;
  * {@link omr.lag.Section} and {@link omr.lag.Run} information, it can also be
  * used as an input means by directly entering the section id in the proper Id
  * spinner.
- *
- * <dl>
- * <dt><b>Selection Inputs:</b></dt><ul>
- * <li>*_SECTION
- * </ul>
- *
- * <dt><b>Selection Outputs:</b></dt><ul>
- * <li>*_SECTION_ID (flagged with SECTION_INIT hint)
- * </ul>
- * </dl>
- *
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -65,6 +60,13 @@ public class SectionBoard
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(SectionBoard.class);
+
+    /** Events this boards is interested in */
+    private static final Collection<Class<?extends UserEvent>> eventClasses = new ArrayList<Class<?extends UserEvent>>();
+
+    static {
+        eventClasses.add(SectionEvent.class);
+    }
 
     //~ Instance fields --------------------------------------------------------
 
@@ -142,19 +144,17 @@ public class SectionBoard
      *
      * @param unitName name for the owning unit
      * @param maxSectionId the upper bound for section id
-     * @param inputSelection the selection for section input
-     * @param outputSelection the selection for section id output
+     * @param lag the related lag
      */
     public SectionBoard (String    unitName,
                          int       maxSectionId,
-                         Selection inputSelection,
-                         Selection outputSelection)
+                         final Lag lag)
     {
-        super(Board.Tag.SECTION, unitName + "-SectionBoard");
-
-        // Dependencies on Selections
-        setOutputSelection(outputSelection);
-        setInputSelectionList(Collections.singletonList(inputSelection));
+        super(
+            Board.Tag.SECTION,
+            unitName + "-SectionBoard",
+            lag.getEventService(),
+            eventClasses);
 
         // Dump button
         dump.setToolTipText("Dump this section");
@@ -163,8 +163,11 @@ public class SectionBoard
                     public void actionPerformed (ActionEvent e)
                     {
                         // Retrieve current section selection
-                        Selection input = inputSelectionList.get(0);
-                        Section   section = (Section) input.getEntity();
+                        SectionEvent sectionEvent = (SectionEvent) lag.getEventService()
+                                                                      .getLastEvent(
+                            SectionEvent.class);
+                        Section      section = (sectionEvent != null)
+                                               ? sectionEvent.getData() : null;
 
                         if (section != null) {
                             section.dump();
@@ -183,21 +186,20 @@ public class SectionBoard
                         // action on an Id spinner, and not the mere update
                         // of section fields (which include this id).
                         if (!updating) {
-                            Selection output = SectionBoard.this.outputSelection;
+                            Integer sectionId = (Integer) id.getValue();
 
-                            if (output != null) {
-                                Integer sectionId = (Integer) id.getValue();
-
-                                if (logger.isFineEnabled()) {
-                                    logger.fine("sectionId=" + sectionId);
-                                }
-
-                                idSelecting = true;
-                                output.setEntity(
-                                    sectionId,
-                                    SelectionHint.SECTION_INIT);
-                                idSelecting = false;
+                            if (logger.isFineEnabled()) {
+                                logger.fine("sectionId=" + sectionId);
                             }
+
+                            idSelecting = true;
+                            lag.getEventService()
+                               .publish(
+                                new SectionIdEvent(
+                                    this,
+                                    SelectionHint.SECTION_INIT,
+                                    sectionId));
+                            idSelecting = false;
                         }
                     }
                 });
@@ -220,29 +222,22 @@ public class SectionBoard
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------//
-    // update //
-    //--------//
+    //---------//
+    // onEvent //
+    //---------//
     /**
      * Call-back triggered when Section Selection has been modified
      *
-     * @param selection the (Section) Selection
-     * @param hint potential notification hint
+     * @param event the section event
      */
-    public void update (Selection     selection,
-                        SelectionHint hint)
+    @Implement(EventSubscriber.class)
+    public void onEvent (UserEvent event)
     {
-        Object entity = selection.getEntity();
-
         if (logger.isFineEnabled()) {
-            logger.fine("SectionBoard " + selection.getTag() + ": " + entity);
+            logger.fine("SectionBoard: " + event);
         }
 
-        switch (selection.getTag()) {
-        case SKEW_SECTION : // Section of initial skewed lag
-        case HORIZONTAL_SECTION : // Section of horizontal lag
-        case VERTICAL_SECTION : // Section of vertical lag
-
+        if (event instanceof SectionEvent) {
             if (updating) {
                 ///logger.warning("double updating");
                 return;
@@ -251,7 +246,9 @@ public class SectionBoard
             // Update section fields in this board
             updating = true;
 
-            Section section = (Section) entity;
+            final SectionEvent sectionEvent = (SectionEvent) event;
+            final Section      section = (sectionEvent != null)
+                                         ? sectionEvent.section : null;
             dump.setEnabled(section != null);
 
             Integer sectionId = null;
@@ -329,11 +326,6 @@ public class SectionBoard
             }
 
             updating = false;
-
-            break;
-
-        default :
-            logger.severe("Unexpected selection event from " + selection);
         }
     }
 

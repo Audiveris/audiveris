@@ -11,13 +11,23 @@ package omr.lag;
 
 import omr.graph.Digraph;
 
-import omr.selection.Selection;
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
+
+import omr.selection.RunEvent;
+import omr.selection.SectionEvent;
+import omr.selection.SectionIdEvent;
 import omr.selection.SelectionHint;
-import omr.selection.SelectionObserver;
+import omr.selection.SheetLocationEvent;
+import omr.selection.UserEvent;
 
 import omr.util.Implement;
 import omr.util.Logger;
 import omr.util.Predicate;
+
+import org.bushe.swing.event.EventService;
+import org.bushe.swing.event.EventSubscriber;
+import org.bushe.swing.event.ThreadSafeEventService;
 
 import java.awt.*;
 import java.util.*;
@@ -30,20 +40,6 @@ import java.util.List;
  * are thus vertices of the graph, while junctions are directed edges between
  * sections.
  *
- * <dl>
- * <dt><b>Selection Inputs:</b></dt><ul>
- * <li>PIXEL Location (if LOCATION_INIT or LOCATION_ADD)
- * <li>*_SECTION (if SECTION_INIT)
- * <li>*_SECTION_ID
- * </ul>
- *
- * <dt><b>Selection Outputs:</b></dt><ul>
- * <li>PIXEL Contour
- * <li>*_RUN
- * <li>*_SECTION
- * </ul>
- * </dl>
- *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  * @param <L> precise lag (sub)type
@@ -51,7 +47,7 @@ import java.util.List;
  */
 public class Lag<L extends Lag<L, S>, S extends Section>
     extends Digraph<L, S>
-    implements Oriented, SelectionObserver
+    implements Oriented, EventSubscriber<UserEvent>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -69,14 +65,14 @@ public class Lag<L extends Lag<L, S>, S extends Section>
      */
     private List<List<Run>> runs;
 
-    /** Selection object where selected pixel location is to be written */
-    protected Selection locationSelection;
+    /** Events related to this lag (Run, Section) */
+    protected EventService eventService = new ThreadSafeEventService();
 
-    /** Selection object where selected Run is to be written */
-    protected Selection runSelection;
+    /** Event service where selected location is to be written */
+    protected EventService locationService;
 
-    /** Selection object where selected Section is to be written */
-    protected Selection sectionSelection;
+    /** Cache of last section found through a lookup action */
+    private S cachedSection;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -95,9 +91,20 @@ public class Lag<L extends Lag<L, S>, S extends Section>
     {
         super(name, sectionClass);
         this.orientation = orientation;
+        eventService.setDefaultCacheSizePerClassOrTopic(1);
+        selfSubscribe(SectionEvent.class);
+        selfSubscribe(SectionIdEvent.class);
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-----------------//
+    // getEventService //
+    //-----------------//
+    public EventService getEventService ()
+    {
+        return eventService;
+    }
 
     //-----------------//
     // getFirstRectRun //
@@ -144,46 +151,30 @@ public class Lag<L extends Lag<L, S>, S extends Section>
         return best;
     }
 
-    //----------------------//
-    // setLocationSelection //
-    //----------------------//
+    //--------------//
+    // getLastEvent //
+    //--------------//
     /**
-     * Inject the selection object where location must be written to, when
-     * triggered through the update method.
-     *
-     * @param locationSelection the output selection object
+     * Report the last event (if any) in the provided class
+     * @return the last event in provided class, or null
      */
-    public void setLocationSelection (Selection locationSelection)
+    public Object getLastEvent (Class<?extends UserEvent> eventClass)
     {
-        this.locationSelection = locationSelection;
+        return eventService.getLastEvent(eventClass);
     }
 
-    //-----------------//
-    // setRunSelection //
-    //-----------------//
+    //--------------------//
+    // setLocationService //
+    //--------------------//
     /**
-     * Inject the selection object where run must be written to, when triggered
-     * through the update method.
-     *
-     * @param runSelection the output selection object
-     */
-    public void setRunSelection (Selection runSelection)
-    {
-        this.runSelection = runSelection;
-    }
-
-    //---------------------//
-    // setSectionSelection //
-    //---------------------//
-    /**
-     * Inject the selection object where section must be written to, when
+     * Inject the event service where location must be written to, when
      * triggered through the update method.
      *
-     * @param sectionSelection the output selection object
+     * @param locationService the output selection object
      */
-    public void setSectionSelection (Selection sectionSelection)
+    public void setLocationService (EventService locationService)
     {
-        this.sectionSelection = sectionSelection;
+        this.locationService = locationService;
     }
 
     //-------------//
@@ -217,12 +208,6 @@ public class Lag<L extends Lag<L, S>, S extends Section>
 
         // Iterate on (all?) sections
         for (S section : getSections()) {
-            // Detect a true ending situation (not too bad)
-            // OOPS: ensure the collection of sections is still ordered
-            // according to their position value !
-            //             if (section.getFirstPos() > maxPos) {
-            //                 break;
-            //             }
             if (rect.intersects(section.getBounds())) {
                 found.add(section);
             }
@@ -288,10 +273,7 @@ public class Lag<L extends Lag<L, S>, S extends Section>
      */
     public void invalidateLookupCache ()
     {
-        sectionSelection.setEntity(
-            null, /* hint => */
-            null, /* notify => */
-            false);
+        cachedSection = null;
     }
 
     //---------------//
@@ -312,30 +294,124 @@ public class Lag<L extends Lag<L, S>, S extends Section>
         Point target = switchRef(pt, null); // Involutive!
 
         // Just in case we have not moved a lot since previous lookup ...
-        S foundSection = (S) sectionSelection.getEntity(); // Compiler warning
-
-        if ((foundSection != null) &&
-            foundSection.contains(target.x, target.y)) {
-            return foundSection;
+        if ((cachedSection != null) &&
+            cachedSection.contains(target.x, target.y) &&
+            collection.contains(cachedSection)) {
+            return cachedSection;
+        } else {
+            cachedSection = null;
         }
 
         // Too bad, let's browse the whole stuff
-        foundSection = null;
-
         for (S section : collection) {
             if (section.contains(target.x, target.y)) {
-                foundSection = section;
+                cachedSection = section;
 
                 break;
             }
         }
 
-        sectionSelection.setEntity(
-            foundSection, /* hint => */
-            null, /* notify => */
-            false);
+        return cachedSection;
+    }
 
-        return foundSection;
+    //---------//
+    // unEvent //
+    //---------//
+    /**
+     * Call-back triggered when selection of sheet location, section or section
+     * id, has been modified.
+     * We forward the related run and section informations.
+     *
+     * @param event the notified Selection
+     */
+    @Implement(EventSubscriber.class)
+    public void onEvent (UserEvent event)
+    {
+        if (event instanceof SheetLocationEvent) { // Sheet location
+
+            SheetLocationEvent sheetLocation = (SheetLocationEvent) event;
+
+            if ((sheetLocation.hint == SelectionHint.LOCATION_ADD) ||
+                (sheetLocation.hint == SelectionHint.LOCATION_INIT)) {
+                // Lookup for Run/Section pointed by this pixel location
+                // Search and forward run & section info
+                // Optimization : do the lookup only if observers other
+                // than this lag are present
+                if ((subscribersCount(RunEvent.class) > 0) ||
+                    (subscribersCount(SectionEvent.class) > 1)) { // Lag itself !
+
+                    Run run = null;
+                    S   section = null;
+
+                    if (sheetLocation != null) {
+                        Rectangle rect = sheetLocation.rectangle;
+
+                        if ((rect != null) &&
+                            (rect.width == 0) &&
+                            (rect.height == 0)) {
+                            Point pt = rect.getLocation();
+                            section = lookupSection(getVertices(), pt);
+
+                            if (section != null) {
+                                Point apt = switchRef(pt, null);
+                                run = section.getRunAt(apt.y);
+                            }
+                        }
+                    }
+
+                    publish(new RunEvent(this, run));
+                    publish(
+                        new SectionEvent<S>(this, sheetLocation.hint, section));
+                }
+            }
+        } else if (event instanceof SectionEvent) { // Section
+
+            SectionEvent sectionEvent = (SectionEvent) event;
+
+            if (sectionEvent.hint == SelectionHint.SECTION_INIT) {
+                // Display section contour
+                Section section = sectionEvent.section;
+
+                if (section != null) {
+                    locationService.publish(
+                        new SheetLocationEvent(
+                            this,
+                            sectionEvent.hint,
+                            null,
+                            section.getContourBox()));
+                } else {
+                    locationService.publish(
+                        new SheetLocationEvent(
+                            this,
+                            sectionEvent.hint,
+                            null,
+                            null));
+                }
+            }
+        } else if (event instanceof SectionIdEvent) { // Section ID
+            publish(new RunEvent(this, null));
+
+            SectionIdEvent idEvent = (SectionIdEvent) event;
+            Integer        id = idEvent.id;
+
+            if (id != null) {
+                // Lookup a section with proper ID
+                publish(
+                    new SectionEvent<S>(this, idEvent.hint, getVertexById(id)));
+            }
+        }
+    }
+
+    //---------//
+    // publish //
+    //---------//
+    /**
+     * Publish on lag event service
+     * @param event the event to publish
+     */
+    public void publish (UserEvent event)
+    {
+        eventService.publish(event);
     }
 
     //---------------//
@@ -396,6 +472,21 @@ public class Lag<L extends Lag<L, S>, S extends Section>
                 });
     }
 
+    //-------------------//
+    // subscribeStrongly //
+    //-------------------//
+    /**
+     * Subscribe to the lag event service for a specific class
+     * @param eventClass the class of published objects to subscriber listen to
+     * @param subscriber The subscriber that will accept the events of the event
+     * class when published.
+     */
+    public void subscribeStrongly (Class<?extends UserEvent> eventClass,
+                           EventSubscriber           subscriber)
+    {
+        eventService.subscribeStrongly(eventClass, subscriber);
+    }
+
     //-----------//
     // switchRef //
     //-----------//
@@ -409,8 +500,8 @@ public class Lag<L extends Lag<L, S>, S extends Section>
      * @return the absolute abscissa and ordinate values
      */
     @Implement(Oriented.class)
-    public Point switchRef (Point cp,
-                            Point xy)
+    public PixelPoint switchRef (Point      cp,
+                                 PixelPoint xy)
     {
         return orientation.switchRef(cp, xy);
     }
@@ -429,8 +520,8 @@ public class Lag<L extends Lag<L, S>, S extends Section>
      * @return the absolute rectangle values
      */
     @Implement(Oriented.class)
-    public Rectangle switchRef (Rectangle cplt,
-                                Rectangle xywh)
+    public PixelRectangle switchRef (Rectangle      cplt,
+                                     PixelRectangle xywh)
     {
         return orientation.switchRef(cplt, xywh);
     }
@@ -466,92 +557,6 @@ public class Lag<L extends Lag<L, S>, S extends Section>
         return sb.toString();
     }
 
-    //--------//
-    // update //
-    //--------//
-    /**
-     * Call-back triggered when selection of sheet location, section or section
-     * id, has been modified.
-     * We forward the related run and section informations.
-     *
-     * @param selection the notified Selection
-     * @param hint potential notification hint
-     */
-    @Implement(SelectionObserver.class)
-    public void update (Selection     selection,
-                        SelectionHint hint)
-    {
-        switch (selection.getTag()) {
-        // Interest in sheet location
-        case SHEET_RECTANGLE :
-
-            // Lookup for Run/Section pointed by this pixel location
-            if ((hint == SelectionHint.LOCATION_ADD) ||
-                (hint == SelectionHint.LOCATION_INIT)) {
-                // Search and forward run & section info
-                // Optimization : do the lookup only if observers other
-                // than this lag are present
-                if (((runSelection != null) &&
-                    (runSelection.countObservers() > 0)) ||
-                    ((sectionSelection != null) &&
-                    (sectionSelection.countObservers() > 1))) { // Lag itself !
-
-                    Run       run = null;
-                    S         section = null;
-                    Rectangle rect = (Rectangle) selection.getEntity();
-
-                    if ((rect != null) &&
-                        (rect.width == 0) &&
-                        (rect.height == 0)) {
-                        Point pt = rect.getLocation();
-                        section = lookupSection(getVertices(), pt);
-
-                        if (section != null) {
-                            Point apt = switchRef(pt, null);
-                            run = section.getRunAt(apt.y);
-                        }
-                    }
-
-                    runSelection.setEntity(run, hint);
-                    sectionSelection.setEntity(section, hint);
-                }
-            }
-
-            break;
-
-        // Interest in section
-        case SKEW_SECTION :
-        case HORIZONTAL_SECTION :
-        case VERTICAL_SECTION :
-
-            if (hint == SelectionHint.SECTION_INIT) {
-                // Display section contour
-                S section = (S) selection.getEntity(); // Compiler warning
-                locationSelection.setEntity(
-                    (section != null) ? section.getContourBox() : null,
-                    hint);
-            }
-
-            break;
-
-        // Interest in section ID
-        case SKEW_SECTION_ID :
-        case HORIZONTAL_SECTION_ID :
-        case VERTICAL_SECTION_ID :
-
-            // Lookup a section with proper ID
-            if (sectionSelection != null) {
-                Integer id = (Integer) selection.getEntity();
-                runSelection.setEntity(null, hint);
-                sectionSelection.setEntity(getVertexById(id), hint);
-            }
-
-            break;
-
-        default :
-        }
-    }
-
     //-----------//
     // getPrefix //
     //-----------//
@@ -565,6 +570,33 @@ public class Lag<L extends Lag<L, S>, S extends Section>
     protected String getPrefix ()
     {
         return "Lag";
+    }
+
+    //---------------//
+    // selfSubscribe //
+    //---------------//
+    /**
+     * Convenient method to auto-subscribe the lag instance on its event service
+     * for a specific class
+     * @param eventClass the specific classe
+     */
+    protected void selfSubscribe (Class<?extends UserEvent> eventClass)
+    {
+        eventService.subscribeStrongly(eventClass, this);
+    }
+
+    //------------------//
+    // subscribersCount //
+    //------------------//
+    /**
+     * Convenient method to retrieve the number of subscribers on the lag event
+     * service for a specific class
+     * @param classe the specific classe
+     */
+    protected int subscribersCount (Class<?extends UserEvent> classe)
+    {
+        return eventService.getSubscribers(classe)
+                           .size();
     }
 
     //---------//
