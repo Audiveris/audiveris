@@ -12,19 +12,10 @@ package omr.glyph.ui;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.plugin.Plugin;
-import omr.plugin.PluginType;
-
-import omr.util.Implement;
-
 import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.Action;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.AbstractAction;
-import javax.swing.JCheckBoxMenuItem;
 
 /**
  * Class <code>ViewParameters</code> handles parameters for GlyphLagView
@@ -112,56 +103,6 @@ public class ViewParameters
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
-    //------------------//
-    // SlurCircleAction //
-    //------------------//
-    @Deprecated
-    @Plugin(type = PluginType.GLYPH_VIEW, item = JCheckBoxMenuItem.class)
-    public static class SlurCircleAction
-        extends AbstractAction
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public SlurCircleAction ()
-        {
-            putValue("SwingSelectedKey", constants.circlePainting.getValue());
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
-            constants.circlePainting.setValue(item.isSelected());
-        }
-    }
-
-    //-----------------//
-    // StickLineAction //
-    //-----------------//
-    @Deprecated
-    @Plugin(type = PluginType.GLYPH_VIEW, item = JCheckBoxMenuItem.class)
-    public static class StickLineAction
-        extends AbstractAction
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public StickLineAction ()
-        {
-            putValue("SwingSelectedKey", constants.linePainting.getValue());
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
-            constants.linePainting.setValue(item.isSelected());
-        }
-    }
 
     //-----------//
     // Constants //
