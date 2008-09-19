@@ -10,44 +10,34 @@
 package omr.score;
 
 import omr.score.common.PagePoint;
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 import omr.score.common.ScorePoint;
+import omr.score.common.ScoreRectangle;
 import omr.score.entity.System;
 
-import omr.selection.Selection;
-import omr.selection.SelectionHint;
-import omr.selection.SelectionObserver;
-import omr.selection.SelectionTag;
+import omr.selection.LocationEvent;
+import omr.selection.ScoreLocationEvent;
+import omr.selection.SheetLocationEvent;
 
-import omr.score.common.PixelPoint;
 import omr.sheet.Sheet;
 
 import omr.util.Implement;
 import omr.util.Logger;
 
-import java.awt.Rectangle;
+import org.bushe.swing.event.EventService;
+import org.bushe.swing.event.EventSubscriber;
 
 /**
  * Class <code>ScoreSheetBridge</code> is in charge of keeping in sync the
- * (sheet) Pixel Selection and the Score Selection. There should exactly one
+ * (sheet) Pixel Selection and the Score Selection. There should be exactly one
  * instance of this class per score (and thus per sheet).
- *
- * <dl>
- * <dt><b>Selection Inputs:</b></dt><ul>
- * <li>PIXEL Location (if not already bridging)
- * <li>SCORE Location (if not already bridging)
- * </ul>
- *
- * <dt><b>Selection Outputs:</b></dt><ul>
- * <li>PIXEL Location
- * <li>SCORE Location
- * </ul>
- * </dl>
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
 public class ScoreSheetBridge
-    implements SelectionObserver
+    implements EventSubscriber<LocationEvent>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -58,16 +48,13 @@ public class ScoreSheetBridge
     //~ Instance fields --------------------------------------------------------
 
     /** The sheet instance */
-    private Sheet sheet;
+    private final Sheet sheet;
 
     /** The score instance */
-    private Score score;
+    private final Score score;
 
-    /** The sheet location selection */
-    private final Selection pixelSelection;
-
-    /** The score location selection */
-    private final Selection scoreSelection;
+    /** The event service to use */
+    private final EventService eventService;
 
     /** Needed to force only one-way sync at a time */
     private volatile boolean bridging;
@@ -86,14 +73,10 @@ public class ScoreSheetBridge
     {
         this.score = score;
         sheet = score.getSheet();
+        eventService = sheet.getEventService();
 
-        // Keep reference of the bridged selections
-        pixelSelection = sheet.getSelection(SelectionTag.SHEET_RECTANGLE);
-        scoreSelection = sheet.getSelection(SelectionTag.SCORE_RECTANGLE);
-
-        // Register to  Selections
-        pixelSelection.addObserver(this);
-        scoreSelection.addObserver(this);
+        // Register to event service
+        eventService.subscribeStrongly(LocationEvent.class, this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -106,7 +89,6 @@ public class ScoreSheetBridge
      *
      * @return name of the bridge
      */
-    @Implement(SelectionObserver.class)
     public String getName ()
     {
         return "Score-Sheet-Bridge";
@@ -119,72 +101,71 @@ public class ScoreSheetBridge
      * Notification of selection objects (disabled when already bridging, to
      * avoid endless loop)
      *
-     * @param selection the originating selection object
-     * @param hint processing hint, if any
+     * @param event the notified event
      */
-    @Implement(SelectionObserver.class)
-    public void update (Selection     selection,
-                        SelectionHint hint)
+    @Implement(EventSubscriber.class)
+    public void onEvent (LocationEvent event)
     {
         if (logger.isFineEnabled()) {
-            logger.fine("Bridge : selection updated " + selection);
+            logger.fine("Bridge : onEvent " + event);
         }
 
         if (!bridging) {
             bridging = true; // Prevent re-entry
 
-            Object entity = selection.getEntity();
-
-            if (logger.isFineEnabled()) {
-                logger.fine("Bridge " + selection.getTag() + ": " + entity);
-            }
-
-            Rectangle rect = (Rectangle) entity;
-
-            switch (selection.getTag()) {
-            case SHEET_RECTANGLE :
-
+            if (event instanceof SheetLocationEvent) {
                 // Forward to Score side
-                if (rect != null) {
+                SheetLocationEvent sheetLocation = (SheetLocationEvent) event;
+                ScoreRectangle     scoreRect = null;
+
+                if (sheetLocation.rectangle != null) {
                     PagePoint pagPt = sheet.getScale()
                                            .toPagePoint(
                         new PixelPoint(
-                            rect.x + (rect.width / 2),
-                            rect.y + (rect.height / 2)));
+                            sheetLocation.rectangle.x +
+                            (sheetLocation.rectangle.width / 2),
+                            sheetLocation.rectangle.y +
+                            (sheetLocation.rectangle.height / 2)));
 
                     if (pagPt != null) {
                         // Which system ?
-                        final System system = score.pageLocateSystem(pagPt);
-                        ScorePoint   scrPt = system.toScorePoint(pagPt);
-                        scoreSelection.setEntity(new Rectangle(scrPt), hint);
+                        System     system = score.pageLocateSystem(pagPt);
+                        ScorePoint scrPt = system.toScorePoint(pagPt);
+                        scoreRect = new ScoreRectangle(scrPt);
                     }
-                } else {
-                    scoreSelection.setEntity(null, hint);
                 }
 
-                break;
-
-            case SCORE_RECTANGLE :
-
+                eventService.publish(
+                    new ScoreLocationEvent(
+                        this,
+                        event.hint,
+                        sheetLocation.movement,
+                        scoreRect));
+            } else if (event instanceof ScoreLocationEvent) {
                 // Forward to Sheet side
-                if (rect != null) {
+                ScoreLocationEvent scoreLocation = (ScoreLocationEvent) event;
+                PixelRectangle     pixRect = null;
+
+                if (scoreLocation.rectangle != null) {
                     // We forge a ScorePoint from the display point
-                    ScorePoint scrPt = new ScorePoint(rect.x, rect.y); // ???
+                    ScorePoint scrPt = new ScorePoint(
+                        scoreLocation.rectangle.x,
+                        scoreLocation.rectangle.y);
 
                     // The enclosing system
                     System     system = score.scoreLocateSystem(scrPt);
                     PagePoint  pagPt = system.toPagePoint(scrPt);
-                    PixelPoint pt = sheet.getScale()
-                                         .toPixelPoint(pagPt, null);
-                    pixelSelection.setEntity(new Rectangle(pt), hint);
-                } else {
-                    pixelSelection.setEntity(null, hint);
+                    PixelPoint pixPt = sheet.getScale()
+                                            .toPixelPoint(pagPt, null);
+                    pixRect = new PixelRectangle(pixPt);
                 }
 
-                break;
-
-            default :
-                logger.severe("Unexpected selection event from " + selection);
+                eventService.publish(
+                    new SheetLocationEvent(
+                        this,
+                        event.hint,
+                        scoreLocation.movement,
+                        pixRect));
             }
 
             bridging = false;
