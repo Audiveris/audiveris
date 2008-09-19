@@ -10,6 +10,7 @@
 //
 package omr.score.common;
 
+import java.awt.Rectangle;
 
 /**
  * Class <code>ScoreRectangle</code> is a simple Rectangle that is meant to
@@ -56,5 +57,32 @@ public class ScoreRectangle
                            int height)
     {
         super(x, y, width, height);
+    }
+
+    //----------------//
+    // ScoreRectangle //
+    //----------------//
+    /**
+     * Construct a <code>ScoreRectangle</code> and initialize it with the
+     * specified generic rectangle
+     *
+     * @param rect the specified generic rectangle
+     */
+    public ScoreRectangle (Rectangle rect)
+    {
+        super(rect.x, rect.y, rect.width, rect.height);
+    }
+
+    //----------------//
+    // ScoreRectangle //
+    //----------------//
+    /**
+     * Construct a <code>ScoreRectangle</code> with just a ScorePoint
+     *
+     * @param pt the specified point
+     */
+    public ScoreRectangle (ScorePoint pt)
+    {
+        super(pt.x, pt.y, 0, 0);
     }
 }
