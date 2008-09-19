@@ -60,7 +60,7 @@ public class Zoom
     private static final Logger logger = Logger.getLogger(Zoom.class);
 
     // To assign a unique Id
-    private static int              globalId;
+    private static int            globalId;
 
     //~ Instance fields --------------------------------------------------------
 
