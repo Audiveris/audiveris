@@ -15,13 +15,8 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.ui.GlyphRepository;
-import static omr.plugin.Dependency.*;
-import omr.plugin.Plugin;
-import static omr.plugin.PluginType.*;
 
 import omr.score.Score;
-
-import omr.selection.SelectionObserver;
 
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
@@ -32,17 +27,14 @@ import omr.ui.util.FileFilter;
 import omr.ui.util.UIUtilities;
 
 import omr.util.BasicTask;
-import omr.util.Implement;
 import omr.util.Logger;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 
-import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 
 /**
@@ -96,16 +88,6 @@ public class SheetActions
         }
 
         return INSTANCE;
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    @Implement(SelectionObserver.class)
-    @Override
-    public String getName ()
-    {
-        return "SheetActions";
     }
 
     //------------//
@@ -297,61 +279,6 @@ public class SheetActions
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //-------------//
-    // CloseAction //
-    //-------------//
-    @Deprecated
-    @Plugin(type = SHEET_EXPORT, dependency = SHEET_AVAILABLE, onToolbar = true)
-    public static class CloseAction
-        extends AbstractAction
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Action(name = "closeSheet")
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            getInstance()
-                .closeSheet(e);
-        }
-    }
-
-    //----------------//
-    // LinePlotAction //
-    //----------------//
-    @Deprecated
-    @Plugin(type = SHEET_EXPORT, dependency = SHEET_AVAILABLE, onToolbar = false)
-    public static class LinePlotAction
-        extends AbstractAction
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            getInstance()
-                .plotLine(e);
-        }
-    }
-
-    //------------//
-    // OpenAction //
-    //------------//
-    @Deprecated
-    @Plugin(type = SHEET_IMPORT, dependency = NONE, onToolbar = true)
-    public static class OpenAction
-        extends AbstractAction
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            getInstance()
-                .openSheet(e);
-        }
-    }
-
     //----------//
     // OpenTask //
     //----------//
@@ -376,106 +303,12 @@ public class SheetActions
             throws InterruptedException
         {
             // Actually load the sheet picture
-            Step.LOAD.perform(null, file);
+            Step.LOAD.performUntil(null, file);
 
             // Remember (even across runs) the parent directory
             constants.defaultSheetDirectory.setValue(file.getParent());
 
             return null;
-        }
-    }
-
-    //--------------//
-    // RecordAction //
-    //--------------//
-    @Deprecated
-    @Plugin(type = SHEET_EXPORT, dependency = SHEET_AVAILABLE)
-    public static class RecordAction
-        extends AbstractAction
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            Task task = getInstance()
-                            .recordGlyphs();
-
-            if (task != null) {
-                task.execute();
-            }
-        }
-    }
-
-    //-----------------//
-    // ScalePlotAction //
-    //-----------------//
-    @Deprecated
-    @Plugin(type = SHEET_EXPORT, dependency = SHEET_AVAILABLE)
-    public static class ScalePlotAction
-        extends AbstractAction
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            getInstance()
-                .plotScale(e);
-        }
-    }
-
-    //----------------//
-    // SkewPlotAction //
-    //----------------//
-    @Deprecated
-    @Plugin(type = SHEET_EXPORT, dependency = SHEET_AVAILABLE)
-    public static class SkewPlotAction
-        extends AbstractAction
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            getInstance()
-                .plotSkew(e);
-        }
-    }
-
-    //------------------//
-    // ZoomHeightAction //
-    //------------------//
-    @Deprecated
-    @Plugin(type = SHEET_EDIT, dependency = SHEET_AVAILABLE, onToolbar = true)
-    public static class ZoomHeightAction
-        extends AbstractAction
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            getInstance()
-                .zoomHeight(e);
-        }
-    }
-
-    //-----------------//
-    // ZoomWidthAction //
-    //-----------------//
-    @Deprecated
-    @Plugin(type = SHEET_EDIT, dependency = SHEET_AVAILABLE, onToolbar = true)
-    public static class ZoomWidthAction
-        extends AbstractAction
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            getInstance()
-                .zoomWidth(e);
         }
     }
 
