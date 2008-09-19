@@ -350,7 +350,7 @@ public class Main
                     protected Void doInBackground ()
                         throws Exception
                     {
-                        parameters.targetStep.perform(null, file);
+                        parameters.targetStep.performUntil(null, file);
 
                         return null;
                     }
@@ -395,7 +395,7 @@ public class Main
     @Override
     protected void startup ()
     {
-        gui = new MainGui(this.getMainFrame());
+        gui = new MainGui(getMainFrame());
         show(gui.getFrame());
     }
 
@@ -445,25 +445,6 @@ public class Main
 
             // Make sure we have nice window decorations.
             JFrame.setDefaultLookAndFeelDecorated(true);
-
-            // Application UI defaults
-            if (!MainGui.useSwingApplicationFramework()) {
-                OmrUIDefaults defaults = OmrUIDefaults.getInstance();
-                defaults.addResourceBundle("config/ui");
-
-                if (defaults.isEmpty()) {
-                    logger.fine(
-                        "No UI defaults as resource bundle, loading from config folder");
-
-                    try {
-                        defaults.loadFrom(new File(getConfigFolder(), "ui"));
-                    } catch (Exception ex) {
-                        logger.warning(
-                            "Unable to load resources from config folder",
-                            ex);
-                    }
-                }
-            }
         }
 
         // Batch closing
