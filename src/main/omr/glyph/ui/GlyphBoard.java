@@ -17,8 +17,11 @@ import omr.glyph.GlyphModel;
 import omr.glyph.Shape;
 import static omr.script.ScriptRecording.*;
 
-import omr.selection.Selection;
+import omr.selection.GlyphEvent;
+import omr.selection.GlyphIdEvent;
+import omr.selection.GlyphSetEvent;
 import omr.selection.SelectionHint;
+import omr.selection.UserEvent;
 
 import omr.ui.Board;
 import omr.ui.PixelCount;
@@ -64,16 +67,6 @@ import javax.swing.event.*;
  * <p>Any spinner can also be used to select a glyph by directly entering the
  * glyph id value into the spinner field
  *
- * <dl>
- * <dt><b>Selection Inputs:</b></dt><ul>
- * <li>*_GLYPH
- * </ul>
- *
- * <dt><b>Selection Outputs:</b></dt><ul>
- * <li>*_GLYPH_ID (flagged with GLYPH_INIT hint)
- * </ul>
- * </dl>
- *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
@@ -90,6 +83,14 @@ public class GlyphBoard
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(GlyphBoard.class);
 
+    /** Events this board is interested in */
+    private static final Collection<Class<?extends UserEvent>> eventClasses = new ArrayList<Class<?extends UserEvent>>();
+
+    static {
+        eventClasses.add(GlyphEvent.class);
+        eventClasses.add(GlyphSetEvent.class);
+    }
+
     //~ Instance fields --------------------------------------------------------
 
     /** The related glyph model */
@@ -105,10 +106,10 @@ public class GlyphBoard
     protected final JLabel count = new JLabel("");
 
     /** Input : Deassign action */
-    protected Action deassignAction = new DeassignAction();
+    protected final Action deassignAction = new DeassignAction();
 
     /** Output : glyph shape icon */
-    protected JLabel shapeIcon = new JLabel();
+    protected final JLabel shapeIcon = new JLabel();
 
     /** Input / Output : spinner of all glyphs */
     protected JSpinner globalSpinner;
@@ -117,7 +118,7 @@ public class GlyphBoard
     protected JSpinner knownSpinner;
 
     /** Predicate for known glyphs */
-    protected Predicate<Glyph> knownPredicate = new Predicate<Glyph>() {
+    protected final Predicate<Glyph> knownPredicate = new Predicate<Glyph>() {
         public boolean check (Glyph glyph)
         {
             return (glyph != null) && glyph.isKnown();
@@ -130,13 +131,13 @@ public class GlyphBoard
         "Assigned shape for this glyph");
 
     /** The JGoodies/Form constraints to be used by all subclasses  */
-    protected CellConstraints cst = new CellConstraints();
+    protected final CellConstraints cst = new CellConstraints();
 
     /** The JGoodies/Form layout to be used by all subclasses  */
-    protected FormLayout layout = Panel.makeFormLayout(6, 3);
+    protected final FormLayout layout = Panel.makeFormLayout(6, 3);
 
     /** The JGoodies/Form builder to be used by all subclasses  */
-    protected PanelBuilder builder;
+    protected final PanelBuilder builder;
 
     /**
      * We have to avoid endless loop, due to related modifications : When a
@@ -156,31 +157,12 @@ public class GlyphBoard
      * @param unitName name of the owning unit
      * @param glyphModel the underlying glyph model
      * @param specificGlyphs additional collection of glyphs, or null
-     * @param glyphSelection input glyph selection
-     * @param glyphIdSelection output glyph Id selection
-     * @param glyphSetSelection input glyph set selection
      */
     public GlyphBoard (String                     unitName,
                        GlyphModel                 glyphModel,
-                       Collection<?extends Glyph> specificGlyphs,
-                       Selection                  glyphSelection,
-                       Selection                  glyphIdSelection,
-                       Selection                  glyphSetSelection)
+                       Collection<?extends Glyph> specificGlyphs)
     {
         this(unitName, glyphModel);
-
-        ArrayList<Selection> inputs = new ArrayList<Selection>();
-
-        if (glyphSelection != null) {
-            inputs.add(glyphSelection);
-        }
-
-        if (glyphSetSelection != null) {
-            inputs.add(glyphSetSelection);
-        }
-
-        setInputSelectionList(inputs);
-        setOutputSelection(glyphIdSelection);
 
         // Model for globalSpinner
         globalSpinner = makeGlyphSpinner(
@@ -219,7 +201,11 @@ public class GlyphBoard
     protected GlyphBoard (String     name,
                           GlyphModel glyphModel)
     {
-        super(Board.Tag.GLYPH, name);
+        super(
+            Board.Tag.GLYPH,
+            name,
+            glyphModel.getLag().getEventService(),
+            eventClasses);
 
         this.glyphModel = glyphModel;
 
@@ -264,59 +250,28 @@ public class GlyphBoard
         return deassignAction;
     }
 
-    //--------------//
-    // stateChanged //
-    //--------------//
-    /**
-     * CallBack triggered by a change in one of the spinners.
-     *
-     * @param e the change event, this allows to retrieve the originating
-     *          spinner
-     */
-    @Implement(ChangeListener.class)
-    public void stateChanged (ChangeEvent e)
-    {
-        JSpinner spinner = (JSpinner) e.getSource();
-
-        //  Nota: this method is automatically called whenever the spinner value
-        //  is changed, including when a GLYPH selection notification is
-        //  received leading to such selfUpdating. So the check.
-        if (!selfUpdating && (outputSelection != null)) {
-            // Notify the new glyph id
-            outputSelection.setEntity(
-                (Integer) spinner.getValue(),
-                SelectionHint.GLYPH_INIT);
-        }
-    }
-
-    //--------//
-    // update //
-    //--------//
+    //---------//
+    // onEvent //
+    //---------//
     /**
      * Call-back triggered when Glyph Selection has been modified
      *
-     * @param selection the (Glyph) Selection
-     * @param hint potential notification hint
+     * @param event of current glyph or glyph set
      */
     @Override
-    public void update (Selection     selection,
-                        SelectionHint hint)
+    public void onEvent (UserEvent event)
     {
-        Object entity = selection.getEntity();
-
         if (logger.isFineEnabled()) {
             logger.fine(
-                "GlyphBoard " + selection.getTag() + " selfUpdating=" +
-                selfUpdating + " : " + entity);
+                "GlyphBoard selfUpdating=" + selfUpdating + " : " + event);
         }
 
-        switch (selection.getTag()) {
-        case VERTICAL_GLYPH :
-        case HORIZONTAL_GLYPH :
+        if (event instanceof GlyphEvent) {
             // Display Glyph parameters (while preventing circular updates)
             selfUpdating = true;
 
-            Glyph glyph = (Glyph) entity;
+            GlyphEvent glyphEvent = (GlyphEvent) event;
+            Glyph      glyph = glyphEvent.getData();
 
             // Active ?
             if (glyph != null) {
@@ -364,24 +319,44 @@ public class GlyphBoard
             }
 
             selfUpdating = false;
-
-            break;
-
-        case GLYPH_SET :
-
+        } else if (event instanceof GlyphSetEvent) {
             // Display count of glyphs in the glyph set
-            List<Glyph> glyphs = (List<Glyph>) entity; // Compiler warning
+            GlyphSetEvent glyphsEvent = (GlyphSetEvent) event;
+            List<Glyph>   glyphs = glyphsEvent.getData();
 
             if ((glyphs != null) && (glyphs.size() > 0)) {
                 count.setText(Integer.toString(glyphs.size()));
             } else {
                 count.setText("");
             }
+        }
+    }
 
-            break;
+    //--------------//
+    // stateChanged //
+    //--------------//
+    /**
+     * CallBack triggered by a change in one of the spinners.
+     *
+     * @param e the change event, this allows to retrieve the originating
+     *          spinner
+     */
+    @Implement(ChangeListener.class)
+    public void stateChanged (ChangeEvent e)
+    {
+        JSpinner spinner = (JSpinner) e.getSource();
 
-        default :
-            logger.severe("Unexpected selection event from " + selection);
+        //  Nota: this method is automatically called whenever the spinner value
+        //  is changed, including when a GLYPH selection notification is
+        //  received leading to such selfUpdating. So the check.
+        if (!selfUpdating) {
+            // Notify the new glyph id
+            eventService.publish(
+                new GlyphIdEvent(
+                    this,
+                    SelectionHint.GLYPH_INIT,
+                    null,
+                    (Integer) spinner.getValue()));
         }
     }
 
@@ -480,25 +455,34 @@ public class GlyphBoard
         @Implement(ChangeListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            if ((glyphModel != null) && (inputSelectionList.size() > 0)) {
-                if (inputSelectionList.size() > 1) {
+            if ((glyphModel != null) && (eventList.size() > 0)) {
+                if (eventList.size() > 1) {
                     // We have selections for glyph and for glyph set
-                    Selection   glyphSelection = inputSelectionList.get(0);
-                    Glyph       glyph = (Glyph) glyphSelection.getEntity();
-                    Selection   glyphSetSelection = inputSelectionList.get(1);
-                    List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity();
+                    GlyphEvent    glyphEvent = (GlyphEvent) eventService.getLastEvent(
+                        GlyphEvent.class);
+                    Glyph         glyph = (glyphEvent != null)
+                                          ? glyphEvent.getData() : null;
+
+                    GlyphSetEvent glyphsEvent = (GlyphSetEvent) eventService.getLastEvent(
+                        GlyphSetEvent.class);
+                    List<Glyph>   glyphs = glyphsEvent.getData();
                     glyphModel.deassignSetShape(ASYNC, glyphs, RECORDING);
 
                     // Update focus on current glyph, even if reused in a compound
                     Glyph newGlyph = glyph.getFirstSection()
                                           .getGlyph();
-                    glyphSelection.setEntity(
-                        newGlyph,
-                        SelectionHint.GLYPH_INIT);
-                } else if (inputSelectionList.size() == 1) {
+                    eventService.publish(
+                        new GlyphEvent(
+                            this,
+                            SelectionHint.GLYPH_INIT,
+                            null,
+                            newGlyph));
+                } else if (eventList.size() == 1) {
                     // We have selection for glyph only
-                    Glyph glyph = (Glyph) inputSelectionList.get(0)
-                                                            .getEntity();
+                    GlyphEvent glyphEvent = (GlyphEvent) eventService.getLastEvent(
+                        GlyphEvent.class);
+                    Glyph      glyph = (glyphEvent != null)
+                                       ? glyphEvent.getData() : null;
                     glyphModel.deassignGlyphShape(ASYNC, glyph, RECORDING);
                 }
             }
@@ -525,8 +509,9 @@ public class GlyphBoard
         public void actionPerformed (ActionEvent e)
         {
             // Retrieve current glyph selection
-            Selection input = inputSelectionList.get(0);
-            Glyph     glyph = (Glyph) input.getEntity();
+            GlyphEvent glyphEvent = (GlyphEvent) eventService.getLastEvent(
+                GlyphEvent.class);
+            Glyph      glyph = glyphEvent.getData();
 
             if (glyph != null) {
                 glyph.dump();

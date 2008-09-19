@@ -23,10 +23,11 @@ import omr.lag.SectionBoard;
 import omr.score.entity.Note;
 import omr.score.visitor.SheetPainter;
 
-import omr.selection.Selection;
+import omr.selection.GlyphEvent;
+import omr.selection.GlyphSetEvent;
+import omr.selection.MouseMovement;
 import omr.selection.SelectionHint;
-import omr.selection.SelectionTag;
-import static omr.selection.SelectionTag.*;
+import omr.selection.UserEvent;
 
 import omr.sheet.Sheet;
 
@@ -44,12 +45,6 @@ import java.util.List;
 /**
  * Class <code>SymbolsEditor</code> defines a UI pane from which all symbol
  * processing actions can be launched and their results checked.
- *
- * <dl>
- * <dt><b>Selection Outputs:</b></dt><ul>
- * <li>VERTICAL_GLYPH (flagged with GLYPH_INIT hint)
- * </ul>
- * </dl>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -108,12 +103,13 @@ public class SymbolsEditor
         this.sheet = sheet;
         this.symbolsBuilder = symbolsBuilder;
 
+        GlyphLag lag = symbolsBuilder.getLag();
+
         // Link with glyph builder
         glyphsBuilder = sheet.getGlyphsBuilder();
 
-        view = new MyView(symbolsBuilder.getLag());
-        view.setLocationSelection(
-            sheet.getSelection(SelectionTag.SHEET_RECTANGLE));
+        view = new MyView(lag);
+        view.setLocationService(sheet.getEventService());
 
         focus = new ShapeFocusBoard(
             sheet,
@@ -127,40 +123,29 @@ public class SymbolsEditor
                     }
                 });
 
-        glyphMenu = new GlyphMenu(
-            sheet,
-            symbolsBuilder,
-            evaluator,
-            focus,
-            sheet.getSelection(VERTICAL_GLYPH),
-            sheet.getSelection(GLYPH_SET));
+        glyphMenu = new GlyphMenu(sheet, symbolsBuilder, evaluator, focus, lag);
 
         final String unit = sheet.getRadix() + ":SymbolsEditor";
 
         glyphBoard = new SymbolGlyphBoard(
             unit + "-SymbolGlyphBoard",
             symbolsBuilder,
-            0,
-            sheet.getSelection(VERTICAL_GLYPH),
-            sheet.getSelection(VERTICAL_GLYPH_ID),
-            sheet.getSelection(GLYPH_SET));
+            0);
 
         BoardsPane    boardsPane = new BoardsPane(
             sheet,
             view,
-            new PixelBoard(unit),
-            new RunBoard(unit, sheet.getSelection(VERTICAL_RUN)),
+            new PixelBoard(unit, sheet),
+            new RunBoard(unit, lag),
             new SectionBoard(
                 unit,
                 symbolsBuilder.getLag().getLastVertexId(),
-                sheet.getSelection(VERTICAL_SECTION),
-                sheet.getSelection(VERTICAL_SECTION_ID)),
+                lag),
             glyphBoard,
             focus,
             new EvaluationBoard(
                 unit + "-Evaluation-ActiveBoard",
                 symbolsBuilder,
-                sheet.getSelection(VERTICAL_GLYPH),
                 sheet,
                 view));
 
@@ -204,9 +189,9 @@ public class SymbolsEditor
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //-----------//
-    // MyLagView //
-    //-----------//
+    //--------//
+    // MyView //
+    //--------//
     private class MyView
         extends GlyphLagView
     {
@@ -215,15 +200,11 @@ public class SymbolsEditor
         private MyView (GlyphLag lag)
         {
             super(lag, null, null, symbolsBuilder, null);
-            setName("GlyphPane-View");
+            setName("SymbolsEditor-View");
 
-            // Current glyph
-            glyphSelection = sheet.getSelection(SelectionTag.VERTICAL_GLYPH);
-            glyphSelection.addObserver(this);
-
-            // Current glyph set
-            glyphSetSelection = sheet.getSelection(SelectionTag.GLYPH_SET);
-            glyphSetSelection.addObserver(this);
+            // Observe current glyph & glyph set
+            lag.subscribeStrongly(GlyphEvent.class, this);
+            lag.subscribeStrongly(GlyphSetEvent.class, this);
 
             // Use light gray color for past successful entities
             sheet.colorize(lag, viewIndex, Color.lightGray);
@@ -262,15 +243,24 @@ public class SymbolsEditor
         // contextSelected //
         //-----------------//
         @Override
-        public void contextSelected (MouseEvent e,
-                                     Point      pt)
+        public void contextSelected (Point         pt,
+                                     MouseMovement movement)
         {
-            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
+            // Retrieve the selected glyphs
+            GlyphSetEvent glyphsEvent = (GlyphSetEvent) sheet.getVerticalLag()
+                                                             .getLastEvent(
+                GlyphSetEvent.class);
+            List<Glyph>   glyphs = (glyphsEvent != null)
+                                   ? glyphsEvent.getData() : null;
 
             // To display point information
             if ((glyphs == null) || (glyphs.size() == 0)) {
-                pointSelected(e, pt);
-                glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
+                pointSelected(pt, movement); // This may change glyph selection
+
+                glyphsEvent = (GlyphSetEvent) sheet.getVerticalLag()
+                                                   .getLastEvent(
+                    GlyphSetEvent.class);
+                glyphs = (glyphsEvent != null) ? glyphsEvent.getData() : null;
             }
 
             if ((glyphs != null) && (glyphs.size() > 0)) {
@@ -279,7 +269,10 @@ public class SymbolsEditor
 
                 // Show the popup menu
                 glyphMenu.getPopup()
-                         .show(this, e.getX(), e.getY());
+                         .show(
+                    this,
+                    getZoom().scaled(pt.x),
+                    getZoom().scaled(pt.y));
             } else {
                 // Popup with no glyph selected ?
             }
@@ -295,40 +288,37 @@ public class SymbolsEditor
             refresh();
         }
 
-        //------------//
-        // updateMenu //
-        //------------//
+        //---------//
+        // onEvent //
+        //---------//
         /**
          * On reception of GLYPH_SET information, we build a transient compound
          * glyph which is then dispatched
          *
-         * @param selection the notified selection
-         * @param hint the processing hint if any
+         * @param event the notified event
          */
         @Override
-        public void update (Selection     selection,
-                            SelectionHint hint)
+        public void onEvent (UserEvent event)
         {
-            ///logger.info(getName() + " updateMenu. " + selection + " hint=" + hint);
+            ///logger.info(getName() + " event:" + event);
 
             // Default lag view behavior, including specifics
-            super.update(selection, hint);
+            super.onEvent(event);
 
-            switch (selection.getTag()) {
-            case GLYPH_SET :
-
-                List<Glyph> glyphs = (List<Glyph>) selection.getEntity(); // Compiler warning
+            if (event instanceof GlyphSetEvent) {
+                GlyphSetEvent glyphsEvent = (GlyphSetEvent) event;
+                List<Glyph>   glyphs = glyphsEvent.getData();
 
                 if ((glyphs != null) && (glyphs.size() > 1)) {
                     Glyph compound = glyphsBuilder.buildCompound(glyphs);
-                    glyphSelection.setEntity(
-                        compound,
-                        SelectionHint.GLYPH_TRANSIENT);
+                    sheet.getVerticalLag()
+                         .publish(
+                        new GlyphEvent(
+                            this,
+                            SelectionHint.GLYPH_TRANSIENT,
+                            null,
+                            compound));
                 }
-
-                break;
-
-            default :
             }
         }
 

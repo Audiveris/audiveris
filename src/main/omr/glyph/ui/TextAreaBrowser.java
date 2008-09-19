@@ -10,6 +10,7 @@
 package omr.glyph.ui;
 
 import omr.glyph.Glyph;
+import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.TextArea;
 
@@ -19,7 +20,8 @@ import omr.lag.VerticalOrientation;
 
 import omr.score.ui.ScoreDependent;
 
-import omr.selection.SelectionTag;
+import omr.selection.GlyphEvent;
+import omr.selection.SheetLocationEvent;
 
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
@@ -67,7 +69,7 @@ public class TextAreaBrowser
     //-------------//
     // getInstance //
     //-------------//
-    public TextAreaBrowser getInstance ()
+    public static TextAreaBrowser getInstance ()
     {
         if (INSTANCE == null) {
             INSTANCE = new TextAreaBrowser();
@@ -161,15 +163,18 @@ public class TextAreaBrowser
         }
 
         // Check for a selected rectangle
-        Rectangle rect = (Rectangle) sheet.getSelection(
-            SelectionTag.SHEET_RECTANGLE)
-                                          .getEntity();
+        SheetLocationEvent sheetLocation = (SheetLocationEvent) sheet.getEventService()
+                                                                     .getLastEvent(
+            SheetLocationEvent.class);
+        Rectangle          rect = (sheetLocation != null)
+                                  ? sheetLocation.rectangle : null;
 
         if ((rect == null) || (rect.width == 0)) {
             // No real rectangle, so check for a selected glyph
-            Glyph glyph = (Glyph) sheet.getSelection(
-                SelectionTag.VERTICAL_GLYPH)
-                                       .getEntity();
+            GlyphEvent glyphEvent = (GlyphEvent) sheet.getEventService()
+                                                      .getLastEvent(
+                GlyphEvent.class);
+            Glyph      glyph = (glyphEvent != null) ? glyphEvent.getData() : null;
 
             if (glyph != null) {
                 rect = glyph.getContourBox();

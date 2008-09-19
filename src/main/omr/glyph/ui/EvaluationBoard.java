@@ -21,10 +21,8 @@ import omr.glyph.GlyphNetwork;
 import omr.glyph.Shape;
 import static omr.script.ScriptRecording.*;
 
-import omr.selection.Selection;
-import omr.selection.SelectionHint;
-import omr.selection.SelectionTag;
-import static omr.selection.SelectionTag.*;
+import omr.selection.GlyphEvent;
+import omr.selection.UserEvent;
 
 import omr.sheet.Sheet;
 
@@ -38,6 +36,8 @@ import static omr.util.Synchronicity.*;
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.factories.FormFactory;
 import com.jgoodies.forms.layout.*;
+
+import org.bushe.swing.event.EventSubscriber;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -53,16 +53,6 @@ import javax.swing.*;
  * <p>By pressing one of the result buttons, the user can force the assignment
  * of the evaluated glyph.
  *
- * <dl>
- * <dt><b>Selection Inputs:</b></dt><ul>
- * <li>*_GLYPH
- * </ul>
- *
- * <dt><b>Selection Outputs:</b></dt><ul>
- * <li>*_GLYPH (flagged with GLYPH_INIT) TO BE CONFIRMED !!!
- * </ul>
- * </dl>
- *
  * @author Herv&eacute; Bitteur and Brenton Partridge
  * @version $Id$
  */
@@ -77,6 +67,13 @@ class EvaluationBoard
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
         EvaluationBoard.class);
+
+    /** Events this boards is interested in */
+    private static final Collection<Class<?extends UserEvent>> eventClasses = new ArrayList<Class<?extends UserEvent>>();
+
+    static {
+        eventClasses.add(GlyphEvent.class);
+    }
 
     /** Color for well recognized glyphs */
     private static final Color EVAL_GOOD_COLOR = new Color(100, 150, 0);
@@ -120,13 +117,11 @@ class EvaluationBoard
      * evaluator
      *
      * @param glyphModel the related glyph model
-     * @param inputSelection the Glyph input to evaluate
      */
     public EvaluationBoard (String     name,
-                            GlyphModel glyphModel,
-                            Selection  inputSelection)
+                            GlyphModel glyphModel)
     {
-        this(name, glyphModel, inputSelection, null, null);
+        this(name, glyphModel, null, null);
     }
 
     //-----------------//
@@ -138,17 +133,19 @@ class EvaluationBoard
      *
      * @param name a rather unique name for this board
      * @param glyphModel the related glyph model
-     * @param inputSelection the Glyph input to evaluate
      * @param sheet the related sheet, or null
      * @param view the related symbol glyph view
      */
     public EvaluationBoard (String       name,
                             GlyphModel   glyphModel,
-                            Selection    inputSelection,
                             Sheet        sheet,
                             GlyphLagView view)
     {
-        super(Board.Tag.CUSTOM, name);
+        super(
+            Board.Tag.CUSTOM,
+            name,
+            glyphModel.getLag().getEventService(),
+            eventClasses);
 
         this.glyphModel = glyphModel;
         this.sheet = sheet;
@@ -163,7 +160,6 @@ class EvaluationBoard
 
         selector = new Selector();
         defineLayout();
-        setInputSelectionList(Collections.singletonList(inputSelection));
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -195,23 +191,15 @@ class EvaluationBoard
     /**
      * Call-back triggered when Glyph Selection has been modified
      *
-     * @param selection the (Glyph) Selection
-     * @param hint potential notification hint
+     * @param event the (Glyph) Selection
      */
-    @Override
-    public void update (Selection     selection,
-                        SelectionHint hint)
+    @Implement(EventSubscriber.class)
+    public void onEvent (UserEvent event)
     {
-        switch (selection.getTag()) {
-        case VERTICAL_GLYPH :
-
-            Glyph glyph = (Glyph) selection.getEntity();
+        if (event instanceof GlyphEvent) {
+            GlyphEvent glyphEvent = (GlyphEvent) event;
+            Glyph      glyph = glyphEvent.getData();
             evaluate(glyph);
-
-            break;
-
-        default :
-            logger.severe("Unexpected selection event from " + selection);
         }
     }
 
@@ -380,10 +368,13 @@ class EvaluationBoard
         {
             // Assign current glyph with selected shape
             if (glyphModel != null) {
-                Selection glyphSelection = sheet.getSelection(
-                    SelectionTag.VERTICAL_GLYPH);
-                Glyph     glyph = (Glyph) glyphSelection.getEntity();
-                Shape     shape = Shape.valueOf(button.getText());
+                GlyphEvent glyphEvent = (GlyphEvent) glyphModel.getLag()
+                                                               .getEventService()
+                                                               .getLastEvent(
+                    GlyphEvent.class);
+                Glyph      glyph = (glyphEvent != null) ? glyphEvent.getData()
+                                   : null;
+                Shape      shape = Shape.valueOf(button.getText());
 
                 // Actually assign the shape
                 glyphModel.assignGlyphShape(ASYNC, glyph, shape, RECORDING);

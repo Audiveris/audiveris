@@ -13,11 +13,13 @@ import omr.glyph.Evaluation;
 import omr.glyph.Evaluator;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphInspector;
+import omr.glyph.GlyphLag;
 import omr.glyph.Shape;
 import omr.glyph.SymbolsBuilder;
 import static omr.script.ScriptRecording.*;
 
-import omr.selection.Selection;
+import omr.selection.GlyphEvent;
+import omr.selection.GlyphSetEvent;
 import omr.selection.SelectionHint;
 
 import omr.sheet.Sheet;
@@ -54,11 +56,8 @@ public class GlyphMenu
     /** Concrete popup menu */
     private final JPopupMenu popup;
 
-    /** Current selection of glyphs */
-    private final Selection glyphSelection;
-
-    /** Current selection of glyphs */
-    private final Selection glyphSetSelection;
+    /** Related glyph lag */
+    private final GlyphLag glyphLag;
 
     // To customize UI items based on selection context
     private int   glyphNb;
@@ -81,22 +80,19 @@ public class GlyphMenu
      * @param symbolsBuilder the top companion
      * @param evaluator the glyph evaluator
      * @param shapeFocus the current shape focus
-     * @param glyphSelection the currently selected glyph
-     * @param glyphSetSelection the currently selected glyphs
+     * @param glyphLag the related glyph lag
      */
     public GlyphMenu (final Sheet          sheet,
                       final SymbolsBuilder symbolsBuilder,
                       Evaluator            evaluator,
                       ShapeFocusBoard      shapeFocus,
-                      Selection            glyphSelection,
-                      Selection            glyphSetSelection)
+                      GlyphLag             glyphLag)
     {
         this.sheet = sheet;
         this.symbolsBuilder = symbolsBuilder;
         this.evaluator = evaluator;
         this.shapeFocus = shapeFocus;
-        this.glyphSelection = glyphSelection;
-        this.glyphSetSelection = glyphSetSelection;
+        this.glyphLag = glyphLag;
 
         popup = new JPopupMenu(); //------------------------------------------
 
@@ -228,7 +224,10 @@ public class GlyphMenu
     //-----------------//
     private Glyph getCurrentGlyph ()
     {
-        return (Glyph) glyphSelection.getEntity(); // Compiler warning
+        GlyphEvent glyphEvent = (GlyphEvent) glyphLag.getLastEvent(
+            GlyphEvent.class);
+
+        return (glyphEvent != null) ? glyphEvent.getData() : null;
     }
 
     //------------------//
@@ -236,8 +235,11 @@ public class GlyphMenu
     //------------------//
     private List<Glyph> getCurrentGlyphs ()
     {
-        return new ArrayList<Glyph>(
-            (List<Glyph>) glyphSetSelection.getEntity()); // Compiler warning
+        GlyphSetEvent glyphsEvent = (GlyphSetEvent) glyphLag.getLastEvent(
+            GlyphSetEvent.class);
+
+        return (glyphsEvent != null)
+               ? new ArrayList<Glyph>(glyphsEvent.getData()) : null;
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -363,7 +365,12 @@ public class GlyphMenu
                                   .getGlyph();
 
             if (glyph != newGlyph) {
-                glyphSelection.setEntity(newGlyph, SelectionHint.GLYPH_INIT);
+                glyphLag.publish(
+                    new GlyphEvent(
+                        this,
+                        SelectionHint.GLYPH_INIT,
+                        null,
+                        newGlyph));
             }
         }
 
@@ -415,7 +422,7 @@ public class GlyphMenu
 
         public void actionPerformed (ActionEvent e)
         {
-            for (Glyph glyph : (List<Glyph>) glyphSetSelection.getEntity()) { // Compiler warning
+            for (Glyph glyph : getCurrentGlyphs()) {
                 glyph.dump();
             }
         }
@@ -497,7 +504,7 @@ public class GlyphMenu
 
         public void actionPerformed (ActionEvent e)
         {
-            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning            
+            List<Glyph> glyphs = getCurrentGlyphs();
             symbolsBuilder.fixLargeSlurs(glyphs, RECORDING);
         }
 
@@ -583,7 +590,7 @@ public class GlyphMenu
 
         public void actionPerformed (ActionEvent e)
         {
-            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
+            List<Glyph> glyphs = getCurrentGlyphs();
             symbolsBuilder.stemSegment(ASYNC, glyphs, true); // isShort
         }
 
@@ -655,7 +662,7 @@ public class GlyphMenu
 
         public void actionPerformed (ActionEvent e)
         {
-            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
+            List<Glyph> glyphs = getCurrentGlyphs();
             symbolsBuilder.stemSegment(ASYNC, glyphs, false); // isShort
         }
 
@@ -687,7 +694,7 @@ public class GlyphMenu
 
         public void actionPerformed (ActionEvent e)
         {
-            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
+            List<Glyph> glyphs = getCurrentGlyphs();
             symbolsBuilder.getEditor()
                           .showTranslations(glyphs);
         }
@@ -695,10 +702,8 @@ public class GlyphMenu
         @Override
         public void update ()
         {
-            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
-
             if (glyphNb > 0) {
-                for (Glyph glyph : glyphs) {
+                for (Glyph glyph : getCurrentGlyphs()) {
                     if (glyph.isTranslated()) {
                         setEnabled(true);
 

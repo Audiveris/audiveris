@@ -16,8 +16,9 @@ import omr.glyph.TextType;
 
 import omr.math.Moments;
 
-import omr.selection.Selection;
-import omr.selection.SelectionHint;
+import omr.selection.GlyphEvent;
+import omr.selection.GlyphSetEvent;
+import omr.selection.UserEvent;
 
 import omr.sheet.SheetManager;
 
@@ -50,12 +51,6 @@ import javax.swing.event.*;
  * omr.glyph.Shape#NOISE}, that is too small glyphs, are not included in this
  * spinner. The symbolSpinner is thus a subset of the knownSpinner (which is
  * itself a subset of the globalSpinner). </ul>
- *
- * <dl>
- * <dt><b>Selection Inputs:</b></dt><ul>
- * <li>VERTICAL_GLYPH
- * </ul>
- * </dl>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -154,25 +149,13 @@ class SymbolGlyphBoard
      * @param glyphModel the companion which handles glyph (de)assignments
      * @param firstSymbolId id of the first glyph made as a symbol (as opposed
      *                      to sticks/glyphs elaborated during previous steps)
-     * @param glyphSelection glyph selection as input
-     * @param glyphIdSelection glyph_id selection as output
-     * @param glyphSetSelection input glyph set selection
      */
     public SymbolGlyphBoard (String     unitName,
                              GlyphModel glyphModel,
-                             int        firstSymbolId,
-                             Selection  glyphSelection,
-                             Selection  glyphIdSelection,
-                             Selection  glyphSetSelection)
+                             int        firstSymbolId)
     {
         // For all glyphs
-        super(
-            unitName,
-            glyphModel,
-            null, // Specific glyphs
-            glyphSelection,
-            glyphIdSelection,
-            glyphSetSelection);
+        super(unitName, glyphModel, null);
 
         // Cache info
         this.firstSymbolId = firstSymbolId;
@@ -226,28 +209,26 @@ class SymbolGlyphBoard
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------//
-    // update //
-    //--------//
+    //---------//
+    // onEvent //
+    //---------//
     /**
      * Call-back triggered when Glyph Selection has been modified
      *
-     * @param selection the (Glyph) Selection
-     * @param hint potential notification hint
+     * @param event the (Glyph or glyph set) Selection
      */
     @Override
-    public void update (Selection     selection,
-                        SelectionHint hint)
+    public void onEvent (UserEvent event)
     {
         //        logger.info("SymbolGlyphBoard " + selection.getTag()
         //                    + " selfUpdating=" + selfUpdating);
-        super.update(selection, hint);
+        super.onEvent(event);
 
-        switch (selection.getTag()) {
-        case VERTICAL_GLYPH :
+        if (event instanceof GlyphEvent) {
             selfUpdating = true;
 
-            Glyph glyph = (Glyph) selection.getEntity();
+            GlyphEvent glyphEvent = (GlyphEvent) event;
+            Glyph      glyph = glyphEvent.getData();
 
             // Set symbolSpinner accordingly
             if (symbolSpinner != null) {
@@ -305,10 +286,6 @@ class SymbolGlyphBoard
             }
 
             selfUpdating = false;
-
-            break;
-
-        default :
         }
     }
 
@@ -395,9 +372,11 @@ class SymbolGlyphBoard
                 return;
             }
 
-            // TBD TBD: Need some secure way to retrieve glyphSetSelection !!!
-            Selection   glyphSetSelection = inputSelectionList.get(1);
-            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
+            // Get current glyph set
+            GlyphSetEvent glyphsEvent = (GlyphSetEvent) eventService.getLastEvent(
+                GlyphSetEvent.class);
+            List<Glyph>   glyphs = (glyphsEvent != null)
+                                   ? glyphsEvent.getData() : null;
 
             if ((glyphs != null) && !glyphs.isEmpty()) {
                 // Read text information

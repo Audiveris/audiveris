@@ -13,10 +13,10 @@ import omr.glyph.Glyph;
 import omr.glyph.GlyphModel;
 import omr.glyph.Shape;
 
-import omr.selection.Selection;
+import omr.selection.GlyphEvent;
+import omr.selection.GlyphIdEvent;
 import omr.selection.SelectionHint;
-import omr.selection.SelectionTag;
-import static omr.selection.SelectionTag.*;
+import omr.selection.UserEvent;
 
 import omr.sheet.Sheet;
 
@@ -32,6 +32,8 @@ import omr.util.Logger;
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
 
+import org.bushe.swing.event.EventSubscriber;
+
 import java.awt.event.*;
 import java.util.*;
 
@@ -42,16 +44,6 @@ import javax.swing.event.*;
  * Class <code>ShapeFocusBoard</code> handles the shape that receives current
  * focus, and all glyphs whose shape corresponds to the focus (for example all
  * treble clefs glyphs if such is the focus)
- *
- * <dl>
- * <dt><b>Selection Inputs:</b></dt><ul>
- * <li>*GLYPH (if GLYPH_MODIFIED)
- * </ul>
- *
- * <dt><b>Selection Outputs:</b></dt><ul>
- * <li>VERTICAL_GLYPH_ID (flagged with GLYPH_INIT hint)
- * </ul>
- * </dl>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -65,6 +57,13 @@ class ShapeFocusBoard
     private static final Logger logger = Logger.getLogger(
         ShapeFocusBoard.class);
 
+    /** Events this board is interested in */
+    private static final Collection<Class<?extends UserEvent>> eventClasses = new ArrayList<Class<?extends UserEvent>>();
+
+    static {
+        eventClasses.add(GlyphEvent.class);
+    }
+
     //~ Enumerations -----------------------------------------------------------
 
     /** Filter on which symbols should be displayed */
@@ -75,11 +74,11 @@ class ShapeFocusBoard
         /** Display all symbols */
         ALL,
         /** Display only known symbols */
-        KNOWN, 
+        KNOWN,
         /** Display only unknown symbols */
-        UNKNOWN, 
+        UNKNOWN,
         /** Display only translated symbols */
-        TRANSLATED, 
+        TRANSLATED,
         /** Display only untranslated symbols */
         UNTRANSLATED;
     }
@@ -121,7 +120,11 @@ class ShapeFocusBoard
                             GlyphModel     glyphModel,
                             ActionListener filterListener)
     {
-        super(Tag.CUSTOM, sheet.getRadix() + "-ShapeFocusBoard");
+        super(
+            Tag.CUSTOM,
+            sheet.getRadix() + "-ShapeFocusBoard",
+            glyphModel.getLag().getEventService(),
+            eventClasses);
 
         this.sheet = sheet;
         this.view = view;
@@ -168,14 +171,6 @@ class ShapeFocusBoard
                 });
 
         defineLayout();
-
-        // Output on glyph id selection
-        setOutputSelection(sheet.getSelection(VERTICAL_GLYPH_ID));
-
-        // Input on Glyph selection
-        setInputSelectionList(
-            Collections.singletonList(
-                sheet.getSelection(SelectionTag.VERTICAL_GLYPH)));
 
         // Initially, no focus
         setCurrentShape(null);
@@ -247,35 +242,29 @@ class ShapeFocusBoard
         return true;
     }
 
-    //--------//
-    // update //
-    //--------//
+    //---------//
+    // onEvent //
+    //---------//
     /**
      * Notification about selection objects (the shape of a just modified glyph,
      * if not null, is used as the new shape focus)
      *
-     * @param selection the notified selection
-     * @param hint the processing hint if any
+     * @param event the notified event
      */
-    @Override
-    public void update (Selection     selection,
-                        SelectionHint hint)
+    @Implement(EventSubscriber.class)
+    public void onEvent (UserEvent event)
     {
-        switch (selection.getTag()) {
-        case VERTICAL_GLYPH :
+        if (event instanceof GlyphEvent) {
+            GlyphEvent glyphEvent = (GlyphEvent) event;
 
-            if (hint == SelectionHint.GLYPH_MODIFIED) {
+            if (glyphEvent.hint == SelectionHint.GLYPH_MODIFIED) {
                 // Use glyph assigned shape as current shape, if not null
-                Glyph glyph = (Glyph) selection.getEntity();
+                Glyph glyph = glyphEvent.getData();
 
                 if ((glyph != null) && (glyph.getShape() != null)) {
                     setCurrentShape(glyph.getShape());
                 }
             }
-
-            break;
-
-        default :
         }
     }
 
@@ -384,7 +373,9 @@ class ShapeFocusBoard
             int id = (Integer) spinner.getValue();
 
             if (id != NO_VALUE) {
-                outputSelection.setEntity(id, SelectionHint.GLYPH_INIT);
+                glyphModel.getLag()
+                          .publish(
+                    new GlyphIdEvent(this, SelectionHint.GLYPH_INIT, null, id));
             }
         }
     }

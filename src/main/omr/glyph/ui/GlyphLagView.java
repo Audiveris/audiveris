@@ -26,8 +26,15 @@ import omr.score.common.PixelRectangle;
 
 import omr.script.ScriptRecording;
 
-import omr.selection.Selection;
+import omr.selection.GlyphEvent;
+import omr.selection.GlyphIdEvent;
+import omr.selection.GlyphSetEvent;
+import omr.selection.SectionEvent;
+import omr.selection.SectionIdEvent;
 import omr.selection.SelectionHint;
+import static omr.selection.SelectionHint.*;
+import omr.selection.SheetLocationEvent;
+import omr.selection.UserEvent;
 
 import omr.stick.Stick;
 
@@ -45,19 +52,6 @@ import java.util.List;
  * Class <code>GlyphLagView</code> is a specific {@link omr.lag.LagView}
  * dedicated to the display and processing of glyphs.
  *
- * <dl>
- * <dt><b>Selection Inputs:</b></dt><ul>
- * <li>PIXEL
- * <li>*_SECTION_ID
- * <li>*_GLYPH_ID
- * <li>GLYPH_SET
- * </ul>
- *
- * <dt><b>Selection Outputs:</b></dt><ul>
- * <li>*_GLYPH
- * </ul>
- * </dl>
- *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
@@ -72,6 +66,15 @@ public class GlyphLagView
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(GlyphLagView.class);
 
+    /** Events this entity is interested in */
+    private static final Collection<Class<?extends UserEvent>> eventClasses = new ArrayList<Class<?extends UserEvent>>();
+
+    static {
+        eventClasses.add(GlyphEvent.class);
+        eventClasses.add(GlyphIdEvent.class);
+        eventClasses.add(GlyphSetEvent.class);
+    }
+
     //~ Instance fields --------------------------------------------------------
 
     /** Specific glyphs for display & lookup */
@@ -79,12 +82,6 @@ public class GlyphLagView
 
     /** Directory of Glyphs */
     protected final GlyphModel model;
-
-    /** Output selection for Glyph information */
-    protected Selection glyphSelection;
-
-    /** Output selection for Glyph Set information */
-    protected Selection glyphSetSelection;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -107,8 +104,17 @@ public class GlyphLagView
                          GlyphModel                 model,
                          Collection<?extends Glyph> specificGlyphs)
     {
-        super(lag, specificSections, showingSpecifics);
+        super(
+            lag,
+            model.getLocationService(),
+            specificSections,
+            showingSpecifics);
         this.model = model;
+
+        // Subscribe to glyph (lag) events
+        for (Class<?extends UserEvent> eventClass : eventClasses) {
+            lag.subscribeStrongly(eventClass, this);
+        }
 
         // Remember specific glyphs
         if (specificGlyphs != null) {
@@ -144,32 +150,6 @@ public class GlyphLagView
         } else {
             return null;
         }
-    }
-
-    //-------------------//
-    // setGlyphSelection //
-    //-------------------//
-    /**
-     * Inject dependency on where we should write glyph information.
-     *
-     * @param glyphSelection the Glyph selection
-     */
-    public void setGlyphSelection (Selection glyphSelection)
-    {
-        this.glyphSelection = glyphSelection;
-    }
-
-    //----------------------//
-    // setGlyphSetSelection //
-    //----------------------//
-    /**
-     * Inject dependency on where we should write glyph set information.
-     *
-     * @param glyphSetSelection the Glyph Set selection
-     */
-    public void setGlyphSetSelection (Selection glyphSetSelection)
-    {
-        this.glyphSetSelection = glyphSetSelection;
     }
 
     //-------------------//
@@ -257,31 +237,33 @@ public class GlyphLagView
         return found;
     }
 
-    //--------//
-    // update //
-    //--------//
+    //---------//
+    // onEvent //
+    //---------//
     /**
      * Notification about selection objects (for specific sections if any, for
      * color of a modified glyph, for display of selected glyph set).
      *
-     * @param selection the notified selection
-     * @param hint the processing hint if any
+     * @param event the notified event
      */
     @Override
-    public void update (Selection     selection,
-                        SelectionHint hint)
+    @SuppressWarnings("unchecked")
+    public void onEvent (UserEvent event)
     {
         ///logger.info(getName() + " update. " + selection + " hint=" + hint);
 
         // Default lag view behavior, including specifics
-        super.update(selection, hint);
+        super.onEvent(event);
 
-        switch (selection.getTag()) {
-        case SHEET_RECTANGLE :
+        if (event instanceof SheetLocationEvent) {
+            // If event originates from a user-provided location, publish the
+            // designated glyph set if any (and also publish the last glyph in
+            // the set)
+            SheetLocationEvent sheetLocation = (SheetLocationEvent) event;
 
-            if ((hint == SelectionHint.LOCATION_ADD) ||
-                (hint == SelectionHint.LOCATION_INIT)) {
-                Rectangle rect = (Rectangle) selection.getEntity();
+            if ((sheetLocation.hint == LOCATION_ADD) ||
+                (sheetLocation.hint == LOCATION_INIT)) {
+                Rectangle rect = sheetLocation.rectangle;
 
                 if (rect != null) {
                     if ((rect.width > 0) || (rect.height > 0)) {
@@ -289,78 +271,81 @@ public class GlyphLagView
                         List<Glyph> glyphsFound = lookupGlyphs(rect);
 
                         if (glyphsFound.size() > 0) {
-                            glyphSelection.setEntity(
-                                glyphsFound.get(glyphsFound.size() - 1),
-                                hint);
+                            lag.publish(
+                                new GlyphEvent(
+                                    this,
+                                    sheetLocation.hint,
+                                    sheetLocation.movement,
+                                    glyphsFound.get(glyphsFound.size() - 1)));
                         } else {
-                            glyphSelection.setEntity(null, hint);
+                            lag.publish(
+                                new GlyphEvent(
+                                    this,
+                                    sheetLocation.hint,
+                                    sheetLocation.movement,
+                                    null));
                         }
 
-                        if (glyphSetSelection != null) {
-                            glyphSetSelection.setEntity(glyphsFound, hint);
-                        }
+                        lag.publish(
+                            new GlyphSetEvent(
+                                this,
+                                sheetLocation.hint,
+                                sheetLocation.movement,
+                                glyphsFound));
                     }
                 }
             }
-
-            break;
-
-        case VERTICAL_GLYPH_ID :
-        case HORIZONTAL_GLYPH_ID :
-
+        } else if (event instanceof GlyphIdEvent) {
             // Lookup a specific glyph with proper ID
-            int id = (Integer) selection.getEntity();
+            GlyphIdEvent glyphIdEvent = (GlyphIdEvent) event;
+            int          id = glyphIdEvent.getData();
 
             for (Glyph glyph : specificGlyphs) {
                 if (glyph.getId() == id) {
-                    glyphSelection.setEntity(glyph, hint);
+                    lag.publish(
+                        new GlyphEvent(this, glyphIdEvent.hint, null, glyph));
 
                     break;
                 }
             }
-
-            break;
-
-        case VERTICAL_SECTION_ID :
-        case HORIZONTAL_SECTION_ID :
-
-            // Check for glyph information
-            if ((showingSpecifics != null) &&
-                showingSpecifics.getValue() &&
-                (sectionSelection != null) &&
-                (glyphSelection != null)) {
+        } else if (event instanceof SectionIdEvent) {
+            // Beware: this is a bit tricky, it depends on order of event
+            // notification. To be carefully checked ===========================
+            // Check for glyph information with proper section id
+            // This has already been done in the super LagView and the section
+            // result must be in the SectionEvent
+            // With this section, looku for a corresponding glyph
+            if ((showingSpecifics != null) && showingSpecifics.getValue()) {
                 // Current Section (perhaps null) is in Section Selection
-                if (sectionSelection != null) {
-                    GlyphSection section = (GlyphSection) sectionSelection.getEntity();
+                SectionEvent<GlyphSection> sectionEvent = (SectionEvent<GlyphSection>) lag.getLastEvent(
+                    SectionEvent.class);
+                GlyphSection               section = (sectionEvent != null)
+                                                     ? sectionEvent.section : null;
 
-                    if (section != null) {
-                        glyphSelection.setEntity(section.getGlyph(), hint);
-                    }
+                if (section != null) {
+                    lag.publish(
+                        new GlyphEvent(
+                            this,
+                            sectionEvent.hint,
+                            null,
+                            section.getGlyph()));
                 }
             }
+        } else if (event instanceof GlyphEvent) {
+            // Glyph: just repaint the view if the glyph has been modified
+            GlyphEvent glyphEvent = (GlyphEvent) event;
 
-            break;
-
-        case VERTICAL_GLYPH :
-
-            if (hint == SelectionHint.GLYPH_MODIFIED) {
+            if (glyphEvent.hint == SelectionHint.GLYPH_MODIFIED) {
                 // Update display of this glyph
-                Glyph glyph = (Glyph) selection.getEntity();
+                Glyph glyph = glyphEvent.getData();
 
                 if (glyph != null) {
                     colorizeGlyph(glyph);
                     repaint();
                 }
             }
-
-            break;
-
-        case GLYPH_SET :
+        } else if (event instanceof GlyphSetEvent) {
             repaint();
-
-            break;
-
-        default :
         }
     }
 
@@ -403,39 +388,40 @@ public class GlyphLagView
     @Override
     protected void renderItems (Graphics g)
     {
-        Zoom z = getZoom();
+        Zoom          z = getZoom();
 
         // Mark the current members of the glyph set
-        if (glyphSetSelection != null) {
-            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
+        GlyphSetEvent glyphsEvent = (GlyphSetEvent) lag.getLastEvent(
+            GlyphSetEvent.class);
+        List<Glyph>   glyphs = (glyphsEvent != null) ? glyphsEvent.getData()
+                               : null;
 
-            if ((glyphs != null) && (glyphs.size() > 0)) {
-                g.setColor(Color.black);
-                g.setXORMode(Color.darkGray);
+        if ((glyphs != null) && (glyphs.size() > 0)) {
+            g.setColor(Color.black);
+            g.setXORMode(Color.darkGray);
 
-                for (Glyph glyph : glyphs) {
-                    renderGlyphArea(glyph, g, z);
+            for (Glyph glyph : glyphs) {
+                renderGlyphArea(glyph, g, z);
 
-                    // Draw circle arc here ?
-                    if (glyph.getShape() == Shape.SLUR) {
-                        if (ViewParameters.getInstance()
-                                          .isCirclePainting()) {
-                            Circle circle = SlurGlyph.computeCircle(glyph);
+                // Draw circle arc here ?
+                if (glyph.getShape() == Shape.SLUR) {
+                    if (ViewParameters.getInstance()
+                                      .isCirclePainting()) {
+                        Circle circle = SlurGlyph.computeCircle(glyph);
 
-                            if (logger.isFineEnabled()) {
-                                logger.fine(
-                                    String.format(
-                                        "dist=%g " + circle.toString(),
-                                        circle.getDistance()));
-                            }
-
-                            drawCircle(circle, g, z);
+                        if (logger.isFineEnabled()) {
+                            logger.fine(
+                                String.format(
+                                    "dist=%g " + circle.toString(),
+                                    circle.getDistance()));
                         }
-                    } else if (ViewParameters.getInstance()
-                                             .isLinePainting()) {
-                        if (glyph instanceof Stick) {
-                            drawStickLine((Stick) glyph, g, z);
-                        }
+
+                        drawCircle(circle, g, z);
+                    }
+                } else if (ViewParameters.getInstance()
+                                         .isLinePainting()) {
+                    if (glyph instanceof Stick) {
+                        drawStickLine((Stick) glyph, g, z);
                     }
                 }
             }
