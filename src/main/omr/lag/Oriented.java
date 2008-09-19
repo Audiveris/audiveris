@@ -9,6 +9,9 @@
 //
 package omr.lag;
 
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
+
 import java.awt.*;
 
 /**
@@ -46,8 +49,8 @@ public interface Oriented
      *
      * @return the corresponding absolute (x, y) point
      */
-    Point switchRef (Point cp,
-                     Point xy);
+    PixelPoint switchRef (Point      cp,
+                          PixelPoint xy);
 
     //-----------//
     // switchRef //
@@ -62,6 +65,6 @@ public interface Oriented
      *
      * @return the corresponding absolute rectangle (x, y, width, height).
      */
-    Rectangle switchRef (Rectangle cplt,
-                         Rectangle xywh);
+    PixelRectangle switchRef (Rectangle      cplt,
+                              PixelRectangle xywh);
 }

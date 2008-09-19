@@ -9,6 +9,9 @@
 //
 package omr.lag;
 
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
+
 import omr.util.Implement;
 
 import java.awt.Point;
@@ -53,11 +56,11 @@ public class HorizontalOrientation
      * @return the absolute coordinates
      */
     @Implement(Oriented.class)
-    public Point switchRef (Point cp,
-                            Point xy)
+    public PixelPoint switchRef (Point      cp,
+                                 PixelPoint xy)
     {
         if (xy == null) {
-            xy = new Point();
+            xy = new PixelPoint();
         }
 
         // Horizontal: coord->x, pos->y
@@ -80,11 +83,11 @@ public class HorizontalOrientation
      * @return the absolute coordinates
      */
     @Implement(Oriented.class)
-    public Rectangle switchRef (Rectangle cplt,
-                                Rectangle xywh)
+    public PixelRectangle switchRef (Rectangle      cplt,
+                                     PixelRectangle xywh)
     {
         if (xywh == null) {
-            xywh = new Rectangle();
+            xywh = new PixelRectangle();
         }
 
         // Horizontal: coord->x, pos->y, length->width, thickness->height

@@ -11,6 +11,8 @@ package omr.lag;
 
 import omr.graph.Vertex;
 
+import omr.score.common.PixelRectangle;
+
 import omr.sheet.Picture;
 
 import omr.util.Logger;
@@ -83,7 +85,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
     private Polygon contour;
 
     /** Display contour points, which do not depend on orientation */
-    private Rectangle contourBox;
+    private PixelRectangle contourBox;
 
     /** Contribution to the foreground */
     private int foreWeight;
@@ -227,11 +229,12 @@ public class Section<L extends Lag, S extends Section<L, S>>
      *
      * @return the bounding contour rectangle box
      */
-    public Rectangle getContourBox ()
+    public PixelRectangle getContourBox ()
     {
         if (contourBox == null) {
-            contourBox = getContour()
-                             .getBounds();
+            Rectangle box = getContour()
+                                .getBounds();
+            contourBox = new PixelRectangle(box);
         }
 
         return contourBox;
@@ -587,6 +590,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
      * time (and safe) to compute section parameters such as contour, view,
      * etc...
      */
+    @SuppressWarnings("unchecked")
     public void complete ()
     {
         // Create views in parallel with containing Lag
@@ -1063,10 +1067,8 @@ public class Section<L extends Lag, S extends Section<L, S>>
     // setPixel //
     //----------//
     /**
-     * This abstract method allows to write a specific pixel at given
-     * coordinates in the given picture. Any concrete subclass must of course
-     * implement this method, in a manner consistent with the <B>orientation</B>
-     * of the containing lag.
+     * This method allows to write a specific pixel at given
+     * coordinates in the given picture.
      *
      * @param picture the picture to be updated
      * @param cp      the (coord,pos) coordinates of the specified point
