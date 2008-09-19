@@ -80,6 +80,7 @@ public class WebBrowser
         return instance;
     }
 
+    @SuppressWarnings("unchecked")
     private static WebBrowser setupBrowser ()
     {
         //First, try java.awt.Desktop
