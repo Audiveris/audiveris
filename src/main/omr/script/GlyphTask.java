@@ -89,7 +89,9 @@ public abstract class GlyphTask
                                    .getOriginal(sig);
 
                 if (glyph == null) {
-                    logger.warning("Cannot find glyph for " + sig, new Throwable());
+                    logger.warning(
+                        "Cannot find glyph for " + sig,
+                        new Throwable());
                 } else {
                     glyphs.add(glyph);
                 }
