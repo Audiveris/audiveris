@@ -277,7 +277,10 @@ public class ScorePainter
         // Draw the beam line, with a specific stroke
         g.setStroke(beamStroke);
         g.setColor(Color.black);
-        paintLine(beam.getDisplayOrigin(), beam.getLeft(), beam.getRight());
+        paintLine(
+            beam.getDisplayOrigin(),
+            beam.getLeftPoint(),
+            beam.getRightPoint());
         g.setColor(oldColor);
         g.setStroke(oldStroke);
 
@@ -475,6 +478,7 @@ public class ScorePainter
     @Override
     public boolean visit (Measure measure)
     {
+        ///logger.info("Visiting " + measure);
         final SystemPart part = measure.getPart();
         final Color      oldColor = g.getColor();
 
@@ -491,8 +495,9 @@ public class ScorePainter
             }
         } else {
             // Write the measure id, on first staff of the first real part only
-            if (part == measure.getSystem()
-                               .getFirstRealPart()) {
+            if ((part == measure.getSystem()
+                                .getFirstRealPart()) &&
+                (measure.getId() != 0)) {
                 final ScorePoint staffOrigin = measure.getPart()
                                                       .getFirstStaff()
                                                       .getDisplayOrigin();
