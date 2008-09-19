@@ -19,13 +19,13 @@ package omr.selection;
  */
 public enum SelectionHint {
     /**
-     * Designation is by location pointing (either SCORE or PIXEL), so we keep
+     * Designation is by location pointing (either SCORE or SHEET), so we keep
      * the original location information, and try to lookup for designated Run,
      * Section & Glyph
      */
     LOCATION_INIT,
     /**
-     * Designation is by location pointing (either SCORE or PIXEL) while adding
+     * Designation is by location pointing (either SCORE or SHEET) while adding
      * to the existing selection(s), so we keep the original location
      * information, and try to lookup for designated Run, Section & Glyph
      */
