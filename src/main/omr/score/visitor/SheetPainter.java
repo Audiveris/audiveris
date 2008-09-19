@@ -14,6 +14,7 @@ import omr.glyph.Glyph;
 import omr.score.Score;
 import omr.score.entity.Measure;
 import omr.score.entity.Staff;
+import omr.score.entity.System;
 import omr.score.entity.SystemPart;
 
 import omr.sheet.Ending;
@@ -51,10 +52,19 @@ public class SheetPainter
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(SheetPainter.class);
 
+    /** Stroke to draw system boundaries */
+    private static Stroke boundaryStroke = new BasicStroke(
+        1f,
+        BasicStroke.CAP_BUTT,
+        BasicStroke.JOIN_BEVEL,
+        0f,
+        new float[] { 5, 5 },
+        0);
+
     //~ Instance fields --------------------------------------------------------
 
     /** Graphic context */
-    private final Graphics g;
+    private final Graphics2D g;
 
     /** Display zoom */
     private final Zoom z;
@@ -74,7 +84,7 @@ public class SheetPainter
     public SheetPainter (Graphics g,
                          Zoom     z)
     {
-        this.g = g;
+        this.g = (Graphics2D) g;
         this.z = z;
     }
 
@@ -160,58 +170,20 @@ public class SheetPainter
             score.accept(this);
         } else {
             // Render what we have got so far
-            if (sheet.getSheetSteps()
-                     .isDone(Step.LINES)) {
+            if (sheet.getStaves() != null) {
                 for (StaffInfo staff : sheet.getStaves()) {
                     staff.render(g, z);
                 }
             }
         }
 
-        if (sheet.getSheetSteps()
-                 .isDone(Step.BARS)) {
+        if (sheet.getSystems() != null) {
             for (SystemInfo system : sheet.getSystems()) {
-                // Check that this system is visible
-                Rectangle box = new Rectangle(
-                    0,
-                    system.getAreaTop(),
-                    Integer.MAX_VALUE,
-                    system.getAreaBottom() - system.getAreaTop() + 1);
-                z.scale(box);
-
-                if (box.intersects(g.getClipBounds())) {
-                    g.setColor(Color.lightGray);
-
-                    // Staff lines
-                    for (StaffInfo staff : system.getStaves()) {
-                        staff.render(g, z);
-                    }
-
-                    g.setColor(Color.black);
-
-                    // Stems 
-                    for (Glyph glyph : system.getGlyphsCopy()) {
-                        if (glyph.isStem()) {
-                            Stick stick = (Stick) glyph;
-                            stick.renderLine(g, z);
-                        }
-                    }
-
-                    // Ledgers
-                    for (Ledger ledger : system.getLedgers()) {
-                        ledger.render(g, z);
-                    }
-
-                    // Endings
-                    for (Ending ending : system.getEndings()) {
-                        ending.render(g, z);
-                    }
-                }
+                visit(system);
             }
         } else {
             // Horizontals
-            if (sheet.getSheetSteps()
-                     .isDone(Step.HORIZONTALS)) {
+            if (sheet.getHorizontals() != null) {
                 // Ledgers
                 for (Ledger ledger : sheet.getHorizontals()
                                           .getLedgers()) {
@@ -227,5 +199,65 @@ public class SheetPainter
         }
 
         return true;
+    }
+
+    //--------------//
+    // visit System //
+    //--------------//
+    @Override
+    public boolean visit (System system)
+    {
+        if (system == null) {
+            return false;
+        }
+
+        return visit(system.getInfo());
+    }
+
+    //------------------//
+    // visit SystemInfo //
+    //------------------//
+    public boolean visit (SystemInfo systemInfo)
+    {
+        // Check that this system is visible
+        Rectangle box = systemInfo.getBounds();
+        z.scale(box);
+
+        if (box.intersects(g.getClipBounds())) {
+            g.setColor(Color.lightGray);
+
+            // System boundary
+            systemInfo.getBoundary()
+                      .render(g, z.getRatio());
+
+            // Staff lines
+            for (StaffInfo staff : systemInfo.getStaves()) {
+                staff.render(g, z);
+            }
+
+            g.setColor(Color.black);
+
+            // Stems 
+            for (Glyph glyph : systemInfo.getGlyphs()) {
+                if (glyph.isStem()) {
+                    Stick stick = (Stick) glyph;
+                    stick.renderLine(g, z);
+                }
+            }
+
+            // Ledgers
+            for (Ledger ledger : systemInfo.getLedgers()) {
+                ledger.render(g, z);
+            }
+
+            // Endings
+            for (Ending ending : systemInfo.getEndings()) {
+                ending.render(g, z);
+            }
+
+            return true;
+        }
+
+        return false;
     }
 }
