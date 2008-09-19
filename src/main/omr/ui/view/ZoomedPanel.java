@@ -11,15 +11,24 @@ package omr.ui.view;
 
 import omr.constant.ConstantSet;
 
-import omr.selection.Selection;
+import omr.score.common.PixelRectangle;
+
+import omr.selection.LocationEvent;
+import omr.selection.MouseMovement;
 import omr.selection.SelectionHint;
 import static omr.selection.SelectionHint.*;
-import omr.selection.SelectionObserver;
+import omr.selection.SheetLocationEvent;
+import omr.selection.UserEvent;
 
 import omr.ui.PixelCount;
 
+import omr.util.ClassUtil;
 import omr.util.Implement;
 import omr.util.Logger;
+
+import org.bushe.swing.event.EventService;
+import org.bushe.swing.event.EventSubscriber;
+import org.bushe.swing.event.ThreadSafeEventService;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -43,24 +52,12 @@ import javax.swing.event.*;
  * in combination with a JScrollPane container (see {@link ScrollView}
  * example).
  *
- * <dl>
- * <dt><b>Selection Inputs:</b></dt><ul>
- * <li>PIXEL Location | SCORE Location
- * </ul>
- *
- * <dt><b>Selection Outputs:</b></dt><ul>
- * <li>PIXEL Location | SCORE Location (either flagged with LOCATION_INIT hint)
- * </ul>
- * </dl>
- *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class ZoomedPanel
     extends JPanel
-    implements ChangeListener, MouseMonitor,
-                   SelectionObserver // To receive events for location selection
-
+    implements ChangeListener, MouseMonitor, EventSubscriber<UserEvent>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -75,8 +72,8 @@ public class ZoomedPanel
     /** Model size (independent of display zoom) */
     protected Dimension modelSize;
 
-    /** Related location Selection if any */
-    protected Selection locationSelection;
+    /** Related location Service if any */
+    protected EventService locationService;
 
     /** Current display zoom */
     protected Zoom zoom;
@@ -88,7 +85,7 @@ public class ZoomedPanel
     //-------------//
     /**
      * Create a zoomed panel, with no predefined zoom, assuming a zoom
-     * instance will be provided later via the {@link #setZoom} method..
+     * instance will be provided later via the {@link #setZoom} method.
      */
     public ZoomedPanel ()
     {
@@ -109,39 +106,12 @@ public class ZoomedPanel
 
     //~ Methods ----------------------------------------------------------------
 
-    //------------------//
-    // setFocusLocation //
-    //------------------//
+    //--------------------//
+    // setLocationService //
+    //--------------------//
     /**
-     * Modifies the location information. This method simply posts the
-     * location information on the proper Selection object, provided that
-     * such object has been previously injected (by means of the method
-     * {@link #setLocationSelection}.
-     *
-     * @param rect the location information
-     * @param hint the related selection hint
-     */
-    public void setFocusLocation (Rectangle     rect,
-                                  SelectionHint hint)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("setFocusRectangle rect=" + rect + " hint=" + hint);
-        }
-
-        // Write & forward the new pixel selection
-        if (locationSelection != null) { // Producer
-            locationSelection.setEntity(
-                (rect != null) ? new Rectangle(rect) : null,
-                hint);
-        }
-    }
-
-    //----------------------//
-    // setLocationSelection //
-    //----------------------//
-    /**
-     * Allow to inject a dependency on a location Selection object. This
-     * location Selection is used for two purposes: <ol>
+     * Allow to inject a dependency on a location service. This location is used
+     * for two purposes: <ol>
      *
      * <li>First, this panel is a producer of location information. The
      * location can be modified both programmatically (by calling method
@@ -157,15 +127,15 @@ public class ZoomedPanel
      * automatically register this view on the selection object. If
      * such registering is needed, it must be done manually.
      *
-     * @param locationSelection the proper location Selection to be updated
+     * @param locationService the proper location service to be updated
      */
-    public void setLocationSelection (Selection locationSelection)
+    public void setLocationService (EventService locationService)
     {
-        if (this.locationSelection != null) {
-            this.locationSelection.deleteObserver(this);
+        if (this.locationService != null) {
+            this.locationService.unsubscribe(LocationEvent.class, this);
         }
 
-        this.locationSelection = locationSelection;
+        this.locationService = locationService;
     }
 
     //--------------//
@@ -177,6 +147,23 @@ public class ZoomedPanel
     public void setModelSize (Dimension modelSize)
     {
         this.modelSize = new Dimension(modelSize);
+    }
+
+    //--------------//
+    // getModelSize //
+    //--------------//
+    /**
+     * Report the size of the model object, that is the unscaled size.
+     *
+     * @return the original size
+     */
+    public Dimension getModelSize ()
+    {
+        if (modelSize != null) {
+            return new Dimension(modelSize);
+        } else {
+            return null;
+        }
     }
 
     //----------------//
@@ -242,48 +229,65 @@ public class ZoomedPanel
     // contextSelected //
     //-----------------//
     @Implement(MouseMonitor.class)
-    public void contextSelected (MouseEvent e,
-                                 Point      pt)
+    public void contextSelected (Point         pt,
+                                 MouseMovement movement)
     {
         // Nothing by default
+    }
+
+    //---------//
+    // onEvent //
+    //---------//
+    /**
+     * Notification of a location selection  (pixel or score)
+     *
+     * @param event the location event
+     */
+    @Implement(EventSubscriber.class)
+    public void onEvent (UserEvent event)
+    {
+        if (event instanceof LocationEvent) {
+            LocationEvent locationEvent = (LocationEvent) event;
+            showFocusLocation(locationEvent.getRectangle());
+        }
     }
 
     //------------//
     // pointAdded //
     //------------//
     @Implement(MouseMonitor.class)
-    public void pointAdded (MouseEvent e,
-                            Point      pt)
+    public void pointAdded (Point         pt,
+                            MouseMovement movement)
     {
-        setFocusLocation(new Rectangle(pt), LOCATION_ADD);
+        setFocusLocation(new Rectangle(pt), movement, LOCATION_ADD);
     }
 
     //---------------//
     // pointSelected //
     //---------------//
     @Implement(MouseMonitor.class)
-    public void pointSelected (MouseEvent e,
-                               Point      pt)
+    public void pointSelected (Point         pt,
+                               MouseMovement movement)
     {
-        setFocusLocation(new Rectangle(pt), LOCATION_INIT);
+        setFocusLocation(new Rectangle(pt), movement, LOCATION_INIT);
     }
 
     //-------------------//
     // rectangleSelected //
     //-------------------//
     @Implement(MouseMonitor.class)
-    public void rectangleSelected (MouseEvent e,
-                                   Rectangle  rect)
+    public void rectangleSelected (Rectangle     rect,
+                                   MouseMovement movement)
     {
-        setFocusLocation(rect, LOCATION_INIT);
+        setFocusLocation(rect, movement, LOCATION_INIT);
     }
 
     //-----------------//
     // rectangleZoomed //
     //-----------------//
     @Implement(MouseMonitor.class)
-    public void rectangleZoomed (MouseEvent      e,
-                                 final Rectangle rect)
+    public void rectangleZoomed (final Rectangle rect,
+                                 MouseMovement   movement)
     {
         // First focus on center of the specified rectangle
         showFocusLocation(rect);
@@ -314,10 +318,6 @@ public class ZoomedPanel
      */
     public void showFocusLocation (Rectangle rect)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("showFocusRectangle rect=" + rect);
-        }
-
         updatePreferredSize();
 
         if (rect != null) {
@@ -361,57 +361,53 @@ public class ZoomedPanel
     public void stateChanged (ChangeEvent e)
     {
         // Force a redisplay
-        if (locationSelection != null) {
-            showFocusLocation((Rectangle) locationSelection.getEntity());
-        } else {
-            showFocusLocation(null);
+        if (locationService != null) {
+            LocationEvent locationEvent = (LocationEvent) locationService.getLastEvent(
+                LocationEvent.class);
+            Rectangle     rect = (locationEvent != null)
+                                 ? locationEvent.getData() : null;
+            showFocusLocation(rect);
         }
     }
 
-    //--------//
-    // update //
-    //--------//
-    /**
-     * Notification of a location selection  (pixel or score)
-     *
-     * @param selection the selection object
-     * @param hint processing hint (not used)
-     */
-    @Implement(SelectionObserver.class)
-    public void update (Selection     selection,
-                        SelectionHint hint)
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
     {
-        ///logger.info("ZoomedPanel. selection=" + selection + " hint=" + hint);
-        switch (selection.getTag()) {
-        case SHEET_RECTANGLE : // For sheet display
-        case SCORE_RECTANGLE : // For score display
-
-            Rectangle rect = (Rectangle) locationSelection.getEntity();
-
-            if (rect != null) {
-                showFocusLocation(rect);
-            }
-
-            break;
-
-        default :
-        }
+        return ClassUtil.nameOf(this);
     }
 
-    //--------------//
-    // getModelSize //
-    //--------------//
+    //------------------//
+    // setFocusLocation //
+    //------------------//
     /**
-     * Report the size of the model object, that is the unscaled size.
+     * Modifies the location information. This method simply posts the
+     * location information on the proper Service object, provided that
+     * such object has been previously injected (by means of the method
+     * {@link #setLocationService}.
      *
-     * @return the original size
+     * @param rect the location information
+     * @param movement the button movement
+     * @param hint the related selection hint
      */
-    public Dimension getModelSize ()
+    protected void setFocusLocation (Rectangle     rect,
+                                     MouseMovement movement,
+                                     SelectionHint hint)
     {
-        if (modelSize != null) {
-            return new Dimension(modelSize);
-        } else {
-            return null;
+        if (logger.isFineEnabled()) {
+            logger.fine("setFocusLocation rect=" + rect + " hint=" + hint);
+        }
+
+        // Publish the new user-selected location
+        if (locationService != null) {
+            locationService.publish(
+                new SheetLocationEvent(
+                    this,
+                    hint,
+                    movement,
+                    new PixelRectangle(rect)));
         }
     }
 
