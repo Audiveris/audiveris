@@ -12,19 +12,10 @@ package omr.score.visitor;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.plugin.Plugin;
-import omr.plugin.PluginType;
-
-import omr.util.Implement;
-
 import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.Action;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.AbstractAction;
-import javax.swing.JCheckBoxMenuItem;
 
 /**
  * Class <code>PaintingParameters</code> handles the dynamic parameters related
@@ -154,84 +145,6 @@ public class PaintingParameters
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
-    //------------//
-    // MarkAction //
-    //------------//
-    @Deprecated
-    @Plugin(type = PluginType.SCORE_VIEW, item = JCheckBoxMenuItem.class)
-    public static class MarkAction
-        extends AbstractAction
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public MarkAction ()
-        {
-            putValue("SwingSelectedKey", constants.markPainting.getValue());
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
-            constants.markPainting.setValue(item.isSelected());
-            ScorePainter.repaintDisplay();
-        }
-    }
-
-    //------------//
-    // SlotAction //
-    //------------//
-    @Deprecated
-    @Plugin(type = PluginType.SCORE_VIEW, item = JCheckBoxMenuItem.class)
-    public static class SlotAction
-        extends AbstractAction
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public SlotAction ()
-        {
-            putValue("SwingSelectedKey", constants.slotPainting.getValue());
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
-            constants.slotPainting.setValue(item.isSelected());
-            ScorePainter.repaintDisplay();
-        }
-    }
-
-    //-------------//
-    // VoiceAction //
-    //-------------//
-    @Deprecated
-    @Plugin(type = PluginType.SCORE_VIEW, item = JCheckBoxMenuItem.class)
-    public static class VoiceAction
-        extends AbstractAction
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public VoiceAction ()
-        {
-            putValue("SwingSelectedKey", constants.voicePainting.getValue());
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
-            constants.voicePainting.setValue(item.isSelected());
-            ScorePainter.repaintDisplay();
-        }
-    }
 
     //-----------//
     // Constants //

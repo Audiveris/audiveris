@@ -13,22 +13,16 @@ import omr.Main;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
-import static omr.plugin.Dependency.*;
-import omr.plugin.Plugin;
-import static omr.plugin.PluginType.*;
 
 import omr.score.Score;
 import omr.score.entity.ScorePart;
 import omr.score.midi.MidiAgent;
-
-import omr.selection.SelectionObserver;
 
 import omr.sheet.SheetManager;
 
 import omr.ui.ScoreBoard;
 
 import omr.util.BasicTask;
-import omr.util.Implement;
 import omr.util.Logger;
 
 import org.jdesktop.application.Action;
@@ -184,16 +178,6 @@ public class ScoreActions
         return apply[0];
     }
 
-    //---------//
-    // getName //
-    //---------//
-    @Implement(SelectionObserver.class)
-    @Override
-    public String getName ()
-    {
-        return "ScoreActions";
-    }
-
     //-------------------//
     // setRebuildAllowed //
     //-------------------//
@@ -330,98 +314,6 @@ public class ScoreActions
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
-    //--------------//
-    // BrowseAction //
-    //--------------//
-    @Deprecated
-    @Plugin(type = SCORE_EDIT, dependency = SCORE_AVAILABLE, onToolbar = true)
-    public static class BrowseAction
-        extends AbstractAction
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            getInstance()
-                .browseScore(e);
-        }
-    }
-
-    //------------//
-    // DumpAction //
-    //------------//
-    @Deprecated
-    @Plugin(type = SCORE_EDIT, dependency = SCORE_AVAILABLE, onToolbar = true)
-    public static class DumpAction
-        extends AbstractAction
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            getInstance()
-                .dumpScore(e);
-        }
-    }
-
-    //-------------//
-    // ParamAction //
-    //-------------//
-    @Deprecated
-    @Plugin(type = SCORE_EDIT, dependency = SCORE_AVAILABLE, onToolbar = true)
-    public static class ParamAction
-        extends AbstractAction
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            getInstance()
-                .defineParameters(e);
-        }
-    }
-
-    //---------------//
-    // RebuildAction //
-    //---------------//
-    @Deprecated
-    @Plugin(type = SCORE_EDIT, dependency = SCORE_AVAILABLE, onToolbar = true)
-    public static class RebuildAction
-        extends AbstractAction
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            getInstance()
-                .rebuildScore(e)
-                .execute();
-        }
-    }
-
-    //-------------//
-    // StoreAction //
-    //-------------//
-    @Deprecated
-    @Plugin(type = SCORE_EXPORT, dependency = SCORE_AVAILABLE, onToolbar = true)
-    public static class StoreAction
-        extends AbstractAction
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            getInstance()
-                .storeScore(e)
-                .execute();
-        }
-    }
 
     //-----------//
     // Constants //

@@ -22,13 +22,9 @@ import omr.score.entity.Slot;
 import omr.score.entity.System;
 import omr.score.entity.SystemPart;
 import omr.score.midi.MidiActions;
-import omr.score.midi.MidiActions.PlayAction;
 import omr.score.midi.MidiAgent;
 
-import omr.selection.Selection;
-import omr.selection.SelectionTag;
-
-import omr.ui.ActionManager;
+import omr.selection.GlyphSetEvent;
 
 import omr.util.Logger;
 
@@ -64,9 +60,6 @@ public class ScoreMenu
     /** Set of items to update menu according to current selections */
     private final Collection<DynItem> dynItems = new HashSet<DynItem>();
 
-    /** Selection of glyphs, which is read on demand (no automatic update) */
-    private final Selection glyphSetSelection;
-
     /** Concrete popup menu */
     private final JPopupMenu popup;
 
@@ -88,9 +81,6 @@ public class ScoreMenu
     public ScoreMenu (Score score)
     {
         this.score = score;
-        glyphSetSelection = score.getSheet()
-                                 .getSelection(SelectionTag.GLYPH_SET);
-
         popup = new JPopupMenu();
         defineLayout();
     }
@@ -127,7 +117,10 @@ public class ScoreMenu
         SystemPoint sysPt = system.toSystemPoint(pagPt);
         SystemPart  part = system.getPartAt(sysPt);
         measure = part.getMeasureAt(sysPt);
-        slot = measure.getClosestSlot(sysPt);
+
+        if (measure != null) {
+            slot = measure.getClosestSlot(sysPt);
+        }
 
         // Update all dynamic actions accordingly
         for (DynAction action : dynActions) {
@@ -362,7 +355,12 @@ public class ScoreMenu
                 }
             }
 
-            List<Glyph> glyphs = (List<Glyph>) glyphSetSelection.getEntity(); // Compiler warning
+            GlyphSetEvent glyphsEvent = (GlyphSetEvent) score.getSheet()
+                                                             .getVerticalLag()
+                                                             .getLastEvent(
+                GlyphSetEvent.class);
+            List<Glyph>   glyphs = (glyphsEvent != null)
+                                   ? glyphsEvent.getData() : null;
 
             if ((glyphs != null) && !glyphs.isEmpty()) {
                 Glyph glyph = glyphs.get(0);
@@ -427,17 +425,6 @@ public class ScoreMenu
         {
             putValue(NAME, "Play measure");
             putValue(SHORT_DESCRIPTION, "Play the selected measure");
-
-            // Retrieve icon
-            Action playAction = ActionManager.getInstance()
-                                             .getActionInstance(
-                PlayAction.class.getName());
-
-            if (playAction != null) {
-                putValue(
-                    SMALL_ICON,
-                    (Icon) playAction.getValue(Action.SMALL_ICON));
-            }
         }
 
         //~ Methods ------------------------------------------------------------
