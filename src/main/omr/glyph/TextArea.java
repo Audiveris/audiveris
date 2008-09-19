@@ -116,9 +116,7 @@ public class TextArea
      */
     public PixelRectangle getAbsoluteContour ()
     {
-        Rectangle r = roi.getAbsoluteContour();
-
-        return new PixelRectangle(r.x, r.y, r.width, r.height);
+        return new PixelRectangle(roi.getAbsoluteContour());
     }
 
     //-------------//
