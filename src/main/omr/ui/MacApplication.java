@@ -120,7 +120,7 @@ public class MacApplication
                 worker.execute();
             } else {
                 // Actually load the sheet picture
-                Step.LOAD.perform(null, new File(filename));
+                Step.LOAD.performUntil(null, new File(filename));
             }
         }
 
@@ -176,6 +176,7 @@ public class MacApplication
      * @return true if successful, false if platform is not
      * Mac OS X or if an error occurs
      */
+    @SuppressWarnings("unchecked")
     public static boolean setupMacMenus ()
     {
         if (!omr.Main.MAC_OS_X) {
