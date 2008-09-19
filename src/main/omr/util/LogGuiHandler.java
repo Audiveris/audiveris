@@ -81,7 +81,7 @@ public class LogGuiHandler
         MainGui gui = Main.getGui();
 
         if ((gui != null) && isLoggable(record)) {
-            gui.logPane.log(record);
+            gui.log(record);
         }
     }
 }
