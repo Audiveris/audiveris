@@ -1063,6 +1063,7 @@ public class ScoreExporter
     // visit Ornament //
     //----------------//
     @Override
+    @SuppressWarnings("unchecked")
     public boolean visit (Ornament ornament)
     {
         Object element = getOrnamentObject(ornament.getShape());
@@ -2062,6 +2063,7 @@ public class ScoreExporter
      * @param obj the element at hand
      * @staff the related score staff
      */
+    @SuppressWarnings("unchecked")
     private void insertStaffId (Object obj,
                                 Staff  staff)
     {
