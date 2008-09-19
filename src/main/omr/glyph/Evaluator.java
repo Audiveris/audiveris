@@ -15,16 +15,10 @@ import omr.constant.ConstantSet;
 import omr.math.Moments;
 import omr.math.NeuralNetwork;
 
-import omr.score.common.PixelRectangle;
-
 import omr.sheet.Scale;
-
-import omr.stick.Stick;
 
 import omr.util.Logger;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -258,7 +252,7 @@ public abstract class Evaluator
             Evaluation best = evaluations[0];
 
             // Temporary logic, to be validated:
-            // If the best shape found is a CLUTTER while a second best is also 
+            // If the best shape found is a CLUTTER while a second best is also
             // acceptable wrt maxDoubt, we choose the second
             if ((best.shape == Shape.CLUTTER) &&
                 (evaluations.length > 1) &&
@@ -278,91 +272,6 @@ public abstract class Evaluator
         }
     }
 
-    //--------------------//
-    // specificShapeCheck //
-    //--------------------//
-    protected Shape specificShapeCheck (Shape shape,
-                                        Glyph glyph)
-    {
-        // Special case for WHOLE/HALF rests : use pitch position
-        if (shape == Shape.WHOLE_OR_HALF_REST) {
-            int pp = (int) Math.rint(2 * glyph.getPitchPosition());
-
-            if (pp == -1) {
-                return Shape.HALF_REST;
-            } else if (pp == -3) {
-                return Shape.WHOLE_REST;
-            } else {
-                return null;
-            }
-        } else if (Shape.Clefs.contains(shape)) {
-            // Check reasonable height
-            if (glyph.getNormalizedHeight() > constants.maxClefHeight.getValue()) {
-                return null;
-            }
-
-            // Check distance from closest staff
-            if (Math.abs(glyph.getPitchPosition()) >= 15) {
-                return null;
-            }
-        } else if (Shape.HeadAndFlags.contains(shape)) {
-            // Check that we do have a stem on left side
-            if (glyph.getLeftStem() == null) {
-                return null;
-            }
-        } else if ((Shape.TEXT == shape) || (Shape.CHARACTER == shape)) {
-            // Check reasonable height (Cannot be too tall when close to staff)
-            double maxHeight = (Math.abs(glyph.getPitchPosition()) >= constants.minTitlePitchPosition.getValue())
-                               ? constants.maxTitleHeight.getValue()
-                               : constants.maxLyricHeight.getValue();
-
-            if (glyph.getNormalizedHeight() >= maxHeight) {
-                return null;
-            }
-
-            // Check there is no huge horizontal gap between parts
-            if (hugeGapBetweenParts(glyph)) {
-                return null;
-            }
-        } else if (Shape.BEAM_HOOK == shape) {
-            // Check we have exactly 1 stem
-            if (glyph.getStemNumber() != 1) {
-                return null;
-            }
-
-            if (!validBeamSlope(glyph)) {
-                return null;
-            }
-        } else if (Shape.Times.contains(shape)) {
-            // A time signature is on staff !
-            if (Math.abs(glyph.getPitchPosition()) >= 3) {
-                return null;
-            }
-        } else if (Shape.Dynamics.contains(shape)) {
-            // Check distance from closest staff
-            if (Math.abs(glyph.getPitchPosition()) >= 15) {
-                return null;
-            }
-        } else if (Shape.Notes.contains(shape) ||
-                   Shape.NoteHeads.contains(shape) ||
-                   Shape.Rests.contains(shape) ||
-                   Shape.HeadAndFlags.contains(shape)) {
-            // A note / rest cannot be too far from a staff
-            if (Math.abs(glyph.getPitchPosition()) >= 15) {
-                return null;
-            }
-
-            if (shape == Shape.NOTEHEAD_BLACK) {
-                if (glyph.getNormalizedWeight() > constants.maxHeadBlackWeight.getValue()) {
-                    return null;
-                }
-            }
-        }
-
-        // Pass-through by default
-        return shape;
-    }
-
     //--------------//
     // boolAsDouble //
     //--------------//
@@ -372,72 +281,6 @@ public abstract class Evaluator
             return 1d;
         } else {
             return 0d;
-        }
-    }
-
-    //-----------//
-    // hugeGapIn //
-    //-----------//
-    /**
-     * Browse the collection of provided glyphs to make sure there is no huge
-     * horizontal gap included
-     * @param glyphs the collection of glyphs that compose the text candidate
-     * @param sheet needed for scale of the context
-     * @return true if gap found
-     */
-    private boolean hugeGapBetweenParts (Glyph compound)
-    {
-        if (compound.getParts()
-                    .size() == 0) {
-            return false;
-        }
-
-        // Sort glyphs by abscissa 
-        List<Glyph> glyphs = new ArrayList(compound.getParts());
-        Collections.sort(glyphs);
-
-        final Scale scale = new Scale(glyphs.get(0).getInterline());
-        final int   maxGap = scale.toPixels(constants.maxTextGap);
-        int         gapStart = 0;
-        Glyph       prev = null;
-
-        for (Glyph glyph : glyphs) {
-            PixelRectangle box = glyph.getContourBox();
-
-            if (prev != null) {
-                if ((box.x - gapStart) > maxGap) {
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            "huge gap detected between glyphs #" +
-                            prev.getId() + " & " + glyph.getId());
-                    }
-
-                    return true;
-                }
-            }
-
-            prev = glyph;
-            gapStart = (box.x + box.width) - 1;
-        }
-
-        return false;
-    }
-
-    //----------------//
-    // validBeamSlope //
-    //----------------//
-    private boolean validBeamSlope (Glyph glyph)
-    {
-        try {
-            Stick          stick = (Stick) glyph;
-            double         slope = stick.getLine()
-                                        .getInvertedSlope(); // vertical lag!
-            PixelRectangle box = glyph.getContourBox();
-            double         maxSlope = (double) box.height / (double) box.width;
-
-            return Math.abs(slope) <= maxSlope;
-        } catch (Exception ex) {
-            return false;
         }
     }
 
@@ -491,6 +334,10 @@ public abstract class Evaluator
             "PitchPosition",
             15d,
             "Minimum absolute pitch position for a title");
+        Constant.Double    maxTimePitchPositionMargin = new Constant.Double(
+            "PitchPosition",
+            1d,
+            "Maximum absolute pitch position margin for a time signature");
         Scale.Fraction     maxTextGap = new Scale.Fraction(
             5.0,
             "Maximum value for a horizontal gap between glyphs of the same text");
