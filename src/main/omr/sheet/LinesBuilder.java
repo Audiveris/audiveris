@@ -31,10 +31,6 @@ import omr.lag.SectionsBuilder;
 
 import omr.math.Population;
 
-import omr.plugin.Plugin;
-import omr.plugin.PluginType;
-import static omr.selection.SelectionTag.*;
-
 import omr.step.StepException;
 
 import omr.stick.Stick;
@@ -43,7 +39,6 @@ import omr.stick.StickSection;
 import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
 
-import omr.util.Implement;
 import omr.util.Logger;
 
 import org.jdesktop.application.AbstractBean;
@@ -59,7 +54,6 @@ import org.jfree.ui.RefineryUtilities;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.*;
 import java.util.List;
 
@@ -263,26 +257,16 @@ public class LinesBuilder
             }
         }
 
-        lagView = new MyLagView(lag, members);
+        lagView = new MyView(lag, members);
 
         final String  unit = sheet.getRadix() + ":LinesBuilder";
         BoardsPane    boardsPane = new BoardsPane(
             sheet,
             lagView,
-            new PixelBoard(unit),
-            new RunBoard(unit, sheet.getSelection(HORIZONTAL_RUN)),
-            new SectionBoard(
-                unit,
-                lag.getLastVertexId(),
-                sheet.getSelection(HORIZONTAL_SECTION),
-                sheet.getSelection(HORIZONTAL_SECTION_ID)),
-            new GlyphBoard(
-                unit,
-                this,
-                null,
-                sheet.getSelection(HORIZONTAL_GLYPH),
-                sheet.getSelection(HORIZONTAL_GLYPH_ID),
-                null));
+            new PixelBoard(unit, sheet),
+            new RunBoard(unit, lag),
+            new SectionBoard(unit, lag.getLastVertexId(), lag),
+            new GlyphBoard(unit, this, null));
 
         // Create a hosting frame for the view
         ScrollLagView slv = new ScrollLagView(lagView);
@@ -578,44 +562,6 @@ public class LinesBuilder
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //------------//
-    // LineAction //
-    //------------//
-    @Deprecated
-    @Plugin(type = PluginType.LINE_VIEW, item = JCheckBoxMenuItem.class)
-    public static class LineAction
-        extends AbstractAction
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public LineAction ()
-        {
-            putValue(
-                "SwingSelectedKey",
-                constants.displayOriginalStaffLines.getValue());
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
-            constants.displayOriginalStaffLines.setValue(item.isSelected());
-
-            // Trigger a repaint if needed
-            Sheet currentSheet = SheetManager.getSelectedSheet();
-
-            if (currentSheet != null) {
-                LinesBuilder builder = currentSheet.getLinesBuilder();
-
-                if ((builder != null) && (builder.lagView != null)) {
-                    builder.lagView.repaint();
-                }
-            }
-        }
-    }
-
     //-----------------//
     // LinesParameters //
     //-----------------//
@@ -735,19 +681,19 @@ public class LinesBuilder
             "Should we produce a chart of computed data ?");
     }
 
-    //-----------//
-    // MyLagView //
-    //-----------//
-    private class MyLagView
+    //--------//
+    // MyView //
+    //--------//
+    private class MyView
         extends GlyphLagView
     {
         //~ Constructors -------------------------------------------------------
 
-        //-----------//
-        // MyLagView //
-        //-----------//
-        public MyLagView (GlyphLag           lag,
-                          List<GlyphSection> specifics)
+        //--------//
+        // MyView //
+        //--------//
+        public MyView (GlyphLag           lag,
+                       List<GlyphSection> specifics)
         {
             super(
                 lag,
@@ -756,16 +702,6 @@ public class LinesBuilder
                 LinesBuilder.this,
                 null);
             setName("LinesBuilder-View");
-
-            setLocationSelection(sheet.getSelection(SHEET_RECTANGLE));
-            setSpecificSelections(
-                sheet.getSelection(HORIZONTAL_RUN),
-                sheet.getSelection(HORIZONTAL_SECTION));
-            setGlyphSelection(sheet.getSelection(HORIZONTAL_GLYPH));
-
-            // Other input
-            sheet.getSelection(HORIZONTAL_SECTION_ID)
-                 .addObserver(this);
         }
 
         //~ Methods ------------------------------------------------------------
