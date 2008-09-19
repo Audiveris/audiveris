@@ -11,21 +11,21 @@ package omr.ui;
 
 import omr.glyph.Glyph;
 
+import omr.score.common.ScoreRectangle;
 import omr.score.common.SystemPoint;
 import omr.score.entity.Measure;
 import omr.score.entity.MeasureNode;
 import omr.score.entity.System;
 import omr.score.entity.SystemNode;
 
-import omr.selection.Selection;
+import omr.selection.GlyphEvent;
+import omr.selection.ScoreLocationEvent;
 import omr.selection.SelectionHint;
-import omr.selection.SelectionTag;
 
 import omr.sheet.Sheet;
 
 import omr.util.Logger;
 
-import java.awt.Rectangle;
 import java.util.*;
 
 import javax.swing.*;
@@ -67,12 +67,6 @@ public class ErrorsEditor
     /** Facade model for the JList */
     private final DefaultListModel model = new DefaultListModel();
 
-    /** Selection bus for glyph */
-    private final Selection glyphSelection;
-
-    /** Selection bus for score node */
-    private final Selection scoreSelection;
-
     //~ Constructors -----------------------------------------------------------
 
     //-------------//
@@ -90,12 +84,6 @@ public class ErrorsEditor
         scrollPane = new JScrollPane(list);
         list.addListSelectionListener(listener);
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-        glyphSelection = sheet.getSelectionManager()
-                              .getSelection(SelectionTag.VERTICAL_GLYPH);
-
-        scoreSelection = sheet.getSelectionManager()
-                              .getSelection(SelectionTag.SCORE_RECTANGLE);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -283,9 +271,13 @@ public class ErrorsEditor
 
                     if (record.glyph != null) {
                         // Use glyph location if available
-                        glyphSelection.setEntity(
-                            record.glyph,
-                            SelectionHint.GLYPH_INIT);
+                        sheet.getVerticalLag()
+                             .publish(
+                            new GlyphEvent(
+                                this,
+                                SelectionHint.GLYPH_INIT,
+                                null,
+                                record.glyph));
                     } else {
                         // Otherwise use system node location as possible
                         try {
@@ -308,9 +300,14 @@ public class ErrorsEditor
                                 }
                             }
 
-                            scoreSelection.setEntity(
-                                new Rectangle(system.toScorePoint(sysPt)),
-                                SelectionHint.LOCATION_INIT);
+                            sheet.getEventService()
+                                 .publish(
+                                new ScoreLocationEvent(
+                                    ErrorsEditor.this,
+                                    SelectionHint.LOCATION_INIT,
+                                    null,
+                                    new ScoreRectangle(
+                                        system.toScorePoint(sysPt))));
                         } catch (Exception ex) {
                             logger.warning(
                                 "Failed pointing to " + record.node,

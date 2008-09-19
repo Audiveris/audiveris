@@ -14,6 +14,8 @@ import omr.score.Score;
 import omr.score.entity.ScorePart;
 import omr.score.midi.MidiAbstractions;
 
+import omr.selection.UserEvent;
+
 import omr.ui.field.LField;
 import omr.ui.field.LIntegerField;
 import omr.ui.util.Panel;
@@ -91,7 +93,7 @@ public class ScoreBoard
     public ScoreBoard (String unitName,
                        Score  score)
     {
-        super(Board.Tag.SCORE, unitName + "-ScoreBoard");
+        super(Board.Tag.SCORE, unitName + "-ScoreBoard", null, null);
         this.score = score;
 
         // rangeBox
@@ -186,6 +188,14 @@ public class ScoreBoard
                 lastId.setEnabled(false);
             }
         }
+    }
+
+    //---------//
+    // onEvent //
+    //---------//
+    public void onEvent (UserEvent event)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     //---------------//

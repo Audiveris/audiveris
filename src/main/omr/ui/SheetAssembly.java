@@ -13,10 +13,10 @@ import omr.Main;
 
 import omr.constant.ConstantSet;
 
+import omr.score.common.PixelRectangle;
 import omr.score.ui.ScoreView;
 
-import omr.selection.Selection;
-import omr.selection.SelectionTag;
+import omr.selection.SheetLocationEvent;
 
 import omr.sheet.Sheet;
 
@@ -29,6 +29,8 @@ import omr.ui.view.Zoom;
 
 import omr.util.Implement;
 import omr.util.Logger;
+
+import org.bushe.swing.event.EventService;
 
 import java.awt.*;
 import java.util.*;
@@ -103,8 +105,8 @@ public class SheetAssembly
     /** Related Score view */
     private ScoreView scoreView;
 
-    /** Selection of pixel location */
-    private Selection locationSelection;
+    /** Service of sheetlocation */
+    private EventService locationService;
 
     /** Index of previously selected tab */
     private int previousViewIndex = -1;
@@ -131,7 +133,7 @@ public class SheetAssembly
         this.sheet = sheet;
         sheet.setAssembly(this);
 
-        locationSelection = sheet.getSelection(SelectionTag.SHEET_RECTANGLE);
+        locationService = sheet.getEventService();
 
         // GUI stuff
         slider.setToolTipText("Adjust Zoom Ratio");
@@ -478,7 +480,9 @@ public class SheetAssembly
         }
 
         // Disconnection of related view
-        locationSelection.deleteObserver(tab.scrollView.getView());
+        locationService.unsubscribe(
+            SheetLocationEvent.class,
+            tab.scrollView.getView());
 
         // Disconnection of related boards
         tab.boardsPane.hidden();
@@ -516,14 +520,24 @@ public class SheetAssembly
         }
 
         // Handle connection to location selection
-        locationSelection.addObserver(scrollView.getView());
+        locationService.subscribeStrongly(
+            SheetLocationEvent.class,
+            scrollView.getView());
 
         // Restore display of proper context
         displayContext( /* connectBoards => */
         true);
 
         // Force update
-        locationSelection.reNotifyObservers(null);
+        SheetLocationEvent locationEvent = (SheetLocationEvent) locationService.getLastEvent(
+            SheetLocationEvent.class);
+        PixelRectangle     location = (locationEvent != null)
+                                      ? locationEvent.getData() : null;
+
+        if (location != null) {
+            locationService.publish(
+                new SheetLocationEvent(this, null, null, location));
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------

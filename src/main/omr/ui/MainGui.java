@@ -16,12 +16,9 @@ import omr.action.Actions;
 
 import omr.constant.*;
 
-import omr.score.midi.MidiActions;
 import omr.score.ui.ScoreController;
 
-import omr.selection.Selection;
-import omr.selection.SelectionHint;
-import omr.selection.SelectionObserver;
+import omr.selection.SheetEvent;
 
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
@@ -39,6 +36,8 @@ import omr.ui.util.UIUtilities;
 import omr.util.Implement;
 import omr.util.Logger;
 
+import org.bushe.swing.event.EventSubscriber;
+
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 
@@ -46,6 +45,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.util.EventObject;
+import java.util.logging.LogRecord;
 
 import javax.swing.*;
 
@@ -57,12 +57,9 @@ import javax.swing.*;
  * @version $Id$
  */
 public class MainGui
-    implements SelectionObserver
+    implements EventSubscriber<SheetEvent>
 {
     //~ Static fields/initializers ---------------------------------------------
-
-    /** Specific application parameters */
-    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(MainGui.class);
@@ -71,9 +68,6 @@ public class MainGui
 
     /** Cache the application */
     private final Application app;
-
-    /** Log pane, which displays logging info */
-    public LogPane logPane;
 
     /** User actions for scores */
     public final ScoreController scoreController;
@@ -84,12 +78,11 @@ public class MainGui
     /** The related concrete frame */
     private JFrame frame;
 
-    /** The splitted panes */
-    private JSplitPane bigSplitPane;
-    private JSplitPane splitPane;
-
     /** Bottom pane split betwen the logPane and the errorsPane */
     private BottomPane bottomPane;
+
+    /** Log pane, which displays logging info */
+    private LogPane logPane;
 
     /** The tool bar */
     private JToolBar toolBar;
@@ -117,16 +110,13 @@ public class MainGui
 
         scoreController = new ScoreController();
 
-        // Frame title
-        updateGui();
-
         defineLayout();
 
         // Stay informed on sheet selection
-        SheetManager.getSelection()
-                    .addObserver(this);
+        SheetManager.getEventService()
+                    .subscribeStrongly(SheetEvent.class, this);
 
-        // Exit listener
+        // Define an exit listener
         app.addExitListener(new MaybeExit());
     }
 
@@ -179,7 +169,6 @@ public class MainGui
      *
      * @return observer name
      */
-    @Implement(SelectionObserver.class)
     public String getName ()
     {
         return "MainGui";
@@ -194,6 +183,17 @@ public class MainGui
         button.setBorder(UIUtilities.getToolBorder());
 
         return button;
+    }
+
+    //----------//
+    // clearLog //
+    //----------//
+    /**
+     * Erase the content of the log window
+     */
+    public void clearLog ()
+    {
+        logPane.clearLog();
     }
 
     //----------------//
@@ -236,6 +236,53 @@ public class MainGui
             JOptionPane.WARNING_MESSAGE);
     }
 
+    //-----//
+    // log //
+    //-----//
+    /**
+     * Log a record in the log window
+     * @param record the record to log
+     */
+    public void log (LogRecord record)
+    {
+        logPane.log(record);
+    }
+
+    //---------//
+    // onEvent //
+    //---------//
+    /**
+     * Notification of sheet selection, to update frame title
+     *
+     * @param sheetEvent the event about selected sheet
+     */
+    @Implement(EventSubscriber.class)
+    public void onEvent (SheetEvent sheetEvent)
+    {
+        final Sheet sheet = sheetEvent.getData();
+        SwingUtilities.invokeLater(
+            new Runnable() {
+                    public void run ()
+                    {
+                        final StringBuilder sb = new StringBuilder();
+
+                        if (sheet != null) {
+                            // Frame title tells sheet name + step
+                            sb.append(sheet.getRadix())
+                              .append(" - ")
+                              .append(sheet.getSheetSteps().getLatestStep())
+                              .append(" - ");
+                        }
+
+                        // Update frame title
+                        sb.append(
+                            app.getContext().getResourceMap().getString(
+                                "mainFrame.title"));
+                        frame.setTitle(sb.toString());
+                    }
+                });
+    }
+
     //------------------//
     // removeBoardsPane //
     //------------------//
@@ -256,72 +303,6 @@ public class MainGui
     public void removeErrorsPane ()
     {
         bottomPane.removeErrors();
-    }
-
-    //--------//
-    // update //
-    //--------//
-    /**
-     * Notification of sheet selection, to update frame title
-     *
-     * @param selection the selection object (SHEET)
-     * @param hint processing hint (not used)
-     */
-    @Implement(SelectionObserver.class)
-    public void update (Selection     selection,
-                        SelectionHint hint)
-    {
-        switch (selection.getTag()) {
-        case SHEET :
-            updateGui();
-
-            break;
-
-        default :
-        }
-    }
-
-    //-----------//
-    // updateGui //
-    //-----------//
-    /**
-     * This method is called whenever a modification has occurred, either a
-     * score or sheet, so that the frame title and the pull-down menus are
-     * always consistent with the current context.
-     */
-    public void updateGui ()
-    {
-        final Sheet sheet = SheetManager.getSelectedSheet();
-
-        SwingUtilities.invokeLater(
-            new Runnable() {
-                    public void run ()
-                    {
-                        final StringBuilder sb = new StringBuilder();
-
-                        if (sheet != null) {
-                            // Frame title tells sheet name + step
-                            sb.append(sheet.getRadix())
-                              .append(" - ")
-                              .append(sheet.currentStep())
-                              .append(" - ");
-                        }
-
-                        // Update frame title
-                        sb.append(
-                            app.getContext().getResourceMap().getString(
-                                "mainFrame.title"));
-                        frame.setTitle(sb.toString());
-                    }
-                });
-    }
-
-    //------------------------------//
-    // useSwingApplicationFramework //
-    //------------------------------//
-    public static boolean useSwingApplicationFramework ()
-    {
-        return constants.useSwingApplicationFramework.getValue();
     }
 
     //--------------//
@@ -372,7 +353,8 @@ public class MainGui
         bottomPane = new BottomPane(logPane.getComponent());
         bottomPane.setName("bottomPane");
 
-        splitPane = new JSplitPane(
+        /** The splitted panes */
+        final JSplitPane splitPane = new JSplitPane(
             JSplitPane.VERTICAL_SPLIT,
             sheetController.getComponent(),
             bottomPane);
@@ -395,7 +377,7 @@ public class MainGui
         frame.getContentPane()
              .add(toolBar, BorderLayout.NORTH);
 
-        bigSplitPane = new JSplitPane(
+        final JSplitPane bigSplitPane = new JSplitPane(
             JSplitPane.HORIZONTAL_SPLIT,
             splitPane,
             boardsPane);
@@ -426,45 +408,25 @@ public class MainGui
         sheetMenu.add(historyMenu);
 
         // Specific step menu
-        JMenu stepMenu = new StepMenu(new SeparableMenu()).getMenu();
+        JMenu       stepMenu = new StepMenu(new SeparableMenu()).getMenu();
 
-        if (constants.useSwingApplicationFramework.getValue()) {
-            // For history sub-menu
-            ResourceMap resource = Main.getInstance()
-                                       .getContext()
-                                       .getResourceMap(Actions.class);
-            historyMenu.setName("historyMenu");
-            resource.injectComponents(historyMenu);
+        // For history sub-menu
+        ResourceMap resource = Main.getInstance()
+                                   .getContext()
+                                   .getResourceMap(Actions.class);
+        historyMenu.setName("historyMenu");
+        resource.injectComponents(historyMenu);
 
-            // For some specific top-level menus
-            ActionManager mgr = ActionManager.getInstance();
-            mgr.injectMenu(Actions.Domain.SHEET.name(), sheetMenu);
-            mgr.injectMenu(Actions.Domain.STEP.name(), stepMenu);
+        // For some specific top-level menus
+        ActionManager mgr = ActionManager.getInstance();
+        mgr.injectMenu(Actions.Domain.SHEET.name(), sheetMenu);
+        mgr.injectMenu(Actions.Domain.STEP.name(), stepMenu);
 
-            // All other commands
-            mgr.loadAllDescriptors();
-            mgr.registerAllActions();
-            toolBar = mgr.getToolBar();
-            frame.setJMenuBar(mgr.getMenuBar());
-        } else {
-            // Old implementation
-            MidiActions.getInstance();
-            UIDressing.dressUp(
-                historyMenu,
-                getClass().getName() + ".historyMenu");
-            UIDressing.dressUp(sheetMenu, getClass().getName() + ".sheetMenu");
-            UIDressing.dressUp(stepMenu, getClass().getName() + ".stepMenu");
-
-            omr.ui.ActionManager mgr = omr.ui.ActionManager.getInstance();
-            mgr.injectMenu("File", sheetMenu);
-            mgr.injectMenu("Step", stepMenu);
-
-            // All other commands
-            mgr.loadAllClasses();
-            mgr.registerAllActions();
-            toolBar = mgr.getToolBar();
-            frame.setJMenuBar(mgr.getMenuBar());
-        }
+        // All other commands
+        mgr.loadAllDescriptors();
+        mgr.registerAllActions();
+        toolBar = mgr.getToolBar();
+        frame.setJMenuBar(mgr.getMenuBar());
 
         // Mac Application menu
         MacApplication.setupMacMenus();
@@ -554,19 +516,6 @@ public class MainGui
 
             setRightComponent(null);
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        Constant.Boolean useSwingApplicationFramework = new Constant.Boolean(
-            true,
-            "Should we use the Swing Application Framework to define Actions?");
     }
 
     //-----------------//

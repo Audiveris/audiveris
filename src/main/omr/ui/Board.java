@@ -9,17 +9,18 @@
 //
 package omr.ui;
 
-import omr.selection.Selection;
-import omr.selection.SelectionHint;
-import omr.selection.SelectionObserver;
+import omr.selection.UserEvent;
 
 import omr.ui.util.Panel;
 
-import omr.util.Implement;
+import omr.util.ClassUtil;
 import omr.util.Logger;
 
+import org.bushe.swing.event.EventService;
+import org.bushe.swing.event.EventSubscriber;
+
 import java.awt.*;
-import java.util.List;
+import java.util.Collection;
 
 import javax.swing.*;
 
@@ -27,20 +28,20 @@ import javax.swing.*;
  * Class <code>Board</code> defines the common properties of any user board such
  * as PixelBoard, SectionBoard, and the like.
  *
- * <p>By default, any board can have multiple inputSelection and an
- * outputSelection objects. When {@link #connect} is called, the board
- * instance is added as an observer to its various inputSelection
- * objects. Similarly, {@link #disconnect} deletes the observer from the same
- * inputSelection objects.
+ * <p>By default, any board can have a related EventService, used for
+ * subscribe(input) and publish (output). When {@link #connect} is called, the
+ * board instance is subscribed to its EventService for a specific collection of
+ * event classes. Similarly, {@link #disconnect} unsubscribes the Board instance
+ * from the same event classes..
  *
- * <p>This is still an abstract class, since the update() method must be
+ * <p>This is still an abstract class, since the onEvent() method must be
  * provided by every subclass.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public abstract class Board
-    implements SelectionObserver
+    implements EventSubscriber<UserEvent>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -113,29 +114,19 @@ public abstract class Board
 
     //~ Instance fields --------------------------------------------------------
 
-    /**
-     * The swing component of the Board instance
-     */
+    /** The swing component of the Board instance */
     protected final Panel component;
 
-    /**
-     * The collection of (input) selection entities to be observed
-     */
-    protected List<Selection> inputSelectionList;
+    /** The event service this board interacts with */
+    protected final EventService eventService;
 
-    /**
-     * The Output selection (if any)
-     */
-    protected Selection outputSelection;
+    /** The collection of event classes to be observed */
+    protected final Collection<Class<?extends UserEvent>> eventList;
 
-    /**
-     * The Board instance name
-     */
+    /** The Board instance name */
     protected String name;
 
-    /**
-     * The Board Tag
-     */
+    /** The Board Tag */
     protected Tag tag;
 
     //~ Constructors -----------------------------------------------------------
@@ -148,12 +139,18 @@ public abstract class Board
      *
      * @param tag the tag to wrap the board
      * @param name a name assigned to the board, for debug reason
+     * @param eventService the related event service (both for input & output)
+     * @param eventList the collection of event classes to observe
      */
-    public Board (Tag    tag,
-                  String name)
+    public Board (Tag                                   tag,
+                  String                                name,
+                  EventService                          eventService,
+                  Collection<Class<?extends UserEvent>> eventList)
     {
         this.tag = tag;
         this.name = name;
+        this.eventService = eventService;
+        this.eventList = eventList;
 
         component = new Panel();
         component.setNoInsets();
@@ -174,40 +171,6 @@ public abstract class Board
         for (Component comp : component.getComponents()) {
             if (comp instanceof JTextField) {
                 ((JTextField) comp).setText("");
-            }
-        }
-    }
-
-    //---------//
-    // connect //
-    //---------//
-    /**
-     * Invoked when the board has been made visible, to connect to input
-     * selections.
-     */
-    public void connect ()
-    {
-        ///logger.info("+Board " + tag + " Shown");
-        if (inputSelectionList != null) {
-            for (Selection input : inputSelectionList) {
-                input.addObserver(this);
-            }
-        }
-    }
-
-    //------------//
-    // disconnect //
-    //------------//
-    /**
-     * Invoked when the board has been made invisible, to disconnect from input
-     * selections.
-     */
-    public void disconnect ()
-    {
-        ///logger.info("-Board " + tag + " Hidden");
-        if (inputSelectionList != null) {
-            for (Selection input : inputSelectionList) {
-                input.deleteObserver(this);
             }
         }
     }
@@ -233,7 +196,6 @@ public abstract class Board
      *
      * @return an instance name
      */
-    @Implement(SelectionObserver.class)
     public String getName ()
     {
         return name;
@@ -252,52 +214,46 @@ public abstract class Board
         return tag;
     }
 
-    //-----------------------//
-    // setInputSelectionList //
-    //-----------------------//
+    //---------//
+    // connect //
+    //---------//
     /**
-     * Inject the selection objects where input are to be read from
-     *
-     * @param inputSelectionList the proper list of input selection objects
+     * Invoked when the board has been made visible, to connect to input
+     * selections.
      */
-    public void setInputSelectionList (List<Selection> inputSelectionList)
+    public void connect ()
     {
-        // First unregister from previous ones, if any
-        if (this.inputSelectionList != null) {
-            for (Selection input : this.inputSelectionList) {
-                input.deleteObserver(this);
+        ///logger.info("+Board " + tag + " Shown");
+        if (eventList != null) {
+            for (Class eventClass : eventList) {
+                eventService.subscribeStrongly(eventClass, this);
             }
         }
-
-        this.inputSelectionList = inputSelectionList;
     }
 
-    //--------------------//
-    // setOutputSelection //
-    //--------------------//
+    //------------//
+    // disconnect //
+    //------------//
     /**
-     * Inject the selection object where output is to be written to
-     *
-     * @param outputSelection the proper output selection object
+     * Invoked when the board has been made invisible, to disconnect from input
+     * selections.
      */
-    public void setOutputSelection (Selection outputSelection)
+    public void disconnect ()
     {
-        this.outputSelection = outputSelection;
+        ///logger.info("-Board " + tag + " Hidden");
+        if (eventList != null) {
+            for (Class eventClass : eventList) {
+                eventService.unsubscribe(eventClass, this);
+            }
+        }
     }
 
-    //--------//
-    // update //
-    //--------//
-    /**
-     * This implementation is just a placeholder
-     *
-     * @param selection the Selection object which emits this notification
-     * @param hint a potential notification hint
-     */
-    @Implement(SelectionObserver.class)
-    public void update (Selection     selection,
-                        SelectionHint hint)
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
     {
-        logger.info("Board default update. selection=" + selection);
+        return ClassUtil.nameOf(this);
     }
 }

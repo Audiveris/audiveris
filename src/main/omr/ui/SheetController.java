@@ -11,21 +11,12 @@ package omr.ui;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
-import static omr.plugin.Dependency.*;
-import static omr.plugin.PluginType.*;
-
-import omr.score.Score;
 
 import omr.script.ScriptActions;
 
-import omr.selection.Selection;
+import omr.selection.SheetEvent;
 
 import omr.sheet.*;
-
-import omr.step.Step;
-
-import omr.ui.util.FileFilter;
-import omr.ui.util.UIUtilities;
 
 import omr.util.Implement;
 import omr.util.Logger;
@@ -45,12 +36,6 @@ import javax.swing.event.*;
  * thus for each sheet, we have a separate {@link SheetAssembly}.
  *
  * <p>This class is meant to be a Singleton
- *
- * <dl>
- * <dt><b>Selection Outputs:</b></dt><ul>
- * <li>SHEET
- * </ul>
- * </dl>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -150,13 +135,6 @@ public class SheetController
         }
 
         if (sheet != null) {
-            // Make sure that scale and skew info is available for the sheet
-            Score score = sheet.getScore();
-
-            if (score != null) {
-                sheet.checkScaleAndSkew(score);
-            }
-
             // Make sure we have a assembly on this sheet
             SheetAssembly assembly = sheet.getAssembly();
 
@@ -266,8 +244,6 @@ public class SheetController
                 // Connect the new sheet tab
                 sheetTabSelected(sheetIndex);
             }
-        } else {
-            logger.warning("Unexpected event from " + source);
         }
     }
 
@@ -306,8 +282,8 @@ public class SheetController
         }
 
         // Tell everyone about the new selected sheet
-        Selection sheetSelection = SheetManager.getSelection();
-        sheetSelection.setEntity(sheet, null);
+        SheetManager.getEventService()
+                    .publish(new SheetEvent(this, sheet));
 
         // Tell the selected assembly that it now has the focus...
         assembly.assemblySelected();

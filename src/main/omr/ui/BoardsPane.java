@@ -9,7 +9,6 @@
 //
 package omr.ui;
 
-import omr.selection.SelectionTag;
 
 import omr.sheet.Sheet;
 import static omr.ui.Board.Tag.*;
@@ -21,7 +20,6 @@ import omr.util.Logger;
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
 
-import java.util.Arrays;
 
 import javax.swing.*;
 
@@ -107,19 +105,6 @@ public class BoardsPane
 
         for (Board board : boards) {
             builder.add(board.getComponent(), cst.xy(1, r));
-
-            if (board.getTag() == PIXEL) {
-                PixelBoard pixelBoard = (PixelBoard) board;
-                // inputs
-                pixelBoard.setInputSelectionList(
-                    Arrays.asList(
-                        sheet.getSelection(SelectionTag.SHEET_RECTANGLE),
-                        sheet.getSelection(SelectionTag.PIXEL_LEVEL)));
-                // output
-                pixelBoard.setOutputSelection(
-                    sheet.getSelection(SelectionTag.SHEET_RECTANGLE));
-            }
-
             r += 2;
         }
 

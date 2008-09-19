@@ -9,19 +9,32 @@
 //
 package omr.ui;
 
-import omr.selection.Selection;
+import omr.score.common.PixelRectangle;
+
+import omr.selection.MouseMovement;
+import omr.selection.PixelLevelEvent;
+import omr.selection.PixelLevelEvent;
 import omr.selection.SelectionHint;
+import omr.selection.SheetLocationEvent;
+import omr.selection.UserEvent;
+
+import omr.sheet.Sheet;
 
 import omr.ui.field.LIntegerField;
 import omr.ui.util.Panel;
 
+import omr.util.Implement;
 import omr.util.Logger;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
 
+import org.bushe.swing.event.EventSubscriber;
+
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import javax.swing.*;
 
@@ -30,17 +43,6 @@ import javax.swing.*;
  * provided by other entities (output side), and which can also be used by a
  * user to directly specify pixel coordinate values by entering numerical values
  * in the fields (input side).
- *
- * <dl>
- * <dt><b>Selection Inputs:</b></dt><ul>
- * <li>PIXEL
- * <li>LEVEL
- * </ul>
- *
- * <dt><b>Selection Outputs:</b></dt><ul>
- * <li>PIXEL Location (flagged with LOCATION_INIT hint)
- * </ul>
- * </dl>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -52,6 +54,14 @@ public class PixelBoard
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(PixelBoard.class);
+
+    /** Events this entity is interested in */
+    private static final Collection<Class<?extends UserEvent>> eventClasses = new ArrayList<Class<?extends UserEvent>>();
+
+    static {
+        eventClasses.add(SheetLocationEvent.class);
+        eventClasses.add(PixelLevelEvent.class);
+    }
 
     //~ Instance fields --------------------------------------------------------
 
@@ -90,10 +100,16 @@ public class PixelBoard
      * Create a PixelBoard
      *
      * @param unitName name of the unit which declares a pixel board
+     * @param sheet the related sheet
      */
-    public PixelBoard (String unitName)
+    public PixelBoard (String unitName,
+                       Sheet  sheet)
     {
-        super(Board.Tag.PIXEL, unitName + "-PixelBoard");
+        super(
+            Board.Tag.PIXEL,
+            unitName + "-PixelBoard",
+            sheet.getEventService(),
+            eventClasses);
 
         // Needed to process user input when RETURN/ENTER is pressed
         getComponent()
@@ -108,57 +124,53 @@ public class PixelBoard
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------//
-    // update //
-    //--------//
+    //---------//
+    // onEvent //
+    //---------//
     /**
      * Call-back triggered when Location Selection has been modified
      *
-     * @param selection the notified Selection
-     * @param hint potential notification hint
+     * @param event the selection event
      */
-    public void update (Selection     selection,
-                        SelectionHint hint)
+    @Implement(EventSubscriber.class)
+    public void onEvent (UserEvent event)
     {
-        Object entity = selection.getEntity();
-
         if (logger.isFineEnabled()) {
-            logger.fine("PixelBoard " + selection.getTag() + ": " + entity);
+            logger.fine("PixelBoard: " + event);
         }
 
-        switch (selection.getTag()) {
-        case SHEET_RECTANGLE : // Display rectangle characteristics
+        if (event instanceof SheetLocationEvent) {
+            // Display rectangle attributes
+            SheetLocationEvent sheetLocation = (SheetLocationEvent) event;
 
-            Rectangle rect = (Rectangle) entity;
+            if (sheetLocation != null) {
+                Rectangle rect = sheetLocation.rectangle;
 
-            if (rect != null) {
-                x.setValue(rect.x);
-                y.setValue(rect.y);
-                width.setValue(rect.width);
-                height.setValue(rect.height);
-            } else {
-                x.setText("");
-                y.setText("");
-                width.setText("");
-                height.setText("");
+                if (rect != null) {
+                    x.setValue(rect.x);
+                    y.setValue(rect.y);
+                    width.setValue(rect.width);
+                    height.setValue(rect.height);
+
+                    return;
+                }
             }
 
-            break;
+            x.setText("");
+            y.setText("");
+            width.setText("");
+            height.setText("");
+        } else if (event instanceof PixelLevelEvent) {
+            // Display pixel grey level
+            PixelLevelEvent pixelLevelEvent = (PixelLevelEvent) event;
+            final Integer   pixelLevel = (pixelLevelEvent != null)
+                                         ? pixelLevelEvent.pixelLevel : null;
 
-        case PIXEL_LEVEL : // Display pixel grey level
-
-            Integer val = (Integer) entity;
-
-            if ((val != null) && (val != -1)) {
-                level.setValue(val);
+            if (pixelLevel != null) {
+                level.setValue(pixelLevel);
             } else {
                 level.setText("");
             }
-
-            break;
-
-        default :
-            logger.severe("Unexpected selection event from " + selection);
         }
     }
 
@@ -219,16 +231,17 @@ public class PixelBoard
         public void actionPerformed (ActionEvent e)
         {
             // Remember & forward the new pixel selection
-            if (outputSelection != null) {
-                // A rectangle (which can be degenerated to a point)
-                outputSelection.setEntity(
-                    new Rectangle(
+            // A rectangle (which can be degenerated to a point)
+            eventService.publish(
+                new SheetLocationEvent(
+                    PixelBoard.this,
+                    SelectionHint.LOCATION_INIT,
+                    MouseMovement.PRESSING,
+                    new PixelRectangle(
                         x.getValue(),
                         y.getValue(),
                         width.getValue(),
-                        height.getValue()),
-                    SelectionHint.LOCATION_INIT);
-            }
+                        height.getValue())));
         }
     }
 }

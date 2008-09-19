@@ -9,15 +9,15 @@
 //
 package omr.ui;
 
-import omr.selection.Selection;
-import omr.selection.SelectionHint;
-import omr.selection.SelectionObserver;
-import omr.selection.SelectionTag;
+import omr.selection.SheetEvent;
 
+import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 
 import omr.util.Implement;
 import omr.util.Logger;
+
+import org.bushe.swing.event.EventSubscriber;
 
 import org.jdesktop.application.AbstractBean;
 
@@ -30,7 +30,7 @@ import org.jdesktop.application.AbstractBean;
  */
 public abstract class SheetDependent
     extends AbstractBean
-    implements SelectionObserver
+    implements EventSubscriber<SheetEvent>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -54,23 +54,11 @@ public abstract class SheetDependent
     {
         // Stay informed on sheet status, in order to enable sheet-dependent
         // actions accordingly
-        SheetManager.getSelection()
-                    .addObserver(this);
+        SheetManager.getEventService()
+                    .subscribeStrongly(SheetEvent.class, this);
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * {@inheritDoc}
-     */
-    @Implement(SelectionObserver.class)
-    public String getName ()
-    {
-        return "SheetDependent";
-    }
 
     //-------------------//
     // setSheetAvailable //
@@ -98,21 +86,18 @@ public abstract class SheetDependent
         return sheetAvailable;
     }
 
-    //--------//
-    // update //
-    //--------//
+    //---------//
+    // onEvent //
+    //---------//
     /**
      * Notification of sheet selection
      *
-     * @param selection the selection object (SHEET)
-     * @param hint processing hint (not used)
+     * @param event the notified sheet event
      */
-    @Implement(SelectionObserver.class)
-    public void update (Selection     selection,
-                        SelectionHint hint)
+    @Implement(EventSubscriber.class)
+    public void onEvent (SheetEvent event)
     {
-        if (selection.getTag() == SelectionTag.SHEET) {
-            setSheetAvailable(selection.getEntity() != null);
-        }
+        Sheet sheet = event.getData();
+        setSheetAvailable(sheet != null);
     }
 }
