@@ -103,7 +103,7 @@ public class SymbolsBuilder
      * Manually assign a Shape to a glyph, but preventing to assign a non-noise
      * shape to a noise glyph
      *
-     * @param record specify whether the method must be run (a)synchronously
+     * @param processing specify whether the method must be run (a)synchronously
      * @param glyph the glyph to be assigned
      * @param shape the assigned shape, which may be null
      * @param record specify whether the action must be recorded in the script
@@ -164,7 +164,7 @@ public class SymbolsBuilder
                         switch (shape) {
                         case THICK_BAR_LINE :
                         case THIN_BAR_LINE :
-                            sheet.getBarsBuilder()
+                            sheet.getSystemsBuilder()
                                  .assignGlyphShape(
                                 SYNC,
                                 glyph,
@@ -348,7 +348,7 @@ public class SymbolsBuilder
         Set<SystemInfo> impactedSystems = new HashSet<SystemInfo>();
 
         for (Glyph stem : stems) {
-            SystemInfo system = sheet.getSystemAtY(stem.getContourBox().y);
+            SystemInfo system = sheet.getSystemOf(stem);
             glyphsBuilder.removeGlyph(stem, system, /* cutSections => */
                                       true);
             assignGlyphShape(SYNC, stem, null, NO_RECORDING);
@@ -410,7 +410,7 @@ public class SymbolsBuilder
             switch (shape) {
             case THICK_BAR_LINE :
             case THIN_BAR_LINE :
-                sheet.getBarsBuilder()
+                sheet.getSystemsBuilder()
                      .deassignGlyphShape(SYNC, glyph, NO_RECORDING);
 
                 break;
@@ -573,12 +573,12 @@ public class SymbolsBuilder
     // stemSegment //
     //-------------//
     /**
-     * 
+     *
      * @param processing specify whether the method must be run (a)synchronously
      * @param givenGlyphs glyphs to segment in order to retrieve stems
      * @param isShort looking for short (or standard) stems
      */
-    public void stemSegment (Synchronicity     processing,
+    public void stemSegment (Synchronicity           processing,
                              final Collection<Glyph> givenGlyphs,
                              final boolean           isShort)
     {
@@ -605,7 +605,7 @@ public class SymbolsBuilder
             deassignSetShape(SYNC, glyphs, NO_RECORDING);
 
             for (Glyph glyph : glyphs) {
-                SystemInfo system = sheet.getSystemAtY(glyph.getContourBox().y);
+                SystemInfo system = sheet.getSystemOf(glyph);
                 sheet.getVerticalsBuilder()
                      .stemSegment(
                     Collections.singletonList(glyph),
