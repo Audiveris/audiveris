@@ -866,43 +866,6 @@ public class Stick
             other.getStop());
     }
 
-    //-------------//
-    // renderChunk //
-    //-------------//
-    /**
-     * Render the chunk area at each end of the stick
-     *
-     * @param g the graphic context
-     * @param z the display zoom
-     */
-    public void renderChunk (Graphics g,
-                             Zoom     z,
-                             int      length,
-                             int      thickness)
-    {
-        Rectangle box = z.scaled(getContourBox());
-
-        if (box.intersects(g.getClipBounds())) {
-            Line      line = getLine();
-            Rectangle rect = new Rectangle();
-            Rectangle rect1 = new Rectangle(
-                z.scaled(getStart()),
-                z.scaled(line.yAt(getStart()) - thickness),
-                z.scaled(length),
-                z.scaled(2 * thickness));
-            lag.switchRef(rect1, rect);
-            g.drawRect(rect.x, rect.y, rect.width, rect.height);
-
-            Rectangle rect2 = new Rectangle(
-                z.scaled((getStop() + 1) - length),
-                z.scaled(line.yAt(getStop() + 1) - thickness),
-                z.scaled(length),
-                z.scaled(2 * thickness));
-            lag.switchRef(rect2, rect);
-            g.drawRect(rect.x, rect.y, rect.width, rect.height);
-        }
-    }
-
     //------------//
     // renderLine //
     //------------//
