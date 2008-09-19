@@ -15,13 +15,13 @@ import omr.glyph.Shape;
 import omr.math.BasicLine;
 import omr.math.Line;
 
-import omr.score.common.SystemPoint;
-
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
+import omr.score.common.SystemPoint;
 
 import omr.stick.Stick;
 
+import omr.util.Implement;
 import omr.util.Logger;
 
 import java.util.Collection;
@@ -82,8 +82,8 @@ public class BeamItem
      * @param measure the containing measure
      * @param glyph the underlying glyph
      */
-    public BeamItem (Measure measure,
-                     Glyph   glyph)
+    private BeamItem (Measure measure,
+                      Glyph   glyph)
     {
         this(measure, glyph, 1, 0);
         glyph.setTranslation(this);
@@ -99,10 +99,10 @@ public class BeamItem
      * @param packCard the number of items in the pack
      * @param packIndex the zero-based index of this item in the pack
      */
-    public BeamItem (Measure measure,
-                     Glyph   glyph,
-                     int     packCard,
-                     int     packIndex)
+    private BeamItem (Measure measure,
+                      Glyph   glyph,
+                      int     packCard,
+                      int     packIndex)
     {
         this.measure = measure;
         this.glyph = glyph;
@@ -120,70 +120,43 @@ public class BeamItem
         double         deltaMid1 = Math.min(yMidLeft, yMidRight) - box.y;
         double         deltaMid2 = (box.y + box.height) -
                                    Math.max(yMidLeft, yMidRight);
-        double         deltaMid = (deltaMid1 + deltaMid2) / 2.0;
-        double         deltaY = (((4 * packIndex) + 1) * deltaMid) / ((2 * packCard) -
-                                                                     1);
-        int            highY = (int) Math.rint(box.y + deltaY);
-        int            lowY = (int) Math.rint(
-            (box.y + box.height) - (2 * deltaMid) + deltaY);
 
-        if (yMidLeft > yMidRight) {
-            // This is an ascending beam
-            left = system.toSystemPoint(new PixelPoint(box.x, lowY));
+        // Beware, the stick line is not reliable for beam hooks
+        if ((deltaMid1 < 0) || (deltaMid2 < 0)) {
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "Strange beam item at glyph#" + glyph.getId() + " slope=" +
+                    stick.getLine().getInvertedSlope());
+            }
+
+            // Make a simple horizontal beam item
+            left = system.toSystemPoint(
+                new PixelPoint(box.x, box.y + (box.height / 2)));
             right = system.toSystemPoint(
-                new PixelPoint(box.x + box.width, highY));
+                new PixelPoint(box.x + box.width, box.y + (box.height / 2)));
         } else {
-            // This is a descending beam
-            left = system.toSystemPoint(new PixelPoint(box.x, highY));
-            right = system.toSystemPoint(
-                new PixelPoint(box.x + box.width, lowY));
+            double deltaMid = (deltaMid1 + deltaMid2) / 2.0;
+            double deltaY = (((4 * packIndex) + 1) * deltaMid) / ((2 * packCard) -
+                                                                 1);
+            int    highY = (int) Math.rint(box.y + deltaY);
+            int    lowY = (int) Math.rint(
+                (box.y + box.height) - (2 * deltaMid) + deltaY);
+
+            if (yMidLeft > yMidRight) {
+                // This is an ascending beam
+                left = system.toSystemPoint(new PixelPoint(box.x, lowY));
+                right = system.toSystemPoint(
+                    new PixelPoint(box.x + box.width, highY));
+            } else {
+                // This is a descending beam
+                left = system.toSystemPoint(new PixelPoint(box.x, highY));
+                right = system.toSystemPoint(
+                    new PixelPoint(box.x + box.width, lowY));
+            }
         }
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //------------//
-    // createPack //
-    //------------//
-    /**
-     * Create a bunch of beam item instances for one beam pack
-     *
-     * @param measure the containing measure
-     * @param glyph the underlying glyph of the beam pack
-     */
-    public static void createPack (Measure measure,
-                                   Glyph   glyph)
-    {
-        int size = packCardOf(glyph.getShape());
-        glyph.clearTranslations();
-
-        try {
-            for (int i = 0; i < size; i++) {
-                BeamItem item = new BeamItem(measure, glyph, size, i);
-                glyph.addTranslation(item);
-                Beam.populate(item, measure);
-            }
-        } catch (Exception ex) {
-            logger.warning(
-                "Error creating BeamItem from glyph #" + glyph.getId(),
-                ex);
-        }
-    }
-
-    //-----------//
-    // compareTo //
-    //-----------//
-    /**
-     * Compare to another BeamItem, by delegating to the underlying glyph
-     *
-     * @param other the other BeamItem instance
-     * @return -1, 0 or 1
-     */
-    public int compareTo (BeamItem other)
-    {
-        // Delegate to underlying glyph
-        return glyph.compareTo(other.glyph);
-    }
 
     //-----------//
     // getCenter //
@@ -205,15 +178,28 @@ public class BeamItem
         return center;
     }
 
-    //---------//
-    // getLeft //
-    //---------//
+    //--------//
+    // isHook //
+    //--------//
+    /**
+     * Check whether the item is a beam hook
+     *
+     * @return true if beam hook, false otherwise
+     */
+    public boolean isHook ()
+    {
+        return glyph.getShape() == Shape.BEAM_HOOK;
+    }
+
+    //--------------//
+    // getLeftPoint //
+    //--------------//
     /**
      * Report the point that define the left edge of the beam item
      *
      * @return the SystemPoint coordinates of the rigleftht point
      */
-    public SystemPoint getLeft ()
+    public SystemPoint getLeftPoint ()
     {
         return left;
     }
@@ -252,15 +238,15 @@ public class BeamItem
         return line;
     }
 
-    //----------//
-    // getRight //
-    //----------//
+    //---------------//
+    // getRightPoint //
+    //---------------//
     /**
      * Report the point that define the right edge of the beam item
      *
      * @return the SystemPoint coordinates of the right point
      */
-    public SystemPoint getRight ()
+    public SystemPoint getRightPoint ()
     {
         return right;
     }
@@ -278,17 +264,20 @@ public class BeamItem
         return glyph.getRightStem();
     }
 
-    //--------//
-    // isHook //
-    //--------//
+    //-----------//
+    // compareTo //
+    //-----------//
     /**
-     * Check whether the item is a beam hook
+     * Compare to another BeamItem, by delegating to the underlying glyph
      *
-     * @return true if beam hook, false otherwise
+     * @param other the other BeamItem instance
+     * @return -1, 0 or 1
      */
-    public boolean isHook ()
+    @Implement(Comparable.class)
+    public int compareTo (BeamItem other)
     {
-        return glyph.getShape() == Shape.BEAM_HOOK;
+        // Delegate to underlying glyph
+        return glyph.compareTo(other.glyph);
     }
 
     //----------//
@@ -376,6 +365,34 @@ public class BeamItem
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //------------//
+    // createPack //
+    //------------//
+    /**
+     * Create a bunch of beam item instances for one beam pack
+     *
+     * @param measure the containing measure
+     * @param glyph the underlying glyph of the beam pack
+     */
+    private static void createPack (Measure measure,
+                                    Glyph   glyph)
+    {
+        int size = packCardOf(glyph.getShape());
+        glyph.clearTranslations();
+
+        try {
+            for (int i = 0; i < size; i++) {
+                BeamItem item = new BeamItem(measure, glyph, size, i);
+                glyph.addTranslation(item);
+                Beam.populate(item, measure);
+            }
+        } catch (Exception ex) {
+            logger.warning(
+                "Error creating BeamItem from glyph #" + glyph.getId(),
+                ex);
+        }
     }
 
     //------------//

@@ -357,8 +357,13 @@ public class BeamGroup
         Beam   bestBeam = null;
 
         for (Beam beam : beams) {
-            double length = beam.getLeft()
-                                .distance(beam.getRight());
+            // Extrema points of Beam hooks are not reliable, skip them
+            if (beam.isHook()) {
+                continue;
+            }
+
+            double length = beam.getLeftPoint()
+                                .distance(beam.getRightPoint());
 
             if (length > bestLength) {
                 bestLength = length;
@@ -366,13 +371,15 @@ public class BeamGroup
             }
         }
 
-        double slope = bestBeam.getLine()
-                               .getSlope();
+        if (bestBeam != null) {
+            double slope = bestBeam.getLine()
+                                   .getSlope();
 
-        for (Beam beam : beams) {
-            SystemPoint left = beam.getLeft();
-            SystemPoint right = beam.getRight();
-            right.y = left.y + (int) Math.rint(slope * (right.x - left.x));
+            for (Beam beam : beams) {
+                SystemPoint left = beam.getLeftPoint();
+                SystemPoint right = beam.getRightPoint();
+                right.y = left.y + (int) Math.rint(slope * (right.x - left.x));
+            }
         }
     }
 
@@ -570,7 +577,7 @@ public class BeamGroup
     // SplitOrder //
     //------------//
     /**
-     * Class <code>SplitOrder</code> records a beam group split order. 
+     * Class <code>SplitOrder</code> records a beam group split order.
      * Splitting must be separate from browsing to avoid concurrent modification
      * of collections
      */
