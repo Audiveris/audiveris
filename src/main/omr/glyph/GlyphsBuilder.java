@@ -145,7 +145,7 @@ public class GlyphsBuilder
      */
     public void computeGlyphFeatures (Glyph glyph)
     {
-        SystemInfo system = sheet.getSystemAtY(glyph.getContourBox().y);
+        SystemInfo system = sheet.getSystemOf(glyph);
         computeGlyphFeatures(glyph, system);
     }
 
@@ -176,7 +176,7 @@ public class GlyphsBuilder
      */
     public Glyph insertGlyph (Glyph glyph)
     {
-        return insertGlyph(glyph, sheet.getSystemAtY(glyph.getContourBox().y));
+        return insertGlyph(glyph, sheet.getSystemOf(glyph));
     }
 
     //-------------//
@@ -195,7 +195,7 @@ public class GlyphsBuilder
     {
         // Make sure we do have an enclosing system
         if (system == null) {
-            system = sheet.getSystemAtY(glyph.getContourBox().y);
+            system = sheet.getSystemOf(glyph);
         }
 
         // Get rid of composing parts if any
@@ -216,7 +216,9 @@ public class GlyphsBuilder
             oldGlyph.copyStemInformation(glyph);
         }
 
-        system.addGlyph(oldGlyph);
+        if (system != null) {
+            system.addGlyph(oldGlyph);
+        }
 
         return oldGlyph;
     }
@@ -238,22 +240,20 @@ public class GlyphsBuilder
                              boolean    cutSections)
     {
         // Remove from system
-        int y = glyph.getContourBox().y;
-
         if (system == null) {
-            system = sheet.getSystemAtY(y);
+            system = sheet.getSystemOf(glyph);
         }
 
         if (!system.removeGlyph(glyph)) {
-            SystemInfo closest = sheet.getClosestSystem(system, y);
-
-            if (closest != null) {
-                if (!closest.removeGlyph(glyph)) {
-                    logger.warning(
-                        "Cannot find " + glyph + " close to " + system +
-                        " closest was " + closest);
-                }
-            }
+            //            SystemInfo closest = sheet.getClosestSystem(system, y);
+            //
+            //            if (closest != null) {
+            //                if (!closest.removeGlyph(glyph)) {
+            //                    logger.warning(
+            //                        "Cannot find " + glyph + " close to " + system +
+            //                        " closest was " + closest);
+            //                }
+            //            }
         }
 
         // Remove from lag
@@ -469,12 +469,12 @@ public class GlyphsBuilder
 
         int stemNb = 0;
 
-        if (checkStemIntersect(system.getGlyphsCopy(), glyph, /* onLeft => */
+        if (checkStemIntersect(system.getGlyphs(), glyph, /* onLeft => */
                                true)) {
             stemNb++;
         }
 
-        if (checkStemIntersect(system.getGlyphsCopy(), glyph, /* onLeft => */
+        if (checkStemIntersect(system.getGlyphs(), glyph, /* onLeft => */
                                false)) {
             stemNb++;
         }
