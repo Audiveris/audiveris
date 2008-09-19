@@ -33,11 +33,6 @@ public abstract class SystemTask
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(SystemTask.class);
 
-    //~ Instance fields --------------------------------------------------------
-
-    /** Flag which systems have been processed by this step */
-    private final SortedMap<SystemInfo, Boolean> systemDone;
-
     //~ Constructors -----------------------------------------------------------
 
     //------------//
@@ -52,7 +47,6 @@ public abstract class SystemTask
                           Step  step)
     {
         super(sheet, step);
-        systemDone = new TreeMap<SystemInfo, Boolean>();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -68,107 +62,68 @@ public abstract class SystemTask
     public abstract void doSystem (SystemInfo system)
         throws StepException;
 
-    //--------//
-    // isDone //
-    //--------//
-    /**
-     * Check whether processing for this system has been done/started
-     * @param system the provided system
-     * @return true if done/started, false otherwise
-     */
-    public synchronized boolean isDone (SystemInfo system)
-    {
-        Boolean result = systemDone.get(system);
-
-        return (result != null) && result;
-    }
-
-    //-----------//
-    // getResult //
-    //-----------//
-    /**
-     * Make sure this step has been run for the given system
-     * @param system the system for which processing may be required
-     * @throws StepException raised if processing failed
-     */
-    public void getResult (SystemInfo system)
-        throws StepException
-    {
-        if (!isDone(system)) {
-            doSystem(system);
-        }
-    }
-
-    //---------//
-    // doFinal //
-    //---------//
-    /**
-     * Final processing for this step, once all systems have been processed
-     * @throws StepException raised if processing failed
-     */
-    public void doFinal ()
-        throws StepException
-    {
-        // Empty by default
-    }
-
     //------//
     // doit //
     //------//
     /**
      * Actually perform the step.
      * This method is run when this step is explicitly selected
+     * @param systems systems to process (null means all systems)
      * @throws StepException raised if processing failed
      */
-    public void doit ()
+    public void doit (Collection<SystemInfo> systems)
         throws StepException
     {
-        if (logger.isFineEnabled()) {
-            logger.fine(step + " SystemTask doit ...");
-        }
+        // Preliminary actions
+        doProlog(systems);
 
         // Processing system per system
-        doitPerSystem();
+        doitPerSystem(systems);
 
         // Final actions
-        doFinal();
-
-        if (logger.isFineEnabled()) {
-            logger.fine(step + " SystemTask doit end");
-        }
+        doEpilog(systems);
     }
 
-    //------//
-    // done //
-    //------//
+    //----------//
+    // doEpilog //
+    //----------//
     /**
-     * Flag this system as done
-     * @param system the provided system
+     * Final processing for this step, once all systems have been processed
+     * @throws StepException raised if processing failed
      */
-    public synchronized void done (SystemInfo system)
+    protected void doEpilog (Collection<SystemInfo> systems)
+        throws StepException
     {
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                step + " done system #" + system.getScoreSystem().getId());
-        }
+        // Empty by default
+    }
 
-        done();
-        systemDone.put(system, Boolean.valueOf(true));
+    //----------//
+    // doProlog //
+    //----------//
+    /**
+     * Do preliminary common work before all systems processings are launched in
+     * parallel
+     */
+    protected void doProlog (Collection<SystemInfo> systems)
+        throws StepException
+    {
+        // Empty by default
     }
 
     //---------------//
     // doitPerSystem //
     //---------------//
-    private void doitPerSystem ()
+    private void doitPerSystem (Collection<SystemInfo> systems)
     {
-        final String classSimpleName = getClass()
-                                           .getSimpleName();
-
         try {
             Collection<Callable<Void>> tasks = new ArrayList<Callable<Void>>(
                 sheet.getSystems().size());
 
-            for (SystemInfo info : sheet.getSystems()) {
+            if (systems == null) {
+                systems = sheet.getSystems();
+            }
+
+            for (SystemInfo info : systems) {
                 final SystemInfo system = info;
                 tasks.add(
                     new Callable<Void>() {
@@ -178,14 +133,14 @@ public abstract class SystemTask
                                 try {
                                     if (logger.isFineEnabled()) {
                                         logger.fine(
-                                            classSimpleName + " doSystem #" +
+                                            step + " doSystem #" +
                                             system.getId());
                                     }
 
                                     doSystem(system);
-                                } catch (StepException ex) {
+                                } catch (Exception ex) {
                                     logger.warning(
-                                        "Step aborted on system",
+                                        "Interrupt on " + system,
                                         ex);
                                 }
 
@@ -197,7 +152,7 @@ public abstract class SystemTask
             OmrExecutors.getLowExecutor()
                         .invokeAll(tasks);
         } catch (InterruptedException ex) {
-            logger.warning("doitParallel got interrupted", ex);
+            logger.warning("doitPerSystem got interrupted", ex);
         }
     }
 }
