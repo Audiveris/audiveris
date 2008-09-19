@@ -120,7 +120,7 @@ public class StepMenu
                     protected Void doInBackground ()
                         throws Exception
                     {
-                        step.perform(sheet, null);
+                        step.performUntil(sheet, null);
 
                         return null;
                     }
@@ -160,15 +160,10 @@ public class StepMenu
                 setState(false);
                 action.setEnabled(false);
             } else {
-                if (sheet.isBusy()) {
-                    setState(false);
-                    setEnabled(false);
-                } else {
-                    boolean bool = sheet.getSheetSteps()
-                                        .isDone(action.step);
-                    setState(bool);
-                    setEnabled(!bool);
-                }
+                boolean bool = sheet.getSheetSteps()
+                                    .isDone(action.step);
+                setState(bool);
+                setEnabled(!bool);
             }
         }
     }

@@ -12,12 +12,15 @@ package omr.step;
 import omr.script.StepTask;
 
 import omr.sheet.Sheet;
+import omr.sheet.SheetManager;
+import omr.sheet.SystemInfo;
 
 import omr.util.Logger;
 import omr.util.Memory;
-import omr.util.OmrExecutors;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.EnumSet;
 
 import javax.swing.SwingUtilities;
 
@@ -55,10 +58,17 @@ public enum Step {
      * Retrieve the horizontal dashes (ledgers, endings)
      */
     HORIZONTALS("Detect horizontal dashes"), 
+
     /**
-     * Retrieve the vertical bar lines, and so the systems and measures
+     * Retrieve the vertical bar lines, and so the systems
      */
-    BARS("Detect vertical Bar lines"), 
+    SYSTEMS("Detect vertical Bar sticks and thus systems"), 
+
+    /**
+     * Retrieve the measures from the bar line glyphs
+     */
+    MEASURES("Translate Bar glyphs to Measures"), 
+
     /**
      * Recognize isolated symbols glyphs and aggregates unknown symbols into
      * compound glyphs
@@ -93,6 +103,12 @@ public enum Step {
 
     /** Description of the step */
     private final String description;
+
+    /** First step */
+    public static final Step first = Step.values()[0];
+
+    /** Last step */
+    public static final Step last = Step.values()[Step.values().length - 1];
 
     //--------------------------------------------------------------------------
 
@@ -136,29 +152,6 @@ public enum Step {
         return description;
     }
 
-    //---------//
-    // getStep //
-    //---------//
-    /**
-     * Retrieve a step, knowing its name
-     *
-     * @param id the name of the step (case is not relevant)
-     *
-     * @return the step found, or null otherwise
-     */
-    public static Step getStep (String id)
-    {
-        Step step = Step.valueOf(id.toUpperCase());
-
-        if (step != null) {
-            return step;
-        } else {
-            logger.severe("Cannot find Step for id " + id);
-
-            return null;
-        }
-    }
-
     //------------//
     // getMonitor //
     //------------//
@@ -189,43 +182,187 @@ public enum Step {
         }
     }
 
-    //---------//
-    // perform //
-    //---------//
+    //--------------//
+    // performUntil //
+    //--------------//
     /**
-     * Trigger the execution of this step
+     * Trigger the execution of all needed steps until this one.
+     * Processing is done synchronously, so if asynchronicity is desired, it
+     * must be handled by the caller.
      *
      * @param sheet the sheet on which analysis is performed
      * @param param a potential parameter (depending on the processing)
      */
-    public void perform (Sheet  sheet,
-                         Object param)
+    public void performUntil (Sheet  sheet,
+                              Object param)
     {
+        // Determine the starting step
+        Step          from = (sheet == null) ? first
+                             : getFollowingStep(
+            sheet.getSheetSteps().getLatestStep());
+
+        // The range of steps to perform
+        EnumSet<Step> stepRange = EnumSet.range(from, this);
+
         try {
-            if (monitor != null) {
-                monitor.perform(this, sheet, param);
-            } else {
-                doStep(sheet, param);
-            }
+            sheet = doStepRange(stepRange, sheet, param, null);
         } catch (Exception ex) {
             logger.warning("Error in processing " + this, ex);
         }
+
+        // Record to script?
+        if (sheet != null) {
+            sheet.getScript()
+                 .addTask(new StepTask(this));
+        }
     }
 
-    //--------//
-    // doStep //
-    //--------//
+    //-----------//
+    // reperform //
+    //-----------//
     /**
-     * Do this step
+     * Re-perform all tasks already done, starting from this step, in order to
+     * update needed data
+     * @param sheet the related sheet, which cannot be null
+     * @param systems only the systems to reperform (null means all systems)
+     */
+    public void reperform (Sheet                  sheet,
+                           Collection<SystemInfo> systems)
+    {
+        if (sheet == null) {
+            throw new IllegalArgumentException(
+                "Reperform step on a null sheet");
+        }
+
+        // The range of steps to re-perform
+        EnumSet<Step> stepRange = EnumSet.range(
+            this,
+            sheet.getSheetSteps().getLatestStep());
+
+        try {
+            doStepRange(stepRange, sheet, null, systems);
+        } catch (Exception ex) {
+            logger.warning("Error in re-processing " + this, ex);
+        }
+    }
+
+    //-------------//
+    // doStepRange //
+    //-------------//
+    /**
+     * Perform a range of steps, with an online display of a progress
+     * monitor.
+     *
+     * @param stepRange the range of steps
+     * @param sheet the sheet being analyzed
+     * @param param an optional parameter
+     * @param systems systems to process (null means all systems)
+     */
+    private Sheet doStepRange (EnumSet<Step>          stepRange,
+                               Sheet                  sheet,
+                               Object                 param,
+                               Collection<SystemInfo> systems)
+    {
+        if (logger.isFineEnabled()) {
+            StringBuilder sb = new StringBuilder("Performing ");
+            sb.append(stepRange);
+
+            if (sheet != null) {
+                sb.append(" sheet=")
+                  .append(sheet.getRadix());
+            }
+
+            if (param != null) {
+                sb.append(" param=")
+                  .append(param);
+            }
+
+            if (systems != null) {
+                sb.append(SystemInfo.toString(systems));
+            }
+
+            sb.append(" ...");
+            logger.fine(sb.toString());
+        }
+
+        try {
+            // "Activate" the progress bar?
+            if (monitor != null) {
+                monitor.animate(true);
+            }
+
+            // The actual processing
+            for (Step step : stepRange) {
+                notifyMsg(step.name());
+                sheet = step.doOneStep(sheet, param, systems);
+
+                if (monitor != null) {
+                    monitor.animate();
+                    // Update sheet (& score) dependent entities
+                    SheetManager.setSelectedSheet(sheet);
+                }
+            }
+        } catch (Exception ex) {
+            logger.warning("Processing aborted", ex);
+        } finally {
+            // Reset the progress bar?
+            if (monitor != null) {
+                notifyMsg("");
+                monitor.animate(false);
+            }
+
+            if (logger.isFineEnabled()) {
+                logger.fine("End of " + stepRange + ".");
+            }
+
+            return sheet;
+        }
+    }
+
+    //------//
+    // next //
+    //------//
+    /**
+     * Report the step right after this one
+     * @return the following step, or null if none
+     */
+    public Step next ()
+    {
+        if (this != last) {
+            return Step.values()[ordinal() + 1];
+        } else {
+            return null;
+        }
+    }
+
+    //------------------//
+    // getFollowingStep //
+    //------------------//
+    private static Step getFollowingStep (Step of)
+    {
+        if (of == null) {
+            return first;
+        } else {
+            return of.next();
+        }
+    }
+
+    //-----------//
+    // doOneStep //
+    //-----------//
+    /**
+     * Do this step, synchronously.
      *
      * @param sheet the sheet to be processed
      * @param param the potential step parameter
+     * @param systems systems to process (null means all systems)
      *
      * @return the (created or modified) sheet
      * @throws StepException
      */
-    Sheet doStep (Sheet  sheet,
-                  Object param)
+    Sheet doOneStep (Sheet                  sheet,
+                     Object                 param,
+                     Collection<SystemInfo> systems)
         throws StepException
     {
         long startTime = 0;
@@ -235,8 +372,6 @@ public enum Step {
             startTime = System.currentTimeMillis();
         }
 
-        notifyMsg(toString() + ((param != null) ? (" " + param) : ""));
-
         // Do we have the sheet already ?
         if (sheet == null) {
             // Load sheet using the provided parameter
@@ -244,19 +379,9 @@ public enum Step {
                               false);
         }
 
-        // Record the step action into sheet script
-        // (except for LOAD step, which is done by default)
-        if (this != LOAD) {
-            sheet.getScript()
-                 .addTask(new StepTask(this));
-        }
-
-        // Check for loading of a sheet
-        if (this != LOAD) {
-            // Standard processing on an existing sheet
-            sheet.getSheetSteps()
-                 .getResult(this);
-        }
+        // Standard processing on an existing sheet
+        sheet.getSheetSteps()
+             .doStep(this, systems);
 
         // Update user interface ?
         if (monitor != null) {

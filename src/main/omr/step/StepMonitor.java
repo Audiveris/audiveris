@@ -9,8 +9,6 @@
 //
 package omr.step;
 
-import omr.Main;
-
 import omr.constant.Constant;
 import omr.constant.Constant.Ratio;
 import omr.constant.ConstantSet;
@@ -24,6 +22,7 @@ import omr.util.Implement;
 import omr.util.Logger;
 
 import java.awt.Graphics;
+import java.util.EnumSet;
 import java.util.concurrent.*;
 
 import javax.swing.*;
@@ -47,9 +46,6 @@ public class StepMonitor
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Single threaded executor for lengthy tasks */
-    private final ExecutorService executor;
-
     /** Progress bar for actions performed on sheet */
     private final JProgressBar bar = new MyJProgressBar();
 
@@ -60,7 +56,8 @@ public class StepMonitor
     //-------------//
     /**
      * Create a user monitor on step processing. This also starts a background
-     * working task to take care of all lengthy processing.
+     * working task to take care of all lengthy processing. This is exactly one
+     * instance of this class (and zero instance when running in batch mode)
      */
     public StepMonitor ()
     {
@@ -73,9 +70,6 @@ public class StepMonitor
         bar.setStringPainted(true);
         animate(false);
         bar.setString("");
-
-        // Launch the worker
-        executor = Executors.newSingleThreadExecutor();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -97,7 +91,7 @@ public class StepMonitor
     // notifyMsg //
     //-----------//
     /**
-     * Call this to display a simple message in the progress window.
+     * Display a simple message in the progress window.
      *
      * @param msg the message to display
      */
@@ -109,91 +103,6 @@ public class StepMonitor
                     public void run ()
                     {
                         bar.setString(msg);
-                    }
-                });
-    }
-
-    //---------//
-    // perform //
-    //---------//
-    /**
-     * Start the performance of a step, with an online display of a progress
-     * monitor.
-     *
-     * @param step the target step
-     * @param sheet the sheet being analyzed
-     * @param param an eventual parameter for targeted step
-     */
-    public void perform (Step   step,
-                         Sheet  sheet,
-                         Object param)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                step + " Executing sheet=" + sheet + " param=" + param +
-                " ...");
-        }
-
-        try {
-            // "Activate" the progress bar
-            if (bar != null) {
-                animate(true);
-            }
-
-            if (sheet != null) {
-                sheet.setBusy(true);
-            }
-
-            sheet = step.doStep(sheet, param);
-
-            // Update sheet (& score) dependent entities
-            SheetManager.setSelectedSheet(sheet);
-
-            Main.getGui()
-                .updateGui();
-
-            if (sheet != null) {
-                sheet.setBusy(false);
-            }
-        } catch (Exception ex) {
-            logger.warning("Processing aborted", ex);
-        } finally {
-            // Reset the progress bar
-            if (bar != null) {
-                notifyMsg("");
-                animate(false);
-            }
-
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    step + " Ending sheet=" + sheet + " param=" + param + ".");
-            }
-        }
-
-        //                    }
-        //                });
-    }
-
-    //---------//
-    // animate //
-    //---------//
-    /**
-     * Sets the progress bar to show a percentage.
-     * @param amount percentage, in decimal form, from 0.0 to 1.0
-     */
-    void animate (final double amount)
-    {
-        SwingUtilities.invokeLater(
-            new Runnable() {
-                    @Implement(Runnable.class)
-                    public void run ()
-                    {
-                        bar.setIndeterminate(false);
-
-                        int divisions = constants.divisions.getValue();
-                        bar.setMinimum(0);
-                        bar.setMaximum(divisions);
-                        bar.setValue((int) Math.round(divisions * amount));
                     }
                 });
     }
@@ -230,12 +139,36 @@ public class StepMonitor
     // animate //
     //---------//
     /**
+     * Sets the progress bar to show a percentage.
+     * @param amount percentage, in decimal form, from 0.0 to 1.0
+     */
+    private void animate (final double amount)
+    {
+        SwingUtilities.invokeLater(
+            new Runnable() {
+                    @Implement(Runnable.class)
+                    public void run ()
+                    {
+                        bar.setIndeterminate(false);
+
+                        int divisions = constants.divisions.getValue();
+                        bar.setMinimum(0);
+                        bar.setMaximum(divisions);
+                        bar.setValue((int) Math.round(divisions * amount));
+                    }
+                });
+    }
+
+    //---------//
+    // animate //
+    //---------//
+    /**
      *
      * @param animating If false, deactivates all animation of the progress
      *                  bar.  If true, activates an indeterminate or
      *                  pseudo-indeterminate animation.
      */
-    private void animate (final boolean animating)
+    void animate (final boolean animating)
     {
         animate(animating ? constants.ratio.getValue() : 0);
     }
