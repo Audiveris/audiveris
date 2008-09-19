@@ -223,6 +223,26 @@ public class ScaleBuilder
 
         //~ Methods ------------------------------------------------------------
 
+        //--------//
+        // isFore //
+        //--------//
+        @Implement(RunsBuilder.Reader.class)
+        public boolean isFore (int level)
+        {
+            // Assuming black=0, white=255
+            return level <= maxForeground;
+        }
+
+        //----------//
+        // getLevel //
+        //----------//
+        @Implement(RunsBuilder.Reader.class)
+        public int getLevel (int coord,
+                             int pos)
+        {
+            return picture.getPixel(pos, coord); // swap pos & coord
+        }
+
         //---------//
         // backRun //
         //---------//
@@ -244,26 +264,6 @@ public class ScaleBuilder
                              int cumul)
         {
             fore[length]++;
-        }
-
-        //----------//
-        // getLevel //
-        //----------//
-        @Implement(RunsBuilder.Reader.class)
-        public int getLevel (int coord,
-                             int pos)
-        {
-            return picture.getPixel(pos, coord); // swap pos & coord
-        }
-
-        //--------//
-        // isFore //
-        //--------//
-        @Implement(RunsBuilder.Reader.class)
-        public boolean isFore (int level)
-        {
-            // Assuming black=0, white=255
-            return level <= maxForeground;
         }
 
         //-----------//

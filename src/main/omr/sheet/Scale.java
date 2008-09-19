@@ -9,13 +9,13 @@
 //
 package omr.sheet;
 
-import omr.score.common.PixelRectangle;
-import omr.score.common.PixelDimension;
-import omr.score.common.PixelPoint;
 import omr.constant.Constant;
 
 import omr.score.common.PagePoint;
 import omr.score.common.PageRectangle;
+import omr.score.common.PixelDimension;
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 import omr.score.common.UnitDimension;
 import static omr.score.ui.ScoreConstants.*;
 
