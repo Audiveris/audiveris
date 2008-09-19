@@ -10,10 +10,7 @@ package omr.action;
 
 import omr.Main;
 
-import omr.selection.Selection;
-import omr.selection.SelectionHint;
-import omr.selection.SelectionObserver;
-import omr.selection.SelectionTag;
+import omr.selection.SheetEvent;
 
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
@@ -24,6 +21,8 @@ import omr.ui.util.UIUtilities;
 
 import omr.util.Implement;
 import omr.util.Logger;
+
+import org.bushe.swing.event.EventSubscriber;
 
 import org.jdesktop.application.ApplicationAction;
 import org.jdesktop.application.ResourceMap;
@@ -45,7 +44,7 @@ import javax.xml.bind.JAXBException;
  * @version $Id$
  */
 public class ActionManager
-    implements SelectionObserver
+    implements EventSubscriber<SheetEvent>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -87,8 +86,8 @@ public class ActionManager
     {
         // Stay informed on sheet selection, in order to enable sheet-dependent
         // actions accordingly
-        SheetManager.getSelection()
-                    .addObserver(this);
+        SheetManager.getEventService()
+                    .subscribeStrongly(SheetEvent.class, this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -115,7 +114,7 @@ public class ActionManager
     //-------------------//
     /**
      * Retrieve an action knowing its methodName
-     * 
+     *
      * @param instance the instance of the hosting class
      * @param methodName the method name
      * @return the action found, or null if none
@@ -160,7 +159,6 @@ public class ActionManager
     //---------//
     // getName //
     //---------//
-    @Implement(SelectionObserver.class)
     public String getName ()
     {
         return "ActionManager";
@@ -243,6 +241,22 @@ public class ActionManager
         }
     }
 
+    //---------//
+    // onEvent //
+    //---------//
+    /**
+     * Notification of sheet selection, to update frame title
+     *
+     * @param sheetEvent the event about sheet selection
+     */
+    @Implement(EventSubscriber.class)
+    public void onEvent (SheetEvent sheetEvent)
+    {
+        final Sheet sheet = sheetEvent.getData();
+        enableSheetActions(sheet != null);
+        enableScoreActions((sheet != null) && (sheet.getScore() != null));
+    }
+
     //--------------------//
     // registerAllActions //
     //--------------------//
@@ -293,26 +307,6 @@ public class ActionManager
         }
     }
 
-    //--------//
-    // update //
-    //--------//
-    /**
-     * Notification of sheet selection, to update frame title
-     *
-     * @param selection the selection object (SHEET)
-     * @param hint processing hint (not used)
-     */
-    @Implement(SelectionObserver.class)
-    public void update (Selection     selection,
-                        SelectionHint hint)
-    {
-        if (selection.getTag() == SelectionTag.SHEET) {
-            Sheet sheet = (Sheet) selection.getEntity();
-            enableSheetActions(sheet != null);
-            enableScoreActions((sheet != null) && (sheet.getScore() != null));
-        }
-    }
-
     //--------------------//
     // enableScoreActions //
     //--------------------//
@@ -344,6 +338,7 @@ public class ActionManager
      * @param action the provided action class
      * @return the registered and decorated instance of the action class
      */
+    @SuppressWarnings("unchecked")
     private ApplicationAction registerAction (ActionDescriptor desc)
     {
         ApplicationAction action = null;
@@ -367,6 +362,7 @@ public class ActionManager
 
             if (instance == null) {
                 // Fall back to allocate a new class instance
+                ///logger.warning("instantiating instance of " + classe);
                 instance = classe.newInstance();
             }
 
@@ -394,6 +390,7 @@ public class ActionManager
     //-----------------------//
     // registerDomainActions //
     //-----------------------//
+    @SuppressWarnings("unchecked")
     private void registerDomainActions (String domain,
                                         JMenu  menu)
     {

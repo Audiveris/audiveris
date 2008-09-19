@@ -9,25 +9,20 @@
 //
 package omr.check;
 
-import omr.selection.Selection;
-import omr.selection.SelectionHint;
+import omr.selection.UserEvent;
 
 import omr.ui.Board;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
 
-import java.util.Collections;
+import org.bushe.swing.event.EventService;
+
+import java.util.Collection;
 
 /**
  * Class <code>CheckBoard</code> defines a board dedicated to the display of
  * check result information.
- *
- * <dl>
- * <dt><b>Selection Inputs:</b></dt><ul>
- * <li>*_GLYPH
- * </ul>
- * </dl>
  *
  * @param C the specific {@link Checkable} type of object to be checked
  *
@@ -50,22 +45,22 @@ public class CheckBoard<C extends Checkable>
     /**
      * Create a Check Board
      *
-     * @param name           the name of the check
-     * @param suite          the check suite to be used
-     * @param inputSelection the input to run check upon
+     * @param name         the name of the check
+     * @param suite        the check suite to be used
+     * @param eventService which event service to use
+     * @param eventList    which even classes to expect
      */
-    public CheckBoard (String        name,
-                       CheckSuite<C> suite,
-                       Selection     inputSelection)
+    public CheckBoard (String                                name,
+                       CheckSuite<C>                         suite,
+                       EventService                          eventService,
+                       Collection<Class<?extends UserEvent>> eventList)
     {
-        super(Board.Tag.CHECK, name + "-CheckBoard");
+        super(Board.Tag.CHECK, name + "-CheckBoard", eventService, eventList);
         checkPanel = new CheckPanel<C>(suite);
 
         if (suite != null) {
             defineLayout(suite.getName());
         }
-
-        setInputSelectionList(Collections.singletonList(inputSelection));
 
         // define default content
         tellObject(null);
@@ -97,13 +92,13 @@ public class CheckBoard<C extends Checkable>
     /**
      * Call-back triggered when C Selection has been modified.
      *
-     * @param selection the Selection to perform check upon
-     * @param hint potential notification hint
+     * @param event the Event to perform check upon its data
      */
-    public void update (Selection     selection,
-                        SelectionHint hint)
+    @Override
+    @SuppressWarnings("unchecked")
+    public void onEvent (UserEvent event)
     {
-        tellObject((C) selection.getEntity()); // Compiler warning
+        tellObject((C) event.getData()); // Compiler warning
     }
 
     //------------//
