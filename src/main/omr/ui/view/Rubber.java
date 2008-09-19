@@ -9,6 +9,8 @@
 //-----------------------------------------------------------------------//
 package omr.ui.view;
 
+import omr.selection.MouseMovement;
+
 import omr.ui.*;
 
 import omr.util.Logger;
@@ -277,7 +279,7 @@ public class Rubber
             updateSize(e);
 
             if (mouseMonitor != null) {
-                mouseMonitor.rectangleSelected(e, rect);
+                mouseMonitor.rectangleSelected(rect, MouseMovement.DRAGGING);
             }
         } else {
             // Behavior equivalent to simple selection
@@ -303,9 +305,11 @@ public class Rubber
                 e.getComponent()
                  .setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
             } else if (isAdditionWanted(e)) {
-                mouseMonitor.pointAdded(e, getCenter());
+                mouseMonitor.pointAdded(getCenter(), MouseMovement.PRESSING);
             } else if (isContextWanted(e)) {
-                mouseMonitor.contextSelected(e, getCenter());
+                mouseMonitor.contextSelected(
+                    getCenter(),
+                    MouseMovement.PRESSING);
             } else if (isRubberWanted(e)) {
                 e.getComponent()
                  .setCursor(
@@ -315,7 +319,7 @@ public class Rubber
                  .setCursor(
                     Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
             } else {
-                mouseMonitor.pointSelected(e, getCenter());
+                mouseMonitor.pointSelected(getCenter(), MouseMovement.PRESSING);
             }
         }
     }
@@ -334,12 +338,12 @@ public class Rubber
         if (mouseMonitor != null) {
             if (isRezoomWanted(e)) {
                 updateSize(e);
-                mouseMonitor.rectangleZoomed(e, rect);
+                mouseMonitor.rectangleZoomed(rect, MouseMovement.RELEASING);
             } else if ((rect != null) &&
                        (rect.width != 0) &&
                        (rect.height != 0)) {
                 updateSize(e);
-                mouseMonitor.rectangleSelected(e, rect);
+                mouseMonitor.rectangleSelected(rect, MouseMovement.RELEASING);
             } else if (isDragWanted(e)) {
                 Rectangle vr = component.getVisibleRect();
                 rawRect.setBounds(
@@ -348,6 +352,8 @@ public class Rubber
                     0,
                     0);
                 normalize();
+            } else if (isAdditionWanted(e)) {
+                mouseMonitor.pointAdded(getCenter(), MouseMovement.RELEASING);
             }
 
             e.getComponent()
@@ -393,8 +399,8 @@ public class Rubber
                 g.drawLine(x - 20, y, x + 20, y); // Horizontal
             } else {
                 // Draw full vertical & horizontal lines (slow!)
-                g.drawLine(x, vr.y, x, (vr.y + vr.height-1)); // Vertical
-                g.drawLine(vr.x, y, (vr.x + vr.width-1), y); // Horizontal
+                g.drawLine(x, vr.y, x, ((vr.y + vr.height) - 1)); // Vertical
+                g.drawLine(vr.x, y, ((vr.x + vr.width) - 1), y); // Horizontal
             }
         }
     }

@@ -9,6 +9,8 @@
 //-----------------------------------------------------------------------//
 package omr.ui.view;
 
+import omr.selection.MouseMovement;
+
 import omr.ui.*;
 
 import java.awt.*;
@@ -27,44 +29,44 @@ public interface MouseMonitor
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * Contextual action (by right button clic)
-     * @param e the mouse event
+     * Contextual action (by right button click)
      * @param pt the current point in model pixel coordinates
+     * @param movement the mouse movement
      */
-    void contextSelected (MouseEvent e,
-                          Point      pt);
+    void contextSelected (Point         pt,
+                          MouseMovement movement);
 
     /**
-     * Selection (by left button clic + control) of an additional point
-     * @param e the mouse event
+     * Selection (by left button click + control) of an additional point
      * @param pt the added point in model pixel coordinates
+     * @param movement the mouse movement
      */
-    void pointAdded (MouseEvent e,
-                     Point      pt);
+    void pointAdded (Point         pt,
+                     MouseMovement movement);
 
     /**
-     * Selection (by left button clic)
-     * @param e the mouse event
+     * Selection (by left button click)
      * @param pt the selected point in model pixel coordinates
+     * @param movement the mouse movement
      */
-    void pointSelected (MouseEvent e,
-                        Point      pt);
+    void pointSelected (Point         pt,
+                        MouseMovement movement);
 
     /**
      * Selection (by left button drag) of a rectangle when mouse is
      * released
-     * @param e the mouse event
      * @param rect the selected rectangle in model pixel coordinates
+     * @param movement the mouse movement
      */
-    void rectangleSelected (MouseEvent e,
-                            Rectangle  rect);
+    void rectangleSelected (Rectangle     rect,
+                            MouseMovement movement);
 
     /**
      * Rectangle zoom (by shift + ctrl) at end of rectangle selection
-     * @param e    the mouse event
      * @param rect the rectangle in model pixel coordinates, which defines
      *             the focus and the zoom ratio
+     * @param movement the mouse movement
      */
-    void rectangleZoomed (MouseEvent e,
-                          Rectangle  rect);
+    void rectangleZoomed (Rectangle     rect,
+                          MouseMovement movement);
 }
