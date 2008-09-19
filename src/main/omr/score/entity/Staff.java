@@ -10,12 +10,12 @@
 package omr.score.entity;
 
 import omr.score.common.PagePoint;
+import omr.score.common.PixelPoint;
 import omr.score.common.ScorePoint;
 import omr.score.common.SystemPoint;
 import static omr.score.ui.ScoreConstants.*;
 import omr.score.visitor.ScoreVisitor;
 
-import omr.score.common.PixelPoint;
 import omr.sheet.StaffInfo;
 
 import omr.util.Logger;
@@ -182,23 +182,6 @@ public class Staff
     public StaffInfo getInfo ()
     {
         return info;
-    }
-
-    //-----------//
-    // getSystem //
-    //-----------//
-    /**
-     * Report the containing system
-     *
-     * @return the system entity
-     */
-    @Override
-    public System getSystem ()
-    {
-        // Beware, staff is not a direct child of System, there is an
-        // intermediate StaffList to skip
-        return (System) parent.getParent()
-                              .getParent();
     }
 
     //------------//
