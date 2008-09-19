@@ -20,13 +20,10 @@ import omr.glyph.ui.GlyphTrainer;
 import omr.glyph.ui.GlyphVerifier;
 import omr.glyph.ui.ShapeColorChooser;
 
-import omr.plugin.Dependency;
-import omr.plugin.Plugin;
-import omr.plugin.PluginType;
+import omr.sheet.SheetManager;
 
 import omr.ui.treetable.JTreeTable;
 
-import omr.util.Implement;
 import omr.util.Logger;
 import omr.util.Memory;
 
@@ -42,7 +39,6 @@ import org.jdesktop.application.Task;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -82,6 +78,9 @@ public class GuiActions
     /** Singleton */
     private static GuiActions INSTANCE;
 
+    /** Create this action just once */
+    private static AboutAction aboutAction;
+
     //~ Methods ----------------------------------------------------------------
 
     //-------------//
@@ -119,13 +118,13 @@ public class GuiActions
     //----------//
     /**
      * Action to erase the content of the log display
-     * (but not the content of the log itself)
      * @param e the event which triggered this action
      */
     @Action
     public void clearLog (ActionEvent e)
     {
-        Main.getGui().logPane.clearLog();
+        Main.getGui()
+            .clearLog();
     }
 
     //---------------//
@@ -153,6 +152,19 @@ public class GuiActions
     public void defineShapeColors (ActionEvent e)
     {
         ShapeColorChooser.showFrame();
+    }
+
+    //-------------------//
+    // dumpEventServices //
+    //-------------------//
+    /**
+     * Action to erase the dump the content of all event services
+     * @param e the event which triggered this action
+     */
+    @Action
+    public void dumpEventServices (ActionEvent e)
+    {
+        SheetManager.dumpEventServices();
     }
 
     //------//
@@ -194,7 +206,11 @@ public class GuiActions
     @Action
     public void showAbout (ActionEvent e)
     {
-        new AboutAction().actionPerformed(e);
+        if (aboutAction == null) {
+            aboutAction = new AboutAction();
+        }
+
+        aboutAction.actionPerformed(e);
     }
 
     //------------//
@@ -285,9 +301,7 @@ public class GuiActions
      * information about the application.
      *
      */
-    @Plugin(type = PluginType.HELP, dependency = Dependency.NONE)
     public static class AboutAction
-        extends AbstractAction
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -297,7 +311,6 @@ public class GuiActions
 
         //~ Methods ------------------------------------------------------------
 
-        @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
             if (aboutBox == null) {
@@ -357,146 +370,6 @@ public class GuiActions
                   .setText(Main.getClassesContainer().toString());
 
             return dialog;
-        }
-    }
-
-    //----------------//
-    // ClearLogAction //
-    //----------------//
-    @Deprecated
-    @Plugin(type = PluginType.LOG_VIEW, onToolbar = true)
-    public static class ClearLogAction
-        extends AbstractAction
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            getInstance()
-                .clearLog(e);
-        }
-    }
-
-    //------------//
-    // ExitAction //
-    //------------//
-    @Deprecated
-    @Plugin(type = PluginType.SHEET_END)
-    public static class ExitAction
-        extends AbstractAction
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            getInstance()
-                .exit(e);
-        }
-    }
-
-    //--------------//
-    // MemoryAction //
-    //--------------//
-    @Deprecated
-    @Plugin(type = PluginType.TOOL)
-    public static class MemoryAction
-        extends AbstractAction
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            getInstance()
-                .showMemory(e);
-        }
-    }
-
-    //-----------------//
-    // OperationAction //
-    //-----------------//
-    @Deprecated
-    @Plugin(type = PluginType.HELP, dependency = Dependency.NONE)
-    public static class OperationAction
-        extends AbstractAction
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public OperationAction ()
-        {
-            setEnabled(getInstance().isBrowserSupported());
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            getInstance()
-                .showManual(e);
-        }
-    }
-
-    //---------------//
-    // OptionsAction //
-    //---------------//
-    @Deprecated
-    @Plugin(type = PluginType.TOOL)
-    public static class OptionsAction
-        extends AbstractAction
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            GuiActions.getInstance()
-                      .defineOptions(e);
-        }
-    }
-
-    //------------------//
-    // ShapeColorAction //
-    //------------------//
-    @Deprecated
-    @Plugin(type = PluginType.TOOL)
-    public static class ShapeColorAction
-        extends AbstractAction
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            getInstance()
-                .defineShapeColors(e);
-        }
-    }
-
-    //---------------//
-    // WebSiteAction //
-    //---------------//
-    @Deprecated
-    @Plugin(type = PluginType.HELP, dependency = Dependency.NONE)
-    public static class WebSiteAction
-        extends AbstractAction
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public WebSiteAction ()
-        {
-            setEnabled(getInstance().isBrowserSupported());
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            getInstance()
-                .visitWebSite(e);
         }
     }
 
