@@ -357,10 +357,6 @@ public class ConstantManager
                 FileInputStream in = new FileInputStream(file);
                 properties.load(in);
                 in.close();
-
-//                System.out.println(
-//                    Thread.currentThread().getName() + ": " +
-//                    "Loaded constants from " + file.getAbsolutePath());
             } catch (FileNotFoundException ex) {
                 // This is not at all a fatal error, let the user know this.
                 logger.info(
@@ -473,10 +469,6 @@ public class ConstantManager
                 final String   def = defaultHolder.getProperty(key);
                 final String   source = constant.getDefaultString();
 
-                //                logger.info(
-                //                    constant.getQualifiedName() + " source:" +
-                //                    constant.getDefaultString() + " current:" +
-                //                    constant.getCurrentString());
                 if ((def != null) && current.equals(def)) {
                     if (properties.remove(key) != null) {
                         if (logger.isFineEnabled()) {
