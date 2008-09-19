@@ -150,18 +150,18 @@ public class Beam
         return items;
     }
 
-    //---------//
-    // getLeft //
-    //---------//
+    //--------------//
+    // getLeftPoint //
+    //--------------//
     /**
      * Report the point that define the left edge of the beam
      *
      * @return the SystemPoint coordinates of the left point
      */
-    public SystemPoint getLeft ()
+    public SystemPoint getLeftPoint ()
     {
         return items.first()
-                    .getLeft();
+                    .getLeftPoint();
     }
 
     //----------//
@@ -193,27 +193,27 @@ public class Beam
             line = new BasicLine();
 
             // Take left side of first item, and right side of last item
-            left = getLeft();
+            left = getLeftPoint();
             line.includePoint(left.x, left.y);
-            right = getRight();
+            right = getRightPoint();
             line.includePoint(right.x, right.y);
         }
 
         return line;
     }
 
-    //----------//
-    // getRight //
-    //----------//
+    //---------------//
+    // getRightPoint //
+    //---------------//
     /**
      * Report the point that define the right edge of the beam
      *
      * @return the SystemPoint coordinates of the right point
      */
-    public SystemPoint getRight ()
+    public SystemPoint getRightPoint ()
     {
         return items.last()
-                    .getRight();
+                    .getRightPoint();
     }
 
     //--------//
@@ -506,10 +506,10 @@ public class Beam
         }
 
         sb.append(" left=")
-          .append(getLeft());
+          .append(getLeftPoint());
 
         sb.append(" right=")
-          .append(getRight());
+          .append(getRightPoint());
 
         sb.append(BeamItem.toString(items));
         sb.append("}");
@@ -597,14 +597,14 @@ public class Beam
         if (logger.isFineEnabled()) {
             logger.fine(
                 "maxGap=" + maxGap + " leftGap=" +
-                item.getRight().distance(getLeft()) + " rightGap=" +
-                item.getLeft().distance(getRight()));
+                item.getRightPoint().distance(getLeftPoint()) + " rightGap=" +
+                item.getLeftPoint().distance(getRightPoint()));
         }
 
-        if ((item.getRight()
-                 .distance(getLeft()) <= maxGap) ||
-            (item.getLeft()
-                 .distance(getRight()) <= maxGap)) {
+        if ((item.getRightPoint()
+                 .distance(getLeftPoint()) <= maxGap) ||
+            (item.getLeftPoint()
+                 .distance(getRightPoint()) <= maxGap)) {
             return true;
         }
 
