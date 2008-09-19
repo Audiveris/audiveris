@@ -31,26 +31,21 @@ import omr.lag.RunBoard;
 import omr.lag.ScrollLagView;
 import omr.lag.SectionBoard;
 
-import omr.plugin.Plugin;
-import omr.plugin.PluginType;
-
 import omr.score.visitor.SheetPainter;
 
-import omr.selection.Selection;
-import omr.selection.SelectionTag;
-import static omr.selection.SelectionTag.*;
+import omr.selection.GlyphEvent;
+import omr.selection.UserEvent;
 
 import omr.step.StepException;
 
-import omr.stick.Stick;
 import omr.stick.LineCleaner;
+import omr.stick.Stick;
 
 import omr.ui.BoardsPane;
 import omr.ui.PixelBoard;
 import static omr.ui.field.SpinnerUtilities.*;
 import omr.ui.view.Zoom;
 
-import omr.util.Implement;
 import omr.util.Logger;
 
 import org.jdesktop.application.AbstractBean;
@@ -58,12 +53,9 @@ import org.jdesktop.application.Action;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-
-import javax.swing.AbstractAction;
-import javax.swing.JCheckBoxMenuItem;
 
 /**
  * Class <code>HorizontalsBuilder</code> is in charge of retrieving horizontal
@@ -83,6 +75,13 @@ public class HorizontalsBuilder
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
         HorizontalsBuilder.class);
+
+    /** Events this entity is interested in */
+    private static final Collection<Class<?extends UserEvent>> eventClasses = new ArrayList<Class<?extends UserEvent>>();
+
+    static {
+        eventClasses.add(GlyphEvent.class);
+    }
 
     /** Success codes */
     private static final SuccessResult LEDGER = new SuccessResult("Ledger");
@@ -291,32 +290,25 @@ public class HorizontalsBuilder
         BoardsPane    boardsPane = new BoardsPane(
             sheet,
             lagView,
-            new PixelBoard(unit),
-            new RunBoard(unit, sheet.getSelection(HORIZONTAL_RUN)),
-            new SectionBoard(
-                unit,
-                lag.getLastVertexId(),
-                sheet.getSelection(HORIZONTAL_SECTION),
-                sheet.getSelection(HORIZONTAL_SECTION_ID)),
-            new GlyphBoard(
-                unit,
-                this,
-                null,
-                sheet.getSelection(HORIZONTAL_GLYPH),
-                sheet.getSelection(HORIZONTAL_GLYPH_ID),
-                null),
+            new PixelBoard(unit, sheet),
+            new RunBoard(unit, lag),
+            new SectionBoard(unit, lag.getLastVertexId(), lag),
+            new GlyphBoard(unit, this, null),
             new CheckBoard<Stick>(
                 unit + "-Common",
                 commonSuite,
-                sheet.getSelection(HORIZONTAL_GLYPH)),
+                lag.getEventService(),
+                eventClasses),
             new CheckBoard<Stick>(
                 unit + "-Ledger",
                 ledgerSuite,
-                sheet.getSelection(HORIZONTAL_GLYPH)),
+                lag.getEventService(),
+                eventClasses),
             new CheckBoard<Stick>(
                 unit + "-Ending",
                 endingSuite,
-                sheet.getSelection(HORIZONTAL_GLYPH)));
+                lag.getEventService(),
+                eventClasses));
 
         // Create a hosting frame for the view
         ScrollLagView slv = new ScrollLagView(lagView);
@@ -433,48 +425,6 @@ public class HorizontalsBuilder
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
-    //--------------//
-    // LedgerAction //
-    //--------------//
-    /**
-     * Class <code>LedgerAction</code> toggles the display of original ledger
-     * pixels
-     */
-    @Deprecated
-    @Plugin(type = PluginType.LINE_VIEW, item = JCheckBoxMenuItem.class)
-    public static class LedgerAction
-        extends AbstractAction
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public LedgerAction ()
-        {
-            putValue(
-                "SwingSelectedKey",
-                constants.displayLedgerLines.getValue());
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
-            constants.displayLedgerLines.setValue(item.isSelected());
-
-            // Trigger a repaint if needed
-            Sheet currentSheet = SheetManager.getSelectedSheet();
-
-            if (currentSheet != null) {
-                HorizontalsBuilder builder = currentSheet.getHorizontalsBuilder();
-
-                if ((builder != null) && (builder.lagView != null)) {
-                    builder.lagView.repaint();
-                }
-            }
-        }
-    }
 
     //------------------//
     // LedgerParameters //
@@ -985,17 +935,17 @@ public class HorizontalsBuilder
                 null);
             setName("HorizontalsBuilder-View");
 
-            setLocationSelection(
-                sheet.getSelection(SelectionTag.SHEET_RECTANGLE));
-
-            setSpecificSelections(
-                sheet.getSelection(SelectionTag.HORIZONTAL_RUN),
-                sheet.getSelection(SelectionTag.HORIZONTAL_SECTION));
-
-            Selection glyphSelection = sheet.getSelection(
-                SelectionTag.HORIZONTAL_GLYPH);
-            setGlyphSelection(glyphSelection);
-            glyphSelection.addObserver(this);
+            //            setLocationSelection(
+            //                sheet.getEventService(SelectionTag.SHEET_LOCATION));
+            //
+            //            setSpecificSelections(
+            //                sheet.getEventService(SelectionTag.HORIZONTAL_RUN),
+            //                sheet.getEventService(SelectionTag.HORIZONTAL_SECTION));
+            //
+            //            Selection glyphSelection = sheet.getEventService(
+            //                SelectionTag.HORIZONTAL_GLYPH);
+            //            setGlyphSelection(glyphSelection);
+            //            glyphSelection.addObserver(this);
         }
 
         //~ Methods ------------------------------------------------------------

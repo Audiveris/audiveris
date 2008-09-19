@@ -15,13 +15,15 @@ import omr.constant.ConstantSet;
 
 import omr.lag.PixelSource;
 
-import omr.selection.Selection;
-import omr.selection.SelectionHint;
-import omr.selection.SelectionObserver;
+import omr.selection.PixelLevelEvent;
+import omr.selection.SheetLocationEvent;
 
 import omr.util.Implement;
 import omr.util.JaiLoader;
 import omr.util.Logger;
+
+import org.bushe.swing.event.EventService;
+import org.bushe.swing.event.EventSubscriber;
 
 import java.awt.*;
 import java.awt.color.ColorSpace;
@@ -62,21 +64,11 @@ import javax.media.jai.operator.MosaicDescriptor;
  *
  * </ul> </p>
  *
- * <dl>
- * <dt><b>Selection Inputs:</b></dt><ul>
- * <li>PIXEL Location (if LOCATION_INIT or LOCATION_ADD)
- * </ul>
- *
- * <dt><b>Selection Outputs:</b></dt><ul>
- * <li>LEVEL
- * </ul>
- * </dl>
- *
  * @author Herv&eacute; Bitteur and Brenton Partridge
  * @version $Id$
  */
 public class Picture
-    implements PixelSource, SelectionObserver
+    implements PixelSource, EventSubscriber<SheetLocationEvent>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -122,9 +114,9 @@ public class Picture
     /** Current image */
     private PlanarImage image;
 
-    /** Selection objects where gray level of pixel is to be written to when so
+    /** Service object where gray level of pixel is to be written to when so
        asked for by calling the update method */
-    private Selection levelSelection;
+    private EventService levelService;
 
     /** Remember if we have actually rotated the image */
     private boolean rotated = false;
@@ -435,7 +427,6 @@ public class Picture
      *
      * @return Observer name
      */
-    @Implement(SelectionObserver.class)
     public String getName ()
     {
         return "Picture";
@@ -517,18 +508,18 @@ public class Picture
         ///            return dataBuffer.getElem(x + (y * dimensionWidth));
     }
 
-    //-------------------//
-    // setLevelSelection //
-    //-------------------//
+    //-----------------//
+    // setLevelService //
+    //-----------------//
     /**
-     * Inject the selection object where pixel gray level must be written to,
+     * Inject the service where pixel gray level must be written to,
      * when triggered through the update method.
      *
-     * @param levelSelection the output selection object
+     * @param levelService the output selection object
      */
-    public void setLevelSelection (Selection levelSelection)
+    public void setLevelService (EventService levelService)
     {
-        this.levelSelection = levelSelection;
+        this.levelService = levelService;
     }
 
     //-----------//
@@ -635,6 +626,39 @@ public class Picture
     }
 
     //--------//
+    // update //
+    //--------//
+    /**
+     * Call-back triggered when sheet location has been modified.  Based on
+     * sheet location, we forward the pixel gray level to whoever is interested
+     * in it.
+     *
+     * @param event the (sheet) location event
+     */
+    @Implement(EventSubscriber.class)
+    public void onEvent (SheetLocationEvent event)
+    {
+        Integer   level = null;
+
+        // Compute and forward pixel gray level
+        Rectangle rect = event.getData();
+
+        if (rect != null) {
+            Point pt = rect.getLocation();
+
+            // Check that we are not pointing outside the image
+            if ((pt.x >= 0) &&
+                (pt.x < getWidth()) &&
+                (pt.y >= 0) &&
+                (pt.y < getHeight())) {
+                level = Integer.valueOf(getPixel(pt.x, pt.y));
+            }
+        }
+
+        levelService.publish(new PixelLevelEvent(this, level));
+    }
+
+    //--------//
     // render //
     //--------//
     /**
@@ -724,53 +748,6 @@ public class Picture
         logger.info("Image stored in " + fname);
 
         return fname;
-    }
-
-    //--------//
-    // update //
-    //--------//
-    /**
-     * Call-back triggered when Pixel Selection has been modified.  Based on
-     * pixel location, we forward the pixel gray level to whoever is interested
-     * in it.
-     *
-     * @param selection the (Pixel) Selection
-     * @param hint potential notification hint
-     */
-    @Implement(SelectionObserver.class)
-    public void update (Selection     selection,
-                        SelectionHint hint)
-    {
-        switch (selection.getTag()) {
-        case SHEET_RECTANGLE :
-
-            Integer level = null;
-
-            if ((hint == SelectionHint.LOCATION_ADD) ||
-                (hint == SelectionHint.LOCATION_INIT)) {
-                // Compute and forward pixel gray level
-                Rectangle rect = (Rectangle) selection.getEntity();
-
-                if (rect != null) {
-                    Point pt = rect.getLocation();
-
-                    // Check that we are not pointing outside the image
-                    if ((pt.x >= 0) &&
-                        (pt.x < getWidth()) &&
-                        (pt.y >= 0) &&
-                        (pt.y < getHeight())) {
-                        level = Integer.valueOf(getPixel(pt.x, pt.y));
-                    }
-                }
-            }
-
-            levelSelection.setEntity(level, hint);
-
-            break;
-
-        default :
-            logger.severe("Unexpected selection event from " + selection);
-        }
     }
 
     //----------//

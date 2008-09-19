@@ -26,8 +26,6 @@ import omr.lag.SectionBoard;
 import omr.lag.SectionView;
 import omr.lag.SectionsBuilder;
 
-import static omr.selection.SelectionTag.*;
-
 import omr.step.StepException;
 
 import omr.stick.Stick;
@@ -334,7 +332,7 @@ public class SkewBuilder
     private void displayFrame ()
     {
         // Create a view
-        LagView view = new SkewLagView();
+        LagView view = new MyView();
         view.colorize();
 
         // Create a hosting frame for the view
@@ -346,13 +344,9 @@ public class SkewBuilder
             new BoardsPane(
                 sheet,
                 view,
-                new PixelBoard(unit),
-                new RunBoard(unit, sheet.getSelection(SKEW_RUN)),
-                new SectionBoard(
-                    unit,
-                    sLag.getLastVertexId(),
-                    sheet.getSelection(SKEW_SECTION),
-                    sheet.getSelection(SKEW_SECTION_ID))));
+                new PixelBoard(unit, sheet),
+                new RunBoard(unit, sLag),
+                new SectionBoard(unit, sLag.getLastVertexId(), sLag)));
     }
 
     //-----------//
@@ -462,39 +456,18 @@ public class SkewBuilder
             "Only sticks with length higher than this threshold are used for final computation");
     }
 
-    //--------------//
-    // SkewLagView //
-    //--------------//
-    private class SkewLagView
+    //--------//
+    // MyView //
+    //--------//
+    private class MyView
         extends LagView<GlyphLag, GlyphSection>
     {
         //~ Constructors -------------------------------------------------------
 
-        //-------------//
-        // SkewLagView //
-        //-------------//
-        public SkewLagView ()
+        public MyView ()
         {
-            super(sLag, null, null);
+            super(sLag, sheet.getEventService(), null, null);
             setName("SkewBuilder-View");
-
-            // Inject selection dependencies into this hlag, only when this
-            // display is activated, since there is no other consumer
-
-            // Location input / output
-            setLocationSelection(sheet.getSelection(SHEET_RECTANGLE));
-
-            // Run input & Section input/output
-            sLag.setLocationSelection(sheet.getSelection(SHEET_RECTANGLE));
-            sLag.setRunSelection(sheet.getSelection(SKEW_RUN));
-            sLag.setSectionSelection(sheet.getSelection(SKEW_SECTION));
-
-            sheet.getSelection(SHEET_RECTANGLE)
-                 .addObserver(sLag);
-            sheet.getSelection(SKEW_SECTION)
-                 .addObserver(sLag);
-            sheet.getSelection(SKEW_SECTION_ID)
-                 .addObserver(sLag);
         }
 
         //~ Methods ------------------------------------------------------------
