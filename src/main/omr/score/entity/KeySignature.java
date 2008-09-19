@@ -15,12 +15,12 @@ import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 import omr.score.common.SystemPoint;
 import static omr.score.entity.Note.Step.*;
 import omr.score.visitor.ScoreVisitor;
 
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
@@ -429,6 +429,7 @@ public class KeySignature
      *
      * @param system the system to be verified
      */
+    @SuppressWarnings("unchecked")
     public static void verifySystemKeys (System system)
     {
         ///logger.info("verifySystemKeys for " + system);

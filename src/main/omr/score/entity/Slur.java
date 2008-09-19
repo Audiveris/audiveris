@@ -16,11 +16,11 @@ import omr.glyph.SlurGlyph;
 
 import omr.math.Circle;
 
+import omr.score.common.PixelPoint;
 import omr.score.common.SystemPoint;
 import omr.score.common.SystemRectangle;
 import omr.score.visitor.ScoreVisitor;
 
-import omr.score.common.PixelPoint;
 import omr.sheet.Scale;
 
 import omr.util.Logger;

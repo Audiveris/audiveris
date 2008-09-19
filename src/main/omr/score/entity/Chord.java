@@ -14,13 +14,13 @@ import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
 
 import omr.score.common.DurationFactor;
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 import omr.score.common.SystemPoint;
 import omr.score.common.SystemRectangle;
 import omr.score.entity.Voice.ChordInfo;
 import omr.score.visitor.ScoreVisitor;
 
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import omr.sheet.Scale;
 
 import omr.stick.Stick;

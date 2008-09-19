@@ -79,7 +79,6 @@ public abstract class VisitableNode
     public void acceptChildren (ScoreVisitor visitor)
     {
         ///logger.info(children.size() + " children for " + this + " parent=" + parent);
-
         for (TreeNode node : getChildrenCopy()) {
             VisitableNode child = (VisitableNode) node;
 

@@ -14,10 +14,10 @@ import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
+import omr.score.common.PixelRectangle;
 import omr.score.common.SystemPoint;
 import omr.score.common.SystemRectangle;
 
-import omr.score.common.PixelRectangle;
 import omr.sheet.Scale;
 
 import java.util.*;

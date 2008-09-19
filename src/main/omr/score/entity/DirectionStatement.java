@@ -43,10 +43,10 @@ public class DirectionStatement
      * @param text the sentence text
      */
     public DirectionStatement (Measure            measure,
-                           SystemPoint        location,
-                           Chord              chord,
-                           Sentence           sentence,
-                           Text.DirectionText text)
+                               SystemPoint        location,
+                               Chord              chord,
+                               Sentence           sentence,
+                               Text.DirectionText text)
     {
         super(measure, location, chord, sentence.getGlyphs().first());
         this.text = text;

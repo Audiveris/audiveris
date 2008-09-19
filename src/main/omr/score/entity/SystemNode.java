@@ -11,12 +11,11 @@ package omr.score.entity;
 
 import omr.glyph.Glyph;
 
+import omr.score.common.PixelPoint;
 import omr.score.common.ScorePoint;
 import omr.score.common.SystemPoint;
 import static omr.score.ui.ScoreConstants.*;
 import omr.score.visitor.ScoreVisitor;
-
-import omr.score.common.PixelPoint;
 
 import omr.util.TreeNode;
 
