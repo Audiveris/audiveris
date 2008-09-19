@@ -467,19 +467,20 @@ public class UnitModel
                     // current sheet and its scale is available.
                     Sheet sheet = SheetManager.getSelectedSheet();
 
-                    if ((sheet != null) &&
-                        sheet.getSheetSteps()
-                             .isDone(Step.SCALE)) {
+                    if (sheet != null) {
                         Scale scale = sheet.getScale();
 
-                        if (constant instanceof Scale.Fraction) {
-                            return Integer.valueOf(
-                                scale.toPixels((Scale.Fraction) constant));
-                        }
+                        if (scale != null) {
+                            if (constant instanceof Scale.Fraction) {
+                                return Integer.valueOf(
+                                    scale.toPixels((Scale.Fraction) constant));
+                            }
 
-                        if (constant instanceof Scale.AreaFraction) {
-                            return Integer.valueOf(
-                                scale.toPixels((Scale.AreaFraction) constant));
+                            if (constant instanceof Scale.AreaFraction) {
+                                return Integer.valueOf(
+                                    scale.toPixels(
+                                        (Scale.AreaFraction) constant));
+                            }
                         }
                     } else {
                         return "?"; // Cannot compute the value
