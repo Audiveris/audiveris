@@ -128,7 +128,7 @@ public class ScoreBuilder
 
             system.fillMissingParts();
             system.retrieveSlurConnections();
-            system.accept(new ScoreFixer());
+            system.accept(new ScoreFixer(true));
             system.accept(new ScoreTimeFixer());
             system.refineLyricSyllables();
         }
@@ -372,10 +372,9 @@ public class ScoreBuilder
          */
         private void translate (Translator translator)
         {
-            // Browse the system (copy) collection of glyphs
-            // A copy is needed since new glyphs may be inserted on-the-fly
+            // Browse the system collection of glyphs
             for (Glyph glyph : system.getInfo()
-                                     .getGlyphsCopy()) {
+                                     .getGlyphs()) {
                 Shape shape = glyph.getShape();
 
                 if (glyph.isWellKnown() &&
