@@ -15,6 +15,7 @@ import omr.constant.ConstantSet;
 import omr.score.Score;
 import omr.score.ScoreSheetBridge;
 import omr.score.common.PagePoint;
+import omr.score.common.PixelRectangle;
 import omr.score.common.ScorePoint;
 import omr.score.common.ScoreRectangle;
 import omr.score.common.SystemPoint;
@@ -25,9 +26,11 @@ import omr.score.entity.System;
 import static omr.score.ui.ScoreConstants.*;
 import omr.score.visitor.ScorePainter;
 
-import omr.selection.Selection;
+import omr.selection.MouseMovement;
+import omr.selection.ScoreLocationEvent;
 import omr.selection.SelectionHint;
-import omr.selection.SelectionTag;
+import omr.selection.SheetLocationEvent;
+import omr.selection.UserEvent;
 
 import omr.sheet.Sheet;
 
@@ -40,11 +43,13 @@ import omr.ui.view.ScrollView;
 import omr.ui.view.Zoom;
 import omr.ui.view.ZoomedPanel;
 
+import omr.util.Implement;
 import omr.util.Logger;
 import omr.util.TreeNode;
 
+import org.bushe.swing.event.EventSubscriber;
+
 import java.awt.*;
-import java.awt.event.MouseEvent;
 import java.util.*;
 
 import javax.swing.*;
@@ -53,12 +58,6 @@ import javax.swing.*;
  * Class <code>ScoreView</code> encapsulates the horizontal display of all the
  * score systems which may encompass several pages & systems. It knows about the
  * display zoom ratio of the score.
- *
- * <dl>
- * <dt><b>Selection Inputs:</b></dt><ul>
- * <li>SCORE Location
- * </ul>
- * </dl>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -85,7 +84,7 @@ public class ScoreView
     private final Rubber rubber = new Rubber(zoom);
 
     /** The displayed view */
-    private final MyPanel view = new MyPanel(zoom, rubber);
+    private final MyView view = new MyView(zoom, rubber);
 
     /** The scroll pane */
     private final ScrollView scrollPane = new ScrollView(view);
@@ -116,11 +115,9 @@ public class ScoreView
         }
 
         // Explicitly register the display to Score Selection
-        Sheet     sheet = score.getSheet();
-        Selection locationSelection = sheet.getSelection(
-            SelectionTag.SCORE_RECTANGLE);
-        view.setLocationSelection(locationSelection);
-        locationSelection.addObserver(view);
+        Sheet sheet = score.getSheet();
+        sheet.getEventService()
+             .subscribeStrongly(ScoreLocationEvent.class, view);
 
         // Layout
         info.setHorizontalAlignment(SwingConstants.LEFT);
@@ -142,9 +139,16 @@ public class ScoreView
         new ScoreSheetBridge(score);
 
         // Force selection update
-        Selection pixelSelection = sheet.getSelection(
-            SelectionTag.SHEET_RECTANGLE);
-        pixelSelection.reNotifyObservers(null);
+        SheetLocationEvent locationEvent = (SheetLocationEvent) sheet.getEventService()
+                                                                     .getLastEvent(
+            SheetLocationEvent.class);
+        PixelRectangle     location = (locationEvent != null)
+                                      ? locationEvent.getData() : null;
+
+        if (location != null) {
+            sheet.getEventService()
+                 .publish(new SheetLocationEvent(this, null, null, location));
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -311,10 +315,10 @@ public class ScoreView
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //---------//
-    // MyPanel //
-    //---------//
-    public class MyPanel
+    //--------//
+    // MyView //
+    //--------//
+    public class MyView
         extends RubberZoomedPanel
     {
         //~ Instance fields ----------------------------------------------------
@@ -326,10 +330,10 @@ public class ScoreView
         //~ Constructors -------------------------------------------------------
 
         //---------//
-        // MyPanel //
+        // MyView //
         //---------//
-        MyPanel (Zoom   zoom,
-                 Rubber rubber)
+        MyView (Zoom   zoom,
+                Rubber rubber)
         {
             super(zoom, rubber);
             setName("ScoreView-MyPanel");
@@ -346,10 +350,10 @@ public class ScoreView
         // contextSelected //
         //-----------------//
         @Override
-        public void contextSelected (MouseEvent e,
-                                     Point      pt)
+        public void contextSelected (Point         pt,
+                                     MouseMovement movement)
         {
-            super.pointSelected(e, pt);
+            super.pointSelected(pt, movement);
 
             // Let the user disable this popup feature if so desired
             if (!constants.popupEnabled.getValue()) {
@@ -364,7 +368,10 @@ public class ScoreView
 
             // Show the popup menu
             scoreMenu.getPopup()
-                     .show(this, e.getX() + 20, e.getY() + 30);
+                     .show(
+                this,
+                getZoom().scaled(scrPt.x) + 20,
+                getZoom().scaled(scrPt.y) + 30);
         }
 
         //-----------//
@@ -410,6 +417,46 @@ public class ScoreView
             zp.showFocusLocation(rect);
         }
 
+        //---------//
+        // onEvent //
+        //---------//
+        /**
+         * Call-back triggered when location has been modified
+         *
+         * @param event the notified event
+         */
+        @Override
+        public void onEvent (UserEvent event)
+        {
+            if (logger.isFineEnabled()) {
+                logger.fine("ScoreView: onEvent " + event);
+            }
+
+            // Show location in display (default dehavior)
+            super.onEvent(event);
+
+            if (event instanceof ScoreLocationEvent) {
+                // Display location coordinates
+                ScoreLocationEvent scoreLocation = (ScoreLocationEvent) event;
+
+                if (scoreLocation != null) {
+                    Rectangle rect = scoreLocation.rectangle;
+
+                    if (rect != null) {
+                        ScorePoint  scrPt = new ScorePoint(rect.x, rect.y);
+                        System      system = score.scoreLocateSystem(scrPt);
+                        PagePoint   pagPt = system.toPagePoint(scrPt);
+                        SystemPoint sysPt = system.toSystemPoint(pagPt);
+                        tellPoint(scrPt, pagPt, sysPt);
+                    } else {
+                        tellPoint(null, null, null);
+                    }
+                } else {
+                    tellPoint(null, null, null);
+                }
+            }
+        }
+
         //--------//
         // render //
         //--------//
@@ -428,41 +475,35 @@ public class ScoreView
             }
         }
 
-        //--------//
-        // update //
-        //--------//
+        //------------------//
+        // setFocusLocation //
+        //------------------//
         /**
-         * Call-back (part of Observer interface) triggered when location has
-         * been modified
+         * Modifies the location information. This method simply posts the
+         * location information on the sheet event service.
          *
-         * @param selection the notified Selection
-         * @param hint potential notification hint
+         * @param rect the location information
+         * @param movement the button movement
+         * @param hint the related selection hint
          */
         @Override
-        public void update (Selection     selection,
-                            SelectionHint hint)
+        protected void setFocusLocation (Rectangle     rect,
+                                         MouseMovement movement,
+                                         SelectionHint hint)
         {
             if (logger.isFineEnabled()) {
-                logger.fine("ScoreView: Score selection updated " + selection);
+                logger.fine("setFocusLocation rect=" + rect + " hint=" + hint);
             }
 
-            // Show location in display (default dehavior)
-            super.update(selection, hint);
-
-            // Display location coordinates
-            if (selection == locationSelection) {
-                Rectangle rect = (Rectangle) selection.getEntity();
-
-                if (rect != null) {
-                    ScorePoint  scrPt = new ScorePoint(rect.x, rect.y);
-                    System      system = score.scoreLocateSystem(scrPt);
-                    PagePoint   pagPt = system.toPagePoint(scrPt);
-                    SystemPoint sysPt = system.toSystemPoint(pagPt);
-                    tellPoint(scrPt, pagPt, sysPt);
-                } else {
-                    tellPoint(null, null, null);
-                }
-            }
+            // Write & forward the new pixel selection
+            score.getSheet()
+                 .getEventService()
+                 .publish(
+                new ScoreLocationEvent(
+                    this,
+                    hint,
+                    movement,
+                    new ScoreRectangle(rect)));
         }
     }
 

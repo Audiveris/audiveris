@@ -9,10 +9,7 @@
 //
 package omr.score.ui;
 
-import omr.selection.Selection;
-import omr.selection.SelectionHint;
-import omr.selection.SelectionObserver;
-import omr.selection.SelectionTag;
+import omr.selection.SheetEvent;
 
 import omr.sheet.Sheet;
 
@@ -20,6 +17,8 @@ import omr.ui.SheetDependent;
 
 import omr.util.Implement;
 import omr.util.Logger;
+
+import org.bushe.swing.event.EventSubscriber;
 
 /**
  * Class <code>ScoreDependent</code> handles the dependency on score
@@ -55,19 +54,6 @@ public abstract class ScoreDependent
 
     //~ Methods ----------------------------------------------------------------
 
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * {@inheritDoc}
-     */
-    @Implement(SelectionObserver.class)
-    @Override
-    public String getName ()
-    {
-        return "ScoreDependent";
-    }
-
     //-------------------//
     // setScoreAvailable //
     //-------------------//
@@ -100,19 +86,15 @@ public abstract class ScoreDependent
     /**
      * Notification of sheet selection (and thus related score if any)
      *
-     * @param selection the selection object (SHEET)
-     * @param hint processing hint (not used)
+     * @param event the notified sheet event
      */
-    @Implement(SelectionObserver.class)
+    @Implement(EventSubscriber.class)
     @Override
-    public void update (Selection     selection,
-                        SelectionHint hint)
+    public void onEvent (SheetEvent event)
     {
-        super.update(selection, hint);
+        super.onEvent(event);
 
-        if (selection.getTag() == SelectionTag.SHEET) {
-            Sheet sheet = (Sheet) selection.getEntity();
-            setScoreAvailable((sheet != null) && (sheet.getScore() != null));
-        }
+        Sheet sheet = event.getData();
+        setScoreAvailable((sheet != null) && (sheet.getScore() != null));
     }
 }
