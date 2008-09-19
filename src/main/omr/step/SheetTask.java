@@ -10,8 +10,11 @@
 package omr.step;
 
 import omr.sheet.Sheet;
+import omr.sheet.SystemInfo;
 
 import omr.util.Logger;
+
+import java.util.Collection;
 
 /**
  * Class <code>SheetTask</code> defines the task for a step at the whole
@@ -36,7 +39,10 @@ public abstract class SheetTask
     /** The related step for this task */
     protected final Step step;
 
-    /** Flag to indicate the task has been done (actually launched) */
+    /** Flag to indicate the task has started */
+    protected volatile boolean stepStarted;
+
+    /** Flag to indicate the task has been done */
     protected volatile boolean stepDone;
 
     //~ Constructors -----------------------------------------------------------
@@ -76,7 +82,7 @@ public abstract class SheetTask
      * Actually perform the step
      * @throws StepException raised if processing failed
      */
-    public abstract void doit ()
+    public abstract void doit (Collection<SystemInfo> systems)
         throws StepException;
 
     //--------//
@@ -92,22 +98,31 @@ public abstract class SheetTask
     }
 
     //-----------//
-    // getResult //
+    // isStarted //
     //-----------//
     /**
-     * Make sure this step has been run (at least started)
+     * Check whether this task has started
+     * @return true if started, false otherwise
+     */
+    public boolean isStarted ()
+    {
+        return stepStarted;
+    }
+
+    //--------//
+    // doStep //
+    //--------//
+    /**
+     * Run the step
+     * @param systems systems to process (null means all systems)
      * @throws StepException raised if processing failed
      */
-    public void getResult ()
+    public void doStep (Collection<SystemInfo> systems)
         throws StepException
     {
-        if (!isDone()) {
-            if (logger.isFineEnabled()) {
-                logger.fine(step + " doit ...");
-            }
-
-            doit();
-        }
+        started();
+        doit(systems);
+        done();
     }
 
     //------//
@@ -119,11 +134,24 @@ public abstract class SheetTask
     public void done ()
     {
         if (logger.isFineEnabled()) {
-            if (!(this instanceof SystemTask)) {
-                logger.fine(step + " done");
-            }
+            logger.fine(step + " done");
         }
 
         stepDone = true;
+    }
+
+    //---------//
+    // started //
+    //---------//
+    /**
+     * Flag this step as started
+     */
+    public void started ()
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine(step + " started ....................................");
+        }
+
+        stepStarted = true;
     }
 }

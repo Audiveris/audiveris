@@ -22,6 +22,7 @@ import omr.score.visitor.ScoreChecker;
 import omr.sheet.HorizontalsBuilder;
 import omr.sheet.ImageFormatException;
 import omr.sheet.LinesBuilder;
+import omr.sheet.MeasuresBuilder;
 import omr.sheet.Picture;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
@@ -30,11 +31,9 @@ import omr.sheet.SystemInfo;
 import static omr.step.Step.*;
 
 import omr.util.Logger;
-import omr.util.OmrExecutors;
 
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.Callable;
 
 import javax.swing.*;
 
@@ -79,7 +78,8 @@ public class SheetSteps
         tasks.put(SKEW, new SkewTask(sheet, SKEW));
         tasks.put(LINES, new LinesTask(sheet, LINES));
         tasks.put(HORIZONTALS, new HorizontalsTask(sheet, HORIZONTALS));
-        tasks.put(BARS, new BarsTask(sheet, BARS));
+        tasks.put(SYSTEMS, new SystemsTask(sheet, SYSTEMS));
+        tasks.put(MEASURES, new MeasuresTask(sheet, MEASURES));
         tasks.put(SYMBOLS, new SymbolsTask(sheet, SYMBOLS));
         tasks.put(VERTICALS, new VerticalsTask(sheet, VERTICALS));
         tasks.put(LEAVES, new LeavesTask(sheet, LEAVES));
@@ -93,10 +93,9 @@ public class SheetSteps
     // isDone //
     //--------//
     /**
-     * Convenient method to check whether a given step has been done (or simply
-     * started)
+     * Convenient method to check whether a given step has been done
      * @param step the provided step
-     * @return true if step has been done / started
+     * @return true if step has been done
      */
     public boolean isDone (Step step)
     {
@@ -104,38 +103,40 @@ public class SheetSteps
                    .isDone();
     }
 
-    //-----------//
-    // getResult //
-    //-----------//
+    //---------------//
+    // getLatestStep //
+    //---------------//
     /**
-     * Convenient method to make sure the result of a given step is
-     * available
-     * @param step the provided step
-     * @exception StepException if processing goes wrong
+     * Report the latest step done so far with the related sheet
+     * @return the latest step done, or null
      */
-    public void getResult (Step step)
-        throws StepException
+    public Step getLatestStep ()
     {
-        getTask(step)
-            .getResult();
+        Step last = null;
+
+        for (Step step : Step.values()) {
+            if (isDone(step)) {
+                last = step;
+            } else {
+                break;
+            }
+        }
+
+        return last;
     }
 
-    //-----------------//
-    // getSystemResult //
-    //-----------------//
+    //-----------//
+    // isStarted //
+    //-----------//
     /**
-     * Convenient method to make sure the result of a given step on a given
-     * system is available
+     * Convenient method to check whether a given step has started
      * @param step the provided step
-     * @param system the provided system
-     * @exception StepException if processing goes wrong
+     * @return true if step has been started
      */
-    public void getSystemResult (Step       step,
-                                 SystemInfo system)
-        throws StepException
+    public boolean isStarted (Step step)
     {
-        SystemTask systemTask = (SystemTask) getTask(step);
-        systemTask.getResult(system);
+        return getTask(step)
+                   .isStarted();
     }
 
     //-----------//
@@ -149,6 +150,23 @@ public class SheetSteps
     {
         getTask(step)
             .displayUI();
+    }
+
+    //--------//
+    // doStep //
+    //--------//
+    /**
+     * Convenient method to run a given step
+     * @param step the given step
+     * @param systems systems to process (null means all systems)
+     * @exception StepException if processing goes wrong
+     */
+    public void doStep (Step                   step,
+                        Collection<SystemInfo> systems)
+        throws StepException
+    {
+        getTask(step)
+            .doStep(systems);
     }
 
     //----------//
@@ -183,11 +201,15 @@ public class SheetSteps
      * @param step the provided step
      * @exception StepException if processing goes wrong
      */
-    public void doit (Step step)
+    public void doit (Step                   step,
+                      Collection<SystemInfo> systems)
         throws StepException
     {
-        getTask(step)
-            .doit();
+        SheetTask task = getTask(step);
+
+        task.started();
+        task.doit(systems);
+        task.done();
     }
 
     //-----------------//
@@ -228,86 +250,93 @@ public class SheetSteps
                 SystemInfo.toString(impactedSystems));
         }
 
-        // Prepare the reprocessing of the impacted systems
-        Collection<Callable<Void>> work = new ArrayList<Callable<Void>>();
-
-        for (SystemInfo info : impactedSystems) {
-            final SystemInfo system = info;
-            work.add(
-                new Callable<Void>() {
-                        public Void call ()
-                            throws Exception
-                        {
-                            system.getScoreSystem()
-                                  .cleanupNode();
-
-                            try {
-                                if (isDone(LEAVES)) {
-                                    doSystem(LEAVES, system);
-                                }
-
-                                if (isDone(CLEANUP)) {
-                                    doSystem(CLEANUP, system);
-                                }
-
-                                if (isDone(SCORE)) {
-                                    doSystem(SCORE, system);
-                                }
-                            } catch (StepException ex) {
-                                ex.printStackTrace();
-                            }
-
-                            return null;
-                        }
-                    });
+        // Rebuild from step LEAVES, if needed
+        if (sheet.getSheetSteps()
+                 .getLatestStep()
+                 .compareTo(Step.LEAVES) >= 0) {
+            Step.LEAVES.reperform(sheet, impactedSystems);
         }
 
-        try {
-            OmrExecutors.getLowExecutor()
-                        .invokeAll(work);
-
-            // Final cross-system translation tasks
-            if (isDone(SCORE)) {
-                Runnable finalWork = new Runnable() {
-                    public void run ()
-                    {
-                        SystemInfo firstSystem = (impactedSystems.size() > 0)
-                                                 ? impactedSystems.first() : null;
-                        sheet.getScoreBuilder()
-                             .buildFinal(firstSystem);
-                    }
-                };
-
-                OmrExecutors.getLowExecutor()
-                            .submit(finalWork)
-                            .get();
-            }
-
-            // Always refresh views if any
-            if (Main.getGui() != null) {
-                SwingUtilities.invokeLater(
-                    new Runnable() {
-                            public void run ()
-                            {
-                                if (isDone(VERTICALS)) {
-                                    getTask(VERTICALS)
-                                        .displayUI();
-                                }
-
-                                if (isDone(SYMBOLS)) {
-                                    getTask(SYMBOLS)
-                                        .displayUI();
-                                }
-
-                                // Kludge, to put the Glyphs tab on top of all others.
-                                sheet.getAssembly()
-                                     .selectTab("Glyphs");
-                            }
-                        });
-            }
-        } catch (Exception ex) {
-            logger.warning("Last steps failed", ex);
-        }
+        //        // Prepare the reprocessing of the impacted systems
+        //        Collection<Callable<Void>> work = new ArrayList<Callable<Void>>();
+        //
+        //        for (SystemInfo info : impactedSystems) {
+        //            final SystemInfo system = info;
+        //            work.add(
+        //                new Callable<Void>() {
+        //                        public Void call ()
+        //                            throws Exception
+        //                        {
+        //                            system.getScoreSystem()
+        //                                  .cleanupNode();
+        //
+        //                            try {
+        //                                if (isDone(LEAVES)) {
+        //                                    doSystem(LEAVES, system);
+        //                                }
+        //
+        //                                if (isDone(CLEANUP)) {
+        //                                    doSystem(CLEANUP, system);
+        //                                }
+        //
+        //                                if (isDone(SCORE)) {
+        //                                    doSystem(SCORE, system);
+        //                                }
+        //                            } catch (StepException ex) {
+        //                                ex.printStackTrace();
+        //                            }
+        //
+        //                            return null;
+        //                        }
+        //                    });
+        //        }
+        //
+        //        try {
+        //            OmrExecutors.getLowExecutor()
+        //                        .invokeAll(work);
+        //
+        //            // Final cross-system translation tasks
+        //            if (isDone(SCORE)) {
+        //                Runnable finalWork = new Runnable() {
+        //                    public void run ()
+        //                    {
+        //                        SystemInfo firstSystem = (impactedSystems.size() > 0)
+        //                                                 ? impactedSystems.first() : null;
+        //                        sheet.getScoreBuilder()
+        //                             .buildFinal(firstSystem);
+        //                    }
+        //                };
+        //
+        //                OmrExecutors.getLowExecutor()
+        //                            .submit(finalWork)
+        //                            .get();
+        //            }
+        //
+        //            // Always refresh views if any
+        //            if (Main.getGui() != null) {
+        //                SwingUtilities.invokeLater(
+        //                    new Runnable() {
+        //                            public void run ()
+        //                            {
+        //                                if (isStarted(VERTICALS)) {
+        //                                    getTask(VERTICALS)
+        //                                        .displayUI();
+        //                                }
+        //
+        //                                if (isStarted(SYMBOLS)) {
+        //                                    getTask(SYMBOLS)
+        //                                        .displayUI();
+        //                                }
+        //
+        //                                // Kludge, to put the Glyphs tab on top of all others.
+        //                                sheet.getAssembly()
+        //                                     .selectTab("Glyphs");
+        //                            }
+        //                        });
+        //            }
+        //        } catch (Exception ex) {
+        //            logger.warning("Last steps failed", ex);
+        //        }
     }
 
     //---------//
@@ -326,19 +355,24 @@ public class SheetSteps
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //----------//
-    // BarsTask //
-    //----------//
+    //--------------//
+    // MeasuresTask //
+    //--------------//
     /**
-     * Step to retrieve barlines, and thus systems and measures
+     * Step to retrieve  measures
      */
-    private static class BarsTask
-        extends SheetTask
+    private class MeasuresTask
+        extends SystemTask
     {
+        //~ Instance fields ----------------------------------------------------
+
+        private MeasuresBuilder builder;
+        private boolean         prologDone = false;
+
         //~ Constructors -------------------------------------------------------
 
-        BarsTask (Sheet sheet,
-                  Step  step)
+        MeasuresTask (Sheet sheet,
+                      Step  step)
         {
             super(sheet, step);
         }
@@ -346,17 +380,66 @@ public class SheetSteps
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public void doit ()
+        public void doSystem (SystemInfo system)
             throws StepException
         {
-            sheet.getBarsBuilder()
-                 .buildInfo();
-            done();
+            builder.buildSystemMeasures(system);
+        }
+
+        @Override
+        protected void doEpilog (Collection<SystemInfo> systems)
+            throws StepException
+        {
+            if (logger.isFineEnabled()) {
+                logger.fine(step + " doEpilog");
+            }
+
+            builder.completeScoreStructure();
 
             // Force score view creation if UI is present
             if (Main.getGui() != null) {
                 Main.getGui().scoreController.setScoreView(sheet.getScore());
             }
+        }
+
+        @Override
+        protected synchronized void doProlog (Collection<SystemInfo> systems)
+            throws StepException
+        {
+            if (logger.isFineEnabled()) {
+                logger.fine(step + " doProlog");
+            }
+
+            builder = sheet.getMeasuresBuilder();
+            builder.allocateScoreStructure();
+        }
+    }
+
+    //-------------//
+    // SystemsTask //
+    //-------------//
+    /**
+     * Step to retrieve bar sticks, and thus systems
+     */
+    private static class SystemsTask
+        extends SheetTask
+    {
+        //~ Constructors -------------------------------------------------------
+
+        SystemsTask (Sheet sheet,
+                     Step  step)
+        {
+            super(sheet, step);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void doit (Collection<SystemInfo> systems)
+            throws StepException
+        {
+            sheet.getSystemsBuilder()
+                 .buildInfo();
         }
     }
 
@@ -382,10 +465,6 @@ public class SheetSteps
         @Override
         public void displayUI ()
         {
-            if (logger.isFineEnabled()) {
-                logger.fine("CLEANUP displayUI");
-            }
-
             getTask(SYMBOLS)
                 .displayUI();
             getTask(VERTICALS)
@@ -396,12 +475,6 @@ public class SheetSteps
         public void doSystem (SystemInfo system)
             throws StepException
         {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "CLEANUP doSystem #" + system.getScoreSystem().getId());
-            }
-
-            getSystemResult(LEAVES, system);
             sheet.getGlyphInspector()
                  .verifyStems(system);
             sheet.getGlyphsBuilder()
@@ -412,7 +485,6 @@ public class SheetSteps
             sheet.getGlyphInspector()
                  .processGlyphs(system, GlyphInspector.getCleanupMaxDoubt());
             system.retrieveTextGlyphs();
-            done(system);
         }
     }
 
@@ -436,12 +508,11 @@ public class SheetSteps
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public void doit ()
+        public void doit (Collection<SystemInfo> unused)
             throws StepException
         {
             sheet.setHorizontalsBuilder(new HorizontalsBuilder(sheet));
             sheet.setHorizontals(sheet.getHorizontalsBuilder().buildInfo());
-            done();
         }
     }
 
@@ -478,17 +549,8 @@ public class SheetSteps
         public void doSystem (SystemInfo system)
             throws StepException
         {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "LEAVES doSystem #" + system.getScoreSystem().getId());
-            }
-
-            // Trigger previous processing for this system, if needed
-            getSystemResult(VERTICALS, system);
-            // Processing for this step
             sheet.getGlyphInspector()
                  .processGlyphs(system, GlyphInspector.getLeafMaxDoubt());
-            done(system);
         }
     }
 
@@ -512,12 +574,11 @@ public class SheetSteps
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public void doit ()
+        public void doit (Collection<SystemInfo> unused)
             throws StepException
         {
             sheet.setLinesBuilder(new LinesBuilder(sheet));
             sheet.setStaves(sheet.getLinesBuilder().getStaves());
-            done();
         }
     }
 
@@ -531,6 +592,10 @@ public class SheetSteps
     private static class LoadTask
         extends SheetTask
     {
+        //~ Instance fields ----------------------------------------------------
+
+        private Picture picture;
+
         //~ Constructors -------------------------------------------------------
 
         LoadTask (Sheet sheet,
@@ -542,14 +607,13 @@ public class SheetSteps
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public void doit ()
+        public void doit (Collection<SystemInfo> unused)
             throws StepException
         {
             File imageFile = sheet.getImageFile();
 
             try {
-                Picture picture = new Picture(imageFile);
-                done();
+                picture = new Picture(imageFile);
                 sheet.setPicture(picture);
             } catch (FileNotFoundException ex) {
                 logger.warning("Cannot find file " + imageFile);
@@ -600,12 +664,11 @@ public class SheetSteps
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public void doit ()
+        public void doit (Collection<SystemInfo> unused)
             throws StepException
         {
             Scale scale = new Scale(sheet);
             sheet.setScale(scale);
-            done();
         }
     }
 
@@ -631,10 +694,6 @@ public class SheetSteps
         @Override
         public void displayUI ()
         {
-            if (logger.isFineEnabled()) {
-                logger.fine("SCORE displayUI");
-            }
-
             // Make sure symbols & verticals are displayed
             getTask(SYMBOLS)
                 .displayUI();
@@ -647,33 +706,27 @@ public class SheetSteps
         }
 
         @Override
-        public void doFinal ()
+        public void doEpilog (Collection<SystemInfo> systems)
             throws StepException
         {
             if (logger.isFineEnabled()) {
-                logger.fine("SCORE final");
+                logger.fine(step + " doEpilog");
             }
 
             // Final cross-system translation tasks
             sheet.getScoreBuilder()
-                 .buildFinal(null);
+                 .buildFinal(
+                (systems != null) ? (SystemInfo) systems.toArray()[0] : null);
         }
 
         @Override
         public void doSystem (SystemInfo system)
             throws StepException
         {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "SCORE doSystem #" + system.getScoreSystem().getId());
-            }
-
             omr.score.entity.System scoreSystem = system.getScoreSystem();
-            getSystemResult(CLEANUP, system);
             sheet.getScoreBuilder()
                  .buildSystem(scoreSystem);
             scoreSystem.acceptChildren(new ScoreChecker());
-            done(system);
         }
     }
 
@@ -701,12 +754,11 @@ public class SheetSteps
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public void doit ()
+        public void doit (Collection<SystemInfo> unused)
             throws StepException
         {
             sheet.setSkewBuilder(new SkewBuilder(sheet));
             sheet.setSkew(sheet.getSkewBuilder().buildInfo());
-            done();
         }
     }
 
@@ -717,7 +769,7 @@ public class SheetSteps
      * Step to process all glyphs, built with connected sections from the
      * current collection of non-recognized sections.
      */
-    private static class SymbolsTask
+    private class SymbolsTask
         extends SystemTask
     {
         //~ Constructors -------------------------------------------------------
@@ -733,25 +785,16 @@ public class SheetSteps
         @Override
         public void displayUI ()
         {
-            if (logger.isFineEnabled()) {
-                logger.fine("SYMBOLS displayUI");
-            }
-
             sheet.getSymbolsEditor()
                  .refresh();
         }
 
         @Override
         public void doSystem (SystemInfo system)
+            throws StepException
         {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "SYMBOLS doSystem #" + system.getScoreSystem().getId());
-            }
-
             sheet.getGlyphInspector()
                  .processGlyphs(system, GlyphInspector.getSymbolMaxDoubt());
-            done(system);
         }
     }
 
@@ -779,10 +822,6 @@ public class SheetSteps
         @Override
         public void displayUI ()
         {
-            if (logger.isFineEnabled()) {
-                logger.fine("VERTICALS displayUI");
-            }
-
             // Create verticals display
             sheet.getVerticalsBuilder()
                  .refresh();
@@ -792,15 +831,8 @@ public class SheetSteps
         public void doSystem (SystemInfo system)
             throws StepException
         {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "VERTICALS doSystem #" + system.getScoreSystem().getId());
-            }
-
-            getSystemResult(SYMBOLS, system);
             sheet.getVerticalsBuilder()
                  .retrieveSystemVerticals(system);
-            done(system);
         }
     }
 }
