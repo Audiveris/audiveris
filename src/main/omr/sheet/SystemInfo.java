@@ -9,7 +9,6 @@
 //
 package omr.sheet;
 
-import omr.score.common.PixelRectangle;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphSection;
 import omr.glyph.TextArea;
@@ -17,12 +16,15 @@ import omr.glyph.TextGlyphLine;
 
 import omr.lag.HorizontalOrientation;
 
+import omr.score.common.PixelRectangle;
 import omr.score.entity.System;
 
+import omr.util.Boundary;
 import omr.util.Logger;
 
 import java.awt.Rectangle;
 import java.util.*;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * Class <code>SystemInfo</code> gathers information from the original picture
@@ -68,8 +70,16 @@ public class SystemInfo
     /** Vertical sections, assigned once for all to this system */
     private final List<GlyphSection> vSections = new ArrayList<GlyphSection>();
 
+    /** Unmodifiable view of the vertical section collection */
+    private final Collection<GlyphSection> vSectionsView = Collections.unmodifiableCollection(
+        vSections);
+
     /** Active glyphs in this system */
-    private final SortedSet<Glyph> glyphs = new TreeSet<Glyph>();
+    private final SortedSet<Glyph> glyphs = new ConcurrentSkipListSet<Glyph>();
+
+    /** Unmodifiable view of the glyphs collection */
+    private final Collection<Glyph> glyphsView = Collections.unmodifiableCollection(
+        glyphs);
 
     /** Ordered collection of lines of text glyphs */
     private SortedSet<TextGlyphLine> textLines = new TreeSet<TextGlyphLine>();
@@ -79,11 +89,8 @@ public class SystemInfo
     /** Unique Id for this system (in the sheet) */
     private final int id;
 
-    /** Bottom of system related area */
-    private int areaBottom = -1;
-
-    /** Top of system related area */
-    private int areaTop = -1;
+    /** Boundary that encloses all items of this system */
+    private Boundary boundary;
 
     /** Ordinate of bottom of last staff of the system. */
     private int bottom;
@@ -131,59 +138,6 @@ public class SystemInfo
 
     //~ Methods ----------------------------------------------------------------
 
-    //---------------//
-    // setAreaBottom //
-    //---------------//
-    /**
-     * Set the ordinate of bottom of system area
-     *
-     * @param areaBottom ordinate of bottom of system area in pixels
-     */
-    public void setAreaBottom (int areaBottom)
-    {
-        this.areaBottom = areaBottom;
-    }
-
-    //---------------//
-    // getAreaBottom //
-    //---------------//
-    /**
-     * Report the ordinate of the bottom of the picture area whose all items are
-     * assumed to belong to this system (the system related area)
-     *
-     * @return the related area bottom ordinate (in pixels)
-     */
-    public int getAreaBottom ()
-    {
-        return areaBottom;
-    }
-
-    //------------//
-    // setAreaTop //
-    //------------//
-    /**
-     * Set the ordinate of top of systemp area
-     *
-     * @param areaTop ordinate of top of system area in pixels
-     */
-    public void setAreaTop (int areaTop)
-    {
-        this.areaTop = areaTop;
-    }
-
-    //------------//
-    // getAreaTop //
-    //------------//
-    /**
-     * Report the ordinate of the top of the related picture area
-     *
-     * @return the related area top ordinate (in pixels)
-     */
-    public int getAreaTop ()
-    {
-        return areaTop;
-    }
-
     //-----------//
     // getBottom //
     //-----------//
@@ -196,6 +150,42 @@ public class SystemInfo
     public int getBottom ()
     {
         return bottom;
+    }
+
+    //-------------//
+    // setBoundary //
+    //-------------//
+    /**
+     * Define the precise boundary of this system
+     * @param boundary the (new) boundary
+     */
+    public void setBoundary (Boundary boundary)
+    {
+        this.boundary = boundary;
+    }
+
+    //-------------//
+    // getBoundary //
+    //-------------//
+    /**
+     * Report the precise boundary of this system
+     * @return the precise polygon boundary
+     */
+    public Boundary getBoundary ()
+    {
+        return boundary;
+    }
+
+    //-----------//
+    // getBounds //
+    //-----------//
+    /**
+     * Report the rectangular bounds that enclose this system
+     * @return the system rectangular bounds
+     */
+    public PixelRectangle getBounds ()
+    {
+        return new PixelRectangle(boundary.getBounds());
     }
 
     //-----------//
@@ -236,20 +226,7 @@ public class SystemInfo
      */
     public Collection<Glyph> getGlyphs ()
     {
-        return Collections.unmodifiableCollection(glyphs);
-    }
-
-    //---------------//
-    // getGlyphsCopy //
-    //--------------//
-    /**
-     * Report a COPY of the collection of glyphs within the system area
-     *
-     * @return a copy of the  collection of glyphs
-     */
-    public synchronized Collection<Glyph> getGlyphsCopy ()
-    {
-        return new ArrayList(glyphs);
+        return glyphsView;
     }
 
     //-------//
@@ -470,7 +447,7 @@ public class SystemInfo
      */
     public Collection<GlyphSection> getVerticalSections ()
     {
-        return Collections.unmodifiableCollection(vSections);
+        return vSectionsView;
     }
 
     //----------//
@@ -489,9 +466,8 @@ public class SystemInfo
     //----------//
     // addGlyph //
     //----------//
-    public synchronized void addGlyph (Glyph glyph)
+    public void addGlyph (Glyph glyph)
     {
-        ///logger.info("addGlyph");
         glyphs.add(glyph);
     }
 
@@ -542,6 +518,14 @@ public class SystemInfo
         LineInfo lastLine = staff.getLastLine();
         bottom = lastLine.getLine()
                          .yAt(lastLine.getLeft());
+    }
+
+    //-------------//
+    // clearGlyphs //
+    //-------------//
+    public void clearGlyphs ()
+    {
+        glyphs.clear();
     }
 
     //-----------//
@@ -662,9 +646,8 @@ public class SystemInfo
     //-------------//
     // removeGlyph //
     //-------------//
-    public synchronized boolean removeGlyph (Glyph glyph)
+    public boolean removeGlyph (Glyph glyph)
     {
-        ///logger.info("removeGlyph");
         return glyphs.remove(glyph);
     }
 
@@ -756,7 +739,7 @@ public class SystemInfo
     {
         try {
             // Keep the previous work! No textLines.clear();
-            for (Glyph glyph : getGlyphsCopy()) {
+            for (Glyph glyph : getGlyphs()) {
                 if ((glyph.getShape() != null) && glyph.getShape()
                                                        .isText()) {
                     TextGlyphLine.feed(glyph, this, textLines);
@@ -797,12 +780,7 @@ public class SystemInfo
     {
         TextArea area = new TextArea(
             null,
-            sheet.getVerticalLag().createAbsoluteRoi(
-                new Rectangle(
-                    0,
-                    areaTop,
-                    sheet.getWidth(),
-                    areaBottom - areaTop + 1)),
+            sheet.getVerticalLag().createAbsoluteRoi(getBounds()),
             new HorizontalOrientation());
 
         // Subdivide the area, to find and build text glyphs (words most likely)
