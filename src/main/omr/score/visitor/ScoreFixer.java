@@ -15,6 +15,7 @@ import omr.score.Score;
 import omr.score.common.ScorePoint;
 import omr.score.common.SystemRectangle;
 import omr.score.entity.Measure;
+import omr.score.entity.ScorePart;
 import omr.score.entity.Staff;
 import omr.score.entity.System;
 import omr.score.entity.Text;
@@ -43,6 +44,9 @@ public class ScoreFixer
 
     //~ Instance fields --------------------------------------------------------
 
+    /** Flag to assign or not measure ids */
+    private final boolean assignMeasureId;
+
     /** Flag to indicate pass number on the system children */
     private boolean firstSystemPass = true;
 
@@ -56,9 +60,12 @@ public class ScoreFixer
     //------------//
     /**
      * Creates a new ScoreFixer object.
+     *
+     * @param assignMeasureId Should we assign measure ids?
      */
-    public ScoreFixer ()
+    public ScoreFixer (boolean assignMeasureId)
     {
+        this.assignMeasureId = assignMeasureId;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -74,25 +81,27 @@ public class ScoreFixer
             measure.resetAbscissae();
         }
 
-        // Set measure id, based on a preceding measure, whatever the part
-        Measure precedingMeasure = measure.getPreceding();
+        if (assignMeasureId) {
+            // Set measure id, based on a preceding measure, whatever the part
+            Measure precedingMeasure = measure.getPreceding();
 
-        // No preceding system?
-        if (precedingMeasure == null) {
-            System prevSystem = (System) measure.getSystem()
-                                                .getPreviousSibling();
+            // No preceding system?
+            if (precedingMeasure == null) {
+                System prevSystem = (System) measure.getSystem()
+                                                    .getPreviousSibling();
 
-            if (prevSystem != null) { // No preceding part
-                precedingMeasure = prevSystem.getFirstRealPart()
-                                             .getLastMeasure();
+                if (prevSystem != null) { // No preceding part
+                    precedingMeasure = prevSystem.getFirstRealPart()
+                                                 .getLastMeasure();
+                }
             }
-        }
 
-        if (precedingMeasure != null) {
-            measure.setId(precedingMeasure.getId() + 1);
-        } else {
-            // Very first measure
-            measure.setId(measure.isImplicit() ? 0 : 1);
+            if (precedingMeasure != null) {
+                measure.setId(precedingMeasure.getId() + 1);
+            } else {
+                // Very first measure
+                measure.setId(measure.isImplicit() ? 0 : 1);
+            }
         }
 
         return true;
@@ -145,11 +154,11 @@ public class ScoreFixer
 
         if (prevSystem == null) {
             // Very first system in the score
+            ScorePart scorePart = system.getFirstPart()
+                                        .getScorePart();
             origin.x = -systemContour.x + STAFF_MARGIN_WIDTH;
             origin.y = -systemContour.y + STAFF_MARGIN_HEIGHT +
-                       system.getFirstPart()
-                             .getScorePart()
-                             .getDisplayOrdinate();
+                       ((scorePart != null) ? scorePart.getDisplayOrdinate() : 0);
         } else {
             // Not the first system
             origin.x = (prevSystem.getDisplayOrigin().x +
