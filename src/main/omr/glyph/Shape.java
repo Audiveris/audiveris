@@ -1218,7 +1218,7 @@ public enum Shape {
         TIME_ZERO,
         TIME_SIXTEEN);
 
-    /** Specific multi-symbol for entiretime signature (such as 4/4 */
+    /** Specific multi-symbol for entire time signature (such as 4/4 */
     public static final EnumSet<Shape> MultiTimes = EnumSet.range(
         TIME_FOUR_FOUR,
         CUT_TIME);

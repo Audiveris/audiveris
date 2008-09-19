@@ -14,6 +14,8 @@ import omr.constant.ConstantSet;
 import omr.lag.HorizontalOrientation;
 
 import omr.score.common.PageRectangle;
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 import omr.score.common.SystemPoint;
 import omr.score.common.SystemRectangle;
 import omr.score.entity.Staff;
@@ -21,8 +23,6 @@ import omr.score.entity.System;
 import omr.score.entity.System.StaffPosition;
 import omr.score.entity.SystemPart;
 
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
@@ -270,10 +270,10 @@ public class Sentence
     public void setTextType (TextType type)
     {
         this.type = type;
+
         for (Glyph item : getGlyphs()) {
             item.resetPseudoContent();
         }
-        
     }
 
     //-------------//
