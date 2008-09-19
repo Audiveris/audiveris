@@ -257,7 +257,6 @@ public abstract class ConstantSet
                 // Not yet allocated, no big deal, we'll get back to it later
                 if (obj == null) {
                     ///logger.warning("ConstantSet not fully allocated yet");
-
                     return;
                 }
 
