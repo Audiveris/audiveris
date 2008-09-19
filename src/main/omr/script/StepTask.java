@@ -66,7 +66,7 @@ public class StepTask
     {
         if (!sheet.getSheetSteps()
                   .isDone(step)) {
-            step.perform(sheet, null);
+            step.performUntil(sheet, null);
         } else if (logger.isFineEnabled()) {
             logger.fine(this + " already done");
         }
