@@ -568,17 +568,16 @@ public class ScoreTree
                 }
             }
 
-//            // Remove also nodes that cannot be expanded (leaves)
-//            for (Iterator<Object> it = set.iterator(); it.hasNext();) {
-//                Object n = it.next();
-//
-//                if (model.isLeaf(n)) {
-//                    ///logger.warning("removing leaf " + n);
-//                    it.remove();
-//                    modified = true;
-//                }
-//            }
-
+            //            // Remove also nodes that cannot be expanded (leaves)
+            //            for (Iterator<Object> it = set.iterator(); it.hasNext();) {
+            //                Object n = it.next();
+            //
+            //                if (model.isLeaf(n)) {
+            //                    ///logger.warning("removing leaf " + n);
+            //                    it.remove();
+            //                    modified = true;
+            //                }
+            //            }
             if (modified) {
                 nodeMap.put(node, set);
                 model.refreshPath(e.getPath());
