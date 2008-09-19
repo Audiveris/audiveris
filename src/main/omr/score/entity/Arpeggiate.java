@@ -13,11 +13,11 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
 
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 import omr.score.common.SystemPoint;
 import omr.score.visitor.ScoreVisitor;
 
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import omr.sheet.Scale;
 
 import omr.util.Logger;
