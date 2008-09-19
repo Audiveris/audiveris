@@ -10,9 +10,6 @@ package omr.score.midi;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
-import static omr.plugin.Dependency.*;
-import omr.plugin.Plugin;
-import static omr.plugin.PluginType.*;
 
 import omr.score.MeasureRange;
 import omr.score.Score;
@@ -21,21 +18,19 @@ import static omr.score.midi.MidiAgent.Status.*;
 import omr.score.ui.ScoreActions;
 import omr.score.ui.ScoreDependent;
 
-import omr.selection.Selection;
-import omr.selection.SelectionHint;
-import omr.selection.SelectionObserver;
-import omr.selection.SelectionTag;
+import omr.selection.SheetEvent;
 
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 
-import omr.ui.MainGui;
 import omr.ui.util.FileFilter;
 import omr.ui.util.UIUtilities;
 
 import omr.util.BasicTask;
 import omr.util.Implement;
 import omr.util.Logger;
+
+import org.bushe.swing.event.EventSubscriber;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
@@ -172,14 +167,21 @@ public class MidiActions
         return midiWritable;
     }
 
-    //---------//
-    // getName //
-    //---------//
-    @Implement(SelectionObserver.class)
+    //--------//
+    // update //
+    //--------//
+    /**
+     * Notification of sheet selection, to update UI actions
+     *
+     * @param event the notified sheet event
+     */
+    @Implement(EventSubscriber.class)
     @Override
-    public String getName ()
+    public void onEvent (SheetEvent event)
     {
-        return "MidiActions";
+        super.onEvent(event);
+
+        updateActions();
     }
 
     //-----------//
@@ -234,27 +236,6 @@ public class MidiActions
             .stop();
     }
 
-    //--------//
-    // update //
-    //--------//
-    /**
-     * Notification of sheet selection, to update UI actions
-     *
-     * @param selection the selection object (SHEET)
-     * @param hint processing hint (not used)
-     */
-    @Implement(SelectionObserver.class)
-    @Override
-    public void update (Selection     selection,
-                        SelectionHint hint)
-    {
-        super.update(selection, hint);
-
-        if (selection.getTag() == SelectionTag.SHEET) {
-            updateActions();
-        }
-    }
-
     //---------------//
     // updateActions //
     //---------------//
@@ -274,25 +255,6 @@ public class MidiActions
             ((status == STOPPED) ||
                         (getAgent()
                              .getScore() == getCurrentScore())));
-
-        // To be removed ASAP
-        if (!MainGui.useSwingApplicationFramework()) {
-            if (playAction == null) {
-                // Action instances
-                omr.ui.ActionManager mgr = omr.ui.ActionManager.getInstance();
-                playAction = mgr.getActionInstance(PlayAction.class.getName());
-                pauseAction = mgr.getActionInstance(
-                    PauseAction.class.getName());
-                stopAction = mgr.getActionInstance(StopAction.class.getName());
-                writeAction = mgr.getActionInstance(
-                    WriteAction.class.getName());
-            }
-
-            playAction.setEnabled(isMidiPlayable());
-            pauseAction.setEnabled(isMidiPausable());
-            stopAction.setEnabled(isMidiStoppable());
-            writeAction.setEnabled(isMidiWritable());
-        }
     }
 
     //-----------//
@@ -370,46 +332,6 @@ public class MidiActions
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //-------------//
-    // PauseAction //
-    //-------------//
-    @Deprecated
-    @Plugin(type = MIDI_EXPORT, dependency = SCORE_AVAILABLE, onToolbar = true)
-    public static class PauseAction
-        extends AbstractAction
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            getInstance()
-                .pauseMidi(e);
-        }
-    }
-
-    //------------//
-    // PlayAction //
-    //------------//
-    @Deprecated
-    @Plugin(type = MIDI_EXPORT, dependency = SCORE_AVAILABLE, onToolbar = true)
-    public static class PlayAction
-        extends AbstractAction
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            Task task = getInstance()
-                            .playMidi(e);
-
-            if (task != null) {
-                task.execute();
-            }
-        }
-    }
-
     //----------//
     // PlayTask //
     //----------//
@@ -454,46 +376,6 @@ public class MidiActions
             }
 
             return null;
-        }
-    }
-
-    //------------//
-    // StopAction //
-    //------------//
-    @Deprecated
-    @Plugin(type = MIDI_EXPORT, dependency = SCORE_AVAILABLE, onToolbar = true)
-    public static class StopAction
-        extends AbstractAction
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            getInstance()
-                .stopMidi(e);
-        }
-    }
-
-    //-------------//
-    // WriteAction //
-    //-------------//
-    @Deprecated
-    @Plugin(type = MIDI_EXPORT, dependency = SCORE_AVAILABLE, onToolbar = false)
-    public static class WriteAction
-        extends AbstractAction
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            Task task = getInstance()
-                            .writeMidi(e);
-
-            if (task != null) {
-                task.execute();
-            }
         }
     }
 
