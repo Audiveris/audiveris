@@ -9,8 +9,6 @@
 //
 package omr.sheet;
 
-import omr.score.common.PixelDimension;
-import omr.score.common.PixelPoint;
 import omr.check.Check;
 import omr.check.CheckSuite;
 import omr.check.Checkable;
@@ -22,30 +20,25 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
-import omr.glyph.Shape;
+import omr.glyph.GlyphLag;
+import omr.glyph.GlyphSection;
 
-import omr.score.Score;
-import omr.score.common.PageRectangle;
-import omr.score.entity.Barline;
-import omr.score.entity.Measure;
-import omr.score.entity.Staff;
-import omr.score.entity.System;
-import omr.score.entity.SystemPart;
+import omr.lag.JunctionDeltaPolicy;
+import omr.lag.SectionsBuilder;
 
 import omr.step.StepException;
 
 import omr.stick.Stick;
 
-import omr.util.Dumper;
 import omr.util.Implement;
 import omr.util.Logger;
-import omr.util.TreeNode;
 
 import java.util.*;
 
 /**
  * Class <code>BarsChecker</code> is a (package private) companion of class
- * {@link BarsBuilder}, dedicated to physical checks.
+ * {@link SystemsBuilder}, dedicated to physical checks of vertical sticks that
+ * are candidates for barlines.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -61,7 +54,7 @@ public class BarsChecker
     private static final Logger logger = Logger.getLogger(BarsChecker.class);
 
     /** Successful bar that embraces a whole system */
-    private static final SuccessResult BAR_PART_DEFINING = new SuccessResult(
+    public static final SuccessResult BAR_PART_DEFINING = new SuccessResult(
         "Bar-PartDefining");
 
     /** Successful bar that embraces only part of a part */
@@ -79,10 +72,6 @@ public class BarsChecker
     /** Failure, since bar has no end aligned with a staff */
     private static final FailureResult NOT_STAFF_ANCHORED = new FailureResult(
         "Bar-NotStaffAnchored");
-
-    /** Failure, since bar goes higher or lower than the system area */
-    private static final FailureResult NOT_WITHIN_SYSTEM = new FailureResult(
-        "Bar-NotWithinSystem");
 
     /** Failure, since bar has too many glyphs stuck on it */
     private static final FailureResult TOO_HIGH_ADJACENCY = new FailureResult(
@@ -104,23 +93,20 @@ public class BarsChecker
     /** Related scale */
     private final Scale scale;
 
-    /** Related score */
-    private final Score score;
+    /** Related vertical lag */
+    private final GlyphLag lag;
+
+    /** Vertical sticks */
+    private final List<Stick> verticalSticks;
 
     /** Suite of checks to be performed */
-    private BarCheckSuite suite;
+    private final BarCheckSuite suite;
+
+    /** Related context of a bar stick */
+    private final Map<Stick, GlyphContext> contexts = new HashMap<Stick, GlyphContext>();
 
     /** List of found bar sticks */
-    private List<Stick> bars;
-
-    /** Vertical sticks, unused so far */
-    private List<Stick> clutter;
-
-    /** Retrieved systems */
-    private List<SystemInfo> systems = new ArrayList<SystemInfo>();
-
-    /** Related staff indices (top and bottom of a bar stick) */
-    private Map<Stick, Context> contexts = new HashMap<Stick, Context>();
+    private List<Stick> barSticks;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -131,71 +117,43 @@ public class BarsChecker
      * Prepare a bar checker on the provided sheet
      *
      * @param sheet the sheet to process
+     * @param verticalSticks the collection to be filled with vertical sticks,
+     * from where recognized bar sticks are removed and transfered to barsSticks
      */
-    public BarsChecker (Sheet sheet)
+    public BarsChecker (Sheet       sheet,
+                        GlyphLag    lag,
+                        List<Stick> verticalSticks)
     {
         this.sheet = sheet;
+        this.lag = lag;
+        this.verticalSticks = verticalSticks;
 
         scale = sheet.getScale();
-        score = sheet.getScore();
+        suite = new BarCheckSuite();
     }
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------------//
-    // isPartEmbraced //
-    //----------------//
+    //-----------------//
+    // getStaffAnchors //
+    //-----------------//
     /**
-     * Check whether the given part is within the vertical range of the given
-     * glyph (bar stick or brace glyph)
-     *
-     * @param part the given part
-     * @param glyph the given glyph
-     * @return true if part is embraced by the bar
+     * Report the indices of the staves at the top and at the bottom of the
+     * provided stick
+     * @param stick the stick to lookup
+     * @return a pair of staff indices, top & bottom, or null if the stick is
+     * not known
      */
-    public boolean isPartEmbraced (SystemPart part,
-                                   Glyph      glyph)
+    public StaffAnchors getStaffAnchors (Stick stick)
     {
-        // Extrema of glyph
-        PageRectangle box = scale.toUnits(glyph.getContourBox());
-        int           top = box.y;
-        int           bot = box.y + box.height;
+        GlyphContext context = contexts.get(stick);
 
-        // Check that part and glyph overlap vertically
-        final int topPart = part.getFirstStaff()
-                                .getTopLeft().y;
-        final int botPart = part.getLastStaff()
-                                .getTopLeft().y +
-                            part.getLastStaff()
-                                .getHeight();
-
-        return Math.max(topPart, top) < Math.min(botPart, bot);
+        if (context != null) {
+            return new StaffAnchors(context.topIdx, context.botIdx);
+        } else {
+            return null;
+        }
     }
-
-    //    //-----------------//
-    //    // isStaffEmbraced //
-    //    //-----------------//
-    //    /**
-    //     * Check whether the given staff is within the vertical range of the given
-    //     * glyph (bar stick or brace glyph)
-    //     *
-    //     * @param staff the given staff
-    //     * @param glyph the given glyph
-    //     * @return true if staff is embraced by the bar
-    //     */
-    //    public boolean isStaffEmbraced (Staff staff,
-    //                                    Glyph glyph)
-    //    {
-    //        // Extrema of glyph
-    //        PageRectangle box = scale.toUnits(glyph.getContourBox());
-    //        int           top = box.y;
-    //        int           bot = box.y + box.height;
-    //
-    //        // Check that middle of staff is within bar top & bottom
-    //        final int midStaff = staff.getTopLeft().y + (staff.getHeight() / 2);
-    //
-    //        return (midStaff > top) && (midStaff < bot);
-    //    }
 
     //----------//
     // getSuite //
@@ -205,82 +163,9 @@ public class BarsChecker
      *
      * @return the check suite
      */
-    public BarCheckSuite getSuite ()
+    public CheckSuite getSuite ()
     {
         return suite;
-    }
-
-    //-------------//
-    // getSystemOf //
-    //-------------//
-    /**
-     * Report the SystemInfo that contains the given bar.
-     *
-     * @param bar the given bar
-     * @return the containing SystemInfo, null if not found
-     */
-    public SystemInfo getSystemOf (Stick bar)
-    {
-        Context context = contexts.get(bar);
-
-        if (context == null) {
-            return null;
-        }
-
-        int topIdx = context.topIdx;
-        int botIdx = context.botIdx;
-
-        if (topIdx == -1) {
-            topIdx = botIdx;
-        }
-
-        if (botIdx == -1) {
-            botIdx = topIdx;
-        }
-
-        for (Iterator it = score.getSystems()
-                                .iterator(); it.hasNext();) {
-            System     system = (omr.score.entity.System) it.next();
-            SystemInfo systemInfo = system.getInfo();
-
-            if ((systemInfo.getStartIdx() <= botIdx) &&
-                (systemInfo.getStopIdx() >= topIdx)) {
-                return systemInfo;
-            }
-        }
-
-        // Not found
-        return null;
-    }
-
-    //------------------//
-    // retrieveMeasures //
-    //------------------//
-    /**
-     * Perform the sequence of physical checks to detect bar lines, then
-     * systems, parts, staves and measures.
-     *
-     * @param clutter the initial collection of vertical sticks, where
-     *                recognized bar sticks are removed
-     * @param bars the resulting collection of bar sticks
-     * @exception StepException raised if processing has been stoppped
-     */
-    public void retrieveMeasures (List<Stick> clutter,
-                                  List<Stick> bars)
-        throws StepException
-    {
-        // Cache parameters
-        this.clutter = clutter;
-        this.bars = bars;
-
-        // Retrieve true bar lines and thus SystemInfos
-        retrieveBarLines();
-
-        // Build score Systems, Parts & Staves from SystemInfos
-        buildScoreSystemsAndStaves();
-
-        // Build Measures
-        buildMeasures();
     }
 
     //------------//
@@ -293,7 +178,7 @@ public class BarsChecker
      *
      * @return true if thick
      */
-    private boolean isThickBar (Stick stick)
+    public boolean isThickBar (Stick stick)
     {
         // Max width of a thin bar line, otherwise this must be a thick bar
         final int maxThinWidth = scale.toPixels(constants.maxThinWidth);
@@ -305,228 +190,41 @@ public class BarsChecker
         return meanWidth > maxThinWidth;
     }
 
-    //---------------//
-    // buildMeasures //
-    //---------------//
-    /**
-     * Bar lines are first sorted according to their abscissa, then we run
-     * additional checks on each bar line, since we now know its enclosing
-     * system. If OK, then we add the corresponding measures in their parts.
-     */
-    private void buildMeasures ()
-    {
-        final int maxDy = scale.toPixels(constants.maxBarOffset);
-
-        // Sort bar sticks by increasing abscissa
-        Collections.sort(
-            bars,
-            new Comparator<Stick>() {
-                    public int compare (Stick b1,
-                                        Stick b2)
-                    {
-                        return b1.getMidPos() - b2.getMidPos();
-                    }
-                });
-
-        // Measures building (Sticks are already sorted by increasing abscissa)
-        for (Iterator<Stick> bit = bars.iterator(); bit.hasNext();) {
-            Stick bar = bit.next();
-
-            // Determine the system this bar line belongs to
-            SystemInfo systemInfo = getSystemOf(bar);
-
-            if (systemInfo == null) { // Should not occur, but that's safer
-                logger.warning("Bar not belonging to any system");
-
-                continue;
-            }
-
-            omr.score.entity.System system = systemInfo.getScoreSystem();
-
-            // We don't check that the bar does not start before first staff,
-            // this is too restrictive because of alternate endings.  We however
-            // do check that the bar does not end after last staff of the
-            // last part of the system.
-            int barAbscissa = bar.getMidPos();
-            int systemBottom = system.getLastPart()
-                                     .getLastStaff()
-                                     .getInfo()
-                                     .getLastLine()
-                                     .getLine()
-                                     .yAt(barAbscissa);
-
-            if ((bar.getStop() - systemBottom) > maxDy) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("Bar stopping too low");
-                }
-
-                bar.setResult(NOT_WITHIN_SYSTEM);
-                bit.remove();
-
-                continue;
-            }
-
-            // We add a measure in each relevant part of this system, provided
-            // that the part is embraced by the bar line
-            for (TreeNode node : system.getParts()) {
-                SystemPart part = (SystemPart) node;
-
-                if (isPartEmbraced(part, bar)) {
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            part + " - Creating measure for bar-line " + bar);
-                    }
-
-                    Measure measure = new Measure(part);
-                    Barline barline = new Barline(measure);
-                    bar.setShape(
-                        isThickBar(bar) ? Shape.THICK_BAR_LINE
-                                                : Shape.THIN_BAR_LINE);
-                    barline.addStick(bar);
-                }
-            }
-        }
-    }
-
-    //----------------------------//
-    // buildScoreSystemsAndStaves //
-    //----------------------------//
-    /**
-     * For each SystemInfo, build the corresponding System entity with all its
-     * depending Parts and Staves
-     */
-    private void buildScoreSystemsAndStaves ()
-    {
-        // Systems
-        for (SystemInfo info : systems) {
-            // Allocate the system
-            omr.score.entity.System system = new omr.score.entity.System(
-                info,
-                score,
-                scale.toPagePoint(
-                    new PixelPoint(info.getLeft(), info.getTop())),
-                scale.toUnits(
-                    new PixelDimension(info.getWidth(), info.getDeltaY())));
-
-            // Set the link SystemInfo -> System
-            info.setScoreSystem(system);
-
-            // Allocate the parts in the system
-            for (PartInfo partInfo : info.getParts()) {
-                SystemPart part = new SystemPart(system);
-
-                // Allocate the staves in this part
-                for (StaffInfo staffInfo : partInfo.getStaves()) {
-                    LineInfo line = staffInfo.getFirstLine();
-                    new Staff(
-                        staffInfo,
-                        part,
-                        scale.toPagePoint(
-                            new PixelPoint(
-                                staffInfo.getLeft(),
-                                line.getLine().yAt(line.getLeft()))),
-                        scale.pixelsToUnits(
-                            staffInfo.getRight() - staffInfo.getLeft()),
-                        64); // Staff vertical size in units);
-                }
-            }
-        }
-    }
-
-    //----------------------//
-    // buildSystemsAndParts //
-    //----------------------//
-    /**
-     * Knowing the starting staff indice of each staff system, we are able to
-     * allocate and describe the proper number of systems & parts in the score.
-     *
-     * @param systemStarts indexed by any staff, to give the staff index of the
-     *                     containing system. For a system with just one staff,
-     *                     both indices are equal. For a system of more than 1
-     *                     staff, the indices differ.
-     * @param partStarts indexed by any staff, to give the staff index of the
-     *                   containing part. For a part with just one staff, both
-     *                   indices are equal. For a part of more than 1 staff, the
-     *                   indices differ.
-     * @throws StepException raised if processing failed
-     */
-    private void buildSystemsAndParts (int[] systemStarts,
-                                       int[] partStarts)
-        throws StepException
-    {
-        int        id = 0; // Id for created SystemInfo's
-        int        sStart = -1; // Current system start
-        SystemInfo system = null; // Current system info
-        int        pStart = -1; // Current part start
-        PartInfo   part = null; // Current part info
-
-        for (int i = 0; i < systemStarts.length; i++) {
-            // System break ?
-            if (systemStarts[i] != sStart) {
-                system = new SystemInfo(++id, sheet);
-                systems.add(system);
-                sStart = i;
-            }
-
-            system.addStaff(i);
-
-            // Part break ?
-            if (partStarts[i] != pStart) {
-                part = new PartInfo();
-                system.addPart(part);
-                pStart = i;
-            }
-
-            part.addStaff(sheet.getStaves().get(i));
-        }
-
-        if (logger.isFineEnabled()) {
-            for (SystemInfo systemInfo : systems) {
-                Dumper.dump(systemInfo);
-
-                int i = 0;
-
-                for (PartInfo partInfo : systemInfo.getParts()) {
-                    Dumper.dump(partInfo, "Part #" + ++i, 1);
-                }
-            }
-        }
-
-        // Finally, store this list into the sheet instance
-        sheet.setSystems(systems);
-    }
-
-    //-------------//
-    // createSuite //
-    //-------------//
-    /**
-     * Create a brand new check suite, with current value of constant parameters
-     */
-    private void createSuite ()
-    {
-        suite = new BarCheckSuite();
-    }
-
-    //------------------//
-    // retrieveBarLines //
-    //------------------//
+    //-------------------//
+    // retrieveBarSticks //
+    //-------------------//
     /**
      * From the list of vertical sticks, this method uses several tests based on
      * stick location, and stick shape (the test is based on adjacency, it
      * should be improved), to detect true bar lines.
      *
-     * <p> The output is thus a filled 'bars' list of bar lines, and the list of
-     * SystemInfos which describe the parameters of each system.
+     * <p> The output is thus a filled 'barSticks' list of sticks.
      *
-     * @throws StepException Raised when a sanity check on systems found
-     *                             has failed
+     * @throws StepException Raised when processing goes wrong
      */
-    private void retrieveBarLines ()
+    public List<Stick> retrieveBarSticks ()
         throws StepException
     {
+        barSticks = new ArrayList<Stick>();
+
+        // Populate the vertical lag of runs
+        SectionsBuilder<GlyphLag, GlyphSection> lagBuilder;
+        lagBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
+            lag,
+            new JunctionDeltaPolicy(scale.toPixels(constants.maxDeltaLength)));
+        lagBuilder.createSections(sheet.getPicture(), 0); // 0 = minRunLength
+
+        // Retrieve (vertical) sticks
+        VerticalArea barsArea = new VerticalArea(
+            sheet,
+            lag,
+            scale.toPixels(constants.maxBarThickness));
+        verticalSticks.clear();
+        verticalSticks.addAll(barsArea.getSticks());
+
         // Sort vertical sticks according to their abscissa
         Collections.sort(
-            clutter,
+            verticalSticks,
             new Comparator<Stick>() {
                     public int compare (Stick o1,
                                         Stick o2)
@@ -537,40 +235,24 @@ public class BarsChecker
 
         if (logger.isFineEnabled()) {
             logger.fine(
-                clutter.size() + " sticks to check: " +
-                Glyph.toString(clutter));
+                verticalSticks.size() + " sticks to check: " +
+                Glyph.toString(verticalSticks));
 
-            for (Stick stick : clutter) {
+            for (Stick stick : verticalSticks) {
                 logger.fine(stick.toString());
             }
         }
 
-        // Total number of staves in the sheet
-        final int staffNb = sheet.getStaves()
-                                 .size();
-
-        // A way to tell the containing System for each staff, by providing the
-        // staff index of the starting staff of the containing system.
-        int[] systemStarts = new int[staffNb];
-        Arrays.fill(systemStarts, -1);
-
-        // A way to tell the containing Part for each staff, by providing the
-        // staff index of the starting staff of the containing part.
-        int[] partStarts = new int[staffNb];
-        Arrays.fill(partStarts, -1);
-
-        createSuite();
-
         double minResult = constants.minCheckResult.getValue();
 
-        // Check each candidate stick in turn, leaving in clutter the unlucky
-        // candidates
-        for (Iterator<Stick> it = clutter.iterator(); it.hasNext();) {
-            Stick   stick = it.next();
+        // Check each candidate stick in turn, leaving in verticalSticks the 
+        // unlucky candidates
+        for (Iterator<Stick> it = verticalSticks.iterator(); it.hasNext();) {
+            Stick        stick = it.next();
 
             // Allocate the candidate context, and pass the whole check suite
-            Context context = new Context(stick);
-            double  res = suite.pass(context);
+            GlyphContext context = new GlyphContext(stick);
+            double       res = suite.pass(context);
 
             if (logger.isFineEnabled()) {
                 logger.fine("suite => " + res + " for " + stick);
@@ -580,7 +262,7 @@ public class BarsChecker
                 // OK, we insert this candidate stick as a true bars member,
                 // and remove it from clutter
                 contexts.put(stick, context);
-                bars.add(stick);
+                barSticks.add(stick);
                 it.remove();
 
                 // Bars that define a system or a part (they start AND end with
@@ -588,14 +270,6 @@ public class BarsChecker
                 if ((context.topIdx != -1) && (context.botIdx != -1)) {
                     // Here, we have both part & system defining bars
                     // System bars occur first (increasing abscissa of glyphs)
-                    for (int i = context.topIdx; i <= context.botIdx; i++) {
-                        if (systemStarts[i] == -1) {
-                            systemStarts[i] = context.topIdx;
-                        }
-
-                        partStarts[i] = context.topIdx;
-                    }
-
                     stick.setResult(BAR_PART_DEFINING);
 
                     if (logger.isFineEnabled()) {
@@ -623,35 +297,40 @@ public class BarsChecker
         if (logger.isFineEnabled()) {
             logger.fine("Bars found:");
 
-            for (Stick bar : bars) {
+            for (Stick bar : barSticks) {
                 logger.fine(bar.toString());
             }
         }
 
-        // Sanity check on the systems found
-        for (int i = 0; i < systemStarts.length; i++) {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "staff=" + i + " systemStart=" + systemStarts[i] +
-                    " partStart=" + partStarts[i]);
-            }
-
-            if (systemStarts[i] == -1) {
-                logger.warning("No system found for staff " + i);
-                throw new StepException();
-            }
-        }
-
-        // System/Part retrieval
-        buildSystemsAndParts(systemStarts, partStarts);
+        return barSticks;
     }
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //---------//
-    // Context //
-    //---------//
-    static class Context
+    //--------------//
+    // StaffAnchors //
+    //--------------//
+    public static class StaffAnchors
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final int top;
+        final int bot;
+
+        //~ Constructors -------------------------------------------------------
+
+        public StaffAnchors (int topIdx,
+                             int botIdx)
+        {
+            this.top = topIdx;
+            this.bot = botIdx;
+        }
+    }
+
+    //--------------//
+    // GlyphContext //
+    //--------------//
+    static class GlyphContext
         implements Checkable
     {
         //~ Instance fields ----------------------------------------------------
@@ -676,7 +355,7 @@ public class BarsChecker
 
         //~ Constructors -------------------------------------------------------
 
-        public Context (Stick stick)
+        public GlyphContext (Stick stick)
         {
             this.stick = stick;
         }
@@ -694,7 +373,7 @@ public class BarsChecker
     // BarCheckSuite //
     //---------------//
     class BarCheckSuite
-        extends CheckSuite<Context>
+        extends CheckSuite<GlyphContext>
     {
         //~ Constructors -------------------------------------------------------
 
@@ -724,7 +403,7 @@ public class BarsChecker
     // AnchorCheck //
     //-------------//
     private class AnchorCheck
-        extends Check<Context>
+        extends Check<GlyphContext>
     {
         //~ Constructors -------------------------------------------------------
 
@@ -744,7 +423,7 @@ public class BarsChecker
         // Make sure that at least top or bottom are staff anchors, and that
         // both are staff anchors in the case of thick bars.
         @Implement(Check.class)
-        protected double getValue (Context context)
+        protected double getValue (GlyphContext context)
         {
             Stick stick = context.stick;
             context.isThick = isThickBar(stick);
@@ -767,7 +446,7 @@ public class BarsChecker
     // BottomCheck //
     //-------------//
     private class BottomCheck
-        extends Check<Context>
+        extends Check<GlyphContext>
     {
         //~ Constructors -------------------------------------------------------
 
@@ -786,7 +465,7 @@ public class BarsChecker
 
         // Retrieve the distance with proper staff border
         @Implement(Check.class)
-        protected double getValue (Context context)
+        protected double getValue (GlyphContext context)
         {
             Stick stick = context.stick;
             int   stop = stick.getStop();
@@ -821,7 +500,7 @@ public class BarsChecker
      * Class <code>BottomChunkCheck</code> checks for lack of chunk at bottom
      */
     private class BottomChunkCheck
-        extends Check<Context>
+        extends Check<GlyphContext>
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -857,7 +536,7 @@ public class BarsChecker
         //~ Methods ------------------------------------------------------------
 
         @Implement(Check.class)
-        protected double getValue (Context context)
+        protected double getValue (GlyphContext context)
         {
             Stick stick = context.stick;
 
@@ -874,45 +553,48 @@ public class BarsChecker
     {
         //~ Instance fields ----------------------------------------------------
 
+        Scale.Fraction maxBarThickness = new Scale.Fraction(
+            0.75,
+            "Maximum thickness of an interesting vertical stick");
+        Scale.Fraction maxDeltaLength = new Scale.Fraction(
+            0.2,
+            "Maximum difference in run length to be part of the same section");
         Scale.Fraction chunkHeight = new Scale.Fraction(
             0.33,
             "Height of half area to look for chunks");
         Constant.Ratio chunkRatioHigh = new Constant.Ratio(
             0.25,
-            "HighMinimum ratio of alien pixels to detect chunks");
+            "High Minimum ratio of alien pixels to detect chunks");
         Constant.Ratio chunkRatioLow = new Constant.Ratio(
             0.25,
-            "LowMinimum ratio of alien pixels to detect chunks");
+            "Low Minimum ratio of alien pixels to detect chunks");
         Scale.Fraction chunkWidth = new Scale.Fraction(
             0.33,
             "Width of half area to look for chunks");
         Constant.Ratio maxAdjacencyHigh = new Constant.Ratio(
             0.25d,
-            "HighMaximum adjacency ratio for a bar stick");
+            "High Maximum adjacency ratio for a bar stick");
         Constant.Ratio maxAdjacencyLow = new Constant.Ratio(
             0.25d,
-            "LowMaximum adjacency ratio for a bar stick");
-        Scale.Fraction maxBarOffset = new Scale.Fraction(
-            1.0,
-            "Vertical offset used to detect that a bar extends past a staff");
+            "Low Maximum adjacency ratio for a bar stick");
         Scale.Fraction maxStaffShiftDyHigh = new Scale.Fraction(
             10,
-            "HighMaximum vertical distance between a bar edge and the staff line");
+            "High Maximum vertical distance between a bar edge and the staff line");
         Scale.Fraction maxStaffShiftDyLow = new Scale.Fraction(
             0.125,
-            "LowMaximum vertical distance between a bar edge and the staff line");
+            "Low Maximum vertical distance between a bar edge and the staff line");
         Scale.Fraction maxStaffDHeightHigh = new Scale.Fraction(
             0.4,
-            "HighMaximum difference between a bar length and min staff height");
+            "High Maximum difference between a bar length and min staff height");
         Scale.Fraction maxStaffDHeightLow = new Scale.Fraction(
             0.2,
-            "LowMaximum difference between a bar length and min staff height");
+            "Low Maximum difference between a bar length and min staff height");
         Scale.Fraction minStaffDxHigh = new Scale.Fraction(
             0,
-            "HighMinimum horizontal distance between a bar and a staff edge");
+            "High Minimum horizontal distance between a bar and a staff edge");
         Scale.Fraction minStaffDxLow = new Scale.Fraction(
             0,
-            "LowMinimum horizontal distance between a bar and a staff edge");
+            "Low Minimum horizontal distance between a bar and a staff edge");
         Scale.Fraction maxThinWidth = new Scale.Fraction(
             0.3,
             "Maximum width of a normal bar, versus a thick bar");
@@ -928,7 +610,7 @@ public class BarsChecker
     // LeftAdjacencyCheck //
     //--------------------//
     private static class LeftAdjacencyCheck
-        extends Check<Context>
+        extends Check<GlyphContext>
     {
         //~ Constructors -------------------------------------------------------
 
@@ -947,7 +629,7 @@ public class BarsChecker
 
         // Retrieve the adjacency value
         @Implement(Check.class)
-        protected double getValue (Context context)
+        protected double getValue (GlyphContext context)
         {
             Stick stick = context.stick;
             int   length = stick.getLength();
@@ -960,7 +642,7 @@ public class BarsChecker
     // HeightDiffCheck //
     //-----------------//
     private class HeightDiffCheck
-        extends Check<Context>
+        extends Check<GlyphContext>
     {
         //~ Constructors -------------------------------------------------------
 
@@ -979,7 +661,7 @@ public class BarsChecker
 
         // Retrieve the length data
         @Implement(Check.class)
-        protected double getValue (Context context)
+        protected double getValue (GlyphContext context)
         {
             Stick stick = context.stick;
             int   height = Integer.MAX_VALUE;
@@ -1000,7 +682,7 @@ public class BarsChecker
     // LeftCheck //
     //-----------//
     private class LeftCheck
-        extends Check<Context>
+        extends Check<GlyphContext>
     {
         //~ Constructors -------------------------------------------------------
 
@@ -1019,7 +701,7 @@ public class BarsChecker
 
         // Retrieve the stick abscissa
         @Implement(Check.class)
-        protected double getValue (Context context)
+        protected double getValue (GlyphContext context)
         {
             Stick stick = context.stick;
             int   x = stick.getMidPos();
@@ -1041,7 +723,7 @@ public class BarsChecker
     // RightAdjacencyCheck //
     //---------------------//
     private static class RightAdjacencyCheck
-        extends Check<Context>
+        extends Check<GlyphContext>
     {
         //~ Constructors -------------------------------------------------------
 
@@ -1060,7 +742,7 @@ public class BarsChecker
 
         // Retrieve the adjacency value
         @Implement(Check.class)
-        protected double getValue (Context context)
+        protected double getValue (GlyphContext context)
         {
             Stick stick = context.stick;
             int   length = stick.getLength();
@@ -1073,7 +755,7 @@ public class BarsChecker
     // RightCheck //
     //------------//
     private class RightCheck
-        extends Check<Context>
+        extends Check<GlyphContext>
     {
         //~ Constructors -------------------------------------------------------
 
@@ -1092,7 +774,7 @@ public class BarsChecker
 
         // Retrieve the stick abscissa
         @Implement(Check.class)
-        protected double getValue (Context context)
+        protected double getValue (GlyphContext context)
         {
             Stick stick = context.stick;
             int   x = stick.getMidPos();
@@ -1114,7 +796,7 @@ public class BarsChecker
     // TopCheck //
     //----------//
     private class TopCheck
-        extends Check<Context>
+        extends Check<GlyphContext>
     {
         //~ Constructors -------------------------------------------------------
 
@@ -1133,7 +815,7 @@ public class BarsChecker
 
         // Retrieve the distance with proper staff border
         @Implement(Check.class)
-        protected double getValue (Context context)
+        protected double getValue (GlyphContext context)
         {
             Stick stick = context.stick;
             int   start = stick.getStart();
@@ -1168,7 +850,7 @@ public class BarsChecker
      * Class <code>TopChunkCheck</code> checks for lack of chunk at top
      */
     private class TopChunkCheck
-        extends Check<Context>
+        extends Check<GlyphContext>
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -1204,7 +886,7 @@ public class BarsChecker
         //~ Methods ------------------------------------------------------------
 
         @Implement(Check.class)
-        protected double getValue (Context context)
+        protected double getValue (GlyphContext context)
         {
             Stick stick = context.stick;
 
