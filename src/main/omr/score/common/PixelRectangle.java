@@ -42,18 +42,6 @@ public class PixelRectangle
     // PixelRectangle //
     //----------------//
     /**
-     * Creates an instance of <code>PixelRectangle</code> by cloning another
-     * instance.
-     */
-    public PixelRectangle (PixelRectangle other)
-    {
-        this(other.x, other.y, other.width, other.height);
-    }
-
-    //----------------//
-    // PixelRectangle //
-    //----------------//
-    /**
      * Construct a <code>PixelRectangle</code> and initialize it with the
      * specified data
      *
@@ -68,6 +56,33 @@ public class PixelRectangle
                            int height)
     {
         super(x, y, width, height);
+    }
+
+    //----------------//
+    // PixelRectangle //
+    //----------------//
+    /**
+     * Construct a <code>PixelRectangle</code> and initialize it with the
+     * specified generic rectangle
+     *
+     * @param rect the specified generic rectangle
+     */
+    public PixelRectangle (Rectangle rect)
+    {
+        super(rect.x, rect.y, rect.width, rect.height);
+    }
+
+    //----------------//
+    // PixelRectangle //
+    //----------------//
+    /**
+     * Construct a <code>PixelRectangle</code> with just a PixelPoint
+     *
+     * @param pt the specified point
+     */
+    public PixelRectangle (PixelPoint pt)
+    {
+        super(pt.x, pt.y, 0, 0);
     }
 
     //~ Methods ----------------------------------------------------------------
