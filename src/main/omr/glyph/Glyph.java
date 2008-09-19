@@ -887,6 +887,7 @@ public class Glyph
     {
         if (contourBox == null) {
             Rectangle box = null;
+
             for (Section section : members) {
                 if (box == null) {
                     box = new Rectangle(section.getContourBox());
@@ -894,15 +895,12 @@ public class Glyph
                     box.add(section.getContourBox());
                 }
             }
+
             contourBox = box;
         }
 
         if (contourBox != null) {
-            return new PixelRectangle(
-                contourBox.x,
-                contourBox.y,
-                contourBox.width,
-                contourBox.height);
+            return new PixelRectangle(contourBox);
         } else {
             return null;
         }
