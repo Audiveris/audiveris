@@ -136,14 +136,14 @@ public class RubberZoomedPanel
         try {
             // Then, drawing specific to the view (to be provided in subclass)
             render(g);
-
+        } catch (ConcurrentModificationException ex) {
+            logger.warning("RubberZoomedPanel paintComponent failed", ex);
+            repaint(); // To trigger another painting later ...
+        } finally {
             // Finally the rubber, now that everything else has been drawn
             if (rubber != null) {
                 rubber.render(g);
             }
-        } catch (ConcurrentModificationException ex) {
-            logger.warning("RubberZoomedPanel paintComponent failed", ex);
-            repaint(); // To trigger another painting later ...
         }
     }
 
@@ -159,5 +159,6 @@ public class RubberZoomedPanel
      */
     protected void render (Graphics g)
     {
+        // Empty by default
     }
 }
