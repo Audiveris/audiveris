@@ -11,11 +11,26 @@ package omr.sheet;
 
 import omr.script.ScriptActions;
 
-import omr.selection.Selection;
+import omr.selection.GlyphEvent;
+import omr.selection.GlyphIdEvent;
+import omr.selection.GlyphSetEvent;
+import omr.selection.LocationEvent;
+import omr.selection.PixelLevelEvent;
+import omr.selection.RunEvent;
+import omr.selection.ScoreLocationEvent;
+import omr.selection.SectionEvent;
+import omr.selection.SectionIdEvent;
+import omr.selection.SheetEvent;
+import omr.selection.SheetLocationEvent;
+import omr.selection.UserEvent;
 
 import omr.util.Dumper;
 import omr.util.Logger;
+import omr.util.Memory;
 import omr.util.NameSet;
+
+import org.bushe.swing.event.EventService;
+import org.bushe.swing.event.ThreadSafeEventService;
 
 import java.util.*;
 
@@ -35,11 +50,37 @@ public class SheetManager
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(SheetManager.class);
 
+    /**
+     * The global event service dedicated to publication of the currently
+     * selected sheet.
+     */
+    private static final EventService sheetService = new ThreadSafeEventService();
+
+    static {
+        // We need a cache of at least one sheet for this service
+        sheetService.setDefaultCacheSizePerClassOrTopic(1);
+    }
+
+    /** Catalog of really all Eventclasses, meant only for debugging */
+    private static final Collection<Class<?extends UserEvent>> allEventClasses = new ArrayList<Class<?extends UserEvent>>();
+
+    static {
+        allEventClasses.add(GlyphEvent.class);
+        allEventClasses.add(GlyphIdEvent.class);
+        allEventClasses.add(GlyphSetEvent.class);
+        allEventClasses.add(LocationEvent.class);
+        allEventClasses.add(PixelLevelEvent.class);
+        allEventClasses.add(RunEvent.class);
+        allEventClasses.add(ScoreLocationEvent.class);
+        allEventClasses.add(SectionEvent.class);
+        allEventClasses.add(SectionIdEvent.class);
+        allEventClasses.add(SheetEvent.class);
+        allEventClasses.add(SheetLocationEvent.class);
+        allEventClasses.add(UserEvent.class);
+    }
+
     /** The single instance of this class */
     private static SheetManager INSTANCE;
-
-    /** Current sheet selection */
-    private static Selection selection;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -130,8 +171,8 @@ public class SheetManager
             logger.fine("setSelectedSheet : " + sheet);
         }
 
-        getSelection()
-            .setEntity(sheet, null);
+        getEventService()
+            .publish(new SheetEvent(SheetManager.class, sheet));
     }
 
     //------------------//
@@ -140,34 +181,32 @@ public class SheetManager
     /**
      * Convenient method to directly access currently selected sheet if any
      *
-     * @return the selected sheet, which may be null (if no sheet selected yet)
+     * @return the selected sheet, which may be null (if no sheet is selected)
      */
     public static Sheet getSelectedSheet ()
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("getSelectedSheet : " + getSelection().getEntity());
-        }
+        SheetEvent sheetEvent = (SheetEvent) sheetService.getLastEvent(
+            SheetEvent.class);
 
-        return (Sheet) getSelection()
-                           .getEntity();
+        return (sheetEvent != null) ? sheetEvent.getData() : null;
     }
 
-    //--------------//
-    // getSelection //
-    //--------------//
+    //-----------------//
+    // getEventService //
+    //-----------------//
     /**
      * Convenient method to access sheet selection, and potentially register
      * observer
      *
      * @return the sheet selection
      */
-    public static Selection getSelection ()
+    public static EventService getEventService ()
     {
         if (logger.isFineEnabled()) {
             logger.fine("getSelection called");
         }
 
-        return SelectionHolder.selection;
+        return sheetService;
     }
 
     //-----------//
@@ -219,11 +258,12 @@ public class SheetManager
         }
 
         // Remove from selection if needed
-        if (getSelection()
-                .getEntity() == sheet) {
-            getSelection()
-                .setEntity(null, null);
+        if (sheet == getSelectedSheet()) {
+            sheetService.publish(new SheetEvent(this, null));
         }
+
+        // Suggestion to run the garbage collector
+        Memory.gc();
     }
 
     //----------//
@@ -272,6 +312,26 @@ public class SheetManager
         logger.info(instances.size() + " sheet(s) dumped");
     }
 
+    //-------------------//
+    // dumpEventServices //
+    //-------------------//
+    /**
+     * Debug action to dump the current status of all event services
+     */
+    public static void dumpEventServices ()
+    {
+        Sheet sheet = SheetManager.getSelectedSheet();
+        logger.info("Sheet:" + sheet);
+
+        if (sheet == null) {
+            return;
+        }
+
+        dumpSubscribers("Sheet events", sheet.getEventService());
+        dumpSubscribers("hLag events", sheet.getHorizontalLag().getEventService());
+        dumpSubscribers("vLag events", sheet.getVerticalLag().getEventService());
+    }
+
     //----------------//
     // insertInstance //
     //----------------//
@@ -311,15 +371,25 @@ public class SheetManager
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
-
     //-----------------//
-    // SelectionHolder //
+    // dumpSubscribers //
     //-----------------//
-    private static class SelectionHolder
+    @SuppressWarnings("unchecked")
+    private static void dumpSubscribers (String       title,
+                                         EventService service)
     {
-        //~ Static fields/initializers -----------------------------------------
+        logger.info(title);
 
-        public static final Selection selection = Selection.makeSheetSelection();
+        for (Class<?extends UserEvent> eventClass : allEventClasses) {
+            List subscribers = service.getSubscribers(eventClass);
+
+            if (subscribers.size() > 0) {
+                logger.info("-- " + eventClass.getSimpleName() + ": " + subscribers.size());
+
+                for (Object obj : subscribers) {
+                    logger.info("      " + obj); //.getClass().getName());
+                }
+            }
+        }
     }
 }
