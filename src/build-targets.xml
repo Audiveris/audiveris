@@ -223,7 +223,7 @@
             packagenames    ="${javadoc.packages}"
             private         ="${javadoc.private}"
             source          ="${javac.source}"
-            sourcepath      ="${src.dir};${swingappfwk.src}"
+            sourcepath      ="${src.dir};${swingappfwk.src};${eventbus.src}"
             splitindex      ="${javadoc.splitindex}"
             use             ="${javadoc.use}"
             useexternalfile ="true"
