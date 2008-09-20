@@ -41,11 +41,11 @@ public class GraphTest
     //@Test
     public void testAddEdgeNoVertices ()
     {
-        MyVertex v1 = null;
-        MyVertex v2 = null;
+        MyVertex v10 = null;
+        MyVertex v20 = null;
 
         try {
-            MyVertex.addEdge(v1, v2);
+            MyVertex.addEdge(v10, v20);
             fail(
                 "Exception should be raised" +
                 " when edge is allocated between null vertices");
@@ -310,6 +310,7 @@ public class GraphTest
     // setUp //
     //-------//
     //@Configuration(beforeTestMethod = true)
+    @Override
     protected void setUp ()
     {
         graph = new MyDigraph();
