@@ -9,6 +9,8 @@
 //-----------------------------------------------------------------------//
 package omr.lag;
 
+import omr.score.common.PixelPoint;
+
 import omr.util.BaseTestCase;
 import static junit.framework.Assert.*;
 
@@ -123,10 +125,10 @@ public class LagTest
     //----------------//
     public void testHSwitchRef ()
     {
-        Point cp = new Point(12, 34);
-        Point xy = hLag.switchRef(cp, null);
+        Point      cp = new Point(12, 34);
+        PixelPoint xy = hLag.switchRef(cp, null);
         assertEquals("Non expected switch.", cp, xy);
-        xy = new Point();
+        xy = new PixelPoint();
         hLag.switchRef(cp, xy);
         assertEquals("Non expected switch.", cp, xy);
     }
@@ -221,10 +223,10 @@ public class LagTest
     //----------------//
     public void testVSwitchRef ()
     {
-        Point cp = new Point(12, 34);
-        Point xy = vLag.switchRef(cp, null);
+        Point      cp = new Point(12, 34);
+        PixelPoint xy = vLag.switchRef(cp, null);
         assertEquals("Expected switch.", new Point(cp.y, cp.x), xy);
-        xy = new Point();
+        xy = new PixelPoint();
         vLag.switchRef(cp, xy);
         assertEquals("Expected switch.", new Point(cp.y, cp.x), xy);
     }
