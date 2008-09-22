@@ -11,7 +11,7 @@ package omr.selection;
 
 
 /**
- * Class <code>MouseMovement</code> defines Which phase of user action generated
+ * Class <code>MouseMovement</code> defines which phase of user action generated
  * the event. For example, we may decide to update minimal information while the
  * user is moving the mouse, and launch expensive processing only when the user
  * is releasing the mouse

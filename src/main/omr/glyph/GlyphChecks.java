@@ -23,7 +23,7 @@ import omr.util.Logger;
 import java.util.*;
 
 /**
- * Class <code>GlyphChecks</code> gatahers additional specific glyph checks,
+ * Class <code>GlyphChecks</code> gathers additional specific glyph checks,
  * meant to complement the work done by the neural network evaluator
  *
  * @author Herv&eacute Bitteur
@@ -39,55 +39,16 @@ public class GlyphChecks
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Evaluator.class);
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
-    //---------------------//
-    // hugeGapBetweenParts //
-    //---------------------//
-    /**
-     * Browse the collection of provided glyphs to make sure there is no huge
-     * horizontal gap included
-     * @param glyphs the collection of glyphs that compose the text candidate
-     * @param sheet needed for scale of the context
-     * @return true if gap found
-     */
-    private static boolean hugeGapBetweenParts (Glyph compound)
+    //-------------//
+    // GlyphChecks // Not meant to be instantiated
+    //-------------//
+    private GlyphChecks ()
     {
-        if (compound.getParts()
-                    .size() == 0) {
-            return false;
-        }
-
-        // Sort glyphs by abscissa
-        List<Glyph> glyphs = new ArrayList<Glyph>(compound.getParts());
-        Collections.sort(glyphs);
-
-        final Scale scale = new Scale(glyphs.get(0).getInterline());
-        final int   maxGap = scale.toPixels(constants.maxTextGap);
-        int         gapStart = 0;
-        Glyph       prev = null;
-
-        for (Glyph glyph : glyphs) {
-            PixelRectangle box = glyph.getContourBox();
-
-            if (prev != null) {
-                if ((box.x - gapStart) > maxGap) {
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            "huge gap detected between glyphs #" +
-                            prev.getId() + " & " + glyph.getId());
-                    }
-
-                    return true;
-                }
-            }
-
-            prev = glyph;
-            gapStart = (box.x + box.width) - 1;
-        }
-
-        return false;
     }
+
+    //~ Methods ----------------------------------------------------------------
 
     //---------------//
     // specificCheck //
@@ -190,6 +151,54 @@ public class GlyphChecks
         return shape;
     }
 
+    //---------------------//
+    // hugeGapBetweenParts //
+    //---------------------//
+    /**
+     * Browse the collection of provided glyphs to make sure there is no huge
+     * horizontal gap included
+     * @param glyphs the collection of glyphs that compose the text candidate
+     * @param sheet needed for scale of the context
+     * @return true if gap found
+     */
+    private static boolean hugeGapBetweenParts (Glyph compound)
+    {
+        if (compound.getParts()
+                    .size() == 0) {
+            return false;
+        }
+
+        // Sort glyphs by abscissa
+        List<Glyph> glyphs = new ArrayList<Glyph>(compound.getParts());
+        Collections.sort(glyphs);
+
+        final Scale scale = new Scale(glyphs.get(0).getInterline());
+        final int   maxGap = scale.toPixels(constants.maxTextGap);
+        int         gapStart = 0;
+        Glyph       prev = null;
+
+        for (Glyph glyph : glyphs) {
+            PixelRectangle box = glyph.getContourBox();
+
+            if (prev != null) {
+                if ((box.x - gapStart) > maxGap) {
+                    if (logger.isFineEnabled()) {
+                        logger.fine(
+                            "huge gap detected between glyphs #" +
+                            prev.getId() + " & " + glyph.getId());
+                    }
+
+                    return true;
+                }
+            }
+
+            prev = glyph;
+            gapStart = (box.x + box.width) - 1;
+        }
+
+        return false;
+    }
+
     //--------------------//
     // validBeamHookSlope //
     //--------------------//
@@ -201,10 +210,10 @@ public class GlyphChecks
     private static boolean validBeamHookSlope (Glyph glyph)
     {
         try {
-            Stick  stick = (Stick) glyph;
-            double slope = stick.getLine()
-                                .getInvertedSlope(); // vertical lag!
-            
+            Stick          stick = (Stick) glyph;
+            double         slope = stick.getLine()
+                                        .getInvertedSlope(); // vertical lag!
+
             PixelRectangle box = glyph.getContourBox();
             double         maxSlope = (double) box.height / (double) box.width;
 

@@ -18,7 +18,7 @@ import omr.lag.Section;
  * <dl>
  * <dt><b>Publishers:</b><dd>GlyphLag, Lag, LagView
  * <dt><b>Subscribers:</b><dd>GlyphLag, Lag
- * <dt><b>Readers:</b><dd>, GlyphLagView, SectionBoard
+ * <dt><b>Readers:</b><dd>GlyphLagView, SectionBoard
  * </dl>
  * @author Herv&eacute Bitteur
  * @version $Id$
