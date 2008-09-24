@@ -482,7 +482,7 @@ public class Lag<L extends Lag<L, S>, S extends Section>
      * class when published.
      */
     public void subscribeStrongly (Class<?extends UserEvent> eventClass,
-                           EventSubscriber           subscriber)
+                                   EventSubscriber           subscriber)
     {
         eventService.subscribeStrongly(eventClass, subscriber);
     }
@@ -555,6 +555,20 @@ public class Lag<L extends Lag<L, S>, S extends Section>
         }
 
         return sb.toString();
+    }
+
+    //-------------//
+    // unsubscribe //
+    //-------------//
+    /**
+     * Unsubscribe to the lag event service for a specific class
+     * @param eventClass the class of interesting events
+     * @param subscriber the entity to unsubscribe
+     */
+    public void unsubscribe (Class<?extends UserEvent> eventClass,
+                             EventSubscriber           subscriber)
+    {
+        eventService.unsubscribe(eventClass, subscriber);
     }
 
     //-----------//

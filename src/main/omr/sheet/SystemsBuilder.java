@@ -637,13 +637,13 @@ public class SystemsBuilder
             }
         }
 
-        //--------//
-        // update //
-        //--------//
+        //---------//
+        // onEvent //
+        //---------//
         /**
          * Notification about selection objects
          *
-         * @param selection the notified selection
+         * @param event the notified event
          */
         @Override
         public void onEvent (UserEvent event)
@@ -656,7 +656,7 @@ public class SystemsBuilder
                 SheetLocationEvent sheetLocation = (SheetLocationEvent) event;
 
                 if (sheetLocation != null) {
-                    logger.info(sheetLocation.toString());
+                    ///logger.info(sheetLocation.toString());
 
                     if (sheetLocation.hint == SelectionHint.LOCATION_ADD) {
                         Rectangle rect = sheetLocation.rectangle;

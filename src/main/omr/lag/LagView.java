@@ -132,13 +132,8 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         viewIndex = lag.viewIndexOf(this);
         colorize();
 
-        // Subscribe to lag events
-        for (Class<?extends UserEvent> eventClass : eventClasses) {
-            lag.subscribeStrongly(eventClass, this);
-        }
-
-        // Subscribe to location events
-        locationService.subscribeStrongly(SheetLocationEvent.class, this);
+        // By default, subscribe to interesting events
+        setLocationService(locationService, SheetLocationEvent.class);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -409,6 +404,48 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
 
         // Paint additional items, such as recognized items, etc...
         renderItems(g);
+    }
+
+    //-----------//
+    // subscribe //
+    //-----------//
+    @Override
+    public void subscribe ()
+    {
+        // Subscribe to location events
+        super.subscribe();
+
+        // Subscribe to lag events
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                this.getClass().getName() + " LV subscribing to " +
+                eventClasses);
+        }
+
+        for (Class<?extends UserEvent> eventClass : eventClasses) {
+            lag.subscribeStrongly(eventClass, this);
+        }
+    }
+
+    //-------------//
+    // unsubscribe //
+    //-------------//
+    @Override
+    public void unsubscribe ()
+    {
+        // Unsubscribe to location events
+        super.unsubscribe();
+
+        // Unsubscribe to lag events
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                getClass().getName() + " LV unsubscribing from " +
+                eventClasses);
+        }
+
+        for (Class<?extends UserEvent> eventClass : eventClasses) {
+            lag.unsubscribe(eventClass, this);
+        }
     }
 
     //----------------//

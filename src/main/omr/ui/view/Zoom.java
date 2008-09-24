@@ -245,14 +245,6 @@ public class Zoom
      */
     public void fireStateChanged ()
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Listeners= " + listeners.size());
-
-            for (ChangeListener listener : listeners) {
-                logger.fine(this + " will Fire " + listener);
-            }
-        }
-
         for (ChangeListener listener : listeners) {
             if (changeEvent == null) {
                 changeEvent = new ChangeEvent(this);

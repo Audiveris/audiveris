@@ -9,6 +9,8 @@
 //
 package omr.sheet;
 
+import omr.selection.SheetLocationEvent;
+
 import omr.ui.view.RubberZoomedPanel;
 import omr.ui.view.ScrollView;
 
@@ -47,7 +49,9 @@ public class PictureView
         view.setName("Picture-View");
 
         // Inject dependency of pixel location
-        view.setLocationService(sheet.getEventService());
+        view.setLocationService(
+            sheet.getEventService(),
+            SheetLocationEvent.class);
 
         // Insert view
         setView(view);

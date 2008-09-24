@@ -43,11 +43,8 @@ import omr.ui.view.ScrollView;
 import omr.ui.view.Zoom;
 import omr.ui.view.ZoomedPanel;
 
-import omr.util.Implement;
 import omr.util.Logger;
 import omr.util.TreeNode;
-
-import org.bushe.swing.event.EventSubscriber;
 
 import java.awt.*;
 import java.util.*;
@@ -84,10 +81,10 @@ public class ScoreView
     private final Rubber rubber = new Rubber(zoom);
 
     /** The displayed view */
-    private final MyView view = new MyView(zoom, rubber);
+    private final MyView view;
 
     /** The scroll pane */
-    private final ScrollView scrollPane = new ScrollView(view);
+    private final ScrollView scrollPane;
 
     /** The info zone */
     private final JLabel info = new JLabel("Score");
@@ -114,10 +111,9 @@ public class ScoreView
             logger.fine("new ScoreView on " + score);
         }
 
-        // Explicitly register the display to Score Selection
-        Sheet sheet = score.getSheet();
-        sheet.getEventService()
-             .subscribeStrongly(ScoreLocationEvent.class, view);
+        this.score = score;
+        view = new MyView(zoom, rubber);
+        scrollPane = new ScrollView(view);
 
         // Layout
         info.setHorizontalAlignment(SwingConstants.LEFT);
@@ -126,7 +122,6 @@ public class ScoreView
         compoundPanel.add(info, BorderLayout.SOUTH);
 
         // Cross referencing between score and its view
-        this.score = score;
         score.setView(this);
 
         // Popup
@@ -137,18 +132,6 @@ public class ScoreView
 
         // Bridge companion between Score and Sheet locations both ways
         new ScoreSheetBridge(score);
-
-        // Force selection update
-        SheetLocationEvent locationEvent = (SheetLocationEvent) sheet.getEventService()
-                                                                     .getLastEvent(
-            SheetLocationEvent.class);
-        PixelRectangle     location = (locationEvent != null)
-                                      ? locationEvent.getData() : null;
-
-        if (location != null) {
-            sheet.getEventService()
-                 .publish(new SheetLocationEvent(this, null, null, location));
-        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -342,6 +325,23 @@ public class ScoreView
             // Initialize drawing colors, border, opacity.
             setBackground(new Color(255, 255, 220));
             setForeground(Color.black);
+
+            // Explicitly register the display to Score Selection
+            setLocationService(
+                score.getSheet().getEventService(),
+                ScoreLocationEvent.class);
+            subscribe();
+
+            // Force selection update
+            SheetLocationEvent locationEvent = (SheetLocationEvent) locationService.getLastEvent(
+                SheetLocationEvent.class);
+            PixelRectangle     location = (locationEvent != null)
+                                          ? locationEvent.getData() : null;
+
+            if (location != null) {
+                locationService.publish(
+                    new SheetLocationEvent(this, null, null, location));
+            }
         }
 
         //~ Methods ------------------------------------------------------------

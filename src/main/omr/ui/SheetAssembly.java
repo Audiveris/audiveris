@@ -479,10 +479,9 @@ public class SheetAssembly
                 " viewTabDeselected for " + tab.title);
         }
 
-        // Disconnection of related view
-        locationService.unsubscribe(
-            SheetLocationEvent.class,
-            tab.scrollView.getView());
+        // Disconnection of events
+        tab.scrollView.getView()
+                      .unsubscribe();
 
         // Disconnection of related boards
         tab.boardsPane.hidden();
@@ -519,10 +518,9 @@ public class SheetAssembly
                       .setValue(prev.getHorizontalScrollBar().getValue());
         }
 
-        // Handle connection to location selection
-        locationService.subscribeStrongly(
-            SheetLocationEvent.class,
-            scrollView.getView());
+        // Make connections to events        
+        scrollView.getView()
+                  .subscribe();
 
         // Restore display of proper context
         displayContext( /* connectBoards => */

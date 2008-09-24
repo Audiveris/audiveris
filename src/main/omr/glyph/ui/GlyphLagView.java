@@ -111,11 +111,6 @@ public class GlyphLagView
             showingSpecifics);
         this.model = model;
 
-        // Subscribe to glyph (lag) events
-        for (Class<?extends UserEvent> eventClass : eventClasses) {
-            lag.subscribeStrongly(eventClass, this);
-        }
-
         // Remember specific glyphs
         if (specificGlyphs != null) {
             this.specificGlyphs = specificGlyphs;
@@ -346,6 +341,45 @@ public class GlyphLagView
             }
         } else if (event instanceof GlyphSetEvent) {
             repaint();
+        }
+    }
+
+    //-----------//
+    // subscribe //
+    //-----------//
+    @Override
+    public void subscribe ()
+    {
+        super.subscribe();
+
+        // Subscribe to glyph (lag) events
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                getClass().getName() + " GLV subscribing to " + eventClasses);
+        }
+
+        for (Class<?extends UserEvent> eventClass : eventClasses) {
+            lag.subscribeStrongly(eventClass, this);
+        }
+    }
+
+    //-------------//
+    // unsubscribe //
+    //-------------//
+    @Override
+    public void unsubscribe ()
+    {
+        super.unsubscribe();
+
+        // Unsubscribe to glyph (lag) events
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                getClass().getName() + " GLV unsubscribing from " +
+                eventClasses);
+        }
+
+        for (Class<?extends UserEvent> eventClass : eventClasses) {
+            lag.unsubscribe(eventClass, this);
         }
     }
 

@@ -27,6 +27,7 @@ import omr.selection.GlyphEvent;
 import omr.selection.GlyphSetEvent;
 import omr.selection.MouseMovement;
 import omr.selection.SelectionHint;
+import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
 
 import omr.sheet.Sheet;
@@ -109,7 +110,9 @@ public class SymbolsEditor
         glyphsBuilder = sheet.getGlyphsBuilder();
 
         view = new MyView(lag);
-        view.setLocationService(sheet.getEventService());
+        view.setLocationService(
+            sheet.getEventService(),
+            SheetLocationEvent.class);
 
         focus = new ShapeFocusBoard(
             sheet,
@@ -201,10 +204,6 @@ public class SymbolsEditor
         {
             super(lag, null, null, symbolsBuilder, null);
             setName("SymbolsEditor-View");
-
-            // Observe current glyph & glyph set
-            lag.subscribeStrongly(GlyphEvent.class, this);
-            lag.subscribeStrongly(GlyphSetEvent.class, this);
 
             // Use light gray color for past successful entities
             sheet.colorize(lag, viewIndex, Color.lightGray);

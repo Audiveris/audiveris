@@ -28,7 +28,6 @@ import omr.util.Logger;
 
 import org.bushe.swing.event.EventService;
 import org.bushe.swing.event.EventSubscriber;
-import org.bushe.swing.event.ThreadSafeEventService;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -74,6 +73,9 @@ public class ZoomedPanel
 
     /** Related location Service if any */
     protected EventService locationService;
+
+    /** Precise location information (sheet or score related) */
+    protected Class<?extends LocationEvent> locationClass;
 
     /** Current display zoom */
     protected Zoom zoom;
@@ -128,14 +130,18 @@ public class ZoomedPanel
      * such registering is needed, it must be done manually.
      *
      * @param locationService the proper location service to be updated
+     * @param locationClass the location class of interest (score or sheet)
      */
-    public void setLocationService (EventService locationService)
+    public void setLocationService (EventService                  locationService,
+                                    Class<?extends LocationEvent> locationClass)
     {
-        if (this.locationService != null) {
-            this.locationService.unsubscribe(LocationEvent.class, this);
+        if ((this.locationService != null) &&
+            (this.locationService != locationService)) {
+            this.locationService.unsubscribe(locationClass, this);
         }
 
         this.locationService = locationService;
+        this.locationClass = locationClass;
     }
 
     //--------------//
@@ -246,6 +252,10 @@ public class ZoomedPanel
     @Implement(EventSubscriber.class)
     public void onEvent (UserEvent event)
     {
+        if (logger.isFineEnabled()) {
+            logger.fine(this.getClass().getName() + " onEvent " + event);
+        }
+
         if (event instanceof LocationEvent) {
             LocationEvent locationEvent = (LocationEvent) event;
             showFocusLocation(locationEvent.getRectangle());
@@ -289,20 +299,27 @@ public class ZoomedPanel
     public void rectangleZoomed (final Rectangle rect,
                                  MouseMovement   movement)
     {
-        // First focus on center of the specified rectangle
-        showFocusLocation(rect);
+        if (logger.isFineEnabled()) {
+            logger.fine(getClass().getName() + " rectangleZoomed " + rect);
+        }
 
-        // Then, adjust zoom ratio to fit the rectangle size
-        SwingUtilities.invokeLater(
-            new Runnable() {
-                    public void run ()
-                    {
-                        Rectangle vr = getVisibleRect();
-                        double    zoomX = (double) vr.width / (double) rect.width;
-                        double    zoomY = (double) vr.height / (double) rect.height;
-                        zoom.setRatio(Math.min(zoomX, zoomY));
-                    }
-                });
+        if (rect != null) {
+            // First focus on center of the specified rectangle
+            setFocusLocation(rect, movement, LOCATION_INIT);
+            showFocusLocation(rect);
+
+            // Then, adjust zoom ratio to fit the rectangle size
+            SwingUtilities.invokeLater(
+                new Runnable() {
+                        public void run ()
+                        {
+                            Rectangle vr = getVisibleRect();
+                            double    zoomX = (double) vr.width / (double) rect.width;
+                            double    zoomY = (double) vr.height / (double) rect.height;
+                            zoom.setRatio(Math.min(zoomX, zoomY));
+                        }
+                    });
+        }
     }
 
     //-------------------//
@@ -318,6 +335,11 @@ public class ZoomedPanel
      */
     public void showFocusLocation (Rectangle rect)
     {
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                getClass().getName() + " showFocusLocation rect=" + rect);
+        }
+
         updatePreferredSize();
 
         if (rect != null) {
@@ -360,14 +382,30 @@ public class ZoomedPanel
     @Implement(ChangeListener.class)
     public void stateChanged (ChangeEvent e)
     {
+        Rectangle rect = null;
+
         // Force a redisplay
         if (locationService != null) {
             LocationEvent locationEvent = (LocationEvent) locationService.getLastEvent(
-                LocationEvent.class);
-            Rectangle     rect = (locationEvent != null)
-                                 ? locationEvent.getData() : null;
-            showFocusLocation(rect);
+                locationClass);
+            rect = (locationEvent != null) ? locationEvent.getData() : null;
         }
+
+        showFocusLocation(rect);
+    }
+
+    //-----------//
+    // subscribe //
+    //-----------//
+    public void subscribe ()
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                getClass().getName() + " ZP subscribing to " + locationClass);
+        }
+
+        // Subscribe to location events
+        locationService.subscribeStrongly(locationClass, this);
     }
 
     //----------//
@@ -377,6 +415,21 @@ public class ZoomedPanel
     public String toString ()
     {
         return ClassUtil.nameOf(this);
+    }
+
+    //-------------//
+    // unsubscribe //
+    //-------------//
+    public void unsubscribe ()
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                getClass().getName() + " ZP unsubscribing from " +
+                locationClass);
+        }
+
+        // Unsubscribe to location events
+        locationService.unsubscribe(locationClass, this);
     }
 
     //------------------//

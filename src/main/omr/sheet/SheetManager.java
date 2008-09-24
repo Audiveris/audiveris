@@ -124,6 +124,24 @@ public class SheetManager
         this.changeListener = changeListener;
     }
 
+    //-----------------//
+    // getEventService //
+    //-----------------//
+    /**
+     * Convenient method to access sheet selection, and potentially register
+     * observer
+     *
+     * @return the sheet selection
+     */
+    public static EventService getEventService ()
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("getSelection called");
+        }
+
+        return sheetService;
+    }
+
     //------------//
     // getHistory //
     //------------//
@@ -189,24 +207,6 @@ public class SheetManager
             SheetEvent.class);
 
         return (sheetEvent != null) ? sheetEvent.getData() : null;
-    }
-
-    //-----------------//
-    // getEventService //
-    //-----------------//
-    /**
-     * Convenient method to access sheet selection, and potentially register
-     * observer
-     *
-     * @return the sheet selection
-     */
-    public static EventService getEventService ()
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("getSelection called");
-        }
-
-        return sheetService;
     }
 
     //-----------//
@@ -328,8 +328,12 @@ public class SheetManager
         }
 
         dumpSubscribers("Sheet events", sheet.getEventService());
-        dumpSubscribers("hLag events", sheet.getHorizontalLag().getEventService());
-        dumpSubscribers("vLag events", sheet.getVerticalLag().getEventService());
+        dumpSubscribers(
+            "hLag events",
+            sheet.getHorizontalLag().getEventService());
+        dumpSubscribers(
+            "vLag events",
+            sheet.getVerticalLag().getEventService());
     }
 
     //----------------//
@@ -384,10 +388,13 @@ public class SheetManager
             List subscribers = service.getSubscribers(eventClass);
 
             if (subscribers.size() > 0) {
-                logger.info("-- " + eventClass.getSimpleName() + ": " + subscribers.size());
+                Object last = service.getLastEvent(eventClass);
+                logger.info(
+                    "-- " + eventClass.getSimpleName() + ": " +
+                    subscribers.size() + ((last != null) ? (" " + last) : ""));
 
                 for (Object obj : subscribers) {
-                    logger.info("      " + obj); //.getClass().getName());
+                    logger.info("      " + obj);
                 }
             }
         }
