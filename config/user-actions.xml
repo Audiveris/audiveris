@@ -24,5 +24,8 @@
     <action domain="Text" section="IMPORT" class="omr.glyph.ui.TextAreaBrowser" method="retrieveTextAreas" />
     <action domain="Text" section="EDIT"   class="omr.glyph.ui.TextAreaBrowser" method="showHorizontalHistogram" />
     <action domain="Text" section="EDIT"   class="omr.glyph.ui.TextAreaBrowser" method="showVerticalHistogram" />
-     
+
+    <!-- Just as an example -->
+    <action domain="Misc" section="END"   class="MyClass" method="dumpCurrentScore" />
+
 </actions>
