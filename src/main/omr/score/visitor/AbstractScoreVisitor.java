@@ -28,10 +28,10 @@ import omr.score.entity.Ornament;
 import omr.score.entity.PartNode;
 import omr.score.entity.Pedal;
 import omr.score.entity.ScoreNode;
+import omr.score.entity.ScoreSystem;
 import omr.score.entity.Segno;
 import omr.score.entity.Slur;
 import omr.score.entity.Staff;
-import omr.score.entity.System;
 import omr.score.entity.SystemPart;
 import omr.score.entity.Text;
 import omr.score.entity.TimeSignature;
@@ -243,7 +243,7 @@ public class AbstractScoreVisitor
     //--------------//
     // visit System //
     //--------------//
-    public boolean visit (System system)
+    public boolean visit (ScoreSystem system)
     {
         return true;
     }

@@ -9,19 +9,19 @@
 //
 package omr.score.visitor;
 
-import omr.glyph.Sentence;
+import omr.glyph.text.Sentence;
+
+import omr.log.Logger;
 
 import omr.score.Score;
 import omr.score.common.ScorePoint;
 import omr.score.common.SystemRectangle;
 import omr.score.entity.Measure;
 import omr.score.entity.ScorePart;
+import omr.score.entity.ScoreSystem;
 import omr.score.entity.Staff;
-import omr.score.entity.System;
 import omr.score.entity.Text;
 import static omr.score.ui.ScoreConstants.*;
-
-import omr.util.Logger;
 
 import java.awt.Point;
 
@@ -87,8 +87,8 @@ public class ScoreFixer
 
             // No preceding system?
             if (precedingMeasure == null) {
-                System prevSystem = (System) measure.getSystem()
-                                                    .getPreviousSibling();
+                ScoreSystem prevSystem = (ScoreSystem) measure.getSystem()
+                                                              .getPreviousSibling();
 
                 if (prevSystem != null) { // No preceding part
                     precedingMeasure = prevSystem.getFirstRealPart()
@@ -122,7 +122,7 @@ public class ScoreFixer
     // visit System //
     //--------------//
     @Override
-    public boolean visit (System system)
+    public boolean visit (ScoreSystem system)
     {
         // Initialize system contours with staves contours and margins
         int height = system.getLastPart()
@@ -149,8 +149,8 @@ public class ScoreFixer
         system.setContour(systemContour);
 
         // Is there a Previous System ?
-        System     prevSystem = (System) system.getPreviousSibling();
-        ScorePoint origin = new ScorePoint();
+        ScoreSystem prevSystem = (ScoreSystem) system.getPreviousSibling();
+        ScorePoint  origin = new ScorePoint();
 
         if (prevSystem == null) {
             // Very first system in the score
@@ -187,8 +187,8 @@ public class ScoreFixer
     {
         if (!firstSystemPass) {
             // Display origin for the staff
-            System system = staff.getSystem();
-            Point  sysorg = system.getDisplayOrigin();
+            ScoreSystem system = staff.getSystem();
+            Point       sysorg = system.getDisplayOrigin();
             staff.setDisplayOrigin(
                 new ScorePoint(
                     sysorg.x,

@@ -11,13 +11,13 @@ package omr.score.visitor;
 
 import omr.glyph.GlyphLag;
 
+import omr.log.Logger;
+
 import omr.score.Score;
 import omr.score.entity.Barline;
 import omr.score.entity.SystemPart;
 
 import omr.stick.Stick;
-
-import omr.util.Logger;
 
 import java.awt.Color;
 

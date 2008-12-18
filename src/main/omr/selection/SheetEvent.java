@@ -13,7 +13,7 @@ import omr.sheet.Sheet;
 
 /**
  * Class <code>SheetEvent</code> represent a Sheet selection event
- * 
+ *
  * <dl>
  * <dt><b>Publishers:</b><dd>SheetController, SheetManager
  * <dt><b>Subscribers:</b><dd>ActionManager, MainGui, MidiActions, ScoreDependent, SheetDependent

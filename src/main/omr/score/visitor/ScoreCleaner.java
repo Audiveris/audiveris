@@ -11,11 +11,11 @@ package omr.score.visitor;
 
 import omr.glyph.Glyph;
 
-import omr.score.entity.Measure;
-import omr.score.entity.System;
-import omr.score.entity.SystemPart;
+import omr.log.Logger;
 
-import omr.util.Logger;
+import omr.score.entity.Measure;
+import omr.score.entity.ScoreSystem;
+import omr.score.entity.SystemPart;
 
 /**
  * Class <code>ScoreCleaner</code> can visit the score hierarchy to get rid of
@@ -61,7 +61,7 @@ public class ScoreCleaner
     // visit System //
     //--------------//
     @Override
-    public boolean visit (System system)
+    public boolean visit (ScoreSystem system)
     {
         if (logger.isFineEnabled()) {
             logger.fine("Cleaning up " + system);

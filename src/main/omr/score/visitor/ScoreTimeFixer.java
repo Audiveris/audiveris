@@ -9,14 +9,14 @@
 //
 package omr.score.visitor;
 
+import omr.log.Logger;
+
 import omr.score.Score;
 import omr.score.entity.Chord;
 import omr.score.entity.Measure;
+import omr.score.entity.ScoreSystem;
 import omr.score.entity.Slot;
-import omr.score.entity.System;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
-
-import omr.util.Logger;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -147,7 +147,7 @@ public class ScoreTimeFixer
      * @return false
      */
     @Override
-    public boolean visit (System system)
+    public boolean visit (ScoreSystem system)
     {
         if (logger.isFineEnabled()) {
             logger.fine("Visiting " + system);

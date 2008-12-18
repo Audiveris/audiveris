@@ -13,16 +13,19 @@ package omr.score.visitor;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
+import omr.log.Logger;
+
 import omr.score.common.SystemPoint;
-import omr.score.entity.LyricItem;
+import omr.score.entity.LyricsItem;
 import omr.score.entity.Note;
 import omr.score.entity.Staff;
-
-import omr.util.Logger;
 
 import proxymusic.*;
 
 import java.lang.String;
+import java.math.BigDecimal;
+
+import javax.xml.bind.JAXBElement;
 
 /**
  * Class <code>MusicXML</code> gathers symbols related to the MusicXML data
@@ -36,33 +39,6 @@ public class MusicXML
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(MusicXML.class);
-
-    // A few constants to avoid typos
-    static final String           ABOVE = "above";
-    static final String           BACKWARD = "backward";
-    static final String           BACKWARD_HOOK = "backward hook";
-    static final String           BEGIN = "begin";
-    static final String           BELOW = "below";
-    static final String           COMMON = "common";
-    static final String           CONTINUE = "continue";
-    static final String           CRESCENDO = "crescendo";
-    static final String           CUT = "cut";
-    static final String           DIMINUENDO = "diminuendo";
-    static final String           DOWN = "down";
-    static final String           END = "end";
-    static final String           FORWARD = "forward";
-    static final String           FORWARD_HOOK = "forward hook";
-    static final String           INVERTED = "inverted";
-    static final String           LEFT = "left";
-    static final String           NO = "no";
-    static final String           OVER = "over";
-    static final String           RIGHT = "right";
-    static final String           START = "start";
-    static final String           STOP = "stop";
-    static final String           UNDER = "under";
-    static final String           UP = "up";
-    static final String           UPRIGHT = "upright";
-    static final String           YES = "yes";
 
     /** Names of the various note types used in MusicXML */
     private static final String[] noteTypeNames = new String[] {
@@ -89,77 +65,80 @@ public class MusicXML
     //-------------------//
     // getDynamicsObject //
     //-------------------//
-    public static Object getDynamicsObject (Shape shape)
+    public static JAXBElement<?> getDynamicsObject (Shape shape)
     {
+        ObjectFactory factory = new ObjectFactory();
+        Empty         empty = factory.createEmpty();
+
         switch (shape) {
         case DYNAMICS_F :
-            return new F();
+            return factory.createDynamicsF(empty);
 
         case DYNAMICS_FF :
-            return new Ff();
+            return factory.createDynamicsFf(empty);
 
         case DYNAMICS_FFF :
-            return new Fff();
+            return factory.createDynamicsFff(empty);
 
         case DYNAMICS_FFFF :
-            return new Ffff();
+            return factory.createDynamicsFfff(empty);
 
         case DYNAMICS_FFFFF :
-            return new Fffff();
+            return factory.createDynamicsFffff(empty);
 
         case DYNAMICS_FFFFFF :
-            return new Ffffff();
+            return factory.createDynamicsFfffff(empty);
 
         case DYNAMICS_FP :
-            return new Fp();
+            return factory.createDynamicsFp(empty);
 
         case DYNAMICS_FZ :
-            return new Fz();
+            return factory.createDynamicsFz(empty);
 
         case DYNAMICS_MF :
-            return new Mf();
+            return factory.createDynamicsMf(empty);
 
         case DYNAMICS_MP :
-            return new Mp();
+            return factory.createDynamicsMp(empty);
 
         case DYNAMICS_P :
-            return new P();
+            return factory.createDynamicsP(empty);
 
         case DYNAMICS_PP :
-            return new Pp();
+            return factory.createDynamicsPp(empty);
 
         case DYNAMICS_PPP :
-            return new Ppp();
+            return factory.createDynamicsPpp(empty);
 
         case DYNAMICS_PPPP :
-            return new Pppp();
+            return factory.createDynamicsPppp(empty);
 
         case DYNAMICS_PPPPP :
-            return new Ppppp();
+            return factory.createDynamicsPpppp(empty);
 
         case DYNAMICS_PPPPPP :
-            return new Pppppp();
+            return factory.createDynamicsPppppp(empty);
 
         case DYNAMICS_RF :
-            return new Rf();
+            return factory.createDynamicsRf(empty);
 
         case DYNAMICS_RFZ :
-            return new Rfz();
+            return factory.createDynamicsRfz(empty);
 
         case DYNAMICS_SF :
-            return new Sf();
+            return factory.createDynamicsSf(empty);
 
         case DYNAMICS_SFFZ :
-            return new Sffz();
+            return factory.createDynamicsSffz(empty);
 
         case DYNAMICS_SFP :
-            return new Sfp();
+            return factory.createDynamicsSfp(empty);
 
         case DYNAMICS_SFPP :
-            return new Sfpp();
+            return factory.createDynamicsSfpp(empty);
 
         case DYNAMICS_SFZ :
-            return new Sfz();
+            return factory.createDynamicsSfz(empty);
         }
 
         logger.severe("Unsupported dynamics shape:" + shape);
@@ -188,24 +167,28 @@ public class MusicXML
     //-------------------//
     // getOrnamentObject //
     //-------------------//
-    public static Object getOrnamentObject (Shape shape)
+    public static JAXBElement<?> getOrnamentObject (Shape shape)
     {
         //	(((trill-mark | turn | delayed-turn | shake |
         //	   wavy-line | mordent | inverted-mordent | 
         //	   schleifer | tremolo | other-ornament), 
         //	   accidental-mark*)*)>
+        ObjectFactory factory = new ObjectFactory();
+
         switch (shape) {
         case INVERTED_MORDENT :
-            return new proxymusic.InvertedMordent();
+            return factory.createOrnamentsInvertedMordent(
+                factory.createMordent());
 
         case MORDENT :
-            return new proxymusic.Mordent();
+            return factory.createOrnamentsMordent(factory.createMordent());
 
         case TR :
-            return new proxymusic.TrillMark();
+            return factory.createOrnamentsTrillMark(
+                factory.createEmptyTrillSound());
 
         case TURN :
-            return new proxymusic.Turn();
+            return factory.createOrnamentsTurn(factory.createEmptyTrillSound());
         }
 
         logger.severe("Unsupported ornament shape:" + shape);
@@ -213,41 +196,21 @@ public class MusicXML
         return null;
     }
 
-    //-------------------//
-    // getSyllabicString //
-    //-------------------//
-    public static String getSyllabicString (LyricItem.SyllabicType type)
+    //-------------//
+    // getSyllabic //
+    //-------------//
+    public static Syllabic getSyllabic (LyricsItem.SyllabicType type)
     {
-        return type.toString()
-                   .toLowerCase();
+        return Syllabic.valueOf(type.toString());
     }
 
     //------------------//
-    // accidentalNameOf //
+    // accidentalTextOf //
     //------------------//
-    public static String accidentalNameOf (Shape shape)
+    public static AccidentalText accidentalTextOf (Shape shape)
     {
         ///sharp, natural, flat, double-sharp, sharp-sharp, flat-flat
-        switch (shape) {
-        case SHARP :
-            return "sharp";
-
-        case NATURAL :
-            return "natural";
-
-        case FLAT :
-            return "flat";
-
-        case DOUBLE_SHARP :
-            return "double-sharp";
-
-        case DOUBLE_FLAT :
-            return "flat-flat";
-        }
-
-        logger.warning("Illegal shape for accidental: " + shape);
-
-        return "";
+        return AccidentalText.valueOf(shape.toString());
     }
 
     //------------//
@@ -259,35 +222,43 @@ public class MusicXML
      * @param shape the barline shape
      * @return the bar style
      */
-    public static String barStyleOf (Shape shape)
+    public static BarStyle barStyleOf (Shape shape)
     {
         //      Bar-style contains style information. Choices are
         //      regular, dotted, dashed, heavy, light-light,
         //      light-heavy, heavy-light, heavy-heavy, and none.
         switch (shape) {
         case SINGLE_BARLINE :
-            return "light";
+            return BarStyle.REGULAR; //"light" ???
 
         case DOUBLE_BARLINE :
-            return "light-light";
+            return BarStyle.LIGHT_LIGHT;
 
         case FINAL_BARLINE :
-            return "light-heavy";
+            return BarStyle.LIGHT_HEAVY;
 
         case REVERSE_FINAL_BARLINE :
-            return "heavy-light";
+            return BarStyle.HEAVY_LIGHT;
 
         case LEFT_REPEAT_SIGN :
-            return "heavy-light";
+            return BarStyle.HEAVY_LIGHT;
 
         case RIGHT_REPEAT_SIGN :
-            return "light-heavy";
+            return BarStyle.LIGHT_HEAVY;
 
         case BACK_TO_BACK_REPEAT_SIGN :
-            return "heavy-heavy"; // ?
+            return BarStyle.HEAVY_HEAVY; //"heavy-heavy"; ???
         }
 
-        return "???";
+        return BarStyle.NONE; // TO BE CHECKED ???
+    }
+
+    //---------------//
+    // createDecimal //
+    //---------------//
+    public static BigDecimal createDecimal (double val)
+    {
+        return new BigDecimal("" + val);
     }
 
     //----------//
@@ -299,10 +270,10 @@ public class MusicXML
      * @param units the number of units
      * @return the number of tenths as a string
      */
-    public static String toTenths (double units)
+    public static BigDecimal toTenths (double units)
     {
         // Divide by 1.6 with rounding to nearest integer value
-        return Integer.toString((int) Math.rint(units / 1.6));
+        return new BigDecimal("" + (int) Math.rint(units / 1.6));
     }
 
     //-----//
@@ -313,10 +284,10 @@ public class MusicXML
      *
      * @param units the system-based ordinate (in units)
      * @param staff the related staff
-     * @return the upward-oriented ordinate wrt to staff top line (in tenths string)
+     * @return the upward-oriented ordinate wrt to staff top line (in tenths)
      */
-    public static String yOf (double units,
-                              Staff  staff)
+    public static BigDecimal yOf (double units,
+                                  Staff  staff)
     {
         return toTenths(
             staff.getTopLeft().y - staff.getSystem().getTopLeft().y - units);
@@ -331,12 +302,25 @@ public class MusicXML
      *
      * @param point the system-based point
      * @param staff the related staff
-     * @return the upward-oriented ordinate wrt to staff top line (in tenths string)
+     * @return the upward-oriented ordinate wrt to staff top line (in tenths)
      */
-    public static String yOf (SystemPoint point,
-                              Staff       staff)
+    public static BigDecimal yOf (SystemPoint point,
+                                  Staff       staff)
     {
         return toTenths(
             staff.getTopLeft().y - staff.getSystem().getTopLeft().y - point.y);
+    }
+
+    //--------//
+    // stepOf //
+    //--------//
+    /**
+     * Convert from Audiveris Step type to Proxymusic Step type
+     * @param step Audiveris enum step
+     * @return Proxymusic enum step
+     */
+    public static Step stepOf (omr.score.entity.Note.Step step)
+    {
+        return Step.fromValue(step.toString());
     }
 }

@@ -14,15 +14,16 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.log.Logger;
+
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
+import omr.sheet.ui.SheetActions;
 
-import omr.ui.SheetActions;
 import omr.ui.util.FileFilter;
 import omr.ui.util.UIUtilities;
 
 import omr.util.BasicTask;
-import omr.util.Logger;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;

@@ -19,9 +19,9 @@ import java.util.List;
  *
  * <dl>
  * <dt><b>Publishers:</b><dd>GlyphLag, GlyphLagView
- * <dt><b>Subscribers:</b><dd>GlyphBoard, GlyphLagView, ScoreMenu, 
+ * <dt><b>Subscribers:</b><dd>GlyphBoard, GlyphLagView, ScoreMenu,
  * SymbolGlyphBoard, SymbolsEditor
- * <dt><b>Readers:</b><dd>GlyphBoard, GlyphLag, GlyphLagView, GlyphMenu, 
+ * <dt><b>Readers:</b><dd>GlyphBoard, GlyphLag, GlyphLagView, GlyphMenu,
  * SymbolsEditor
  * </dl>
  * @author Herv&eacute Bitteur

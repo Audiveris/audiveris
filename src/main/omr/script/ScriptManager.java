@@ -9,7 +9,7 @@
 ///
 package omr.script;
 
-import omr.util.Logger;
+import omr.log.Logger;
 
 import java.io.*;
 

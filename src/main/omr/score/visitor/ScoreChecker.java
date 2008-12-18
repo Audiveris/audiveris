@@ -11,12 +11,12 @@ package omr.score.visitor;
 
 import omr.glyph.Shape;
 
+import omr.log.Logger;
+
 import omr.score.Score;
 import omr.score.entity.Dynamics;
 import omr.score.entity.TimeSignature;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
-
-import omr.util.Logger;
 
 /**
  * Class <code>ScoreChecker</code> can visit the score hierarchy perform

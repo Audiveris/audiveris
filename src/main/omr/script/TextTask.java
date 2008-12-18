@@ -9,7 +9,7 @@
 package omr.script;
 
 import omr.glyph.Glyph;
-import omr.glyph.TextType;
+import omr.glyph.text.TextType;
 
 import omr.sheet.Sheet;
 

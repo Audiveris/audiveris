@@ -11,10 +11,12 @@ package omr.score.visitor;
 
 import omr.glyph.Glyph;
 
+import omr.log.Logger;
+
 import omr.score.Score;
 import omr.score.entity.Measure;
+import omr.score.entity.ScoreSystem;
 import omr.score.entity.Staff;
-import omr.score.entity.System;
 import omr.score.entity.SystemPart;
 
 import omr.sheet.Ending;
@@ -28,8 +30,6 @@ import omr.step.Step;
 import omr.stick.Stick;
 
 import omr.ui.view.Zoom;
-
-import omr.util.Logger;
 
 import java.awt.*;
 
@@ -205,7 +205,7 @@ public class SheetPainter
     // visit System //
     //--------------//
     @Override
-    public boolean visit (System system)
+    public boolean visit (ScoreSystem system)
     {
         if (system == null) {
             return false;

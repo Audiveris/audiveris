@@ -19,7 +19,7 @@ import java.awt.Rectangle;
  *
  *
  * <dl>
- * <dt><b>Publishers:</b><dd>GlyphBrowser, GlyphLag, Lag, PixelBoard, 
+ * <dt><b>Publishers:</b><dd>GlyphBrowser, GlyphLag, Lag, PixelBoard,
  * ScoreSheetBridge, ScoreView, SheetAssembly, ZoomedPanel
  * <dt><b>Subscribers:</b><dd>GlyphBrowser, GlyphLag(hLag, vLag), GlyphLagView,
  * LagView, Picture, PixelBoard, ScoreSheetBridge, SystemsBuilder

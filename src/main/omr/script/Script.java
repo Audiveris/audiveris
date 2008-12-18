@@ -9,11 +9,11 @@
 //
 package omr.script;
 
+import omr.log.Logger;
+
 import omr.sheet.Sheet;
 
 import omr.step.StepException;
-
-import omr.util.Logger;
 
 import java.util.ArrayList;
 import java.util.List;

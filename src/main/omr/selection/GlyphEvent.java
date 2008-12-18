@@ -17,8 +17,8 @@ import omr.glyph.Glyph;
  * <dl>
  * <dt><b>Publishers:</b><dd>ErrorsEditor, GlyphBoard, GlyphBrowser, GlyphLag,
  * GlyphLagView, GlyphMenu, GlyphModel, SymbolsEditor
- * <dt><b>Subscribers:</b><dd>EvaluationBoard, GlyphBoard, GlyphBrowser, 
- * GlyphLag, GlyphLagView, HorizontalsBuilder CheckBoards, ShapeFocusBoard, 
+ * <dt><b>Subscribers:</b><dd>EvaluationBoard, GlyphBoard, GlyphBrowser,
+ * GlyphLag, GlyphLagView, HorizontalsBuilder CheckBoards, ShapeFocusBoard,
  * SymbolGlyphBoard, SystemsBuilder, VerticalsBuilder CheckBoard
  * <dt><b>Readers:</b><dd>EvaluationBoard, GlyphBoard, GlyphMenu, TextAreaBrowser
  * </dl>

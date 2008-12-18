@@ -8,13 +8,13 @@
 //----------------------------------------------------------------------------//
 package omr.script;
 
+import omr.log.Logger;
+
 import omr.score.ScoreManager;
 
 import omr.sheet.Sheet;
 
 import omr.step.StepException;
-
-import omr.util.Logger;
 
 import java.io.File;
 
