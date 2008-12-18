@@ -12,9 +12,9 @@ package omr.ui.util;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.ui.PixelCount;
+import omr.log.Logger;
 
-import omr.util.Logger;
+import omr.ui.PixelCount;
 
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -63,7 +63,7 @@ public class Panel
      */
     public Panel ()
     {
-        // XXX Uncomment following line for FormDebugPanel XXX
+        // Note: Uncomment following line for FormDebugPanel
         //setPaintInBackground(true);
     }
 
@@ -286,7 +286,6 @@ public class Panel
     @Override
     protected void paintComponent (Graphics g)
     {
-        // XXX Uncomment following line for FormDebugPanel XXX
         //setPaintInBackground(true);
         super.paintComponent(g);
     }

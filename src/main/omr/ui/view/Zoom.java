@@ -12,9 +12,9 @@ package omr.ui.view;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.ui.*;
+import omr.log.Logger;
 
-import omr.util.Logger;
+import omr.ui.*;
 
 import java.awt.Dimension;
 import java.awt.Point;

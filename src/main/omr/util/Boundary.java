@@ -12,6 +12,8 @@ package omr.util;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.log.Logger;
+
 import net.jcip.annotations.NotThreadSafe;
 
 import java.awt.Graphics;

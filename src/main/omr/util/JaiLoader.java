@@ -8,6 +8,7 @@
 //----------------------------------------------------------------------------//
 package omr.util;
 
+import omr.log.Logger;
 
 /**
  * Class <code>JaiLoader</code> is designed to speed up the load time of the

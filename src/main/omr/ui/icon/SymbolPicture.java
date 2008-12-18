@@ -11,10 +11,11 @@ package omr.ui.icon;
 
 import omr.lag.PixelSource;
 
-import omr.sheet.Picture;
+import omr.log.Logger;
+
+import omr.sheet.picture.Picture;
 
 import omr.util.Implement;
-import omr.util.Logger;
 
 import java.awt.image.DataBuffer;
 

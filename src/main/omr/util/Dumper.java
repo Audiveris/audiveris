@@ -78,13 +78,18 @@ public abstract class Dumper
     protected final StringBuffer sb;
 
     /**
+     * Can we use HTML directives?
+     */
+    protected final boolean useHtml;
+
+    /** Maximum number of collection items printed */
+    private final int MAX_COLLECTION_INDEX = 9;
+
+    /**
      * Class (beware, this variable is updated as we walk up the inheritance
      * tree)
      */
     protected Class cl;
-
-    /** Maximum number of collection items printed */
-    private final int MAX_COLLECTION_INDEX = 9;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -93,13 +98,15 @@ public abstract class Dumper
      *
      * @param obj the object instance to be dumped.
      */
-    private Dumper (Object obj)
+    private Dumper (Object  obj,
+                    boolean useHtml)
     {
         // (re)Allocate the string buffer
         sb = new StringBuffer(1024);
 
         // Cache the object & the related class
         this.obj = obj;
+        this.useHtml = useHtml;
         cl = obj.getClass();
     }
 
@@ -311,7 +318,7 @@ public abstract class Dumper
 
         for (Object obj : col) {
             if (i++ > 0) {
-                sb.append(",<br/>");
+                sb.append(useHtml ? ",<br/>" : ",");
             }
 
             // Safeguard action when the object is a big collection
@@ -435,7 +442,7 @@ public abstract class Dumper
                        String title,
                        int    level)
         {
-            super(obj);
+            super(obj, false);
 
             // Cache the title
             if (title != null) {
@@ -496,7 +503,7 @@ public abstract class Dumper
 
         protected Html (Object obj)
         {
-            super(obj);
+            super(obj, true);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -568,7 +575,7 @@ public abstract class Dumper
 
         protected Row (Object obj)
         {
-            super(obj);
+            super(obj, false);
         }
 
         //~ Methods ------------------------------------------------------------

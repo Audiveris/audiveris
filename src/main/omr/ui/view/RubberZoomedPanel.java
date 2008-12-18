@@ -9,9 +9,7 @@
 //-----------------------------------------------------------------------//
 package omr.ui.view;
 
-import omr.ui.*;
-
-import omr.util.Logger;
+import omr.log.Logger;
 
 import java.awt.*;
 import java.util.ConcurrentModificationException;
@@ -28,7 +26,7 @@ import java.util.ConcurrentModificationException;
  * <p>The Zoom instance and the Rubber instance can be provided separately,
  * after this RubberZoomedPanel has been constructed. This is meant for cases
  * where the same Zoom and Rubber instances are shared by several views, as in
- * the {@link SheetAssembly} example.
+ * the {@link omr.sheet.ui.SheetAssembly} example.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$

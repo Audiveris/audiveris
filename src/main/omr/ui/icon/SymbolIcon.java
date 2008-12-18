@@ -12,8 +12,9 @@ package omr.ui.icon;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.log.Logger;
+
 import omr.util.Implement;
-import omr.util.Logger;
 import omr.util.PointFacade;
 
 import java.awt.*;
@@ -99,7 +100,6 @@ public class SymbolIcon
     private BufferedImage image;
 
     /** Wrapping of the image for (un)marshalling */
-    //@XmlJavaTypeAdapter(BitmapAdapter.class)
     @XmlElementWrapper(name = "bitmap")
     @XmlElement(name = "row")
     public String[] bitmap;

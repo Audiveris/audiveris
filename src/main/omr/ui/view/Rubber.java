@@ -9,11 +9,11 @@
 //-----------------------------------------------------------------------//
 package omr.ui.view;
 
+import omr.log.Logger;
+
 import omr.selection.MouseMovement;
 
 import omr.ui.*;
-
-import omr.util.Logger;
 
 import java.awt.*;
 import java.awt.event.*;

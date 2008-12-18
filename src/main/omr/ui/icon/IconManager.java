@@ -13,9 +13,9 @@ import omr.Main;
 
 import omr.constant.ConstantSet;
 
-import omr.ui.PixelCount;
+import omr.log.Logger;
 
-import omr.util.Logger;
+import omr.ui.PixelCount;
 
 import java.awt.Color;
 import java.awt.image.*;

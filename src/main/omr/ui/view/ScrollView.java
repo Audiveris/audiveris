@@ -9,7 +9,7 @@
 //-----------------------------------------------------------------------//
 package omr.ui.view;
 
-import omr.util.Logger;
+import omr.log.Logger;
 
 import java.awt.*;
 

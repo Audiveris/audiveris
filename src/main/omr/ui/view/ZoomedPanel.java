@@ -11,6 +11,8 @@ package omr.ui.view;
 
 import omr.constant.ConstantSet;
 
+import omr.log.Logger;
+
 import omr.score.common.PixelRectangle;
 
 import omr.selection.LocationEvent;
@@ -24,7 +26,6 @@ import omr.ui.PixelCount;
 
 import omr.util.ClassUtil;
 import omr.util.Implement;
-import omr.util.Logger;
 
 import org.bushe.swing.event.EventService;
 import org.bushe.swing.event.EventSubscriber;

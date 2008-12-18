@@ -9,6 +9,8 @@
 //
 package omr.util;
 
+import omr.log.Logger;
+
 import java.io.*;
 import java.util.*;
 

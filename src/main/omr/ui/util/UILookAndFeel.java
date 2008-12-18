@@ -12,7 +12,7 @@ package omr.ui.util;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.util.Logger;
+import omr.log.Logger;
 
 // import com.jgoodies.looks.windows.*;
 // import com.jgoodies.looks.plastic.*;

@@ -13,6 +13,8 @@ import omr.Main;
 
 import omr.glyph.Shape;
 
+import omr.log.Logger;
+
 import omr.ui.field.IntegerListSpinner;
 import omr.ui.field.LField;
 import omr.ui.field.LIntegerSpinner;
@@ -20,8 +22,6 @@ import omr.ui.field.LSpinner;
 import omr.ui.field.SpinnerUtilities;
 import omr.ui.util.Panel;
 import omr.ui.util.UILookAndFeel;
-
-import omr.util.Logger;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
