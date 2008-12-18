@@ -8,9 +8,9 @@
 //----------------------------------------------------------------------------//
 package omr;
 
-import omr.step.Step;
+import omr.log.Logger;
 
-import omr.util.Logger;
+import omr.step.Step;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -319,7 +319,7 @@ public class CLI
         /** Flag that indicates a batch mode */
         boolean batchMode = false;
 
-        /** The desired step if any (-step XXX) */
+        /** The desired step if any (option: -step stepName) */
         Step targetStep = Step.LOAD;
 
         /** The list of sheet file names to load */
