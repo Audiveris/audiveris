@@ -8,17 +8,18 @@
 //----------------------------------------------------------------------------//
 package omr.score.midi;
 
+import omr.log.Logger;
+
 import omr.score.MeasureRange;
 import omr.score.Score;
 import omr.score.entity.Measure;
 import omr.score.entity.Note;
+import omr.score.entity.ScoreSystem;
 import omr.score.entity.Slot;
-import omr.score.entity.System;
 import omr.score.entity.SystemPart;
 import omr.score.ui.ScoreView;
 
 import omr.util.Implement;
-import omr.util.Logger;
 import omr.util.TreeNode;
 
 import javax.sound.midi.*;
@@ -75,7 +76,7 @@ public class MidiReceiver
     private Integer lastSystemMeasureId;
 
     /** The current system */
-    private System currentSystem;
+    private ScoreSystem currentSystem;
 
     /** The current measure id */
     private int currentMeasureId;
@@ -349,7 +350,7 @@ public class MidiReceiver
             // Should we move to next system?
             while (mid > lastSystemMeasureId) {
                 ///logger.fine("Moving to next system");
-                currentSystem = (System) currentSystem.getNextSibling();
+                currentSystem = (ScoreSystem) currentSystem.getNextSibling();
                 lastSystemMeasureId = currentSystem.getFirstPart()
                                                    .getLastMeasure()
                                                    .getId();

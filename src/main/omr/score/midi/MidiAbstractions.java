@@ -8,7 +8,7 @@
 //----------------------------------------------------------------------------//
 package omr.score.midi;
 
-import omr.util.Logger;
+import omr.log.Logger;
 
 /**
  * Class <code>MidiAbstractions</code> handles various MIDI abstractions

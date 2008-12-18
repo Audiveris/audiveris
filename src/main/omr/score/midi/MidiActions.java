@@ -11,6 +11,8 @@ package omr.score.midi;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.log.Logger;
+
 import omr.score.MeasureRange;
 import omr.score.Score;
 import omr.score.ScoreManager;
@@ -28,7 +30,6 @@ import omr.ui.util.UIUtilities;
 
 import omr.util.BasicTask;
 import omr.util.Implement;
-import omr.util.Logger;
 
 import org.bushe.swing.event.EventSubscriber;
 

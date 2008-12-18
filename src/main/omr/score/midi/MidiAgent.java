@@ -8,13 +8,14 @@
 //----------------------------------------------------------------------------//
 package omr.score.midi;
 
+import omr.log.Logger;
+
 import omr.score.MeasureRange;
 import omr.score.Score;
 import omr.score.ui.ScoreActions;
 import omr.score.visitor.ScoreExporter;
 
 import omr.util.BasicTask;
-import omr.util.Logger;
 
 import com.xenoage.player.Player;
 import com.xenoage.player.musicxml.MusicXMLDocument;
