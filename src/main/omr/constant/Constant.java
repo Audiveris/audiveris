@@ -9,8 +9,9 @@
 //
 package omr.constant;
 
+import omr.log.Logger;
+
 import omr.util.Implement;
-import omr.util.Logger;
 
 import net.jcip.annotations.ThreadSafe;
 

@@ -9,16 +9,14 @@
 //
 package omr.constant;
 
+import omr.log.Logger;
+
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 
-import omr.step.Step;
-
 import omr.ui.treetable.AbstractTreeTableModel;
 import omr.ui.treetable.TreeTableModel;
-
-import omr.util.Logger;
 
 import javax.swing.*;
 
@@ -65,7 +63,7 @@ public class UnitModel
         TREE("Unit", true, 250, TreeTableModel.class),
 
         /**
-         * Editable column dedicated to {@link omr.util.Logger} entity if any
+         * Editable column dedicated to {@link omr.log.Logger} entity if any
          */
         LOGGER("Logger", true, 30, String.class), 
 

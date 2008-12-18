@@ -11,7 +11,7 @@ package omr.constant;
 
 import omr.Main;
 
-import omr.util.Logger;
+import omr.log.Logger;
 
 import net.jcip.annotations.ThreadSafe;
 

@@ -9,7 +9,7 @@
 //
 package omr.constant;
 
-import omr.util.Logger;
+import omr.log.Logger;
 
 /**
  * Class <code>UnitNode</code> represents a unit (class) in the hierarchy of
