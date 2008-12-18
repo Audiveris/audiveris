@@ -20,17 +20,17 @@
      
 <actions>
     
-    <action domain="SHEET" section="IMPORT" class="omr.script.ScriptActions" method="loadScript"/>
-    <action domain="SHEET" section="IMPORT" class="omr.script.ScriptActions" method="storeScript"/>
-    <action domain="SHEET" section="IMPORT" class="omr.ui.SheetActions"      method="openSheet"    toolbar="true"/>
-    <action domain="SHEET" section="EDIT"   class="omr.ui.SheetActions"      method="zoomWidth"    toolbar="true"/>
-    <action domain="SHEET" section="EDIT"   class="omr.ui.SheetActions"      method="zoomHeight"   toolbar="true"/>
-    <action domain="SHEET" section="EDIT"   class="omr.ui.SheetActions"      method="plotScale"/>
-    <action domain="SHEET" section="EDIT"   class="omr.ui.SheetActions"      method="plotSkew"/>
-    <action domain="SHEET" section="EDIT"   class="omr.ui.SheetActions"      method="plotLine"/>
-    <action domain="SHEET" section="EXPORT" class="omr.ui.SheetActions"      method="recordGlyphs"/>
-    <action domain="SHEET" section="EXPORT" class="omr.ui.SheetActions"      method="closeSheet"   toolbar="true"/>
-    <action domain="SHEET" section="END"    class="omr.ui.GuiActions"        method="exit"/>
+    <action domain="SHEET" section="IMPORT" class="omr.script.ScriptActions"  method="loadScript"/>
+    <action domain="SHEET" section="IMPORT" class="omr.script.ScriptActions"  method="storeScript"/>
+    <action domain="SHEET" section="IMPORT" class="omr.sheet.ui.SheetActions" method="openSheet"    toolbar="true"/>
+    <action domain="SHEET" section="EDIT"   class="omr.sheet.ui.SheetActions" method="zoomWidth"    toolbar="true"/>
+    <action domain="SHEET" section="EDIT"   class="omr.sheet.ui.SheetActions" method="zoomHeight"   toolbar="true"/>
+    <action domain="SHEET" section="EDIT"   class="omr.sheet.ui.SheetActions" method="plotScale"/>
+    <action domain="SHEET" section="EDIT"   class="omr.sheet.ui.SheetActions" method="plotSkew"/>
+    <action domain="SHEET" section="EDIT"   class="omr.sheet.ui.SheetActions" method="plotLine"/>
+    <action domain="SHEET" section="EXPORT" class="omr.sheet.ui.SheetActions" method="recordGlyphs"/>
+    <action domain="SHEET" section="EXPORT" class="omr.sheet.ui.SheetActions" method="closeSheet"   toolbar="true"/>
+    <action domain="SHEET" section="END"    class="omr.ui.GuiActions"         method="exit"/>
 
     <action domain="SCORE" section="IMPORT" class="omr.score.ui.ScoreActions" method="rebuildScore"     toolbar="true"/>
     <action domain="SCORE" section="IMPORT" class="omr.score.ui.ScoreActions" method="toggleRebuild" item="javax.swing.JCheckBoxMenuItem" />
