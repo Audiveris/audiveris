@@ -13,9 +13,11 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
-import omr.glyph.Sentence;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
+import omr.glyph.text.Sentence;
+
+import omr.log.Logger;
 
 import omr.score.Score;
 import omr.score.common.ScorePoint;
@@ -37,11 +39,11 @@ import omr.score.entity.MeasureElement;
 import omr.score.entity.Note;
 import omr.score.entity.Ornament;
 import omr.score.entity.Pedal;
+import omr.score.entity.ScoreSystem;
 import omr.score.entity.Segno;
 import omr.score.entity.Slot;
 import omr.score.entity.Slur;
 import omr.score.entity.Staff;
-import omr.score.entity.System;
 import omr.score.entity.SystemPart;
 import omr.score.entity.Text;
 import omr.score.entity.TimeSignature;
@@ -56,7 +58,6 @@ import omr.sheet.Scale;
 import omr.ui.icon.SymbolIcon;
 import omr.ui.view.Zoom;
 
-import omr.util.Logger;
 import omr.util.TreeNode;
 
 import java.awt.*;
@@ -79,21 +80,6 @@ public class ScorePainter
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScorePainter.class);
-
-    /** Stroke to draw beams */
-    private static final Stroke beamStroke = new BasicStroke(4f);
-
-    /** Stroke to draw voices */
-    private static final Stroke voiceStroke = new BasicStroke(
-        3f,
-        BasicStroke.CAP_BUTT,
-        BasicStroke.JOIN_BEVEL,
-        0f,
-        new float[] { 10, 5 },
-        0);
-
-    /** Stroke to draw stems */
-    private static final Stroke stemStroke = new BasicStroke(1f);
 
     /** Sequence of colors for voices */
     private static Color[] voiceColors = new Color[] {
@@ -127,6 +113,15 @@ public class ScorePainter
     /** Display zoom */
     private final Zoom zoom;
 
+    /** Stroke to draw beams */
+    private final Stroke beamStroke;
+
+    /** Stroke to draw stems */
+    private final Stroke stemStroke;
+
+    /** Stroke to draw voices */
+    private final Stroke voiceStroke;
+
     /** Used for icon image transformation */
     private final AffineTransform transform = new AffineTransform();
 
@@ -153,6 +148,18 @@ public class ScorePainter
     {
         this.g = (Graphics2D) g;
         this.zoom = z;
+
+        // Size strokes according to display zoom
+        float zoomRatio = (float) zoom.getRatio();
+        beamStroke = new BasicStroke(8f * zoomRatio);
+        stemStroke = new BasicStroke(2f * zoomRatio);
+        voiceStroke = new BasicStroke(
+            6f * zoomRatio,
+            BasicStroke.CAP_BUTT,
+            BasicStroke.JOIN_BEVEL,
+            0f,
+            new float[] { 20f * zoomRatio, 10f * zoomRatio },
+            0);
 
         // Anti-aliasing for beams especially
         this.g.setRenderingHint(
@@ -719,7 +726,7 @@ public class ScorePainter
     // visit System //
     //--------------//
     @Override
-    public boolean visit (System system)
+    public boolean visit (ScoreSystem system)
     {
         // Check whether our system is impacted)
         final Rectangle clip = g.getClipBounds();
@@ -810,10 +817,17 @@ public class ScorePainter
         Color oldColor = g.getColor();
         Font  oldFont = g.getFont();
 
-        g.setColor(Color.BLUE);
-
         // Text can be outside the boundaries of a system
-        g.setFont(text.getDisplayFont());
+
+        // Use font size according to the zoom ratio
+        //        logger.info(
+        //            text.getClass().getSimpleName() + " " + text.getContent() +
+        //            " size:" + text.getFontSize());
+        float fontSize = (float) zoom.getRatio() * text.getFontSize();
+        Font  font = text.getFont()
+                         .deriveFont(fontSize);
+        g.setFont(font);
+        g.setColor(Color.BLUE);
 
         // Force y alignment for items of the same sentence
         Sentence sentence = text.getSentence();
@@ -827,10 +841,12 @@ public class ScorePainter
         } else {
             // Use the (pseudo)content of contained glyphs
             for (Glyph item : sentence.getGlyphs()) {
-                String str = item.getTextContent();
+                String str = item.getTextInfo()
+                                 .getContent();
 
                 if (str == null) {
-                    str = item.getPseudoContent();
+                    str = item.getTextInfo()
+                              .getPseudoContent();
                 }
 
                 if (str != null) {
@@ -844,8 +860,8 @@ public class ScorePainter
             }
         }
 
-        g.setColor(oldColor);
         g.setFont(oldFont);
+        g.setColor(oldColor);
 
         return true;
     }
@@ -946,7 +962,7 @@ public class ScorePainter
     public boolean visit (Wedge wedge)
     {
         if (wedge.isStart()) {
-            final System          system = wedge.getSystem();
+            final ScoreSystem     system = wedge.getSystem();
             final SystemRectangle box = system.toSystemRectangle(
                 wedge.getGlyph().getContourBox());
 
