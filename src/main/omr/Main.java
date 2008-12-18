@@ -19,12 +19,11 @@ import omr.script.Script;
 import omr.script.ScriptManager;
 
 import omr.ui.MainGui;
-import omr.ui.OmrUIDefaults;
 
 import omr.util.BasicTask;
 import omr.util.Clock;
 import omr.util.JaiLoader;
-import omr.util.Logger;
+import omr.log.Logger;
 import omr.util.OmrExecutors;
 
 import org.jdesktop.application.Application;
@@ -32,7 +31,6 @@ import org.jdesktop.application.SingleFrameApplication;
 
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.*;
 
 import javax.swing.*;
 
@@ -188,6 +186,18 @@ public class Main
     public static MainGui getGui ()
     {
         return gui;
+    }
+
+    //---------------//
+    // getHomeFolder //
+    //---------------//
+    /**
+     * Report the location where Audiveris tool is installed
+     * @return Audiveris home folder
+     */
+    public static File getHomeFolder ()
+    {
+        return homeFolder;
     }
 
     //----------------//
