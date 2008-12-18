@@ -155,7 +155,6 @@
 	    classpathref="build.classpath" >
 	    <fileset dir="${src.dir}">
 		<include name="**/*.java" />
-		<exclude name="**/Shape.java"/>
 		<exclude name="**/package-info.java"/>
 	    </fileset>
 	</jalopy>
@@ -243,7 +242,7 @@
             <packageset dir="${src.dir}" includes="*/**"/>
 
             <!-- Define a logical grouping of packages -->
-             <group packages="omr:omr.sheet:omr.score:omr.score.common:omr.score.entity:omr.score.midi:omr.score.visitor:omr.glyph:omr.step:omr.script"
+             <group packages="omr:omr.sheet:omr.score:omr.score.common:omr.score.entity:omr.score.midi:omr.score.visitor:omr.glyph:omr.glyph.text:omr.step:omr.script"
                  title="Driving Packages"/>
              <group packages="omr.action:omr.ui:omr.ui.*:omr.glyph.ui:omr.plugin:omr.score.ui"
                  title="User interface Packages"/>
