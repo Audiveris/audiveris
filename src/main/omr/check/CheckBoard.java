@@ -55,7 +55,7 @@ public class CheckBoard<C extends Checkable>
                        EventService                          eventService,
                        Collection<Class<?extends UserEvent>> eventList)
     {
-        super(Board.Tag.CHECK, name + "-CheckBoard", eventService, eventList);
+        super(name + "-CheckBoard", eventService, eventList);
         checkPanel = new CheckPanel<C>(suite);
 
         if (suite != null) {

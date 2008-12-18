@@ -11,7 +11,7 @@ package omr.check;
 
 import omr.constant.Constant;
 
-import omr.util.Logger;
+import omr.log.Logger;
 
 /**
  * Class <code>Check</code> encapsulates the <b>definition</b> of a check,

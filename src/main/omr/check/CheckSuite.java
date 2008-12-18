@@ -9,7 +9,7 @@
 //
 package omr.check;
 
-import omr.util.Logger;
+import omr.log.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
