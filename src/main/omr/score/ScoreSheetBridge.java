@@ -14,7 +14,7 @@ import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.common.ScorePoint;
 import omr.score.common.ScoreRectangle;
-import omr.score.entity.System;
+import omr.score.entity.ScoreSystem;
 
 import omr.selection.LocationEvent;
 import omr.selection.ScoreLocationEvent;
@@ -23,7 +23,7 @@ import omr.selection.SheetLocationEvent;
 import omr.sheet.Sheet;
 
 import omr.util.Implement;
-import omr.util.Logger;
+import omr.log.Logger;
 
 import org.bushe.swing.event.EventService;
 import org.bushe.swing.event.EventSubscriber;
@@ -129,7 +129,7 @@ public class ScoreSheetBridge
 
                     if (pagPt != null) {
                         // Which system ?
-                        System     system = score.pageLocateSystem(pagPt);
+                        ScoreSystem     system = score.pageLocateSystem(pagPt);
                         ScorePoint scrPt = system.toScorePoint(pagPt);
                         scoreRect = new ScoreRectangle(scrPt);
                     }
@@ -153,7 +153,7 @@ public class ScoreSheetBridge
                         scoreLocation.rectangle.y);
 
                     // The enclosing system
-                    System     system = score.scoreLocateSystem(scrPt);
+                    ScoreSystem     system = score.scoreLocateSystem(scrPt);
                     PagePoint  pagPt = system.toPagePoint(scrPt);
                     PixelPoint pixPt = sheet.getScale()
                                             .toPixelPoint(pagPt, null);

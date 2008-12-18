@@ -10,7 +10,7 @@
 package omr.score;
 
 import omr.score.entity.Measure;
-import omr.score.entity.System;
+import omr.score.entity.ScoreSystem;
 import omr.score.entity.SystemPart;
 
 import omr.util.TreeNode;
@@ -39,8 +39,8 @@ public class MeasureRange
 
     /** Cached data */
     private boolean boundsComputed;
-    private System  firstSystem;
-    private System  lastSystem;
+    private ScoreSystem  firstSystem;
+    private ScoreSystem  lastSystem;
     private Measure firstMeasure;
     private Measure lastMeasure;
 
@@ -93,7 +93,7 @@ public class MeasureRange
     //----------------//
     // getFirstSystem //
     //----------------//
-    public System getFirstSystem ()
+    public ScoreSystem getFirstSystem ()
     {
         checkBounds();
 
@@ -126,7 +126,7 @@ public class MeasureRange
     //---------------//
     // getLastSystem //
     //---------------//
-    public System getLastSystem ()
+    public ScoreSystem getLastSystem ()
     {
         checkBounds();
 
@@ -181,7 +181,7 @@ public class MeasureRange
     private void computeFirsts ()
     {
         for (TreeNode sn : score.getSystems()) {
-            System system = (System) sn;
+            ScoreSystem system = (ScoreSystem) sn;
 
             for (TreeNode pn : system.getParts()) {
                 SystemPart part = (SystemPart) pn;
@@ -208,7 +208,7 @@ public class MeasureRange
         for (ListIterator sit = score.getSystems()
                                      .listIterator(score.getSystems().size());
              sit.hasPrevious();) {
-            System system = (System) sit.previous();
+            ScoreSystem system = (ScoreSystem) sit.previous();
 
             for (ListIterator pit = system.getParts()
                                           .listIterator(

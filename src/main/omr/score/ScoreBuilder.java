@@ -10,9 +10,9 @@
 package omr.score;
 
 import omr.glyph.Glyph;
-import omr.glyph.Sentence;
+import omr.glyph.text.Sentence;
 import omr.glyph.Shape;
-import omr.glyph.TextType;
+import omr.glyph.text.TextType;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -36,7 +36,7 @@ import omr.score.entity.Segno;
 import omr.score.entity.Slot;
 import omr.score.entity.Slur;
 import omr.score.entity.Staff;
-import omr.score.entity.System;
+import omr.score.entity.ScoreSystem;
 import omr.score.entity.SystemPart;
 import omr.score.entity.Text;
 import omr.score.entity.TimeSignature;
@@ -50,7 +50,7 @@ import omr.score.visitor.ScoreTimeFixer;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
-import omr.util.Logger;
+import omr.log.Logger;
 import omr.util.TreeNode;
 
 import java.util.*;
@@ -124,7 +124,7 @@ public class ScoreBuilder
             sheet.getSystems().size());
 
         for (SystemInfo systemInfo : systems) {
-            System system = systemInfo.getScoreSystem();
+            ScoreSystem system = systemInfo.getScoreSystem();
 
             system.fillMissingParts();
             system.retrieveSlurConnections();
@@ -156,7 +156,7 @@ public class ScoreBuilder
     //-------------//
     // buildSystem //
     //-------------//
-    public void buildSystem (System system)
+    public void buildSystem (ScoreSystem system)
     {
         // Clear errors for this system only
         sheet.getErrorsEditor()
@@ -173,52 +173,6 @@ public class ScoreBuilder
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
-    //    //-------------------//
-    //    // buildParallelInfo //
-    //    //-------------------//
-    //    /**
-    //     * Systems are built in parallel
-    //     */
-    //    private void buildParallelInfo ()
-    //    {
-    //        Executor       executor = OmrExecutors.getHighExecutor();
-    //        CountDownLatch doneSignal = new CountDownLatch(
-    //            sheet.getSystems().size());
-    //
-    //        for (SystemInfo systemInfo : sheet.getSystems()) {
-    //            final System       system = systemInfo.getScoreSystem();
-    //            SignallingRunnable work = new SignallingRunnable(
-    //                doneSignal,
-    //                new Runnable() {
-    //                        public void run ()
-    //                        {
-    //                            buildSystem(system);
-    //                        }
-    //                    });
-    //            executor.execute(work);
-    //        }
-    //
-    //        // Wait for end of work
-    //        try {
-    //            doneSignal.await();
-    //        } catch (InterruptedException ex) {
-    //            ex.printStackTrace();
-    //        }
-    //    }
-    //
-    //    //---------------------//
-    //    // buildSequentialInfo //
-    //    //---------------------//
-    //    /**
-    //     * Systems are built in sequence
-    //     */
-    //    private void buildSequentialInfo ()
-    //    {
-    //        for (SystemInfo systemInfo : sheet.getSystems()) {
-    //            buildSystem(systemInfo.getScoreSystem());
-    //        }
-    //    }
 
     //------------------//
     // RebuildException //
@@ -254,7 +208,7 @@ public class ScoreBuilder
         //~ Instance fields ----------------------------------------------------
 
         /** The current system */
-        private System system;
+        private ScoreSystem system;
 
         /** The current systempart */
         private SystemPart currentPart;
@@ -273,7 +227,7 @@ public class ScoreBuilder
         //---------------//
         // SystemBuilder //
         //---------------//
-        SystemBuilder (System system)
+        SystemBuilder (ScoreSystem system)
         {
             this.system = system;
         }
@@ -1159,7 +1113,7 @@ public class ScoreBuilder
             {
                 for (TreeNode node : system.getParts()) {
                     SystemPart part = (SystemPart) node;
-                    part.populateLyricLines();
+                    part.populateLyricsLines();
                     part.mapSyllables();
                 }
             }
@@ -1172,7 +1126,7 @@ public class ScoreBuilder
                     systemBox.x + (systemBox.width / 2),
                     systemBox.y + systemBox.height);
 
-                if (glyph.getTextType() == TextType.Lyrics) {
+                if (glyph.getTextInfo().getTextType() == TextType.Lyrics) {
                     // Take the staff just above, if any
                     currentStaff = system.getStaffAbove(currentCenter);
                 }
@@ -1186,7 +1140,7 @@ public class ScoreBuilder
 
             public void translate (Glyph glyph)
             {
-                Sentence sentence = glyph.getSentence();
+                Sentence sentence = glyph.getTextInfo().getSentence();
 
                 // Translate the sentence here
                 // Using the left edge for x and the baseline for y

@@ -24,7 +24,7 @@ import omr.script.MidiWriteTask;
 import omr.ui.util.FileFilter;
 import omr.ui.util.UIUtilities;
 
-import omr.util.Logger;
+import omr.log.Logger;
 
 import java.io.*;
 
