@@ -9,11 +9,11 @@
 //-----------------------------------------------------------------------//
 package omr.ui;
 
+import omr.log.Logger;
+
 import omr.score.Score;
 import omr.score.ui.ScoreActions;
 import omr.score.ui.ScoreController;
-
-import omr.util.Logger;
 
 import javax.swing.*;
 

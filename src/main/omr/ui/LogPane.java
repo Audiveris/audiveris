@@ -12,7 +12,7 @@ package omr.ui;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.util.Logger;
+import omr.log.Logger;
 
 import java.awt.*;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -25,8 +25,8 @@ import javax.swing.text.*;
  * Class <code>LogPane</code> defines the pane dedicated to application-level
  * messages, those that are logged using the <code>Logger</code> class.
  *
- * @see omr.util.Logger
- * @see omr.util.LogGuiHandler
+ * @see omr.log.Logger
+ * @see omr.log.LogGuiHandler
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$

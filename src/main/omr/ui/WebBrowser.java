@@ -10,7 +10,7 @@ package omr.ui;
 
 import omr.Main;
 
-import omr.util.Logger;
+import omr.log.Logger;
 
 import java.lang.reflect.*;
 import java.net.URI;

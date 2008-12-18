@@ -9,17 +9,15 @@
 //
 package omr.ui;
 
+import omr.log.Logger;
 
 import omr.sheet.Sheet;
-import static omr.ui.Board.Tag.*;
+
 import omr.ui.util.Panel;
 import omr.ui.view.RubberZoomedPanel;
 
-import omr.util.Logger;
-
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
-
 
 import javax.swing.*;
 
@@ -29,7 +27,7 @@ import javax.swing.*;
  * dedicated boards, as well as a general-purpose Filter board and a custom
  * board.
  *
- * <p>There is now one single BoardsPane for all views of the same sheet, while
+ * <p>There is one single BoardsPane for all views of the same sheet, while
  * the visibility of some of its boards may vary with the view at hand.
  *
  * @author Herv&eacute; Bitteur

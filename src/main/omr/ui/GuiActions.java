@@ -16,15 +16,16 @@ import omr.constant.UnitManager;
 import omr.constant.UnitModel;
 import omr.constant.UnitTreeTable;
 
-import omr.glyph.ui.GlyphTrainer;
 import omr.glyph.ui.GlyphVerifier;
 import omr.glyph.ui.ShapeColorChooser;
+import omr.glyph.ui.panel.GlyphTrainer;
+
+import omr.log.Logger;
 
 import omr.sheet.SheetManager;
 
 import omr.ui.treetable.JTreeTable;
 
-import omr.util.Logger;
 import omr.util.Memory;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -238,7 +239,9 @@ public class GuiActions
             String str = url + "?manual=operation";
             ///str = "file:///u:/soft/audiveris/www/docs/manual/index.html?manual=operation";
             ///str = "file:///u:/soft/audiveris";
-            str = "u:/soft/audiveris/www/docs/manual/index.html"; // BOF !!!
+            str = "file:///u:/soft/audiveris/www/docs/manual/index.html"; // BOF !!!
+            str = "file:///u|/soft/audiveris/www/docs/manual/index.html"; // BOF !!!
+            str = "/soft/audiveris/www/docs/manual/index.html"; // BOF !!!
             logger.info("str=" + str);
 
             WebBrowser.getBrowser()

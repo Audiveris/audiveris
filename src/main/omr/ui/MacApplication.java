@@ -9,13 +9,14 @@
 //
 package omr.ui;
 
+import omr.log.Logger;
+
 import omr.script.Script;
 import omr.script.ScriptManager;
 
 import omr.step.Step;
 
 import omr.util.Implement;
-import omr.util.Logger;
 
 import org.jdesktop.swingworker.SwingWorker;
 

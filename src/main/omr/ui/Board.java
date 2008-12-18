@@ -9,12 +9,13 @@
 //
 package omr.ui;
 
+import omr.log.Logger;
+
 import omr.selection.UserEvent;
 
 import omr.ui.util.Panel;
 
 import omr.util.ClassUtil;
-import omr.util.Logger;
 
 import org.bushe.swing.event.EventService;
 import org.bushe.swing.event.EventSubscriber;
@@ -48,70 +49,6 @@ public abstract class Board
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Board.class);
 
-    //~ Enumerations -----------------------------------------------------------
-
-    //-----//
-    // Tag //
-    //-----//
-    /**
-     * Enum <code>Tag</code> is used to refer to the various user boards.
-     */
-    public enum Tag {
-        //~ Enumeration constant initializers ----------------------------------
-
-
-        /** Board for check results */
-        CHECK("Check"),
-        /** Custom board */
-        CUSTOM("Custom"), 
-        /** Board for glyph info */
-        GLYPH("Glyph"), 
-        /** Board for pixel info (coordinates, pixel grey level) */
-        PIXEL("Pixel"), 
-        /** Board for run info */
-        RUN("Run"), 
-        /** Board for section info */
-        SECTION("Section"), 
-        /** Board for Score info */
-        SCORE("Score");
-        //~ Instance fields ----------------------------------------------------
-
-        //
-        // For description only
-        private String label;
-
-        //~ Constructors -------------------------------------------------------
-
-        //-----//
-        // Tag //
-        //-----//
-        /**
-         * Create a tag enum item, with its provided description
-         *
-         * @param label the tag description
-         */
-        Tag (String label)
-        {
-            this.label = label;
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        //----------//
-        // toString //
-        //----------//
-        /**
-         * Report the tag description
-         *
-         * @return the tag description
-         */
-        @Override
-        public String toString ()
-        {
-            return label;
-        }
-    }
-
     //~ Instance fields --------------------------------------------------------
 
     /** The swing component of the Board instance */
@@ -126,9 +63,6 @@ public abstract class Board
     /** The Board instance name */
     protected String name;
 
-    /** The Board Tag */
-    protected Tag tag;
-
     //~ Constructors -----------------------------------------------------------
 
     //-------//
@@ -137,17 +71,14 @@ public abstract class Board
     /**
      * Create a board
      *
-     * @param tag the tag to wrap the board
      * @param name a name assigned to the board, for debug reason
      * @param eventService the related event service (both for input & output)
      * @param eventList the collection of event classes to observe
      */
-    public Board (Tag                                   tag,
-                  String                                name,
+    public Board (String                                name,
                   EventService                          eventService,
                   Collection<Class<?extends UserEvent>> eventList)
     {
-        this.tag = tag;
         this.name = name;
         this.eventService = eventService;
         this.eventList = eventList;
@@ -199,19 +130,6 @@ public abstract class Board
     public String getName ()
     {
         return name;
-    }
-
-    //--------//
-    // getTag //
-    //--------//
-    /**
-     * Report the tag of the board
-     *
-     * @return the board tag
-     */
-    public Tag getTag ()
-    {
-        return tag;
     }
 
     //---------//

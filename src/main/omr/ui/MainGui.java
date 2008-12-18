@@ -16,17 +16,20 @@ import omr.action.Actions;
 
 import omr.constant.*;
 
+import omr.log.Logger;
+
 import omr.score.ui.ScoreController;
 
 import omr.selection.SheetEvent;
 
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
+import omr.sheet.ui.SheetActions.OpenTask;
+import omr.sheet.ui.SheetController;
 
 import omr.step.Step;
 import omr.step.StepMenu;
 
-import omr.ui.SheetActions.OpenTask;
 import omr.ui.icon.IconManager;
 import omr.ui.util.MemoryMeter;
 import omr.ui.util.Panel;
@@ -34,7 +37,6 @@ import omr.ui.util.SeparableMenu;
 import omr.ui.util.UIUtilities;
 
 import omr.util.Implement;
-import omr.util.Logger;
 
 import org.bushe.swing.event.EventSubscriber;
 

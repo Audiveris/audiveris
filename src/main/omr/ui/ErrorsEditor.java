@@ -11,11 +11,13 @@ package omr.ui;
 
 import omr.glyph.Glyph;
 
+import omr.log.Logger;
+
 import omr.score.common.ScoreRectangle;
 import omr.score.common.SystemPoint;
 import omr.score.entity.Measure;
 import omr.score.entity.MeasureNode;
-import omr.score.entity.System;
+import omr.score.entity.ScoreSystem;
 import omr.score.entity.SystemNode;
 
 import omr.selection.GlyphEvent;
@@ -23,8 +25,6 @@ import omr.selection.ScoreLocationEvent;
 import omr.selection.SelectionHint;
 
 import omr.sheet.Sheet;
-
-import omr.util.Logger;
 
 import java.util.*;
 
@@ -168,7 +168,7 @@ public class ErrorsEditor
     //-------------//
     // clearSystem //
     //-------------//
-    public void clearSystem (final System system)
+    public void clearSystem (final ScoreSystem system)
     {
         SwingUtilities.invokeLater(
             new Runnable() {
@@ -281,7 +281,7 @@ public class ErrorsEditor
                     } else {
                         // Otherwise use system node location as possible
                         try {
-                            System      system = record.node.getSystem();
+                            ScoreSystem system = record.node.getSystem();
                             SystemPoint sysPt = null;
 
                             try {
