@@ -11,7 +11,7 @@ package omr.action;
 
 import static omr.action.ActionDescriptor.*;
 
-import omr.util.Logger;
+import omr.log.Logger;
 
 import java.io.InputStream;
 import java.util.*;

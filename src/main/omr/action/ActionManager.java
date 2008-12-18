@@ -10,6 +10,8 @@ package omr.action;
 
 import omr.Main;
 
+import omr.log.Logger;
+
 import omr.selection.SheetEvent;
 
 import omr.sheet.Sheet;
@@ -20,7 +22,6 @@ import omr.ui.util.SeparableToolBar;
 import omr.ui.util.UIUtilities;
 
 import omr.util.Implement;
-import omr.util.Logger;
 
 import org.bushe.swing.event.EventSubscriber;
 
@@ -159,7 +160,11 @@ public class ActionManager
     //---------//
     // getName //
     //---------//
-    public String getName ()
+    /**
+     * Report a describing name
+     * @return a describing name
+     */
+    public String getName()
     {
         return "ActionManager";
     }
