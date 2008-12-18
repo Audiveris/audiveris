@@ -9,8 +9,6 @@
 //
 package omr.action;
 
-import static omr.action.ActionDescriptor.*;
-
 import omr.log.Logger;
 
 import java.io.InputStream;
@@ -134,12 +132,14 @@ public class Actions
             }
         }
 
-        // User-specified ones
+        // User-specified ones, except HELP
         for (ActionDescriptor desc : allDescriptors) {
-            names.add(desc.domain);
+            if (!desc.domain.equalsIgnoreCase(Domain.HELP.toString())) {
+                names.add(desc.domain);
+            }
         }
 
-        // Add HELP as the last one
+        // Add HELP as the very last one
         names.add(Domain.HELP.name());
 
         return names;
