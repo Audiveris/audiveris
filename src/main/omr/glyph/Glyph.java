@@ -13,7 +13,9 @@ import omr.check.Checkable;
 import omr.check.Result;
 import omr.check.SuccessResult;
 
-import omr.lag.HorizontalOrientation;
+import omr.glyph.text.Sentence;
+import omr.glyph.text.TextInfo;
+
 import omr.lag.Section;
 import omr.lag.SectionView;
 
@@ -25,10 +27,11 @@ import omr.score.common.PixelRectangle;
 import omr.ui.icon.SymbolIcon;
 
 import omr.util.Implement;
-import omr.util.Logger;
+import omr.log.Logger;
 import omr.util.Predicate;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.*;
 
 import javax.xml.bind.annotation.*;
@@ -150,17 +153,8 @@ public class Glyph
      */
     private Rectangle bounds;
 
-    /** Related text area parameters */
-    private TextArea textArea;
-
-    /** Text content if any */
-    private String textContent;
-
-    /** Dummy text content as placeholder, if any */
-    private String pseudoContent;
-
-    /** Containing text sentence if any */
-    private Sentence sentence;
+    /** Related textual information, if any */
+    private TextInfo textInfo;
 
     /** Set of forbidden shapes, if any */
     private Set<Shape> forbiddenShapes;
@@ -281,11 +275,11 @@ public class Glyph
     // getMembers //
     //------------//
     /**
-     * Report the collection of member sections.
+     * Report the set of member sections.
      *
      * @return member sections
      */
-    public Collection<GlyphSection> getMembers ()
+    public Set<GlyphSection> getMembers ()
     {
         return members;
     }
@@ -468,18 +462,6 @@ public class Glyph
         return rightStem;
     }
 
-    //-------------//
-    // getSentence //
-    //-------------//
-    /**
-     * Report the sentence, if any, this (text) glyph is a component of
-     * @return the containing sentence, or null
-     */
-    public Sentence getSentence ()
-    {
-        return sentence;
-    }
-
     //----------//
     // setShape //
     //----------//
@@ -512,10 +494,13 @@ public class Glyph
             forbidShape(oldShape);
 
             // No text, no sentence
-            if (oldShape.isText() &&
-                (sentence != null) &&
-                ((shape == null) || !shape.isText())) {
-                sentence.removeItem(this);
+            if (oldShape.isText()) {
+                Sentence sentence = getTextInfo()
+                                        .getSentence();
+
+                if ((sentence != null) && ((shape == null) || !shape.isText())) {
+                    sentence.removeItem(this);
+                }
             }
         }
 
@@ -686,84 +671,6 @@ public class Glyph
                     }
                 }
             }
-        }
-    }
-
-    //-------------//
-    // getTextArea //
-    //-------------//
-    /**
-     * Report the text area that contains this glyph
-     * @return the text area for this glyph
-     */
-    public TextArea getTextArea ()
-    {
-        if (textArea == null) {
-            try {
-                textArea = new TextArea(
-                    null,
-                    lag.createAbsoluteRoi(getContourBox()),
-                    new HorizontalOrientation());
-            } catch (Exception ex) {
-                logger.warning("Cannot create TextArea for glyph " + this);
-            }
-        }
-
-        return textArea;
-    }
-
-    //----------------//
-    // setTextContent //
-    //----------------//
-    /**
-     * Assign a text meaning to the glyph
-     * @param textContent the string value for this text glyph
-     */
-    public void setTextContent (String textContent)
-    {
-        this.textContent = textContent;
-    }
-
-    //----------------//
-    // getTextContent //
-    //----------------//
-    /**
-     * Report the text content (the string value) of this text glyph if any
-     * @return the text meaning of this glyph if any, either entered manually
-     * of via an OCR function
-     */
-    public String getTextContent ()
-    {
-        return textContent;
-    }
-
-    //--------------//
-    // getTextStart //
-    //--------------//
-    /**
-     * Report the starting point of this text glyph, which is the left side
-     * abscissa and the baseline ordinate
-     * @return the starting point of the text glyph, specified in pixels
-     */
-    public PixelPoint getTextStart ()
-    {
-        return new PixelPoint(getContourBox().x, getTextArea().getBaseline());
-    }
-
-    //-------------//
-    // getTextType //
-    //-------------//
-    /**
-     * Convenient method that report the text type of the sentence, if any, that
-     * contains this text glyph
-     * @return the text type of the enclosing sentence, or null
-     */
-    public TextType getTextType ()
-    {
-        if (sentence != null) {
-            return sentence.getTextType();
-        } else {
-            return null;
         }
     }
 
@@ -958,6 +865,29 @@ public class Glyph
         return id;
     }
 
+    //----------//
+    // getImage //
+    //----------//
+    /**
+     * Report an image of the glyph (which can be handed to the OCR)
+     * @return a black & white image (contour box size )
+     */
+    public BufferedImage getImage ()
+    {
+        // Determine the bounding box
+        Rectangle     box = getContourBox();
+        BufferedImage image = new BufferedImage(
+            box.width,
+            box.height,
+            BufferedImage.TYPE_BYTE_GRAY);
+
+        for (Section section : members) {
+            section.fillImage(image, box);
+        }
+
+        return image;
+    }
+
     //--------------//
     // getInterline //
     //--------------//
@@ -1074,8 +1004,6 @@ public class Glyph
      */
     public boolean isWellKnown ()
     {
-        Shape shape = getShape();
-
         return (shape != null) && shape.isWellKnown();
     }
 
@@ -1254,7 +1182,7 @@ public class Glyph
     public void computeMoments ()
     {
         // First cumulate point from member sections
-        int   weight = getWeight();
+        weight = getWeight();
 
         int[] coord = new int[weight];
         int[] pos = new int[weight];
@@ -1356,10 +1284,7 @@ public class Glyph
         System.out.println("   centroid=" + getCentroid());
         System.out.println("   bounds=" + getBounds());
         System.out.println("   forbiddenShapes=" + forbiddenShapes);
-        System.out.println("   textArea=" + textArea);
-        System.out.println("   textContent=" + textContent);
-        System.out.println("   pseudoContent=" + getPseudoContent());
-        System.out.println("   sentence=" + sentence);
+        System.out.println("   textInfo=" + textInfo);
         System.out.println("   translations=" + translations);
     }
 
@@ -1384,19 +1309,22 @@ public class Glyph
     //----------//
     /**
      * Convenient method, to build a string with just the ids of the glyph
-     * collection
+     * collection, introduced by the provided label
      *
      * @param glyphs the collection of glyphs
      * @return the string built
      */
-    public static String toString (Collection<?extends Glyph> glyphs)
+    public static String toString (String                     label,
+                                   Collection<?extends Glyph> glyphs)
     {
         if (glyphs == null) {
             return "";
         }
 
         StringBuilder sb = new StringBuilder();
-        sb.append(" glyphs[");
+        sb.append(" ")
+          .append(label)
+          .append("[");
 
         for (Glyph glyph : glyphs) {
             sb.append("#")
@@ -1406,6 +1334,21 @@ public class Glyph
         sb.append("]");
 
         return sb.toString();
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    /**
+     * Convenient method, to build a string with just the ids of the glyph
+     * collection, introduced by the label "glyphs"
+     *
+     * @param glyphs the collection of glyphs
+     * @return the string built
+     */
+    public static String toString (Collection<?extends Glyph> glyphs)
+    {
+        return toString("glyphs", glyphs);
     }
 
     //---------------//
@@ -1468,7 +1411,8 @@ public class Glyph
         }
 
         if (shape.isText()) {
-            return getTextStart();
+            return getTextInfo()
+                       .getTextStart();
         }
 
         SymbolIcon icon = (SymbolIcon) shape.getIcon();
@@ -1490,40 +1434,16 @@ public class Glyph
         return getAreaCenter();
     }
 
-    //------------------//
-    // getPseudoContent //
-    //------------------//
-    /**
-     * Report a dummy content for this glyph (for lack of know content)
-     * @return an artificial text content, based on the enclosing sentence type
-     */
-    public String getPseudoContent ()
+    //-------------//
+    // getTextInfo //
+    //-------------//
+    public TextInfo getTextInfo ()
     {
-        if (pseudoContent == null) {
-            if (sentence != null) {
-                final int nbChar = (int) Math.rint(
-                    ((double) getContourBox().width) / sentence.getTextHeight());
-
-                if (getTextType() != null) {
-                    pseudoContent = getTextType()
-                                        .getStringHolder(nbChar);
-                }
-            }
+        if (textInfo == null) {
+            textInfo = new TextInfo(this);
         }
 
-        return pseudoContent;
-    }
-
-    //--------------------//
-    // resetPseudoContent //
-    //--------------------//
-    /**
-     * Invalidate the glyph pseudo content, as a consequence of a sentence type
-     * change, to force its re-evaluation later
-     */
-    public void resetPseudoContent ()
-    {
-        pseudoContent = null;
+        return textInfo;
     }
 
     //----------//
@@ -1543,16 +1463,27 @@ public class Glyph
         sb.append("#")
           .append(id);
 
-        if (getShape() != null) {
+        if (shape != null) {
             sb.append(" shape=")
-              .append(getShape())
+              .append(shape)
               .append("(")
               .append(String.format("%.3f", getDoubt()))
               .append(")");
 
-            if (getTrainingShape() != getShape()) {
+            if (getTrainingShape() != shape) {
                 sb.append(" training=")
                   .append(getTrainingShape());
+            }
+
+            if (shape.isText()) {
+                String textContent = getTextInfo()
+                                         .getContent();
+
+                if (textContent != null) {
+                    sb.append(" \"")
+                      .append(textContent)
+                      .append("\"");
+                }
             }
         }
 
@@ -1562,8 +1493,7 @@ public class Glyph
         }
 
         if (leaves.size() > 0) {
-            sb.append(" leaves")
-              .append(toString(leaves));
+            sb.append(toString("leaves", leaves));
         }
 
         if (partOf != null) {
@@ -1572,8 +1502,7 @@ public class Glyph
         }
 
         if (parts.size() > 0) {
-            sb.append(" parts")
-              .append(toString(parts));
+            sb.append(toString("parts", parts));
         }
 
         if (centroid != null) {
@@ -1612,31 +1541,6 @@ public class Glyph
     protected String getPrefix ()
     {
         return "Glyph";
-    }
-
-    //-------------//
-    // setSentence //
-    //-------------//
-    /**
-     * Define the enclosing sentence for this (text) glyph
-     * @param sentence the enclosing sentence
-     */
-    void setSentence (Sentence sentence)
-    {
-        this.sentence = sentence;
-    }
-
-    //-------------//
-    // setTextArea //
-    //-------------//
-    /**
-     * Define the related text area for this glyph
-     * @param textArea the related text area which can provide horizontal and
-     * vertical histograms
-     */
-    void setTextArea (TextArea textArea)
-    {
-        this.textArea = textArea;
     }
 
     //---------------------//
