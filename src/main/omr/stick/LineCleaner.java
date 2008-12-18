@@ -23,12 +23,12 @@ import omr.graph.DigraphView;
 import omr.lag.Run;
 import omr.lag.Section;
 
+import omr.log.Logger;
+
 import omr.math.BasicLine;
 import omr.math.Line;
 
-import omr.sheet.Picture;
-
-import omr.util.Logger;
+import omr.sheet.picture.Picture;
 
 import net.jcip.annotations.ThreadSafe;
 
@@ -133,11 +133,11 @@ public class LineCleaner
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** The line stick to be cleand and patched */
+        /** The line stick to be cleaned and patched */
         private final Stick lineStick;
 
         /** Sections that are borders of the line stick */
-        private final List<GlyphSection> borders = new ArrayList<GlyphSection>();
+        private final Set<GlyphSection> borders = new LinkedHashSet<GlyphSection>();
 
         /** Patch sections created to extend crossing objects through the line */
         private final List<GlyphSection> patches = new ArrayList<GlyphSection>();
@@ -181,7 +181,13 @@ public class LineCleaner
                 }
 
                 // Delete the section itself
-                section.delete();
+                try {
+                    section.delete();
+                } catch (Exception ex) {
+                    // In some cases we try to remove a section several times
+                    // So simply ignore this
+                    ///logger.warning("Error removing " + section);
+                }
             }
 
             // Include the border sections as line members
