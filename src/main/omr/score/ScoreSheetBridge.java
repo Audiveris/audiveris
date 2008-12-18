@@ -9,6 +9,8 @@
 //
 package omr.score;
 
+import omr.log.Logger;
+
 import omr.score.common.PagePoint;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -23,7 +25,6 @@ import omr.selection.SheetLocationEvent;
 import omr.sheet.Sheet;
 
 import omr.util.Implement;
-import omr.log.Logger;
 
 import org.bushe.swing.event.EventService;
 import org.bushe.swing.event.EventSubscriber;
@@ -129,8 +130,8 @@ public class ScoreSheetBridge
 
                     if (pagPt != null) {
                         // Which system ?
-                        ScoreSystem     system = score.pageLocateSystem(pagPt);
-                        ScorePoint scrPt = system.toScorePoint(pagPt);
+                        ScoreSystem system = score.pageLocateSystem(pagPt);
+                        ScorePoint  scrPt = system.toScorePoint(pagPt);
                         scoreRect = new ScoreRectangle(scrPt);
                     }
                 }
@@ -148,15 +149,15 @@ public class ScoreSheetBridge
 
                 if (scoreLocation.rectangle != null) {
                     // We forge a ScorePoint from the display point
-                    ScorePoint scrPt = new ScorePoint(
+                    ScorePoint  scrPt = new ScorePoint(
                         scoreLocation.rectangle.x,
                         scoreLocation.rectangle.y);
 
                     // The enclosing system
-                    ScoreSystem     system = score.scoreLocateSystem(scrPt);
-                    PagePoint  pagPt = system.toPagePoint(scrPt);
-                    PixelPoint pixPt = sheet.getScale()
-                                            .toPixelPoint(pagPt, null);
+                    ScoreSystem system = score.scoreLocateSystem(scrPt);
+                    PagePoint   pagPt = system.toPagePoint(scrPt);
+                    PixelPoint  pixPt = sheet.getScale()
+                                             .toPixelPoint(pagPt, null);
                     pixRect = new PixelRectangle(pixPt);
                 }
 

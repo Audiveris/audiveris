@@ -10,9 +10,11 @@
 package omr.score;
 
 import omr.glyph.Glyph;
-import omr.glyph.text.Sentence;
 import omr.glyph.Shape;
+import omr.glyph.text.Sentence;
 import omr.glyph.text.TextType;
+
+import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -32,11 +34,11 @@ import omr.score.entity.MeasureNode;
 import omr.score.entity.Note;
 import omr.score.entity.Ornament;
 import omr.score.entity.Pedal;
+import omr.score.entity.ScoreSystem;
 import omr.score.entity.Segno;
 import omr.score.entity.Slot;
 import omr.score.entity.Slur;
 import omr.score.entity.Staff;
-import omr.score.entity.ScoreSystem;
 import omr.score.entity.SystemPart;
 import omr.score.entity.Text;
 import omr.score.entity.TimeSignature;
@@ -50,7 +52,6 @@ import omr.score.visitor.ScoreTimeFixer;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
-import omr.log.Logger;
 import omr.util.TreeNode;
 
 import java.util.*;
@@ -1126,7 +1127,8 @@ public class ScoreBuilder
                     systemBox.x + (systemBox.width / 2),
                     systemBox.y + systemBox.height);
 
-                if (glyph.getTextInfo().getTextType() == TextType.Lyrics) {
+                if (glyph.getTextInfo()
+                         .getTextType() == TextType.Lyrics) {
                     // Take the staff just above, if any
                     currentStaff = system.getStaffAbove(currentCenter);
                 }
@@ -1140,7 +1142,8 @@ public class ScoreBuilder
 
             public void translate (Glyph glyph)
             {
-                Sentence sentence = glyph.getTextInfo().getSentence();
+                Sentence sentence = glyph.getTextInfo()
+                                         .getSentence();
 
                 // Translate the sentence here
                 // Using the left edge for x and the baseline for y

@@ -14,6 +14,8 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.log.Logger;
+
 import omr.score.midi.MidiAgent;
 import omr.score.ui.ScoreActions;
 import omr.score.visitor.ScoreExporter;
@@ -23,8 +25,6 @@ import omr.script.MidiWriteTask;
 
 import omr.ui.util.FileFilter;
 import omr.ui.util.UIUtilities;
-
-import omr.log.Logger;
 
 import java.io.*;
 

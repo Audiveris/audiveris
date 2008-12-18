@@ -39,10 +39,10 @@ public class MeasureRange
 
     /** Cached data */
     private boolean boundsComputed;
-    private ScoreSystem  firstSystem;
-    private ScoreSystem  lastSystem;
-    private Measure firstMeasure;
-    private Measure lastMeasure;
+    private ScoreSystem firstSystem;
+    private ScoreSystem lastSystem;
+    private Measure     firstMeasure;
+    private Measure     lastMeasure;
 
     //~ Constructors -----------------------------------------------------------
 
