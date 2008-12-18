@@ -12,6 +12,8 @@ package omr.score.ui;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.log.Logger;
+
 import omr.score.Score;
 import omr.score.ScoreSheetBridge;
 import omr.score.common.PagePoint;
@@ -21,8 +23,8 @@ import omr.score.common.ScoreRectangle;
 import omr.score.common.SystemPoint;
 import omr.score.common.UnitDimension;
 import omr.score.entity.Measure;
+import omr.score.entity.ScoreSystem;
 import omr.score.entity.Slot;
-import omr.score.entity.System;
 import static omr.score.ui.ScoreConstants.*;
 import omr.score.visitor.ScorePainter;
 
@@ -33,9 +35,9 @@ import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
 
 import omr.sheet.Sheet;
+import omr.sheet.ui.SheetAssembly;
 
 import omr.ui.PixelCount;
-import omr.ui.SheetAssembly;
 import omr.ui.util.Panel;
 import omr.ui.view.Rubber;
 import omr.ui.view.RubberZoomedPanel;
@@ -43,11 +45,9 @@ import omr.ui.view.ScrollView;
 import omr.ui.view.Zoom;
 import omr.ui.view.ZoomedPanel;
 
-import omr.util.Logger;
 import omr.util.TreeNode;
 
 import java.awt.*;
-import java.util.*;
 
 import javax.swing.*;
 
@@ -197,7 +197,7 @@ public class ScoreView
         ScoreRectangle scoreContour = null;
 
         for (TreeNode node : score.getSystems()) {
-            System         system = (System) node;
+            ScoreSystem    system = (ScoreSystem) node;
             ScoreRectangle absSystemContour = system.toScoreRectangle(
                 system.getContour());
 
@@ -444,7 +444,7 @@ public class ScoreView
 
                     if (rect != null) {
                         ScorePoint  scrPt = new ScorePoint(rect.x, rect.y);
-                        System      system = score.scoreLocateSystem(scrPt);
+                        ScoreSystem system = score.scoreLocateSystem(scrPt);
                         PagePoint   pagPt = system.toPagePoint(scrPt);
                         SystemPoint sysPt = system.toSystemPoint(pagPt);
                         tellPoint(scrPt, pagPt, sysPt);

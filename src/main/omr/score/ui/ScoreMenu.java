@@ -11,6 +11,8 @@ package omr.score.ui;
 
 import omr.glyph.Glyph;
 
+import omr.log.Logger;
+
 import omr.score.MeasureRange;
 import omr.score.Score;
 import omr.score.common.PagePoint;
@@ -18,15 +20,13 @@ import omr.score.common.ScorePoint;
 import omr.score.common.SystemPoint;
 import omr.score.entity.Measure;
 import omr.score.entity.Note;
+import omr.score.entity.ScoreSystem;
 import omr.score.entity.Slot;
-import omr.score.entity.System;
 import omr.score.entity.SystemPart;
 import omr.score.midi.MidiActions;
 import omr.score.midi.MidiAgent;
 
 import omr.selection.GlyphSetEvent;
-
-import omr.util.Logger;
 
 import java.awt.Component;
 import java.awt.event.*;
@@ -64,9 +64,9 @@ public class ScoreMenu
     private final JPopupMenu popup;
 
     // Context
-    private System  system;
-    private Measure measure;
-    private Slot    slot;
+    private ScoreSystem system;
+    private Measure     measure;
+    private Slot        slot;
 
     //~ Constructors -----------------------------------------------------------
 

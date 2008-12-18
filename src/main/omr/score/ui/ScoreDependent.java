@@ -9,14 +9,14 @@
 //
 package omr.score.ui;
 
+import omr.log.Logger;
+
 import omr.selection.SheetEvent;
 
 import omr.sheet.Sheet;
-
-import omr.ui.SheetDependent;
+import omr.sheet.ui.SheetDependent;
 
 import omr.util.Implement;
-import omr.util.Logger;
 
 import org.bushe.swing.event.EventSubscriber;
 

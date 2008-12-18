@@ -9,12 +9,12 @@
 //
 package omr.score.ui;
 
+import omr.log.Logger;
+
 import omr.score.Score;
 
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
-
-import omr.util.Logger;
 
 /**
  * Class <code>ScoreController</code> encapsulates a set of user interface means

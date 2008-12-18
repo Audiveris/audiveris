@@ -14,16 +14,16 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.log.Logger;
+
 import omr.score.Score;
 import omr.score.entity.ScorePart;
 import omr.score.midi.MidiAgent;
+import omr.score.ui.ScoreBoard;
 
 import omr.sheet.SheetManager;
 
-import omr.ui.ScoreBoard;
-
 import omr.util.BasicTask;
-import omr.util.Logger;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;

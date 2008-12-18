@@ -14,12 +14,13 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.log.Logger;
+
 import omr.score.Score;
 import omr.score.entity.Container;
 
 import omr.util.Dumper;
 import omr.util.Implement;
-import omr.util.Logger;
 
 import org.jdesktop.application.ResourceMap;
 
