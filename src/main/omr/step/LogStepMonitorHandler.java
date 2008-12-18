@@ -9,7 +9,7 @@
 //
 package omr.step;
 
-import omr.util.LogLevelsFilter;
+import omr.log.LogLevelsFilter;
 
 import java.util.logging.*;
 

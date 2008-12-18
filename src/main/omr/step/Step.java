@@ -9,13 +9,14 @@
 //
 package omr.step;
 
+import omr.log.Logger;
+
 import omr.script.StepTask;
 
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 import omr.sheet.SystemInfo;
 
-import omr.util.Logger;
 import omr.util.Memory;
 
 import java.io.File;

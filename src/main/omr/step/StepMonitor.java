@@ -13,13 +13,14 @@ import omr.constant.Constant;
 import omr.constant.Constant.Ratio;
 import omr.constant.ConstantSet;
 
+import omr.log.Logger;
+
 import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 
 import omr.ui.util.UIUtilities;
 
 import omr.util.Implement;
-import omr.util.Logger;
 
 import java.awt.Graphics;
 import java.util.EnumSet;

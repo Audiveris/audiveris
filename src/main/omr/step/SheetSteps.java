@@ -16,21 +16,23 @@ import omr.glyph.GlyphInspector;
 import omr.glyph.Shape;
 import omr.glyph.SlurGlyph;
 
+import omr.log.Logger;
+
 import omr.score.ui.ScoreActions;
 import omr.score.visitor.ScoreChecker;
 
+import omr.selection.GlyphEvent;
+
 import omr.sheet.HorizontalsBuilder;
-import omr.sheet.ImageFormatException;
 import omr.sheet.LinesBuilder;
 import omr.sheet.MeasuresBuilder;
-import omr.sheet.Picture;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SkewBuilder;
 import omr.sheet.SystemInfo;
+import omr.sheet.picture.ImageFormatException;
+import omr.sheet.picture.Picture;
 import static omr.step.Step.*;
-
-import omr.util.Logger;
 
 import java.io.*;
 import java.util.*;
@@ -256,87 +258,6 @@ public class SheetSteps
                  .compareTo(Step.LEAVES) >= 0) {
             Step.LEAVES.reperform(sheet, impactedSystems);
         }
-
-        //        // Prepare the reprocessing of the impacted systems
-        //        Collection<Callable<Void>> work = new ArrayList<Callable<Void>>();
-        //
-        //        for (SystemInfo info : impactedSystems) {
-        //            final SystemInfo system = info;
-        //            work.add(
-        //                new Callable<Void>() {
-        //                        public Void call ()
-        //                            throws Exception
-        //                        {
-        //                            system.getScoreSystem()
-        //                                  .cleanupNode();
-        //
-        //                            try {
-        //                                if (isDone(LEAVES)) {
-        //                                    doSystem(LEAVES, system);
-        //                                }
-        //
-        //                                if (isDone(CLEANUP)) {
-        //                                    doSystem(CLEANUP, system);
-        //                                }
-        //
-        //                                if (isDone(SCORE)) {
-        //                                    doSystem(SCORE, system);
-        //                                }
-        //                            } catch (StepException ex) {
-        //                                ex.printStackTrace();
-        //                            }
-        //
-        //                            return null;
-        //                        }
-        //                    });
-        //        }
-        //
-        //        try {
-        //            OmrExecutors.getLowExecutor()
-        //                        .invokeAll(work);
-        //
-        //            // Final cross-system translation tasks
-        //            if (isDone(SCORE)) {
-        //                Runnable finalWork = new Runnable() {
-        //                    public void run ()
-        //                    {
-        //                        SystemInfo firstSystem = (impactedSystems.size() > 0)
-        //                                                 ? impactedSystems.first() : null;
-        //                        sheet.getScoreBuilder()
-        //                             .buildFinal(firstSystem);
-        //                    }
-        //                };
-        //
-        //                OmrExecutors.getLowExecutor()
-        //                            .submit(finalWork)
-        //                            .get();
-        //            }
-        //
-        //            // Always refresh views if any
-        //            if (Main.getGui() != null) {
-        //                SwingUtilities.invokeLater(
-        //                    new Runnable() {
-        //                            public void run ()
-        //                            {
-        //                                if (isStarted(VERTICALS)) {
-        //                                    getTask(VERTICALS)
-        //                                        .displayUI();
-        //                                }
-        //
-        //                                if (isStarted(SYMBOLS)) {
-        //                                    getTask(SYMBOLS)
-        //                                        .displayUI();
-        //                                }
-        //
-        //                                // Kludge, to put the Glyphs tab on top of all others.
-        //                                sheet.getAssembly()
-        //                                     .selectTab("Glyphs");
-        //                            }
-        //                        });
-        //            }
-        //        } catch (Exception ex) {
-        //            logger.warning("Last steps failed", ex);
-        //        }
     }
 
     //---------//
@@ -703,6 +624,16 @@ public class SheetSteps
             // Kludge, to put the Glyphs tab on top of all others.
             sheet.getAssembly()
                  .selectTab("Glyphs");
+
+            // Update the glyph board, by re-publishing the current glyph
+            GlyphEvent glyphEvent = (GlyphEvent) sheet.getVerticalLag()
+                                                      .getLastEvent(
+                GlyphEvent.class);
+
+            if (glyphEvent != null) {
+                sheet.getVerticalLag()
+                     .publish(glyphEvent);
+            }
         }
 
         @Override
@@ -723,7 +654,7 @@ public class SheetSteps
         public void doSystem (SystemInfo system)
             throws StepException
         {
-            omr.score.entity.System scoreSystem = system.getScoreSystem();
+            omr.score.entity.ScoreSystem scoreSystem = system.getScoreSystem();
             sheet.getScoreBuilder()
                  .buildSystem(scoreSystem);
             scoreSystem.acceptChildren(new ScoreChecker());
