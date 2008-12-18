@@ -9,75 +9,22 @@
 //
 package omr.sheet;
 
-import omr.math.Line;
-
-import omr.stick.Stick;
+import omr.glyph.GlyphSection;
 
 import omr.ui.view.Zoom;
 
-import java.awt.*;
-import java.util.List;
+import java.awt.Graphics;
+import java.util.Collection;
 
 /**
- * Class <code>LineInfo</code> handles one staff line.
+ * Interface <code>LineInfo</code> describes the handling of one staff line.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-public class LineInfo
+public interface LineInfo
 {
-    //~ Instance fields --------------------------------------------------------
-
-    /** Related Builder */
-    private LineBuilder builder;
-
-    /** Best line equation */
-    private Line line;
-
-    /** Just a sequential id for debug */
-    private int id;
-
-    /** Abscissa of left edge */
-    private int left;
-
-    /** Abscissa of right edge */
-    private int right;
-
-    //~ Constructors -----------------------------------------------------------
-
-    //----------//
-    // LineInfo //
-    //----------//
-    /**
-     * Create info about one staff line
-     *
-     * @param id the line id (debug)
-     * @param left computed abscissa of the left line end
-     * @param right computed  abscissa of the right line end
-     * */
-    public LineInfo (int id,
-                     int left,
-                     int right)
-    {
-        this.id = id;
-        this.left = left;
-        this.right = right;
-    }
-
     //~ Methods ----------------------------------------------------------------
-
-    //-------//
-    // getId //
-    //-------//
-    /**
-     * Report the id of this line
-     *
-     * @return the line id (debugging info)
-     */
-    public int getId ()
-    {
-        return id;
-    }
 
     //---------//
     // getLeft //
@@ -87,23 +34,41 @@ public class LineInfo
      *
      * @return left abscissa
      */
-    public int getLeft ()
-    {
-        return left;
-    }
+    int getLeft ();
 
-    //---------//
-    // getLine //
-    //---------//
+    //-----//
+    // yAt //
+    //-----//
     /**
-     * Selector for the best fitting line
+     * Retrieve the staff line ordinate at given abscissa x, using int values
      *
-     * @return the line equation
+     * @param x the imposed abscissa
+     *
+     * @return the corresponding y value
      */
-    public Line getLine ()
-    {
-        return line;
-    }
+    int yAt (int x);
+
+    //-----//
+    // yAt //
+    //-----//
+    /**
+     * Retrieve the staff line ordinate at given abscissa x, using double values
+     *
+     * @param x the imposed abscissa
+     *
+     * @return the corresponding y value
+     */
+    double yAt (double x);
+
+    //-------------//
+    // getSections //
+    //-------------//
+    /**
+     * Report the lag sections that compose the staff line
+     *
+     * @return a collection of the line sections
+     */
+    Collection<GlyphSection> getSections ();
 
     //----------//
     // getRight //
@@ -113,34 +78,16 @@ public class LineInfo
      *
      * @return right abscissa
      */
-    public int getRight ()
-    {
-        return right;
-    }
-
-    //-----------//
-    // getSticks //
-    //-----------//
-    /**
-     * Returns the collection of sticks found in this area
-     *
-     * @return the sticks found
-     */
-    public List<Stick> getSticks ()
-    {
-        return builder.getSticks();
-    }
+    int getRight ();
 
     //---------//
     // cleanup //
     //---------//
     /**
-     * Cleanup the line
+     * Cleanup the line, by removing the sections that compose the line and by
+     * extending the external crossing sections
      */
-    public void cleanup ()
-    {
-        builder.cleanup();
-    }
+    public void cleanup ();
 
     //--------//
     // render //
@@ -150,63 +97,11 @@ public class LineInfo
      *
      * @param g     the graphics context
      * @param z     the display zoom
-     * @param left  the imposed left abscissa
-     * @param right the imposed right abscissa
+     * @param left  the imposed (for clean alignment) left abscissa
+     * @param right the imposed (for clean alignment) right abscissa
      */
     public void render (Graphics g,
                         Zoom     z,
                         int      left,
-                        int      right)
-    {
-        // Paint the computed line
-        if (line != null) {
-            g.drawLine(
-                z.scaled(left + 0.5),
-                z.scaled(line.yAt(left + 0.5) + 0.5),
-                z.scaled(right + 0.5),
-                z.scaled(line.yAt(right + 0.5) + 0.5));
-        }
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * A readable information string
-     *
-     * @return a short description
-     */
-    @Override
-    public String toString ()
-    {
-        return "LineInfo" + id + " left=" + left + " right=" + right +
-               ((line != null) ? line.toString() : "");
-    }
-
-    //------------//
-    // setBuilder //
-    //------------//
-    /**
-     * Set the link back to the builder who holds the build context for this
-     * line
-     *
-     * @param builder the LineBuilder
-     */
-    void setBuilder (LineBuilder builder)
-    {
-        this.builder = builder;
-    }
-
-    //---------//
-    // setLine //
-    //---------//
-    /**
-     * Store the underlying physical line
-     *
-     * @param line the line equation
-     */
-    void setLine (Line line)
-    {
-        this.line = line;
-    }
+                        int      right);
 }
