@@ -30,6 +30,8 @@ import omr.lag.ScrollLagView;
 import omr.lag.SectionBoard;
 import omr.lag.VerticalOrientation;
 
+import omr.log.Logger;
+
 import omr.score.common.PixelPoint;
 import omr.score.visitor.SheetPainter;
 
@@ -41,6 +43,8 @@ import omr.selection.SelectionHint;
 import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
 
+import omr.sheet.ui.PixelBoard;
+
 import omr.step.Step;
 import omr.step.StepException;
 
@@ -48,12 +52,10 @@ import omr.stick.Stick;
 import omr.stick.StickSection;
 
 import omr.ui.BoardsPane;
-import omr.ui.PixelBoard;
 
 import omr.util.BasicTask;
 import omr.util.Boundary;
 import omr.util.Dumper;
-import omr.util.Logger;
 import omr.util.Synchronicity;
 import static omr.util.Synchronicity.*;
 
@@ -657,7 +659,6 @@ public class SystemsBuilder
 
                 if (sheetLocation != null) {
                     ///logger.info(sheetLocation.toString());
-
                     if (sheetLocation.hint == SelectionHint.LOCATION_ADD) {
                         Rectangle rect = sheetLocation.rectangle;
 

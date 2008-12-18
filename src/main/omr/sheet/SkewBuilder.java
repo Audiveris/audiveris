@@ -26,15 +26,18 @@ import omr.lag.SectionBoard;
 import omr.lag.SectionView;
 import omr.lag.SectionsBuilder;
 
+import omr.log.Logger;
+
+import omr.sheet.picture.ImageFormatException;
+import omr.sheet.picture.Picture;
+import omr.sheet.ui.PixelBoard;
+
 import omr.step.StepException;
 
 import omr.stick.Stick;
 import omr.stick.StickSection;
 
 import omr.ui.BoardsPane;
-import omr.ui.PixelBoard;
-
-import omr.util.Logger;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartFrame;

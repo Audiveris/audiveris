@@ -26,12 +26,13 @@ import omr.glyph.GlyphSection;
 import omr.lag.JunctionDeltaPolicy;
 import omr.lag.SectionsBuilder;
 
+import omr.log.Logger;
+
 import omr.step.StepException;
 
 import omr.stick.Stick;
 
 import omr.util.Implement;
-import omr.util.Logger;
 
 import java.util.*;
 
@@ -478,7 +479,6 @@ public class BarsChecker
 
             // How far are we from the stop of the staff?
             int    staffBottom = area.getLastLine()
-                                     .getLine()
                                      .yAt(stick.getMidPos());
 
             double dy = sheet.getScale()
@@ -828,7 +828,6 @@ public class BarsChecker
 
             // How far are we from the start of the staff?
             int    staffTop = area.getFirstLine()
-                                  .getLine()
                                   .yAt(stick.getMidPos());
 
             double dy = sheet.getScale()

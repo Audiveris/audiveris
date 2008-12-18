@@ -16,6 +16,8 @@ import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 
+import omr.log.Logger;
+
 import omr.step.StepException;
 
 import omr.stick.Stick;
@@ -23,7 +25,6 @@ import omr.stick.SticksBuilder;
 import omr.stick.SticksSource;
 import omr.stick.UnknownSectionPredicate;
 
-import omr.util.Logger;
 import omr.util.Predicate;
 
 import java.util.Collection;

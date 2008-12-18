@@ -33,6 +33,8 @@ import omr.lag.ScrollLagView;
 import omr.lag.Section;
 import omr.lag.SectionBoard;
 
+import omr.log.Logger;
+
 import omr.score.visitor.SheetPainter;
 
 import omr.script.ScriptRecording;
@@ -41,16 +43,16 @@ import static omr.script.ScriptRecording.*;
 import omr.selection.GlyphEvent;
 import omr.selection.UserEvent;
 
+import omr.sheet.ui.PixelBoard;
+
 import omr.step.StepException;
 
 import omr.stick.Stick;
 
 import omr.ui.BoardsPane;
-import omr.ui.PixelBoard;
 import static omr.ui.field.SpinnerUtilities.*;
 
 import omr.util.Implement;
-import omr.util.Logger;
 import omr.util.Predicate;
 import omr.util.Synchronicity;
 import static omr.util.Synchronicity.*;

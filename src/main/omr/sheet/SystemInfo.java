@@ -11,18 +11,18 @@ package omr.sheet;
 
 import omr.glyph.Glyph;
 import omr.glyph.GlyphSection;
-import omr.glyph.TextArea;
-import omr.glyph.TextGlyphLine;
+import omr.glyph.text.TextArea;
+import omr.glyph.text.TextGlyphLine;
 
 import omr.lag.HorizontalOrientation;
 
+import omr.log.Logger;
+
 import omr.score.common.PixelRectangle;
-import omr.score.entity.System;
+import omr.score.entity.ScoreSystem;
 
 import omr.util.Boundary;
-import omr.util.Logger;
 
-import java.awt.Rectangle;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
 
@@ -49,7 +49,7 @@ public class SystemInfo
     private final Sheet sheet;
 
     /** Related System in Score hierarchy */
-    private System scoreSystem;
+    private ScoreSystem scoreSystem;
 
     /** Staves of this system */
     private final List<StaffInfo> staves = new ArrayList<StaffInfo>();
@@ -332,7 +332,7 @@ public class SystemInfo
      *
      * @param scoreSystem the logical score System counterpart
      */
-    public void setScoreSystem (System scoreSystem)
+    public void setScoreSystem (ScoreSystem scoreSystem)
     {
         this.scoreSystem = scoreSystem;
     }
@@ -345,7 +345,7 @@ public class SystemInfo
      *
      * @return the logical score System counterpart
      */
-    public System getScoreSystem ()
+    public ScoreSystem getScoreSystem ()
     {
         return scoreSystem;
     }
@@ -506,18 +506,15 @@ public class SystemInfo
         // First staff ?
         if (startIdx == -1) {
             startIdx = idx;
-            top = firstLine.getLine()
-                           .yAt(firstLine.getLeft());
+            top = firstLine.yAt(firstLine.getLeft());
         }
 
         // Last staff (so far)
         stopIdx = idx;
-        deltaY = firstLine.getLine()
-                          .yAt(firstLine.getLeft()) - top;
+        deltaY = firstLine.yAt(firstLine.getLeft()) - top;
 
         LineInfo lastLine = staff.getLastLine();
-        bottom = lastLine.getLine()
-                         .yAt(lastLine.getLeft());
+        bottom = lastLine.yAt(lastLine.getLeft());
     }
 
     //-------------//
@@ -560,7 +557,7 @@ public class SystemInfo
     {
         for (Glyph glyph : getGlyphs()) {
             if ((rect == null) || (rect.contains(glyph.getContourBox()))) {
-                java.lang.System.out.println(
+                System.out.println(
                     (glyph.isActive() ? "active " : "       ") +
                     (glyph.isKnown() ? "known " : "      ") +
                     (glyph.isWellKnown() ? "wellKnown " : "          ") +
@@ -593,7 +590,7 @@ public class SystemInfo
     {
         for (GlyphSection section : getVerticalSections()) {
             if ((rect == null) || (rect.contains(section.getContourBox()))) {
-                java.lang.System.out.println(
+                System.out.println(
                     (section.isKnown() ? "known " : "      ") +
                     section.toString());
             }

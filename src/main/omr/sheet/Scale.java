@@ -11,6 +11,8 @@ package omr.sheet;
 
 import omr.constant.Constant;
 
+import omr.log.Logger;
+
 import omr.score.common.PagePoint;
 import omr.score.common.PageRectangle;
 import omr.score.common.PixelDimension;
@@ -20,8 +22,6 @@ import omr.score.common.UnitDimension;
 import static omr.score.ui.ScoreConstants.*;
 
 import omr.step.StepException;
-
-import omr.util.Logger;
 
 import java.awt.Rectangle;
 

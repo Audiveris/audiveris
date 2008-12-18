@@ -20,6 +20,8 @@ import omr.glyph.Shape;
 import omr.glyph.SymbolsBuilder;
 import omr.glyph.ui.SymbolsEditor;
 
+import omr.log.Logger;
+
 import omr.score.Score;
 import omr.score.ScoreBuilder;
 import omr.score.common.PixelDimension;
@@ -35,6 +37,11 @@ import omr.script.Script;
 
 import omr.selection.SheetLocationEvent;
 
+import omr.sheet.picture.Picture;
+import omr.sheet.picture.PictureView;
+import omr.sheet.ui.PixelBoard;
+import omr.sheet.ui.SheetAssembly;
+
 import omr.step.SheetSteps;
 import static omr.step.Step.*;
 import omr.step.StepException;
@@ -44,13 +51,10 @@ import omr.stick.Stick;
 import omr.ui.BoardsPane;
 import omr.ui.ErrorsEditor;
 import omr.ui.MainGui;
-import omr.ui.PixelBoard;
-import omr.ui.SheetAssembly;
 
 import omr.util.Boundary;
 import omr.util.Dumper;
 import omr.util.FileUtil;
-import omr.util.Logger;
 
 import org.bushe.swing.event.EventService;
 import org.bushe.swing.event.ThreadSafeEventService;

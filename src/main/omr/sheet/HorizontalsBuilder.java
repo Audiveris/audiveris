@@ -31,10 +31,14 @@ import omr.lag.RunBoard;
 import omr.lag.ScrollLagView;
 import omr.lag.SectionBoard;
 
+import omr.log.Logger;
+
 import omr.score.visitor.SheetPainter;
 
 import omr.selection.GlyphEvent;
 import omr.selection.UserEvent;
+
+import omr.sheet.ui.PixelBoard;
 
 import omr.step.StepException;
 
@@ -42,11 +46,8 @@ import omr.stick.LineCleaner;
 import omr.stick.Stick;
 
 import omr.ui.BoardsPane;
-import omr.ui.PixelBoard;
 import static omr.ui.field.SpinnerUtilities.*;
 import omr.ui.view.Zoom;
-
-import omr.util.Logger;
 
 import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.Action;
@@ -375,10 +376,8 @@ public class HorizontalsBuilder
         StaffInfo area = sheet.getStaves()
                               .get(idx);
         final int top = area.getFirstLine()
-                            .getLine()
                             .yAt(x);
         final int bottom = area.getLastLine()
-                               .getLine()
                                .yAt(x);
         final int dist = Math.max(top - y, y - bottom);
 

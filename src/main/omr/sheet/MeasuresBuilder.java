@@ -16,6 +16,8 @@ import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
+import omr.log.Logger;
+
 import omr.score.common.PageRectangle;
 import omr.score.common.PixelDimension;
 import omr.score.common.PixelPoint;
@@ -23,8 +25,8 @@ import omr.score.common.UnitDimension;
 import omr.score.entity.Barline;
 import omr.score.entity.Measure;
 import omr.score.entity.ScorePart;
+import omr.score.entity.ScoreSystem;
 import omr.score.entity.Staff;
-import omr.score.entity.System;
 import omr.score.entity.SystemPart;
 import omr.score.visitor.ScoreFixer;
 
@@ -33,7 +35,6 @@ import omr.step.StepException;
 import omr.stick.Stick;
 
 import omr.util.Dumper;
-import omr.util.Logger;
 import omr.util.TreeNode;
 
 import java.util.*;
@@ -116,7 +117,7 @@ public class MeasuresBuilder
         // Systems
         for (SystemInfo info : sheet.getSystems()) {
             // Allocate the system
-            System system = new System(
+            ScoreSystem system = new ScoreSystem(
                 info,
                 sheet.getScore(),
                 scale.toPagePoint(
@@ -140,7 +141,7 @@ public class MeasuresBuilder
                         scale.toPagePoint(
                             new PixelPoint(
                                 staffInfo.getLeft(),
-                                line.getLine().yAt(line.getLeft()))),
+                                line.yAt(line.getLeft()))),
                         scale.pixelsToUnits(
                             staffInfo.getRight() - staffInfo.getLeft()),
                         64); // Staff vertical size in units);
@@ -214,8 +215,8 @@ public class MeasuresBuilder
      */
     private void allocateSystemMeasures (SystemInfo systemInfo)
     {
-        final int    maxDy = scale.toPixels(constants.maxBarOffset);
-        final System system = systemInfo.getScoreSystem();
+        final int         maxDy = scale.toPixels(constants.maxBarOffset);
+        final ScoreSystem system = systemInfo.getScoreSystem();
 
         // Measures building (Sticks are already sorted by increasing abscissa)
         for (Iterator<Glyph> bit = systemInfo.getGlyphs()
@@ -231,7 +232,6 @@ public class MeasuresBuilder
                                      .getLastStaff()
                                      .getInfo()
                                      .getLastLine()
-                                     .getLine()
                                      .yAt(barAbscissa);
 
             if ((bar.getStop() - systemBottom) > maxDy) {
@@ -276,7 +276,7 @@ public class MeasuresBuilder
      *
      * @param system the system to check
      */
-    private void checkBarAlignments (omr.score.entity.System system)
+    private void checkBarAlignments (omr.score.entity.ScoreSystem system)
     {
         if (system.getInfo()
                   .getStaves()
@@ -369,7 +369,7 @@ public class MeasuresBuilder
      *
      * @param system the system to check
      */
-    private void checkEndingBar (omr.score.entity.System system)
+    private void checkEndingBar (omr.score.entity.ScoreSystem system)
     {
         try {
             SystemPart part = system.getFirstPart();
@@ -419,7 +419,7 @@ public class MeasuresBuilder
      */
     private void checkSystemMeasures (SystemInfo systemInfo)
     {
-        omr.score.entity.System system = systemInfo.getScoreSystem();
+        omr.score.entity.ScoreSystem system = systemInfo.getScoreSystem();
 
         // Check alignment of each measure of each staff with the other
         // staff measures, a test that needs several staves in the system
@@ -481,8 +481,8 @@ public class MeasuresBuilder
         throws StepException
     {
         // Take the best representative system
-        System refSystem = chooseRefSystem()
-                               .getScoreSystem();
+        ScoreSystem refSystem = chooseRefSystem()
+                                    .getScoreSystem();
 
         // Build the ScorePart list based on the parts of the ref system
         sheet.getScore()
@@ -495,7 +495,7 @@ public class MeasuresBuilder
         final int       nbScoreParts = partList.size();
 
         for (SystemInfo systemInfo : sheet.getSystems()) {
-            System system = systemInfo.getScoreSystem();
+            ScoreSystem system = systemInfo.getScoreSystem();
             logger.fine(system.toString());
 
             List<TreeNode> systemParts = system.getParts();
@@ -519,7 +519,7 @@ public class MeasuresBuilder
      *
      * @param system the system to check
      */
-    private void mergeBarlines (omr.score.entity.System system)
+    private void mergeBarlines (omr.score.entity.ScoreSystem system)
     {
         int maxDoubleDx = scale.toPixels(constants.maxDoubleBarDx);
 
@@ -590,7 +590,7 @@ public class MeasuresBuilder
      *
      * @param system the system whose staves starting measure has to be checked
      */
-    private void removeStartingBar (omr.score.entity.System system)
+    private void removeStartingBar (omr.score.entity.ScoreSystem system)
     {
         int     minWidth = scale.toPixels(constants.minMeasureWidth);
         Barline firstBarline = system.getFirstPart()

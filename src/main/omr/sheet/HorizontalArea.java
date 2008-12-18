@@ -14,13 +14,13 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
 
+import omr.log.Logger;
+
 import omr.step.StepException;
 
 import omr.stick.Stick;
 import omr.stick.SticksBuilder;
 import omr.stick.SticksSource;
-
-import omr.util.Logger;
 
 import java.util.*;
 

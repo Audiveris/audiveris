@@ -29,7 +29,12 @@ import omr.lag.Section;
 import omr.lag.SectionBoard;
 import omr.lag.SectionsBuilder;
 
+import omr.log.Logger;
+
 import omr.math.Population;
+
+import omr.sheet.picture.Picture;
+import omr.sheet.ui.PixelBoard;
 
 import omr.step.StepException;
 
@@ -37,9 +42,6 @@ import omr.stick.Stick;
 import omr.stick.StickSection;
 
 import omr.ui.BoardsPane;
-import omr.ui.PixelBoard;
-
-import omr.util.Logger;
 
 import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.Action;
@@ -217,10 +219,8 @@ public class LinesBuilder
                 // ordinate of last line of previous staff and ordinate of
                 // first line of current staff
                 int middle = (prevStaff.getLastLine()
-                                       .getLine()
                                        .yAt(prevStaff.getLeft()) +
                              staff.getFirstLine()
-                                  .getLine()
                                   .yAt(staff.getLeft())) / 2;
                 prevStaff.setAreaBottom(middle);
                 staff.setAreaTop(middle);
@@ -242,18 +242,16 @@ public class LinesBuilder
         // Sections that, as members of staff lines, will be treated as specific
         List<GlyphSection> members = new ArrayList<GlyphSection>();
 
-        // Populate the lineMembers
+        /*
+         * Populate the specific sections, to hide or display the removed
+         * line sections. This assumes StraightLineInfo implementation (?)
+         */
+
         // Browse StaffInfos
         for (StaffInfo staff : staves) {
             // Browse LineInfos
             for (LineInfo line : staff.getLines()) {
-                // Browse Sticks
-                for (Stick stick : line.getSticks()) {
-                    // Browse member sections
-                    for (GlyphSection section : stick.getMembers()) {
-                        members.add(section);
-                    }
-                }
+                members.addAll(line.getSections());
             }
         }
 

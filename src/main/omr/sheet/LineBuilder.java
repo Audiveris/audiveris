@@ -18,6 +18,8 @@ import omr.glyph.Shape;
 
 import omr.lag.Run;
 
+import omr.log.Logger;
+
 import omr.math.BasicLine;
 import omr.math.Line;
 
@@ -26,7 +28,6 @@ import omr.step.StepException;
 import omr.stick.*;
 
 import omr.util.Implement;
-import omr.util.Logger;
 
 import java.awt.*;
 import java.util.*;
@@ -230,11 +231,7 @@ public class LineBuilder
         }
 
         // Return the info just built
-        LineInfo info = new LineInfo(id, left, right);
-        info.setBuilder(this);
-        info.setLine(line);
-
-        return info;
+        return new StraightLineInfo(id, left, right, this, line);
     }
 
     //-------//

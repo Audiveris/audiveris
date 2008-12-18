@@ -16,10 +16,13 @@ import omr.constant.ConstantSet;
 
 import omr.lag.RunsBuilder;
 
+import omr.log.Logger;
+
+import omr.sheet.picture.Picture;
+
 import omr.step.StepException;
 
 import omr.util.Implement;
-import omr.util.Logger;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartFrame;

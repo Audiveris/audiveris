@@ -9,13 +9,13 @@
 //
 package omr.sheet;
 
+import omr.log.Logger;
+
 import omr.math.Line;
 
 import omr.score.common.PixelPoint;
 
 import omr.ui.view.Zoom;
-
-import omr.util.Logger;
 
 import java.awt.*;
 import java.util.List;
@@ -302,10 +302,8 @@ public class StaffInfo
     public double pitchPositionOf (PixelPoint pt)
     {
         int top = getFirstLine()
-                      .getLine()
                       .yAt(pt.x);
         int bottom = getLastLine()
-                         .getLine()
                          .yAt(pt.x);
 
         return (4.0d * ((2 * pt.y) - bottom - top)) / (bottom - top);
@@ -324,10 +322,8 @@ public class StaffInfo
     public boolean render (Graphics g,
                            Zoom     z)
     {
-        Line firstLine = getFirstLine()
-                             .getLine();
-        Line lastLine = getLastLine()
-                            .getLine();
+        LineInfo firstLine = getFirstLine();
+        LineInfo lastLine = getLastLine();
 
         if ((firstLine != null) && (lastLine != null)) {
             final double xl = (double) left;

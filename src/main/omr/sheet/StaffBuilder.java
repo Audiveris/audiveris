@@ -12,11 +12,11 @@ package omr.sheet;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 
+import omr.log.Logger;
+
 import omr.step.StepException;
 
 import omr.stick.StickSection;
-
-import omr.util.Logger;
 
 import java.util.ArrayList;
 import java.util.Collections;

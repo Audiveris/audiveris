@@ -9,6 +9,8 @@
 //
 package omr.sheet;
 
+import omr.log.Logger;
+
 import omr.script.ScriptActions;
 
 import omr.selection.GlyphEvent;
@@ -25,7 +27,6 @@ import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
 
 import omr.util.Dumper;
-import omr.util.Logger;
 import omr.util.Memory;
 import omr.util.NameSet;
 
