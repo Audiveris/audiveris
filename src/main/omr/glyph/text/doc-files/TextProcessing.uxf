@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><umlet_diagram><help_text>//Uncomment the following line to change the fontsize:
+//fontsize=14
+
+//Welcome to UMLet!
+
+// *Double-click on UML elements to add them to the diagram.
+// *Edit element properties by modifying the text in this panel.
+// *Edit the files in the 'palettes' directory to store your own element palettes.
+// *Press Del or Backspace to remove elements from the diagram.
+// *Hold down Ctrl key to select multiple elements.
+// *Press c to copy the UML diagram to the system clipboard.
+// * This text will be stored with each diagram. Feel free to use the area for notes.
+</help_text><element><type>com.umlet.element.base.SequenceDiagram</type><coordinates><x>30</x><y>20</y><w>1050</w><h>690</h></coordinates><panel_attributes>_CLEANUP:Step~id1_|_system:SystemInfo~id2_|_area:TextArea~id3_|_line:TextGlyphLine~id4_|_sentence:Sentence~id5_
+id1-&gt;&gt;id2:id1,id2:system.retrieveTextGlyphs()
+id2-&gt;&gt;id3:id2,id3:new TextArea()
+id3-&gt;&gt;id3:id2,id3:subdivide()
+iframe{:alignTextGlyphs()
+id2-&gt;&gt;id4:id2:TextGlyphLine.feed(glyph,system)
+id2-&gt;&gt;id4:id2,id4:new TextGlyphLine()
+iframe}
+iframe{:foreach TextGlyphLine in system
+id2-&gt;&gt;id4:id2,id4:line.processGlyphs()
+id4-&gt;&gt;id4:id4:mergeEnclosedTextGlyphs()
+id4-&gt;&gt;id4:id4:includeAliens()
+iframe{:retrieveSentences()
+id4-&gt;&gt;id5:id4:sentence.feed(glyph)
+id4-&gt;&gt;id5:id4,id5:new Sentence()
+iframe}
+iframe{:foreach Sentence in line
+id5-&gt;&gt;id5:id5,id5:getTextType()
+id5-&gt;&gt;id5:id5,id5:getTextHeight()
+iframe}
+iframe}
+</panel_attributes><additional_attributes/></element></umlet_diagram>
