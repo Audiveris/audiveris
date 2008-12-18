@@ -1,0 +1,313 @@
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                            L y r i c s L i n e                             //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2007. All rights reserved.               //
+//  This software is released under the GNU General Public License.           //
+//  Contact author at herve.bitteur@laposte.net to report bugs & suggestions. //
+//----------------------------------------------------------------------------//
+//
+package omr.score.entity;
+
+import omr.constant.ConstantSet;
+
+import omr.log.Logger;
+
+import omr.math.Population;
+
+import omr.score.common.SystemPoint;
+
+import omr.sheet.Scale;
+
+import omr.util.TreeNode;
+
+import java.util.*;
+
+/**
+ * Class <code>LyricsLine</code> gathers one line of lyrics within a system part.
+ * A lyrics line is composed of instances of LyricsItem, which can be Syllables,
+ * Hyphens, Extensions or Elisions
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
+ */
+public class LyricsLine
+    extends PartNode
+{
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(LyricsLine.class);
+
+    //~ Instance fields --------------------------------------------------------
+
+    /** The line number */
+    private int id;
+
+    /** The mean ordinate (in units) within the system */
+    private Integer y;
+
+    /** The x-ordered collection of lyrics items */
+    private final SortedSet<LyricsItem> items = new TreeSet<LyricsItem>();
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new LyricsLine object.
+     *
+     * @param systemPart the containing system part
+     */
+    public LyricsLine (SystemPart systemPart)
+    {
+        super(systemPart);
+    }
+
+    //~ Methods ----------------------------------------------------------------
+
+    //------------------//
+    // getFollowingLine //
+    //------------------//
+    /**
+     * Retrieve the corresponding lyrics line in the next part, if any
+     *
+     * @return the next lyrics line, or null
+     */
+    public LyricsLine getFollowingLine ()
+    {
+        LyricsLine nextLine = null;
+
+        // Check existence of similar line in following system part
+        SystemPart nextPart = (SystemPart) getPart()
+                                               .getFollowing();
+
+        if (nextPart != null) {
+            // Retrieve the same lyrics line in the next (system) part
+            if (nextPart.getLyrics()
+                        .size() >= id) {
+                nextLine = (LyricsLine) nextPart.getLyrics()
+                                                .get(id - 1);
+            }
+        }
+
+        return nextLine;
+    }
+
+    //-------//
+    // setId //
+    //-------//
+    public void setId (int id)
+    {
+        this.id = id;
+    }
+
+    //-------//
+    // getId //
+    //-------//
+    public int getId ()
+    {
+        return id;
+    }
+
+    //------------------//
+    // getPrecedingLine //
+    //------------------//
+    /**
+     * Retrieve the corresponding lyrics line in the preceding part, if any
+     *
+     * @return the preceding lyrics line, or null
+     */
+    public LyricsLine getPrecedingLine ()
+    {
+        // Check existence of similar line in preceding system part
+        SystemPart part = getPart();
+
+        if ((part != null) && (part.getLyrics()
+                                   .size() >= id)) {
+            return (LyricsLine) part.getLyrics()
+                                    .get(id - 1);
+        }
+
+        return null;
+    }
+
+    //------//
+    // getY //
+    //------//
+    /**
+     * Report the ordinate of this line
+     *
+     * @return the mean line ordinate, wrt the containing system
+     */
+    public int getY ()
+    {
+        if (y == null) {
+            Population population = new Population();
+
+            for (LyricsItem item : items) {
+                population.includeValue(item.getLocation().y);
+            }
+
+            if (population.getCardinality() > 0) {
+                y = (int) Math.rint(population.getMeanValue());
+            }
+        }
+
+        return y;
+    }
+
+    //----------//
+    // populate //
+    //----------//
+    /**
+     * Populate a Lyrics line with this lyrics item
+     *
+     * @param item the lyrics item to host in a lyrics line
+     * @param part the containing system part
+     */
+    public static void populate (LyricsItem item,
+                                 SystemPart part)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("Populating LyricsLine with " + item);
+        }
+
+        // First look for a suitable lyrics line
+        for (TreeNode node : part.getLyrics()) {
+            LyricsLine line = (LyricsLine) node;
+
+            if (line.isAlignedWith(item.getLocation())) {
+                line.addItem(item);
+
+                if (logger.isFineEnabled()) {
+                    logger.fine("Added " + item + " into " + line);
+                }
+
+                return;
+            }
+        }
+
+        // No compatible line, create a brand new one
+        LyricsLine line = new LyricsLine(part);
+        line.addItem(item);
+
+        if (logger.isFineEnabled()) {
+            logger.fine("Created new " + line);
+        }
+    }
+
+    //----------------------//
+    // refineLyricSyllables //
+    //----------------------//
+    public void refineLyricSyllables ()
+    {
+        // Last item of preceding line is any
+        LyricsItem precedingItem = null;
+        LyricsLine precedingLine = getPrecedingLine();
+
+        if (precedingLine != null) {
+            precedingItem = precedingLine.items.last();
+        }
+
+        // Now browse sequentially all our line items
+        LyricsItem[] itemArray = items.toArray(new LyricsItem[items.size()]);
+
+        for (int i = 0; i < itemArray.length; i++) {
+            LyricsItem item = itemArray[i];
+
+            // Following item (perhaps to be found in following line if needed)
+            LyricsItem followingItem = null;
+
+            if (i < (itemArray.length - 1)) {
+                followingItem = itemArray[i + 1];
+            } else {
+                LyricsLine followingLine = getFollowingLine();
+
+                if (followingLine != null) {
+                    followingItem = followingLine.items.first();
+                }
+            }
+
+            // We process only syllable items
+            if (item.getItemKind() == LyricsItem.ItemKind.Syllable) {
+                item.defineSyllabicType(precedingItem, followingItem);
+            }
+
+            precedingItem = item;
+        }
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("{LyricLine #")
+          .append(getId())
+          .append(" y:")
+          .append(y)
+          .append(" items:")
+          .append(items)
+          .append("}");
+
+        return sb.toString();
+    }
+
+    //--------------//
+    // mapSyllables //
+    //--------------//
+    void mapSyllables ()
+    {
+        for (LyricsItem item : items) {
+            item.mapToNote();
+        }
+    }
+
+    //---------------//
+    // isAlignedWith //
+    //---------------//
+    /**
+     * Check whether a system point is roughly aligned with this line instance
+     *
+     * @param sysPt the system point to check
+     * @return true if aligned
+     */
+    private boolean isAlignedWith (SystemPoint sysPt)
+    {
+        return Math.abs(sysPt.y - getY()) <= getScale()
+                                                 .toUnits(constants.maxItemDy);
+    }
+
+    //---------//
+    // addItem //
+    //---------//
+    private void addItem (LyricsItem item)
+    {
+        items.add(item);
+        item.setLyricLine(this);
+
+        // Force recomputation of line mean ordinate
+        y = null;
+        getY();
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        Scale.Fraction maxItemDy = new Scale.Fraction(
+            2,
+            "Maximum vertical distance between a lyrics line and a lyrics item");
+    }
+}
