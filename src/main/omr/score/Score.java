@@ -12,13 +12,15 @@ package omr.score;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.log.Logger;
+
 import omr.score.common.PagePoint;
 import omr.score.common.ScorePoint;
 import omr.score.common.UnitDimension;
 import omr.score.entity.ScoreNode;
 import omr.score.entity.ScorePart;
+import omr.score.entity.ScoreSystem;
 import omr.score.entity.Staff;
-import omr.score.entity.System;
 import omr.score.entity.SystemPart;
 import omr.score.ui.ScoreConstants;
 import omr.score.ui.ScoreTree;
@@ -30,7 +32,6 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 
 import omr.util.Dumper;
-import omr.util.Logger;
 import omr.util.TreeNode;
 
 import java.io.File;
@@ -85,6 +86,9 @@ public class Score
     /** Sheet global scale */
     private Scale scale;
 
+    /** Dominant text language */
+    private String language;
+
     /** Greatest duration divisor */
     private Integer durationDivisor;
 
@@ -92,7 +96,7 @@ public class Score
     private List<ScorePart> partList;
 
     /** The most recent system pointed at */
-    private System recentSystem = null;
+    private ScoreSystem recentSystem = null;
 
     /** The view on this score if any */
     private ScoreView view;
@@ -167,7 +171,7 @@ public class Score
      */
     public int getActualDuration ()
     {
-        System lastSystem = getLastSystem();
+        ScoreSystem lastSystem = getLastSystem();
 
         return lastSystem.getStartTime() + lastSystem.getActualDuration();
     }
@@ -269,9 +273,9 @@ public class Score
      *
      * @return the first system
      */
-    public System getFirstSystem ()
+    public ScoreSystem getFirstSystem ()
     {
-        return (System) children.get(0);
+        return (ScoreSystem) children.get(0);
     }
 
     //--------------//
@@ -304,6 +308,30 @@ public class Score
         return imageFile.getPath();
     }
 
+    //-------------//
+    // setLanguage //
+    //-------------//
+    /**
+     * Set the score dominant language
+     * @param language the dominant language
+     */
+    public void setLanguage (String language)
+    {
+        this.language = language;
+    }
+
+    //-------------//
+    // getLanguage //
+    //-------------//
+    /**
+     * Report the dominant language in the score text
+     * @return the dominant language
+     */
+    public String getLanguage ()
+    {
+        return language;
+    }
+
     //------------------//
     // getLastSoundTime //
     //------------------//
@@ -321,8 +349,8 @@ public class Score
         for (ListIterator it = getSystems()
                                    .listIterator(getSystems().size());
              it.hasPrevious();) {
-            System system = (System) it.previous();
-            int    time = system.getLastSoundTime(measureId);
+            ScoreSystem system = (ScoreSystem) it.previous();
+            int         time = system.getLastSoundTime(measureId);
 
             if (time > 0) {
                 return system.getStartTime() + time;
@@ -340,9 +368,9 @@ public class Score
      *
      * @return the last system
      */
-    public System getLastSystem ()
+    public ScoreSystem getLastSystem ()
     {
-        return (System) children.get(children.size() - 1);
+        return (ScoreSystem) children.get(children.size() - 1);
     }
 
     //-------------------//
@@ -358,8 +386,8 @@ public class Score
         int nb = 0;
 
         for (TreeNode node : children) {
-            System system = (System) node;
-            int    sn = 0;
+            ScoreSystem system = (ScoreSystem) node;
+            int         sn = 0;
 
             for (TreeNode n : system.getParts()) {
                 SystemPart part = (SystemPart) n;
@@ -660,7 +688,7 @@ public class Score
      *
      * @param refSystem the system taken as reference
      */
-    public void createPartListFrom (System refSystem)
+    public void createPartListFrom (ScoreSystem refSystem)
     {
         // Build a ScorePart list based on the parts of the ref system
         int index = 0;
@@ -687,14 +715,14 @@ public class Score
      */
     public void dump ()
     {
-        java.lang.System.out.println(
+        System.out.println(
             "----------------------------------------------------------------");
 
         if (dumpNode()) {
             dumpChildren(1);
         }
 
-        java.lang.System.out.println(
+        System.out.println(
             "----------------------------------------------------------------");
     }
 
@@ -720,7 +748,7 @@ public class Score
      *
      * @return the nearest system.
      */
-    public System pageLocateSystem (PagePoint pagPt)
+    public ScoreSystem pageLocateSystem (PagePoint pagPt)
     {
         if (recentSystem != null) {
             // Check first with most recent system (loosely)
@@ -728,7 +756,7 @@ public class Score
             case -1 :
 
                 // Check w/ previous system
-                System prevSystem = (System) recentSystem.getPreviousSibling();
+                ScoreSystem prevSystem = (ScoreSystem) recentSystem.getPreviousSibling();
 
                 if (prevSystem == null) { // Very first system
 
@@ -745,7 +773,7 @@ public class Score
             case +1 :
 
                 // Check w/ next system
-                System nextSystem = (System) recentSystem.getNextSibling();
+                ScoreSystem nextSystem = (ScoreSystem) recentSystem.getNextSibling();
 
                 if (nextSystem == null) { // Very last system
 
@@ -763,10 +791,10 @@ public class Score
         }
 
         // Recent system is not OK, Browse though all the score systems
-        System system = null;
+        ScoreSystem system = null;
 
         for (TreeNode node : children) {
-            system = (System) node;
+            system = (ScoreSystem) node;
 
             // How do we locate the point wrt the system  ?
             switch (system.locate(pagPt)) {
@@ -795,7 +823,7 @@ public class Score
      *
      * @return the nearest system
      */
-    public System scoreLocateSystem (ScorePoint scrPt)
+    public ScoreSystem scoreLocateSystem (ScorePoint scrPt)
     {
         if (recentSystem != null) {
             // Check first with most recent system (loosely)
@@ -803,7 +831,7 @@ public class Score
             case -1 :
 
                 // Check w/ previous system
-                System prevSystem = (System) recentSystem.getPreviousSibling();
+                ScoreSystem prevSystem = (ScoreSystem) recentSystem.getPreviousSibling();
 
                 if (prevSystem == null) { // Very first system
 
@@ -822,7 +850,7 @@ public class Score
             case +1 :
 
                 // Check w/ next system
-                System nextSystem = (System) recentSystem.getNextSibling();
+                ScoreSystem nextSystem = (ScoreSystem) recentSystem.getNextSibling();
 
                 if (nextSystem == null) { // Very last system
 
@@ -838,10 +866,10 @@ public class Score
         }
 
         // Recent system is not OK, Browse though all the score systems
-        System system = null;
+        ScoreSystem system = null;
 
         for (TreeNode node : children) {
-            system = (System) node;
+            system = (ScoreSystem) node;
 
             // How do we locate the point wrt the system  ?
             switch (system.locate(scrPt)) {
