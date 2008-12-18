@@ -16,14 +16,14 @@ import omr.lag.Lag;
 import omr.lag.Run;
 import omr.lag.SectionView;
 
+import omr.log.Logger;
+
 import omr.math.BasicLine;
 import omr.math.Line;
 
 import omr.score.common.PixelPoint;
 
 import omr.ui.view.Zoom;
-
-import omr.util.Logger;
 
 import java.awt.*;
 import java.util.Collection;

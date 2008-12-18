@@ -19,10 +19,10 @@ import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 
+import omr.log.Logger;
+
 import omr.sheet.Sheet;
 import static omr.stick.SectionRole.*;
-
-import omr.util.Logger;
 
 import java.util.*;
 
