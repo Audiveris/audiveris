@@ -21,13 +21,12 @@ import omr.selection.UserEvent;
 import omr.sheet.Sheet;
 
 import omr.ui.Board;
-import omr.ui.Board.Tag;
 import omr.ui.field.SpinnerUtilities;
 import static omr.ui.field.SpinnerUtilities.*;
 import omr.ui.util.Panel;
 
 import omr.util.Implement;
-import omr.util.Logger;
+import omr.log.Logger;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
@@ -121,7 +120,6 @@ class ShapeFocusBoard
                             ActionListener filterListener)
     {
         super(
-            Tag.CUSTOM,
             sheet.getRadix() + "-ShapeFocusBoard",
             glyphModel.getLag().getEventService(),
             eventClasses);

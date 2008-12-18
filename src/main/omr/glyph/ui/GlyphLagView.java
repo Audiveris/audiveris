@@ -40,7 +40,7 @@ import omr.stick.Stick;
 
 import omr.ui.view.Zoom;
 
-import omr.util.Logger;
+import omr.log.Logger;
 import static omr.util.Synchronicity.*;
 
 import java.awt.*;

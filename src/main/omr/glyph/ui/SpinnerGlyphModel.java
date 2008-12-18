@@ -14,7 +14,7 @@ import omr.glyph.GlyphLag;
 import static omr.ui.field.SpinnerUtilities.*;
 
 import omr.util.Implement;
-import omr.util.Logger;
+import omr.log.Logger;
 import omr.util.Predicate;
 
 import java.util.*;

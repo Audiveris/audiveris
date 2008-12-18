@@ -13,7 +13,7 @@ import omr.Main;
 import static omr.selection.SelectionHint.*;
 
 import omr.util.Implement;
-import omr.util.Logger;
+import omr.log.Logger;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;

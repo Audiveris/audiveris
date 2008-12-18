@@ -16,6 +16,8 @@ import omr.glyph.GlyphSection;
 import omr.glyph.IconGlyph;
 import omr.glyph.Shape;
 
+import omr.log.Logger;
+
 import omr.sheet.Sheet;
 
 import omr.stick.Stick;
@@ -25,7 +27,6 @@ import omr.ui.icon.SymbolIcon;
 
 import omr.util.BlackList;
 import omr.util.FileUtil;
-import omr.util.Logger;
 
 import java.io.*;
 import java.util.*;
@@ -139,6 +140,60 @@ public class GlyphRepository
         return INSTANCE;
     }
 
+    //----------//
+    // getGlyph //
+    //----------//
+    /**
+     * Return a glyph knowing its full glyph name, which is the name of the
+     * corresponding training material. If not already done, the glyph is
+     * deserialized from the training file, searching first in the icons area,
+     * then the core area, then in the global sheets area.
+     *
+     * @param gName the full glyph name (format is: sheetName/Shape.id.xml)
+     * @param monitor the monitor, if any, to be kept informed of glyph loading
+     *
+     * @return the glyph instance if found, null otherwise
+     */
+    public Glyph getGlyph (String  gName,
+                           Monitor monitor)
+    {
+        // First, try the map of glyphs
+        Glyph glyph = glyphsMap.get(gName);
+
+        if (glyph == null) {
+            // If failed, actually load the glyph from XML backup file.
+            if (isIcon(gName)) {
+                glyph = buildIconGlyph(gName);
+            } else {
+                File file = new File(coreFolder, gName);
+
+                if (!file.exists()) {
+                    file = new File(getSheetsFolder(), gName);
+
+                    if (!file.exists()) {
+                        logger.warning(
+                            "Unable to find file for glyph " + gName);
+
+                        return null;
+                    }
+                }
+
+                glyph = buildGlyph(gName, file);
+            }
+
+            if (glyph != null) {
+                glyphsMap.put(gName, glyph);
+                namesMap.put(glyph, gName);
+            }
+        }
+
+        if (monitor != null) {
+            monitor.loadedGlyph(gName);
+        }
+
+        return glyph;
+    }
+
     //--------------//
     // getGlyphName //
     //--------------//
@@ -147,12 +202,136 @@ public class GlyphRepository
         return namesMap.get(glyph);
     }
 
+    //-------------//
+    // getGlyphsIn //
+    //-------------//
+    /**
+     * Report the list of glyph files that are contained within a given
+     * directory
+     *
+     * @param dir the containing directory
+     * @return the list of glyph files
+     */
+    public synchronized List<File> getGlyphsIn (File dir)
+    {
+        File[] files = listLegalFiles(dir);
+
+        if (files != null) {
+            return Arrays.asList(files);
+        } else {
+            logger.warning("Cannot get files list from dir " + dir);
+
+            return new ArrayList<File>();
+        }
+    }
+
     //--------//
     // isIcon //
     //--------//
     public boolean isIcon (String gName)
     {
         return isIcon(new File(gName));
+    }
+
+    //------------//
+    // fileNameOf //
+    //------------//
+    /**
+     * Report the file name w/o extension of a gName.
+     *
+     * @param gName glyph name, using format "folder/name.number.xml" or "folder/name.xml"
+     * @return the 'name' or 'name.number' part of the format
+     */
+    public static String fileNameOf (String gName)
+    {
+        int    slash = gName.indexOf("/");
+        String nameWithExt = gName.substring(slash + 1);
+
+        int    lastDot = nameWithExt.lastIndexOf(".");
+
+        if (lastDot != -1) {
+            return nameWithExt.substring(0, lastDot);
+        } else {
+            return nameWithExt;
+        }
+    }
+
+    //-------------//
+    // getCoreBase //
+    //-------------//
+    /**
+     * Return the names of the core collection of glyphs
+     *
+     * @return the core collection of recorded glyphs
+     */
+    public List<String> getCoreBase (Monitor monitor)
+    {
+        if (coreBase == null) {
+            synchronized (this) {
+                if (coreBase == null) {
+                    coreBase = loadCoreBase(monitor);
+                }
+            }
+        }
+
+        return coreBase;
+    }
+
+    //---------------------//
+    // getSheetDirectories //
+    //---------------------//
+    /**
+     * Report the list of all sheet directories found in the training material
+     *
+     * @return the list of sheet directories
+     */
+    public synchronized List<File> getSheetDirectories ()
+    {
+        // One directory per sheet
+        List<File> dirs = new ArrayList<File>();
+        File[]     files = listLegalFiles(getSheetsFolder());
+
+        for (File file : files) {
+            if (file.isDirectory()) {
+                dirs.add(file);
+            }
+        }
+
+        return dirs;
+    }
+
+    //-----------------//
+    // getSheetsFolder //
+    //-----------------//
+    /**
+     * Report the folder where all sheet glyphs are stored
+     *
+     * @return the directory of all sheets material
+     */
+    public File getSheetsFolder ()
+    {
+        return sheetsFolder;
+    }
+
+    //--------------//
+    // getWholeBase //
+    //--------------//
+    /**
+     * Return the names of the whole collection of glyphs
+     *
+     * @return the whole collection of recorded glyphs
+     */
+    public List<String> getWholeBase (Monitor monitor)
+    {
+        if (wholeBase == null) {
+            synchronized (this) {
+                if (wholeBase == null) {
+                    wholeBase = loadWholeBase(monitor);
+                }
+            }
+        }
+
+        return wholeBase;
     }
 
     //-------------------//
@@ -271,29 +450,6 @@ public class GlyphRepository
         coreBase = null;
     }
 
-    //------------//
-    // fileNameOf //
-    //------------//
-    /**
-     * Report the file name w/o extension of a gName.
-     *
-     * @param gName glyph name, using format "folder/name.number.xml" or "folder/name.xml"
-     * @return the 'name' or 'name.number' part of the format
-     */
-    static String fileNameOf (String gName)
-    {
-        int    slash = gName.indexOf("/");
-        String nameWithExt = gName.substring(slash + 1);
-
-        int    lastDot = nameWithExt.lastIndexOf(".");
-
-        if (lastDot != -1) {
-            return nameWithExt.substring(0, lastDot);
-        } else {
-            return nameWithExt;
-        }
-    }
-
     //-------------//
     // setCoreBase //
     //-------------//
@@ -302,107 +458,9 @@ public class GlyphRepository
      *
      * @param base the provided collection
      */
-    synchronized void setCoreBase (List<String> base)
+    public synchronized void setCoreBase (List<String> base)
     {
         coreBase = base;
-    }
-
-    //-------------//
-    // getCoreBase //
-    //-------------//
-    /**
-     * Return the names of the core collection of glyphs
-     *
-     * @return the core collection of recorded glyphs
-     */
-    List<String> getCoreBase (Monitor monitor)
-    {
-        if (coreBase == null) {
-            synchronized (this) {
-                if (coreBase == null) {
-                    coreBase = loadCoreBase(monitor);
-                }
-            }
-        }
-
-        return coreBase;
-    }
-
-    //----------//
-    // getGlyph //
-    //----------//
-    /**
-     * Return a glyph knowing its full glyph name, which is the name of the
-     * corresponding training material. If not already done, the glyph is
-     * deserialized from the training file, searching first in the icons area,
-     * then the core area, then in the global sheets area.
-     *
-     * @param gName the full glyph name (format is: sheetName/Shape.id.xml)
-     * @param monitor the monitor, if any, to be kept informed of glyph loading
-     *
-     * @return the glyph instance if found, null otherwise
-     */
-    Glyph getGlyph (String  gName,
-                    Monitor monitor)
-    {
-        // First, try the map of glyphs
-        Glyph glyph = glyphsMap.get(gName);
-
-        if (glyph == null) {
-            // If failed, actually load the glyph from XML backup file.
-            if (isIcon(gName)) {
-                glyph = buildIconGlyph(gName);
-            } else {
-                File file = new File(coreFolder, gName);
-
-                if (!file.exists()) {
-                    file = new File(getSheetsFolder(), gName);
-
-                    if (!file.exists()) {
-                        logger.warning(
-                            "Unable to find file for glyph " + gName);
-
-                        return null;
-                    }
-                }
-
-                glyph = buildGlyph(gName, file);
-            }
-
-            if (glyph != null) {
-                glyphsMap.put(gName, glyph);
-                namesMap.put(glyph, gName);
-            }
-        }
-
-        if (monitor != null) {
-            monitor.loadedGlyph(gName);
-        }
-
-        return glyph;
-    }
-
-    //-------------//
-    // getGlyphsIn //
-    //-------------//
-    /**
-     * Report the list of glyph files that are contained within a given
-     * directory
-     *
-     * @param dir the containing directory
-     * @return the list of glyph files
-     */
-    synchronized List<File> getGlyphsIn (File dir)
-    {
-        File[] files = listLegalFiles(dir);
-
-        if (files != null) {
-            return Arrays.asList(files);
-        } else {
-            logger.warning("Cannot get files list from dir " + dir);
-
-            return new ArrayList<File>();
-        }
     }
 
     //---------------//
@@ -421,63 +479,6 @@ public class GlyphRepository
         return glyphsMap.get(gName) != null;
     }
 
-    //---------------------//
-    // getSheetDirectories //
-    //---------------------//
-    /**
-     * Report the list of all sheet directories found in the training material
-     *
-     * @return the list of sheet directories
-     */
-    synchronized List<File> getSheetDirectories ()
-    {
-        // One directory per sheet
-        List<File> dirs = new ArrayList<File>();
-        File[]     files = listLegalFiles(getSheetsFolder());
-
-        for (File file : files) {
-            if (file.isDirectory()) {
-                dirs.add(file);
-            }
-        }
-
-        return dirs;
-    }
-
-    //-----------------//
-    // getSheetsFolder //
-    //-----------------//
-    /**
-     * Report the folder where all sheet glyphs are stored
-     *
-     * @return the directory of all sheets material
-     */
-    File getSheetsFolder ()
-    {
-        return sheetsFolder;
-    }
-
-    //--------------//
-    // getWholeBase //
-    //--------------//
-    /**
-     * Return the names of the whole collection of glyphs
-     *
-     * @return the whole collection of recorded glyphs
-     */
-    List<String> getWholeBase (Monitor monitor)
-    {
-        if (wholeBase == null) {
-            synchronized (this) {
-                if (wholeBase == null) {
-                    wholeBase = loadWholeBase(monitor);
-                }
-            }
-        }
-
-        return wholeBase;
-    }
-
     //-------------//
     // shapeNameOf //
     //-------------//
@@ -487,7 +488,7 @@ public class GlyphRepository
      * @param gName glyph name, using format "folder/name.number.xml" or "folder/name.xml"
      * @return the 'name' part of the format
      */
-    static String shapeNameOf (String gName)
+    public static String shapeNameOf (String gName)
     {
         int    slash = gName.indexOf("/");
         String nameWithExt = gName.substring(slash + 1);
@@ -526,7 +527,7 @@ public class GlyphRepository
      * @param gName the full glyph name
      * @return the shape of the known glyph
      */
-    Shape shapeOf (String gName)
+    public Shape shapeOf (String gName)
     {
         return shapeOf(new File(gName));
     }
@@ -537,7 +538,7 @@ public class GlyphRepository
     /**
      * Store the core training material
      */
-    synchronized void storeCoreBase ()
+    public synchronized void storeCoreBase ()
     {
         if (coreBase == null) {
             logger.warning("Core base is null");
@@ -892,7 +893,7 @@ public class GlyphRepository
      * Interface <code>Monitor</code> defines the entries to a UI entity which
      * monitors the loading of glyphs by the glyph repository
      */
-    static interface Monitor
+    public static interface Monitor
     {
         //~ Methods ------------------------------------------------------------
 

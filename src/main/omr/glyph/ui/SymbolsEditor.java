@@ -33,10 +33,10 @@ import omr.selection.UserEvent;
 import omr.sheet.Sheet;
 
 import omr.ui.BoardsPane;
-import omr.ui.PixelBoard;
+import omr.sheet.ui.PixelBoard;
 
 import omr.util.Implement;
-import omr.util.Logger;
+import omr.log.Logger;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -79,9 +79,6 @@ public class SymbolsEditor
 
     /** Popup menu related to glyph selection */
     private GlyphMenu glyphMenu;
-
-    /** Pointer to glyph board */
-    private SymbolGlyphBoard glyphBoard;
 
     /** The entity used for display focus */
     private ShapeFocusBoard focus;
@@ -128,12 +125,7 @@ public class SymbolsEditor
 
         glyphMenu = new GlyphMenu(sheet, symbolsBuilder, evaluator, focus, lag);
 
-        final String unit = sheet.getRadix() + ":SymbolsEditor";
-
-        glyphBoard = new SymbolGlyphBoard(
-            unit + "-SymbolGlyphBoard",
-            symbolsBuilder,
-            0);
+        final String  unit = sheet.getRadix() + ":SymbolsEditor";
 
         BoardsPane    boardsPane = new BoardsPane(
             sheet,
@@ -144,7 +136,7 @@ public class SymbolsEditor
                 unit,
                 symbolsBuilder.getLag().getLastVertexId(),
                 lag),
-            glyphBoard,
+            new SymbolGlyphBoard(unit + "-SymbolGlyphBoard", symbolsBuilder, 0),
             focus,
             new EvaluationBoard(
                 unit + "-Evaluation-ActiveBoard",

@@ -12,7 +12,8 @@ package omr.glyph.ui;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphModel;
 import omr.glyph.Shape;
-import omr.glyph.TextType;
+import omr.glyph.text.TextInfo;
+import omr.glyph.text.TextType;
 
 import omr.math.Moments;
 
@@ -29,7 +30,7 @@ import omr.ui.field.SField;
 import static omr.ui.field.SpinnerUtilities.*;
 
 import omr.util.Implement;
-import omr.util.Logger;
+import omr.log.Logger;
 import omr.util.Predicate;
 import static omr.util.Synchronicity.*;
 
@@ -51,6 +52,10 @@ import javax.swing.event.*;
  * omr.glyph.Shape#NOISE}, that is too small glyphs, are not included in this
  * spinner. The symbolSpinner is thus a subset of the knownSpinner (which is
  * itself a subset of the globalSpinner). </ul>
+ *
+ * <h4>Layout of an instance of SymbolGlyphBoard:<br/>
+ *    <img src="doc-files/SymbolGlyphBoard.jpg"/>
+ * </h4>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -220,8 +225,8 @@ class SymbolGlyphBoard
     @Override
     public void onEvent (UserEvent event)
     {
-        //        logger.info("SymbolGlyphBoard " + selection.getTag()
-        //                    + " selfUpdating=" + selfUpdating);
+        //        logger.info(
+        //            "SymbolGlyphBoard " + event + " selfUpdating=" + selfUpdating);
         super.onEvent(event);
 
         if (event instanceof GlyphEvent) {
@@ -247,14 +252,16 @@ class SymbolGlyphBoard
                     textCombo.setEnabled(true);
                     textField.setEnabled(true);
 
-                    if (glyph.getTextContent() != null) {
-                        textField.setText(glyph.getTextContent());
+                    TextInfo textInfo = glyph.getTextInfo();
+
+                    if (textInfo.getContent() != null) {
+                        textField.setText(glyph.getTextInfo().getContent());
                     } else {
                         textField.setText("");
                     }
 
-                    if (glyph.getTextType() != null) {
-                        textCombo.setSelectedItem(glyph.getTextType());
+                    if (textInfo.getTextType() != null) {
+                        textCombo.setSelectedItem(textInfo.getTextType());
                     }
                 } else {
                     textCombo.setEnabled(false);
@@ -323,8 +330,8 @@ class SymbolGlyphBoard
                 // For text information
 
         if (textCombo != null) {
-            builder.add(textCombo, cst.xyw(3, r, 3));
-            builder.add(textField, cst.xyw(7, r, 5));
+            builder.add(textCombo, cst.xyw(3, r, 1));
+            builder.add(textField, cst.xyw(5, r, 7));
         }
 
         r += 2; // --------------------------------

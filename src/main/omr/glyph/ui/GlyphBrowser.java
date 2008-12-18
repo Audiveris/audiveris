@@ -39,7 +39,7 @@ import omr.ui.view.Zoom;
 
 import omr.util.BlackList;
 import omr.util.Implement;
-import omr.util.Logger;
+import omr.log.Logger;
 import omr.util.Synchronicity;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -607,7 +607,7 @@ class GlyphBrowser
         //-----------//
         Navigator ()
         {
-            super(Board.Tag.CUSTOM, "Glyph-Navigator", null, null);
+            super("Glyph-Navigator", null, null);
 
             defineLayout();
 

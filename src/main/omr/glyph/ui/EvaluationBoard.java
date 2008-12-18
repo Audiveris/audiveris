@@ -30,7 +30,7 @@ import omr.ui.Board;
 import omr.ui.util.Panel;
 
 import omr.util.Implement;
-import omr.util.Logger;
+import omr.log.Logger;
 import static omr.util.Synchronicity.*;
 
 import com.jgoodies.forms.builder.*;
@@ -141,11 +141,7 @@ class EvaluationBoard
                             Sheet        sheet,
                             GlyphLagView view)
     {
-        super(
-            Board.Tag.CUSTOM,
-            name,
-            glyphModel.getLag().getEventService(),
-            eventClasses);
+        super(name, glyphModel.getLag().getEventService(), eventClasses);
 
         this.glyphModel = glyphModel;
         this.sheet = sheet;

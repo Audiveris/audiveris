@@ -10,9 +10,8 @@
 package omr.glyph.ui;
 
 import omr.glyph.Glyph;
-import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
-import omr.glyph.TextArea;
+import omr.glyph.text.TextArea;
 
 import omr.lag.HorizontalOrientation;
 import omr.lag.Oriented;
@@ -28,7 +27,7 @@ import omr.sheet.SheetManager;
 import omr.sheet.SystemInfo;
 
 import omr.util.BasicTask;
-import omr.util.Logger;
+import omr.log.Logger;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;

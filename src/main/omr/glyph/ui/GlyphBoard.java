@@ -31,7 +31,7 @@ import static omr.ui.field.SpinnerUtilities.*;
 import omr.ui.util.Panel;
 
 import omr.util.Implement;
-import omr.util.Logger;
+import omr.log.Logger;
 import omr.util.Predicate;
 import static omr.util.Synchronicity.*;
 
@@ -202,7 +202,6 @@ public class GlyphBoard
                           GlyphModel glyphModel)
     {
         super(
-            Board.Tag.GLYPH,
             name,
             glyphModel.getLag().getEventService(),
             eventClasses);
