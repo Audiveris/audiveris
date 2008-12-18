@@ -11,7 +11,7 @@ package omr.math;
 
 import omr.score.common.PixelPoint;
 
-import omr.util.Logger;
+import omr.log.Logger;
 
 /**
  * Class <code>Moments</code> encapsulates the set of all moments that

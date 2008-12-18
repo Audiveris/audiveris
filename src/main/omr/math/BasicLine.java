@@ -10,7 +10,7 @@
 package omr.math;
 
 import omr.util.Implement;
-import omr.util.Logger;
+import omr.log.Logger;
 import static java.lang.Math.*;
 
 /**
