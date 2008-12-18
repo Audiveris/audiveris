@@ -12,6 +12,8 @@ package omr;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.log.Logger;
+
 import omr.score.midi.MidiAgent;
 import omr.score.visitor.ScoreExporter;
 
@@ -23,7 +25,6 @@ import omr.ui.MainGui;
 import omr.util.BasicTask;
 import omr.util.Clock;
 import omr.util.JaiLoader;
-import omr.log.Logger;
 import omr.util.OmrExecutors;
 
 import org.jdesktop.application.Application;

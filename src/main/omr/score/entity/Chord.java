@@ -13,6 +13,8 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
 
+import omr.log.Logger;
+
 import omr.score.common.DurationFactor;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -26,7 +28,6 @@ import omr.sheet.Scale;
 import omr.stick.Stick;
 
 import omr.util.Implement;
-import omr.log.Logger;
 import omr.util.TreeNode;
 
 import java.awt.Polygon;

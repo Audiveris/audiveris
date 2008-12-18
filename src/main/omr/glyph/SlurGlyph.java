@@ -13,6 +13,8 @@ import omr.constant.ConstantSet;
 
 import omr.lag.Section;
 
+import omr.log.Logger;
+
 import omr.math.Circle;
 
 import omr.sheet.Scale;
@@ -21,7 +23,6 @@ import omr.sheet.SystemInfo;
 import omr.stick.Stick;
 
 import omr.util.Implement;
-import omr.log.Logger;
 
 import java.util.*;
 

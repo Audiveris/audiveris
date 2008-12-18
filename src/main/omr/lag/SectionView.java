@@ -14,10 +14,11 @@ import omr.constant.ConstantSet;
 
 import omr.graph.VertexView;
 
+import omr.log.Logger;
+
 import omr.ui.view.Zoom;
 
 import omr.util.Implement;
-import omr.log.Logger;
 
 import java.awt.Color;
 import java.awt.Graphics;

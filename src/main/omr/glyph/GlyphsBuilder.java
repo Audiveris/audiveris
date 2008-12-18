@@ -11,6 +11,8 @@ package omr.glyph;
 
 import omr.constant.ConstantSet;
 
+import omr.log.Logger;
+
 import omr.score.common.SystemPoint;
 import omr.score.entity.Staff;
 
@@ -20,8 +22,6 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.stick.Stick;
-
-import omr.log.Logger;
 
 import java.awt.Rectangle;
 import java.util.*;

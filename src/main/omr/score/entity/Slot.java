@@ -13,6 +13,8 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
 
+import omr.log.Logger;
+
 import omr.math.InjectionSolver;
 import omr.math.Population;
 
@@ -22,7 +24,6 @@ import omr.score.ui.ScoreConstants;
 
 import omr.sheet.Scale;
 
-import omr.log.Logger;
 import omr.util.TreeNode;
 
 import java.util.*;

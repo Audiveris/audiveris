@@ -15,12 +15,12 @@ import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
+import omr.log.Logger;
+
 import omr.score.common.SystemPoint;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
-
-import omr.log.Logger;
 
 import java.util.*;
 import java.util.logging.Level;

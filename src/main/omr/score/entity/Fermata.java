@@ -12,12 +12,12 @@ package omr.score.entity;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
+import omr.log.Logger;
+
 import omr.score.common.SystemPoint;
 import omr.score.entity.AbstractNotation;
 import omr.score.entity.Chord;
 import omr.score.visitor.ScoreVisitor;
-
-import omr.log.Logger;
 
 /**
  * Class <code>Fermata</code> represents a fermata event (upright or inverted)

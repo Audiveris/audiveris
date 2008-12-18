@@ -11,9 +11,9 @@ package omr.score.entity;
 
 import omr.glyph.Shape;
 
-import omr.score.common.SystemPoint;
-
 import omr.log.Logger;
+
+import omr.score.common.SystemPoint;
 
 import java.util.Map;
 import java.util.SortedMap;

@@ -12,13 +12,13 @@ package omr.glyph;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.log.Logger;
+
 import omr.score.common.PixelRectangle;
 
 import omr.sheet.Scale;
 
 import omr.stick.Stick;
-
-import omr.log.Logger;
 
 import java.util.*;
 

@@ -20,6 +20,8 @@ import omr.lag.RunBoard;
 import omr.lag.ScrollLagView;
 import omr.lag.SectionBoard;
 
+import omr.log.Logger;
+
 import omr.score.entity.Note;
 import omr.score.visitor.SheetPainter;
 
@@ -31,12 +33,11 @@ import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
 
 import omr.sheet.Sheet;
-
-import omr.ui.BoardsPane;
 import omr.sheet.ui.PixelBoard;
 
+import omr.ui.BoardsPane;
+
 import omr.util.Implement;
-import omr.log.Logger;
 
 import java.awt.*;
 import java.awt.event.*;

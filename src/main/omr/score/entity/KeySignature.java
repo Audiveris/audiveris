@@ -15,6 +15,8 @@ import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
+import omr.log.Logger;
+
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.common.SystemPoint;
@@ -24,7 +26,6 @@ import omr.score.visitor.ScoreVisitor;
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
-import omr.log.Logger;
 import omr.util.TreeNode;
 
 import java.util.*;
@@ -307,7 +308,7 @@ public class KeySignature
             logger.fine("Populating keysig for " + glyph);
         }
 
-        ScoreSystem         system = measure.getSystem();
+        ScoreSystem    system = measure.getSystem();
         SystemInfo     systemInfo = system.getInfo();
 
         // Make sure we have no note nearby
@@ -650,8 +651,8 @@ public class KeySignature
     // getContextString //
     //------------------//
     private static String getContextString (ScoreSystem system,
-                                            int    measureIndex,
-                                            int    systemStaffIndex)
+                                            int         measureIndex,
+                                            int         systemStaffIndex)
     {
         return system.getContextString() + "M" + (measureIndex + 1) + "F" +
                staffOf(system, systemStaffIndex)
@@ -662,8 +663,8 @@ public class KeySignature
     // getMeasureOf //
     //--------------//
     private static Measure getMeasureOf (ScoreSystem system,
-                                         int    staffIndex,
-                                         int    measureIndex)
+                                         int         staffIndex,
+                                         int         measureIndex)
     {
         int staffOffset = 0;
 
@@ -714,7 +715,7 @@ public class KeySignature
     // staffOf //
     //---------//
     private static Staff staffOf (ScoreSystem system,
-                                  int    systemStaffIndex)
+                                  int         systemStaffIndex)
     {
         int staffOffset = 0;
 

@@ -9,9 +9,9 @@
 //
 package omr.lag;
 
-import omr.ui.view.ScrollView;
-
 import omr.log.Logger;
+
+import omr.ui.view.ScrollView;
 
 /**
  * Class <code>ScrollLagView</code> is a customized {@link ScrollView} dedicated

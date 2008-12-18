@@ -11,11 +11,11 @@ package omr.lag;
 
 import omr.graph.Vertex;
 
+import omr.log.Logger;
+
 import omr.score.common.PixelRectangle;
 
 import omr.sheet.picture.Picture;
-
-import omr.log.Logger;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

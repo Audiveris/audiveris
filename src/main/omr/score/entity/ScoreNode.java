@@ -9,11 +9,12 @@
 //
 package omr.score.entity;
 
+import omr.log.Logger;
+
 import omr.score.Score;
 
 import omr.sheet.Scale;
 
-import omr.log.Logger;
 import omr.util.TreeNode;
 
 /**

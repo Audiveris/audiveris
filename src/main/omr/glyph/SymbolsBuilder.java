@@ -9,11 +9,13 @@
 //
 package omr.glyph;
 
-import omr.glyph.text.Sentence;
-import omr.glyph.text.TextType;
 import omr.Main;
 
+import omr.glyph.text.Sentence;
+import omr.glyph.text.TextType;
 import omr.glyph.ui.SymbolsEditor;
+
+import omr.log.Logger;
 
 import omr.score.entity.Note;
 
@@ -29,7 +31,6 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.util.BasicTask;
-import omr.log.Logger;
 import omr.util.Synchronicity;
 import static omr.util.Synchronicity.*;
 
@@ -302,7 +303,8 @@ public class SymbolsBuilder
             // Do the job
             for (Glyph glyph : glyphs) {
                 // Assign text type
-                Sentence sentence = glyph.getTextInfo().getSentence();
+                Sentence sentence = glyph.getTextInfo()
+                                         .getSentence();
 
                 if (sentence != null) {
                     sentence.setTextType(textType);
@@ -310,7 +312,8 @@ public class SymbolsBuilder
 
                 // Assign text only if it is not empty
                 if ((textContent != null) && (textContent.length() > 0)) {
-                    glyph.getTextInfo().setManualContent(textContent);
+                    glyph.getTextInfo()
+                         .setManualContent(textContent);
                 }
             }
 

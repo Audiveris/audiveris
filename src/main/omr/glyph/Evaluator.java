@@ -12,12 +12,12 @@ package omr.glyph;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.log.Logger;
+
 import omr.math.Moments;
 import omr.math.NeuralNetwork;
 
 import omr.sheet.Scale;
-
-import omr.log.Logger;
 
 import java.util.Comparator;
 import java.util.List;

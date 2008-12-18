@@ -9,9 +9,9 @@
 //
 package omr.glyph.text;
 
-import omr.score.entity.Text;
-
 import omr.log.Logger;
+
+import omr.score.entity.Text;
 
 import java.awt.Font;
 import java.awt.Rectangle;

@@ -11,9 +11,9 @@ package omr.score.entity;
 
 import omr.glyph.Glyph;
 
-import omr.score.common.SystemPoint;
-
 import omr.log.Logger;
+
+import omr.score.common.SystemPoint;
 
 /**
  * Class <code>Notation</code> is the basis for all variants of notations:

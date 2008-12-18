@@ -12,6 +12,8 @@ package omr.lag;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.log.Logger;
+
 import omr.selection.SectionEvent;
 import omr.selection.SectionIdEvent;
 import omr.selection.SelectionHint;
@@ -26,7 +28,6 @@ import static omr.ui.field.SpinnerUtilities.*;
 import omr.ui.util.Panel;
 
 import omr.util.Implement;
-import omr.log.Logger;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;

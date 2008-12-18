@@ -13,6 +13,8 @@ import omr.lag.Lag;
 import omr.lag.Oriented;
 import omr.lag.Section;
 
+import omr.log.Logger;
+
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphIdEvent;
 import omr.selection.GlyphSetEvent;
@@ -24,7 +26,6 @@ import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
 
 import omr.util.Implement;
-import omr.log.Logger;
 
 import org.bushe.swing.event.EventSubscriber;
 
@@ -277,7 +278,7 @@ public class GlyphLag
 
         for (Glyph glyph : collection) {
             boolean inRect = true;
-            sectionTest:
+            sectionTest: 
             for (GlyphSection section : glyph.getMembers()) {
                 if (!rect.contains(section.getContourBox())) {
                     inRect = false;
@@ -465,12 +466,11 @@ public class GlyphLag
 
         sb.append(super.toString());
 
-//        // Active/All glyphs
-//        sb.append(" glyphs=")
-//          .append(getActiveGlyphs().size())
-//          .append("/")
-//          .append(allGlyphs.size());
-
+        //        // Active/All glyphs
+        //        sb.append(" glyphs=")
+        //          .append(getActiveGlyphs().size())
+        //          .append("/")
+        //          .append(allGlyphs.size());
         if (this.getClass()
                 .getName()
                 .equals(GlyphLag.class.getName())) {

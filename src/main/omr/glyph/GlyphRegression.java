@@ -14,9 +14,9 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.ui.GlyphRepository;
 
-import omr.math.Population;
-
 import omr.log.Logger;
+
+import omr.math.Population;
 
 import java.util.Arrays;
 import java.util.List;

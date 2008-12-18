@@ -9,8 +9,9 @@
 //
 package omr.lag;
 
-import omr.util.Implement;
 import omr.log.Logger;
+
+import omr.util.Implement;
 
 import java.awt.*;
 import java.util.List;

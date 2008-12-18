@@ -9,6 +9,8 @@
 //
 package omr.glyph;
 
+import omr.log.Logger;
+
 import omr.script.ScriptRecording;
 
 import omr.selection.GlyphEvent;
@@ -17,7 +19,6 @@ import omr.selection.SelectionHint;
 import omr.sheet.Sheet;
 
 import omr.util.BasicTask;
-import omr.log.Logger;
 import omr.util.Synchronicity;
 import static omr.util.Synchronicity.*;
 
@@ -134,7 +135,7 @@ public class GlyphModel
     //--------------------//
     /**
      * Report the event service to use for SheetLocationEvent
-     * When no sheet is available, override this method to point to another 
+     * When no sheet is available, override this method to point to another
      * service
      * @return the event service to use for SheetLocationEvent
      */

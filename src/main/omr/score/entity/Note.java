@@ -14,6 +14,8 @@ import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
+import omr.log.Logger;
+
 import omr.math.GCD;
 
 import omr.score.common.PixelPoint;
@@ -25,7 +27,6 @@ import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
 
-import omr.log.Logger;
 import omr.util.TreeNode;
 
 import java.util.*;
@@ -64,11 +65,11 @@ public class Note
 
 
         /** La */ A,
-        /** Si */ B,
-        /** Do */ C,
-        /** Re */ D,
-        /** Mi */ E,
-        /** Fa */ F,
+        /** Si */ B, 
+        /** Do */ C, 
+        /** Re */ D, 
+        /** Mi */ E, 
+        /** Fa */ F, 
         /** Sol */ G;
     }
 
@@ -717,7 +718,7 @@ public class Note
         final Set<Note> candidates = new HashSet<Note>();
 
         // An accidental impacts the note right after (even if duplicated)
-        ChordLoop:
+        ChordLoop: 
         for (TreeNode node : measure.getChords()) {
             final Chord chord = (Chord) node;
 

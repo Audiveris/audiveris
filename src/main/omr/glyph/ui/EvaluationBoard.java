@@ -19,6 +19,8 @@ import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphModel;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Shape;
+
+import omr.log.Logger;
 import static omr.script.ScriptRecording.*;
 
 import omr.selection.GlyphEvent;
@@ -30,7 +32,6 @@ import omr.ui.Board;
 import omr.ui.util.Panel;
 
 import omr.util.Implement;
-import omr.log.Logger;
 import static omr.util.Synchronicity.*;
 
 import com.jgoodies.forms.builder.*;

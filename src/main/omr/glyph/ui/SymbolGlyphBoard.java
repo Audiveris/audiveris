@@ -15,6 +15,8 @@ import omr.glyph.Shape;
 import omr.glyph.text.TextInfo;
 import omr.glyph.text.TextType;
 
+import omr.log.Logger;
+
 import omr.math.Moments;
 
 import omr.selection.GlyphEvent;
@@ -30,7 +32,6 @@ import omr.ui.field.SField;
 import static omr.ui.field.SpinnerUtilities.*;
 
 import omr.util.Implement;
-import omr.log.Logger;
 import omr.util.Predicate;
 import static omr.util.Synchronicity.*;
 

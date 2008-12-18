@@ -13,9 +13,9 @@ import omr.glyph.Glyph;
 
 import omr.lag.HorizontalOrientation;
 
-import omr.score.common.PixelPoint;
-
 import omr.log.Logger;
+
+import omr.score.common.PixelPoint;
 
 /**
  * Class <code>TextInfo</code> handles the textual aspects of a glyph. It

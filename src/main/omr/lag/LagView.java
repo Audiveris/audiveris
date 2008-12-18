@@ -13,6 +13,8 @@ import omr.constant.Constant;
 
 import omr.graph.DigraphView;
 
+import omr.log.Logger;
+
 import omr.selection.RunEvent;
 import omr.selection.SectionEvent;
 import omr.selection.SectionIdEvent;
@@ -21,8 +23,6 @@ import omr.selection.UserEvent;
 
 import omr.ui.view.RubberZoomedPanel;
 import omr.ui.view.Zoom;
-
-import omr.log.Logger;
 
 import org.bushe.swing.event.EventService;
 import org.bushe.swing.event.EventSubscriber;

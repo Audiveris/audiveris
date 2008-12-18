@@ -11,10 +11,11 @@ package omr.glyph.ui;
 
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
+
+import omr.log.Logger;
 import static omr.ui.field.SpinnerUtilities.*;
 
 import omr.util.Implement;
-import omr.log.Logger;
 import omr.util.Predicate;
 
 import java.util.*;

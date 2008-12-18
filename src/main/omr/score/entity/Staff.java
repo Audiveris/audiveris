@@ -9,6 +9,8 @@
 //
 package omr.score.entity;
 
+import omr.log.Logger;
+
 import omr.score.common.PagePoint;
 import omr.score.common.PixelPoint;
 import omr.score.common.ScorePoint;
@@ -17,8 +19,6 @@ import static omr.score.ui.ScoreConstants.*;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.StaffInfo;
-
-import omr.log.Logger;
 
 /**
  * Class <code>Staff</code> handles a staff in a system part. It is useful for

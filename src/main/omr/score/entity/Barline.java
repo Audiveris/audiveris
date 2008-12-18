@@ -11,6 +11,8 @@ package omr.score.entity;
 
 import omr.glyph.Shape;
 
+import omr.log.Logger;
+
 import omr.score.common.PagePoint;
 import omr.score.common.PageRectangle;
 import omr.score.common.SystemRectangle;
@@ -21,8 +23,6 @@ import omr.sheet.Scale;
 import omr.stick.Stick;
 
 import omr.ui.view.Zoom;
-
-import omr.log.Logger;
 
 import java.awt.*;
 import java.util.*;
@@ -394,7 +394,7 @@ public class Barline
     {
         if (signature == null) {
             final Measure       measure = (Measure) getParent();
-            final ScoreSystem        system = measure.getSystem();
+            final ScoreSystem   system = measure.getSystem();
             final StringBuilder sb = new StringBuilder();
             final Staff         staffRef = measure.getPart()
                                                   .getFirstStaff();

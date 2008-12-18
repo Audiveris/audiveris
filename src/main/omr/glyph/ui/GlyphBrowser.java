@@ -22,6 +22,8 @@ import omr.glyph.GlyphSection;
 import omr.lag.ScrollLagView;
 import omr.lag.VerticalOrientation;
 
+import omr.log.Logger;
+
 import omr.script.ScriptRecording;
 
 import omr.selection.GlyphEvent;
@@ -39,7 +41,6 @@ import omr.ui.view.Zoom;
 
 import omr.util.BlackList;
 import omr.util.Implement;
-import omr.log.Logger;
 import omr.util.Synchronicity;
 
 import com.jgoodies.forms.builder.PanelBuilder;

@@ -13,6 +13,8 @@ import omr.glyph.Glyph;
 import omr.glyph.GlyphModel;
 import omr.glyph.Shape;
 
+import omr.log.Logger;
+
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphIdEvent;
 import omr.selection.SelectionHint;
@@ -26,7 +28,6 @@ import static omr.ui.field.SpinnerUtilities.*;
 import omr.ui.util.Panel;
 
 import omr.util.Implement;
-import omr.log.Logger;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
@@ -73,11 +74,11 @@ class ShapeFocusBoard
         /** Display all symbols */
         ALL,
         /** Display only known symbols */
-        KNOWN,
+        KNOWN, 
         /** Display only unknown symbols */
-        UNKNOWN,
+        UNKNOWN, 
         /** Display only translated symbols */
-        TRANSLATED,
+        TRANSLATED, 
         /** Display only untranslated symbols */
         UNTRANSLATED;
     }

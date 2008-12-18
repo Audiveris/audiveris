@@ -11,9 +11,9 @@ package omr.check;
 
 import omr.constant.Constant;
 
-import omr.ui.util.Panel;
-
 import omr.log.Logger;
+
+import omr.ui.util.Panel;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;

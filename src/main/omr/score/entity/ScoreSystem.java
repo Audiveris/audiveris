@@ -59,7 +59,7 @@ public class ScoreSystem
         /** Above the first staff of the first (real)part */
         above,
         /** Somewhere within the staves of this system */
-        within,
+        within, 
         /** Below the last staff of the last part */
         below;
     }

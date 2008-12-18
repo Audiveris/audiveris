@@ -15,14 +15,16 @@ import omr.glyph.*;
 
 import omr.lag.HorizontalOrientation;
 
+import omr.log.Logger;
+
 import omr.score.common.PageRectangle;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.common.SystemPoint;
 import omr.score.common.SystemRectangle;
-import omr.score.entity.Staff;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.ScoreSystem.StaffPosition;
+import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
 
 import omr.sheet.Scale;
@@ -30,7 +32,6 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.util.Implement;
-import omr.log.Logger;
 
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -501,7 +502,7 @@ public class Sentence
     private TextType guessType ()
     {
         Sheet           sheet = systemInfo.getSheet();
-        ScoreSystem          system = systemInfo.getScoreSystem();
+        ScoreSystem     system = systemInfo.getScoreSystem();
         Scale           scale = system.getScale();
         PageRectangle   pageBox = scale.toUnits(getContourBox());
         SystemRectangle box = getSystemContour();

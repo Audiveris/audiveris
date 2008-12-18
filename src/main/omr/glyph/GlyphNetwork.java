@@ -16,9 +16,9 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluator.StartingMode;
 
-import omr.math.NeuralNetwork;
-
 import omr.log.Logger;
+
+import omr.math.NeuralNetwork;
 
 import java.io.*;
 import java.util.*;
@@ -141,7 +141,9 @@ public class GlyphNetwork
             network.run(ins, null, outs);
 
             for (int s = 0; s < outSize; s++) {
-                Shape shape = GlyphChecks.specificCheck(Shape.values()[s], glyph);
+                Shape shape = GlyphChecks.specificCheck(
+                    Shape.values()[s],
+                    glyph);
 
                 if (shape != null) {
                     evals[s] = new Evaluation(shape, 1d / outs[s]);

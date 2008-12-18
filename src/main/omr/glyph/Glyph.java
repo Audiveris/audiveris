@@ -19,6 +19,8 @@ import omr.glyph.text.TextInfo;
 import omr.lag.Section;
 import omr.lag.SectionView;
 
+import omr.log.Logger;
+
 import omr.math.Moments;
 
 import omr.score.common.PixelPoint;
@@ -27,7 +29,6 @@ import omr.score.common.PixelRectangle;
 import omr.ui.icon.SymbolIcon;
 
 import omr.util.Implement;
-import omr.log.Logger;
 import omr.util.Predicate;
 
 import java.awt.*;

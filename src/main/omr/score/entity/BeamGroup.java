@@ -12,9 +12,10 @@ package omr.score.entity;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.log.Logger;
+
 import omr.score.common.SystemPoint;
 
-import omr.log.Logger;
 import omr.util.TreeNode;
 
 import java.util.ArrayList;

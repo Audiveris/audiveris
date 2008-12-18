@@ -10,10 +10,11 @@
 package omr.glyph.ui;
 
 import omr.Main;
+
+import omr.log.Logger;
 import static omr.selection.SelectionHint.*;
 
 import omr.util.Implement;
-import omr.log.Logger;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;

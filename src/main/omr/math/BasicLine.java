@@ -9,8 +9,9 @@
 //
 package omr.math;
 
-import omr.util.Implement;
 import omr.log.Logger;
+
+import omr.util.Implement;
 import static java.lang.Math.*;
 
 /**

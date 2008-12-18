@@ -164,7 +164,7 @@ public class ActionManager
      * Report a describing name
      * @return a describing name
      */
-    public String getName()
+    public String getName ()
     {
         return "ActionManager";
     }

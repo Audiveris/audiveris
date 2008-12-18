@@ -9,12 +9,13 @@
 //
 package omr.score.entity;
 
+import omr.log.Logger;
+
 import omr.score.common.PagePoint;
 import omr.score.common.ScorePoint;
 import omr.score.common.SystemPoint;
 import omr.score.visitor.ScoreVisitor;
 
-import omr.log.Logger;
 import omr.util.Predicate;
 import omr.util.TreeNode;
 
@@ -138,7 +139,7 @@ public class SystemPart
     public SystemPart getFollowing ()
     {
         ScoreSystem nextSystem = (ScoreSystem) getSystem()
-                                         .getNextSibling();
+                                                   .getNextSibling();
 
         if (nextSystem != null) {
             return nextSystem.getPart(id);
@@ -301,7 +302,7 @@ public class SystemPart
     public SystemPart getPreceding ()
     {
         ScoreSystem prevSystem = (ScoreSystem) getSystem()
-                                         .getPreviousSibling();
+                                                   .getPreviousSibling();
 
         if (prevSystem != null) {
             return prevSystem.getPart(id);
@@ -559,7 +560,7 @@ public class SystemPart
 
         do {
             ScoreSystem nextSystem = (ScoreSystem) getSystem()
-                                             .getNextSibling();
+                                                       .getNextSibling();
 
             if (nextSystem != null) {
                 SystemPart part = nextSystem.getPart(id);
@@ -766,7 +767,7 @@ public class SystemPart
             Collections.sort(precedingOrphans, Slur.verticalComparator);
 
             // Connect the orphans as much as possible
-            SlurLoop:
+            SlurLoop: 
             for (Slur slur : orphans) {
                 for (Slur prevSlur : precedingOrphans) {
                     if (slur.canExtend(prevSlur)) {

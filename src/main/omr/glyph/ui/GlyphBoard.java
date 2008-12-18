@@ -15,6 +15,8 @@ import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphModel;
 import omr.glyph.Shape;
+
+import omr.log.Logger;
 import static omr.script.ScriptRecording.*;
 
 import omr.selection.GlyphEvent;
@@ -31,7 +33,6 @@ import static omr.ui.field.SpinnerUtilities.*;
 import omr.ui.util.Panel;
 
 import omr.util.Implement;
-import omr.log.Logger;
 import omr.util.Predicate;
 import static omr.util.Synchronicity.*;
 
@@ -201,10 +202,7 @@ public class GlyphBoard
     protected GlyphBoard (String     name,
                           GlyphModel glyphModel)
     {
-        super(
-            name,
-            glyphModel.getLag().getEventService(),
-            eventClasses);
+        super(name, glyphModel.getLag().getEventService(), eventClasses);
 
         this.glyphModel = glyphModel;
 

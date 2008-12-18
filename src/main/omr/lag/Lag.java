@@ -11,6 +11,8 @@ package omr.lag;
 
 import omr.graph.Digraph;
 
+import omr.log.Logger;
+
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
@@ -22,7 +24,6 @@ import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
 
 import omr.util.Implement;
-import omr.log.Logger;
 import omr.util.Predicate;
 
 import org.bushe.swing.event.EventService;

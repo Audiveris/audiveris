@@ -14,11 +14,12 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.log.Logger;
+
 import omr.sheet.picture.PictureLoader;
 
 import omr.util.FileUtil;
 import omr.util.Implement;
-import omr.log.Logger;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -240,7 +241,6 @@ public class TesseractOCR
 
         while ((str = in.readLine()) != null) {
             ///logger.info("str=\"" + str + "\"");
-
             if (str.equals("<para>")) {
                 // End of whole text
                 if (line != null) {

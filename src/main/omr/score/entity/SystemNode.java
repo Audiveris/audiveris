@@ -241,11 +241,11 @@ public abstract class SystemNode
             return null;
         }
 
-        PixelPoint pixPt = new PixelPoint(
+        PixelPoint  pixPt = new PixelPoint(
             rect.x + (rect.width / 2),
             rect.y + (rect.height / 2));
 
-        ScoreSystem     s = getSystem();
+        ScoreSystem s = getSystem();
 
         return (s == null) ? null : s.toSystemPoint(pixPt);
     }

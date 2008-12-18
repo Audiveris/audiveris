@@ -9,6 +9,8 @@
 //
 package omr.lag;
 
+import omr.log.Logger;
+
 import omr.selection.RunEvent;
 import omr.selection.UserEvent;
 
@@ -17,7 +19,6 @@ import omr.ui.field.LIntegerField;
 import omr.ui.util.Panel;
 
 import omr.util.Implement;
-import omr.log.Logger;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;

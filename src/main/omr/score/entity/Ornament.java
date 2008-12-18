@@ -11,10 +11,10 @@ package omr.score.entity;
 
 import omr.glyph.Glyph;
 
+import omr.log.Logger;
+
 import omr.score.common.SystemPoint;
 import omr.score.visitor.ScoreVisitor;
-
-import omr.log.Logger;
 
 /**
  * Class <code>Ornament</code> represents an ornament event, a special notation.

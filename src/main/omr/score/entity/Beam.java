@@ -13,6 +13,8 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
 
+import omr.log.Logger;
+
 import omr.math.BasicLine;
 import omr.math.Line;
 
@@ -22,7 +24,6 @@ import omr.score.visitor.ScoreVisitor;
 import omr.sheet.Scale;
 
 import omr.util.Dumper;
-import omr.log.Logger;
 import omr.util.TreeNode;
 import static java.lang.Math.*;
 import java.util.*;

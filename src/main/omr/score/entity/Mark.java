@@ -66,7 +66,7 @@ public class Mark
      * @param shape symbol shape to be used
      * @param data related data or null
      */
-    public Mark (ScoreSystem      system,
+    public Mark (ScoreSystem system,
                  SystemPoint location,
                  Position    position,
                  Shape       shape,

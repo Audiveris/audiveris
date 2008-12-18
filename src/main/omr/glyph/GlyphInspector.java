@@ -11,12 +11,13 @@ package omr.glyph;
 
 import omr.constant.ConstantSet;
 
+import omr.log.Logger;
+
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.util.Implement;
-import omr.log.Logger;
 import omr.util.Predicate;
 
 import java.awt.*;

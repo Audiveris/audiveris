@@ -9,9 +9,9 @@
 //
 package omr.math;
 
-import omr.score.common.PixelPoint;
-
 import omr.log.Logger;
+
+import omr.score.common.PixelPoint;
 
 /**
  * Class <code>Moments</code> encapsulates the set of all moments that

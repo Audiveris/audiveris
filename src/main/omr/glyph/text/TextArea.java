@@ -9,20 +9,21 @@
 //
 package omr.glyph.text;
 
-import omr.glyph.*;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
+
+import omr.glyph.*;
 
 import omr.lag.HorizontalOrientation;
 import omr.lag.Oriented;
 import omr.lag.VerticalOrientation;
 
+import omr.log.Logger;
+
 import omr.score.common.PixelRectangle;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
-
-import omr.log.Logger;
 
 import java.awt.Rectangle;
 import java.util.*;

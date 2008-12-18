@@ -9,9 +9,9 @@
 //
 package omr.lag;
 
-import omr.sheet.picture.Picture;
-
 import omr.log.Logger;
+
+import omr.sheet.picture.Picture;
 
 import java.awt.*;
 import java.util.ArrayList;

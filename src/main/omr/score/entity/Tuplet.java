@@ -12,11 +12,12 @@ package omr.score.entity;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
+import omr.log.Logger;
+
 import omr.score.common.DurationFactor;
 import omr.score.common.SystemPoint;
 import omr.score.visitor.ScoreVisitor;
 
-import omr.log.Logger;
 import omr.util.TreeNode;
 
 import java.util.SortedSet;

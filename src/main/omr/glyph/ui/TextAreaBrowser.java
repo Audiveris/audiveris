@@ -17,6 +17,8 @@ import omr.lag.HorizontalOrientation;
 import omr.lag.Oriented;
 import omr.lag.VerticalOrientation;
 
+import omr.log.Logger;
+
 import omr.score.ui.ScoreDependent;
 
 import omr.selection.GlyphEvent;
@@ -27,7 +29,6 @@ import omr.sheet.SheetManager;
 import omr.sheet.SystemInfo;
 
 import omr.util.BasicTask;
-import omr.log.Logger;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;

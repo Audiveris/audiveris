@@ -17,6 +17,8 @@ import omr.glyph.Shape;
 
 import omr.lag.LagView;
 
+import omr.log.Logger;
+
 import omr.math.Circle;
 import omr.math.Line;
 import omr.math.Line.UndefinedLineException;
@@ -39,8 +41,6 @@ import omr.selection.UserEvent;
 import omr.stick.Stick;
 
 import omr.ui.view.Zoom;
-
-import omr.log.Logger;
 import static omr.util.Synchronicity.*;
 
 import java.awt.*;

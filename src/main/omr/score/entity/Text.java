@@ -14,11 +14,11 @@ import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
 import omr.glyph.text.Sentence;
 
+import omr.log.Logger;
+
 import omr.score.common.SystemPoint;
 import omr.score.common.SystemRectangle;
 import omr.score.visitor.ScoreVisitor;
-
-import omr.log.Logger;
 
 import java.awt.Font;
 
@@ -243,8 +243,8 @@ public abstract class Text
     public static void populate (Sentence    sentence,
                                  SystemPoint location)
     {
-        final SystemPart systemPart = sentence.getSystemPart();
-        final ScoreSystem     system = systemPart.getSystem();
+        final SystemPart  systemPart = sentence.getSystemPart();
+        final ScoreSystem system = systemPart.getSystem();
 
         if (sentence.getTextType() == null) {
             systemPart.addError(

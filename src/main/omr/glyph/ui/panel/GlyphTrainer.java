@@ -16,11 +16,12 @@ import omr.constant.ConstantManager;
 import omr.glyph.GlyphNetwork;
 import static omr.glyph.Shape.*;
 
+import omr.log.Logger;
+
 import omr.ui.util.Panel;
 import omr.ui.util.UILookAndFeel;
 
 import omr.util.Implement;
-import omr.log.Logger;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;

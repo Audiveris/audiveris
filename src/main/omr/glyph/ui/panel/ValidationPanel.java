@@ -9,19 +9,20 @@
 //
 package omr.glyph.ui.panel;
 
-import omr.glyph.ui.*;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
 import omr.glyph.Evaluator;
 import omr.glyph.Glyph;
+import omr.glyph.ui.*;
+
+import omr.log.Logger;
 
 import omr.ui.field.LDoubleField;
 import omr.ui.field.LIntegerField;
 import omr.ui.util.Panel;
 
 import omr.util.Implement;
-import omr.log.Logger;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
