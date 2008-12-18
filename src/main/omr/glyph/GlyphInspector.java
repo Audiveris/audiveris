@@ -16,7 +16,7 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.util.Implement;
-import omr.util.Logger;
+import omr.log.Logger;
 import omr.util.Predicate;
 
 import java.awt.*;

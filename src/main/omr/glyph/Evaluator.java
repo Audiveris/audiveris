@@ -17,7 +17,7 @@ import omr.math.NeuralNetwork;
 
 import omr.sheet.Scale;
 
-import omr.util.Logger;
+import omr.log.Logger;
 
 import java.util.Comparator;
 import java.util.List;

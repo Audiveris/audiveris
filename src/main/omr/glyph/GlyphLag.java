@@ -24,7 +24,7 @@ import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
 
 import omr.util.Implement;
-import omr.util.Logger;
+import omr.log.Logger;
 
 import org.bushe.swing.event.EventSubscriber;
 

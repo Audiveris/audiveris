@@ -17,7 +17,7 @@ import omr.selection.SelectionHint;
 import omr.sheet.Sheet;
 
 import omr.util.BasicTask;
-import omr.util.Logger;
+import omr.log.Logger;
 import omr.util.Synchronicity;
 import static omr.util.Synchronicity.*;
 

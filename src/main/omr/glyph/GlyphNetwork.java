@@ -18,7 +18,7 @@ import omr.glyph.Evaluator.StartingMode;
 
 import omr.math.NeuralNetwork;
 
-import omr.util.Logger;
+import omr.log.Logger;
 
 import java.io.*;
 import java.util.*;

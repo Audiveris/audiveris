@@ -18,7 +18,7 @@ import omr.sheet.Scale;
 
 import omr.stick.Stick;
 
-import omr.util.Logger;
+import omr.log.Logger;
 
 import java.util.*;
 
@@ -92,7 +92,7 @@ public class GlyphChecks
             // Check reasonable height (Cannot be too tall when close to staff)
             double maxHeight = (Math.abs(glyph.getPitchPosition()) >= constants.minTitlePitchPosition.getValue())
                                ? constants.maxTitleHeight.getValue()
-                               : constants.maxLyricHeight.getValue();
+                               : constants.maxLyricsHeight.getValue();
 
             if (glyph.getNormalizedHeight() >= maxHeight) {
                 return null;
@@ -244,10 +244,10 @@ public class GlyphChecks
             "Maximum normalized height for a clef");
         Scale.Fraction     maxTitleHeight = new Scale.Fraction(
             4d,
-            "Maximum normalized height for a text");
-        Scale.Fraction     maxLyricHeight = new Scale.Fraction(
+            "Maximum normalized height for a title text");
+        Scale.Fraction     maxLyricsHeight = new Scale.Fraction(
             2.5d,
-            "Maximum normalized height for a text");
+            "Maximum normalized height for a lyrics text");
         Constant.Double    minTitlePitchPosition = new Constant.Double(
             "PitchPosition",
             15d,

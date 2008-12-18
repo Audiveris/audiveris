@@ -18,7 +18,7 @@ import omr.score.ui.ScoreConstants;
 import omr.ui.icon.SymbolIcon;
 import omr.ui.icon.SymbolPicture;
 
-import omr.util.Logger;
+import omr.log.Logger;
 
 import java.awt.Rectangle;
 

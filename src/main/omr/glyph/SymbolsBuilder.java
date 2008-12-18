@@ -2,14 +2,15 @@
 //                                                                            //
 //                        S y m b o l s B u i l d e r                         //
 //                                                                            //
-//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
-//  This software is released under the terms of the GNU General Public       //
-//  License. Please contact the author at herve.bitteur@laposte.net           //
-//  to report bugs & suggestions.                                             //
+//  Copyright (C) Herve Bitteur 2000-2007. All rights reserved.               //
+//  This software is released under the GNU General Public License.           //
+//  Contact author at herve.bitteur@laposte.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
 //
 package omr.glyph;
 
+import omr.glyph.text.Sentence;
+import omr.glyph.text.TextType;
 import omr.Main;
 
 import omr.glyph.ui.SymbolsEditor;
@@ -28,7 +29,7 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.util.BasicTask;
-import omr.util.Logger;
+import omr.log.Logger;
 import omr.util.Synchronicity;
 import static omr.util.Synchronicity.*;
 
@@ -155,7 +156,7 @@ public class SymbolsBuilder
 
                 // Test on glyph weight (noise-like)
                 if ((shape == Shape.NOISE) || Evaluator.isBigEnough(glyph)) {
-                    // Force a recomputation of glyph parameters 
+                    // Force a recomputation of glyph parameters
                     // (since environment may have changed since the time they
                     // had been computed)
                     glyphsBuilder.computeGlyphFeatures(glyph);
@@ -274,6 +275,7 @@ public class SymbolsBuilder
     /**
      * Assign text characteristics to a (collection of) textual glyphs
      *
+     * @param processing (a)synchronous execution required
      * @param glyphs the impacted glyphs
      * @param textType the type(role) of this textual element
      * @param textContent the content as a string (if not empty)
@@ -300,7 +302,7 @@ public class SymbolsBuilder
             // Do the job
             for (Glyph glyph : glyphs) {
                 // Assign text type
-                Sentence sentence = glyph.getSentence();
+                Sentence sentence = glyph.getTextInfo().getSentence();
 
                 if (sentence != null) {
                     sentence.setTextType(textType);
@@ -308,7 +310,7 @@ public class SymbolsBuilder
 
                 // Assign text only if it is not empty
                 if ((textContent != null) && (textContent.length() > 0)) {
-                    glyph.setTextContent(textContent);
+                    glyph.getTextInfo().setManualContent(textContent);
                 }
             }
 

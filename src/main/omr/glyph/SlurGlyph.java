@@ -21,7 +21,7 @@ import omr.sheet.SystemInfo;
 import omr.stick.Stick;
 
 import omr.util.Implement;
-import omr.util.Logger;
+import omr.log.Logger;
 
 import java.util.*;
 
