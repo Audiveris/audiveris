@@ -22,7 +22,7 @@ import omr.selection.UserEvent;
 import omr.ui.view.RubberZoomedPanel;
 import omr.ui.view.Zoom;
 
-import omr.util.Logger;
+import omr.log.Logger;
 
 import org.bushe.swing.event.EventService;
 import org.bushe.swing.event.EventSubscriber;

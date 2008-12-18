@@ -17,7 +17,7 @@ import omr.graph.VertexView;
 import omr.ui.view.Zoom;
 
 import omr.util.Implement;
-import omr.util.Logger;
+import omr.log.Logger;
 
 import java.awt.Color;
 import java.awt.Graphics;

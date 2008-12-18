@@ -9,7 +9,7 @@
 //
 package omr.graph;
 
-import omr.util.Logger;
+import omr.log.Logger;
 
 import net.jcip.annotations.NotThreadSafe;
 

@@ -13,11 +13,13 @@ import omr.graph.Vertex;
 
 import omr.score.common.PixelRectangle;
 
-import omr.sheet.Picture;
+import omr.sheet.picture.Picture;
 
-import omr.util.Logger;
+import omr.log.Logger;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
 import java.util.*;
 import java.util.List;
 
@@ -745,6 +747,24 @@ public class Section<L extends Lag, S extends Section<L, S>>
         for (int iy = 0; iy < table.length; iy++) {
             System.out.print((iy + box.y) + ": ");
             System.out.println(table[iy]);
+        }
+    }
+
+    //-----------//
+    // fillImage //
+    //-----------//
+    public void fillImage (BufferedImage im,
+                           Rectangle     box)
+    {
+        WritableRaster raster = im.getRaster();
+        int            x = getFirstPos() - box.x;
+
+        for (Run run : runs) {
+            for (int y = run.getStart(); y <= run.getStop(); y++) {
+                raster.setSample(x, y - box.y, 0, 255);
+            }
+
+            x += 1;
         }
     }
 

@@ -17,7 +17,7 @@ import omr.ui.field.LIntegerField;
 import omr.ui.util.Panel;
 
 import omr.util.Implement;
-import omr.util.Logger;
+import omr.log.Logger;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
@@ -81,11 +81,7 @@ public class RunBoard
     public RunBoard (String unitName,
                      Lag    lag)
     {
-        super(
-            Board.Tag.RUN,
-            unitName + "-RunBoard",
-            lag.getEventService(),
-            eventClasses);
+        super(unitName + "-RunBoard", lag.getEventService(), eventClasses);
         defineLayout();
     }
 

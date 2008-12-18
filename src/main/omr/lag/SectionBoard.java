@@ -26,7 +26,7 @@ import static omr.ui.field.SpinnerUtilities.*;
 import omr.ui.util.Panel;
 
 import omr.util.Implement;
-import omr.util.Logger;
+import omr.log.Logger;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
@@ -150,11 +150,7 @@ public class SectionBoard
                          int       maxSectionId,
                          final Lag lag)
     {
-        super(
-            Board.Tag.SECTION,
-            unitName + "-SectionBoard",
-            lag.getEventService(),
-            eventClasses);
+        super(unitName + "-SectionBoard", lag.getEventService(), eventClasses);
 
         // Dump button
         dump.setToolTipText("Dump this section");
