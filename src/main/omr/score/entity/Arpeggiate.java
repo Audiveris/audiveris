@@ -20,7 +20,7 @@ import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
 
-import omr.util.Logger;
+import omr.log.Logger;
 
 import java.util.List;
 
@@ -97,7 +97,7 @@ public class Arpeggiate
 
         // We look for ALL embraced chord notes
         PixelRectangle box = glyph.getContourBox();
-        System         system = measure.getSystem();
+        ScoreSystem         system = measure.getSystem();
         SystemPoint    top = system.toSystemPoint(
             new PixelPoint(box.x + (box.width / 2), box.y));
         SystemPoint    bottom = system.toSystemPoint(

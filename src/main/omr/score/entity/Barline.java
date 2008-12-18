@@ -22,7 +22,7 @@ import omr.stick.Stick;
 
 import omr.ui.view.Zoom;
 
-import omr.util.Logger;
+import omr.log.Logger;
 
 import java.awt.*;
 import java.util.*;
@@ -394,7 +394,7 @@ public class Barline
     {
         if (signature == null) {
             final Measure       measure = (Measure) getParent();
-            final System        system = measure.getSystem();
+            final ScoreSystem        system = measure.getSystem();
             final StringBuilder sb = new StringBuilder();
             final Staff         staffRef = measure.getPart()
                                                   .getFirstStaff();

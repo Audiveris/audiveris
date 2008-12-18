@@ -26,7 +26,7 @@ import omr.sheet.Scale;
 import omr.stick.Stick;
 
 import omr.util.Implement;
-import omr.util.Logger;
+import omr.log.Logger;
 import omr.util.TreeNode;
 
 import java.awt.Polygon;
@@ -1585,7 +1585,7 @@ public class Chord
      */
     private void computeLocations ()
     {
-        System system = getSystem();
+        ScoreSystem system = getSystem();
 
         // Find the note farthest from stem middle point
         if (getNotes()

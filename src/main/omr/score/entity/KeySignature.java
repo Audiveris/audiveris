@@ -24,10 +24,11 @@ import omr.score.visitor.ScoreVisitor;
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
-import omr.util.Logger;
+import omr.log.Logger;
 import omr.util.TreeNode;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Class <code>KeySignature</code> encapsulates a key signature, which may be
@@ -79,7 +80,13 @@ public class KeySignature
                                                      B, E, A, D, G, C, F
                                                  };
 
+    /** Unique Id (for debugging) */
+    private static AtomicInteger globalId = new AtomicInteger(0);
+
     //~ Instance fields --------------------------------------------------------
+
+    /** Unique Id (debugging) */
+    private final int id;
 
     /** Precise key signature. 0 for none, +n for n sharps, -n for n flats */
     private Integer key;
@@ -121,9 +128,10 @@ public class KeySignature
     {
         super(measure);
         setStaff(staff);
+        id = newId();
 
         if (logger.isFineEnabled()) {
-            logger.fine(getContextString() + " KeySignature created");
+            logger.fine(getContextString() + " KeySignature created: " + this);
         }
     }
 
@@ -143,6 +151,7 @@ public class KeySignature
     {
         super(measure);
         setStaff(staff);
+        id = newId();
         key = other.getKey();
         pitchPosition = other.getPitchPosition();
         shape = other.getShape();
@@ -152,12 +161,19 @@ public class KeySignature
         setCenter(new SystemPoint(other.getCenter().x, 0));
 
         if (logger.isFineEnabled()) {
-            logger.fine(
-                getContextString() + " KeySignature created by cloning");
+            logger.fine(getContextString() + " KeySignature cloned: " + this);
         }
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-------//
+    // newId //
+    //-------//
+    private static int newId ()
+    {
+        return globalId.incrementAndGet();
+    }
 
     //-------------//
     // getAlterFor //
@@ -291,7 +307,7 @@ public class KeySignature
             logger.fine("Populating keysig for " + glyph);
         }
 
-        System         system = measure.getSystem();
+        ScoreSystem         system = measure.getSystem();
         SystemInfo     systemInfo = system.getInfo();
 
         // Make sure we have no note nearby
@@ -400,18 +416,21 @@ public class KeySignature
     public String toString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("{KeySignature");
+        sb.append("{KeySignature#")
+          .append(id);
 
         try {
             sb.append(" key=")
               .append(key);
             sb.append(" center=")
               .append(getCenter());
+            sb.append(" contour=")
+              .append(getContour());
             sb.append(" pitch=")
               .append(getPitchPosition());
             sb.append(Glyph.toString(glyphs));
         } catch (Exception e) {
-            sb.append(" INVALID");
+            sb.append("INVALID");
         }
 
         sb.append("}");
@@ -430,7 +449,7 @@ public class KeySignature
      * @param system the system to be verified
      */
     @SuppressWarnings("unchecked")
-    public static void verifySystemKeys (System system)
+    public static void verifySystemKeys (ScoreSystem system)
     {
         ///logger.info("verifySystemKeys for " + system);
 
@@ -574,7 +593,7 @@ public class KeySignature
                             try {
                                 ks.copyKey(keysig);
                             } catch (Exception ex) {
-                                ///logger.warning("Cannot copy key", ex);
+                                logger.warning("Cannot copy key", ex);
                                 ks.addError("Cannot copy key");
                             }
 
@@ -630,7 +649,7 @@ public class KeySignature
     //------------------//
     // getContextString //
     //------------------//
-    private static String getContextString (System system,
+    private static String getContextString (ScoreSystem system,
                                             int    measureIndex,
                                             int    systemStaffIndex)
     {
@@ -642,7 +661,7 @@ public class KeySignature
     //--------------//
     // getMeasureOf //
     //--------------//
-    private static Measure getMeasureOf (System system,
+    private static Measure getMeasureOf (ScoreSystem system,
                                          int    staffIndex,
                                          int    measureIndex)
     {
@@ -694,7 +713,7 @@ public class KeySignature
     //---------//
     // staffOf //
     //---------//
-    private static Staff staffOf (System system,
+    private static Staff staffOf (ScoreSystem system,
                                   int    systemStaffIndex)
     {
         int staffOffset = 0;
@@ -811,6 +830,10 @@ public class KeySignature
      */
     private void addGlyph (Glyph glyph)
     {
+        if (logger.isFineEnabled()) {
+            logger.fine(this + " addGlyph " + glyph);
+        }
+
         glyphs.add(glyph);
         reset();
     }
@@ -924,12 +947,13 @@ public class KeySignature
 
         // Beware of different clef kinds. What if we ignore a clef?
         Measure measure = getMeasure();
-        Clef    clef = measure.getClefBefore(getCenter());
-        Shape   kind = getClefKind(clef.getShape());
+        Clef    clef = measure.getClefBefore(ks.getCenter(), getStaff());
+        Shape   kind = (clef != null) ? getClefKind(clef.getShape())
+                       : Shape.G_CLEF;
 
         Measure ms = ks.getMeasure();
         Clef    c = ms.getClefBefore(ks.getCenter());
-        Shape   k = getClefKind(c.getShape());
+        Shape   k = (c != null) ? getClefKind(c.getShape()) : Shape.G_CLEF;
 
         int     delta = clefToDelta(kind) - clefToDelta(k);
 

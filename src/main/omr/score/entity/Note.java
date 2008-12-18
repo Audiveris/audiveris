@@ -25,7 +25,7 @@ import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
 
-import omr.util.Logger;
+import omr.log.Logger;
 import omr.util.TreeNode;
 
 import java.util.*;
@@ -64,11 +64,11 @@ public class Note
 
 
         /** La */ A,
-        /** Si */ B, 
-        /** Do */ C, 
-        /** Re */ D, 
-        /** Mi */ E, 
-        /** Fa */ F, 
+        /** Si */ B,
+        /** Do */ C,
+        /** Re */ D,
+        /** Mi */ E,
+        /** Fa */ F,
         /** Sol */ G;
     }
 
@@ -116,8 +116,8 @@ public class Note
     /** Tie / slurs */
     private List<Slur> slurs = new ArrayList<Slur>();
 
-    /** Lyric syllables (in different lines) */
-    private SortedSet<LyricItem> syllables;
+    /** Lyrics syllables (in different lines) */
+    private SortedSet<LyricsItem> syllables;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -269,7 +269,7 @@ public class Note
     //--------------//
     // getSyllables //
     //--------------//
-    public SortedSet<LyricItem> getSyllables ()
+    public SortedSet<LyricsItem> getSyllables ()
     {
         return syllables;
     }
@@ -340,10 +340,10 @@ public class Note
     //-------------//
     // addSyllable //
     //-------------//
-    public void addSyllable (LyricItem item)
+    public void addSyllable (LyricsItem item)
     {
         if (syllables == null) {
-            syllables = new TreeSet<LyricItem>(LyricItem.numberComparator);
+            syllables = new TreeSet<LyricsItem>(LyricsItem.numberComparator);
         }
 
         syllables.add(item);
@@ -717,7 +717,7 @@ public class Note
         final Set<Note> candidates = new HashSet<Note>();
 
         // An accidental impacts the note right after (even if duplicated)
-        ChordLoop: 
+        ChordLoop:
         for (TreeNode node : measure.getChords()) {
             final Chord chord = (Chord) node;
 

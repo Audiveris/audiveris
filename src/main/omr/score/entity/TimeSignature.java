@@ -20,7 +20,7 @@ import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
 
-import omr.util.Logger;
+import omr.log.Logger;
 
 import java.util.*;
 import java.util.logging.Level;

@@ -15,7 +15,7 @@ import omr.glyph.Shape;
 import omr.score.common.SystemPoint;
 import omr.score.visitor.ScoreVisitor;
 
-import omr.util.Logger;
+import omr.log.Logger;
 
 /**
  * Class <code>Clef</code> encapsulates a clef.

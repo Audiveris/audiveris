@@ -23,7 +23,7 @@ import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
 
-import omr.util.Logger;
+import omr.log.Logger;
 import omr.util.Predicate;
 import omr.util.TreeNode;
 
@@ -304,7 +304,7 @@ public class Slur
      * @param system The system which will contain the allocated Slur
      */
     public static void populate (Glyph  glyph,
-                                 System system)
+                                 ScoreSystem system)
     {
         if (logger.isFineEnabled()) {
             logger.fine("Populating slur glyph#" + glyph.getId());
@@ -594,7 +594,7 @@ public class Slur
      * @return the resulting curve
      */
     private static CubicCurve2D computeCurve (Circle circle,
-                                              System system)
+                                              ScoreSystem system)
     {
         CubicCurve2D pixelCurve = circle.getCurve();
         SystemPoint  p1 = system.toSystemPoint(
@@ -701,7 +701,7 @@ public class Slur
      * @param rightNodes output: the ordered list of notes found on right side
      * @return true if the placement is 'below'
      */
-    private static boolean retrieveEmbracedNotes (System            system,
+    private static boolean retrieveEmbracedNotes (ScoreSystem            system,
                                                   CubicCurve2D      curve,
                                                   List<MeasureNode> leftNodes,
                                                   List<MeasureNode> rightNodes)

@@ -13,7 +13,7 @@ import omr.score.visitor.ScoreVisitor;
 import omr.score.visitor.Visitable;
 
 import omr.util.Implement;
-import omr.util.Logger;
+import omr.log.Logger;
 import omr.util.TreeNode;
 
 /**

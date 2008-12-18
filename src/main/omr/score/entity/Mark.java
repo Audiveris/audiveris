@@ -12,7 +12,7 @@ package omr.score.entity;
 import omr.glyph.Shape;
 
 import omr.score.common.SystemPoint;
-import omr.score.entity.System;
+import omr.score.entity.ScoreSystem;
 
 /**
  * Class <code>Mark</code> encapsulates information to be made visible to the
@@ -39,7 +39,7 @@ public class Mark
     //~ Instance fields --------------------------------------------------------
 
     /** Containing system */
-    private final System system;
+    private final ScoreSystem system;
 
     /** Precise location within system */
     private final SystemPoint location;
@@ -66,7 +66,7 @@ public class Mark
      * @param shape symbol shape to be used
      * @param data related data or null
      */
-    public Mark (System      system,
+    public Mark (ScoreSystem      system,
                  SystemPoint location,
                  Position    position,
                  Shape       shape,
@@ -141,7 +141,7 @@ public class Mark
      *
      * @return the containing system
      */
-    public System getSystem ()
+    public ScoreSystem getSystem ()
     {
         return system;
     }

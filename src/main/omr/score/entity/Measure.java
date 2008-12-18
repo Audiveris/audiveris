@@ -15,7 +15,7 @@ import omr.score.common.SystemPoint;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
 import omr.score.visitor.ScoreVisitor;
 
-import omr.util.Logger;
+import omr.log.Logger;
 import omr.util.TreeNode;
 
 import java.util.*;
@@ -322,11 +322,29 @@ public class Measure
      */
     public Clef getClefBefore (SystemPoint point)
     {
-        // Which staff we are in
+        return getClefBefore(point, null);
+    }
+
+    //---------------//
+    // getClefBefore //
+    //---------------//
+    /**
+     * Same functionally than the other method, but with a staff provided
+     *
+     * @param point the point before which to look
+     * @param staff the containing staff (if null, it is derived from center.y)
+     * @return the latest clef defined, or null
+     */
+    public Clef getClefBefore (SystemPoint point,
+                               Staff       staff)
+    {
         Clef clef = null;
-        int  staffId = getPart()
-                           .getStaffAt(point)
-                           .getId();
+
+        // Which staff we are in
+        int staffId = (staff != null) ? staff.getId()
+                      : getPart()
+                            .getStaffAt(point)
+                            .getId();
 
         // Look in this measure, with same staff, going backwards
         for (int ic = getClefs()
@@ -689,6 +707,10 @@ public class Measure
      */
     public KeySignature getKeyBefore (SystemPoint point)
     {
+        if (point == null) {
+            throw new NullPointerException();
+        }
+
         KeySignature ks = null;
         int          staffId = getPart()
                                    .getStaffAt(point)
@@ -1201,7 +1223,7 @@ public class Measure
      *
      * @param system the system to inspect
      */
-    public static void checkPartialMeasures (System system)
+    public static void checkPartialMeasures (ScoreSystem system)
     {
         // Use a loop on measures, across system parts
         final int imMax = system.getFirstRealPart()

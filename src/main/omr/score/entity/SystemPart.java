@@ -14,7 +14,7 @@ import omr.score.common.ScorePoint;
 import omr.score.common.SystemPoint;
 import omr.score.visitor.ScoreVisitor;
 
-import omr.util.Logger;
+import omr.log.Logger;
 import omr.util.Predicate;
 import omr.util.TreeNode;
 
@@ -52,7 +52,7 @@ public class SystemPart
     /** Specific child : list of slurs */
     private final Container slurs;
 
-    /** Specific child : list of lyric lines */
+    /** Specific child : list of lyrics lines */
     private final Container lyrics;
 
     /** Specific child : list of text items */
@@ -74,7 +74,7 @@ public class SystemPart
      *
      * @param system the containing system
      */
-    public SystemPart (System system)
+    public SystemPart (ScoreSystem system)
     {
         super(system);
 
@@ -137,7 +137,7 @@ public class SystemPart
     //--------------//
     public SystemPart getFollowing ()
     {
-        System nextSystem = (System) getSystem()
+        ScoreSystem nextSystem = (ScoreSystem) getSystem()
                                          .getNextSibling();
 
         if (nextSystem != null) {
@@ -300,7 +300,7 @@ public class SystemPart
      */
     public SystemPart getPreceding ()
     {
-        System prevSystem = (System) getSystem()
+        ScoreSystem prevSystem = (ScoreSystem) getSystem()
                                          .getPreviousSibling();
 
         if (prevSystem != null) {
@@ -455,9 +455,9 @@ public class SystemPart
      * @return the containing system
      */
     @Override
-    public System getSystem ()
+    public ScoreSystem getSystem ()
     {
-        return (System) getParent();
+        return (ScoreSystem) getParent();
     }
 
     //----------//
@@ -495,7 +495,7 @@ public class SystemPart
             measures.addChild(node);
         } else if (node instanceof Slur) {
             slurs.addChild(node);
-        } else if (node instanceof LyricLine) {
+        } else if (node instanceof LyricsLine) {
             lyrics.addChild(node);
         } else if (node instanceof Text) {
             texts.addChild(node);
@@ -558,7 +558,7 @@ public class SystemPart
         SystemPart nextPart = null;
 
         do {
-            System nextSystem = (System) getSystem()
+            ScoreSystem nextSystem = (ScoreSystem) getSystem()
                                              .getNextSibling();
 
             if (nextSystem != null) {
@@ -684,26 +684,26 @@ public class SystemPart
     public void mapSyllables ()
     {
         for (TreeNode node : getLyrics()) {
-            LyricLine line = (LyricLine) node;
+            LyricsLine line = (LyricsLine) node;
             line.mapSyllables();
         }
     }
 
-    //--------------------//
-    // populateLyricLines //
-    //--------------------//
+    //---------------------//
+    // populateLyricsLines //
+    //---------------------//
     /**
-     * Organize the various lyric items in aligned lyric lines
+     * Organize the various lyrics items in aligned lyrics lines
      */
-    public void populateLyricLines ()
+    public void populateLyricsLines ()
     {
-        // Create the lyric lines as needed
+        // Create the lyrics lines as needed
         for (TreeNode tn : getTexts()) {
             Text text = (Text) tn;
 
-            if (text instanceof LyricItem) {
-                LyricItem item = (LyricItem) text;
-                LyricLine.populate(item, this);
+            if (text instanceof LyricsItem) {
+                LyricsItem item = (LyricsItem) text;
+                LyricsLine.populate(item, this);
             }
         }
 
@@ -714,15 +714,15 @@ public class SystemPart
                     public int compare (TreeNode tn1,
                                         TreeNode tn2)
                     {
-                        LyricLine l1 = (LyricLine) tn1;
-                        LyricLine l2 = (LyricLine) tn2;
+                        LyricsLine l1 = (LyricsLine) tn1;
+                        LyricsLine l2 = (LyricsLine) tn2;
 
                         return Integer.signum(l1.getY() - l2.getY());
                     }
                 });
 
         for (TreeNode node : getLyrics()) {
-            LyricLine line = (LyricLine) node;
+            LyricsLine line = (LyricsLine) node;
             line.setId(lyrics.getChildren().indexOf(line) + 1);
             line.setStaff(
                 getSystem().getStaffAbove(new SystemPoint(0, line.getY())));
@@ -733,13 +733,13 @@ public class SystemPart
     // refineLyricSyllables //
     //----------------------//
     /**
-     * Determine for each lyric item of syllable kind, its precise syllabic type
+     * Determine for each lyrics item of syllable kind, its precise syllabic type
      * (single, of part of a longer word)
      */
     public void refineLyricSyllables ()
     {
         for (TreeNode node : getLyrics()) {
-            LyricLine line = (LyricLine) node;
+            LyricsLine line = (LyricsLine) node;
             line.refineLyricSyllables();
         }
     }
@@ -766,7 +766,7 @@ public class SystemPart
             Collections.sort(precedingOrphans, Slur.verticalComparator);
 
             // Connect the orphans as much as possible
-            SlurLoop: 
+            SlurLoop:
             for (Slur slur : orphans) {
                 for (Slur prevSlur : precedingOrphans) {
                     if (slur.canExtend(prevSlur)) {

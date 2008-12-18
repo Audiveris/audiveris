@@ -37,7 +37,7 @@ public abstract class SystemNode
     //~ Instance fields --------------------------------------------------------
 
     /** Containing system */
-    private System system;
+    private ScoreSystem system;
 
     /** Location of the center of this entity WRT system top-left corner */
     private SystemPoint center;
@@ -58,8 +58,8 @@ public abstract class SystemNode
 
         // Set the system link
         for (TreeNode c = this; c != null; c = c.getParent()) {
-            if (c instanceof System) {
-                system = (System) c;
+            if (c instanceof ScoreSystem) {
+                system = (ScoreSystem) c;
 
                 if (c != this) {
                     system.setDirty();
@@ -138,7 +138,7 @@ public abstract class SystemNode
      *
      * @return the containing system
      */
-    public System getSystem ()
+    public ScoreSystem getSystem ()
     {
         return system;
     }
@@ -245,7 +245,7 @@ public abstract class SystemNode
             rect.x + (rect.width / 2),
             rect.y + (rect.height / 2));
 
-        System     s = getSystem();
+        ScoreSystem     s = getSystem();
 
         return (s == null) ? null : s.toSystemPoint(pixPt);
     }

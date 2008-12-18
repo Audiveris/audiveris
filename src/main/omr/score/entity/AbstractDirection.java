@@ -13,7 +13,7 @@ import omr.glyph.Glyph;
 
 import omr.score.common.SystemPoint;
 
-import omr.util.Logger;
+import omr.log.Logger;
 
 /**
  * Class <code>Direction</code> is the basis for all variants of direction

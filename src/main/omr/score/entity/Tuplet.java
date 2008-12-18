@@ -16,7 +16,7 @@ import omr.score.common.DurationFactor;
 import omr.score.common.SystemPoint;
 import omr.score.visitor.ScoreVisitor;
 
-import omr.util.Logger;
+import omr.log.Logger;
 import omr.util.TreeNode;
 
 import java.util.SortedSet;

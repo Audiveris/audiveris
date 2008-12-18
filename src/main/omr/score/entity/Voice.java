@@ -13,7 +13,7 @@ import omr.glyph.Shape;
 
 import omr.score.common.SystemPoint;
 
-import omr.util.Logger;
+import omr.log.Logger;
 
 import java.util.Map;
 import java.util.SortedMap;

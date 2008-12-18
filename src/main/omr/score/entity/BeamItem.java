@@ -22,7 +22,7 @@ import omr.score.common.SystemPoint;
 import omr.stick.Stick;
 
 import omr.util.Implement;
-import omr.util.Logger;
+import omr.log.Logger;
 
 import java.util.Collection;
 
@@ -110,7 +110,7 @@ public class BeamItem
         this.packIndex = packIndex;
 
         // Location of left and right points
-        System         system = measure.getSystem();
+        ScoreSystem         system = measure.getSystem();
         Stick          stick = (Stick) glyph;
         PixelRectangle box = stick.getContourBox();
         double         yMidLeft = stick.getLine()

@@ -22,7 +22,7 @@ import omr.score.ui.ScoreConstants;
 
 import omr.sheet.Scale;
 
-import omr.util.Logger;
+import omr.log.Logger;
 import omr.util.TreeNode;
 
 import java.util.*;
@@ -332,7 +332,7 @@ public class Slot
     //-----------------//
     // dumpSystemSlots //
     //-----------------//
-    public static void dumpSystemSlots (System system)
+    public static void dumpSystemSlots (ScoreSystem system)
     {
         // Dump all measure slots
         logger.fine(system.toString());

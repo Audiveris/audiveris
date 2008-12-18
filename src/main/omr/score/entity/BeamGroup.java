@@ -14,7 +14,7 @@ import omr.constant.ConstantSet;
 
 import omr.score.common.SystemPoint;
 
-import omr.util.Logger;
+import omr.log.Logger;
 import omr.util.TreeNode;
 
 import java.util.ArrayList;

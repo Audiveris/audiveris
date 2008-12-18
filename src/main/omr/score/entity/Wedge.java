@@ -17,7 +17,7 @@ import omr.score.common.PixelRectangle;
 import omr.score.common.SystemPoint;
 import omr.score.visitor.ScoreVisitor;
 
-import omr.util.Logger;
+import omr.log.Logger;
 
 /**
  * Class <code>Wedge</code> represents a crescendo or decrescendo (diminuendo)
@@ -110,7 +110,7 @@ public class Wedge
                                  Measure     startingMeasure,
                                  SystemPoint startingPoint)
     {
-        System         system = startingMeasure.getSystem();
+        ScoreSystem         system = startingMeasure.getSystem();
         SystemPart     part = startingMeasure.getPart();
         PixelRectangle box = glyph.getContourBox();
 

@@ -9,7 +9,7 @@
 //
 package omr.score.entity;
 
-import omr.glyph.Sentence;
+import omr.glyph.text.Sentence;
 
 import omr.score.common.SystemPoint;
 import omr.score.visitor.ScoreVisitor;

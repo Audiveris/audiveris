@@ -12,13 +12,13 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
-import omr.glyph.Sentence;
+import omr.glyph.text.Sentence;
 
 import omr.score.common.SystemPoint;
 import omr.score.common.SystemRectangle;
 import omr.score.visitor.ScoreVisitor;
 
-import omr.util.Logger;
+import omr.log.Logger;
 
 import java.awt.Font;
 
@@ -26,12 +26,12 @@ import java.awt.Font;
  * Class <code>Text</code> handles any textual score entity.
  *
  * <p><b>Nota</b>: There is exactly one Text entity per sentence, except for
- * lyric items for which we build one LyricItem (subclass of Text) for each
+ * lyrics items for which we build one LyricsItem (subclass of Text) for each
  * textual glyph. The reason is that, except for lyrics, only the full sentence
  * is meaningful: for example "Ludwig van Beethoven" is meaningful as a Creator
  * Text, but the various glyphs "Ludwig", "van", "Beethoven" are not.
  * For lyrics, since we can have very long sentences, and since the positioning
- * of every syllable must done with precision, we handle one LyricItem Text
+ * of every syllable must done with precision, we handle one LyricsItem Text
  * entity per isolated textual glyph.</p>
  *
  * <p>Working at the sentence level also allows a better accuracy in the setting
@@ -55,11 +55,11 @@ public abstract class Text
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Text.class);
 
-    /** The font used for text entities */
-    protected static Font textFont = new Font(
-        constants.textFontName.getValue(),
+    /** The basic font used for text entities */
+    protected static Font lyricsFont = new Font(
+        constants.lyricsFontName.getValue(),
         Font.PLAIN,
-        constants.textFontSize.getValue());
+        constants.lyricsFontSize.getValue());
 
     //~ Instance fields --------------------------------------------------------
 
@@ -72,8 +72,8 @@ public abstract class Text
     /** The bounding box of the content in the score */
     protected final SystemRectangle box;
 
-    /** The font to display this text entity */
-    protected Font displayFont;
+    /** The font to render this text entity */
+    protected Font font;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -110,7 +110,7 @@ public abstract class Text
         box = sentence.getSystemContour();
 
         // Proper font
-        determineActualFont();
+        determineFontSize();
 
         if (logger.isFineEnabled()) {
             logger.fine("Created " + this);
@@ -137,17 +137,18 @@ public abstract class Text
         return str;
     }
 
-    //--------------------//
-    // getDefaultFontSize //
-    //--------------------//
+    //-------------------//
+    // getLyricsFontSize //
+    //-------------------//
     /**
      * Report the font size to be exported for the lyrics
      *
-     * @return the exported lyric font size
+     * @return the exported lyrics font size
      */
-    public static int getDefaultFontSize ()
+    public static int getLyricsFontSize ()
     {
-        return (int) Math.rint(textFont.getSize2D() / 1.8);
+        //        return (int) Math.rint(lyricsFont.getSize2D() / 1.8);
+        return lyricsFont.getSize();
     }
 
     //-------------//
@@ -160,7 +161,8 @@ public abstract class Text
      */
     public int getFontSize ()
     {
-        return (int) Math.rint(displayFont.getSize2D() / 1.8);
+        //        return (int) Math.rint(font.getSize2D() / 1.8);
+        return font.getSize();
     }
 
     //-------------//
@@ -176,16 +178,16 @@ public abstract class Text
         return location;
     }
 
-    //--------------//
-    // getLyricFont //
-    //--------------//
+    //---------------//
+    // getLyricsFont //
+    //---------------//
     /**
-     * Report the font to be used for handling text
-     * @return the default text font
+     * Report the font to be used for handling lyrics text
+     * @return the lyrics text font
      */
-    public static Font getLyricFont ()
+    public static Font getLyricsFont ()
     {
-        return textFont;
+        return lyricsFont;
     }
 
     //-------------//
@@ -233,7 +235,7 @@ public abstract class Text
      * <li>a part Number</li>
      * <li>a Creator</li>
      * <li>a Copyright</li>
-     * <li>one or several LyricItem entities</li>
+     * <li>one or several LyricsItem entities</li>
      *
      * @param sentence the whole sentence
      * @param location its starting reference wrt containing system
@@ -242,7 +244,7 @@ public abstract class Text
                                  SystemPoint location)
     {
         final SystemPart systemPart = sentence.getSystemPart();
-        final System     system = systemPart.getSystem();
+        final ScoreSystem     system = systemPart.getSystem();
 
         if (sentence.getTextType() == null) {
             systemPart.addError(
@@ -261,11 +263,12 @@ public abstract class Text
         switch (sentence.getTextType()) {
         case Lyrics :
 
-            // Create as many lyric items as needed
+            // Create as many lyrics items as needed
             for (Glyph item : sentence.getGlyphs()) {
                 SystemRectangle itemBox = system.toSystemRectangle(
                     item.getContourBox());
-                String          itemStr = item.getTextContent();
+                String          itemStr = item.getTextInfo()
+                                              .getContent();
 
                 if (itemStr == null) {
                     int nbChar = (int) Math.rint(
@@ -274,7 +277,7 @@ public abstract class Text
                                       .getStringHolder(nbChar);
                 }
 
-                LyricItem.createLyricItems(
+                LyricsItem.createLyricsItems(
                     sentence,
                     item,
                     new SystemPoint(itemBox.x, location.y),
@@ -327,17 +330,17 @@ public abstract class Text
         }
     }
 
-    //----------------//
-    // getDisplayFont //
-    //----------------//
+    //---------//
+    // getFont //
+    //---------//
     /**
-     * Report the font to be used for score display
+     * Report the font to render this text
      *
-     * @return properly defined and sized font for score display
+     * @return the font to render this text
      */
-    public Font getDisplayFont ()
+    public Font getFont ()
     {
-        return displayFont;
+        return font;
     }
 
     //----------//
@@ -373,16 +376,16 @@ public abstract class Text
         return sb.toString();
     }
 
-    //---------------------//
-    // determineActualFont //
-    //---------------------//
+    //-------------------//
+    // determineFontSize //
+    //-------------------//
     /**
      * Determine the proper font size
      */
-    protected void determineActualFont ()
+    protected void determineFontSize ()
     {
-        displayFont = textFont.deriveFont(
-            new Float(0.95f * sentence.getTextHeight()));
+        float size = (float) Math.rint(1.9f * sentence.getTextHeight());
+        font = lyricsFont.deriveFont(size);
     }
 
     //-----------------//
@@ -561,12 +564,12 @@ public abstract class Text
     {
         //~ Instance fields ----------------------------------------------------
 
-        Constant.Integer textFontSize = new Constant.Integer(
+        Constant.Integer lyricsFontSize = new Constant.Integer(
             "points",
-            17,
+            30,
             "Standard font point size for lyrics");
-        Constant.String  textFontName = new Constant.String(
-            "Sans Serif",
+        Constant.String  lyricsFontName = new Constant.String(
+            "Serif", //"Sans Serif",
             "Standard font name for lyrics");
     }
 }

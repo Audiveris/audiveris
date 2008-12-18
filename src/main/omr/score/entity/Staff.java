@@ -18,7 +18,7 @@ import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.StaffInfo;
 
-import omr.util.Logger;
+import omr.log.Logger;
 
 /**
  * Class <code>Staff</code> handles a staff in a system part. It is useful for
