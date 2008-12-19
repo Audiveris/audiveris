@@ -116,6 +116,10 @@ public class GlyphInspector
     //-------------------------//
     // getMinCompoundPartDoubt //
     //-------------------------//
+    /**
+     * Report the minimum doubt value to be considered as part of a compound
+     * @return the doubt threshold for a compound part
+     */
     public static double getMinCompoundPartDoubt ()
     {
         return constants.minCompoundPartDoubt.getValue();

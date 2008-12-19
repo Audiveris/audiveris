@@ -118,7 +118,7 @@ public class ScoreExporter
     /** Potential range of selected measures */
     private MeasureRange measureRange;
 
-    /** Factory for ^roxymusic entities */
+    /** Factory for proxymusic entities */
     private final proxymusic.ObjectFactory factory = new proxymusic.ObjectFactory();
 
     //~ Constructors -----------------------------------------------------------
@@ -145,6 +145,9 @@ public class ScoreExporter
     //---------//
     // preload //
     //---------//
+    /**
+     * Empty static method, just to trigger class elaboration
+     */
     public static void preload ()
     {
     }

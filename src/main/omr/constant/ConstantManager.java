@@ -232,6 +232,7 @@ public class ConstantManager
     /**
      * Register a brand new constant with a provided name to retrieve
      * a predefined value loaded from disk backup if any
+     * @param qName the constant qualified name
      * @param constant the Constant instance to register
      * @return the loaded value if any, otherwise null
      */

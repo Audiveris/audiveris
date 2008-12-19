@@ -181,7 +181,7 @@ public class UnitModel
      * the parent's child array.
      *
      * @param parent a node in the tree, obtained from this data source
-     *
+     * @param i the child index in parent sequence
      * @return the child of <code>parent</code> at index <code>index</code>
      */
     public Object getChild (Object parent,

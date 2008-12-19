@@ -269,6 +269,7 @@ public abstract class Check<C extends Checkable>
      * allow the sanity check of 'low' less than or equal to 'high'
      *
      * @param low the new low value
+     * @param high the new high value
      */
     public void setLowHigh (Constant.Double low,
                             Constant.Double high)

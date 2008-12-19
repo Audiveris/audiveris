@@ -268,6 +268,8 @@ public class UnitManager
      * simply extracting names stored at previous runs. This will load the
      * classes not already loaded. This method is meant to be used by the UI
      * which let the user browse and modify the whole collection of constants.
+     *
+     * @param main the application main class name
      */
     public void preLoadUnits (String main)
     {

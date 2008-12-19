@@ -122,14 +122,6 @@ public class GlyphModel
         return latestShapeAssigned;
     }
 
-    //----------//
-    // getSheet //
-    //----------//
-    public Sheet getSheet ()
-    {
-        return sheet;
-    }
-
     //--------------------//
     // getLocationService //
     //--------------------//
@@ -141,8 +133,7 @@ public class GlyphModel
      */
     public EventService getLocationService ()
     {
-        return getSheet()
-                   .getEventService();
+        return sheet.getEventService();
     }
 
     //------------------//

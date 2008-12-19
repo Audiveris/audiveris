@@ -24,7 +24,7 @@ import java.util.Collection;
  * Class <code>CheckBoard</code> defines a board dedicated to the display of
  * check result information.
  *
- * @param C the specific {@link Checkable} type of object to be checked
+ * @param <C> The {@link Checkable} entity type to be checked
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$

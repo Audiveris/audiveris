@@ -1312,6 +1312,7 @@ public class Glyph
      * Convenient method, to build a string with just the ids of the glyph
      * collection, introduced by the provided label
      *
+     * @param label the string that introduces the list of IDs
      * @param glyphs the collection of glyphs
      * @return the string built
      */
@@ -1438,6 +1439,10 @@ public class Glyph
     //-------------//
     // getTextInfo //
     //-------------//
+    /**
+     * Report the textual information for this glyph
+     * @return the glyph textual info, or null if none
+     */
     public TextInfo getTextInfo ()
     {
         if (textInfo == null) {

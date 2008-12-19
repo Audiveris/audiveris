@@ -133,6 +133,11 @@ public abstract class Constant
     //------------------//
     // getDefaultString //
     //------------------//
+    /**
+     * Report the constant default string
+     *
+     * @return the default string
+     */
     public java.lang.String getDefaultString ()
     {
         return defaultString;
