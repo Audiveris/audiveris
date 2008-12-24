@@ -73,6 +73,6 @@ public class GlyphSetEvent
     @Override
     protected String internalString ()
     {
-        return " " + Glyph.toString(glyphs);
+        return Glyph.toString(glyphs);
     }
 }

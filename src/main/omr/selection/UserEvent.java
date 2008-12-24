@@ -9,6 +9,9 @@
 //
 package omr.selection;
 
+import omr.log.Logger;
+
+import omr.util.ClassUtil;
 
 /**
  * Interface <code>UserEvent</code> defines the common behavior of user events
@@ -49,6 +52,11 @@ package omr.selection;
  */
 public abstract class UserEvent
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(UserEvent.class);
+
     //~ Instance fields --------------------------------------------------------
 
     /** The entity which created this event */
@@ -83,6 +91,9 @@ public abstract class UserEvent
         this.source = source;
         this.hint = hint;
         this.movement = movement;
+
+//        logger.warning(
+//            ClassUtil.nameOf(this) + " created by:" + source);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -104,7 +115,7 @@ public abstract class UserEvent
     {
         StringBuilder sb = new StringBuilder("{");
         sb.append(getClass().getSimpleName());
-        sb.append(" ")
+        sb.append(" src:")
           .append(source);
 
         if (hint != null) {

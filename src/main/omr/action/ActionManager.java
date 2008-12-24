@@ -12,6 +12,7 @@ import omr.Main;
 
 import omr.log.Logger;
 
+import omr.selection.MouseMovement;
 import omr.selection.SheetEvent;
 
 import omr.sheet.Sheet;
@@ -257,6 +258,11 @@ public class ActionManager
     @Implement(EventSubscriber.class)
     public void onEvent (SheetEvent sheetEvent)
     {
+        // Ignore RELEASING
+        if (sheetEvent.movement == MouseMovement.RELEASING) {
+            return;
+        }
+
         final Sheet sheet = sheetEvent.getData();
         enableSheetActions(sheet != null);
         enableScoreActions((sheet != null) && (sheet.getScore() != null));

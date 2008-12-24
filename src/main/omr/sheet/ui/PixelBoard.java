@@ -132,6 +132,11 @@ public class PixelBoard
     @Implement(EventSubscriber.class)
     public void onEvent (UserEvent event)
     {
+        // Ignore RELEASING
+        if (event.movement == MouseMovement.RELEASING) {
+            return;
+        }
+
         if (logger.isFineEnabled()) {
             logger.fine("PixelBoard: " + event);
         }

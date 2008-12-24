@@ -11,6 +11,7 @@ package omr.sheet.ui;
 
 import omr.log.Logger;
 
+import omr.selection.MouseMovement;
 import omr.selection.SheetEvent;
 
 import omr.sheet.Sheet;
@@ -98,6 +99,11 @@ public abstract class SheetDependent
     @Implement(EventSubscriber.class)
     public void onEvent (SheetEvent event)
     {
+        // Ignore RELEASING
+        if (event.movement == MouseMovement.RELEASING) {
+            return;
+        }
+
         Sheet sheet = event.getData();
         setSheetAvailable(sheet != null);
     }

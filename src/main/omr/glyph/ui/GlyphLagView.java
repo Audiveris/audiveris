@@ -31,6 +31,7 @@ import omr.script.ScriptRecording;
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphIdEvent;
 import omr.selection.GlyphSetEvent;
+import omr.selection.MouseMovement;
 import omr.selection.SectionEvent;
 import omr.selection.SectionIdEvent;
 import omr.selection.SelectionHint;
@@ -245,7 +246,14 @@ public class GlyphLagView
     @SuppressWarnings("unchecked")
     public void onEvent (UserEvent event)
     {
-        ///logger.info(getName() + " update. " + selection + " hint=" + hint);
+        // Ignore RELEASING
+        if (event.movement == MouseMovement.RELEASING) {
+            return;
+        }
+
+        //        logger.info(
+        //            "GlyphLagView/" + getClass().getSimpleName() + " " + getName() +
+        //            ":" + event);
 
         // Default lag view behavior, including specifics
         super.onEvent(event);

@@ -14,6 +14,7 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
+import omr.selection.MouseMovement;
 import omr.selection.SectionEvent;
 import omr.selection.SectionIdEvent;
 import omr.selection.SelectionHint;
@@ -230,6 +231,11 @@ public class SectionBoard
     @Implement(EventSubscriber.class)
     public void onEvent (UserEvent event)
     {
+        // Ignore RELEASING
+        if (event.movement == MouseMovement.RELEASING) {
+            return;
+        }
+
         if (logger.isFineEnabled()) {
             logger.fine("SectionBoard: " + event);
         }

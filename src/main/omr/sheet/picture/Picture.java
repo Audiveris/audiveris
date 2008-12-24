@@ -17,6 +17,7 @@ import omr.lag.PixelSource;
 
 import omr.log.Logger;
 
+import omr.selection.MouseMovement;
 import omr.selection.PixelLevelEvent;
 import omr.selection.SheetLocationEvent;
 
@@ -639,6 +640,11 @@ public class Picture
     @Implement(EventSubscriber.class)
     public void onEvent (SheetLocationEvent event)
     {
+        // Ignore RELEASING
+        if (event.movement == MouseMovement.RELEASING) {
+            return;
+        }
+
         Integer   level = null;
 
         // Compute and forward pixel gray level

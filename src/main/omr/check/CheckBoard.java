@@ -9,6 +9,7 @@
 //
 package omr.check;
 
+import omr.selection.MouseMovement;
 import omr.selection.UserEvent;
 
 import omr.ui.Board;
@@ -98,6 +99,11 @@ public class CheckBoard<C extends Checkable>
     @SuppressWarnings("unchecked")
     public void onEvent (UserEvent event)
     {
+        // Ignore RELEASING
+        if (event.movement == MouseMovement.RELEASING) {
+            return;
+        }
+
         tellObject((C) event.getData()); // Compiler warning
     }
 

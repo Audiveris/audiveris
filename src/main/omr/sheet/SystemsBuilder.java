@@ -39,6 +39,7 @@ import omr.script.ScriptRecording;
 import static omr.script.ScriptRecording.*;
 
 import omr.selection.GlyphEvent;
+import omr.selection.MouseMovement;
 import omr.selection.SelectionHint;
 import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
@@ -573,6 +574,11 @@ public class SystemsBuilder
         @Override
         public void onEvent (UserEvent event)
         {
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
+                return;
+            }
+
             if (event instanceof GlyphEvent) {
                 BarsChecker.GlyphContext context = null;
                 GlyphEvent               glyphEvent = (GlyphEvent) event;
@@ -651,40 +657,40 @@ public class SystemsBuilder
         public void onEvent (UserEvent event)
         {
             // Default lag view behavior, including specifics
-            super.onEvent(event);
+            if (event.movement != MouseMovement.RELEASING) {
+                super.onEvent(event);
+            }
 
             if (event instanceof SheetLocationEvent) {
                 // Update system boundary?
                 SheetLocationEvent sheetLocation = (SheetLocationEvent) event;
 
-                if (sheetLocation != null) {
-                    ///logger.info(sheetLocation.toString());
-                    if (sheetLocation.hint == SelectionHint.LOCATION_ADD) {
-                        Rectangle rect = sheetLocation.rectangle;
+                ///logger.info(sheetLocation.toString());
+                if (sheetLocation.hint == SelectionHint.LOCATION_ADD) {
+                    Rectangle rect = sheetLocation.rectangle;
 
-                        if (rect != null) {
-                            updateBoundary(
-                                new Point(
-                                    rect.x + (rect.width / 2),
-                                    rect.y + (rect.height / 2)));
+                    if (rect != null) {
+                        updateBoundary(
+                            new Point(
+                                rect.x + (rect.width / 2),
+                                rect.y + (rect.height / 2)));
 
-                            if (sheetLocation.movement == sheetLocation.movement.RELEASING) {
-                                new BasicTask() {
-                                        @Override
-                                        protected Void doInBackground ()
-                                            throws Exception
-                                        {
-                                            updateSystemEntities();
+                        if (sheetLocation.movement == MouseMovement.RELEASING) {
+                            new BasicTask() {
+                                    @Override
+                                    protected Void doInBackground ()
+                                        throws Exception
+                                    {
+                                        updateSystemEntities();
 
-                                            // Update following steps if any
-                                            logger.info(
-                                                "updating steps, starting at " +
-                                                Step.SYSTEMS.next());
+                                        // Update following steps if any
+                                        logger.info(
+                                            "updating steps, starting at " +
+                                            Step.SYSTEMS.next());
 
-                                            return null;
-                                        }
-                                    }.execute();
-                            }
+                                        return null;
+                                    }
+                                }.execute();
                         }
                     }
                 }

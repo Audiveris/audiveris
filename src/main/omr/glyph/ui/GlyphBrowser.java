@@ -27,6 +27,7 @@ import omr.log.Logger;
 import omr.script.ScriptRecording;
 
 import omr.selection.GlyphEvent;
+import omr.selection.MouseMovement;
 import omr.selection.SelectionHint;
 import static omr.selection.SelectionHint.*;
 import omr.selection.SheetLocationEvent;
@@ -482,6 +483,11 @@ class GlyphBrowser
         @Override
         public void onEvent (UserEvent event)
         {
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
+                return;
+            }
+
             // Keep normal view behavior (rubber, etc...)
             super.onEvent(event);
 

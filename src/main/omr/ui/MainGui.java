@@ -20,6 +20,7 @@ import omr.log.Logger;
 
 import omr.score.ui.ScoreController;
 
+import omr.selection.MouseMovement;
 import omr.selection.SheetEvent;
 
 import omr.sheet.Sheet;
@@ -261,6 +262,11 @@ public class MainGui
     @Implement(EventSubscriber.class)
     public void onEvent (SheetEvent sheetEvent)
     {
+        // Ignore RELEASING
+        if (sheetEvent.movement == MouseMovement.RELEASING) {
+            return;
+        }
+
         final Sheet sheet = sheetEvent.getData();
         SwingUtilities.invokeLater(
             new Runnable() {

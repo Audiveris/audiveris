@@ -24,6 +24,8 @@ import omr.log.Logger;
 import static omr.script.ScriptRecording.*;
 
 import omr.selection.GlyphEvent;
+import omr.selection.MouseMovement;
+import omr.selection.SelectionHint;
 import omr.selection.UserEvent;
 
 import omr.sheet.Sheet;
@@ -182,9 +184,9 @@ class EvaluationBoard
         }
     }
 
-    //--------//
-    // update //
-    //--------//
+    //---------//
+    // onEvent //
+    //---------//
     /**
      * Call-back triggered when Glyph Selection has been modified
      *
@@ -193,6 +195,20 @@ class EvaluationBoard
     @Implement(EventSubscriber.class)
     public void onEvent (UserEvent event)
     {
+        // Ignore RELEASING
+        if (event.movement == MouseMovement.RELEASING) {
+            return;
+        }
+
+//        logger.info(
+//            "EvaluationBoard/" + getClass().getSimpleName() + " " + getName() +
+//            " " + event);
+
+        // Don't evaluate Added glyph, since this would hide Compound evaluation
+        if (event.hint == SelectionHint.LOCATION_ADD) {
+            return;
+        }
+
         if (event instanceof GlyphEvent) {
             GlyphEvent glyphEvent = (GlyphEvent) event;
             Glyph      glyph = glyphEvent.getData();

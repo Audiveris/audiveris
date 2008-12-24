@@ -21,6 +21,7 @@ import omr.math.Moments;
 
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphSetEvent;
+import omr.selection.MouseMovement;
 import omr.selection.UserEvent;
 
 import omr.sheet.SheetManager;
@@ -40,7 +41,6 @@ import java.awt.event.ActionListener;
 import java.util.List;
 
 import javax.swing.*;
-import javax.swing.event.*;
 
 /**
  * Class <code>SymbolGlyphBoard</code> defines an extended glyph board, with
@@ -226,6 +226,11 @@ class SymbolGlyphBoard
     @Override
     public void onEvent (UserEvent event)
     {
+        // Ignore RELEASING
+        if (event.movement == MouseMovement.RELEASING) {
+            return;
+        }
+
         //        logger.info(
         //            "SymbolGlyphBoard " + event + " selfUpdating=" + selfUpdating);
         super.onEvent(event);

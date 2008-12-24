@@ -20,10 +20,11 @@ import omr.score.ui.ScoreView;
 
 import omr.selection.SheetLocationEvent;
 
-import omr.sheet.*;
 import omr.sheet.Sheet;
 
-import omr.ui.*;
+import omr.ui.BoardsPane;
+import omr.ui.MainGui;
+import omr.ui.PixelCount;
 import omr.ui.util.Panel;
 import omr.ui.view.LogSlider;
 import omr.ui.view.Rubber;

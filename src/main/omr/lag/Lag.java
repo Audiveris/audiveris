@@ -33,6 +33,7 @@ import org.bushe.swing.event.ThreadSafeEventService;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import omr.selection.MouseMovement;
 
 /**
  * Class <code>Lag</code> handles a graph of class {@link Section} (sets of
@@ -316,7 +317,7 @@ public class Lag<L extends Lag<L, S>, S extends Section>
     }
 
     //---------//
-    // unEvent //
+    // onEvent //
     //---------//
     /**
      * Call-back triggered when selection of sheet location, section or section
@@ -328,6 +329,11 @@ public class Lag<L extends Lag<L, S>, S extends Section>
     @Implement(EventSubscriber.class)
     public void onEvent (UserEvent event)
     {
+        // Ignore RELEASING
+        if (event.movement == MouseMovement.RELEASING) {
+            return;
+        }
+
         if (event instanceof SheetLocationEvent) { // Sheet location
 
             SheetLocationEvent sheetLocation = (SheetLocationEvent) event;

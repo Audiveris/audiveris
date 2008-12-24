@@ -38,9 +38,9 @@ import omr.log.Logger;
 import omr.score.visitor.SheetPainter;
 
 import omr.script.ScriptRecording;
-import static omr.script.ScriptRecording.*;
 
 import omr.selection.GlyphEvent;
+import omr.selection.MouseMovement;
 import omr.selection.UserEvent;
 
 import omr.sheet.ui.PixelBoard;
@@ -50,12 +50,10 @@ import omr.step.StepException;
 import omr.stick.Stick;
 
 import omr.ui.BoardsPane;
-import static omr.ui.field.SpinnerUtilities.*;
 
 import omr.util.Implement;
 import omr.util.Predicate;
 import omr.util.Synchronicity;
-import static omr.util.Synchronicity.*;
 
 import org.bushe.swing.event.EventService;
 
@@ -637,6 +635,11 @@ public class VerticalsBuilder
         @Override
         public void onEvent (UserEvent event)
         {
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
+                return;
+            }
+
             if (event instanceof GlyphEvent) {
                 GlyphEvent glyphEvent = (GlyphEvent) event;
                 Glyph      glyph = glyphEvent.getData();

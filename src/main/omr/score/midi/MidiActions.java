@@ -20,6 +20,7 @@ import static omr.score.midi.MidiAgent.Status.*;
 import omr.score.ui.ScoreActions;
 import omr.score.ui.ScoreDependent;
 
+import omr.selection.MouseMovement;
 import omr.selection.SheetEvent;
 
 import omr.sheet.Sheet;
@@ -38,8 +39,6 @@ import org.jdesktop.application.Task;
 
 import java.awt.event.*;
 import java.io.*;
-
-import javax.swing.*;
 
 /**
  * Class <code>MidiActions</code> is merely a collection of UI actions that
@@ -180,6 +179,11 @@ public class MidiActions
     @Override
     public void onEvent (SheetEvent event)
     {
+        // Ignore RELEASING
+        if (event.movement == MouseMovement.RELEASING) {
+            return;
+        }
+
         super.onEvent(event);
 
         updateActions();

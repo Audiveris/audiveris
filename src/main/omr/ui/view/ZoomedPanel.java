@@ -31,7 +31,6 @@ import org.bushe.swing.event.EventService;
 import org.bushe.swing.event.EventSubscriber;
 
 import java.awt.*;
-import java.awt.event.*;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -253,6 +252,11 @@ public class ZoomedPanel
     @Implement(EventSubscriber.class)
     public void onEvent (UserEvent event)
     {
+        // Ignore RELEASING
+        if (event.movement == MouseMovement.RELEASING) {
+            return;
+        }
+
         if (logger.isFineEnabled()) {
             logger.fine(this.getClass().getName() + " onEvent " + event);
         }

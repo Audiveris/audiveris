@@ -18,6 +18,7 @@ import omr.log.Logger;
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphIdEvent;
 import omr.selection.GlyphSetEvent;
+import omr.selection.MouseMovement;
 import omr.selection.RunEvent;
 import omr.selection.SectionEvent;
 import omr.selection.SelectionHint;
@@ -324,6 +325,15 @@ public class GlyphLag
     @Implement(EventSubscriber.class)
     public void onEvent (UserEvent event)
     {
+        // Ignore RELEASING
+        if (event.movement == MouseMovement.RELEASING) {
+            return;
+        }
+
+        //        logger.info(
+        //            "GlyphLag/" + getClass().getSimpleName() + " " + getName() + ":" +
+        //            event);
+
         // Keep normal lag behavior
         // (interest in sheet location, section and section ID)
         super.onEvent(event);

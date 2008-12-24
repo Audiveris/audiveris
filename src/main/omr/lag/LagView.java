@@ -15,6 +15,7 @@ import omr.graph.DigraphView;
 
 import omr.log.Logger;
 
+import omr.selection.MouseMovement;
 import omr.selection.RunEvent;
 import omr.selection.SectionEvent;
 import omr.selection.SectionIdEvent;
@@ -307,6 +308,11 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     @Override
     public void onEvent (UserEvent event)
     {
+        // Ignore RELEASING
+        if (event.movement == MouseMovement.RELEASING) {
+            return;
+        }
+
         ///logger.info("LagView. selection=" + selection + " hint=" + hint);
 
         // Default behavior : making point visible & drawing the markers

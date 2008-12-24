@@ -19,6 +19,7 @@ import omr.score.common.ScoreRectangle;
 import omr.score.entity.ScoreSystem;
 
 import omr.selection.LocationEvent;
+import omr.selection.MouseMovement;
 import omr.selection.ScoreLocationEvent;
 import omr.selection.SheetLocationEvent;
 
@@ -107,6 +108,11 @@ public class ScoreSheetBridge
     @Implement(EventSubscriber.class)
     public void onEvent (LocationEvent event)
     {
+        // Ignore RELEASING
+        if (event.movement == MouseMovement.RELEASING) {
+            return;
+        }
+
         if (logger.isFineEnabled()) {
             logger.fine("Bridge : onEvent " + event);
         }

@@ -11,6 +11,7 @@ package omr.lag;
 
 import omr.log.Logger;
 
+import omr.selection.MouseMovement;
 import omr.selection.RunEvent;
 import omr.selection.UserEvent;
 
@@ -99,6 +100,11 @@ public class RunBoard
     @Implement(EventSubscriber.class)
     public void onEvent (UserEvent event)
     {
+        // Ignore RELEASING
+        if (event.movement == MouseMovement.RELEASING) {
+            return;
+        }
+
         if (logger.isFineEnabled()) {
             logger.fine("RunBoard: " + event);
         }

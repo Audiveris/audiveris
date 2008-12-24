@@ -22,6 +22,7 @@ import static omr.script.ScriptRecording.*;
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphIdEvent;
 import omr.selection.GlyphSetEvent;
+import omr.selection.MouseMovement;
 import omr.selection.SelectionHint;
 import omr.selection.UserEvent;
 
@@ -258,6 +259,11 @@ public class GlyphBoard
     @Override
     public void onEvent (UserEvent event)
     {
+        // Ignore RELEASING
+        if (event.movement == MouseMovement.RELEASING) {
+            return;
+        }
+
         if (logger.isFineEnabled()) {
             logger.fine(
                 "GlyphBoard selfUpdating=" + selfUpdating + " : " + event);

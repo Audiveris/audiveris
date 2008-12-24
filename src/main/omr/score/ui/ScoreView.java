@@ -428,6 +428,11 @@ public class ScoreView
         @Override
         public void onEvent (UserEvent event)
         {
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
+                return;
+            }
+
             if (logger.isFineEnabled()) {
                 logger.fine("ScoreView: onEvent " + event);
             }

@@ -76,7 +76,7 @@ public class SymbolsEditor
     private final GlyphsBuilder glyphsBuilder;
 
     /** Related Lag view */
-    private GlyphLagView view;
+    private final GlyphLagView view;
 
     /** Popup menu related to glyph selection */
     private GlyphMenu glyphMenu;
@@ -196,7 +196,7 @@ public class SymbolsEditor
         private MyView (GlyphLag lag)
         {
             super(lag, null, null, symbolsBuilder, null);
-            setName("SymbolsEditor-View");
+            setName("SymbolsEditor-MyView");
 
             // Use light gray color for past successful entities
             sheet.colorize(lag, viewIndex, Color.lightGray);
@@ -292,26 +292,39 @@ public class SymbolsEditor
         @Override
         public void onEvent (UserEvent event)
         {
-            ///logger.info(getName() + " event:" + event);
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
+                return;
+            }
 
-            // Default lag view behavior, including specifics
-            super.onEvent(event);
-
+            //            logger.info(
+            //                "SymbolsEditor/" + getClass().getSimpleName() + " " +
+            //                getName() + " " + event);
             if (event instanceof GlyphSetEvent) {
                 GlyphSetEvent glyphsEvent = (GlyphSetEvent) event;
                 List<Glyph>   glyphs = glyphsEvent.getData();
 
-                if ((glyphs != null) && (glyphs.size() > 1)) {
-                    Glyph compound = glyphsBuilder.buildCompound(glyphs);
-                    sheet.getVerticalLag()
-                         .publish(
-                        new GlyphEvent(
-                            this,
-                            SelectionHint.GLYPH_TRANSIENT,
-                            null,
-                            compound));
+                Glyph         compound = null;
+
+                if (glyphs != null) {
+                    if (glyphs.size() > 1) {
+                        compound = glyphsBuilder.buildCompound(glyphs);
+                    } else if (glyphs.size() == 1) {
+                        compound = glyphs.get(0);
+                    }
                 }
+
+                sheet.getVerticalLag()
+                     .publish(
+                    new GlyphEvent(
+                        this,
+                        SelectionHint.GLYPH_TRANSIENT,
+                        null,
+                        compound));
             }
+
+            // Default lag view behavior, including specifics
+            super.onEvent(event);
         }
 
         //-------------//

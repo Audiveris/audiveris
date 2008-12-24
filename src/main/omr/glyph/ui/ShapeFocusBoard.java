@@ -17,6 +17,7 @@ import omr.log.Logger;
 
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphIdEvent;
+import omr.selection.MouseMovement;
 import omr.selection.SelectionHint;
 import omr.selection.UserEvent;
 
@@ -253,6 +254,11 @@ class ShapeFocusBoard
     @Implement(EventSubscriber.class)
     public void onEvent (UserEvent event)
     {
+        // Ignore RELEASING
+        if (event.movement == MouseMovement.RELEASING) {
+            return;
+        }
+
         if (event instanceof GlyphEvent) {
             GlyphEvent glyphEvent = (GlyphEvent) event;
 

@@ -11,6 +11,7 @@ package omr.score.ui;
 
 import omr.log.Logger;
 
+import omr.selection.MouseMovement;
 import omr.selection.SheetEvent;
 
 import omr.sheet.Sheet;
@@ -92,6 +93,11 @@ public abstract class ScoreDependent
     @Override
     public void onEvent (SheetEvent event)
     {
+        // Ignore RELEASING
+        if (event.movement == MouseMovement.RELEASING) {
+            return;
+        }
+
         super.onEvent(event);
 
         Sheet sheet = event.getData();
