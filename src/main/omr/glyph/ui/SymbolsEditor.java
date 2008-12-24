@@ -300,6 +300,10 @@ public class SymbolsEditor
             //            logger.info(
             //                "SymbolsEditor/" + getClass().getSimpleName() + " " +
             //                getName() + " " + event);
+
+            // Default lag view behavior, including specifics
+            super.onEvent(event);
+
             if (event instanceof GlyphSetEvent) {
                 GlyphSetEvent glyphsEvent = (GlyphSetEvent) event;
                 List<Glyph>   glyphs = glyphsEvent.getData();
@@ -322,9 +326,6 @@ public class SymbolsEditor
                         null,
                         compound));
             }
-
-            // Default lag view behavior, including specifics
-            super.onEvent(event);
         }
 
         //-------------//
