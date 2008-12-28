@@ -78,37 +78,23 @@ public class Main
         Clock.resetTime();
     }
 
-    /** Classes container, beware of escaped blanks */
-    private static File container;
+    /** Classes container (either classes directory or jar archive */
+    private static File classContainer;
 
-    static {
-        try {
-            container = new File(
-                Main.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-        } catch (Exception ex) {
-            System.err.println("Cannot decode container, " + ex);
-        }
-    }
+    /** Installation folder */
+    private static File homeFolder;
 
-    /** Installation folder (needs to be initialized before logger) */
-    // .../build/classes
-    // .../dist/audiveris.jar
-    private static final File homeFolder = container.getParentFile()
-                                                    .getParentFile();
-
-    /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Main.class);
-
-    /** Specific application parameters */
-    private static final Constants constants = new Constants();
+    /** Config folder */
+    private static File configFolder;
 
     /** Specific folder name for icons */
-    public static final String ICONS_NAME = "icons";
+    private static final String ICONS_FOLDER_NAME = "icons";
 
-    /** Tells if using Mac OS X for special GUI functionality */
-    public static final boolean MAC_OS_X = System.getProperty("os.name")
-                                                 .toLowerCase()
-                                                 .startsWith("mac os x");
+    /** Specific folder name for documentation */
+    private static final String DOC_FOLDER_NAME = "www";
+
+    /** Specific folder name for training data */
+    private static final String TRAIN_FOLDER_NAME = "train";
 
     /** Build reference of the application as displayed to the user */
     private static String toolBuild;
@@ -121,6 +107,17 @@ public class Main
 
     /** Master View */
     private static MainGui gui;
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(Main.class);
+
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
+
+    /** Tells if using Mac OS X for special GUI functionality */
+    public static final boolean MAC_OS_X = System.getProperty("os.name")
+                                                 .toLowerCase()
+                                                 .startsWith("mac os x");
 
     //~ Instance fields --------------------------------------------------------
 
@@ -147,7 +144,7 @@ public class Main
      */
     public static File getClassesContainer ()
     {
-        return container;
+        return classContainer;
     }
 
     //-----------------//
@@ -160,7 +157,7 @@ public class Main
      */
     public static File getConfigFolder ()
     {
-        return new File(homeFolder, "config");
+        return configFolder;
     }
 
     //------------------------//
@@ -173,7 +170,7 @@ public class Main
      */
     public static File getDocumentationFolder ()
     {
-        return new File(homeFolder, "www");
+        return new File(homeFolder, DOC_FOLDER_NAME);
     }
 
     //--------//
@@ -211,7 +208,7 @@ public class Main
      */
     public static File getIconsFolder ()
     {
-        return new File(homeFolder, ICONS_NAME);
+        return new File(homeFolder, ICONS_FOLDER_NAME);
     }
 
     //-------------//
@@ -276,7 +273,7 @@ public class Main
      */
     public static File getTrainFolder ()
     {
-        return new File(homeFolder, "train");
+        return new File(homeFolder, TRAIN_FOLDER_NAME);
     }
 
     //------//
@@ -285,12 +282,22 @@ public class Main
     /**
      * Specific starting method for the application.
      *
+     * @param classContainer the class container (a directory or a jar file)
+     * @param homeFolder the folder where Audiveris is installed
+     * @param configFolder the subfolder for configuration data
      * @param args the command line parameters
      *
      * @see omr.Main the possible command line parameters
      */
-    public static void main (String[] args)
+    public static void main (File     classContainer,
+                             File     homeFolder,
+                             File     configFolder,
+                             String[] args)
     {
+        Main.classContainer = classContainer;
+        Main.homeFolder = homeFolder;
+        Main.configFolder = configFolder;
+
         launch(Main.class, args);
     }
 
@@ -303,8 +310,9 @@ public class Main
     {
         if (logger.isFineEnabled()) {
             logger.fine("homeFolder=" + homeFolder);
-            logger.fine("container=" + container);
-            logger.fine("container.isDirectory=" + container.isDirectory());
+            logger.fine("classContainer=" + classContainer);
+            logger.fine(
+                "classContainer.isDirectory=" + classContainer.isDirectory());
         }
 
         // Locale to be used in the whole application ?
@@ -348,10 +356,12 @@ public class Main
     @Override
     protected void ready ()
     {
-        // Launch background pre-loading tasks
-        JaiLoader.preload();
-        ScoreExporter.preload();
-        MidiAgent.preload();
+        // Launch background pre-loading tasks?
+        if (constants.preloadCostlyPackages.getValue()) {
+            JaiLoader.preload();
+            ScoreExporter.preload();
+            MidiAgent.preload();
+        }
 
         // Launch desired step on each sheet in parallel
         for (String name : parameters.sheetNames) {
@@ -478,5 +488,10 @@ public class Main
         private final Constant.String localeCountry = new Constant.String(
             "",
             "Locale country to be used in the whole application (US, FR, ...)");
+
+        /** Flag for the preloading of costly packages in the background */
+        private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
+            true,
+            "Should we preload costly packages in the background?");
     }
 }
