@@ -468,7 +468,7 @@ public class GlyphRepository
     //---------------//
     boolean isIconsFolder (String folder)
     {
-        return folder.equals(Main.ICONS_NAME);
+        return folder.equals(Main.getIconsFolder().getName());
     }
 
     //----------//
