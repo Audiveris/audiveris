@@ -285,7 +285,10 @@ public class SymbolsEditor
         //---------//
         /**
          * On reception of GLYPH_SET information, we build a transient compound
-         * glyph which is then dispatched
+         * glyph which is then dispatched. Such glyph is always generated
+         * (a null glyph if the set is null or empty, a simple glyph if the set
+         * contains just one glyph, and a true compound glyph when the set
+         * contains several glyphs)
          *
          * @param event the notified event
          */
@@ -307,7 +310,6 @@ public class SymbolsEditor
             if (event instanceof GlyphSetEvent) {
                 GlyphSetEvent glyphsEvent = (GlyphSetEvent) event;
                 List<Glyph>   glyphs = glyphsEvent.getData();
-
                 Glyph         compound = null;
 
                 if (glyphs != null) {
