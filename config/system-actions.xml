@@ -51,6 +51,7 @@
     <action domain="VIEW" section="EDIT"   class="omr.glyph.ui.ViewParameters"                   method="toggleCircles" item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="EXPORT" class="omr.sheet.LinesBuilder$LinesParameters"        method="toggleLines"   item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="EXPORT" class="omr.sheet.HorizontalsBuilder$LedgerParameters" method="toggleLines"   item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="END"    class="omr.ui.GuiActions"                             method="toggleErrors"  item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="END"    class="omr.ui.GuiActions"                             method="clearLog" toolbar="true"/>
 
     <action domain="TOOL" section="IMPORT" class="omr.ui.GuiActions" method="verifyTrainingMaterial" />

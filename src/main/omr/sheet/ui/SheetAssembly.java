@@ -23,6 +23,7 @@ import omr.selection.SheetLocationEvent;
 import omr.sheet.Sheet;
 
 import omr.ui.BoardsPane;
+import omr.ui.GuiActions;
 import omr.ui.MainGui;
 import omr.ui.PixelCount;
 import omr.ui.util.Panel;
@@ -340,9 +341,15 @@ public class SheetAssembly
         displayContext( /* connectBoards => */
         false);
 
-        // Display the errors pane of this assembly
-        Main.getGui()
-            .setErrorsPane(getErrorsPane());
+        // Display the errors pane of this assembly?
+        MainGui gui = Main.getGui();
+
+        if (GuiActions.getInstance()
+                      .isErrorsDisplayed()) {
+            gui.showErrorsPane(getErrorsPane());
+        } else {
+            gui.hideErrorsPane();
+        }
     }
 
     //-------//
@@ -362,7 +369,7 @@ public class SheetAssembly
 
         MainGui gui = Main.getGui();
         gui.removeBoardsPane(); // Disconnect boards pane
-        gui.removeErrorsPane(); // Disconnect errors pane
+        gui.hideErrorsPane(); // Disconnect errors pane (USEFUL??? TBD)
         gui.sheetController.close(this);
 
         // Disconnect all keyboard bindings from PixelBoard's (as a workaround
