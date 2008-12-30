@@ -41,19 +41,34 @@
     
     <!-- Tools classpath -->
     <path id="tools.classpath">
+        <pathelement path="${eventbus.jar}"/>
+
         <pathelement path="${jama.jar}"/>
-        <pathelement path="${java.home}/lib/ext/jai_codec.jar"/>
+
+        <pathelement path="${java.home}/lib/ext/jai_imageio.jar"/>
+        <pathelement path="${java.home}/lib/ext/clibwrapper_jiio.jar"/>
+
+	<pathelement path="${java.home}/lib/ext/jai_codec.jar"/>
         <pathelement path="${java.home}/lib/ext/jai_core.jar"/>
         <pathelement path="${java.home}/lib/ext/mlibwrapper_jai.jar"/>
-        <pathelement path="${jcommon.jar}"/>
+	
+        <pathelement path="${jcip.jar}"/>
+
+	<pathelement path="${jcommon.jar}"/>
         <pathelement path="${jfreechart.jar}"/>
-        <pathelement path="${jgoodies.forms.jar}"/>
+
+	<pathelement path="${jgoodies.forms.jar}"/>
         <pathelement path="${jgoodies.looks.jar}"/>
-        <pathelement path="${pdfrenderer.jar}"/>
-        <pathelement path="${proxymusic.jar}"/>
-        <pathelement path="${swingappfwk.jar}"/>
-        <pathelement path="${swingworker.jar}"/>
-        <pathelement path="${xenoplay.jar}"/>
+
+	<pathelement path="${pdfrenderer.jar}"/>
+
+	<pathelement path="${proxymusic.jar}"/>
+
+	<pathelement path="${swingappfwk.jar}"/>
+
+	<pathelement path="${swingworker.jar}"/>
+
+	<pathelement path="${xenoplay.jar}"/>
     </path>
     
     <!-- Build classpath -->
@@ -132,6 +147,7 @@
     <target name="-copy-libs">
         <mkdir dir="${dist.dir}/lib"/>
 
+	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${eventbus.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${icons.buttons.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${icons.music.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jama.jar}"/>
@@ -139,13 +155,29 @@
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jfreechart.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jgoodies.forms.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jgoodies.looks.jar}"/>
+	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${pdfrenderer.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${proxymusic.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${swingappfwk.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${swingworker.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${xenoplay.jar}"/>
+        <copy todir="${dist.dir}/lib" verbose="$verbose" file="${java.home}/lib/ext/jai_imageio.jar"/>
+        <copy todir="${dist.dir}/lib" verbose="$verbose" file="${java.home}/lib/ext/clibwrapper_jiio.jar"/>
         <copy todir="${dist.dir}/lib" verbose="$verbose" file="${java.home}/lib/ext/jai_codec.jar"/>
         <copy todir="${dist.dir}/lib" verbose="$verbose" file="${java.home}/lib/ext/jai_core.jar"/>
         <copy todir="${dist.dir}/lib" verbose="$verbose" file="${java.home}/lib/ext/mlibwrapper_jai.jar"/>
+
+    </target>
+    
+    <!-- =============================== -->
+    <!--  - C O P Y - R E S O U R C E S  -->
+    <!-- =============================== -->
+    <target name="-copy-resources">
+        <mkdir dir="${build.classes.dir}"/>
+
+	<copy todir="${build.classes.dir}" verbose="$verbose">
+	    <fileset dir="${src.dir}" includes="**/*.properties"/>
+	    <fileset dir="${plugins.dir}" includes="**/*.properties"/>
+	</copy>
 
     </target>
 	     
@@ -169,6 +201,22 @@
             listfiles    = "${build.compile.listfiles}"
             source       = "${build.compile.source}"
             srcdir       = "${src.dir}"
+            >
+<!--             <compilerarg value="-Xlint"/> -->
+<!--             <compilerarg value="-Xlint:-serial"/> -->
+<!--             <compilerarg value="-Xlint:-path"/> -->
+        </javac>
+        
+        <!-- plugin classes -->
+        <javac
+	    target       = "${javac.target}"
+            classpathref = "build.classpath"
+            debug        = "${build.compile.debug}"
+            deprecation  = "${build.compile.deprecation}"
+            destdir      = "${build.classes.dir}"
+            listfiles    = "${build.compile.listfiles}"
+            source       = "${build.compile.source}"
+            srcdir       = "${plugins.dir}"
             >
 <!--             <compilerarg value="-Xlint"/> -->
 <!--             <compilerarg value="-Xlint:-serial"/> -->
@@ -204,7 +252,7 @@
     <!-- =========================== -->
     <!--  - P O S T - C O M P I L E  -->
     <!-- =========================== -->
-    <target name="-post-compile" depends="-build-icons"/>        
+    <target name="-post-compile" depends="-copy-resources,-build-icons"/>        
     
     <!-- ================================================================ -->
     <!-- =======================  Public Targets  ======================= -->
@@ -354,10 +402,15 @@
             
             <!-- Specific JVM arguments, if any -->
 <!--    	    <jvmarg value="-verbose:class"/>  -->
- 	    <jvmarg value="-Dcom.sun.management.jmxremote"/>
+
+	    <!-- For JMX console (no longer needed?) -->
+<!--  	    <sysproperty -->
+<!-- 		key="com.sun.management.jmxremote" -->
+<!-- 		value="true"/> -->
  	    
             <!-- Configuration file for logging -->
-            <sysproperty key="java.util.logging.config.file"
+            <sysproperty
+		key="java.util.logging.config.file"
                 value="${config.dir}/logging.properties"/>
             
             <!-- Application arguments -->
