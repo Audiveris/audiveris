@@ -138,17 +138,28 @@ public class MainGui
         boardsPane.addBoards(boards);
     }
 
-    //---------------//
-    // setErrorsPane //
-    //---------------//
+    //----------------//
+    // showErrorsPane //
+    //----------------//
     /**
-     * Set/show a new errors pane
+     * Show the errors pane
      *
      * @param errorsPane the errors pane to be shown
      */
-    public void setErrorsPane (JComponent errorsPane)
+    public void showErrorsPane (JComponent errorsPane)
     {
         bottomPane.addErrors(errorsPane);
+    }
+
+    //----------------//
+    // hideErrorsPane //
+    //----------------//
+    /**
+     * Hide the errors pane
+     */
+    public void hideErrorsPane ()
+    {
+        bottomPane.removeErrors();
     }
 
     //----------//
@@ -300,17 +311,6 @@ public class MainGui
     public void removeBoardsPane ()
     {
         boardsPane.removeBoards();
-    }
-
-    //------------------//
-    // removeErrorsPane //
-    //------------------//
-    /**
-     * Remove the current errors pane, if any
-     */
-    public void removeErrorsPane ()
-    {
-        bottomPane.removeErrors();
     }
 
     //--------------//
@@ -523,6 +523,7 @@ public class MainGui
             }
 
             setRightComponent(null);
+            dividerLocation = -1;
         }
     }
 
