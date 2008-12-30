@@ -27,7 +27,8 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.*;
 
-import javax.imageio.*;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 
 /**
