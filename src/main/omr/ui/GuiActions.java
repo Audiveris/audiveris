@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.*;
+import omr.sheet.Sheet;
 
 /**
  * Class <code>GuiActions</code> gathers individual actions trigerred from the
@@ -83,6 +84,43 @@ public class GuiActions
     private static AboutAction aboutAction;
 
     //~ Methods ----------------------------------------------------------------
+
+    //--------------------//
+    // setErrorsDisplayed //
+    //--------------------//
+    public void setErrorsDisplayed (boolean value)
+    {
+        boolean oldValue = constants.errorsDisplayed.getValue();
+        constants.errorsDisplayed.setValue(value);
+        firePropertyChange(
+            "errorsDisplayed",
+            oldValue,
+            constants.errorsDisplayed.getValue());
+    }
+
+    //-------------------//
+    // isErrorsDisplayed //
+    //-------------------//
+    public boolean isErrorsDisplayed ()
+    {
+        return constants.errorsDisplayed.getValue();
+    }
+
+    //--------------//
+    // toggleErrors //
+    //--------------//
+    /**
+     * Action that toggles the display of errors window
+     * @param e the event that triggered this action
+     */
+    @Action(selectedProperty = "errorsDisplayed")
+    public void toggleErrors (ActionEvent e)
+    {
+        Sheet sheet = SheetManager.getSelectedSheet();
+        if (sheet != null) {
+            sheet.getAssembly().assemblySelected();
+        }
+    }
 
     //-------------//
     // getInstance //
@@ -384,12 +422,17 @@ public class GuiActions
     {
         //~ Instance fields ----------------------------------------------------
 
-        Constant.String webSiteUrl = new Constant.String(
+        Constant.String        webSiteUrl = new Constant.String(
             "https://audiveris.dev.java.net",
             "URL of Audiveris home page");
-        Constant.String manualUrl = new Constant.String(
+        Constant.String        manualUrl = new Constant.String(
             "/docs/manual/index.html",
             "URL of local Audiveris manual");
+
+        /** Should the errors window be displayed */
+        final Constant.Boolean errorsDisplayed = new Constant.Boolean(
+            true,
+            "Should the errors window be displayed");
     }
 
     //-------------//
