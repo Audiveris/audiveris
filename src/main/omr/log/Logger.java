@@ -258,7 +258,7 @@ public class Logger
     // setGlobalParameters //
     //---------------------//
     /**
-     * This method define configuration parameters in a programmatic way, so
+     * This method defines configuration parameters in a programmatic way, so
      * that only specific loggers if any need to be set in a configuration file
      * This file would simply contain lines like:
      *  # omr.step.StepMonitor.level=FINEST
