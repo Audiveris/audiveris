@@ -103,6 +103,40 @@ public class GlyphsBuilder
 
     //~ Methods ----------------------------------------------------------------
 
+    //----------//
+    // addGlyph //
+    //----------//
+    /**
+     * Add a brand new glyph as an active glyph in proper system and lag.
+     * It does not check if the glyph has an assigned shape.
+     * If the glyph is a compound, its parts are made pointing back to it and
+     * are made no longer active glyphs.
+     *
+     * @param glyph the brand new glyph
+     * @return the original glyph as inserted in the glyph lag
+     */
+    public Glyph addGlyph (Glyph glyph)
+    {
+        // Get rid of composing parts if any
+        for (Glyph part : glyph.getParts()) {
+            part.setPartOf(glyph);
+            part.setShape(Shape.NO_LEGAL_SHAPE);
+            removeGlyph(part);
+        }
+
+        // Insert in lag, which assigns an id to the glyph
+        Glyph oldGlyph = vLag.addGlyph(glyph);
+
+        if (oldGlyph != glyph) {
+            // Perhaps some members to carry over
+            oldGlyph.copyStemInformation(glyph);
+        }
+
+        system.addToGlyphsCollection(oldGlyph);
+
+        return oldGlyph;
+    }
+
     //---------------//
     // buildCompound //
     //---------------//
@@ -189,38 +223,24 @@ public class GlyphsBuilder
         glyph.setPitchPosition(staff.pitchPositionOf(centroid));
     }
 
-    //----------//
-    // addGlyph //
-    //----------//
+    //-------------//
+    // removeGlyph //
+    //-------------//
     /**
-     * Add a brand new glyph as an active glyph in proper system and lag.
-     * It does not check if the glyph has an assigned shape.
-     * If the glyph is a compound, its parts are made pointing back to it and
-     * are made no longer active glyphs.
+     * Remove a glyph from the containing system glyph list.
      *
-     * @param glyph the brand new glyph
-     * @return the original glyph as inserted in the glyph lag
+     * @param glyph the glyph to remove
      */
-    public Glyph addGlyph (Glyph glyph)
+    public void removeGlyph (Glyph glyph)
     {
-        // Get rid of composing parts if any
-        for (Glyph part : glyph.getParts()) {
-            part.setPartOf(glyph);
-            part.setShape(Shape.NO_LEGAL_SHAPE);
-            system.removeGlyph(part);
+        if (!system.removeFromGlyphsCollection(glyph)) {
+            logger.warning(
+                "Glyph #" + glyph.getId() + " not found in system #" +
+                system.getId());
         }
 
-        // Insert in lag, which assigns an id to the glyph
-        Glyph oldGlyph = vLag.addGlyph(glyph);
-
-        if (oldGlyph != glyph) {
-            // Perhaps some members to carry over
-            oldGlyph.copyStemInformation(glyph);
-        }
-
-        system.addToGlyphsCollection(oldGlyph);
-
-        return oldGlyph;
+        // Cut link from its member sections, if pointing to this glyph
+        glyph.cutSections();
     }
 
     //----------------//

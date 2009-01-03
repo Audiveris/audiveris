@@ -728,23 +728,32 @@ public class SystemInfo
         return lookupIntersectedGlyphs(rect, null);
     }
 
+    //----------------------------//
+    // removeFromGlyphsCollection //
+    //----------------------------//
+    /**
+     * Meant for access by GlypsBuilder only
+     * Standard entry is {@link #removeGlyph}
+     * @param glyph
+     * @return
+     */
+    public boolean removeFromGlyphsCollection (Glyph glyph)
+    {
+        return glyphs.remove(glyph);
+    }
+
     //-------------//
     // removeGlyph //
     //-------------//
     /**
-     * Remove a glyph from the containing system glyph list.
+     * Remove a glyph from the containing system glyph list, and make it
+     * inactive by cutting the link from its member sections
      *
      * @param glyph the glyph to remove
      */
     public void removeGlyph (Glyph glyph)
     {
-        if (!glyphs.remove(glyph)) {
-            logger.warning(
-                "Glyph #" + glyph.getId() + " not found in system #" + getId());
-        }
-
-        // Cut link from its member sections, if pointing to this glyph
-        glyph.cutSections();
+        glyphsBuilder.removeGlyph(glyph);
     }
 
     //----------------------//
