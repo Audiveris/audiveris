@@ -12,18 +12,15 @@ package omr.sheet;
 import omr.Main;
 
 import omr.glyph.Glyph;
-import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
-import omr.glyph.GlyphsBuilder;
 import omr.glyph.Shape;
-import omr.glyph.SymbolsBuilder;
+import omr.glyph.SymbolsModel;
 import omr.glyph.ui.SymbolsEditor;
 
 import omr.log.Logger;
 
 import omr.score.Score;
-import omr.score.ScoreBuilder;
 import omr.score.common.PixelDimension;
 import omr.score.common.PixelPoint;
 import omr.score.entity.SystemNode;
@@ -120,12 +117,6 @@ public class Sheet
     /** A measure extractor for this sheet */
     private MeasuresBuilder measuresBuilder;
 
-    /** A glyph extractor for this sheet */
-    private volatile GlyphsBuilder glyphBuilder;
-
-    /** A glyph inspector for this sheet */
-    private volatile GlyphInspector glyphInspector;
-
     /** Horizontal lag (built by LINES/LinesBuilder) */
     private GlyphLag hLag;
 
@@ -144,9 +135,6 @@ public class Sheet
     /** Dedicated skew builder */
     private SkewBuilder skewBuilder;
 
-    /** Score builder */
-    private volatile ScoreBuilder scoreBuilder;
-
     /** Related errors editor */
     private volatile ErrorsEditor errorsEditor;
 
@@ -160,10 +148,10 @@ public class Sheet
     private volatile SheetAssembly assembly;
 
     /** Specific builder dealing with glyphs */
-    private volatile SymbolsBuilder symbolsBuilder;
+    private volatile SymbolsModel symbolsBuilder;
 
-    /** Related verticals builder */
-    private volatile VerticalsBuilder verticalsBuilder;
+    /** Related verticals model */
+    private volatile VerticalsModel verticalsModel;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -271,37 +259,6 @@ public class Sheet
         return assembly;
     }
 
-    //    //------------------//
-    //    // getClosestSystem //
-    //    //------------------//
-    //    /**
-    //     * Report the closest system (apart from the provided one) in the direction
-    //     * of provided ordinate
-    //     *
-    //     * @param system the current system
-    //     * @param y the ordinate (of a point, a glyph, ...)
-    //     * @return the next (or previous) system if any
-    //     */
-    //    public SystemInfo getClosestSystem (SystemInfo system,
-    //                                        int        y)
-    //    {
-    //        int            index = systems.indexOf(system);
-    //        PixelRectangle box = system.getBounds();
-    //        int            middle = box.y + (box.height / 2);
-    //
-    //        if (y > middle) {
-    //            if (index < (systems.size() - 1)) {
-    //                return systems.get(index + 1);
-    //            }
-    //        } else {
-    //            if (index > 0) {
-    //                return systems.get(index - 1);
-    //            }
-    //        }
-    //
-    //        return null;
-    //    }
-
     //-----------------//
     // getErrorsEditor //
     //-----------------//
@@ -329,51 +286,6 @@ public class Sheet
     public EventService getEventService ()
     {
         return eventService;
-    }
-
-    //-------------------//
-    // getGlyphInspector //
-    //-------------------//
-    /**
-     * Give access to the glyph inspector (in charge of all glyph recognition
-     * actions) for this sheet
-     *
-     * @return the inspector instance
-     */
-    public GlyphInspector getGlyphInspector ()
-    {
-        if (glyphInspector == null) {
-            synchronized (this) {
-                if (glyphInspector == null) {
-                    glyphInspector = new GlyphInspector(
-                        this,
-                        getGlyphsBuilder());
-                }
-            }
-        }
-
-        return glyphInspector;
-    }
-
-    //------------------//
-    // getGlyphsBuilder //
-    //------------------//
-    /**
-     * Give access to the glyphs builder for this sheet
-     *
-     * @return the builder instance
-     */
-    public GlyphsBuilder getGlyphsBuilder ()
-    {
-        if (glyphBuilder == null) {
-            synchronized (this) {
-                if (glyphBuilder == null) {
-                    glyphBuilder = new GlyphsBuilder(this);
-                }
-            }
-        }
-
-        return glyphBuilder;
     }
 
     //-----------//
@@ -729,22 +641,6 @@ public class Sheet
         return score;
     }
 
-    //-----------------//
-    // getScoreBuilder //
-    //-----------------//
-    public ScoreBuilder getScoreBuilder ()
-    {
-        if (scoreBuilder == null) {
-            synchronized (this) {
-                if (scoreBuilder == null) {
-                    scoreBuilder = new ScoreBuilder(score, this);
-                }
-            }
-        }
-
-        return scoreBuilder;
-    }
-
     //-----------//
     // getScript //
     //-----------//
@@ -763,6 +659,22 @@ public class Sheet
     public SheetSteps getSheetSteps ()
     {
         return sheetSteps;
+    }
+
+    //------------------------//
+    // getSheetVerticalsModel //
+    //------------------------//
+    public VerticalsModel getSheetVerticalsModel ()
+    {
+        if (verticalsModel == null) {
+            synchronized (this) {
+                if (verticalsModel == null) {
+                    verticalsModel = new VerticalsModel(this);
+                }
+            }
+        }
+
+        return verticalsModel;
     }
 
     //---------//
@@ -904,27 +816,6 @@ public class Sheet
         return staves;
     }
 
-    //-------------------//
-    // getSymbolsBuilder //
-    //-------------------//
-    /**
-     * Give access to the module dealing with symbol recognition
-     *
-     * @return the symbols builder
-     */
-    public SymbolsBuilder getSymbolsBuilder ()
-    {
-        if (symbolsBuilder == null) {
-            synchronized (this) {
-                if (symbolsBuilder == null) {
-                    symbolsBuilder = new SymbolsBuilder(this);
-                }
-            }
-        }
-
-        return symbolsBuilder;
-    }
-
     //------------------//
     // getSymbolsEditor //
     //------------------//
@@ -935,8 +826,29 @@ public class Sheet
      */
     public SymbolsEditor getSymbolsEditor ()
     {
-        return getSymbolsBuilder()
+        return getSymbolsModel()
                    .getEditor();
+    }
+
+    //-----------------//
+    // getSymbolsModel //
+    //-----------------//
+    /**
+     * Give access to the module dealing with symbol management
+     *
+     * @return the symbols model
+     */
+    public SymbolsModel getSymbolsModel ()
+    {
+        if (symbolsBuilder == null) {
+            synchronized (this) {
+                if (symbolsBuilder == null) {
+                    symbolsBuilder = new SymbolsModel(this);
+                }
+            }
+        }
+
+        return symbolsBuilder;
     }
 
     //-------------//
@@ -969,6 +881,40 @@ public class Sheet
                         .getLocation();
 
         return getSystemOf(new PixelPoint(pt.x, pt.y));
+    }
+
+    //-------------//
+    // getSystemOf //
+    //-------------//
+    /**
+     * Report the system that contains ALL glyphs provided.
+     * If all glyphs do not belong to the same system, exception is thrown
+     * @param glyphs the collection of glyphs
+     * @return the containing system
+     * @exception IllegalArgumentException raised if glyphs collection is not OK
+     */
+    public SystemInfo getSystemOf (Collection<Glyph> glyphs)
+    {
+        if ((glyphs == null) || glyphs.isEmpty()) {
+            throw new IllegalArgumentException(
+                "getSystemOf. Glyphs collection is null or empty");
+        }
+
+        SystemInfo system = null;
+
+        for (Glyph glyph : glyphs) {
+            if (system == null) {
+                system = getSystemOf(glyph);
+            } else {
+                // Make sure we are still in the same system
+                if (getSystemOf(glyph) != system) {
+                    throw new IllegalArgumentException(
+                        "getSystemOf. Glyphs from different systems");
+                }
+            }
+        }
+
+        return system;
     }
 
     //------------//
@@ -1076,22 +1022,6 @@ public class Sheet
     public GlyphLag getVerticalLag ()
     {
         return vLag;
-    }
-
-    //---------------------//
-    // getVerticalsBuilder //
-    //---------------------//
-    public VerticalsBuilder getVerticalsBuilder ()
-    {
-        if (verticalsBuilder == null) {
-            synchronized (this) {
-                if (verticalsBuilder == null) {
-                    verticalsBuilder = new VerticalsBuilder(this);
-                }
-            }
-        }
-
-        return verticalsBuilder;
     }
 
     //----------//
@@ -1308,10 +1238,9 @@ public class Sheet
         }
 
         // Assign the bar sticks to the proper system glyphs collection
-        GlyphsBuilder glyphsBuilder = getGlyphsBuilder();
-
         for (Stick stick : barSticks) {
-            glyphsBuilder.insertGlyph(stick, getSystemOf(stick));
+            getSystemOf(stick)
+                .addGlyph(stick);
         }
     }
 

@@ -22,6 +22,7 @@ import omr.glyph.ui.panel.GlyphTrainer;
 
 import omr.log.Logger;
 
+import omr.sheet.Sheet;
 import omr.sheet.SheetManager;
 
 import omr.ui.treetable.JTreeTable;
@@ -48,7 +49,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.*;
-import omr.sheet.Sheet;
 
 /**
  * Class <code>GuiActions</code> gathers individual actions trigerred from the
@@ -117,8 +117,10 @@ public class GuiActions
     public void toggleErrors (ActionEvent e)
     {
         Sheet sheet = SheetManager.getSelectedSheet();
+
         if (sheet != null) {
-            sheet.getAssembly().assemblySelected();
+            sheet.getAssembly()
+                 .assemblySelected();
         }
     }
 

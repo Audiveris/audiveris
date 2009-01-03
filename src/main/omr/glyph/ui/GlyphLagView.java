@@ -449,7 +449,7 @@ public class GlyphLagView
                 if (glyph.getShape() == Shape.SLUR) {
                     if (ViewParameters.getInstance()
                                       .isCirclePainting()) {
-                        Circle circle = SlurGlyph.computeCircle(glyph);
+                        Circle circle = SlurInspector.computeCircle(glyph);
 
                         if (logger.isFineEnabled()) {
                             logger.fine(

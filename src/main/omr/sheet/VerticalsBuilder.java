@@ -9,10 +9,7 @@
 //
 package omr.sheet;
 
-import omr.Main;
-
 import omr.check.Check;
-import omr.check.CheckBoard;
 import omr.check.CheckSuite;
 import omr.check.FailureResult;
 import omr.check.SuccessResult;
@@ -22,40 +19,22 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
-import omr.glyph.GlyphModel;
 import omr.glyph.GlyphSection;
 import omr.glyph.Shape;
-import omr.glyph.ui.GlyphBoard;
-import omr.glyph.ui.GlyphLagView;
 
-import omr.lag.RunBoard;
-import omr.lag.ScrollLagView;
 import omr.lag.Section;
-import omr.lag.SectionBoard;
 
 import omr.log.Logger;
 
-import omr.score.visitor.SheetPainter;
-
-import omr.script.ScriptRecording;
-
 import omr.selection.GlyphEvent;
-import omr.selection.MouseMovement;
 import omr.selection.UserEvent;
-
-import omr.sheet.ui.PixelBoard;
 
 import omr.step.StepException;
 
 import omr.stick.Stick;
 
-import omr.ui.BoardsPane;
-
 import omr.util.Implement;
 import omr.util.Predicate;
-import omr.util.Synchronicity;
-
-import org.bushe.swing.event.EventService;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -63,7 +42,7 @@ import java.util.Collection;
 
 /**
  * Class <code>VerticalsBuilder</code> is in charge of retrieving all the
- * vertical sticks of all systems in the sheet at hand. Bars are assumed to have
+ * vertical sticks of a dedicated system. Bars are assumed to have
  * been already recognized, so this accounts for stems, vertical edges of
  * endings, and potentially parts of alterations (sharp, natural, flat).
  *
@@ -71,7 +50,6 @@ import java.util.Collection;
  * @version $Id$
  */
 public class VerticalsBuilder
-    extends GlyphModel
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -108,8 +86,14 @@ public class VerticalsBuilder
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Related user display if any */
-    private MyView view;
+    /** Related sheet */
+    private final Sheet sheet;
+
+    /** Dedicated system */
+    private final SystemInfo system;
+
+    /** Related glyph lag */
+    private final GlyphLag lag;
 
     /** Global sheet scale */
     private final Scale scale;
@@ -123,114 +107,36 @@ public class VerticalsBuilder
      * Creates a new VerticalsBuilder object.
      *
      * @param sheet the related sheet
-     *
-     * @throws StepException when processing had to stop
      */
-    public VerticalsBuilder (Sheet sheet)
+    public VerticalsBuilder (SystemInfo system)
     {
         // We work with the sheet vertical lag
-        super(sheet, sheet.getVerticalLag());
-        scale = sheet.getScale();
+        this.system = system;
+        this.sheet = system.getSheet();
+        this.lag = sheet.getVerticalLag();
+        scale = system.getSheet()
+                      .getScale();
     }
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------------------//
-    // deassignGlyphShape //
-    //--------------------//
-    /**
-     * This method is limited to deassignment of stems
-     *
-     * @param glyph the glyph to deassign
-     * @param record request to record this action in the script
-     */
-    @Override
-    public void deassignGlyphShape (Synchronicity         processing,
-                                    final Glyph           glyph,
-                                    final ScriptRecording record)
-    {
-        Shape shape = glyph.getShape();
-
-        switch (shape) {
-        case COMBINING_STEM :
-            sheet.getSymbolsBuilder()
-                 .deassignGlyphShape(processing, glyph, record);
-
-            break;
-
-        default :
-        }
-    }
-
-    //------------------//
-    // deassignSetShape //
-    //------------------//
-    /**
-     * This method is limited to deassignment of stems
-     *
-     * @param glyphs the collection of glyphs to be de-assigned
-     * @param record true if this action is to be recorded in the script
-     */
-    @Override
-    public void deassignSetShape (Synchronicity     processing,
-                                  Collection<Glyph> glyphs,
-                                  ScriptRecording   record)
-    {
-        sheet.getSymbolsBuilder()
-             .deassignSetShape(processing, glyphs, record);
-    }
-
-    //---------//
-    // refresh //
-    //---------//
-    /**
-     * Refresh the display if any, with proper colors for sections
-     */
-    public void refresh ()
-    {
-        if (Main.getGui() != null) {
-            if ((view == null) && constants.displayFrame.getValue()) {
-                displayFrame();
-            } else if (view != null) {
-                view.colorize();
-                view.repaint();
-            }
-        }
-    }
-
     //----------------------//
-    // retrieveAllVerticals //
+    // createStemCheckSuite //
     //----------------------//
-    public void retrieveAllVerticals ()
+    public CheckSuite<Stick> createStemCheckSuite (boolean isShort)
         throws StepException
     {
-        // Process each system area on turn
-        int nb = 0;
-
-        for (SystemInfo system : sheet.getSystems()) {
-            nb += retrieveSystemVerticals(system);
-        }
-
-        if (constants.displayFrame.getValue() && (Main.getGui() != null)) {
-            displayFrame();
-        }
-
-        if (nb > 0) {
-            logger.info(nb + " stem" + ((nb > 1) ? "s" : "") + " found");
-        } else {
-            logger.info("No stem found");
-        }
+        return new StemCheckSuite(isShort);
     }
 
-    //-------------------------//
-    // retrieveSystemVerticals //
-    //-------------------------//
-    public int retrieveSystemVerticals (SystemInfo system)
+    //-------------------//
+    // retrieveVerticals //
+    //-------------------//
+    public int retrieveVerticals ()
         throws StepException
     {
         // Get rid of former symbols
-        sheet.getGlyphsBuilder()
-             .removeSystemInactives(system);
+        system.removeInactiveGlyphs();
 
         // We cannot reuse the sticks, since thick sticks are allowed for bars
         // but not for stems.
@@ -241,22 +147,18 @@ public class VerticalsBuilder
             new MySectionPredicate(),
             scale.toPixels(constants.maxStemThickness));
 
-        return retrieveVerticals(verticalsArea.getSticks(), system, true);
+        return retrieveVerticals(verticalsArea.getSticks(), true);
     }
 
-    //-------------//
-    // stemSegment //
-    //-------------//
-    public void stemSegment (Collection<Glyph> glyphs,
-                             SystemInfo        system,
-                             boolean           isShort)
+    //---------------------//
+    // segmentGlyphOnStems //
+    //---------------------//
+    public void segmentGlyphOnStems (Glyph   glyph,
+                                     boolean isShort)
     {
         // Gather all sections to be browsed
-        Collection<GlyphSection> sections = new ArrayList<GlyphSection>();
-
-        for (Glyph glyph : glyphs) {
-            sections.addAll(glyph.getMembers());
-        }
+        Collection<GlyphSection> sections = new ArrayList<GlyphSection>(
+            glyph.getMembers());
 
         if (logger.isFineEnabled()) {
             logger.fine("Sections browsed: " + Section.toString(sections));
@@ -272,10 +174,7 @@ public class VerticalsBuilder
                 scale.toPixels(constants.maxStemThickness));
 
             // Retrieve stems
-            int nb = retrieveVerticals(
-                verticalsArea.getSticks(),
-                system,
-                isShort);
+            int nb = retrieveVerticals(verticalsArea.getSticks(), isShort);
 
             if (logger.isFineEnabled()) {
                 if (nb > 0) {
@@ -289,32 +188,6 @@ public class VerticalsBuilder
         }
     }
 
-    //--------------//
-    // displayFrame //
-    //--------------//
-    private void displayFrame ()
-    {
-        // Specific rubber display
-        view = new MyView(lag);
-        view.colorize();
-
-        // Create a hosting frame for the view
-        final String unit = sheet.getRadix() + ":VerticalsBuilder";
-
-        sheet.getAssembly()
-             .addViewTab(
-            "Verticals",
-            new ScrollLagView(view),
-            new BoardsPane(
-                sheet,
-                view,
-                new PixelBoard(unit, sheet),
-                new RunBoard(unit, lag),
-                new SectionBoard(unit, lag.getLastVertexId(), lag),
-                new GlyphBoard(unit, this, null),
-                new MyCheckBoard(unit, lag.getEventService(), eventClasses)));
-    }
-
     //-------------------//
     // retrieveVerticals //
     //-------------------//
@@ -323,19 +196,16 @@ public class VerticalsBuilder
      * collection of vertical sticks, and in the context of a system
      *
      * @param sticks the provided collection of vertical sticks
-     * @param system the containing system whose "glyphs" collection will be
-     * augmented by the stems found
      * @param isShort true for short stems
      * @return the number of stems found
      * @throws StepException
      */
     private int retrieveVerticals (Collection<Stick> sticks,
-                                   SystemInfo        system,
                                    boolean           isShort)
         throws StepException
     {
         /** Suite of checks for a stem glyph */
-        StemCheckSuite suite = new StemCheckSuite(system, isShort);
+        StemCheckSuite suite = new StemCheckSuite(isShort);
         double minResult = constants.minCheckResult.getValue();
         int    stemNb = 0;
 
@@ -361,8 +231,7 @@ public class VerticalsBuilder
                 stick.setResult(TOO_LIMITED);
             }
 
-            sheet.getGlyphsBuilder()
-                 .insertGlyph(stick, system);
+            system.addGlyph(stick);
         }
 
         if (logger.isFineEnabled()) {
@@ -374,6 +243,40 @@ public class VerticalsBuilder
 
     //~ Inner Classes ----------------------------------------------------------
 
+    //----------------//
+    // StemCheckSuite //
+    //----------------//
+    public class StemCheckSuite
+        extends CheckSuite<Stick>
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public StemCheckSuite (boolean isShort)
+            throws StepException
+        {
+            super("Stem", constants.minCheckResult.getValue());
+            add(1, new MinLengthCheck(isShort));
+            add(1, new MinAspectCheck());
+            add(1, new FirstAdjacencyCheck());
+            add(1, new LastAdjacencyCheck());
+            add(0, new LeftCheck(system));
+            add(0, new RightCheck(system));
+            add(2, new MinDensityCheck());
+
+            if (logger.isFineEnabled()) {
+                dump();
+            }
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        protected void dumpSpecific ()
+        {
+            System.out.println(system.toString());
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
@@ -382,46 +285,43 @@ public class VerticalsBuilder
     {
         //~ Instance fields ----------------------------------------------------
 
-        Constant.Boolean displayFrame = new Constant.Boolean(
-            true,
-            "Should we display a frame on the stem sticks");
-        Constant.Ratio   maxStemAdjacencyHigh = new Constant.Ratio(
+        Constant.Ratio maxStemAdjacencyHigh = new Constant.Ratio(
             0.70,
             "High Maximum adjacency ratio for a stem stick");
-        Constant.Ratio   maxStemAdjacencyLow = new Constant.Ratio(
+        Constant.Ratio maxStemAdjacencyLow = new Constant.Ratio(
             0.60,
             "Low Maximum adjacency ratio for a stem stick");
-        Check.Grade      minCheckResult = new Check.Grade(
+        Check.Grade    minCheckResult = new Check.Grade(
             0.50,
             "Minimum result for suite of check");
-        Constant.Ratio   minDensityHigh = new Constant.Ratio(
+        Constant.Ratio minDensityHigh = new Constant.Ratio(
             0.9,
             "High Minimum density for a stem");
-        Constant.Ratio   minDensityLow = new Constant.Ratio(
+        Constant.Ratio minDensityLow = new Constant.Ratio(
             0.8,
             "Low Minimum density for a stem");
-        Constant.Ratio   minStemAspectHigh = new Constant.Ratio(
+        Constant.Ratio minStemAspectHigh = new Constant.Ratio(
             12.5,
             "High Minimum aspect ratio for a stem stick");
-        Constant.Ratio   minStemAspectLow = new Constant.Ratio(
+        Constant.Ratio minStemAspectLow = new Constant.Ratio(
             10.0,
             "Low Minimum aspect ratio for a stem stick");
-        Scale.Fraction   minStemLengthHigh = new Scale.Fraction(
+        Scale.Fraction minStemLengthHigh = new Scale.Fraction(
             3.5,
             "High Minimum length for a stem");
-        Scale.Fraction   minStemLengthLow = new Scale.Fraction(
+        Scale.Fraction minStemLengthLow = new Scale.Fraction(
             2.5,
             "Low Minimum length for a stem");
-        Scale.Fraction   minShortStemLengthLow = new Scale.Fraction(
+        Scale.Fraction minShortStemLengthLow = new Scale.Fraction(
             1.5,
             "Low Minimum length for a short stem");
-        Scale.Fraction   maxStemThickness = new Scale.Fraction(
+        Scale.Fraction maxStemThickness = new Scale.Fraction(
             0.4,
             "Maximum thickness of an interesting vertical stick");
-        Scale.Fraction   minStaffDxHigh = new Scale.Fraction(
+        Scale.Fraction minStaffDxHigh = new Scale.Fraction(
             0,
             "HighMinimum horizontal distance between a stem and a staff edge");
-        Scale.Fraction   minStaffDxLow = new Scale.Fraction(
+        Scale.Fraction minStaffDxLow = new Scale.Fraction(
             0,
             "LowMinimum horizontal distance between a stem and a staff edge");
     }
@@ -546,8 +446,7 @@ public class VerticalsBuilder
         {
             int x = stick.getMidPos();
 
-            return sheet.getScale()
-                        .pixelsToFrac(x - system.getLeft());
+            return scale.pixelsToFrac(x - system.getLeft());
         }
     }
 
@@ -610,54 +509,7 @@ public class VerticalsBuilder
         @Implement(Check.class)
         protected double getValue (Stick stick)
         {
-            return sheet.getScale()
-                        .pixelsToFrac(stick.getLength());
-        }
-    }
-
-    //--------------//
-    // MyCheckBoard //
-    //--------------//
-    private class MyCheckBoard
-        extends CheckBoard<Stick>
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public MyCheckBoard (String                                unit,
-                             EventService                          eventService,
-                             Collection<Class<?extends UserEvent>> eventList)
-        {
-            super(unit, null, eventService, eventList);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public void onEvent (UserEvent event)
-        {
-            // Ignore RELEASING
-            if (event.movement == MouseMovement.RELEASING) {
-                return;
-            }
-
-            if (event instanceof GlyphEvent) {
-                GlyphEvent glyphEvent = (GlyphEvent) event;
-                Glyph      glyph = glyphEvent.getData();
-
-                if (glyph instanceof Stick) {
-                    try {
-                        Stick      stick = (Stick) glyph;
-                        SystemInfo system = sheet.getSystemOf(stick);
-                        // Get a fresh suite
-                        setSuite(new StemCheckSuite(system, true));
-                        tellObject(stick);
-                    } catch (StepException ex) {
-                        logger.warning("Glyph cannot be processed");
-                    }
-                } else {
-                    tellObject(null);
-                }
-            }
+            return scale.pixelsToFrac(stick.getLength());
         }
     }
 
@@ -677,55 +529,6 @@ public class VerticalsBuilder
                                      .isWellKnown();
 
             return result;
-        }
-    }
-
-    //--------//
-    // MyView //
-    //--------//
-    private class MyView
-        extends GlyphLagView
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public MyView (GlyphLag lag)
-        {
-            super(lag, null, null, VerticalsBuilder.this, null);
-            setName("VerticalsBuilder-MyView");
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        //----------//
-        // colorize //
-        //----------//
-        @Override
-        public void colorize ()
-        {
-            super.colorize();
-
-            // Use light gray color for past successful entities
-            sheet.colorize(lag, viewIndex, Color.lightGray);
-
-            // Use bright yellow color for recognized stems
-            for (Glyph glyph : sheet.getActiveGlyphs()) {
-                if (glyph.isStem()) {
-                    Stick stick = (Stick) glyph;
-                    stick.colorize(lag, viewIndex, Color.yellow);
-                }
-            }
-        }
-
-        //-------------//
-        // renderItems //
-        //-------------//
-        @Override
-        public void renderItems (Graphics g)
-        {
-            // Render all physical info known so far
-            sheet.accept(new SheetPainter(g, getZoom()));
-
-            super.renderItems(g);
         }
     }
 
@@ -760,50 +563,8 @@ public class VerticalsBuilder
         @Implement(Check.class)
         protected double getValue (Stick stick)
         {
-            return sheet.getScale()
-                        .pixelsToFrac(
+            return scale.pixelsToFrac(
                 (system.getLeft() + system.getWidth()) - stick.getMidPos());
-        }
-    }
-
-    //----------------//
-    // StemCheckSuite //
-    //----------------//
-    private class StemCheckSuite
-        extends CheckSuite<Stick>
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        private final SystemInfo system;
-
-        //~ Constructors -------------------------------------------------------
-
-        public StemCheckSuite (SystemInfo system,
-                               boolean    isShort)
-            throws StepException
-        {
-            super("Stem", constants.minCheckResult.getValue());
-            add(1, new MinLengthCheck(isShort));
-            add(1, new MinAspectCheck());
-            add(1, new FirstAdjacencyCheck());
-            add(1, new LastAdjacencyCheck());
-            add(0, new LeftCheck(system));
-            add(0, new RightCheck(system));
-            add(2, new MinDensityCheck());
-
-            this.system = system;
-
-            if (logger.isFineEnabled()) {
-                dump();
-            }
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        protected void dumpSpecific ()
-        {
-            System.out.println(system.toString());
         }
     }
 }

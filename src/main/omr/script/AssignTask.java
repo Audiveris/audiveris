@@ -85,7 +85,7 @@ public class AssignTask
         throws StepException
     {
         super.run(sheet);
-        sheet.getSymbolsBuilder()
+        sheet.getSymbolsModel()
              .assignSetShape(SYNC, glyphs, shape, compound, RECORDING);
     }
 

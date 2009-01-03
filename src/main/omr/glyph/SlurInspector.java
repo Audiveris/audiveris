@@ -27,14 +27,13 @@ import omr.util.Implement;
 import java.util.*;
 
 /**
- * Class <code>SlurGlyph</code> encapsulates physical processing dedicated to
- * glyphs with SLUR shape, before they are actually used to generate Slurs
- * entities in the score domain.
+ * Class <code>SlurInspector</code> encapsulates physical processing dedicated
+ * to inspection of glyphs with SLUR shape at a dedicated system level.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
-public class SlurGlyph
+public class SlurInspector
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -42,13 +41,26 @@ public class SlurGlyph
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(SlurGlyph.class);
+    private static final Logger logger = Logger.getLogger(SlurInspector.class);
+
+    //~ Instance fields --------------------------------------------------------
+
+    /** Dedicated system */
+    private final SystemInfo system;
 
     //~ Constructors -----------------------------------------------------------
 
-    /** Pure functionalities ??? */
-    private SlurGlyph ()
+    //---------------//
+    // SlurInspector //
+    //---------------//
+    /**
+     * Creates a new SlurInspector object.
+     *
+     * @param system The dedicated system
+     */
+    public SlurInspector (SystemInfo system)
     {
+        this.system = system;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -114,19 +126,17 @@ public class SlurGlyph
     /**
      * For large glyphs, we suspect a slur with a stuck object. So the strategy
      * is to rebuild the true Slur portions from the underlying sections. These
-     * "good" seections are put into the "kept" collection. Sections left over
+     * "good" sections are put into the "kept" collection. Sections left over
      * are put into the "left" collection in order to be used to rebuild the
      * stuck object(s).
      *
-     * <p>The method by itself does not build the new slur glyph, this task must
+     * <p>The method by itself does not build the new oldSlur glyph, this task must
      * be done by the caller.
      *
-     * @param slur the spurious slur slur
-     * @param system the containing system info
-     * @return the extracted slur glyph, if any
+     * @param oldSlur the spurious slur
+     * @return the extracted oldSlur glyph, if any
      */
-    public static Glyph fixLargeSlur (Glyph      slur,
-                                      SystemInfo system)
+    public Glyph fixLargeSlur (Glyph oldSlur)
     {
         /**
          * Sections are first ordered by decreasing weight and continuously
@@ -135,12 +145,10 @@ public class SlurGlyph
          * if the resulting circle distance gets lower.
          */
         if (logger.isFineEnabled()) {
-            logger.finest("fixing Large Slur for glyph #" + slur.getId());
+            logger.fine("fixing Large Slur for glyph #" + oldSlur.getId());
         }
 
-        final int          interline = system.getScoreSystem()
-                                             .getScore()
-                                             .getSheet()
+        final int          interline = system.getSheet()
                                              .getInterline();
         final int          minChunkWeight = system.getScoreSystem()
                                                   .getScale()
@@ -149,7 +157,7 @@ public class SlurGlyph
 
         // Get a COPY of the member list */
         List<GlyphSection> members = new ArrayList<GlyphSection>(
-            slur.getMembers());
+            oldSlur.getMembers());
 
         // Sort by decreasing weight
         Collections.sort(
@@ -180,7 +188,7 @@ public class SlurGlyph
         }
 
         if (logger.isFineEnabled()) {
-            logger.finest("Seed section is " + seedSection);
+            logger.fine("Seed section is " + seedSection);
         }
 
         // If no significant section has been found, just give up
@@ -195,7 +203,8 @@ public class SlurGlyph
         double             distThreshold = constants.maxCircleDistance.getValue();
         double             bestDistance = distThreshold;
 
-        kept.add(seedSection); // We impose the seed
+        // We impose the seed
+        kept.add(seedSection);
 
         for (GlyphSection section : members) {
             if (section == seedSection) {
@@ -208,7 +217,7 @@ public class SlurGlyph
             }
 
             if (logger.isFineEnabled()) {
-                logger.finest("Trying " + section);
+                logger.fine("Trying " + section);
             }
 
             // Try a circle
@@ -221,7 +230,7 @@ public class SlurGlyph
                 double distance = circle.getDistance();
 
                 if (logger.isFineEnabled()) {
-                    logger.finest("dist=" + distance);
+                    logger.fine("dist=" + distance);
                 }
 
                 if (distance <= distThreshold) {
@@ -229,69 +238,148 @@ public class SlurGlyph
                     bestDistance = distance;
 
                     if (logger.isFineEnabled()) {
-                        logger.finest("Keep " + section);
+                        logger.fine("Keep " + section);
                     }
                 } else {
                     left.add(section);
 
                     if (logger.isFineEnabled()) {
-                        logger.finest("Discard " + section);
+                        logger.fine("Discard " + section);
                     }
                 }
             } catch (Exception ex) {
                 left.add(section);
 
                 if (logger.isFineEnabled()) {
-                    logger.finest(ex.getMessage() + " w/ " + section);
+                    logger.fine(ex.getMessage() + " w/ " + section);
                 }
             }
         }
 
         if (kept.size() > 0) {
-            GlyphsBuilder builder = system.getScoreSystem()
-                                          .getScore()
-                                          .getSheet()
-                                          .getGlyphsBuilder();
-
-            // Build new slur glyph with sections kept
-            Glyph newGlyph = new Stick(interline);
-
-            for (GlyphSection section : kept) {
-                newGlyph.addSection(section, /* link => */
-                                    true);
-            }
-
-            newGlyph.setShape(Shape.SLUR);
-            newGlyph = builder.insertGlyph(newGlyph, system);
-
-            // Remove former slur glyph
-            builder.removeGlyph(slur, system, /*cutSections=>*/
-                                false);
-
-            // Free the sections left over
-            for (GlyphSection section : left) {
-                section.setGlyph(null);
-            }
-
-            if (logger.isFineEnabled()) {
+            // Make sure we do have a suitable oldSlur
+            try {
                 Circle circle = computeCircle(kept);
                 double distance = circle.getDistance();
-                logger.finest(
-                    "Built slur #" + newGlyph.getId() + " distance=" +
-                    (float) distance + " sections=" + Section.toString(kept));
 
-                logger.fine(
-                    "Fixed large slur #" + slur.getId() + " as smaller #" +
-                    newGlyph.getId());
+                if (logger.isFineEnabled()) {
+                    logger.fine("Final dist=" + distance);
+                }
+
+                if (distance <= distThreshold) {
+                    // Build new oldSlur glyph with sections kept
+                    Glyph newGlyph = new Stick(interline);
+
+                    for (GlyphSection section : kept) {
+                        newGlyph.addSection(section, /* link => */
+                                            true);
+                    }
+
+                    newGlyph.setShape(Shape.SLUR);
+                    newGlyph = system.addGlyph(newGlyph);
+
+                    if (logger.isFineEnabled()) {
+                        logger.fine(
+                            "Built slur #" + newGlyph.getId() + " distance=" +
+                            (float) distance + " sections=" +
+                            Section.toString(kept));
+
+                        logger.fine(
+                            "Fixed large slur #" + oldSlur.getId() +
+                            " as smaller #" + newGlyph.getId());
+                    }
+
+                    return newGlyph;
+                } else {
+                    if (logger.isFineEnabled()) {
+                        logger.fine("Giving up slur w/ " + kept);
+                    }
+
+                    left.addAll(kept);
+
+                    return null;
+                }
+            } catch (Exception ex) {
+                left.addAll(kept);
+
+                return null;
+            } finally {
+                // Remove former oldSlur glyph
+                oldSlur.setShape(null);
+                system.removeGlyph(oldSlur);
+
+                // Free the sections left over
+                for (GlyphSection section : left) {
+                    section.setGlyph(null);
+                }
             }
-
-            return newGlyph;
         } else {
             logger.warning(
                 system.getScoreSystem().getContextString() +
-                " No section left from large slur #" + slur.getId());
+                " No section left from large slur #" + oldSlur.getId());
 
             return null;
+        }
+    }
+
+    //-----------------//
+    // fixSpuriousSlur //
+    //-----------------//
+    /**
+     * Try to correct the oldSlur glyphs (which have a too high circle distance) by
+     * either adding a neigboring glyph (for small slurs) or removing stuck
+     * glyph sections (for large slurs)
+     *
+     * @param glyph the spurious glyph at hand
+     * @return true if the oldSlur glyph has actually been fixed
+     */
+    public Glyph fixSpuriousSlur (Glyph glyph)
+    {
+        if (glyph.getNormalizedWeight() <= constants.spuriousWeightThreshold.getValue()) {
+            return fixSmallSlur(glyph);
+        } else {
+            return fixLargeSlur(glyph);
+        }
+    }
+
+    //-------------//
+    // verifySlurs //
+    //-------------//
+    /**
+     * Process all the oldSlur glyphs in the given system, and try to correct the
+     * spurious ones if any
+     */
+    public void verifySlurs ()
+    {
+        // First, make a list of all oldSlur glyphs in this system
+        // (So as to free the system glyph list for on-the-fly modifications)
+        List<Glyph> slurs = new ArrayList<Glyph>();
+
+        for (Glyph glyph : system.getGlyphs()) {
+            if ((glyph.getShape() == Shape.SLUR)) {
+                slurs.add(glyph);
+            }
+        }
+
+        // Then verify each slur seed in turn
+        for (Glyph seed : slurs) {
+            // Check this slur has not just been 'merged' with another one
+            if (seed.isActive()) {
+                if (logger.isFineEnabled()) {
+                    logger.fine("Verifying slur glyph#" + seed.getId());
+                }
+
+                if (!computeCircle(seed)
+                         .isValid(getMaxCircleDistance())) {
+                    try {
+                        fixSpuriousSlur(seed);
+                    } catch (Exception ex) {
+                        logger.warning("Error in fixing slur", ex);
+                    }
+                } else if (logger.isFineEnabled()) {
+                    logger.finest("Valid slur " + seed.getId());
+                }
+            }
         }
     }
 
@@ -305,14 +393,12 @@ public class SlurGlyph
      * distance to the resulting best approximating circle.
      *
      * @param slur the spurious slur glyph
-     * @param system the containing system info
      * @return the fixed slur glyph, if any
      */
-    public static Glyph fixSmallSlur (Glyph      slur,
-                                      SystemInfo system)
+    private Glyph fixSmallSlur (Glyph oldSlur)
     {
         if (logger.isFineEnabled()) {
-            logger.finest("fixing Small Slur for glyph #" + slur.getId());
+            logger.finest("fixing Small Slur for glyph #" + oldSlur.getId());
         }
 
         SlurCompoundAdapter adapter = new SlurCompoundAdapter(
@@ -323,12 +409,12 @@ public class SlurGlyph
             system.getGlyphs().size());
 
         for (Glyph g : system.getGlyphs()) {
-            if ((g != slur) && adapter.isSuitable(g)) {
+            if ((g != oldSlur) && adapter.isSuitable(g)) {
                 suitables.add(g);
             }
         }
 
-        // Sort suitable glyphs by decreasing weight (BOF)
+        // Sort suitable glyphs by decreasing weight
         Collections.sort(
             suitables,
             new Comparator<Glyph>() {
@@ -340,93 +426,21 @@ public class SlurGlyph
                 });
 
         // Process that slur, looking at neighbors
-        Glyph compound = system.getScoreSystem()
-                               .getScore()
-                               .getSheet()
-                               .getGlyphInspector()
-                               .tryCompound(slur, suitables, adapter);
+        Glyph compound = system.tryCompound(oldSlur, suitables, adapter);
 
         if (compound != null) {
-            compound.setShape(Shape.SLUR);
+            Glyph newSlur = system.addGlyph(compound);
+            newSlur.setShape(Shape.SLUR);
 
             if (logger.isFineEnabled()) {
                 logger.fine(
-                    "Fixed small slur #" + slur.getId() + " as compound #" +
-                    compound.getId());
+                    "Fixed small slur #" + oldSlur.getId() + " as compound #" +
+                    newSlur.getId());
             }
 
-            return compound;
+            return newSlur;
         } else {
             return null;
-        }
-    }
-
-    //-----------------//
-    // fixSpuriousSlur //
-    //-----------------//
-    /**
-     * Try to correct the slur glyphs (which have a too high circle distance) by
-     * either adding a neigboring glyph (for small slurs) or removing stuck
-     * glyph sections (for large slurs)
-     *
-     * @param glyph the spurious glyph at hand
-     * @param system the containing system
-     * @return true if the slur glyph has actually been fixed
-     */
-    public static Glyph fixSpuriousSlur (Glyph      glyph,
-                                         SystemInfo system)
-    {
-        if (glyph.getNormalizedWeight() <= constants.spuriousWeightThreshold.getValue()) {
-            return fixSmallSlur(glyph, system);
-        } else {
-            return fixLargeSlur(glyph, system);
-        }
-    }
-
-    //-------------//
-    // verifySlurs //
-    //-------------//
-    /**
-     * Process all the slur glyphs in the given system, and try to correct the
-     * spurious ones if any
-     *
-     * @param system the system at hand
-     */
-    public static void verifySlurs (SystemInfo system)
-    {
-        // First, make up a list of all slur glyphs in this system
-        // (So as to free the system glyph list for on-the-fly modifications)
-        List<Glyph> slurs = new ArrayList<Glyph>();
-
-        for (Glyph glyph : system.getGlyphs()) {
-            if (glyph.getShape() == Shape.SLUR) {
-                slurs.add(glyph);
-            }
-        }
-
-        // Then verify each slur seed in turn
-        for (Glyph seed : slurs) {
-            if (logger.isFineEnabled()) {
-                logger.fine("Verifying slur glyph#" + seed.getId());
-            }
-
-            // Check this slur has not just been 'merged' with another one
-            if (seed.getFirstSection()
-                    .getGlyph() != seed) {
-                continue;
-            }
-
-            Circle circle = computeCircle(seed);
-
-            if (!circle.isValid(getMaxCircleDistance())) {
-                try {
-                    fixSpuriousSlur(seed, system);
-                } catch (Exception ex) {
-                    logger.warning("Error in fixing slur", ex);
-                }
-            } else if (logger.isFineEnabled()) {
-                logger.finest("Valid slur " + seed.getId());
-            }
         }
     }
 
@@ -440,7 +454,7 @@ public class SlurGlyph
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** Maximum distance to approximating circle for a slur */
+        /** Maximum distance to approximating circle for a oldSlur */
         Scale.Fraction maxCircleDistance = new Scale.Fraction(
             0.12,
             "Maximum distance to approximating circle" + " for a slur");
@@ -451,17 +465,17 @@ public class SlurGlyph
             "Normalized weight threshold between small and large spurious" +
             " slurs");
 
-        /** Minimum weight of a chunk to be part of slur computation */
+        /** Minimum weight of a chunk to be part of oldSlur computation */
         Scale.AreaFraction minChunkWeight = new Scale.AreaFraction(
             0.5,
             "Minimum weight of a chunk to be part of slur" + " computation");
 
-        /** Extension abscissa when looking for slur compound */
+        /** Extension abscissa when looking for oldSlur compound */
         Scale.Fraction slurBoxDx = new Scale.Fraction(
             0.3,
             "Extension abscissa when looking for slur compound");
 
-        /** Extension ordinate when looking for slur compound */
+        /** Extension ordinate when looking for oldSlur compound */
         Scale.Fraction slurBoxDy = new Scale.Fraction(
             0.2,
             "Extension ordinate when looking for slur compound");
@@ -472,14 +486,14 @@ public class SlurGlyph
     //---------------------//
     /**
      * Class <code>SlurCompoundAdapter</code> is a CompoundAdapter meant to process a
-     * small slur.
+     * small oldSlur.
      */
     private static class SlurCompoundAdapter
         implements GlyphInspector.CompoundAdapter
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** The scale around the slur */
+        /** The scale around the oldSlur */
         private final Scale scale;
 
         //~ Constructors -------------------------------------------------------
@@ -506,13 +520,18 @@ public class SlurGlyph
         @Implement(GlyphInspector.CompoundAdapter.class)
         public boolean isSuitable (Glyph glyph)
         {
+            if (!glyph.isActive()) { // Safer
+
+                return false;
+            }
+
             if (!glyph.isKnown()) {
                 return true;
             }
 
             if (glyph.getShape() == Shape.SLUR) {
                 try {
-                    Circle circle = SlurGlyph.computeCircle(glyph);
+                    Circle circle = SlurInspector.computeCircle(glyph);
 
                     return !circle.isValid(getMaxCircleDistance());
                 } catch (Exception ex) {

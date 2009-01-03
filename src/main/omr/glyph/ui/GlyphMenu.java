@@ -15,7 +15,7 @@ import omr.glyph.Glyph;
 import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphLag;
 import omr.glyph.Shape;
-import omr.glyph.SymbolsBuilder;
+import omr.glyph.SymbolsModel;
 import static omr.script.ScriptRecording.*;
 
 import omr.selection.GlyphEvent;
@@ -47,7 +47,7 @@ public class GlyphMenu
     // Links to partnering entities
     private final Sheet           sheet;
     private final ShapeFocusBoard shapeFocus;
-    private final SymbolsBuilder  symbolsBuilder;
+    private final SymbolsModel    symbolsBuilder;
     private final Evaluator       evaluator;
 
     /** Set of actions to update menu according to selected glyphs */
@@ -82,11 +82,11 @@ public class GlyphMenu
      * @param shapeFocus the current shape focus
      * @param glyphLag the related glyph lag
      */
-    public GlyphMenu (final Sheet          sheet,
-                      final SymbolsBuilder symbolsBuilder,
-                      Evaluator            evaluator,
-                      ShapeFocusBoard      shapeFocus,
-                      GlyphLag             glyphLag)
+    public GlyphMenu (final Sheet        sheet,
+                      final SymbolsModel symbolsBuilder,
+                      Evaluator          evaluator,
+                      ShapeFocusBoard    shapeFocus,
+                      GlyphLag           glyphLag)
     {
         this.sheet = sheet;
         this.symbolsBuilder = symbolsBuilder;
@@ -361,16 +361,18 @@ public class GlyphMenu
             symbolsBuilder.deassignSetShape(ASYNC, glyphs, RECORDING);
 
             // Update focus on current glyph, if reused in a compound
-            Glyph newGlyph = glyph.getFirstSection()
-                                  .getGlyph();
+            if (glyph != null) {
+                Glyph newGlyph = glyph.getFirstSection()
+                                      .getGlyph();
 
-            if (glyph != newGlyph) {
-                glyphLag.publish(
-                    new GlyphEvent(
-                        this,
-                        SelectionHint.GLYPH_INIT,
-                        null,
-                        newGlyph));
+                if (glyph != newGlyph) {
+                    glyphLag.publish(
+                        new GlyphEvent(
+                            this,
+                            SelectionHint.GLYPH_INIT,
+                            null,
+                            newGlyph));
+                }
             }
         }
 
@@ -552,7 +554,7 @@ public class GlyphMenu
             // Proposed compound?
             Glyph glyph = getCurrentGlyph();
 
-            if ((glyphNb > 0) && (glyph.getId() == 0)) {
+            if ((glyphNb > 0) && (glyph != null) && (glyph.getId() == 0)) {
                 Evaluation vote = evaluator.vote(
                     glyph,
                     GlyphInspector.getSymbolMaxDoubt());
@@ -591,7 +593,7 @@ public class GlyphMenu
         public void actionPerformed (ActionEvent e)
         {
             List<Glyph> glyphs = getCurrentGlyphs();
-            symbolsBuilder.stemSegment(ASYNC, glyphs, true); // isShort
+            symbolsBuilder.segmentGlyphSetOnStems(ASYNC, glyphs, true); // isShort
         }
 
         @Override
@@ -663,7 +665,7 @@ public class GlyphMenu
         public void actionPerformed (ActionEvent e)
         {
             List<Glyph> glyphs = getCurrentGlyphs();
-            symbolsBuilder.stemSegment(ASYNC, glyphs, false); // isShort
+            symbolsBuilder.segmentGlyphSetOnStems(ASYNC, glyphs, false); // isShort
         }
 
         @Override

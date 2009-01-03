@@ -64,7 +64,7 @@ public class DeassignTask
         throws StepException
     {
         super.run(sheet);
-        sheet.getSymbolsBuilder()
+        sheet.getSymbolsModel()
              .deassignSetShape(SYNC, glyphs, RECORDING);
     }
 

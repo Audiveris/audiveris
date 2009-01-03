@@ -375,7 +375,7 @@ public class Glyph
     //----------//
     /**
      * Report the parts, if any, that compose this compound
-     * @return the set of glyphs
+     * @return the set of glyphs, perhaps empty, but never null
      */
     public Set<Glyph> getParts ()
     {
@@ -704,29 +704,10 @@ public class Glyph
      * Tests whether this glyph is active (its member sections point to it) or
      * not
      *
-     * @return true if glyph is active
+     * @return true if glyph is active, false otherwise
      */
     public boolean isActive ()
     {
-        // Some sanity check, to be removed later
-        if (false) {
-            boolean foundMembers = false;
-            boolean foundAliens = false;
-
-            for (GlyphSection section : members) {
-                if (section.getGlyph() == this) {
-                    foundMembers = true;
-                } else {
-                    foundAliens = true;
-                }
-
-                if (foundAliens && foundMembers) {
-                    logger.warning(
-                        "Mixed aliens & members in glyph #" + getId());
-                }
-            }
-        }
-
         return members.first()
                       .getGlyph() == this;
     }
@@ -1201,29 +1182,20 @@ public class Glyph
         }
     }
 
-    //---------//
-    // destroy //
-    //---------//
+    //-------------//
+    // cutSections //
+    //-------------//
     /**
-     * Delete the glyph from its containing lag
-     *
-     * @param cutSections if true, the glyph links in the member sections
-     * are also nullified
+     * Cut the link to this glyph from its member sections, only if the sections
+     * actually point to this glyph
      */
-    public void destroy (boolean cutSections)
+    public void cutSections ()
     {
-        // Cut the link between this glyph and its member sections
-        if (cutSections) {
-            for (GlyphSection section : members) {
+        for (GlyphSection section : members) {
+            if (section.getGlyph() == this) {
                 section.setGlyph(null);
             }
         }
-
-        //        // We do not destroy the sections, just the glyph which must be
-        //        // removed from its containing lag.
-        //        if (lag != null) {
-        //            lag.removeGlyph(this);
-        //        }
     }
 
     //-----------//

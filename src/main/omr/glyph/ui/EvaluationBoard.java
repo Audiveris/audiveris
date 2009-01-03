@@ -200,9 +200,9 @@ class EvaluationBoard
             return;
         }
 
-//        logger.info(
-//            "EvaluationBoard/" + getClass().getSimpleName() + " " + getName() +
-//            " " + event);
+        //        logger.info(
+        //            "EvaluationBoard/" + getClass().getSimpleName() + " " + getName() +
+        //            " " + event);
 
         // Don't evaluate Added glyph, since this would hide Compound evaluation
         if (event.hint == SelectionHint.LOCATION_ADD) {

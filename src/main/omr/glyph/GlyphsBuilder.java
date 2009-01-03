@@ -27,9 +27,11 @@ import java.awt.Rectangle;
 import java.util.*;
 
 /**
- * Class <code>GlyphsBuilder</code> is in charge of building (and removing)
- * glyphs and of updating accordingly the containing entities (GlyphLag and
- * SystemInfo). Though there are vertical and horizontal glyphs, a GlyphBuilder
+ * Class <code>GlyphsBuilder</code> is, at a system level, in charge of
+ * building (and removing) glyphs and of updating accordingly the containing
+ * entities (GlyphLag and SystemInfo).
+ *
+ * <p>Though there are vertical and horizontal glyphs, a GlyphBuilder
  * is meant to handle only vertical glyphs, since it plays only with the sheet
  * vertical lag and with the system vertical sections.
  *
@@ -42,9 +44,10 @@ import java.util.*;
  * out of the remaining sections of a sheet (since this is done using the
  * physical edges between the sections).
  *
- * <p>It provides the provisioning methods to actually insert or remove a glyph.<ul>
+ * <p>It provides the provisioning methods to actually insert or remove a glyph.
+ * <ul>
  *
- * <li>A given newly built glyph can be inserted via {@link #insertGlyph}
+ * <li>A given newly built glyph can be inserted via {@link #addGlyph}
  *
  * <li>Similarly {@link #removeGlyph} allows the removal of an existing glyph.
  * <B>Nota:</B> Remember that the sections that compose a glyph are not removed,
@@ -68,8 +71,8 @@ public class GlyphsBuilder
 
     //~ Instance fields --------------------------------------------------------
 
-    /** The containing sheet */
-    private final Sheet sheet;
+    /** The dedicated system */
+    private final SystemInfo system;
 
     /** The global sheet scale */
     private final Scale scale;
@@ -83,13 +86,15 @@ public class GlyphsBuilder
     // GlyphsBuilder //
     //---------------//
     /**
-     * Creates a sheet-dedicated builder of glyphs
+     * Creates a system-dedicated builder of glyphs
      *
-     * @param sheet the contextual sheet
+     * @param system the dedicated system
      */
-    public GlyphsBuilder (Sheet sheet)
+    public GlyphsBuilder (SystemInfo system)
     {
-        this.sheet = sheet;
+        this.system = system;
+
+        Sheet sheet = system.getSheet();
         scale = sheet.getScale();
 
         // Reuse vertical lag (from bars step).
@@ -104,9 +109,9 @@ public class GlyphsBuilder
     /**
      * Make a new glyph out of a collection of (sub) glyphs, by merging all
      * their member sections. This compound is temporary, since until it is
-     * properly inserted by use of {@link #insertGlyph}, this building has no
+     * properly inserted by use of {@link #addGlyph}, this building has no
      * impact on either the containing lag, the containing system, nor the
-     * contained sections themselves.
+     * contained parts or the contained sections themselves.
      *
      * @param parts the collection of (sub) glyphs
      * @return the brand new (compound) glyph
@@ -145,67 +150,64 @@ public class GlyphsBuilder
      */
     public void computeGlyphFeatures (Glyph glyph)
     {
-        SystemInfo system = sheet.getSystemOf(glyph);
-        computeGlyphFeatures(glyph, system);
-    }
+        // Ordinate (approximate value)
+        Rectangle   box = glyph.getContourBox();
+        int         y = box.y;
 
-    //------------------------//
-    // extractNewSystemGlyphs //
-    //------------------------//
-    /**
-     * In the specified system, build new glyphs from unknown sections (sections
-     * not linked to a known glyph)
-     *
-     * @param system the specified system
-     */
-    public void extractNewSystemGlyphs (SystemInfo system)
-    {
-        removeSystemInactives(system);
-        retrieveSystemGlyphs(system);
-    }
+        // Mass center (which makes sure moments are available)
+        SystemPoint centroid = system.getScoreSystem()
+                                     .toSystemPoint(glyph.getCentroid());
+        Staff       staff = system.getScoreSystem()
+                                  .getStaffAt(centroid);
 
-    //-------------//
-    // insertGlyph //
-    //-------------//
-    /**
-     * Insert a brand new glyph in proper system and lag. It does not check if
-     * the glyph has an assigned shape.
-     *
-     * @param glyph the brand new glyph
-     * @return the original glyph as inserted in the glyph lag
-     */
-    public Glyph insertGlyph (Glyph glyph)
-    {
-        return insertGlyph(glyph, sheet.getSystemOf(glyph));
-    }
+        // Connected stems
+        glyph.setLeftStem(null);
+        glyph.setRightStem(null);
 
-    //-------------//
-    // insertGlyph //
-    //-------------//
-    /**
-     * Insert a brand new glyph in proper system and lag. It does not check if
-     * the glyph has an assigned shape.
-     *
-     * @param glyph the brand new glyph
-     * @param system the containing system, which may be null
-     * @return the original glyph as inserted in the glyph lag
-     */
-    public Glyph insertGlyph (Glyph      glyph,
-                              SystemInfo system)
-    {
-        // Make sure we do have an enclosing system
-        if (system == null) {
-            system = sheet.getSystemOf(glyph);
+        int stemNb = 0;
+
+        if (checkStemIntersect(system.getGlyphs(), glyph, /* onLeft => */
+                               true)) {
+            stemNb++;
         }
 
+        if (checkStemIntersect(system.getGlyphs(), glyph, /* onLeft => */
+                               false)) {
+            stemNb++;
+        }
+
+        glyph.setStemNumber(stemNb);
+
+        // Has a related ledger ?
+        glyph.setWithLedger(
+            checkDashIntersect(
+                system.getLedgers(),
+                system.getMaxLedgerWidth(),
+                ledgerBox(box)));
+
+        // Vertical position wrt staff
+        glyph.setPitchPosition(staff.pitchPositionOf(centroid));
+    }
+
+    //----------//
+    // addGlyph //
+    //----------//
+    /**
+     * Add a brand new glyph as an active glyph in proper system and lag.
+     * It does not check if the glyph has an assigned shape.
+     * If the glyph is a compound, its parts are made pointing back to it and
+     * are made no longer active glyphs.
+     *
+     * @param glyph the brand new glyph
+     * @return the original glyph as inserted in the glyph lag
+     */
+    public Glyph addGlyph (Glyph glyph)
+    {
         // Get rid of composing parts if any
-        if (glyph.getParts() != null) {
-            for (Glyph part : glyph.getParts()) {
-                part.setPartOf(glyph);
-                part.setShape(Shape.NO_LEGAL_SHAPE);
-                removeGlyph(part, system, /* cutSections => */
-                            false);
-            }
+        for (Glyph part : glyph.getParts()) {
+            part.setPartOf(glyph);
+            part.setShape(Shape.NO_LEGAL_SHAPE);
+            system.removeGlyph(part);
         }
 
         // Insert in lag, which assigns an id to the glyph
@@ -216,116 +218,21 @@ public class GlyphsBuilder
             oldGlyph.copyStemInformation(glyph);
         }
 
-        if (system != null) {
-            system.addGlyph(oldGlyph);
-        }
+        system.addToGlyphsCollection(oldGlyph);
 
         return oldGlyph;
-    }
-
-    //-------------//
-    // removeGlyph //
-    //-------------//
-    /**
-     * Remove a glyph from the containing lag and the containing system glyph
-     * list.
-     *
-     * @param glyph the glyph to remove
-     * @param system the (potential) containing system info, or null
-     * @param cutSections true to also cut the link between member sections and
-     *                    glyph
-     */
-    public void removeGlyph (Glyph      glyph,
-                             SystemInfo system,
-                             boolean    cutSections)
-    {
-        // Remove from system
-        if (system == null) {
-            system = sheet.getSystemOf(glyph);
-        }
-
-        if (!system.removeGlyph(glyph)) {
-            //            SystemInfo closest = sheet.getClosestSystem(system, y);
-            //
-            //            if (closest != null) {
-            //                if (!closest.removeGlyph(glyph)) {
-            //                    logger.warning(
-            //                        "Cannot find " + glyph + " close to " + system +
-            //                        " closest was " + closest);
-            //                }
-            //            }
-        }
-
-        // Remove from lag
-        glyph.destroy(cutSections);
-    }
-
-    //-----------------------//
-    // removeSystemInactives //
-    //-----------------------//
-    /**
-     * On a specified system, look for all inactive glyphs and remove them from
-     * its glyphs collection as well as from the containing lag.
-     * Purpose is to prepare room for a new glyph extraction
-     *
-     * @param system the specified system
-     */
-    public void removeSystemInactives (SystemInfo system)
-    {
-        // To avoid concurrent modifs exception
-        Collection<Glyph> toRemove = new ArrayList<Glyph>();
-
-        for (Glyph glyph : system.getGlyphs()) {
-            if (!glyph.isActive()) {
-                toRemove.add(glyph);
-            }
-        }
-
-        for (Glyph glyph : toRemove) {
-            // Remove from system (& lag)
-            removeGlyph(glyph, system, /* cutSections => */
-                        false);
-        }
     }
 
     //----------------//
     // retrieveGlyphs //
     //----------------//
     /**
-     * Retrieve the new glyphs that can be built in all systems of the sheet
-     */
-    public void retrieveGlyphs ()
-    {
-        // Make sure horizontals (such as ledgers) & verticals (such as
-        // stems) have been retrieved
-        sheet.getHorizontals();
-
-        int nb = 0;
-
-        // Now considerConnection each system area on turn
-        for (SystemInfo system : sheet.getSystems()) {
-            nb += retrieveSystemGlyphs(system);
-        }
-
-        // Report result
-        if (logger.isFineEnabled() && (nb > 0)) {
-            logger.fine(nb + " glyph" + ((nb > 1) ? "s" : "") + " found");
-        } else {
-            logger.fine("No glyph found");
-        }
-    }
-
-    //----------------------//
-    // retrieveSystemGlyphs //
-    //----------------------//
-    /**
      * In a given system area, browse through all sections not assigned to known
      * glyphs, and build new glyphs out of connected sections
      *
-     * @param system the system area to process
      * @return the number of glyphs built in this system
      */
-    public int retrieveSystemGlyphs (SystemInfo system)
+    public int retrieveGlyphs ()
     {
         int               nb = 0;
         Set<GlyphSection> visitedSections = new LinkedHashSet<GlyphSection>();
@@ -338,18 +245,17 @@ public class GlyphsBuilder
                 Glyph glyph = new Stick(scale.interline());
                 considerConnection(glyph, section, visitedSections);
 
-                // Compute all its characteristics
-                ///computeGlyphFeatures(glyph, system);
-
                 // And insert this newly built glyph at proper location
-                glyph = insertGlyph(glyph, system);
+                glyph = addGlyph(glyph);
                 nb++;
             }
         }
 
-        // Force update for features of ALL system glyphs
+        // Force update for features of ALL system glyphs, since the mere
+        // existence of new glyphs may impact the characteristics of others
+        // (example of stems nearby)
         for (Glyph glyph : system.getGlyphs()) {
-            computeGlyphFeatures(glyph, system);
+            computeGlyphFeatures(glyph);
         }
 
         return nb;
@@ -438,58 +344,6 @@ public class GlyphsBuilder
         }
 
         return false;
-    }
-
-    //----------------------//
-    // computeGlyphFeatures //
-    //----------------------//
-    /**
-     * Compute all the features that will be used to recognize the glyph at hand
-     * (it's a mix of moments plus a few other characteristics)
-     *
-     * @param glyph the glyph at hand
-     * @param system the system area which contains the glyph
-     */
-    private void computeGlyphFeatures (Glyph      glyph,
-                                       SystemInfo system)
-    {
-        // Ordinate (approximate value)
-        Rectangle   box = glyph.getContourBox();
-        int         y = box.y;
-
-        // Mass center (which makes sure moments are available)
-        SystemPoint centroid = system.getScoreSystem()
-                                     .toSystemPoint(glyph.getCentroid());
-        Staff       staff = system.getScoreSystem()
-                                  .getStaffAt(centroid);
-
-        // Connected stems
-        glyph.setLeftStem(null);
-        glyph.setRightStem(null);
-
-        int stemNb = 0;
-
-        if (checkStemIntersect(system.getGlyphs(), glyph, /* onLeft => */
-                               true)) {
-            stemNb++;
-        }
-
-        if (checkStemIntersect(system.getGlyphs(), glyph, /* onLeft => */
-                               false)) {
-            stemNb++;
-        }
-
-        glyph.setStemNumber(stemNb);
-
-        // Has a related ledger ?
-        glyph.setWithLedger(
-            checkDashIntersect(
-                system.getLedgers(),
-                system.getMaxLedgerWidth(),
-                ledgerBox(box)));
-
-        // Vertical position wrt staff
-        glyph.setPitchPosition(staff.pitchPositionOf(centroid));
     }
 
     //--------------------//

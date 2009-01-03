@@ -822,7 +822,7 @@ public class KeySignature
     }
 
     //----------//
-    // addGlyph //
+    // addToGlyphsCollection //
     //----------//
     /**
      * Add a new glyph as part of this key signature

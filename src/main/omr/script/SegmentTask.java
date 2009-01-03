@@ -67,8 +67,8 @@ public class SegmentTask
         throws StepException
     {
         super.run(sheet);
-        sheet.getSymbolsBuilder()
-             .stemSegment(SYNC, glyphs, isShort);
+        sheet.getSymbolsModel()
+             .segmentGlyphSetOnStems(SYNC, glyphs, isShort);
     }
 
     //-----------------//

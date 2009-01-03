@@ -11,8 +11,6 @@ package omr.selection;
 
 import omr.log.Logger;
 
-import omr.util.ClassUtil;
-
 /**
  * Interface <code>UserEvent</code> defines the common behavior of user events
  * that are stored as selections, and handled by the EventBus.
@@ -92,8 +90,8 @@ public abstract class UserEvent
         this.hint = hint;
         this.movement = movement;
 
-//        logger.warning(
-//            ClassUtil.nameOf(this) + " created by:" + source);
+        //        logger.warning(
+        //            ClassUtil.nameOf(this) + " created by:" + source);
     }
 
     //~ Methods ----------------------------------------------------------------

@@ -39,46 +39,41 @@ import java.util.*;
 import java.util.List;
 
 /**
- * Class <code>SymbolsBuilder</code> is a GlyphModel specific for symbols
+ * Class <code>SymbolsModel</code> is the GlyphModel specifically meant for
+ * symbol glyphs.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-public class SymbolsBuilder
+public class SymbolsModel
     extends GlyphModel
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(SymbolsBuilder.class);
+    private static final Logger logger = Logger.getLogger(SymbolsModel.class);
 
     /** Color for hiding unknown glyphs when filter is ON */
     public static final Color hiddenColor = Color.white;
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Glyph builder */
-    private final GlyphsBuilder glyphsBuilder;
-
     /** Related symbols editor, if any */
     private final SymbolsEditor editor;
 
     //~ Constructors -----------------------------------------------------------
 
-    //----------------//
-    // SymbolsBuilder //
-    //----------------//
+    //--------------//
+    // SymbolsModel //
+    //--------------//
     /**
      * Create a handler dedicated to symbol glyphs
      *
      * @param sheet the sheet whose glyphs are considered
      */
-    public SymbolsBuilder (Sheet sheet)
+    public SymbolsModel (Sheet sheet)
     {
         super(sheet, sheet.getVerticalLag());
-
-        // Link with glyph builder & glyph inspector
-        glyphsBuilder = sheet.getGlyphsBuilder();
 
         // Allocation of UI components if needed
         if (Main.getGui() != null) {
@@ -102,8 +97,7 @@ public class SymbolsBuilder
     // assignGlyphShape //
     //------------------//
     /**
-     * Manually assign a Shape to a glyph, but preventing to assign a non-noise
-     * shape to a noise glyph
+     * Manually assign a Shape to a glyph
      *
      * @param processing specify whether the method must be run (a)synchronously
      * @param glyph the glyph to be assigned
@@ -130,6 +124,7 @@ public class SymbolsBuilder
                         }
                     }.execute();
             } else {
+                SystemInfo        system = sheet.getSystemOf(glyph);
                 Collection<Shape> shapes = null;
                 boolean           isCompound = glyph.getId() == 0;
                 Collection<Glyph> glyphs;
@@ -150,17 +145,18 @@ public class SymbolsBuilder
 
                 // If this is a transient glyph (with no Id yet), insert it
                 if (isCompound) {
-                    glyph = glyphsBuilder.insertGlyph(glyph);
+                    glyph = system.addGlyph(glyph);
                     logger.info(
                         "Inserted compound #" + glyph.getId() + " as " + shape);
                 }
 
                 // Test on glyph weight (noise-like)
+                // To prevent to assign a non-noise shape to a noise glyph
                 if ((shape == Shape.NOISE) || Evaluator.isBigEnough(glyph)) {
                     // Force a recomputation of glyph parameters
                     // (since environment may have changed since the time they
                     // had been computed)
-                    glyphsBuilder.computeGlyphFeatures(glyph);
+                    system.computeGlyphFeatures(glyph);
 
                     if (shape != null) {
                         switch (shape) {
@@ -239,8 +235,9 @@ public class SymbolsBuilder
             } else {
                 if (compound) {
                     // Build & insert a compound
-                    Glyph glyph = glyphsBuilder.buildCompound(glyphs);
-                    glyphsBuilder.insertGlyph(glyph);
+                    SystemInfo system = sheet.getSystemOf(glyphs);
+                    Glyph      glyph = system.buildCompound(glyphs);
+                    system.addGlyph(glyph);
                     assignGlyphShape(SYNC, glyph, shape, NO_RECORDING);
                 } else {
                     int              noiseNb = 0;
@@ -354,15 +351,14 @@ public class SymbolsBuilder
 
         for (Glyph stem : stems) {
             SystemInfo system = sheet.getSystemOf(stem);
-            glyphsBuilder.removeGlyph(stem, system, /* cutSections => */
-                                      true);
+            system.removeGlyph(stem);
             assignGlyphShape(SYNC, stem, null, NO_RECORDING);
             impactedSystems.add(system);
         }
 
         // Extract brand new glyphs from impacted impactedSystems
         for (SystemInfo system : impactedSystems) {
-            glyphsBuilder.extractNewSystemGlyphs(system);
+            system.extractNewSystemGlyphs();
         }
 
         // Update the UI?
@@ -536,9 +532,8 @@ public class SymbolsBuilder
         List<Glyph> slurs = new ArrayList<Glyph>();
 
         for (Glyph glyph : glyphsCopy) {
-            Glyph slur = SlurGlyph.fixLargeSlur(
-                glyph,
-                sheet.getSystemOf(glyph));
+            SystemInfo system = sheet.getSystemOf(glyph);
+            Glyph      slur = system.fixLargeSlur(glyph);
 
             if (slur != null) {
                 slurs.add(slur);
@@ -557,35 +552,18 @@ public class SymbolsBuilder
         }
     }
 
-    //------------------//
-    // showTranslations //
-    //------------------//
-    public void showTranslations (Collection<Glyph> glyphs)
-    {
-        for (Glyph glyph : glyphs) {
-            for (Object entity : glyph.getTranslations()) {
-                if (entity instanceof Note) {
-                    Note note = (Note) entity;
-                    logger.info(note + "->" + note.getChord());
-                } else {
-                    logger.info(entity.toString());
-                }
-            }
-        }
-    }
-
-    //-------------//
-    // stemSegment //
-    //-------------//
+    //------------------------//
+    // segmentGlyphSetOnStems //
+    //------------------------//
     /**
      *
      * @param processing specify whether the method must be run (a)synchronously
      * @param givenGlyphs glyphs to segment in order to retrieve stems
      * @param isShort looking for short (or standard) stems
      */
-    public void stemSegment (Synchronicity           processing,
-                             final Collection<Glyph> givenGlyphs,
-                             final boolean           isShort)
+    public void segmentGlyphSetOnStems (Synchronicity           processing,
+                                        final Collection<Glyph> givenGlyphs,
+                                        final boolean           isShort)
     {
         if (processing == ASYNC) {
             new BasicTask() {
@@ -593,7 +571,7 @@ public class SymbolsBuilder
                     protected Void doInBackground ()
                         throws Exception
                     {
-                        stemSegment(SYNC, givenGlyphs, isShort);
+                        segmentGlyphSetOnStems(SYNC, givenGlyphs, isShort);
 
                         return null;
                     }
@@ -611,14 +589,27 @@ public class SymbolsBuilder
 
             for (Glyph glyph : glyphs) {
                 SystemInfo system = sheet.getSystemOf(glyph);
-                sheet.getVerticalsBuilder()
-                     .stemSegment(
-                    Collections.singletonList(glyph),
-                    system,
-                    isShort);
+                system.segmentGlyphOnStems(glyph, isShort);
             }
 
             sheet.updateLastSteps(glyphs, shapes);
+        }
+    }
+
+    //------------------//
+    // showTranslations //
+    //------------------//
+    public void showTranslations (Collection<Glyph> glyphs)
+    {
+        for (Glyph glyph : glyphs) {
+            for (Object entity : glyph.getTranslations()) {
+                if (entity instanceof Note) {
+                    Note note = (Note) entity;
+                    logger.info(note + "->" + note.getChord());
+                } else {
+                    logger.info(entity.toString());
+                }
+            }
         }
     }
 }

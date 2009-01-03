@@ -12,7 +12,7 @@ package omr.score.entity;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
-import omr.glyph.SlurGlyph;
+import omr.glyph.SlurInspector;
 
 import omr.log.Logger;
 
@@ -312,12 +312,13 @@ public class Slur
         }
 
         // Compute (and check) the approximating circle
-        Circle circle = SlurGlyph.computeCircle(glyph);
+        Circle circle = SlurInspector.computeCircle(glyph);
 
-        if (!circle.isValid(SlurGlyph.getMaxCircleDistance())) {
+        if (!circle.isValid(SlurInspector.getMaxCircleDistance())) {
             system.addError(glyph, "Still spurious slur glyph");
 
-            if (SlurGlyph.fixSpuriousSlur(glyph, system.getInfo()) != null) {
+            if (system.getInfo()
+                      .fixSpuriousSlur(glyph) != null) {
                 if (logger.isFineEnabled()) {
                     logger.fine("Slur fixed  ...");
                 }

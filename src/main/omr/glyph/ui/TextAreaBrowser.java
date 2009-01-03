@@ -116,7 +116,7 @@ public class TextAreaBrowser
     //-------------------------//
     /**
      * Action that allows to display the histogram of horizontal projection of
-     * forground pixels found in the selected rectangle
+     * foreground pixels found in the selected rectangle
      */
     @Action
     public void showHorizontalHistogram ()
@@ -129,7 +129,7 @@ public class TextAreaBrowser
     //-----------------------//
     /**
      * Action that allows to display the histogram of vertical projection of
-     * forground pixels found in the selected rectangle
+     * foreground pixels found in the selected rectangle
      */
     @Action
     public void showVerticalHistogram ()

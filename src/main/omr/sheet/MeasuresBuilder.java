@@ -560,7 +560,7 @@ public class MeasuresBuilder
                         } else {
                             // No overlap => one above the other
                             //                            prevStick.addGlyphSections(stick, true);
-                            //                            stick.destroy(false);
+                            //                            stick.cutSections(false);
                             //                            bars.remove(stick);
                             if (logger.isFineEnabled()) {
                                 logger.fine(

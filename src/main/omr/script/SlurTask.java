@@ -62,7 +62,7 @@ public class SlurTask
         throws StepException
     {
         super.run(sheet);
-        sheet.getSymbolsBuilder()
+        sheet.getSymbolsModel()
              .fixLargeSlurs(glyphs, RECORDING);
     }
 

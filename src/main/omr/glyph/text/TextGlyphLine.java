@@ -58,9 +58,6 @@ public class TextGlyphLine
     /** The related scale */
     private final Scale scale;
 
-    /** The glyph builder */
-    private final GlyphsBuilder glyphsBuilder;
-
     /** The line number */
     private int id;
 
@@ -85,11 +82,25 @@ public class TextGlyphLine
 
         scale = systemInfo.getScoreSystem()
                           .getScale();
-        glyphsBuilder = systemInfo.getSheet()
-                                  .getGlyphsBuilder();
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //---------------//
+    // isAlignedWith //
+    //---------------//
+    /**
+     * Check whether a system point is roughly aligned with this line instance
+     *
+     * @param pixPt the system point to check
+     * @param maxDy the maximum difference in pixel ordinate
+     * @return true if aligned
+     */
+    public boolean isAlignedWith (PixelPoint pixPt,
+                                  int        maxDy)
+    {
+        return Math.abs(pixPt.y - getY()) <= maxDy;
+    }
 
     //-------//
     // setId //
@@ -107,50 +118,32 @@ public class TextGlyphLine
         return id;
     }
 
-    //------//
-    // feed //
-    //------//
+    //--------------//
+    // getMaxItemDy //
+    //--------------//
     /**
-     * Populate a Text line with this text glyph
-     *
-     * @param item the text item to host in a text line
-     * @param systemInfo the containing system
-     * @param lines the collections of text glyph lines
+     * Report the maximum vertical distance between a glyph candidate and a text
+     * line
+     * @return the interline fraction
      */
-    public static void feed (Glyph                    item,
-                             SystemInfo               systemInfo,
-                             SortedSet<TextGlyphLine> lines)
+    public static Scale.Fraction getMaxItemDy ()
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Feeding a GlyphTextLine with " + item);
-        }
+        return constants.maxItemDy;
+    }
 
-        // First look for a suitable existing text line
-        final int maxDy = systemInfo.getScoreSystem()
-                                    .getScale()
-                                    .toPixels(constants.maxItemDy);
+    //---------//
+    // addItem //
+    //---------//
+    /**
+     * Add a glyph to this line
+     * @param item the glyph to zdd
+     */
+    public void addItem (Glyph item)
+    {
+        glyphs.add(item);
 
-        for (TextGlyphLine line : lines) {
-            if (line.isAlignedWith(item.getLocation(), maxDy)) {
-                line.addItem(item);
-
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "Inserted glyph #" + item.getId() + " into " + line);
-                }
-
-                return;
-            }
-        }
-
-        // No compatible line, create a brand new one
-        TextGlyphLine line = new TextGlyphLine(systemInfo);
-        line.addItem(item);
-        lines.add(line);
-
-        if (logger.isFineEnabled()) {
-            logger.fine("Created new " + line);
-        }
+        // Force recomputation of line mean ordinate
+        y = null;
     }
 
     //-----------//
@@ -167,7 +160,7 @@ public class TextGlyphLine
     }
 
     //---------------//
-    // processGlyphs //
+    // inspectGlyphs //
     //---------------//
     public void processGlyphs ()
     {
@@ -282,22 +275,6 @@ public class TextGlyphLine
     }
 
     //---------------//
-    // isAlignedWith //
-    //---------------//
-    /**
-     * Check whether a system point is roughly aligned with this line instance
-     *
-     * @param pixPt the system point to check
-     * @param maxDy the maximum difference in pixel ordinate
-     * @return true if aligned
-     */
-    private boolean isAlignedWith (PixelPoint pixPt,
-                                   int        maxDy)
-    {
-        return Math.abs(pixPt.y - getY()) <= maxDy;
-    }
-
-    //---------------//
     // getFirstAfter //
     //---------------//
     private Glyph getFirstAfter (Glyph start)
@@ -374,17 +351,6 @@ public class TextGlyphLine
         return y;
     }
 
-    //---------//
-    // addItem //
-    //---------//
-    private void addItem (Glyph item)
-    {
-        glyphs.add(item);
-
-        // Force recomputation of line mean ordinate
-        y = null;
-    }
-
     //---------------//
     // includeAliens //
     //---------------//
@@ -452,12 +418,10 @@ public class TextGlyphLine
                                 " enclosed in text #" + outer.getId());
                         }
 
-                        Glyph compound = systemInfo.getSheet()
-                                                   .getGlyphsBuilder()
-                                                   .buildCompound(
+                        Glyph compound = systemInfo.buildCompound(
                             Arrays.asList(outer, inner));
-                        compound = glyphsBuilder.insertGlyph(compound);
-                        glyphsBuilder.computeGlyphFeatures(compound);
+                        compound = systemInfo.addGlyph(compound);
+                        systemInfo.computeGlyphFeatures(compound);
                         compound.setShape(Shape.TEXT);
 
                         addItem(compound);
@@ -492,9 +456,8 @@ public class TextGlyphLine
 
             if (sentence.getGlyphs()
                         .size() > 1) {
-                Glyph compound = glyphsBuilder.buildCompound(
-                    sentence.getGlyphs());
-                //                glyphsBuilder.insertGlyph(compound);
+                Glyph compound = systemInfo.buildCompound(sentence.getGlyphs());
+                //                glyphsBuilder.addGlyph(compound);
                 compound.setShape(Shape.TEXT, Evaluation.NO_DOUBT);
                 glyph = sentence.getGlyphs()
                                 .first()
@@ -567,10 +530,10 @@ public class TextGlyphLine
                         Glyph glyph = merge.compound;
 
                         if (glyph.getId() == 0) {
-                            glyph = glyphsBuilder.insertGlyph(glyph);
+                            glyph = systemInfo.addGlyph(glyph);
                         }
 
-                        glyphsBuilder.computeGlyphFeatures(glyph);
+                        systemInfo.computeGlyphFeatures(glyph);
                         glyph.setShape(merge.vote.shape, merge.vote.doubt);
 
                         if (logger.isFineEnabled()) {
@@ -694,7 +657,7 @@ public class TextGlyphLine
         public boolean isOk ()
         {
             if (parts.size() > 1) {
-                compound = glyphsBuilder.buildCompound(parts);
+                compound = systemInfo.buildCompound(parts);
             } else if (parts.size() == 1) {
                 compound = parts.get(0);
             } else {

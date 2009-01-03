@@ -14,12 +14,10 @@ import omr.Main;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphInspector;
 import omr.glyph.Shape;
-import omr.glyph.SlurGlyph;
 
 import omr.log.Logger;
 
 import omr.score.ui.ScoreActions;
-import omr.score.visitor.ScoreChecker;
 
 import omr.selection.GlyphEvent;
 
@@ -396,15 +394,15 @@ public class SheetSteps
         public void doSystem (SystemInfo system)
             throws StepException
         {
-            sheet.getGlyphInspector()
-                 .verifyStems(system);
-            sheet.getGlyphsBuilder()
-                 .removeSystemInactives(system);
-            SlurGlyph.verifySlurs(system);
-            sheet.getGlyphsBuilder()
-                 .extractNewSystemGlyphs(system);
-            sheet.getGlyphInspector()
-                 .processGlyphs(system, GlyphInspector.getCleanupMaxDoubt());
+            system.removeInactiveGlyphs();
+            system.verifyStems();
+
+            system.removeInactiveGlyphs();
+            system.retrieveGlyphs();
+            system.verifySlurs();
+
+            system.removeInactiveGlyphs();
+            system.retrieveGlyphs();
             system.retrieveTextGlyphs();
         }
     }
@@ -470,8 +468,7 @@ public class SheetSteps
         public void doSystem (SystemInfo system)
             throws StepException
         {
-            sheet.getGlyphInspector()
-                 .processGlyphs(system, GlyphInspector.getLeafMaxDoubt());
+            system.inspectGlyphs(GlyphInspector.getLeafMaxDoubt());
         }
     }
 
@@ -645,19 +642,27 @@ public class SheetSteps
             }
 
             // Final cross-system translation tasks
-            sheet.getScoreBuilder()
-                 .buildFinal(
-                (systems != null) ? (SystemInfo) systems.toArray()[0] : null);
+            if (systems == null) {
+                systems = sheet.getSystems();
+            }
+
+            SystemInfo first = systems.iterator()
+                                      .next();
+
+            if (first != null) {
+                first.translateFinal();
+            } else {
+                logger.warning(
+                    ("ScoreTask.doEpilog. Systems:" +
+                    ((systems == null) ? "null" : systems.size())));
+            }
         }
 
         @Override
         public void doSystem (SystemInfo system)
             throws StepException
         {
-            omr.score.entity.ScoreSystem scoreSystem = system.getScoreSystem();
-            sheet.getScoreBuilder()
-                 .buildSystem(scoreSystem);
-            scoreSystem.acceptChildren(new ScoreChecker());
+            system.translateSystem();
         }
     }
 
@@ -724,8 +729,7 @@ public class SheetSteps
         public void doSystem (SystemInfo system)
             throws StepException
         {
-            sheet.getGlyphInspector()
-                 .processGlyphs(system, GlyphInspector.getSymbolMaxDoubt());
+            system.inspectGlyphs(GlyphInspector.getSymbolMaxDoubt());
         }
     }
 
@@ -754,7 +758,7 @@ public class SheetSteps
         public void displayUI ()
         {
             // Create verticals display
-            sheet.getVerticalsBuilder()
+            sheet.getSheetVerticalsModel()
                  .refresh();
         }
 
@@ -762,8 +766,7 @@ public class SheetSteps
         public void doSystem (SystemInfo system)
             throws StepException
         {
-            sheet.getVerticalsBuilder()
-                 .retrieveSystemVerticals(system);
+            system.retrieveVerticals();
         }
     }
 }

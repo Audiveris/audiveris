@@ -37,8 +37,23 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Class <code>GlyphLag</code> is a lag of {@link GlyphSection} instances which
- * can be aggregated into {@link Glyph}instances. A GlyphLag keeps an internal
+ * can be aggregated into {@link Glyph} instances. A GlyphLag keeps an internal
  * collection of all defined glyphs.
+ *
+ * <p>A glyph is made of member sections and always keeps a collection of its
+ * member sections. Sections are made of runs of pixels and thus sections do not
+ * overlap. Different glyphs can have sections in common, and in that case they
+ * overlap, however only one of these glyphs is the current "owner" of these
+ * common sections. It is known as being "active" while the others are inactive:
+ * <ul>
+ * <li>Active glyph: The member sections point to the glyph.</li>
+ * <li>Inactive glyph: The member sections don't point to this glyph (they
+ * usually point to some other (active) glyph).</li>
+ * </ul>
+ * </p>
+ *
+ * <p>Selecting a (foreground) pixel, thus selects its containing section, and
+ * its active glyph if any.</p>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -54,8 +69,9 @@ public class GlyphLag
     //~ Instance fields --------------------------------------------------------
 
     /**
-     * Smart glyph map, usable across several glyph extractions, to ensure glyph
-     * unicity. A glyph is never removed, it can be active or inactive.
+     * Smart glyph map, based on a physical glyph signature, and thus usable
+     * across several glyph extractions, to ensure glyph unicity whatever the
+     * sequential ID it is assigned.
      */
     private final ConcurrentHashMap<GlyphSignature, Glyph> originals = new ConcurrentHashMap<GlyphSignature, Glyph>();
 
@@ -69,12 +85,13 @@ public class GlyphLag
      * Current map of section -> glyphs. This defines the glyphs that are
      * currently active, since there is at least one section pointing to them
      * (and the sections collection is immutable).
+     * Nota: The glyph reference within the section is kept in sync
      */
-    private final ConcurrentHashMap<GlyphSection, Glyph> glyphMap = new ConcurrentHashMap<GlyphSection, Glyph>();
+    private final ConcurrentHashMap<GlyphSection, Glyph> activeMap = new ConcurrentHashMap<GlyphSection, Glyph>();
 
     /**
-     * Collection of active glyphs. This is derived from the glyphMap, to give
-     * direct access to all the active glyphs. It is kept in sync with glyphMap.
+     * Collection of active glyphs. This is derived from the activeMap, to give
+     * direct access to all the active glyphs. It is kept in sync with activeMap.
      */
     private volatile SortedSet<Glyph> activeGlyphs;
 
@@ -117,7 +134,7 @@ public class GlyphLag
         if (activeGlyphs == null) {
             //synchronized (this) {
             if (activeGlyphs == null) {
-                activeGlyphs = new TreeSet<Glyph>(glyphMap.values());
+                activeGlyphs = new TreeSet<Glyph>(activeMap.values());
             }
 
             //}
@@ -184,27 +201,29 @@ public class GlyphLag
     // addGlyph //
     //----------//
     /**
-     * Add a glyph in the graph, making sure we do not duplicate an existing
+     * Add a glyph in the graph, making sure we do not duplicate any existing
      * glyph (a glyph being really defined by the set of its member sections)
      *
      * @param glyph the glyph to add to the lag
-     * @return the actual glyph (existing or brand new)
+     * @return the actual glyph (already existing or brand new)
      */
     public Glyph addGlyph (Glyph glyph)
     {
-        // First check this glyph does not already exist
+        // First check this physical glyph does not already exist
         Glyph original = getOriginal(glyph);
 
-        if ((original != null) && (original != glyph)) {
-            // Reuse the existing glyph
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "new avatar of #" + original.getId() + " members =" +
-                    Section.toString(glyph.getMembers()) + " original=" +
-                    Section.toString(original.getMembers()));
-            }
+        if (original != null) {
+            if (original != glyph) {
+                // Reuse the existing glyph
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "new avatar of #" + original.getId() + " members=" +
+                        Section.toString(glyph.getMembers()) + " original=" +
+                        Section.toString(original.getMembers()));
+                }
 
-            glyph = original;
+                glyph = original;
+            }
         } else {
             // Create a brand new glyph
             final int id = generateId();
@@ -519,9 +538,9 @@ public class GlyphLag
                                   Glyph        glyph)
     {
         if (glyph != null) {
-            glyphMap.put(section, glyph);
+            activeMap.put(section, glyph);
         } else {
-            glyphMap.remove(section);
+            activeMap.remove(section);
         }
 
         // Invalidate the collection of active glyphs

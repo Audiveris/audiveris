@@ -9,17 +9,27 @@
 //
 package omr.sheet;
 
-import omr.glyph.Glyph;
-import omr.glyph.GlyphSection;
-import omr.glyph.text.TextArea;
-import omr.glyph.text.TextGlyphLine;
+import omr.check.CheckSuite;
 
-import omr.lag.HorizontalOrientation;
+import omr.glyph.Glyph;
+import omr.glyph.GlyphInspector;
+import omr.glyph.GlyphInspector.CompoundAdapter;
+import omr.glyph.GlyphSection;
+import omr.glyph.GlyphsBuilder;
+import omr.glyph.SlurInspector;
+import omr.glyph.StemInspector;
+import omr.glyph.text.TextGlyphLine;
+import omr.glyph.text.TextInspector;
 
 import omr.log.Logger;
 
+import omr.score.SystemTranslator;
 import omr.score.common.PixelRectangle;
 import omr.score.entity.ScoreSystem;
+
+import omr.step.StepException;
+
+import omr.stick.Stick;
 
 import omr.util.Boundary;
 
@@ -48,14 +58,35 @@ public class SystemInfo
     /** Related sheet */
     private final Sheet sheet;
 
-    /** Related System in Score hierarchy */
-    private ScoreSystem scoreSystem;
+    /** Dedicated glyph builder */
+    private final GlyphsBuilder glyphsBuilder;
+
+    /** Dedicated verticals builder */
+    private final VerticalsBuilder verticalsBuilder;
+
+    /** Dedicated glyph inspector */
+    private final GlyphInspector glyphInspector;
+
+    /** Dedicated stem inspector */
+    private final StemInspector stemInspector;
+
+    /** Dedicated slur inspector */
+    private final SlurInspector slurInspector;
+
+    /** Dedicated text inspector */
+    private final TextInspector textInspector;
+
+    /** Dedicated system translator */
+    private final SystemTranslator translator;
 
     /** Staves of this system */
     private final List<StaffInfo> staves = new ArrayList<StaffInfo>();
 
     /** Parts in this system */
     private final List<PartInfo> parts = new ArrayList<PartInfo>();
+
+    /** Related System in Score hierarchy */
+    private ScoreSystem scoreSystem;
 
     ///   HORIZONTALS   ////////////////////////////////////////////////////////
 
@@ -74,7 +105,7 @@ public class SystemInfo
     private final Collection<GlyphSection> vSectionsView = Collections.unmodifiableCollection(
         vSections);
 
-    /** Active glyphs in this system */
+    /** Collection of (active?) glyphs in this system */
     private final SortedSet<Glyph> glyphs = new ConcurrentSkipListSet<Glyph>();
 
     /** Unmodifiable view of the glyphs collection */
@@ -134,6 +165,14 @@ public class SystemInfo
     {
         this.id = id;
         this.sheet = sheet;
+
+        glyphsBuilder = new GlyphsBuilder(this);
+        verticalsBuilder = new VerticalsBuilder(this);
+        glyphInspector = new GlyphInspector(this);
+        stemInspector = new StemInspector(this);
+        slurInspector = new SlurInspector(this);
+        textInspector = new TextInspector(this);
+        translator = new SystemTranslator(this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -466,9 +505,21 @@ public class SystemInfo
     //----------//
     // addGlyph //
     //----------//
-    public void addGlyph (Glyph glyph)
+    /**
+     * Add a brand new glyph as an active glyph in proper system and lag.
+     * If the glyph is a compound, its parts are made pointing back to it and
+     * are made no longer active glyphs.
+     * <p><b>Note</b>:
+     * Use the returned glyph which may be different from the provided glyph
+     * (when an original glyph with same signature existed before this one)
+     *
+     * @param glyph the brand new glyph
+     * @return the original glyph as inserted in the glyph lag. Use this entity
+     * instead of the provided one.
+     */
+    public Glyph addGlyph (Glyph glyph)
     {
-        glyphs.add(glyph);
+        return glyphsBuilder.addGlyph(glyph);
     }
 
     //---------//
@@ -515,6 +566,29 @@ public class SystemInfo
 
         LineInfo lastLine = staff.getLastLine();
         bottom = lastLine.yAt(lastLine.getLeft());
+    }
+
+    //-----------------------//
+    // addToGlyphsCollection //
+    //-----------------------//
+    /**
+     * This is a private entry meant for GlyphsBuilder only.
+     * The standard entry is {@link #addGlyph}
+     */
+    public void addToGlyphsCollection (Glyph glyph)
+    {
+        glyphs.add(glyph);
+    }
+
+    //-----------------//
+    // alignTextGlyphs //
+    //-----------------//
+    /**
+     * Align the various text glyphs in horizontal text lines
+     */
+    public void alignTextGlyphs ()
+    {
+        textInspector.alignTextGlyphs();
     }
 
     //-------------//
@@ -597,6 +671,20 @@ public class SystemInfo
         }
     }
 
+    //---------------//
+    // inspectGlyphs //
+    //---------------//
+    /**
+     * Process the given system, by retrieving unassigned glyphs, evaluating
+     * and assigning them if OK, or trying compounds otherwise.
+     *
+     * @param maxDoubt the maximum acceptable doubt for this processing
+     */
+    public void inspectGlyphs (double maxDoubt)
+    {
+        glyphInspector.inspectGlyphs(maxDoubt);
+    }
+
     //-------------------------//
     // lookupIntersectedGlyphs //
     //-------------------------//
@@ -643,9 +731,83 @@ public class SystemInfo
     //-------------//
     // removeGlyph //
     //-------------//
-    public boolean removeGlyph (Glyph glyph)
+    /**
+     * Remove a glyph from the containing system glyph list.
+     *
+     * @param glyph the glyph to remove
+     */
+    public void removeGlyph (Glyph glyph)
     {
-        return glyphs.remove(glyph);
+        if (!glyphs.remove(glyph)) {
+            logger.warning(
+                "Glyph #" + glyph.getId() + " not found in system #" + getId());
+        }
+
+        // Cut link from its member sections, if pointing to this glyph
+        glyph.cutSections();
+    }
+
+    //----------------------//
+    // removeInactiveGlyphs //
+    //----------------------//
+    /**
+     * On a specified system, look for all inactive glyphs and remove them from
+     * its glyphs collection as well as from the containing lag.
+     * Purpose is to prepare room for a new glyph extraction
+     */
+    public void removeInactiveGlyphs ()
+    {
+        // To avoid concurrent modifs exception
+        Collection<Glyph> toRemove = new ArrayList<Glyph>();
+
+        for (Glyph glyph : getGlyphs()) {
+            if (!glyph.isActive()) {
+                toRemove.add(glyph);
+            }
+        }
+
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                "removeInactiveGlyphs: " + toRemove.size() + " " +
+                Glyph.toString(toRemove));
+        }
+
+        for (Glyph glyph : toRemove) {
+            // Remove glyph from system & cut sections links to it
+            removeGlyph(glyph);
+        }
+    }
+
+    //----------------//
+    // retrieveGlyphs //
+    //----------------//
+    /**
+     * In a given system area, browse through all sections not assigned to known
+     * glyphs, and build new glyphs out of connected sections
+     *
+     * @return the number of glyphs built in this system
+     */
+    public int retrieveGlyphs ()
+    {
+        return glyphsBuilder.retrieveGlyphs();
+    }
+
+    //-------------------//
+    // retrieveVerticals //
+    //-------------------//
+    public int retrieveVerticals ()
+        throws StepException
+    {
+        return verticalsBuilder.retrieveVerticals();
+    }
+
+    //---------------------//
+    // segmentGlyphOnStems //
+    //---------------------//
+    public void segmentGlyphOnStems (Glyph   glyph,
+                                     boolean isShort)
+    {
+        verticalsBuilder.segmentGlyphOnStems(glyph, isShort);
     }
 
     //----------//
@@ -726,44 +888,97 @@ public class SystemInfo
         return textLines;
     }
 
+    //---------------//
+    // buildCompound //
+    //---------------//
+    /**
+     * Make a new glyph out of a collection of (sub) glyphs, by merging all
+     * their member sections. This compound is temporary, since until it is
+     * properly inserted by use of {@link #addGlyph}, this building has no
+     * impact on either the containing lag, the containing system, nor the
+     * contained sections themselves.
+     *
+     * @param parts the collection of (sub) glyphs
+     * @return the brand new (compound) glyph
+     */
+    public Glyph buildCompound (Collection<Glyph> parts)
+    {
+        return glyphsBuilder.buildCompound(parts);
+    }
+
+    //----------------------//
+    // computeGlyphFeatures //
+    //----------------------//
+    /**
+     * Compute all the features that will be used to recognize the glyph at hand
+     * (it's a mix of moments plus a few other characteristics)
+     *
+     * @param glyph the glyph at hand
+     */
+    public void computeGlyphFeatures (Glyph glyph)
+    {
+        glyphsBuilder.computeGlyphFeatures(glyph);
+    }
+
+    //----------------------//
+    // createStemCheckSuite //
+    //----------------------//
+    public CheckSuite<Stick> createStemCheckSuite (boolean isShort)
+        throws StepException
+    {
+        return verticalsBuilder.createStemCheckSuite(isShort);
+    }
+
+    //------------------------//
+    // extractNewSystemGlyphs //
+    //------------------------//
+    /**
+     * In the specified system, build new glyphs from unknown sections (sections
+     * not linked to a known glyph)
+     *
+     * @param system the specified system
+     */
+    public void extractNewSystemGlyphs ()
+    {
+        removeInactiveGlyphs();
+        retrieveGlyphs();
+    }
+
+    //--------------//
+    // fixLargeSlur //
+    //--------------//
+    /**
+     * For large glyphs, we suspect a slur with a stuck object. So the strategy
+     * is to rebuild the true Slur portions from the underlying sections. These
+     * "good" sections are put into the "kept" collection. Sections left over
+     * are put into the "left" collection in order to be used to rebuild the
+     * stuck object(s).
+     *
+     * <p>The method by itself does not build the new slur glyph, this task must
+     * be done by the caller.
+     *
+     * @param slur the spurious slur slur
+     * @return the extracted slur glyph, if any
+     */
+    public Glyph fixLargeSlur (Glyph slur)
+    {
+        return slurInspector.fixLargeSlur(slur);
+    }
+
     //-----------------//
-    // alignTextGlyphs //
+    // fixSpuriousSlur //
     //-----------------//
     /**
-     * Align the various text glyphs in horizontal text lines
+     * Try to correct the slur glyphs (which have a too high circle distance) by
+     * either adding a neigboring glyph (for small slurs) or removing stuck
+     * glyph sections (for large slurs)
+     *
+     * @param glyph the spurious glyph at hand
+     * @return true if the slur glyph has actually been fixed
      */
-    public void alignTextGlyphs ()
+    public Glyph fixSpuriousSlur (Glyph glyph)
     {
-        try {
-            // Keep the previous work! No textLines.clear();
-            for (Glyph glyph : getGlyphs()) {
-                if ((glyph.getShape() != null) && glyph.getShape()
-                                                       .isText()) {
-                    TextGlyphLine.feed(glyph, this, textLines);
-                }
-            }
-
-            // (Re)assign an id to each line
-            if (logger.isFineEnabled()) {
-                logger.fine("System#" + id);
-            }
-
-            int index = 0;
-
-            for (TextGlyphLine line : textLines) {
-                line.setId(++index);
-
-                if (logger.isFineEnabled()) {
-                    logger.fine(line.toString());
-                }
-
-                line.processGlyphs();
-            }
-        } catch (Error error) {
-            logger.warning("Error in TextArea.alignTexts: " + error);
-        } catch (Exception ex) {
-            logger.warning("Exception in TextArea.alignTexts", ex);
-        }
+        return slurInspector.fixSpuriousSlur(glyph);
     }
 
     //--------------------//
@@ -775,15 +990,75 @@ public class SystemInfo
      */
     public void retrieveTextGlyphs ()
     {
-        TextArea area = new TextArea(
-            null,
-            sheet.getVerticalLag().createAbsoluteRoi(getBounds()),
-            new HorizontalOrientation());
+        textInspector.retrieveTextGlyphs();
+    }
 
-        // Subdivide the area, to find and build text glyphs (words most likely)
-        area.subdivide(sheet);
+    //----------------//
+    // translateFinal //
+    //----------------//
+    public void translateFinal ()
+    {
+        translator.TranslateFinal();
+    }
 
-        // Process alignments of text items
-        alignTextGlyphs();
+    //-----------------//
+    // translateSystem //
+    //-----------------//
+    /**
+     * Translate the physical Sheet system data into Score system entities
+     */
+    public void translateSystem ()
+    {
+        translator.translateSystem();
+    }
+
+    //-------------//
+    // tryCompound //
+    //-------------//
+    /**
+     * Try to build a compound, starting from given seed and looking into the
+     * collection of suitable glyphs.
+     *
+     * <p>Note that this method has no impact on the system/lag environment.
+     * It is the caller's responsability, for a successful (i.e. non-null)
+     * compound, to assign its shape and to add the glyph to the system/lag.
+     *
+     * @param seed the initial glyph around which the compound is built
+     * @param suitables collection of potential glyphs
+     * @param adapter the specific behavior of the compound tests
+     * @return the compound built if successful, null otherwise
+     */
+    public Glyph tryCompound (Glyph           seed,
+                              List<Glyph>     suitables,
+                              CompoundAdapter adapter)
+    {
+        return glyphInspector.tryCompound(seed, suitables, adapter);
+    }
+
+    //-------------//
+    // verifySlurs //
+    //-------------//
+    /**
+     * Process all the slur glyphs in the given system, and try to correct the
+     * spurious ones if any
+     */
+    public void verifySlurs ()
+    {
+        slurInspector.verifySlurs();
+    }
+
+    //-------------//
+    // verifyStems //
+    //-------------//
+    /**
+     * In a specified system, look for all stems that should not be kept,
+     * rebuild surrounding glyphs and try to recognize them. If this action does
+     * not lead to some recognized symbol, then we restore the stems.
+     *
+     * @return the number of symbols recognized
+     */
+    public int verifyStems ()
+    {
+        return stemInspector.verifyStems();
     }
 }

@@ -418,11 +418,11 @@ public class Sentence
     }
 
     //----------//
-    // addGlyph //
+    // addToGlyphsCollection //
     //----------//
     /**
      * Add a (textual) glyph to this sentence
-     * @param glyph the textual glyph to addGlyph
+     * @param glyph the textual glyph to addToGlyphsCollection
      */
     private void addGlyph (Glyph glyph)
     {

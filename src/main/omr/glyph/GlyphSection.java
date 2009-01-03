@@ -11,6 +11,8 @@ package omr.glyph;
 
 import omr.lag.Section;
 
+import omr.log.Logger;
+
 import omr.util.Implement;
 
 import java.awt.Point;
@@ -30,12 +32,19 @@ public class GlyphSection
     extends Section<GlyphLag, GlyphSection>
     implements Comparable<GlyphSection>
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(GlyphSection.class);
+
     //~ Instance fields --------------------------------------------------------
 
     /**
-     * Glyph this section belongs to
+     * Glyph this section belongs to. This reference is kept in sync with the
+     * containing GlyphLag activeMap. Don't directly assign a value to 'glyph',
+     * use the setGlyph() method instead.
      */
-    protected Glyph glyph;
+    private Glyph glyph;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -63,7 +72,7 @@ public class GlyphSection
     {
         this.glyph = glyph;
 
-        // Update the glyphMap of the containing GlyphLag
+        // Keep the activeMap of the containing GlyphLag in sync!
         getGraph()
             .mapSection(this, glyph);
     }
@@ -123,26 +132,27 @@ public class GlyphSection
     @Implement(Comparable.class)
     public int compareTo (GlyphSection other)
     {
-        Point ref = this.getContourBox()
-                        .getLocation();
-        Point otherRef = other.getContourBox()
+        final Point ref = this.getContourBox()
                               .getLocation();
+        final Point otherRef = other.getContourBox()
+                                    .getLocation();
 
         // Are x values different?
-        int dx = ref.x - otherRef.x;
+        final int dx = ref.x - otherRef.x;
 
         if (dx != 0) {
             return dx;
         }
 
         // Vertically aligned, so use ordinates
-        int dy = ref.y - otherRef.y;
+        final int dy = ref.y - otherRef.y;
 
         if (dy != 0) {
             return dy;
         }
 
-        // Finally, use id ...
+        // Finally, use id. Note this should return zero since different
+        // sections cannot overlap
         return this.getId() - other.getId();
     }
 

@@ -13,8 +13,7 @@ import omr.glyph.Evaluator;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphNetwork;
-import omr.glyph.GlyphsBuilder;
-import omr.glyph.SymbolsBuilder;
+import omr.glyph.SymbolsModel;
 
 import omr.lag.RunBoard;
 import omr.lag.ScrollLagView;
@@ -33,6 +32,7 @@ import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
 
 import omr.sheet.Sheet;
+import omr.sheet.SystemInfo;
 import omr.sheet.ui.PixelBoard;
 
 import omr.ui.BoardsPane;
@@ -64,16 +64,13 @@ public class SymbolsEditor
     //~ Instance fields --------------------------------------------------------
 
     /** Related instance of symbols builder */
-    private final SymbolsBuilder symbolsBuilder;
+    private final SymbolsModel symbolsBuilder;
 
     /** Related sheet */
     private final Sheet sheet;
 
     /** Evaluator to check for NOISE glyphs */
     private final Evaluator evaluator = GlyphNetwork.getInstance();
-
-    /** Glyphs builder */
-    private final GlyphsBuilder glyphsBuilder;
 
     /** Related Lag view */
     private final GlyphLagView view;
@@ -96,16 +93,13 @@ public class SymbolsEditor
      * @param sheet the sheet whose glyphs are considered
      * @param symbolsBuilder the symbols builder for this sheet
      */
-    public SymbolsEditor (Sheet          sheet,
-                          SymbolsBuilder symbolsBuilder)
+    public SymbolsEditor (Sheet        sheet,
+                          SymbolsModel symbolsBuilder)
     {
         this.sheet = sheet;
         this.symbolsBuilder = symbolsBuilder;
 
         GlyphLag lag = symbolsBuilder.getLag();
-
-        // Link with glyph builder
-        glyphsBuilder = sheet.getGlyphsBuilder();
 
         view = new MyView(lag);
         view.setLocationService(
@@ -300,10 +294,6 @@ public class SymbolsEditor
                 return;
             }
 
-            //            logger.info(
-            //                "SymbolsEditor/" + getClass().getSimpleName() + " " +
-            //                getName() + " " + event);
-
             // Default lag view behavior, including specifics
             super.onEvent(event);
 
@@ -314,7 +304,14 @@ public class SymbolsEditor
 
                 if (glyphs != null) {
                     if (glyphs.size() > 1) {
-                        compound = glyphsBuilder.buildCompound(glyphs);
+                        try {
+                            SystemInfo system = sheet.getSystemOf(glyphs);
+                            compound = system.buildCompound(glyphs);
+                        } catch (IllegalArgumentException ex) {
+                            // All glyphs do not belong to the same system
+                            // No compound is allowed and displayed
+                            logger.warning("Glyphs from different systems");
+                        }
                     } else if (glyphs.size() == 1) {
                         compound = glyphs.get(0);
                     }

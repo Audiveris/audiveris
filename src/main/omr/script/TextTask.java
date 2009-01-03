@@ -82,7 +82,7 @@ public class TextTask
     {
         super.run(sheet);
 
-        sheet.getSymbolsBuilder()
+        sheet.getSymbolsModel()
              .assignText(SYNC, glyphs, type, content, true);
     }
 

@@ -24,6 +24,7 @@ import omr.score.common.PixelRectangle;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
+import omr.sheet.SystemInfo;
 
 import java.awt.Rectangle;
 import java.util.*;
@@ -447,11 +448,11 @@ public class TextArea
         }
 
         if (glyphs.size() > 0) {
-            Glyph glyph;
+            SystemInfo system = sheet.getSystemOf(glyphs);
+            Glyph      glyph;
 
             if (glyphs.size() > 1) {
-                glyph = sheet.getGlyphsBuilder()
-                             .buildCompound(glyphs);
+                glyph = system.buildCompound(glyphs);
             } else {
                 glyph = glyphs.get(0);
             }
@@ -468,12 +469,10 @@ public class TextArea
 
                 if (vote.shape.isText()) {
                     if (glyph.getId() == 0) {
-                        glyph = sheet.getGlyphsBuilder()
-                                     .insertGlyph(glyph);
+                        glyph = system.addGlyph(glyph);
                     }
 
-                    sheet.getGlyphsBuilder()
-                         .computeGlyphFeatures(glyph);
+                    system.computeGlyphFeatures(glyph);
                     // No! glyph.setTextArea(this);
                     glyph.setShape(vote.shape, vote.doubt);
 

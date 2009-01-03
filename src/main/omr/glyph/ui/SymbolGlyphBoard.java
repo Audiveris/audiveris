@@ -400,7 +400,7 @@ class SymbolGlyphBoard
                 }
 
                 SheetManager.getSelectedSheet()
-                            .getSymbolsBuilder()
+                            .getSymbolsModel()
                             .assignText(
                     ASYNC,
                     glyphs,

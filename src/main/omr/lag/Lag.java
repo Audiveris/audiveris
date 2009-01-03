@@ -16,6 +16,7 @@ import omr.log.Logger;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
+import omr.selection.MouseMovement;
 import omr.selection.RunEvent;
 import omr.selection.SectionEvent;
 import omr.selection.SectionIdEvent;
@@ -33,7 +34,6 @@ import org.bushe.swing.event.ThreadSafeEventService;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
-import omr.selection.MouseMovement;
 
 /**
  * Class <code>Lag</code> handles a graph of class {@link Section} (sets of
