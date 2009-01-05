@@ -38,7 +38,14 @@ import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * Class <code>SystemInfo</code> gathers information from the original picture
- * about a retrieved system.
+ * about a retrieved system. Most of the physical processing is done in parallel
+ * at system level, and thus is handled from this SystemInfo object.
+ *
+ * <p>Many processing tasks are actually handled by companion classes, but
+ * this SystemInfo is the interface of choice, with delegation to the proper
+ * companion (such as {@link GlyphsBuilder}, {@link GlyphInspector},
+ * {@link StemInspector}, {@link SlurInspector}, {@link TextInspector},
+ * {@link SystemTranslator}, etc)
  *
  * <p>Nota: All measurements are assumed in pixels.
  *
@@ -345,7 +352,11 @@ public class SystemInfo
     //----------//
     // getParts //
     //----------//
-    public List<PartInfo> getParts ()
+    /**
+     * Reports the parts of this system
+     * @return the parts (non-null)
+     */
+    public List<PartInfo> getParts()
     {
         return parts;
     }
@@ -525,7 +536,11 @@ public class SystemInfo
     //---------//
     // addPart //
     //---------//
-    public void addPart (PartInfo partInfo)
+    /**
+     * Add a part (set of staves) in this system
+     * @param partInfo the part to add
+     */
+    public void addPart(PartInfo partInfo)
     {
         parts.add(partInfo);
     }
@@ -533,7 +548,12 @@ public class SystemInfo
     //----------//
     // addStaff //
     //----------//
-    public void addStaff (int idx)
+    /**
+     * Add a staff into this system
+     * @param idx index (in the global staves collection at sheet level) of the
+     * staff to add
+     */
+    public void addStaff(int idx)
     {
         StaffInfo staff = sheet.getStaves()
                                .get(idx);
@@ -574,6 +594,7 @@ public class SystemInfo
     /**
      * This is a private entry meant for GlyphsBuilder only.
      * The standard entry is {@link #addGlyph}
+     * @param glyph the glyph to add to the system glyph collection
      */
     public void addToGlyphsCollection (Glyph glyph)
     {
@@ -594,7 +615,10 @@ public class SystemInfo
     //-------------//
     // clearGlyphs //
     //-------------//
-    public void clearGlyphs ()
+    /**
+     * Empty the system glyph collection
+     */
+    public void clearGlyphs()
     {
         glyphs.clear();
     }
@@ -602,6 +626,11 @@ public class SystemInfo
     //-----------//
     // compareTo //
     //-----------//
+    /**
+     * Needed to implement natural SystemInfo sorting, based on system id
+     * @param o the other system to compare to
+     * @return the comparison result
+     */
     public int compareTo (SystemInfo o)
     {
         return Integer.signum(id - o.id);
@@ -804,7 +833,12 @@ public class SystemInfo
     //-------------------//
     // retrieveVerticals //
     //-------------------//
-    public int retrieveVerticals ()
+    /**
+     * Build new glyphs out of system suitable sections,
+     * @return the number of glyphs built
+     * @throws omr.step.StepException
+     */
+    public int retrieveVerticals()
         throws StepException
     {
         return verticalsBuilder.retrieveVerticals();
@@ -813,7 +847,12 @@ public class SystemInfo
     //---------------------//
     // segmentGlyphOnStems //
     //---------------------//
-    public void segmentGlyphOnStems (Glyph   glyph,
+    /**
+     * Process a glyph to retrieve its internal potential stems and leaves
+     * @param glyph the glyph to segment along stems
+     * @param isShort should we look for short (rather than standard) stems?
+     */
+    public void segmentGlyphOnStems(Glyph   glyph,
                                      boolean isShort)
     {
         verticalsBuilder.segmentGlyphOnStems(glyph, isShort);
@@ -878,7 +917,11 @@ public class SystemInfo
     //----------//
     // getSheet //
     //----------//
-    public Sheet getSheet ()
+    /**
+     * Report the sheet this system belongs to
+     * @return the containing sheet
+     */
+    public Sheet getSheet()
     {
         return sheet;
     }
@@ -932,7 +975,13 @@ public class SystemInfo
     //----------------------//
     // createStemCheckSuite //
     //----------------------//
-    public CheckSuite<Stick> createStemCheckSuite (boolean isShort)
+    /**
+     * Build a check suite for stem retrievals
+     * @param isShort are we looking for short (vs standard) stems?
+     * @return the newly built check suite
+     * @throws omr.step.StepException
+     */
+    public CheckSuite<Stick> createStemCheckSuite(boolean isShort)
         throws StepException
     {
         return verticalsBuilder.createStemCheckSuite(isShort);
@@ -1004,7 +1053,11 @@ public class SystemInfo
     //----------------//
     // translateFinal //
     //----------------//
-    public void translateFinal ()
+    /**
+     * Launch from this system the final processing of impacted systems to
+     * translate them to score entities
+     */
+    public void translateFinal()
     {
         translator.TranslateFinal();
     }

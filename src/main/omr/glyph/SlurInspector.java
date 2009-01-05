@@ -68,7 +68,12 @@ public class SlurInspector
     //----------------------//
     // getMaxCircleDistance //
     //----------------------//
-    public static double getMaxCircleDistance ()
+    /**
+     * Report the maximum distance to approximating circle that is acceptable
+     * for a slur
+     * @return the maximum circle distance, expressed as interline fraction
+     */
+    public static double getMaxCircleDistance()
     {
         return constants.maxCircleDistance.getValue();
     }
@@ -474,7 +479,7 @@ public class SlurInspector
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** Maximum distance to approximating circle for a oldSlur */
+        /** Maximum distance to approximating circle for a slur */
         Scale.Fraction maxCircleDistance = new Scale.Fraction(
             0.12,
             "Maximum distance to approximating circle" + " for a slur");

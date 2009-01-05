@@ -106,7 +106,7 @@ public class VerticalsBuilder
     /**
      * Creates a new VerticalsBuilder object.
      *
-     * @param sheet the related sheet
+     * @param system the related system
      */
     public VerticalsBuilder (SystemInfo system)
     {
@@ -123,8 +123,12 @@ public class VerticalsBuilder
     //----------------------//
     // createStemCheckSuite //
     //----------------------//
+    /**
+     * Create a brand new check suite for stem glyph candidates
+     * @param isShort should we look for short (vs standard) stems?
+     * @return the check suite ready for use
+     */
     public CheckSuite<Stick> createStemCheckSuite (boolean isShort)
-        throws StepException
     {
         return new StemCheckSuite(isShort);
     }
@@ -132,7 +136,12 @@ public class VerticalsBuilder
     //-------------------//
     // retrieveVerticals //
     //-------------------//
-    public int retrieveVerticals ()
+    /**
+     * Actually build the new verticals glyphs out of the dedicated system
+     * @return the number of stems found
+     * @throws omr.step.StepException
+     */
+    public int retrieveVerticals()
         throws StepException
     {
         // Get rid of former symbols
@@ -153,7 +162,12 @@ public class VerticalsBuilder
     //---------------------//
     // segmentGlyphOnStems //
     //---------------------//
-    public void segmentGlyphOnStems (Glyph   glyph,
+    /**
+     * Decompose the provided glyph into stems + leaves
+     * @param glyph the glyph to decompose
+     * @param isShort are we looking for short (vs standard) stems?
+     */
+    public void segmentGlyphOnStems(Glyph   glyph,
                                      boolean isShort)
     {
         // Gather all sections to be browsed
@@ -246,13 +260,19 @@ public class VerticalsBuilder
     //----------------//
     // StemCheckSuite //
     //----------------//
+    /**
+     * A suite of checks meant for stem candidates
+     */
     public class StemCheckSuite
         extends CheckSuite<Stick>
     {
         //~ Constructors -------------------------------------------------------
 
-        public StemCheckSuite (boolean isShort)
-            throws StepException
+        /**
+         * Create a new instance
+         * @param isShort for short stems
+         */
+        public StemCheckSuite(boolean isShort)
         {
             super("Stem", constants.minCheckResult.getValue());
             add(1, new MinLengthCheck(isShort));
@@ -426,7 +446,6 @@ public class VerticalsBuilder
         //~ Constructors -------------------------------------------------------
 
         protected LeftCheck (SystemInfo system)
-            throws StepException
         {
             super(
                 "LeftLimit",
@@ -491,7 +510,6 @@ public class VerticalsBuilder
         //~ Constructors -------------------------------------------------------
 
         protected MinLengthCheck (boolean isShort)
-            throws StepException
         {
             super(
                 "MinLength",
@@ -545,7 +563,6 @@ public class VerticalsBuilder
         //~ Constructors -------------------------------------------------------
 
         protected RightCheck (SystemInfo system)
-            throws StepException
         {
             super(
                 "RightLimit",
