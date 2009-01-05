@@ -734,8 +734,8 @@ public class SystemInfo
     /**
      * Meant for access by GlypsBuilder only
      * Standard entry is {@link #removeGlyph}
-     * @param glyph
-     * @return
+     * @param glyph the glyph to remove
+     * @return true if the glyph was registered
      */
     public boolean removeFromGlyphsCollection (Glyph glyph)
     {
@@ -944,8 +944,6 @@ public class SystemInfo
     /**
      * In the specified system, build new glyphs from unknown sections (sections
      * not linked to a known glyph)
-     *
-     * @param system the specified system
      */
     public void extractNewSystemGlyphs ()
     {
@@ -996,10 +994,11 @@ public class SystemInfo
     /**
      * Retrieve the various glyphs and series of glyphs that could represent
      * text portions in the system at hand
+     * @return the number of text glyphs built
      */
-    public void retrieveTextGlyphs ()
+    public int retrieveTextGlyphs ()
     {
-        textInspector.retrieveTextGlyphs();
+        return textInspector.retrieveTextGlyphs();
     }
 
     //----------------//
@@ -1050,10 +1049,11 @@ public class SystemInfo
     /**
      * Process all the slur glyphs in the given system, and try to correct the
      * spurious ones if any
+     * @return the number of slurs fixed
      */
-    public void verifySlurs ()
+    public int verifySlurs ()
     {
-        slurInspector.verifySlurs();
+        return slurInspector.verifySlurs();
     }
 
     //-------------//

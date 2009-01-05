@@ -11,6 +11,9 @@ package omr.step;
 
 import omr.Main;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.glyph.Glyph;
 import omr.glyph.GlyphInspector;
 import omr.glyph.Shape;
@@ -47,6 +50,9 @@ import javax.swing.*;
 public class SheetSteps
 {
     //~ Static fields/initializers ---------------------------------------------
+
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(SheetSteps.class);
@@ -274,6 +280,20 @@ public class SheetSteps
 
     //~ Inner Classes ----------------------------------------------------------
 
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        private final Constant.Integer MaxCleanupIterations = new Constant.Integer(
+            "count",
+            10,
+            "Maximum number of iterations for CLEANUP task");
+    }
+
     //--------------//
     // MeasuresTask //
     //--------------//
@@ -394,16 +414,32 @@ public class SheetSteps
         public void doSystem (SystemInfo system)
             throws StepException
         {
-            system.removeInactiveGlyphs();
-            system.verifyStems();
+            final int iterNb = constants.MaxCleanupIterations.getValue();
+            boolean   onGoing = true;
 
-            system.removeInactiveGlyphs();
-            system.retrieveGlyphs();
-            system.verifySlurs();
+            for (int iter = 0; onGoing && (iter < iterNb); iter++) {
+                int stemModifs = 0;
+                int slurModifs = 0;
+                int textModifs = 0;
+                system.removeInactiveGlyphs();
+                stemModifs = system.verifyStems();
 
-            system.removeInactiveGlyphs();
-            system.retrieveGlyphs();
-            system.retrieveTextGlyphs();
+                system.removeInactiveGlyphs();
+                system.retrieveGlyphs();
+                slurModifs = system.verifySlurs();
+
+                system.removeInactiveGlyphs();
+                system.retrieveGlyphs();
+                textModifs = system.retrieveTextGlyphs();
+                onGoing = (stemModifs + slurModifs + textModifs) > 0;
+
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "System#" + system.getId() + " CLEANUP#" + iter +
+                        " stems:" + stemModifs + " slurs:" + slurModifs +
+                        " texts:" + textModifs);
+                }
+            }
         }
     }
 

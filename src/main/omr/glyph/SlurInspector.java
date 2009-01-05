@@ -257,7 +257,7 @@ public class SlurInspector
         }
 
         if (kept.size() > 0) {
-            // Make sure we do have a suitable oldSlur
+            // Make sure we do have a suitable slur
             try {
                 Circle circle = computeCircle(kept);
                 double distance = circle.getDistance();
@@ -267,7 +267,7 @@ public class SlurInspector
                 }
 
                 if (distance <= distThreshold) {
-                    // Build new oldSlur glyph with sections kept
+                    // Build new slur glyph with sections kept
                     Glyph newGlyph = new Stick(interline);
 
                     for (GlyphSection section : kept) {
@@ -276,7 +276,11 @@ public class SlurInspector
                     }
 
                     newGlyph.setShape(Shape.SLUR);
-                    newGlyph = system.addGlyph(newGlyph);
+
+                    // Pb: the newGlyph may now belong to a different system!
+                    SystemInfo newSystem = system.getSheet()
+                                                 .getSystemOf(newGlyph);
+                    newGlyph = newSystem.addGlyph(newGlyph);
 
                     if (logger.isFineEnabled()) {
                         logger.fine(
@@ -331,7 +335,7 @@ public class SlurInspector
      * glyph sections (for large slurs)
      *
      * @param glyph the spurious glyph at hand
-     * @return true if the oldSlur glyph has actually been fixed
+     * @return the fixed slur glyph, if any, otherwise null
      */
     public Glyph fixSpuriousSlur (Glyph glyph)
     {
@@ -348,15 +352,18 @@ public class SlurInspector
     /**
      * Process all the oldSlur glyphs in the given system, and try to correct the
      * spurious ones if any
+     * @return the number of slurs fixed
      */
-    public void verifySlurs ()
+    public int verifySlurs ()
     {
-        // First, make a list of all oldSlur glyphs in this system
+        int         modifs = 0;
+
+        // First, make a list of all slur glyphs to be checked in this system
         // (So as to free the system glyph list for on-the-fly modifications)
         List<Glyph> slurs = new ArrayList<Glyph>();
 
         for (Glyph glyph : system.getGlyphs()) {
-            if ((glyph.getShape() == Shape.SLUR)) {
+            if ((glyph.getShape() == Shape.SLUR) && !glyph.isManualShape()) {
                 slurs.add(glyph);
             }
         }
@@ -372,7 +379,13 @@ public class SlurInspector
                 if (!computeCircle(seed)
                          .isValid(getMaxCircleDistance())) {
                     try {
-                        fixSpuriousSlur(seed);
+                        Glyph newSlur = fixSpuriousSlur(seed);
+
+                        if (logger.isFineEnabled()) {
+                            logger.fine("Fixed " + seed + " into " + newSlur);
+                        }
+
+                        modifs++;
                     } catch (Exception ex) {
                         logger.warning("Error in fixing slur", ex);
                     }
@@ -381,6 +394,8 @@ public class SlurInspector
                 }
             }
         }
+
+        return modifs;
     }
 
     //--------------//
@@ -440,6 +455,8 @@ public class SlurInspector
 
             return newSlur;
         } else {
+            oldSlur.setShape(null); // Since this slur has not been fixed
+
             return null;
         }
     }

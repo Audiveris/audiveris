@@ -58,14 +58,18 @@ public class TextInspector
     /**
      * Align the various text glyphs in horizontal text lines
      */
-    public void alignTextGlyphs ()
+    public int alignTextGlyphs ()
     {
+        int modifs = 0;
+
         try {
             // Keep the previous work! No textLines.clear();
             for (Glyph glyph : system.getGlyphs()) {
                 if ((glyph.getShape() != null) && glyph.getShape()
                                                        .isText()) {
-                    feedLine(glyph, system.getTextLines());
+                    if (feedLine(glyph, system.getTextLines())) {
+                        modifs++;
+                    }
                 }
             }
 
@@ -90,6 +94,8 @@ public class TextInspector
         } catch (Exception ex) {
             logger.warning("Exception in TextInspector.alignTextGlyphs", ex);
         }
+
+        return modifs;
     }
 
     //--------------------//
@@ -98,8 +104,9 @@ public class TextInspector
     /**
      * Retrieve the various glyphs and series of glyphs that could represent
      * text portions in the system at hand
+     * @return the number of text glyphs built
      */
-    public void retrieveTextGlyphs ()
+    public int retrieveTextGlyphs ()
     {
         TextArea area = new TextArea(
             null,
@@ -111,7 +118,7 @@ public class TextInspector
         area.subdivide(system.getSheet());
 
         // Process alignments of text items
-        alignTextGlyphs();
+        return alignTextGlyphs();
     }
 
     //----------//
@@ -122,10 +129,13 @@ public class TextInspector
      *
      * @param item the text item to host in a text line
      * @param lines the collections of text glyph lines
+     * @return true if the glyph was really added
      */
-    private void feedLine (Glyph                    item,
-                           SortedSet<TextGlyphLine> lines)
+    private boolean feedLine (Glyph                    item,
+                              SortedSet<TextGlyphLine> lines)
     {
+        boolean added = false;
+
         if (logger.isFineEnabled()) {
             logger.fine("Feeding a GlyphTextLine with " + item);
         }
@@ -137,24 +147,26 @@ public class TextInspector
 
         for (TextGlyphLine line : lines) {
             if (line.isAlignedWith(item.getLocation(), maxDy)) {
-                line.addItem(item);
+                added = line.addItem(item);
 
                 if (logger.isFineEnabled()) {
                     logger.fine(
                         "Inserted glyph #" + item.getId() + " into " + line);
                 }
 
-                return;
+                return added;
             }
         }
 
         // No compatible line, so create a brand new one
         TextGlyphLine line = new TextGlyphLine(system);
-        line.addItem(item);
+        added = line.addItem(item);
         lines.add(line);
 
         if (logger.isFineEnabled()) {
             logger.fine("Created new " + line);
         }
+
+        return added;
     }
 }

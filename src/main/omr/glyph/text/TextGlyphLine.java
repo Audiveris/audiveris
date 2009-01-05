@@ -136,14 +136,15 @@ public class TextGlyphLine
     //---------//
     /**
      * Add a glyph to this line
-     * @param item the glyph to zdd
+     * @param item the glyph to add
+     * @return true if item did not already exist in the glyphs set
      */
-    public void addItem (Glyph item)
+    public boolean addItem (Glyph item)
     {
-        glyphs.add(item);
-
         // Force recomputation of line mean ordinate
         y = null;
+
+        return glyphs.add(item);
     }
 
     //-----------//
@@ -477,7 +478,7 @@ public class TextGlyphLine
                         glyph.getImage(),
                         language)
                                               .get(0);
-                    logger.info("Glyph#" + glyph.getId() + "->" + line);
+                    ///logger.info("Glyph#" + glyph.getId() + "->" + line);
 
                     glyph.getTextInfo()
                          .setOcrContent(line);
