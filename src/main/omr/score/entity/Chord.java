@@ -1075,7 +1075,11 @@ public class Chord
     //--------------//
     // toLongString //
     //--------------//
-    public String toLongString ()
+    /**
+     *
+     * @return
+     */
+    public String toLongString()
     {
         StringBuilder sb = new StringBuilder();
         sb.append(this);
@@ -1754,7 +1758,12 @@ public class Chord
 
         //~ Constructors -------------------------------------------------------
 
-        public SplitOrder (Chord chord,
+        /**
+         *
+         * @param chord
+         * @param alienNote
+         */
+        public SplitOrder(Chord chord,
                            Note  alienNote)
         {
             this.chord = chord;
