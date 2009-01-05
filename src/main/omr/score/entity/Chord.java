@@ -1351,6 +1351,15 @@ public class Chord
     //-----------//
     // checkTies //
     //-----------//
+    /**
+     * For this chord, check either the incoming of the outgoing ties according
+     * to the TieRelation information. For true ties (slurs linking notes with
+     * same pitch) we make sure there is no more than one distant chord. If not,
+     * we split the chord in two, so that each (sub)chord has only consistent
+     * ties.
+     * @param tie info about the relation between the slur and this chord
+     * @return how to split the chord, or null if no split is needed
+     */
     private SplitOrder checkTies (TieRelation tie)
     {
         List<Note>       distantNotes = new ArrayList<Note>();
@@ -1783,7 +1792,7 @@ public class Chord
         public boolean isRelevant (Slur slur,
                                    Note note)
         {
-            return getLocalNote(slur) == note;
+            return slur.isTie() && (getLocalNote(slur) == note);
         }
     }
 
