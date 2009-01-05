@@ -55,7 +55,7 @@ import omr.stick.StickSection;
 import omr.ui.BoardsPane;
 
 import omr.util.BasicTask;
-import omr.util.Boundary;
+import omr.util.BrokenLine;
 import omr.util.Dumper;
 import omr.util.Synchronicity;
 import static omr.util.Synchronicity.*;
@@ -607,14 +607,13 @@ public class SystemsBuilder
 
         /** Acceptable distance since last reference point (while dragging) */
         private int maxDraggingDelta = (int) Math.rint(
-            constants.draggingRatio.getValue() * Boundary.getDefaultStickyDistance());
+            constants.draggingRatio.getValue() * BrokenLine.getDefaultStickyDistance());
 
-        /** Latest designated reference point, if any */
-        private Point lastRefPoint = null;
+        // Latest designated reference point, if any */
+        private Point      lastPoint = null;
 
-        /** Latest information, meaningful only if lastRefPoint is not null */
-        private SystemInfo lastSystem = null;
-        private int lastIndex = -1;
+        // Latest information, meaningful only if lastPoint is not null */
+        private BrokenLine lastLine = null;
 
         //~ Constructors -------------------------------------------------------
 
@@ -670,12 +669,12 @@ public class SystemsBuilder
                     Rectangle rect = sheetLocation.rectangle;
 
                     if (rect != null) {
-                        updateBoundary(
-                            new Point(
-                                rect.x + (rect.width / 2),
-                                rect.y + (rect.height / 2)));
-
-                        if (sheetLocation.movement == MouseMovement.RELEASING) {
+                        if (event.movement != MouseMovement.RELEASING) {
+                            updateBoundary(
+                                new Point(
+                                    rect.x + (rect.width / 2),
+                                    rect.y + (rect.height / 2)));
+                        } else {
                             new BasicTask() {
                                     @Override
                                     protected Void doInBackground ()
@@ -719,86 +718,65 @@ public class SystemsBuilder
          */
         private void updateBoundary (Point pt)
         {
-            // New ref point
-            Point refPoint = null;
+            Point refPoint = null; // New ref point
 
             // Are we close to the latest refPoint?
-            if (lastRefPoint != null) {
-                if ((Math.abs(lastRefPoint.x - pt.x) <= maxDraggingDelta) &&
-                    (Math.abs(lastRefPoint.y - pt.y) <= maxDraggingDelta)) {
-                    refPoint = lastRefPoint;
-                } else {
-                    lastRefPoint = null;
-
-                    return;
+            if (lastPoint != null) {
+                if ((Math.abs(lastPoint.x - pt.x) <= maxDraggingDelta) &&
+                    (Math.abs(lastPoint.y - pt.y) <= maxDraggingDelta)) {
+                    refPoint = lastPoint;
                 }
             }
 
             if (refPoint == null) {
-                // Are we close to a new refPoint?
-                SystemInfo system = sheet.getSystemOf(
-                    new PixelPoint(pt.x, pt.y));
+                // Are we close to any existing refPoint?
+                SystemInfo system = sheet.getSystemsNear(pt)
+                                         .iterator()
+                                         .next();
 
-                if (system != null) {
-                    Boundary boundary = system.getBoundary();
-                    int      index = boundary.findPoint(pt);
+                for (BrokenLine line : system.getBoundary()
+                                             .getLimits()) {
+                    refPoint = line.findPoint(pt);
 
-                    // We may be outside of any system ...
-                    if (index != -1) {
-                        refPoint = boundary.getPoint(index);
-                        lastSystem = system;
-                        lastIndex = index;
+                    if (refPoint != null) {
+                        lastLine = line;
+
+                        break;
                     }
                 }
             }
 
             if (refPoint != null) {
                 // Move the current ref point to user pt
-                refPoint = pt;
-
-                Boundary boundary = lastSystem.getBoundary();
-                boundary.movePoint(lastIndex, refPoint);
+                lastLine.movePoint(refPoint, pt);
 
                 // If we get colinear segments, let's merge them
-                if (boundary.size() >= 3) {
-                    int prevIndex = (lastIndex > 0) ? (lastIndex - 1)
-                                    : (boundary.size() - 1);
-                    int nextIndex = (lastIndex < (boundary.size() - 1))
-                                    ? (lastIndex + 1) : 0;
-
-                    if (boundary.areColinear(prevIndex, lastIndex, nextIndex)) {
-                        boundary.removePoint(lastIndex);
-                        refPoint = null;
-                    }
+                if (lastLine.isColinear(refPoint)) {
+                    lastLine.removePoint(refPoint);
+                    refPoint = null;
                 }
             } else {
-                // Are we close to a segment? (of which system?)
-                // Try systems nearby (maximum 2)
-                int tried = 0;
+                // Are we close to a segment, to define a new ref point?
+                SystemInfo system = sheet.getSystemsNear(pt)
+                                         .iterator()
+                                         .next();
 
-                for (SystemInfo system : sheet.getSystemsNear(pt)) {
-                    if (tried++ > 2) {
-                        break;
-                    }
+                for (BrokenLine line : system.getBoundary()
+                                             .getLimits()) {
+                    Point segmentStart = line.findSegment(pt);
 
-                    int index = system.getBoundary()
-                                      .findSegment(pt);
-
-                    if (index != -1) {
+                    if (segmentStart != null) {
                         // Add a new ref point
                         refPoint = pt;
-                        lastSystem = system;
-                        lastIndex = index + 1;
-                        system.getBoundary()
-                              .insertPoint(lastIndex, pt);
+                        lastLine = line;
+                        line.insertPointAfter(pt, segmentStart);
+
+                        break;
                     }
                 }
             }
 
-            lastRefPoint = refPoint;
-
-            if (refPoint != null) {
-            }
+            lastPoint = refPoint;
         }
     }
 }

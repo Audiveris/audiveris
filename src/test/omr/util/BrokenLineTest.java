@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                          B o u n d a r y T e s t                           //
+//                        B r o k e n L i n e T e s t                         //
 //                                                                            //
 //  Copyright (C) Herve Bitteur 2000-2007. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
@@ -17,33 +17,34 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.awt.Point;
-import java.awt.Rectangle;
+import java.util.Arrays;
+import java.util.List;
 
 /**
- * Class <code>BoundaryTest</code> is a set of unitary tests for the
- * <code>Boundary</code> class.
+ * Class <code>BrokenLineTest</code> is a set of unitary tests for the
+ * <code>BrokenLine</code> class.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
-public class BoundaryTest
+public class BrokenLineTest
 {
     //~ Instance fields --------------------------------------------------------
 
-    private Point    p0 = new Point(1, 5);
-    private Point    p1 = new Point(10, 5);
-    private Point    p2 = new Point(10, 1);
-    private Point    p3 = new Point(1, 1);
-    private Boundary instance;
+    private Point      p0 = new Point(1, 5);
+    private Point      p1 = new Point(10, 5);
+    private Point      p2 = new Point(10, 1);
+    private Point      p3 = new Point(1, 1);
+    private BrokenLine instance;
 
     //~ Constructors -----------------------------------------------------------
 
     /**
-     * Creates a new BoundaryTest object.
+     * Creates a new BrokenLineTest object.
      */
-    public BoundaryTest ()
+    public BrokenLineTest ()
     {
-        ///System.out.println("BoundaryTest");
+        ///System.out.println("BrokenLineTest");
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -63,20 +64,7 @@ public class BoundaryTest
     }
 
     /**
-     * Test of getBounds method, of class Boundary.
-     */
-    @Test
-    public void getBounds ()
-    {
-        System.out.println("getBounds");
-
-        Rectangle expResult = new Rectangle(1, 1, 9, 4);
-        Rectangle result = instance.getBounds();
-        assertEquals(expResult, result);
-    }
-
-    /**
-     * Test of getPoint method, of class Boundary.
+     * Test of getPoint method, of class BrokenLine.
      */
     @Test
     public void getPoint ()
@@ -90,54 +78,54 @@ public class BoundaryTest
     }
 
     /**
-     * Test of getSequence method, of class Boundary.
+     * Test of getPoints method, of class BrokenLine.
      */
     @Test
     public void getSequence ()
     {
         System.out.println("getSequence");
 
-        Point[] expResult = new Point[] { p0, p1, p2, p3 };
-        Point[] result = instance.getSequence();
+        List<Point> expResult = Arrays.asList(p0, p1, p2, p3);
+        List<Point> result = instance.getPoints();
         assertEquals(expResult, result);
     }
 
     /**
-     * Test of getSequenceString method, of class Boundary.
+     * Test of getSequenceString method, of class BrokenLine.
      */
     @Test
     public void getSequenceString ()
     {
         System.out.println("getSequenceString");
 
-        String   expResult = "[(1,5) (10,5) (10,1) (1,1)]";
-        String   result = instance.getSequenceString();
+        String expResult = "[(1,5) (10,5) (10,1) (1,1)]";
+        String result = instance.getSequenceString();
         assertEquals(expResult, result);
     }
 
     /**
-     * Test of setStickyDistance method, of class Boundary.
+     * Test of setStickyDistance method, of class BrokenLine.
      */
     @Test
     public void setStickyDistance ()
     {
         System.out.println("setStickyDistance");
 
-        int      stickyDistance = 123;
+        int stickyDistance = 123;
         instance.setStickyDistance(stickyDistance);
         assertEquals(stickyDistance, instance.getStickyDistance());
     }
 
     /**
-     * Test of getStickyDistance method, of class Boundary.
+     * Test of getStickyDistance method, of class BrokenLine.
      */
     @Test
     public void getStickyDistance ()
     {
         System.out.println("getStickyDistance");
 
-        int      expResult = 1;
-        int      result = instance.getStickyDistance();
+        int expResult = 1;
+        int result = instance.getStickyDistance();
         assertEquals(expResult, result);
     }
 
@@ -145,16 +133,19 @@ public class BoundaryTest
     public void setUp ()
     {
         ///System.out.println("setUp");
-        instance = new Boundary(
-            new Point(1, 5),
-            new Point(10, 5),
-            new Point(10, 1),
-            new Point(1, 1));
+        instance = new BrokenLine(p0, p1, p2, p3);
         instance.setStickyDistance(1);
+        instance.addListener(
+            new BrokenLine.Listener() {
+                    public void update (BrokenLine brokenLine)
+                    {
+                        System.out.println("Notification received");
+                    }
+                });
     }
 
     /**
-     * Test of addPoint method, of class Boundary.
+     * Test of addPoint method, of class BrokenLine.
      */
     @Test
     public void addPoint ()
@@ -169,13 +160,13 @@ public class BoundaryTest
     }
 
     /**
-     * Test of addPointEmpty method, of class Boundary.
+     * Test of addPointEmpty method, of class BrokenLine.
      */
     @Test
     public void addPointEmpty ()
     {
         System.out.println("addPointEmpty");
-        instance = new Boundary();
+        instance = new BrokenLine();
         System.out.println("before: " + instance.getSequenceString());
 
         Point point = new Point(2, 3);
@@ -185,40 +176,39 @@ public class BoundaryTest
     }
 
     /**
-     * Test of areColinear method, of class Boundary.
+     * Test of areColinear method, of class BrokenLine.
      */
     @Test
-    public void areColinear ()
+    public void isColinear ()
     {
-        System.out.println("areColinear");
-
-        instance.insertPoint(2, new Point(12, 5));
-        assertTrue(instance.areColinear(0, 1, 2));
-        assertFalse(instance.areColinear(1, 2, 3));
+        System.out.println("isColinear");
+        instance.insertPointAfter(new Point(0,1), p3);
+        assertTrue(instance.isColinear(p3));
+        assertFalse(instance.isColinear(p2));
     }
 
     /**
-     * Test of findPoint method, of class Boundary.
+     * Test of findPoint method, of class BrokenLine.
      */
     @Test
     public void findPoint ()
     {
-        int expResult = 2;
+        Point expResult = p2;
         System.out.println("findPoint " + expResult);
         System.out.println("before: " + instance.getSequenceString());
 
         Point point = new Point(11, 2);
         instance.setStickyDistance(1);
 
-        int result = instance.findPoint(point);
+        Point result = instance.findPoint(point);
         assertEquals(expResult, result);
 
         instance.setStickyDistance(0);
-        assertEquals(-1, instance.findPoint(point));
+        assertEquals(null, instance.findPoint(point));
     }
 
     /**
-     * Test of findSegment method, of class Boundary.
+     * Test of findSegment method, of class BrokenLine.
      */
     @Test
     public void findSegment ()
@@ -228,22 +218,33 @@ public class BoundaryTest
 
         Point point = new Point(11, 3);
         instance.setStickyDistance(2);
-        assertEquals(1, instance.findSegment(point));
+        assertEquals(p1, instance.findSegment(point));
 
         instance.setStickyDistance(0);
-        assertEquals(-1, instance.findSegment(point));
+        assertEquals(null, instance.findSegment(point));
 
-        instance = new Boundary();
+        instance = new BrokenLine();
         instance.setStickyDistance(2);
-        assertEquals(-1, instance.findSegment(point));
+        assertEquals(null, instance.findSegment(point));
         instance.addPoint(p1);
-        assertEquals(-1, instance.findSegment(point));
+        assertEquals(null, instance.findSegment(point));
         instance.addPoint(p2);
-        assertEquals(0, instance.findSegment(point));
+        assertEquals(p1, instance.findSegment(point));
     }
 
     /**
-     * Test of insertPoint method, of class Boundary.
+     * Test of indexOf method, of class BrokenLine.
+     */
+    @Test
+    public void indexOf ()
+    {
+        int expResult = 2;
+        int result = instance.indexOf(p2);
+        assertEquals(expResult, result);
+    }
+
+    /**
+     * Test of insertPoint method, of class BrokenLine.
      */
     @Test
     public void insertPoint ()
@@ -259,49 +260,51 @@ public class BoundaryTest
     }
 
     /**
-     * Test of movePoint method, of class Boundary.
+     * Test of insertPointAfter method, of class BrokenLine.
+     */
+    @Test
+    public void insertPointAfter ()
+    {
+        System.out.println("insertPointAfter " + p2);
+        System.out.println("before: " + instance.getSequenceString());
+
+        Point point = new Point(5, 2);
+        instance.insertPointAfter(point, p2);
+        System.out.println("after : " + instance.getSequenceString());
+        assertEquals(3, instance.indexOf(point));
+    }
+
+    /**
+     * Test of movePoint method, of class BrokenLine.
      */
     @Test
     public void movePoint ()
     {
-        int index = 1;
-        System.out.println("movePoint " + index);
+        System.out.println("movePoint " + p1);
         System.out.println("before: " + instance.getSequenceString());
 
         Point location = new Point(11, 6);
-        instance.movePoint(index, location);
+        instance.movePoint(p1, location);
         System.out.println("after : " + instance.getSequenceString());
-        assertTrue(location.equals(instance.getPoint(index)));
+        assertEquals(location, instance.getPoint(1));
     }
 
     /**
-     * Test of removePoint method, of class Boundary.
+     * Test of removePoint method, of class BrokenLine.
      */
     @Test
     public void removePoint ()
     {
-        int index = 2;
-        System.out.println("removePoint " + index);
+        System.out.println("removePoint " + p2);
         System.out.println("before: " + instance.getSequenceString());
 
-        instance.removePoint(index);
+        instance.removePoint(p2);
         System.out.println("after : " + instance.getSequenceString());
-        assertTrue(p3.equals(instance.getPoint(index)));
+        assertTrue(p3.equals(instance.getPoint(2)));
     }
 
     /**
-     * Test of render method, of class Boundary.
-     */
-    @Test
-    public void render ()
-    {
-        System.out.println("render");
-
-        // Nothing we can easily test
-    }
-
-    /**
-     * Test of size method, of class Boundary.
+     * Test of size method, of class BrokenLine.
      */
     @Test
     public void size ()

@@ -49,7 +49,7 @@ import omr.ui.BoardsPane;
 import omr.ui.ErrorsEditor;
 import omr.ui.MainGui;
 
-import omr.util.Boundary;
+import omr.util.BrokenLine;
 import omr.util.Dumper;
 import omr.util.FileUtil;
 
@@ -971,9 +971,10 @@ public class Sheet
      * Report the ordered list of systems containing or close to the provided
      * point
      * @param point the provided point
-     * @return a collection of systems ordered by increasing distance from point
+     * @return a collection of systems ordered by increasing distance from the
+     * provided point
      */
-    public List<SystemInfo> getSystemsNear (Point point)
+    public List<SystemInfo> getSystemsNear (final Point point)
     {
         List<SystemInfo> neighbors = new ArrayList<SystemInfo>(systems);
         Collections.sort(
@@ -983,9 +984,11 @@ public class Sheet
                                         SystemInfo s2)
                     {
                         int y1 = (s1.getTop() + s1.getBottom()) / 2;
+                        int d1 = Math.abs(point.y - y1);
                         int y2 = (s2.getTop() + s2.getBottom()) / 2;
+                        int d2 = Math.abs(point.y - y2);
 
-                        return Integer.signum(y1 - y2);
+                        return Integer.signum(d1 - d2);
                     }
                 });
 
@@ -1115,6 +1118,10 @@ public class Sheet
         // Compute the dimensions of the picture area of every system
         SystemInfo prevSystem = null;
         int        top = 0;
+        BrokenLine north = new BrokenLine(
+            new Point(0, top),
+            new Point(getWidth(), top));
+        BrokenLine south = null;
 
         for (SystemInfo system : getSystems()) {
             // Not the very first system?
@@ -1123,13 +1130,12 @@ public class Sheet
                 // ordinate of last line of last staff of previous system and
                 // ordinate of first line of first staff of current system
                 int bottom = (prevSystem.getBottom() + system.getTop()) / 2;
+                south = new BrokenLine(
+                    new Point(0, bottom),
+                    new Point(getWidth(), bottom));
                 prevSystem.setBoundary(
-                    new Boundary(
-                        new Point(0, top),
-                        new Point(getWidth(), top),
-                        new Point(getWidth(), bottom),
-                        new Point(0, bottom)));
-                top = bottom;
+                    new SystemBoundary(prevSystem, north, south));
+                north = south;
             }
 
             // Remember this info for next system
@@ -1138,12 +1144,11 @@ public class Sheet
 
         // Last system
         if (prevSystem != null) {
+            south = new BrokenLine(
+                new Point(0, getHeight()),
+                new Point(getWidth(), getHeight()));
             prevSystem.setBoundary(
-                new Boundary(
-                    new Point(0, top),
-                    new Point(getWidth(), top),
-                    new Point(getWidth(), getHeight()),
-                    new Point(0, getHeight())));
+                new SystemBoundary(prevSystem, north, south));
         }
     }
 

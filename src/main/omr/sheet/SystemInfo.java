@@ -31,7 +31,7 @@ import omr.step.StepException;
 
 import omr.stick.Stick;
 
-import omr.util.Boundary;
+import omr.util.BrokenLine;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -128,7 +128,7 @@ public class SystemInfo
     private final int id;
 
     /** Boundary that encloses all items of this system */
-    private Boundary boundary;
+    private SystemBoundary boundary;
 
     /** Ordinate of bottom of last staff of the system. */
     private int bottom;
@@ -205,7 +205,7 @@ public class SystemInfo
      * Define the precise boundary of this system
      * @param boundary the (new) boundary
      */
-    public void setBoundary (Boundary boundary)
+    public void setBoundary (SystemBoundary boundary)
     {
         this.boundary = boundary;
     }
@@ -215,9 +215,9 @@ public class SystemInfo
     //-------------//
     /**
      * Report the precise boundary of this system
-     * @return the precise polygon boundary
+     * @return the precise system boundary
      */
-    public Boundary getBoundary ()
+    public SystemBoundary getBoundary ()
     {
         return boundary;
     }
@@ -356,7 +356,7 @@ public class SystemInfo
      * Reports the parts of this system
      * @return the parts (non-null)
      */
-    public List<PartInfo> getParts()
+    public List<PartInfo> getParts ()
     {
         return parts;
     }
@@ -540,7 +540,7 @@ public class SystemInfo
      * Add a part (set of staves) in this system
      * @param partInfo the part to add
      */
-    public void addPart(PartInfo partInfo)
+    public void addPart (PartInfo partInfo)
     {
         parts.add(partInfo);
     }
@@ -553,7 +553,7 @@ public class SystemInfo
      * @param idx index (in the global staves collection at sheet level) of the
      * staff to add
      */
-    public void addStaff(int idx)
+    public void addStaff (int idx)
     {
         StaffInfo staff = sheet.getStaves()
                                .get(idx);
@@ -618,7 +618,7 @@ public class SystemInfo
     /**
      * Empty the system glyph collection
      */
-    public void clearGlyphs()
+    public void clearGlyphs ()
     {
         glyphs.clear();
     }
@@ -838,7 +838,7 @@ public class SystemInfo
      * @return the number of glyphs built
      * @throws omr.step.StepException
      */
-    public int retrieveVerticals()
+    public int retrieveVerticals ()
         throws StepException
     {
         return verticalsBuilder.retrieveVerticals();
@@ -852,7 +852,7 @@ public class SystemInfo
      * @param glyph the glyph to segment along stems
      * @param isShort should we look for short (rather than standard) stems?
      */
-    public void segmentGlyphOnStems(Glyph   glyph,
+    public void segmentGlyphOnStems (Glyph   glyph,
                                      boolean isShort)
     {
         verticalsBuilder.segmentGlyphOnStems(glyph, isShort);
@@ -921,7 +921,7 @@ public class SystemInfo
      * Report the sheet this system belongs to
      * @return the containing sheet
      */
-    public Sheet getSheet()
+    public Sheet getSheet ()
     {
         return sheet;
     }
@@ -981,7 +981,7 @@ public class SystemInfo
      * @return the newly built check suite
      * @throws omr.step.StepException
      */
-    public CheckSuite<Stick> createStemCheckSuite(boolean isShort)
+    public CheckSuite<Stick> createStemCheckSuite (boolean isShort)
         throws StepException
     {
         return verticalsBuilder.createStemCheckSuite(isShort);
@@ -1057,7 +1057,7 @@ public class SystemInfo
      * Launch from this system the final processing of impacted systems to
      * translate them to score entities
      */
-    public void translateFinal()
+    public void translateFinal ()
     {
         translator.TranslateFinal();
     }
@@ -1122,5 +1122,13 @@ public class SystemInfo
     public int verifyStems ()
     {
         return stemInspector.verifyStems();
+    }
+
+    //-----------------//
+    // boundaryUpdated //
+    //-----------------//
+    void boundaryUpdated ()
+    {
+        ///logger.warning("Update for " + this);
     }
 }
