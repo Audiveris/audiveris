@@ -311,127 +311,115 @@ public class Slur
             logger.fine("Populating slur glyph#" + glyph.getId());
         }
 
-        // Compute (and check) the approximating circle
-        Circle circle = SlurInspector.computeCircle(glyph);
+        // Compute the approximating circle
+        // Build a curve using system-based coordinates
+        Circle            circle = SlurInspector.computeCircle(glyph);
+        CubicCurve2D      curve = computeCurve(circle, system);
 
-        if (!circle.isValid(SlurInspector.getMaxCircleDistance())) {
-            system.addError(glyph, "Still spurious slur glyph");
+        // Retrieve & sort nodes (notes or chords) on both ends of the slur
+        List<MeasureNode> leftNodes = new ArrayList<MeasureNode>();
+        List<MeasureNode> rightNodes = new ArrayList<MeasureNode>();
 
-            if (system.getInfo()
-                      .fixSpuriousSlur(glyph) != null) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("Slur fixed  ...");
-                }
-            }
-        } else {
-            // Build a curve using system-based coordinates
-            CubicCurve2D      curve = computeCurve(circle, system);
+        boolean           below = retrieveEmbracedNotes(
+            system,
+            curve,
+            leftNodes,
+            rightNodes);
 
-            // Retrieve & sort nodes (notes or chords) on both ends of the slur
-            List<MeasureNode> leftNodes = new ArrayList<MeasureNode>();
-            List<MeasureNode> rightNodes = new ArrayList<MeasureNode>();
+        // Now choose the most relevant note, if any, on each slur side
+        Side leftSide = null;
+        Side rightSide = null;
 
-            boolean           below = retrieveEmbracedNotes(
-                system,
-                curve,
-                leftNodes,
-                rightNodes);
+        switch (leftNodes.size()) {
+        case 0 :
 
-            // Now choose the most relevant note, if any, on each slur side
-            Side leftSide = null;
-            Side rightSide = null;
-
-            switch (leftNodes.size()) {
+            switch (rightNodes.size()) {
             case 0 :
-
-                switch (rightNodes.size()) {
-                case 0 :
-                    break;
-
-                case 1 :
-                    rightSide = new Side(rightNodes.get(0));
-
-                    break;
-
-                default :
-                    rightSide = new Side(rightNodes.get(0)); // Why not?
-                }
-
                 break;
 
             case 1 :
-                leftSide = new Side(leftNodes.get(0));
+                rightSide = new Side(rightNodes.get(0));
 
-                switch (rightNodes.size()) {
-                case 0 :
-                    break;
+                break;
 
-                case 1 :
-                    rightSide = new Side(rightNodes.get(0));
+            default :
+                rightSide = new Side(rightNodes.get(0)); // Why not?
+            }
 
-                    break;
+            break;
 
-                default :
+        case 1 :
+            leftSide = new Side(leftNodes.get(0));
 
-                    for (MeasureNode node : rightNodes) {
-                        rightSide = new Side(node);
+            switch (rightNodes.size()) {
+            case 0 :
+                break;
 
-                        if (leftSide.stemDir == rightSide.stemDir) {
-                            break;
-                        }
-                    }
-                }
+            case 1 :
+                rightSide = new Side(rightNodes.get(0));
 
                 break;
 
             default :
 
-                switch (rightNodes.size()) {
-                case 0 :
-                    leftSide = new Side(leftNodes.get(0)); // Why not?
+                for (MeasureNode node : rightNodes) {
+                    rightSide = new Side(node);
 
-                    break;
-
-                case 1 :
-                    rightSide = new Side(rightNodes.get(0));
-
-                    for (MeasureNode node : leftNodes) {
-                        leftSide = new Side(node);
-
-                        if (leftSide.stemDir == rightSide.stemDir) {
-                            break;
-                        }
+                    if (leftSide.stemDir == rightSide.stemDir) {
+                        break;
                     }
-
-                    break;
-
-                default : // N left & P right
-                    leftSide = new Side(leftNodes.get(0)); // Why not?
-                    rightSide = new Side(rightNodes.get(0)); // Why not?
                 }
             }
 
-            // Should we allocate the slur entity?
-            if ((leftSide != null) || (rightSide != null)) {
-                SystemPart part = (leftSide != null) ? leftSide.note.getPart()
-                                  : rightSide.note.getPart();
-                Slur       slur = new Slur(
-                    part,
-                    glyph,
-                    curve,
-                    below,
-                    (leftSide != null) ? leftSide.note : null,
-                    (rightSide != null) ? rightSide.note : null);
-                glyph.setTranslation(slur);
+            break;
 
-                if (logger.isFineEnabled()) {
-                    logger.finest(slur.toString());
+        default :
+
+            switch (rightNodes.size()) {
+            case 0 :
+                leftSide = new Side(leftNodes.get(0)); // Why not?
+
+                break;
+
+            case 1 :
+                rightSide = new Side(rightNodes.get(0));
+
+                for (MeasureNode node : leftNodes) {
+                    leftSide = new Side(node);
+
+                    if (leftSide.stemDir == rightSide.stemDir) {
+                        break;
+                    }
                 }
-            } else {
-                system.addError(
-                    glyph,
-                    "Slur " + glyph.getId() + " with no embraced notes");
+
+                break;
+
+            default : // N left & P right
+                leftSide = new Side(leftNodes.get(0)); // Why not?
+                rightSide = new Side(rightNodes.get(0)); // Why not?
             }
+        }
+
+        // Should we allocate the slur entity?
+        if ((leftSide != null) || (rightSide != null)) {
+            SystemPart part = (leftSide != null) ? leftSide.note.getPart()
+                              : rightSide.note.getPart();
+            Slur       slur = new Slur(
+                part,
+                glyph,
+                curve,
+                below,
+                (leftSide != null) ? leftSide.note : null,
+                (rightSide != null) ? rightSide.note : null);
+            glyph.setTranslation(slur);
+
+            if (logger.isFineEnabled()) {
+                logger.finest(slur.toString());
+            }
+        } else {
+            system.addError(
+                glyph,
+                "Slur " + glyph.getId() + " with no embraced notes");
         }
     }
 
