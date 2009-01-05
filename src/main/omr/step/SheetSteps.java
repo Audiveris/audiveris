@@ -415,23 +415,29 @@ public class SheetSteps
             throws StepException
         {
             final int iterNb = constants.MaxCleanupIterations.getValue();
-            boolean   onGoing = true;
+            boolean   keepGoing = true;
 
-            for (int iter = 0; onGoing && (iter < iterNb); iter++) {
+            for (int iter = 0; keepGoing && (iter < iterNb); iter++) {
                 int stemModifs = 0;
                 int slurModifs = 0;
                 int textModifs = 0;
+
+                // Stems
                 system.removeInactiveGlyphs();
                 stemModifs = system.verifyStems();
 
+                // Slurs
                 system.removeInactiveGlyphs();
                 system.retrieveGlyphs();
                 slurModifs = system.verifySlurs();
 
+                // Texts
                 system.removeInactiveGlyphs();
                 system.retrieveGlyphs();
                 textModifs = system.retrieveTextGlyphs();
-                onGoing = (stemModifs + slurModifs + textModifs) > 0;
+
+                // Progress made?
+                keepGoing = (stemModifs + slurModifs + textModifs) > 0;
 
                 if (logger.isFineEnabled()) {
                     logger.fine(

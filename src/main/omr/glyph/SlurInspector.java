@@ -277,7 +277,7 @@ public class SlurInspector
 
                     newGlyph.setShape(Shape.SLUR);
 
-                    // Pb: the newGlyph may now belong to a different system!
+                    // Beware, the newGlyph may now belong to a different system
                     SystemInfo newSystem = system.getSheet()
                                                  .getSystemOf(newGlyph);
                     newGlyph = newSystem.addGlyph(newGlyph);
@@ -444,7 +444,10 @@ public class SlurInspector
         Glyph compound = system.tryCompound(oldSlur, suitables, adapter);
 
         if (compound != null) {
-            Glyph newSlur = system.addGlyph(compound);
+            // Beware, the compound may now belong to a different system
+            SystemInfo newSystem = system.getSheet()
+                                         .getSystemOf(compound);
+            Glyph      newSlur = newSystem.addGlyph(compound);
             newSlur.setShape(Shape.SLUR);
 
             if (logger.isFineEnabled()) {
