@@ -53,8 +53,6 @@ import omr.score.visitor.ScoreTimeFixer;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
-import omr.ui.ErrorsEditor;
-
 import omr.util.TreeNode;
 
 import java.util.Collections;
