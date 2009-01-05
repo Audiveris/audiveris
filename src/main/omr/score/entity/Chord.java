@@ -1076,8 +1076,8 @@ public class Chord
     // toLongString //
     //--------------//
     /**
-     *
-     * @return
+     * Report a more detailed description than plain toStrïng
+     * @return a detailed description
      */
     public String toLongString()
     {
