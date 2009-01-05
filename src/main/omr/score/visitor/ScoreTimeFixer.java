@@ -77,12 +77,12 @@ public class ScoreTimeFixer
 
             // Whole/multi rests are handled outside of slots
             for (Slot slot : measure.getSlots()) {
-                slot.getStartTime();
-
-                for (Chord chord : slot.getChords()) {
-                    measureDur = Math.max(
-                        measureDur,
-                        slot.getStartTime() + chord.getDuration());
+                if (slot.getStartTime() != null) {
+                    for (Chord chord : slot.getChords()) {
+                        measureDur = Math.max(
+                            measureDur,
+                            slot.getStartTime() + chord.getDuration());
+                    }
                 }
             }
 
