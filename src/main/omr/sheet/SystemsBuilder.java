@@ -32,7 +32,6 @@ import omr.lag.VerticalOrientation;
 
 import omr.log.Logger;
 
-import omr.score.common.PixelPoint;
 import omr.score.visitor.SheetPainter;
 
 import omr.script.ScriptRecording;
