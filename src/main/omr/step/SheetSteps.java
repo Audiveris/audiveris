@@ -26,7 +26,7 @@ import omr.selection.GlyphEvent;
 
 import omr.sheet.HorizontalsBuilder;
 import omr.sheet.LinesBuilder;
-import omr.sheet.MeasuresBuilder;
+import omr.sheet.MeasuresModel;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SkewBuilder;
@@ -305,8 +305,7 @@ public class SheetSteps
     {
         //~ Instance fields ----------------------------------------------------
 
-        private MeasuresBuilder builder;
-        private boolean         prologDone = false;
+        private MeasuresModel model;
 
         //~ Constructors -------------------------------------------------------
 
@@ -322,7 +321,7 @@ public class SheetSteps
         public void doSystem (SystemInfo system)
             throws StepException
         {
-            builder.buildSystemMeasures(system);
+            system.buildMeasures(); // For Measures
         }
 
         @Override
@@ -333,7 +332,7 @@ public class SheetSteps
                 logger.fine(step + " doEpilog");
             }
 
-            builder.completeScoreStructure();
+            model.completeScoreStructure();
 
             // Force score view creation if UI is present
             if (Main.getGui() != null) {
@@ -349,8 +348,8 @@ public class SheetSteps
                 logger.fine(step + " doProlog");
             }
 
-            builder = sheet.getMeasuresBuilder();
-            builder.allocateScoreStructure();
+            model = sheet.getMeasuresModel();
+            model.allocateScoreStructure(); // For Score, Systems, Parts & Staves
         }
     }
 

@@ -115,7 +115,7 @@ public class Sheet
     private SystemsBuilder systemsBuilder;
 
     /** A measure extractor for this sheet */
-    private MeasuresBuilder measuresBuilder;
+    private MeasuresModel measuresModel;
 
     /** Horizontal lag (built by LINES/LinesBuilder) */
     private GlyphLag hLag;
@@ -493,17 +493,17 @@ public class Sheet
      *
      * @return the builder instance
      */
-    public MeasuresBuilder getMeasuresBuilder ()
+    public MeasuresModel getMeasuresModel ()
     {
-        if (measuresBuilder == null) {
+        if (measuresModel == null) {
             synchronized (this) {
-                if (measuresBuilder == null) {
-                    measuresBuilder = new MeasuresBuilder(this);
+                if (measuresModel == null) {
+                    measuresModel = new MeasuresModel(this);
                 }
             }
         }
 
-        return measuresBuilder;
+        return measuresModel;
     }
 
     //-------------//
@@ -1155,6 +1155,9 @@ public class Sheet
     //-------------//
     // createScore //
     //-------------//
+    /**
+     * Simply create an empty Score instance and cross-link it with Sheet
+     */
     public void createScore ()
     {
         if (logger.isFineEnabled()) {

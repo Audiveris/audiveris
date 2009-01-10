@@ -211,9 +211,6 @@ public class ScoreFixer
 
             if (sentence != null) {
                 systemContour.add(sentence.getSystemContour());
-
-                //                logger.info("adding sentence " + sentence);
-                //                logger.info("systemContour=" + systemContour);
             }
         }
 

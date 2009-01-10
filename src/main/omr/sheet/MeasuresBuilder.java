@@ -24,13 +24,9 @@ import omr.score.common.PixelPoint;
 import omr.score.common.UnitDimension;
 import omr.score.entity.Barline;
 import omr.score.entity.Measure;
-import omr.score.entity.ScorePart;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
-import omr.score.visitor.ScoreFixer;
-
-import omr.step.StepException;
 
 import omr.stick.Stick;
 
@@ -40,8 +36,9 @@ import omr.util.TreeNode;
 import java.util.*;
 
 /**
- * Class <code>MeasuresBuilder</code> is in charge of building measures on the
- * Score side, from the bar sticks found on the Sheet side
+ * Class <code>MeasuresBuilder</code> is in charge, at a system level, of
+ * building measures from the bar sticks found. At this moment, the only glyphs
+ * registered by the system are barline glyphs.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -67,6 +64,12 @@ public class MeasuresBuilder
 
     //~ Instance fields --------------------------------------------------------
 
+    /** The dedicated system */
+    private final SystemInfo system;
+
+    /** Its counterpart within Score hierarchy */
+    private ScoreSystem scoreSystem;
+
     /** Companion systems builder */
     private final SystemsBuilder systemsBuilder;
 
@@ -84,19 +87,23 @@ public class MeasuresBuilder
 
     //~ Constructors -----------------------------------------------------------
 
+    //-----------------//
+    // MeasuresBuilder //
+    //-----------------//
     /**
      * Creates a new MeasuresBuilder object.
      *
-     * @param sheet the related sheet
+     * @param system the dedicated system
      */
-    public MeasuresBuilder (Sheet sheet)
+    public MeasuresBuilder (SystemInfo system)
     {
-        this.sheet = sheet;
+        this.system = system;
 
+        sheet = system.getSheet();
+        scale = sheet.getScale();
         systemsBuilder = sheet.getSystemsBuilder();
         barsChecker = systemsBuilder.getBarsChecker();
         barSticks = systemsBuilder.getBarSticks();
-        scale = sheet.getScale();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -105,74 +112,54 @@ public class MeasuresBuilder
     // allocateScoreStructure //
     //------------------------//
     /**
-     * For each SystemInfo, build the corresponding System entity with all its
-     * depending Parts and Staves
+     * Build the corresponding ScoreSystem entity with all its depending Parts
+     * and Staves
      */
     public void allocateScoreStructure ()
-        throws StepException
     {
-        // Allocate score
-        sheet.createScore();
+        // Allocate the score system
+        scoreSystem = new ScoreSystem(
+            system,
+            sheet.getScore(),
+            scale.toPagePoint(
+                new PixelPoint(system.getLeft(), system.getTop())),
+            scale.toUnits(
+                new PixelDimension(system.getWidth(), system.getDeltaY())));
 
-        // Systems
-        for (SystemInfo info : sheet.getSystems()) {
-            // Allocate the system
-            ScoreSystem system = new ScoreSystem(
-                info,
-                sheet.getScore(),
-                scale.toPagePoint(
-                    new PixelPoint(info.getLeft(), info.getTop())),
-                scale.toUnits(
-                    new PixelDimension(info.getWidth(), info.getDeltaY())));
+        // Set the link SystemInfo -> ScoreSystem
+        system.setScoreSystem(scoreSystem);
 
-            // Set the link SystemInfo -> System
-            info.setScoreSystem(system);
+        // Allocate the parts in the system
+        for (PartInfo partInfo : system.getParts()) {
+            SystemPart part = new SystemPart(scoreSystem);
 
-            // Allocate the parts in the system
-            for (PartInfo partInfo : info.getParts()) {
-                SystemPart part = new SystemPart(system);
-
-                // Allocate the staves in this part
-                for (StaffInfo staffInfo : partInfo.getStaves()) {
-                    LineInfo line = staffInfo.getFirstLine();
-                    new Staff(
-                        staffInfo,
-                        part,
-                        scale.toPagePoint(
-                            new PixelPoint(
-                                staffInfo.getLeft(),
-                                line.yAt(line.getLeft()))),
-                        scale.pixelsToUnits(
-                            staffInfo.getRight() - staffInfo.getLeft()),
-                        64); // Staff vertical size in units);
-                }
+            // Allocate the staves in this part
+            for (StaffInfo staffInfo : partInfo.getStaves()) {
+                LineInfo line = staffInfo.getFirstLine();
+                new Staff(
+                    staffInfo,
+                    part,
+                    scale.toPagePoint(
+                        new PixelPoint(
+                            staffInfo.getLeft(),
+                            line.yAt(line.getLeft()))),
+                    scale.pixelsToUnits(
+                        staffInfo.getRight() - staffInfo.getLeft()),
+                    64); // Staff vertical size in units);
             }
         }
-
-        // Define score parts
-        defineScoreParts();
     }
 
-    //---------------------//
-    // buildSystemMeasures //
-    //---------------------//
-    public void buildSystemMeasures (SystemInfo systemInfo)
+    //---------------//
+    // buildMeasures //
+    //---------------//
+    /**
+     * Based on barlines found, build, check and cleanup score measures
+     */
+    public void buildMeasures ()
     {
-        allocateSystemMeasures(systemInfo);
-        checkSystemMeasures(systemInfo);
-    }
-
-    //------------------------//
-    // completeScoreStructure //
-    //------------------------//
-    public void completeScoreStructure ()
-        throws StepException
-    {
-        // Update score internal data
-        sheet.getScore()
-             .accept(new ScoreFixer(true));
-
-        reportResults();
+        allocateMeasures();
+        checkMeasures();
     }
 
     //----------------//
@@ -205,34 +192,32 @@ public class MeasuresBuilder
         return Math.max(topPart, top) < Math.min(botPart, bot);
     }
 
-    //------------------------//
-    // allocateSystemMeasures //
-    //------------------------//
+    //------------------//
+    // allocateMeasures //
+    //------------------//
     /**
      * Bar lines are first sorted according to their abscissa, then we run
      * additional checks on each bar line, since we now know its enclosing
      * system. If OK, then we add the corresponding measures in their parts.
      */
-    private void allocateSystemMeasures (SystemInfo systemInfo)
+    private void allocateMeasures ()
     {
-        final int         maxDy = scale.toPixels(constants.maxBarOffset);
-        final ScoreSystem system = systemInfo.getScoreSystem();
+        final int maxDy = scale.toPixels(constants.maxBarOffset);
 
         // Measures building (Sticks are already sorted by increasing abscissa)
-        for (Iterator<Glyph> bit = systemInfo.getGlyphs()
-                                             .iterator(); bit.hasNext();) {
-            Stick bar = (Stick) bit.next();
+        for (Glyph glyph : system.getGlyphs()) {
+            Stick bar = (Stick) glyph;
 
             // We don't check that the bar does not start before first staff,
             // this is too restrictive because of alternate endings.  We however
             // do check that the bar does not end after last staff of the
             // last part of the system.
             int barAbscissa = bar.getMidPos();
-            int systemBottom = system.getLastPart()
-                                     .getLastStaff()
-                                     .getInfo()
-                                     .getLastLine()
-                                     .yAt(barAbscissa);
+            int systemBottom = scoreSystem.getLastPart()
+                                          .getLastStaff()
+                                          .getInfo()
+                                          .getLastLine()
+                                          .yAt(barAbscissa);
 
             if ((bar.getStop() - systemBottom) > maxDy) {
                 if (logger.isFineEnabled()) {
@@ -247,7 +232,7 @@ public class MeasuresBuilder
 
             // We add a measure in each relevant part of this system, provided
             // that the part is embraced by the bar line
-            for (TreeNode node : system.getParts()) {
+            for (TreeNode node : scoreSystem.getParts()) {
                 SystemPart part = (SystemPart) node;
 
                 if (isPartEmbraced(part, bar)) {
@@ -273,19 +258,15 @@ public class MeasuresBuilder
     /**
      * Check alignment of each measure of each part with the other part
      * measures, a test that needs several staves in the system
-     *
-     * @param system the system to check
      */
-    private void checkBarAlignments (omr.score.entity.ScoreSystem system)
+    private void checkBarAlignments ()
     {
-        if (system.getInfo()
-                  .getStaves()
+        if (system.getStaves()
                   .size() > 1) {
             int maxShiftDx = scale.toPixels(constants.maxAlignShiftDx);
 
-            for (Iterator pit = system.getParts()
-                                      .iterator(); pit.hasNext();) {
-                SystemPart part = (SystemPart) pit.next();
+            for (TreeNode pnode : scoreSystem.getParts()) {
+                SystemPart part = (SystemPart) pnode;
 
                 for (Iterator mit = part.getMeasures()
                                         .iterator(); mit.hasNext();) {
@@ -319,7 +300,7 @@ public class MeasuresBuilder
                     // the other parts
                     if (logger.isFineEnabled()) {
                         logger.fine(
-                            system.getContextString() +
+                            scoreSystem.getContextString() +
                             " Checking measure alignment at x: " +
                             measure.getLeftX());
                     }
@@ -327,9 +308,8 @@ public class MeasuresBuilder
                     int x = measure.getBarline()
                                    .getCenter().x;
 
-                    for (Iterator it = system.getParts()
-                                             .iterator(); it.hasNext();) {
-                        SystemPart prt = (SystemPart) it.next();
+                    for (TreeNode pn : scoreSystem.getParts()) {
+                        SystemPart prt = (SystemPart) pn;
 
                         if (prt == part) {
                             continue;
@@ -366,13 +346,11 @@ public class MeasuresBuilder
     /**
      * Use ending bar line if any, to adjust the right abscissa of the system
      * and its staves.
-     *
-     * @param system the system to check
      */
-    private void checkEndingBar (omr.score.entity.ScoreSystem system)
+    private void checkEndingBar ()
     {
         try {
-            SystemPart part = system.getFirstPart();
+            SystemPart part = scoreSystem.getFirstPart();
             Measure    measure = part.getLastMeasure();
             Barline    barline = measure.getBarline();
             int        lastX = barline.getRightX();
@@ -385,129 +363,59 @@ public class MeasuresBuilder
                 }
 
                 // Adjust end of system & staff(s) to this one
-                UnitDimension dim = system.getDimension();
+                UnitDimension dim = scoreSystem.getDimension();
 
                 if (dim == null) {
-                    system.setDimension(new UnitDimension(lastX, 0));
+                    scoreSystem.setDimension(new UnitDimension(lastX, 0));
                 } else {
                     dim.width = lastX;
                 }
 
-                for (Iterator pit = system.getParts()
-                                          .iterator(); pit.hasNext();) {
-                    SystemPart prt = (SystemPart) pit.next();
+                for (TreeNode pnode : scoreSystem.getParts()) {
+                    SystemPart prt = (SystemPart) pnode;
 
                     for (Iterator sit = prt.getStaves()
                                            .iterator(); sit.hasNext();) {
                         Staff stv = (Staff) sit.next();
-                        stv.setWidth(system.getDimension().width);
+                        stv.setWidth(scoreSystem.getDimension().width);
                     }
                 }
             }
         } catch (Exception ex) {
             logger.warning(
-                system.getContextString() + " Error in checking ending bar",
+                scoreSystem.getContextString() +
+                " Error in checking ending bar",
                 ex);
         }
     }
 
-    //---------------------//
-    // checkSystemMeasures //
-    //---------------------//
+    //---------------//
+    // checkMeasures //
+    //---------------//
     /**
      * Check measure reality, using a set of additional tests.
      */
-    private void checkSystemMeasures (SystemInfo systemInfo)
+    private void checkMeasures ()
     {
-        omr.score.entity.ScoreSystem system = systemInfo.getScoreSystem();
-
         // Check alignment of each measure of each staff with the other
         // staff measures, a test that needs several staves in the system
-        checkBarAlignments(system);
+        checkBarAlignments();
 
         // Detect very narrow measures which in fact indicate double bar
         // lines.
-        mergeBarlines(system);
+        mergeBarlines();
 
         // First barline may be just the beginning of the staff, so do not
         // count the very first bar line, which in general defines the
         // beginning of the staff rather than the end of a measure, but use
         // it to precisely define the left abscissa of the system and all
         // its contained staves.
-        removeStartingBar(system);
+        removeStartingBar();
 
         // Similarly, use the very last bar line, which generally ends the
         // system, to define the right abscissa of the system and its
         // staves.
-        checkEndingBar(system);
-    }
-
-    //-----------------//
-    // chooseRefSystem //
-    //-----------------//
-    private SystemInfo chooseRefSystem ()
-        throws StepException
-    {
-        // Look for the first largest system (according to its number of parts)
-        int        NbOfParts = 0;
-        SystemInfo refSystem = null;
-
-        for (SystemInfo systemInfo : sheet.getSystems()) {
-            int nb = systemInfo.getScoreSystem()
-                               .getParts()
-                               .size();
-
-            if (nb > NbOfParts) {
-                NbOfParts = nb;
-                refSystem = systemInfo;
-            }
-        }
-
-        if (refSystem == null) {
-            throw new StepException("No system found");
-        }
-
-        return refSystem;
-    }
-
-    //------------------//
-    // defineScoreParts //
-    //------------------//
-    /**
-     * From system part, define the score parts
-     * @throws StepException
-     */
-    private void defineScoreParts ()
-        throws StepException
-    {
-        // Take the best representative system
-        ScoreSystem refSystem = chooseRefSystem()
-                                    .getScoreSystem();
-
-        // Build the ScorePart list based on the parts of the ref system
-        sheet.getScore()
-             .createPartListFrom(refSystem);
-
-        // Now examine each system as compared with the ref system
-        // We browse through the parts "bottom up"
-        List<ScorePart> partList = sheet.getScore()
-                                        .getPartList();
-        final int       nbScoreParts = partList.size();
-
-        for (SystemInfo systemInfo : sheet.getSystems()) {
-            ScoreSystem system = systemInfo.getScoreSystem();
-            logger.fine(system.toString());
-
-            List<TreeNode> systemParts = system.getParts();
-            final int      nbp = systemParts.size();
-
-            for (int ip = 0; ip < nbp; ip++) {
-                ScorePart  global = partList.get(nbScoreParts - 1 - ip);
-                SystemPart sp = (SystemPart) systemParts.get(nbp - 1 - ip);
-                sp.setScorePart(global);
-                sp.setId(global.getId());
-            }
-        }
+        checkEndingBar();
     }
 
     //---------------//
@@ -516,14 +424,12 @@ public class MeasuresBuilder
     /**
      * Check whether two close bar lines are not in fact double lines (with
      * variants)
-     *
-     * @param system the system to check
      */
-    private void mergeBarlines (omr.score.entity.ScoreSystem system)
+    private void mergeBarlines ()
     {
         int maxDoubleDx = scale.toPixels(constants.maxDoubleBarDx);
 
-        for (TreeNode node : system.getParts()) {
+        for (TreeNode node : scoreSystem.getParts()) {
             SystemPart part = (SystemPart) node;
             Measure    prevMeasure = null;
 
@@ -587,15 +493,13 @@ public class MeasuresBuilder
      * We associate measures only with their ending bar line(s), so the starting
      * bar of a staff does not end a measure, we thus have to remove the measure
      * that we first had associated with it.
-     *
-     * @param system the system whose staves starting measure has to be checked
      */
-    private void removeStartingBar (omr.score.entity.ScoreSystem system)
+    private void removeStartingBar ()
     {
         int     minWidth = scale.toPixels(constants.minMeasureWidth);
-        Barline firstBarline = system.getFirstPart()
-                                     .getFirstMeasure()
-                                     .getBarline();
+        Barline firstBarline = scoreSystem.getFirstPart()
+                                          .getFirstMeasure()
+                                          .getBarline();
         int     firstX = firstBarline.getLeftX();
 
         // Check is based on the width of this first measure
@@ -606,14 +510,14 @@ public class MeasuresBuilder
                     logger.fine("Adjusting firstX=" + firstX + " " + system);
                 }
 
-                system.getTopLeft()
-                      .translate(firstX, 0);
-                system.getDimension().width -= firstX;
+                scoreSystem.getTopLeft()
+                           .translate(firstX, 0);
+                scoreSystem.getDimension().width -= firstX;
             }
 
             // Adjust beginning of all staves to this one
             // Remove this false "measure" in all parts of the system
-            for (TreeNode node : system.getParts()) {
+            for (TreeNode node : scoreSystem.getParts()) {
                 SystemPart part = (SystemPart) node;
 
                 // Set the bar as starting bar for the staff
@@ -638,34 +542,6 @@ public class MeasuresBuilder
                 }
             }
         }
-    }
-
-    //---------------//
-    // reportResults //
-    //---------------//
-    private void reportResults ()
-    {
-        StringBuilder    sb = new StringBuilder();
-
-        List<SystemInfo> systems = sheet.getSystems();
-        int              nb = systems.get(systems.size() - 1)
-                                     .getScoreSystem()
-                                     .getLastPart()
-                                     .getLastMeasure()
-                                     .getId();
-
-        if (nb > 0) {
-            sb.append(nb)
-              .append(" measure");
-
-            if (nb > 1) {
-                sb.append("s");
-            }
-        } else {
-            sb.append("no measure found");
-        }
-
-        logger.info(sb.toString());
     }
 
     //~ Inner Classes ----------------------------------------------------------

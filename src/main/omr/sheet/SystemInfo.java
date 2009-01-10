@@ -31,8 +31,6 @@ import omr.step.StepException;
 
 import omr.stick.Stick;
 
-import omr.util.BrokenLine;
-
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
 
@@ -64,6 +62,9 @@ public class SystemInfo
 
     /** Related sheet */
     private final Sheet sheet;
+
+    /** Dedicated measure builder */
+    private final MeasuresBuilder measuresBuilder;
 
     /** Dedicated glyph builder */
     private final GlyphsBuilder glyphsBuilder;
@@ -173,6 +174,7 @@ public class SystemInfo
         this.id = id;
         this.sheet = sheet;
 
+        measuresBuilder = new MeasuresBuilder(this);
         glyphsBuilder = new GlyphsBuilder(this);
         verticalsBuilder = new VerticalsBuilder(this);
         glyphInspector = new GlyphInspector(this);
@@ -612,6 +614,17 @@ public class SystemInfo
         textInspector.alignTextGlyphs();
     }
 
+    //---------------//
+    // buildMeasures //
+    //---------------//
+    /**
+     * Based on barlines found, build, check and cleanup score measures
+     */
+    public void buildMeasures ()
+    {
+        measuresBuilder.buildMeasures();
+    }
+
     //-------------//
     // clearGlyphs //
     //-------------//
@@ -938,6 +951,18 @@ public class SystemInfo
     public SortedSet<TextGlyphLine> getTextLines ()
     {
         return textLines;
+    }
+
+    //------------------------//
+    // allocateScoreStructure //
+    //------------------------//
+    /**
+     * Build the corresponding ScoreSystem entity with all its depending Parts
+     * and Staves
+     */
+    public void allocateScoreStructure ()
+    {
+        measuresBuilder.allocateScoreStructure();
     }
 
     //---------------//
