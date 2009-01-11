@@ -58,6 +58,9 @@ public final class Audiveris
             /** Workaround for Swing performance problem in java 1.6.0 u10&11 */
             System.setProperty("sun.java2d.d3d", "false");
 
+            /** Turn off JAI native acceleration */
+            System.setProperty("com.sun.media.jai.disableMediaLib", "true");
+
             /** Classes container, beware of escaped blanks */
             final File classContainer = new File(
                 Audiveris.class.getProtectionDomain().getCodeSource().getLocation().toURI());
