@@ -640,29 +640,33 @@ public class Picture
     @Implement(EventSubscriber.class)
     public void onEvent (SheetLocationEvent event)
     {
-        // Ignore RELEASING
-        if (event.movement == MouseMovement.RELEASING) {
-            return;
-        }
-
-        Integer   level = null;
-
-        // Compute and forward pixel gray level
-        Rectangle rect = event.getData();
-
-        if (rect != null) {
-            Point pt = rect.getLocation();
-
-            // Check that we are not pointing outside the image
-            if ((pt.x >= 0) &&
-                (pt.x < getWidth()) &&
-                (pt.y >= 0) &&
-                (pt.y < getHeight())) {
-                level = Integer.valueOf(getPixel(pt.x, pt.y));
+        try {
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
+                return;
             }
-        }
 
-        levelService.publish(new PixelLevelEvent(this, level));
+            Integer   level = null;
+
+            // Compute and forward pixel gray level
+            Rectangle rect = event.getData();
+
+            if (rect != null) {
+                Point pt = rect.getLocation();
+
+                // Check that we are not pointing outside the image
+                if ((pt.x >= 0) &&
+                    (pt.x < getWidth()) &&
+                    (pt.y >= 0) &&
+                    (pt.y < getHeight())) {
+                    level = Integer.valueOf(getPixel(pt.x, pt.y));
+                }
+            }
+
+            levelService.publish(new PixelLevelEvent(this, level));
+        } catch (Exception ex) {
+            logger.warning(getClass().getName() + " onEvent error", ex);
+        }
     }
 
     //--------//
