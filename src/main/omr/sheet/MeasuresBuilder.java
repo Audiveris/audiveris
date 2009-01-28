@@ -14,13 +14,10 @@ import omr.check.FailureResult;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
-import omr.glyph.Shape;
 
 import omr.log.Logger;
 
 import omr.score.common.PageRectangle;
-import omr.score.common.PixelDimension;
-import omr.score.common.PixelPoint;
 import omr.score.common.UnitDimension;
 import omr.score.entity.Barline;
 import omr.score.entity.Measure;
@@ -33,16 +30,23 @@ import omr.stick.Stick;
 import omr.util.Dumper;
 import omr.util.TreeNode;
 
+import net.jcip.annotations.NotThreadSafe;
+
 import java.util.*;
 
 /**
  * Class <code>MeasuresBuilder</code> is in charge, at a system level, of
  * building measures from the bar sticks found. At this moment, the only glyphs
- * registered by the system are barline glyphs.
+ * in the system collection are barline glyphs.
+ *
+ * <p>Each instance of this class is meant to be called by a single thread,
+ * dedicated to the processing of this system. So this class does not need to be
+ * thread-safe.</p>
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
+@NotThreadSafe
 public class MeasuresBuilder
 {
     //~ Static fields/initializers ---------------------------------------------
@@ -73,9 +77,6 @@ public class MeasuresBuilder
     /** Companion systems builder */
     private final SystemsBuilder systemsBuilder;
 
-    /** Companion bars checker */
-    private final BarsChecker barsChecker;
-
     /** The related sheet */
     private final Sheet sheet;
 
@@ -83,7 +84,7 @@ public class MeasuresBuilder
     private final Scale scale;
 
     /** List of found bar sticks */
-    private final List<Stick> barSticks;
+    private final Set<Stick> barSticks;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -102,53 +103,10 @@ public class MeasuresBuilder
         sheet = system.getSheet();
         scale = sheet.getScale();
         systemsBuilder = sheet.getSystemsBuilder();
-        barsChecker = systemsBuilder.getBarsChecker();
         barSticks = systemsBuilder.getBarSticks();
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //------------------------//
-    // allocateScoreStructure //
-    //------------------------//
-    /**
-     * Build the corresponding ScoreSystem entity with all its depending Parts
-     * and Staves
-     */
-    public void allocateScoreStructure ()
-    {
-        // Allocate the score system
-        scoreSystem = new ScoreSystem(
-            system,
-            sheet.getScore(),
-            scale.toPagePoint(
-                new PixelPoint(system.getLeft(), system.getTop())),
-            scale.toUnits(
-                new PixelDimension(system.getWidth(), system.getDeltaY())));
-
-        // Set the link SystemInfo -> ScoreSystem
-        system.setScoreSystem(scoreSystem);
-
-        // Allocate the parts in the system
-        for (PartInfo partInfo : system.getParts()) {
-            SystemPart part = new SystemPart(scoreSystem);
-
-            // Allocate the staves in this part
-            for (StaffInfo staffInfo : partInfo.getStaves()) {
-                LineInfo line = staffInfo.getFirstLine();
-                new Staff(
-                    staffInfo,
-                    part,
-                    scale.toPagePoint(
-                        new PixelPoint(
-                            staffInfo.getLeft(),
-                            line.yAt(line.getLeft()))),
-                    scale.pixelsToUnits(
-                        staffInfo.getRight() - staffInfo.getLeft()),
-                    64); // Staff vertical size in units);
-            }
-        }
-    }
 
     //---------------//
     // buildMeasures //
@@ -158,6 +116,8 @@ public class MeasuresBuilder
      */
     public void buildMeasures ()
     {
+        scoreSystem = system.getScoreSystem();
+
         allocateMeasures();
         checkMeasures();
     }
@@ -183,9 +143,9 @@ public class MeasuresBuilder
 
         // Check that part and glyph overlap vertically
         final int topPart = part.getFirstStaff()
-                                .getTopLeft().y;
+                                .getPageTopLeft().y;
         final int botPart = part.getLastStaff()
-                                .getTopLeft().y +
+                                .getPageTopLeft().y +
                             part.getLastStaff()
                                 .getHeight();
 
@@ -202,10 +162,21 @@ public class MeasuresBuilder
      */
     private void allocateMeasures ()
     {
+        // Clear the collection of Measure instances
+        for (TreeNode node : scoreSystem.getParts()) {
+            SystemPart part = (SystemPart) node;
+            part.getMeasures()
+                .clear();
+        }
+
         final int maxDy = scale.toPixels(constants.maxBarOffset);
 
         // Measures building (Sticks are already sorted by increasing abscissa)
         for (Glyph glyph : system.getGlyphs()) {
+            if (!glyph.isBar()) {
+                continue;
+            }
+
             Stick bar = (Stick) glyph;
 
             // We don't check that the bar does not start before first staff,
@@ -243,9 +214,6 @@ public class MeasuresBuilder
 
                     Measure measure = new Measure(part);
                     Barline barline = new Barline(measure);
-                    bar.setShape(
-                        barsChecker.isThickBar(bar) ? Shape.THICK_BAR_LINE
-                                                : Shape.THIN_BAR_LINE);
                     barline.addStick(bar);
                 }
             }
@@ -290,7 +258,7 @@ public class MeasuresBuilder
                             barSticks.remove(stick);
                         }
 
-                        // Remove the false measure
+                        // Remove this false measure
                         mit.remove();
 
                         break;
@@ -531,7 +499,7 @@ public class MeasuresBuilder
                 // Update abscissa of top-left corner of every staff
                 for (TreeNode sNode : part.getStaves()) {
                     Staff staff = (Staff) sNode;
-                    staff.getTopLeft()
+                    staff.getPageTopLeft()
                          .translate(firstX, 0);
                 }
 

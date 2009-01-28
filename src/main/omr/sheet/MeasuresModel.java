@@ -12,14 +12,11 @@ package omr.sheet;
 
 import omr.log.Logger;
 
-import omr.score.entity.ScorePart;
-import omr.score.entity.ScoreSystem;
-import omr.score.entity.SystemPart;
 import omr.score.visitor.ScoreFixer;
 
 import omr.step.StepException;
 
-import omr.util.TreeNode;
+import net.jcip.annotations.NotThreadSafe;
 
 import java.util.*;
 
@@ -28,9 +25,13 @@ import java.util.*;
  * sheet level. Most of the processing is delegated to instances of the class
  * {@link MeasuresBuilder} that work at the system level.
  *
+ * <p>Ths class is meant to be called by one single thread, thus it is not
+ * thread safe</p>
+ *
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
+@NotThreadSafe
 public class MeasuresModel
 {
     //~ Static fields/initializers ---------------------------------------------
@@ -58,30 +59,13 @@ public class MeasuresModel
     //~ Methods ----------------------------------------------------------------
 
     //------------------------//
-    // allocateScoreStructure //
-    //------------------------//
-    /**
-     * For each SystemInfo, build the corresponding System entity with all its
-     * depending Parts and Staves
-     */
-    public void allocateScoreStructure ()
-        throws StepException
-    {
-        // Allocate score
-        sheet.createScore();
-
-        // Systems
-        for (SystemInfo system : sheet.getSystems()) {
-            system.allocateScoreStructure();
-        }
-
-        // Define score parts
-        defineScoreParts();
-    }
-
-    //------------------------//
     // completeScoreStructure //
     //------------------------//
+    /**
+     * Run some final processing (such as Measure numbering, System contour)
+     * on the whole Score structure, now that all entities down to Measure
+     * instances have been allocated
+     */
     public void completeScoreStructure ()
         throws StepException
     {
@@ -90,76 +74,6 @@ public class MeasuresModel
              .accept(new ScoreFixer(true));
 
         reportResults();
-    }
-
-    //-----------------//
-    // chooseRefSystem //
-    //-----------------//
-    /**
-     * Look for the first largest system (according to its number of parts)
-     * @return the largest system
-     * @throws omr.step.StepException
-     */
-    private SystemInfo chooseRefSystem ()
-        throws StepException
-    {
-        int        NbOfParts = 0;
-        SystemInfo refSystem = null;
-
-        for (SystemInfo systemInfo : sheet.getSystems()) {
-            int nb = systemInfo.getScoreSystem()
-                               .getParts()
-                               .size();
-
-            if (nb > NbOfParts) {
-                NbOfParts = nb;
-                refSystem = systemInfo;
-            }
-        }
-
-        if (refSystem == null) {
-            throw new StepException("No system found");
-        }
-
-        return refSystem;
-    }
-
-    //------------------//
-    // defineScoreParts //
-    //------------------//
-    /**
-     * From system part, define the score parts
-     * @throws StepException
-     */
-    private void defineScoreParts ()
-        throws StepException
-    {
-        // Take the best representative system
-        ScoreSystem refSystem = chooseRefSystem()
-                                    .getScoreSystem();
-
-        // Build the ScorePart list based on the parts of the ref system
-        sheet.getScore()
-             .createPartListFrom(refSystem);
-
-        // Now examine each system as compared with the ref system
-        // We browse through the parts "bottom up"
-        List<ScorePart> partList = sheet.getScore()
-                                        .getPartList();
-        final int       nbScoreParts = partList.size();
-
-        for (SystemInfo systemInfo : sheet.getSystems()) {
-            ScoreSystem    system = systemInfo.getScoreSystem();
-            List<TreeNode> systemParts = system.getParts();
-            final int      nbp = systemParts.size();
-
-            for (int ip = 0; ip < nbp; ip++) {
-                ScorePart  global = partList.get(nbScoreParts - 1 - ip);
-                SystemPart sp = (SystemPart) systemParts.get(nbp - 1 - ip);
-                sp.setScorePart(global);
-                sp.setId(global.getId());
-            }
-        }
     }
 
     //---------------//

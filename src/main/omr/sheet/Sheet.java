@@ -40,6 +40,7 @@ import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.SheetAssembly;
 
 import omr.step.SheetSteps;
+import omr.step.Step;
 import static omr.step.Step.*;
 import omr.step.StepException;
 
@@ -60,6 +61,7 @@ import java.awt.*;
 import java.io.*;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * Class <code>Sheet</code> encapsulates the original music image, as well as
@@ -96,6 +98,9 @@ public class Sheet
     /** Horizontal entities */
     private Horizontals horizontals;
 
+    /** Horizontal lag (built by LINES/LinesBuilder) */
+    private GlyphLag hLag;
+
     /** Vertical lag (built by SYSTEMS/BarsBuilder) */
     private GlyphLag vLag;
 
@@ -106,37 +111,10 @@ public class Sheet
     private int width = -1;
 
     /** Retrieved systems. Set by SYSTEMS. */
-    private List<SystemInfo> systems;
+    private final List<SystemInfo> systems = new ArrayList<SystemInfo>();
 
     /** Link with related score. Set by SYSTEMS. */
     private Score score;
-
-    /** A bar line extractor for this sheet */
-    private SystemsBuilder systemsBuilder;
-
-    /** A measure extractor for this sheet */
-    private MeasuresModel measuresModel;
-
-    /** Horizontal lag (built by LINES/LinesBuilder) */
-    private GlyphLag hLag;
-
-    /** A staff line extractor for this sheet */
-    private LinesBuilder linesBuilder;
-
-    /** A ledger line extractor for this sheet */
-    private HorizontalsBuilder horizontalsBuilder;
-
-    /**
-     * Non-lag related selections for this sheet
-     * (SheetLocation, ScoreLocation and PixelLevel)
-     */
-    private EventService eventService = new ThreadSafeEventService();
-
-    /** Dedicated skew builder */
-    private SkewBuilder skewBuilder;
-
-    /** Related errors editor */
-    private volatile ErrorsEditor errorsEditor;
 
     /** Steps for this instance */
     private final SheetSteps sheetSteps;
@@ -144,14 +122,40 @@ public class Sheet
     /** The script of user actions on this sheet */
     private Script script;
 
+    /**
+     * Non-lag related selections for this sheet
+     * (SheetLocation, ScoreLocation and PixelLevel)
+     */
+    private EventService eventService = new ThreadSafeEventService();
+
+    // Companion processors
+
     /** Related assembly instance */
     private volatile SheetAssembly assembly;
+
+    /** Dedicated skew builder */
+    private volatile SkewBuilder skewBuilder;
+
+    /** A staff line extractor for this sheet */
+    private volatile LinesBuilder linesBuilder;
+
+    /** A ledger line extractor for this sheet */
+    private volatile HorizontalsBuilder horizontalsBuilder;
+
+    /** A bar line extractor for this sheet */
+    private volatile SystemsBuilder systemsBuilder;
+
+    /** A measure extractor for this sheet */
+    private volatile MeasuresModel measuresModel;
 
     /** Specific builder dealing with glyphs */
     private volatile SymbolsModel symbolsBuilder;
 
     /** Related verticals model */
     private volatile VerticalsModel verticalsModel;
+
+    /** Related errors editor */
+    private volatile ErrorsEditor errorsEditor;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -918,19 +922,6 @@ public class Sheet
     }
 
     //------------//
-    // setSystems //
-    //------------//
-    /**
-     * Assign the retrieved systems (infos)
-     *
-     * @param systems the elaborated list of SystemInfo's
-     */
-    public void setSystems (List<SystemInfo> systems)
-    {
-        this.systems = systems;
-    }
-
-    //------------//
     // getSystems //
     //------------//
     /**
@@ -1233,23 +1224,61 @@ public class Sheet
         return null;
     }
 
+    //-------------//
+    // rebuildFrom //
+    //-------------//
+    public void rebuildFrom (Step                    step,
+                             final Collection<Glyph> glyphs,
+                             final Collection<Shape> shapes)
+    {
+        sheetSteps.rebuildFrom(step, glyphs, shapes, false); //Not imposed
+    }
+
+    //-------------------//
+    // rebuildFromLeaves //
+    //-------------------//
+    public void rebuildFromLeaves (final Collection<Glyph> glyphs,
+                                   final Collection<Shape> shapes)
+    {
+        rebuildFrom(Step.LEAVES, glyphs, shapes);
+    }
+
     //----------------//
     // splitBarSticks //
     //----------------//
     /**
      * Split the bar sticks among systems
+     *
+     * @return the set of modified systems
      */
-    public void splitBarSticks (Collection<Stick> barSticks)
+    public Set<SystemInfo> splitBarSticks (Collection<Stick> barSticks)
     {
+        Set<SystemInfo>                   modified = new LinkedHashSet<SystemInfo>();
+        Map<SystemInfo, SortedSet<Glyph>> glyphs = new HashMap<SystemInfo, SortedSet<Glyph>>();
+
         for (SystemInfo system : systems) {
+            glyphs.put(
+                system,
+                new ConcurrentSkipListSet<Glyph>(system.getGlyphs()));
             system.clearGlyphs();
         }
 
         // Assign the bar sticks to the proper system glyphs collection
         for (Stick stick : barSticks) {
-            getSystemOf(stick)
-                .addGlyph(stick);
+            SystemInfo system = getSystemOf(stick);
+
+            if (system != null) {
+                system.addGlyph(stick);
+            }
         }
+
+        for (SystemInfo system : systems) {
+            if (!(system.getGlyphs().equals(glyphs.get(system)))) {
+                modified.add(system);
+            }
+        }
+
+        return modified;
     }
 
     //------------------//
@@ -1257,12 +1286,20 @@ public class Sheet
     //------------------//
     /**
      * Split the various horizontals among systems
+     *
+     * @return the set of modified systems
      */
-    public void splitHorizontals ()
+    public Set<SystemInfo> splitHorizontals ()
     {
+        Set<SystemInfo>               modified = new LinkedHashSet<SystemInfo>();
+        Map<SystemInfo, List<Ledger>> ledgers = new HashMap<SystemInfo, List<Ledger>>();
+        Map<SystemInfo, List<Ending>> endings = new HashMap<SystemInfo, List<Ending>>();
+
         for (SystemInfo system : systems) {
+            ledgers.put(system, new ArrayList<Ledger>(system.getLedgers()));
             system.getLedgers()
                   .clear();
+            endings.put(system, new ArrayList<Ending>(system.getEndings()));
             system.getEndings()
                   .clear();
         }
@@ -1286,6 +1323,18 @@ public class Sheet
                       .add(ending);
             }
         }
+
+        for (SystemInfo system : systems) {
+            if (!(system.getLedgers().equals(ledgers.get(system)))) {
+                modified.add(system);
+            }
+
+            if (!(system.getEndings().equals(endings.get(system)))) {
+                modified.add(system);
+            }
+        }
+
+        return modified;
     }
 
     //-----------------------//
@@ -1293,12 +1342,18 @@ public class Sheet
     //-----------------------//
     /**
      * Split the various horizontal sections (Used by Glyphs).
+     *
+     * @return the set of modified systems
      */
-    public void splitVerticalSections ()
+    public Set<SystemInfo> splitVerticalSections ()
     {
+        Set<SystemInfo>                           modified = new LinkedHashSet<SystemInfo>();
+        Map<SystemInfo, Collection<GlyphSection>> sections = new HashMap<SystemInfo, Collection<GlyphSection>>();
+
         for (SystemInfo system : systems) {
-            system.getMutableVerticalSections()
-                  .clear();
+            Collection<GlyphSection> systemSections = system.getMutableVerticalSections();
+            sections.put(system, new ArrayList<GlyphSection>(systemSections));
+            systemSections.clear();
         }
 
         for (GlyphSection section : getVerticalLag()
@@ -1311,6 +1366,15 @@ public class Sheet
                       .add(section);
             }
         }
+
+        for (SystemInfo system : systems) {
+            if (!(system.getMutableVerticalSections().equals(
+                sections.get(system)))) {
+                modified.add(system);
+            }
+        }
+
+        return modified;
     }
 
     //----------//
@@ -1325,15 +1389,6 @@ public class Sheet
     public String toString ()
     {
         return "{Sheet " + getPath() + "}";
-    }
-
-    //-----------------//
-    // updateLastSteps //
-    //-----------------//
-    public void updateLastSteps (final Collection<Glyph> glyphs,
-                                 final Collection<Shape> shapes)
-    {
-        sheetSteps.updateLastSteps(glyphs, shapes, false); //Not imposed
     }
 
     //-------------------//
