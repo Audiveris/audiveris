@@ -36,11 +36,16 @@ import java.util.*;
 import java.util.List;
 
 /**
- * Class <code>Lag</code> handles a graph of class {@link Section} (sets of
+ * Class <code>Lag</code> handles a graph of {@link Section} instances (sets of
  * contiguous runs with compatible lengths), linked by Junctions when there is
  * no more contiguous run or when the compatibility is no longer met.  Sections
  * are thus vertices of the graph, while junctions are directed edges between
  * sections.
+ *
+ * <p>A lag has a dedicated event service to handle Run and Section events,
+ * accessible directly through methods like {@link #getEventService}, {@link
+ * #subscribeStrongly}, {@link #unsubscribe}, {@link #publish}, or via
+ * higher-level {@link #getCurrentSection}.</p>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -68,7 +73,7 @@ public class Lag<L extends Lag<L, S>, S extends Section>
     private List<List<Run>> runs;
 
     /** Events related to this lag (Run, Section) */
-    protected EventService eventService = new ThreadSafeEventService();
+    protected final EventService eventService = new ThreadSafeEventService();
 
     /** Event service where selected location is to be written */
     protected EventService locationService;
@@ -100,9 +105,29 @@ public class Lag<L extends Lag<L, S>, S extends Section>
 
     //~ Methods ----------------------------------------------------------------
 
+    //-------------------//
+    // getCurrentSection //
+    //-------------------//
+    /**
+     * Report the section currently selected, or null
+     * @return the selected section, or null
+     */
+    @SuppressWarnings("unchecked")
+    public S getCurrentSection ()
+    {
+        SectionEvent<S> sectionEvent = (SectionEvent<S>) getLastEvent(
+            SectionEvent.class);
+
+        return (sectionEvent != null) ? sectionEvent.section : null;
+    }
+
     //-----------------//
     // getEventService //
     //-----------------//
+    /**
+     * Report the lag event service
+     * @return the lag event service
+     */
     public EventService getEventService ()
     {
         return eventService;
@@ -329,83 +354,93 @@ public class Lag<L extends Lag<L, S>, S extends Section>
     @Implement(EventSubscriber.class)
     public void onEvent (UserEvent event)
     {
-        // Ignore RELEASING
-        if (event.movement == MouseMovement.RELEASING) {
-            return;
-        }
+        try {
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
+                return;
+            }
 
-        if (event instanceof SheetLocationEvent) { // Sheet location
+            if (event instanceof SheetLocationEvent) { // Sheet location
 
-            SheetLocationEvent sheetLocation = (SheetLocationEvent) event;
+                SheetLocationEvent sheetLocation = (SheetLocationEvent) event;
 
-            if ((sheetLocation.hint == SelectionHint.LOCATION_ADD) ||
-                (sheetLocation.hint == SelectionHint.LOCATION_INIT)) {
-                // Lookup for Run/Section pointed by this pixel location
-                // Search and forward run & section info
-                // Optimization : do the lookup only if observers other
-                // than this lag are present
-                if ((subscribersCount(RunEvent.class) > 0) ||
-                    (subscribersCount(SectionEvent.class) > 1)) { // Lag itself !
+                if ((sheetLocation.hint == SelectionHint.LOCATION_ADD) ||
+                    (sheetLocation.hint == SelectionHint.LOCATION_INIT)) {
+                    // Lookup for Run/Section pointed by this pixel location
+                    // Search and forward run & section info
+                    // Optimization : do the lookup only if observers other
+                    // than this lag are present
+                    if ((subscribersCount(RunEvent.class) > 0) ||
+                        (subscribersCount(SectionEvent.class) > 1)) { // Lag itself !
 
-                    Run run = null;
-                    S   section = null;
+                        Run run = null;
+                        S   section = null;
 
-                    if (sheetLocation != null) {
-                        Rectangle rect = sheetLocation.rectangle;
+                        if (sheetLocation != null) {
+                            Rectangle rect = sheetLocation.rectangle;
 
-                        if ((rect != null) &&
-                            (rect.width == 0) &&
-                            (rect.height == 0)) {
-                            Point pt = rect.getLocation();
-                            section = lookupSection(getVertices(), pt);
+                            if ((rect != null) &&
+                                (rect.width == 0) &&
+                                (rect.height == 0)) {
+                                Point pt = rect.getLocation();
+                                section = lookupSection(getVertices(), pt);
 
-                            if (section != null) {
-                                Point apt = switchRef(pt, null);
-                                run = section.getRunAt(apt.y);
+                                if (section != null) {
+                                    Point apt = switchRef(pt, null);
+                                    run = section.getRunAt(apt.y);
+                                }
                             }
                         }
+
+                        publish(new RunEvent(this, run));
+                        publish(
+                            new SectionEvent<S>(
+                                this,
+                                sheetLocation.hint,
+                                section));
                     }
+                }
+            } else if (event instanceof SectionEvent) { // Section
 
-                    publish(new RunEvent(this, run));
+                SectionEvent sectionEvent = (SectionEvent) event;
+
+                if (sectionEvent.hint == SelectionHint.SECTION_INIT) {
+                    // Display section contour
+                    Section section = sectionEvent.section;
+
+                    if (section != null) {
+                        locationService.publish(
+                            new SheetLocationEvent(
+                                this,
+                                sectionEvent.hint,
+                                null,
+                                section.getContourBox()));
+                    } else {
+                        locationService.publish(
+                            new SheetLocationEvent(
+                                this,
+                                sectionEvent.hint,
+                                null,
+                                null));
+                    }
+                }
+            } else if (event instanceof SectionIdEvent) { // Section ID
+                publish(new RunEvent(this, null));
+
+                SectionIdEvent idEvent = (SectionIdEvent) event;
+                Integer        id = idEvent.id;
+
+                if (id != null) {
+                    // Lookup a section with proper ID
                     publish(
-                        new SectionEvent<S>(this, sheetLocation.hint, section));
+                        new SectionEvent<S>(
+                            this,
+                            idEvent.hint,
+                            getVertexById(id)));
                 }
             }
-        } else if (event instanceof SectionEvent) { // Section
-
-            SectionEvent sectionEvent = (SectionEvent) event;
-
-            if (sectionEvent.hint == SelectionHint.SECTION_INIT) {
-                // Display section contour
-                Section section = sectionEvent.section;
-
-                if (section != null) {
-                    locationService.publish(
-                        new SheetLocationEvent(
-                            this,
-                            sectionEvent.hint,
-                            null,
-                            section.getContourBox()));
-                } else {
-                    locationService.publish(
-                        new SheetLocationEvent(
-                            this,
-                            sectionEvent.hint,
-                            null,
-                            null));
-                }
-            }
-        } else if (event instanceof SectionIdEvent) { // Section ID
-            publish(new RunEvent(this, null));
-
-            SectionIdEvent idEvent = (SectionIdEvent) event;
-            Integer        id = idEvent.id;
-
-            if (id != null) {
-                // Lookup a section with proper ID
-                publish(
-                    new SectionEvent<S>(this, idEvent.hint, getVertexById(id)));
-            }
+        } catch (Exception ex) {
+            logger.warning(getClass().getName() + " onEvent error", ex);
         }
     }
 

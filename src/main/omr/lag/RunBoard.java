@@ -100,26 +100,30 @@ public class RunBoard
     @Implement(EventSubscriber.class)
     public void onEvent (UserEvent event)
     {
-        // Ignore RELEASING
-        if (event.movement == MouseMovement.RELEASING) {
-            return;
-        }
-
-        if (logger.isFineEnabled()) {
-            logger.fine("RunBoard: " + event);
-        }
-
-        if (event instanceof RunEvent) {
-            final RunEvent runEvent = (RunEvent) event;
-            final Run      run = runEvent.run;
-
-            if (run != null) {
-                rStart.setValue(run.getStart());
-                rLength.setValue(run.getLength());
-                rLevel.setValue(run.getLevel());
-            } else {
-                emptyFields(getComponent());
+        try {
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
+                return;
             }
+
+            if (logger.isFineEnabled()) {
+                logger.fine("RunBoard: " + event);
+            }
+
+            if (event instanceof RunEvent) {
+                final RunEvent runEvent = (RunEvent) event;
+                final Run      run = runEvent.run;
+
+                if (run != null) {
+                    rStart.setValue(run.getStart());
+                    rLength.setValue(run.getLength());
+                    rLevel.setValue(run.getLevel());
+                } else {
+                    emptyFields(getComponent());
+                }
+            }
+        } catch (Exception ex) {
+            logger.warning(getClass().getName() + " onEvent error", ex);
         }
     }
 

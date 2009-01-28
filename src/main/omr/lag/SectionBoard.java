@@ -161,11 +161,7 @@ public class SectionBoard
                     public void actionPerformed (ActionEvent e)
                     {
                         // Retrieve current section selection
-                        SectionEvent sectionEvent = (SectionEvent) lag.getEventService()
-                                                                      .getLastEvent(
-                            SectionEvent.class);
-                        Section      section = (sectionEvent != null)
-                                               ? sectionEvent.getData() : null;
+                        Section section = lag.getCurrentSection();
 
                         if (section != null) {
                             section.dump();
@@ -191,8 +187,7 @@ public class SectionBoard
                             }
 
                             idSelecting = true;
-                            lag.getEventService()
-                               .publish(
+                            lag.publish(
                                 new SectionIdEvent(
                                     this,
                                     SelectionHint.SECTION_INIT,
@@ -231,104 +226,108 @@ public class SectionBoard
     @Implement(EventSubscriber.class)
     public void onEvent (UserEvent event)
     {
-        // Ignore RELEASING
-        if (event.movement == MouseMovement.RELEASING) {
-            return;
-        }
-
-        if (logger.isFineEnabled()) {
-            logger.fine("SectionBoard: " + event);
-        }
-
-        if (event instanceof SectionEvent) {
-            if (updating) {
-                ///logger.warning("double updating");
+        try {
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
                 return;
             }
 
-            // Update section fields in this board
-            updating = true;
-
-            final SectionEvent sectionEvent = (SectionEvent) event;
-            final Section      section = (sectionEvent != null)
-                                         ? sectionEvent.section : null;
-            dump.setEnabled(section != null);
-
-            Integer sectionId = null;
-
-            if (idSelecting) {
-                sectionId = (Integer) id.getValue();
+            if (logger.isFineEnabled()) {
+                logger.fine("SectionBoard: " + event);
             }
 
-            emptyFields(getComponent());
+            if (event instanceof SectionEvent) {
+                if (updating) {
+                    ///logger.warning("double updating");
+                    return;
+                }
 
-            if (section == null) {
-                lagName.setText("");
+                // Update section fields in this board
+                updating = true;
 
-                // If the user is currently using the Id spinner, make sure we
-                // display the right Id value in the spinner, even if there is
-                // no corresponding section
+                final SectionEvent sectionEvent = (SectionEvent) event;
+                final Section      section = (sectionEvent != null)
+                                             ? sectionEvent.section : null;
+                dump.setEnabled(section != null);
+
+                Integer sectionId = null;
+
                 if (idSelecting) {
-                    id.setValue(sectionId);
-                } else {
-                    id.setValue(NO_VALUE);
+                    sectionId = (Integer) id.getValue();
                 }
 
-                if (constants.hideRelationFields.getValue()) {
-                    direction.setVisible(false);
-                    layer.setVisible(false);
-                    role.setVisible(false);
-                }
-            } else {
-                // We have a valid section, let's display its fields
-                lagName.setText(section.getGraph().getName());
-                id.setValue(section.getId());
+                emptyFields(getComponent());
 
-                Rectangle box = section.getContourBox();
-                x.setValue(box.x);
-                y.setValue(box.y);
-                width.setValue(box.width);
-                height.setValue(box.height);
-                weight.setValue(section.getWeight());
+                if (section == null) {
+                    lagName.setText("");
 
-                // Additional relation fields for a StickSection
-                if (section instanceof StickSection) {
-                    StickSection  ss = (StickSection) section;
-                    StickRelation relation = ss.getRelation();
+                    // If the user is currently using the Id spinner, make sure we
+                    // display the right Id value in the spinner, even if there is
+                    // no corresponding section
+                    if (idSelecting) {
+                        id.setValue(sectionId);
+                    } else {
+                        id.setValue(NO_VALUE);
+                    }
 
-                    if (relation != null) {
-                        if (constants.hideRelationFields.getValue()) {
-                            layer.setVisible(true);
-                        }
-
-                        layer.setValue(relation.layer);
-
-                        if (constants.hideRelationFields.getValue()) {
-                            direction.setVisible(true);
-                        }
-
-                        direction.setValue(relation.direction);
-
-                        if (relation.role != null) {
-                            role.setText(relation.role.toString());
-
-                            if (constants.hideRelationFields.getValue()) {
-                                role.setVisible(true);
-                            }
-                        } else {
-                            if (constants.hideRelationFields.getValue()) {
-                                role.setVisible(false);
-                            }
-                        }
-                    } else if (constants.hideRelationFields.getValue()) {
+                    if (constants.hideRelationFields.getValue()) {
                         direction.setVisible(false);
                         layer.setVisible(false);
                         role.setVisible(false);
                     }
-                }
-            }
+                } else {
+                    // We have a valid section, let's display its fields
+                    lagName.setText(section.getGraph().getName());
+                    id.setValue(section.getId());
 
-            updating = false;
+                    Rectangle box = section.getContourBox();
+                    x.setValue(box.x);
+                    y.setValue(box.y);
+                    width.setValue(box.width);
+                    height.setValue(box.height);
+                    weight.setValue(section.getWeight());
+
+                    // Additional relation fields for a StickSection
+                    if (section instanceof StickSection) {
+                        StickSection  ss = (StickSection) section;
+                        StickRelation relation = ss.getRelation();
+
+                        if (relation != null) {
+                            if (constants.hideRelationFields.getValue()) {
+                                layer.setVisible(true);
+                            }
+
+                            layer.setValue(relation.layer);
+
+                            if (constants.hideRelationFields.getValue()) {
+                                direction.setVisible(true);
+                            }
+
+                            direction.setValue(relation.direction);
+
+                            if (relation.role != null) {
+                                role.setText(relation.role.toString());
+
+                                if (constants.hideRelationFields.getValue()) {
+                                    role.setVisible(true);
+                                }
+                            } else {
+                                if (constants.hideRelationFields.getValue()) {
+                                    role.setVisible(false);
+                                }
+                            }
+                        } else if (constants.hideRelationFields.getValue()) {
+                            direction.setVisible(false);
+                            layer.setVisible(false);
+                            role.setVisible(false);
+                        }
+                    }
+                }
+
+                updating = false;
+            }
+        } catch (Exception ex) {
+            logger.warning(getClass().getName() + " onEvent error", ex);
         }
     }
 
