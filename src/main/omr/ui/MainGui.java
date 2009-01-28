@@ -119,6 +119,9 @@ public class MainGui
         SheetManager.getEventService()
                     .subscribeStrongly(SheetEvent.class, this);
 
+        // Allow dropping files
+        frame.setTransferHandler(new FileDropHandler());
+
         // Define an exit listener
         app.addExitListener(new MaybeExit());
     }
@@ -136,30 +139,6 @@ public class MainGui
     public void setBoardsPane (JComponent boards)
     {
         boardsPane.addBoards(boards);
-    }
-
-    //----------------//
-    // showErrorsPane //
-    //----------------//
-    /**
-     * Show the errors pane
-     *
-     * @param errorsPane the errors pane to be shown
-     */
-    public void showErrorsPane (JComponent errorsPane)
-    {
-        bottomPane.addErrors(errorsPane);
-    }
-
-    //----------------//
-    // hideErrorsPane //
-    //----------------//
-    /**
-     * Hide the errors pane
-     */
-    public void hideErrorsPane ()
-    {
-        bottomPane.removeErrors();
     }
 
     //----------//
@@ -250,6 +229,17 @@ public class MainGui
             JOptionPane.WARNING_MESSAGE);
     }
 
+    //----------------//
+    // hideErrorsPane //
+    //----------------//
+    /**
+     * Hide the errors pane
+     */
+    public void hideErrorsPane ()
+    {
+        bottomPane.removeErrors();
+    }
+
     //-----//
     // log //
     //-----//
@@ -273,33 +263,38 @@ public class MainGui
     @Implement(EventSubscriber.class)
     public void onEvent (SheetEvent sheetEvent)
     {
-        // Ignore RELEASING
-        if (sheetEvent.movement == MouseMovement.RELEASING) {
-            return;
-        }
+        try {
+            // Ignore RELEASING
+            if (sheetEvent.movement == MouseMovement.RELEASING) {
+                return;
+            }
 
-        final Sheet sheet = sheetEvent.getData();
-        SwingUtilities.invokeLater(
-            new Runnable() {
-                    public void run ()
-                    {
-                        final StringBuilder sb = new StringBuilder();
+            final Sheet sheet = sheetEvent.getData();
+            SwingUtilities.invokeLater(
+                new Runnable() {
+                        public void run ()
+                        {
+                            final StringBuilder sb = new StringBuilder();
 
-                        if (sheet != null) {
-                            // Frame title tells sheet name + step
-                            sb.append(sheet.getRadix())
-                              .append(" - ")
-                              .append(sheet.getSheetSteps().getLatestStep())
-                              .append(" - ");
+                            if (sheet != null) {
+                                // Frame title tells sheet name + step
+                                sb.append(sheet.getRadix())
+                                  .append(" - ")
+                                  .append(
+                                    sheet.getSheetSteps().getLatestStep())
+                                  .append(" - ");
+                            }
+
+                            // Update frame title
+                            sb.append(
+                                app.getContext().getResourceMap().getString(
+                                    "mainFrame.title"));
+                            frame.setTitle(sb.toString());
                         }
-
-                        // Update frame title
-                        sb.append(
-                            app.getContext().getResourceMap().getString(
-                                "mainFrame.title"));
-                        frame.setTitle(sb.toString());
-                    }
-                });
+                    });
+        } catch (Exception ex) {
+            logger.warning(getClass().getName() + " onEvent error", ex);
+        }
     }
 
     //------------------//
@@ -311,6 +306,19 @@ public class MainGui
     public void removeBoardsPane ()
     {
         boardsPane.removeBoards();
+    }
+
+    //----------------//
+    // showErrorsPane //
+    //----------------//
+    /**
+     * Show the errors pane
+     *
+     * @param errorsPane the errors pane to be shown
+     */
+    public void showErrorsPane (JComponent errorsPane)
+    {
+        bottomPane.addErrors(errorsPane);
     }
 
     //--------------//
