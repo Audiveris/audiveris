@@ -218,24 +218,23 @@ public class SheetSteps
         task.done();
     }
 
-    //-----------------//
-    // updateLastSteps //
-    //-----------------//
+    //-------------//
+    // rebuildFrom //
+    //-------------//
     /**
-     * Following the modification of a collection of glyphs, this method
-     * launches the re-processing of the steps following VERTICALS on the
-     * systems impacted by the modifications
-     *
-     * @param glyphs the modified glyphs
-     * @param shapes the previous shapes of these glyphs
-     * @param imposed true if update must occur, else depends on current mode
+     * Update the steps already done, starting from the provided step
+     * @param step the step to restart from
+     * @param glyphs the collection of modified glyphs
+     * @param shapes the collection of the previous shapes
+     * @param imposed flag to indicate that update is imposed
      */
-    public void updateLastSteps (Collection<Glyph> glyphs,
-                                 Collection<Shape> shapes,
-                                 boolean           imposed)
+    public void rebuildFrom (Step              step,
+                             Collection<Glyph> glyphs,
+                             Collection<Shape> shapes,
+                             boolean           imposed)
     {
         if (SwingUtilities.isEventDispatchThread()) {
-            logger.severe("updateLastSteps run on EDT");
+            logger.severe("updateLastSteps should not run on EDT!");
         }
 
         // Check whether the update must really be done
@@ -252,16 +251,34 @@ public class SheetSteps
 
         if (logger.isFineEnabled()) {
             logger.fine(
-                "Score rebuild launched on" +
-                SystemInfo.toString(impactedSystems));
+                "Rebuild launched on" + SystemInfo.toString(impactedSystems));
         }
 
-        // Rebuild from step LEAVES, if needed
+        // Rebuild from specified step, if needed
         if (sheet.getSheetSteps()
                  .getLatestStep()
-                 .compareTo(Step.LEAVES) >= 0) {
-            Step.LEAVES.reperform(sheet, impactedSystems);
+                 .compareTo(step) >= 0) {
+            step.reperform(sheet, impactedSystems);
         }
+    }
+
+    //-------------------//
+    // rebuildFromLeaves //
+    //-------------------//
+    /**
+     * Following the modification of a collection of glyphs, this method
+     * launches the re-processing of the steps starting with LEAVES on the
+     * systems impacted by the modifications
+     *
+     * @param glyphs the modified glyphs
+     * @param shapes the previous shapes of these glyphs
+     * @param imposed true if update must occur, else depends on current mode
+     */
+    public void rebuildFromLeaves (Collection<Glyph> glyphs,
+                                   Collection<Shape> shapes,
+                                   boolean           imposed)
+    {
+        rebuildFrom(Step.LEAVES, glyphs, shapes, imposed);
     }
 
     //---------//
@@ -332,25 +349,25 @@ public class SheetSteps
                 logger.fine(step + " doEpilog");
             }
 
-            model.completeScoreStructure();
+            sheet.getMeasuresModel().completeScoreStructure();
 
-            // Force score view creation if UI is present
-            if (Main.getGui() != null) {
-                Main.getGui().scoreController.setScoreView(sheet.getScore());
-            }
+//            // Force score view creation if UI is present
+//            if (Main.getGui() != null) {
+//                Main.getGui().scoreController.setScoreView(sheet.getScore());
+//            }
         }
 
-        @Override
-        protected synchronized void doProlog (Collection<SystemInfo> systems)
-            throws StepException
-        {
-            if (logger.isFineEnabled()) {
-                logger.fine(step + " doProlog");
-            }
-
-            model = sheet.getMeasuresModel();
-            model.allocateScoreStructure(); // For Score, Systems, Parts & Staves
-        }
+//        @Override
+//        protected synchronized void doProlog (Collection<SystemInfo> systems)
+//            throws StepException
+//        {
+//            if (logger.isFineEnabled()) {
+//                logger.fine(step + " doProlog");
+//            }
+//
+//            model = sheet.getMeasuresModel();
+//            model.allocateScoreStructure(systems); // For Score, Systems, Parts & Staves
+//        }
     }
 
     //-------------//
@@ -378,6 +395,11 @@ public class SheetSteps
         {
             sheet.getSystemsBuilder()
                  .buildInfo();
+
+            // Force score view creation if UI is present
+            if (Main.getGui() != null) {
+                Main.getGui().scoreController.setScoreView(sheet.getScore());
+            }
         }
     }
 
