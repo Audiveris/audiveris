@@ -9,6 +9,8 @@
 //
 package omr.check;
 
+import omr.log.Logger;
+
 import omr.selection.MouseMovement;
 import omr.selection.UserEvent;
 
@@ -33,6 +35,11 @@ import java.util.Collection;
 public class CheckBoard<C extends Checkable>
     extends Board
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(CheckBoard.class);
+
     //~ Instance fields --------------------------------------------------------
 
     /** For display of check suite results */
@@ -99,12 +106,16 @@ public class CheckBoard<C extends Checkable>
     @SuppressWarnings("unchecked")
     public void onEvent (UserEvent event)
     {
-        // Ignore RELEASING
-        if (event.movement == MouseMovement.RELEASING) {
-            return;
-        }
+        try {
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
+                return;
+            }
 
-        tellObject((C) event.getData()); // Compiler warning
+            tellObject((C) event.getData()); // Compiler warning
+        } catch (Exception ex) {
+            logger.warning(getClass().getName() + " onEvent error", ex);
+        }
     }
 
     //------------//
