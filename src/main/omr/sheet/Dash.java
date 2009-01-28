@@ -13,8 +13,6 @@ import omr.math.Line;
 
 import omr.stick.Stick;
 
-import omr.ui.view.Zoom;
-
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -162,21 +160,18 @@ public class Dash
      * Render the dash.
      *
      * @param g the graphics context
-     * @param z the scaling zoom
      */
-    public void render (Graphics g,
-                        Zoom     z)
+    public void render (Graphics g)
     {
-        Rectangle b = z.scaled(box);
-
-        if (b.intersects(g.getClipBounds())) {
+        if (box.intersects(g.getClipBounds())) {
             Line  line = getLine();
             Point start = new Point(
-                b.x,
-                z.scaled(line.yAt((double) box.x) + 0.5));
+                box.x,
+                (int) Math.rint(line.yAt((double) box.x)));
             Point stop = new Point(
-                b.x + b.width,
-                z.scaled(line.yAt((double) box.x + box.width + 1) + 0.5));
+                box.x + box.width,
+                (int) Math.rint(line.yAt((double) box.x + box.width + 1)));
+
             g.drawLine(start.x, start.y, stop.x, stop.y);
         }
     }
@@ -188,16 +183,12 @@ public class Dash
      * Render the contour box of the dash, using the current foreground color
      *
      * @param g the graphic context
-     * @param z the display zoom
      */
-    public boolean renderContour (Graphics g,
-                                  Zoom     z)
+    public boolean renderContour (Graphics g)
     {
         // Check the clipping
-        Rectangle b = z.scaled(box);
-
-        if (b.intersects(g.getClipBounds())) {
-            g.drawRect(b.x, b.y, b.width, b.height);
+        if (box.intersects(g.getClipBounds())) {
+            g.drawRect(box.x, box.y, box.width, box.height);
 
             return true;
         } else {

@@ -21,8 +21,8 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
-import omr.glyph.GlyphModel;
 import omr.glyph.GlyphSection;
+import omr.glyph.GlyphsModel;
 import omr.glyph.Shape;
 import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphLagView;
@@ -46,8 +46,6 @@ import omr.stick.LineCleaner;
 import omr.stick.Stick;
 
 import omr.ui.BoardsPane;
-import static omr.ui.field.SpinnerUtilities.*;
-import omr.ui.view.Zoom;
 
 import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.Action;
@@ -60,13 +58,13 @@ import java.util.List;
 
 /**
  * Class <code>HorizontalsBuilder</code> is in charge of retrieving horizontal
- * dashes in the given sheet.
+ * dashes (ledgers, legato signs and endings) in the given sheet.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class HorizontalsBuilder
-    extends GlyphModel
+    extends GlyphsModel
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -933,18 +931,6 @@ public class HorizontalsBuilder
                 HorizontalsBuilder.this,
                 null);
             setName("HorizontalsBuilder-View");
-
-            //            setLocationSelection(
-            //                sheet.getEventService(SelectionTag.SHEET_LOCATION));
-            //
-            //            setSpecificSelections(
-            //                sheet.getEventService(SelectionTag.HORIZONTAL_RUN),
-            //                sheet.getEventService(SelectionTag.HORIZONTAL_SECTION));
-            //
-            //            Selection glyphSelection = sheet.getEventService(
-            //                SelectionTag.HORIZONTAL_GLYPH);
-            //            setGlyphSelection(glyphSelection);
-            //            glyphSelection.addObserver(this);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -978,15 +964,13 @@ public class HorizontalsBuilder
         @Override
         public void renderItems (Graphics g)
         {
-            Zoom z = getZoom();
-
             // Render all physical info known so far (staff lines)
-            sheet.accept(new SheetPainter(g, z));
+            sheet.accept(new SheetPainter(g));
 
             // Render the dashes found
             for (Dash dash : allDashes) {
-                dash.render(g, z);
-                dash.renderContour(g, z);
+                dash.render(g);
+                dash.renderContour(g);
             }
 
             super.renderItems(g);
