@@ -246,11 +246,10 @@ public class Logger
     public void warning (String    msg,
                          Throwable thrown)
     {
+        super.warning(msg + " [" + thrown + "]");
+
         if (constants.printStackOnWarning.getValue()) {
-            super.warning(msg);
             thrown.printStackTrace();
-        } else {
-            super.warning(msg + " [" + thrown + "]");
         }
     }
 
