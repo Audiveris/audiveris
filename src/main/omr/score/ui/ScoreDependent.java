@@ -93,14 +93,18 @@ public abstract class ScoreDependent
     @Override
     public void onEvent (SheetEvent event)
     {
-        // Ignore RELEASING
-        if (event.movement == MouseMovement.RELEASING) {
-            return;
+        try {
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
+                return;
+            }
+
+            super.onEvent(event);
+
+            Sheet sheet = event.getData();
+            setScoreAvailable((sheet != null) && (sheet.getScore() != null));
+        } catch (Exception ex) {
+            logger.warning(getClass().getName() + " onEvent error", ex);
         }
-
-        super.onEvent(event);
-
-        Sheet sheet = event.getData();
-        setScoreAvailable((sheet != null) && (sheet.getScore() != null));
     }
 }
