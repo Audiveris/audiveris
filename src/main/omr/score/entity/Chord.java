@@ -1587,7 +1587,7 @@ public class Chord
 
         return new SystemPoint(
             tailLocation.x,
-            staff.getTopLeft().y - note.getSystem().getTopLeft().y +
+            staff.getPageTopLeft().y - note.getSystem().getTopLeft().y +
             Staff.pitchToUnit(Math.rint(note.getPitchPosition())));
     }
 

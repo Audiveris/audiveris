@@ -201,7 +201,7 @@ public class Note
         setCenter(
             new SystemPoint(
                 center.x,
-                (staff.getTopLeft().y - staff.getSystem().getTopLeft().y) +
+                (staff.getPageTopLeft().y - staff.getSystem().getTopLeft().y) +
                 ((ScoreConstants.INTER_LINE * (4d + pitchPosition)) / 2)));
 
         // Note box

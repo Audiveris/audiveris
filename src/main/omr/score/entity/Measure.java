@@ -517,7 +517,7 @@ public class Measure
             Staff staff = getPart()
                               .getStaffAt(point);
 
-            int   staffY = staff.getTopLeft().y - getSystem()
+            int   staffY = staff.getPageTopLeft().y - getSystem()
                                                       .getTopLeft().y +
                            (staff.getHeight() / 2);
 
@@ -1430,7 +1430,7 @@ public class Measure
         for (TreeNode sn : part.getStaves()) {
             Staff       staff = (Staff) sn;
             int         right = getLeftX(); // Right of dummy = Left of current
-            int         midY = (staff.getTopLeft().y + (staff.getHeight() / 2)) -
+            int         midY = (staff.getPageTopLeft().y + (staff.getHeight() / 2)) -
                                getSystem()
                                    .getTopLeft().y;
             SystemPoint staffPoint = new SystemPoint(right, midY);

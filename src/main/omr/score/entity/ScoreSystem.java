@@ -242,10 +242,25 @@ public class ScoreSystem
      *
      * @return the display origin
      */
-    @Override
     public ScorePoint getDisplayOrigin ()
     {
         return displayOrigin;
+    }
+
+    //----------------//
+    // getDummyOffset //
+    //----------------//
+    /**
+     * Report the vertical offset of the first part wrt the system, which is 0
+     * for a standard system, and non zero when the system begins with a dummy
+     * part.
+     * @return the vertical offset (in unit) of the dummy part, or 0 if none
+     */
+    public int getDummyOffset ()
+    {
+        return getTopLeft().y - getFirstPart()
+                                    .getFirstStaff()
+                                    .getPageTopLeft().y;
     }
 
     //--------------//
@@ -441,7 +456,7 @@ public class ScoreSystem
 
             for (TreeNode n : part.getStaves()) {
                 Staff staff = (Staff) n;
-                int   dy = sysPt.y - staff.getTopLeft().y + getTopLeft().y;
+                int   dy = sysPt.y - staff.getPageTopLeft().y + getTopLeft().y;
 
                 if (dy >= 0) {
                     best = staff;
@@ -472,7 +487,7 @@ public class ScoreSystem
             if (!part.isDummy()) {
                 for (TreeNode n : part.getStaves()) {
                     Staff staff = (Staff) n;
-                    int   midY = (staff.getTopLeft().y +
+                    int   midY = (staff.getPageTopLeft().y +
                                  (staff.getHeight() / 2)) -
                                  this.getTopLeft().y;
                     int   dy = Math.abs(sysPt.y - midY);
@@ -504,14 +519,14 @@ public class ScoreSystem
 
         PagePoint pagPt = toPagePoint(sysPt);
 
-        if (pagPt.y < firstStaff.getTopLeft().y) {
+        if (pagPt.y < firstStaff.getPageTopLeft().y) {
             return StaffPosition.above;
         }
 
         Staff lastStaff = getLastPart()
                               .getLastStaff();
 
-        if (pagPt.y > (lastStaff.getTopLeft().y + lastStaff.getHeight())) {
+        if (pagPt.y > (lastStaff.getPageTopLeft().y + lastStaff.getHeight())) {
             return StaffPosition.below;
         } else {
             return StaffPosition.within;
