@@ -23,7 +23,6 @@ import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
 
 import omr.ui.view.RubberZoomedPanel;
-import omr.ui.view.Zoom;
 
 import org.bushe.swing.event.EventService;
 import org.bushe.swing.event.EventSubscriber;
@@ -61,9 +60,10 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     private static final Logger logger = Logger.getLogger(LagView.class);
 
     /** (Lag) events this entity is interested in */
-    private static final Collection<Class<?extends UserEvent>> eventClasses = new ArrayList<Class<?extends UserEvent>>();
+    private static final Collection<Class<?extends UserEvent>> eventClasses;
 
     static {
+        eventClasses = new ArrayList<Class<?extends UserEvent>>();
         eventClasses.add(SectionIdEvent.class);
     }
 
@@ -196,39 +196,25 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         return lag.getVertexById(id);
     }
 
-    //---------//
-    // setZoom //
-    //---------//
-    /**
-     * Allows to programmatically modify the display zoom
-     *
-     * @param zoom the new zoom
-     */
-    @Override
-    public void setZoom (Zoom zoom)
-    {
-        // What is my view Index in all views on this lag
-        int viewIndex = lag.viewIndexOf(this);
-
-        // Update standard vertices as well as specific ones
-        setCollectionZoom(lag.getVertices(), viewIndex, zoom);
-        setCollectionZoom(specificSections, viewIndex, zoom);
-
-        super.setZoom(zoom);
-    }
-
     //----------------//
     // addSectionView //
     //----------------//
     /**
-     * Add a view on a section, using the zoom of this lag view
+     * Add a view on a section
      *
      * @param section the section to display
      * @return the view on the section
      */
     public SectionView<L, S> addSectionView (S section)
     {
-        return addSectionView(section, zoom);
+        // Build the related section view
+        SectionView<L, S> sectionView = new SectionView<L, S>(section);
+        section.addView(sectionView);
+
+        // Extend the lag bounding rectangle
+        lagContour.add(sectionView.getRectangle());
+
+        return sectionView;
     }
 
     //----------//
@@ -308,104 +294,91 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     @Override
     public void onEvent (UserEvent event)
     {
-        // Ignore RELEASING
-        if (event.movement == MouseMovement.RELEASING) {
-            return;
-        }
+        try {
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
+                return;
+            }
 
-        ///logger.info("LagView. selection=" + selection + " hint=" + hint);
+            ///logger.info("LagView. selection=" + selection + " hint=" + hint);
 
-        // Default behavior : making point visible & drawing the markers
-        super.onEvent(event);
+            // Default behavior : making point visible & drawing the markers
+            super.onEvent(event);
 
-        // Check for specific section if any
-        if ((showingSpecifics != null) && showingSpecifics.getValue()) {
-            if (event instanceof SheetLocationEvent) {
-                SheetLocationEvent sheetLocation = (SheetLocationEvent) event;
+            // Check for specific section if any
+            if ((showingSpecifics != null) && showingSpecifics.getValue()) {
+                if (event instanceof SheetLocationEvent) {
+                    SheetLocationEvent sheetLocation = (SheetLocationEvent) event;
 
-                // Default behavior : making point visible & drawing the markers
-                super.onEvent(sheetLocation);
+                    // Default behavior : making point visible & drawing the markers
+                    super.onEvent(sheetLocation);
 
-                Rectangle rect = sheetLocation.getData();
+                    Rectangle rect = sheetLocation.getData();
 
-                if (rect != null) {
-                    Point pt = rect.getLocation();
-                    lag.invalidateLookupCache();
+                    if (rect != null) {
+                        Point pt = rect.getLocation();
+                        lag.invalidateLookupCache();
 
-                    S section = lookupSpecificSection(pt);
+                        S section = lookupSpecificSection(pt);
 
-                    if (section != null) {
-                        lag.publish(
-                            new SectionEvent<S>(
-                                this,
-                                sheetLocation.hint,
-                                section));
-
-                        Point apt = lag.switchRef(pt, null);
-                        lag.publish(
-                            new RunEvent(this, section.getRunAt(apt.y)));
-                    }
-                }
-            } else if (event instanceof SectionIdEvent) {
-                // Lookup a specific section with proper ID
-                SectionIdEvent idEvent = (SectionIdEvent) event;
-                Integer        id = idEvent.id;
-
-                if ((id != null) & (id != 0)) {
-                    for (S section : specificSections) {
-                        if (section.getId() == id) {
+                        if (section != null) {
                             lag.publish(
                                 new SectionEvent<S>(
                                     this,
-                                    idEvent.hint,
+                                    sheetLocation.hint,
                                     section));
-                            lag.publish(new RunEvent(this, null));
 
-                            break;
+                            Point apt = lag.switchRef(pt, null);
+                            lag.publish(
+                                new RunEvent(this, section.getRunAt(apt.y)));
+                        }
+                    }
+                } else if (event instanceof SectionIdEvent) {
+                    // Lookup a specific section with proper ID
+                    SectionIdEvent idEvent = (SectionIdEvent) event;
+                    Integer        id = idEvent.id;
+
+                    if ((id != null) & (id != 0)) {
+                        for (S section : specificSections) {
+                            if (section.getId() == id) {
+                                lag.publish(
+                                    new SectionEvent<S>(
+                                        this,
+                                        idEvent.hint,
+                                        section));
+                                lag.publish(new RunEvent(this, null));
+
+                                break;
+                            }
                         }
                     }
                 }
             }
+        } catch (Exception ex) {
+            logger.warning(getClass().getName() + " onEvent error", ex);
         }
     }
-
-    //
-    //    //------------------------//
-    //    // notifySpecificsVisible //
-    //    //------------------------//
-    //    public void notifySpecificsVisible ()
-    //    {
-    //        // Since search rules are modified, invalidate cache
-    //        lag.invalidateLookupCache();
-    //
-    //        // Force update
-    //        SheetLocationEvent locationEvent = (SheetLocationEvent) locationSelection.getEntity();
-    //        PixelRectangle     location = (locationEvent != null)
-    //                                      ? locationEvent.getData() : null;
-    //
-    //        if (location != null) {
-    //            locationSelection.setEntity(
-    //                new SheetLocationEvent(this, null, null, location));
-    //        }
-    //
-    //        repaint();
-    //    }
 
     //--------//
     // render //
     //--------//
+    /**
+     * Render this lag in the provided Graphics context, which may be already
+     * scaled
+     * @param g the graphics context
+     */
     @Override
     public void render (Graphics g)
     {
-        // Determine my view index in the lag views
-        final int viewIndex = lag.viewIndexOf(this);
+        // Determine my view index in the sequence of lag views
+        final int vIndex = lag.viewIndexOf(this);
 
         // Render all sections, using the colors they have been assigned
-        renderCollection(g, lag.getVertices(), viewIndex);
+        renderCollection(g, lag.getVertices(), vIndex);
 
         // Render also all specific sections ?
         if ((showingSpecifics != null) && showingSpecifics.getValue()) {
-            renderCollection(g, specificSections, viewIndex);
+            renderCollection(g, specificSections, vIndex);
         }
 
         // Paint additional items, such as recognized items, etc...
@@ -415,6 +388,9 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     //-----------//
     // subscribe //
     //-----------//
+    /**
+     * Subscribe to location and lag events
+     */
     @Override
     public void subscribe ()
     {
@@ -436,6 +412,9 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     //-------------//
     // unsubscribe //
     //-------------//
+    /**
+     * Unsubscribe from location and lag events
+     */
     @Override
     public void unsubscribe ()
     {
@@ -454,29 +433,6 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         }
     }
 
-    //----------------//
-    // addSectionView //
-    //----------------//
-    /**
-     * Add a view on a section, with specified zoom
-     *
-     * @param section the section to display
-     * @param zoom the specified zoom
-     * @return the view on the section
-     */
-    protected SectionView<L, S> addSectionView (S    section,
-                                                Zoom zoom)
-    {
-        // Build the related section view
-        SectionView<L, S> sectionView = new SectionView<L, S>(section, zoom);
-        section.addView(sectionView);
-
-        // Extend the lag bounding rectangle
-        lagContour.add(sectionView.getRectangle());
-
-        return sectionView;
-    }
-
     //-------------//
     // renderItems //
     //-------------//
@@ -488,20 +444,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
      */
     protected void renderItems (Graphics g)
     {
-        // Empty
-    }
-
-    //-------------------//
-    // setCollectionZoom //
-    //-------------------//
-    private void setCollectionZoom (Collection<S> collection,
-                                    int           index,
-                                    Zoom          zoom)
-    {
-        for (Section section : collection) {
-            SectionView view = (SectionView) section.getView(index);
-            view.setZoom(zoom);
-        }
+        // Just a placeholder
     }
 
     //----------//
