@@ -99,12 +99,16 @@ public abstract class SheetDependent
     @Implement(EventSubscriber.class)
     public void onEvent (SheetEvent event)
     {
-        // Ignore RELEASING
-        if (event.movement == MouseMovement.RELEASING) {
-            return;
-        }
+        try {
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
+                return;
+            }
 
-        Sheet sheet = event.getData();
-        setSheetAvailable(sheet != null);
+            Sheet sheet = event.getData();
+            setSheetAvailable(sheet != null);
+        } catch (Exception ex) {
+            logger.warning(getClass().getName() + " onEvent error", ex);
+        }
     }
 }

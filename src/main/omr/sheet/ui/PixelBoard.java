@@ -132,47 +132,51 @@ public class PixelBoard
     @Implement(EventSubscriber.class)
     public void onEvent (UserEvent event)
     {
-        // Ignore RELEASING
-        if (event.movement == MouseMovement.RELEASING) {
-            return;
-        }
+        try {
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
+                return;
+            }
 
-        if (logger.isFineEnabled()) {
-            logger.fine("PixelBoard: " + event);
-        }
+            if (logger.isFineEnabled()) {
+                logger.fine("PixelBoard: " + event);
+            }
 
-        if (event instanceof SheetLocationEvent) {
-            // Display rectangle attributes
-            SheetLocationEvent sheetLocation = (SheetLocationEvent) event;
+            if (event instanceof SheetLocationEvent) {
+                // Display rectangle attributes
+                SheetLocationEvent sheetLocation = (SheetLocationEvent) event;
 
-            if (sheetLocation != null) {
-                Rectangle rect = sheetLocation.rectangle;
+                if (sheetLocation != null) {
+                    Rectangle rect = sheetLocation.rectangle;
 
-                if (rect != null) {
-                    x.setValue(rect.x);
-                    y.setValue(rect.y);
-                    width.setValue(rect.width);
-                    height.setValue(rect.height);
+                    if (rect != null) {
+                        x.setValue(rect.x);
+                        y.setValue(rect.y);
+                        width.setValue(rect.width);
+                        height.setValue(rect.height);
 
-                    return;
+                        return;
+                    }
+                }
+
+                x.setText("");
+                y.setText("");
+                width.setText("");
+                height.setText("");
+            } else if (event instanceof PixelLevelEvent) {
+                // Display pixel grey level
+                PixelLevelEvent pixelLevelEvent = (PixelLevelEvent) event;
+                final Integer   pixelLevel = (pixelLevelEvent != null)
+                                             ? pixelLevelEvent.pixelLevel : null;
+
+                if (pixelLevel != null) {
+                    level.setValue(pixelLevel);
+                } else {
+                    level.setText("");
                 }
             }
-
-            x.setText("");
-            y.setText("");
-            width.setText("");
-            height.setText("");
-        } else if (event instanceof PixelLevelEvent) {
-            // Display pixel grey level
-            PixelLevelEvent pixelLevelEvent = (PixelLevelEvent) event;
-            final Integer   pixelLevel = (pixelLevelEvent != null)
-                                         ? pixelLevelEvent.pixelLevel : null;
-
-            if (pixelLevel != null) {
-                level.setValue(pixelLevel);
-            } else {
-                level.setText("");
-            }
+        } catch (Exception ex) {
+            logger.warning(getClass().getName() + " onEvent error", ex);
         }
     }
 
