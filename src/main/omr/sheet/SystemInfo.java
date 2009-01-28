@@ -24,8 +24,12 @@ import omr.glyph.text.TextInspector;
 import omr.log.Logger;
 
 import omr.score.SystemTranslator;
+import omr.score.common.PixelDimension;
+import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.entity.ScoreSystem;
+import omr.score.entity.Staff;
+import omr.score.entity.SystemPart;
 
 import omr.step.StepException;
 
@@ -117,7 +121,7 @@ public class SystemInfo
     private final SortedSet<Glyph> glyphs = new ConcurrentSkipListSet<Glyph>();
 
     /** Unmodifiable view of the glyphs collection */
-    private final Collection<Glyph> glyphsView = Collections.unmodifiableCollection(
+    private final SortedSet<Glyph> glyphsView = Collections.unmodifiableSortedSet(
         glyphs);
 
     /** Ordered collection of lines of text glyphs */
@@ -272,7 +276,7 @@ public class SystemInfo
      *
      * @return the unmodifiable collection of glyphs
      */
-    public Collection<Glyph> getGlyphs ()
+    public SortedSet<Glyph> getGlyphs ()
     {
         return glyphsView;
     }
@@ -374,19 +378,6 @@ public class SystemInfo
     public int getRight ()
     {
         return left + width;
-    }
-
-    //----------------//
-    // setScoreSystem //
-    //----------------//
-    /**
-     * Set the link : physical sheet.SystemInfo -> logical score.System
-     *
-     * @param scoreSystem the logical score System counterpart
-     */
-    public void setScoreSystem (ScoreSystem scoreSystem)
-    {
-        this.scoreSystem = scoreSystem;
     }
 
     //----------------//
@@ -612,6 +603,45 @@ public class SystemInfo
     public void alignTextGlyphs ()
     {
         textInspector.alignTextGlyphs();
+    }
+
+    //------------------------//
+    // allocateScoreStructure //
+    //------------------------//
+    /**
+     * Build the corresponding ScoreSystem entity with all its depending Parts
+     * and Staves
+     */
+    public void allocateScoreStructure ()
+    {
+        Scale scale = sheet.getScale();
+
+        // Allocate the score system
+        scoreSystem = new ScoreSystem(
+            this,
+            sheet.getScore(),
+            scale.toPagePoint(new PixelPoint(getLeft(), getTop())),
+            scale.toUnits(new PixelDimension(getWidth(), getDeltaY())));
+
+        // Allocate the parts in the system
+        for (PartInfo partInfo : getParts()) {
+            SystemPart part = new SystemPart(scoreSystem);
+
+            // Allocate the staves in this part
+            for (StaffInfo staffInfo : partInfo.getStaves()) {
+                LineInfo line = staffInfo.getFirstLine();
+                new Staff(
+                    staffInfo,
+                    part,
+                    scale.toPagePoint(
+                        new PixelPoint(
+                            staffInfo.getLeft(),
+                            line.yAt(line.getLeft()))),
+                    scale.pixelsToUnits(
+                        staffInfo.getRight() - staffInfo.getLeft()),
+                    64); // Staff vertical size in units);
+            }
+        }
     }
 
     //---------------//
@@ -885,12 +915,12 @@ public class SystemInfo
         StringBuffer sb = new StringBuffer(80);
         sb.append("{SystemInfo#")
           .append(id);
-        sb.append(" ")
-          .append(startIdx);
+        sb.append(" T")
+          .append(startIdx + 1);
 
         if (startIdx != stopIdx) {
-            sb.append("..")
-              .append(stopIdx);
+            sb.append("..T")
+              .append(stopIdx + 1);
         }
 
         sb.append("}");
@@ -951,18 +981,6 @@ public class SystemInfo
     public SortedSet<TextGlyphLine> getTextLines ()
     {
         return textLines;
-    }
-
-    //------------------------//
-    // allocateScoreStructure //
-    //------------------------//
-    /**
-     * Build the corresponding ScoreSystem entity with all its depending Parts
-     * and Staves
-     */
-    public void allocateScoreStructure ()
-    {
-        measuresBuilder.allocateScoreStructure();
     }
 
     //---------------//
