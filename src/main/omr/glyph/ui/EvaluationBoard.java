@@ -16,7 +16,7 @@ import omr.glyph.Evaluation;
 import omr.glyph.Evaluator;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphInspector;
-import omr.glyph.GlyphModel;
+import omr.glyph.GlyphsModel;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Shape;
 
@@ -90,9 +90,9 @@ class EvaluationBoard
     private final Evaluator evaluator = GlyphNetwork.getInstance();
 
     /** Related glyph model */
-    private final GlyphModel glyphModel;
+    private final GlyphsModel glyphModel;
 
-    /** Related sheet & GlyphModel */
+    /** Related sheet & GlyphsModel */
     private final Sheet sheet;
 
     /** Lag view (if any) */
@@ -122,7 +122,7 @@ class EvaluationBoard
      * @param glyphModel the related glyph model
      */
     public EvaluationBoard (String     name,
-                            GlyphModel glyphModel)
+                            GlyphsModel glyphModel)
     {
         this(name, glyphModel, null, null);
     }
@@ -140,7 +140,7 @@ class EvaluationBoard
      * @param view the related symbol glyph view
      */
     public EvaluationBoard (String       name,
-                            GlyphModel   glyphModel,
+                            GlyphsModel   glyphModel,
                             Sheet        sheet,
                             GlyphLagView view)
     {
@@ -195,24 +195,28 @@ class EvaluationBoard
     @Implement(EventSubscriber.class)
     public void onEvent (UserEvent event)
     {
-        // Ignore RELEASING
-        if (event.movement == MouseMovement.RELEASING) {
-            return;
-        }
+        try {
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
+                return;
+            }
 
-        //        logger.info(
-        //            "EvaluationBoard/" + getClass().getSimpleName() + " " + getName() +
-        //            " " + event);
+            //        logger.info(
+            //            "EvaluationBoard/" + getClass().getSimpleName() + " " + getName() +
+            //            " " + event);
 
-        // Don't evaluate Added glyph, since this would hide Compound evaluation
-        if (event.hint == SelectionHint.LOCATION_ADD) {
-            return;
-        }
+            // Don't evaluate Added glyph, since this would hide Compound evaluation
+            if (event.hint == SelectionHint.LOCATION_ADD) {
+                return;
+            }
 
-        if (event instanceof GlyphEvent) {
-            GlyphEvent glyphEvent = (GlyphEvent) event;
-            Glyph      glyph = glyphEvent.getData();
-            evaluate(glyph);
+            if (event instanceof GlyphEvent) {
+                GlyphEvent glyphEvent = (GlyphEvent) event;
+                Glyph      glyph = glyphEvent.getData();
+                evaluate(glyph);
+            }
+        } catch (Exception ex) {
+            logger.warning(getClass().getName() + " onEvent error", ex);
         }
     }
 
@@ -381,13 +385,9 @@ class EvaluationBoard
         {
             // Assign current glyph with selected shape
             if (glyphModel != null) {
-                GlyphEvent glyphEvent = (GlyphEvent) glyphModel.getLag()
-                                                               .getEventService()
-                                                               .getLastEvent(
-                    GlyphEvent.class);
-                Glyph      glyph = (glyphEvent != null) ? glyphEvent.getData()
-                                   : null;
-                Shape      shape = Shape.valueOf(button.getText());
+                Glyph glyph = glyphModel.getLag()
+                                        .getCurrentGlyph();
+                Shape shape = Shape.valueOf(button.getText());
 
                 // Actually assign the shape
                 glyphModel.assignGlyphShape(ASYNC, glyph, shape, RECORDING);
