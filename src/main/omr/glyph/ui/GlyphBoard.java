@@ -13,7 +13,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
-import omr.glyph.GlyphModel;
+import omr.glyph.GlyphsModel;
 import omr.glyph.Shape;
 
 import omr.log.Logger;
@@ -33,6 +33,7 @@ import omr.ui.field.SpinnerUtilities;
 import static omr.ui.field.SpinnerUtilities.*;
 import omr.ui.util.Panel;
 
+import omr.util.BasicTask;
 import omr.util.Implement;
 import omr.util.Predicate;
 import static omr.util.Synchronicity.*;
@@ -96,7 +97,7 @@ public class GlyphBoard
     //~ Instance fields --------------------------------------------------------
 
     /** The related glyph model */
-    protected final GlyphModel glyphModel;
+    protected final GlyphsModel glyphModel;
 
     /** An active label */
     protected final JLabel active = new JLabel("");
@@ -161,7 +162,7 @@ public class GlyphBoard
      * @param specificGlyphs additional collection of glyphs, or null
      */
     public GlyphBoard (String                     unitName,
-                       GlyphModel                 glyphModel,
+                       GlyphsModel                 glyphModel,
                        Collection<?extends Glyph> specificGlyphs)
     {
         this(unitName, glyphModel);
@@ -201,7 +202,7 @@ public class GlyphBoard
      * @param glyphModel the related glyph model, if any
      */
     protected GlyphBoard (String     name,
-                          GlyphModel glyphModel)
+                          GlyphsModel glyphModel)
     {
         super(name, glyphModel.getLag().getEventService(), eventClasses);
 
@@ -259,79 +260,83 @@ public class GlyphBoard
     @Override
     public void onEvent (UserEvent event)
     {
-        // Ignore RELEASING
-        if (event.movement == MouseMovement.RELEASING) {
-            return;
-        }
-
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "GlyphBoard selfUpdating=" + selfUpdating + " : " + event);
-        }
-
-        if (event instanceof GlyphEvent) {
-            // Display Glyph parameters (while preventing circular updates)
-            selfUpdating = true;
-
-            GlyphEvent glyphEvent = (GlyphEvent) event;
-            Glyph      glyph = glyphEvent.getData();
-
-            // Active ?
-            if (glyph != null) {
-                if (glyph.isActive()) {
-                    active.setText("Active");
-                } else {
-                    active.setText("Non Active");
-                }
-            } else {
-                active.setText("");
+        try {
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
+                return;
             }
 
-            // Dump button and deassign button
-            dumpAction.setEnabled(glyph != null);
-            deassignAction.setEnabled((glyph != null) && glyph.isKnown());
-
-            // Shape text and icon
-            Shape shape = (glyph != null) ? glyph.getShape() : null;
-
-            if (shape != null) {
-                shapeField.setText(shape.toString());
-                shapeIcon.setIcon(shape.getIcon());
-            } else {
-                shapeField.setText("");
-                shapeIcon.setIcon(null);
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "GlyphBoard selfUpdating=" + selfUpdating + " : " + event);
             }
 
-            // Global Spinner
-            if (globalSpinner != null) {
+            if (event instanceof GlyphEvent) {
+                // Display Glyph parameters (while preventing circular updates)
+                selfUpdating = true;
+
+                GlyphEvent glyphEvent = (GlyphEvent) event;
+                Glyph      glyph = glyphEvent.getData();
+
+                // Active ?
                 if (glyph != null) {
-                    globalSpinner.setValue(glyph.getId());
+                    if (glyph.isActive()) {
+                        active.setText("Active");
+                    } else {
+                        active.setText("Non Active");
+                    }
                 } else {
-                    globalSpinner.setValue(NO_VALUE);
+                    active.setText("");
+                }
+
+                // Dump button and deassign button
+                dumpAction.setEnabled(glyph != null);
+                deassignAction.setEnabled((glyph != null) && glyph.isKnown());
+
+                // Shape text and icon
+                Shape shape = (glyph != null) ? glyph.getShape() : null;
+
+                if (shape != null) {
+                    shapeField.setText(shape.toString());
+                    shapeIcon.setIcon(shape.getIcon());
+                } else {
+                    shapeField.setText("");
+                    shapeIcon.setIcon(null);
+                }
+
+                // Global Spinner
+                if (globalSpinner != null) {
+                    if (glyph != null) {
+                        globalSpinner.setValue(glyph.getId());
+                    } else {
+                        globalSpinner.setValue(NO_VALUE);
+                    }
+                }
+
+                // Known Spinner
+                if (knownSpinner != null) {
+                    if (glyph != null) {
+                        knownSpinner.setValue(
+                            knownPredicate.check(glyph) ? glyph.getId() : NO_VALUE);
+                    } else {
+                        knownSpinner.setValue(NO_VALUE);
+                    }
+                }
+
+                selfUpdating = false;
+            } else if (event instanceof GlyphSetEvent) {
+                // Display count of glyphs in the glyph set
+                GlyphSetEvent glyphsEvent = (GlyphSetEvent) event;
+                List<Glyph>   glyphs = glyphsEvent.getData();
+
+                if ((glyphs != null) && (glyphs.size() > 0)) {
+                    count.setText(Integer.toString(glyphs.size()));
+                } else {
+                    count.setText("");
                 }
             }
-
-            // Known Spinner
-            if (knownSpinner != null) {
-                if (glyph != null) {
-                    knownSpinner.setValue(
-                        knownPredicate.check(glyph) ? glyph.getId() : NO_VALUE);
-                } else {
-                    knownSpinner.setValue(NO_VALUE);
-                }
-            }
-
-            selfUpdating = false;
-        } else if (event instanceof GlyphSetEvent) {
-            // Display count of glyphs in the glyph set
-            GlyphSetEvent glyphsEvent = (GlyphSetEvent) event;
-            List<Glyph>   glyphs = glyphsEvent.getData();
-
-            if ((glyphs != null) && (glyphs.size() > 0)) {
-                count.setText(Integer.toString(glyphs.size()));
-            } else {
-                count.setText("");
-            }
+        } catch (Exception ex) {
+            logger.warning(getClass().getName() + " onEvent error", ex);
         }
     }
 
@@ -459,34 +464,47 @@ public class GlyphBoard
         public void actionPerformed (ActionEvent e)
         {
             if ((glyphModel != null) && (eventList.size() > 0)) {
-                if (eventList.size() > 1) {
-                    // We have selections for glyph and for glyph set
-                    GlyphEvent    glyphEvent = (GlyphEvent) eventService.getLastEvent(
+                // Do we have selections for glyph set, or just for glyph?
+                if (eventList.contains(GlyphEvent.class)) {
+                    GlyphEvent  glyphEvent = (GlyphEvent) eventService.getLastEvent(
                         GlyphEvent.class);
-                    Glyph         glyph = (glyphEvent != null)
-                                          ? glyphEvent.getData() : null;
+                    final Glyph glyph = (glyphEvent != null)
+                                        ? glyphEvent.getData() : null;
 
-                    GlyphSetEvent glyphsEvent = (GlyphSetEvent) eventService.getLastEvent(
-                        GlyphSetEvent.class);
-                    List<Glyph>   glyphs = glyphsEvent.getData();
-                    glyphModel.deassignSetShape(ASYNC, glyphs, RECORDING);
+                    if (eventList.contains(GlyphSetEvent.class)) {
+                        GlyphSetEvent     glyphSetEvent = (GlyphSetEvent) eventService.getLastEvent(
+                            GlyphSetEvent.class);
+                        final List<Glyph> glyphs = glyphSetEvent.getData();
 
-                    // Update focus on current glyph, even if reused in a compound
-                    Glyph newGlyph = glyph.getFirstSection()
-                                          .getGlyph();
-                    eventService.publish(
-                        new GlyphEvent(
-                            this,
-                            SelectionHint.GLYPH_INIT,
-                            null,
-                            newGlyph));
-                } else if (eventList.size() == 1) {
-                    // We have selection for glyph only
-                    GlyphEvent glyphEvent = (GlyphEvent) eventService.getLastEvent(
-                        GlyphEvent.class);
-                    Glyph      glyph = (glyphEvent != null)
-                                       ? glyphEvent.getData() : null;
-                    glyphModel.deassignGlyphShape(ASYNC, glyph, RECORDING);
+                        new BasicTask() {
+                                @Override
+                                protected Void doInBackground ()
+                                    throws Exception
+                                {
+                                    // Following actions must be done in sequence
+                                    glyphModel.deassignSetShape(
+                                        SYNC,
+                                        glyphs,
+                                        RECORDING);
+
+                                    // Update focus on current glyph, 
+                                    // even if reused in a compound
+                                    Glyph newGlyph = glyph.getFirstSection()
+                                                          .getGlyph();
+                                    eventService.publish(
+                                        new GlyphEvent(
+                                            this,
+                                            SelectionHint.GLYPH_INIT,
+                                            null,
+                                            newGlyph));
+
+                                    return null;
+                                }
+                            }.execute();
+                    } else {
+                        // We have selection for glyph only
+                        glyphModel.deassignGlyphShape(ASYNC, glyph, RECORDING);
+                    }
                 }
             }
         }
