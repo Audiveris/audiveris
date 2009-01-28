@@ -1296,8 +1296,7 @@ public class Glyph
         }
 
         StringBuilder sb = new StringBuilder();
-        sb.append(" ")
-          .append(label)
+        sb.append(label)
           .append("[");
 
         for (Glyph glyph : glyphs) {
