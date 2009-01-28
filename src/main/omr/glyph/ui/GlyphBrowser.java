@@ -16,8 +16,8 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
-import omr.glyph.GlyphModel;
 import omr.glyph.GlyphSection;
+import omr.glyph.GlyphsModel;
 
 import omr.lag.ScrollLagView;
 import omr.lag.VerticalOrientation;
@@ -121,7 +121,7 @@ class GlyphBrowser
     private GlyphLag tLag;
 
     /** Basic glyph model */
-    private GlyphModel glyphModel;
+    private GlyphsModel glyphModel;
 
     /** The lag view */
     private GlyphLagView view;
@@ -361,7 +361,7 @@ class GlyphBrowser
     // BasicGlyphModel // ------------------------------------------------------
     //-----------------//
     private class BasicGlyphModel
-        extends GlyphModel
+        extends GlyphsModel
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -483,47 +483,51 @@ class GlyphBrowser
         @Override
         public void onEvent (UserEvent event)
         {
-            // Ignore RELEASING
-            if (event.movement == MouseMovement.RELEASING) {
-                return;
-            }
+            try {
+                // Ignore RELEASING
+                if (event.movement == MouseMovement.RELEASING) {
+                    return;
+                }
 
-            // Keep normal view behavior (rubber, etc...)
-            super.onEvent(event);
+                // Keep normal view behavior (rubber, etc...)
+                super.onEvent(event);
 
-            // Additional tasks
-            if (event instanceof SheetLocationEvent) {
-                SheetLocationEvent sheetLocation = (SheetLocationEvent) event;
+                // Additional tasks
+                if (event instanceof SheetLocationEvent) {
+                    SheetLocationEvent sheetLocation = (SheetLocationEvent) event;
 
-                if (sheetLocation.hint == SelectionHint.LOCATION_INIT) {
-                    Rectangle rect = sheetLocation.rectangle;
+                    if (sheetLocation.hint == SelectionHint.LOCATION_INIT) {
+                        Rectangle rect = sheetLocation.rectangle;
 
-                    if ((rect != null) &&
-                        (rect.width == 0) &&
-                        (rect.height == 0)) {
-                        // Look for pointed glyph
-                        navigator.setIndex(
-                            glyphLookup(rect),
-                            sheetLocation.hint);
+                        if ((rect != null) &&
+                            (rect.width == 0) &&
+                            (rect.height == 0)) {
+                            // Look for pointed glyph
+                            navigator.setIndex(
+                                glyphLookup(rect),
+                                sheetLocation.hint);
+                        }
+                    }
+                } else if (event instanceof GlyphEvent) {
+                    GlyphEvent glyphEvent = (GlyphEvent) event;
+
+                    if (glyphEvent.hint == GLYPH_INIT) {
+                        Glyph glyph = glyphEvent.getData();
+
+                        // Display glyph contour
+                        if (glyph != null) {
+                            // Use tLag event service for this location info ...
+                            tLag.publish(
+                                new SheetLocationEvent(
+                                    this,
+                                    glyphEvent.hint,
+                                    null,
+                                    glyph.getContourBox()));
+                        }
                     }
                 }
-            } else if (event instanceof GlyphEvent) {
-                GlyphEvent glyphEvent = (GlyphEvent) event;
-
-                if (glyphEvent.hint == GLYPH_INIT) {
-                    Glyph glyph = glyphEvent.getData();
-
-                    // Display glyph contour
-                    if (glyph != null) {
-                        // Use tLag event service for this location info ...
-                        tLag.publish(
-                            new SheetLocationEvent(
-                                this,
-                                glyphEvent.hint,
-                                null,
-                                glyph.getContourBox()));
-                    }
-                }
+            } catch (Exception ex) {
+                logger.warning(getClass().getName() + " onEvent error", ex);
             }
         }
 
@@ -541,7 +545,7 @@ class GlyphBrowser
                 Glyph  glyph = navigator.getGlyph(gName);
                 g.setColor(Color.black);
                 g.setXORMode(Color.darkGray);
-                renderGlyphArea(glyph, g, getZoom());
+                renderGlyphArea(glyph, g);
             }
         }
 
