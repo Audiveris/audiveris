@@ -23,8 +23,6 @@ import omr.math.Line;
 
 import omr.score.common.PixelPoint;
 
-import omr.ui.view.Zoom;
-
 import java.awt.*;
 import java.util.Collection;
 import java.util.List;
@@ -93,8 +91,7 @@ public class Stick
      * Report the number of pixels found in the specified rectangle that do not
      * belong to the stick.
      *
-     * @param area the rectangular area to investigate, in (coord, pos) form of
-     *             course!
+     * @param area the rectangular area to investigate, in (coord, pos) form 
      *
      * @return the number of alien pixels found
      */
@@ -122,7 +119,6 @@ public class Stick
                         continue;
                     }
 
-                    int stop = run.getStop();
                     int coordMin = Math.max(area.x, run.getStart());
                     int coordMax = Math.min(
                         (area.x + area.width) - 1,
@@ -874,24 +870,21 @@ public class Stick
      * color.
      *
      * @param g the graphic context
-     * @param z the display zoom
      */
-    public void renderLine (Graphics g,
-                            Zoom     z)
+    public void renderLine (Graphics g)
     {
-        Rectangle box = z.scaled(getContourBox());
-
-        if (box.intersects(g.getClipBounds())) {
-            Line  line = getLine();
+        if (getContourBox()
+                .intersects(g.getClipBounds())) {
+            getLine(); // To make sure the line has been computed
             Point start = lag.switchRef(
                 new Point(
-                    z.scaled(getStart()),
-                    z.scaled(line.yAt((double) getStart()) + 0.5)),
+                    getStart(),
+                    (int) Math.rint(line.yAt((double) getStart()))),
                 null);
             Point stop = lag.switchRef(
                 new Point(
-                    z.scaled(getStop() + 1),
-                    z.scaled(line.yAt((double) getStop() + 1) + 0.5)),
+                    getStop() + 1,
+                    (int) Math.rint(line.yAt((double) getStop() + 1))),
                 null);
             g.drawLine(start.x, start.y, stop.x, stop.y);
         }
