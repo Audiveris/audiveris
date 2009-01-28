@@ -74,7 +74,12 @@ public class ScoreView
     /** The related score */
     private final Score score;
 
-    /** Display zoom */
+    /**
+     * Display zoom. NOTA: To use a value different from 0.5, the definition
+     * of symbols bimaps must be redone at scale 1, and the painting of these
+     * symbols must be simplified to use the graphics context directly (see the
+     * ScorePainter class for modifications)
+     */
     private final Zoom zoom = new Zoom(0.5d);
 
     /** Mouse rubber */
@@ -189,8 +194,8 @@ public class ScoreView
     // computeModelSize //
     //------------------//
     /**
-     * Run computations on the tree of score, systems, etc, so that all display
-     * data, such as origins and widths are available for display use.
+     * Run computations on the collection of systems so that they are displayed
+     * in a nice manner, with all first staves aligned horizontally
      */
     public void computeModelSize ()
     {
@@ -380,41 +385,42 @@ public class ScoreView
         public void highLight (Measure measure,
                                Slot    slot)
         {
-            this.highlightedMeasure = measure;
-            this.highlightedSlot = slot;
-
-            int margin = constants.measureMargin.getValue();
-
-            // Safer
-            if ((measure == null) || (slot == null)) {
-                repaint(); // To erase previous highlight
-
-                return;
-            }
-
-            UnitDimension dimension = measure.getSystem()
-                                             .getDimension();
-            Point         origin = measure.getDisplayOrigin();
-            ZoomedPanel   zp = (ZoomedPanel) this;
-
-            // If the current measure is at the beginning of a system,
-            // make the most of this (new) system as visible as possible
-            if (measure.getPreviousSibling() == null) {
-                Rectangle rect = new Rectangle(
-                    origin.x,
-                    origin.y,
-                    dimension.width,
-                    dimension.height + STAFF_HEIGHT);
-                zp.showFocusLocation(rect);
-            }
-
-            // Make the measure rectangle visible
-            Rectangle rect = new Rectangle(
-                (origin.x + measure.getLeftX()) - margin,
-                origin.y - margin,
-                measure.getWidth() + (2 * margin),
-                dimension.height + STAFF_HEIGHT + (2 * margin));
-            zp.showFocusLocation(rect);
+            logger.warning("highLight method needs to be rewritten");
+//            this.highlightedMeasure = measure;
+//            this.highlightedSlot = slot;
+//
+//            int margin = constants.measureMargin.getValue();
+//
+//            // Safer
+//            if ((measure == null) || (slot == null)) {
+//                repaint(); // To erase previous highlight
+//
+//                return;
+//            }
+//
+//            UnitDimension dimension = measure.getSystem()
+//                                             .getDimension();
+//            Point         origin = measure.getDisplayOrigin();
+//            ZoomedPanel   zp = (ZoomedPanel) this;
+//
+//            // If the current measure is at the beginning of a system,
+//            // make the most of this (new) system as visible as possible
+//            if (measure.getPreviousSibling() == null) {
+//                Rectangle rect = new Rectangle(
+//                    origin.x,
+//                    origin.y,
+//                    dimension.width,
+//                    dimension.height + STAFF_HEIGHT);
+//                zp.showFocusLocation(rect);
+//            }
+//
+//            // Make the measure rectangle visible
+//            Rectangle rect = new Rectangle(
+//                (origin.x + measure.getLeftX()) - margin,
+//                origin.y - margin,
+//                measure.getWidth() + (2 * margin),
+//                dimension.height + STAFF_HEIGHT + (2 * margin));
+//            zp.showFocusLocation(rect);
         }
 
         //---------//
@@ -428,37 +434,41 @@ public class ScoreView
         @Override
         public void onEvent (UserEvent event)
         {
-            // Ignore RELEASING
-            if (event.movement == MouseMovement.RELEASING) {
-                return;
-            }
+            try {
+                // Ignore RELEASING
+                if (event.movement == MouseMovement.RELEASING) {
+                    return;
+                }
 
-            if (logger.isFineEnabled()) {
-                logger.fine("ScoreView: onEvent " + event);
-            }
+                if (logger.isFineEnabled()) {
+                    logger.fine("ScoreView: onEvent " + event);
+                }
 
-            // Show location in display (default dehavior)
-            super.onEvent(event);
+                // Show location in display (default dehavior)
+                super.onEvent(event);
 
-            if (event instanceof ScoreLocationEvent) {
-                // Display location coordinates
-                ScoreLocationEvent scoreLocation = (ScoreLocationEvent) event;
+                if (event instanceof ScoreLocationEvent) {
+                    // Display location coordinates
+                    ScoreLocationEvent scoreLocation = (ScoreLocationEvent) event;
 
-                if (scoreLocation != null) {
-                    Rectangle rect = scoreLocation.rectangle;
+                    if (scoreLocation != null) {
+                        Rectangle rect = scoreLocation.rectangle;
 
-                    if (rect != null) {
-                        ScorePoint  scrPt = new ScorePoint(rect.x, rect.y);
-                        ScoreSystem system = score.scoreLocateSystem(scrPt);
-                        PagePoint   pagPt = system.toPagePoint(scrPt);
-                        SystemPoint sysPt = system.toSystemPoint(pagPt);
-                        tellPoint(scrPt, pagPt, sysPt);
+                        if (rect != null) {
+                            ScorePoint  scrPt = new ScorePoint(rect.x, rect.y);
+                            ScoreSystem system = score.scoreLocateSystem(scrPt);
+                            PagePoint   pagPt = system.toPagePoint(scrPt);
+                            SystemPoint sysPt = system.toSystemPoint(pagPt);
+                            tellPoint(scrPt, pagPt, sysPt);
+                        } else {
+                            tellPoint(null, null, null);
+                        }
                     } else {
                         tellPoint(null, null, null);
                     }
-                } else {
-                    tellPoint(null, null, null);
                 }
+            } catch (Exception ex) {
+                logger.warning(getClass().getName() + " onEvent error", ex);
             }
         }
 

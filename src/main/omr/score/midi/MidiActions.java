@@ -179,14 +179,18 @@ public class MidiActions
     @Override
     public void onEvent (SheetEvent event)
     {
-        // Ignore RELEASING
-        if (event.movement == MouseMovement.RELEASING) {
-            return;
+        try {
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
+                return;
+            }
+
+            super.onEvent(event);
+
+            updateActions();
+        } catch (Exception ex) {
+            logger.warning(getClass().getName() + " onEvent error", ex);
         }
-
-        super.onEvent(event);
-
-        updateActions();
     }
 
     //-----------//
