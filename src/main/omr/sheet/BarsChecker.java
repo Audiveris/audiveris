@@ -107,7 +107,7 @@ public class BarsChecker
     private final Map<Stick, GlyphContext> contexts = new HashMap<Stick, GlyphContext>();
 
     /** List of found bar sticks */
-    private List<Stick> barSticks;
+    private SortedSet<Stick> barSticks;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -121,8 +121,8 @@ public class BarsChecker
      * @param verticalSticks the collection to be filled with vertical sticks,
      * from where recognized bar sticks are removed and transfered to barsSticks
      */
-    public BarsChecker (Sheet       sheet,
-                        GlyphLag    lag,
+    public BarsChecker (Sheet      sheet,
+                        GlyphLag   lag,
                         List<Stick> verticalSticks)
     {
         this.sheet = sheet;
@@ -164,7 +164,7 @@ public class BarsChecker
      *
      * @return the check suite
      */
-    public CheckSuite getSuite ()
+    public CheckSuite<GlyphContext> getSuite ()
     {
         return suite;
     }
@@ -203,10 +203,10 @@ public class BarsChecker
      *
      * @throws StepException Raised when processing goes wrong
      */
-    public List<Stick> retrieveBarSticks ()
+    public SortedSet<Stick> retrieveBarSticks ()
         throws StepException
     {
-        barSticks = new ArrayList<Stick>();
+        barSticks = new TreeSet<Stick>();
 
         // Populate the vertical lag of runs
         SectionsBuilder<GlyphLag, GlyphSection> lagBuilder;
