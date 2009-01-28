@@ -108,74 +108,78 @@ public class ScoreSheetBridge
     @Implement(EventSubscriber.class)
     public void onEvent (LocationEvent event)
     {
-        // Ignore RELEASING
-        if (event.movement == MouseMovement.RELEASING) {
-            return;
-        }
-
-        if (logger.isFineEnabled()) {
-            logger.fine("Bridge : onEvent " + event);
-        }
-
-        if (!bridging) {
-            bridging = true; // Prevent re-entry
-
-            if (event instanceof SheetLocationEvent) {
-                // Forward to Score side
-                SheetLocationEvent sheetLocation = (SheetLocationEvent) event;
-                ScoreRectangle     scoreRect = null;
-
-                if (sheetLocation.rectangle != null) {
-                    PagePoint pagPt = sheet.getScale()
-                                           .toPagePoint(
-                        new PixelPoint(
-                            sheetLocation.rectangle.x +
-                            (sheetLocation.rectangle.width / 2),
-                            sheetLocation.rectangle.y +
-                            (sheetLocation.rectangle.height / 2)));
-
-                    if (pagPt != null) {
-                        // Which system ?
-                        ScoreSystem system = score.pageLocateSystem(pagPt);
-                        ScorePoint  scrPt = system.toScorePoint(pagPt);
-                        scoreRect = new ScoreRectangle(scrPt);
-                    }
-                }
-
-                eventService.publish(
-                    new ScoreLocationEvent(
-                        this,
-                        event.hint,
-                        sheetLocation.movement,
-                        scoreRect));
-            } else if (event instanceof ScoreLocationEvent) {
-                // Forward to Sheet side
-                ScoreLocationEvent scoreLocation = (ScoreLocationEvent) event;
-                PixelRectangle     pixRect = null;
-
-                if (scoreLocation.rectangle != null) {
-                    // We forge a ScorePoint from the display point
-                    ScorePoint  scrPt = new ScorePoint(
-                        scoreLocation.rectangle.x,
-                        scoreLocation.rectangle.y);
-
-                    // The enclosing system
-                    ScoreSystem system = score.scoreLocateSystem(scrPt);
-                    PagePoint   pagPt = system.toPagePoint(scrPt);
-                    PixelPoint  pixPt = sheet.getScale()
-                                             .toPixelPoint(pagPt, null);
-                    pixRect = new PixelRectangle(pixPt);
-                }
-
-                eventService.publish(
-                    new SheetLocationEvent(
-                        this,
-                        event.hint,
-                        scoreLocation.movement,
-                        pixRect));
+        try {
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
+                return;
             }
 
-            bridging = false;
+            if (logger.isFineEnabled()) {
+                logger.fine("Bridge : onEvent " + event);
+            }
+
+            if (!bridging) {
+                bridging = true; // Prevent re-entry
+
+                if (event instanceof SheetLocationEvent) {
+                    // Forward to Score side
+                    SheetLocationEvent sheetLocation = (SheetLocationEvent) event;
+                    ScoreRectangle     scoreRect = null;
+
+                    if (sheetLocation.rectangle != null) {
+                        PagePoint pagPt = sheet.getScale()
+                                               .toPagePoint(
+                            new PixelPoint(
+                                sheetLocation.rectangle.x +
+                                (sheetLocation.rectangle.width / 2),
+                                sheetLocation.rectangle.y +
+                                (sheetLocation.rectangle.height / 2)));
+
+                        if (pagPt != null) {
+                            // Which system ?
+                            ScoreSystem system = score.pageLocateSystem(pagPt);
+                            ScorePoint  scrPt = system.toScorePoint(pagPt);
+                            scoreRect = new ScoreRectangle(scrPt);
+                        }
+                    }
+
+                    eventService.publish(
+                        new ScoreLocationEvent(
+                            this,
+                            event.hint,
+                            sheetLocation.movement,
+                            scoreRect));
+                } else if (event instanceof ScoreLocationEvent) {
+                    // Forward to Sheet side
+                    ScoreLocationEvent scoreLocation = (ScoreLocationEvent) event;
+                    PixelRectangle     pixRect = null;
+
+                    if (scoreLocation.rectangle != null) {
+                        // We forge a ScorePoint from the display point
+                        ScorePoint  scrPt = new ScorePoint(
+                            scoreLocation.rectangle.x,
+                            scoreLocation.rectangle.y);
+
+                        // The enclosing system
+                        ScoreSystem system = score.scoreLocateSystem(scrPt);
+                        PagePoint   pagPt = system.toPagePoint(scrPt);
+                        PixelPoint  pixPt = sheet.getScale()
+                                                 .toPixelPoint(pagPt, null);
+                        pixRect = new PixelRectangle(pixPt);
+                    }
+
+                    eventService.publish(
+                        new SheetLocationEvent(
+                            this,
+                            event.hint,
+                            scoreLocation.movement,
+                            pixRect));
+                }
+
+                bridging = false;
+            }
+        } catch (Exception ex) {
+            logger.warning(getClass().getName() + " onEvent error", ex);
         }
     }
 }
