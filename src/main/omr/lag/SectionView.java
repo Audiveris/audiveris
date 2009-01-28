@@ -16,8 +16,6 @@ import omr.graph.VertexView;
 
 import omr.log.Logger;
 
-import omr.ui.view.Zoom;
-
 import omr.util.Implement;
 
 import java.awt.Color;
@@ -27,8 +25,9 @@ import java.awt.Rectangle;
 import java.util.Arrays;
 
 /**
- * Class <code>SectionView</code> is an abstract class to define common features
- * needed by a vertical or horizontal section view.
+ * Class <code>SectionView</code> defines one view meant for display of a
+ * given section. No zoom is defined for this view, since the provided Graphics
+ * context can be used for this when rendering.
  *
  * @param L the precise lag type
  * @param S the precise section type
@@ -63,11 +62,6 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
     //~ Instance fields --------------------------------------------------------
 
     /**
-     * Precise zoomed points
-     */
-    protected final Polygon dspPolygon;
-
-    /**
      * Related section
      */
     protected final S section;
@@ -80,42 +74,13 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
     protected Color color;
 
     /**
-     * Bounding rectangle for the (zoomed) display
-     */
-    protected Rectangle dspRectangle = new Rectangle();
-
-    /**
-     * Display zoom
-     */
-    protected Zoom zoom;
-
-    /**
      * Assigned color index. This is the permanent default, which is set when
      * the containing {@link LagView} is created, and which is also used when
      * the color is reset by {@link #resetColor}
      */
     protected int colorIndex = -1;
 
-    /**
-     * Last zoom ratio. The value is cached to save on the computation of the
-     * display polygon.
-     */
-    private double lastZoomRatio;
-
     //~ Constructors -----------------------------------------------------------
-
-    //-------------//
-    // SectionView //
-    //-------------//
-    /**
-     * Create a section view, with implicit zoom ratio
-     *
-     * @param section
-     */
-    public SectionView (S section)
-    {
-        this(section, null);
-    }
 
     //-------------//
     // SectionView //
@@ -124,19 +89,10 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
      * Create a section view, with specified zoom
      *
      * @param section the related section
-     * @param zoom the display zoom
      */
-    public SectionView (S    section,
-                        Zoom zoom)
+    public SectionView (S section)
     {
         this.section = section;
-
-        // Delimitating points
-        final int pointNb = 4 * section.getRunNb();
-        dspPolygon = new Polygon(new int[pointNb], new int[pointNb], pointNb);
-
-        // Compute zoom-dependent variables
-        setZoom(zoom);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -179,37 +135,7 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
     @Implement(VertexView.class)
     public Rectangle getRectangle ()
     {
-        return dspRectangle;
-    }
-
-    //---------//
-    // setZoom //
-    //---------//
-    /**
-     * Specify the display zoom
-     *
-     * @param zoom the new zoom
-     */
-    public void setZoom (Zoom zoom)
-    {
-        // Cache the zoom reference for future rendering
-        this.zoom = zoom;
-
-        Polygon polygon = section.getContour();
-
-        if (zoom != null) {
-            for (int i = 0; i < polygon.npoints; i++) {
-                dspPolygon.xpoints[i] = zoom.scaled(polygon.xpoints[i]);
-                dspPolygon.ypoints[i] = zoom.scaled(polygon.ypoints[i]);
-            }
-
-            dspRectangle = zoom.scaled(section.getContourBox());
-
-            // Cache last zoom ratio
-            lastZoomRatio = zoom.getRatio();
-        } else {
-            lastZoomRatio = 0;
-        }
+        return section.getContourBox();
     }
 
     //---------------------//
@@ -276,36 +202,31 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
     /**
      * Render the section using the provided graphics object.
      *
-     * @param g the graphics environment
+     * @param g the graphics environment (which may be applying transformation
+     * such as scale)
      * @return true if the section is concerned by the clipping rectangle, which
      * means if (part of) the section has been drawn
      */
     @Implement(VertexView.class)
     public boolean render (Graphics g)
     {
-        // Has zoom been modified?
-        if (zoom.getRatio() != lastZoomRatio) {
-            setZoom(zoom); // Update the display polygon
-        }
-
         Rectangle clip = g.getClipBounds();
+        Rectangle rect = getRectangle();
 
-        if (clip.intersects(dspRectangle)) {
+        if (clip.intersects(rect)) {
             g.setColor(color);
 
-            double ratio = zoom.getRatio();
-            g.fillPolygon(
-                dspPolygon.xpoints,
-                dspPolygon.ypoints,
-                dspPolygon.npoints);
+            Polygon polygon = section.getContour();
+            ///g.drawPolygon(polygon.xpoints, polygon.ypoints, polygon.npoints);
+            g.fillPolygon(polygon.xpoints, polygon.ypoints, polygon.npoints);
 
             // Display the section foreground value? To be improved!!!
-            if (constants.displayDensity.getValue() && (ratio > 1.0)) {
+            if (constants.displayDensity.getValue()) {
                 g.setColor(Color.black);
                 g.drawString(
                     Integer.toString(section.getLevel()),
-                    dspRectangle.x + ((dspRectangle.width / 2) - 8),
-                    dspRectangle.y + ((dspRectangle.height / 2) + 5));
+                    rect.x + ((rect.width / 2) - 8),
+                    rect.y + ((rect.height / 2) + 5));
             }
 
             return true;
