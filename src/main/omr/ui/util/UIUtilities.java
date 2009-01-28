@@ -13,6 +13,7 @@ package omr.ui.util;
 import omr.log.Logger;
 
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.io.*;
 import java.util.*;
 
@@ -55,6 +56,65 @@ public class UIUtilities
         }
 
         return toolBorder;
+    }
+
+    //-------------------//
+    // SetAbsoluteStroke //
+    //-------------------//
+    /**
+     * Whatever the current scaling of a graphic context, set the stroke to the
+     * desired absolute width, and return the saved stroke for later restore.
+     * @param g the current graphics context
+     * @param width the absolute stroke width desired
+     * @return the previous stroke
+     */
+    public static Stroke SetAbsoluteStroke (Graphics g,
+                                            float    width)
+    {
+        Graphics2D      g2 = (Graphics2D) g;
+        AffineTransform AT = g2.getTransform();
+        double          ratio = AT.getScaleX();
+        Stroke          oldStroke = g2.getStroke();
+        Stroke          stroke = new BasicStroke(width / (float) ratio);
+        g2.setStroke(stroke);
+
+        return oldStroke;
+    }
+
+    //------------------//
+    // directoryChooser //
+    //------------------//
+    /**
+     * Let the user select a directory
+     *
+     * @param parent the parent component for the dialog
+     * @param startDir the default directory
+     * @return the chosen directory, or null
+     */
+    public static File directoryChooser (Component parent,
+                                         File      startDir)
+    {
+        String oldMacProperty = System.getProperty(
+            "apple.awt.fileDialogForDirectories",
+            "false");
+        System.setProperty("apple.awt.fileDialogForDirectories", "true");
+
+        FileFilter directoryFilter = new FileFilter(
+            "directory",
+            new String[] {  }) {
+            @Override
+            public boolean accept (File f)
+            {
+                return (f.isDirectory());
+            }
+        };
+
+        File file = fileChooser(false, parent, startDir, directoryFilter);
+        System.setProperty(
+            "apple.awt.fileDialogForDirectories",
+            oldMacProperty);
+
+        return file;
     }
 
     //---------------//
@@ -169,42 +229,6 @@ public class UIUtilities
                 file = fc.getSelectedFile();
             }
         }
-
-        return file;
-    }
-
-    //------------------//
-    // directoryChooser //
-    //------------------//
-    /**
-     * Let the user select a directory
-     *
-     * @param parent the parent component for the dialog
-     * @param startDir the default directory
-     * @return the chosen directory, or null
-     */
-    public static File directoryChooser (Component parent,
-                                         File      startDir)
-    {
-        String oldMacProperty = System.getProperty(
-            "apple.awt.fileDialogForDirectories",
-            "false");
-        System.setProperty("apple.awt.fileDialogForDirectories", "true");
-
-        FileFilter directoryFilter = new FileFilter(
-            "directory",
-            new String[] {  }) {
-            @Override
-            public boolean accept (File f)
-            {
-                return (f.isDirectory());
-            }
-        };
-
-        File file = fileChooser(false, parent, startDir, directoryFilter);
-        System.setProperty(
-            "apple.awt.fileDialogForDirectories",
-            oldMacProperty);
 
         return file;
     }

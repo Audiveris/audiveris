@@ -9,11 +9,11 @@
 //-----------------------------------------------------------------------//
 package omr.ui.view;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.log.Logger;
-
-import omr.selection.MouseMovement;
-
-import omr.ui.*;
+import static omr.selection.MouseMovement.*;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -79,10 +79,13 @@ public class Rubber
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
+
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Rubber.class);
 
-    // Color used for drawing horizontal & vertical rules
+    /** Color used for drawing horizontal & vertical rules */
     private static final Color ruleColor = new Color(255, 200, 0);
 
     //~ Instance fields --------------------------------------------------------
@@ -279,7 +282,7 @@ public class Rubber
             updateSize(e);
 
             if (mouseMonitor != null) {
-                mouseMonitor.rectangleSelected(rect, MouseMovement.DRAGGING);
+                mouseMonitor.rectangleSelected(rect, DRAGGING);
             }
         } else {
             // Behavior equivalent to simple selection
@@ -305,11 +308,9 @@ public class Rubber
                 e.getComponent()
                  .setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
             } else if (isAdditionWanted(e)) {
-                mouseMonitor.pointAdded(getCenter(), MouseMovement.PRESSING);
+                mouseMonitor.pointAdded(getCenter(), PRESSING);
             } else if (isContextWanted(e)) {
-                mouseMonitor.contextSelected(
-                    getCenter(),
-                    MouseMovement.PRESSING);
+                mouseMonitor.contextSelected(getCenter(), PRESSING);
             } else if (isRubberWanted(e)) {
                 e.getComponent()
                  .setCursor(
@@ -319,7 +320,7 @@ public class Rubber
                  .setCursor(
                     Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
             } else {
-                mouseMonitor.pointSelected(getCenter(), MouseMovement.PRESSING);
+                mouseMonitor.pointSelected(getCenter(), PRESSING);
             }
         }
     }
@@ -338,12 +339,7 @@ public class Rubber
         if (mouseMonitor != null) {
             if (isRezoomWanted(e)) {
                 updateSize(e);
-                mouseMonitor.rectangleZoomed(rect, MouseMovement.RELEASING);
-            } else if ((rect != null) &&
-                       (rect.width != 0) &&
-                       (rect.height != 0)) {
-                updateSize(e);
-                mouseMonitor.rectangleSelected(rect, MouseMovement.RELEASING);
+                mouseMonitor.rectangleZoomed(rect, RELEASING);
             } else if (isDragWanted(e)) {
                 Rectangle vr = component.getVisibleRect();
                 rawRect.setBounds(
@@ -353,7 +349,14 @@ public class Rubber
                     0);
                 normalize();
             } else if (isAdditionWanted(e)) {
-                mouseMonitor.pointAdded(getCenter(), MouseMovement.RELEASING);
+                mouseMonitor.pointAdded(getCenter(), RELEASING);
+            } else if (rect != null) {
+                if ((rect.width != 0) && (rect.height != 0)) {
+                    updateSize(e);
+                    mouseMonitor.rectangleSelected(rect, RELEASING);
+                } else {
+                    mouseMonitor.pointSelected(getCenter(), RELEASING);
+                }
             }
 
             e.getComponent()
@@ -366,42 +369,62 @@ public class Rubber
     //--------//
     /**
      * Render the rubber rectangle. This should be called late, typically
-     * when everything else has already been painted.
+     * when everything else has already been painted. Note that needs an
+     * unscaled graphics, since we want to draw the rubber lines (vertical
+     * and horizontal) perfectly on top of image pixels.
      *
-     * @param g the graphic context
+     * @param unscaledGraphics the graphic context (not transformed!)
      */
-    public void render (Graphics g)
+    public void render (Graphics unscaledGraphics)
     {
         if (rect != null) {
+            Graphics2D g = (Graphics2D) unscaledGraphics;
             g.setXORMode(Color.white);
 
+            Rectangle r = new Rectangle(rect);
+
+            if (zoom != null) {
+                zoom.scale(r);
+            }
+
             // Is this is a true rectangle ?
-            if ((rect.width != 0) || (rect.height != 0)) {
+            if ((r.width != 0) || (r.height != 0)) {
                 g.setColor(Color.black);
-                g.drawRect(
-                    scaled(rect.x),
-                    scaled(rect.y),
-                    scaled(rect.width),
-                    scaled(rect.height));
+                g.drawRect(r.x, r.y, r.width, r.height);
             }
 
             // Draw horizontal & vertical rules (point or rectangle)
             g.setColor(ruleColor);
 
-            Rectangle vr = component.getVisibleRect();
+            int    x = scaled(rect.x + (rect.width / 2));
+            int    y = scaled(rect.y + (rect.height / 2));
+            Stroke oldStroke = g.getStroke();
+            float  pixelSize = scaled(1);
 
-            int       x = scaled(rect.x + (rect.width / 2));
-            int       y = scaled(rect.y + (rect.height / 2));
-
-            if (false) {
-                // Draw just a small cross (fast!)
-                g.drawLine(x, y - 20, x, y + 20); // Vertical
-                g.drawLine(x - 20, y, x + 20, y); // Horizontal
+            if (pixelSize < 1) {
+                pixelSize = 1f;
             } else {
-                // Draw full vertical & horizontal lines (slow!)
-                g.drawLine(x, vr.y, x, ((vr.y + vr.height) - 1)); // Vertical
-                g.drawLine(vr.x, y, ((vr.x + vr.width) - 1), y); // Horizontal
+                int halfPen = (int) Math.rint(pixelSize / 2);
+                x += halfPen;
+                y += halfPen;
             }
+
+            Stroke s = new BasicStroke(pixelSize);
+            g.setStroke(s);
+
+            if (constants.displayCross.getValue()) {
+                // Draw just a small cross
+                int legLength = constants.crossLegLength.getValue();
+                g.drawLine(x, y - legLength, x, y + legLength); // Vertical
+                g.drawLine(x - legLength, y, x + legLength, y); // Horizontal
+            } else {
+                // Draw full vertical & horizontal lines 
+                Rectangle bounds = component.getBounds(null);
+                g.drawLine(x, 0, x, bounds.height); // Vertical
+                g.drawLine(0, y, bounds.width, y); // Horizontal
+            }
+
+            g.setStroke(oldStroke); // Reset stroke
         }
     }
 
@@ -656,7 +679,6 @@ public class Rubber
     private int scaled (int val)
     {
         if (zoom != null) {
-            //return zoom.truncScaled(val);
             return zoom.scaled(val);
         } else {
             return val;
@@ -669,7 +691,6 @@ public class Rubber
     private int unscaled (int val)
     {
         if (zoom != null) {
-            //return zoom.truncUnscaled(val);
             return zoom.unscaled(val);
         } else {
             return val;
@@ -687,5 +708,24 @@ public class Rubber
 
         // Repaint the component (with the resized rectangle)
         component.repaint();
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        Constant.Boolean displayCross = new Constant.Boolean(
+            false,
+            "Should we display just a cross for rubber (or whole lines)");
+        Constant.Integer crossLegLength = new Constant.Integer(
+            "pixels",
+            40,
+            "Length for each leg of the rubber cross");
     }
 }

@@ -127,7 +127,8 @@ public class ZoomedPanel
      *
      * <p><b>Nota</b>: Setting the location selection does not
      * automatically register this view on the selection object. If
-     * such registering is needed, it must be done manually.
+     * such registering is needed, it must be done manually through method
+     * {@link #subscribe}.
      *
      * @param locationService the proper location service to be updated
      * @param locationClass the location class of interest (score or sheet)
@@ -149,6 +150,7 @@ public class ZoomedPanel
     //--------------//
     /**
      * Assign the size of the model object, that is the unscaled size.
+     * @param modelSize the model size to use
      */
     public void setModelSize (Dimension modelSize)
     {
@@ -252,18 +254,22 @@ public class ZoomedPanel
     @Implement(EventSubscriber.class)
     public void onEvent (UserEvent event)
     {
-        // Ignore RELEASING
-        if (event.movement == MouseMovement.RELEASING) {
-            return;
-        }
+        try {
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
+                return;
+            }
 
-        if (logger.isFineEnabled()) {
-            logger.fine(this.getClass().getName() + " onEvent " + event);
-        }
+            if (logger.isFineEnabled()) {
+                logger.fine(this.getClass().getName() + " onEvent " + event);
+            }
 
-        if (event instanceof LocationEvent) {
-            LocationEvent locationEvent = (LocationEvent) event;
-            showFocusLocation(locationEvent.getRectangle());
+            if (event instanceof LocationEvent) {
+                LocationEvent locationEvent = (LocationEvent) event;
+                showFocusLocation(locationEvent.getRectangle());
+            }
+        } catch (Exception ex) {
+            logger.warning(getClass().getName() + " onEvent error", ex);
         }
     }
 
@@ -402,6 +408,10 @@ public class ZoomedPanel
     //-----------//
     // subscribe //
     //-----------//
+    /**
+     * Subscribe to the (previously injected) location service (either Sheet or
+     * Score location, depending on the context)
+     */
     public void subscribe ()
     {
         if (logger.isFineEnabled()) {
@@ -425,6 +435,9 @@ public class ZoomedPanel
     //-------------//
     // unsubscribe //
     //-------------//
+    /**
+     * Unsubscribe from the related location  service
+     */
     public void unsubscribe ()
     {
         if (logger.isFineEnabled()) {

@@ -123,24 +123,30 @@ public class RubberZoomedPanel
      * Final method, called by Swing. If something has to be changed in the
      * rendering of the model, override the render method instead.
      *
-     * @param g the graphic context
+     * @param initialGraphics the graphic context
      */
     @Override
-    protected final void paintComponent (Graphics g)
+    protected final void paintComponent (Graphics initialGraphics)
     {
-        // Background first
-        super.paintComponent(g);
+        // Paint background first
+        super.paintComponent(initialGraphics);
+
+        // Adjust graphics context to desired zoom ratio
+        Graphics2D g2 = (Graphics2D) initialGraphics.create();
+        g2.scale(getZoom().getRatio(), getZoom().getRatio());
 
         try {
             // Then, drawing specific to the view (to be provided in subclass)
-            render(g);
+            render(g2);
         } catch (ConcurrentModificationException ex) {
+            // It's hard to avoid concurrent modifs since the GUI may need to
+            // repaint a view, while some processing is taking place ...
             logger.warning("RubberZoomedPanel paintComponent failed", ex);
             repaint(); // To trigger another painting later ...
         } finally {
             // Finally the rubber, now that everything else has been drawn
             if (rubber != null) {
-                rubber.render(g);
+                rubber.render(initialGraphics);
             }
         }
     }
