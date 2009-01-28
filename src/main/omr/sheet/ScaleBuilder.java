@@ -173,7 +173,8 @@ public class ScaleBuilder
         // Check picture resolution
         if ((mainFore + mainBack) < constants.minInterline.getValue()) {
             String msg = "Picture resolution is too low: " +
-                         (mainFore + mainBack);
+                         (mainFore + mainBack) + ". Check constant " +
+                         constants.minInterline.toDetailedString();
             logger.warning(msg);
 
             if (Main.getGui() != null) {
