@@ -355,15 +355,13 @@ public class ScoreMenu
                 }
             }
 
-            GlyphSetEvent glyphsEvent = (GlyphSetEvent) score.getSheet()
-                                                             .getVerticalLag()
-                                                             .getLastEvent(
-                GlyphSetEvent.class);
-            List<Glyph>   glyphs = (glyphsEvent != null)
-                                   ? glyphsEvent.getData() : null;
+            Set<Glyph> glyphs = score.getSheet()
+                                     .getVerticalLag()
+                                     .getCurrentGlyphSet();
 
             if ((glyphs != null) && !glyphs.isEmpty()) {
-                Glyph glyph = glyphs.get(0);
+                Glyph glyph = glyphs.iterator()
+                                    .next();
 
                 if (glyph.isTranslated()) {
                     int itemNb = 0;
