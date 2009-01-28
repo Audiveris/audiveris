@@ -343,7 +343,7 @@ public class ScoreActions
             try {
                 SheetManager.getSelectedSheet()
                             .getSheetSteps()
-                            .updateLastSteps(null, null, /* imposed => */
+                            .rebuildFromLeaves(null, null, /* imposed => */
                                              true);
             } catch (Exception ex) {
                 logger.warning("Could not refresh score", ex);
