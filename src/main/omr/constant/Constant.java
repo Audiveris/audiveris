@@ -329,6 +329,26 @@ public abstract class Constant
         setTuple(initialString, decode(initialString));
     }
 
+    //------------------//
+    // toDetailedString //
+    //------------------//
+    /**
+     * Report detailed data about this constant
+     * @return data meant for end user
+     */
+    public java.lang.String toDetailedString ()
+    {
+        StringBuilder sb = new StringBuilder(getQualifiedName());
+        sb.append(" (")
+          .append(getCurrentString())
+          .append(")");
+        sb.append(" \"")
+          .append(getDescription())
+          .append("\"");
+
+        return sb.toString();
+    }
+
     //----------//
     // toString //
     //----------//

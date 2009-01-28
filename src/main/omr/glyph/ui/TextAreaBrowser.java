@@ -284,7 +284,7 @@ public class TextAreaBrowser
             Sheet sheet = SheetManager.getSelectedSheet();
             alignTexts(sheet);
             sheet.getSheetSteps()
-                 .updateLastSteps(null, null, true);
+                 .rebuildFromLeaves(null, null, true);
 
             return null;
         }

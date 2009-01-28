@@ -91,15 +91,15 @@ public class SymbolsEditor
      * handling of glyphs
      *
      * @param sheet the sheet whose glyphs are considered
-     * @param symbolsBuilder the symbols builder for this sheet
+     * @param symbolsModel the symbols model for this sheet
      */
     public SymbolsEditor (Sheet        sheet,
-                          SymbolsModel symbolsBuilder)
+                          SymbolsModel symbolsModel)
     {
         this.sheet = sheet;
-        this.symbolsBuilder = symbolsBuilder;
+        this.symbolsBuilder = symbolsModel;
 
-        GlyphLag lag = symbolsBuilder.getLag();
+        GlyphLag lag = symbolsModel.getLag();
 
         view = new MyView(lag);
         view.setLocationService(
@@ -109,7 +109,7 @@ public class SymbolsEditor
         focus = new ShapeFocusBoard(
             sheet,
             view,
-            symbolsBuilder,
+            symbolsModel,
             new ActionListener() {
                     @Implement(ActionListener.class)
                     public void actionPerformed (ActionEvent e)
@@ -118,7 +118,7 @@ public class SymbolsEditor
                     }
                 });
 
-        glyphMenu = new GlyphMenu(sheet, symbolsBuilder, evaluator, focus, lag);
+        glyphMenu = new GlyphMenu(sheet, symbolsModel, evaluator, focus, lag);
 
         final String  unit = sheet.getRadix() + ":SymbolsEditor";
 
@@ -129,13 +129,13 @@ public class SymbolsEditor
             new RunBoard(unit, lag),
             new SectionBoard(
                 unit,
-                symbolsBuilder.getLag().getLastVertexId(),
+                symbolsModel.getLag().getLastVertexId(),
                 lag),
-            new SymbolGlyphBoard(unit + "-SymbolGlyphBoard", symbolsBuilder, 0),
+            new SymbolGlyphBoard(unit + "-SymbolGlyphBoard", symbolsModel, 0),
             focus,
             new EvaluationBoard(
                 unit + "-Evaluation-ActiveBoard",
-                symbolsBuilder,
+                symbolsModel,
                 sheet,
                 view));
 
@@ -233,20 +233,14 @@ public class SymbolsEditor
                                      MouseMovement movement)
         {
             // Retrieve the selected glyphs
-            GlyphSetEvent glyphsEvent = (GlyphSetEvent) sheet.getVerticalLag()
-                                                             .getLastEvent(
-                GlyphSetEvent.class);
-            List<Glyph>   glyphs = (glyphsEvent != null)
-                                   ? glyphsEvent.getData() : null;
+            Set<Glyph> glyphs = sheet.getVerticalLag()
+                                     .getCurrentGlyphSet();
 
             // To display point information
             if ((glyphs == null) || (glyphs.size() == 0)) {
                 pointSelected(pt, movement); // This may change glyph selection
-
-                glyphsEvent = (GlyphSetEvent) sheet.getVerticalLag()
-                                                   .getLastEvent(
-                    GlyphSetEvent.class);
-                glyphs = (glyphsEvent != null) ? glyphsEvent.getData() : null;
+                glyphs = sheet.getVerticalLag()
+                              .getCurrentGlyphSet();
             }
 
             if ((glyphs != null) && (glyphs.size() > 0)) {
@@ -289,41 +283,45 @@ public class SymbolsEditor
         @Override
         public void onEvent (UserEvent event)
         {
-            // Ignore RELEASING
-            if (event.movement == MouseMovement.RELEASING) {
-                return;
-            }
-
-            // Default lag view behavior, including specifics
-            super.onEvent(event);
-
-            if (event instanceof GlyphSetEvent) {
-                GlyphSetEvent glyphsEvent = (GlyphSetEvent) event;
-                List<Glyph>   glyphs = glyphsEvent.getData();
-                Glyph         compound = null;
-
-                if (glyphs != null) {
-                    if (glyphs.size() > 1) {
-                        try {
-                            SystemInfo system = sheet.getSystemOf(glyphs);
-                            compound = system.buildCompound(glyphs);
-                        } catch (IllegalArgumentException ex) {
-                            // All glyphs do not belong to the same system
-                            // No compound is allowed and displayed
-                            logger.warning("Glyphs from different systems");
-                        }
-                    } else if (glyphs.size() == 1) {
-                        compound = glyphs.get(0);
-                    }
+            try {
+                // Ignore RELEASING
+                if (event.movement == MouseMovement.RELEASING) {
+                    return;
                 }
 
-                sheet.getVerticalLag()
-                     .publish(
-                    new GlyphEvent(
-                        this,
-                        SelectionHint.GLYPH_TRANSIENT,
-                        null,
-                        compound));
+                // Default lag view behavior, including specifics
+                super.onEvent(event);
+
+                if (event instanceof GlyphSetEvent) {
+                    GlyphSetEvent glyphsEvent = (GlyphSetEvent) event;
+                    List<Glyph>   glyphs = glyphsEvent.getData();
+                    Glyph         compound = null;
+
+                    if (glyphs != null) {
+                        if (glyphs.size() > 1) {
+                            try {
+                                SystemInfo system = sheet.getSystemOf(glyphs);
+                                compound = system.buildCompound(glyphs);
+                            } catch (IllegalArgumentException ex) {
+                                // All glyphs do not belong to the same system
+                                // No compound is allowed and displayed
+                                logger.warning("Glyphs from different systems");
+                            }
+                        } else if (glyphs.size() == 1) {
+                            compound = glyphs.get(0);
+                        }
+                    }
+
+                    sheet.getVerticalLag()
+                         .publish(
+                        new GlyphEvent(
+                            this,
+                            SelectionHint.GLYPH_TRANSIENT,
+                            null,
+                            compound));
+                }
+            } catch (Exception ex) {
+                logger.warning(getClass().getName() + " onEvent error", ex);
             }
         }
 
@@ -334,7 +332,7 @@ public class SymbolsEditor
         protected void renderItems (Graphics g)
         {
             // Render all sheet physical info known so far
-            sheet.accept(new SheetPainter(g, getZoom()));
+            sheet.accept(new SheetPainter(g));
 
             // Normal display of selected items
             super.renderItems(g);

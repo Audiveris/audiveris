@@ -523,7 +523,7 @@ public class Sentence
 
         // Vertical distance from staff
         Staff   staff = system.getStaffAt(left);
-        int     staffDy = Math.abs(staff.getTopLeft().y - pageBox.y);
+        int     staffDy = Math.abs(staff.getPageTopLeft().y - pageBox.y);
         boolean closeToStaff = staffDy <= scale.toUnits(constants.maxStaffDy);
 
         // Begins before the part?
