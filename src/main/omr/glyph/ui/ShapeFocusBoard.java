@@ -10,7 +10,7 @@
 package omr.glyph.ui;
 
 import omr.glyph.Glyph;
-import omr.glyph.GlyphModel;
+import omr.glyph.GlyphsModel;
 import omr.glyph.Shape;
 
 import omr.log.Logger;
@@ -59,9 +59,9 @@ class ShapeFocusBoard
         ShapeFocusBoard.class);
 
     /** Events this board is interested in */
-    private static final Collection<Class<?extends UserEvent>> eventClasses = new ArrayList<Class<?extends UserEvent>>();
-
+    private static final Collection<Class<?extends UserEvent>> eventClasses;
     static {
+        eventClasses = new ArrayList<Class<?extends UserEvent>>();
         eventClasses.add(GlyphEvent.class);
     }
 
@@ -87,7 +87,7 @@ class ShapeFocusBoard
     //~ Instance fields --------------------------------------------------------
 
     private final GlyphLagView view;
-    private final GlyphModel   glyphModel;
+    private final GlyphsModel   glyphModel;
     private final Sheet        sheet;
 
     /** Counter on symbols assigned to the current shape */
@@ -118,7 +118,7 @@ class ShapeFocusBoard
      */
     public ShapeFocusBoard (Sheet          sheet,
                             GlyphLagView   view,
-                            GlyphModel     glyphModel,
+                            GlyphsModel     glyphModel,
                             ActionListener filterListener)
     {
         super(
@@ -254,22 +254,26 @@ class ShapeFocusBoard
     @Implement(EventSubscriber.class)
     public void onEvent (UserEvent event)
     {
-        // Ignore RELEASING
-        if (event.movement == MouseMovement.RELEASING) {
-            return;
-        }
+        try {
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
+                return;
+            }
 
-        if (event instanceof GlyphEvent) {
-            GlyphEvent glyphEvent = (GlyphEvent) event;
+            if (event instanceof GlyphEvent) {
+                GlyphEvent glyphEvent = (GlyphEvent) event;
 
-            if (glyphEvent.hint == SelectionHint.GLYPH_MODIFIED) {
-                // Use glyph assigned shape as current shape, if not null
-                Glyph glyph = glyphEvent.getData();
+                if (glyphEvent.hint == SelectionHint.GLYPH_MODIFIED) {
+                    // Use glyph assigned shape as current shape, if not null
+                    Glyph glyph = glyphEvent.getData();
 
-                if ((glyph != null) && (glyph.getShape() != null)) {
-                    setCurrentShape(glyph.getShape());
+                    if ((glyph != null) && (glyph.getShape() != null)) {
+                        setCurrentShape(glyph.getShape());
+                    }
                 }
             }
+        } catch (Exception ex) {
+            logger.warning(getClass().getName() + " onEvent error", ex);
         }
     }
 

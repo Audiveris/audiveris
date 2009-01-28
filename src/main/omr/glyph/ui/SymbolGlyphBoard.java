@@ -10,7 +10,7 @@
 package omr.glyph.ui;
 
 import omr.glyph.Glyph;
-import omr.glyph.GlyphModel;
+import omr.glyph.GlyphsModel;
 import omr.glyph.Shape;
 import omr.glyph.text.TextInfo;
 import omr.glyph.text.TextType;
@@ -157,7 +157,7 @@ class SymbolGlyphBoard
      *                      to sticks/glyphs elaborated during previous steps)
      */
     public SymbolGlyphBoard (String     unitName,
-                             GlyphModel glyphModel,
+                             GlyphsModel glyphModel,
                              int        firstSymbolId)
     {
         // For all glyphs
@@ -205,7 +205,7 @@ class SymbolGlyphBoard
      * @param glyphModel the companion which handles glyph (de)assignments
      */
     public SymbolGlyphBoard (String     unitName,
-                             GlyphModel glyphModel)
+                             GlyphsModel glyphModel)
     {
         super(unitName, glyphModel);
         paramAction = null;
@@ -226,79 +226,83 @@ class SymbolGlyphBoard
     @Override
     public void onEvent (UserEvent event)
     {
-        // Ignore RELEASING
-        if (event.movement == MouseMovement.RELEASING) {
-            return;
-        }
-
-        //        logger.info(
-        //            "SymbolGlyphBoard " + event + " selfUpdating=" + selfUpdating);
-        super.onEvent(event);
-
-        if (event instanceof GlyphEvent) {
-            selfUpdating = true;
-
-            GlyphEvent glyphEvent = (GlyphEvent) event;
-            Glyph      glyph = glyphEvent.getData();
-
-            // Set symbolSpinner accordingly
-            if (symbolSpinner != null) {
-                symbolSpinner.setValue(
-                    symbolPredicate.check(glyph) ? glyph.getId() : NO_VALUE);
+        try {
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
+                return;
             }
 
-            // Text Information
-            if (textCombo != null) {
-                selfUpdatingText = true;
-                textCombo.setSelectedItem(TextType.NoType);
+            //        logger.info(
+            //            "SymbolGlyphBoard " + event + " selfUpdating=" + selfUpdating);
+            super.onEvent(event);
 
-                if ((glyph != null) &&
-                    (glyph.getShape() != null) &&
-                    (glyph.getShape().isText())) {
-                    textCombo.setEnabled(true);
-                    textField.setEnabled(true);
+            if (event instanceof GlyphEvent) {
+                selfUpdating = true;
 
-                    TextInfo textInfo = glyph.getTextInfo();
+                GlyphEvent glyphEvent = (GlyphEvent) event;
+                Glyph      glyph = glyphEvent.getData();
 
-                    if (textInfo.getContent() != null) {
-                        textField.setText(glyph.getTextInfo().getContent());
+                // Set symbolSpinner accordingly
+                if (symbolSpinner != null) {
+                    symbolSpinner.setValue(
+                        symbolPredicate.check(glyph) ? glyph.getId() : NO_VALUE);
+                }
+
+                // Text Information
+                if (textCombo != null) {
+                    selfUpdatingText = true;
+                    textCombo.setSelectedItem(TextType.NoType);
+
+                    if ((glyph != null) &&
+                        (glyph.getShape() != null) &&
+                        (glyph.getShape().isText())) {
+                        textCombo.setEnabled(true);
+                        textField.setEnabled(true);
+
+                        TextInfo textInfo = glyph.getTextInfo();
+
+                        if (textInfo.getContent() != null) {
+                            textField.setText(glyph.getTextInfo().getContent());
+                        } else {
+                            textField.setText("");
+                        }
+
+                        if (textInfo.getTextType() != null) {
+                            textCombo.setSelectedItem(textInfo.getTextType());
+                        }
                     } else {
+                        textCombo.setEnabled(false);
+                        textField.setEnabled(false);
                         textField.setText("");
                     }
 
-                    if (textInfo.getTextType() != null) {
-                        textCombo.setSelectedItem(textInfo.getTextType());
-                    }
-                } else {
-                    textCombo.setEnabled(false);
-                    textField.setEnabled(false);
-                    textField.setText("");
+                    selfUpdatingText = false;
                 }
 
-                selfUpdatingText = false;
+                // Fill symbol characteristics
+                if (glyph != null) {
+                    pitchPosition.setValue(glyph.getPitchPosition());
+                    ledger.setText(Boolean.toString(glyph.isWithLedger()));
+                    stems.setValue(glyph.getStemNumber());
+
+                    Moments moments = glyph.getMoments();
+                    weight.setValue(moments.getWeight()); // Normalized
+                    width.setValue(moments.getWidth());
+                    height.setValue(moments.getHeight());
+                } else {
+                    ledger.setText("");
+                    pitchPosition.setText("");
+                    stems.setText("");
+
+                    weight.setText("");
+                    width.setText("");
+                    height.setText("");
+                }
+
+                selfUpdating = false;
             }
-
-            // Fill symbol characteristics
-            if (glyph != null) {
-                pitchPosition.setValue(glyph.getPitchPosition());
-                ledger.setText(Boolean.toString(glyph.isWithLedger()));
-                stems.setValue(glyph.getStemNumber());
-
-                Moments moments = glyph.getMoments();
-                weight.setValue(moments.getWeight()); // Normalized
-                width.setValue(moments.getWidth());
-                height.setValue(moments.getHeight());
-            } else {
-                ledger.setText("");
-                pitchPosition.setText("");
-                stems.setText("");
-
-                weight.setText("");
-                width.setText("");
-                height.setText("");
-            }
-
-            selfUpdating = false;
+        } catch (Exception ex) {
+            logger.warning(getClass().getName() + " onEvent error", ex);
         }
     }
 
