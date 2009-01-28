@@ -36,6 +36,7 @@ import omr.util.TreeNode;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
@@ -96,7 +97,7 @@ public class Score
     private List<ScorePart> partList;
 
     /** The most recent system pointed at */
-    private ScoreSystem recentSystem = null;
+    private WeakReference<ScoreSystem> recentSystemRef = null;
 
     /** The view on this score if any */
     private ScoreView view;
@@ -701,7 +702,7 @@ public class Score
                 sp,
                 this,
                 ++index,
-                firstStaff.getTopLeft().y - refSystem.getTopLeft().y);
+                firstStaff.getPageTopLeft().y - refSystem.getTopLeft().y);
             scorePart.setName("Part_" + index);
             partList.add(scorePart);
         }
@@ -750,6 +751,9 @@ public class Score
      */
     public ScoreSystem pageLocateSystem (PagePoint pagPt)
     {
+        ScoreSystem recentSystem = (recentSystemRef == null) ? null
+                                   : recentSystemRef.get();
+
         if (recentSystem != null) {
             // Check first with most recent system (loosely)
             switch (recentSystem.locate(pagPt)) {
@@ -811,6 +815,19 @@ public class Score
         return recentSystem = system;
     }
 
+    //-------//
+    // reset //
+    //-------//
+    /**
+     * Reset a score entity to its basic structure
+     */
+    public void reset ()
+    {
+        // Discard systems
+        getSystems()
+            .clear();
+    }
+
     //-------------------//
     // scoreLocateSystem //
     //-------------------//
@@ -825,6 +842,8 @@ public class Score
      */
     public ScoreSystem scoreLocateSystem (ScorePoint scrPt)
     {
+        ScoreSystem recentSystem = getRecentSystem();
+
         if (recentSystem != null) {
             // Check first with most recent system (loosely)
             switch (recentSystem.locate(scrPt)) {
@@ -875,7 +894,7 @@ public class Score
             switch (system.locate(scrPt)) {
             case -1 : // Point is on left of system, give up.
             case 0 : // Point is within system.
-                return recentSystem = system;
+                return setRecentSystem(system);
 
             case +1 : // Point is on right of system, go on.
                 break;
@@ -883,7 +902,7 @@ public class Score
         }
 
         // Return the last system in the score
-        return recentSystem = system;
+        return setRecentSystem(system);
     }
 
     //------------------//
@@ -918,6 +937,24 @@ public class Score
         } else {
             return "{Score }";
         }
+    }
+
+    //-----------------//
+    // setRecentSystem //
+    //-----------------//
+    private ScoreSystem setRecentSystem (ScoreSystem system)
+    {
+        recentSystemRef = new WeakReference<ScoreSystem>(system);
+
+        return system;
+    }
+
+    //-----------------//
+    // getRecentSystem //
+    //-----------------//
+    private ScoreSystem getRecentSystem ()
+    {
+        return (recentSystemRef == null) ? null : recentSystemRef.get();
     }
 
     //~ Inner Classes ----------------------------------------------------------
