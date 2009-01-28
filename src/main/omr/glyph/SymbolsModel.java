@@ -39,14 +39,14 @@ import java.util.*;
 import java.util.List;
 
 /**
- * Class <code>SymbolsModel</code> is the GlyphModel specifically meant for
+ * Class <code>SymbolsModel</code> is the GlyphsModel specifically meant for
  * symbol glyphs.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class SymbolsModel
-    extends GlyphModel
+    extends GlyphsModel
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -187,7 +187,7 @@ public class SymbolsModel
                 // Update final steps?
                 if (record == RECORDING) {
                     shapes.add(shape);
-                    sheet.updateLastSteps(glyphs, shapes);
+                    sheet.rebuildFromLeaves(glyphs, shapes);
                 }
             }
         }
@@ -261,7 +261,7 @@ public class SymbolsModel
                     sheet.getScript()
                          .addTask(new AssignTask(shape, compound, glyphs));
                     shapes.add(shape);
-                    sheet.updateLastSteps(glyphs, shapes);
+                    sheet.rebuildFromLeaves(glyphs, shapes);
                 }
             }
         }
@@ -318,7 +318,7 @@ public class SymbolsModel
             if (record) {
                 sheet.getScript()
                      .addTask(new TextTask(textType, textContent, glyphs));
-                sheet.updateLastSteps(glyphs, new ArrayList<Shape>()); // No shapes
+                sheet.rebuildFromLeaves(glyphs, new ArrayList<Shape>()); // No shapes
             }
         }
     }
@@ -452,7 +452,7 @@ public class SymbolsModel
 
             // Update last steps?
             if (record == RECORDING) {
-                sheet.updateLastSteps(glyphs, shapes);
+                sheet.rebuildFromLeaves(glyphs, shapes);
             }
         }
     }
@@ -512,7 +512,7 @@ public class SymbolsModel
                 sheet.getScript()
                      .addTask(new DeassignTask(glyphs));
 
-                sheet.updateLastSteps(glyphs, shapes);
+                sheet.rebuildFromLeaves(glyphs, shapes);
             }
         }
     }
@@ -520,8 +520,8 @@ public class SymbolsModel
     //---------------//
     // fixLargeSlurs //
     //---------------//
-    public void fixLargeSlurs (List<Glyph>     glyphs,
-                               ScriptRecording record)
+    public void fixLargeSlurs (Collection<Glyph> glyphs,
+                               ScriptRecording   record)
     {
         // Safer
         if ((glyphs == null) || glyphs.isEmpty()) {
@@ -548,7 +548,7 @@ public class SymbolsModel
         if (record == RECORDING) {
             sheet.getScript()
                  .addTask(new SlurTask(glyphsCopy));
-            sheet.updateLastSteps(glyphsCopy, null);
+            sheet.rebuildFromLeaves(glyphsCopy, null);
         }
     }
 
@@ -592,7 +592,7 @@ public class SymbolsModel
                 system.segmentGlyphOnStems(glyph, isShort);
             }
 
-            sheet.updateLastSteps(glyphs, shapes);
+            sheet.rebuildFromLeaves(glyphs, shapes);
         }
     }
 
