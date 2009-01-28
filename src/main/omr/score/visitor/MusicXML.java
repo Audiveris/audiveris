@@ -290,7 +290,7 @@ public class MusicXML
                                   Staff  staff)
     {
         return toTenths(
-            staff.getTopLeft().y - staff.getSystem().getTopLeft().y - units);
+            staff.getPageTopLeft().y - staff.getSystem().getTopLeft().y - units);
     }
 
     //-----//
@@ -308,7 +308,7 @@ public class MusicXML
                                   Staff       staff)
     {
         return toTenths(
-            staff.getTopLeft().y - staff.getSystem().getTopLeft().y - point.y);
+            staff.getPageTopLeft().y - staff.getSystem().getTopLeft().y - point.y);
     }
 
     //--------//

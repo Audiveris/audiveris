@@ -47,11 +47,18 @@ public class ScoreFixer
     /** Flag to assign or not measure ids */
     private final boolean assignMeasureId;
 
-    /** Flag to indicate pass number on the system children */
-    private boolean firstSystemPass = true;
+    /** Flag to indicate first pass */
+    private boolean firstPass = true;
 
     /** Contour of the current system */
     private SystemRectangle systemContour;
+
+    /**
+     * Retrieve max offset above first part and use it to align first staves
+     * This is usually a negative value, since the ref point is the topLeft
+     * of first system staff.
+     */
+    private int highestTop = 0;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -113,6 +120,14 @@ public class ScoreFixer
     @Override
     public boolean visit (Score score)
     {
+        firstPass = true;
+        score.acceptChildren(this);
+
+        if (logger.isFineEnabled()) {
+            logger.fine("highestTop=" + highestTop);
+        }
+
+        firstPass = false;
         score.acceptChildren(this);
 
         return false;
@@ -124,79 +139,66 @@ public class ScoreFixer
     @Override
     public boolean visit (ScoreSystem system)
     {
-        // Initialize system contours with staves contours and margins
-        int height = system.getLastPart()
-                           .getLastStaff()
-                           .getTopLeft().y -
-                     system.getFirstPart()
-                           .getFirstStaff()
-                           .getTopLeft().y;
-        systemContour = new SystemRectangle(
-            0,
-            0,
-            system.getDimension().width + (2 * STAFF_MARGIN_WIDTH),
-            height + STAFF_HEIGHT + (2 * STAFF_MARGIN_HEIGHT));
+        if (firstPass) {
+            // First pass on contained entities to retrieve contours
+            // Initialize system contours with staves contours and margins
+            systemContour = new SystemRectangle(
+                0,
+                0,
+                system.getDimension().width + (2 * STAFF_MARGIN_WIDTH),
+                system.getDimension().height + STAFF_HEIGHT +
+                (2 * STAFF_MARGIN_HEIGHT));
 
-        // First pass on contained entities to retrieve contours
-        firstSystemPass = true;
-        system.acceptChildren(this);
+            system.acceptChildren(this);
 
-        // Write down the system contour
-        if (logger.isFineEnabled()) {
-            logger.fine(system + " contour:" + systemContour);
-        }
+            // Write down the system contour
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "First pass " + system + " contour:" + systemContour);
+            }
 
-        system.setContour(systemContour);
+            system.setContour(systemContour);
 
-        // Is there a Previous System ?
-        ScoreSystem prevSystem = (ScoreSystem) system.getPreviousSibling();
-        ScorePoint  origin = new ScorePoint();
+            int top = system.getContour().y + system.getDummyOffset();
 
-        if (prevSystem == null) {
-            // Very first system in the score
-            ScorePart scorePart = system.getFirstPart()
-                                        .getScorePart();
-            origin.x = -systemContour.x + STAFF_MARGIN_WIDTH;
+            if (highestTop > top) {
+                highestTop = top;
+            }
+        } else {
+            // Second pass to align all first staves, and to set display origins
+            systemContour = system.getContour();
+            systemContour.y = highestTop - system.getDummyOffset();
+
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "Second pass " + system + " contour:" + systemContour);
+            }
+
+            // Is there a Previous System ?
+            ScoreSystem prevSystem = (ScoreSystem) system.getPreviousSibling();
+            ScorePoint  origin = new ScorePoint();
+            ScorePart   scorePart = system.getFirstPart()
+                                          .getScorePart();
+
+            if (prevSystem == null) {
+                // Very first system in the score
+                origin.x = -systemContour.x + STAFF_MARGIN_WIDTH;
+            } else {
+                // Not the first system
+                origin.x = (prevSystem.getDisplayOrigin().x +
+                           prevSystem.getDimension().width) + INTER_SYSTEM;
+            }
+
             origin.y = -systemContour.y + STAFF_MARGIN_HEIGHT +
                        ((scorePart != null) ? scorePart.getDisplayOrdinate() : 0);
-        } else {
-            // Not the first system
-            origin.x = (prevSystem.getDisplayOrigin().x +
-                       prevSystem.getDimension().width) + INTER_SYSTEM;
-            origin.y = (prevSystem.getDisplayOrigin().y +
-                       prevSystem.getFirstPart().getFirstStaff().getTopLeft().y) -
-                       prevSystem.getFirstRealPart()
-                                 .getFirstStaff()
-                                 .getTopLeft().y;
+
+            system.setDisplayOrigin(origin);
+
+            firstPass = false;
+            system.acceptChildren(this);
         }
-
-        system.setDisplayOrigin(origin);
-
-        // Second pass on contained entities to set display origins
-        firstSystemPass = false;
-        system.acceptChildren(this);
 
         return false;
-    }
-
-    //-------------//
-    // visit Staff //
-    //-------------//
-    @Override
-    public boolean visit (Staff staff)
-    {
-        if (!firstSystemPass) {
-            // Display origin for the staff
-            ScoreSystem system = staff.getSystem();
-            Point       sysorg = system.getDisplayOrigin();
-            staff.setDisplayOrigin(
-                new ScorePoint(
-                    sysorg.x,
-                    sysorg.y +
-                    (staff.getTopLeft().y - staff.getSystem().getTopLeft().y)));
-        }
-
-        return true;
     }
 
     //------------//
@@ -205,7 +207,7 @@ public class ScoreFixer
     @Override
     public boolean visit (Text text)
     {
-        if (firstSystemPass) {
+        if (firstPass) {
             // Extends system contour if needed
             Sentence sentence = text.getSentence();
 

@@ -716,8 +716,8 @@ public class ScoreExporter
 
                             staffLayout.setStaffDistance(
                                 toTenths(
-                                    staff.getTopLeft().y -
-                                    prevStaff.getTopLeft().y -
+                                    staff.getPageTopLeft().y -
+                                    prevStaff.getPageTopLeft().y -
                                     prevStaff.getHeight()));
                             current.pmPrint.getStaffLayout()
                                            .add(staffLayout);
