@@ -15,7 +15,7 @@ import omr.math.Line;
 
 import omr.stick.Stick;
 
-import omr.ui.view.Zoom;
+import omr.util.Implement;
 
 import java.awt.Graphics;
 import java.util.*;
@@ -57,7 +57,7 @@ public class StraightLineInfo
      *
      * @param id the line id (debug)
      * @param left computed abscissa of the left line end
-     * @param right computed  abscissa of the right line end
+     * @param right computed abscissa of the right line end
      * @param builder the computing of the line
      * @param line the underlying straight line
      * */
@@ -92,6 +92,7 @@ public class StraightLineInfo
     //---------//
     // getLeft //
     //---------//
+    @Implement(LineInfo.class)
     public int getLeft ()
     {
         return left;
@@ -100,14 +101,35 @@ public class StraightLineInfo
     //----------//
     // getRight //
     //----------//
+    @Implement(LineInfo.class)
     public int getRight ()
     {
         return right;
     }
 
+    //-------------//
+    // getSections //
+    //-------------//
+    @Implement(LineInfo.class)
+    public Collection<GlyphSection> getSections ()
+    {
+        List<GlyphSection> members = new ArrayList<GlyphSection>();
+
+        // Browse Sticks
+        for (Stick stick : builder.getSticks()) {
+            // Browse member sections
+            for (GlyphSection section : stick.getMembers()) {
+                members.add(section);
+            }
+        }
+
+        return members;
+    }
+
     //---------//
     // cleanup //
     //---------//
+    @Implement(LineInfo.class)
     public void cleanup ()
     {
         builder.cleanup();
@@ -116,18 +138,14 @@ public class StraightLineInfo
     //--------//
     // render //
     //--------//
+    @Implement(LineInfo.class)
     public void render (Graphics g,
-                        Zoom     z,
                         int      left,
                         int      right)
     {
         // Paint the computed line
         if (line != null) {
-            g.drawLine(
-                z.scaled(left + 0.5),
-                z.scaled(line.yAt(left + 0.5) + 0.5),
-                z.scaled(right + 0.5),
-                z.scaled(line.yAt(right + 0.5) + 0.5));
+            g.drawLine(left, line.yAt(left), right, line.yAt(right));
         }
     }
 
@@ -149,6 +167,7 @@ public class StraightLineInfo
     //-----//
     // yAt //
     //-----//
+    @Implement(LineInfo.class)
     public int yAt (int x)
     {
         if (line == null) {
@@ -161,6 +180,7 @@ public class StraightLineInfo
     //-----//
     // yAt //
     //-----//
+    @Implement(LineInfo.class)
     public double yAt (double x)
     {
         if (line == null) {
@@ -168,23 +188,5 @@ public class StraightLineInfo
         }
 
         return line.yAt(x);
-    }
-
-    //-------------//
-    // getSections //
-    //-------------//
-    public Collection<GlyphSection> getSections ()
-    {
-        List<GlyphSection> members = new ArrayList<GlyphSection>();
-
-        // Browse Sticks
-        for (Stick stick : builder.getSticks()) {
-            // Browse member sections
-            for (GlyphSection section : stick.getMembers()) {
-                members.add(section);
-            }
-        }
-
-        return members;
     }
 }

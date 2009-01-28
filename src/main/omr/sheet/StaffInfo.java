@@ -11,11 +11,7 @@ package omr.sheet;
 
 import omr.log.Logger;
 
-import omr.math.Line;
-
 import omr.score.common.PixelPoint;
-
-import omr.ui.view.Zoom;
 
 import java.awt.*;
 import java.util.List;
@@ -316,22 +312,17 @@ public class StaffInfo
      * Paint the staff lines.
      *
      * @param g the graphics context
-     * @param z the display zoom
      * @return true if something has been drawn
      */
-    public boolean render (Graphics g,
-                           Zoom     z)
+    public boolean render (Graphics g)
     {
         LineInfo firstLine = getFirstLine();
         LineInfo lastLine = getLastLine();
 
         if ((firstLine != null) && (lastLine != null)) {
-            final double xl = (double) left;
-            final double xr = (double) right;
-
             // Check that top of staff is visible
-            final int yTopLeft = z.scaled(firstLine.yAt(xl) + 0.5);
-            final int yTopRight = z.scaled(firstLine.yAt(xr) + 0.5);
+            final int yTopLeft = firstLine.yAt(left);
+            final int yTopRight = firstLine.yAt(right);
 
             // Check with the clipping region
             Rectangle clip = g.getClipBounds();
@@ -341,8 +332,8 @@ public class StaffInfo
             }
 
             // Check that bottom of staff is visible
-            final int yBottomLeft = z.scaled(lastLine.yAt(xl) + 0.5);
-            final int yBottomRight = z.scaled(lastLine.yAt(xr) + 0.5);
+            final int yBottomLeft = lastLine.yAt(left);
+            final int yBottomRight = lastLine.yAt(right);
 
             if (clip.y > Math.max(yBottomLeft, yBottomRight)) {
                 return false;
@@ -350,16 +341,14 @@ public class StaffInfo
 
             // Paint each horizontal line in the set
             for (LineInfo line : lines) {
-                line.render(g, z, left, right);
+                line.render(g, left, right);
             }
 
             // Left vertical line
-            final int xLeft = z.scaled(xl + 0.5);
-            g.drawLine(xLeft, yTopLeft, xLeft, yBottomLeft);
+            g.drawLine(left, yTopLeft, left, yBottomLeft);
 
             // Right vertical line
-            final int xRight = z.scaled(xr + 0.5);
-            g.drawLine(xRight, yTopRight, xRight, yBottomRight);
+            g.drawLine(right, yTopRight, right, yBottomRight);
 
             return true;
         } else {

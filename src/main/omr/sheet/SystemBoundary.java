@@ -159,17 +159,13 @@ public class SystemBoundary
      * Paint the SystemBoundary in the provided graphic context.
      *
      * @param g     the Graphics context
-     * @param ratio the display zoom ratio
      */
-    public void render (Graphics g,
-                        double   ratio)
+    public void render (Graphics g)
     {
         Graphics2D      g2 = (Graphics2D) g;
         int             radius = north.getStickyDistance();
 
         // Draw the polygon
-        AffineTransform saveAT = g2.getTransform();
-        g2.transform(AffineTransform.getScaleInstance(ratio, ratio));
         g2.drawPolygon(polygon);
 
         // Mark the points
@@ -180,8 +176,6 @@ public class SystemBoundary
                 2 * radius,
                 2 * radius);
         }
-
-        g2.setTransform(saveAT); // Restore
     }
 
     //----------//
