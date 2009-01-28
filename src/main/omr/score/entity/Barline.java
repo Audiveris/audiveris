@@ -22,8 +22,6 @@ import omr.sheet.Scale;
 
 import omr.stick.Stick;
 
-import omr.ui.view.Zoom;
-
 import java.awt.*;
 import java.util.*;
 
@@ -246,7 +244,7 @@ public class Barline
                 int           bot = box.y + box.height;
 
                 // Check that staff and stick overlap vertically
-                final int topStaff = staff.getTopLeft().y;
+                final int topStaff = staff.getPageTopLeft().y;
                 final int botStaff = topStaff + staff.getHeight();
 
                 if (Math.max(topStaff, top) < Math.min(botStaff, bot)) {
@@ -286,15 +284,13 @@ public class Barline
      * Render the bar contour
      *
      * @param g the graphics context
-     * @param z the display zoom
      */
-    public void render (Graphics g,
-                        Zoom     z)
+    public void render (Graphics g)
     {
         for (Stick stick : getSticks()) {
             if ((stick.getShape() == Shape.THICK_BAR_LINE) ||
                 (stick.getShape() == Shape.THIN_BAR_LINE)) {
-                stick.renderLine(g, z);
+                stick.renderLine(g);
             }
         }
     }
@@ -364,6 +360,12 @@ public class Barline
     //-----------//
     private String getLetter (Shape shape)
     {
+        if (shape == null) {
+            logger.warning("Barline. getLetter for null shape");
+
+            return null;
+        }
+
         switch (shape) {
         case THICK_BAR_LINE :
             return "K";
@@ -398,7 +400,7 @@ public class Barline
             final StringBuilder sb = new StringBuilder();
             final Staff         staffRef = measure.getPart()
                                                   .getFirstStaff();
-            final int           topStaff = staffRef.getTopLeft().y -
+            final int           topStaff = staffRef.getPageTopLeft().y -
                                            system.getTopLeft().y;
             final int           botStaff = topStaff + staffRef.getHeight();
             String              last = null; // Last stick

@@ -114,21 +114,21 @@ public abstract class SystemNode
 
         return sb.toString();
     }
-
-    //------------------//
-    // getDisplayOrigin //
-    //------------------//
-    /**
-     * Report the origin for the containing system, in the horizontal score
-     * display, since coordinates use SystemPoint.
-     *
-     * @return the (system) display origin
-     */
-    public ScorePoint getDisplayOrigin ()
-    {
-        return getSystem()
-                   .getDisplayOrigin();
-    }
+//
+//    //------------------//
+//    // getDisplayOrigin //
+//    //------------------//
+//    /**
+//     * Report the origin for the containing system, in the horizontal score
+//     * display, since coordinates use SystemPoint.
+//     *
+//     * @return the (system) display origin
+//     */
+//    public ScorePoint getDisplayOrigin ()
+//    {
+//        return getSystem()
+//                   .getDisplayOrigin();
+//    }
 
     //-----------//
     // getSystem //

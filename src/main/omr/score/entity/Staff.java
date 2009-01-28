@@ -43,7 +43,10 @@ public class Staff
     //~ Instance fields --------------------------------------------------------
 
     /** Top left corner of the staff (relative to the page top left corner) */
-    private PagePoint topLeft;
+    private final PagePoint pageTopLeft;
+
+    /** Top left corner of the staff (relative to the system top left corner) */
+    private final SystemPoint systemTopLeft;
 
     /** Actual cached display origin */
     private ScorePoint displayOrigin;
@@ -73,23 +76,27 @@ public class Staff
      *
      * @param info the physical information read from the sheet
      * @param part the containing systemPart
-     * @param topLeft the coordinate,in units, wrt the score upper left
+     * @param pageTopLeft the coordinate,in units, wrt the score upper left
      *                  corner, of the upper left corner of this staff
      * @param width the staff width, in units
      * @param height the staff height, in units
      */
     public Staff (StaffInfo  info,
                   SystemPart part,
-                  PagePoint  topLeft,
+                  PagePoint  pageTopLeft,
                   int        width,
                   int        height)
     {
         super(part);
 
         this.info = info;
-        this.topLeft = topLeft;
+        this.pageTopLeft = pageTopLeft;
         this.width = width;
         this.height = height;
+
+        systemTopLeft = new SystemPoint(
+            0,
+            pageTopLeft.y - getSystem().getTopLeft().y);
 
         // Assign id
         id = getParent()
@@ -106,44 +113,25 @@ public class Staff
     private Staff ()
     {
         super(null);
+        pageTopLeft = null;
+        systemTopLeft = null;
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //---------------//
-    // computeCenter //
-    //---------------//
-    @Override
-    protected void computeCenter ()
-    {
-        setCenter(
-            new SystemPoint(
-                width / 2,
-                topLeft.y - getSystem().getTopLeft().y + (height / 2)));
-    }
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
-    //------------------//
-    // getDisplayOrigin //
-    //------------------//
-    /**
-     * Report the staff display origin in the score display of this staff
-     *
-     * @return the (staff-specific) displayOrigin
-     */
-    @Override
-    public ScorePoint getDisplayOrigin ()
-    {
-        return displayOrigin;
-    }
+//
+//    //------------------//
+//    // getDisplayOrigin //
+//    //------------------//
+//    /**
+//     * Report the staff display origin in the score display of this staff
+//     *
+//     * @return the (staff-specific) displayOrigin
+//     */
+//    @Override
+//    public ScorePoint getDisplayOrigin ()
+//    {
+//        return displayOrigin;
+//    }
 
     //-----------//
     // getHeight //
@@ -184,17 +172,31 @@ public class Staff
         return info;
     }
 
-    //------------//
-    // getTopLeft //
-    //------------//
+    //----------------//
+    // getPageTopLeft //
+    //----------------//
     /**
      * Report the coordinates of the top left corner of the staff, wrt the score
      *
      * @return the top left coordinates
      */
-    public PagePoint getTopLeft ()
+    public PagePoint getPageTopLeft ()
     {
-        return topLeft;
+        return pageTopLeft;
+    }
+
+    //------------//
+    // getTopLeft //
+    //------------//
+    /**
+     * Report the coordinates of the top left corner of the staff, wrt the
+     * containing system
+     *
+     * @return the top left coordinates
+     */
+    public SystemPoint getTopLeft ()
+    {
+        return systemTopLeft;
     }
 
     //----------//
@@ -208,6 +210,15 @@ public class Staff
     public int getWidth ()
     {
         return width;
+    }
+
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
     }
 
     //-------------//
@@ -267,8 +278,8 @@ public class Staff
                 sb.append(" dummy");
             }
 
-            sb.append(" topLeft=")
-              .append(topLeft);
+            sb.append(" pageTopLeft=")
+              .append(pageTopLeft);
             sb.append(" width=")
               .append(width);
             sb.append(" size=")
@@ -301,6 +312,16 @@ public class Staff
         return (int) Math.rint(((2D * unit) - (4D * INTER_LINE)) / INTER_LINE);
     }
 
+    public void setDummy (boolean dummy)
+    {
+        this.dummy = dummy;
+    }
+
+    public boolean isDummy ()
+    {
+        return dummy;
+    }
+
     //-----------------//
     // pitchPositionOf //
     //-----------------//
@@ -329,13 +350,15 @@ public class Staff
         return info.pitchPositionOf(getSystem().toPixelPoint(pt));
     }
 
-    public boolean isDummy ()
+    //---------------//
+    // computeCenter //
+    //---------------//
+    @Override
+    protected void computeCenter ()
     {
-        return dummy;
-    }
-
-    public void setDummy (boolean dummy)
-    {
-        this.dummy = dummy;
+        setCenter(
+            new SystemPoint(
+                width / 2,
+                pageTopLeft.y - getSystem().getTopLeft().y + (height / 2)));
     }
 }
