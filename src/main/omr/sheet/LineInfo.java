@@ -11,8 +11,6 @@ package omr.sheet;
 
 import omr.glyph.GlyphSection;
 
-import omr.ui.view.Zoom;
-
 import java.awt.Graphics;
 import java.util.Collection;
 
@@ -25,60 +23,6 @@ import java.util.Collection;
 public interface LineInfo
 {
     //~ Methods ----------------------------------------------------------------
-
-    //---------//
-    // getLeft //
-    //---------//
-    /**
-     * Selector for the left abscissa of the line
-     *
-     * @return left abscissa
-     */
-    int getLeft ();
-
-    //-----//
-    // yAt //
-    //-----//
-    /**
-     * Retrieve the staff line ordinate at given abscissa x, using int values
-     *
-     * @param x the imposed abscissa
-     *
-     * @return the corresponding y value
-     */
-    int yAt (int x);
-
-    //-----//
-    // yAt //
-    //-----//
-    /**
-     * Retrieve the staff line ordinate at given abscissa x, using double values
-     *
-     * @param x the imposed abscissa
-     *
-     * @return the corresponding y value
-     */
-    double yAt (double x);
-
-    //-------------//
-    // getSections //
-    //-------------//
-    /**
-     * Report the lag sections that compose the staff line
-     *
-     * @return a collection of the line sections
-     */
-    Collection<GlyphSection> getSections ();
-
-    //----------//
-    // getRight //
-    //----------//
-    /**
-     * Selector for the right abscissa of the line
-     *
-     * @return right abscissa
-     */
-    int getRight ();
 
     //---------//
     // cleanup //
@@ -96,12 +40,64 @@ public interface LineInfo
      * Paint the computed line on the provided environment.
      *
      * @param g     the graphics context
-     * @param z     the display zoom
      * @param left  the imposed (for clean alignment) left abscissa
      * @param right the imposed (for clean alignment) right abscissa
      */
     public void render (Graphics g,
-                        Zoom     z,
                         int      left,
                         int      right);
+
+    //---------//
+    // getLeft //
+    //---------//
+    /**
+     * Selector for the left abscissa of the line
+     *
+     * @return left abscissa, in pixels
+     */
+    int getLeft ();
+
+    //----------//
+    // getRight //
+    //----------//
+    /**
+     * Selector for the right abscissa of the line
+     *
+     * @return right abscissa, in pixels
+     */
+    int getRight ();
+
+    //-------------//
+    // getSections //
+    //-------------//
+    /**
+     * Report the lag sections that compose the staff line
+     *
+     * @return a collection of the line sections
+     */
+    Collection<GlyphSection> getSections ();
+
+    //-----//
+    // yAt //
+    //-----//
+    /**
+     * Retrieve the staff line ordinate at given abscissa x, using int values
+     *
+     * @param x the given abscissa
+     *
+     * @return the corresponding y value
+     */
+    int yAt (int x);
+
+    //-----//
+    // yAt //
+    //-----//
+    /**
+     * Retrieve the staff line ordinate at given abscissa x, using double values
+     *
+     * @param x the given abscissa
+     *
+     * @return the corresponding y value
+     */
+    double yAt (double x);
 }

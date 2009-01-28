@@ -15,7 +15,7 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
-import omr.glyph.GlyphModel;
+import omr.glyph.GlyphsModel;
 import omr.glyph.GlyphSection;
 import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphLagView;
@@ -72,7 +72,7 @@ import javax.swing.*;
  * @version $Id$
  */
 public class LinesBuilder
-    extends GlyphModel
+    extends GlyphsModel
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -714,7 +714,7 @@ public class LinesBuilder
             g.setColor(Color.black);
 
             for (StaffInfo staff : staves) {
-                staff.render(g, getZoom());
+                staff.render(g);
             }
         }
     }
