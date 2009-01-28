@@ -12,15 +12,13 @@ package omr.sheet;
 import omr.Main;
 
 import omr.check.CheckBoard;
-import omr.check.FailureResult;
-import omr.check.SuccessResult;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
-import omr.glyph.GlyphModel;
+import omr.glyph.GlyphsModel;
 import omr.glyph.Shape;
 import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphLagView;
@@ -64,7 +62,7 @@ import java.util.Collection;
  * @version $Id$
  */
 public class VerticalsModel
-    extends GlyphModel
+    extends GlyphsModel
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -88,9 +86,9 @@ public class VerticalsModel
 
     //~ Constructors -----------------------------------------------------------
 
-    //---------------------//
+    //----------------//
     // VerticalsModel //
-    //---------------------//
+    //----------------//
     /**
      * Creates a new VerticalsModel object.
      *
@@ -228,28 +226,32 @@ public class VerticalsModel
         @Override
         public void onEvent (UserEvent event)
         {
-            // Ignore RELEASING
-            if (event.movement == MouseMovement.RELEASING) {
-                return;
-            }
-
-            if (event instanceof GlyphEvent) {
-                GlyphEvent glyphEvent = (GlyphEvent) event;
-                Glyph      glyph = glyphEvent.getData();
-
-                if (glyph instanceof Stick) {
-                    try {
-                        Stick      stick = (Stick) glyph;
-                        SystemInfo system = sheet.getSystemOf(stick);
-                        // Get a fresh suite
-                        setSuite(system.createStemCheckSuite(true));
-                        tellObject(stick);
-                    } catch (StepException ex) {
-                        logger.warning("Glyph cannot be processed");
-                    }
-                } else {
-                    tellObject(null);
+            try {
+                // Ignore RELEASING
+                if (event.movement == MouseMovement.RELEASING) {
+                    return;
                 }
+
+                if (event instanceof GlyphEvent) {
+                    GlyphEvent glyphEvent = (GlyphEvent) event;
+                    Glyph      glyph = glyphEvent.getData();
+
+                    if (glyph instanceof Stick) {
+                        try {
+                            Stick      stick = (Stick) glyph;
+                            SystemInfo system = sheet.getSystemOf(stick);
+                            // Get a fresh suite
+                            setSuite(system.createStemCheckSuite(true));
+                            tellObject(stick);
+                        } catch (StepException ex) {
+                            logger.warning("Glyph cannot be processed");
+                        }
+                    } else {
+                        tellObject(null);
+                    }
+                }
+            } catch (Exception ex) {
+                logger.warning(getClass().getName() + " onEvent error", ex);
             }
         }
     }
@@ -297,7 +299,7 @@ public class VerticalsModel
         public void renderItems (Graphics g)
         {
             // Render all physical info known so far
-            sheet.accept(new SheetPainter(g, getZoom()));
+            sheet.accept(new SheetPainter(g));
 
             super.renderItems(g);
         }
