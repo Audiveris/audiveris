@@ -45,6 +45,7 @@ import omr.score.entity.TimeSignature;
 import omr.score.entity.Tuplet;
 import omr.score.entity.Wedge;
 import omr.score.midi.MidiAgent;
+import omr.score.ui.ScoreView;
 import omr.score.visitor.ScoreChecker;
 import omr.score.visitor.ScoreCleaner;
 import omr.score.visitor.ScoreFixer;
@@ -131,10 +132,11 @@ public class SystemTranslator
 
             syst.fillMissingParts();
             syst.retrieveSlurConnections();
-            syst.accept(new ScoreFixer(true));
             syst.accept(new ScoreTimeFixer());
             syst.refineLyricSyllables();
         }
+
+        score.accept(new ScoreFixer(true));
 
         // Invalidate score data within MidiAgent, if needed
         try {
@@ -148,11 +150,12 @@ public class SystemTranslator
         }
 
         // Update score view if any
-        if (score.getView() != null) {
-            score.getView()
-                 .computeModelSize();
-            score.getView()
-                 .repaint();
+        ScoreView scoreView = sheet.getScore()
+                                   .getView();
+
+        if (scoreView != null) {
+            scoreView.computeModelSize();
+            scoreView.repaint();
         }
     }
 
