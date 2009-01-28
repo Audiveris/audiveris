@@ -381,7 +381,7 @@ public class SystemPart
 
         for (TreeNode node : getStaves()) {
             Staff staff = (Staff) node;
-            int   midY = staff.getTopLeft().y + (staff.getHeight() / 2);
+            int   midY = staff.getPageTopLeft().y + (staff.getHeight() / 2);
             int   dy = Math.abs(point.y - midY);
 
             if (dy < minDy) {
@@ -612,8 +612,8 @@ public class SystemPart
                         dummyPart,
                         new PagePoint(
                             getFirstStaff()
-                                .getTopLeft().x,
-                            getFirstStaff().getTopLeft().y -
+                                .getPageTopLeft().x,
+                            getFirstStaff().getPageTopLeft().y -
                             getScorePart().getDisplayOrdinate()),
                         getFirstStaff().getWidth(),
                         nextStaff.getHeight());

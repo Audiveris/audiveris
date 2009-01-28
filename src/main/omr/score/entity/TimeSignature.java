@@ -112,8 +112,8 @@ public class TimeSignature
             setCenter(
                 new SystemPoint(
                     other.getCenter().x,
-                    other.getCenter().y - other.getStaff().getTopLeft().y +
-                    staff.getTopLeft().y));
+                    other.getCenter().y - other.getStaff().getPageTopLeft().y +
+                    staff.getPageTopLeft().y));
         } catch (InvalidTimeSignature ex) {
             logger.severe("Cannot duplicate TimeSignature", ex);
         }
