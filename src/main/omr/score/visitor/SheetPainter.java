@@ -25,11 +25,9 @@ import omr.sheet.Sheet;
 import omr.sheet.StaffInfo;
 import omr.sheet.SystemInfo;
 
-import omr.step.Step;
-
 import omr.stick.Stick;
 
-import omr.ui.view.Zoom;
+import omr.ui.util.UIUtilities;
 
 import java.awt.*;
 
@@ -66,8 +64,8 @@ public class SheetPainter
     /** Graphic context */
     private final Graphics2D g;
 
-    /** Display zoom */
-    private final Zoom z;
+    /** Saved stroke for restoration at the end of the painting */
+    private final Stroke oldStroke;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -79,13 +77,12 @@ public class SheetPainter
      *
      *
      * @param g Graphic context
-     * @param z zoom factor
      */
-    public SheetPainter (Graphics g,
-                         Zoom     z)
+    public SheetPainter (Graphics g)
     {
         this.g = (Graphics2D) g;
-        this.z = z;
+
+        oldStroke = UIUtilities.SetAbsoluteStroke(g, 1f);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -99,7 +96,7 @@ public class SheetPainter
         // Render the measure ending barline, if within the clipping area
         if (measure.getBarline() != null) {
             measure.getBarline()
-                   .render(g, z);
+                   .render(g);
         }
 
         return true;
@@ -125,7 +122,7 @@ public class SheetPainter
         StaffInfo info = staff.getInfo();
 
         // Render the staff lines, if within the clipping area
-        if ((info != null) && info.render(g, z)) {
+        if ((info != null) && info.render(g)) {
             return true;
         } else {
             return false;
@@ -141,7 +138,7 @@ public class SheetPainter
         // Render the part starting barline, if any
         if (part.getStartingBarline() != null) {
             part.getStartingBarline()
-                .render(g, z);
+                .render(g);
         }
 
         return true;
@@ -172,7 +169,7 @@ public class SheetPainter
             // Render what we have got so far
             if (sheet.getStaves() != null) {
                 for (StaffInfo staff : sheet.getStaves()) {
-                    staff.render(g, z);
+                    staff.render(g);
                 }
             }
         }
@@ -187,16 +184,18 @@ public class SheetPainter
                 // Ledgers
                 for (Ledger ledger : sheet.getHorizontals()
                                           .getLedgers()) {
-                    ledger.render(g, z);
+                    ledger.render(g);
                 }
 
                 // Endings
                 for (Ending ending : sheet.getHorizontals()
                                           .getEndings()) {
-                    ending.render(g, z);
+                    ending.render(g);
                 }
             }
         }
+
+        ((Graphics2D) g).setStroke(oldStroke);
 
         return true;
     }
@@ -220,19 +219,17 @@ public class SheetPainter
     public boolean visit (SystemInfo systemInfo)
     {
         // Check that this system is visible
-        Rectangle box = systemInfo.getBounds();
-        z.scale(box);
-
-        if (box.intersects(g.getClipBounds())) {
+        if (systemInfo.getBounds()
+                      .intersects(g.getClipBounds())) {
             g.setColor(Color.lightGray);
 
             // System boundary
             systemInfo.getBoundary()
-                      .render(g, z.getRatio());
+                      .render(g);
 
             // Staff lines
             for (StaffInfo staff : systemInfo.getStaves()) {
-                staff.render(g, z);
+                staff.render(g);
             }
 
             g.setColor(Color.black);
@@ -241,18 +238,18 @@ public class SheetPainter
             for (Glyph glyph : systemInfo.getGlyphs()) {
                 if (glyph.isStem()) {
                     Stick stick = (Stick) glyph;
-                    stick.renderLine(g, z);
+                    stick.renderLine(g);
                 }
             }
 
             // Ledgers
             for (Ledger ledger : systemInfo.getLedgers()) {
-                ledger.render(g, z);
+                ledger.render(g);
             }
 
             // Endings
             for (Ending ending : systemInfo.getEndings()) {
-                ending.render(g, z);
+                ending.render(g);
             }
 
             return true;

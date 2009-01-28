@@ -20,7 +20,6 @@ import omr.glyph.text.Sentence;
 import omr.log.Logger;
 
 import omr.score.Score;
-import omr.score.common.ScorePoint;
 import omr.score.common.SystemPoint;
 import omr.score.common.SystemRectangle;
 import omr.score.common.UnitDimension;
@@ -114,13 +113,19 @@ public class ScorePainter
     private final Zoom zoom;
 
     /** Stroke to draw beams */
-    private final Stroke beamStroke;
+    private final Stroke beamStroke = new BasicStroke(8f);
 
     /** Stroke to draw stems */
-    private final Stroke stemStroke;
+    private final Stroke stemStroke = new BasicStroke(2f);
 
     /** Stroke to draw voices */
-    private final Stroke voiceStroke;
+    private final Stroke voiceStroke = new BasicStroke(
+        6f,
+        BasicStroke.CAP_BUTT,
+        BasicStroke.JOIN_BEVEL,
+        0f,
+        new float[] { 20f, 10f },
+        0);
 
     /** Used for icon image transformation */
     private final AffineTransform transform = new AffineTransform();
@@ -132,6 +137,9 @@ public class ScorePainter
         0,
         constants.slotAlpha.getValue());
 
+    /** Saved graphics set at init-time, to easily start a new System */
+    private AffineTransform savedTransform;
+
     //~ Constructors -----------------------------------------------------------
 
     //--------------//
@@ -140,31 +148,27 @@ public class ScorePainter
     /**
      * Creates a new ScorePainter object.
      *
-     * @param g Graphic context
-     * @param z zoom factor
+     * @param initialGraphics the Graphic context, already properly scaled
+     * @param zoom the zoom factor (a temporary fix to "descale" for symbols)
      */
-    public ScorePainter (Graphics g,
-                         Zoom     z)
+    public ScorePainter (Graphics initialGraphics,
+                         Zoom     zoom)
     {
-        this.g = (Graphics2D) g;
-        this.zoom = z;
+        g = (Graphics2D) initialGraphics.create();
+        this.zoom = zoom;
 
-        // Size strokes according to display zoom
-        float zoomRatio = (float) zoom.getRatio();
-        beamStroke = new BasicStroke(8f * zoomRatio);
-        stemStroke = new BasicStroke(2f * zoomRatio);
-        voiceStroke = new BasicStroke(
-            6f * zoomRatio,
-            BasicStroke.CAP_BUTT,
-            BasicStroke.JOIN_BEVEL,
-            0f,
-            new float[] { 20f * zoomRatio, 10f * zoomRatio },
-            0);
+        // Size of default font
+        Font  font = g.getFont();
+        float fontSize = font.getSize2D();
+        g.setFont(font.deriveFont(fontSize / (float) zoom.getRatio()));
 
         // Anti-aliasing for beams especially
-        this.g.setRenderingHint(
+        g.setRenderingHint(
             RenderingHints.KEY_ANTIALIASING,
             RenderingHints.VALUE_ANTIALIAS_ON);
+
+        // Save the transform
+        savedTransform = g.getTransform();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -189,28 +193,22 @@ public class ScorePainter
         final Color oldColor = g.getColor();
         g.setColor(color);
 
-        final ScorePoint    origin = measure.getDisplayOrigin();
-        final int           x = zoom.scaled(origin.x + slot.getX());
+        final int           x = slot.getX();
         final UnitDimension systemDimension = measure.getSystem()
                                                      .getDimension();
 
         if (wholeSystem) {
-            g.drawLine(
-                x,
-                zoom.scaled(origin.y),
-                x,
-                zoom.scaled(origin.y + systemDimension.height + STAFF_HEIGHT));
+            // Draw for the system height
+            g.drawLine(x, 0, x, systemDimension.height + STAFF_HEIGHT);
         } else {
+            // Draw for the part height
             g.drawLine(
                 x,
-                zoom.scaled(
-                    measure.getPart()
-                           .getFirstStaff()
-                           .getDisplayOrigin().y),
+                measure.getPart()
+                       .getFirstStaff()
+                       .getTopLeft().y,
                 x,
-                zoom.scaled(
-                    measure.getPart().getLastStaff().getDisplayOrigin().y +
-                    STAFF_HEIGHT));
+                measure.getPart().getLastStaff().getTopLeft().y + STAFF_HEIGHT);
         }
 
         g.setColor(oldColor);
@@ -236,13 +234,12 @@ public class ScorePainter
 
             g.setColor(Color.black);
             transform.setTransform(
-                1,
+                2,
                 0,
                 0,
                 ratio,
-                zoom.scaled(
-                    arpeggiate.getDisplayOrigin().x + arpeggiate.getPoint().x),
-                zoom.scaled(arpeggiate.getDisplayOrigin().y + top));
+                zoom.scaled(arpeggiate.getPoint().x),
+                zoom.scaled(top));
             g.drawRenderedImage(icon.getImage(), transform);
         }
 
@@ -255,18 +252,23 @@ public class ScorePainter
     @Override
     public boolean visit (Barline barline)
     {
-        final Shape shape = barline.getShape();
+        try {
+            final Shape shape = barline.getShape();
 
-        if (shape != null) {
-            // Draw the barline symbol for each stave in the measure
-            final SystemPart part = barline.getPart();
+            if (shape != null) {
+                // Draw the barline symbol for each stave in the measure
+                final SystemPart part = barline.getPart();
 
-            for (TreeNode node : part.getStaves()) {
-                final Staff staff = (Staff) node;
-                paintSymbol(shape, barline.getCenter(), staff, 0);
+                for (TreeNode node : part.getStaves()) {
+                    final Staff staff = (Staff) node;
+                    paintSymbol(shape, barline.getCenter(), staff, 0);
+                }
+            } else {
+                barline.addError("No shape for barline " + barline);
             }
-        } else {
-            barline.addError("No shape for barline " + barline);
+        } catch (Exception ex) {
+            // We do nothing
+            logger.warning("Could not draw Barline", ex);
         }
 
         return true;
@@ -284,10 +286,7 @@ public class ScorePainter
         // Draw the beam line, with a specific stroke
         g.setStroke(beamStroke);
         g.setColor(Color.black);
-        paintLine(
-            beam.getDisplayOrigin(),
-            beam.getLeftPoint(),
-            beam.getRightPoint());
+        paintLine(beam.getLeftPoint(), beam.getRightPoint());
         g.setColor(oldColor);
         g.setStroke(oldStroke);
 
@@ -315,7 +314,7 @@ public class ScorePainter
             }
 
             g.setStroke(stemStroke);
-            paintLine(chord.getDisplayOrigin(), tail, head);
+            paintLine(tail, head);
             g.setStroke(oldStroke);
 
             // Flags ?
@@ -328,21 +327,11 @@ public class ScorePainter
                 if (tail.y < head.y) { // Flags down
                     shape = Shape.values()[(COMBINING_FLAG_1.ordinal() + fn) -
                             1];
-                    paintSymbol(
-                        shape,
-                        center,
-                        chord.getDisplayOrigin(),
-                        chord,
-                        VerticalAlignment.TOP);
+                    paintSymbol(shape, center, chord, VerticalAlignment.TOP);
                 } else { // Flags up
                     shape = Shape.values()[(COMBINING_FLAG_1_UP.ordinal() + fn) -
                             1];
-                    paintSymbol(
-                        shape,
-                        center,
-                        chord.getDisplayOrigin(),
-                        chord,
-                        VerticalAlignment.BOTTOM);
+                    paintSymbol(shape, center, chord, VerticalAlignment.BOTTOM);
                 }
             }
         }
@@ -363,7 +352,6 @@ public class ScorePainter
                                                     .getId() - 1]);
                         g.setStroke(voiceStroke);
                         paintLine(
-                            chord.getDisplayOrigin(),
                             prev.getHeadLocation(),
                             chord.getHeadLocation());
                     } catch (Exception ex) {
@@ -387,7 +375,6 @@ public class ScorePainter
                 paintSymbol(
                     mark.getShape(),
                     mark.getLocation(),
-                    chord.getDisplayOrigin(),
                     hAlign,
                     VerticalAlignment.CENTER);
 
@@ -396,7 +383,6 @@ public class ScorePainter
 
                     Point topLeft = toScaledPoint(
                         mark.getLocation(),
-                        chord.getDisplayOrigin(),
                         hAlign,
                         10,
                         VerticalAlignment.BOTTOM,
@@ -505,16 +491,13 @@ public class ScorePainter
             if ((part == measure.getSystem()
                                 .getFirstRealPart()) &&
                 (measure.getId() != 0)) {
-                final ScorePoint staffOrigin = measure.getPart()
-                                                      .getFirstStaff()
-                                                      .getDisplayOrigin();
                 g.setColor(Color.lightGray);
                 g.drawString(
                     (measure.isPartial() ? "P" : "") +
                     (measure.isImplicit() ? "I" : "") +
                     Integer.toString(measure.getId()),
-                    zoom.scaled(staffOrigin.x + measure.getLeftX()) - 5,
-                    zoom.scaled(staffOrigin.y) - 15);
+                    (measure.getLeftX()) - 5,
+                    measure.getPart().getFirstStaff().getTopLeft().y - 15);
             }
 
             // Draw slot vertical lines ?
@@ -527,14 +510,11 @@ public class ScorePainter
 
             // Flag for measure excess duration?
             if (measure.getExcess() != null) {
-                final ScorePoint staffOrigin = measure.getPart()
-                                                      .getFirstStaff()
-                                                      .getDisplayOrigin();
                 g.setColor(Color.red);
                 g.drawString(
                     "Excess " + Note.quarterValueOf(measure.getExcess()),
-                    zoom.scaled(staffOrigin.x + measure.getLeftX()) + 10,
-                    zoom.scaled(staffOrigin.y) - 15);
+                    measure.getLeftX() + 10,
+                    measure.getPart().getFirstStaff().getTopLeft().y - 15);
             }
         }
 
@@ -550,10 +530,7 @@ public class ScorePainter
     public boolean visit (MeasureElement measureElement)
     {
         if (measureElement.getShape() != null) {
-            paintSymbol(
-                measureElement.getShape(),
-                measureElement.getPoint(),
-                measureElement.getDisplayOrigin());
+            paintSymbol(measureElement.getShape(), measureElement.getPoint());
         }
 
         return true;
@@ -565,7 +542,6 @@ public class ScorePainter
     @Override
     public boolean visit (Note note)
     {
-        final SystemPart  part = note.getPart();
         final Staff       staff = note.getStaff();
         final Chord       chord = note.getChord();
         final Glyph       stem = chord.getStem();
@@ -594,7 +570,7 @@ public class ScorePainter
                 displayShape = shape;
             }
 
-            paintSymbol(displayShape, center, part.getDisplayOrigin());
+            paintSymbol(displayShape, center);
         }
 
         // Augmentation dots ?
@@ -631,21 +607,24 @@ public class ScorePainter
             final int         halfLedger = note.getScale()
                                                .toUnits(
                 constants.halfLedgerLength);
-            final SystemPoint left = new SystemPoint(center.x - halfLedger, 0);
 
-            if (pitch > 0) {
-                left.y += STAFF_HEIGHT;
-            }
+            // Left side of the ledger (on staff external line)
+            final SystemPoint left = new SystemPoint(
+                center.x - halfLedger,
+                (pitch < 0) ? staff.getTopLeft().y
+                                : (staff.getTopLeft().y + STAFF_HEIGHT));
 
+            // Right side of the ledger (on staff external line)
             final SystemPoint right = new SystemPoint(
                 left.x + (2 * halfLedger),
                 left.y);
             final int         sign = Integer.signum(pitch);
 
+            // We draw ledgers until we reach absolute target note pitch
             for (int p = 6; p <= (pitch * sign); p = p + 2) {
                 left.y += (INTER_LINE * sign);
                 right.y += (INTER_LINE * sign);
-                paintLine(staff.getDisplayOrigin(), left, right);
+                paintLine(left, right);
             }
         }
 
@@ -669,19 +648,7 @@ public class ScorePainter
     @Override
     public boolean visit (Slur slur)
     {
-        // Build a new curve, w/ translation and zoom
-        final Point        origin = slur.getDisplayOrigin();
-        final CubicCurve2D curve = slur.getCurve();
-        g.draw(
-            new CubicCurve2D.Double(
-                zoom.scaled(0.5 + curve.getX1() + origin.x),
-                zoom.scaled(0.5 + curve.getY1() + origin.y),
-                zoom.scaled(0.5 + curve.getCtrlX1() + origin.x),
-                zoom.scaled(0.5 + curve.getCtrlY1() + origin.y),
-                zoom.scaled(0.5 + curve.getCtrlX2() + origin.x),
-                zoom.scaled(0.5 + curve.getCtrlY2() + origin.y),
-                zoom.scaled(0.5 + curve.getX2() + origin.x),
-                zoom.scaled(0.5 + curve.getY2() + origin.y)));
+        g.draw(slur.getCurve());
 
         return true;
     }
@@ -695,7 +662,7 @@ public class ScorePainter
         final Color oldColor = g.getColor();
 
         try {
-            final Point origin = staff.getDisplayOrigin();
+            int topY = staff.getTopLeft().y;
 
             if (staff.isDummy()) {
                 g.setColor(Color.LIGHT_GRAY);
@@ -706,12 +673,8 @@ public class ScorePainter
             // Draw the staff lines
             for (int i = 0; i < LINE_NB; i++) {
                 // Y of this staff line
-                final int y = zoom.scaled(origin.y + (i * INTER_LINE));
-                g.drawLine(
-                    zoom.scaled(origin.x),
-                    y,
-                    zoom.scaled(origin.x + staff.getWidth()),
-                    y);
+                final int y = topY + (i * INTER_LINE);
+                g.drawLine(0, y, staff.getWidth(), y);
             }
         } catch (Exception ex) {
             logger.warning("Cannot paint " + staff);
@@ -728,34 +691,35 @@ public class ScorePainter
     @Override
     public boolean visit (ScoreSystem system)
     {
+        // Restore saved transform
+        g.setTransform(savedTransform);
+
         // Check whether our system is impacted)
         final Rectangle clip = g.getClipBounds();
         final int       xMargin = 2 * INTER_SYSTEM;
         final int       systemLeft = system.getRightPosition() + xMargin;
         final int       systemRight = system.getDisplayOrigin().x - xMargin;
 
-        if ((zoom.unscaled(clip.x) > systemLeft) ||
-            (zoom.unscaled(clip.x + clip.width) < systemRight)) {
+        if ((clip.x > systemLeft) || ((clip.x + clip.width) < systemRight)) {
             return false;
         } else {
-            final UnitDimension dimension = system.getDimension();
+            final UnitDimension dim = system.getDimension();
             final Point         origin = system.getDisplayOrigin();
+
             Color               oldColor = g.getColor();
             g.setColor(Color.lightGray);
 
+            // Write system # at the top of the display
+            g.drawString("S" + system.getId(), origin.x, 24);
+
+            // Now use system topLeft as the origin
+            g.translate(origin.x, origin.y);
+
             // Draw the system left edge
-            g.drawLine(
-                zoom.scaled(origin.x),
-                zoom.scaled(origin.y),
-                zoom.scaled(origin.x),
-                zoom.scaled(origin.y + dimension.height + STAFF_HEIGHT));
+            g.drawLine(0, 0, 0, dim.height + STAFF_HEIGHT);
 
             // Draw the system right edge
-            g.drawLine(
-                zoom.scaled(origin.x + dimension.width),
-                zoom.scaled(origin.y),
-                zoom.scaled(origin.x + dimension.width),
-                zoom.scaled(origin.y + dimension.height + STAFF_HEIGHT));
+            g.drawLine(dim.width, 0, dim.width, dim.height + STAFF_HEIGHT);
             g.setColor(oldColor);
 
             return true;
@@ -773,10 +737,10 @@ public class ScorePainter
                 .size() > 1) {
             // Top & bottom of brace to draw
             final int        top = part.getFirstStaff()
-                                       .getDisplayOrigin().y;
+                                       .getTopLeft().y;
             final int        bot = part.getLastStaff()
-                                       .getDisplayOrigin().y + STAFF_HEIGHT;
-            final double     height = zoom.scaled(bot - top + 1);
+                                       .getTopLeft().y + STAFF_HEIGHT;
+            final double     height = bot - top + 1;
 
             // Vertical ratio to extend the icon */
             final SymbolIcon braceIcon = (SymbolIcon) Shape.BRACE.getIcon();
@@ -788,13 +752,12 @@ public class ScorePainter
                 final int dx = 10;
                 g.setColor(Color.black);
                 transform.setTransform(
-                    1,
+                    1 / zoom.getRatio(),
                     0,
                     0,
                     ratio,
-                    zoom.scaled(part.getSystem()
-                                    .getDisplayOrigin().x) - dx,
-                    zoom.scaled(top));
+                    -dx,
+                    top);
                 g.drawRenderedImage(braceIcon.getImage(), transform);
             }
         }
@@ -823,7 +786,7 @@ public class ScorePainter
         //        logger.info(
         //            text.getClass().getSimpleName() + " " + text.getContent() +
         //            " size:" + text.getFontSize());
-        float fontSize = (float) zoom.getRatio() * text.getFontSize();
+        float fontSize = text.getFontSize();
         Font  font = text.getFont()
                          .deriveFont(fontSize);
         g.setFont(font);
@@ -834,10 +797,7 @@ public class ScorePainter
         int      y = sentence.getLocation().y;
 
         if (text.getContent() != null) {
-            g.drawString(
-                text.getContent(),
-                zoom.scaled(text.getDisplayOrigin().x + text.getLocation().x),
-                zoom.scaled(text.getDisplayOrigin().y + y));
+            g.drawString(text.getContent(), text.getLocation().x, y);
         } else {
             // Use the (pseudo)content of contained glyphs
             for (Glyph item : sentence.getGlyphs()) {
@@ -852,10 +812,9 @@ public class ScorePainter
                 if (str != null) {
                     g.drawString(
                         str,
-                        zoom.scaled(
-                            text.getDisplayOrigin().x +
-                            text.getSystem().toSystemPoint(item.getLocation()).x),
-                        zoom.scaled(text.getDisplayOrigin().y + y));
+                        text.getSystem()
+                            .toSystemPoint(item.getLocation()).x,
+                        y);
                 }
             }
         }
@@ -891,10 +850,7 @@ public class ScorePainter
                 case TIME_SIX_EIGHT :
                 case COMMON_TIME :
                 case CUT_TIME :
-                    paintSymbol(
-                        shape,
-                        timeSignature.getCenter(),
-                        part.getDisplayOrigin());
+                    paintSymbol(shape, timeSignature.getCenter());
 
                     break;
                 }
@@ -982,8 +938,8 @@ public class ScorePainter
                 bot = new SystemPoint(box.x, box.y + box.height);
             }
 
-            paintLine(system.getDisplayOrigin(), single, top);
-            paintLine(system.getDisplayOrigin(), single, bot);
+            paintLine(single, top);
+            paintLine(single, bot);
         }
 
         return true;
@@ -1015,24 +971,14 @@ public class ScorePainter
      * Draw a line from one SystemPoint to another SystemPoint within their
      * containing system.
      *
-     * @param displayOrigin the related system display origin
      * @param from first point
      * @param to second point
      */
-    private void paintLine (ScorePoint  displayOrigin,
-                            SystemPoint from,
+    private void paintLine (SystemPoint from,
                             SystemPoint to)
     {
-        if ((g != null) &&
-            (zoom != null) &&
-            (displayOrigin != null) &&
-            (from != null) &&
-            (to != null)) {
-            g.drawLine(
-                zoom.scaled(displayOrigin.x + from.x),
-                zoom.scaled(displayOrigin.y + from.y),
-                zoom.scaled(displayOrigin.x + to.x),
-                zoom.scaled(displayOrigin.y + to.y));
+        if ((from != null) && (to != null)) {
+            g.drawLine(from.x, from.y, to.x, to.y);
         } else {
             logger.warning("line not painted due to null reference");
         }
@@ -1048,16 +994,13 @@ public class ScorePainter
      *
      * @param shape the shape whose icon must be painted
      * @param point system-based given point in units
-     * @param displayOrigin the related origin in score display
      */
     private void paintSymbol (Shape       shape,
-                              SystemPoint point,
-                              ScorePoint  displayOrigin)
+                              SystemPoint point)
     {
         paintSymbol(
             shape,
             point,
-            displayOrigin,
             HorizontalAlignment.CENTER,
             VerticalAlignment.CENTER);
     }
@@ -1071,27 +1014,30 @@ public class ScorePainter
      *
      * @param shape the shape whose icon must be painted
      * @param point system-based given point in units
-     * @param displayOrigin the related origin in score display
      * @param hAlign the horizontal alignment wrt the point
      * @param vAlign the vertical alignment wrt the point
      */
     private void paintSymbol (Shape               shape,
                               SystemPoint         point,
-                              ScorePoint          displayOrigin,
                               HorizontalAlignment hAlign,
                               VerticalAlignment   vAlign)
     {
         final SymbolIcon icon = (SymbolIcon) shape.getIcon();
 
         if (icon != null) {
-            final Point topLeft = toScaledPoint(
-                point,
-                displayOrigin,
-                hAlign,
-                icon.getActualWidth(),
-                vAlign,
-                icon.getIconHeight());
-            g.drawImage(icon.getImage(), topLeft.x, topLeft.y, null);
+            try {
+                final Point topLeft = toScaledPoint(
+                    point,
+                    hAlign,
+                    icon.getActualWidth(),
+                    vAlign,
+                    icon.getIconHeight());
+                zoom.scale(topLeft);
+                g.scale(1 / zoom.getRatio(), 1 / zoom.getRatio());
+                g.drawImage(icon.getImage(), topLeft.x, topLeft.y, null);
+            } finally {
+                g.scale(zoom.getRatio(), zoom.getRatio());
+            }
         }
     }
 
@@ -1105,37 +1051,40 @@ public class ScorePainter
      *
      * @param shape the shape whose icon must be painted
      * @param center system-based bounding center in units
-     * @param displayOrigin the related origin in score display
      * @param chord the chord stem to attach the symbol to
      * @param vAlign the vertical alignment wrt the point
      */
     private void paintSymbol (Shape             shape,
                               SystemPoint       center,
-                              ScorePoint        displayOrigin,
                               Chord             chord,
                               VerticalAlignment vAlign)
     {
         final SymbolIcon icon = (SymbolIcon) shape.getIcon();
 
         if (icon != null) {
-            final Point topLeft = new Point(
-                zoom.scaled(displayOrigin.x + chord.getTailLocation().x),
-                zoom.scaled(displayOrigin.y + center.y));
+            try {
+                final Point topLeft = new Point(
+                    zoom.scaled(chord.getTailLocation().x),
+                    zoom.scaled(center.y));
 
-            // Horizontal alignment
-            if (center.x < chord.getTailLocation().x) {
-                // Symbol is on left side of stem (-1 is for stem width)
-                topLeft.x -= (icon.getActualWidth() - 1);
+                // Horizontal alignment
+                if (center.x < chord.getTailLocation().x) {
+                    // Symbol is on left side of stem (-1 is for stem width)
+                    topLeft.x -= (icon.getActualWidth() - 1);
+                }
+
+                // Vertical alignment
+                if (vAlign == VerticalAlignment.CENTER) {
+                    topLeft.y -= (icon.getIconHeight() / 2);
+                } else if (vAlign == VerticalAlignment.BOTTOM) {
+                    topLeft.y -= icon.getIconHeight();
+                }
+
+                g.scale(1 / zoom.getRatio(), 1 / zoom.getRatio());
+                g.drawImage(icon.getImage(), topLeft.x, topLeft.y, null);
+            } finally {
+                g.scale(zoom.getRatio(), zoom.getRatio());
             }
-
-            // Vertical alignment
-            if (vAlign == VerticalAlignment.CENTER) {
-                topLeft.y -= (icon.getIconHeight() / 2);
-            } else if (vAlign == VerticalAlignment.BOTTOM) {
-                topLeft.y -= icon.getIconHeight();
-            }
-
-            g.drawImage(icon.getImage(), topLeft.x, topLeft.y, null);
         }
     }
 
@@ -1160,23 +1109,28 @@ public class ScorePainter
         final SymbolIcon icon = (SymbolIcon) shape.getIcon();
 
         if (icon != null) {
-            final ScorePoint displayOrigin = staff.getDisplayOrigin();
-            final int        dy = Staff.pitchToUnit(pitchPosition);
+            try {
+                final int dy = Staff.pitchToUnit(pitchPosition);
 
-            // Position of symbol wrt stem
-            final int stemX = chord.getTailLocation().x;
-            int       iconX = zoom.scaled(displayOrigin.x + stemX);
+                // Position of symbol wrt stem
+                final int stemX = chord.getTailLocation().x;
+                int       iconX = zoom.scaled(stemX);
 
-            if (center.x < stemX) {
-                // Symbol is on left side of stem (-1 is for stem width)
-                iconX -= (icon.getActualWidth() - 1);
+                if (center.x < stemX) {
+                    // Symbol is on left side of stem (-1 is for stem width)
+                    iconX -= (icon.getActualWidth() - 1);
+                }
+
+                g.scale(1 / zoom.getRatio(), 1 / zoom.getRatio());
+                g.drawImage(
+                    icon.getImage(),
+                    iconX,
+                    zoom.scaled(staff.getTopLeft().y + dy) -
+                    icon.getCenter().y,
+                    null);
+            } finally {
+                g.scale(zoom.getRatio(), zoom.getRatio());
             }
-
-            g.drawImage(
-                icon.getImage(),
-                iconX,
-                zoom.scaled(displayOrigin.y + dy) - icon.getCenter().y,
-                null);
         }
     }
 
@@ -1226,14 +1180,14 @@ public class ScorePainter
                               double              pitchPosition,
                               HorizontalAlignment hAlign)
     {
-        try {
-            final SymbolIcon icon = (SymbolIcon) shape.getIcon();
+        final SymbolIcon icon = (SymbolIcon) shape.getIcon();
 
-            if (icon != null) {
+        if (icon != null) {
+            try {
                 final Point topLeft = new Point(
-                    zoom.scaled(staff.getDisplayOrigin().x + center.x),
+                    zoom.scaled(center.x),
                     zoom.scaled(
-                        staff.getDisplayOrigin().y +
+                        staff.getTopLeft().y +
                         Staff.pitchToUnit(pitchPosition)));
 
                 // Horizontal alignment
@@ -1246,12 +1200,15 @@ public class ScorePainter
                 // Specific vertical alignment
                 topLeft.y -= icon.getCenter().y;
 
+                g.scale(1 / zoom.getRatio(), 1 / zoom.getRatio());
                 g.drawImage(icon.getImage(), topLeft.x, topLeft.y, null);
+            } catch (Exception ex) {
+                logger.warning(
+                    "Cannot paint symbol " + shape + " at center " + center,
+                    ex);
+            } finally {
+                g.scale(zoom.getRatio(), zoom.getRatio());
             }
-        } catch (Exception ex) {
-            logger.warning(
-                "Cannot paint symbol " + shape + " at center " + center,
-                ex);
         }
     }
 
@@ -1259,15 +1216,12 @@ public class ScorePainter
     // toScaledPoint //
     //---------------//
     private Point toScaledPoint (SystemPoint         sysPt,
-                                 ScorePoint          displayOrigin,
                                  HorizontalAlignment hAlign,
                                  int                 width,
                                  VerticalAlignment   vAlign,
                                  int                 height)
     {
-        final Point point = new Point(
-            zoom.scaled(displayOrigin.x + sysPt.x),
-            zoom.scaled(displayOrigin.y + sysPt.y));
+        final Point point = new Point(sysPt);
 
         if (hAlign == HorizontalAlignment.CENTER) {
             point.x -= (width / 2);
