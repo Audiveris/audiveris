@@ -11,9 +11,7 @@ package omr.glyph.ui;
 
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
-import omr.glyph.GlyphsModel;
 import omr.glyph.Shape;
-import static omr.script.ScriptRecording.*;
 
 import omr.selection.GlyphEvent;
 import omr.selection.SelectionHint;
@@ -21,13 +19,11 @@ import omr.selection.SelectionHint;
 import omr.sheet.Sheet;
 
 import omr.util.Implement;
-import static omr.util.Synchronicity.*;
 
 import java.awt.event.*;
 import java.util.*;
 
 import javax.swing.*;
-import static javax.swing.Action.*;
 
 /**
  * Class <code>BarMenu</code> defines the popup menu to interact with bar lines
@@ -40,8 +36,8 @@ public class BarMenu
     //~ Instance fields --------------------------------------------------------
 
     // Links to partnering entities
-    private final Sheet          sheet;
-    private final GlyphsModel     glyphModel;
+    private final Sheet            sheet;
+    private final GlyphsController glyphsController;
 
     /** Set of actions to update menu according to selected glyphs */
     private final Set<DynAction> dynActions = new HashSet<DynAction>();
@@ -66,15 +62,15 @@ public class BarMenu
      * Create the popup menu
      *
      * @param sheet the related sheet
-     * @param glyphModel the top companion
+     * @param glyphsController the top companion
      * @param glyphLag the related glyph lag
      */
-    public BarMenu (final Sheet      sheet,
-                    final GlyphsModel glyphModel,
-                    final GlyphLag   glyphLag)
+    public BarMenu (final Sheet            sheet,
+                    final GlyphsController glyphsController,
+                    final GlyphLag         glyphLag)
     {
         this.sheet = sheet;
-        this.glyphModel = glyphModel;
+        this.glyphsController = glyphsController;
         this.glyphLag = glyphLag;
 
         popup = new JPopupMenu(); //------------------------------------------
@@ -89,19 +85,18 @@ public class BarMenu
 
         // Manually assign a shape
         JMenu assignMenu = new JMenu(new AssignAction());
-        Shape.addRangeShapeItems(Shape.Barlines,
+        Shape.addRangeShapeItems(
+            Shape.Barlines,
             assignMenu,
             new ActionListener() {
                     @Implement(ActionListener.class)
                     public void actionPerformed (final ActionEvent e)
                     {
                         JMenuItem source = (JMenuItem) e.getSource();
-                        glyphModel.assignSetShape(
-                            ASYNC,
-                            glyphLag.getCurrentGlyphSet(),
+                        glyphsController.asyncAssignGlyphSet(
+                            glyphLag.getSelectedGlyphSet(),
                             Shape.valueOf(source.getText()),
-                            false,
-                            RECORDING);
+                            false);
                     }
                 });
         popup.add(assignMenu);
@@ -110,19 +105,18 @@ public class BarMenu
 
         // Build a compound, with menu for shape selection
         JMenu compoundMenu = new JMenu(new CompoundAction());
-        Shape.addShapeItems(
+        Shape.addRangeShapeItems(
+            Shape.Barlines,
             compoundMenu,
             new ActionListener() {
                     @Implement(ActionListener.class)
                     public void actionPerformed (ActionEvent e)
                     {
                         JMenuItem source = (JMenuItem) e.getSource();
-                        glyphModel.assignSetShape(
-                            ASYNC,
-                            glyphLag.getCurrentGlyphSet(),
+                        glyphsController.asyncAssignGlyphSet(
+                            glyphLag.getSelectedGlyphSet(),
                             Shape.valueOf(source.getText()),
-                            true,
-                            RECORDING);
+                            true);
                     }
                 });
         popup.add(compoundMenu);
@@ -157,7 +151,7 @@ public class BarMenu
     public void updateMenu ()
     {
         // Analyze the context
-        Set<Glyph> glyphs = glyphLag.getCurrentGlyphSet();
+        Set<Glyph> glyphs = glyphLag.getSelectedGlyphSet();
         glyphNb = glyphs.size();
         knownNb = 0;
         stemNb = 0;
@@ -290,11 +284,11 @@ public class BarMenu
         public void actionPerformed (ActionEvent e)
         {
             // Remember which is the current selected glyph
-            Glyph      glyph = glyphLag.getCurrentGlyph();
+            Glyph      glyph = glyphLag.getSelectedGlyph();
 
             // Actually deassign the whole set
-            Set<Glyph> glyphs = glyphLag.getCurrentGlyphSet();
-            glyphModel.deassignSetShape(ASYNC, glyphs, RECORDING);
+            Set<Glyph> glyphs = glyphLag.getSelectedGlyphSet();
+            glyphsController.asyncDeassignGlyphSet(glyphs);
 
             // Update focus on current glyph, if reused in a compound
             if (glyph != null) {
@@ -302,7 +296,8 @@ public class BarMenu
                                       .getGlyph();
 
                 if (glyph != newGlyph) {
-                    glyphLag.publish(
+                    glyphLag.getSelectionService()
+                            .publish(
                         new GlyphEvent(
                             this,
                             SelectionHint.GLYPH_INIT,
@@ -360,7 +355,7 @@ public class BarMenu
 
         public void actionPerformed (ActionEvent e)
         {
-            for (Glyph glyph : glyphLag.getCurrentGlyphSet()) {
+            for (Glyph glyph : glyphLag.getSelectedGlyphSet()) {
                 glyph.dump();
             }
         }
@@ -405,17 +400,20 @@ public class BarMenu
         {
             JMenuItem source = (JMenuItem) e.getSource();
             Shape     shape = Shape.valueOf(source.getText());
-            Glyph     glyph = glyphLag.getCurrentGlyph();
+            Glyph     glyph = glyphLag.getSelectedGlyph();
 
             if (glyph != null) {
-                glyphModel.assignGlyphShape(ASYNC, glyph, shape, RECORDING);
+                glyphsController.asyncAssignGlyphSet(
+                    Collections.singleton(glyph),
+                    shape,
+                    false);
             }
         }
 
         @Override
         public void update ()
         {
-            Shape latest = glyphModel.getLatestShapeAssigned();
+            Shape latest = glyphsController.getLatestShapeAssigned();
 
             if ((glyphNb > 0) && (latest != null)) {
                 setEnabled(true);

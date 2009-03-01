@@ -10,7 +10,7 @@
 package omr.glyph.ui;
 
 import omr.glyph.Glyph;
-import omr.glyph.GlyphsModel;
+import omr.glyph.ui.GlyphsController;
 import omr.glyph.Shape;
 
 import omr.log.Logger;
@@ -60,6 +60,7 @@ class ShapeFocusBoard
 
     /** Events this board is interested in */
     private static final Collection<Class<?extends UserEvent>> eventClasses;
+
     static {
         eventClasses = new ArrayList<Class<?extends UserEvent>>();
         eventClasses.add(GlyphEvent.class);
@@ -87,7 +88,7 @@ class ShapeFocusBoard
     //~ Instance fields --------------------------------------------------------
 
     private final GlyphLagView view;
-    private final GlyphsModel   glyphModel;
+    private final GlyphsController  glyphModel;
     private final Sheet        sheet;
 
     /** Counter on symbols assigned to the current shape */
@@ -118,12 +119,12 @@ class ShapeFocusBoard
      */
     public ShapeFocusBoard (Sheet          sheet,
                             GlyphLagView   view,
-                            GlyphsModel     glyphModel,
+                            GlyphsController    glyphModel,
                             ActionListener filterListener)
     {
         super(
             sheet.getRadix() + "-ShapeFocusBoard",
-            glyphModel.getLag().getEventService(),
+            glyphModel.getLag().getSelectionService(),
             eventClasses);
 
         this.sheet = sheet;
@@ -383,6 +384,7 @@ class ShapeFocusBoard
 
             if (id != NO_VALUE) {
                 glyphModel.getLag()
+                          .getSelectionService()
                           .publish(
                     new GlyphIdEvent(this, SelectionHint.GLYPH_INIT, null, id));
             }

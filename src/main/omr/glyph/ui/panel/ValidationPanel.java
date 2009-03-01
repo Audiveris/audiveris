@@ -176,8 +176,8 @@ class ValidationPanel
     public void update (Observable obs,
                         Object     unused)
     {
-        negativeAction.setEnabled(negatives.size() > 0);
-        falsePositiveAction.setEnabled(falsePositives.size() > 0);
+        negativeAction.setEnabled(!negatives.isEmpty());
+        falsePositiveAction.setEnabled(!falsePositives.isEmpty());
     }
 
     //--------------//
@@ -391,7 +391,7 @@ class ValidationPanel
                             runValidation();
                             negativeAction.setEnabled(negatives.size() > 0);
                             falsePositiveAction.setEnabled(
-                                falsePositives.size() > 0);
+                                !falsePositives.isEmpty());
                             setEnabled(true);
                         }
                     });

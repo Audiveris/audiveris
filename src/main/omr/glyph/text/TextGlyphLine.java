@@ -459,7 +459,7 @@ public class TextGlyphLine
                         .size() > 1) {
                 Glyph compound = systemInfo.buildCompound(sentence.getGlyphs());
                 //                glyphsBuilder.addGlyph(compound);
-                compound.setShape(Shape.TEXT, Evaluation.NO_DOUBT);
+                compound.setShape(Shape.TEXT, Evaluation.ALGORITHM);
                 glyph = sentence.getGlyphs()
                                 .first()
                                 .getFirstSection()
@@ -478,7 +478,7 @@ public class TextGlyphLine
                         glyph.getImage(),
                         language)
                                               .get(0);
-                    ///logger.info("Glyph#" + glyph.getId() + "->" + line);
+                    logger.info("Glyph#" + glyph.getId() + "->" + line);
 
                     glyph.getTextInfo()
                          .setOcrContent(line);

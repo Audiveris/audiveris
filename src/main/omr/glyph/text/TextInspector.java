@@ -109,6 +109,7 @@ public class TextInspector
     public int retrieveTextGlyphs ()
     {
         TextArea area = new TextArea(
+            system,
             null,
             system.getSheet().getVerticalLag().createAbsoluteRoi(
                 system.getBounds()),

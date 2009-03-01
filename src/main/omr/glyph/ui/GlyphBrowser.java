@@ -19,17 +19,16 @@ import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 import omr.glyph.GlyphsModel;
 
-import omr.lag.ScrollLagView;
 import omr.lag.VerticalOrientation;
+import omr.lag.ui.ScrollLagView;
 
 import omr.log.Logger;
-
-import omr.script.ScriptRecording;
 
 import omr.selection.GlyphEvent;
 import omr.selection.MouseMovement;
 import omr.selection.SelectionHint;
 import static omr.selection.SelectionHint.*;
+import omr.selection.SelectionService;
 import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
 
@@ -42,14 +41,10 @@ import omr.ui.view.Zoom;
 
 import omr.util.BlackList;
 import omr.util.Implement;
-import omr.util.Synchronicity;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
-import org.bushe.swing.event.EventService;
-import org.bushe.swing.event.ThreadSafeEventService;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -115,13 +110,13 @@ class GlyphBrowser
     private Display display;
 
     /** Basic (sheet) event service */
-    private EventService locationService;
+    private SelectionService locationService;
 
     /** Hosting GlyphLag */
     private GlyphLag tLag;
 
     /** Basic glyph model */
-    private GlyphsModel glyphModel;
+    private GlyphsController controller;
 
     /** The lag view */
     private GlyphLagView view;
@@ -178,6 +173,7 @@ class GlyphBrowser
     //--------------//
     // stateChanged //
     //--------------//
+    @Implement(ChangeListener.class)
     public void stateChanged (ChangeEvent e)
     {
         int selNb = verifier.getGlyphNames().length;
@@ -200,7 +196,7 @@ class GlyphBrowser
         // Specific glyph board
         glyphBoard = new SymbolGlyphBoard(
             "Browser-SymbolGlyphBoard",
-            glyphModel);
+            controller);
 
         glyphBoard.connect();
         glyphBoard.getDeassignAction()
@@ -213,7 +209,7 @@ class GlyphBrowser
         // Passive evaluation board
         EvaluationBoard evalBoard = new EvaluationBoard(
             "Evaluation-PassiveBoard",
-            glyphModel);
+            controller);
         evalBoard.connect();
 
         // Layout
@@ -301,12 +297,7 @@ class GlyphBrowser
             GlyphSection.class,
             new VerticalOrientation());
 
-        locationService = new ThreadSafeEventService();
-        locationService.setDefaultCacheSizePerClassOrTopic(1);
-        tLag.setLocationService(locationService);
-        locationService.subscribeStrongly(SheetLocationEvent.class, tLag);
-
-        glyphModel = new BasicGlyphModel(tLag, locationService);
+        controller = new BasicController(tLag, locationService);
 
         //        tLag.setSectionSelection(localSectionSelection);
         //        localSectionSelection.addObserver(tLag);
@@ -358,43 +349,72 @@ class GlyphBrowser
     }
 
     //-----------------//
-    // BasicGlyphModel // ------------------------------------------------------
+    // BasicController //
     //-----------------//
-    private class BasicGlyphModel
-        extends GlyphsModel
+    /**
+     * A very basic glyphs controller, with a sheet-less location service
+     */
+    private class BasicController
+        extends GlyphsController
     {
         //~ Instance fields ----------------------------------------------------
 
-        private final EventService locationService;
+        /** A specific location service, not tied to a sheet */
+        private final SelectionService locationService;
 
         //~ Constructors -------------------------------------------------------
 
-        public BasicGlyphModel (GlyphLag     lag,
-                                EventService locationService)
+        public BasicController (GlyphLag         lag,
+                                SelectionService locationService)
         {
-            super(null, lag);
+            super(new BasicModel(lag));
             this.locationService = locationService;
         }
 
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public EventService getLocationService ()
+        public SelectionService getLocationService ()
         {
             return this.locationService;
         }
+    }
 
-        @Override
-        public void deassignGlyphShape (Synchronicity   processing,
-                                        Glyph           glyph,
-                                        ScriptRecording record)
+    //------------//
+    // BasicModel //
+    //------------//
+    /**
+     * A very basic glyphs model, used to handle the deletion of glyphs
+     */
+    private class BasicModel
+        extends GlyphsModel
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public BasicModel (GlyphLag lag)
         {
-            deleteGlyph(); // Using current glyph
+            super(null, lag, null);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        //---------------//
+        // deassignGlyph //
+        //---------------//
+        /**
+         * Deassign the shape of a glyph
+         *
+         * @param glyph the glyph to deassign
+         */
+        @Override
+        public void deassignGlyph (Glyph glyph)
+        {
+            deleteGlyph();
         }
     }
 
     //---------//
-    // Display // --------------------------------------------------------------
+    // Display //
     //---------//
     private class Display
         extends JPanel
@@ -416,7 +436,7 @@ class GlyphBrowser
                 //                localGlyphSelection.deleteObserver(view);
             }
 
-            view = new MyView();
+            view = new MyView(controller);
             modelRectangle = new Rectangle();
             modelSize = new Dimension(0, 0);
             slider = new LogSlider(2, 5, LogSlider.VERTICAL, -3, 4, 0);
@@ -435,16 +455,16 @@ class GlyphBrowser
     }
 
     //--------//
-    // MyView // ---------------------------------------------------------------
+    // MyView //
     //--------//
     private class MyView
         extends GlyphLagView
     {
         //~ Constructors -------------------------------------------------------
 
-        public MyView ()
+        public MyView (GlyphsController controller)
         {
-            super(tLag, null, null, glyphModel, null);
+            super(tLag, null, null, controller, null);
             setName("GlyphBrowser-View");
 
             //            setLocationSelection(localPixelSelection);
@@ -455,21 +475,22 @@ class GlyphBrowser
         //~ Methods ------------------------------------------------------------
 
         //---------------//
-        // colorizeGlyph //
-        //---------------//
-        @Override
-        public void colorizeGlyph (Glyph glyph)
-        {
-            colorizeGlyph(glyph, glyph.getColor());
-        }
-
-        //---------------//
         // deassignGlyph //
         //---------------//
         @Override
-        public void deassignGlyph (Glyph glyph)
+        public void asyncDeassignGlyphSet (Set<Glyph> glyphs)
         {
             deleteGlyph(); // Current glyph
+        }
+
+        //---------------//
+        // colorizeGlyph //
+        //---------------//
+        @Override
+        public void colorizeGlyph (int   viewIndex,
+                                   Glyph glyph)
+        {
+            colorizeGlyph(viewIndex, glyph, glyph.getColor());
         }
 
         //---------//
@@ -517,7 +538,9 @@ class GlyphBrowser
                         // Display glyph contour
                         if (glyph != null) {
                             // Use tLag event service for this location info ...
-                            tLag.publish(
+                            // BIZARRE : SheetLocation publié sur le lag !!!!?
+                            tLag.getSelectionService()
+                                .publish(
                                 new SheetLocationEvent(
                                     this,
                                     glyphEvent.hint,
@@ -587,7 +610,7 @@ class GlyphBrowser
     }
 
     //-----------//
-    // Navigator // ------------------------------------------------------------
+    // Navigator //
     //-----------//
     /**
      * Class <code>Navigator</code> handles the navigation through the
@@ -684,9 +707,9 @@ class GlyphBrowser
             return nameIndex;
         }
 
-        //-----------//
-        // loadGlyph //
-        //-----------//
+        //----------//
+        // getGlyph //
+        //----------//
         public Glyph getGlyph (String gName)
         {
             Glyph glyph = repository.getGlyph(gName, null);
@@ -701,7 +724,8 @@ class GlyphBrowser
                     section.complete();
                 }
 
-                view.colorizeGlyph(glyph);
+                int viewIndex = tLag.viewIndexOf(view);
+                view.colorizeGlyph(viewIndex, glyph);
             }
 
             return glyph;
@@ -752,11 +776,12 @@ class GlyphBrowser
                 nameField.setText("");
             }
 
-            tLag.publish(new GlyphEvent(this, hint, null, glyph));
+            tLag.getSelectionService()
+                .publish(new GlyphEvent(this, hint, null, glyph));
             nameIndex = index;
 
             // Enable buttons according to glyph selection
-            all.setEnabled(names.size() > 0);
+            all.setEnabled(!names.isEmpty());
             prev.setEnabled(index > 0);
             next.setEnabled((index >= 0) && (index < (names.size() - 1)));
         }
@@ -824,7 +849,7 @@ class GlyphBrowser
             resetBrowser();
 
             // Set navigator on first glyph, if any
-            if (names.size() > 0) {
+            if (!names.isEmpty()) {
                 navigator.setIndex(0, GLYPH_INIT);
             } else {
                 if (e != null) {

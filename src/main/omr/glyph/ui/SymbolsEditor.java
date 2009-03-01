@@ -13,15 +13,14 @@ import omr.glyph.Evaluator;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphNetwork;
-import omr.glyph.SymbolsModel;
+import omr.glyph.ui.SymbolsController;
 
-import omr.lag.RunBoard;
-import omr.lag.ScrollLagView;
-import omr.lag.SectionBoard;
+import omr.lag.ui.RunBoard;
+import omr.lag.ui.ScrollLagView;
+import omr.lag.ui.SectionBoard;
 
 import omr.log.Logger;
 
-import omr.score.entity.Note;
 import omr.score.visitor.SheetPainter;
 
 import omr.selection.GlyphEvent;
@@ -35,6 +34,8 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 import omr.sheet.ui.PixelBoard;
 
+import omr.step.Step;
+
 import omr.ui.BoardsPane;
 
 import omr.util.Implement;
@@ -42,7 +43,6 @@ import omr.util.Implement;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
-import java.util.List;
 
 /**
  * Class <code>SymbolsEditor</code> defines a UI pane from which all symbol
@@ -64,7 +64,7 @@ public class SymbolsEditor
     //~ Instance fields --------------------------------------------------------
 
     /** Related instance of symbols builder */
-    private final SymbolsModel symbolsBuilder;
+    private final SymbolsController symbolsBuilder;
 
     /** Related sheet */
     private final Sheet sheet;
@@ -93,8 +93,8 @@ public class SymbolsEditor
      * @param sheet the sheet whose glyphs are considered
      * @param symbolsModel the symbols model for this sheet
      */
-    public SymbolsEditor (Sheet        sheet,
-                          SymbolsModel symbolsModel)
+    public SymbolsEditor (Sheet             sheet,
+                          SymbolsController symbolsModel)
     {
         this.sheet = sheet;
         this.symbolsBuilder = symbolsModel;
@@ -103,7 +103,7 @@ public class SymbolsEditor
 
         view = new MyView(lag);
         view.setLocationService(
-            sheet.getEventService(),
+            sheet.getSelectionService(),
             SheetLocationEvent.class);
 
         focus = new ShapeFocusBoard(
@@ -142,7 +142,7 @@ public class SymbolsEditor
         // Create a hosting pane for the view
         ScrollLagView slv = new ScrollLagView(view);
         sheet.getAssembly()
-             .addViewTab("Glyphs", slv, boardsPane);
+             .addViewTab(Step.SYMBOLS, slv, boardsPane);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -156,25 +156,7 @@ public class SymbolsEditor
      */
     public void refresh ()
     {
-        view.colorizeAllGlyphs();
-        view.repaint();
-    }
-
-    //------------------//
-    // showTranslations //
-    //------------------//
-    public void showTranslations (Collection<Glyph> glyphs)
-    {
-        for (Glyph glyph : glyphs) {
-            for (Object entity : glyph.getTranslations()) {
-                if (entity instanceof Note) {
-                    Note note = (Note) entity;
-                    logger.info(note + "->" + note.getChord());
-                } else {
-                    logger.info(entity.toString());
-                }
-            }
-        }
+        view.refresh();
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -193,10 +175,20 @@ public class SymbolsEditor
             setName("SymbolsEditor-MyView");
 
             // Use light gray color for past successful entities
+            int viewIndex = lag.viewIndexOf(this);
             sheet.colorize(lag, viewIndex, Color.lightGray);
         }
 
         //~ Methods ------------------------------------------------------------
+
+        //-----------------------//
+        // asyncDeassignGlyphSet //
+        //-----------------------//
+        @Override
+        public void asyncDeassignGlyphSet (Set<Glyph> glyphs)
+        {
+            super.asyncDeassignGlyphSet(glyphs);
+        }
 
         //-------------------//
         // colorizeAllGlyphs //
@@ -207,8 +199,10 @@ public class SymbolsEditor
         @Override
         public void colorizeAllGlyphs ()
         {
+            int viewIndex = lag.viewIndexOf(this);
+
             for (Glyph glyph : sheet.getActiveGlyphs()) {
-                colorizeGlyph(glyph);
+                colorizeGlyph(viewIndex, glyph);
             }
 
             repaint();
@@ -218,9 +212,11 @@ public class SymbolsEditor
         // colorizeGlyph //
         //---------------//
         @Override
-        public void colorizeGlyph (Glyph glyph)
+        public void colorizeGlyph (int   viewIndex,
+                                   Glyph glyph)
         {
             colorizeGlyph(
+                viewIndex,
                 glyph,
                 focus.isDisplayed(glyph) ? glyph.getColor() : hiddenColor);
         }
@@ -234,16 +230,16 @@ public class SymbolsEditor
         {
             // Retrieve the selected glyphs
             Set<Glyph> glyphs = sheet.getVerticalLag()
-                                     .getCurrentGlyphSet();
+                                     .getSelectedGlyphSet();
 
             // To display point information
             if ((glyphs == null) || (glyphs.size() == 0)) {
                 pointSelected(pt, movement); // This may change glyph selection
                 glyphs = sheet.getVerticalLag()
-                              .getCurrentGlyphSet();
+                              .getSelectedGlyphSet();
             }
 
-            if ((glyphs != null) && (glyphs.size() > 0)) {
+            if ((glyphs != null) && !glyphs.isEmpty()) {
                 // Update the popup menu according to selected glyphs
                 glyphMenu.updateMenu();
 
@@ -256,16 +252,6 @@ public class SymbolsEditor
             } else {
                 // Popup with no glyph selected ?
             }
-        }
-
-        //---------------//
-        // deassignGlyph //
-        //---------------//
-        @Override
-        public void deassignGlyph (Glyph glyph)
-        {
-            super.deassignGlyph(glyph);
-            refresh();
         }
 
         //---------//
@@ -294,25 +280,32 @@ public class SymbolsEditor
 
                 if (event instanceof GlyphSetEvent) {
                     GlyphSetEvent glyphsEvent = (GlyphSetEvent) event;
-                    List<Glyph>   glyphs = glyphsEvent.getData();
+                    Set<Glyph>    glyphs = glyphsEvent.getData();
                     Glyph         compound = null;
 
                     if (glyphs != null) {
                         if (glyphs.size() > 1) {
                             try {
                                 SystemInfo system = sheet.getSystemOf(glyphs);
-                                compound = system.buildCompound(glyphs);
+
+                                if (system != null) {
+                                    compound = system.buildCompound(glyphs);
+                                }
                             } catch (IllegalArgumentException ex) {
                                 // All glyphs do not belong to the same system
                                 // No compound is allowed and displayed
-                                logger.warning("Glyphs from different systems");
+                                logger.warning(
+                                    "Glyphs from different systems " +
+                                    Glyph.toString(glyphs));
                             }
                         } else if (glyphs.size() == 1) {
-                            compound = glyphs.get(0);
+                            compound = glyphs.iterator()
+                                             .next();
                         }
                     }
 
                     sheet.getVerticalLag()
+                         .getSelectionService()
                          .publish(
                         new GlyphEvent(
                             this,

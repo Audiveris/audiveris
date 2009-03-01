@@ -408,6 +408,7 @@ public class Sentence
     {
         if (textArea == null) {
             textArea = new TextArea(
+                systemInfo,
                 null,
                 systemInfo.getSheet().getVerticalLag().createAbsoluteRoi(
                     getContourBox()),
@@ -418,7 +419,7 @@ public class Sentence
     }
 
     //----------//
-    // addToGlyphsCollection //
+    // addGlyph //
     //----------//
     /**
      * Add a (textual) glyph to this sentence

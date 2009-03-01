@@ -13,11 +13,9 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
-import omr.glyph.GlyphsModel;
 import omr.glyph.Shape;
 
 import omr.log.Logger;
-import static omr.script.ScriptRecording.*;
 
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphIdEvent;
@@ -41,17 +39,20 @@ import static omr.util.Synchronicity.*;
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
 
+import org.jdesktop.application.Task;
+
 import java.awt.Dimension;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.Collections;
+import java.util.Set;
 
 import javax.swing.*;
 import javax.swing.event.*;
 
 /**
- * Class <code>GlyphBoard</code> defines a board dedicated to the display of
+ * Class <code>GlyphBoard</code> defines a UI board dedicated to the display of
  * {@link Glyph} information, with several spinners : <ol>
  *
  * <li>The universal <b>globalSpinner</b>, to browse through <i>all</i> glyphs
@@ -97,7 +98,7 @@ public class GlyphBoard
     //~ Instance fields --------------------------------------------------------
 
     /** The related glyph model */
-    protected final GlyphsModel glyphModel;
+    protected final GlyphsController controller;
 
     /** An active label */
     protected final JLabel active = new JLabel("");
@@ -158,18 +159,18 @@ public class GlyphBoard
      * Create a Glyph Board
      *
      * @param unitName name of the owning unit
-     * @param glyphModel the underlying glyph model
+     * @param controller the underlying GlyphsController
      * @param specificGlyphs additional collection of glyphs, or null
      */
     public GlyphBoard (String                     unitName,
-                       GlyphsModel                 glyphModel,
+                       GlyphsController           controller,
                        Collection<?extends Glyph> specificGlyphs)
     {
-        this(unitName, glyphModel);
+        this(unitName, controller);
 
         // Model for globalSpinner
         globalSpinner = makeGlyphSpinner(
-            glyphModel.getLag(),
+            controller.getLag(),
             specificGlyphs,
             null);
         globalSpinner.setName("globalSpinner");
@@ -177,7 +178,7 @@ public class GlyphBoard
 
         // Model for knownSpinner
         knownSpinner = makeGlyphSpinner(
-            glyphModel.getLag(),
+            controller.getLag(),
             specificGlyphs,
             knownPredicate);
         knownSpinner.setName("knownSpinner");
@@ -199,14 +200,14 @@ public class GlyphBoard
      * Basic constructor, to set common characteristics
      *
      * @param name the name assigned to this board instance
-     * @param glyphModel the related glyph model, if any
+     * @param controller the related glyphs controller, if any
      */
-    protected GlyphBoard (String     name,
-                          GlyphsModel glyphModel)
+    protected GlyphBoard (String           name,
+                          GlyphsController controller)
     {
-        super(name, glyphModel.getLag().getEventService(), eventClasses);
+        super(name, controller.getLag().getSelectionService(), eventClasses);
 
-        this.glyphModel = glyphModel;
+        this.controller = controller;
 
         // Until a glyph selection is made
         dumpAction.setEnabled(false);
@@ -327,9 +328,9 @@ public class GlyphBoard
             } else if (event instanceof GlyphSetEvent) {
                 // Display count of glyphs in the glyph set
                 GlyphSetEvent glyphsEvent = (GlyphSetEvent) event;
-                List<Glyph>   glyphs = glyphsEvent.getData();
+                Set<Glyph>    glyphs = glyphsEvent.getData();
 
-                if ((glyphs != null) && (glyphs.size() > 0)) {
+                if ((glyphs != null) && !glyphs.isEmpty()) {
                     count.setText(Integer.toString(glyphs.size()));
                 } else {
                     count.setText("");
@@ -359,7 +360,7 @@ public class GlyphBoard
         //  received leading to such selfUpdating. So the check.
         if (!selfUpdating) {
             // Notify the new glyph id
-            eventService.publish(
+            selectionService.publish(
                 new GlyphIdEvent(
                     this,
                     SelectionHint.GLYPH_INIT,
@@ -460,21 +461,19 @@ public class GlyphBoard
 
         //~ Methods ------------------------------------------------------------
 
+        @SuppressWarnings("unchecked")
         @Implement(ChangeListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            if ((glyphModel != null) && (eventList.size() > 0)) {
+            if ((controller != null) && !eventList.isEmpty()) {
                 // Do we have selections for glyph set, or just for glyph?
                 if (eventList.contains(GlyphEvent.class)) {
-                    GlyphEvent  glyphEvent = (GlyphEvent) eventService.getLastEvent(
+                    final Glyph glyph = (Glyph) selectionService.getSelection(
                         GlyphEvent.class);
-                    final Glyph glyph = (glyphEvent != null)
-                                        ? glyphEvent.getData() : null;
 
                     if (eventList.contains(GlyphSetEvent.class)) {
-                        GlyphSetEvent     glyphSetEvent = (GlyphSetEvent) eventService.getLastEvent(
+                        final Set<Glyph> glyphs = (Set<Glyph>) selectionService.getSelection(
                             GlyphSetEvent.class);
-                        final List<Glyph> glyphs = glyphSetEvent.getData();
 
                         new BasicTask() {
                                 @Override
@@ -482,16 +481,15 @@ public class GlyphBoard
                                     throws Exception
                                 {
                                     // Following actions must be done in sequence
-                                    glyphModel.deassignSetShape(
-                                        SYNC,
-                                        glyphs,
-                                        RECORDING);
+                                    Task task = controller.asyncDeassignGlyphSet(
+                                        glyphs);
+                                    task.get();
 
                                     // Update focus on current glyph, 
                                     // even if reused in a compound
                                     Glyph newGlyph = glyph.getFirstSection()
                                                           .getGlyph();
-                                    eventService.publish(
+                                    selectionService.publish(
                                         new GlyphEvent(
                                             this,
                                             SelectionHint.GLYPH_INIT,
@@ -503,7 +501,8 @@ public class GlyphBoard
                             }.execute();
                     } else {
                         // We have selection for glyph only
-                        glyphModel.deassignGlyphShape(ASYNC, glyph, RECORDING);
+                        controller.asyncDeassignGlyphSet(
+                            Collections.singleton(glyph));
                     }
                 }
             }
@@ -530,7 +529,7 @@ public class GlyphBoard
         public void actionPerformed (ActionEvent e)
         {
             // Retrieve current glyph selection
-            GlyphEvent glyphEvent = (GlyphEvent) eventService.getLastEvent(
+            GlyphEvent glyphEvent = (GlyphEvent) selectionService.getLastEvent(
                 GlyphEvent.class);
             Glyph      glyph = glyphEvent.getData();
 

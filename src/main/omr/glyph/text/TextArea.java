@@ -47,6 +47,9 @@ public class TextArea
 
     //~ Instance fields --------------------------------------------------------
 
+    /** The containing system */
+    private final SystemInfo system;
+
     /** The parent area, if any */
     private final TextArea parent;
 
@@ -91,14 +94,17 @@ public class TextArea
     /**
      * Creates a new TextArea object.
      *
+     * @param system the containing system, if any
      * @param parent the containing text area if any
      * @param roi the region of interest in the related lag
      * @param orientation the default orientation when scanning this area
      */
-    public TextArea (TextArea     parent,
+    public TextArea (SystemInfo   system,
+                     TextArea     parent,
                      GlyphLag.Roi roi,
                      Oriented     orientation)
     {
+        this.system = system;
         this.parent = parent;
         this.roi = roi;
         this.orientation = orientation;
@@ -399,6 +405,7 @@ public class TextArea
 
         if (orientation.isVertical()) {
             return new TextArea(
+                system,
                 this,
                 lag.createAbsoluteRoi(
                     new Rectangle(
@@ -409,6 +416,7 @@ public class TextArea
                 new HorizontalOrientation());
         } else {
             return new TextArea(
+                system,
                 this,
                 lag.createAbsoluteRoi(
                     new Rectangle(
@@ -432,12 +440,30 @@ public class TextArea
      */
     private boolean evaluateArea (Sheet sheet)
     {
-        List<Glyph> glyphs = sheet.getVerticalLag()
-                                  .lookupGlyphs(roi.getAbsoluteContour());
+        // We cannot evaluate glyphs out of a system
+        if (system == null) {
+            return false;
+        }
+
+        // Retrieve glyphs in the provided rectangular area
+        Set<Glyph> glyphs = sheet.getVerticalLag()
+                                 .lookupGlyphs(roi.getAbsoluteContour());
+
+        // A system is not exactly a rectangular area
+        // So some further glyph filtering is needed
+        for (Iterator<Glyph> it = glyphs.iterator(); it.hasNext();) {
+            Glyph glyph = it.next();
+
+            if (sheet.getSystemOf(glyph) != system) {
+                it.remove();
+            }
+        }
 
         // Purge the glyph collection of unwanted glyphs
         for (Iterator<Glyph> it = glyphs.iterator(); it.hasNext();) {
             Glyph glyph = it.next();
+
+            // Glyph not part of the system
 
             // Glyph for which TEXT is forbidden
             if (glyph.isShapeForbidden(Shape.TEXT)) {
@@ -447,14 +473,14 @@ public class TextArea
             // Glyph already member of a sentence ??? TBD
         }
 
-        if (glyphs.size() > 0) {
-            SystemInfo system = sheet.getSystemOf(glyphs);
-            Glyph      glyph;
+        if (!glyphs.isEmpty()) {
+            Glyph glyph;
 
             if (glyphs.size() > 1) {
                 glyph = system.buildCompound(glyphs);
             } else {
-                glyph = glyphs.get(0);
+                glyph = glyphs.iterator()
+                              .next();
             }
 
             Evaluator  evaluator = GlyphNetwork.getInstance();
@@ -535,7 +561,7 @@ public class TextArea
      * Try to perform a split in the projection orientation
      * @param sheet the related sheet
      * @param building should we actually create the subareas
-     * @return the number of subareas identified (whether thay are actually
+     * @return the number of subareas identified (whether they are actually
      * created or not)
      */
     private int splitArea (Sheet   sheet,

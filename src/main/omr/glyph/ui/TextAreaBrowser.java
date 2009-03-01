@@ -25,8 +25,10 @@ import omr.selection.GlyphEvent;
 import omr.selection.SheetLocationEvent;
 
 import omr.sheet.Sheet;
-import omr.sheet.SheetManager;
 import omr.sheet.SystemInfo;
+import omr.sheet.ui.SheetsController;
+
+import omr.step.Step;
 
 import omr.util.BasicTask;
 
@@ -46,7 +48,7 @@ import java.awt.Rectangle;
 import javax.swing.WindowConstants;
 
 /**
- * Class <code>TextAreaBrowser</code> is a user interface to intercat with
+ * Class <code>TextAreaBrowser</code> is a user interface to interact with
  * potential text areas
  *
  * @author Herv&eacute Bitteur
@@ -84,6 +86,7 @@ public class TextAreaBrowser
     public static void alignTexts (Sheet sheet)
     {
         TextArea area = new TextArea(
+            null,
             null,
             sheet.getVerticalLag().createAbsoluteRoi(
                 new Rectangle(0, 0, sheet.getWidth(), sheet.getHeight())),
@@ -156,14 +159,14 @@ public class TextAreaBrowser
     //-------------------------//
     private void processDesiredRectangle (Oriented orientation)
     {
-        Sheet sheet = SheetManager.getSelectedSheet();
+        Sheet sheet = SheetsController.selectedSheet();
 
         if (sheet == null) {
             return;
         }
 
         // Check for a selected rectangle
-        SheetLocationEvent sheetLocation = (SheetLocationEvent) sheet.getEventService()
+        SheetLocationEvent sheetLocation = (SheetLocationEvent) sheet.getSelectionService()
                                                                      .getLastEvent(
             SheetLocationEvent.class);
         Rectangle          rect = (sheetLocation != null)
@@ -171,7 +174,7 @@ public class TextAreaBrowser
 
         if ((rect == null) || (rect.width == 0)) {
             // No real rectangle, so check for a selected glyph
-            GlyphEvent glyphEvent = (GlyphEvent) sheet.getEventService()
+            GlyphEvent glyphEvent = (GlyphEvent) sheet.getSelectionService()
                                                       .getLastEvent(
                 GlyphEvent.class);
             Glyph      glyph = (glyphEvent != null) ? glyphEvent.getData() : null;
@@ -192,6 +195,7 @@ public class TextAreaBrowser
         }
 
         TextArea area = new TextArea(
+            null,
             null,
             lag.createAbsoluteRoi(rect),
             orientation);
@@ -281,10 +285,10 @@ public class TextAreaBrowser
         protected Void doInBackground ()
             throws InterruptedException
         {
-            Sheet sheet = SheetManager.getSelectedSheet();
+            Sheet sheet = SheetsController.selectedSheet();
             alignTexts(sheet);
             sheet.getSheetSteps()
-                 .rebuildFromLeaves(null, null, true);
+                 .rebuildAfter(Step.SYMBOLS, null, null, true);
 
             return null;
         }

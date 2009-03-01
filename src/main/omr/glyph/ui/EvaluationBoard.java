@@ -16,12 +16,11 @@ import omr.glyph.Evaluation;
 import omr.glyph.Evaluator;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphInspector;
-import omr.glyph.GlyphsModel;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Shape;
+import omr.glyph.ui.GlyphsController;
 
 import omr.log.Logger;
-import static omr.script.ScriptRecording.*;
 
 import omr.selection.GlyphEvent;
 import omr.selection.MouseMovement;
@@ -29,6 +28,8 @@ import omr.selection.SelectionHint;
 import omr.selection.UserEvent;
 
 import omr.sheet.Sheet;
+
+import omr.step.Step;
 
 import omr.ui.Board;
 import omr.ui.util.Panel;
@@ -72,9 +73,10 @@ class EvaluationBoard
         EvaluationBoard.class);
 
     /** Events this boards is interested in */
-    private static final Collection<Class<?extends UserEvent>> eventClasses = new ArrayList<Class<?extends UserEvent>>();
+    private static final Collection<Class<?extends UserEvent>> eventClasses;
 
     static {
+        eventClasses = new ArrayList<Class<?extends UserEvent>>();
         eventClasses.add(GlyphEvent.class);
     }
 
@@ -90,9 +92,9 @@ class EvaluationBoard
     private final Evaluator evaluator = GlyphNetwork.getInstance();
 
     /** Related glyph model */
-    private final GlyphsModel glyphModel;
+    private final GlyphsController glyphController;
 
-    /** Related sheet & GlyphsModel */
+    /** Related sheet & GlyphsController */
     private final Sheet sheet;
 
     /** Lag view (if any) */
@@ -121,8 +123,8 @@ class EvaluationBoard
      *
      * @param glyphModel the related glyph model
      */
-    public EvaluationBoard (String     name,
-                            GlyphsModel glyphModel)
+    public EvaluationBoard (String           name,
+                            GlyphsController glyphModel)
     {
         this(name, glyphModel, null, null);
     }
@@ -135,18 +137,21 @@ class EvaluationBoard
      * force glyph shape, and test buttons
      *
      * @param name a rather unique name for this board
-     * @param glyphModel the related glyph model
+     * @param glyphController the related glyph controller
      * @param sheet the related sheet, or null
      * @param view the related symbol glyph view
      */
-    public EvaluationBoard (String       name,
-                            GlyphsModel   glyphModel,
-                            Sheet        sheet,
-                            GlyphLagView view)
+    public EvaluationBoard (String           name,
+                            GlyphsController glyphController,
+                            Sheet            sheet,
+                            GlyphLagView     view)
     {
-        super(name, glyphModel.getLag().getEventService(), eventClasses);
+        super(
+            name,
+            glyphController.getLag().getSelectionService(),
+            eventClasses);
 
-        this.glyphModel = glyphModel;
+        this.glyphController = glyphController;
         this.sheet = sheet;
         this.view = view;
 
@@ -176,7 +181,7 @@ class EvaluationBoard
     {
         if ((glyph == null) ||
             (glyph.getShape() == Shape.COMBINING_STEM) ||
-            Shape.Barlines.contains(glyph.getShape())) {
+            glyph.isBar()) {
             // Blank the output
             selector.setEvals(null, null);
         } else {
@@ -384,13 +389,17 @@ class EvaluationBoard
         public void actionPerformed (ActionEvent e)
         {
             // Assign current glyph with selected shape
-            if (glyphModel != null) {
-                Glyph glyph = glyphModel.getLag()
-                                        .getCurrentGlyph();
+            if (glyphController != null) {
+                Glyph glyph = (Glyph) glyphController.getLag()
+                                                     .getSelectedGlyph();
+
                 Shape shape = Shape.valueOf(button.getText());
 
                 // Actually assign the shape
-                glyphModel.assignGlyphShape(ASYNC, glyph, shape, RECORDING);
+                glyphController.asyncAssignGlyphSet(
+                    Collections.singleton(glyph),
+                    shape,
+                    false);
             }
         }
     }
@@ -494,6 +503,8 @@ class EvaluationBoard
             int          ok = 0;
             int          total = 0;
             final double maxDoubt = GlyphInspector.getSymbolMaxDoubt();
+            final int    viewIndex = glyphController.getLag()
+                                                    .viewIndexOf(view);
 
             for (Glyph glyph : sheet.getActiveGlyphs()) {
                 if (glyph.isKnown() &&
@@ -504,9 +515,9 @@ class EvaluationBoard
 
                     if ((guess != null) && (glyph.getShape() == guess.shape)) {
                         ok++;
-                        view.colorizeGlyph(glyph, Shape.okColor);
+                        view.colorizeGlyph(viewIndex, glyph, Shape.okColor);
                     } else {
-                        view.colorizeGlyph(glyph, Shape.missedColor);
+                        view.colorizeGlyph(viewIndex, glyph, Shape.missedColor);
                     }
                 }
             }

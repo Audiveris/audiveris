@@ -10,7 +10,6 @@
 package omr.glyph.ui;
 
 import omr.glyph.Glyph;
-import omr.glyph.GlyphsModel;
 import omr.glyph.Shape;
 import omr.glyph.text.TextInfo;
 import omr.glyph.text.TextType;
@@ -24,7 +23,7 @@ import omr.selection.GlyphSetEvent;
 import omr.selection.MouseMovement;
 import omr.selection.UserEvent;
 
-import omr.sheet.SheetManager;
+import omr.sheet.ui.SheetsController;
 
 import omr.ui.field.LDoubleField;
 import omr.ui.field.LField;
@@ -38,7 +37,7 @@ import static omr.util.Synchronicity.*;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.List;
+import java.util.Set;
 
 import javax.swing.*;
 
@@ -152,24 +151,24 @@ class SymbolGlyphBoard
      *
      *
      * @param unitName name of the owning unit
-     * @param glyphModel the companion which handles glyph (de)assignments
+     * @param glyphsController the companion which handles glyph (de)assignments
      * @param firstSymbolId id of the first glyph made as a symbol (as opposed
      *                      to sticks/glyphs elaborated during previous steps)
      */
-    public SymbolGlyphBoard (String     unitName,
-                             GlyphsModel glyphModel,
-                             int        firstSymbolId)
+    public SymbolGlyphBoard (String           unitName,
+                             GlyphsController glyphsController,
+                             int              firstSymbolId)
     {
         // For all glyphs
-        super(unitName, glyphModel, null);
+        super(unitName, glyphsController, null);
 
         // Cache info
         this.firstSymbolId = firstSymbolId;
 
         // Additional spinner for symbols
-        if (glyphModel != null) {
+        if (glyphsController != null) {
             symbolSpinner = makeGlyphSpinner(
-                glyphModel.getLag(),
+                glyphsController.getLag(),
                 null, // Specific glyphs
                 symbolPredicate);
             symbolSpinner.setName("symbolSpinner");
@@ -202,12 +201,12 @@ class SymbolGlyphBoard
     /**
      * Create a simplified symbol glyph board
      * @param unitName name of the owning unit
-     * @param glyphModel the companion which handles glyph (de)assignments
+     * @param glyphsController the companion which handles glyph (de)assignments
      */
-    public SymbolGlyphBoard (String     unitName,
-                             GlyphsModel glyphModel)
+    public SymbolGlyphBoard (String           unitName,
+                             GlyphsController glyphsController)
     {
-        super(unitName, glyphModel);
+        super(unitName, glyphsController);
         paramAction = null;
 
         defineSpecificLayout(false); // no use of spinners
@@ -390,9 +389,9 @@ class SymbolGlyphBoard
             }
 
             // Get current glyph set
-            GlyphSetEvent glyphsEvent = (GlyphSetEvent) eventService.getLastEvent(
+            GlyphSetEvent glyphsEvent = (GlyphSetEvent) selectionService.getLastEvent(
                 GlyphSetEvent.class);
-            List<Glyph>   glyphs = (glyphsEvent != null)
+            Set<Glyph>    glyphs = (glyphsEvent != null)
                                    ? glyphsEvent.getData() : null;
 
             if ((glyphs != null) && !glyphs.isEmpty()) {
@@ -403,14 +402,12 @@ class SymbolGlyphBoard
                         textCombo.getSelectedItem());
                 }
 
-                SheetManager.getSelectedSheet()
-                            .getSymbolsModel()
-                            .assignText(
-                    ASYNC,
+                SheetsController.selectedSheet()
+                                .getSymbolsController()
+                                .asyncAssignText(
                     glyphs,
                     (TextType) textCombo.getSelectedItem(),
-                    textField.getText(),
-                    true);
+                    textField.getText());
             }
         }
     }
