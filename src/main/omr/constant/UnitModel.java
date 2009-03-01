@@ -13,7 +13,7 @@ import omr.log.Logger;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
-import omr.sheet.SheetManager;
+import omr.sheet.ui.SheetsController;
 
 import omr.ui.treetable.AbstractTreeTableModel;
 import omr.ui.treetable.TreeTableModel;
@@ -463,7 +463,7 @@ public class UnitModel
                     // Compute the equivalent in pixels of this interline-based
                     // fraction or area fraction, provided that we have a 
                     // current sheet and its scale is available.
-                    Sheet sheet = SheetManager.getSelectedSheet();
+                    Sheet sheet = SheetsController.selectedSheet();
 
                     if (sheet != null) {
                         Scale scale = sheet.getScale();

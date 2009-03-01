@@ -12,14 +12,13 @@ package omr.check;
 import omr.log.Logger;
 
 import omr.selection.MouseMovement;
+import omr.selection.SelectionService;
 import omr.selection.UserEvent;
 
 import omr.ui.Board;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
-
-import org.bushe.swing.event.EventService;
 
 import java.util.Collection;
 
@@ -55,15 +54,15 @@ public class CheckBoard<C extends Checkable>
      *
      * @param name         the name of the check
      * @param suite        the check suite to be used
-     * @param eventService which event service to use
+     * @param selectionService which selection service to use
      * @param eventList    which even classes to expect
      */
     public CheckBoard (String                                name,
                        CheckSuite<C>                         suite,
-                       EventService                          eventService,
+                       SelectionService                      selectionService,
                        Collection<Class<?extends UserEvent>> eventList)
     {
-        super(name + "-CheckBoard", eventService, eventList);
+        super(name + "-CheckBoard", selectionService, eventList);
         checkPanel = new CheckPanel<C>(suite);
 
         if (suite != null) {
