@@ -23,18 +23,21 @@ public class Evaluation
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Absolutely no doubt for shape manually assigned */
-    public static final double MANUAL_NO_DOUBT = -1;
+    /** Absolutely no doubt for shape manually assigned by the user */
+    public static final double MANUAL = -1;
 
     /** No doubt for shape structurally assigned */
-    public static final double NO_DOUBT = 0;
+    public static final double ALGORITHM = 0;
 
     //~ Instance fields --------------------------------------------------------
 
     /** The evaluated shape */
     public Shape shape;
 
-    /** The evaluation doubt (smaller is better) */
+    /**
+     * The evaluation doubt (smaller is better), generally provided by the
+     * neural network evaluator
+     */
     public double doubt;
 
     //~ Constructors -----------------------------------------------------------

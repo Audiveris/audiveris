@@ -116,7 +116,7 @@ public class StemInspector
         }
 
         // Extract brand new glyphs (removeInactiveGlyphs + retrieveGlyphs)
-        system.extractNewSystemGlyphs();
+        system.extractNewGlyphs();
 
         // Try to recognize each glyph in turn
         List<Glyph>     symbols = new ArrayList<Glyph>();

@@ -431,7 +431,7 @@ public class GlyphNetwork
             int     card = 0;
             boolean first = true;
 
-            if (l.size() > 0) {
+            if (!l.isEmpty()) {
                 while (card < quorum) {
                     for (int i = 0; i < l.size(); i++) {
                         newGlyphs.add((Glyph) l.get(i));

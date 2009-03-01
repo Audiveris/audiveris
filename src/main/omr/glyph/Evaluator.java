@@ -318,29 +318,6 @@ public abstract class Evaluator
         Scale.AreaFraction minWeight = new Scale.AreaFraction(
             0.19,
             "Minimum normalized weight to be considered not a noise");
-        Scale.AreaFraction maxHeadBlackWeight = new Scale.AreaFraction(
-            1.2,
-            "Maximum normalized weight for a NOTEHEAD_BLACK");
-        Scale.Fraction     maxClefHeight = new Scale.Fraction(
-            9d,
-            "Maximum normalized height for a clef");
-        Scale.Fraction     maxTitleHeight = new Scale.Fraction(
-            4d,
-            "Maximum normalized height for a text");
-        Scale.Fraction     maxLyricHeight = new Scale.Fraction(
-            2.5d,
-            "Maximum normalized height for a text");
-        Constant.Double    minTitlePitchPosition = new Constant.Double(
-            "PitchPosition",
-            15d,
-            "Minimum absolute pitch position for a title");
-        Constant.Double    maxTimePitchPositionMargin = new Constant.Double(
-            "PitchPosition",
-            1d,
-            "Maximum absolute pitch position margin for a time signature");
-        Scale.Fraction     maxTextGap = new Scale.Fraction(
-            5.0,
-            "Maximum value for a horizontal gap between glyphs of the same text");
     }
 
     //--------------//

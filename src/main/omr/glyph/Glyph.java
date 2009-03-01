@@ -17,7 +17,7 @@ import omr.glyph.text.Sentence;
 import omr.glyph.text.TextInfo;
 
 import omr.lag.Section;
-import omr.lag.SectionView;
+import omr.lag.ui.SectionView;
 
 import omr.log.Logger;
 
@@ -121,7 +121,7 @@ public class Glyph
     private Shape shape;
 
     /** Doubt in the assigned shape */
-    private double doubt = Evaluation.NO_DOUBT;
+    private double doubt = Evaluation.ALGORITHM;
 
     /** Number of stems it is connected to (0, 1, 2) */
     private int stemNumber;
@@ -269,7 +269,7 @@ public class Glyph
      */
     public boolean isManualShape ()
     {
-        return getDoubt() == Evaluation.MANUAL_NO_DOUBT;
+        return getDoubt() == Evaluation.MANUAL;
     }
 
     //------------//
@@ -352,6 +352,19 @@ public class Glyph
     public void setPartOf (Glyph compound)
     {
         partOf = compound;
+    }
+
+    //-----------//
+    // getPartOf //
+    //-----------//
+    /**
+     * Report the containing compound, if any
+     *
+     * @return compound the containing compound if any
+     */
+    public Glyph getPartOf ()
+    {
+        return partOf;
     }
 
     //----------//
@@ -473,7 +486,7 @@ public class Glyph
      */
     public void setShape (Shape shape)
     {
-        setShape(shape, Evaluation.NO_DOUBT);
+        setShape(shape, Evaluation.ALGORITHM);
     }
 
     //----------//
@@ -684,13 +697,15 @@ public class Glyph
      * @param glyphs the provided collection of glyphs
      * @return the shapes assigned among these glyphs
      */
-    public static Collection<Shape> shapesOf (Collection<Glyph> glyphs)
+    public static Set<Shape> shapesOf (Collection<Glyph> glyphs)
     {
         Set<Shape> shapes = new HashSet<Shape>();
 
-        for (Glyph glyph : glyphs) {
-            if (glyph.getShape() != null) {
-                shapes.add(glyph.getShape());
+        if (glyphs != null) {
+            for (Glyph glyph : glyphs) {
+                if (glyph.getShape() != null) {
+                    shapes.add(glyph.getShape());
+                }
             }
         }
 
@@ -1469,7 +1484,7 @@ public class Glyph
               .append(leafOf.getId());
         }
 
-        if (leaves.size() > 0) {
+        if (!leaves.isEmpty()) {
             sb.append(toString("leaves", leaves));
         }
 
@@ -1478,8 +1493,8 @@ public class Glyph
               .append(partOf.getId());
         }
 
-        if (parts.size() > 0) {
-            sb.append(toString("parts", parts));
+        if (!parts.isEmpty()) {
+            sb.append(toString(" parts", parts));
         }
 
         if (centroid != null) {

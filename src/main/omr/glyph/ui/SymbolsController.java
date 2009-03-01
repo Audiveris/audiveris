@@ -152,12 +152,12 @@ public class SymbolsController
         }
     }
 
-    //-------------//
-    // GlyphsModel //
-    //-------------//
+    //----------//
+    // getModel //
+    //----------//
     /**
      * Report the underlying model
-     * @return the underlying glpyhs model
+     * @return the underlying glyphs model
      */
     @Override
     protected SymbolsModel getModel ()
@@ -176,7 +176,8 @@ public class SymbolsController
             logger.fine("syncAssignText " + Glyph.toString(glyphs));
         }
 
-        model.assignText(glyphs, textType, textContent, Evaluation.MANUAL);
+        getModel()
+            .assignText(glyphs, textType, textContent, Evaluation.MANUAL);
 
         return glyphs;
     }

@@ -487,8 +487,11 @@ public enum Shape {
     // Bars --------------------------------------------------------------------
     //
 
-    /** Single thin bar line */
-    SINGLE_BARLINE("Single thin bar line"),
+    /** Thin bar line */
+    THIN_BARLINE("Thin bar line"),
+
+    /** Thick bar line */
+    THICK_BARLINE("Thick bar line"),
 
     /** Double thin bar line */
     DOUBLE_BARLINE("Double thin bar line"), 
@@ -499,20 +502,15 @@ public enum Shape {
     /** Thick / Thin bar line */
     REVERSE_FINAL_BARLINE("Thick / Thin bar line"), 
 
-    //     DASHED_BARLINE,
-    //     SHORT_BARLINE,
-
     /** Thick / Thin bar line + REPEAT_DOTS */
     LEFT_REPEAT_SIGN("Thick / Thin bar line + REPEAT_DOTS"), 
 
     /** REPEAT_DOTS + Thin / Thick bar line */
-    RIGHT_REPEAT_SIGN("REPEAT_DOTS + Thin / Thick bar line"), 
-    BACK_TO_BACK_REPEAT_SIGN("REPEAT_DOTS + Thin / Thick / Thin + REPEAT_DOTS"), 
+    RIGHT_REPEAT_SIGN("REPEAT_DOTS + Thin / Thick bar line"),
 
-    /** Thick bar line */
-    THICK_BAR_LINE("Thick bar line"), 
-    /** Thin bar line */
-    THIN_BAR_LINE("Thin bar line"), 
+    /** REPEAT_DOTS + Thin / Thick / Thin + REPEAT_DOTS */
+    BACK_TO_BACK_REPEAT_SIGN("REPEAT_DOTS + Thin / Thick / Thin + REPEAT_DOTS"),
+
     /** Vertical dots */
     REPEAT_DOTS("Vertical dots"), 
 
@@ -609,7 +607,7 @@ public enum Shape {
     /**
      * First logical shape, that are more precisely assigned.
      */
-    public static final Shape FirstLogicalShape = SINGLE_BARLINE;
+    public static final Shape FirstLogicalShape = THIN_BARLINE;
 
     /** Color for unknown shape */
     public static final Color missedColor = Color.red;
@@ -1204,7 +1202,7 @@ public enum Shape {
 
     //
     public static final Range Barlines = new Range(
-        EnumSet.range(SINGLE_BARLINE, THIN_BAR_LINE));
+        EnumSet.range(THIN_BARLINE, BACK_TO_BACK_REPEAT_SIGN));
     public static final Range Logicals = new Range(
         EnumSet.range(REPEAT_DOTS, ENDING));
 

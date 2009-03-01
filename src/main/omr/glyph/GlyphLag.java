@@ -16,19 +16,7 @@ import omr.lag.Section;
 import omr.log.Logger;
 
 import omr.selection.GlyphEvent;
-import omr.selection.GlyphIdEvent;
 import omr.selection.GlyphSetEvent;
-import omr.selection.MouseMovement;
-import omr.selection.RunEvent;
-import omr.selection.SectionEvent;
-import omr.selection.SelectionHint;
-import static omr.selection.SelectionHint.*;
-import omr.selection.SheetLocationEvent;
-import omr.selection.UserEvent;
-
-import omr.util.Implement;
-
-import org.bushe.swing.event.EventSubscriber;
 
 import java.awt.Rectangle;
 import java.util.*;
@@ -96,7 +84,7 @@ public class GlyphLag
     private volatile SortedSet<Glyph> activeGlyphs;
 
     /** Global id to uniquely identify a glyph */
-    private AtomicInteger globalGlyphId = new AtomicInteger(0);
+    private final AtomicInteger globalGlyphId = new AtomicInteger(0);
 
     //~ Constructors -----------------------------------------------------------
 
@@ -115,8 +103,6 @@ public class GlyphLag
                      Oriented                     orientation)
     {
         super(name, sectionClass, orientation);
-        selfSubscribe(GlyphEvent.class);
-        selfSubscribe(GlyphIdEvent.class);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -132,12 +118,11 @@ public class GlyphLag
     public synchronized Collection<Glyph> getActiveGlyphs ()
     {
         if (activeGlyphs == null) {
-            //synchronized (this) {
-            if (activeGlyphs == null) {
-                activeGlyphs = new TreeSet<Glyph>(activeMap.values());
+            synchronized (this) {
+                if (activeGlyphs == null) {
+                    activeGlyphs = new TreeSet<Glyph>(activeMap.values());
+                }
             }
-
-            //}
         }
 
         return Collections.unmodifiableCollection(activeGlyphs);
@@ -154,36 +139,6 @@ public class GlyphLag
     public Collection<Glyph> getAllGlyphs ()
     {
         return Collections.unmodifiableCollection(allGlyphs.values());
-    }
-
-    //-----------------//
-    // getCurrentGlyph //
-    //-----------------//
-    /**
-     * Report the glyph currently selected, or null
-     * @return the selected glyph, or null
-     */
-    public Glyph getCurrentGlyph ()
-    {
-        GlyphEvent glyphEvent = (GlyphEvent) getLastEvent(GlyphEvent.class);
-
-        return (glyphEvent != null) ? glyphEvent.getData() : null;
-    }
-
-    //--------------------//
-    // getCurrentGlyphSet //
-    //--------------------//
-    /**
-     * Report the set of glyphs currently selected, if any
-     * @return the set of selected glyphs, or null
-     */
-    public Set<Glyph> getCurrentGlyphSet ()
-    {
-        GlyphSetEvent glyphsEvent = (GlyphSetEvent) getLastEvent(
-            GlyphSetEvent.class);
-
-        return (glyphsEvent != null)
-               ? new LinkedHashSet<Glyph>(glyphsEvent.getData()) : null;
     }
 
     //----------//
@@ -225,6 +180,25 @@ public class GlyphLag
     public Glyph getOriginal (GlyphSignature signature)
     {
         return originals.get(signature);
+    }
+
+    //------------------//
+    // getSelectedGlyph //
+    //------------------//
+    public Glyph getSelectedGlyph ()
+    {
+        return (Glyph) getSelectionService()
+                           .getSelection(GlyphEvent.class);
+    }
+
+    //---------------------//
+    // getSelectedGlyphSet //
+    //---------------------//
+    @SuppressWarnings("unchecked")
+    public Set<Glyph> getSelectedGlyphSet ()
+    {
+        return (Set<Glyph>) getSelectionService()
+                                .getSelection(GlyphSetEvent.class);
     }
 
     //----------//
@@ -321,10 +295,10 @@ public class GlyphLag
      *
      * @return the glyphs found, which may be an empty list
      */
-    public List<Glyph> lookupGlyphs (Collection<?extends Glyph> collection,
-                                     Rectangle                  rect)
+    public Set<Glyph> lookupGlyphs (Collection<?extends Glyph> collection,
+                                    Rectangle                  rect)
     {
-        List<Glyph> list = new ArrayList<Glyph>();
+        Set<Glyph> set = new LinkedHashSet<Glyph>();
 
         for (Glyph glyph : collection) {
             boolean inRect = true;
@@ -338,11 +312,11 @@ public class GlyphLag
             }
 
             if (inRect) {
-                list.add(glyph);
+                set.add(glyph);
             }
         }
 
-        return list;
+        return set;
     }
 
     //--------------//
@@ -355,156 +329,9 @@ public class GlyphLag
      *
      * @return the glyphs found, which may be an empty list
      */
-    public List<Glyph> lookupGlyphs (Rectangle rect)
+    public Set<Glyph> lookupGlyphs (Rectangle rect)
     {
         return lookupGlyphs(getActiveGlyphs(), rect);
-    }
-
-    //---------//
-    // onEvent //
-    //---------//
-    /**
-     * Call-back triggered on selection notification.  We forward glyph
-     * information.
-     *
-     * @param event the notified event
-     */
-    @Override
-    @SuppressWarnings("unchecked")
-    @Implement(EventSubscriber.class)
-    public void onEvent (UserEvent event)
-    {
-        try {
-            // Ignore RELEASING
-            if (event.movement == MouseMovement.RELEASING) {
-                return;
-            }
-
-            // Keep normal lag behavior
-            // (interest in sheet location, section and section ID)
-            super.onEvent(event);
-
-            // Additional tasks
-            if (event instanceof SheetLocationEvent) {
-                // Interest in sheet location => active glyph(s)
-                SheetLocationEvent sheetLocation = (SheetLocationEvent) event;
-
-                if ((sheetLocation.hint == LOCATION_ADD) ||
-                    (sheetLocation.hint == LOCATION_INIT)) {
-                    Rectangle rect = sheetLocation.rectangle;
-
-                    if (rect != null) {
-                        if ((rect.width > 0) || (rect.height > 0)) {
-                            // This is a non-degenerated rectangle
-                            // Look for enclosed active glyphs
-                            if (subscribersCount(GlyphSetEvent.class) > 0) {
-                                List<Glyph> glyphsFound = lookupGlyphs(rect);
-
-                                if (glyphsFound.size() > 0) {
-                                    publish(
-                                        new GlyphEvent(
-                                            this,
-                                            sheetLocation.hint,
-                                            sheetLocation.movement,
-                                            glyphsFound.get(
-                                                glyphsFound.size() - 1)));
-                                } else {
-                                    publish(
-                                        new GlyphEvent(
-                                            this,
-                                            sheetLocation.hint,
-                                            sheetLocation.movement,
-                                            null));
-                                }
-
-                                publish(
-                                    new GlyphSetEvent(
-                                        this,
-                                        sheetLocation.hint,
-                                        sheetLocation.movement,
-                                        glyphsFound));
-                            }
-                        } else {
-                            // This is just a point
-                            // If a section has just been found,
-                            // forward its assigned glyph if any
-                            if ((subscribersCount(GlyphEvent.class) > 0) &&
-                                (subscribersCount(SectionEvent.class) > 0)) { // TBD GlyphLag itself
-
-                                Glyph        glyph = null;
-                                GlyphSection section = getCurrentSection();
-
-                                if (section != null) {
-                                    glyph = section.getGlyph();
-                                }
-
-                                publish(
-                                    new GlyphEvent(
-                                        this,
-                                        sheetLocation.hint,
-                                        null,
-                                        glyph));
-                            }
-                        }
-                    }
-                }
-            } else if (event instanceof SectionEvent) {
-                // Interest in Section => assigned glyph
-                SectionEvent<GlyphSection> sectionEvent = (SectionEvent<GlyphSection>) event;
-
-                if (sectionEvent.hint == SECTION_INIT) {
-                    // Select related Glyph if any
-                    GlyphSection section = sectionEvent.section;
-
-                    if (section != null) {
-                        publish(
-                            new GlyphEvent(
-                                this,
-                                sectionEvent.hint,
-                                sectionEvent.movement,
-                                section.getGlyph()));
-                    }
-                }
-            } else if (event instanceof GlyphEvent) {
-                // Interest in Glyph => glyph contour
-                GlyphEvent glyphEvent = (GlyphEvent) event;
-                Glyph      glyph = glyphEvent.glyph;
-
-                if ((glyphEvent.hint == GLYPH_INIT) ||
-                    (glyphEvent.hint == GLYPH_MODIFIED)) {
-                    // Display glyph contour
-                    if (glyph != null) {
-                        ///locationService.setEntity(glyph.getContourBox(), hint);
-                        locationService.publish(
-                            new SheetLocationEvent(
-                                this,
-                                glyphEvent.hint,
-                                glyphEvent.movement,
-                                glyph.getContourBox()));
-                    }
-                }
-
-                if (glyphEvent.hint != GLYPH_TRANSIENT) {
-                    // Update (vertical) glyph set
-                    updateGlyphSet(glyph, glyphEvent.hint);
-                }
-            } else if (event instanceof GlyphIdEvent) {
-                // Interest in Glyph ID => glyph
-                GlyphIdEvent glyphIdEvent = (GlyphIdEvent) event;
-
-                // Lookup a glyph with proper ID
-                // Nullify Run & Section entities
-                publish(new RunEvent(this, null));
-                publish(new SectionEvent(this, glyphIdEvent.hint, null));
-
-                // Report Glyph entity
-                Integer id = glyphIdEvent.getData();
-                publish(
-                    new GlyphEvent(this, glyphIdEvent.hint, null, getGlyph(id)));
-            }
-        } catch (Exception ex) {
-            logger.warning(getClass().getName() + " onEvent error", ex);
-        }
     }
 
     //----------//
@@ -580,50 +407,5 @@ public class GlyphLag
     private int generateId ()
     {
         return globalGlyphId.incrementAndGet();
-    }
-
-    //----------------//
-    // updateGlyphSet //
-    //----------------//
-    private void updateGlyphSet (Glyph         glyph,
-                                 SelectionHint hint)
-    {
-        if (subscribersCount(GlyphSetEvent.class) > 0) {
-            // Get current glyph set
-            GlyphSetEvent glyphsEvent = (GlyphSetEvent) eventService.getLastEvent(
-                GlyphSetEvent.class);
-            List<Glyph>   glyphs = (glyphsEvent != null)
-                                   ? glyphsEvent.getData() : null;
-
-            if (glyphs == null) {
-                glyphs = new ArrayList<Glyph>();
-            }
-
-            if (hint == LOCATION_ADD) {
-                // Adding / Removing
-                if (glyph != null) {
-                    // Add to (or remove from) glyph set
-                    if (glyphs.contains(glyph)) {
-                        glyphs.remove(glyph);
-                    } else {
-                        glyphs.add(glyph);
-                    }
-
-                    publish(new GlyphSetEvent(this, hint, null, glyphs));
-                }
-            } else {
-                // Overwriting
-                if (glyph != null) {
-                    // Make a one-glyph set
-                    glyphs.clear();
-                    glyphs.add(glyph);
-                } else if (glyphs.size() > 0) {
-                    // Empty the glyph set
-                    glyphs.clear();
-                }
-
-                publish(new GlyphSetEvent(this, hint, null, glyphs));
-            }
-        }
     }
 }

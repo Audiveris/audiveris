@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                             S l u r G l y p h                              //
+//                         S l u r I n s p e c t o r                          //
 //                                                                            //
 //  Copyright (C) Herve Bitteur 2000-2007. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
@@ -261,7 +261,7 @@ public class SlurInspector
             }
         }
 
-        if (kept.size() > 0) {
+        if (!kept.isEmpty()) {
             // Make sure we do have a suitable slur
             try {
                 Circle circle = computeCircle(kept);

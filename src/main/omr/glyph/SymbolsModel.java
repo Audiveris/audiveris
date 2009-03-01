@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                        S y m b o l s B u i l d e r                         //
+//                          S y m b o l s M o d e l                           //
 //                                                                            //
 //  Copyright (C) Herve Bitteur 2000-2007. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
@@ -9,40 +9,28 @@
 //
 package omr.glyph;
 
-import omr.Main;
-
 import omr.glyph.text.Sentence;
 import omr.glyph.text.TextType;
-import omr.glyph.ui.SymbolsEditor;
 
 import omr.log.Logger;
-
-import omr.score.entity.Note;
-
-import omr.script.AssignTask;
-import omr.script.DeassignTask;
-import omr.script.ScriptRecording;
-import static omr.script.ScriptRecording.*;
-import omr.script.SegmentTask;
-import omr.script.SlurTask;
-import omr.script.TextTask;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
-import omr.util.BasicTask;
-import omr.util.Synchronicity;
-import static omr.util.Synchronicity.*;
+import omr.step.Step;
 
-import java.awt.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
- * Class <code>SymbolsModel</code> is the GlyphsModel specifically meant for
- * symbol glyphs.
+ * Class <code>SymbolsModel</code> is a GlyphsModel specifically meant for
+ * symbol glyphs
  *
- * @author Herv&eacute; Bitteur
+ * @author Herv&eacute Bitteur
  * @version $Id$
  */
 public class SymbolsModel
@@ -53,217 +41,53 @@ public class SymbolsModel
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(SymbolsModel.class);
 
-    /** Color for hiding unknown glyphs when filter is ON */
-    public static final Color hiddenColor = Color.white;
-
-    //~ Instance fields --------------------------------------------------------
-
-    /** Related symbols editor, if any */
-    private final SymbolsEditor editor;
-
     //~ Constructors -----------------------------------------------------------
 
     //--------------//
     // SymbolsModel //
     //--------------//
     /**
-     * Create a handler dedicated to symbol glyphs
+     * Creates a new SymbolsModel object.
      *
-     * @param sheet the sheet whose glyphs are considered
+     * @param sheet the related sheet (can be null)
+     * @param lag the related lag (cannot be null)
      */
-    public SymbolsModel (Sheet sheet)
+    public SymbolsModel (Sheet    sheet,
+                         GlyphLag lag)
     {
-        super(sheet, sheet.getVerticalLag());
-
-        // Allocation of UI components if needed
-        if (Main.getGui() != null) {
-            editor = new SymbolsEditor(sheet, this);
-        } else {
-            editor = null;
-        }
+        super(sheet, lag, Step.SYMBOLS);
     }
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------//
-    // getEditor //
-    //-----------//
-    public SymbolsEditor getEditor ()
-    {
-        return editor;
-    }
-
-    //------------------//
-    // assignGlyphShape //
-    //------------------//
+    //-------------//
+    // assignGlyph //
+    //-------------//
     /**
-     * Manually assign a Shape to a glyph
+     * Assign a Shape to a glyph
      *
-     * @param processing specify whether the method must be run (a)synchronously
      * @param glyph the glyph to be assigned
      * @param shape the assigned shape, which may be null
-     * @param record specify whether the action must be recorded in the script
+     * @param doubt the doubt about shape (Evaluation.MANUAL_NO_DOUBT?)
      */
     @Override
-    public void assignGlyphShape (Synchronicity         processing,
-                                  Glyph                 glyph,
-                                  final Shape           shape,
-                                  final ScriptRecording record)
+    public void assignGlyph (Glyph  glyph,
+                             Shape  shape,
+                             double doubt)
     {
-        if (glyph != null) {
-            if (processing == ASYNC) {
-                final Glyph finalGlyph = glyph;
-                new BasicTask() {
-                        @Override
-                        protected Void doInBackground ()
-                            throws Exception
-                        {
-                            assignGlyphShape(SYNC, finalGlyph, shape, record);
-
-                            return null;
-                        }
-                    }.execute();
-            } else {
-                SystemInfo        system = sheet.getSystemOf(glyph);
-                Collection<Shape> shapes = null;
-                boolean           isCompound = glyph.getId() == 0;
-                Collection<Glyph> glyphs;
-
-                if (isCompound) {
-                    glyphs = glyph.getParts();
-                } else {
-                    glyphs = Collections.singleton(glyph);
-                }
-
-                // Record this task to the sheet script?
-                if (record == RECORDING) {
-                    shapes = Glyph.shapesOf(glyphs);
-
-                    sheet.getScript()
-                         .addTask(new AssignTask(shape, isCompound, glyphs));
-                }
-
-                // If this is a transient glyph (with no Id yet), insert it
-                if (isCompound) {
-                    glyph = system.addGlyph(glyph);
-                    logger.info(
-                        "Inserted compound #" + glyph.getId() + " as " + shape);
-                }
-
-                // Test on glyph weight (noise-like)
-                // To prevent to assign a non-noise shape to a noise glyph
-                if ((shape == Shape.NOISE) || Evaluator.isBigEnough(glyph)) {
-                    // Force a recomputation of glyph parameters
-                    // (since environment may have changed since the time they
-                    // had been computed)
-                    system.computeGlyphFeatures(glyph);
-
-                    if (shape != null) {
-                        switch (shape) {
-                        case THICK_BAR_LINE :
-                        case THIN_BAR_LINE :
-                            sheet.getSystemsBuilder()
-                                 .assignGlyphShape(
-                                SYNC,
-                                glyph,
-                                shape,
-                                NO_RECORDING);
-
-                            break;
-
-                        case COMBINING_STEM : // TBD
-                            break;
-
-                        case NOISE :
-                            break;
-
-                        default :
-                        }
-                    }
-
-                    super.assignGlyphShape(SYNC, glyph, shape, NO_RECORDING);
-                }
-
-                // Update final steps?
-                if (record == RECORDING) {
-                    shapes.add(shape);
-                    sheet.rebuildFromLeaves(glyphs, shapes);
-                }
-            }
+        if (glyph == null) {
+            return;
         }
-    }
 
-    //----------------//
-    // assignSetShape //
-    //----------------//
-    /**
-     * Assign a shape to a set of glyphs, either to each glyph individually, or
-     * to a compound glyph built from the glyph set
-     *
-     * @param processing specify whether we should run (a)synchronously
-     * @param glyphs the collection of glyphs
-     * @param shape the shape to be assigned
-     * @param compound flag to indicate a compound is desired
-     * @param record specify whether the action must be recorded in the script
-     */
-    @Override
-    public void assignSetShape (Synchronicity           processing,
-                                final Collection<Glyph> glyphs,
-                                final Shape             shape,
-                                final boolean           compound,
-                                final ScriptRecording   record)
-    {
-        Collection<Shape> shapes = Glyph.shapesOf(glyphs);
-
-        if ((glyphs != null) && (glyphs.size() > 0)) {
-            if (processing == ASYNC) {
-                new BasicTask() {
-                        @Override
-                        protected Void doInBackground ()
-                            throws Exception
-                        {
-                            assignSetShape(
-                                SYNC,
-                                glyphs,
-                                shape,
-                                compound,
-                                record);
-
-                            return null;
-                        }
-                    }.execute();
-            } else {
-                if (compound) {
-                    // Build & insert a compound
-                    SystemInfo system = sheet.getSystemOf(glyphs);
-                    Glyph      glyph = system.buildCompound(glyphs);
-                    system.addGlyph(glyph);
-                    assignGlyphShape(SYNC, glyph, shape, NO_RECORDING);
-                } else {
-                    int              noiseNb = 0;
-                    ArrayList<Glyph> glyphsCopy = new ArrayList<Glyph>(glyphs);
-
-                    for (Glyph glyph : glyphsCopy) {
-                        if (glyph.getShape() != Shape.NOISE) {
-                            assignGlyphShape(SYNC, glyph, shape, NO_RECORDING);
-                        } else {
-                            noiseNb++;
-                        }
-                    }
-
-                    if (logger.isFineEnabled() && (noiseNb > 0)) {
-                        logger.fine(noiseNb + " noise glyphs skipped");
-                    }
-                }
-
-                // Record this task to the sheet script?
-                if (record == RECORDING) {
-                    sheet.getScript()
-                         .addTask(new AssignTask(shape, compound, glyphs));
-                    shapes.add(shape);
-                    sheet.rebuildFromLeaves(glyphs, shapes);
-                }
-            }
+        // Test on glyph weight (noise-like)
+        // To prevent to assign a non-noise shape to a noise glyph
+        if ((shape == Shape.NOISE) || Evaluator.isBigEnough(glyph)) {
+            // Force a recomputation of glyph parameters
+            // (since environment may have changed since the time they
+            // have been computed)
+            SystemInfo system = sheet.getSystemOf(glyph);
+            system.computeGlyphFeatures(glyph);
+            super.assignGlyph(glyph, shape, doubt);
         }
     }
 
@@ -271,54 +95,31 @@ public class SymbolsModel
     // assignText //
     //------------//
     /**
-     * Assign text characteristics to a (collection of) textual glyphs
-     *
-     * @param processing (a)synchronous execution required
-     * @param glyphs the impacted glyphs
-     * @param textType the type(role) of this textual element
-     * @param textContent the content as a string (if not empty)
-     * @param record true if this task must be recorded
+     * Assign a collection of glyphs as textual element
+     * @param glyphs the collection of glyphs
+     * @param textType the text role
+     * @param textContent the ascii content
+     * @param doubt the doubt wrt this assignment
      */
-    public void assignText (Synchronicity           processing,
-                            final Collection<Glyph> glyphs,
-                            final TextType          textType,
-                            final String            textContent,
-                            final boolean           record)
+    public void assignText (Collection<Glyph> glyphs,
+                            TextType          textType,
+                            String            textContent,
+                            double            doubt)
     {
-        if (processing == ASYNC) {
-            new BasicTask() {
-                    @Override
-                    protected Void doInBackground ()
-                        throws Exception
-                    {
-                        assignText(SYNC, glyphs, textType, textContent, record);
+        // Do the job
+        for (Glyph glyph : glyphs) {
+            // Assign text type
+            Sentence sentence = glyph.getTextInfo()
+                                     .getSentence();
 
-                        return null;
-                    }
-                }.execute();
-        } else {
-            // Do the job
-            for (Glyph glyph : glyphs) {
-                // Assign text type
-                Sentence sentence = glyph.getTextInfo()
-                                         .getSentence();
-
-                if (sentence != null) {
-                    sentence.setTextType(textType);
-                }
-
-                // Assign text only if it is not empty
-                if ((textContent != null) && (textContent.length() > 0)) {
-                    glyph.getTextInfo()
-                         .setManualContent(textContent);
-                }
+            if (sentence != null) {
+                sentence.setTextType(textType);
             }
 
-            // Record this task in the sheet script
-            if (record) {
-                sheet.getScript()
-                     .addTask(new TextTask(textType, textContent, glyphs));
-                sheet.rebuildFromLeaves(glyphs, new ArrayList<Shape>()); // No shapes
+            // Assign text only if it is not empty
+            if ((textContent != null) && (textContent.length() > 0)) {
+                glyph.getTextInfo()
+                     .setManualContent(textContent);
             }
         }
     }
@@ -352,186 +153,60 @@ public class SymbolsModel
         for (Glyph stem : stems) {
             SystemInfo system = sheet.getSystemOf(stem);
             system.removeGlyph(stem);
-            assignGlyphShape(SYNC, stem, null, NO_RECORDING);
+            super.deassignGlyph(stem);
             impactedSystems.add(system);
         }
 
-        // Extract brand new glyphs from impacted impactedSystems
+        // Extract brand new glyphs from impactedSystems
         for (SystemInfo system : impactedSystems) {
-            system.extractNewSystemGlyphs();
-        }
-
-        // Update the UI?
-        if (editor != null) {
-            editor.refresh();
+            system.extractNewGlyphs();
         }
     }
 
-    //--------------------//
-    // deassignGlyphShape //
-    //--------------------//
+    //---------------//
+    // deassignGlyph //
+    //---------------//
     /**
-     * De-assign the shape of a glyph
+     * Deassign the shape of a glyph. This overrides the basic deassignment, in
+     * order to delegate the handling of some specific shapes.
      *
-     * @param processing specify whether the method must be run (a)synchronously
      * @param glyph the glyph to deassign
-     * @param record specify whether the action must be recorded in the script
      */
     @Override
-    public void deassignGlyphShape (Synchronicity         processing,
-                                    final Glyph           glyph,
-                                    final ScriptRecording record)
+    public void deassignGlyph (Glyph glyph)
     {
-        if (processing == ASYNC) {
-            new BasicTask() {
-                    @Override
-                    protected Void doInBackground ()
-                        throws Exception
-                    {
-                        deassignGlyphShape(SYNC, glyph, record);
+        // Processing depends on shape at hand
+        switch (glyph.getShape()) {
+        case COMBINING_STEM :
 
-                        return null;
-                    }
-                }.execute();
-        } else {
-            Collection<Glyph> glyphs = null;
-            Collection<Shape> shapes = null;
-
-            // Record this action in the sheet script?
-            if (record == RECORDING) {
-                glyphs = Collections.singleton(glyph);
-                shapes = Glyph.shapesOf(glyphs);
-                sheet.getScript()
-                     .addTask(new DeassignTask(glyphs));
+            if (logger.isFineEnabled()) {
+                logger.fine("Deassigning a Stem as glyph " + glyph.getId());
             }
 
-            Shape shape = glyph.getShape();
+            cancelStems(Collections.singletonList(glyph));
 
-            // Processing depends on shape at hand
-            switch (shape) {
-            case THICK_BAR_LINE :
-            case THIN_BAR_LINE :
-                sheet.getSystemsBuilder()
-                     .deassignGlyphShape(SYNC, glyph, NO_RECORDING);
+            break;
 
-                break;
+        case NOISE :
+            logger.info("Skipping Noise as glyph " + glyph.getId());
 
-            case COMBINING_STEM :
+            break;
 
-                if (logger.isFineEnabled()) {
-                    logger.fine("Deassigning a Stem as glyph " + glyph.getId());
-                }
+        default :
+            super.deassignGlyph(glyph);
 
-                cancelStems(Collections.singletonList(glyph));
-
-                break;
-
-            case NOISE :
-                logger.info("Skipping Noise as glyph " + glyph.getId());
-
-                break;
-
-            default :
-
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "Deassigning a " + shape + " symbol as glyph " +
-                        glyph.getId());
-                }
-
-                // If glyph is a compound, deassign also the parts
-                for (Glyph p : glyph.getParts()) {
-                    assignGlyphShape(SYNC, p, null, NO_RECORDING);
-                }
-
-                // Deassign the glyph itself
-                assignGlyphShape(SYNC, glyph, null, NO_RECORDING);
-
-                break;
-            }
-
-            // Update last steps?
-            if (record == RECORDING) {
-                sheet.rebuildFromLeaves(glyphs, shapes);
-            }
-        }
-    }
-
-    //------------------//
-    // deassignSetShape //
-    //------------------//
-    /**
-     * Deassign all the glyphs of the provided collection
-     *
-     * @param processing specify whether the method must be run (a)synchronously
-     * @param glyphs the collection of glyphs to deassign
-     * @param record specify whether the action must be recorded in the script
-     */
-    @Override
-    public void deassignSetShape (Synchronicity           processing,
-                                  final Collection<Glyph> glyphs,
-                                  final ScriptRecording   record)
-    {
-        if (processing == ASYNC) {
-            new BasicTask() {
-                    @Override
-                    protected Void doInBackground ()
-                        throws Exception
-                    {
-                        deassignSetShape(SYNC, glyphs, record);
-
-                        return null;
-                    }
-                }.execute();
-        } else {
-            Collection<Shape> shapes = null;
-
-            if (record == RECORDING) {
-                shapes = Glyph.shapesOf(glyphs);
-            }
-
-            // First phase, putting the stems apart
-            List<Glyph> stems = new ArrayList<Glyph>();
-            List<Glyph> glyphsCopy = new ArrayList<Glyph>(glyphs);
-
-            for (Glyph glyph : glyphsCopy) {
-                if (glyph.getShape() == Shape.COMBINING_STEM) {
-                    stems.add(glyph);
-                } else if (glyph.isKnown()) {
-                    deassignGlyphShape(SYNC, glyph, NO_RECORDING);
-                }
-            }
-
-            // Second phase dedicated to stems, if any
-            if (stems.size() > 0) {
-                cancelStems(stems);
-            }
-
-            // Record this action in the sheet script?
-            if (record == RECORDING) {
-                sheet.getScript()
-                     .addTask(new DeassignTask(glyphs));
-
-                sheet.rebuildFromLeaves(glyphs, shapes);
-            }
+            break;
         }
     }
 
     //---------------//
     // fixLargeSlurs //
     //---------------//
-    public void fixLargeSlurs (Collection<Glyph> glyphs,
-                               ScriptRecording   record)
+    public void fixLargeSlurs (Collection<Glyph> glyphs)
     {
-        // Safer
-        if ((glyphs == null) || glyphs.isEmpty()) {
-            return;
-        }
-
-        List<Glyph> glyphsCopy = new ArrayList<Glyph>(glyphs);
         List<Glyph> slurs = new ArrayList<Glyph>();
 
-        for (Glyph glyph : glyphsCopy) {
+        for (Glyph glyph : new ArrayList<Glyph>(glyphs)) {
             SystemInfo system = sheet.getSystemOf(glyph);
             Glyph      slur = system.fixLargeSlur(glyph);
 
@@ -541,75 +216,21 @@ public class SymbolsModel
         }
 
         if (!slurs.isEmpty()) {
-            assignSetShape(SYNC, slurs, Shape.SLUR, false, NO_RECORDING);
-        }
-
-        // Record this task to the sheet script?
-        if (record == RECORDING) {
-            sheet.getScript()
-                 .addTask(new SlurTask(glyphsCopy));
-            sheet.rebuildFromLeaves(glyphsCopy, null);
+            assignGlyphSet(slurs, Shape.SLUR, false, Evaluation.MANUAL);
         }
     }
 
-    //------------------------//
-    // segmentGlyphSetOnStems //
-    //------------------------//
-    /**
-     *
-     * @param processing specify whether the method must be run (a)synchronously
-     * @param givenGlyphs glyphs to segment in order to retrieve stems
-     * @param isShort looking for short (or standard) stems
-     */
-    public void segmentGlyphSetOnStems (Synchronicity           processing,
-                                        final Collection<Glyph> givenGlyphs,
-                                        final boolean           isShort)
+    //-----------------//
+    // segmentGlyphSet //
+    //-----------------//
+    public void segmentGlyphSet (Collection<Glyph> glyphs,
+                                 boolean           isShort)
     {
-        if (processing == ASYNC) {
-            new BasicTask() {
-                    @Override
-                    protected Void doInBackground ()
-                        throws Exception
-                    {
-                        segmentGlyphSetOnStems(SYNC, givenGlyphs, isShort);
+        deassignGlyphSet(glyphs);
 
-                        return null;
-                    }
-                }.execute();
-        } else {
-            // Record this task in the sheet script
-            sheet.getScript()
-                 .addTask(new SegmentTask(isShort, givenGlyphs));
-
-            // Use a copy of glyphs selection
-            Collection<Glyph> glyphs = new ArrayList<Glyph>(givenGlyphs);
-            Collection<Shape> shapes = Glyph.shapesOf(glyphs);
-
-            deassignSetShape(SYNC, glyphs, NO_RECORDING);
-
-            for (Glyph glyph : glyphs) {
-                SystemInfo system = sheet.getSystemOf(glyph);
-                system.segmentGlyphOnStems(glyph, isShort);
-            }
-
-            sheet.rebuildFromLeaves(glyphs, shapes);
-        }
-    }
-
-    //------------------//
-    // showTranslations //
-    //------------------//
-    public void showTranslations (Collection<Glyph> glyphs)
-    {
-        for (Glyph glyph : glyphs) {
-            for (Object entity : glyph.getTranslations()) {
-                if (entity instanceof Note) {
-                    Note note = (Note) entity;
-                    logger.info(note + "->" + note.getChord());
-                } else {
-                    logger.info(entity.toString());
-                }
-            }
+        for (Glyph glyph : new ArrayList<Glyph>(glyphs)) {
+            SystemInfo system = sheet.getSystemOf(glyph);
+            system.segmentGlyphOnStems(glyph, isShort);
         }
     }
 }
