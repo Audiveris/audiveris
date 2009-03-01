@@ -117,8 +117,7 @@ public abstract class SystemTask
     private void doitPerSystem (Collection<SystemInfo> systems)
     {
         try {
-            Collection<Callable<Void>> tasks = new ArrayList<Callable<Void>>(
-                sheet.getSystems().size());
+            Collection<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
 
             if (systems == null) {
                 systems = sheet.getSystems();
@@ -150,6 +149,7 @@ public abstract class SystemTask
                         });
             }
 
+            // Launch all system tasks in parallel and wait for their completion
             OmrExecutors.getLowExecutor()
                         .invokeAll(tasks);
         } catch (InterruptedException ex) {

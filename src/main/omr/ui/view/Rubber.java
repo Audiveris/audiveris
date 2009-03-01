@@ -18,6 +18,7 @@ import static omr.selection.MouseMovement.*;
 import java.awt.*;
 import java.awt.event.*;
 import static java.awt.event.InputEvent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -87,15 +88,14 @@ public class Rubber
 
     /** Color used for drawing horizontal & vertical rules */
     private static final Color ruleColor = new Color(255, 200, 0);
+    private static AtomicInteger globalId = new AtomicInteger(0);
 
     //~ Instance fields --------------------------------------------------------
 
-    /** JComponent partner from which the rubber will receive physical
-       mouse events */
+    /** View from which the rubber will receive physical mouse events */
     protected JComponent component;
 
-    /** The entity to be notified about mouse actions (can be the
-       originating component) */
+    /** The controller to be notified about mouse actions */
     protected MouseMonitor mouseMonitor;
 
     /** Related zoom if any */
@@ -109,6 +109,7 @@ public class Rubber
     // The normalized unzoomed rubber rectangle, inside the component, with
     // x & y at the top left and positive width & height
     private Rectangle rect;
+    private final int id;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -124,6 +125,7 @@ public class Rubber
      */
     public Rubber ()
     {
+        id = globalId.addAndGet(1);
     }
 
     //--------//
@@ -138,6 +140,7 @@ public class Rubber
      */
     public Rubber (Zoom zoom)
     {
+        id = globalId.addAndGet(1);
         setZoom(zoom);
     }
 
@@ -153,6 +156,7 @@ public class Rubber
     public Rubber (JComponent component,
                    Zoom       zoom)
     {
+        id = globalId.addAndGet(1);
         setComponent(component);
         setZoom(zoom);
     }
@@ -474,6 +478,15 @@ public class Rubber
         if (component != null) {
             component.repaint();
         }
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return "{Rubber #" + id + " " + rect + "}";
     }
 
     //------------------//

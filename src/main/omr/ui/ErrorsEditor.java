@@ -168,7 +168,12 @@ public class ErrorsEditor
     //-------------//
     // clearSystem //
     //-------------//
-    public void clearSystem (final ScoreSystem system)
+    /**
+     * Clear all messages related to the provided system id (we use system id
+     * rather than system, since a system may be reallocated by SystemsBuilder)
+     * @param systemId the id of system to clear
+     */
+    public void clearSystem (final int systemId)
     {
         SwingUtilities.invokeLater(
             new Runnable() {
@@ -179,7 +184,8 @@ public class ErrorsEditor
                              it.hasNext();) {
                             Record record = it.next();
 
-                            if (record.node.getSystem() == system) {
+                            if (record.node.getSystem()
+                                           .getId() == systemId) {
                                 it.remove();
                             }
                         }
@@ -273,6 +279,7 @@ public class ErrorsEditor
                     if (record.glyph != null) {
                         // Use glyph location if available
                         sheet.getVerticalLag()
+                             .getSelectionService()
                              .publish(
                             new GlyphEvent(
                                 this,
@@ -301,7 +308,7 @@ public class ErrorsEditor
                                 }
                             }
 
-                            sheet.getEventService()
+                            sheet.getSelectionService()
                                  .publish(
                                 new ScoreLocationEvent(
                                     ErrorsEditor.this,

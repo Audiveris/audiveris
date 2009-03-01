@@ -67,7 +67,13 @@ public class OmrExecutors
      */
     public static ExecutorService getHighExecutor ()
     {
-        return Highs.executor;
+        ExecutorService exec = Highs.executor;
+
+        if (exec.isShutdown() || exec.isTerminated()) {
+            exec = Highs.create();
+        }
+
+        return exec;
     }
 
     //----------------//
@@ -80,7 +86,13 @@ public class OmrExecutors
      */
     public static ExecutorService getLowExecutor ()
     {
-        return Lows.executor;
+        ExecutorService exec = Lows.executor;
+
+        if (exec.isShutdown() || exec.isTerminated()) {
+            exec = Lows.create();
+        }
+
+        return exec;
     }
 
     //-----------------//
@@ -241,10 +253,19 @@ public class OmrExecutors
         public static ExecutorService executor;
 
         static {
+            create();
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        public static ExecutorService create ()
+        {
             executor = Executors.newFixedThreadPool(
                 useParallelism() ? (cpuNb + 1) : 1,
                 new Factory("high", Thread.NORM_PRIORITY));
             highsLaunched = true;
+
+            return executor;
         }
     }
 
@@ -256,13 +277,22 @@ public class OmrExecutors
     {
         //~ Static fields/initializers -----------------------------------------
 
-        public static final ExecutorService executor;
+        public static ExecutorService executor;
 
         static {
+            create();
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        public static ExecutorService create ()
+        {
             executor = Executors.newFixedThreadPool(
                 useParallelism() ? (cpuNb + 1) : 1,
                 new Factory("low", Thread.MIN_PRIORITY));
             lowsLaunched = true;
+
+            return executor;
         }
     }
 }

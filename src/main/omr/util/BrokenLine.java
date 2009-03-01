@@ -21,6 +21,10 @@ import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.util.*;
 
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.*;
+
 /**
  * Class <code>BrokenLine</code> handles the broken line defined by a sequence
  * of points which can be modified at any time. Several features use a
@@ -30,6 +34,8 @@ import java.util.*;
  * @version $Id $
  */
 @NotThreadSafe
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "broken-line")
 public class BrokenLine
 {
     //~ Static fields/initializers ---------------------------------------------
@@ -43,13 +49,17 @@ public class BrokenLine
     //~ Instance fields --------------------------------------------------------
 
     /** The ordered sequence of points */
-    private List<Point> points = new ArrayList<Point>();
+    private final List<Point> points = new ArrayList<Point>();
+
+    /** Dummy collection of points, just for (un) marshalling*/
+    @XmlElement(name = "point")
+    private final List<PointFacade> xps = new ArrayList<PointFacade>();
 
     /** Default sticky distance */
     private int stickyDistance = getDefaultStickyDistance();
 
     /** Set of insterested listeners */
-    private Set<Listener> listeners = new LinkedHashSet<Listener>();
+    private final Set<Listener> listeners = new LinkedHashSet<Listener>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -73,7 +83,7 @@ public class BrokenLine
      */
     public BrokenLine (Point... points)
     {
-        this.points.addAll(Arrays.asList(points));
+        resetPoints(Arrays.asList(points));
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -391,6 +401,24 @@ public class BrokenLine
         fireListeners();
     }
 
+    //-------------//
+    // resetPoints //
+    //-------------//
+    /**
+     * Replace the current line points with the provided ones
+     * @param points the new collection of points
+     */
+    public void resetPoints (Collection<Point> points)
+    {
+        this.points.clear();
+
+        if (points != null) {
+            this.points.addAll(points);
+        }
+
+        fireListeners();
+    }
+
     //------//
     // size //
     //------//
@@ -424,8 +452,81 @@ public class BrokenLine
             try {
                 listener.update(this);
             } catch (Exception ex) {
-                logger.warning("Error notifyinh BrokenLine listener", ex);
+                logger.warning("Error notifying BrokenLine listener", ex);
             }
+        }
+    }
+
+    //    //--------------//
+    //    // setXmlPoints //
+    //    //--------------//
+    //    /** Trick for XML binding */
+    //    ///@XmlElementWrapper(name = "points")
+    //    ///@XmlElement(name = "point")
+    //    private void setXmlPoints (List<PointFacade> xps)
+    //    {
+    //        logger.warning("setXmlPoints1. xps=" + xps + " points=" + points);
+    //        points.clear();
+    //
+    //        for (PointFacade xp : xps) {
+    //            points.add(xp.getPoint());
+    //        }
+    //
+    //        logger.warning("setXmlPoints2. xps=" + xps + " points=" + points);
+    //    }
+    //
+    //    //--------------//
+    //    // getXmlPoints //
+    //    //--------------//
+    //    /** Trick for XML binding */
+    //    private List<PointFacade> getXmlPoints ()
+    //    {
+    //        logger.warning("getXmlPoints1. xps=" + xps + " points=" + points);
+    //
+    //        if (xps == null) {
+    //            xps = new ArrayList<PointFacade>();
+    //        } else {
+    //            for (Point p : points) {
+    //                xps.add(new PointFacade(p));
+    //            }
+    //        }
+    //
+    //        logger.warning("getXmlPoints2. xps=" + xps + " points=" + points);
+    //
+    //        return xps;
+    //    }
+
+    //----------------//
+    // afterUnmarshal //
+    //----------------//
+    /**
+     * Called after all the properties (except IDREF) are unmarshalled for this
+     * object, but before this object is set to the parent object.
+     */
+    private void afterUnmarshal (Unmarshaller um,
+                                 Object       parent)
+    {
+        // Convert xps -> points
+        points.clear();
+
+        for (PointFacade xp : xps) {
+            points.add(xp.getPoint());
+        }
+    }
+
+    //---------------//
+    // beforeMarshal //
+    //---------------//
+    /**
+     * Called immediately before the marshalling of this object begins.
+     */
+    private void beforeMarshal (Marshaller m)
+    {
+        // Convert points -> xps
+        xps.clear();
+
+        for (Point point : points) {
+            xps.add(new PointFacade(point));
         }
     }
 

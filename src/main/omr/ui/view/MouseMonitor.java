@@ -11,10 +11,7 @@ package omr.ui.view;
 
 import omr.selection.MouseMovement;
 
-import omr.ui.*;
-
 import java.awt.*;
-import java.awt.event.*;
 
 /**
  * Interface <code>MouseMonitor</code> defines the entries of an entity to

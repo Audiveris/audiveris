@@ -1,12 +1,12 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                          S c r o l l V i e w                          //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2007. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                            S c r o l l V i e w                             //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2007. All rights reserved.               //
+//  This software is released under the GNU General Public License.           //
+//  Contact author at herve.bitteur@laposte.net to report bugs & suggestions. //
+//----------------------------------------------------------------------------//
+//
 package omr.ui.view;
 
 import omr.log.Logger;
@@ -19,7 +19,7 @@ import javax.swing.*;
  * Class <code>ScrollView</code> contains a JScrollPane, which provides a
  * comprehensive combination of the following entities: <dl>
  *
- * <dt> <b>view:</b> </dt> <dd>the display of a {@link RubberZoomedPanel},
+ * <dt> <b>view:</b> </dt> <dd>the display of a {@link RubberPanel},
  * a component potentially linked to a {@link Zoom} and a mouse adapter
  * {@link Rubber}</dd>
  *
@@ -40,7 +40,7 @@ public class ScrollView
     //~ Instance fields --------------------------------------------------------
 
     /** Current view inside the scrolled pane */
-    protected RubberZoomedPanel view;
+    protected RubberPanel view;
 
     // The concrete UI component
     private JScrollPane component = new JScrollPane();
@@ -67,7 +67,7 @@ public class ScrollView
      *
      * @param view the pre-built panel
      */
-    public ScrollView (RubberZoomedPanel view)
+    public ScrollView (RubberPanel view)
     {
         setView(view);
     }
@@ -126,13 +126,11 @@ public class ScrollView
     // getRubberSelection //
     //--------------------//
     /**
-     * Retrieve a copy of the rubber rectangle, or
-     * a zero-height, zero-width rectangle at
-     * <code>getRubberFocus()</code> if the rubber
-     * rectangle does not exist.
+     * Retrieve a copy of the rubber rectangle, or a zero-height, zero-width
+     * rectangle at <code>getRubberFocus()</code> if the rubber rectangle does
+     * not exist.
      *
-     * @return the dezoomed rubber selection, or null
-     * if the view is null
+     * @return the rubber selection, or null if the view is null
      */
     public Rectangle getRubberSelection ()
     {
@@ -159,7 +157,7 @@ public class ScrollView
      *
      * @param view the pre-built panel
      */
-    public void setView (RubberZoomedPanel view)
+    public void setView (RubberPanel view)
     {
         // Display the view in the scrollpane
         component.setViewportView(view);
@@ -176,7 +174,7 @@ public class ScrollView
      *
      * @return the view
      */
-    public RubberZoomedPanel getView ()
+    public RubberPanel getView ()
     {
         return view;
     }

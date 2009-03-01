@@ -12,7 +12,8 @@ package omr.step;
 import omr.log.Logger;
 
 import omr.sheet.Sheet;
-import omr.sheet.SheetManager;
+import omr.sheet.SheetsManager;
+import omr.sheet.ui.SheetsController;
 
 import omr.util.BasicTask;
 import omr.util.Implement;
@@ -107,7 +108,7 @@ public class StepMenu
         {
             super(step.toString());
             this.step = step;
-            putValue(SHORT_DESCRIPTION, step.getDescription());
+            putValue(SHORT_DESCRIPTION, step.description);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -115,7 +116,7 @@ public class StepMenu
         @Implement(AbstractAction.class)
         public void actionPerformed (ActionEvent e)
         {
-            final Sheet sheet = SheetManager.getSelectedSheet();
+            final Sheet sheet = SheetsController.selectedSheet();
             new BasicTask() {
                     @Override
                     protected Void doInBackground ()
@@ -195,7 +196,7 @@ public class StepMenu
         @Implement(MenuListener.class)
         public void menuSelected (MenuEvent e)
         {
-            Sheet sheet = SheetManager.getSelectedSheet();
+            Sheet sheet = SheetsController.selectedSheet();
 
             for (int i = 0; i < menu.getItemCount(); i++) {
                 JMenuItem menuItem = menu.getItem(i);

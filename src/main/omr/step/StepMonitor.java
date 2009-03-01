@@ -16,7 +16,7 @@ import omr.constant.ConstantSet;
 import omr.log.Logger;
 
 import omr.sheet.Sheet;
-import omr.sheet.SheetManager;
+import omr.sheet.SheetsManager;
 
 import omr.ui.util.UIUtilities;
 

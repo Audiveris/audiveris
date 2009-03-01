@@ -21,12 +21,10 @@ import omr.glyph.Shape;
 import omr.log.Logger;
 
 import omr.score.ui.ScoreActions;
-
-import omr.selection.GlyphEvent;
+import omr.score.visitor.ScoreFixer;
 
 import omr.sheet.HorizontalsBuilder;
 import omr.sheet.LinesBuilder;
-import omr.sheet.MeasuresModel;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SkewBuilder;
@@ -156,6 +154,10 @@ public class SheetSteps
     {
         getTask(step)
             .displayUI();
+
+        // Selected the view tab most related to the current step
+        sheet.getAssembly()
+             .selectTab(step);
     }
 
     //--------//
@@ -218,23 +220,39 @@ public class SheetSteps
         task.done();
     }
 
-    //-------------//
-    // rebuildFrom //
-    //-------------//
+    //--------------//
+    // rebuildAfter //
+    //--------------//
     /**
-     * Update the steps already done, starting from the provided step
-     * @param step the step to restart from
-     * @param glyphs the collection of modified glyphs
-     * @param shapes the collection of the previous shapes
+     * Update the steps already done, starting right after the provided step.
+     * This method will try to minimize the systems to rebuild in each step, by
+     * determining the actual impact of the glyphs and shapes.<ul>
+     * <li>The glyphs are used to flag the systems containing these glyphs. So
+     * the best way to trigger the rebuild of all systems is to pass a null
+     * collection of glyphs.</li>
+     * <li>The shapes are used to flag or not the systems that follow the ones
+     * directly impacted by the modified glyphs. If some of the shapes are
+     * "persistent", which means their impact continues past the end of their
+     * containing measure, all the following systems must be flagged as well.
+     * </li></ul>
+     * @param step the step, after which to restart
+     * @param glyphs the collection of modified glyphs, or null to flag all
+     * systems
+     * @param shapes the collection of the modified shapes, only useful if
+     * glyphs collection is not null
      * @param imposed flag to indicate that update is imposed
      */
-    public void rebuildFrom (Step              step,
-                             Collection<Glyph> glyphs,
-                             Collection<Shape> shapes,
-                             boolean           imposed)
+    public void rebuildAfter (Step              step,
+                              Collection<Glyph> glyphs,
+                              Collection<Shape> shapes,
+                              boolean           imposed)
     {
         if (SwingUtilities.isEventDispatchThread()) {
             logger.severe("updateLastSteps should not run on EDT!");
+        }
+
+        if (step == null) {
+            return;
         }
 
         // Check whether the update must really be done
@@ -251,34 +269,16 @@ public class SheetSteps
 
         if (logger.isFineEnabled()) {
             logger.fine(
-                "Rebuild launched on" + SystemInfo.toString(impactedSystems));
+                "Rebuild launched after " + step + " on" +
+                SystemInfo.toString(impactedSystems));
         }
 
-        // Rebuild from specified step, if needed
+        // Rebuild after specified step, if needed
         if (sheet.getSheetSteps()
                  .getLatestStep()
-                 .compareTo(step) >= 0) {
-            step.reperform(sheet, impactedSystems);
+                 .compareTo(step) > 0) {
+            step.reperformNextSteps(sheet, impactedSystems);
         }
-    }
-
-    //-------------------//
-    // rebuildFromLeaves //
-    //-------------------//
-    /**
-     * Following the modification of a collection of glyphs, this method
-     * launches the re-processing of the steps starting with LEAVES on the
-     * systems impacted by the modifications
-     *
-     * @param glyphs the modified glyphs
-     * @param shapes the previous shapes of these glyphs
-     * @param imposed true if update must occur, else depends on current mode
-     */
-    public void rebuildFromLeaves (Collection<Glyph> glyphs,
-                                   Collection<Shape> shapes,
-                                   boolean           imposed)
-    {
-        rebuildFrom(Step.LEAVES, glyphs, shapes, imposed);
     }
 
     //---------//
@@ -320,10 +320,6 @@ public class SheetSteps
     private class MeasuresTask
         extends SystemTask
     {
-        //~ Instance fields ----------------------------------------------------
-
-        private MeasuresModel model;
-
         //~ Constructors -------------------------------------------------------
 
         MeasuresTask (Sheet sheet,
@@ -333,6 +329,12 @@ public class SheetSteps
         }
 
         //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void displayUI ()
+        {
+            Main.getGui().scoreController.setScoreView(sheet.getScore());
+        }
 
         @Override
         public void doSystem (SystemInfo system)
@@ -349,25 +351,12 @@ public class SheetSteps
                 logger.fine(step + " doEpilog");
             }
 
-            sheet.getMeasuresModel().completeScoreStructure();
-
-//            // Force score view creation if UI is present
-//            if (Main.getGui() != null) {
-//                Main.getGui().scoreController.setScoreView(sheet.getScore());
-//            }
+            // Update score internal data
+            sheet.getScore()
+                 .accept(new ScoreFixer(true));
+            sheet.getScore()
+                 .dumpMeasureCounts(null);
         }
-
-//        @Override
-//        protected synchronized void doProlog (Collection<SystemInfo> systems)
-//            throws StepException
-//        {
-//            if (logger.isFineEnabled()) {
-//                logger.fine(step + " doProlog");
-//            }
-//
-//            model = sheet.getMeasuresModel();
-//            model.allocateScoreStructure(systems); // For Score, Systems, Parts & Staves
-//        }
     }
 
     //-------------//
@@ -390,16 +379,17 @@ public class SheetSteps
         //~ Methods ------------------------------------------------------------
 
         @Override
+        public void displayUI ()
+        {
+            Main.getGui().scoreController.setScoreView(sheet.getScore());
+        }
+
+        @Override
         public void doit (Collection<SystemInfo> systems)
             throws StepException
         {
             sheet.getSystemsBuilder()
-                 .buildInfo();
-
-            // Force score view creation if UI is present
-            if (Main.getGui() != null) {
-                Main.getGui().scoreController.setScoreView(sheet.getScore());
-            }
+                 .buildSystems();
         }
     }
 
@@ -522,8 +512,6 @@ public class SheetSteps
         public void displayUI ()
         {
             getTask(SYMBOLS)
-                .displayUI();
-            getTask(VERTICALS)
                 .displayUI();
         }
 
@@ -681,19 +669,15 @@ public class SheetSteps
             getTask(VERTICALS)
                 .displayUI();
 
-            // Kludge, to put the Glyphs tab on top of all others.
-            sheet.getAssembly()
-                 .selectTab("Glyphs");
-
             // Update the glyph board, by re-publishing the current glyph
-            GlyphEvent glyphEvent = (GlyphEvent) sheet.getVerticalLag()
-                                                      .getLastEvent(
-                GlyphEvent.class);
-
-            if (glyphEvent != null) {
-                sheet.getVerticalLag()
-                     .publish(glyphEvent);
-            }
+            //            GlyphEvent glyphEvent = (GlyphEvent) sheet.getVerticalLag()
+            //                                                      .getLastEvent(
+            //                GlyphEvent.class);
+            //
+            //            if (glyphEvent != null) {
+            //                sheet.getVerticalLag()
+            //                     .publish(glyphEvent);
+            //            }
         }
 
         @Override
@@ -821,7 +805,7 @@ public class SheetSteps
         public void displayUI ()
         {
             // Create verticals display
-            sheet.getSheetVerticalsModel()
+            sheet.getVerticalsController()
                  .refresh();
         }
 

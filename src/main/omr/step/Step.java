@@ -14,8 +14,8 @@ import omr.log.Logger;
 import omr.script.StepTask;
 
 import omr.sheet.Sheet;
-import omr.sheet.SheetManager;
 import omr.sheet.SystemInfo;
+import omr.sheet.ui.SheetsController;
 
 import omr.util.Memory;
 
@@ -36,63 +36,66 @@ public enum Step {
     /**
      * Load the image for the sheet, from a provided image file
      */
-    LOAD("Load the sheet picture"),
+    LOAD("Picture", "Load the sheet picture"),
 
     /**
      * Determine the general scale of the sheet, based on the mean distance
      * between staff lines
      */
-    SCALE("Compute the global Skew, and rotate if needed"), 
+    SCALE(LOAD.label, "Compute the global Skew, and rotate if needed"), 
 
     /**
      * Determine the average skew of the picture, and deskews it if needed
      */
-    SKEW("Detect & remove all Staff Lines"), 
+    SKEW("Skew", "Detect & remove all Staff Lines"), 
 
     /**
      * Retrieve the staff lines, erases their pixels and creates crossing
      * objects when needed
      */
-    LINES("Retrieve horizontal Dashes"), 
+    LINES("Lines", "Retrieve horizontal Dashes"), 
 
     /**
      * Retrieve the horizontal dashes (ledgers, endings)
      */
-    HORIZONTALS("Detect horizontal dashes"), 
+    HORIZONTALS("Horizontals", "Detect horizontal dashes"), 
 
     /**
      * Retrieve the vertical bar lines, and so the systems
      */
-    SYSTEMS("Detect vertical Bar sticks and thus systems"), 
+    SYSTEMS("Systems", "Detect vertical Bar sticks and thus systems"), 
 
     /**
      * Retrieve the measures from the bar line glyphs
      */
-    MEASURES("Translate Bar glyphs to Measures"), 
+    MEASURES(SYSTEMS.label, "Translate Bar glyphs to Measures"), 
 
     /**
      * Recognize isolated symbols glyphs and aggregates unknown symbols into
      * compound glyphs
      */
-    SYMBOLS("Recognize Symbols & Compounds"), 
+    SYMBOLS("Glyphs", "Recognize Symbols & Compounds"), 
+
     /**
      * Retrieve the vertical items such as stems
      */
-    VERTICALS("Extract verticals"), 
+    VERTICALS("Verticals", "Extract verticals"), 
+
     /**
      * Process leaves, which are glyphs attached to stems and aggregates unknown
      * leaves into compound glyphs
      */
-    LEAVES("Recognize Leaves & Compounds"), 
+    LEAVES(SYMBOLS.label, "Recognize Leaves & Compounds"), 
+
     /**
      * Cleanup stems and slurs
      */
-    CLEANUP("Cleanup stems and slurs"), 
+    CLEANUP(SYMBOLS.label, "Cleanup stems and slurs"), 
 
     /**
      * Translate glyphs into score entities
      */
-    SCORE("Translate glyphs to score items");
+    SCORE(SYMBOLS.label, "Translate glyphs to score items");
     //
     //--------------------------------------------------------------------------
     //
@@ -102,8 +105,11 @@ public enum Step {
     /** Related UI when used in interactive mode */
     private static volatile StepMonitor monitor;
 
+    /** Related short label */
+    public final String label;
+
     /** Description of the step */
-    private final String description;
+    public final String description;
 
     /** First step */
     public static final Step first = Step.values()[0];
@@ -118,9 +124,13 @@ public enum Step {
     //------//
     /**
      * This enumeration is not meant to be instantiated outside of this class
+     * @param label The title of the related (or most relevant) view tab
+     * @param description A step description for the end user
      */
-    private Step (String description)
+    private Step (String label,
+                  String description)
     {
+        this.label = label;
         this.description = description;
     }
 
@@ -138,19 +148,6 @@ public enum Step {
         monitor = new StepMonitor();
 
         return monitor;
-    }
-
-    //----------------//
-    // getDescription //
-    //----------------//
-    /**
-     * Report the user-friendly description of this step
-     *
-     * @return the step description
-     */
-    public String getDescription ()
-    {
-        return description;
     }
 
     //------------//
@@ -218,17 +215,17 @@ public enum Step {
         }
     }
 
-    //-----------//
-    // reperform //
-    //-----------//
+    //--------------------//
+    // reperformNextSteps //
+    //--------------------//
     /**
-     * Re-perform all tasks already done, starting from this step, in order to
-     * update needed data
+     * Re-perform all tasks already done, starting from this step excluded,
+     * in order to update needed data
      * @param sheet the related sheet, which cannot be null
      * @param systems only the systems to reperform (null means all systems)
      */
-    public void reperform (Sheet                  sheet,
-                           Collection<SystemInfo> systems)
+    public void reperformNextSteps (Sheet                  sheet,
+                                    Collection<SystemInfo> systems)
     {
         if (sheet == null) {
             throw new IllegalArgumentException(
@@ -237,13 +234,13 @@ public enum Step {
 
         // The range of steps to re-perform
         EnumSet<Step> stepRange = EnumSet.range(
-            this,
+            this.next(),
             sheet.getSheetSteps().getLatestStep());
 
         try {
             doStepRange(stepRange, sheet, null, systems);
         } catch (Exception ex) {
-            logger.warning("Error in re-processing " + this, ex);
+            logger.warning("Error in re-processing after " + this, ex);
         }
     }
 
@@ -264,7 +261,11 @@ public enum Step {
                                Object                 param,
                                Collection<SystemInfo> systems)
     {
+        long startTime = 0;
+
         if (logger.isFineEnabled()) {
+            startTime = System.currentTimeMillis();
+
             StringBuilder sb = new StringBuilder("Performing ");
             sb.append(stepRange);
 
@@ -300,7 +301,8 @@ public enum Step {
                 if (monitor != null) {
                     monitor.animate();
                     // Update sheet (& score) dependent entities
-                    SheetManager.setSelectedSheet(sheet);
+                    SheetsController.getInstance()
+                                    .setSelectedSheet(sheet);
                 }
             }
         } catch (Exception ex) {
@@ -313,7 +315,10 @@ public enum Step {
             }
 
             if (logger.isFineEnabled()) {
-                logger.fine("End of " + stepRange + ".");
+                long stopTime = System.currentTimeMillis();
+                logger.fine(
+                    "End of " + stepRange + " in " + (stopTime - startTime) +
+                    " ms.");
             }
 
             return sheet;
@@ -400,8 +405,7 @@ public enum Step {
         if (logger.isFineEnabled()) {
             final long stopTime = System.currentTimeMillis();
             logger.fine(
-                this + " completed in " + (stopTime - startTime) + " ms with " +
-                Memory.getValue() + " bytes");
+                this + " completed in " + (stopTime - startTime) + " ms");
         }
 
         return sheet;

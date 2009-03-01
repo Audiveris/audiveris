@@ -1,12 +1,12 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                         Z o o m e d P a n e l                         //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2007. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                           R u b b e r P a n e l                            //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2007. All rights reserved.               //
+//  This software is released under the GNU General Public License.           //
+//  Contact author at herve.bitteur@laposte.net to report bugs & suggestions. //
+//----------------------------------------------------------------------------//
+//
 package omr.ui.view;
 
 import omr.constant.ConstantSet;
@@ -19,6 +19,7 @@ import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
 import omr.selection.SelectionHint;
 import static omr.selection.SelectionHint.*;
+import omr.selection.SelectionService;
 import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
 
@@ -27,34 +28,39 @@ import omr.ui.PixelCount;
 import omr.util.ClassUtil;
 import omr.util.Implement;
 
-import org.bushe.swing.event.EventService;
 import org.bushe.swing.event.EventSubscriber;
 
 import java.awt.*;
+import java.util.ConcurrentModificationException;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
- * Class <code>ZoomedPanel</code> is a class meant to handle common
- * task of a display with a magnifying lens, as provided by a related
- * {@link Zoom} entity.
+ * Class <code>RubberPanel</code> is a combination of two linked entities:
+ * a {@link Zoom} and a {@link Rubber}.
  *
- * <p>This class does not allocate any zoom instance. When using this
- * class, we have to provide our own Zoom instance, either at contruction
- * time by using the proper constructor or later by using the {@link
+ * <p>Its <i>paintComponent</i> method is declared final to ensure that the
+ * rendering is done in proper sequence, with the rubber rectangle rendered at
+ * the end on top of any other stuff. Any specific rendering required by a
+ * subclass is performed by overriding the {@link #render} method.
+ *
+ * <p>The Zoom instance and the Rubber instance can be provided separately,
+ * after this RubberPanel has been constructed. This is meant for cases
+ * where the same Zoom and Rubber instances are shared by several views, as in
+ * the {@link omr.sheet.ui.SheetAssembly} example.
+ *
+ * <p>When using this class, we have to provide our own Zoom instance, either at
+ * contruction time by using the proper constructor or later by using the {@link
  * #setZoom} method. The class then registers itself as an observer of the
  * Zoom instance, to be notified when the zoom ratio is modified.
- *
- * <p>The ModelSize is the unzoomed size of the data to be displayed, it
- * can be updated through {@link #setModelSize}. This is useful when used
- * in combination with a JScrollPane container (see {@link ScrollView}
- * example).
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-public class ZoomedPanel
+public class RubberPanel
     extends JPanel
     implements ChangeListener, MouseMonitor, EventSubscriber<UserEvent>
 {
@@ -64,46 +70,62 @@ public class ZoomedPanel
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ZoomedPanel.class);
+    private static final Logger logger = Logger.getLogger(RubberPanel.class);
 
     //~ Instance fields --------------------------------------------------------
+
+    /** Current display zoom, if any */
+    protected Zoom zoom;
+
+    /** Rubber band mouse handling, if any */
+    protected Rubber rubber;
 
     /** Model size (independent of display zoom) */
     protected Dimension modelSize;
 
-    /** Related location Service if any */
-    protected EventService locationService;
+    /** Location Service if any  (either SheetLocation or ScoreLocation) */
+    protected SelectionService locationService;
 
-    /** Precise location information (sheet or score related) */
+    /** Precise location information event (sheet or score related) */
     protected Class<?extends LocationEvent> locationClass;
-
-    /** Current display zoom */
-    protected Zoom zoom;
 
     //~ Constructors -----------------------------------------------------------
 
     //-------------//
-    // ZoomedPanel //
+    // RubberPanel //
     //-------------//
     /**
-     * Create a zoomed panel, with no predefined zoom, assuming a zoom
-     * instance will be provided later via the {@link #setZoom} method.
+     * Create a bare RubberPanel, assuming zoom and rubber will be
+     * assigned later.
      */
-    public ZoomedPanel ()
+    public RubberPanel ()
     {
+        if (logger.isFineEnabled()) {
+            logger.fine("new RubberPanel");
+        }
     }
 
     //-------------//
-    // ZoomedPanel //
+    // RubberPanel //
     //-------------//
     /**
-     * Create a zoomed panel, with a driving zoom instance.
+     * Create a RubberPanel, with the specified Rubber to interact via the
+     * mouse, and a specified Zoom instance
      *
-     * @param zoom the related zoom instance
+     * @param zoom related display zoom
+     * @param rubber the rubber instance to be linked to this panel
      */
-    public ZoomedPanel (Zoom zoom)
+    public RubberPanel (Zoom   zoom,
+                        Rubber rubber)
     {
         setZoom(zoom);
+        setRubber(rubber);
+
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                "new RubberZoomedPanel" + " zoom=" + zoom + " rubber=" +
+                rubber);
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -128,12 +150,12 @@ public class ZoomedPanel
      * <p><b>Nota</b>: Setting the location selection does not
      * automatically register this view on the selection object. If
      * such registering is needed, it must be done manually through method
-     * {@link #subscribe}.
+     * {@link #subscribe}. (TBD Question: Why?)
      *
      * @param locationService the proper location service to be updated
      * @param locationClass the location class of interest (score or sheet)
      */
-    public void setLocationService (EventService                  locationService,
+    public void setLocationService (SelectionService              locationService,
                                     Class<?extends LocationEvent> locationClass)
     {
         if ((this.locationService != null) &&
@@ -195,6 +217,35 @@ public class ZoomedPanel
         }
 
         return pt;
+    }
+
+    //-----------//
+    // setRubber //
+    //-----------//
+    /**
+     * Allows to provide the rubber instance, only after this RubberPanel
+     * has been built. This can be used to solve circular elaboration problems.
+     *
+     * @param rubber the rubber instance to be used
+     */
+    public void setRubber (Rubber rubber)
+    {
+        this.rubber = rubber;
+
+        rubber.setZoom(zoom);
+        rubber.setComponent(this);
+        rubber.setMouseMonitor(this);
+    }
+
+    //---------------------//
+    // getSelectedLocation //
+    //---------------------//
+    public Rectangle getSelectedLocation ()
+    {
+        LocationEvent locationEvent = (LocationEvent) locationService.getLastEvent(
+            locationClass);
+
+        return (locationEvent != null) ? locationEvent.getData() : null;
     }
 
     //---------//
@@ -293,6 +344,14 @@ public class ZoomedPanel
         setFocusLocation(new Rectangle(pt), movement, LOCATION_INIT);
     }
 
+    //---------//
+    // publish //
+    //---------//
+    public void publish (LocationEvent locationEvent)
+    {
+        locationService.publish(locationClass, locationEvent);
+    }
+
     //-------------------//
     // rectangleSelected //
     //-------------------//
@@ -351,6 +410,11 @@ public class ZoomedPanel
                 getClass().getName() + " showFocusLocation rect=" + rect);
         }
 
+        // Modify the rubber accordingly
+        if (rubber != null) {
+            rubber.resetRectangle(rect);
+        }
+
         updatePreferredSize();
 
         if (rect != null) {
@@ -393,16 +457,8 @@ public class ZoomedPanel
     @Implement(ChangeListener.class)
     public void stateChanged (ChangeEvent e)
     {
-        Rectangle rect = null;
-
         // Force a redisplay
-        if (locationService != null) {
-            LocationEvent locationEvent = (LocationEvent) locationService.getLastEvent(
-                locationClass);
-            rect = (locationEvent != null) ? locationEvent.getData() : null;
-        }
-
-        showFocusLocation(rect);
+        showFocusLocation(getSelectedLocation());
     }
 
     //-----------//
@@ -480,6 +536,56 @@ public class ZoomedPanel
                     movement,
                     new PixelRectangle(rect)));
         }
+    }
+
+    //----------------//
+    // paintComponent //
+    //----------------//
+    /**
+     * Final method, called by Swing. If something has to be changed in the
+     * rendering of the model, override the render method instead.
+     *
+     * @param initialGraphics the graphic context
+     */
+    @Override
+    protected final void paintComponent (Graphics initialGraphics)
+    {
+        // Paint background first
+        super.paintComponent(initialGraphics);
+
+        // Adjust graphics context to desired zoom ratio
+        Graphics2D g = (Graphics2D) initialGraphics.create();
+        g.scale(zoom.getRatio(), zoom.getRatio());
+
+        try {
+            // Then, drawing specific to the view (to be provided in subclass)
+            render(g);
+        } catch (ConcurrentModificationException ex) {
+            // It's hard to avoid concurrent modifs since the GUI may need to
+            // repaint a view, while some processing is taking place ...
+            logger.warning("RubberPanel paintComponent failed", ex);
+            repaint(); // To trigger another painting later ...
+        } finally {
+            // Finally the rubber, now that everything else has been drawn
+            if (rubber != null) {
+                rubber.render(initialGraphics);
+            }
+        }
+    }
+
+    //--------//
+    // render //
+    //--------//
+    /**
+     * This is just a place holder, the real rendering must be provided by a
+     * subclass to actually render the object displayed, since the rubber is
+     * automatically rendered after this one.
+     *
+     * @param g the graphic context
+     */
+    protected void render (Graphics g)
+    {
+        // Empty by default
     }
 
     //---------------------//

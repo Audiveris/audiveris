@@ -11,13 +11,13 @@ package omr.ui;
 
 import omr.log.Logger;
 
+import omr.selection.SelectionService;
 import omr.selection.UserEvent;
 
 import omr.ui.util.Panel;
 
 import omr.util.ClassUtil;
 
-import org.bushe.swing.event.EventService;
 import org.bushe.swing.event.EventSubscriber;
 
 import java.awt.*;
@@ -26,14 +26,14 @@ import java.util.Collection;
 import javax.swing.*;
 
 /**
- * Class <code>Board</code> defines the common properties of any user board such
- * as PixelBoard, SectionBoard, and the like.
+ * Class <code>Board</code> defines the common properties of any user board
+ * such as PixelBoard, SectionBoard, and the like.
  *
- * <p>By default, any board can have a related EventService, used for
- * subscribe(input) and publish (output). When {@link #connect} is called, the
- * board instance is subscribed to its EventService for a specific collection of
- * event classes. Similarly, {@link #disconnect} unsubscribes the Board instance
- * from the same event classes..
+ * <p>By default, any board can have a related SelectionService, used for
+ * subscribe (input) and publish (output). When {@link #connect} is called, the
+ * board instance is subscribed to its SelectionService for a specific
+ * collection of event classes. Similarly, {@link #disconnect} unsubscribes the
+ * Board instance from the same event classes..
  *
  * <p>This is still an abstract class, since the onEvent() method must be
  * provided by every subclass.
@@ -55,7 +55,7 @@ public abstract class Board
     protected final Panel component;
 
     /** The event service this board interacts with */
-    protected final EventService eventService;
+    protected final SelectionService selectionService;
 
     /** The collection of event classes to be observed */
     protected final Collection<Class<?extends UserEvent>> eventList;
@@ -72,15 +72,15 @@ public abstract class Board
      * Create a board
      *
      * @param name a name assigned to the board, for debug reason
-     * @param eventService the related event service (both for input & output)
+     * @param selectionService the related selection service (for input & output)
      * @param eventList the collection of event classes to observe
      */
     public Board (String                                name,
-                  EventService                          eventService,
+                  SelectionService                      selectionService,
                   Collection<Class<?extends UserEvent>> eventList)
     {
         this.name = name;
-        this.eventService = eventService;
+        this.selectionService = selectionService;
         this.eventList = eventList;
 
         component = new Panel();
@@ -144,7 +144,7 @@ public abstract class Board
         ///logger.info("+Board " + tag + " Shown");
         if (eventList != null) {
             for (Class eventClass : eventList) {
-                eventService.subscribeStrongly(eventClass, this);
+                selectionService.subscribeStrongly(eventClass, this);
             }
         }
     }
@@ -161,7 +161,7 @@ public abstract class Board
         ///logger.info("-Board " + tag + " Hidden");
         if (eventList != null) {
             for (Class eventClass : eventList) {
-                eventService.unsubscribe(eventClass, this);
+                selectionService.unsubscribe(eventClass, this);
             }
         }
     }

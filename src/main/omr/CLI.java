@@ -297,7 +297,7 @@ public class CLI
                 String.format(
                     "%n%-11s : %s",
                     step.toString().toUpperCase(),
-                    step.getDescription()));
+                    step.description));
         }
 
         logger.info(buf.toString());

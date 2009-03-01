@@ -177,7 +177,7 @@ public class BlackList
     //------//
     private void dump ()
     {
-        if (bl.size() > 0) {
+        if (!bl.isEmpty()) {
             System.out.println("BlackList for dir : " + dir);
 
             for (String s : bl) {

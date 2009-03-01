@@ -14,7 +14,7 @@ import omr.glyph.GlyphSection;
 
 import omr.lag.Lag;
 import omr.lag.Run;
-import omr.lag.SectionView;
+import omr.lag.ui.SectionView;
 
 import omr.log.Logger;
 
@@ -91,7 +91,7 @@ public class Stick
      * Report the number of pixels found in the specified rectangle that do not
      * belong to the stick.
      *
-     * @param area the rectangular area to investigate, in (coord, pos) form 
+     * @param area the rectangular area to investigate, in (coord, pos) form
      *
      * @return the number of alien pixels found
      */
@@ -876,6 +876,7 @@ public class Stick
         if (getContourBox()
                 .intersects(g.getClipBounds())) {
             getLine(); // To make sure the line has been computed
+
             Point start = lag.switchRef(
                 new Point(
                     getStart(),
@@ -909,8 +910,8 @@ public class Stick
               .append(getResult());
         }
 
-        if (getMembers()
-                .size() > 0) {
+        if (!getMembers()
+                 .isEmpty()) {
             sb.append(" th=")
               .append(getThickness());
             sb.append(" lg=")

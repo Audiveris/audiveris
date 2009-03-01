@@ -14,7 +14,7 @@ import omr.log.Logger;
 import omr.sheet.Sheet;
 
 import omr.ui.util.Panel;
-import omr.ui.view.RubberZoomedPanel;
+import omr.ui.view.RubberPanel;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
@@ -61,7 +61,7 @@ public class BoardsPane
      * @param boards a varying number of boards
      */
     public BoardsPane (Sheet             sheet,
-                       RubberZoomedPanel view,
+                       RubberPanel view,
                        Board... boards)
     {
         // View

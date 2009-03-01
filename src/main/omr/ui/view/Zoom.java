@@ -14,8 +14,6 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
-import omr.ui.*;
-
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;

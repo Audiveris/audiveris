@@ -24,9 +24,9 @@ import omr.selection.MouseMovement;
 import omr.selection.SheetEvent;
 
 import omr.sheet.Sheet;
-import omr.sheet.SheetManager;
+import omr.sheet.SheetsManager;
 import omr.sheet.ui.SheetActions.OpenTask;
-import omr.sheet.ui.SheetController;
+import omr.sheet.ui.SheetsController;
 
 import omr.step.Step;
 import omr.step.StepMenu;
@@ -76,7 +76,7 @@ public class MainGui
     public final ScoreController scoreController;
 
     /** Sheet tabbed pane, which may contain several views */
-    public final SheetController sheetController = new SheetController();
+    public final SheetsController sheetSetController;
 
     /** The related concrete frame */
     private JFrame frame;
@@ -109,15 +109,17 @@ public class MainGui
         this.frame = frame;
         app = Application.getInstance();
 
-        defineMenus();
+        sheetSetController = SheetsController.getInstance();
+        SheetsManager.getInstance()
+                       .setController(sheetSetController);
+        sheetSetController.subscribe(this);
 
         scoreController = new ScoreController();
 
+        defineMenus();
         defineLayout();
 
         // Stay informed on sheet selection
-        SheetManager.getEventService()
-                    .subscribeStrongly(SheetEvent.class, this);
 
         // Allow dropping files
         frame.setTransferHandler(new FileDropHandler());
@@ -372,7 +374,7 @@ public class MainGui
         /** The splitted panes */
         final JSplitPane splitPane = new JSplitPane(
             JSplitPane.VERTICAL_SPLIT,
-            sheetController.getComponent(),
+            sheetSetController.getComponent(),
             bottomPane);
         splitPane.setName("splitPane");
         splitPane.setBorder(null);
@@ -416,9 +418,9 @@ public class MainGui
         JMenu     sheetMenu = new SeparableMenu();
 
         // Specific history sub-menu
-        JMenuItem historyMenu = SheetManager.getInstance()
-                                            .getHistory()
-                                            .menu(
+        JMenuItem historyMenu = SheetsManager.getInstance()
+                                               .getHistory()
+                                               .menu(
             "Sheet History",
             new HistoryListener());
         sheetMenu.add(historyMenu);
@@ -571,8 +573,14 @@ public class MainGui
         public boolean canExit (EventObject e)
         {
             // Make sure all scripts are stored (or explicitly ignored)
-            return SheetManager.getInstance()
-                               .areAllScriptsStored();
+            MainGui gui = Main.getGui();
+
+            if (gui != null) {
+                return SheetsManager.getInstance()
+                                      .areAllScriptsStored();
+            } else {
+                return true;
+            }
         }
 
         public void willExit (EventObject e)
