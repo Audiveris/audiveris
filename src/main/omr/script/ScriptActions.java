@@ -17,7 +17,6 @@ import omr.constant.ConstantSet;
 import omr.log.Logger;
 
 import omr.sheet.Sheet;
-import omr.sheet.SheetManager;
 import omr.sheet.ui.SheetActions;
 
 import omr.ui.util.FileFilter;
@@ -34,6 +33,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
 import javax.swing.JOptionPane;
+import omr.sheet.ui.SheetsController;
 
 /**
  * Class <code>ScriptActions</code> gathers UI actions related to script
@@ -146,7 +146,7 @@ public class ScriptActions
     @Action(enabledProperty = "sheetAvailable")
     public Task storeScript (ActionEvent e)
     {
-        final Sheet sheet = SheetManager.getSelectedSheet();
+        final Sheet sheet = SheetsController.selectedSheet();
 
         if (sheet == null) {
             return null;

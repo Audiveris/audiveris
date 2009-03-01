@@ -227,11 +227,17 @@ public class ScoreSystem
     /**
      * Assign origin for score display
      *
-     * @param origin display origin for this system
+     * @param displayOrigin display origin for this system
      */
-    public void setDisplayOrigin (ScorePoint origin)
+    public void setDisplayOrigin (ScorePoint displayOrigin)
     {
-        this.displayOrigin = origin;
+        if (displayOrigin == null) {
+            logger.warning(
+                "ScoreSystem.setDisplayOrigin displayOrigin=null",
+                new Throwable("BINGO"));
+        }
+
+        this.displayOrigin = displayOrigin;
     }
 
     //------------------//
@@ -258,9 +264,10 @@ public class ScoreSystem
      */
     public int getDummyOffset ()
     {
-        return getTopLeft().y - getFirstPart()
-                                    .getFirstStaff()
-                                    .getPageTopLeft().y;
+        return getTopLeft().y -
+               getFirstPart()
+                   .getFirstStaff()
+                   .getPageTopLeft().y;
     }
 
     //--------------//
@@ -435,7 +442,15 @@ public class ScoreSystem
      */
     public int getRightPosition ()
     {
-        return (displayOrigin.x + dimension.width) - 1;
+        if (displayOrigin == null) {
+            logger.warning("ScoreSystem.getRightPosition. displayOrigin=null");
+        } else if (dimension == null) {
+            logger.warning("ScoreSystem.getRightPosition. dimension=null");
+        } else {
+            return (displayOrigin.x + dimension.width) - 1;
+        }
+
+        return 0; // ?????
     }
 
     //---------------//

@@ -9,6 +9,7 @@
 //
 package omr.lag;
 
+import omr.lag.ui.LagView;
 import omr.graph.Vertex;
 
 import omr.log.Logger;
@@ -83,7 +84,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
     /** Mass center */
     private Point centroid;
 
-    /** Model(unzoomed) contour points, which depend on orientation */
+    /** Model contour points, which depend on orientation */
     private Polygon contour;
 
     /** Display contour points, which do not depend on orientation */
@@ -334,6 +335,20 @@ public class Section<L extends Lag, S extends Section<L, S>>
     public int getForeWeight ()
     {
         return foreWeight;
+    }
+
+    //----------//
+    // getGraph //
+    //----------//
+    /**
+     * Report the containing graph (lag) of this vertex (section)
+     *
+     * @return the containing graph
+     */
+    @Override
+    public L getGraph ()
+    {
+        return graph;
     }
 
     //------------------//
@@ -592,6 +607,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
      * time (and safe) to compute section parameters such as contour, view,
      * etc...
      */
+
     @SuppressWarnings("unchecked")
     public void complete ()
     {

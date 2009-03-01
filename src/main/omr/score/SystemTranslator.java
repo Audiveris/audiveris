@@ -168,7 +168,7 @@ public class SystemTranslator
         system = systemInfo.getScoreSystem();
         systemInfo.getSheet()
                   .getErrorsEditor()
-                  .clearSystem(system);
+                  .clearSystem(system.getId());
 
         // Cleanup the system, staves, measures, barlines, ...
         // and clear glyph (& sentence) translations
@@ -764,8 +764,8 @@ public class SystemTranslator
                     Chord chord = (Chord) node;
                     logger.fine(chord.toString());
 
-                    if (chord.getBeams()
-                             .size() > 0) {
+                    if (!chord.getBeams()
+                             .isEmpty()) {
                         logger.fine("   Beams:" + chord.getBeams().size());
                     }
 

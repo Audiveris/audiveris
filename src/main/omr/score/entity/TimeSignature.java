@@ -418,7 +418,7 @@ public class TimeSignature
             throw new InvalidTimeSignature();
         }
 
-        if (glyphs.size() > 0) {
+        if (!glyphs.isEmpty()) {
             if (glyphs.size() == 1) {
                 // Just one symbol
                 Shape shape = glyphs.first()

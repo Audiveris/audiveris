@@ -75,7 +75,7 @@ public class ScoreSheetBridge
     {
         this.score = score;
         sheet = score.getSheet();
-        eventService = sheet.getEventService();
+        eventService = sheet.getSelectionService();
 
         // Register to event service
         eventService.subscribeStrongly(LocationEvent.class, this);

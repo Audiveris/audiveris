@@ -14,7 +14,6 @@ import omr.glyph.text.TextType;
 import omr.sheet.Sheet;
 
 import omr.step.StepException;
-import static omr.util.Synchronicity.*;
 
 import java.util.Collection;
 
@@ -82,8 +81,8 @@ public class TextTask
     {
         super.run(sheet);
 
-        sheet.getSymbolsModel()
-             .assignText(SYNC, glyphs, type, content, true);
+        sheet.getSymbolsController()
+             .asyncAssignText(glyphs, type, content);
     }
 
     //-----------------//

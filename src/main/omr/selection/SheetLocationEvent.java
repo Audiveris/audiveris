@@ -63,9 +63,9 @@ public class SheetLocationEvent
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------//
-    // getEntity //
-    //-----------//
+    //---------//
+    // getData //
+    //---------//
     @Override
     public PixelRectangle getData ()
     {

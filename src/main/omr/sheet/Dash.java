@@ -13,9 +13,13 @@ import omr.math.Line;
 
 import omr.stick.Stick;
 
+import omr.ui.util.UIUtilities;
+
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Stroke;
 import java.util.List;
 
 /**
@@ -164,15 +168,18 @@ public class Dash
     public void render (Graphics g)
     {
         if (box.intersects(g.getClipBounds())) {
-            Line  line = getLine();
-            Point start = new Point(
+            Stroke oldStroke = UIUtilities.SetAbsoluteStroke(g, 1f);
+
+            Line   line = getLine();
+            Point  start = new Point(
                 box.x,
                 (int) Math.rint(line.yAt((double) box.x)));
-            Point stop = new Point(
+            Point  stop = new Point(
                 box.x + box.width,
                 (int) Math.rint(line.yAt((double) box.x + box.width + 1)));
 
             g.drawLine(start.x, start.y, stop.x, stop.y);
+            ((Graphics2D) g).setStroke(oldStroke);
         }
     }
 
@@ -188,7 +195,9 @@ public class Dash
     {
         // Check the clipping
         if (box.intersects(g.getClipBounds())) {
+            Stroke oldStroke = UIUtilities.SetAbsoluteStroke(g, 1f);
             g.drawRect(box.x, box.y, box.width, box.height);
+            ((Graphics2D) g).setStroke(oldStroke);
 
             return true;
         } else {

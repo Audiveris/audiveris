@@ -16,6 +16,7 @@ import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 import omr.glyph.Shape;
 import omr.glyph.SymbolsModel;
+import omr.glyph.ui.SymbolsController;
 import omr.glyph.ui.SymbolsEditor;
 
 import omr.log.Logger;
@@ -32,6 +33,7 @@ import omr.score.visitor.Visitable;
 
 import omr.script.Script;
 
+import omr.selection.SelectionService;
 import omr.selection.SheetLocationEvent;
 
 import omr.sheet.picture.Picture;
@@ -44,8 +46,6 @@ import omr.step.Step;
 import static omr.step.Step.*;
 import omr.step.StepException;
 
-import omr.stick.Stick;
-
 import omr.ui.BoardsPane;
 import omr.ui.ErrorsEditor;
 import omr.ui.MainGui;
@@ -53,9 +53,6 @@ import omr.ui.MainGui;
 import omr.util.BrokenLine;
 import omr.util.Dumper;
 import omr.util.FileUtil;
-
-import org.bushe.swing.event.EventService;
-import org.bushe.swing.event.ThreadSafeEventService;
 
 import java.awt.*;
 import java.io.*;
@@ -126,7 +123,7 @@ public class Sheet
      * Non-lag related selections for this sheet
      * (SheetLocation, ScoreLocation and PixelLevel)
      */
-    private EventService eventService = new ThreadSafeEventService();
+    private SelectionService selectionService = new SelectionService();
 
     // Companion processors
 
@@ -145,14 +142,14 @@ public class Sheet
     /** A bar line extractor for this sheet */
     private volatile SystemsBuilder systemsBuilder;
 
-    /** A measure extractor for this sheet */
-    private volatile MeasuresModel measuresModel;
-
     /** Specific builder dealing with glyphs */
-    private volatile SymbolsModel symbolsBuilder;
+    private volatile SymbolsController symbolsController;
 
     /** Related verticals model */
-    private volatile VerticalsModel verticalsModel;
+    private volatile VerticalsController verticalsController;
+
+    /** Related symbols editor */
+    private SymbolsEditor editor;
 
     /** Related errors editor */
     private volatile ErrorsEditor errorsEditor;
@@ -189,14 +186,9 @@ public class Sheet
             logger.warning(ex.toString(), ex);
         }
 
-        // Insert in sheet history
-        SheetManager.getInstance()
-                    .getHistory()
-                    .add(getPath());
-
         // Insert in list of handled sheets
-        SheetManager.getInstance()
-                    .insertInstance(this);
+        SheetsManager.getInstance()
+                     .insertInstance(this);
 
         // Update UI information if so needed
         displayAssembly();
@@ -211,7 +203,6 @@ public class Sheet
     private Sheet ()
     {
         sheetSteps = new SheetSteps(this);
-        eventService.setDefaultCacheSizePerClassOrTopic(1);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -279,19 +270,6 @@ public class Sheet
         return errorsEditor;
     }
 
-    //-----------------//
-    // getEventService //
-    //-----------------//
-    /**
-     * Report the sheet event service
-     * (which handles SheetLocationEvent, PixelLevelEvent, ScoreLocationEvent)
-     * @return the sheet dedicated event service
-     */
-    public EventService getEventService ()
-    {
-        return eventService;
-    }
-
     //-----------//
     // getHeight //
     //-----------//
@@ -316,12 +294,6 @@ public class Sheet
     public void setHorizontalLag (GlyphLag hLag)
     {
         this.hLag = hLag;
-
-        // Input
-        eventService.subscribeStrongly(SheetLocationEvent.class, hLag);
-
-        // Output
-        hLag.setLocationService(eventService);
     }
 
     //------------------//
@@ -489,27 +461,6 @@ public class Sheet
         return linesBuilder;
     }
 
-    //--------------------//
-    // getMeasuresBuilder //
-    //--------------------//
-    /**
-     * Give access to the builder in charge of measures computation
-     *
-     * @return the builder instance
-     */
-    public MeasuresModel getMeasuresModel ()
-    {
-        if (measuresModel == null) {
-            synchronized (this) {
-                if (measuresModel == null) {
-                    measuresModel = new MeasuresModel(this);
-                }
-            }
-        }
-
-        return measuresModel;
-    }
-
     //-------------//
     // isOnSymbols //
     //-------------//
@@ -552,15 +503,15 @@ public class Sheet
 
         // Attach proper Selection objects
         // (reading from pixel location & writing to grey level)
-        picture.setLevelService(eventService);
-        eventService.subscribeStrongly(SheetLocationEvent.class, picture);
+        picture.setLevelService(selectionService);
+        selectionService.subscribe(SheetLocationEvent.class, picture);
 
         // Display sheet picture if not batch mode
         if (Main.getGui() != null) {
             PictureView pictureView = new PictureView(Sheet.this);
             displayAssembly();
             assembly.addViewTab(
-                "Picture",
+                Step.LOAD,
                 pictureView,
                 new BoardsPane(
                     Sheet.this,
@@ -657,28 +608,25 @@ public class Sheet
         return script;
     }
 
+    //---------------------//
+    // getSelectionService //
+    //---------------------//
+    /**
+     * Report the sheet selection service
+     * (which handles SheetLocationEvent, PixelLevelEvent, ScoreLocationEvent)
+     * @return the sheet dedicated event service
+     */
+    public SelectionService getSelectionService ()
+    {
+        return selectionService;
+    }
+
     //---------------//
     // getSheetSteps //
     //---------------//
     public SheetSteps getSheetSteps ()
     {
         return sheetSteps;
-    }
-
-    //------------------------//
-    // getSheetVerticalsModel //
-    //------------------------//
-    public VerticalsModel getSheetVerticalsModel ()
-    {
-        if (verticalsModel == null) {
-            synchronized (this) {
-                if (verticalsModel == null) {
-                    verticalsModel = new VerticalsModel(this);
-                }
-            }
-        }
-
-        return verticalsModel;
     }
 
     //---------//
@@ -820,6 +768,31 @@ public class Sheet
         return staves;
     }
 
+    //----------------------//
+    // getSymbolsController //
+    //----------------------//
+    /**
+     * Give access to the module dealing with symbol management
+     *
+     * @return the symbols model
+     */
+    public SymbolsController getSymbolsController ()
+    {
+        if (symbolsController == null) {
+            synchronized (this) {
+                if (symbolsController == null) {
+                    SymbolsModel model = new SymbolsModel(
+                        this,
+                        getVerticalLag());
+                    symbolsController = new SymbolsController(model);
+                    editor = new SymbolsEditor(this, symbolsController);
+                }
+            }
+        }
+
+        return symbolsController;
+    }
+
     //------------------//
     // getSymbolsEditor //
     //------------------//
@@ -830,29 +803,9 @@ public class Sheet
      */
     public SymbolsEditor getSymbolsEditor ()
     {
-        return getSymbolsModel()
-                   .getEditor();
-    }
+        getSymbolsController();
 
-    //-----------------//
-    // getSymbolsModel //
-    //-----------------//
-    /**
-     * Give access to the module dealing with symbol management
-     *
-     * @return the symbols model
-     */
-    public SymbolsModel getSymbolsModel ()
-    {
-        if (symbolsBuilder == null) {
-            synchronized (this) {
-                if (symbolsBuilder == null) {
-                    symbolsBuilder = new SymbolsModel(this);
-                }
-            }
-        }
-
-        return symbolsBuilder;
+        return editor;
     }
 
     //-------------//
@@ -879,12 +832,18 @@ public class Sheet
     //-------------//
     // getSystemOf //
     //-------------//
+    /**
+     * Report the system, if any, which contains the provided glyph
+     * (the precise point is the glyph area center)
+     * @param glyph the provided glyph
+     * @return the containing system, or null
+     */
     public SystemInfo getSystemOf (Glyph glyph)
     {
-        Point pt = glyph.getContourBox()
-                        .getLocation();
+        Rectangle box = glyph.getContourBox();
 
-        return getSystemOf(new PixelPoint(pt.x, pt.y));
+        return getSystemOf(
+            new PixelPoint(box.x + (box.width / 2), box.y + (box.height / 2)));
     }
 
     //-------------//
@@ -904,18 +863,32 @@ public class Sheet
                 "getSystemOf. Glyphs collection is null or empty");
         }
 
-        SystemInfo system = null;
+        SystemInfo        system = null;
+        Collection<Glyph> toRemove = new ArrayList<Glyph>();
 
         for (Glyph glyph : glyphs) {
-            if (system == null) {
-                system = getSystemOf(glyph);
+            SystemInfo glyphSystem = getSystemOf(glyph);
+
+            if (glyphSystem == null) {
+                toRemove.add(glyph);
             } else {
-                // Make sure we are still in the same system
-                if (getSystemOf(glyph) != system) {
-                    throw new IllegalArgumentException(
-                        "getSystemOf. Glyphs from different systems");
+                if (system == null) {
+                    system = glyphSystem;
+                } else {
+                    // Make sure we are still in the same system
+                    if (glyphSystem != system) {
+                        throw new IllegalArgumentException(
+                            "getSystemOf. Glyphs from different systems (" +
+                            getSystemOf(glyph) + " and " + system + ") " +
+                            Glyph.toString(glyphs));
+                    }
                 }
             }
+        }
+
+        if (!toRemove.isEmpty()) {
+            logger.warning("No system for " + Glyph.toString(toRemove));
+            glyphs.removeAll(toRemove);
         }
 
         return system;
@@ -997,12 +970,6 @@ public class Sheet
     public void setVerticalLag (GlyphLag vLag)
     {
         this.vLag = vLag;
-
-        // Input
-        eventService.subscribeStrongly(SheetLocationEvent.class, vLag);
-
-        // Output
-        vLag.setLocationService(eventService);
     }
 
     //----------------//
@@ -1016,6 +983,22 @@ public class Sheet
     public GlyphLag getVerticalLag ()
     {
         return vLag;
+    }
+
+    //------------------------//
+    // getVerticalsController //
+    //------------------------//
+    public VerticalsController getVerticalsController ()
+    {
+        if (verticalsController == null) {
+            synchronized (this) {
+                if (verticalsController == null) {
+                    verticalsController = new VerticalsController(this);
+                }
+            }
+        }
+
+        return verticalsController;
     }
 
     //----------//
@@ -1067,8 +1050,8 @@ public class Sheet
             assembly.close();
         }
 
-        SheetManager.getInstance()
-                    .close(this);
+        SheetsManager.getInstance()
+                     .close(this);
 
         if (picture != null) {
             picture.close();
@@ -1176,10 +1159,7 @@ public class Sheet
         MainGui gui = Main.getGui();
 
         if (gui != null) {
-            // Prepare a assembly on this sheet, this uses the initial zoom
-            // ratio
-            int viewIndex = gui.sheetController.setSheetAssembly(this);
-            gui.sheetController.showSheetView(viewIndex);
+            gui.sheetSetController.showSheet(this);
         }
     }
 
@@ -1225,23 +1205,32 @@ public class Sheet
     }
 
     //-------------//
-    // rebuildFrom //
+    // rebuildAfter //
     //-------------//
-    public void rebuildFrom (Step                    step,
-                             final Collection<Glyph> glyphs,
-                             final Collection<Shape> shapes)
+    public void rebuildAfter (Step                    step,
+                              final Collection<Glyph> glyphs,
+                              final Collection<Shape> shapes)
     {
-        sheetSteps.rebuildFrom(step, glyphs, shapes, false); //Not imposed
+        sheetSteps.rebuildAfter(step, glyphs, shapes, false); //Not imposed
     }
 
-    //-------------------//
-    // rebuildFromLeaves //
-    //-------------------//
-    public void rebuildFromLeaves (final Collection<Glyph> glyphs,
-                                   final Collection<Shape> shapes)
-    {
-        rebuildFrom(Step.LEAVES, glyphs, shapes);
-    }
+    //
+    //    //-----------------------//
+    //    // registerLagController //
+    //    //-----------------------//
+    //    /**
+    //     * Register a lag controller for SheetLocation events
+    //     *
+    //     * @param lag the lag at hand
+    //     */
+    //    public void registerLagController (GlyphLagController controller)
+    //    {
+    //        // Input for location events
+    //        eventService.subscribeStrongly(SheetLocationEvent.class, controller);
+    //
+    //        //        // Output for location events
+    //        //        controller.setLocationService(eventService);
+    //    }
 
     //----------------//
     // splitBarSticks //
@@ -1251,7 +1240,7 @@ public class Sheet
      *
      * @return the set of modified systems
      */
-    public Set<SystemInfo> splitBarSticks (Collection<Stick> barSticks)
+    public Set<SystemInfo> splitBarSticks (Collection<?extends Glyph> barSticks)
     {
         Set<SystemInfo>                   modified = new LinkedHashSet<SystemInfo>();
         Map<SystemInfo, SortedSet<Glyph>> glyphs = new HashMap<SystemInfo, SortedSet<Glyph>>();
@@ -1264,11 +1253,13 @@ public class Sheet
         }
 
         // Assign the bar sticks to the proper system glyphs collection
-        for (Stick stick : barSticks) {
-            SystemInfo system = getSystemOf(stick);
+        for (Glyph stick : barSticks) {
+            if (stick.isActive()) {
+                SystemInfo system = getSystemOf(stick);
 
-            if (system != null) {
-                system.addGlyph(stick);
+                if (system != null) {
+                    system.addGlyph(stick);
+                }
             }
         }
 

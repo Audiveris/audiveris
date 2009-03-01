@@ -15,7 +15,6 @@ import omr.selection.MouseMovement;
 import omr.selection.SheetEvent;
 
 import omr.sheet.Sheet;
-import omr.sheet.SheetManager;
 
 import omr.util.Implement;
 
@@ -56,8 +55,8 @@ public abstract class SheetDependent
     {
         // Stay informed on sheet status, in order to enable sheet-dependent
         // actions accordingly
-        SheetManager.getEventService()
-                    .subscribeStrongly(SheetEvent.class, this);
+        SheetsController.getInstance()
+                          .subscribe(this);
     }
 
     //~ Methods ----------------------------------------------------------------

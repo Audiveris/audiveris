@@ -188,8 +188,8 @@ public class Chord
      */
     public BeamGroup getBeamGroup ()
     {
-        if (getBeams()
-                .size() > 0) {
+        if (!getBeams()
+                .isEmpty()) {
             return getBeams()
                        .first()
                        .getGroup();
@@ -450,8 +450,8 @@ public class Chord
     public Staff getStaff ()
     {
         if (super.getStaff() == null) {
-            if (getNotes()
-                    .size() > 0) {
+            if (!getNotes()
+                    .isEmpty()) {
                 Note note = (Note) getNotes()
                                        .get(0);
                 setStaff(note.getStaff());
@@ -693,8 +693,8 @@ public class Chord
      */
     public boolean isWholeDuration ()
     {
-        if (getNotes()
-                .size() > 0) {
+        if (!getNotes()
+                .isEmpty()) {
             Note note = (Note) getNotes()
                                    .get(0);
 
@@ -969,7 +969,7 @@ public class Chord
         } else {
             List<Chord> sideChords = Chord.getStemChords(measure, stem);
 
-            if (sideChords.size() > 0) {
+            if (!sideChords.isEmpty()) {
                 for (Chord chord : sideChords) {
                     chord.flagsNumber += getFlagValue(glyph);
                     glyph.addTranslation(chord);
@@ -1102,7 +1102,7 @@ public class Chord
                   .append("]");
             }
 
-            if (beams.size() > 0) {
+            if (!beams.isEmpty()) {
                 try {
                     sb.append(
                         " beams G#" + beams.first().getGroup().getId() + "[");
@@ -1322,8 +1322,8 @@ public class Chord
     {
         Integer rawDuration = null;
 
-        if (getNotes()
-                .size() > 0) {
+        if (!getNotes()
+                .isEmpty()) {
             // All note heads are assumed to be the same within one chord
             Note note = (Note) getNotes()
                                    .get(0);
@@ -1602,8 +1602,8 @@ public class Chord
         ScoreSystem system = getSystem();
 
         // Find the note farthest from stem middle point
-        if (getNotes()
-                .size() > 0) {
+        if (!getNotes()
+                .isEmpty()) {
             if (stem != null) {
                 SystemPoint middle = system.toSystemPoint(stem.getLocation());
                 Note        bestNote = null;

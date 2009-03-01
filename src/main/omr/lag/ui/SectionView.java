@@ -7,8 +7,9 @@
 //  Contact author at herve.bitteur@laposte.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
 //
-package omr.lag;
+package omr.lag.ui;
 
+import omr.lag.*;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -18,16 +19,20 @@ import omr.log.Logger;
 
 import omr.util.Implement;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Polygon;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Class <code>SectionView</code> defines one view meant for display of a
- * given section. No zoom is defined for this view, since the provided Graphics
- * context can be used for this when rendering.
+ * given section.
+ *
+ * <p>An important characteristic is the default color to be used when
+ * rendering the related section: this color is determined by looking at the
+ * adjacent sections in the same view, to make sure we select a different color.
+ * On top of this, we may use a temporary color, for example to highlight the
+ * section.
  *
  * @param L the precise lag type
  * @param S the precise section type
@@ -67,18 +72,18 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
     protected final S section;
 
     /**
-     * Color currently used. By defaut, the color corresponds to the colorIndex
+     * Default color. This is the permanent default, which is set when
+     * the containing {@link LagView} is created, and which is also used when
+     * the color is reset by {@link #resetColor}
+     */
+    protected Color defaultColor;
+
+    /**
+     * Color currently used. By defaut, the color is the defaultColor chosen out
      * of the palette. But, temporarily, a section can be assigned a different
      * color, for example to highlight the section.
      */
     protected Color color;
-
-    /**
-     * Assigned color index. This is the permanent default, which is set when
-     * the containing {@link LagView} is created, and which is also used when
-     * the color is reset by {@link #resetColor}
-     */
-    protected int colorIndex = -1;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -93,6 +98,8 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
     public SectionView (S section)
     {
         this.section = section;
+
+        ///defaultColor = determineDefaultColor();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -110,18 +117,16 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
         this.color = color;
     }
 
-    //---------------//
-    // getColorIndex //
-    //---------------//
+    //-------------//
+    // isColorized //
+    //-------------//
     /**
-     * Report the color index assigned to this section view. A -1 value means no
-     * value has been assigned yet.
-     *
-     * @return the assigned index, or -1 if none.
+     * Report whether a default color has been assigned
+     * @return trur if defaultColor is no longer null
      */
-    public int getColorIndex ()
+    public boolean isColorized ()
     {
-        return colorIndex;
+        return defaultColor != null;
     }
 
     //--------------//
@@ -138,61 +143,59 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
         return section.getContourBox();
     }
 
-    //---------------------//
-    // determineColorIndex //
-    //---------------------//
+    //-----------------------//
+    // determineDefaultColor //
+    //-----------------------//
     /**
-     * Determine the proper color index in the palette to assign to this section
-     * view. We choose the first color in the palette which is not already used
-     * by any of the connected sections (sources and targets).
+     * Determine the proper default color in the palette to assign to this
+     * section view. We choose the first color in the palette which is not
+     * already used by any of the connected sections (sources and targets).
      *
      * @param viewIndex the index of this view in the collection of views for
      * this section, which is identical to the index of the containing lag view
      * in the collection of views for the lag.
      */
-    public void determineColorIndex (int viewIndex)
+    public void determineDefaultColor (int viewIndex)
     {
+        // Check if work has already been done
+        if (defaultColor != null) {
+            return;
+        }
+
         // Choose a correct color, by first looking at adjacent sections
-        boolean[] colorUsed = new boolean[COLOR_NB];
-        Arrays.fill(colorUsed, false);
+        Set<Color> usedColors = new HashSet<Color>();
 
         for (S sct : section.getTargets()) {
             SectionView v = (SectionView) sct.getView(viewIndex);
-            int         c = v.colorIndex;
+            Color       c = v.defaultColor;
 
-            if (c != -1) {
-                colorUsed[c] = true;
+            if (c != null) {
+                usedColors.add(c);
             }
         }
 
         for (S sct : section.getSources()) {
             SectionView v = (SectionView) sct.getView(viewIndex);
-            int         c = v.colorIndex;
+            Color       c = v.defaultColor;
 
-            if (c != -1) {
-                colorUsed[c] = true;
+            if (c != null) {
+                usedColors.add(c);
             }
         }
 
-        // Take the first color not already used in the palette
-        int best = -1;
-
-        for (int i = 0; i < colorUsed.length; i++) {
-            if (!colorUsed[i]) {
-                best = i;
-
-                break;
-            }
-        }
+        // Take the first color avaliable
+        Set<Color> availableColors = new HashSet<Color>(Arrays.asList(palette));
+        availableColors.removeAll(usedColors);
 
         // This should not happen: thanks to a theorem I forgot, we just need 3
-        // colors for areas on a plan.
-        if (best == -1) {
-            logger.warning("Color collision for section " + section.getId());
-            best = SectionView.COLOR_NB - 1;
+        // colors for areas on a 2-D plan.
+        if (availableColors.isEmpty()) {
+            logger.severe("Color collision for section " + section.getId());
+            defaultColor = palette[0]; // We need a color!
         }
 
-        colorIndex = best;
+        defaultColor = availableColors.iterator()
+                                      .next();
         resetColor();
     }
 
@@ -217,7 +220,6 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
             g.setColor(color);
 
             Polygon polygon = section.getContour();
-            ///g.drawPolygon(polygon.xpoints, polygon.ypoints, polygon.npoints);
             g.fillPolygon(polygon.xpoints, polygon.ypoints, polygon.npoints);
 
             // Display the section foreground value? To be improved!!!
@@ -243,7 +245,7 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
      */
     public void resetColor ()
     {
-        setColor(palette[colorIndex]);
+        setColor(defaultColor);
     }
 
     //~ Inner Classes ----------------------------------------------------------

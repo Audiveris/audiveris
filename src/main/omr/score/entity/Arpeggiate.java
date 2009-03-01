@@ -104,7 +104,7 @@ public class Arpeggiate
             new PixelPoint(box.x + (box.width / 2), box.y + box.height));
         List<Chord>    chords = slot.getEmbracedChords(top, bottom);
 
-        if (chords.size() > 0) {
+        if (!chords.isEmpty()) {
             // Allocate an instance with first embraced chord
             Arpeggiate arpeggiate = new Arpeggiate(
                 measure,

@@ -14,7 +14,7 @@ import omr.log.Logger;
 import omr.score.Score;
 
 import omr.sheet.Sheet;
-import omr.sheet.SheetManager;
+import omr.sheet.ui.SheetsController;
 
 /**
  * Class <code>ScoreController</code> encapsulates a set of user interface means
@@ -56,7 +56,7 @@ public class ScoreController
      */
     public static Score getCurrentScore ()
     {
-        Sheet sheet = SheetManager.getSelectedSheet();
+        Sheet sheet = SheetsController.selectedSheet();
 
         if (sheet != null) {
             return sheet.getScore();
@@ -96,6 +96,7 @@ public class ScoreController
                  .setScoreView(view);
         }
 
-        SheetManager.setSelectedSheet(sheet);
+        SheetsController.getInstance()
+                        .setSelectedSheet(sheet);
     }
 }

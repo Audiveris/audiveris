@@ -19,12 +19,12 @@ import omr.log.Logger;
 
 import omr.selection.MouseMovement;
 import omr.selection.PixelLevelEvent;
+import omr.selection.SelectionService;
 import omr.selection.SheetLocationEvent;
 
 import omr.util.Implement;
 import omr.util.JaiLoader;
 
-import org.bushe.swing.event.EventService;
 import org.bushe.swing.event.EventSubscriber;
 
 import java.awt.*;
@@ -100,12 +100,10 @@ public class Picture
         }
     }
 
-    //~ Instance fields --------------------------------------------------------
+    /** Identity ransformation used for display */
+    private static final AffineTransform identity = new AffineTransform();
 
-    /** Transformation used for display */
-    private final AffineTransform scaleTransform = AffineTransform.getScaleInstance(
-        1d,
-        1d);
+    //~ Instance fields --------------------------------------------------------
 
     /** Dimension of current image */
     private Dimension dimension;
@@ -118,7 +116,7 @@ public class Picture
 
     /** Service object where gray level of pixel is to be written to when so
        asked for by calling the update method */
-    private EventService levelService;
+    private SelectionService levelService;
 
     /** Remember if we have actually rotated the image */
     private boolean rotated = false;
@@ -519,7 +517,7 @@ public class Picture
      *
      * @param levelService the output selection object
      */
-    public void setLevelService (EventService levelService)
+    public void setLevelService (SelectionService levelService)
     {
         this.levelService = levelService;
     }
@@ -675,15 +673,12 @@ public class Picture
     /**
      * Paint the picture image in the provided graphic context.
      *
-     * @param g     the Graphics context
-     * @param ratio the display zoom ratio
+     * @param g the Graphics context
      */
-    public void render (Graphics g,
-                        double   ratio)
+    public void render (Graphics g)
     {
         Graphics2D g2 = (Graphics2D) g;
-        scaleTransform.setToScale(ratio, ratio);
-        g2.drawRenderedImage(image, scaleTransform);
+        g2.drawRenderedImage(image, identity);
     }
 
     //--------//

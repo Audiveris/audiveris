@@ -96,8 +96,8 @@ public class Barline
                                 .getTopLeft();
 
         for (Stick stick : getSticks()) {
-            if ((stick.getShape() == Shape.THICK_BAR_LINE) ||
-                (stick.getShape() == Shape.THIN_BAR_LINE)) {
+            if ((stick.getShape() == Shape.THICK_BARLINE) ||
+                (stick.getShape() == Shape.THIN_BARLINE)) {
                 // Beware : Vertical sticks using Horizontal line equation
                 int x = stick.getLine()
                              .yAt(getScale()
@@ -129,8 +129,7 @@ public class Barline
                                 .getTopLeft();
 
         for (Stick stick : getSticks()) {
-            if ((stick.getShape() == Shape.THICK_BAR_LINE) ||
-                (stick.getShape() == Shape.THIN_BAR_LINE)) {
+            if (stick.isBar()) {
                 // Beware : Vertical sticks using Horizontal line equation
                 int x = stick.getLine()
                              .yAt(getScale()
@@ -288,8 +287,7 @@ public class Barline
     public void render (Graphics g)
     {
         for (Stick stick : getSticks()) {
-            if ((stick.getShape() == Shape.THICK_BAR_LINE) ||
-                (stick.getShape() == Shape.THIN_BAR_LINE)) {
+            if (stick.isBar()) {
                 stick.renderLine(g);
             }
         }
@@ -367,11 +365,29 @@ public class Barline
         }
 
         switch (shape) {
-        case THICK_BAR_LINE :
+        case THICK_BARLINE :
             return "K";
 
-        case THIN_BAR_LINE :
+        case THIN_BARLINE :
             return "N";
+
+        case DOUBLE_BARLINE :
+            return "NN";
+
+        case FINAL_BARLINE :
+            return "NK";
+
+        case REVERSE_FINAL_BARLINE :
+            return "KN";
+
+        case LEFT_REPEAT_SIGN :
+            return "KNO";
+
+        case RIGHT_REPEAT_SIGN :
+            return "ONK";
+
+        case BACK_TO_BACK_REPEAT_SIGN :
+            return "ONKNO";
 
         case DOT :
         case REPEAT_DOTS :
@@ -467,7 +483,7 @@ public class Barline
         public static final Map<String, Shape> map = new HashMap<String, Shape>();
 
         static {
-            map.put("N", Shape.SINGLE_BARLINE);
+            map.put("N", Shape.THIN_BARLINE);
             map.put("NN", Shape.DOUBLE_BARLINE);
             map.put("NK", Shape.FINAL_BARLINE);
             map.put("KN", Shape.REVERSE_FINAL_BARLINE);

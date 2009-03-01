@@ -266,7 +266,7 @@ public class ScoreExporter
 
         Shape shape = barline.getShape();
 
-        if (shape != omr.glyph.Shape.SINGLE_BARLINE) {
+        if (shape != omr.glyph.Shape.THIN_BARLINE) {
             try {
                 proxymusic.Barline       pmBarline = factory.createBarline();
                 proxymusic.BarStyleColor barStyleColor = factory.createBarStyleColor();
@@ -1951,6 +1951,7 @@ public class ScoreExporter
     //---------//
     private Work getWork ()
     {
+
         if (current.pmWork == null) {
             current.pmWork = factory.createWork();
             scorePartwise.setWork(current.pmWork);

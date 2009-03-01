@@ -19,9 +19,10 @@ import omr.log.Logger;
 import omr.score.Score;
 import omr.score.entity.ScorePart;
 import omr.score.midi.MidiAgent;
-import omr.score.ui.ScoreBoard;
 
-import omr.sheet.SheetManager;
+import omr.sheet.ui.SheetsController;
+
+import omr.step.Step;
 
 import omr.util.BasicTask;
 
@@ -341,10 +342,13 @@ public class ScoreActions
             throws InterruptedException
         {
             try {
-                SheetManager.getSelectedSheet()
-                            .getSheetSteps()
-                            .rebuildFromLeaves(null, null, /* imposed => */
-                                             true);
+                SheetsController.selectedSheet()
+                                .getSheetSteps()
+                                .rebuildAfter(
+                    Step.SYMBOLS,
+                    null,
+                    null, /* imposed => */
+                    true);
             } catch (Exception ex) {
                 logger.warning("Could not refresh score", ex);
             }

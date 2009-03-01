@@ -25,11 +25,12 @@ import omr.glyph.Shape;
 import omr.glyph.ui.BarMenu;
 import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphLagView;
+import omr.glyph.ui.GlyphsController;
 
-import omr.lag.RunBoard;
-import omr.lag.ScrollLagView;
-import omr.lag.SectionBoard;
 import omr.lag.VerticalOrientation;
+import omr.lag.ui.RunBoard;
+import omr.lag.ui.ScrollLagView;
+import omr.lag.ui.SectionBoard;
 
 import omr.log.Logger;
 
@@ -40,13 +41,12 @@ import omr.score.ui.ScoreView;
 import omr.score.visitor.ScoreFixer;
 import omr.score.visitor.SheetPainter;
 
-import omr.script.AssignTask;
-import omr.script.ScriptRecording;
-import static omr.script.ScriptRecording.*;
+import omr.script.BoundaryTask;
 
 import omr.selection.GlyphEvent;
 import omr.selection.MouseMovement;
 import omr.selection.SelectionHint;
+import omr.selection.SelectionService;
 import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
 
@@ -60,20 +60,15 @@ import omr.stick.StickSection;
 
 import omr.ui.BoardsPane;
 
-import omr.util.BasicTask;
 import omr.util.BrokenLine;
 import omr.util.Dumper;
-import omr.util.Synchronicity;
-import static omr.util.Synchronicity.*;
 import omr.util.TreeNode;
 
-import org.bushe.swing.event.EventService;
+import org.jdesktop.application.Task;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 /**
  * Class <code>SystemsBuilder</code> is in charge of retrieving the systems
@@ -91,7 +86,7 @@ import java.util.*;
  * system. The user has the ability to interactively modify the broken line
  * that defines the limit between two adjacent systems.</p>
  *
- * <p>This class has close relationships with {@link MeasuresModel} in charge
+ * <p>This class has close relationships with {@link MeasuresBuilder} in charge
  * of building and checking the measures, because barlines are used both to
  * define systems and parts, and to define measures.</p>
  *
@@ -135,11 +130,8 @@ public class SystemsBuilder
     /** Lag view on bars, if so desired */
     private GlyphLagView lagView;
 
-    /** Collection of vertical sticks */
-    private List<Stick> verticalSticks = new ArrayList<Stick>();
-
-    /** Sorted set of found bar sticks */
-    private SortedSet<Stick> barSticks;
+    /** Glyphs controller */
+    private BarsController barsController;
 
     /** Sheet retrieved systems */
     private final List<SystemInfo> systems;
@@ -158,152 +150,28 @@ public class SystemsBuilder
     {
         super(
             sheet,
-            new GlyphLag("vLag", StickSection.class, new VerticalOrientation()));
+            new GlyphLag("vLag", StickSection.class, new VerticalOrientation()),
+            Step.SYSTEMS);
 
         systems = sheet.getSystems();
 
-        // BarsChecker companion
-        barsChecker = new BarsChecker(sheet, lag, verticalSticks);
+        // BarsChecker companion, in charge of purely physical tests
+        barsChecker = new BarsChecker(sheet, lag);
     }
 
     //~ Methods ----------------------------------------------------------------
 
+    //---------------//
+    // getController //
+    //---------------//
+    public BarsController getController ()
+    {
+        return (BarsController) lagView.getController();
+    }
+
     //--------------//
-    // getBarSticks //
+    // buildSystems //
     //--------------//
-    public Set<Stick> getBarSticks ()
-    {
-        return barSticks;
-    }
-
-    //------------------//
-    // assignGlyphShape //
-    //------------------//
-    /**
-     * Assign a Shape to a glyph
-     *
-     * @param processing specify whether we should run (a)synchronously
-     * @param glyph the glyph to be assigned
-     * @param shape the assigned shape, which may be null
-     * @param record specify whether the action must be recorded in the script
-     */
-    @Override
-    public void assignGlyphShape (Synchronicity         processing,
-                                  final Glyph           glyph,
-                                  final Shape           shape,
-                                  final ScriptRecording record)
-    {
-        logger.info("assignGlyphShape #" + glyph.getId() + " to " + shape);
-        super.assignGlyphShape(processing, glyph, shape, record);
-
-        // Move from the internal bars list to the unlucky verticals
-        if (shape == null) {
-            verticalSticks.add((Stick) glyph);
-            barSticks.remove(glyph);
-        } else {
-            verticalSticks.remove(glyph);
-            barSticks.add((Stick) glyph);
-        }
-
-        // Update the view accordingly
-        if (lagView != null) {
-            lagView.colorize();
-            lagView.repaint();
-        }
-
-        // Record this task to the sheet script?
-        if (record == RECORDING) {
-            sheet.getScript()
-                 .addTask(new AssignTask(shape, false, Arrays.asList(glyph)));
-            sheet.rebuildFrom(Step.MEASURES, null, null);
-        }
-    }
-
-    //----------------//
-    // assignSetShape //
-    //----------------//
-    /**
-     * Assign a shape to the selected collection of glyphs.
-     *
-     * @param processing specify whether we should run (a)synchronously
-     * @param glyphs the collection of glyphs to be assigned
-     * @param shape the shape to be assigned
-     * @param compound flag to build one compound, rather than assign each
-     *                 individual glyph
-     * @param record specify whether the action must be recorded in the script
-     */
-    @Override
-    public void assignSetShape (Synchronicity           processing,
-                                final Collection<Glyph> glyphs,
-                                final Shape             shape,
-                                final boolean           compound,
-                                final ScriptRecording   record)
-    {
-        if ((glyphs != null) && (glyphs.size() > 0)) {
-            if (processing == ASYNC) {
-                new BasicTask() {
-                        @Override
-                        protected Void doInBackground ()
-                            throws Exception
-                        {
-                            assignSetShape(
-                                SYNC,
-                                glyphs,
-                                shape,
-                                compound,
-                                record);
-
-                            return null;
-                        }
-                    }.execute();
-            } else {
-                logger.info(
-                    "assignSetShape " + Glyph.toString(glyphs) + " to " +
-                    shape);
-
-                if (compound) {
-                    // Build & insert a compound
-                    SystemInfo system = sheet.getSystemOf(glyphs);
-                    Glyph      glyph = system.buildCompound(glyphs);
-                    system.addGlyph(glyph);
-                    assignGlyphShape(SYNC, glyph, shape, NO_RECORDING);
-                } else {
-                    int              noiseNb = 0;
-                    ArrayList<Glyph> glyphsCopy = new ArrayList<Glyph>(glyphs);
-
-                    for (Glyph glyph : glyphsCopy) {
-                        if (glyph.getShape() != Shape.NOISE) {
-                            assignGlyphShape(SYNC, glyph, shape, NO_RECORDING);
-                        } else {
-                            noiseNb++;
-                        }
-                    }
-
-                    if (logger.isFineEnabled() && (noiseNb > 0)) {
-                        logger.fine(noiseNb + " noise glyphs skipped");
-                    }
-                }
-
-                // Record this task to the sheet script?
-                if (record == RECORDING) {
-                    sheet.getScript()
-                         .addTask(new AssignTask(shape, compound, glyphs));
-
-                    try {
-                        rebuildInfo();
-                    } catch (StepException ex) {
-                        logger.warning("Error rebuilding systems info", ex);
-                    }
-
-                    sheet.rebuildFrom(Step.MEASURES, glyphs, null);
-                }
-            }
-        }
-    }
-
-    //-----------//
-    // buildInfo //
-    //-----------//
     /**
      * Process the sheet information (the vertical lag) to retrieve bars and
      * then the systems.
@@ -311,17 +179,19 @@ public class SystemsBuilder
      * @throws StepException raised when step processing must stop, due to
      *                             encountered error
      */
-    public void buildInfo ()
+    public void buildSystems ()
         throws StepException
     {
         try {
             sheet.setVerticalLag(lag);
             sheet.createScore();
 
-            // Retrieve true bar lines and thus SystemInfos
-            barSticks = barsChecker.retrieveBarSticks();
+            // Retrieve the initial collection of good barline candidates
+            // Results are updated shapes in vLag glyphs
+            barsChecker.retrieveCandidates();
 
-            rebuildInfo();
+            // Processing
+            rebuildSystems();
         } finally {
             // Display the resulting stickarea if so asked for
             if (constants.displayFrame.getValue() && (Main.getGui() != null)) {
@@ -330,114 +200,20 @@ public class SystemsBuilder
         }
     }
 
-    //--------------------//
-    // deassignGlyphShape //
-    //--------------------//
-    /**
-     * Remove a bar together with all its related entities. This means removing
-     * reference in the bars list of this builder, reference in the containing
-     * SystemInfo. The related stick must also be assigned a failure result.
-     *
-     * @param processing specify whether the method should run (a)synchronously
-     * @param glyph the (false) bar glyph to deassign
-     * @param record specify whether the action must be recorded in the script
-     */
-    @Override
-    public void deassignGlyphShape (Synchronicity         processing,
-                                    final Glyph           glyph,
-                                    final ScriptRecording record)
+    //-------------------//
+    // getSpecificGlyphs //
+    //-------------------//
+    private Collection<Glyph> getSpecificGlyphs ()
     {
-        if (processing == ASYNC) {
-            new BasicTask() {
-                    @Override
-                    protected Void doInBackground ()
-                        throws Exception
-                    {
-                        deassignGlyphShape(SYNC, glyph, record);
+        List<Glyph> specifics = new ArrayList<Glyph>();
 
-                        return null;
-                    }
-                }.execute();
-        } else {
-            if (glyph.isBar()) {
-                logger.info(
-                    "deassignGlyphShape #" + glyph.getId() + " was " +
-                    glyph.getShape());
-
-                Stick bar = (Stick) glyph;
-
-                // Related stick has to be freed
-                /////////////////////////////////////////////////:::bar.setResult(CANCELLED);
-
-                // Move from the internal bars list to the unlucky verticals
-                verticalSticks.add(bar);
-                barSticks.remove(bar);
-
-                assignGlyphShape(SYNC, glyph, null, NO_RECORDING);
-
-                // Record?
-                if (record == RECORDING) {
-                    // TBD: Need to record deassign in the script ???
-                    ///////////////////////////////////////////////////////////////////////
-
-                    // Update following steps
-                    sheet.rebuildFrom(Step.MEASURES, null, null);
-                }
-            } else {
-                logger.warning(
-                    "No deassign meant for " + glyph.getShape() + " glyph");
+        for (Glyph stick : lag.getAllGlyphs()) {
+            if (!stick.isBar()) {
+                specifics.add(stick);
             }
         }
-    }
 
-    //------------------//
-    // deassignSetShape //
-    //------------------//
-    /**
-     * Remove a set of bars
-     *
-     * @param processing specify whether the method must run (a)synchronously
-     * @param glyphs the collection of glyphs to be de-assigned
-     * @param record specify whether the action must be recorded in the script
-     */
-    @Override
-    public void deassignSetShape (Synchronicity           processing,
-                                  final Collection<Glyph> glyphs,
-                                  final ScriptRecording   record)
-    {
-        if (processing == ASYNC) {
-            new BasicTask() {
-                    @Override
-                    protected Void doInBackground ()
-                        throws Exception
-                    {
-                        deassignSetShape(SYNC, glyphs, record);
-
-                        return null;
-                    }
-                }.execute();
-        } else {
-            logger.info("deassignSetShape " + Glyph.toString(glyphs));
-
-            // Use a copy of glyphs collection
-            for (Glyph glyph : new ArrayList<Glyph>(glyphs)) {
-                deassignGlyphShape(SYNC, glyph, NO_RECORDING);
-            }
-
-            if (record == RECORDING) {
-                try {
-                    rebuildInfo();
-                } catch (StepException ex) {
-                    logger.warning("Error rebuilding systems info", ex);
-                }
-
-                // TBD: Need to record deassign in the script ???
-                ///////////////////////////////////////////////////////////////////////////////////////
-
-                // Update following steps
-                sheet.rebuildFrom(Step.MEASURES, null, null);
-            }
-        }
+        return specifics;
     }
 
     //------------------------//
@@ -494,14 +270,13 @@ public class SystemsBuilder
         int[] partStarts = new int[staffNb];
         Arrays.fill(partStarts, -1);
 
-        for (Stick bar : barSticks) {
-            bar.setShape(
-                barsChecker.isThickBar(bar) ? Shape.THICK_BAR_LINE
-                                : Shape.THIN_BAR_LINE);
+        for (Glyph glyph : lag.getAllGlyphs()) {
+            Stick stick = (Stick) glyph;
 
-            if (bar.getResult() == BarsChecker.BAR_PART_DEFINING) {
+            if (stick.isBar() &&
+                (stick.getResult() == BarsChecker.BAR_PART_DEFINING)) {
                 BarsChecker.StaffAnchors pair = barsChecker.getStaffAnchors(
-                    bar);
+                    stick);
 
                 for (int i = pair.top; i <= pair.bot; i++) {
                     if (systemStarts[i] == -1) {
@@ -645,8 +420,9 @@ public class SystemsBuilder
     //--------------//
     private void displayFrame ()
     {
-        lagView = new MyView(lag);
-        lagView.colorize();
+        barsController = new BarsController();
+        lagView = new MyView(lag, getSpecificGlyphs(), barsController);
+        lagView.colorizeAllGlyphs();
 
         final String  unit = sheet.getRadix() + ":BarsBuilder";
         BoardsPane    boardsPane = new BoardsPane(
@@ -655,23 +431,42 @@ public class SystemsBuilder
             new PixelBoard(unit, sheet),
             new RunBoard(unit, lag),
             new SectionBoard(unit, lag.getLastVertexId(), lag),
-            new GlyphBoard(unit, this, verticalSticks),
+            new GlyphBoard(unit, lagView.getController(), lag.getAllGlyphs()),
             new MyCheckBoard(
                 unit,
                 barsChecker.getSuite(),
-                lag.getEventService(),
+                lag.getSelectionService(),
                 eventClasses));
 
         // Create a hosting frame for the view
         ScrollLagView slv = new ScrollLagView(lagView);
         sheet.getAssembly()
-             .addViewTab("Systems", slv, boardsPane);
+             .addViewTab(Step.SYSTEMS, slv, boardsPane);
     }
 
     //-------------//
-    // rebuildInfo //
+    // localUpdate //
     //-------------//
-    private void rebuildInfo ()
+    private void localUpdate ()
+    {
+        // Update the retrieved systems
+        try {
+            rebuildSystems();
+        } catch (StepException ex) {
+            logger.warning("Error rebuilding systems info", ex);
+        }
+
+        // Update the view accordingly
+        if (lagView != null) {
+            lagView.colorizeAllGlyphs();
+            lagView.repaint();
+        }
+    }
+
+    //----------------//
+    // rebuildSystems //
+    //----------------//
+    private void rebuildSystems ()
         throws StepException
     {
         // Build systems and parts on sheet/glyph side
@@ -686,22 +481,7 @@ public class SystemsBuilder
         // Define precisely the systems boundaries
         sheet.computeSystemBoundaries();
 
-        // Finally split the entities (horizontals sections, vertical
-        // sections, bar sticks) to the system they belong to
-        splitSystemEntities();
-
-        // Update score internal data
-        sheet.getScore()
-             .accept(new ScoreFixer(true));
-
-        // Update score view if any
-        ScoreView scoreView = sheet.getScore()
-                                   .getView();
-
-        if (scoreView != null) {
-            scoreView.computeModelSize();
-            scoreView.repaint();
-        }
+        useBoundaries();
     }
 
     //---------------//
@@ -754,16 +534,128 @@ public class SystemsBuilder
         SortedSet<SystemInfo> modified = new TreeSet<SystemInfo>();
         modified.addAll(sheet.splitHorizontals());
         modified.addAll(sheet.splitVerticalSections());
-        modified.addAll(sheet.splitBarSticks(barSticks));
+        modified.addAll(sheet.splitBarSticks(lag.getAllGlyphs()));
 
-        if (modified.size() > 0) {
+        if (!modified.isEmpty()) {
             logger.info("Systems impact: " + modified);
         }
 
         return modified;
     }
 
+    //---------------//
+    // useBoundaries //
+    //---------------//
+    private void useBoundaries ()
+    {
+        // Finally split the entities (horizontals sections, vertical
+        // sections, vertical sticks) to the system they belong to
+        splitSystemEntities();
+
+        // Update score internal data
+        sheet.getScore()
+             .accept(new ScoreFixer(true));
+
+        // Update score view if any
+        ScoreView scoreView = sheet.getScore()
+                                   .getView();
+
+        if (scoreView != null) {
+            scoreView.computeModelSize();
+            scoreView.repaint();
+        }
+    }
+
     //~ Inner Classes ----------------------------------------------------------
+
+    //----------------//
+    // BarsController //
+    //----------------//
+    /**
+     * A glyphs controller meant for barlines
+     */
+    public class BarsController
+        extends GlyphsController
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public BarsController ()
+        {
+            super(SystemsBuilder.this);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        public Task asyncModifyBoundaries (final BrokenLine brokenLine)
+        {
+            if (logger.isFineEnabled()) {
+                logger.fine("asyncModifyBoundaries " + brokenLine);
+            }
+
+            if (brokenLine != null) {
+                // Retrieve containing system
+                for (SystemInfo system : sheet.getSystems()) {
+                    SystemBoundary boundary = system.getBoundary();
+
+                    for (SystemBoundary.Side side : SystemBoundary.Side.values()) {
+                        if (boundary.getLimit(side) == brokenLine) {
+                            return launch(
+                                new BoundaryTask(system, side, brokenLine),
+                                null,
+                                new GlyphsRunnable() {
+                                        public Collection<Glyph> run ()
+                                        {
+                                            useBoundaries();
+
+                                            return null;
+                                        }
+                                    });
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        //--------------------//
+        // syncAssignGlyphSet //
+        //--------------------//
+        /**
+         * Assign a shape to the selected collection of glyphs.
+         *
+         * @param glyphs the collection of glyphs to be assigned
+         * @param shape the shape to be assigned
+         * @param compound flag to indicate a compound is desired
+         */
+        @Override
+        protected Collection<Glyph> syncAssignGlyphSet (Collection<Glyph> glyphs,
+                                                        Shape             shape,
+                                                        boolean           compound)
+        {
+            super.syncAssignGlyphSet(glyphs, shape, compound);
+            localUpdate();
+
+            return null; // To trigger update for all systems
+        }
+
+        //----------------------//
+        // syncDeassignGlyphSet //
+        //----------------------//
+        /**
+         * Remove a set of bars
+         *
+         * @param glyphs the collection of glyphs to be de-assigned
+         */
+        @Override
+        protected Collection<Glyph> syncDeassignGlyphSet (Collection<Glyph> glyphs)
+        {
+            super.syncDeassignGlyphSet(glyphs);
+            localUpdate();
+
+            return null; // To trigger update for all systems
+        }
+    }
 
     //-----------//
     // Constants //
@@ -797,7 +689,7 @@ public class SystemsBuilder
 
         public MyCheckBoard (String                                unit,
                              CheckSuite<BarsChecker.GlyphContext>  suite,
-                             EventService                          eventService,
+                             SelectionService                      eventService,
                              Collection<Class<?extends UserEvent>> eventList)
         {
             super(unit, suite, eventService, eventList);
@@ -858,11 +750,13 @@ public class SystemsBuilder
 
         //~ Constructors -------------------------------------------------------
 
-        private MyView (GlyphLag lag)
+        private MyView (GlyphLag                   lag,
+                        Collection<?extends Glyph> specificGlyphs,
+                        BarsController             barsController)
         {
-            super(lag, null, null, SystemsBuilder.this, verticalSticks);
+            super(lag, null, null, barsController, specificGlyphs);
             setName("SystemsBuilder-View");
-            barMenu = new BarMenu(sheet, SystemsBuilder.this, lag);
+            barMenu = new BarMenu(sheet, getController(), lag);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -871,18 +765,26 @@ public class SystemsBuilder
         // colorize //
         //----------//
         @Override
-        public void colorize ()
+        public void colorizeAllGlyphs ()
         {
-            super.colorize();
+            int viewIndex = lag.viewIndexOf(this);
 
-            // All remaining vertical sticks clutter
-            for (Stick stick : verticalSticks) {
-                stick.colorize(lag, viewIndex, Color.red);
+            // Nonn recognized bar lines
+            for (Glyph glyph : lag.getAllGlyphs()) {
+                Stick stick = (Stick) glyph;
+
+                if (!stick.isBar()) {
+                    stick.colorize(lag, viewIndex, Color.red);
+                }
             }
 
             // Recognized bar lines
-            for (Stick stick : barSticks) {
-                stick.colorize(lag, viewIndex, Color.yellow);
+            for (Glyph glyph : lag.getAllGlyphs()) {
+                Stick stick = (Stick) glyph;
+
+                if (stick.isBar()) {
+                    stick.colorize(lag, viewIndex, Color.yellow);
+                }
             }
         }
 
@@ -895,16 +797,16 @@ public class SystemsBuilder
         {
             // Retrieve the selected glyphs
             Set<Glyph> glyphs = sheet.getVerticalLag()
-                                     .getCurrentGlyphSet();
+                                     .getSelectedGlyphSet();
 
             // To display point information
-            if ((glyphs == null) || (glyphs.size() == 0)) {
+            if ((glyphs == null) || glyphs.isEmpty()) {
                 pointSelected(pt, movement); // This may change glyph selection
                 glyphs = sheet.getVerticalLag()
-                              .getCurrentGlyphSet();
+                              .getSelectedGlyphSet();
             }
 
-            if ((glyphs != null) && (glyphs.size() > 0)) {
+            if ((glyphs != null) && !glyphs.isEmpty()) {
                 // Update the popup menu according to selected glyphs
                 barMenu.updateMenu();
 
@@ -951,23 +853,14 @@ public class SystemsBuilder
                                         rect.x + (rect.width / 2),
                                         rect.y + (rect.height / 2)));
                             } else if (lastPoint != null) {
-                                new BasicTask() {
-                                        @Override
-                                        protected Void doInBackground ()
-                                            throws Exception
-                                        {
-                                            Set<SystemInfo> modifs = splitSystemEntities();
+                                // Perform boundary modifs synchronously
+                                Set<SystemInfo> modifs = splitSystemEntities();
 
-                                            // Update following steps if any
-                                            if (modifs.size() > 0) {
-                                                logger.info(
-                                                    "TBD: updating steps, starting at " +
-                                                    Step.SYSTEMS.next());
-                                            }
-
-                                            return null;
-                                        }
-                                    }.execute();
+                                // If modifs, launch updates asynchronously
+                                if (!modifs.isEmpty()) {
+                                    barsController.asyncModifyBoundaries(
+                                        lastLine);
+                                }
                             }
                         }
                     }

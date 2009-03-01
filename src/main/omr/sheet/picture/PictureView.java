@@ -9,11 +9,13 @@
 //
 package omr.sheet.picture;
 
+import omr.log.Logger;
+
 import omr.selection.SheetLocationEvent;
 
 import omr.sheet.*;
 
-import omr.ui.view.RubberZoomedPanel;
+import omr.ui.view.RubberPanel;
 import omr.ui.view.ScrollView;
 
 import java.awt.*;
@@ -28,6 +30,11 @@ import java.awt.*;
 public class PictureView
     extends ScrollView
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(PictureView.class);
+
     //~ Instance fields --------------------------------------------------------
 
     /** Link with sheet */
@@ -52,7 +59,7 @@ public class PictureView
 
         // Inject dependency of pixel location
         view.setLocationService(
-            sheet.getEventService(),
+            sheet.getSelectionService(),
             SheetLocationEvent.class);
 
         // Insert view
@@ -65,7 +72,7 @@ public class PictureView
     // MyView //
     //--------//
     private class MyView
-        extends RubberZoomedPanel
+        extends RubberPanel
     {
         //~ Methods ------------------------------------------------------------
 
@@ -77,7 +84,7 @@ public class PictureView
         {
             // Render the picture image
             sheet.getPicture()
-                 .render(g, getZoom().getRatio());
+                 .render(g);
         }
     }
 }

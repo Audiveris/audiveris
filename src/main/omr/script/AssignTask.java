@@ -11,12 +11,10 @@ package omr.script;
 
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
-import static omr.script.ScriptRecording.*;
 
 import omr.sheet.Sheet;
 
 import omr.step.StepException;
-import static omr.util.Synchronicity.*;
 
 import java.util.Collection;
 
@@ -85,8 +83,8 @@ public class AssignTask
         throws StepException
     {
         super.run(sheet);
-        sheet.getSymbolsModel()
-             .assignSetShape(SYNC, glyphs, shape, compound, RECORDING);
+        sheet.getSymbolsController()
+             .asyncAssignGlyphSet(glyphs, shape, compound);
     }
 
     //-----------------//

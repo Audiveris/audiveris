@@ -24,7 +24,6 @@ import omr.selection.MouseMovement;
 import omr.selection.SheetEvent;
 
 import omr.sheet.Sheet;
-import omr.sheet.SheetManager;
 
 import omr.ui.util.FileFilter;
 import omr.ui.util.UIUtilities;
@@ -39,6 +38,7 @@ import org.jdesktop.application.Task;
 
 import java.awt.event.*;
 import java.io.*;
+import omr.sheet.ui.SheetsController;
 
 /**
  * Class <code>MidiActions</code> is merely a collection of UI actions that
@@ -218,7 +218,7 @@ public class MidiActions
     @Action(enabledProperty = "midiPlayable")
     public Task playMidi (ActionEvent e)
     {
-        Sheet sheet = SheetManager.getSelectedSheet();
+        Sheet sheet = SheetsController.selectedSheet();
 
         if (sheet != null) {
             Score score = sheet.getScore();
@@ -330,7 +330,7 @@ public class MidiActions
      */
     private Score getCurrentScore ()
     {
-        Sheet sheet = SheetManager.getSelectedSheet();
+        Sheet sheet = SheetsController.selectedSheet();
 
         if (sheet == null) {
             return null;

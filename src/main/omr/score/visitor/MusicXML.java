@@ -228,7 +228,7 @@ public class MusicXML
         //      regular, dotted, dashed, heavy, light-light,
         //      light-heavy, heavy-light, heavy-heavy, and none.
         switch (shape) {
-        case SINGLE_BARLINE :
+        case THIN_BARLINE :
             return BarStyle.REGULAR; //"light" ???
 
         case DOUBLE_BARLINE :

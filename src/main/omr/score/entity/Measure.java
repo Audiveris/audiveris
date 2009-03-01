@@ -1200,6 +1200,7 @@ public class Measure
         voices.add(voice);
     }
 
+
     //---------------//
     // checkDuration //
     //---------------//
@@ -1544,7 +1545,7 @@ public class Measure
         sb.append(this);
 
         // Slot headers
-        if (slots.size() > 0) {
+        if (!slots.isEmpty()) {
             sb.append("\n    ");
 
             for (Slot slot : slots) {

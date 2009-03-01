@@ -22,7 +22,7 @@ import omr.score.Score;
 
 import omr.sheet.*;
 import omr.sheet.Sheet;
-import omr.sheet.SheetManager;
+import omr.sheet.SheetsManager;
 
 import omr.step.Step;
 
@@ -102,7 +102,7 @@ public class SheetActions
     @Action(enabledProperty = "sheetAvailable")
     public void closeSheet (ActionEvent e)
     {
-        Sheet sheet = SheetManager.getSelectedSheet();
+        Sheet sheet = SheetsController.selectedSheet();
 
         if (sheet != null) {
             Score score = sheet.getScore();
@@ -155,7 +155,7 @@ public class SheetActions
     @Action(enabledProperty = "sheetAvailable")
     public void plotLine (ActionEvent e)
     {
-        Sheet sheet = SheetManager.getSelectedSheet();
+        Sheet sheet = SheetsController.selectedSheet();
 
         if (sheet != null) {
             if (sheet.getLinesBuilder() != null) {
@@ -178,7 +178,7 @@ public class SheetActions
     @Action(enabledProperty = "sheetAvailable")
     public void plotScale (ActionEvent e)
     {
-        Sheet sheet = SheetManager.getSelectedSheet();
+        Sheet sheet = SheetsController.selectedSheet();
 
         if (sheet != null) {
             sheet.getScale()
@@ -196,7 +196,7 @@ public class SheetActions
     @Action(enabledProperty = "sheetAvailable")
     public void plotSkew (ActionEvent e)
     {
-        Sheet sheet = SheetManager.getSelectedSheet();
+        Sheet sheet = SheetsController.selectedSheet();
 
         if (sheet != null) {
             if (sheet.getSkewBuilder() != null) {
@@ -236,7 +236,7 @@ public class SheetActions
     @Action(enabledProperty = "sheetAvailable")
     public void zoomHeight (ActionEvent e)
     {
-        Sheet sheet = SheetManager.getSelectedSheet();
+        Sheet sheet = SheetsController.selectedSheet();
 
         if (sheet == null) {
             return;
@@ -263,7 +263,7 @@ public class SheetActions
     @Action(enabledProperty = "sheetAvailable")
     public void zoomWidth (ActionEvent e)
     {
-        Sheet sheet = SheetManager.getSelectedSheet();
+        Sheet sheet = SheetsController.selectedSheet();
 
         if (sheet == null) {
             return;
@@ -345,7 +345,7 @@ public class SheetActions
         protected Void doInBackground ()
             throws InterruptedException
         {
-            Sheet sheet = SheetManager.getSelectedSheet();
+            Sheet sheet = SheetsController.selectedSheet();
             GlyphRepository.getInstance()
                            .recordSheetGlyphs(
                 sheet, /* emptyStructures => */

@@ -106,7 +106,7 @@ public class PixelBoard
     public PixelBoard (String unitName,
                        Sheet  sheet)
     {
-        super(unitName + "-PixelBoard", sheet.getEventService(), eventClasses);
+        super(unitName + "-PixelBoard", sheet.getSelectionService(), eventClasses);
 
         // Needed to process user input when RETURN/ENTER is pressed
         getComponent()
@@ -238,7 +238,7 @@ public class PixelBoard
         {
             // Remember & forward the new pixel selection
             // A rectangle (which can be degenerated to a point)
-            eventService.publish(
+            selectionService.publish(
                 new SheetLocationEvent(
                     PixelBoard.this,
                     SelectionHint.LOCATION_INIT,

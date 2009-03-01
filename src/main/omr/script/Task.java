@@ -15,8 +15,6 @@ import omr.sheet.Sheet;
 
 import omr.step.StepException;
 
-import javax.xml.bind.annotation.*;
-
 /**
  * Class <code>Task</code> is meant for all possible tasks within a score script
  *

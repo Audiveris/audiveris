@@ -19,12 +19,12 @@ import omr.glyph.GlyphSection;
 
 import omr.lag.HorizontalOrientation;
 import omr.lag.JunctionRatioPolicy;
-import omr.lag.LagView;
-import omr.lag.RunBoard;
-import omr.lag.ScrollLagView;
-import omr.lag.SectionBoard;
-import omr.lag.SectionView;
 import omr.lag.SectionsBuilder;
+import omr.lag.ui.LagView;
+import omr.lag.ui.RunBoard;
+import omr.lag.ui.ScrollLagView;
+import omr.lag.ui.SectionBoard;
+import omr.lag.ui.SectionView;
 
 import omr.log.Logger;
 
@@ -32,6 +32,7 @@ import omr.sheet.picture.ImageFormatException;
 import omr.sheet.picture.Picture;
 import omr.sheet.ui.PixelBoard;
 
+import omr.step.Step;
 import omr.step.StepException;
 
 import omr.stick.Stick;
@@ -288,7 +289,7 @@ public class SkewBuilder
         }
 
         // Now process these sticks
-        if (sticks.size() > 0) {
+        if (!sticks.isEmpty()) {
             // Sort the sticks on their length, longest first (so the swap)
             Collections.sort(
                 sticks,
@@ -335,21 +336,20 @@ public class SkewBuilder
     private void displayFrame ()
     {
         // Create a view
-        LagView view = new MyView();
-        view.colorize();
+        MyView        view = new MyView();
 
         // Create a hosting frame for the view
-        final String unit = sheet.getRadix() + ":SkewBuilder";
+        final String  unit = sheet.getRadix() + ":SkewBuilder";
+        ScrollLagView slv = new ScrollLagView(view);
+        BoardsPane    boards = new BoardsPane(
+            sheet,
+            view,
+            new PixelBoard(unit, sheet),
+            new RunBoard(unit, sLag),
+            new SectionBoard(unit, sLag.getLastVertexId(), sLag));
+
         sheet.getAssembly()
-             .addViewTab(
-            "Skew",
-            new ScrollLagView(view),
-            new BoardsPane(
-                sheet,
-                view,
-                new PixelBoard(unit, sheet),
-                new RunBoard(unit, sLag),
-                new SectionBoard(unit, sLag.getLastVertexId(), sLag)));
+             .addViewTab(Step.SKEW, slv, boards);
     }
 
     //-----------//
@@ -469,20 +469,22 @@ public class SkewBuilder
 
         public MyView ()
         {
-            super(sLag, sheet.getEventService(), null, null);
+            super(sLag, null, null, sheet.getSelectionService());
             setName("SkewBuilder-View");
         }
 
         //~ Methods ------------------------------------------------------------
 
-        //----------//
-        // colorize //
-        //----------//
+        //---------------------//
+        // colorizeAllSections //
+        //---------------------//
         @Override
-        public void colorize ()
+        public void colorizeAllSections ()
         {
+            int viewIndex = lag.viewIndexOf(this);
+
             // Default colors for lag sections
-            super.colorize();
+            super.colorizeAllSections();
 
             // Colorize the sections of the sticks
             for (Stick stick : sticks) {

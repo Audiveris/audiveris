@@ -190,7 +190,7 @@ public class Beam
      */
     public Line getLine ()
     {
-        if ((line == null) && (items.size() > 0)) {
+        if ((line == null) && !items.isEmpty()) {
             line = new BasicLine();
 
             // Take left side of first item, and right side of last item
@@ -635,7 +635,7 @@ public class Beam
         if (stem != null) {
             List<Chord> sideChords = Chord.getStemChords(getMeasure(), stem);
 
-            if (sideChords.size() > 0) {
+            if (!sideChords.isEmpty()) {
                 for (Chord chord : sideChords) {
                     chords.add(chord);
                     chord.addBeam(this);

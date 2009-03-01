@@ -7,8 +7,9 @@
 //  Contact author at herve.bitteur@laposte.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
 //
-package omr.lag;
+package omr.lag.ui;
 
+import omr.lag.*;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -45,9 +46,8 @@ import javax.swing.event.*;
 
 /**
  * Class <code>SectionBoard</code> defines a board dedicated to the display of
- * {@link omr.lag.Section} and {@link omr.lag.Run} information, it can also be
- * used as an input means by directly entering the section id in the proper Id
- * spinner.
+ * {@link omr.lag.Section} information, it can also be used as an input means
+ * by directly entering the section id in the proper Id spinner.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -64,9 +64,10 @@ public class SectionBoard
     private static final Logger logger = Logger.getLogger(SectionBoard.class);
 
     /** Events this boards is interested in */
-    private static final Collection<Class<?extends UserEvent>> eventClasses = new ArrayList<Class<?extends UserEvent>>();
+    private static final Collection<Class<?extends UserEvent>> eventClasses;
 
     static {
+        eventClasses = new ArrayList<Class<?extends UserEvent>>();
         eventClasses.add(SectionEvent.class);
     }
 
@@ -152,7 +153,10 @@ public class SectionBoard
                          int       maxSectionId,
                          final Lag lag)
     {
-        super(unitName + "-SectionBoard", lag.getEventService(), eventClasses);
+        super(
+            unitName + "-SectionBoard",
+            lag.getSelectionService(),
+            eventClasses);
 
         // Dump button
         dump.setToolTipText("Dump this section");
@@ -161,7 +165,9 @@ public class SectionBoard
                     public void actionPerformed (ActionEvent e)
                     {
                         // Retrieve current section selection
-                        Section section = lag.getCurrentSection();
+                        Section section = (Section) lag.getSelectionService()
+                                                       .getSelection(
+                            SectionEvent.class);
 
                         if (section != null) {
                             section.dump();
@@ -187,7 +193,8 @@ public class SectionBoard
                             }
 
                             idSelecting = true;
-                            lag.publish(
+                            lag.getSelectionService()
+                               .publish(
                                 new SectionIdEvent(
                                     this,
                                     SelectionHint.SECTION_INIT,

@@ -26,10 +26,11 @@ import omr.glyph.GlyphsModel;
 import omr.glyph.Shape;
 import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphLagView;
+import omr.glyph.ui.GlyphsController;
 
-import omr.lag.RunBoard;
-import omr.lag.ScrollLagView;
-import omr.lag.SectionBoard;
+import omr.lag.ui.RunBoard;
+import omr.lag.ui.ScrollLagView;
+import omr.lag.ui.SectionBoard;
 
 import omr.log.Logger;
 
@@ -39,7 +40,9 @@ import omr.selection.GlyphEvent;
 import omr.selection.UserEvent;
 
 import omr.sheet.ui.PixelBoard;
+import omr.sheet.ui.SheetsController;
 
+import omr.step.Step;
 import omr.step.StepException;
 
 import omr.stick.LineCleaner;
@@ -76,9 +79,10 @@ public class HorizontalsBuilder
         HorizontalsBuilder.class);
 
     /** Events this entity is interested in */
-    private static final Collection<Class<?extends UserEvent>> eventClasses = new ArrayList<Class<?extends UserEvent>>();
+    private static final Collection<Class<?extends UserEvent>> eventClasses;
 
     static {
+        eventClasses = new ArrayList<Class<?extends UserEvent>>();
         eventClasses.add(GlyphEvent.class);
     }
 
@@ -151,7 +155,7 @@ public class HorizontalsBuilder
     public HorizontalsBuilder (Sheet sheet)
     {
         // Reuse the horizontal lag of runs (from staff lines)
-        super(sheet, sheet.getHorizontalLag());
+        super(sheet, sheet.getHorizontalLag(), Step.HORIZONTALS);
 
         lineCleaner = new LineCleaner(
             sheet.getHorizontalLag(),
@@ -275,6 +279,8 @@ public class HorizontalsBuilder
     //--------------//
     private void displayFrame ()
     {
+        GlyphsController   controller = new GlyphsController(this);
+
         // Sections that, as members of horizontals, will be treated as specific
         List<GlyphSection> members = new ArrayList<GlyphSection>();
 
@@ -283,7 +289,7 @@ public class HorizontalsBuilder
         }
 
         // Specific rubber display
-        lagView = new MyView(lag, members);
+        lagView = new MyView(lag, members, controller);
 
         final String  unit = sheet.getRadix() + ":HorizontalsBuilder";
         BoardsPane    boardsPane = new BoardsPane(
@@ -292,27 +298,27 @@ public class HorizontalsBuilder
             new PixelBoard(unit, sheet),
             new RunBoard(unit, lag),
             new SectionBoard(unit, lag.getLastVertexId(), lag),
-            new GlyphBoard(unit, this, null),
+            new GlyphBoard(unit, controller, null),
             new CheckBoard<Stick>(
                 unit + "-Common",
                 commonSuite,
-                lag.getEventService(),
+                lag.getSelectionService(),
                 eventClasses),
             new CheckBoard<Stick>(
                 unit + "-Ledger",
                 ledgerSuite,
-                lag.getEventService(),
+                lag.getSelectionService(),
                 eventClasses),
             new CheckBoard<Stick>(
                 unit + "-Ending",
                 endingSuite,
-                lag.getEventService(),
+                lag.getSelectionService(),
                 eventClasses));
 
         // Create a hosting frame for the view
         ScrollLagView slv = new ScrollLagView(lagView);
         sheet.getAssembly()
-             .addViewTab("Horizontals", slv, boardsPane);
+             .addViewTab(Step.HORIZONTALS, slv, boardsPane);
     }
 
     //---------------------//
@@ -472,7 +478,7 @@ public class HorizontalsBuilder
         public void toggleLines (ActionEvent e)
         {
             // Trigger a repaint if needed
-            Sheet currentSheet = SheetManager.getSelectedSheet();
+            Sheet currentSheet = SheetsController.selectedSheet();
 
             if (currentSheet != null) {
                 HorizontalsBuilder builder = currentSheet.getHorizontalsBuilder();
@@ -922,26 +928,22 @@ public class HorizontalsBuilder
         //~ Constructors -------------------------------------------------------
 
         public MyView (GlyphLag           lag,
-                       List<GlyphSection> members)
+                       List<GlyphSection> members,
+                       GlyphsController   controller)
         {
-            super(
-                lag,
-                members,
-                constants.displayLedgerLines,
-                HorizontalsBuilder.this,
-                null);
+            super(lag, members, constants.displayLedgerLines, controller, null);
             setName("HorizontalsBuilder-View");
         }
 
         //~ Methods ------------------------------------------------------------
 
-        //----------//
-        // colorize //
-        //----------//
+        //---------------------//
+        // colorizeAllSections //
+        //---------------------//
         @Override
-        public void colorize ()
+        public void colorizeAllSections ()
         {
-            super.colorize();
+            super.colorizeAllSections();
 
             final int viewIndex = lag.viewIndexOf(this);
 

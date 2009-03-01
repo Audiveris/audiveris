@@ -19,9 +19,9 @@ import omr.check.SuccessResult;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
+import omr.glyph.Shape;
 
 import omr.lag.JunctionDeltaPolicy;
 import omr.lag.SectionsBuilder;
@@ -34,6 +34,8 @@ import omr.stick.Stick;
 
 import omr.util.Implement;
 
+import net.jcip.annotations.NotThreadSafe;
+
 import java.util.*;
 
 /**
@@ -44,6 +46,7 @@ import java.util.*;
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
+@NotThreadSafe
 public class BarsChecker
 {
     //~ Static fields/initializers ---------------------------------------------
@@ -97,17 +100,11 @@ public class BarsChecker
     /** Related vertical lag */
     private final GlyphLag lag;
 
-    /** Vertical sticks */
-    private final List<Stick> verticalSticks;
-
     /** Suite of checks to be performed */
     private final BarCheckSuite suite;
 
     /** Related context of a bar stick */
     private final Map<Stick, GlyphContext> contexts = new HashMap<Stick, GlyphContext>();
-
-    /** List of found bar sticks */
-    private SortedSet<Stick> barSticks;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -118,16 +115,12 @@ public class BarsChecker
      * Prepare a bar checker on the provided sheet
      *
      * @param sheet the sheet to process
-     * @param verticalSticks the collection to be filled with vertical sticks,
-     * from where recognized bar sticks are removed and transfered to barsSticks
      */
-    public BarsChecker (Sheet      sheet,
-                        GlyphLag   lag,
-                        List<Stick> verticalSticks)
+    public BarsChecker (Sheet    sheet,
+                        GlyphLag lag)
     {
         this.sheet = sheet;
         this.lag = lag;
-        this.verticalSticks = verticalSticks;
 
         scale = sheet.getScale();
         suite = new BarCheckSuite();
@@ -135,79 +128,20 @@ public class BarsChecker
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------------//
-    // getStaffAnchors //
-    //-----------------//
-    /**
-     * Report the indices of the staves at the top and at the bottom of the
-     * provided stick
-     * @param stick the stick to lookup
-     * @return a pair of staff indices, top & bottom, or null if the stick is
-     * not known
-     */
-    public StaffAnchors getStaffAnchors (Stick stick)
-    {
-        GlyphContext context = contexts.get(stick);
-
-        if (context != null) {
-            return new StaffAnchors(context.topIdx, context.botIdx);
-        } else {
-            return null;
-        }
-    }
-
-    //----------//
-    // getSuite //
-    //----------//
-    /**
-     * Report the suite currently defined
-     *
-     * @return the check suite
-     */
-    public CheckSuite<GlyphContext> getSuite ()
-    {
-        return suite;
-    }
-
-    //------------//
-    // isThickBar //
-    //------------//
-    /**
-     * Check if the stick/bar is a thick one
-     *
-     * @param stick the bar stick to check
-     *
-     * @return true if thick
-     */
-    public boolean isThickBar (Stick stick)
-    {
-        // Max width of a thin bar line, otherwise this must be a thick bar
-        final int maxThinWidth = scale.toPixels(constants.maxThinWidth);
-
-        // Average width of the stick
-        final int meanWidth = (int) Math.rint(
-            (double) stick.getWeight() / (double) stick.getLength());
-
-        return meanWidth > maxThinWidth;
-    }
-
-    //-------------------//
-    // retrieveBarSticks //
-    //-------------------//
+    //--------------------//
+    // retrieveCandidates //
+    //--------------------//
     /**
      * From the list of vertical sticks, this method uses several tests based on
      * stick location, and stick shape (the test is based on adjacency, it
-     * should be improved), to detect true bar lines.
-     *
-     * <p> The output is thus a filled 'barSticks' list of sticks.
+     * should be improved), to provide the initial collection of good barlines
+     * candidates.
      *
      * @throws StepException Raised when processing goes wrong
      */
-    public SortedSet<Stick> retrieveBarSticks ()
+    public void retrieveCandidates ()
         throws StepException
     {
-        barSticks = new TreeSet<Stick>();
-
         // Populate the vertical lag of runs
         SectionsBuilder<GlyphLag, GlyphSection> lagBuilder;
         lagBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
@@ -220,12 +154,15 @@ public class BarsChecker
             sheet,
             lag,
             scale.toPixels(constants.maxBarThickness));
-        verticalSticks.clear();
-        verticalSticks.addAll(barsArea.getSticks());
 
-        // Sort vertical sticks according to their abscissa
+        // Register these sticks as standard lag glyphs
+        for (Stick stick : barsArea.getSticks()) {
+            lag.addGlyph(stick);
+        }
+
+        // Sort bar candidates according to their abscissa
         Collections.sort(
-            verticalSticks,
+            barsArea.getSticks(),
             new Comparator<Stick>() {
                     public int compare (Stick o1,
                                         Stick o2)
@@ -234,23 +171,10 @@ public class BarsChecker
                     }
                 });
 
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                verticalSticks.size() + " sticks to check: " +
-                Glyph.toString(verticalSticks));
-
-            for (Stick stick : verticalSticks) {
-                logger.fine(stick.toString());
-            }
-        }
-
         double minResult = constants.minCheckResult.getValue();
 
-        // Check each candidate stick in turn, leaving in verticalSticks the 
-        // unlucky candidates
-        for (Iterator<Stick> it = verticalSticks.iterator(); it.hasNext();) {
-            Stick        stick = it.next();
-
+        // Check each candidate stick in turn
+        for (Stick stick : barsArea.getSticks()) {
             // Allocate the candidate context, and pass the whole check suite
             GlyphContext context = new GlyphContext(stick);
             double       res = suite.pass(context);
@@ -260,17 +184,17 @@ public class BarsChecker
             }
 
             if (res >= minResult) {
-                // OK, we insert this candidate stick as a true bars member,
-                // and remove it from clutter
+                // OK, we flag this candidate with proper barline shape
                 contexts.put(stick, context);
-                barSticks.add(stick);
-                it.remove();
+                stick.setShape(
+                    isThickBar(stick) ? Shape.THICK_BARLINE : Shape.THIN_BARLINE);
 
-                // Bars that define a system or a part (they start AND end with
-                // precise staves limits)
+                // Additional processing for Bars that define a system or a part
+                // (they start AND end with precise staves horizontal limits)
                 if ((context.topIdx != -1) && (context.botIdx != -1)) {
                     // Here, we have both part & system defining bars
-                    // System bars occur first (increasing abscissa of glyphs)
+                    // System bars occur first 
+                    // (since glyphs are sorted by increasing abscissa)
                     stick.setResult(BAR_PART_DEFINING);
 
                     if (logger.isFineEnabled()) {
@@ -293,17 +217,62 @@ public class BarsChecker
                 }
             }
         }
+    }
 
-        // Print all bars found
-        if (logger.isFineEnabled()) {
-            logger.fine("Bars found:");
+    //-----------------//
+    // getStaffAnchors //
+    //-----------------//
+    /**
+     * Report the indices of the staves at the top and at the bottom of the
+     * provided stick. (Used by package mate SystemsBuilder)
+     * @param stick the stick to lookup
+     * @return a pair of staff indices, top & bottom, or null if the stick is
+     * not known
+     */
+    StaffAnchors getStaffAnchors (Stick stick)
+    {
+        GlyphContext context = contexts.get(stick);
 
-            for (Stick bar : barSticks) {
-                logger.fine(bar.toString());
-            }
+        if (context != null) {
+            return new StaffAnchors(context.topIdx, context.botIdx);
+        } else {
+            return null;
         }
+    }
 
-        return barSticks;
+    //----------//
+    // getSuite //
+    //----------//
+    /**
+     * Report the suite currently defined (used by package mate SystemsBuilder)
+     *
+     * @return the check suite
+     */
+    CheckSuite<GlyphContext> getSuite ()
+    {
+        return suite;
+    }
+
+    //------------//
+    // isThickBar //
+    //------------//
+    /**
+     * Check if the stick/bar is a thick one
+     *
+     * @param stick the bar stick to check
+     *
+     * @return true if thick
+     */
+    private boolean isThickBar (Stick stick)
+    {
+        // Max width of a thin bar line, otherwise this must be a thick bar
+        final int maxThinWidth = scale.toPixels(constants.maxThinWidth);
+
+        // Average width of the stick
+        final int meanWidth = (int) Math.rint(
+            (double) stick.getWeight() / (double) stick.getLength());
+
+        return meanWidth > maxThinWidth;
     }
 
     //~ Inner Classes ----------------------------------------------------------

@@ -143,7 +143,7 @@ public class SectionsBuilder<L extends Lag<L, S>, S extends Section<L, S>>
             col++;
 
             // If we have runs in this column
-            if (runList.size() > 0) {
+            if (!runList.isEmpty()) {
                 // Copy the former next actives sections
                 // as the new previous active sections
                 prevActives = nextActives;

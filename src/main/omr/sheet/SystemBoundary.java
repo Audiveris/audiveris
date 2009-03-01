@@ -15,15 +15,8 @@ import omr.util.BrokenLine;
 
 import net.jcip.annotations.NotThreadSafe;
 
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Polygon;
-import java.awt.Rectangle;
-import java.awt.geom.AffineTransform;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
+import java.awt.*;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -42,17 +35,26 @@ public class SystemBoundary
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(SystemBoundary.class);
 
+    //~ Enumerations -----------------------------------------------------------
+
+    /** Enum to specify the north or south side of the system boundary */
+    public static enum Side {
+        //~ Enumeration constant initializers ----------------------------------
+
+
+        /** North boundary */
+        NORTH,
+        /** South boundary */
+        SOUTH;
+    }
+
     //~ Instance fields --------------------------------------------------------
 
     /** Related system */
     private final SystemInfo system;
 
-    /** Limit on north side */
-    private final BrokenLine north;
-
-    /** Limit on south side */
-    private final BrokenLine south;
-    private final List<BrokenLine> limits;
+    /** The north and south limits */
+    private final Map<Side, BrokenLine> limits = new TreeMap<Side, BrokenLine>();
 
     /** Handling of the SystemBoundary is delegated to a Polygon */
     private final Polygon polygon = new Polygon();
@@ -77,14 +79,13 @@ public class SystemBoundary
         }
 
         this.system = system;
-        this.north = north;
-        this.south = south;
-        limits = Arrays.asList(north, south);
+        limits.put(Side.NORTH, north);
+        limits.put(Side.SOUTH, south);
 
         buildPolygon();
 
         // Register 
-        for (BrokenLine line : limits) {
+        for (BrokenLine line : limits.values()) {
             line.addListener(this);
         }
     }
@@ -103,6 +104,19 @@ public class SystemBoundary
         return polygon.getBounds();
     }
 
+    //----------//
+    // getLimit //
+    //----------//
+    /**
+     * Report the broken line on provided side
+     * @param side the desired side (NORTH or SOUTH)
+     * @return the desired limit
+     */
+    public BrokenLine getLimit (Side side)
+    {
+        return limits.get(side);
+    }
+
     //-----------//
     // getLimits //
     //-----------//
@@ -110,33 +124,9 @@ public class SystemBoundary
      * Report the limits as a collection
      * @return the north and south limits
      */
-    public List<BrokenLine> getLimits ()
+    public Collection<BrokenLine> getLimits ()
     {
-        return limits;
-    }
-
-    //---------------//
-    // getNorthLimit //
-    //---------------//
-    /**
-     * Report the broken line on northern side
-     * @return the northern limit
-     */
-    public BrokenLine getNorthLimit ()
-    {
-        return north;
-    }
-
-    //---------------//
-    // getSouthLimit //
-    //---------------//
-    /**
-     * Report the broken line on southern side
-     * @return the southern limit
-     */
-    public BrokenLine getSouthLimit ()
-    {
-        return south;
+        return limits.values();
     }
 
     //----------//
@@ -162,8 +152,9 @@ public class SystemBoundary
      */
     public void render (Graphics g)
     {
-        Graphics2D      g2 = (Graphics2D) g;
-        int             radius = north.getStickyDistance();
+        Graphics2D g2 = (Graphics2D) g;
+        int        radius = limits.get(Side.NORTH)
+                                  .getStickyDistance();
 
         // Draw the polygon
         g2.drawPolygon(polygon);
@@ -184,8 +175,9 @@ public class SystemBoundary
     @Override
     public String toString ()
     {
-        return "{Boundary" + " system#" + system.getId() + " north:" + north +
-               " south:" + south + "}";
+        return "{Boundary" + " system#" + system.getId() + " north:" +
+               limits.get(Side.NORTH) + " south:" + limits.get(Side.SOUTH) +
+               "}";
     }
 
     //--------//
@@ -209,12 +201,14 @@ public class SystemBoundary
         polygon.reset();
 
         // North
-        for (Point point : north.getPoints()) {
+        for (Point point : limits.get(Side.NORTH)
+                                 .getPoints()) {
             polygon.addPoint(point.x, point.y);
         }
 
         // South (in reverse order)
-        List<Point> reverse = new ArrayList<Point>(south.getPoints());
+        List<Point> reverse = new ArrayList<Point>(
+            limits.get(Side.SOUTH).getPoints());
         Collections.reverse(reverse);
 
         for (Point point : reverse) {

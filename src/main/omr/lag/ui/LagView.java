@@ -7,11 +7,13 @@
 //  Contact author at herve.bitteur@laposte.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
 //
-package omr.lag;
+package omr.lag.ui;
 
 import omr.constant.Constant;
 
 import omr.graph.DigraphView;
+
+import omr.lag.*;
 
 import omr.log.Logger;
 
@@ -19,19 +21,20 @@ import omr.selection.MouseMovement;
 import omr.selection.RunEvent;
 import omr.selection.SectionEvent;
 import omr.selection.SectionIdEvent;
+import omr.selection.SelectionHint;
+import omr.selection.SelectionService;
 import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
 
-import omr.ui.view.RubberZoomedPanel;
+import omr.ui.view.RubberPanel;
 
-import org.bushe.swing.event.EventService;
 import org.bushe.swing.event.EventSubscriber;
 
 import java.awt.*;
 import java.util.*;
 
 /**
- * Class <code>LagView</code> derives {@link omr.ui.view.RubberZoomedPanel} to
+ * Class <code>LagView</code> derives {@link omr.ui.view.RubberPanel} to
  * provide an implementation of a comprehensive display for lags, whether they
  * are vertical or horizontal.
  *
@@ -51,13 +54,16 @@ import java.util.*;
  * @param <S> the type of section the related lag handles
  */
 public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
-    extends RubberZoomedPanel
-    implements DigraphView, EventSubscriber<UserEvent>
+    extends RubberPanel
+    implements DigraphView
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(LagView.class);
+
+    /** Color used when rendering specific sections */
+    private static final Color SPECIFIC_COLOR = Color.yellow;
 
     /** (Lag) events this entity is interested in */
     private static final Collection<Class<?extends UserEvent>> eventClasses;
@@ -67,25 +73,22 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         eventClasses.add(SectionIdEvent.class);
     }
 
-    // Color used when rendering specific sections
-    private static final Color       SPECIFIC_COLOR = Color.yellow;
-
     //~ Instance fields --------------------------------------------------------
-
-    /** Specific sections for display & lookup */
-    protected final Collection<S> specificSections;
 
     /** Related lag model */
     protected final L lag;
 
-    /** Global size of displayed image */
-    protected Rectangle lagContour = new Rectangle();
+    /** Lag Event service (Run, Section) */
+    protected final SelectionService lagSelectionService;
 
     /** Boolean used to trigger handling of specific sections */
     protected final Constant.Boolean showingSpecifics;
 
-    /** Index of this view in the ordered list of views of the related lag */
-    protected final int viewIndex;
+    /** Specific sections for display & lookup */
+    protected final Collection<S> specificSections;
+
+    /** Global size of displayed image */
+    protected Rectangle lagContour = new Rectangle();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -93,24 +96,31 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     // LagView //
     //---------//
     /**
-     * Create a view on the provided lag, building the related section view.
+     * Create a view on the provided lag, building the related sections views.
      *
      * @param lag              the lag to be displayed
-     * @param locationService the service which notifies location events
      * @param specificSections the collection of 'specific' sections, or null
-     * @param showingSpecifics (ref of) a flag for showing specifics or not
+     * @param showingSpecifics (ref of) a flag for showing specifics sections
      */
     public LagView (L                lag,
-                    EventService     locationService,
                     Collection<S>    specificSections,
-                    Constant.Boolean showingSpecifics)
+                    Constant.Boolean showingSpecifics,
+                    SelectionService locationService)
     {
         // Self-register this view in the related lag
         this.lag = lag;
         lag.addView(this);
-        this.showingSpecifics = showingSpecifics;
+
+        // Location service        
+        this.locationService = locationService;
+        lagSelectionService = lag.getSelectionService();
+        selfSubscribe(SectionEvent.class);
+        selfSubscribe(SectionIdEvent.class);
+        setLocationService(locationService, SheetLocationEvent.class);
 
         // Remember specific sections
+        this.showingSpecifics = showingSpecifics;
+
         if (specificSections != null) {
             this.specificSections = specificSections;
         } else {
@@ -127,14 +137,9 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
             addSectionView(section);
         }
 
-        setBackground(Color.white);
-
         // Colorize all sections of the lag
-        viewIndex = lag.viewIndexOf(this);
-        colorize();
-
-        // By default, subscribe to interesting events
-        setLocationService(locationService, SheetLocationEvent.class);
+        setBackground(Color.white);
+        colorizeAllSections();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -152,24 +157,6 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         return lag;
     }
 
-    //--------------//
-    // getModelSize //
-    //--------------//
-    /**
-     * Return the overall dimension of the lag graph (zooming put apart).
-     *
-     * @return the global bounding box of the lag
-     */
-    @Override
-    public Dimension getModelSize ()
-    {
-        if (super.getModelSize() != null) {
-            return super.getModelSize();
-        } else {
-            return lagContour.getSize();
-        }
-    }
-
     //----------------//
     // getSectionById //
     //----------------//
@@ -181,7 +168,8 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
      * @param id the key to be used
      * @return the section found, or null otherwise
      */
-    public Section getSectionById (int id)
+    @SuppressWarnings("unchecked")
+    public S getSectionById (int id)
     {
         if ((showingSpecifics != null) && showingSpecifics.getValue()) {
             // Look up in specifics first
@@ -195,6 +183,32 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         // Now look into 'normal' sections
         return lag.getVertexById(id);
     }
+
+    //---------------------//
+    // getSpecificSections //
+    //---------------------//
+    public Collection<S> getSpecificSections ()
+    {
+        return specificSections;
+    }
+
+    //    //--------------//
+    //    // getModelSize //
+    //    //--------------//
+    //    /**
+    //     * Return the overall dimension of the lag graph (zooming put apart).
+    //     *
+    //     * @return the global bounding box of the lag
+    //     */
+    //    @Override
+    //    public Dimension getModelSize ()
+    //    {
+    //        if (super.getModelSize() != null) {
+    //            return super.getModelSize();
+    //        } else {
+    //            return lagContour.getSize();
+    //        }
+    //    }
 
     //----------------//
     // addSectionView //
@@ -217,24 +231,24 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         return sectionView;
     }
 
-    //----------//
-    // colorize //
-    //----------//
+    //---------------------//
+    // colorizeAllSections //
+    //---------------------//
     /**
      * Colorize the whole lag of sections, by assigning proper color index
      */
-    public void colorize ()
+    public void colorizeAllSections ()
     {
-        // Colorize (normal) vertices
+        int viewIndex = lag.viewIndexOf(this);
+
+        // Colorize (normal) vertices and transitively all the connected ones
         for (S section : lag.getVertices()) {
-            colorize(section);
+            colorizeSection(section, viewIndex);
         }
 
         // Colorize specific sections, with a different color
-        SectionView view;
-
         for (S section : specificSections) {
-            view = (SectionView) section.getView(viewIndex);
+            SectionView view = (SectionView) section.getView(viewIndex);
             view.setColor(SPECIFIC_COLOR);
         }
     }
@@ -285,9 +299,11 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     // onEvent //
     //---------//
     /**
-     * Notification about selection objects. In addition to normal view
-     * behavior(making location visible), use the specific sections if any to
-     * retrieve Run and Section, based on location or identity.
+     * Notification about selection objects. We catch:
+     *
+     * SheetLocation (-> Run & Section) in specifics and lag
+     * SectionId (-> Section) in specifics and lag
+     * Section (-> section contour box) whatever the section
      *
      * @param event the notified event
      */
@@ -300,63 +316,127 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
                 return;
             }
 
-            ///logger.info("LagView. selection=" + selection + " hint=" + hint);
+            ///logger.info("LagView. event=" + event);
 
             // Default behavior : making point visible & drawing the markers
             super.onEvent(event);
 
-            // Check for specific section if any
-            if ((showingSpecifics != null) && showingSpecifics.getValue()) {
-                if (event instanceof SheetLocationEvent) {
+            // Lookup for Run/Section pointed by this pixel location
+            // Search and forward run & section info
+            // Optimization : do the lookup only if observers other
+            // than this controller are present
+            if (event instanceof SheetLocationEvent) { // Location
+
+                if ((subscribersCount(RunEvent.class) > 0) ||
+                    (subscribersCount(SectionEvent.class) > 1)) { // myself!
+
                     SheetLocationEvent sheetLocation = (SheetLocationEvent) event;
-
-                    // Default behavior : making point visible & drawing the markers
-                    super.onEvent(sheetLocation);
-
-                    Rectangle rect = sheetLocation.getData();
+                    Rectangle          rect = sheetLocation.getData();
+                    S                  section = null;
 
                     if (rect != null) {
-                        Point pt = rect.getLocation();
-                        lag.invalidateLookupCache();
+                        if ((sheetLocation.hint == SelectionHint.LOCATION_ADD) ||
+                            (sheetLocation.hint == SelectionHint.LOCATION_INIT)) {
+                            Point pt = rect.getLocation();
 
-                        S section = lookupSpecificSection(pt);
+                            if (showingSpecifics()) {
+                                // First look in specific sections
+                                lag.invalidateLookupCache();
+                                section = lookupSpecificSection(pt);
+                            } else {
+                                // Look into lag
+                                section = lag.lookupSection(
+                                    lag.getVertices(),
+                                    pt);
+                            }
 
-                        if (section != null) {
-                            lag.publish(
+                            publish(
                                 new SectionEvent<S>(
                                     this,
                                     sheetLocation.hint,
                                     section));
 
                             Point apt = lag.switchRef(pt, null);
-                            lag.publish(
-                                new RunEvent(this, section.getRunAt(apt.y)));
+                            publish(
+                                new RunEvent(
+                                    this,
+                                    (section != null) ? section.getRunAt(apt.y)
+                                                                        : null));
                         }
                     }
-                } else if (event instanceof SectionIdEvent) {
-                    // Lookup a specific section with proper ID
-                    SectionIdEvent idEvent = (SectionIdEvent) event;
-                    Integer        id = idEvent.id;
+                }
+            } else if (event instanceof SectionIdEvent) { // Section ID
 
-                    if ((id != null) & (id != 0)) {
+                SectionIdEvent idEvent = (SectionIdEvent) event;
+                Integer        id = idEvent.id;
+
+                if ((id != null) & (id != 0)) {
+                    publish(new RunEvent(this, null));
+
+                    if (!specificSections.isEmpty()) {
+                        // Lookup a specific section with proper ID
                         for (S section : specificSections) {
                             if (section.getId() == id) {
-                                lag.publish(
+                                publish(
                                     new SectionEvent<S>(
                                         this,
                                         idEvent.hint,
                                         section));
-                                lag.publish(new RunEvent(this, null));
 
                                 break;
                             }
                         }
+                    } else {
+                        // Lookup a lag section with proper ID
+                        publish(
+                            new SectionEvent<S>(
+                                this,
+                                idEvent.hint,
+                                lag.getVertexById(id)));
                     }
+                }
+            } else if (event instanceof SectionEvent) { // Section
+
+                SectionEvent sectionEvent = (SectionEvent) event;
+
+                if (sectionEvent.hint == SelectionHint.SECTION_INIT) {
+                    // Display section contour
+                    Section section = sectionEvent.section;
+                    locationService.publish(
+                        new SheetLocationEvent(
+                            this,
+                            sectionEvent.hint,
+                            null,
+                            (section != null) ? section.getContourBox() : null));
                 }
             }
         } catch (Exception ex) {
             logger.warning(getClass().getName() + " onEvent error", ex);
         }
+    }
+
+    //---------//
+    // publish //
+    //---------//
+    /**
+     * Publish on LagController event service
+     * @param event the event to publish
+     */
+    public void publish (UserEvent event)
+    {
+        lagSelectionService.publish(event);
+    }
+
+    //---------//
+    // refresh //
+    //---------//
+    /**
+     * Refresh the  display using the colors of the sections
+     */
+    public void refresh ()
+    {
+        colorizeAllSections();
+        repaint();
     }
 
     //--------//
@@ -400,13 +480,27 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         // Subscribe to lag events
         if (logger.isFineEnabled()) {
             logger.fine(
-                this.getClass().getName() + " LV subscribing to " +
-                eventClasses);
+                getClass().getName() + " LC subscribing to " + eventClasses);
         }
 
         for (Class<?extends UserEvent> eventClass : eventClasses) {
-            lag.subscribeStrongly(eventClass, this);
+            subscribe(eventClass, this);
         }
+    }
+
+    //-----------//
+    // subscribe //
+    //-----------//
+    /**
+     * Subscribe to the LagController event service for a specific class
+     * @param eventClass the class of published objects to subscriber listen to
+     * @param subscriber The subscriber that will accept the events of the event
+     * class when published.
+     */
+    public void subscribe (Class<?extends UserEvent> eventClass,
+                           EventSubscriber           subscriber)
+    {
+        lagSelectionService.subscribe(eventClass, subscriber);
     }
 
     //-------------//
@@ -424,13 +518,27 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         // Unsubscribe to lag events
         if (logger.isFineEnabled()) {
             logger.fine(
-                getClass().getName() + " LV unsubscribing from " +
+                getClass().getName() + " LC unsubscribing from " +
                 eventClasses);
         }
 
         for (Class<?extends UserEvent> eventClass : eventClasses) {
-            lag.unsubscribe(eventClass, this);
+            unsubscribe(eventClass, this);
         }
+    }
+
+    //-------------//
+    // unsubscribe //
+    //-------------//
+    /**
+     * Unsubscribe to the LagController event service for a specific class
+     * @param eventClass the class of interesting events
+     * @param subscriber the entity to unsubscribe
+     */
+    public void unsubscribe (Class<?extends UserEvent> eventClass,
+                             EventSubscriber           subscriber)
+    {
+        lagSelectionService.unsubscribe(eventClass, subscriber);
     }
 
     //-------------//
@@ -447,31 +555,67 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         // Just a placeholder
     }
 
-    //----------//
-    // colorize //
-    //----------//
+    //---------------//
+    // selfSubscribe //
+    //---------------//
+    /**
+     * Convenient method to auto-subscribe the lag instance on its event service
+     * for a specific class
+     * @param eventClass the specific classe
+     */
+    protected void selfSubscribe (Class<?extends UserEvent> eventClass)
+    {
+        lagSelectionService.subscribe(eventClass, this);
+    }
+
+    //------------------//
+    // showingSpecifics //
+    //------------------//
+    protected boolean showingSpecifics ()
+    {
+        return (showingSpecifics != null) && showingSpecifics.getValue();
+    }
+
+    //------------------//
+    // subscribersCount //
+    //------------------//
+    /**
+     * Convenient method to retrieve the number of subscribers on the lag event
+     * service for a specific class
+     * @param classe the specific classe
+     */
+    protected int subscribersCount (Class<?extends UserEvent> classe)
+    {
+        return lagSelectionService.subscribersCount(classe);
+    }
+
+    //-----------------//
+    // colorizeSection //
+    //-----------------//
     /**
      * Colorize one section, with a color not already used by the adjacent
      * sections
      *
      * @param section the section to colorize
+     * @param viewIndex the index of this view in the lag list of views
      */
-    private void colorize (S section)
+    private void colorizeSection (S   section,
+                                  int viewIndex)
     {
         SectionView view = (SectionView) section.getView(viewIndex);
 
-        if (view.getColorIndex() == -1) {
-            // Determine suitable color for this section view
-            view.determineColorIndex(viewIndex);
+        // Determine suitable color for this section view
+        if (!view.isColorized()) {
+            view.determineDefaultColor(viewIndex);
 
             // Recursive processing of Targets
             for (S sct : section.getTargets()) {
-                colorize(sct);
+                colorizeSection(sct, viewIndex);
             }
 
             // Recursive processing of Sources
             for (S sct : section.getSources()) {
-                colorize(sct);
+                colorizeSection(sct, viewIndex);
             }
         }
     }
@@ -483,7 +627,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
                                    Collection<S> collection,
                                    int           index)
     {
-        for (Section section : collection) {
+        for (S section : collection) {
             SectionView view = (SectionView) section.getView(index);
             view.render(g);
         }

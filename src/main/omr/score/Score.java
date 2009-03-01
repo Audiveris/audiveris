@@ -17,6 +17,7 @@ import omr.log.Logger;
 import omr.score.common.PagePoint;
 import omr.score.common.ScorePoint;
 import omr.score.common.UnitDimension;
+import omr.score.entity.Measure;
 import omr.score.entity.ScoreNode;
 import omr.score.entity.ScorePart;
 import omr.score.entity.ScoreSystem;
@@ -725,6 +726,34 @@ public class Score
 
         System.out.println(
             "----------------------------------------------------------------");
+    }
+
+    //-------------------//
+    // dumpMeasureCounts //
+    //-------------------//
+    /**
+     * Print out the detailed number of measures inthe score
+     * @param title an optional title, or null
+     */
+    public void dumpMeasureCounts (String title)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        if (title != null) {
+            sb.append("(")
+              .append(title)
+              .append(") ");
+        }
+
+        sb.append("Measure counts:");
+
+        for (TreeNode node : getSystems()) {
+            ScoreSystem sys = (ScoreSystem) node;
+            SystemPart  part = sys.getLastPart();
+            sb.append(" System#" + sys.getId() + "=" + part.getMeasures().size());
+        }
+
+        logger.info(sb.toString());
     }
 
     //--------//

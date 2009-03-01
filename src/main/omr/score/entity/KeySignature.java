@@ -81,7 +81,7 @@ public class KeySignature
                                                      B, E, A, D, G, C, F
                                                  };
 
-    /** Unique Id (for debugging) */
+    /** Unique Id (for debugging). Having a static variable is stupid !!! TBD */
     private static AtomicInteger globalId = new AtomicInteger(0);
 
     //~ Instance fields --------------------------------------------------------
@@ -1062,7 +1062,7 @@ public class KeySignature
      */
     private void retrieveKey ()
     {
-        if ((glyphs != null) && (glyphs.size() > 0)) {
+        if ((glyphs != null) && !glyphs.isEmpty()) {
             // Check we have only sharps or only flats
             Shape shp = null;
 

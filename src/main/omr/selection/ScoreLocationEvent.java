@@ -61,9 +61,9 @@ public class ScoreLocationEvent
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------//
-    // getEntity //
-    //-----------//
+    //---------//
+    // getData //
+    //---------//
     @Override
     public ScoreRectangle getData ()
     {

@@ -16,20 +16,11 @@ import omr.log.Logger;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
-import omr.selection.MouseMovement;
-import omr.selection.RunEvent;
 import omr.selection.SectionEvent;
-import omr.selection.SectionIdEvent;
-import omr.selection.SelectionHint;
-import omr.selection.SheetLocationEvent;
-import omr.selection.UserEvent;
+import omr.selection.SelectionService;
 
 import omr.util.Implement;
 import omr.util.Predicate;
-
-import org.bushe.swing.event.EventService;
-import org.bushe.swing.event.EventSubscriber;
-import org.bushe.swing.event.ThreadSafeEventService;
 
 import java.awt.*;
 import java.util.*;
@@ -42,10 +33,11 @@ import java.util.List;
  * are thus vertices of the graph, while junctions are directed edges between
  * sections.
  *
- * <p>A lag has a dedicated event service to handle Run and Section events,
- * accessible directly through methods like {@link #getEventService}, {@link
- * #subscribeStrongly}, {@link #unsubscribe}, {@link #publish}, or via
- * higher-level {@link #getCurrentSection}.</p>
+ * <p>A lag may have a related UI selection service accessible through {@link
+ * #getSelectionService}. This selection service handles Run and Section events,
+ * a derived class such as GlyphLag being able to add other events. The {@link
+ * #getSelectedSection} method is just a convenient way to retrieve the last
+ * selected section from the lag selection service.</p>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -54,7 +46,7 @@ import java.util.List;
  */
 public class Lag<L extends Lag<L, S>, S extends Section>
     extends Digraph<L, S>
-    implements Oriented, EventSubscriber<UserEvent>
+    implements Oriented
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -72,14 +64,11 @@ public class Lag<L extends Lag<L, S>, S extends Section>
      */
     private List<List<Run>> runs;
 
-    /** Events related to this lag (Run, Section) */
-    protected final EventService eventService = new ThreadSafeEventService();
-
-    /** Event service where selected location is to be written */
-    protected EventService locationService;
-
     /** Cache of last section found through a lookup action */
     private S cachedSection;
+
+    /** Hosted event service for UI events related to this lag (Run, Section) */
+    protected SelectionService lagSelectionService;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -98,40 +87,9 @@ public class Lag<L extends Lag<L, S>, S extends Section>
     {
         super(name, sectionClass);
         this.orientation = orientation;
-        eventService.setDefaultCacheSizePerClassOrTopic(1);
-        selfSubscribe(SectionEvent.class);
-        selfSubscribe(SectionIdEvent.class);
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //-------------------//
-    // getCurrentSection //
-    //-------------------//
-    /**
-     * Report the section currently selected, or null
-     * @return the selected section, or null
-     */
-    @SuppressWarnings("unchecked")
-    public S getCurrentSection ()
-    {
-        SectionEvent<S> sectionEvent = (SectionEvent<S>) getLastEvent(
-            SectionEvent.class);
-
-        return (sectionEvent != null) ? sectionEvent.section : null;
-    }
-
-    //-----------------//
-    // getEventService //
-    //-----------------//
-    /**
-     * Report the lag event service
-     * @return the lag event service
-     */
-    public EventService getEventService ()
-    {
-        return eventService;
-    }
 
     //-----------------//
     // getFirstRectRun //
@@ -178,32 +136,6 @@ public class Lag<L extends Lag<L, S>, S extends Section>
         return best;
     }
 
-    //--------------//
-    // getLastEvent //
-    //--------------//
-    /**
-     * Report the last event (if any) in the provided class
-     * @return the last event in provided class, or null
-     */
-    public Object getLastEvent (Class<?extends UserEvent> eventClass)
-    {
-        return eventService.getLastEvent(eventClass);
-    }
-
-    //--------------------//
-    // setLocationService //
-    //--------------------//
-    /**
-     * Inject the event service where location must be written to, when
-     * triggered through the update method.
-     *
-     * @param locationService the output selection object
-     */
-    public void setLocationService (EventService locationService)
-    {
-        this.locationService = locationService;
-    }
-
     //-------------//
     // getSections //
     //-------------//
@@ -241,6 +173,37 @@ public class Lag<L extends Lag<L, S>, S extends Section>
         }
 
         return found;
+    }
+
+    //--------------------//
+    // getSelectedSection //
+    //--------------------//
+    /**
+     * Convenient method to report the UI currently selected Section, if any, in
+     * this lag
+     * @return the UI selected section, or null if none
+     */
+    @SuppressWarnings("unchecked")
+    public S getSelectedSection ()
+    {
+        return (S) getSelectionService()
+                       .getSelection(SectionEvent.class); // Unchecked
+    }
+
+    //---------------------//
+    // getSelectionService //
+    //---------------------//
+    /**
+     * Report the lag selection service, lazily created
+     * @return the lag selection service
+     */
+    public SelectionService getSelectionService ()
+    {
+        if (lagSelectionService == null) {
+            lagSelectionService = new SelectionService();
+        }
+
+        return lagSelectionService;
     }
 
     //------------//
@@ -320,140 +283,30 @@ public class Lag<L extends Lag<L, S>, S extends Section>
     {
         Point target = switchRef(pt, null); // Involutive!
 
+        // Local copy (in case of concurrent accesses)
+        S cached = cachedSection;
+
         // Just in case we have not moved a lot since previous lookup ...
-        if ((cachedSection != null) &&
-            cachedSection.contains(target.x, target.y) &&
-            collection.contains(cachedSection)) {
-            return cachedSection;
+        if ((cached != null) &&
+            cached.contains(target.x, target.y) &&
+            collection.contains(cached)) {
+            return cached;
         } else {
-            cachedSection = null;
+            cached = null;
         }
 
         // Too bad, let's browse the whole stuff
         for (S section : collection) {
             if (section.contains(target.x, target.y)) {
-                cachedSection = section;
+                cached = section;
 
                 break;
             }
         }
 
-        return cachedSection;
-    }
+        cachedSection = cached;
 
-    //---------//
-    // onEvent //
-    //---------//
-    /**
-     * Call-back triggered when selection of sheet location, section or section
-     * id, has been modified.
-     * We forward the related run and section informations.
-     *
-     * @param event the notified Selection
-     */
-    @Implement(EventSubscriber.class)
-    public void onEvent (UserEvent event)
-    {
-        try {
-            // Ignore RELEASING
-            if (event.movement == MouseMovement.RELEASING) {
-                return;
-            }
-
-            if (event instanceof SheetLocationEvent) { // Sheet location
-
-                SheetLocationEvent sheetLocation = (SheetLocationEvent) event;
-
-                if ((sheetLocation.hint == SelectionHint.LOCATION_ADD) ||
-                    (sheetLocation.hint == SelectionHint.LOCATION_INIT)) {
-                    // Lookup for Run/Section pointed by this pixel location
-                    // Search and forward run & section info
-                    // Optimization : do the lookup only if observers other
-                    // than this lag are present
-                    if ((subscribersCount(RunEvent.class) > 0) ||
-                        (subscribersCount(SectionEvent.class) > 1)) { // Lag itself !
-
-                        Run run = null;
-                        S   section = null;
-
-                        if (sheetLocation != null) {
-                            Rectangle rect = sheetLocation.rectangle;
-
-                            if ((rect != null) &&
-                                (rect.width == 0) &&
-                                (rect.height == 0)) {
-                                Point pt = rect.getLocation();
-                                section = lookupSection(getVertices(), pt);
-
-                                if (section != null) {
-                                    Point apt = switchRef(pt, null);
-                                    run = section.getRunAt(apt.y);
-                                }
-                            }
-                        }
-
-                        publish(new RunEvent(this, run));
-                        publish(
-                            new SectionEvent<S>(
-                                this,
-                                sheetLocation.hint,
-                                section));
-                    }
-                }
-            } else if (event instanceof SectionEvent) { // Section
-
-                SectionEvent sectionEvent = (SectionEvent) event;
-
-                if (sectionEvent.hint == SelectionHint.SECTION_INIT) {
-                    // Display section contour
-                    Section section = sectionEvent.section;
-
-                    if (section != null) {
-                        locationService.publish(
-                            new SheetLocationEvent(
-                                this,
-                                sectionEvent.hint,
-                                null,
-                                section.getContourBox()));
-                    } else {
-                        locationService.publish(
-                            new SheetLocationEvent(
-                                this,
-                                sectionEvent.hint,
-                                null,
-                                null));
-                    }
-                }
-            } else if (event instanceof SectionIdEvent) { // Section ID
-                publish(new RunEvent(this, null));
-
-                SectionIdEvent idEvent = (SectionIdEvent) event;
-                Integer        id = idEvent.id;
-
-                if (id != null) {
-                    // Lookup a section with proper ID
-                    publish(
-                        new SectionEvent<S>(
-                            this,
-                            idEvent.hint,
-                            getVertexById(id)));
-                }
-            }
-        } catch (Exception ex) {
-            logger.warning(getClass().getName() + " onEvent error", ex);
-        }
-    }
-
-    //---------//
-    // publish //
-    //---------//
-    /**
-     * Publish on lag event service
-     * @param event the event to publish
-     */
-    public void publish (UserEvent event)
-    {
-        eventService.publish(event);
+        return cached;
     }
 
     //---------------//
@@ -466,7 +319,7 @@ public class Lag<L extends Lag<L, S>, S extends Section>
      *
      * @return the list of sections purged in this call
      */
-    public List<S> purgeSections (Predicate<Section> predicate)
+    public List<S> purgeSections (Predicate<S> predicate)
     {
         // List of sections to be purged (to avoid concurrent modifications)
         List<S> purges = new ArrayList<S>(2000);
@@ -504,29 +357,14 @@ public class Lag<L extends Lag<L, S>, S extends Section>
     public List<S> purgeTinySections (final int minForeWeight)
     {
         return purgeSections(
-            new Predicate<Section>() {
-                    public boolean check (Section section)
+            new Predicate<S>() {
+                    public boolean check (S section)
                     {
                         return (section.getForeWeight() < minForeWeight) &&
                                ((section.getInDegree() == 0) ||
                                (section.getOutDegree() == 0));
                     }
                 });
-    }
-
-    //-------------------//
-    // subscribeStrongly //
-    //-------------------//
-    /**
-     * Subscribe to the lag event service for a specific class
-     * @param eventClass the class of published objects to subscriber listen to
-     * @param subscriber The subscriber that will accept the events of the event
-     * class when published.
-     */
-    public void subscribeStrongly (Class<?extends UserEvent> eventClass,
-                                   EventSubscriber           subscriber)
-    {
-        eventService.subscribeStrongly(eventClass, subscriber);
     }
 
     //-----------//
@@ -599,20 +437,6 @@ public class Lag<L extends Lag<L, S>, S extends Section>
         return sb.toString();
     }
 
-    //-------------//
-    // unsubscribe //
-    //-------------//
-    /**
-     * Unsubscribe to the lag event service for a specific class
-     * @param eventClass the class of interesting events
-     * @param subscriber the entity to unsubscribe
-     */
-    public void unsubscribe (Class<?extends UserEvent> eventClass,
-                             EventSubscriber           subscriber)
-    {
-        eventService.unsubscribe(eventClass, subscriber);
-    }
-
     //-----------//
     // getPrefix //
     //-----------//
@@ -626,33 +450,6 @@ public class Lag<L extends Lag<L, S>, S extends Section>
     protected String getPrefix ()
     {
         return "Lag";
-    }
-
-    //---------------//
-    // selfSubscribe //
-    //---------------//
-    /**
-     * Convenient method to auto-subscribe the lag instance on its event service
-     * for a specific class
-     * @param eventClass the specific classe
-     */
-    protected void selfSubscribe (Class<?extends UserEvent> eventClass)
-    {
-        eventService.subscribeStrongly(eventClass, this);
-    }
-
-    //------------------//
-    // subscribersCount //
-    //------------------//
-    /**
-     * Convenient method to retrieve the number of subscribers on the lag event
-     * service for a specific class
-     * @param classe the specific classe
-     */
-    protected int subscribersCount (Class<?extends UserEvent> classe)
-    {
-        return eventService.getSubscribers(classe)
-                           .size();
     }
 
     //---------//

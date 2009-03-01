@@ -7,7 +7,7 @@
 //  Contact author at herve.bitteur@laposte.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
 //
-package omr.lag;
+package omr.lag.ui;
 
 import omr.log.Logger;
 
@@ -15,7 +15,7 @@ import omr.ui.view.ScrollView;
 
 /**
  * Class <code>ScrollLagView</code> is a customized {@link ScrollView} dedicated
- * to the display of a {@link omr.lag.LagView}, with monitoring of run and
+ * to the display of a {@link omr.lag.ui.LagView}, with monitoring of run and
  * section informations
  *
  * @author Herv&eacute; Bitteur
@@ -37,7 +37,7 @@ public class ScrollLagView
     /**
      * Create a scroll view on a lag.
      *
-     * @param view the contained {@link omr.lag.LagView}
+     * @param view the contained {@link omr.lag.ui.LagView}
      */
     public ScrollLagView (LagView view)
     {

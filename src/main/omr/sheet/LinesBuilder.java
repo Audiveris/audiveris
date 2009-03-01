@@ -15,19 +15,20 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
-import omr.glyph.GlyphsModel;
 import omr.glyph.GlyphSection;
+import omr.glyph.GlyphsModel;
 import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphLagView;
+import omr.glyph.ui.GlyphsController;
 
 import omr.lag.HorizontalOrientation;
 import omr.lag.JunctionDeltaPolicy;
 import omr.lag.Run;
-import omr.lag.RunBoard;
-import omr.lag.ScrollLagView;
 import omr.lag.Section;
-import omr.lag.SectionBoard;
 import omr.lag.SectionsBuilder;
+import omr.lag.ui.RunBoard;
+import omr.lag.ui.ScrollLagView;
+import omr.lag.ui.SectionBoard;
 
 import omr.log.Logger;
 
@@ -35,10 +36,11 @@ import omr.math.Population;
 
 import omr.sheet.picture.Picture;
 import omr.sheet.ui.PixelBoard;
+import omr.sheet.ui.SheetsController;
 
+import omr.step.Step;
 import omr.step.StepException;
 
-import omr.stick.Stick;
 import omr.stick.StickSection;
 
 import omr.ui.BoardsPane;
@@ -118,7 +120,8 @@ public class LinesBuilder
             new GlyphLag(
                 "hLag",
                 StickSection.class,
-                new HorizontalOrientation()));
+                new HorizontalOrientation()),
+            Step.LINES);
 
         // Check output needed from previous steps
         scale = sheet.getScale(); // Will run Scale if not yet done
@@ -145,7 +148,7 @@ public class LinesBuilder
         // User feedback
         if (staves.size() > 1) {
             logger.info(staves.size() + " staves");
-        } else if (staves.size() > 0) {
+        } else if (!staves.isEmpty()) {
             logger.info(staves.size() + " staff");
         } else {
             logger.warning("No staff found");
@@ -255,7 +258,8 @@ public class LinesBuilder
             }
         }
 
-        lagView = new MyView(lag, members);
+        GlyphsController controller = new GlyphsController(this);
+        lagView = new MyView(lag, members, controller);
 
         final String  unit = sheet.getRadix() + ":LinesBuilder";
         BoardsPane    boardsPane = new BoardsPane(
@@ -264,12 +268,12 @@ public class LinesBuilder
             new PixelBoard(unit, sheet),
             new RunBoard(unit, lag),
             new SectionBoard(unit, lag.getLastVertexId(), lag),
-            new GlyphBoard(unit, this, null));
+            new GlyphBoard(unit, controller, null));
 
         // Create a hosting frame for the view
         ScrollLagView slv = new ScrollLagView(lagView);
         sheet.getAssembly()
-             .addViewTab("Lines", slv, boardsPane);
+             .addViewTab(Step.LINES, slv, boardsPane);
     }
 
     //---------------//
@@ -614,7 +618,7 @@ public class LinesBuilder
         public void toggleLines (ActionEvent e)
         {
             // Trigger a repaint if needed
-            Sheet currentSheet = SheetManager.getSelectedSheet();
+            Sheet currentSheet = SheetsController.selectedSheet();
 
             if (currentSheet != null) {
                 LinesBuilder builder = currentSheet.getLinesBuilder();
@@ -691,13 +695,14 @@ public class LinesBuilder
         // MyView //
         //--------//
         public MyView (GlyphLag           lag,
-                       List<GlyphSection> specifics)
+                       List<GlyphSection> specifics,
+                       GlyphsController   controller)
         {
             super(
                 lag,
                 specifics,
                 constants.displayOriginalStaffLines,
-                LinesBuilder.this,
+                controller,
                 null);
             setName("LinesBuilder-View");
         }

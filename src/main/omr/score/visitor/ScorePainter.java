@@ -381,7 +381,7 @@ public class ScorePainter
                 if (mark.getData() != null) {
                     g.setColor(Color.RED);
 
-                    Point topLeft = toScaledPoint(
+                    Point topLeft = topLeftOf(
                         mark.getLocation(),
                         hAlign,
                         10,
@@ -481,7 +481,7 @@ public class ScorePainter
                                         .getStaves()) {
                 final Staff staff = (Staff) node;
                 paintSymbol(
-                    Shape.SINGLE_BARLINE,
+                    Shape.THIN_BARLINE,
                     new SystemPoint(measure.getLeftX(), 0),
                     staff,
                     0);
@@ -1026,13 +1026,14 @@ public class ScorePainter
 
         if (icon != null) {
             try {
-                final Point topLeft = toScaledPoint(
-                    point,
+                SystemPoint scaledPoint = new SystemPoint(point);
+                zoom.scale(scaledPoint);
+                final Point topLeft = topLeftOf(
+                    scaledPoint,
                     hAlign,
                     icon.getActualWidth(),
                     vAlign,
                     icon.getIconHeight());
-                zoom.scale(topLeft);
                 g.scale(1 / zoom.getRatio(), 1 / zoom.getRatio());
                 g.drawImage(icon.getImage(), topLeft.x, topLeft.y, null);
             } finally {
@@ -1212,14 +1213,14 @@ public class ScorePainter
         }
     }
 
-    //---------------//
-    // toScaledPoint //
-    //---------------//
-    private Point toScaledPoint (SystemPoint         sysPt,
-                                 HorizontalAlignment hAlign,
-                                 int                 width,
-                                 VerticalAlignment   vAlign,
-                                 int                 height)
+    //-----------//
+    // topLeftOf //
+    //-----------//
+    private Point topLeftOf (SystemPoint         sysPt,
+                             HorizontalAlignment hAlign,
+                             int                 width,
+                             VerticalAlignment   vAlign,
+                             int                 height)
     {
         final Point point = new Point(sysPt);
 

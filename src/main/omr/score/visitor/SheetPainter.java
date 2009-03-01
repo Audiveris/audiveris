@@ -161,8 +161,8 @@ public class SheetPainter
 
         Score score = sheet.getScore();
 
-        if ((score != null) && (score.getSystems()
-                                     .size() > 0)) {
+        if ((score != null) && !score.getSystems()
+                                     .isEmpty()) {
             // Normal (full) rendering of the score
             score.accept(this);
         } else {

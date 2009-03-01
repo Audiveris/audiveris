@@ -357,7 +357,7 @@ public class ScoreMenu
 
             Set<Glyph> glyphs = score.getSheet()
                                      .getVerticalLag()
-                                     .getCurrentGlyphSet();
+                                     .getSelectedGlyphSet();
 
             if ((glyphs != null) && !glyphs.isEmpty()) {
                 Glyph glyph = glyphs.iterator()

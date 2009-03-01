@@ -10,12 +10,10 @@
 package omr.script;
 
 import omr.glyph.Glyph;
-import static omr.script.ScriptRecording.*;
 
 import omr.sheet.Sheet;
 
 import omr.step.StepException;
-import static omr.util.Synchronicity.*;
 
 import java.util.Collection;
 
@@ -64,8 +62,8 @@ public class DeassignTask
         throws StepException
     {
         super.run(sheet);
-        sheet.getSymbolsModel()
-             .deassignSetShape(SYNC, glyphs, RECORDING);
+        sheet.getSymbolsController()
+             .asyncDeassignGlyphSet(glyphs);
     }
 
     //-----------------//

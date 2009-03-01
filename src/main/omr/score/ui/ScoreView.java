@@ -40,10 +40,9 @@ import omr.sheet.ui.SheetAssembly;
 import omr.ui.PixelCount;
 import omr.ui.util.Panel;
 import omr.ui.view.Rubber;
-import omr.ui.view.RubberZoomedPanel;
+import omr.ui.view.RubberPanel;
 import omr.ui.view.ScrollView;
 import omr.ui.view.Zoom;
-import omr.ui.view.ZoomedPanel;
 
 import omr.util.TreeNode;
 
@@ -307,7 +306,7 @@ public class ScoreView
     // MyView //
     //--------//
     public class MyView
-        extends RubberZoomedPanel
+        extends RubberPanel
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -325,27 +324,24 @@ public class ScoreView
         {
             super(zoom, rubber);
             setName("ScoreView-MyPanel");
-            rubber.setMouseMonitor(this);
 
             // Initialize drawing colors, border, opacity.
             setBackground(new Color(255, 255, 220));
             setForeground(Color.black);
 
+            rubber.setMouseMonitor(this);
+
             // Explicitly register the display to Score Selection
             setLocationService(
-                score.getSheet().getEventService(),
+                score.getSheet().getSelectionService(),
                 ScoreLocationEvent.class);
             subscribe();
 
             // Force selection update
-            SheetLocationEvent locationEvent = (SheetLocationEvent) locationService.getLastEvent(
-                SheetLocationEvent.class);
-            PixelRectangle     location = (locationEvent != null)
-                                          ? locationEvent.getData() : null;
+            ScoreRectangle location = (ScoreRectangle) getSelectedLocation();
 
             if (location != null) {
-                locationService.publish(
-                    new SheetLocationEvent(this, null, null, location));
+                publish(new ScoreLocationEvent(this, null, null, location));
             }
         }
 
@@ -374,7 +370,7 @@ public class ScoreView
             // Show the popup menu
             scoreMenu.getPopup()
                      .show(
-                this,
+                view,
                 getZoom().scaled(scrPt.x) + 20,
                 getZoom().scaled(scrPt.y) + 30);
         }
@@ -386,41 +382,40 @@ public class ScoreView
                                Slot    slot)
         {
             logger.warning("highLight method needs to be rewritten");
-//            this.highlightedMeasure = measure;
-//            this.highlightedSlot = slot;
-//
-//            int margin = constants.measureMargin.getValue();
-//
-//            // Safer
-//            if ((measure == null) || (slot == null)) {
-//                repaint(); // To erase previous highlight
-//
-//                return;
-//            }
-//
-//            UnitDimension dimension = measure.getSystem()
-//                                             .getDimension();
-//            Point         origin = measure.getDisplayOrigin();
-//            ZoomedPanel   zp = (ZoomedPanel) this;
-//
-//            // If the current measure is at the beginning of a system,
-//            // make the most of this (new) system as visible as possible
-//            if (measure.getPreviousSibling() == null) {
-//                Rectangle rect = new Rectangle(
-//                    origin.x,
-//                    origin.y,
-//                    dimension.width,
-//                    dimension.height + STAFF_HEIGHT);
-//                zp.showFocusLocation(rect);
-//            }
-//
-//            // Make the measure rectangle visible
-//            Rectangle rect = new Rectangle(
-//                (origin.x + measure.getLeftX()) - margin,
-//                origin.y - margin,
-//                measure.getWidth() + (2 * margin),
-//                dimension.height + STAFF_HEIGHT + (2 * margin));
-//            zp.showFocusLocation(rect);
+
+            this.highlightedMeasure = measure;
+            this.highlightedSlot = slot;
+
+            int margin = constants.measureMargin.getValue();
+
+            // Safer
+            if ((measure == null) || (slot == null)) {
+                repaint(); // To erase previous highlight
+
+                return;
+            }
+
+            UnitDimension dimension = measure.getSystem()
+                                             .getDimension();
+
+            // If the current measure is at the beginning of a system,
+            // make the most of this (new) system as visible as possible
+            if (measure.getPreviousSibling() == null) {
+                Rectangle rect = new Rectangle(
+                    0,
+                    0,
+                    dimension.width,
+                    dimension.height + STAFF_HEIGHT);
+                showFocusLocation(rect);
+            }
+
+            // Make the measure rectangle visible
+            Rectangle rect = new Rectangle(
+                (measure.getLeftX()) - margin,
+                -margin,
+                measure.getWidth() + (2 * margin),
+                dimension.height + STAFF_HEIGHT + (2 * margin));
+            showFocusLocation(rect);
         }
 
         //---------//
@@ -512,7 +507,7 @@ public class ScoreView
 
             // Write & forward the new pixel selection
             score.getSheet()
-                 .getEventService()
+                 .getSelectionService()
                  .publish(
                 new ScoreLocationEvent(
                     this,

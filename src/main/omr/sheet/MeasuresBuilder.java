@@ -13,6 +13,7 @@ import omr.check.FailureResult;
 
 import omr.constant.ConstantSet;
 
+import omr.glyph.Evaluation;
 import omr.glyph.Glyph;
 
 import omr.log.Logger;
@@ -37,10 +38,10 @@ import java.util.*;
 /**
  * Class <code>MeasuresBuilder</code> is in charge, at a system level, of
  * building measures from the bar sticks found. At this moment, the only glyphs
- * in the system collection are barline glyphs.
+ * in the system collection are the barline candidates.
  *
  * <p>Each instance of this class is meant to be called by a single thread,
- * dedicated to the processing of this system. So this class does not need to be
+ * dedicated to the processing of one system. So this class does not need to be
  * thread-safe.</p>
  *
  * @author Herv&eacute Bitteur
@@ -74,17 +75,11 @@ public class MeasuresBuilder
     /** Its counterpart within Score hierarchy */
     private ScoreSystem scoreSystem;
 
-    /** Companion systems builder */
-    private final SystemsBuilder systemsBuilder;
-
     /** The related sheet */
     private final Sheet sheet;
 
     /** Sheet scale */
     private final Scale scale;
-
-    /** List of found bar sticks */
-    private final Set<Stick> barSticks;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -102,8 +97,6 @@ public class MeasuresBuilder
 
         sheet = system.getSheet();
         scale = sheet.getScale();
-        systemsBuilder = sheet.getSystemsBuilder();
-        barSticks = systemsBuilder.getBarSticks();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -117,7 +110,6 @@ public class MeasuresBuilder
     public void buildMeasures ()
     {
         scoreSystem = system.getScoreSystem();
-
         allocateMeasures();
         checkMeasures();
     }
@@ -197,7 +189,6 @@ public class MeasuresBuilder
 
                 bar.setResult(NOT_WITHIN_SYSTEM);
 
-                ///bit.remove();
                 continue;
             }
 
@@ -225,83 +216,101 @@ public class MeasuresBuilder
     //--------------------//
     /**
      * Check alignment of each measure of each part with the other part
-     * measures, a test that needs several staves in the system
+     * measures, a test that needs several parts in the system
      */
     private void checkBarAlignments ()
     {
-        if (system.getStaves()
-                  .size() > 1) {
-            int maxShiftDx = scale.toPixels(constants.maxAlignShiftDx);
+        // We need several staves to run the test
+        if (system.getParts()
+                  .size() <= 1) {
+            return;
+        }
 
-            for (TreeNode pnode : scoreSystem.getParts()) {
-                SystemPart part = (SystemPart) pnode;
+        int maxShiftDx = scale.toPixels(constants.maxAlignShiftDx);
 
-                for (Iterator mit = part.getMeasures()
-                                        .iterator(); mit.hasNext();) {
-                    Measure           measure = (Measure) mit.next();
+        for (TreeNode pnode : scoreSystem.getParts()) {
+            SystemPart        part = (SystemPart) pnode;
+            Collection<Staff> staves = new ArrayList<Staff>();
 
-                    // Check that all staves in this part are concerned with
-                    // at least one stick of the barline
-                    Collection<Staff> staves = new ArrayList<Staff>();
+            for (TreeNode node : part.getStaves()) {
+                staves.add((Staff) node);
+            }
 
-                    for (TreeNode node : part.getStaves()) {
-                        staves.add((Staff) node);
+            MeasureLoop: 
+            for (Iterator mit = part.getMeasures()
+                                    .iterator(); mit.hasNext();) {
+                Measure measure = (Measure) mit.next();
+
+                // If at least one of the barline sticks has been *manually*
+                // assigned, accept the bar with no further check
+                for (Stick stick : measure.getBarline()
+                                          .getSticks()) {
+                    if (stick.isBar() &&
+                        (stick.getDoubt() == Evaluation.MANUAL)) {
+                        if (logger.isFineEnabled()) {
+                            logger.fine(
+                                scoreSystem.getContextString() +
+                                " Accepting manual barline at x: " +
+                                measure.getLeftX());
+                        }
+
+                        continue MeasureLoop;
+                    }
+                }
+
+                // Check that all staves in this part are concerned with
+                // at least one stick of the barline
+                if (!measure.getBarline()
+                            .joinsAllStaves(staves)) {
+                    // Remove the false bar info
+                    for (Stick stick : measure.getBarline()
+                                              .getSticks()) {
+                        stick.setResult(NOT_STAFF_ALIGNED);
+                        stick.setShape(null);
                     }
 
-                    if (!measure.getBarline()
-                                .joinsAllStaves(staves)) {
+                    // Remove this false measure
+                    mit.remove();
+
+                    break;
+                }
+
+                // Compare the abscissa with corresponding position in
+                // the other parts
+                int x = measure.getBarline()
+                               .getCenter().x;
+
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        scoreSystem.getContextString() +
+                        " Checking measure alignment at x: " + x);
+                }
+
+                for (TreeNode pn : scoreSystem.getParts()) {
+                    SystemPart prt = (SystemPart) pn;
+
+                    if (prt == part) {
+                        continue;
+                    }
+
+                    if (!prt.barlineExists(x, maxShiftDx)) {
+                        if (logger.isFineEnabled()) {
+                            logger.fine(
+                                "Singular measure removed: " +
+                                Dumper.dumpOf(measure));
+                        }
+
                         // Remove the false bar info
                         for (Stick stick : measure.getBarline()
                                                   .getSticks()) {
-                            stick.setResult(NOT_STAFF_ALIGNED);
+                            stick.setResult(NOT_SYSTEM_ALIGNED);
                             stick.setShape(null);
-                            barSticks.remove(stick);
                         }
 
-                        // Remove this false measure
+                        // Remove the false measure
                         mit.remove();
 
                         break;
-                    }
-
-                    // Compare the abscissa with corresponding position in
-                    // the other parts
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            scoreSystem.getContextString() +
-                            " Checking measure alignment at x: " +
-                            measure.getLeftX());
-                    }
-
-                    int x = measure.getBarline()
-                                   .getCenter().x;
-
-                    for (TreeNode pn : scoreSystem.getParts()) {
-                        SystemPart prt = (SystemPart) pn;
-
-                        if (prt == part) {
-                            continue;
-                        }
-
-                        if (!prt.barlineExists(x, maxShiftDx)) {
-                            if (logger.isFineEnabled()) {
-                                logger.fine(
-                                    "Singular measure removed: " +
-                                    Dumper.dumpOf(measure));
-                            }
-
-                            // Remove the false bar info
-                            for (Stick stick : measure.getBarline()
-                                                      .getSticks()) {
-                                stick.setResult(NOT_SYSTEM_ALIGNED);
-                                barSticks.remove(stick);
-                            }
-
-                            // Remove the false measure
-                            mit.remove();
-
-                            break;
-                        }
                     }
                 }
             }
@@ -378,7 +387,7 @@ public class MeasuresBuilder
         // beginning of the staff rather than the end of a measure, but use
         // it to precisely define the left abscissa of the system and all
         // its contained staves.
-        removeStartingBar();
+        removeStartingMeasure();
 
         // Similarly, use the very last bar line, which generally ends the
         // system, to define the right abscissa of the system and its
@@ -454,15 +463,15 @@ public class MeasuresBuilder
         }
     }
 
-    //-------------------//
-    // removeStartingBar //
-    //-------------------//
+    //-----------------------//
+    // removeStartingMeasure //
+    //-----------------------//
     /**
      * We associate measures only with their ending bar line(s), so the starting
      * bar of a staff does not end a measure, we thus have to remove the measure
      * that we first had associated with it.
      */
-    private void removeStartingBar ()
+    private void removeStartingMeasure ()
     {
         int     minWidth = scale.toPixels(constants.minMeasureWidth);
         Barline firstBarline = scoreSystem.getFirstPart()

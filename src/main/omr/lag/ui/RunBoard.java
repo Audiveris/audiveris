@@ -7,8 +7,9 @@
 //  Contact author at herve.bitteur@laposte.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
 //
-package omr.lag;
+package omr.lag.ui;
 
+import omr.lag.*;
 import omr.log.Logger;
 
 import omr.selection.MouseMovement;
@@ -44,9 +45,10 @@ public class RunBoard
     private static final Logger logger = Logger.getLogger(RunBoard.class);
 
     /** Events this entity is interested in */
-    private static final Collection<Class<?extends UserEvent>> eventClasses = new ArrayList<Class<?extends UserEvent>>();
+    private static final Collection<Class<?extends UserEvent>> eventClasses;
 
     static {
+        eventClasses = new ArrayList<Class<?extends UserEvent>>();
         eventClasses.add(RunEvent.class);
     }
 
@@ -83,7 +85,7 @@ public class RunBoard
     public RunBoard (String unitName,
                      Lag    lag)
     {
-        super(unitName + "-RunBoard", lag.getEventService(), eventClasses);
+        super(unitName + "-RunBoard", lag.getSelectionService(), eventClasses);
         defineLayout();
     }
 

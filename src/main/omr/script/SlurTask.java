@@ -10,7 +10,6 @@
 package omr.script;
 
 import omr.glyph.Glyph;
-import static omr.script.ScriptRecording.*;
 
 import omr.sheet.Sheet;
 
@@ -62,8 +61,14 @@ public class SlurTask
         throws StepException
     {
         super.run(sheet);
-        sheet.getSymbolsModel()
-             .fixLargeSlurs(glyphs, RECORDING);
+
+        try {
+            sheet.getSymbolsController()
+                 .asyncFixLargeSlurs(glyphs)
+                 .get();
+        } catch (Exception ex) {
+            logger.warning("Error in running asyncFixLargeSlurs", ex);
+        }
     }
 
     //-----------------//

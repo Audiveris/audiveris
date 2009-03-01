@@ -184,10 +184,10 @@ public class SystemPart
      */
     public Measure getLastMeasure ()
     {
-        if (getMeasures()
-                .size() > 0) {
-            return (Measure) getMeasures()
-                                 .get(getMeasures().size() - 1);
+        List<TreeNode> meas = getMeasures();
+
+        if (!meas.isEmpty()) {
+            return (Measure) meas.get(meas.size() - 1);
         } else {
             return null;
         }

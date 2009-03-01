@@ -13,6 +13,7 @@ import omr.log.Logger;
 
 import omr.sheet.Sheet;
 
+import omr.step.Step;
 import omr.step.StepException;
 
 import java.util.ArrayList;
@@ -57,6 +58,7 @@ public class Script
         , @XmlElement(name = "play", type = PlayTask.class)
         , @XmlElement(name = "slur", type = SlurTask.class)
         , @XmlElement(name = "text", type = TextTask.class)
+        , @XmlElement(name = "boundary", type = BoundaryTask.class)
     })
     private final List<Task> tasks = new ArrayList<Task>();
 
@@ -226,7 +228,7 @@ public class Script
                         public void run ()
                         {
                             sheet.getAssembly()
-                                 .selectTab("Glyphs");
+                                 .selectTab(Step.SYMBOLS);
                         }
                     });
         }

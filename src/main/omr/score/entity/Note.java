@@ -754,7 +754,7 @@ public class Note
 
         // Select the best note candidate, the one whose ordinate is closest
         // TBD: Bug here? what if the note is duplicated ("shared" by 2 chords)?
-        if (candidates.size() > 0) {
+        if (!candidates.isEmpty()) {
             int  bestDy = Integer.MAX_VALUE;
             Note bestNote = null;
             glyph.clearTranslations();

@@ -11,11 +11,10 @@ package omr.selection;
 
 import omr.glyph.Glyph;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * Class <code>GlyphSetEvent</code> represents a Glyph Set selection
- *
  *
  * <dl>
  * <dt><b>Publishers:</b><dd>GlyphLag, GlyphLagView
@@ -33,7 +32,7 @@ public class GlyphSetEvent
     //~ Instance fields --------------------------------------------------------
 
     /** The selected glyph set, which may be null */
-    public final List<Glyph> glyphs;
+    public final Set<Glyph> glyphs;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -50,7 +49,7 @@ public class GlyphSetEvent
     public GlyphSetEvent (Object        source,
                           SelectionHint hint,
                           MouseMovement movement,
-                          List<Glyph>   glyphs)
+                          Set<Glyph>    glyphs)
     {
         super(source, hint, movement);
         this.glyphs = glyphs;
@@ -62,7 +61,7 @@ public class GlyphSetEvent
     // getEntity //
     //-----------//
     @Override
-    public List<Glyph> getData ()
+    public Set<Glyph> getData ()
     {
         return glyphs;
     }

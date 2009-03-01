@@ -1030,14 +1030,14 @@ public class SystemInfo
         return verticalsBuilder.createStemCheckSuite(isShort);
     }
 
-    //------------------------//
-    // extractNewSystemGlyphs //
-    //------------------------//
+    //------------------//
+    // extractNewGlyphs //
+    //------------------//
     /**
      * In the specified system, build new glyphs from unknown sections (sections
      * not linked to a known glyph)
      */
-    public void extractNewSystemGlyphs ()
+    public void extractNewGlyphs ()
     {
         removeInactiveGlyphs();
         retrieveGlyphs();

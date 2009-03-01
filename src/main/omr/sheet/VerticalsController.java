@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                        V e r t i c a l s M o d e l                         //
+//                   V e r t i c a l s C o n t r o l l e r                    //
 //                                                                            //
 //  Copyright (C) Herve Bitteur 2000-2007. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
@@ -8,8 +8,6 @@
 //----------------------------------------------------------------------------//
 //
 package omr.sheet;
-
-import omr.Main;
 
 import omr.check.CheckBoard;
 
@@ -19,50 +17,44 @@ import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphsModel;
-import omr.glyph.Shape;
 import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphLagView;
+import omr.glyph.ui.GlyphsController;
 
-import omr.lag.RunBoard;
-import omr.lag.ScrollLagView;
-import omr.lag.SectionBoard;
+import omr.lag.ui.RunBoard;
+import omr.lag.ui.ScrollLagView;
+import omr.lag.ui.SectionBoard;
 
 import omr.log.Logger;
 
 import omr.score.visitor.SheetPainter;
 
-import omr.script.ScriptRecording;
-
 import omr.selection.GlyphEvent;
 import omr.selection.MouseMovement;
+import omr.selection.SelectionService;
 import omr.selection.UserEvent;
 
 import omr.sheet.ui.PixelBoard;
 
+import omr.step.Step;
 import omr.step.StepException;
 
 import omr.stick.Stick;
 
 import omr.ui.BoardsPane;
 
-import omr.util.Synchronicity;
-
-import org.bushe.swing.event.EventService;
-
-import java.awt.Color;
-import java.awt.Graphics;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.awt.*;
+import java.util.*;
 
 /**
- * Class <code>VerticalsModel</code> is in charge of handling (de)assignment
- * of vertical entities at sheet level
+ * Class <code>VerticalsController</code> is in charge of handling assignment
+ * and deassignment of vertical entities (stems) at sheet level
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-public class VerticalsModel
-    extends GlyphsModel
+public class VerticalsController
+    extends GlyphsController
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -70,12 +62,14 @@ public class VerticalsModel
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(VerticalsModel.class);
+    private static final Logger logger = Logger.getLogger(
+        VerticalsController.class);
 
     /** Events this entity is interested in */
-    private static final Collection<Class<?extends UserEvent>> eventClasses = new ArrayList<Class<?extends UserEvent>>();
+    private static final Collection<Class<?extends UserEvent>> eventClasses;
 
     static {
+        eventClasses = new ArrayList<Class<?extends UserEvent>>();
         eventClasses.add(GlyphEvent.class);
     }
 
@@ -86,66 +80,66 @@ public class VerticalsModel
 
     //~ Constructors -----------------------------------------------------------
 
-    //----------------//
-    // VerticalsModel //
-    //----------------//
+    //---------------------//
+    // VerticalsController //
+    //---------------------//
     /**
-     * Creates a new VerticalsModel object.
+     * Creates a new VerticalsController object.
      *
      * @param sheet the related sheet
      */
-    public VerticalsModel (Sheet sheet)
+    public VerticalsController (Sheet sheet)
     {
         // We work with the sheet vertical lag
-        super(sheet, sheet.getVerticalLag());
+        super(new GlyphsModel(sheet, sheet.getVerticalLag(), Step.VERTICALS));
     }
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------------------//
-    // deassignGlyphShape //
-    //--------------------//
-    /**
-     * This method is limited to deassignment of stems
-     *
-     * @param glyph the glyph to deassign
-     * @param record request to record this action in the script
-     */
-    @Override
-    public void deassignGlyphShape (Synchronicity         processing,
-                                    final Glyph           glyph,
-                                    final ScriptRecording record)
-    {
-        Shape shape = glyph.getShape();
-
-        switch (shape) {
-        case COMBINING_STEM :
-            sheet.getSymbolsModel()
-                 .deassignGlyphShape(processing, glyph, record);
-
-            break;
-
-        default :
-        }
-    }
-
-    //------------------//
-    // deassignSetShape //
-    //------------------//
-    /**
-     * This method is limited to deassignment of stems
-     *
-     * @param glyphs the collection of glyphs to be de-assigned
-     * @param record true if this action is to be recorded in the script
-     */
-    @Override
-    public void deassignSetShape (Synchronicity     processing,
-                                  Collection<Glyph> glyphs,
-                                  ScriptRecording   record)
-    {
-        sheet.getSymbolsModel()
-             .deassignSetShape(processing, glyphs, record);
-    }
+    //    //---------------//
+    //    // deassignGlyph //
+    //    //---------------//
+    //    /**
+    //     * This method is limited to deassignment of stems
+    //     *
+    //     * @param glyph the glyph to deassign
+    //     * @param record request to record this action in the script
+    //     */
+    //    @Override
+    //    public void deassignGlyph (Synchronicity         processing,
+    //                               final Glyph           glyph,
+    //                               final ScriptRecording record)
+    //    {
+    //        Shape shape = glyph.getShape();
+    //
+    //        switch (shape) {
+    //        case COMBINING_STEM :
+    //            sheet.getSymbolsController()
+    //                 .deassignGlyph(processing, glyph, record);
+    //
+    //            break;
+    //
+    //        default :
+    //        }
+    //    }
+    //
+    //    //------------------//
+    //    // deassignGlyphSet //
+    //    //------------------//
+    //    /**
+    //     * This method is limited to deassignment of stems
+    //     *
+    //     * @param glyphs the collection of glyphs to be de-assigned
+    //     * @param record true if this action is to be recorded in the script
+    //     */
+    //    @Override
+    //    public void deassignGlyphSet (Synchronicity     processing,
+    //                                  Collection<Glyph> glyphs,
+    //                                  ScriptRecording   record)
+    //    {
+    //        sheet.getSymbolsController()
+    //             .deassignGlyphSet(processing, glyphs, record);
+    //    }
 
     //---------//
     // refresh //
@@ -155,13 +149,10 @@ public class VerticalsModel
      */
     public void refresh ()
     {
-        if (Main.getGui() != null) {
-            if ((view == null) && constants.displayFrame.getValue()) {
-                displayFrame();
-            } else if (view != null) {
-                view.colorize();
-                view.repaint();
-            }
+        if ((view == null) && constants.displayFrame.getValue()) {
+            displayFrame();
+        } else if (view != null) {
+            view.refresh();
         }
     }
 
@@ -170,16 +161,17 @@ public class VerticalsModel
     //--------------//
     private void displayFrame ()
     {
+        GlyphLag lag = getLag();
+
         // Specific rubber display
         view = new MyView(lag);
-        view.colorize();
 
         // Create a hosting frame for the view
         final String unit = sheet.getRadix() + ":VerticalsBuilder";
 
         sheet.getAssembly()
              .addViewTab(
-            "Verticals",
+            Step.VERTICALS,
             new ScrollLagView(view),
             new BoardsPane(
                 sheet,
@@ -188,7 +180,7 @@ public class VerticalsModel
                 new RunBoard(unit, lag),
                 new SectionBoard(unit, lag.getLastVertexId(), lag),
                 new GlyphBoard(unit, this, null),
-                new MyCheckBoard(unit, lag.getEventService(), eventClasses)));
+                new MyCheckBoard(unit, lag.getSelectionService(), eventClasses)));
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -215,7 +207,7 @@ public class VerticalsModel
         //~ Constructors -------------------------------------------------------
 
         public MyCheckBoard (String                                unit,
-                             EventService                          eventService,
+                             SelectionService                      eventService,
                              Collection<Class<?extends UserEvent>> eventList)
         {
             super(unit, null, eventService, eventList);
@@ -266,19 +258,22 @@ public class VerticalsModel
 
         public MyView (GlyphLag lag)
         {
-            super(lag, null, null, VerticalsModel.this, null);
+            super(lag, null, null, VerticalsController.this, null);
             setName("VerticalsBuilder-MyView");
+            colorizeAllSections();
         }
 
         //~ Methods ------------------------------------------------------------
 
-        //----------//
-        // colorize //
-        //----------//
+        //---------------------//
+        // colorizeAllSections //
+        //---------------------//
         @Override
-        public void colorize ()
+        public void colorizeAllSections ()
         {
-            super.colorize();
+            super.colorizeAllSections();
+
+            int viewIndex = lag.viewIndexOf(this);
 
             // Use light gray color for past successful entities
             sheet.colorize(lag, viewIndex, Color.lightGray);

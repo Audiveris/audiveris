@@ -22,6 +22,8 @@ import omr.selection.SheetLocationEvent;
 
 import omr.sheet.Sheet;
 
+import omr.step.Step;
+
 import omr.ui.BoardsPane;
 import omr.ui.GuiActions;
 import omr.ui.MainGui;
@@ -29,7 +31,7 @@ import omr.ui.PixelCount;
 import omr.ui.util.Panel;
 import omr.ui.view.LogSlider;
 import omr.ui.view.Rubber;
-import omr.ui.view.RubberZoomedPanel;
+import omr.ui.view.RubberPanel;
 import omr.ui.view.ScrollView;
 import omr.ui.view.Zoom;
 
@@ -138,7 +140,7 @@ public class SheetAssembly
         this.sheet = sheet;
         sheet.setAssembly(this);
 
-        locationService = sheet.getEventService();
+        locationService = sheet.getSelectionService();
 
         // GUI stuff
         slider.setToolTipText("Adjust Zoom Ratio");
@@ -262,19 +264,19 @@ public class SheetAssembly
     //------------//
     /**
      * Add a new tab, that contains a new view on the sheet
-     * @param title label to be used for the tab
+     * @param step the step whose results are displayed in this tab
      * @param sv the view on the sheet
      * @param boardsPane the board pane associated to the tab
      */
-    public void addViewTab (String     title,
+    public void addViewTab (Step       step,
                             ScrollView sv,
                             BoardsPane boardsPane)
     {
-        boardsPane.setName(sheet.getRadix() + ":" + title);
+        boardsPane.setName(sheet.getRadix() + ":" + step.label);
 
         if (logger.isFineEnabled()) {
             logger.fine(
-                "addViewTab title=" + title + " boardsPane=" + boardsPane);
+                "addViewTab " + step.label + " boardsPane=" + boardsPane);
         }
 
         // Make the new view reuse the common zoom and rubber instances
@@ -295,10 +297,13 @@ public class SheetAssembly
         // Force scroll bar computations
         zoom.fireStateChanged();
         viewTabs.add(
-            new omr.sheet.ui.SheetAssembly.ViewTab(title, boardsPane, sv));
+            new omr.sheet.ui.SheetAssembly.ViewTab(
+                step.label,
+                boardsPane,
+                sv));
 
         // Actually insert a Swing tab
-        tabbedPane.addTab(title, sv.getComponent());
+        tabbedPane.addTab(step.label, sv.getComponent());
         tabbedPane.setSelectedComponent(sv.getComponent());
     }
 
@@ -328,7 +333,7 @@ public class SheetAssembly
     /**
      * Method called when this sheet assembly is selected (since we can have
      * several sheets displayed, each one with its own sheet assembly). This is
-     * called from {@link omr.sheet.ui.SheetController} when the tab of another
+     * called from {@link omr.sheet.ui.SheetsController} when the tab of another
      * sheet is selected.
      */
     public void assemblySelected ()
@@ -370,7 +375,7 @@ public class SheetAssembly
         MainGui gui = Main.getGui();
         gui.removeBoardsPane(); // Disconnect boards pane
         gui.hideErrorsPane(); // Disconnect errors pane (USEFUL??? TBD)
-        gui.sheetController.close(this);
+        gui.sheetSetController.close(sheet);
 
         // Disconnect all keyboard bindings from PixelBoard's (as a workaround
         // for a Swing memory leak)
@@ -408,8 +413,10 @@ public class SheetAssembly
     //-----------//
     // selectTab //
     //-----------//
-    public void selectTab (String title)
+    public void selectTab (Step step)
     {
+        final String title = step.label;
+
         for (int i = 0, count = tabbedPane.getTabCount(); i < count; i++) {
             if (tabbedPane.getTitleAt(i)
                           .equals(title)) {
@@ -512,12 +519,12 @@ public class SheetAssembly
                 tab.title);
         }
 
-        ScrollView        scrollView = getSelectedView();
-        RubberZoomedPanel view = scrollView.getView();
+        ScrollView  scrollView = getSelectedView();
+        RubberPanel view = scrollView.getView();
 
         // Link rubber with proper view
         rubber.setComponent(view);
-        rubber.setMouseMonitor(view);
+        rubber.setMouseMonitor(scrollView.getView());
 
         // Keep previous scroll bar positions
         if (previousViewIndex != -1) {
