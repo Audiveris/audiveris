@@ -31,14 +31,14 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <code>Edge</code> type per se, links between vertices are implemented simply
  * by Lists of Vertex.
  *
- * @param <D> precise (sub)type for the graph
- * @param <V> precise type for handled vertices
+ * @param <D> precise type for digraph (which is pointed back by vertex)
+ * @param <V> precise type for vertices handled by this digraph
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 @ThreadSafe
-public class Digraph<D extends Digraph<D, V>, V extends Vertex>
+public class Digraph<D extends Digraph<D,V>, V extends Vertex>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -186,7 +186,7 @@ public class Digraph<D extends Digraph<D, V>, V extends Vertex>
             throw new IllegalArgumentException("Cannot add a null vertex");
         }
 
-        vertex.setGraph(this); // Compiler warning here
+        vertex.setGraph(this); // Unchecked
         vertex.setId(globalVertexId.incrementAndGet()); // Atomic increment
         vertices.put(vertex.getId(), vertex); // Atomic insertion
     }

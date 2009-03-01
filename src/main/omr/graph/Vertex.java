@@ -75,7 +75,9 @@ public class Vertex<D extends Digraph, V extends Vertex<D, V>>
     protected D graph;
 
     /**
-     * Collection of views created on this vertex
+     * Sequence of views created on this vertex. Index in the sequence is
+     * important, since this sequence is kept parallel to the sequence of views
+     * on the containing graph.
      */
     protected List<VertexView> views;
 
@@ -423,9 +425,9 @@ public class Vertex<D extends Digraph, V extends Vertex<D, V>>
     // getViews //
     //----------//
     /**
-     * Pointers to the related view if any
+     * Report the sequence of the related views, lazily created.
      *
-     * @return the view collection
+     * @return the views collection (perhaps empty, but not null)
      */
     private List<VertexView> getViews ()
     {
