@@ -50,10 +50,6 @@
                                 legato, staccato, accent, etc should be
                                 translated to proper score entities and exported
                                 into the MusicXML stream.</LI>
-                            <LI><u>Bars</u>: Redesign the implementation of
-                                systems and measures handling, so that a bar
-                                line can be easily corrected by a user
-                                action.</LI>
                             <LI><u>Glyph</u>: Ability to arbitrarily split a
                                 given glyph, according to some user driving
                                 instructions.</LI>
@@ -64,10 +60,6 @@
                                 current awkward menu hierarchy, to easily select
                                 a shape for glyph shape assignment or score
                                 entity injection.</LI>
-                            <LI><u>Midi</u>: Add the ability to select and
-                                playback just a portion of the score, such as a
-                                sequence of notes or a sequence of
-                                measures.</LI>
                         </UL>
                     </TD>
                 </TR>
@@ -97,12 +89,19 @@
                     <TH>Distribution Changes</TH>
                     <TD>
                         <UL>
-			    <LI><u>Application</u>: During the 3.2 work, we plan
-				to switch to the Swing Application Framework, in
-				order to use a standard approach for such tasks
-				as: application lifecycle, resources, actions,
-				session persistency,... all in an OS-independent
+			    <LI><u>Application</u>: We have switched to the
+				Swing Application Framework, in order to use a
+				standard approach for such tasks as: application
+				lifecycle, resources, actions, session
+				persistency,... all in an OS-independent
 				way.</LI>
+			    <LI><u>EventBus</u>: This event bus from Michael
+				Bushe has been added for user selections.</LI>
+			    <LI><u>PDFRenderer</u>: The PDFRenderer tool has
+				been added to allow the reading of PDF
+				images.</LI>
+			    <LI><u>Tesseract</u>: The opensource Tessaract OCR
+				has been added for text recognition.</LI>
                         </UL>
                     </TD>
                 </TR>
@@ -111,6 +110,28 @@
                     <TH>New Features</TH>
                     <TD>
                         <UL>
+			    <LI><u>Barlines</u>: Systems building and Measure
+				building have been redesigned, to allow easy
+				assignment or deassignment of a measure barline
+				by user interaction.</LI>
+			    <LI><u>Image</u>: PDF format has been added to the
+				collection of image formats that Audiveris can
+				load, thanks to the PDFRenderer companion
+				tool.</LI>
+                            <LI><u>Midi</u>: The user now has the ability to
+                                select and playback just a sequence of measures,
+                                besied the whole score.</LI>
+			    <LI><u>System Boundaries</u>: The boundaries of any
+				system area are now defined by a polygon, that
+				the user can modify by mouse movements. This
+				allows a more flexible definition of which
+				glyphs belong to a system.</LI>
+			    <LI><u>Text</u>: A whole hierarchy of text items is
+				now defined to precisely handle Lyrics as well
+				as Titles, Directions and the like. The actual
+				text content can be entered manually via the
+				glyph board or automatically via the OCR
+				mechanism.</LI>
                         </UL>
                     </TD>
                 </TR>
@@ -135,6 +156,9 @@
                     <TH>Other Changes</TH>
                     <TD>
                         <UL>
+			    <LI>Introduced the EventBus companion tool, to
+			    replace the proprietary Selection mechanism in
+			    handling the current user selections.</LI>
                         </UL>
                     </TD>
                 </TR>
