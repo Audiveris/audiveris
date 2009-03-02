@@ -668,16 +668,6 @@ public class SheetSteps
                 .displayUI();
             getTask(VERTICALS)
                 .displayUI();
-
-            // Update the glyph board, by re-publishing the current glyph
-            //            GlyphEvent glyphEvent = (GlyphEvent) sheet.getVerticalLag()
-            //                                                      .getLastEvent(
-            //                GlyphEvent.class);
-            //
-            //            if (glyphEvent != null) {
-            //                sheet.getVerticalLag()
-            //                     .publish(glyphEvent);
-            //            }
         }
 
         @Override
@@ -685,7 +675,7 @@ public class SheetSteps
             throws StepException
         {
             if (logger.isFineEnabled()) {
-                logger.fine(step + " doEpilog");
+                logger.fine(step + " doEpilog " + systems);
             }
 
             // Final cross-system translation tasks
@@ -693,15 +683,10 @@ public class SheetSteps
                 systems = sheet.getSystems();
             }
 
-            SystemInfo first = systems.iterator()
-                                      .next();
-
-            if (first != null) {
-                first.translateFinal();
-            } else {
-                logger.warning(
-                    ("ScoreTask.doEpilog. Systems:" +
-                    ((systems == null) ? "null" : systems.size())));
+            if (!systems.isEmpty()) {
+                systems.iterator()
+                       .next()
+                       .translateFinal();
             }
         }
 

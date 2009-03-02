@@ -408,14 +408,19 @@ public class Sheet
         if (glyphs != null) {
             for (Glyph glyph : glyphs) {
                 SystemInfo system = getSystemOf(glyph);
-                impacted.add(system);
 
-                Shape shape = glyph.getShape();
+                if (system != null) {
+                    impacted.add(system);
 
-                if (persistent || ((shape != null) && shape.isPersistent())) {
-                    // Add the following systems
-                    int index = systems.indexOf(system);
-                    impacted.addAll(systems.subList(index + 1, systems.size()));
+                    Shape shape = glyph.getShape();
+
+                    if (persistent ||
+                        ((shape != null) && shape.isPersistent())) {
+                        // Add the following systems
+                        int index = systems.indexOf(system);
+                        impacted.addAll(
+                            systems.subList(index + 1, systems.size()));
+                    }
                 }
             }
         }

@@ -86,8 +86,11 @@ public class SymbolsModel
             // (since environment may have changed since the time they
             // have been computed)
             SystemInfo system = sheet.getSystemOf(glyph);
-            system.computeGlyphFeatures(glyph);
-            super.assignGlyph(glyph, shape, doubt);
+
+            if (system != null) {
+                system.computeGlyphFeatures(glyph);
+                super.assignGlyph(glyph, shape, doubt);
+            }
         }
     }
 
