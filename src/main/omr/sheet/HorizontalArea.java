@@ -2,9 +2,9 @@
 //                                                                            //
 //                        H o r i z o n t a l A r e a                         //
 //                                                                            //
-//  Copyright (C) Herve Bitteur 2000-2007. All rights reserved.               //
+//  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
-//  Contact author at herve.bitteur@laposte.net to report bugs & suggestions. //
+//  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
 //
 package omr.sheet;

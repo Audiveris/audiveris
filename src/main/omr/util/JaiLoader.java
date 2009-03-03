@@ -4,7 +4,7 @@
 //                                                                            //
 //  Copyright (C) Brenton Partridge 2000-2007. All rights reserved.           //
 //  This software is released under the GNU General Public License.           //
-//  Contact author at herve.bitteur@laposte.net to report bugs & suggestions. //
+//  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
 package omr.util;
 
