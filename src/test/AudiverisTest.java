@@ -1,7 +1,12 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                         A u d i v e r i s T e s t                          //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
+//  This software is released under the GNU General Public License.           //
+//  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
+//----------------------------------------------------------------------------//
+//
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.*;
