@@ -23,9 +23,10 @@ import omr.glyph.ui.panel.GlyphTrainer;
 import omr.log.Logger;
 
 import omr.sheet.Sheet;
-import omr.sheet.SheetsManager;
+import omr.sheet.ui.SheetsController;
 
 import omr.ui.treetable.JTreeTable;
+import omr.ui.util.WebBrowser;
 
 import omr.util.Memory;
 
@@ -49,7 +50,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.*;
-import omr.sheet.ui.SheetsController;
 
 /**
  * Class <code>GuiActions</code> gathers individual actions trigerred from the
@@ -87,6 +87,19 @@ public class GuiActions
     //~ Methods ----------------------------------------------------------------
 
     //--------------------//
+    // isBrowserSupported //
+    //--------------------//
+    /**
+     * Report whether the underlying platform can launch a browser
+     * @return true if it can
+     */
+    public boolean isBrowserSupported ()
+    {
+        return WebBrowser.getBrowser()
+                         .isSupported();
+    }
+
+    //--------------------//
     // setErrorsDisplayed //
     //--------------------//
     public void setErrorsDisplayed (boolean value)
@@ -107,24 +120,6 @@ public class GuiActions
         return constants.errorsDisplayed.getValue();
     }
 
-    //--------------//
-    // toggleErrors //
-    //--------------//
-    /**
-     * Action that toggles the display of errors window
-     * @param e the event that triggered this action
-     */
-    @Action(selectedProperty = "errorsDisplayed")
-    public void toggleErrors (ActionEvent e)
-    {
-        Sheet sheet = SheetsController.selectedSheet();
-
-        if (sheet != null) {
-            sheet.getAssembly()
-                 .assemblySelected();
-        }
-    }
-
     //-------------//
     // getInstance //
     //-------------//
@@ -140,19 +135,6 @@ public class GuiActions
         }
 
         return INSTANCE;
-    }
-
-    //--------------------//
-    // isBrowserSupported //
-    //--------------------//
-    /**
-     * Report whether the underlying platform can launch a browser
-     * @return true if it can
-     */
-    public boolean isBrowserSupported ()
-    {
-        return WebBrowser.getBrowser()
-                         .isSupported();
     }
 
     //----------//
@@ -206,7 +188,8 @@ public class GuiActions
     @Action
     public void dumpEventServices (ActionEvent e)
     {
-        SheetsController.getInstance().dumpCurrentSheetServices();
+        SheetsController.getInstance()
+                        .dumpCurrentSheetServices();
     }
 
     //------//
@@ -219,8 +202,8 @@ public class GuiActions
     @Action
     public void exit (ActionEvent e)
     {
-        Main.getInstance()
-            .exit();
+        MainGui.getInstance()
+               .exit();
     }
 
     //---------------//
@@ -266,25 +249,14 @@ public class GuiActions
     public void showManual (ActionEvent e)
     {
         try {
-            File file = new File(
+            File   file = new File(
                 Main.getDocumentationFolder(),
                 constants.manualUrl.getValue());
-            logger.info("file=" + file);
+            URI    uri = file.toURI();
+            URL    url = uri.toURL();
+            String str = "\"" + url + "?manual=operation" + "\"";
 
-            URI uri = file.toURI();
-            logger.info("uri=" + uri);
-
-            URL url = uri.toURL();
-            logger.info("url=" + url);
-
-            String str = url + "?manual=operation";
-            ///str = "file:///u:/soft/audiveris/www/docs/manual/index.html?manual=operation";
-            ///str = "file:///u:/soft/audiveris";
-            str = "file:///u:/soft/audiveris/www/docs/manual/index.html"; // BOF !!!
-            str = "file:///u|/soft/audiveris/www/docs/manual/index.html"; // BOF !!!
-            str = "/soft/audiveris/www/docs/manual/index.html"; // BOF !!!
-            logger.info("str=" + str);
-
+            logger.info("Launching browser on " + str);
             WebBrowser.getBrowser()
                       .launch(str);
         } catch (MalformedURLException ex) {
@@ -303,6 +275,24 @@ public class GuiActions
     public void showMemory (ActionEvent e)
     {
         logger.info("Occupied memory is " + Memory.getValue() + " bytes");
+    }
+
+    //--------------//
+    // toggleErrors //
+    //--------------//
+    /**
+     * Action that toggles the display of errors window
+     * @param e the event that triggered this action
+     */
+    @Action(selectedProperty = "errorsDisplayed")
+    public void toggleErrors (ActionEvent e)
+    {
+        Sheet sheet = SheetsController.selectedSheet();
+
+        if (sheet != null) {
+            sheet.getAssembly()
+                 .assemblySelected();
+        }
     }
 
     //------------------------//
@@ -331,8 +321,11 @@ public class GuiActions
     @Action(enabledProperty = "browserSupported")
     public void visitWebSite (ActionEvent e)
     {
+        String str = constants.webSiteUrl.getValue();
+
+        logger.info("Launching browser on " + str);
         WebBrowser.getBrowser()
-                  .launch(constants.webSiteUrl.getValue());
+                  .launch(str);
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -361,8 +354,8 @@ public class GuiActions
                 aboutBox = createAboutBox();
             }
 
-            Main.getInstance()
-                .show(aboutBox);
+            MainGui.getInstance()
+                   .show(aboutBox);
         }
 
         private JDialog createAboutBox ()
@@ -448,7 +441,7 @@ public class GuiActions
 
         public OptionsTask ()
         {
-            super(Main.getInstance());
+            super(MainGui.getInstance());
         }
 
         //~ Methods ------------------------------------------------------------
@@ -511,8 +504,8 @@ public class GuiActions
         protected void succeeded (JFrame frame)
         {
             if (frame != null) {
-                Main.getInstance()
-                    .show(frame);
+                MainGui.getInstance()
+                       .show(frame);
             }
         }
     }

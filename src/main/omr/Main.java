@@ -19,7 +19,6 @@ import omr.script.ScriptManager;
 
 import omr.ui.MainGui;
 
-import omr.util.BasicTask;
 import omr.util.Clock;
 import omr.util.OmrExecutors;
 
@@ -55,9 +54,9 @@ import javax.swing.*;
  * recursively). A list file is a simple text file, with one image file name per
  * line.</dd>
  *
- * <dt> <b>-script (SCRIPTNAME | &#64;SCRIPTLIST)+</b> </dt> <dd> to specify some
- * scripts to be read, using the same mechanism than sheets. These script files
- * contain actions recorded during a previous run.</dd>
+ * <dt> <b>-script (SCRIPTNAME | &#64;SCRIPTLIST)+</b> </dt> <dd> to specify
+ * some scripts to be read, using the same mechanism than sheets. These script
+ * files contain actions recorded during a previous run.</dd>
  *
  * </dd> </dl>
  *
