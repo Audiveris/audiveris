@@ -9,9 +9,9 @@
 //
 package omr.glyph.ui;
 
-import omr.Main;
-
 import omr.glyph.Shape;
+
+import omr.ui.MainGui;
 
 import omr.util.Implement;
 
@@ -118,8 +118,8 @@ public class ShapeColorChooser
             resource.injectComponents(frame);
         }
 
-        Main.getInstance()
-            .show(frame);
+        MainGui.getInstance()
+               .show(frame);
     }
 
     //--------------//

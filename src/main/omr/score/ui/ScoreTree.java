@@ -9,8 +9,6 @@
 //
 package omr.score.ui;
 
-import omr.Main;
-
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -18,6 +16,8 @@ import omr.log.Logger;
 
 import omr.score.Score;
 import omr.score.entity.Container;
+
+import omr.ui.MainGui;
 
 import omr.util.Dumper;
 import omr.util.Implement;
@@ -173,9 +173,9 @@ public class ScoreTree
             frame.add(component);
 
             // Resources injection
-            ResourceMap resource = Main.getInstance()
-                                       .getContext()
-                                       .getResourceMap(ScoreTree.class);
+            ResourceMap resource = MainGui.getInstance()
+                                          .getContext()
+                                          .getResourceMap(ScoreTree.class);
             resource.injectComponents(frame);
             frame.setTitle(
                 resource.getString("frameTitleMask", score.getRadix()));

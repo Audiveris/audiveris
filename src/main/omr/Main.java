@@ -14,9 +14,6 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
-import omr.score.midi.MidiAgent;
-import omr.score.visitor.ScoreExporter;
-
 import omr.script.Script;
 import omr.script.ScriptManager;
 
@@ -24,14 +21,13 @@ import omr.ui.MainGui;
 
 import omr.util.BasicTask;
 import omr.util.Clock;
-import omr.util.JaiLoader;
 import omr.util.OmrExecutors;
 
 import org.jdesktop.application.Application;
-import org.jdesktop.application.SingleFrameApplication;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.Callable;
 
 import javax.swing.*;
 
@@ -69,7 +65,6 @@ import javax.swing.*;
  * @version $Id$
  */
 public class Main
-    extends SingleFrameApplication
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -119,10 +114,8 @@ public class Main
                                                  .toLowerCase()
                                                  .startsWith("mac os x");
 
-    //~ Instance fields --------------------------------------------------------
-
     /** Parameters read from CLI */
-    private CLI.Parameters parameters;
+    private static CLI.Parameters parameters;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -174,6 +167,14 @@ public class Main
     }
 
     //--------//
+    // setGui //
+    //--------//
+    public static void setGui (MainGui gui)
+    {
+        Main.gui = gui;
+    }
+
+    //--------//
     // getGui //
     //--------//
     /**
@@ -211,17 +212,12 @@ public class Main
         return new File(homeFolder, ICONS_FOLDER_NAME);
     }
 
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single instance of this application
-     *
-     * @return the SingleFrameApplication instance
-     */
-    public static SingleFrameApplication getInstance ()
+    //--------------//
+    // setToolBuild //
+    //--------------//
+    public static void setToolBuild (String toolBuild)
     {
-        return (SingleFrameApplication) Application.getInstance();
+        Main.toolBuild = toolBuild;
     }
 
     //--------------//
@@ -238,6 +234,14 @@ public class Main
     }
 
     //-------------//
+    // setToolName //
+    //-------------//
+    public static void setToolName (String toolName)
+    {
+        Main.toolName = toolName;
+    }
+
+    //-------------//
     // getToolName //
     //-------------//
     /**
@@ -248,6 +252,14 @@ public class Main
     public static String getToolName ()
     {
         return toolName;
+    }
+
+    //----------------//
+    // setToolVersion //
+    //----------------//
+    public static void setToolVersion (String toolVersion)
+    {
+        Main.toolVersion = toolVersion;
     }
 
     //----------------//
@@ -276,114 +288,18 @@ public class Main
         return new File(homeFolder, TRAIN_FOLDER_NAME);
     }
 
-    //------//
-    // main //
-    //------//
-    /**
-     * Specific starting method for the application.
-     *
-     * @param classContainer the class container (a directory or a jar file)
-     * @param homeFolder the folder where Audiveris is installed
-     * @param configFolder the subfolder for configuration data
-     * @param args the command line parameters
-     *
-     * @see omr.Main the possible command line parameters
-     */
-    public static void main (File     classContainer,
-                             File     homeFolder,
-                             File     configFolder,
-                             String[] args)
+    //---------------//
+    // launchScripts //
+    //---------------//
+    public static void launchScripts ()
     {
-        Main.classContainer = classContainer;
-        Main.homeFolder = homeFolder;
-        Main.configFolder = configFolder;
-
-        launch(Main.class, args);
-    }
-
-    //------------//
-    // initialize //
-    //------------//
-    /** {@inheritDoc} */
-    @Override
-    protected void initialize (String[] args)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("homeFolder=" + homeFolder);
-            logger.fine("classContainer=" + classContainer);
-            logger.fine(
-                "classContainer.isDirectory=" + classContainer.isDirectory());
-        }
-
-        // Locale to be used in the whole application ?
-        checkLocale();
-
-        // Tool name
-        final Package thisPackage = Main.class.getPackage();
-        toolName = thisPackage.getSpecificationTitle();
-
-        if (toolName == null) {
-            toolName = getContext()
-                           .getResourceMap()
-                           .getString("Application.id");
-        }
-
-        // Tool version
-        toolVersion = thisPackage.getSpecificationVersion();
-
-        if (toolVersion == null) {
-            toolVersion = getContext()
-                              .getResourceMap()
-                              .getString("Application.version");
-        }
-
-        // Tool build
-        toolBuild = thisPackage.getImplementationVersion();
-
-        if (toolBuild == null) {
-            toolBuild = getContext()
-                            .getResourceMap()
-                            .getString("Application.build");
-        }
-
-        // Process CLI arguments
-        process(args);
-    }
-
-    //-------//
-    // ready //
-    //-------//
-    @Override
-    protected void ready ()
-    {
-        // Launch background pre-loading tasks?
-        if (constants.preloadCostlyPackages.getValue()) {
-            JaiLoader.preload();
-            ScoreExporter.preload();
-            MidiAgent.preload();
-        }
-
-        // Launch desired step on each sheet in parallel
-        for (String name : parameters.sheetNames) {
-            final File file = new File(name);
-            new BasicTask() {
-                    @Override
-                    protected Void doInBackground ()
-                        throws Exception
-                    {
-                        parameters.targetStep.performUntil(null, file);
-
-                        return null;
-                    }
-                }.execute();
-        }
-
         // Launch desired scripts in parallel
         for (String name : parameters.scriptNames) {
             final String scriptName = name;
-            new BasicTask() {
-                    @Override
-                    protected Void doInBackground ()
+
+            try {
+                Callable<Void> task = new Callable<Void>() {
+                    public Void call ()
                         throws Exception
                     {
                         long start = System.currentTimeMillis();
@@ -406,24 +322,98 @@ public class Main
 
                         return null;
                     }
-                }.execute();
+                };
+
+                OmrExecutors.getLowExecutor()
+                            .submit(task);
+            } catch (Exception ex) {
+                logger.warning("Error in processing script " + name, ex);
+            }
         }
     }
 
-    //---------//
-    // startup //
-    //---------//
-    @Override
-    protected void startup ()
+    //--------------//
+    // launchSheets //
+    //--------------//
+    public static void launchSheets ()
     {
-        gui = new MainGui(getMainFrame());
-        show(gui.getFrame());
+        // Launch desired step on each sheet in parallel
+        for (String name : parameters.sheetNames) {
+            final File file = new File(name);
+
+            try {
+                Callable<Void> task = new Callable<Void>() {
+                    public Void call ()
+                        throws Exception
+                    {
+                        parameters.targetStep.performUntil(null, file);
+
+                        return null;
+                    }
+                };
+
+                OmrExecutors.getLowExecutor()
+                            .submit(task);
+            } catch (Exception ex) {
+                logger.warning("Error in processing sheet " + file, ex);
+            }
+        }
+    }
+
+    //------//
+    // main //
+    //------//
+    /**
+     * Specific starting method for the application.
+     *
+     * @param classContainer the class container (a directory or a jar file)
+     * @param homeFolder the folder where Audiveris is installed
+     * @param configFolder the subfolder for configuration data
+     * @param args the command line parameters
+     *
+     * @see omr.Main the possible command line parameters
+     */
+    public static void main (File     classContainer,
+                             File     homeFolder,
+                             File     configFolder,
+                             String[] args)
+    {
+        Main.classContainer = classContainer;
+        Main.homeFolder = homeFolder;
+        Main.configFolder = configFolder;
+
+        // Locale to be used in the whole application ?
+        checkLocale();
+
+        // Initialize tool parameters
+        initialize();
+
+        // Process CLI arguments
+        process(args);
+
+        // For non-batch mode
+        if (!parameters.batchMode) {
+            logger.info("Main. Launching MainGui application");
+            Application.launch(MainGui.class, args);
+        } else {
+            // Launch the required tasks
+            launchSheets();
+            launchScripts();
+
+            // Wait for batch completion and exit
+            OmrExecutors.shutdown();
+            logger.info("End of main");
+
+            // Stop the JVM ????
+//            Runtime.getRuntime()
+//                   .exit(0);
+        }
     }
 
     //-------------//
     // checkLocale //
     //-------------//
-    private void checkLocale ()
+    private static void checkLocale ()
     {
         final String country = constants.localeCountry.getValue();
 
@@ -441,17 +431,43 @@ public class Main
         }
     }
 
+    //------------//
+    // initialize //
+    //------------//
+    private static void initialize ()
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("homeFolder=" + homeFolder);
+            logger.fine("classContainer=" + classContainer);
+            logger.fine(
+                "classContainer.isDirectory=" + classContainer.isDirectory());
+        }
+
+        // Tool name
+        final Package thisPackage = Main.class.getPackage();
+        toolName = thisPackage.getSpecificationTitle();
+
+        // Tool version
+        toolVersion = thisPackage.getSpecificationVersion();
+
+        // Tool build
+        toolBuild = thisPackage.getImplementationVersion();
+    }
+
     //---------//
     // process //
     //---------//
-    private void process (String[] args)
+    private static void process (String[] args)
     {
         // First get the provided arguments if any
         parameters = new CLI(toolName, args).getParameters();
 
         if (parameters == null) {
             logger.warning("Invalid CLI parameters, exiting ...");
-            exit();
+
+            // Stop the JVM ????
+            Runtime.getRuntime()
+                   .exit(1);
         }
 
         // Interactive or Batch mode ?
@@ -461,16 +477,8 @@ public class Main
         } else {
             logger.fine("Running in interactive mode");
 
-            // UI Look and Feel
-            ///UILookAndFeel.setUI(null);
-
             // Make sure we have nice window decorations.
             JFrame.setDefaultLookAndFeelDecorated(true);
-        }
-
-        // Batch closing
-        if (parameters.batchMode) {
-            OmrExecutors.shutdown();
         }
     }
 
@@ -488,10 +496,5 @@ public class Main
         private final Constant.String localeCountry = new Constant.String(
             "",
             "Locale country to be used in the whole application (US, FR, ...)");
-
-        /** Flag for the preloading of costly packages in the background */
-        private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
-            true,
-            "Should we preload costly packages in the background?");
     }
 }

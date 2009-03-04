@@ -9,8 +9,6 @@
 //
 package omr.glyph.ui.panel;
 
-import omr.Main;
-
 import omr.constant.ConstantManager;
 
 import omr.glyph.GlyphNetwork;
@@ -18,17 +16,15 @@ import static omr.glyph.Shape.*;
 
 import omr.log.Logger;
 
+import omr.ui.MainGui;
 import omr.ui.util.Panel;
 import omr.ui.util.UILookAndFeel;
-
-import omr.util.Implement;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
 
 import org.jdesktop.application.ResourceMap;
 
-import java.awt.*;
 import java.awt.event.*;
 import java.util.Observable;
 
@@ -154,9 +150,9 @@ public class GlyphTrainer
         }
 
         // Resource injection
-        ResourceMap resource = Main.getInstance()
-                                   .getContext()
-                                   .getResourceMap(getClass());
+        ResourceMap resource = MainGui.getInstance()
+                                      .getContext()
+                                      .getResourceMap(getClass());
         resource.injectComponents(frame);
         frameTitle = frame.getTitle();
     }
@@ -171,8 +167,8 @@ public class GlyphTrainer
      */
     public static void launch ()
     {
-        Main.getInstance()
-            .show(getInstance().frame);
+        MainGui.getInstance()
+               .show(getInstance().frame);
     }
 
     //------//

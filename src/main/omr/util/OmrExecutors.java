@@ -48,6 +48,9 @@ public class OmrExecutors
     /** Indicates that low pool has been launched */
     private static volatile boolean lowsLaunched = false;
 
+    /** Indicates that cached low pool has been launched */
+    private static volatile boolean cachedLowsLaunched = false;
+
     //~ Constructors -----------------------------------------------------------
 
     /** Not meant to be instantiated */
@@ -56,6 +59,25 @@ public class OmrExecutors
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //----------------------//
+    // getCachedLowExecutor //
+    //----------------------//
+    /**
+     * Return the (single) pool of cached low priority threads
+     *
+     * @return the cached low pool, allocated if needed
+     */
+    public static ExecutorService getCachedLowExecutor ()
+    {
+        ExecutorService exec = CachedLows.executor;
+
+        if (exec.isShutdown() || exec.isTerminated()) {
+            exec = CachedLows.create();
+        }
+
+        return exec;
+    }
 
     //-----------------//
     // getHighExecutor //
@@ -116,6 +138,11 @@ public class OmrExecutors
      */
     public static void shutdown ()
     {
+        if (cachedLowsLaunched) {
+            logger.info("Shutting down cached low executors");
+            shutdownAndAwaitTermination(getCachedLowExecutor());
+        }
+
         if (lowsLaunched) {
             logger.info("Shutting down low executors");
             shutdownAndAwaitTermination(getLowExecutor());
@@ -192,6 +219,32 @@ public class OmrExecutors
             "Time to wait for terminating tasks");
     }
 
+    //------------//
+    // CachedLows //
+    //------------//
+    /** Cached pool with low priority */
+    private static class CachedLows
+    {
+        //~ Static fields/initializers -----------------------------------------
+
+        public static ExecutorService executor;
+
+        static {
+            create();
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        public static ExecutorService create ()
+        {
+            executor = Executors.newCachedThreadPool(
+                new Factory("cachedLow", Thread.MIN_PRIORITY));
+            cachedLowsLaunched = true;
+
+            return executor;
+        }
+    }
+
     //---------//
     // Factory //
     //---------//
@@ -245,7 +298,7 @@ public class OmrExecutors
     //-------//
     // Highs //
     //-------//
-    /** Pool with high priority */
+    /** Fixed pool with high priority */
     private static class Highs
     {
         //~ Static fields/initializers -----------------------------------------
@@ -272,7 +325,7 @@ public class OmrExecutors
     //------//
     // Lows //
     //------//
-    /** Pool with low priority */
+    /** Fixed pool with low priority */
     private static class Lows
     {
         //~ Static fields/initializers -----------------------------------------

@@ -18,6 +18,7 @@ import omr.selection.SheetEvent;
 import omr.sheet.Sheet;
 import omr.sheet.ui.SheetsController;
 
+import omr.ui.MainGui;
 import omr.ui.util.SeparableMenu;
 import omr.ui.util.SeparableToolBar;
 import omr.ui.util.UIUtilities;
@@ -89,7 +90,7 @@ public class ActionManager
         // Stay informed on sheet selection, in order to enable sheet-dependent
         // actions accordingly
         SheetsController.getInstance()
-                          .subscribe(this);
+                        .subscribe(this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -124,9 +125,9 @@ public class ActionManager
     public ApplicationAction getActionInstance (Object instance,
                                                 String methodName)
     {
-        ActionMap actionMap = Main.getInstance()
-                                  .getContext()
-                                  .getActionMap(instance);
+        ActionMap actionMap = MainGui.getInstance()
+                                     .getContext()
+                                     .getActionMap(instance);
 
         return (ApplicationAction) actionMap.get(methodName);
     }
@@ -298,9 +299,9 @@ public class ActionManager
             }
 
             // Proper menu decoration
-            ResourceMap resource = Main.getInstance()
-                                       .getContext()
-                                       .getResourceMap(Actions.class);
+            ResourceMap resource = MainGui.getInstance()
+                                          .getContext()
+                                          .getResourceMap(Actions.class);
             menu.setText(domain); // As default
             menu.setName(domain);
 

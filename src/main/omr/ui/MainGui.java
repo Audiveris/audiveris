@@ -18,7 +18,9 @@ import omr.constant.*;
 
 import omr.log.Logger;
 
+import omr.score.midi.MidiAgent;
 import omr.score.ui.ScoreController;
+import omr.score.visitor.ScoreExporter;
 
 import omr.selection.MouseMovement;
 import omr.selection.SheetEvent;
@@ -38,11 +40,13 @@ import omr.ui.util.SeparableMenu;
 import omr.ui.util.UIUtilities;
 
 import omr.util.Implement;
+import omr.util.JaiLoader;
 
 import org.bushe.swing.event.EventSubscriber;
 
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
+import org.jdesktop.application.SingleFrameApplication;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -60,9 +64,13 @@ import javax.swing.*;
  * @version $Id$
  */
 public class MainGui
+    extends SingleFrameApplication
     implements EventSubscriber<SheetEvent>
 {
     //~ Static fields/initializers ---------------------------------------------
+
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(MainGui.class);
@@ -70,13 +78,13 @@ public class MainGui
     //~ Instance fields --------------------------------------------------------
 
     /** Cache the application */
-    private final Application app;
+    private Application app;
 
     /** User actions for scores */
-    public final ScoreController scoreController;
+    public ScoreController scoreController;
 
     /** Sheet tabbed pane, which may contain several views */
-    public final SheetsController sheetSetController;
+    public SheetsController sheetSetController;
 
     /** The related concrete frame */
     private JFrame frame;
@@ -101,34 +109,26 @@ public class MainGui
     /**
      * Creates a new <code>MainGui</code> instance, to handle any user display
      * and interaction.
-     *
-     * @param frame the frame provided by SAF
      */
-    public MainGui (JFrame frame)
+    public MainGui ()
     {
-        this.frame = frame;
-        app = Application.getInstance();
-
-        sheetSetController = SheetsController.getInstance();
-        SheetsManager.getInstance()
-                       .setController(sheetSetController);
-        sheetSetController.subscribe(this);
-
-        scoreController = new ScoreController();
-
-        defineMenus();
-        defineLayout();
-
-        // Stay informed on sheet selection
-
-        // Allow dropping files
-        frame.setTransferHandler(new FileDropHandler());
-
-        // Define an exit listener
-        app.addExitListener(new MaybeExit());
+        logger.info("MainGui constructed");
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of this application
+     *
+     * @return the SingleFrameApplication instance
+     */
+    public static SingleFrameApplication getInstance ()
+    {
+        return (SingleFrameApplication) Application.getInstance();
+    }
 
     //---------------//
     // setBoardsPane //
@@ -323,6 +323,90 @@ public class MainGui
         bottomPane.addErrors(errorsPane);
     }
 
+    //------------//
+    // initialize //
+    //------------//
+    /** {@inheritDoc} */
+    @Override
+    protected void initialize (String[] args)
+    {
+        logger.info("MainGui. initialize");
+
+        // Provide default tool parameters if not already set
+
+        // Tool name
+        if (Main.getToolName() == null) {
+            Main.setToolName(
+                getContext().getResourceMap().getString("Application.id"));
+        }
+
+        // Tool version
+        if (Main.getToolVersion() == null) {
+            Main.setToolVersion(
+                getContext().getResourceMap().getString("Application.version"));
+        }
+
+        // Tool build
+        if (Main.getToolBuild() == null) {
+            Main.setToolBuild(
+                getContext().getResourceMap().getString("Application.build"));
+        }
+
+        // Launch background pre-loading tasks?
+        if (constants.preloadCostlyPackages.getValue()) {
+            JaiLoader.preload();
+            ScoreExporter.preload();
+            MidiAgent.preload();
+        }
+    }
+
+    //-------//
+    // ready //
+    //-------//
+    /** {@inheritDoc} */
+    @Override
+    protected void ready ()
+    {
+        logger.info("MainGui. ready");
+        Main.setGui(this);
+        
+        Main.launchSheets();
+        Main.launchScripts();
+    }
+
+    //---------//
+    // startup //
+    //---------//
+    /** {@inheritDoc} */
+    @Override
+    protected void startup ()
+    {
+        logger.info("MainGui. startup");
+
+        frame = getMainFrame();
+
+        sheetSetController = SheetsController.getInstance();
+        SheetsManager.getInstance()
+                     .setController(sheetSetController);
+        sheetSetController.subscribe(this);
+
+        scoreController = new ScoreController();
+
+        defineMenus();
+        defineLayout();
+
+        // Stay informed on sheet selection
+
+        // Allow dropping files
+        frame.setTransferHandler(new FileDropHandler());
+
+        // Define an exit listener
+        app = Application.getInstance();
+        app.addExitListener(new MaybeExit());
+
+        show(frame);
+    }
+
     //--------------//
     // defineLayout //
     //--------------//
@@ -419,8 +503,8 @@ public class MainGui
 
         // Specific history sub-menu
         JMenuItem historyMenu = SheetsManager.getInstance()
-                                               .getHistory()
-                                               .menu(
+                                             .getHistory()
+                                             .menu(
             "Sheet History",
             new HistoryListener());
         sheetMenu.add(historyMenu);
@@ -429,9 +513,9 @@ public class MainGui
         JMenu       stepMenu = new StepMenu(new SeparableMenu()).getMenu();
 
         // For history sub-menu
-        ResourceMap resource = Main.getInstance()
-                                   .getContext()
-                                   .getResourceMap(Actions.class);
+        ResourceMap resource = MainGui.getInstance()
+                                      .getContext()
+                                      .getResourceMap(Actions.class);
         historyMenu.setName("historyMenu");
         resource.injectComponents(historyMenu);
 
@@ -537,6 +621,20 @@ public class MainGui
         }
     }
 
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Flag for the preloading of costly packages in the background */
+        private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
+            true,
+            "Should we preload costly packages in the background?");
+    }
+
     //-----------------//
     // HistoryListener //
     //-----------------//
@@ -577,7 +675,7 @@ public class MainGui
 
             if (gui != null) {
                 return SheetsManager.getInstance()
-                                      .areAllScriptsStored();
+                                    .areAllScriptsStored();
             } else {
                 return true;
             }

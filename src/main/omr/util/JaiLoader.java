@@ -10,6 +10,9 @@ package omr.util;
 
 import omr.log.Logger;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+
 /**
  * Class <code>JaiLoader</code> is designed to speed up the load time of the
  * first <code>Picture</code> by allowing the <code>JAI</code> class to be
@@ -30,12 +33,9 @@ public class JaiLoader
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(JaiLoader.class);
 
-    /** A future which reflects whether JAI has been initialized **/
-    private static final LoadTask loading = new LoadTask();
-
-    static {
-        loading.execute();
-    }
+    /** A future which reflects whether JAI has been loaded */
+    private static Future<Void> loaded = OmrExecutors.getCachedLowExecutor()
+                                                     .submit(new LoadTask());
 
     //~ Constructors -----------------------------------------------------------
 
@@ -56,7 +56,7 @@ public class JaiLoader
     public static void ensureLoaded ()
     {
         try {
-            loading.get();
+            loaded.get();
         } catch (Exception e) {
             logger.severe("JAI loading failed", e);
         }
@@ -78,13 +78,12 @@ public class JaiLoader
     // LoadTask //
     //----------//
     public static class LoadTask
-        extends BasicTask
+        implements Callable<Void>
     {
         //~ Methods ------------------------------------------------------------
 
-        @Override
-        protected Void doInBackground ()
-            throws InterruptedException
+        public Void call ()
+            throws Exception
         {
             if (logger.isFineEnabled()) {
                 logger.fine("Pre-loading JAI ...");

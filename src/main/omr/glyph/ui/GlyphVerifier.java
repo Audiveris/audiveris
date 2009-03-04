@@ -14,6 +14,8 @@ import omr.Main;
 import omr.log.Logger;
 import static omr.selection.SelectionHint.*;
 
+import omr.ui.MainGui;
+
 import omr.util.Implement;
 
 import com.jgoodies.forms.builder.*;
@@ -99,9 +101,9 @@ public class GlyphVerifier
              .add(glyphBrowser.getComponent(), BorderLayout.CENTER);
 
         // Resource injection
-        ResourceMap resource = Main.getInstance()
-                                   .getContext()
-                                   .getResourceMap(getClass());
+        ResourceMap resource = MainGui.getInstance()
+                                      .getContext()
+                                      .getResourceMap(getClass());
         resource.injectComponents(frame);
     }
 
@@ -134,8 +136,8 @@ public class GlyphVerifier
      */
     public void setVisible (boolean bool)
     {
-        Main.getInstance()
-            .show(frame);
+        MainGui.getInstance()
+               .show(frame);
     }
 
     //--------//

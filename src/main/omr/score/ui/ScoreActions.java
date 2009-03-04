@@ -24,6 +24,8 @@ import omr.sheet.ui.SheetsController;
 
 import omr.step.Step;
 
+import omr.ui.MainGui;
+
 import omr.util.BasicTask;
 
 import org.jdesktop.application.Action;
@@ -207,8 +209,8 @@ public class ScoreActions
     @Action(enabledProperty = "scoreAvailable")
     public void browseScore (ActionEvent e)
     {
-        Main.getInstance()
-            .show(ScoreController.getCurrentScore().getBrowserFrame());
+        MainGui.getInstance()
+               .show(ScoreController.getCurrentScore().getBrowserFrame());
     }
 
     //------------------//

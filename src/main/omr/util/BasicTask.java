@@ -9,7 +9,7 @@
 //
 package omr.util;
 
-import omr.Main;
+import omr.ui.MainGui;
 
 import org.jdesktop.application.Task;
 
@@ -33,6 +33,6 @@ public abstract class BasicTask
      */
     public BasicTask ()
     {
-        super(Main.getInstance());
+        super(MainGui.getInstance());
     }
 }
