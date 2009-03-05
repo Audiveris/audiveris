@@ -15,7 +15,7 @@ import omr.score.Score;
 import omr.score.ui.ScoreActions;
 import omr.score.visitor.ScoreExporter;
 
-import omr.util.BasicTask;
+import omr.util.Worker;
 
 import com.xenoage.player.Player;
 import com.xenoage.player.musicxml.MusicXMLDocument;
@@ -24,7 +24,6 @@ import org.w3c.dom.Document;
 
 import java.io.*;
 
-import javax.sound.midi.*;
 import javax.swing.JOptionPane;
 import javax.xml.parsers.*;
 
@@ -52,10 +51,10 @@ public class MidiAgent
     public static final int MIDI_FILE_TYPE = 1;
 
     /** A future which reflects whether Midi Agent has been initialized **/
-    private static final LoadTask loading = new LoadTask();
+    private static final Loader loader = new Loader();
 
     static {
-        loading.execute();
+        loader.start();
     }
 
     //~ Enumerations -----------------------------------------------------------
@@ -421,39 +420,6 @@ public class MidiAgent
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //----------//
-    // LoadTask //
-    //----------//
-    public static class LoadTask
-        extends BasicTask
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        protected Void doInBackground ()
-            throws InterruptedException
-        {
-            try {
-                if (logger.isFineEnabled()) {
-                    logger.fine("Pre-loading Midi Agent ...");
-                }
-
-                long startTime = System.currentTimeMillis();
-                getInstance();
-
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "Midi Agent Loaded in " +
-                        (System.currentTimeMillis() - startTime) + "ms");
-                }
-            } catch (Exception ex) {
-                logger.warning("Could not preload the Midi Agent", ex);
-            }
-
-            return null;
-        }
-    }
-
     //--------//
     // Holder //
     //--------//
@@ -462,6 +428,27 @@ public class MidiAgent
         //~ Static fields/initializers -----------------------------------------
 
         public static final MidiAgent INSTANCE = new MidiAgent();
+    }
+
+    //--------//
+    // Loader //
+    //--------//
+    private static class Loader
+        extends Worker<Void>
+    {
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public Void construct ()
+        {
+            try {
+                getInstance();
+            } catch (Exception ex) {
+                logger.warning("Could not preload the Midi Agent", ex);
+            }
+
+            return null;
+        }
     }
 
     //-----------//

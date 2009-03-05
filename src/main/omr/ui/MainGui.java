@@ -52,7 +52,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.util.EventObject;
-import java.util.logging.LogRecord;
 
 import javax.swing.*;
 
@@ -112,7 +111,6 @@ public class MainGui
      */
     public MainGui ()
     {
-        logger.info("MainGui constructed");
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -242,16 +240,15 @@ public class MainGui
         bottomPane.removeErrors();
     }
 
-    //-----//
-    // log //
-    //-----//
+    //-----------//
+    // notifyLog //
+    //-----------//
     /**
-     * Log a record in the log window
-     * @param record the record to log
+     * Tell that one or several new log records are waiting for display
      */
-    public void log (LogRecord record)
+    public void notifylog ()
     {
-        logPane.log(record);
+        logPane.notifyLog();
     }
 
     //---------//
@@ -330,7 +327,9 @@ public class MainGui
     @Override
     protected void initialize (String[] args)
     {
-        logger.info("MainGui. initialize");
+        if (logger.isFineEnabled()) {
+            logger.fine("MainGui. initialize");
+        }
 
         // Provide default tool parameters if not already set
 
@@ -367,9 +366,12 @@ public class MainGui
     @Override
     protected void ready ()
     {
-        logger.info("MainGui. ready");
+        if (logger.isFineEnabled()) {
+            logger.fine("MainGui. ready");
+        }
+
         Main.setGui(this);
-        
+
         Main.launchSheets();
         Main.launchScripts();
     }
@@ -381,7 +383,9 @@ public class MainGui
     @Override
     protected void startup ()
     {
-        logger.info("MainGui. startup");
+        if (logger.isFineEnabled()) {
+            logger.fine("MainGui. startup");
+        }
 
         frame = getMainFrame();
 

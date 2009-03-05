@@ -86,21 +86,10 @@ public class Picture
     public static final int BACKGROUND = 255;
 
     static {
-        long startTime = System.currentTimeMillis();
-
-        if (logger.isFineEnabled()) {
-            logger.fine("Awaiting JAI loading");
-        }
-
         JaiLoader.ensureLoaded();
-
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "Waited " + (System.currentTimeMillis() - startTime) + "ms");
-        }
     }
 
-    /** Identity ransformation used for display */
+    /** Identity transformation used for display */
     private static final AffineTransform identity = new AffineTransform();
 
     //~ Instance fields --------------------------------------------------------

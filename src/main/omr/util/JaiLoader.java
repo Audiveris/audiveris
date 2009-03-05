@@ -4,14 +4,10 @@
 //                                                                            //
 //  Copyright (C) Brenton Partridge 2000-2007. All rights reserved.           //
 //  This software is released under the GNU General Public License.           //
-//  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
+//  Contact author at herve.bitteur@laposte.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
 package omr.util;
 
-import omr.log.Logger;
-
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 
 /**
  * Class <code>JaiLoader</code> is designed to speed up the load time of the
@@ -27,18 +23,22 @@ import java.util.concurrent.Future;
  * @version $Id$
  */
 public class JaiLoader
+    extends Worker<Void>
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(JaiLoader.class);
+    /** The loader itself */
+    private static final JaiLoader loader = new JaiLoader();
 
-    /** A future which reflects whether JAI has been loaded */
-    private static Future<Void> loaded = OmrExecutors.getCachedLowExecutor()
-                                                     .submit(new LoadTask());
+    static {
+        loader.start();
+    }
 
     //~ Constructors -----------------------------------------------------------
 
+    //-----------//
+    // JaiLoader //
+    //-----------//
     private JaiLoader ()
     {
     }
@@ -55,11 +55,7 @@ public class JaiLoader
      */
     public static void ensureLoaded ()
     {
-        try {
-            loaded.get();
-        } catch (Exception e) {
-            logger.severe("JAI loading failed", e);
-        }
+        loader.get();
     }
 
     //---------//
@@ -70,35 +66,17 @@ public class JaiLoader
      */
     public static void preload ()
     {
+        // Empty body, the purpose is just to trigger class elaboration
     }
 
-    //~ Inner Classes ----------------------------------------------------------
-
-    //----------//
-    // LoadTask //
-    //----------//
-    public static class LoadTask
-        implements Callable<Void>
+    //-----------//
+    // construct //
+    //-----------//
+    @Override
+    public Void construct ()
     {
-        //~ Methods ------------------------------------------------------------
+        javax.media.jai.JAI.getBuildVersion();
 
-        public Void call ()
-            throws Exception
-        {
-            if (logger.isFineEnabled()) {
-                logger.fine("Pre-loading JAI ...");
-            }
-
-            long startTime = System.currentTimeMillis();
-            javax.media.jai.JAI.getBuildVersion();
-
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "JAI Loaded in " +
-                    (System.currentTimeMillis() - startTime) + "ms");
-            }
-
-            return null;
-        }
+        return null;
     }
 }

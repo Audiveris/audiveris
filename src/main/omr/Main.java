@@ -20,7 +20,6 @@ import omr.script.ScriptManager;
 import omr.ui.MainGui;
 
 import omr.util.Clock;
-import omr.util.JaiLoader;
 import omr.util.OmrExecutors;
 
 import org.jdesktop.application.Application;
@@ -395,7 +394,10 @@ public class Main
 
         // For non-batch mode
         if (!parameters.batchMode) {
-            logger.info("Main. Launching MainGui application");
+            if (logger.isFineEnabled()) {
+                logger.fine("Main. Launching MainGui");
+            }
+
             Application.launch(MainGui.class, args);
         } else {
             // Launch the required tasks
@@ -404,7 +406,10 @@ public class Main
 
             // Wait for batch completion and exit
             OmrExecutors.shutdown();
-            logger.info("End of main");
+
+            if (logger.isFineEnabled()) {
+                logger.fine("End of main");
+            }
         }
     }
 

@@ -54,8 +54,8 @@ import omr.score.entity.Wedge;
 import omr.score.midi.MidiAbstractions;
 import static omr.score.visitor.MusicXML.*;
 
-import omr.util.BasicTask;
 import omr.util.TreeNode;
+import omr.util.Worker;
 
 import org.w3c.dom.Node;
 
@@ -89,10 +89,10 @@ public class ScoreExporter
     private static final Logger logger = Logger.getLogger(ScoreExporter.class);
 
     /** A future which reflects whether JAXB has been initialized **/
-    private static final LoadTask loading = new LoadTask();
+    private static final Loader loader = new Loader();
 
     static {
-        loading.execute();
+        loader.start();
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -1951,7 +1951,6 @@ public class ScoreExporter
     //---------//
     private Work getWork ()
     {
-
         if (current.pmWork == null) {
             current.pmWork = factory.createWork();
             scorePartwise.setWork(current.pmWork);
@@ -2027,40 +2026,6 @@ public class ScoreExporter
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
-    //----------//
-    // LoadTask //
-    //----------//
-    public static class LoadTask
-        extends BasicTask
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        protected Void doInBackground ()
-            throws InterruptedException
-        {
-            if (logger.isFineEnabled()) {
-                logger.fine("Pre-loading JAXB ...");
-            }
-
-            try {
-                long startTime = java.lang.System.currentTimeMillis();
-                Marshalling.getContext();
-
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "JAXB Loaded in " +
-                        (java.lang.System.currentTimeMillis() - startTime) +
-                        "ms");
-                }
-            } catch (JAXBException ex) {
-                logger.warning("Error preloading JaxbContext", ex);
-            }
-
-            return null;
-        }
-    }
 
     //---------//
     // Current //
@@ -2152,6 +2117,27 @@ public class ScoreExporter
             }
 
             return sb.toString();
+        }
+    }
+
+    //--------//
+    // Loader //
+    //--------//
+    private static class Loader
+        extends Worker<Void>
+    {
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public Void construct ()
+        {
+            try {
+                Marshalling.getContext();
+            } catch (JAXBException ex) {
+                logger.warning("Error preloading JaxbContext", ex);
+            }
+
+            return null;
         }
     }
 }

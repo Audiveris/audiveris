@@ -15,7 +15,7 @@ import omr.constant.ConstantSet;
 import omr.log.Logger;
 
 import java.awt.*;
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.logging.*;
 
 import javax.swing.*;
@@ -43,16 +43,16 @@ public class LogPane
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Mail box for incoming messages */
-    private final ArrayBlockingQueue<LogRecord> logMbx;
-
     /** The scrolling text area */
     private JScrollPane component;
 
     /** Status/log area */
     private final JTextPane logArea;
-    private final AbstractDocument   document;
-    private final SimpleAttributeSet attributes = new SimpleAttributeSet();
+    private final AbstractDocument         document;
+    private final SimpleAttributeSet       attributes = new SimpleAttributeSet();
+
+    /** The mailbox where log records are retrieved for display */
+    private final BlockingQueue<LogRecord> logMbx = Logger.getMailbox();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -66,10 +66,6 @@ public class LogPane
     {
         // Build the scroll pane
         component = new JScrollPane();
-
-        // Allocate message mail box for several simultaneous msgs max
-        logMbx = new ArrayBlockingQueue<LogRecord>(
-            constants.msgQueueSize.getValue());
 
         // log/status area
         logArea = new JTextPane();
@@ -109,24 +105,14 @@ public class LogPane
         component.repaint();
     }
 
-    //-----//
-    // log //
-    //-----//
+    //-----------//
+    // notifyLog //
+    //-----------//
     /**
-     * Display the given message in the dedicated status area.
-     *
-     * @param record a log record to log/display
+     * Tell LogPane that there is one or more log records in the Logger mailbox
      */
-    public void log (LogRecord record)
+    public void notifyLog ()
     {
-        try {
-            logMbx.put(record);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-
-            return;
-        }
-
         SwingUtilities.invokeLater(
             new Runnable() {
                     public void run ()
@@ -199,10 +185,6 @@ public class LogPane
     {
         //~ Instance fields ----------------------------------------------------
 
-        Constant.Integer msgQueueSize = new Constant.Integer(
-            "Messages",
-            10000,
-            "Size of message queue");
         Constant.Integer fontSize = new Constant.Integer(
             "Points",
             10,
