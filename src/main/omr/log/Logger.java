@@ -15,10 +15,13 @@ import omr.constant.UnitManager;
 
 import omr.step.LogStepMonitorHandler;
 
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
+import java.util.logging.LogRecord;
 
 /**
  * Class <code>Logger</code> is a specific subclass of standard java Logger,
@@ -47,6 +50,12 @@ public class Logger
 
     /** Cache this log manager */
     private static LogManager manager;
+
+    /** Temporary mail box for logged messages */
+    private static ArrayBlockingQueue<LogRecord> logMbx;
+
+    /** Size of the mail box (cannot use a Constant) */
+    private static final int LOG_MBX_SIZE = 1000;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -105,6 +114,23 @@ public class Logger
         }
 
         return result;
+    }
+
+    //------------//
+    // getMailbox //
+    //------------//
+    /**
+     * Report the mailbox used as a buffer for log messages before they get
+     * displayed by a GUI
+     * @return the GUI mailbox
+     */
+    public static synchronized BlockingQueue<LogRecord> getMailbox ()
+    {
+        if (logMbx == null) {
+            logMbx = new ArrayBlockingQueue<LogRecord>(LOG_MBX_SIZE);
+        }
+
+        return logMbx;
     }
 
     //-------------------//
@@ -314,5 +340,9 @@ public class Logger
         final Constant.Boolean printThreadName = new Constant.Boolean(
             false,
             "Should we print out the name of the originating thread?");
+        final Constant.Integer msgQueueSize = new Constant.Integer(
+            "Messages",
+            10000,
+            "Size of message queue");
     }
 }
