@@ -20,6 +20,7 @@ import omr.script.ScriptManager;
 import omr.ui.MainGui;
 
 import omr.util.Clock;
+import omr.util.JaiLoader;
 import omr.util.OmrExecutors;
 
 import org.jdesktop.application.Application;
@@ -351,6 +352,8 @@ public class Main
                     }
                 };
 
+                logger.info(
+                    "Submitting " + parameters.targetStep + " on " + file);
                 OmrExecutors.getLowExecutor()
                             .submit(task);
             } catch (Exception ex) {
@@ -402,10 +405,6 @@ public class Main
             // Wait for batch completion and exit
             OmrExecutors.shutdown();
             logger.info("End of main");
-
-            // Stop the JVM ????
-//            Runtime.getRuntime()
-//                   .exit(0);
         }
     }
 
