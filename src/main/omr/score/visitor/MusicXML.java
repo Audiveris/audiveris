@@ -1,12 +1,11 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                            M u s i c X M L                            //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2007. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                              M u s i c X M L                               //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
+//  This software is released under the GNU General Public License.           //
+//  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
+//----------------------------------------------------------------------------//
 //
 package omr.score.visitor;
 
@@ -169,10 +168,10 @@ public class MusicXML
     //-------------------//
     public static JAXBElement<?> getOrnamentObject (Shape shape)
     {
-        //	(((trill-mark | turn | delayed-turn | shake |
-        //	   wavy-line | mordent | inverted-mordent | 
-        //	   schleifer | tremolo | other-ornament), 
-        //	   accidental-mark*)*)>
+        //      (((trill-mark | turn | delayed-turn | shake |
+        //         wavy-line | mordent | inverted-mordent |
+        //         schleifer | tremolo | other-ornament),
+        //         accidental-mark*)*)>
         ObjectFactory factory = new ObjectFactory();
 
         switch (shape) {
