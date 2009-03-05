@@ -11,9 +11,8 @@ package omr.log;
 
 import omr.Main;
 
-import omr.ui.MainGui;
-
-import java.util.logging.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.logging.LogRecord;
 
 /**
  * <p>Class <code>LogGuiAppender</code> is a specific Log Appender, to be used with
@@ -29,6 +28,11 @@ import java.util.logging.*;
 public class LogGuiHandler
     extends java.util.logging.Handler
 {
+    //~ Instance fields --------------------------------------------------------
+
+    /** The mailbox where log records are stored for display */
+    private final BlockingQueue<LogRecord> logMbx = Logger.getMailbox();
+
     //~ Constructors -----------------------------------------------------------
 
     //---------------//
@@ -78,10 +82,15 @@ public class LogGuiHandler
     @Override
     public void publish (LogRecord record)
     {
-        MainGui gui = Main.getGui();
+        if (isLoggable(record)) {
+            if (!logMbx.offer(record)) {
+                System.err.println("Logger Mailbox is full");
+            }
 
-        if ((gui != null) && isLoggable(record)) {
-            gui.log(record);
+            if (Main.getGui() != null) {
+                Main.getGui()
+                    .notifylog();
+            }
         }
     }
 }
