@@ -154,10 +154,6 @@ public class SheetSteps
     {
         getTask(step)
             .displayUI();
-
-        // Selected the view tab most related to the current step
-        sheet.getAssembly()
-             .selectTab(step);
     }
 
     //--------//

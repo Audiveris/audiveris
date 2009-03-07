@@ -14,6 +14,7 @@ import omr.sheet.Sheet;
 import omr.step.Step;
 import omr.step.StepException;
 
+import javax.swing.SwingUtilities;
 import javax.xml.bind.annotation.*;
 
 /**
@@ -61,12 +62,22 @@ public class StepTask
     // run //
     //-----//
     @Override
-    public void run (Sheet sheet)
+    public void run (final Sheet sheet)
         throws StepException
     {
         if (!sheet.getSheetSteps()
                   .isDone(step)) {
             step.performUntil(sheet, null);
+
+            // Display the related assembly tab
+            SwingUtilities.invokeLater(
+                new Runnable() {
+                        public void run ()
+                        {
+                            sheet.getAssembly()
+                                 .selectTab(step);
+                        }
+                    });
         } else if (logger.isFineEnabled()) {
             logger.fine(this + " already done");
         }

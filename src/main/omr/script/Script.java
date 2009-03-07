@@ -13,13 +13,11 @@ import omr.log.Logger;
 
 import omr.sheet.Sheet;
 
-import omr.step.Step;
 import omr.step.StepException;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.SwingUtilities;
 import javax.xml.bind.annotation.*;
 
 /**
@@ -221,16 +219,6 @@ public class Script
             // Flag the active script as up-to-date
             sheet.getScript()
                  .setStored();
-
-            // Kludge, to put the Glyphs tab on top of all others.
-            SwingUtilities.invokeLater(
-                new Runnable() {
-                        public void run ()
-                        {
-                            sheet.getAssembly()
-                                 .selectTab(Step.SYMBOLS);
-                        }
-                    });
         }
     }
 

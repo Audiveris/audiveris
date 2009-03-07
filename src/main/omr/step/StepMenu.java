@@ -12,7 +12,6 @@ package omr.step;
 import omr.log.Logger;
 
 import omr.sheet.Sheet;
-import omr.sheet.SheetsManager;
 import omr.sheet.ui.SheetsController;
 
 import omr.util.BasicTask;
@@ -125,6 +124,16 @@ public class StepMenu
                         step.performUntil(sheet, null);
 
                         return null;
+                    }
+
+                    @Override
+                    protected void finished ()
+                    {
+                        // Select the assembly tab related to the target step
+                        if (sheet != null) {
+                            sheet.getAssembly()
+                                 .selectTab(step);
+                        }
                     }
                 }.execute();
         }
