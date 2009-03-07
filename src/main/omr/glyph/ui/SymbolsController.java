@@ -118,7 +118,7 @@ public class SymbolsController
     /**
      * Asynchronously segment a set of glyphs on their stems
      *
-     * @param givenGlyphs glyphs to segment in order to retrieve stems
+     * @param glyphs glyphs to segment in order to retrieve stems
      * @param isShort looking for short (or standard) stems
      */
     public Task asyncSegmentGlyphSet (final Collection<Glyph> glyphs,

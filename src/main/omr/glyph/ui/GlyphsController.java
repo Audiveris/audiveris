@@ -366,7 +366,10 @@ public class GlyphsController
     // syncDeassignGlyphSet //
     //----------------------//
     /**
-     * {@inheritDoc}
+     * Perform the synchronous shape deassignment of a glyph set for a user
+     * @param glyphs the set of glyphs
+     * @return the impacted glyphs to limit the following update of systems,
+     * or null to force update of all systems
      */
     protected Collection<Glyph> syncDeassignGlyphSet (Collection<Glyph> glyphs)
     {
