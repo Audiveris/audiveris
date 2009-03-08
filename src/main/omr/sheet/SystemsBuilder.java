@@ -878,7 +878,7 @@ public class SystemsBuilder
         {
             // Render all physical info known so far, which is just the staff
             // line info, lineset by lineset
-            sheet.accept(new SheetPainter(g));
+            sheet.accept(new SheetPainter(g, true));
 
             super.renderItems(g);
         }

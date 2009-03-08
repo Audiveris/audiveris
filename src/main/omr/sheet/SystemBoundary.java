@@ -149,24 +149,36 @@ public class SystemBoundary
      * Paint the SystemBoundary in the provided graphic context.
      *
      * @param g     the Graphics context
+     * @param editable flag to indicate that boundary is editable
      */
-    public void render (Graphics g)
+    public void render (Graphics g,
+                        boolean  editable)
     {
         Graphics2D g2 = (Graphics2D) g;
         int        radius = limits.get(Side.NORTH)
                                   .getStickyDistance();
 
+        Color      oldColor = g.getColor();
+
+        if (editable) {
+            g.setColor(Color.BLUE);
+        }
+
         // Draw the polygon
         g2.drawPolygon(polygon);
 
         // Mark the points
-        for (int i = 0; i < polygon.npoints; i++) {
-            g2.drawRect(
-                polygon.xpoints[i] - radius,
-                polygon.ypoints[i] - radius,
-                2 * radius,
-                2 * radius);
+        if (editable) {
+            for (int i = 0; i < polygon.npoints; i++) {
+                g2.drawRect(
+                    polygon.xpoints[i] - radius,
+                    polygon.ypoints[i] - radius,
+                    2 * radius,
+                    2 * radius);
+            }
         }
+
+        g.setColor(oldColor);
     }
 
     //----------//

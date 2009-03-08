@@ -325,7 +325,7 @@ public class SymbolsEditor
         protected void renderItems (Graphics g)
         {
             // Render all sheet physical info known so far
-            sheet.accept(new SheetPainter(g));
+            sheet.accept(new SheetPainter(g, false));
 
             // Normal display of selected items
             super.renderItems(g);

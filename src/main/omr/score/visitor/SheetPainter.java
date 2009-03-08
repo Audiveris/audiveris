@@ -50,22 +50,25 @@ public class SheetPainter
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(SheetPainter.class);
 
-    /** Stroke to draw system boundaries */
-    private static Stroke boundaryStroke = new BasicStroke(
-        1f,
-        BasicStroke.CAP_BUTT,
-        BasicStroke.JOIN_BEVEL,
-        0f,
-        new float[] { 5, 5 },
-        0);
-
     //~ Instance fields --------------------------------------------------------
+
+    //    /** Stroke to draw system boundaries */
+    //    private static Stroke boundaryStroke = new BasicStroke(
+    //        1f,
+    //        BasicStroke.CAP_BUTT,
+    //        BasicStroke.JOIN_BEVEL,
+    //        0f,
+    //        new float[] { 5, 5 },
+    //        0);
 
     /** Graphic context */
     private final Graphics2D g;
 
     /** Saved stroke for restoration at the end of the painting */
     private final Stroke oldStroke;
+
+    /** Are we drawing editable boundaries? */
+    private final boolean editableBoundaries;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -75,12 +78,14 @@ public class SheetPainter
     /**
      * Creates a new SheetPainter object.
      *
-     *
      * @param g Graphic context
+     * @param editableBoundaries flag to draw editable boundaries
      */
-    public SheetPainter (Graphics g)
+    public SheetPainter (Graphics g,
+                         boolean  editableBoundaries)
     {
         this.g = (Graphics2D) g;
+        this.editableBoundaries = editableBoundaries;
 
         oldStroke = UIUtilities.SetAbsoluteStroke(g, 1f);
     }
@@ -225,7 +230,7 @@ public class SheetPainter
 
             // System boundary
             systemInfo.getBoundary()
-                      .render(g);
+                      .render(g, editableBoundaries);
 
             // Staff lines
             for (StaffInfo staff : systemInfo.getStaves()) {

@@ -294,7 +294,7 @@ public class VerticalsController
         public void renderItems (Graphics g)
         {
             // Render all physical info known so far
-            sheet.accept(new SheetPainter(g));
+            sheet.accept(new SheetPainter(g, false));
 
             super.renderItems(g);
         }

@@ -967,7 +967,7 @@ public class HorizontalsBuilder
         public void renderItems (Graphics g)
         {
             // Render all physical info known so far (staff lines)
-            sheet.accept(new SheetPainter(g));
+            sheet.accept(new SheetPainter(g, false));
 
             // Render the dashes found
             for (Dash dash : allDashes) {
