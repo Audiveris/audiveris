@@ -52,15 +52,6 @@ public class SheetPainter
 
     //~ Instance fields --------------------------------------------------------
 
-    //    /** Stroke to draw system boundaries */
-    //    private static Stroke boundaryStroke = new BasicStroke(
-    //        1f,
-    //        BasicStroke.CAP_BUTT,
-    //        BasicStroke.JOIN_BEVEL,
-    //        0f,
-    //        new float[] { 5, 5 },
-    //        0);
-
     /** Graphic context */
     private final Graphics2D g;
 
