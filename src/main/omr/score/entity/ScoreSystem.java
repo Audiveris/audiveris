@@ -231,12 +231,6 @@ public class ScoreSystem
      */
     public void setDisplayOrigin (ScorePoint displayOrigin)
     {
-        if (displayOrigin == null) {
-            logger.warning(
-                "ScoreSystem.setDisplayOrigin displayOrigin=null",
-                new Throwable("BINGO"));
-        }
-
         this.displayOrigin = displayOrigin;
     }
 
