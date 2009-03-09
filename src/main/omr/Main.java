@@ -21,6 +21,7 @@ import omr.ui.MainGui;
 
 import omr.util.Clock;
 import omr.util.OmrExecutors;
+import omr.util.Worker;
 
 import org.jdesktop.application.Application;
 
@@ -297,9 +298,9 @@ public class Main
             final String scriptName = name;
 
             try {
-                Callable<Void> task = new Callable<Void>() {
-                    public Void call ()
-                        throws Exception
+                Worker<Void> task = new Worker<Void>() {
+                    @Override
+                    public Void construct ()
                     {
                         long start = System.currentTimeMillis();
                         File file = new File(scriptName);
@@ -323,8 +324,7 @@ public class Main
                     }
                 };
 
-                OmrExecutors.getLowExecutor()
-                            .submit(task);
+                task.start();
             } catch (Exception ex) {
                 logger.warning("Error in processing script " + name, ex);
             }
@@ -341,9 +341,9 @@ public class Main
             final File file = new File(name);
 
             try {
-                Callable<Void> task = new Callable<Void>() {
-                    public Void call ()
-                        throws Exception
+                Worker<Void> task = new Worker<Void>() {
+                    @Override
+                    public Void construct ()
                     {
                         parameters.targetStep.performUntil(null, file);
 
@@ -353,8 +353,7 @@ public class Main
 
                 logger.info(
                     "Submitting " + parameters.targetStep + " on " + file);
-                OmrExecutors.getLowExecutor()
-                            .submit(task);
+                task.start();
             } catch (Exception ex) {
                 logger.warning("Error in processing sheet " + file, ex);
             }
