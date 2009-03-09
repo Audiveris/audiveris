@@ -14,7 +14,8 @@ import omr.log.Logger;
 /**
  * Class <code>Worker</code> is a simple way to delegate processing to a worker
  * thread, and synchronize at the end of the work. This is actually derived from
- * the standard SwingWorker class, with the Swing part removed.
+ * the standard SwingWorker class, with the Swing part removed. The worker
+ * thread is always assigned the minimum priority.
  *
  * <p>Usage:<ol>
  * <li>To get a concrete Worker, you only have to subclass this abstract class
@@ -77,6 +78,7 @@ public abstract class Worker<T>
         };
 
         Thread t = new Thread(doConstruct);
+        t.setPriority(Thread.MIN_PRIORITY);
         threadVar = new ThreadVar(t);
 
         if (logger.isFineEnabled()) {
