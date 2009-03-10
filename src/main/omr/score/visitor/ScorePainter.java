@@ -691,6 +691,13 @@ public class ScorePainter
     @Override
     public boolean visit (ScoreSystem system)
     {
+        // Check that displayOrigin has been set, otherwise there is no point
+        // in displaying the system, which is currently being built and which
+        // will later use ScoreFixer to assign proper displayOrigin
+        if (system.getDisplayOrigin() == null) {
+            return false;
+        }
+
         // Restore saved transform
         g.setTransform(savedTransform);
 
@@ -1028,6 +1035,7 @@ public class ScorePainter
             try {
                 SystemPoint scaledPoint = new SystemPoint(point);
                 zoom.scale(scaledPoint);
+
                 final Point topLeft = topLeftOf(
                     scaledPoint,
                     hAlign,
