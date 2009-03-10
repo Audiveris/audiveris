@@ -95,7 +95,7 @@ public class StemInspector
                 glyph.getSymbolsBefore(reliableStemSymbols, goods, bads);
                 glyph.getSymbolsAfter(reliableStemSymbols, goods, bads);
 
-                if (goods.size() == 0) {
+                if (goods.isEmpty()) {
                     if (logger.isFineEnabled()) {
                         logger.finest("Suspected Stem " + glyph);
                     }

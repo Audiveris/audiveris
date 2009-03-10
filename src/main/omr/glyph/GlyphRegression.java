@@ -198,7 +198,7 @@ public class GlyphRegression
                        Monitor      monitor,
                        StartingMode mode)
     {
-        if (base.size() == 0) {
+        if (base.isEmpty()) {
             logger.warning("No glyph to retrain Regression Evaluator");
 
             return;

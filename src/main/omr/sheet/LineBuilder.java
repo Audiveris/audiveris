@@ -205,7 +205,7 @@ public class LineBuilder
         Collections.sort(sticks, stickStartComparator);
 
         // Sanity check
-        if (sticks.size() == 0) {
+        if (sticks.isEmpty()) {
             logger.warning("No sticks found in line area #" + id);
             throw new StepException();
         }

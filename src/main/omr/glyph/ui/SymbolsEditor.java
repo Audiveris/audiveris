@@ -233,7 +233,7 @@ public class SymbolsEditor
                                      .getSelectedGlyphSet();
 
             // To display point information
-            if ((glyphs == null) || (glyphs.size() == 0)) {
+            if ((glyphs == null) || glyphs.isEmpty()) {
                 pointSelected(pt, movement); // This may change glyph selection
                 glyphs = sheet.getVerticalLag()
                               .getSelectedGlyphSet();

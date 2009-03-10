@@ -405,7 +405,7 @@ public class GlyphNetwork
                        Monitor      monitor,
                        StartingMode mode)
     {
-        if (glyphs.size() == 0) {
+        if (glyphs.isEmpty()) {
             logger.warning("No glyph to retrain Network Evaluator");
 
             return;

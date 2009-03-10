@@ -164,7 +164,7 @@ public class GlyphChecks
     private static boolean hugeGapBetweenParts (Glyph compound)
     {
         if (compound.getParts()
-                    .size() == 0) {
+                    .isEmpty()) {
             return false;
         }
 
