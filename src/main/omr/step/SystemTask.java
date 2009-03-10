@@ -90,6 +90,7 @@ public abstract class SystemTask
     //----------//
     /**
      * Final processing for this step, once all systems have been processed
+     * @param systems the systems which have been updated
      * @throws StepException raised if processing failed
      */
     protected void doEpilog (Collection<SystemInfo> systems)
@@ -104,6 +105,8 @@ public abstract class SystemTask
     /**
      * Do preliminary common work before all systems processings are launched in
      * parallel
+     * @param systems the systems which will be updated
+     * @throws StepException raised if processing failed
      */
     protected void doProlog (Collection<SystemInfo> systems)
         throws StepException
