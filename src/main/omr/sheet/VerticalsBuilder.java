@@ -141,7 +141,7 @@ public class VerticalsBuilder
      * @return the number of stems found
      * @throws omr.step.StepException
      */
-    public int retrieveVerticals()
+    public int retrieveVerticals ()
         throws StepException
     {
         // Get rid of former symbols
@@ -167,7 +167,7 @@ public class VerticalsBuilder
      * @param glyph the glyph to decompose
      * @param isShort are we looking for short (vs standard) stems?
      */
-    public void segmentGlyphOnStems(Glyph   glyph,
+    public void segmentGlyphOnStems (Glyph   glyph,
                                      boolean isShort)
     {
         // Gather all sections to be browsed
@@ -230,22 +230,24 @@ public class VerticalsBuilder
         }
 
         for (Stick stick : sticks) {
-            // Run the various Checks
-            double res = suite.pass(stick);
+            stick = (Stick) system.addGlyph(stick);
 
-            if (logger.isFineEnabled()) {
-                logger.fine("suite=> " + res + " for " + stick);
+            if (!stick.isShapeForbidden(Shape.COMBINING_STEM)) {
+                // Run the various Checks
+                double res = suite.pass(stick);
+
+                if (logger.isFineEnabled()) {
+                    logger.fine("suite=> " + res + " for " + stick);
+                }
+
+                if (res >= minResult) {
+                    stick.setResult(STEM);
+                    stick.setShape(Shape.COMBINING_STEM);
+                    stemNb++;
+                } else {
+                    stick.setResult(TOO_LIMITED);
+                }
             }
-
-            if (res >= minResult) {
-                stick.setResult(STEM);
-                stick.setShape(Shape.COMBINING_STEM);
-                stemNb++;
-            } else {
-                stick.setResult(TOO_LIMITED);
-            }
-
-            system.addGlyph(stick);
         }
 
         if (logger.isFineEnabled()) {
@@ -272,7 +274,7 @@ public class VerticalsBuilder
          * Create a new instance
          * @param isShort for short stems
          */
-        public StemCheckSuite(boolean isShort)
+        public StemCheckSuite (boolean isShort)
         {
             super("Stem", constants.minCheckResult.getValue());
             add(1, new MinLengthCheck(isShort));
