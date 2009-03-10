@@ -57,6 +57,7 @@ public class TextInspector
     //-----------------//
     /**
      * Align the various text glyphs in horizontal text lines
+     * @return the number of recognized textual items
      */
     public int alignTextGlyphs ()
     {
