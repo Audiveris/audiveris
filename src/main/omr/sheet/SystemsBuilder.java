@@ -270,7 +270,12 @@ public class SystemsBuilder
         int[] partStarts = new int[staffNb];
         Arrays.fill(partStarts, -1);
 
-        for (Glyph glyph : lag.getAllGlyphs()) {
+        // We need an abscissa-ordered collection of glyphs, so that system
+        // defining bars are seen first
+        List<Glyph> glyphs = new ArrayList<Glyph>(lag.getAllGlyphs());
+        Collections.sort(glyphs);
+
+        for (Glyph glyph : glyphs) {
             Stick stick = (Stick) glyph;
 
             if (stick.isBar() &&
