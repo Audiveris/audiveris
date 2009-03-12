@@ -13,6 +13,8 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
+import omr.score.common.PixelRectangle;
+
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
@@ -48,6 +50,17 @@ public class GlyphInspector
     /** Related scale */
     private final Scale scale;
 
+    /** Related lag */
+    private final GlyphLag lag;
+
+    /** Constants for alter verification */
+    final int maxCloseStemDx;
+    final int    minCloseStemOverlap;
+    final int    maxCloseStemLength;
+    final int    maxNaturalOverlap;
+    final int    maxSharpNonOverlap;
+    final double alterMaxDoubt;
+
     //~ Constructors -----------------------------------------------------------
 
     //----------------//
@@ -63,6 +76,15 @@ public class GlyphInspector
         this.system = system;
         scale = system.getSheet()
                       .getScale();
+        lag = system.getSheet()
+                    .getVerticalLag();
+
+        maxCloseStemDx = scale.toPixels(constants.maxCloseStemDx);
+        minCloseStemOverlap = scale.toPixels(constants.minCloseStemOverlap);
+        maxCloseStemLength = scale.toPixels(constants.maxCloseStemLength);
+        maxNaturalOverlap = scale.toPixels(constants.maxNaturalOverlap);
+        maxSharpNonOverlap = scale.toPixels(constants.maxSharpNonOverlap);
+        alterMaxDoubt = constants.alterMaxDoubt.getValue();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -161,13 +183,31 @@ public class GlyphInspector
         evaluateGlyphs(maxDoubt);
     }
 
+    //-------------------//
+    // purgeManualShapes //
+    //-------------------//
+    /**
+     * Purge a collection of glyphs from manually assigned shapes
+     * @param glyphs the glyph collection to purge
+     */
+    public static void purgeManualShapes (Collection<Glyph> glyphs)
+    {
+        for (Iterator<Glyph> it = glyphs.iterator(); it.hasNext();) {
+            Glyph glyph = it.next();
+
+            if (glyph.isManualShape()) {
+                it.remove();
+            }
+        }
+    }
+
     //-------------//
     // tryCompound //
     //-------------//
     /**
      * Try to build a compound, starting from given seed and looking into the
      * collection of suitable glyphs.
-     * 
+     *
      * <p>Note that this method has no impact on the system/lag environment.
      * It is the caller's responsability, for a successful (i.e. non-null)
      * compound, to assign its shape and to add the glyph to the system/lag.
@@ -232,6 +272,164 @@ public class GlyphInspector
         }
 
         return null;
+    }
+
+    //------------------//
+    // verifyAlterSigns //
+    //------------------//
+    /**
+     * Verify the case of stems very close to each other since they may result
+     * from wrong segmentation of sharp and natural signs
+     * @return the number of cases fixed
+     */
+    public int verifyAlterSigns ()
+    {
+        // First retrieve the collection of all stems in the system
+        // Ordered naturally by their abscissa
+        SortedSet<Glyph> stems = new TreeSet<Glyph>();
+
+        for (Glyph glyph : system.getGlyphs()) {
+            if (glyph.isStem() && glyph.isActive()) {
+                PixelRectangle box = glyph.getContourBox();
+
+                // Check stem length
+                if (box.height <= maxCloseStemLength) {
+                    stems.add(glyph);
+                }
+            }
+        }
+
+        int nb = 0; // Success counter
+
+        // Then, look for close stems
+        for (Glyph glyph : stems) {
+            if (!glyph.isStem()) {
+                continue;
+            }
+
+            PixelRectangle box = glyph.getContourBox();
+            int            x = box.x + (box.width / 2);
+
+            //logger.info("Checking stems close to glyph #" + glyph.getId());
+            for (Glyph other : stems.tailSet(glyph)) {
+                if ((other == glyph) || !other.isStem()) {
+                    continue;
+                }
+
+                PixelRectangle oBox = other.getContourBox();
+                int            oX = oBox.x + (oBox.width / 2);
+
+                // Check horizontal distance
+                int dx = oX - x;
+
+                if (dx > maxCloseStemDx) {
+                    break; // Since the set is ordered, no candidate is left
+                }
+
+                // Check vertical overlap
+                int commonTop = Math.max(box.y, oBox.y);
+                int commonBot = Math.min(
+                    box.y + box.height,
+                    oBox.y + oBox.height);
+                int overlap = commonBot - commonTop;
+
+                if (overlap < minCloseStemOverlap) {
+                    continue;
+                }
+
+                logger.info(
+                    "close stems: " +
+                    Glyph.toString(Arrays.asList(glyph, other)));
+
+                // "hide" the stems to not perturb evaluation
+                glyph.setShape(null);
+                other.setShape(null);
+
+                boolean success = false;
+
+                if (overlap <= maxNaturalOverlap) {
+                    //                    logger.info(
+                    //                        "Natural glyph rebuilt as #" + compound.getId());
+                    //                    success = true;
+                } else {
+                    success = checkSharp(box, oBox);
+                }
+
+                if (success) {
+                    nb++;
+                } else {
+                    // Restore stem shapes
+                    glyph.setShape(Shape.COMBINING_STEM);
+                    other.setShape(Shape.COMBINING_STEM);
+                }
+            }
+        }
+
+        return nb;
+    }
+
+    //------------//
+    // checkSharp //
+    //------------//
+    /**
+     * Check if, around the two (stem) boxes, there is actually a sharp sign
+     * @param lbox contour box of left stem
+     * @param rBox contour box of right stem
+     * @return true if successful
+     */
+    private boolean checkSharp (PixelRectangle lBox,
+                                PixelRectangle rBox)
+    {
+        final int lX = lBox.x + (lBox.width / 2);
+        final int rX = rBox.x + (rBox.width / 2);
+        final int dyTop = Math.abs(lBox.y - rBox.y);
+        final int dyBot = Math.abs(
+            (lBox.y + lBox.height) - rBox.y - rBox.height);
+
+        if ((dyTop <= maxSharpNonOverlap) && (dyBot <= maxSharpNonOverlap)) {
+            if (logger.isFineEnabled()) {
+                logger.fine("SHARP sign?");
+            }
+
+            int            halfWidth = (3 * maxCloseStemDx) / 2;
+            int            hMargin = minCloseStemOverlap / 2;
+            PixelRectangle outerBox = new PixelRectangle(
+                ((lX + rX) / 2) - halfWidth,
+                Math.min(lBox.y, rBox.y) - hMargin,
+                2 * halfWidth,
+                Math.max(lBox.y + lBox.height, rBox.y + rBox.height) -
+                Math.min(lBox.y, rBox.y) + (2 * hMargin));
+
+            if (logger.isFineEnabled()) {
+                logger.fine("outerBox: " + outerBox);
+            }
+
+            // Look for glyphs in this outer box
+            Set<Glyph> glyphs = lag.lookupGlyphs(system.getGlyphs(), outerBox);
+            purgeManualShapes(glyphs);
+
+            Glyph compound = system.buildCompound(glyphs);
+            system.computeGlyphFeatures(compound);
+
+            Evaluation vote = GlyphNetwork.getInstance()
+                                          .vote(compound, alterMaxDoubt);
+
+            if (vote != null) {
+                if (vote.shape == Shape.SHARP) {
+                    compound = system.addGlyph(compound);
+                    compound.setShape(vote.shape, Evaluation.ALGORITHM);
+                    logger.info("Sharp glyph rebuilt as #" + compound.getId());
+
+                    return true;
+                } else {
+                    logger.warning(
+                        "Shape " + vote.shape + " better then sharp for " +
+                        Glyph.toString(glyphs));
+                }
+            }
+        }
+
+        return false;
     }
 
     //-------------------//
@@ -417,6 +615,9 @@ public class GlyphInspector
         Scale.Fraction   boxWiden = new Scale.Fraction(
             0.15,
             "Box widening to check intersection with compound");
+        Evaluation.Doubt alterMaxDoubt = new Evaluation.Doubt(
+            3,
+            "Maximum doubt for alteration sign verifocation");
         Evaluation.Doubt cleanupMaxDoubt = new Evaluation.Doubt(
             1.2,
             "Maximum doubt for cleanup phase");
@@ -429,5 +630,20 @@ public class GlyphInspector
         Evaluation.Doubt minCompoundPartDoubt = new Evaluation.Doubt(
             1.020,
             "Minimum doubt for a suitable compound part");
+        Scale.Fraction   maxCloseStemDx = new Scale.Fraction(
+            0.7d,
+            "Maximum horizontal distance for close stems");
+        Scale.Fraction   maxSharpNonOverlap = new Scale.Fraction(
+            1d,
+            "Maximum vertical non overlap for sharp stems");
+        Scale.Fraction   maxNaturalOverlap = new Scale.Fraction(
+            1.5d,
+            "Maximum vertical overlap for natural stems");
+        Scale.Fraction   minCloseStemOverlap = new Scale.Fraction(
+            0.5d,
+            "Minimum vertical overlap for close stems");
+        Scale.Fraction   maxCloseStemLength = new Scale.Fraction(
+            3d,
+            "Maximum length for close stems");
     }
 }

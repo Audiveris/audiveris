@@ -1139,6 +1139,20 @@ public class SystemInfo
         return glyphInspector.tryCompound(seed, suitables, adapter);
     }
 
+    //------------------//
+    // verifyAlterSigns //
+    //------------------//
+    /**
+     * In a specified system, look for coupls of close stems that in fact result
+     * from indue segmentation of sharp or natural signs.
+     *
+     * @return the number of symbols recognized
+     */
+    public int verifyAlterSigns ()
+    {
+        return glyphInspector.verifyAlterSigns();
+    }
+
     //-------------//
     // verifySlurs //
     //-------------//

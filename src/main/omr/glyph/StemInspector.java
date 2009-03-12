@@ -15,10 +15,7 @@ import omr.sheet.SystemInfo;
 
 import omr.util.Predicate;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Class <code>StemInspector</code> is a GlyphInspector dedicated to the
@@ -82,9 +79,6 @@ public class StemInspector
     {
         int         nb = 0;
 
-        // Use very close stems to detect sharps and naturals ?
-        // TBD
-        //
         // Collect all undue stems
         List<Glyph> SuspectedStems = new ArrayList<Glyph>();
 
