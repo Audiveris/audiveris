@@ -410,20 +410,21 @@ public class GlyphInspector
             Glyph compound = system.buildCompound(glyphs);
             system.computeGlyphFeatures(compound);
 
-            final Evaluation vote = GlyphNetwork.getInstance()
-                                                .vote(compound, alterMaxDoubt);
+            final Evaluation[] votes = GlyphNetwork.getInstance()
+                                                   .getEvaluations(compound);
 
-            if (vote != null) {
+            // Check if a sharp appears in the top evaluations
+            for (Evaluation vote : votes) {
+                if (vote.doubt > alterMaxDoubt) {
+                    break;
+                }
+
                 if (vote.shape == Shape.SHARP) {
                     compound = system.addGlyph(compound);
                     compound.setShape(vote.shape, Evaluation.ALGORITHM);
                     logger.info("Sharp glyph rebuilt as #" + compound.getId());
 
                     return true;
-                } else {
-                    logger.warning(
-                        "Shape " + vote.shape + " better then sharp for " +
-                        Glyph.toString(glyphs));
                 }
             }
         }
@@ -615,7 +616,7 @@ public class GlyphInspector
             0.15,
             "Box widening to check intersection with compound");
         Evaluation.Doubt alterMaxDoubt = new Evaluation.Doubt(
-            3,
+            6,
             "Maximum doubt for alteration sign verifocation");
         Evaluation.Doubt cleanupMaxDoubt = new Evaluation.Doubt(
             1.2,
