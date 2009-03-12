@@ -53,13 +53,13 @@ public class GlyphInspector
     /** Related lag */
     private final GlyphLag lag;
 
-    /** Constants for alter verification */
-    final int maxCloseStemDx;
-    final int    minCloseStemOverlap;
-    final int    maxCloseStemLength;
-    final int    maxNaturalOverlap;
-    final int    maxSharpNonOverlap;
-    final double alterMaxDoubt;
+    // Constants for alter verification
+    private final int    maxCloseStemDx;
+    private final int    minCloseStemOverlap;
+    private final int    maxCloseStemLength;
+    private final int    maxNaturalOverlap;
+    private final int    maxSharpNonOverlap;
+    private final double alterMaxDoubt;
 
     //~ Constructors -----------------------------------------------------------
 
