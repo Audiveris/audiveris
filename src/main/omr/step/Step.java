@@ -190,9 +190,10 @@ public enum Step {
      *
      * @param sheet the sheet on which analysis is performed
      * @param param a potential parameter (depending on the processing)
+     * @return the created or modified sheet
      */
-    public void performUntil (Sheet  sheet,
-                              Object param)
+    public Sheet performUntil (Sheet  sheet,
+                               Object param)
     {
         // Determine the starting step
         Step          from = (sheet == null) ? first
@@ -213,6 +214,8 @@ public enum Step {
             sheet.getScript()
                  .addTask(new StepTask(this));
         }
+
+        return sheet;
     }
 
     //--------------------//

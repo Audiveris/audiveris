@@ -17,6 +17,8 @@ import omr.log.Logger;
 import omr.script.Script;
 import omr.script.ScriptManager;
 
+import omr.sheet.Sheet;
+
 import omr.ui.MainGui;
 
 import omr.util.Clock;
@@ -27,7 +29,6 @@ import org.jdesktop.application.Application;
 
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.Callable;
 
 import javax.swing.*;
 
@@ -345,7 +346,22 @@ public class Main
                     @Override
                     public Void construct ()
                     {
-                        parameters.targetStep.performUntil(null, file);
+                        final Sheet sheet = parameters.targetStep.performUntil(
+                            null,
+                            file);
+
+                        // Select proper assembly tab, if UI is used
+                        if (getGui() != null) {
+                            SwingUtilities.invokeLater(
+                                new Runnable() {
+                                        public void run ()
+                                        {
+                                            sheet.getAssembly()
+                                                 .selectTab(
+                                                parameters.targetStep);
+                                        }
+                                    });
+                        }
 
                         return null;
                     }
