@@ -65,9 +65,9 @@ public class StemInspector
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------------//
-    // verifyStems //
-    //-------------//
+    //----------------//
+    // runStemPattern //
+    //----------------//
     /**
      * In a specified system, look for all stems that should not be kept,
      * rebuild surrounding glyphs and try to recognize them. If this action does
@@ -75,7 +75,7 @@ public class StemInspector
      *
      * @return the number of symbols recognized
      */
-    public int verifyStems ()
+    public int runStemPattern ()
     {
         int         nb = 0;
 

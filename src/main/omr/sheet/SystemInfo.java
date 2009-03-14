@@ -1080,17 +1080,73 @@ public class SystemInfo
         return slurInspector.fixSpuriousSlur(glyph);
     }
 
-    //--------------------//
-    // retrieveTextGlyphs //
-    //--------------------//
+    //-----------------//
+    // runAlterPattern //
+    //-----------------//
+    /**
+     * In a specified system, look for pairs of close stems that in fact result
+     * from indue segmentation of sharp or natural signs.
+     *
+     * @return the number of symbols recognized
+     */
+    public int runAlterPattern ()
+    {
+        return glyphInspector.runAlterPattern();
+    }
+
+    //----------------//
+    // runClefPattern //
+    //----------------//
+    /**
+     * In a specified system, look for clefs at the beginning of the system,
+     * and check that every staff has a clef
+     *
+     * @return the number of clefs fixed
+     */
+    public int runClefPattern ()
+    {
+        return glyphInspector.runClefPattern();
+    }
+
+    //----------------//
+    // runSlurPattern //
+    //----------------//
+    /**
+     * Process all the slur glyphs in the given system, and try to correct the
+     * spurious ones if any
+     * @return the number of slurs fixed
+     */
+    public int runSlurPattern ()
+    {
+        return slurInspector.runSlurPattern();
+    }
+
+    //----------------//
+    // runStemPattern //
+    //----------------//
+    /**
+     * In a specified system, look for all stems that should not be kept,
+     * rebuild surrounding glyphs and try to recognize them. If this action does
+     * not lead to some recognized symbol, then we restore the stems.
+     *
+     * @return the number of symbols recognized
+     */
+    public int runStemPattern ()
+    {
+        return stemInspector.runStemPattern();
+    }
+
+    //----------------//
+    // runTextPattern //
+    //----------------//
     /**
      * Retrieve the various glyphs and series of glyphs that could represent
      * text portions in the system at hand
      * @return the number of text glyphs built
      */
-    public int retrieveTextGlyphs ()
+    public int runTextPattern ()
     {
-        return textInspector.retrieveTextGlyphs();
+        return textInspector.runTextPattern();
     }
 
     //----------------//
@@ -1137,62 +1193,6 @@ public class SystemInfo
                               CompoundAdapter adapter)
     {
         return glyphInspector.tryCompound(seed, suitables, adapter);
-    }
-
-    //------------------//
-    // verifyAlterSigns //
-    //------------------//
-    /**
-     * In a specified system, look for pairs of close stems that in fact result
-     * from indue segmentation of sharp or natural signs.
-     *
-     * @return the number of symbols recognized
-     */
-    public int verifyAlterSigns ()
-    {
-        return glyphInspector.verifyAlterSigns();
-    }
-
-    //-------------//
-    // verifyClefs //
-    //-------------//
-    /**
-     * In a specified system, look for clefs at the beginning of the system,
-     * and check that every staff has a clef
-     *
-     * @return the number of clefs fixed
-     */
-    public int verifyClefs ()
-    {
-        return glyphInspector.verifyClefs();
-    }
-
-    //-------------//
-    // verifySlurs //
-    //-------------//
-    /**
-     * Process all the slur glyphs in the given system, and try to correct the
-     * spurious ones if any
-     * @return the number of slurs fixed
-     */
-    public int verifySlurs ()
-    {
-        return slurInspector.verifySlurs();
-    }
-
-    //-------------//
-    // verifyStems //
-    //-------------//
-    /**
-     * In a specified system, look for all stems that should not be kept,
-     * rebuild surrounding glyphs and try to recognize them. If this action does
-     * not lead to some recognized symbol, then we restore the stems.
-     *
-     * @return the number of symbols recognized
-     */
-    public int verifyStems ()
-    {
-        return stemInspector.verifyStems();
     }
 
     //-----------------//

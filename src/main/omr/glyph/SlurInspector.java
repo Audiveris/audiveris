@@ -73,7 +73,7 @@ public class SlurInspector
      * for a slur
      * @return the maximum circle distance, expressed as interline fraction
      */
-    public static double getMaxCircleDistance()
+    public static double getMaxCircleDistance ()
     {
         return constants.maxCircleDistance.getValue();
     }
@@ -351,15 +351,15 @@ public class SlurInspector
         }
     }
 
-    //-------------//
-    // verifySlurs //
-    //-------------//
+    //----------------//
+    // runSlurPattern //
+    //----------------//
     /**
      * Process all the oldSlur glyphs in the given system, and try to correct the
      * spurious ones if any
      * @return the number of slurs fixed
      */
-    public int verifySlurs ()
+    public int runSlurPattern ()
     {
         int         modifs = 0;
 

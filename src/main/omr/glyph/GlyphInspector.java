@@ -210,88 +210,15 @@ public class GlyphInspector
         }
     }
 
-    //-------------//
-    // tryCompound //
-    //-------------//
-    /**
-     * Try to build a compound, starting from given seed and looking into the
-     * collection of suitable glyphs.
-     *
-     * <p>Note that this method has no impact on the system/lag environment.
-     * It is the caller's responsability, for a successful (i.e. non-null)
-     * compound, to assign its shape and to add the glyph to the system/lag.
-     *
-     * @param seed the initial glyph around which the compound is built
-     * @param suitables collection of potential glyphs
-     * @param adapter the specific behavior of the compound tests
-     * @return the compound built if successful, null otherwise
-     */
-    public Glyph tryCompound (Glyph           seed,
-                              List<Glyph>     suitables,
-                              CompoundAdapter adapter)
-    {
-        // Build box extended around the seed
-        Rectangle   rect = seed.getContourBox();
-        Rectangle   box = new Rectangle(
-            rect.x - adapter.getBoxDx(),
-            rect.y - adapter.getBoxDy(),
-            rect.width + (2 * adapter.getBoxDx()),
-            rect.height + (2 * adapter.getBoxDy()));
-
-        // Retrieve good neighbors among the suitable glyphs
-        List<Glyph> neighbors = new ArrayList<Glyph>();
-
-        // Include the seed in the compound glyphs
-        neighbors.add(seed);
-
-        for (Glyph g : suitables) {
-            if (!adapter.isSuitable(g)) {
-                continue;
-            }
-
-            if (box.intersects(g.getContourBox())) {
-                neighbors.add(g);
-            }
-        }
-
-        if (neighbors.size() > 1) {
-            if (logger.isFineEnabled()) {
-                logger.finest(
-                    "neighbors=" + Glyph.toString(neighbors) + " seed=" + seed);
-            }
-
-            Glyph compound = system.buildCompound(neighbors);
-
-            if (adapter.isValid(compound)) {
-                // If this compound duplicates an original glyph, 
-                // make sure the shape was not forbidden in the original
-                Glyph original = system.getSheet()
-                                       .getVerticalLag()
-                                       .getOriginal(compound);
-
-                if ((original == null) ||
-                    !original.isShapeForbidden(compound.getShape())) {
-                    if (logger.isFineEnabled()) {
-                        logger.fine("Inserted compound " + compound);
-                    }
-
-                    return compound;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    //------------------//
-    // verifyAlterSigns //
-    //------------------//
+    //-----------------//
+    // runAlterPattern //
+    //-----------------//
     /**
      * Verify the case of stems very close to each other since they may result
      * from wrong segmentation of sharp or natural signs
      * @return the number of cases fixed
      */
-    public int verifyAlterSigns ()
+    public int runAlterPattern ()
     {
         // First retrieve the collection of all stems in the system
         // Ordered naturally by their abscissa
@@ -375,14 +302,14 @@ public class GlyphInspector
         return successNb;
     }
 
-    //-------------//
-    // verifyClefs //
-    //-------------//
+    //----------------//
+    // runClefPattern //
+    //----------------//
     /**
      * Verify the initial clefs of a system
      * @return the number of clefs fixed
      */
-    public int verifyClefs ()
+    public int runClefPattern ()
     {
         int successNb = 0;
 
@@ -437,6 +364,79 @@ public class GlyphInspector
         }
 
         return successNb;
+    }
+
+    //-------------//
+    // tryCompound //
+    //-------------//
+    /**
+     * Try to build a compound, starting from given seed and looking into the
+     * collection of suitable glyphs.
+     *
+     * <p>Note that this method has no impact on the system/lag environment.
+     * It is the caller's responsability, for a successful (i.e. non-null)
+     * compound, to assign its shape and to add the glyph to the system/lag.
+     *
+     * @param seed the initial glyph around which the compound is built
+     * @param suitables collection of potential glyphs
+     * @param adapter the specific behavior of the compound tests
+     * @return the compound built if successful, null otherwise
+     */
+    public Glyph tryCompound (Glyph           seed,
+                              List<Glyph>     suitables,
+                              CompoundAdapter adapter)
+    {
+        // Build box extended around the seed
+        Rectangle   rect = seed.getContourBox();
+        Rectangle   box = new Rectangle(
+            rect.x - adapter.getBoxDx(),
+            rect.y - adapter.getBoxDy(),
+            rect.width + (2 * adapter.getBoxDx()),
+            rect.height + (2 * adapter.getBoxDy()));
+
+        // Retrieve good neighbors among the suitable glyphs
+        List<Glyph> neighbors = new ArrayList<Glyph>();
+
+        // Include the seed in the compound glyphs
+        neighbors.add(seed);
+
+        for (Glyph g : suitables) {
+            if (!adapter.isSuitable(g)) {
+                continue;
+            }
+
+            if (box.intersects(g.getContourBox())) {
+                neighbors.add(g);
+            }
+        }
+
+        if (neighbors.size() > 1) {
+            if (logger.isFineEnabled()) {
+                logger.finest(
+                    "neighbors=" + Glyph.toString(neighbors) + " seed=" + seed);
+            }
+
+            Glyph compound = system.buildCompound(neighbors);
+
+            if (adapter.isValid(compound)) {
+                // If this compound duplicates an original glyph, 
+                // make sure the shape was not forbidden in the original
+                Glyph original = system.getSheet()
+                                       .getVerticalLag()
+                                       .getOriginal(compound);
+
+                if ((original == null) ||
+                    !original.isShapeForbidden(compound.getShape())) {
+                    if (logger.isFineEnabled()) {
+                        logger.fine("Inserted compound " + compound);
+                    }
+
+                    return compound;
+                }
+            }
+        }
+
+        return null;
     }
 
     //-----------//

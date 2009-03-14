@@ -100,14 +100,14 @@ public class TextInspector
     }
 
     //--------------------//
-    // retrieveTextGlyphs //
+    // runTextPattern //
     //--------------------//
     /**
      * Retrieve the various glyphs and series of glyphs that could represent
      * text portions in the system at hand
      * @return the number of text glyphs built
      */
-    public int retrieveTextGlyphs ()
+    public int runTextPattern ()
     {
         TextArea area = new TextArea(
             system,

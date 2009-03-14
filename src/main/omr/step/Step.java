@@ -88,9 +88,9 @@ public enum Step {
     LEAVES(SYMBOLS.label, "Recognize Leaves & Compounds"), 
 
     /**
-     * Cleanup stems and slurs
+     * Process specific patterns (clefs, sharps, naturals, stems, slurs, ...)
      */
-    CLEANUP(SYMBOLS.label, "Cleanup stems and slurs"), 
+    PATTERNS(SYMBOLS.label, "Specific patterns"),
 
     /**
      * Translate glyphs into score entities

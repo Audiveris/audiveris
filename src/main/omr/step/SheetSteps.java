@@ -87,7 +87,7 @@ public class SheetSteps
         tasks.put(SYMBOLS, new SymbolsTask(sheet, SYMBOLS));
         tasks.put(VERTICALS, new VerticalsTask(sheet, VERTICALS));
         tasks.put(LEAVES, new LeavesTask(sheet, LEAVES));
-        tasks.put(CLEANUP, new CleanupTask(sheet, CLEANUP));
+        tasks.put(PATTERNS, new PatternsTask(sheet, PATTERNS));
         tasks.put(SCORE, new ScoreTask(sheet, SCORE));
     }
 
@@ -307,167 +307,6 @@ public class SheetSteps
             "Maximum number of iterations for CLEANUP task");
     }
 
-    //--------------//
-    // MeasuresTask //
-    //--------------//
-    /**
-     * Step to retrieve  measures
-     */
-    private class MeasuresTask
-        extends SystemTask
-    {
-        //~ Constructors -------------------------------------------------------
-
-        MeasuresTask (Sheet sheet,
-                      Step  step)
-        {
-            super(sheet, step);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public void displayUI ()
-        {
-            Main.getGui().scoreController.setScoreView(sheet.getScore());
-        }
-
-        @Override
-        public void doSystem (SystemInfo system)
-            throws StepException
-        {
-            system.buildMeasures(); // For Measures
-        }
-
-        @Override
-        protected void doEpilog (Collection<SystemInfo> systems)
-            throws StepException
-        {
-            if (logger.isFineEnabled()) {
-                logger.fine(step + " doEpilog");
-            }
-
-            // Update score internal data
-            sheet.getScore()
-                 .accept(new ScoreFixer(true));
-            sheet.getScore()
-                 .dumpMeasureCounts(null);
-        }
-    }
-
-    //-------------//
-    // SystemsTask //
-    //-------------//
-    /**
-     * Step to retrieve bar sticks, and thus systems
-     */
-    private static class SystemsTask
-        extends SheetTask
-    {
-        //~ Constructors -------------------------------------------------------
-
-        SystemsTask (Sheet sheet,
-                     Step  step)
-        {
-            super(sheet, step);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public void displayUI ()
-        {
-            Main.getGui().scoreController.setScoreView(sheet.getScore());
-        }
-
-        @Override
-        public void doit (Collection<SystemInfo> systems)
-            throws StepException
-        {
-            sheet.getSystemsBuilder()
-                 .buildSystems();
-        }
-    }
-
-    //-------------//
-    // CleanupTask //
-    //-------------//
-    /**
-     * Step to clean up undue constructions, such as wrong stems..
-     */
-    private class CleanupTask
-        extends SystemTask
-    {
-        //~ Constructors -------------------------------------------------------
-
-        CleanupTask (Sheet sheet,
-                     Step  step)
-        {
-            super(sheet, step);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public void displayUI ()
-        {
-            getTask(SYMBOLS)
-                .displayUI();
-            getTask(VERTICALS)
-                .displayUI();
-        }
-
-        @Override
-        public void doSystem (SystemInfo system)
-            throws StepException
-        {
-            final int iterNb = constants.MaxCleanupIterations.getValue();
-            boolean   keepGoing = true;
-
-            for (int iter = 0; keepGoing && (iter < iterNb); iter++) {
-                int clefModifs = 0;
-                int alterModifs = 0;
-                int stemModifs = 0;
-                int slurModifs = 0;
-                int textModifs = 0;
-
-                // Clefs
-                system.removeInactiveGlyphs();
-                clefModifs = system.verifyClefs();
-
-                // Close Stems (sharps & naturals)
-                system.removeInactiveGlyphs();
-                alterModifs = system.verifyAlterSigns();
-
-                // Stems
-                system.removeInactiveGlyphs();
-                stemModifs = system.verifyStems();
-
-                // Slurs
-                system.removeInactiveGlyphs();
-                system.retrieveGlyphs();
-                slurModifs = system.verifySlurs();
-
-                // Texts
-                system.removeInactiveGlyphs();
-                system.retrieveGlyphs();
-                textModifs = system.retrieveTextGlyphs();
-
-                // Progress made?
-                keepGoing = (clefModifs + alterModifs + stemModifs +
-                            slurModifs + textModifs) > 0;
-
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "System#" + system.getId() + " CLEANUP#" + iter +
-                        " clef:" + clefModifs + " alter:" + alterModifs +
-                        " stems:" + stemModifs + " slurs:" + slurModifs +
-                        " texts:" + textModifs);
-                }
-            }
-        }
-    }
-
     //-----------------//
     // HorizontalsTask //
     //-----------------//
@@ -493,41 +332,6 @@ public class SheetSteps
         {
             sheet.setHorizontalsBuilder(new HorizontalsBuilder(sheet));
             sheet.setHorizontals(sheet.getHorizontalsBuilder().buildInfo());
-        }
-    }
-
-    //------------//
-    // LeavesTask //
-    //------------//
-    /**
-     * Step to extract newly segmented leaves, since sections belonging to stems
-     * are properly assigned.
-     */
-    private class LeavesTask
-        extends SystemTask
-    {
-        //~ Constructors -------------------------------------------------------
-
-        LeavesTask (Sheet sheet,
-                    Step  step)
-        {
-            super(sheet, step);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public void displayUI ()
-        {
-            getTask(SYMBOLS)
-                .displayUI();
-        }
-
-        @Override
-        public void doSystem (SystemInfo system)
-            throws StepException
-        {
-            system.inspectGlyphs(GlyphInspector.getLeafMaxDoubt());
         }
     }
 
@@ -617,6 +421,54 @@ public class SheetSteps
         }
     }
 
+    //--------------//
+    // MeasuresTask //
+    //--------------//
+    /**
+     * Step to retrieve  measures
+     */
+    private class MeasuresTask
+        extends SystemTask
+    {
+        //~ Constructors -------------------------------------------------------
+
+        MeasuresTask (Sheet sheet,
+                      Step  step)
+        {
+            super(sheet, step);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void displayUI ()
+        {
+            Main.getGui().scoreController.setScoreView(sheet.getScore());
+        }
+
+        @Override
+        public void doSystem (SystemInfo system)
+            throws StepException
+        {
+            system.buildMeasures(); // For Measures
+        }
+
+        @Override
+        protected void doEpilog (Collection<SystemInfo> systems)
+            throws StepException
+        {
+            if (logger.isFineEnabled()) {
+                logger.fine(step + " doEpilog");
+            }
+
+            // Update score internal data
+            sheet.getScore()
+                 .accept(new ScoreFixer(true));
+            sheet.getScore()
+                 .dumpMeasureCounts(null);
+        }
+    }
+
     //-----------//
     // ScaleTask //
     //-----------//
@@ -646,6 +498,155 @@ public class SheetSteps
         {
             Scale scale = new Scale(sheet);
             sheet.setScale(scale);
+        }
+    }
+
+    //-------------//
+    // SystemsTask //
+    //-------------//
+    /**
+     * Step to retrieve bar sticks, and thus systems
+     */
+    private static class SystemsTask
+        extends SheetTask
+    {
+        //~ Constructors -------------------------------------------------------
+
+        SystemsTask (Sheet sheet,
+                     Step  step)
+        {
+            super(sheet, step);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void displayUI ()
+        {
+            Main.getGui().scoreController.setScoreView(sheet.getScore());
+        }
+
+        @Override
+        public void doit (Collection<SystemInfo> systems)
+            throws StepException
+        {
+            sheet.getSystemsBuilder()
+                 .buildSystems();
+        }
+    }
+
+    //------------//
+    // LeavesTask //
+    //------------//
+    /**
+     * Step to extract newly segmented leaves, since sections belonging to stems
+     * are properly assigned.
+     */
+    private class LeavesTask
+        extends SystemTask
+    {
+        //~ Constructors -------------------------------------------------------
+
+        LeavesTask (Sheet sheet,
+                    Step  step)
+        {
+            super(sheet, step);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void displayUI ()
+        {
+            getTask(SYMBOLS)
+                .displayUI();
+        }
+
+        @Override
+        public void doSystem (SystemInfo system)
+            throws StepException
+        {
+            system.inspectGlyphs(GlyphInspector.getLeafMaxDoubt());
+        }
+    }
+
+    //--------------//
+    // PatternsTask //
+    //--------------//
+    /**
+     * Step to run processing of specific patterns arounds clefs, sharps,
+     * naturals, stems, slurs, ect
+     */
+    private class PatternsTask
+        extends SystemTask
+    {
+        //~ Constructors -------------------------------------------------------
+
+        PatternsTask (Sheet sheet,
+                      Step  step)
+        {
+            super(sheet, step);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void displayUI ()
+        {
+            getTask(SYMBOLS)
+                .displayUI();
+            getTask(VERTICALS)
+                .displayUI();
+        }
+
+        @Override
+        public void doSystem (SystemInfo system)
+            throws StepException
+        {
+            final int iterNb = constants.MaxCleanupIterations.getValue();
+            boolean   keepGoing = true;
+
+            for (int iter = 0; keepGoing && (iter < iterNb); iter++) {
+                int clefModifs = 0;
+                int alterModifs = 0;
+                int stemModifs = 0;
+                int slurModifs = 0;
+                int textModifs = 0;
+
+                // Clefs
+                system.removeInactiveGlyphs();
+                clefModifs = system.runClefPattern();
+
+                // Close Stems (sharps & naturals)
+                system.removeInactiveGlyphs();
+                alterModifs = system.runAlterPattern();
+
+                // Stems
+                system.removeInactiveGlyphs();
+                stemModifs = system.runStemPattern();
+
+                // Slurs
+                system.removeInactiveGlyphs();
+                system.retrieveGlyphs();
+                slurModifs = system.runSlurPattern();
+
+                // Texts
+                system.removeInactiveGlyphs();
+                system.retrieveGlyphs();
+                textModifs = system.runTextPattern();
+
+                // Progress made?
+                keepGoing = (clefModifs + alterModifs + stemModifs +
+                            slurModifs + textModifs) > 0;
+
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "System#" + system.getId() + " CLEANUP#" + iter +
+                        " clef:" + clefModifs + " alter:" + alterModifs +
+                        " stems:" + stemModifs + " slurs:" + slurModifs +
+                        " texts:" + textModifs);
+                }
+            }
         }
     }
 
