@@ -271,9 +271,11 @@ public class GlyphInspector
                     continue;
                 }
 
-                logger.info(
-                    "close stems: " +
-                    Glyph.toString(Arrays.asList(glyph, other)));
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "close stems: " +
+                        Glyph.toString(Arrays.asList(glyph, other)));
+                }
 
                 // "hide" the stems to not perturb evaluation
                 glyph.setShape(null);
@@ -467,7 +469,7 @@ public class GlyphInspector
                 compound = system.addGlyph(compound);
                 compound.setShape(vote.shape, Evaluation.ALGORITHM);
                 logger.info(
-                    "Clef " + vote.shape + " rebuilt as #" + compound.getId());
+                    vote.shape + " rebuilt as glyph#" + compound.getId());
 
                 return true;
             }
@@ -531,7 +533,7 @@ public class GlyphInspector
                 if (vote.shape == Shape.SHARP) {
                     compound = system.addGlyph(compound);
                     compound.setShape(vote.shape, Evaluation.ALGORITHM);
-                    logger.info("Sharp glyph rebuilt as #" + compound.getId());
+                    logger.info("SHARP rebuilt as glyph#" + compound.getId());
 
                     return true;
                 }
