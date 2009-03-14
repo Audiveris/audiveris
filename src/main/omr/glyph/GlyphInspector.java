@@ -272,9 +272,7 @@ public class GlyphInspector
                 }
 
                 if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "close stems: " +
-                        Glyph.toString(Arrays.asList(glyph, other)));
+                    logger.fine("close stems: " + Glyph.toString(glyph, other));
                 }
 
                 // "hide" the stems to not perturb evaluation

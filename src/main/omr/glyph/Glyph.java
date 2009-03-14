@@ -1342,12 +1342,44 @@ public class Glyph
     //----------//
     /**
      * Convenient method, to build a string with just the ids of the glyph
+     * array, introduced by the provided label
+     *
+     * @param label the string that introduces the list of IDs
+     * @param glyphs the array of glyphs
+     * @return the string built
+     */
+    public static String toString (String   label,
+                                   Glyph... glyphs)
+    {
+        return toString(label, Arrays.asList(glyphs));
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    /**
+     * Convenient method, to build a string with just the ids of the glyph
      * collection, introduced by the label "glyphs"
      *
      * @param glyphs the collection of glyphs
      * @return the string built
      */
     public static String toString (Collection<?extends Glyph> glyphs)
+    {
+        return toString("glyphs", glyphs);
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    /**
+     * Convenient method, to build a string with just the ids of the glyph
+     * array, introduced by the label "glyphs"
+     *
+     * @param glyphs the array of glyphs
+     * @return the string built
+     */
+    public static String toString (Glyph... glyphs)
     {
         return toString("glyphs", glyphs);
     }
