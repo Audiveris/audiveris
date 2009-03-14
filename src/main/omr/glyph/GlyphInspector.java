@@ -16,6 +16,7 @@ import omr.log.Logger;
 import omr.score.common.PixelRectangle;
 
 import omr.sheet.Scale;
+import omr.sheet.StaffInfo;
 import omr.sheet.SystemInfo;
 
 import omr.util.Implement;
@@ -61,6 +62,10 @@ public class GlyphInspector
     private final int    maxSharpNonOverlap;
     private final double alterMaxDoubt;
 
+    // Constants for clef verification
+    private final int    clefHalfWidth;
+    private final double clefMaxDoubt;
+
     //~ Constructors -----------------------------------------------------------
 
     //----------------//
@@ -85,6 +90,9 @@ public class GlyphInspector
         maxNaturalOverlap = scale.toPixels(constants.maxNaturalOverlap);
         maxSharpNonOverlap = scale.toPixels(constants.maxSharpNonOverlap);
         alterMaxDoubt = constants.alterMaxDoubt.getValue();
+
+        clefHalfWidth = scale.toPixels(constants.clefHalfWidth);
+        clefMaxDoubt = constants.clefMaxDoubt.getValue();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -367,6 +375,107 @@ public class GlyphInspector
         return successNb;
     }
 
+    //-------------//
+    // verifyClefs //
+    //-------------//
+    /**
+     * Verify the initial clefs of a system
+     * @return the number of clefs fixed
+     */
+    public int verifyClefs ()
+    {
+        int successNb = 0;
+
+        for (Glyph glyph : system.getGlyphs()) {
+            if (!glyph.isClef()) {
+                continue;
+            }
+
+            if (logger.isFineEnabled()) {
+                logger.fine("Glyph#" + glyph.getId() + " " + glyph.getShape());
+            }
+
+            PixelRectangle box = glyph.getContourBox();
+            int            x = box.x + (box.width / 2);
+            int            y = box.y + (box.height / 2);
+            StaffInfo      staff = system.getStaffAtY(y);
+
+            // Look in the other staves
+            for (StaffInfo oStaff : system.getStaves()) {
+                if (oStaff == staff) {
+                    continue;
+                }
+
+                // Is there a clef in this staff, with similar abscissa?
+                PixelRectangle oBox = new PixelRectangle(
+                    x - clefHalfWidth,
+                    oStaff.getFirstLine().yAt(x),
+                    2 * clefHalfWidth,
+                    oStaff.getHeight());
+
+                if (logger.isFineEnabled()) {
+                    logger.fine("oBox: " + oBox);
+                }
+
+                Collection<Glyph> glyphs = system.lookupIntersectedGlyphs(oBox);
+
+                if (logger.isFineEnabled()) {
+                    logger.fine(Glyph.toString(glyphs));
+                }
+
+                if (!foundClef(glyphs)) {
+                    if (logger.isFineEnabled()) {
+                        logger.fine(
+                            "No clef found at x:" + x + " in staff " + oStaff);
+                    }
+
+                    if (checkClef(glyphs)) {
+                        successNb++;
+                    }
+                }
+            }
+        }
+
+        return successNb;
+    }
+
+    //-----------//
+    // checkClef //
+    //-----------//
+    /**
+     * Try to recognize a glef in the compound of the provided glyphs
+     * @param glyphs the parts of a clef candidate
+     * @return true if successful
+     */
+    private boolean checkClef (Collection<Glyph> glyphs)
+    {
+        purgeManualShapes(glyphs);
+
+        Glyph compound = system.buildCompound(glyphs);
+        system.computeGlyphFeatures(compound);
+
+        final Evaluation[] votes = GlyphNetwork.getInstance()
+                                               .getEvaluations(compound);
+
+        // Check if a clef appears in the top evaluations
+        for (Evaluation vote : votes) {
+            if (vote.doubt > clefMaxDoubt) {
+                break;
+            }
+
+            if (Shape.Clefs.contains(vote.shape)) {
+                compound = system.addGlyph(compound);
+                compound.setShape(vote.shape, Evaluation.ALGORITHM);
+                logger.info(
+                    "Clef " + vote.shape + " rebuilt as #" + compound.getId());
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     //------------//
     // checkSharp //
     //------------//
@@ -426,6 +535,30 @@ public class GlyphInspector
 
                     return true;
                 }
+            }
+        }
+
+        return false;
+    }
+
+    //-----------//
+    // foundClef //
+    //-----------//
+    /**
+     * Check whether the provided collection of glyphs contains a clef
+     * @param glyphs the provided glyphs
+     * @return trur if a clef shape if found
+     */
+    private boolean foundClef (Collection<Glyph> glyphs)
+    {
+        for (Glyph gl : glyphs) {
+            if (gl.isClef()) {
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "Found glyph#" + gl.getId() + " as " + gl.getShape());
+                }
+
+                return true;
             }
         }
 
@@ -617,7 +750,7 @@ public class GlyphInspector
             "Box widening to check intersection with compound");
         Evaluation.Doubt alterMaxDoubt = new Evaluation.Doubt(
             6,
-            "Maximum doubt for alteration sign verifocation");
+            "Maximum doubt for alteration sign verification");
         Evaluation.Doubt cleanupMaxDoubt = new Evaluation.Doubt(
             1.2,
             "Maximum doubt for cleanup phase");
@@ -645,5 +778,11 @@ public class GlyphInspector
         Scale.Fraction   maxCloseStemLength = new Scale.Fraction(
             3d,
             "Maximum length for close stems");
+        Scale.Fraction   clefHalfWidth = new Scale.Fraction(
+            2d,
+            "half width of a clef");
+        Evaluation.Doubt clefMaxDoubt = new Evaluation.Doubt(
+            3,
+            "Maximum doubt for clef verification");
     }
 }

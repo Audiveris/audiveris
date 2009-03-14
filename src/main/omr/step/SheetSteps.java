@@ -425,10 +425,15 @@ public class SheetSteps
             boolean   keepGoing = true;
 
             for (int iter = 0; keepGoing && (iter < iterNb); iter++) {
+                int clefModifs = 0;
                 int alterModifs = 0;
                 int stemModifs = 0;
                 int slurModifs = 0;
                 int textModifs = 0;
+
+                // Clefs
+                system.removeInactiveGlyphs();
+                clefModifs = system.verifyClefs();
 
                 // Close Stems (sharps & naturals)
                 system.removeInactiveGlyphs();
@@ -449,14 +454,15 @@ public class SheetSteps
                 textModifs = system.retrieveTextGlyphs();
 
                 // Progress made?
-                keepGoing = (alterModifs + stemModifs + slurModifs +
-                            textModifs) > 0;
+                keepGoing = (clefModifs + alterModifs + stemModifs +
+                            slurModifs + textModifs) > 0;
 
                 if (logger.isFineEnabled()) {
                     logger.fine(
                         "System#" + system.getId() + " CLEANUP#" + iter +
-                        " alter:" + alterModifs + " stems:" + stemModifs +
-                        " slurs:" + slurModifs + " texts:" + textModifs);
+                        " clef:" + clefModifs + " alter:" + alterModifs +
+                        " stems:" + stemModifs + " slurs:" + slurModifs +
+                        " texts:" + textModifs);
                 }
             }
         }

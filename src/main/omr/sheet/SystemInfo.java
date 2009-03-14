@@ -1143,7 +1143,7 @@ public class SystemInfo
     // verifyAlterSigns //
     //------------------//
     /**
-     * In a specified system, look for coupls of close stems that in fact result
+     * In a specified system, look for pairs of close stems that in fact result
      * from indue segmentation of sharp or natural signs.
      *
      * @return the number of symbols recognized
@@ -1151,6 +1151,20 @@ public class SystemInfo
     public int verifyAlterSigns ()
     {
         return glyphInspector.verifyAlterSigns();
+    }
+
+    //-------------//
+    // verifyClefs //
+    //-------------//
+    /**
+     * In a specified system, look for clefs at the beginning of the system,
+     * and check that every staff has a clef
+     *
+     * @return the number of clefs fixed
+     */
+    public int verifyClefs ()
+    {
+        return glyphInspector.verifyClefs();
     }
 
     //-------------//

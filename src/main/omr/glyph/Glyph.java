@@ -190,6 +190,19 @@ public class Glyph
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------//
+    // isClef //
+    //--------//
+    /**
+     * Convenient method which tests if the glyph is a Clef
+     *
+     * @return true if glyph shape is a Clef
+     */
+    public boolean isClef ()
+    {
+        return Shape.Clefs.contains(getShape());
+    }
+
     //---------//
     // isKnown //
     //---------//
