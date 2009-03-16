@@ -530,6 +530,10 @@ public class GlyphInspector
             final Set<Glyph> glyphs = lag.lookupGlyphs(system.getGlyphs(), box);
             purgeManualShapes(glyphs);
 
+            if (glyphs.isEmpty()) {
+                return false;
+            }
+
             Glyph compound = system.buildCompound(glyphs);
             system.computeGlyphFeatures(compound);
 
