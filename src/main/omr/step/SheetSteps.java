@@ -20,7 +20,11 @@ import omr.glyph.Shape;
 
 import omr.log.Logger;
 
+import omr.score.entity.Measure;
+import omr.score.entity.ScoreSystem;
 import omr.score.ui.ScoreActions;
+import omr.score.visitor.ScoreChecker;
+import omr.score.visitor.ScoreCleaner;
 import omr.score.visitor.ScoreFixer;
 
 import omr.sheet.HorizontalsBuilder;
@@ -301,10 +305,14 @@ public class SheetSteps
     {
         //~ Instance fields ----------------------------------------------------
 
-        private final Constant.Integer MaxCleanupIterations = new Constant.Integer(
+        private final Constant.Integer MaxPatternsIterations = new Constant.Integer(
             "count",
             10,
-            "Maximum number of iterations for CLEANUP task");
+            "Maximum number of iterations for PATTERNS task");
+        private final Constant.Integer MaxScoreIterations = new Constant.Integer(
+            "count",
+            10,
+            "Maximum number of iterations for SCORE task");
     }
 
     //-----------------//
@@ -603,7 +611,7 @@ public class SheetSteps
         public void doSystem (SystemInfo system)
             throws StepException
         {
-            final int iterNb = constants.MaxCleanupIterations.getValue();
+            final int iterNb = constants.MaxPatternsIterations.getValue();
             boolean   keepGoing = true;
 
             for (int iter = 0; keepGoing && (iter < iterNb); iter++) {
@@ -641,7 +649,7 @@ public class SheetSteps
 
                 if (logger.isFineEnabled()) {
                     logger.fine(
-                        "System#" + system.getId() + " CLEANUP#" + iter +
+                        "System#" + system.getId() + " PATTERNS#" + iter +
                         " clef:" + clefModifs + " alter:" + alterModifs +
                         " stems:" + stemModifs + " slurs:" + slurModifs +
                         " texts:" + textModifs);
@@ -672,10 +680,8 @@ public class SheetSteps
         @Override
         public void displayUI ()
         {
-            // Make sure symbols & verticals are displayed
+            // Symbols may have been updated (beam hooks for example)
             getTask(SYMBOLS)
-                .displayUI();
-            getTask(VERTICALS)
                 .displayUI();
         }
 
@@ -703,7 +709,44 @@ public class SheetSteps
         public void doSystem (SystemInfo system)
             throws StepException
         {
-            system.translateSystem();
+            final int         iterNb = constants.MaxScoreIterations.getValue();
+            final ScoreSystem scoreSystem = system.getScoreSystem();
+            final boolean[]   modified = new boolean[1];
+            modified[0] = true;
+
+            for (int iter = 1; modified[0] && (iter <= iterNb); iter++) {
+                modified[0] = false;
+
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "System#" + system.getId() + " translation iter #" +
+                        iter);
+                }
+
+                // Clear errors for this system only
+                system.getSheet()
+                      .getErrorsEditor()
+                      .clearSystem(system.getId());
+
+                // Cleanup the system, staves, measures, barlines, ...
+                // and clear glyph (& sentence) translations
+                scoreSystem.accept(new ScoreCleaner());
+
+                // Real translation
+                system.translateSystem();
+
+                /** Final checks */
+                scoreSystem.acceptChildren(new ScoreChecker(modified));
+            }
+
+            // Additional measure checking
+            try {
+                Measure.checkPartialMeasures(scoreSystem);
+            } catch (Exception ex) {
+                logger.warning(
+                    "Error checking partial measures in " + system,
+                    ex);
+            }
         }
     }
 

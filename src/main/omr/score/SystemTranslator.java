@@ -46,8 +46,6 @@ import omr.score.entity.Tuplet;
 import omr.score.entity.Wedge;
 import omr.score.midi.MidiAgent;
 import omr.score.ui.ScoreView;
-import omr.score.visitor.ScoreChecker;
-import omr.score.visitor.ScoreCleaner;
 import omr.score.visitor.ScoreFixer;
 import omr.score.visitor.ScoreTimeFixer;
 
@@ -73,8 +71,10 @@ public class SystemTranslator
 
     //~ Instance fields --------------------------------------------------------
 
-    /** The current system */
+    /** The physical system */
     private final SystemInfo systemInfo;
+
+    /** The logical system */
     private ScoreSystem system;
 
     /** The current systempart */
@@ -164,37 +164,6 @@ public class SystemTranslator
     //-----------------//
     public void translateSystem ()
     {
-        // Clear errors for this system only
-        system = systemInfo.getScoreSystem();
-        systemInfo.getSheet()
-                  .getErrorsEditor()
-                  .clearSystem(system.getId());
-
-        // Cleanup the system, staves, measures, barlines, ...
-        // and clear glyph (& sentence) translations
-        system.accept(new ScoreCleaner());
-
-        // Real translation
-        doTranslateSystem();
-
-        // Additional measure checking
-        try {
-            Measure.checkPartialMeasures(system);
-        } catch (Exception ex) {
-            logger.warning("Error checking partial measures in " + system, ex);
-        }
-
-        ///Measure.checkImplicitMeasures(system);
-
-        /** Final checks */
-        system.acceptChildren(new ScoreChecker());
-    }
-
-    //-------------------//
-    // doTranslateSystem //
-    //-------------------//
-    private void doTranslateSystem ()
-    {
         // Translations in proper order
 
         // Whole score impact
@@ -258,6 +227,8 @@ public class SystemTranslator
      */
     private void translate (Translator translator)
     {
+        system = systemInfo.getScoreSystem();
+        
         // Browse the system collection of glyphs
         for (Glyph glyph : system.getInfo()
                                  .getGlyphs()) {
@@ -765,7 +736,7 @@ public class SystemTranslator
                     logger.fine(chord.toString());
 
                     if (!chord.getBeams()
-                             .isEmpty()) {
+                              .isEmpty()) {
                         logger.fine("   Beams:" + chord.getBeams().size());
                     }
 

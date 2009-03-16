@@ -90,9 +90,9 @@ public class BeamItem
         glyph.setTranslation(this);
     }
 
-    //------//
-    // Note //
-    //------//
+    //----------//
+    // BeamItem //
+    //----------//
     /** Create a new instance of beam item, as a chunk of a larger beam pack.
      *
      * @param measure the containing measure
@@ -419,7 +419,7 @@ public class BeamItem
             return 1;
 
         default :
-            logger.severe("Use of BeamItem.packSizeOf with shape " + shape);
+            logger.severe("Use of BeamItem.packCardOf with shape " + shape);
 
             return 0;
         }

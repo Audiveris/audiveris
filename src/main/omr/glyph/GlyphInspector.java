@@ -97,18 +97,18 @@ public class GlyphInspector
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------------------//
-    // getCleanupMaxDoubt //
-    //--------------------//
+    //-----------------//
+    // getHookMaxDoubt //
+    //-----------------//
     /**
-     * Report the maximum doubt for a cleanup
+     * Report the maximum doubt for a beam hook
      *
      *
      * @return maximum acceptable doubt value
      */
-    public static double getCleanupMaxDoubt ()
+    public static double getHookMaxDoubt ()
     {
-        return constants.cleanupMaxDoubt.getValue();
+        return constants.hookMaxDoubt.getValue();
     }
 
     //-----------------//
@@ -135,6 +135,20 @@ public class GlyphInspector
     public static double getMinCompoundPartDoubt ()
     {
         return constants.minCompoundPartDoubt.getValue();
+    }
+
+    //--------------------//
+    // getPatternsMaxDoubt //
+    //--------------------//
+    /**
+     * Report the maximum doubt for a cleanup
+     *
+     *
+     * @return maximum acceptable doubt value
+     */
+    public static double getPatternsMaxDoubt ()
+    {
+        return constants.patternsMaxDoubt.getValue();
     }
 
     //-------------------//
@@ -751,7 +765,7 @@ public class GlyphInspector
         Evaluation.Doubt alterMaxDoubt = new Evaluation.Doubt(
             6,
             "Maximum doubt for alteration sign verification");
-        Evaluation.Doubt cleanupMaxDoubt = new Evaluation.Doubt(
+        Evaluation.Doubt patternsMaxDoubt = new Evaluation.Doubt(
             1.2,
             "Maximum doubt for cleanup phase");
         Evaluation.Doubt leafMaxDoubt = new Evaluation.Doubt(
@@ -782,7 +796,10 @@ public class GlyphInspector
             2d,
             "half width of a clef");
         Evaluation.Doubt clefMaxDoubt = new Evaluation.Doubt(
-            3,
+            3d,
             "Maximum doubt for clef verification");
+        Evaluation.Doubt hookMaxDoubt = new Evaluation.Doubt(
+            5d,
+            "Maximum doubt for beam hook verification");
     }
 }

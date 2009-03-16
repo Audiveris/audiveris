@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><umlet_diagram><help_text>//Uncomment the following line to change the fontsize:
+//fontsize=14
+
+//Welcome to UMLet!
+
+// *Double-click on UML elements to add them to the diagram.
+// *Edit element properties by modifying the text in this panel.
+// *Edit the files in the 'palettes' directory to store your own element palettes.
+// *Press Del or Backspace to remove elements from the diagram.
+// *Hold down Ctrl key to select multiple elements.
+// *Press c to copy the UML diagram to the system clipboard.
+// * This text will be stored with each diagram. Feel free to use the area for notes.
+</help_text><element><type>com.umlet.element.base.Class</type><coordinates><x>80</x><y>160</y><w>100</w><h>60</h></coordinates><panel_attributes>Beam</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Class</type><coordinates><x>80</x><y>70</y><w>100</w><h>30</h></coordinates><panel_attributes>BeamGroup</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>77</x><y>80</y><w>107</w><h>100</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-
+r1=    level   ordered</panel_attributes><additional_attributes>53;20;53;80</additional_attributes></element><element><type>com.umlet.element.base.Class</type><coordinates><x>320</x><y>70</y><w>100</w><h>30</h></coordinates><panel_attributes>Voice</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>160</x><y>60</y><w>180</w><h>40</h></coordinates><panel_attributes>lt=&lt;-</panel_attributes><additional_attributes>160;20;20;20</additional_attributes></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>70</x><y>200</y><w>120</w><h>100</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-
+r1=abscissa    ordered</panel_attributes><additional_attributes>60;20;60;80</additional_attributes></element><element><type>com.umlet.element.base.Class</type><coordinates><x>80</x><y>280</y><w>100</w><h>50</h></coordinates><panel_attributes>BeamItem
+--
+glyph</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>160</x><y>150</y><w>180</w><h>40</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m1=abscissa ordered</panel_attributes><additional_attributes>20;20;160;20</additional_attributes></element><element><type>com.umlet.element.base.Class</type><coordinates><x>320</x><y>160</y><w>100</w><h>60</h></coordinates><panel_attributes>Chord
+--
+stem</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>310</x><y>80</y><w>120</w><h>100</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-
+r1=abscissa    ordered</panel_attributes><additional_attributes>60;20;60;80</additional_attributes></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>160</x><y>180</y><w>180</w><h>40</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m1=abscissa ordered</panel_attributes><additional_attributes>160;20;20;20</additional_attributes></element></umlet_diagram>
