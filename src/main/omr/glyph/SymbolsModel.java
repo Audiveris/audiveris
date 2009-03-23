@@ -178,6 +178,11 @@ public class SymbolsModel
     @Override
     public void deassignGlyph (Glyph glyph)
     {
+        // Safer
+        if (glyph.getShape() == null) {
+            return;
+        }
+
         // Processing depends on shape at hand
         switch (glyph.getShape()) {
         case COMBINING_STEM :
