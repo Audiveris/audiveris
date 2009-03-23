@@ -206,24 +206,6 @@ public class GlyphInspector
         evaluateGlyphs(maxDoubt);
     }
 
-    //-------------------//
-    // purgeManualShapes //
-    //-------------------//
-    /**
-     * Purge a collection of glyphs from manually assigned shapes
-     * @param glyphs the glyph collection to purge
-     */
-    public static void purgeManualShapes (Collection<Glyph> glyphs)
-    {
-        for (Iterator<Glyph> it = glyphs.iterator(); it.hasNext();) {
-            Glyph glyph = it.next();
-
-            if (glyph.isManualShape()) {
-                it.remove();
-            }
-        }
-    }
-
     //-----------------//
     // runAlterPattern //
     //-----------------//
@@ -463,7 +445,11 @@ public class GlyphInspector
      */
     private boolean checkClef (Collection<Glyph> glyphs)
     {
-        purgeManualShapes(glyphs);
+        Glyph.purgeManualShapes(glyphs);
+
+        if (glyphs.isEmpty()) {
+            return false;
+        }
 
         Glyph compound = system.buildCompound(glyphs);
         system.computeGlyphFeatures(compound);
@@ -528,7 +514,7 @@ public class GlyphInspector
 
             // Look for glyphs in this outer box
             final Set<Glyph> glyphs = lag.lookupGlyphs(system.getGlyphs(), box);
-            purgeManualShapes(glyphs);
+            Glyph.purgeManualShapes(glyphs);
 
             if (glyphs.isEmpty()) {
                 return false;

@@ -190,6 +190,44 @@ public class Glyph
 
     //~ Methods ----------------------------------------------------------------
 
+    //---------------------//
+    // containsManualShape //
+    //---------------------//
+    /**
+     * Check whether a collection of glyphs contains at least one manually
+     * assigned shape
+     * @param glyphs the glyph collection to check
+     * @return true if there is at least one manually assigned shape
+     */
+    public static boolean containsManualShape (Collection<Glyph> glyphs)
+    {
+        for (Glyph glyph : glyphs) {
+            if (glyph.isManualShape()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    //-------------------//
+    // purgeManualShapes //
+    //-------------------//
+    /**
+     * Purge a collection of glyphs from manually assigned shapes
+     * @param glyphs the glyph collection to purge
+     */
+    public static void purgeManualShapes (Collection<Glyph> glyphs)
+    {
+        for (Iterator<Glyph> it = glyphs.iterator(); it.hasNext();) {
+            Glyph glyph = it.next();
+
+            if (glyph.isManualShape()) {
+                it.remove();
+            }
+        }
+    }
+
     //--------//
     // isClef //
     //--------//

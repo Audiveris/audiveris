@@ -27,14 +27,14 @@ import omr.score.entity.Chord;
 import omr.score.entity.Dynamics;
 import omr.score.entity.Measure;
 import omr.score.entity.ScoreSystem;
+import omr.score.entity.Staff;
 import omr.score.entity.TimeSignature;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
 
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
-import java.util.Collection;
-import java.util.SortedSet;
+import java.util.*;
 
 /**
  * Class <code>ScoreChecker</code> can visit the score hierarchy perform
@@ -96,10 +96,13 @@ public class ScoreChecker
     public boolean visit (TimeSignature timeSignature)
     {
         if (logger.isFineEnabled()) {
-            logger.fine("Checking " + timeSignature);
+            logger.fine(
+                timeSignature.getContextString() + " Checking " +
+                timeSignature);
         }
 
         try {
+            // Trigger computation of Num & Den if not already done
             Shape shape = timeSignature.getShape();
 
             if (shape == null) {
@@ -107,14 +110,22 @@ public class ScoreChecker
                     (timeSignature.getDenominator() == null)) {
                     timeSignature.addError(
                         "Time signature with no rational value");
+                } else { // Normal complex shape
+                    logger.info("*** complex " + timeSignature);
                 }
             } else if (shape == Shape.NO_LEGAL_SHAPE) {
                 timeSignature.addError("Illegal " + timeSignature);
             } else if (Shape.SingleTimes.contains(shape)) {
                 timeSignature.addError(
                     "Orphan time signature shape : " + shape);
+            } else { // Normal simple shape
+
+                if (!timeSignature.isDummy()) {
+                    checkSimpleTime(timeSignature);
+                }
             }
         } catch (InvalidTimeSignature its) {
+            logger.warning("visit. InvalidTimeSignature", its);
         }
 
         return true;
@@ -234,7 +245,192 @@ public class ScoreChecker
         }
     }
 
+    //-----------------//
+    // checkSimpleTime //
+    //-----------------//
+    private void checkSimpleTime (TimeSignature timeSignature)
+    {
+        // Check others, similar abscissa, in all other staves of the system
+        // Use score hierarchy, same system, all parts, same measure id
+        // If there is no time sig, create a dummy one
+        // If there is one, make sure the sig is identical
+        // Priority to manually assigned shapes of course
+        TimeSignature bestSig = findBestTime(timeSignature.getMeasure());
+
+        if (bestSig != null) {
+            for (Staff.SystemIterator sit = new Staff.SystemIterator(
+                timeSignature.getMeasure()); sit.hasNext();) {
+                Staff         staff = sit.next();
+                Measure       measure = sit.getMeasure();
+                TimeSignature sig = measure.getTimeSignature(staff);
+
+                if (sig == null) {
+                    sig = new TimeSignature(measure, staff, bestSig);
+
+                    try {
+                        logger.info(
+                            sig.getContextString() + " Created time sig " +
+                            sig.getNumerator() + "/" + sig.getDenominator());
+                    } catch (InvalidTimeSignature ignored) {
+                        logger.warning("InvalidTimeSignature", ignored);
+                    }
+                } else {
+                    if (logger.isFineEnabled()) {
+                        logger.fine(
+                            sig.getContextString() + " Existing sig " + sig);
+                    }
+                }
+            }
+        }
+    }
+
+    //--------------//
+    // findBestTime //
+    //--------------//
+    /**
+     * Report the best time signature for all parallel measures
+     * @param measure
+     * @return the best signature, or null if no suitable signature found
+     */
+    private TimeSignature findBestTime (Measure measure)
+    {
+        TimeSignature manualSig = null;
+
+        try {
+            manualSig = findManualTime(measure); // Perhaps null
+        } catch (InconsistentTimeSignatures ex) {
+            logger.warning("InconsistentTimeSignatures");
+
+            return null;
+        }
+
+        TimeSignature bestSig = manualSig;
+
+        for (Staff.SystemIterator sit = new Staff.SystemIterator(measure);
+             sit.hasNext();) {
+            Staff staff = sit.next();
+            measure = sit.getMeasure();
+
+            TimeSignature sig = measure.getTimeSignature(staff);
+
+            if ((sig == null) || sig.isDummy()) {
+                continue;
+            }
+
+            try {
+                // Make sure the signature is valid
+                int num = sig.getNumerator();
+                int den = sig.getDenominator();
+
+                // First instance?
+                if (bestSig == null) {
+                    bestSig = sig;
+
+                    continue;
+                }
+
+                // Still consistent?
+                if ((num == bestSig.getNumerator()) &&
+                    (den == bestSig.getDenominator())) {
+                    continue;
+                }
+
+                // Inconsistency detected
+                if (manualSig != null) {
+                    // Replace sig !
+                    TimeSignature oldSig = sig;
+                    oldSig.getParent()
+                          .getChildren()
+                          .remove(oldSig);
+                    sig = new TimeSignature(measure, staff, manualSig);
+                    ///oldSig.deassign();
+                } else {
+                    // Inconsistent sigs
+                    if (logger.isFineEnabled()) {
+                        logger.fine("Inconsistency between time sigs");
+                    }
+
+                    sig.addError("Inconsistent time signature ");
+                    bestSig.addError("Inconsistent time signature");
+
+                    return null;
+                }
+            } catch (InvalidTimeSignature ex) {
+                // Skip invalid signatures
+            }
+        }
+
+        return bestSig;
+    }
+
+    //----------------//
+    // findManualTime //
+    //----------------//
+    /**
+     * Report a suitable manually assigned time signature, if any. For this, we
+     * need to find a manual time sig, after having checked that all manual time
+     * sigs in the measure are consistent. This method
+     * @param measure the reference measure
+     * @return the suitable manual sig, if any
+     * @throws InconsistentTimeSignatures if at least two manual sigs differ
+     */
+    private TimeSignature findManualTime (Measure measure)
+        throws InconsistentTimeSignatures
+    {
+        TimeSignature manualSig = null;
+
+        for (Staff.SystemIterator sit = new Staff.SystemIterator(measure);
+             sit.hasNext();) {
+            Staff         staff = sit.next();
+            TimeSignature sig = sit.getMeasure()
+                                   .getTimeSignature(staff);
+
+            if ((sig != null) && !sig.isDummy() && sig.isManual()) {
+                try {
+                    // Make sure the signature is valid
+                    int num = sig.getNumerator();
+                    int den = sig.getDenominator();
+
+                    // First instance?
+                    if (manualSig == null) {
+                        manualSig = sig;
+
+                        continue;
+                    }
+
+                    // Still consistent?
+                    if ((num == manualSig.getNumerator()) &&
+                        (den == manualSig.getDenominator())) {
+                    } else {
+                        sig.addError("Inconsistent time signature");
+                        manualSig.addError("Inconsistent time signature");
+
+                        throw new InconsistentTimeSignatures();
+                    }
+                } catch (InvalidTimeSignature ex) {
+                    // Unusable signature, forget about this one
+                }
+            }
+        }
+
+        return manualSig;
+    }
+
     //~ Inner Classes ----------------------------------------------------------
+
+    //----------------------------//
+    // InconsistentTimeSignatures //
+    //----------------------------//
+    public static class InconsistentTimeSignatures
+        extends Exception
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public InconsistentTimeSignatures ()
+        {
+            super("Time signatures are inconsistent");
+        }
+    }
 
     //-----------//
     // Constants //
@@ -249,6 +445,6 @@ public class ScoreChecker
             "Margin around stem width for intersecting beams & beam hooks");
         private final Scale.Fraction stemYMargin = new Scale.Fraction(
             0.2d,
-            "Margin around stem heightfor intersecting beams & beam hooks");
+            "Margin around stem height for intersecting beams & beam hooks");
     }
 }

@@ -490,6 +490,14 @@ public class Measure
         return null; // Not found !!!
     }
 
+    //----------//
+    // setDummy //
+    //----------//
+    public void setDummy (boolean dummy)
+    {
+        this.dummy = dummy;
+    }
+
     //---------//
     // isDummy //
     //---------//
@@ -517,9 +525,9 @@ public class Measure
             Staff staff = getPart()
                               .getStaffAt(point);
 
-            int   staffY = staff.getPageTopLeft().y - getSystem()
-                                                      .getTopLeft().y +
-                           (staff.getHeight() / 2);
+            int   staffY = staff.getPageTopLeft().y -
+                           getSystem()
+                               .getTopLeft().y + (staff.getHeight() / 2);
 
             if (staffY <= point.y) {
                 return slot.getChordAbove(point);
@@ -949,6 +957,14 @@ public class Measure
         setPartial(true);
     }
 
+    //------------//
+    // setPartial //
+    //------------//
+    public void setPartial (boolean partial)
+    {
+        this.partial = partial;
+    }
+
     //-----------//
     // isPartial //
     //-----------//
@@ -1031,6 +1047,22 @@ public class Measure
         }
 
         return startTime;
+    }
+
+    //--------------//
+    // setTemporary //
+    //--------------//
+    public void setTemporary (boolean temporary)
+    {
+        this.temporary = temporary;
+    }
+
+    //-------------//
+    // isTemporary //
+    //-------------//
+    public boolean isTemporary ()
+    {
+        return temporary;
     }
 
     //----------------//
@@ -1200,6 +1232,42 @@ public class Measure
         voices.add(voice);
     }
 
+    //-------------//
+    // buildVoices //
+    //-------------//
+    /**
+     * Browse the slots and chords, in order to compute the various voices and
+     * start times
+     */
+    public void buildVoices ()
+    {
+        // Debug
+        if (logger.isFineEnabled()) {
+            printChords("Initial chords for ");
+        }
+
+        // The 'activeChords' collection gathers the chords that are "active"
+        // (not terminated) at the time slot being considered. Initially, it
+        // contains just the whole chords.
+        List<Chord> activeChords = new ArrayList<Chord>(getWholeChords());
+        Collections.sort(activeChords);
+
+        // Create voices for whole chords
+        for (Chord chord : activeChords) {
+            chord.setStartTime(0);
+            Voice.createWholeVoice(chord);
+        }
+
+        // Process slot after slot, if any
+        for (Slot slot : getSlots()) {
+            slot.buildVoices(activeChords);
+        }
+
+        // Debug
+        if (logger.isFineEnabled()) {
+            printVoices("Final voices for ");
+        }
+    }
 
     //---------------//
     // checkDuration //
@@ -1284,75 +1352,6 @@ public class Measure
         }
     }
 
-    //----------//
-    // setDummy //
-    //----------//
-    public void setDummy (boolean dummy)
-    {
-        this.dummy = dummy;
-    }
-
-    //------------//
-    // setPartial //
-    //------------//
-    public void setPartial (boolean partial)
-    {
-        this.partial = partial;
-    }
-
-    //--------------//
-    // setTemporary //
-    //--------------//
-    public void setTemporary (boolean temporary)
-    {
-        this.temporary = temporary;
-    }
-
-    //-------------//
-    // isTemporary //
-    //-------------//
-    public boolean isTemporary ()
-    {
-        return temporary;
-    }
-
-    //-------------//
-    // buildVoices //
-    //-------------//
-    /**
-     * Browse the slots and chords, in order to compute the various voices and
-     * start times
-     */
-    public void buildVoices ()
-    {
-        // Debug
-        if (logger.isFineEnabled()) {
-            printChords("Initial chords for ");
-        }
-
-        // The 'activeChords' collection gathers the chords that are "active"
-        // (not terminated) at the time slot being considered. Initially, it
-        // contains just the whole chords.
-        List<Chord> activeChords = new ArrayList<Chord>(getWholeChords());
-        Collections.sort(activeChords);
-
-        // Create voices for whole chords
-        for (Chord chord : activeChords) {
-            chord.setStartTime(0);
-            Voice.createWholeVoice(chord);
-        }
-
-        // Process slot after slot, if any
-        for (Slot slot : getSlots()) {
-            slot.buildVoices(activeChords);
-        }
-
-        // Debug
-        if (logger.isFineEnabled()) {
-            printVoices("Final voices for ");
-        }
-    }
-
     //-----------------//
     // checkTiedChords //
     //-----------------//
@@ -1431,7 +1430,8 @@ public class Measure
         for (TreeNode sn : part.getStaves()) {
             Staff       staff = (Staff) sn;
             int         right = getLeftX(); // Right of dummy = Left of current
-            int         midY = (staff.getPageTopLeft().y + (staff.getHeight() / 2)) -
+            int         midY = (staff.getPageTopLeft().y +
+                               (staff.getHeight() / 2)) -
                                getSystem()
                                    .getTopLeft().y;
             SystemPoint staffPoint = new SystemPoint(right, midY);

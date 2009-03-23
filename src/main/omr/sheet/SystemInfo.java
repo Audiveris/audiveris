@@ -16,6 +16,7 @@ import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphInspector.CompoundAdapter;
 import omr.glyph.GlyphSection;
 import omr.glyph.GlyphsBuilder;
+import omr.glyph.PatternsChecker;
 import omr.glyph.SlurInspector;
 import omr.glyph.StemInspector;
 import omr.glyph.text.TextGlyphLine;
@@ -90,6 +91,9 @@ public class SystemInfo
 
     /** Dedicated system translator */
     private final SystemTranslator translator;
+
+    /** Dedicated patterns checker */
+    private final PatternsChecker patternsChecker;
 
     /** Staves of this system */
     private final List<StaffInfo> staves = new ArrayList<StaffInfo>();
@@ -186,6 +190,7 @@ public class SystemInfo
         slurInspector = new SlurInspector(this);
         textInspector = new TextInspector(this);
         translator = new SystemTranslator(this);
+        patternsChecker = new PatternsChecker(this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -833,7 +838,7 @@ public class SystemInfo
     //----------------------//
     /**
      * On a specified system, look for all inactive glyphs and remove them from
-     * its glyphs collection as well as from the containing lag.
+     * its glyphs collection (but leave them in the containing lag).
      * Purpose is to prepare room for a new glyph extraction
      */
     public void removeInactiveGlyphs ()
@@ -885,6 +890,18 @@ public class SystemInfo
         throws StepException
     {
         return verticalsBuilder.retrieveVerticals();
+    }
+
+    //-------------//
+    // runPatterns //
+    //-------------//
+    /**
+     * Run the series of glyphs patterns
+     * @return true if some progress has been made
+     */
+    public boolean runPatterns ()
+    {
+        return patternsChecker.runPatterns();
     }
 
     //---------------------//

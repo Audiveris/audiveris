@@ -120,6 +120,11 @@ public class GlyphChecks
                 if (absPos > maxDy) {
                     return null;
                 }
+
+                // Total height for a complete time sig is staff height
+                if (glyph.getNormalizedHeight() > 4.5) {
+                    return null;
+                }
             } else {
                 // A partial time shape must be on -2 or -2 positions
                 if (Math.abs(absPos - 2) > maxDy) {

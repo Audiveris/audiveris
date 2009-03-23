@@ -23,11 +23,10 @@ import omr.score.visitor.ScoreVisitor;
 import omr.sheet.Scale;
 
 import java.util.*;
-import java.util.logging.Level;
 
 /**
  * Class <code>TimeSignature</code> encapsulates a time signature, which may be
- * composed of one or several sticks.
+ * composed of one or several glyphs.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -63,11 +62,14 @@ public class TimeSignature
     private Shape shape;
 
     /**
-     * The glyph(s) that compose the time signature, a collection which is kept
+     * The glyph(s) that compose the time signature, a set which is kept
      * sorted on glyph abscissa. This can be just one : e.g. TIME_SIX_EIGHT for
      * 6/8, or several : e.g. TIME_SIX + TIME_TWELVE for 6/12
      */
     private SortedSet<Glyph> glyphs = new TreeSet<Glyph>();
+
+    /** Flag a time sig not created out of its glyphs */
+    private final boolean isDummy;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -84,6 +86,7 @@ public class TimeSignature
                           Staff   staff)
     {
         super(measure);
+        isDummy = false;
         setStaff(staff);
     }
 
@@ -103,6 +106,7 @@ public class TimeSignature
                           TimeSignature other)
     {
         super(measure);
+        isDummy = true;
         setStaff(staff);
 
         try {
@@ -142,6 +146,18 @@ public class TimeSignature
         }
 
         return denominator;
+    }
+
+    //---------//
+    // isDummy //
+    //---------//
+    /**
+     * Report whether this time signature has been built artificially
+     * @return true if artificial
+     */
+    public boolean isDummy ()
+    {
+        return isDummy;
     }
 
     //-----------//
@@ -234,6 +250,16 @@ public class TimeSignature
     }
 
     //----------//
+    // deassign //
+    //----------//
+    public void deassign ()
+    {
+        for (Glyph glyph : glyphs) {
+            glyph.setShape(null);
+        }
+    }
+
+    //----------//
     // populate //
     //----------//
     /**
@@ -276,6 +302,18 @@ public class TimeSignature
         }
     }
 
+    //----------//
+    // isManual //
+    //----------//
+    /**
+     * Report whether this time signature is based on manual assignment
+     * @return true if manually assigned
+     */
+    public boolean isManual ()
+    {
+        return Glyph.containsManualShape(getGlyphs());
+    }
+
     //-------//
     // reset //
     //-------//
@@ -312,21 +350,18 @@ public class TimeSignature
                   .append(getDenominator());
             }
 
-            sb.append(" shape=")
-              .append(getShape());
+            if (getShape() != null) {
+                sb.append(" ")
+                  .append(getShape());
+            }
 
             sb.append(" center=")
               .append(getCenter());
 
-            if (getGlyphs() != null) {
-                sb.append(" glyphs[");
-
-                for (Glyph glyph : getGlyphs()) {
-                    sb.append("#")
-                      .append(glyph.getId());
-                }
-
-                sb.append("]");
+            if (!getGlyphs()
+                     .isEmpty()) {
+                sb.append(" ")
+                  .append(Glyph.toString(getGlyphs()));
             }
         } catch (InvalidTimeSignature e) {
             sb.append(" INVALID");
@@ -602,19 +637,10 @@ public class TimeSignature
     {
         //~ Instance fields ----------------------------------------------------
 
-        /**
-         * Maximum euclidian distance between two parts
-         * of a time signature
-         */
         Scale.Fraction maxTimeDistance = new Scale.Fraction(
             4d,
             "Maximum euclidian distance between two" +
             " parts of a time signature");
-
-        /**
-         * Minimum horizontal offset for a time
-         * signature since start of measure
-         */
         Scale.Fraction minTimeOffset = new Scale.Fraction(
             1d,
             "Minimum horizontal offset for a time" +

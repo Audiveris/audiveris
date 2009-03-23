@@ -20,6 +20,10 @@ import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.StaffInfo;
 
+import omr.util.TreeNode;
+
+import java.util.Iterator;
+
 /**
  * Class <code>Staff</code> handles a staff in a system part. It is useful for
  * its geometric parameters (topLeft corner, width and height, ability to
@@ -118,20 +122,21 @@ public class Staff
     }
 
     //~ Methods ----------------------------------------------------------------
-//
-//    //------------------//
-//    // getDisplayOrigin //
-//    //------------------//
-//    /**
-//     * Report the staff display origin in the score display of this staff
-//     *
-//     * @return the (staff-specific) displayOrigin
-//     */
-//    @Override
-//    public ScorePoint getDisplayOrigin ()
-//    {
-//        return displayOrigin;
-//    }
+
+    //
+    //    //------------------//
+    //    // getDisplayOrigin //
+    //    //------------------//
+    //    /**
+    //     * Report the staff display origin in the score display of this staff
+    //     *
+    //     * @return the (staff-specific) displayOrigin
+    //     */
+    //    @Override
+    //    public ScorePoint getDisplayOrigin ()
+    //    {
+    //        return displayOrigin;
+    //    }
 
     //-----------//
     // getHeight //
@@ -360,5 +365,140 @@ public class Staff
             new SystemPoint(
                 width / 2,
                 pageTopLeft.y - getSystem().getTopLeft().y + (height / 2)));
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //--------------//
+    // PartIterator //
+    //--------------//
+    /**
+     * Class <code>PartIterator</code> implements of the sequence of parallel
+     * measures within a SystemPart
+     */
+    public static class PartIterator
+        implements Iterator<Staff>
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        // Constant
+        private final Iterator<TreeNode> staffIterator;
+
+        //~ Constructors -------------------------------------------------------
+
+        public PartIterator (Measure measure)
+        {
+            staffIterator = measure.getPart()
+                                   .getStaves()
+                                   .iterator();
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        public boolean hasNext ()
+        {
+            return staffIterator.hasNext();
+        }
+
+        public Staff next ()
+        {
+            return (Staff) staffIterator.next();
+        }
+
+        public void remove ()
+        {
+            throw new UnsupportedOperationException("Not supported operation");
+        }
+    }
+
+    //----------------//
+    // SystemIterator //
+    //----------------//
+    /**
+     * Class <code>SystemIterator</code> implements of the sequence of
+     * staves within all parallel measures within a system
+     */
+    public static class SystemIterator
+        implements Iterator<Staff>
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        // Constant
+        private final int                measureIndex;
+        private final Iterator<TreeNode> partIterator;
+
+        // Non constant
+        private SystemPart   part;
+        private Measure      measure;
+        private PartIterator partStaffIterator;
+
+        //~ Constructors -------------------------------------------------------
+
+        public SystemIterator (Measure measure)
+        {
+            measureIndex = measure.getParent()
+                                  .getChildren()
+                                  .indexOf(measure);
+            partIterator = measure.getSystem()
+                                  .getParts()
+                                  .iterator();
+
+            if (partIterator.hasNext()) {
+                toNextPart();
+            }
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        public Measure getMeasure ()
+        {
+            return measure;
+        }
+
+        public SystemPart getPart ()
+        {
+            return part;
+        }
+
+        public boolean hasNext ()
+        {
+            if (partStaffIterator == null) {
+                return false;
+            } else if (partStaffIterator.hasNext()) {
+                return true;
+            } else {
+                // Do we have following parts?
+                if (partIterator.hasNext()) {
+                    toNextPart();
+
+                    return partStaffIterator.hasNext();
+                } else {
+                    // This is the end ...
+                    return false;
+                }
+            }
+        }
+
+        public Staff next ()
+        {
+            if (hasNext()) {
+                return partStaffIterator.next();
+            } else {
+                return null;
+            }
+        }
+
+        public void remove ()
+        {
+            throw new UnsupportedOperationException("Not supported operation.");
+        }
+
+        private void toNextPart ()
+        {
+            part = (SystemPart) partIterator.next();
+            measure = (Measure) part.getMeasures()
+                                    .get(measureIndex);
+            partStaffIterator = new PartIterator(measure);
+        }
     }
 }

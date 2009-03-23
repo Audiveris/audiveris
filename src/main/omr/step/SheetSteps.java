@@ -611,48 +611,10 @@ public class SheetSteps
         public void doSystem (SystemInfo system)
             throws StepException
         {
-            final int iterNb = constants.MaxPatternsIterations.getValue();
-            boolean   keepGoing = true;
-
-            for (int iter = 0; keepGoing && (iter < iterNb); iter++) {
-                int clefModifs = 0;
-                int alterModifs = 0;
-                int stemModifs = 0;
-                int slurModifs = 0;
-                int textModifs = 0;
-
-                // Clefs
-                system.removeInactiveGlyphs();
-                clefModifs = system.runClefPattern();
-
-                // Close Stems (sharps & naturals)
-                system.removeInactiveGlyphs();
-                alterModifs = system.runAlterPattern();
-
-                // Stems
-                system.removeInactiveGlyphs();
-                stemModifs = system.runStemPattern();
-
-                // Slurs
-                system.removeInactiveGlyphs();
-                system.retrieveGlyphs();
-                slurModifs = system.runSlurPattern();
-
-                // Texts
-                system.removeInactiveGlyphs();
-                system.retrieveGlyphs();
-                textModifs = system.runTextPattern();
-
-                // Progress made?
-                keepGoing = (clefModifs + alterModifs + stemModifs +
-                            slurModifs + textModifs) > 0;
-
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "System#" + system.getId() + " PATTERNS#" + iter +
-                        " clef:" + clefModifs + " alter:" + alterModifs +
-                        " stems:" + stemModifs + " slurs:" + slurModifs +
-                        " texts:" + textModifs);
+            for (int iter = 0;
+                 iter < constants.MaxPatternsIterations.getValue(); iter++) {
+                if (!system.runPatterns()) {
+                    return; // No more progress made
                 }
             }
         }

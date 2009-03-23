@@ -843,23 +843,12 @@ public class ScorePainter
             final SystemPart part = timeSignature.getPart();
 
             if (shape != null) {
-                switch (shape) {
-                // If this is an illegal shape, do not draw anything.
-                // TBD: we could draw a special sign for this
-                case NO_LEGAL_SHAPE :
-                    break;
-
-                // Is it a complete (one-symbol) time signature ?
-                case TIME_FOUR_FOUR :
-                case TIME_TWO_TWO :
-                case TIME_TWO_FOUR :
-                case TIME_THREE_FOUR :
-                case TIME_SIX_EIGHT :
-                case COMMON_TIME :
-                case CUT_TIME :
+                if (shape == NO_LEGAL_SHAPE) {
+                    // If this is an illegal shape, do not draw anything.
+                    // TBD: we could draw a special sign for this
+                } else if (Shape.MultiTimes.contains(shape)) {
+                    // It is a complete (one-symbol) time signature
                     paintSymbol(shape, timeSignature.getCenter());
-
-                    break;
                 }
             } else {
                 // Assume a (legal) multi-symbol signature
