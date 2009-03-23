@@ -85,7 +85,7 @@ public class ScoreChecker
     /**
      * Not used
      * @param score
-     * @return
+     * @return true
      */
     @Override
     public boolean visit (Score score)
