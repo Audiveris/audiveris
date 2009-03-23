@@ -37,8 +37,13 @@ import omr.sheet.SystemInfo;
 import java.util.*;
 
 /**
- * Class <code>ScoreChecker</code> can visit the score hierarchy perform
+ * Class <code>ScoreChecker</code> can visit the score hierarchy and perform
  * global checking on score nodes.
+ * <p>We use it for: <ul>
+ * <li>Improving the recognition of beam hooks</li>
+ * <li>Forcing consistency among time signatures</li>
+ * <li>Making sure all dynamics can be assigned a shape</li>
+ * </ul>
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -77,6 +82,11 @@ public class ScoreChecker
     //-------------//
     // visit Score //
     //-------------//
+    /**
+     * Not used
+     * @param score
+     * @return
+     */
     @Override
     public boolean visit (Score score)
     {
@@ -92,6 +102,12 @@ public class ScoreChecker
     //---------------------//
     // visit TimeSignature //
     //---------------------//
+    /**
+     * Method use to check and correct the consistency between all time
+     * signatures that occur in parallel measures.
+     * @param timeSignature the score entity that triggers the check
+     * @return true
+     */
     @Override
     public boolean visit (TimeSignature timeSignature)
     {
@@ -134,10 +150,15 @@ public class ScoreChecker
     //----------------//
     // visit Dynamics //
     //----------------//
+    /**
+     * Check that each dynamics shape can be computed
+     * @param dynamics the dynamics item
+     * @return true
+     */
     @Override
     public boolean visit (Dynamics dynamics)
     {
-        // Check that each dynamics shape can be computed
+        
         dynamics.getShape();
 
         return true;
@@ -288,7 +309,8 @@ public class ScoreChecker
     // findBestTime //
     //--------------//
     /**
-     * Report the best time signature for all parallel measures
+     * Report the best time signature for all parallel measures (among all the
+     * parallel candidate time signatures)
      * @param measure
      * @return the best signature, or null if no suitable signature found
      */
@@ -421,6 +443,9 @@ public class ScoreChecker
     //----------------------------//
     // InconsistentTimeSignatures //
     //----------------------------//
+    /**
+     * Used to signal that parallel time signatures are not consistent
+     */
     public static class InconsistentTimeSignatures
         extends Exception
     {

@@ -618,6 +618,10 @@ public class TimeSignature
     //----------------------//
     // InvalidTimeSignature //
     //----------------------//
+    /**
+     * Used to signal that a time signature is invalid (for example because
+     * some of its parts are missing or incorrectly recognized)
+     */
     public static class InvalidTimeSignature
         extends Exception
     {
