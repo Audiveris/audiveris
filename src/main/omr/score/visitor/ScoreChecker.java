@@ -158,7 +158,6 @@ public class ScoreChecker
     @Override
     public boolean visit (Dynamics dynamics)
     {
-        
         dynamics.getShape();
 
         return true;
@@ -365,7 +364,11 @@ public class ScoreChecker
                           .getChildren()
                           .remove(oldSig);
                     sig = new TimeSignature(measure, staff, manualSig);
+
+                    // Assign this manual sig to this incorrect sig?
+
                     ///oldSig.deassign();
+                    replaceSig(oldSig, manualSig);
                 } else {
                     // Inconsistent sigs
                     if (logger.isFineEnabled()) {
@@ -436,6 +439,36 @@ public class ScoreChecker
         }
 
         return manualSig;
+    }
+
+    //------------//
+    // replaceSig //
+    //------------//
+    private void replaceSig (TimeSignature oldSig,
+                             TimeSignature newSig)
+    {
+        Shape shape = null;
+
+        try {
+            shape = newSig.getShape();
+        } catch (InvalidTimeSignature ex) {
+            return;
+        }
+
+        SystemInfo        systemInfo = oldSig.getSystem()
+                                             .getInfo();
+        Collection<Glyph> glyphs = systemInfo.lookupIntersectedGlyphs(
+            Glyph.getContourBox(oldSig.getGlyphs()));
+
+        if (logger.isFineEnabled()) {
+            logger.fine("oldSig " + Glyph.toString(glyphs));
+        }
+
+        Glyph compound = systemInfo.buildCompound(glyphs);
+        systemInfo.computeGlyphFeatures(compound);
+        compound = systemInfo.addGlyph(compound);
+        compound.setShape(shape, Evaluation.ALGORITHM);
+        logger.info(shape + " assigned to glyph#" + compound.getId());
     }
 
     //~ Inner Classes ----------------------------------------------------------

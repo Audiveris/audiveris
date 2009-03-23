@@ -739,6 +739,20 @@ public class Glyph
         }
     }
 
+    //--------//
+    // isTime //
+    //--------//
+    /**
+     * Convenient method which tests if the glyph is a (part of) time signature
+     *
+     * @return true if glyph shape is a time
+     */
+    public boolean isTime ()
+    {
+        return Shape.SingleTimes.contains(getShape()) ||
+               Shape.MultiTimes.contains(getShape());
+    }
+
     //----------//
     // shapesOf //
     //----------//
@@ -859,6 +873,30 @@ public class Glyph
         } else {
             return null;
         }
+    }
+
+    //---------------//
+    // getContourBox //
+    //---------------//
+    /**
+     * Return the display bounding box of a collection of glyphs.
+     *
+     * @param glyphs the provided collection of glyphs
+     * @return the bounding contour
+     */
+    public static PixelRectangle getContourBox (Collection<Glyph> glyphs)
+    {
+        PixelRectangle box = null;
+
+        for (Glyph glyph : glyphs) {
+            if (box == null) {
+                box = new PixelRectangle(glyph.getContourBox());
+            } else {
+                box.add(glyph.getContourBox());
+            }
+        }
+
+        return box;
     }
 
     //----------//

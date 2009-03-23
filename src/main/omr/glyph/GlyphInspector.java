@@ -13,6 +13,7 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
+import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
 import omr.sheet.Scale;
@@ -318,10 +319,8 @@ public class GlyphInspector
                 logger.fine("Glyph#" + glyph.getId() + " " + glyph.getShape());
             }
 
-            PixelRectangle box = glyph.getContourBox();
-            int            x = box.x + (box.width / 2);
-            int            y = box.y + (box.height / 2);
-            StaffInfo      staff = system.getStaffAtY(y);
+            PixelPoint center = glyph.getAreaCenter();
+            StaffInfo  staff = system.getStaffAtY(center.y);
 
             // Look in the other staves
             for (StaffInfo oStaff : system.getStaves()) {
@@ -331,8 +330,8 @@ public class GlyphInspector
 
                 // Is there a clef in this staff, with similar abscissa?
                 PixelRectangle oBox = new PixelRectangle(
-                    x - clefHalfWidth,
-                    oStaff.getFirstLine().yAt(x),
+                    center.x - clefHalfWidth,
+                    oStaff.getFirstLine().yAt(center.x),
                     2 * clefHalfWidth,
                     oStaff.getHeight());
 
@@ -349,7 +348,8 @@ public class GlyphInspector
                 if (!foundClef(glyphs)) {
                     if (logger.isFineEnabled()) {
                         logger.fine(
-                            "No clef found at x:" + x + " in staff " + oStaff);
+                            "No clef found at x:" + center.x + " in staff " +
+                            oStaff);
                     }
 
                     if (checkClef(glyphs)) {

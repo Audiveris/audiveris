@@ -240,7 +240,6 @@ public class GlyphsBuilder
         }
 
         // Cut link from its member sections, if pointing to this glyph
-        if (glyph.getId() == 593) logger.warning("removeGlyph");
         glyph.cutSections();
     }
 
