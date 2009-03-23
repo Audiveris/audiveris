@@ -444,6 +444,13 @@ public class ScoreChecker
     //------------//
     // replaceSig //
     //------------//
+    /**
+     * Replaces in situ the time signature 'oldSig' by the logical information
+     * of 'newSig'. We use the intersected glyphs of the old sig as the glyphs
+     * for the newly built signature.
+     * @param oldSig the old (incorrect) time sig
+     * @param newSig the correct sig to assign in lieu of oldSig
+     */
     private void replaceSig (TimeSignature oldSig,
                              TimeSignature newSig)
     {
