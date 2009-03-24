@@ -54,12 +54,6 @@ public class MidiActions
     // Companion Midi Agent
     private volatile MidiAgent agent;
 
-    // Action instances (to be removed ASAP)
-    private javax.swing.Action playAction;
-    private javax.swing.Action pauseAction;
-    private javax.swing.Action stopAction;
-    private javax.swing.Action writeAction;
-
     // Status variables
     private boolean midiPlayable = false;
     private boolean midiPausable = false;
