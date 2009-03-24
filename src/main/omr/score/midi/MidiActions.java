@@ -8,9 +8,6 @@
 //----------------------------------------------------------------------------//
 package omr.score.midi;
 
-import omr.constant.Constant;
-import omr.constant.ConstantSet;
-
 import omr.log.Logger;
 
 import omr.score.MeasureRange;
@@ -24,9 +21,7 @@ import omr.selection.MouseMovement;
 import omr.selection.SheetEvent;
 
 import omr.sheet.Sheet;
-
-import omr.ui.util.FileFilter;
-import omr.ui.util.UIUtilities;
+import omr.sheet.ui.SheetsController;
 
 import omr.util.BasicTask;
 import omr.util.Implement;
@@ -37,8 +32,6 @@ import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
 
 import java.awt.event.*;
-import java.io.*;
-import omr.sheet.ui.SheetsController;
 
 /**
  * Class <code>MidiActions</code> is merely a collection of UI actions that
@@ -52,9 +45,6 @@ public class MidiActions
     extends ScoreDependent
 {
     //~ Static fields/initializers ---------------------------------------------
-
-    /** Specific application parameters */
-    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(MidiActions.class);
@@ -289,20 +279,7 @@ public class MidiActions
             return null;
         }
 
-        // Let the user select a score output file
-        File       midiFile = new File(
-            constants.defaultMidiDirectory.getValue(),
-            score.getRadix() + MidiAbstractions.MIDI_EXTENSION);
-        FileFilter filter = new FileFilter(
-            "Midi files",
-            new String[] { MidiAbstractions.MIDI_EXTENSION });
-        midiFile = UIUtilities.fileChooser(true, null, midiFile, filter);
-
-        if (midiFile != null) {
-            return new WriteTask(score, midiFile);
-        } else {
-            return null;
-        }
+        return new WriteTask(score);
     }
 
     //----------//
@@ -400,15 +377,12 @@ public class MidiActions
         //~ Instance fields ----------------------------------------------------
 
         private final Score score;
-        private final File  midiFile;
 
         //~ Constructors -------------------------------------------------------
 
-        WriteTask (Score score,
-                   File  midiFile)
+        WriteTask (Score score)
         {
             this.score = score;
-            this.midiFile = midiFile;
         }
 
         //~ Methods ------------------------------------------------------------
@@ -419,28 +393,13 @@ public class MidiActions
         {
             try {
                 ScoreManager.getInstance()
-                            .midiWrite(score, midiFile);
-                // Remember (even across runs) the selected directory
-                constants.defaultMidiDirectory.setValue(midiFile.getParent());
+                            .midiWrite(score, null);
             } catch (Exception ignored) {
                 // User already informed
             }
 
             return null;
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        Constant.String defaultMidiDirectory = new Constant.String(
-            "",
-            "Default directory for writing Midi files");
     }
 
     //--------//

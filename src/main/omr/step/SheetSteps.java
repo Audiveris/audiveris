@@ -20,12 +20,16 @@ import omr.glyph.Shape;
 
 import omr.log.Logger;
 
+import omr.score.ScoreManager;
 import omr.score.entity.Measure;
 import omr.score.entity.ScoreSystem;
+import omr.score.midi.MidiActions;
 import omr.score.ui.ScoreActions;
 import omr.score.visitor.ScoreChecker;
 import omr.score.visitor.ScoreCleaner;
 import omr.score.visitor.ScoreFixer;
+
+import omr.script.MidiWriteTask;
 
 import omr.sheet.HorizontalsBuilder;
 import omr.sheet.LinesBuilder;
@@ -93,6 +97,9 @@ public class SheetSteps
         tasks.put(LEAVES, new LeavesTask(sheet, LEAVES));
         tasks.put(PATTERNS, new PatternsTask(sheet, PATTERNS));
         tasks.put(SCORE, new ScoreTask(sheet, SCORE));
+        tasks.put(PLAY, new PlayTask(sheet, PLAY));
+        tasks.put(MIDI, new MidiWriteTask(sheet, MIDI));
+        tasks.put(EXPORT, new ExportTask(sheet, EXPORT));
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -315,6 +322,35 @@ public class SheetSteps
             "Maximum number of iterations for SCORE task");
     }
 
+    //------------//
+    // ExportTask //
+    //------------//
+    /**
+     * Step to export the score to the MusicXML file. We use the default
+     * directory for scores.
+     */
+    private static class ExportTask
+        extends SheetTask
+    {
+        //~ Constructors -------------------------------------------------------
+
+        ExportTask (Sheet sheet,
+                    Step  step)
+        {
+            super(sheet, step);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void doit (Collection<SystemInfo> unused)
+            throws StepException
+        {
+            ScoreManager.getInstance()
+                        .export(sheet.getScore(), null);
+        }
+    }
+
     //-----------------//
     // HorizontalsTask //
     //-----------------//
@@ -477,6 +513,38 @@ public class SheetSteps
         }
     }
 
+    //---------------//
+    // MidiWriteTask //
+    //---------------//
+    /**
+     * Step to write the output MIDI file
+     */
+    private static class MidiWriteTask
+        extends SheetTask
+    {
+        //~ Constructors -------------------------------------------------------
+
+        MidiWriteTask (Sheet sheet,
+                       Step  step)
+        {
+            super(sheet, step);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void doit (Collection<SystemInfo> unused)
+            throws StepException
+        {
+            try {
+                ScoreManager.getInstance()
+                            .midiWrite(sheet.getScore(), null);
+            } catch (Exception ex) {
+                logger.warning("Midi write failed", ex);
+            }
+        }
+    }
+
     //-----------//
     // ScaleTask //
     //-----------//
@@ -617,6 +685,33 @@ public class SheetSteps
                     return; // No more progress made
                 }
             }
+        }
+    }
+
+    //----------//
+    // PlayTask //
+    //----------//
+    /**
+     * Step to play the whole score, using a MIDI sequencer
+     */
+    private static class PlayTask
+        extends SheetTask
+    {
+        //~ Constructors -------------------------------------------------------
+
+        PlayTask (Sheet sheet,
+                  Step  step)
+        {
+            super(sheet, step);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void doit (Collection<SystemInfo> unused)
+            throws StepException
+        {
+            new MidiActions.PlayTask(sheet.getScore(), null).execute();
         }
     }
 

@@ -36,66 +36,81 @@ public enum Step {
     /**
      * Load the image for the sheet, from a provided image file
      */
-    LOAD("Picture", "Load the sheet picture"),
+    LOAD(true, "Picture", "Load the sheet picture"),
 
     /**
      * Determine the general scale of the sheet, based on the mean distance
      * between staff lines
      */
-    SCALE(LOAD.label, "Compute the global Skew, and rotate if needed"), 
+    SCALE(true, LOAD.label, "Compute the global Skew, and rotate if needed"), 
 
     /**
      * Determine the average skew of the picture, and deskews it if needed
      */
-    SKEW("Skew", "Detect & remove all Staff Lines"), 
+    SKEW(true, "Skew", "Detect & remove all Staff Lines"), 
 
     /**
      * Retrieve the staff lines, erases their pixels and creates crossing
      * objects when needed
      */
-    LINES("Lines", "Retrieve horizontal Dashes"), 
+    LINES(true, "Lines", "Retrieve horizontal Dashes"), 
 
     /**
      * Retrieve the horizontal dashes (ledgers, endings)
      */
-    HORIZONTALS("Horizontals", "Detect horizontal dashes"), 
+    HORIZONTALS(true, "Horizontals", "Detect horizontal dashes"), 
 
     /**
      * Retrieve the vertical bar lines, and so the systems
      */
-    SYSTEMS("Systems", "Detect vertical Bar sticks and thus systems"), 
+    SYSTEMS(true, "Systems", "Detect vertical Bar sticks and thus systems"), 
 
     /**
      * Retrieve the measures from the bar line glyphs
      */
-    MEASURES(SYSTEMS.label, "Translate Bar glyphs to Measures"), 
+    MEASURES(true, SYSTEMS.label, "Translate Bar glyphs to Measures"), 
 
     /**
      * Recognize isolated symbols glyphs and aggregates unknown symbols into
      * compound glyphs
      */
-    SYMBOLS("Glyphs", "Recognize Symbols & Compounds"), 
+    SYMBOLS(true, "Glyphs", "Recognize Symbols & Compounds"), 
 
     /**
      * Retrieve the vertical items such as stems
      */
-    VERTICALS("Verticals", "Extract verticals"), 
+    VERTICALS(true, "Verticals", "Extract verticals"), 
 
     /**
      * Process leaves, which are glyphs attached to stems and aggregates unknown
      * leaves into compound glyphs
      */
-    LEAVES(SYMBOLS.label, "Recognize Leaves & Compounds"), 
+    LEAVES(true, SYMBOLS.label, "Recognize Leaves & Compounds"), 
 
     /**
-     * Process specific patterns (clefs, sharps, naturals, stems, slurs, ...)
+     * Process specific patterns (true,clefs, sharps, naturals, stems, slurs, ...)
      */
-    PATTERNS(SYMBOLS.label, "Specific patterns"),
+    PATTERNS(true, SYMBOLS.label, "Specific patterns"), 
 
     /**
      * Translate glyphs into score entities
      */
-    SCORE(SYMBOLS.label, "Translate glyphs to score items");
+    SCORE(true, SYMBOLS.label, "Translate glyphs to score items"), 
+
+    /**
+     * Play the whole score
+     */
+    PLAY(false, SYMBOLS.label, "Play the whole score"), 
+
+    /**
+     * Write the output MIDI file
+     */
+    MIDI(false, SYMBOLS.label, "Write the output MIDI file"),
+
+    /**
+     * Export the score into the MusicXML file
+     */
+    EXPORT(false, SYMBOLS.label, "Export the score into the MusicXML file");
     //
     //--------------------------------------------------------------------------
     //
@@ -104,6 +119,9 @@ public enum Step {
 
     /** Related UI when used in interactive mode */
     private static volatile StepMonitor monitor;
+
+    /** Is the step mandatory? */
+    public final boolean isMandatory;
 
     /** Related short label */
     public final String label;
@@ -127,9 +145,11 @@ public enum Step {
      * @param label The title of the related (or most relevant) view tab
      * @param description A step description for the end user
      */
-    private Step (String label,
-                  String description)
+    private Step (boolean isMandatory,
+                  String  label,
+                  String  description)
     {
+        this.isMandatory = isMandatory;
         this.label = label;
         this.description = description;
     }
@@ -184,7 +204,7 @@ public enum Step {
     // performUntil //
     //--------------//
     /**
-     * Trigger the execution of all needed steps until this one.
+     * Trigger the execution of all mandatory steps until this one.
      * Processing is done synchronously, so if asynchronicity is desired, it
      * must be handled by the caller.
      *
@@ -200,11 +220,20 @@ public enum Step {
                              : getFollowingStep(
             sheet.getSheetSteps().getLatestStep());
 
-        // The range of steps to perform
-        EnumSet<Step> stepRange = EnumSet.range(from, this);
+        // The precise collection of steps to perform
+        EnumSet<Step> steps = EnumSet.noneOf(Step.class);
+
+        for (Step step : EnumSet.range(from, this)) {
+            if (step.isMandatory) {
+                steps.add(step);
+            }
+        }
+
+        // Last step is always included
+        steps.add(this);
 
         try {
-            sheet = doStepRange(stepRange, sheet, param, null);
+            sheet = doStepRange(steps, sheet, param, null);
         } catch (Exception ex) {
             logger.warning("Error in processing " + this, ex);
         }

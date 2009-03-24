@@ -171,10 +171,11 @@ public class StepMenu
                 setState(false);
                 action.setEnabled(false);
             } else {
-                boolean bool = sheet.getSheetSteps()
-                                    .isDone(action.step);
-                setState(bool);
-                setEnabled(!bool);
+                boolean done = action.step.isMandatory
+                               ? sheet.getSheetSteps()
+                                      .isDone(action.step) : false;
+                setState(done);
+                setEnabled(!done);
             }
         }
     }

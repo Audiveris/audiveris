@@ -16,6 +16,7 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
+import omr.score.midi.MidiAbstractions;
 import omr.score.midi.MidiAgent;
 import omr.score.ui.ScoreActions;
 import omr.score.visitor.ScoreExporter;
@@ -191,35 +192,61 @@ public class ScoreManager
             return;
         }
 
-        // Make sure the folder exists
-        File folder = new File(midiFile.getParent());
+        // Where do we write the midi file?
+        if (midiFile == null) {
+            midiFile = new File(
+                constants.defaultMidiDirectory.getValue(),
+                score.getRadix() + MidiAbstractions.MIDI_EXTENSION);
 
-        if (folder.mkdirs()) {
-            logger.info("Creating folder " + folder);
+            // Ask user confirmation, if Gui available
+            if (Main.getGui() != null) {
+                // Let the user select a score output file
+                FileFilter filter = new FileFilter(
+                    "Midi files",
+                    new String[] { MidiAbstractions.MIDI_EXTENSION });
+                midiFile = UIUtilities.fileChooser(
+                    true,
+                    null,
+                    midiFile,
+                    filter);
+            }
         }
 
-        // Record this task in the sheet script
-        score.getSheet()
-             .getScript()
-             .addTask(new MidiWriteTask(midiFile.getPath()));
+        if (midiFile != null) {
+            // Make sure the folder exists
+            File folder = new File(midiFile.getParent());
 
-        // Actually write the Midi file
-        try {
-            MidiAgent agent = MidiAgent.getInstance();
-
-            if (agent.getStatus() == MidiAgent.Status.STOPPED) {
-                agent.setScore(score);
+            if (folder.mkdirs()) {
+                logger.info("Creating folder " + folder);
             }
 
-            if (agent.getScore() == score) {
-                agent.write(midiFile);
-                logger.info("Midi written to " + midiFile);
-            } else {
-                logger.warning("Midi Agent is busy with another score");
+            // Record this task in the sheet script
+            score.getSheet()
+                 .getScript()
+                 .addTask(new MidiWriteTask(midiFile.getPath()));
+
+            // Actually write the Midi file
+            try {
+                MidiAgent agent = MidiAgent.getInstance();
+
+                if (agent.getStatus() == MidiAgent.Status.STOPPED) {
+                    agent.setScore(score);
+                }
+
+                if (agent.getScore() == score) {
+                    agent.write(midiFile);
+                    logger.info("Midi written to " + midiFile);
+
+                    // Remember (even across runs) the selected directory
+                    constants.defaultMidiDirectory.setValue(
+                        midiFile.getParent());
+                } else {
+                    logger.warning("Midi Agent is busy with another score");
+                }
+            } catch (Exception ex) {
+                logger.warning("Cannot write Midi to " + midiFile, ex);
+                throw ex;
             }
-        } catch (Exception ex) {
-            logger.warning("Cannot write Midi to " + midiFile, ex);
-            throw ex;
         }
     }
 
@@ -237,5 +264,8 @@ public class ScoreManager
         Constant.String defaultScoreDirectory = new Constant.String(
             "",
             "Default directory for saved scores");
+        Constant.String defaultMidiDirectory = new Constant.String(
+            "",
+            "Default directory for writing Midi files");
     }
 }

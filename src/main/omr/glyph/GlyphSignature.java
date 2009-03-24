@@ -14,10 +14,7 @@ import omr.util.RectangleFacade;
 
 import java.awt.Rectangle;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.*;
 
 /**
  * Class <code>GlyphSignature</code> is used to implement a map of glyphs,
@@ -122,6 +119,9 @@ public class GlyphSignature
         return 0; // Equal
     }
 
+    //--------//
+    // equals //
+    //--------//
     @Override
     public boolean equals (Object obj)
     {
@@ -142,6 +142,9 @@ public class GlyphSignature
         }
     }
 
+    //----------//
+    // hashCode //
+    //----------//
     @Override
     public int hashCode ()
     {
@@ -150,17 +153,6 @@ public class GlyphSignature
 
         return hash;
     }
-
-    //    @Override
-    //    public int hashCode ()
-    //    {
-    //        int hash = 5;
-    //        hash = (11 * hash) + this.weight;
-    //        hash = (11 * hash) +
-    //               ((this.contourBox != null) ? this.contourBox.hashCode() : 0);
-    //
-    //        return hash;
-    //    }
 
     //----------//
     // toString //
