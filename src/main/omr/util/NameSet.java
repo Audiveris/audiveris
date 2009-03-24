@@ -100,7 +100,7 @@ public class NameSet
      *
      * @param name Name to be inserted in the set
      */
-    public void add (String name)
+    public synchronized void add (String name)
     {
         if ((name == null) || (name.equals(""))) {
             return;
@@ -207,7 +207,7 @@ public class NameSet
      * @param name the name to remove
      * @return true if actually found and removed
      */
-    public boolean remove (String name)
+    public synchronized boolean remove (String name)
     {
         // If the ref exists in the list, it is removed
         for (Iterator<String> it = names.iterator(); it.hasNext();) {
