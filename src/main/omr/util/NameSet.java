@@ -13,6 +13,8 @@ import omr.constant.Constant;
 
 import omr.ui.util.DynamicMenu;
 
+import net.jcip.annotations.ThreadSafe;
+
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -35,6 +37,7 @@ import javax.swing.*;
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
+@ThreadSafe
 public class NameSet
 {
     //~ Static fields/initializers ---------------------------------------------
@@ -118,17 +121,7 @@ public class NameSet
         }
 
         // Update the constant accordingly
-        StringBuffer buf = new StringBuffer(1024);
-
-        for (String n : names) {
-            if (buf.length() > 0) {
-                buf.append(SEPARATOR);
-            }
-
-            buf.append(n);
-        }
-
-        constant.setValue(buf.toString());
+        updateConstant();
     }
 
     //------//
@@ -157,10 +150,12 @@ public class NameSet
         }
 
         // Regenerate proper menu items
-        for (String f : names) {
-            JMenuItem menuItem = new JMenuItem(f);
-            menuItem.addActionListener(listener);
-            menu.add(menuItem);
+        synchronized (this) {
+            for (String f : names) {
+                JMenuItem menuItem = new JMenuItem(f);
+                menuItem.addActionListener(listener);
+                menu.add(menuItem);
+            }
         }
 
         return menu;
@@ -215,12 +210,31 @@ public class NameSet
 
             if (f.equalsIgnoreCase(name)) {
                 it.remove();
+                updateConstant();
 
                 return true;
             }
         }
 
         return false;
+    }
+
+    //----------------//
+    // updateConstant //
+    //----------------//
+    private void updateConstant ()
+    {
+        StringBuffer buf = new StringBuffer(1024);
+
+        for (String n : names) {
+            if (buf.length() > 0) {
+                buf.append(SEPARATOR);
+            }
+
+            buf.append(n);
+        }
+
+        constant.setValue(buf.toString());
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -249,11 +263,13 @@ public class NameSet
         protected void buildItems ()
         {
             // Regenerate proper menu items
-            for (String f : names) {
-                JMenuItem menuItem = new JMenuItem(f);
-                menuItem.addActionListener(listener);
-                getMenu()
-                    .add(menuItem);
+            synchronized (NameSet.this) {
+                for (String f : names) {
+                    JMenuItem menuItem = new JMenuItem(f);
+                    menuItem.addActionListener(listener);
+                    getMenu()
+                        .add(menuItem);
+                }
             }
         }
     }
