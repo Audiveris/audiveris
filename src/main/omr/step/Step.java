@@ -17,8 +17,6 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 import omr.sheet.ui.SheetsController;
 
-import omr.util.Memory;
-
 import java.io.File;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -105,7 +103,7 @@ public enum Step {
     /**
      * Write the output MIDI file
      */
-    MIDI(false, SYMBOLS.label, "Write the output MIDI file"),
+    MIDI(false, SYMBOLS.label, "Write the output MIDI file"), 
 
     /**
      * Export the score into the MusicXML file
