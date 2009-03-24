@@ -8,9 +8,15 @@
 //----------------------------------------------------------------------------//
 package omr.ui;
 
+import omr.constant.ConstantSet;
+
 import omr.log.Logger;
 
-import omr.sheet.ui.SheetActions;
+import omr.sheet.Sheet;
+
+import omr.step.Step;
+
+import omr.util.BasicTask;
 
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -33,6 +39,9 @@ class FileDropHandler
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
+
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
         FileDropHandler.class);
@@ -42,6 +51,9 @@ class FileDropHandler
     //-----------//
     // canImport //
     //-----------//
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean canImport (TransferSupport support)
     {
@@ -73,6 +85,9 @@ class FileDropHandler
     //------------//
     // importData //
     //------------//
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean importData (TransferSupport support)
     {
@@ -90,9 +105,33 @@ class FileDropHandler
 
             /* Loop through the files */
             for (Object obj : fileList) {
-                File file = (File) obj;
+                final File file = (File) obj;
                 logger.info("Dropping file " + file);
-                new SheetActions.OpenTask(file).execute();
+
+                // Targer step
+                final Step target = constants.defaultStep.getValue();
+                new BasicTask() {
+                        Sheet sheet = null;
+
+                        @Override
+                        protected Void doInBackground ()
+                            throws Exception
+                        {
+                            sheet = target.performUntil(null, file);
+
+                            return null;
+                        }
+
+                        @Override
+                        protected void finished ()
+                        {
+                            // Select the assembly tab related to the target step
+                            if (sheet != null) {
+                                sheet.getAssembly()
+                                     .selectTab(target);
+                            }
+                        }
+                    }.execute();
             }
         } catch (UnsupportedFlavorException ex) {
             logger.warning("Unsupported flavor in drag & drop", ex);
@@ -105,5 +144,20 @@ class FileDropHandler
         }
 
         return true;
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        private final Step.Constant defaultStep = new Step.Constant(
+            Step.SCORE,
+            "Default step executed when a file is dropped");
     }
 }

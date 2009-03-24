@@ -440,4 +440,76 @@ public enum Step {
 
         return sheet;
     }
+
+    //----------//
+    // Constant //
+    //----------//
+    /**
+     * Class <code>StepConstant</code> is a subclass of
+     * {@link} omr.constant.Constant, meant to store a {@link Step} value.
+     */
+    public static class Constant
+        extends omr.constant.Constant
+    {
+        /**
+         * Normal constructor
+         *
+         * @param unit         the enclosing unit
+         * @param name         the constant name
+         * @param defaultValue the default Step value
+         * @param description  the semantic of the constant
+         */
+        public Constant (java.lang.String unit,
+                         java.lang.String name,
+                         Step             defaultValue,
+                         java.lang.String description)
+        {
+            super(null, defaultValue.toString(), description);
+            setUnitAndName(unit, name);
+        }
+
+        /**
+         * Specific constructor, where 'unit' and 'name' are assigned later
+         *
+         * @param defaultValue the default Step value
+         * @param description  the semantic of the constant
+         */
+        public Constant (Step             defaultValue,
+                         java.lang.String description)
+        {
+            super(null, defaultValue.toString(), description);
+        }
+
+        /**
+         * Set a new value to the constant
+         *
+         * @param val the new Step value
+         */
+        public void setValue (Step val)
+        {
+            setTuple(val.toString(), val);
+        }
+
+        @Override
+        public void setValue (java.lang.String string)
+        {
+            setValue(decode(string));
+        }
+
+        /**
+         * Retrieve the current constant value
+         *
+         * @return the current Step value
+         */
+        public Step getValue ()
+        {
+            return (Step) getCachedValue();
+        }
+
+        @Override
+        protected Step decode (java.lang.String str)
+        {
+            return Step.valueOf(str);
+        }
+    }
 }
