@@ -217,6 +217,10 @@ public class GlyphLag
         Glyph original = getOriginal(glyph);
 
         if (original != null) {
+            if (original.getId() == 726) {
+                logger.warning("BINGO");
+            }
+
             if (original != glyph) {
                 // Reuse the existing glyph
                 if (logger.isFineEnabled()) {

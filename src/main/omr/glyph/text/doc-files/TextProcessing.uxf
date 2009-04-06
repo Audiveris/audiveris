@@ -10,25 +10,27 @@
 // *Hold down Ctrl key to select multiple elements.
 // *Press c to copy the UML diagram to the system clipboard.
 // * This text will be stored with each diagram. Feel free to use the area for notes.
-</help_text><element><type>com.umlet.element.base.SequenceDiagram</type><coordinates><x>30</x><y>20</y><w>1050</w><h>690</h></coordinates><panel_attributes>_CLEANUP:Step~id1_|_system:SystemInfo~id2_|_area:TextArea~id3_|_line:TextGlyphLine~id4_|_sentence:Sentence~id5_
-id1-&gt;&gt;id2:id1,id2:system.retrieveTextGlyphs()
-id2-&gt;&gt;id3:id2,id3:new TextArea()
-id3-&gt;&gt;id3:id2,id3:subdivide()
-iframe{:alignTextGlyphs()
-id2-&gt;&gt;id4:id2:TextGlyphLine.feed(glyph,system)
-id2-&gt;&gt;id4:id2,id4:new TextGlyphLine()
-iframe}
-iframe{:foreach TextGlyphLine in system
-id2-&gt;&gt;id4:id2,id4:line.processGlyphs()
-id4-&gt;&gt;id4:id4:mergeEnclosedTextGlyphs()
-id4-&gt;&gt;id4:id4:includeAliens()
-iframe{:retrieveSentences()
-id4-&gt;&gt;id5:id4:sentence.feed(glyph)
-id4-&gt;&gt;id5:id4,id5:new Sentence()
-iframe}
-iframe{:foreach Sentence in line
-id5-&gt;&gt;id5:id5,id5:getTextType()
-id5-&gt;&gt;id5:id5,id5:getTextHeight()
-iframe}
-iframe}
+</help_text><element><type>com.umlet.element.base.SequenceDiagram</type><coordinates><x>20</x><y>20</y><w>1220</w><h>660</h></coordinates><panel_attributes>_PATTERNS:Step~id1_|_system:SystemInfo~id2_|_ti:TextInspector~id3_|_area:TextArea~id4_|_line:TextLine~id5_|_sentence:Sentence~id6_
+id1.&gt;&gt;id2:id2
+id2-&gt;&gt;id3:id2,id3:ti.runTextPattern()
+
+id3-&gt;&gt;id4:id3,id4:new TextArea()
+id4-&gt;&gt;id4:id3,id4:subdivide()
+id3-&gt;&gt;id3::retrieveTextLines()
+id3-&gt;&gt;id5:id3:TextLine.feed(glyph,system)
+id3-&gt;&gt;id5:id3:new TextLine()
+id3-&gt;&gt;id3:foreach TextLine :
+id3-&gt;&gt;id5:id3,id5:line.process()
+
+id5-&gt;&gt;id5:id5:mergeEnclosedTexts()
+id5-&gt;&gt;id5:id5:includeAliens()
+id5-&gt;&gt;id5:retrieveSentences()
+id5-&gt;&gt;id6:id5:sentence.feed(glyph)
+id5-&gt;&gt;id6:id5:new Sentence()
+id5-&gt;&gt;id5:foreach Sentence :
+id5-&gt;&gt;id6:id5,id6:sentence.recognize()
+
+id6-&gt;&gt;id6:id6,id6:getTextType()
+id6-&gt;&gt;id6:id6,id6:getTextHeight()
+id6-&gt;&gt;id6:id6:Ocr()
 </panel_attributes><additional_attributes/></element></umlet_diagram>

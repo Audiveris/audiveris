@@ -9,6 +9,7 @@
 //
 package omr.glyph.text;
 
+import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.*;
@@ -17,6 +18,7 @@ import omr.lag.HorizontalOrientation;
 
 import omr.log.Logger;
 
+import omr.score.Score;
 import omr.score.common.PageRectangle;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -71,7 +73,7 @@ public class Sentence
     private SystemPart systemPart;
 
     /** The containing text glyph line */
-    private final TextGlyphLine line;
+    private final TextLine line;
 
     /** Ordered collection of text items */
     private final SortedSet<Glyph> items = new TreeSet<Glyph>();
@@ -99,9 +101,9 @@ public class Sentence
      * @param systemInfo The containing system
      * @param glyph A first glyph that gives birth to this sentence
      */
-    Sentence (SystemInfo    systemInfo,
-              TextGlyphLine line,
-              Glyph         glyph)
+    Sentence (SystemInfo systemInfo,
+              TextLine   line,
+              Glyph      glyph)
     {
         this.systemInfo = systemInfo;
         this.line = line;
@@ -238,9 +240,9 @@ public class Sentence
         return systemPart;
     }
 
-    //----------------//
+    //------------//
     // getContent //
-    //----------------//
+    //------------//
     /**
      * Report the string content of this sentence, as computed by OCR or entered
      * manually for example
@@ -313,26 +315,83 @@ public class Sentence
                     .compareTo(other.items.first());
     }
 
-    //------------//
-    // removeItem //
-    //------------//
-    /**
-     * Remove the provided glyph from this sentence
-     * @param glyph the glyph to removeItem
-     */
-    public void removeItem (Glyph glyph)
+    //-----------//
+    // recognize //
+    //-----------//
+    public void recognize ()
     {
-        if ((items.size() == 1) && (items.first() == glyph)) {
-            line.removeSentence(this);
-        } else {
-            items.remove(glyph);
-            invalidateCache();
+        if (logger.isFineEnabled()) {
+            logger.fine(this + " recognize");
         }
 
-        glyph.getTextInfo()
-             .setSentence(null);
-        line.removeItem(glyph);
+        // Make sure these parameters are computed
+        getTextType();
+        getTextHeight();
+
+        if (logger.isFineEnabled()) {
+            logger.fine(this + " type:" + type + " height:" + getTextHeight());
+        }
+
+        // Default language
+        Score  score = systemInfo.getScoreSystem()
+                                 .getScore();
+        String language = score.getLanguage();
+
+        if (language == null) {
+            language = constants.defaultLanguageCode.getValue();
+        }
+
+        Glyph glyph = null;
+
+        if (items.size() > 1) {
+            Glyph compound = systemInfo.buildCompound(items);
+            glyph = systemInfo.addGlyph(compound);
+            glyph.setShape(Shape.TEXT, Evaluation.ALGORITHM);
+            items.clear();
+            items.add(glyph);
+        } else {
+            glyph = items.first();
+        }
+
+        if (glyph.getTextInfo()
+                 .getContent() == null) {
+            try {
+                String content = TesseractOCR.getInstance()
+                                             .recognize(
+                    glyph.getImage(),
+                    language)
+                                             .get(0);
+                logger.info("Glyph#" + glyph.getId() + "->" + content);
+                glyph.getTextInfo()
+                     .setOcrContent(content);
+            } catch (Exception ex) {
+                logger.warning("OCR error with glyph #" + glyph.getId(), ex);
+            }
+        }
+
+        addGlyph(glyph);
     }
+
+    //    //------------//
+    //    // removeItem //
+    //    //------------//
+    //    /**
+    //     * Remove the provided glyph from this sentence
+    //     * @param glyph the glyph to removeItem
+    //     */
+    //    public void removeItem (Glyph glyph)
+    //    {
+    //        if ((items.size() == 1) && (items.first() == glyph)) {
+    //            line.removeSentence(this);
+    //        } else {
+    //            items.remove(glyph);
+    //            invalidateCache();
+    //        }
+    //
+    //        glyph.getTextInfo()
+    //             .setSentence(null);
+    //        line.removeItem(glyph);
+    //    }
 
     //----------//
     // toString //
@@ -340,7 +399,20 @@ public class Sentence
     @Override
     public String toString ()
     {
-        return "{Sentence" + Glyph.toString(items) + "}";
+        StringBuilder sb = new StringBuilder("{Sentence");
+        sb.append(" ")
+          .append(Glyph.toString("items", items));
+
+        if (content != null) {
+            sb.append(" content:")
+              .append('"')
+              .append(content)
+              .append('"');
+        }
+
+        sb.append("}");
+
+        return sb.toString();
     }
 
     //------//
@@ -618,23 +690,26 @@ public class Sentence
     {
         //~ Instance fields ----------------------------------------------------
 
-        Scale.Fraction minSentenceGap = new Scale.Fraction(
+        Scale.Fraction  minSentenceGap = new Scale.Fraction(
             20,
             "Minimum horizontal distance between two sentences on the same line");
-        Scale.Fraction maxRightDx = new Scale.Fraction(
+        Scale.Fraction  maxRightDx = new Scale.Fraction(
             2,
             "Maximum horizontal distance on the right end of the staff");
-        Scale.Fraction maxCenterDx = new Scale.Fraction(
+        Scale.Fraction  maxCenterDx = new Scale.Fraction(
             30,
             "Maximum horizontal distance around center of page");
-        Scale.Fraction maxShortLength = new Scale.Fraction(
+        Scale.Fraction  maxShortLength = new Scale.Fraction(
             30,
             "Maximum length for a short sentence (no lyrics)");
-        Scale.Fraction maxStaffDy = new Scale.Fraction(
+        Scale.Fraction  maxStaffDy = new Scale.Fraction(
             7,
             "Maximum distance above staff for a direction");
-        Scale.Fraction minTitleHeight = new Scale.Fraction(
+        Scale.Fraction  minTitleHeight = new Scale.Fraction(
             3,
             "Minimum height for a title text");
+        Constant.String defaultLanguageCode = new Constant.String(
+            "deu",
+            "3-letter code for the default sheet language");
     }
 }

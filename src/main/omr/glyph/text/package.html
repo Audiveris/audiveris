@@ -1,8 +1,61 @@
-<!-- 	$Id$	 -->
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
-
-<html>
+<html><head><!-- $Id$ --></head>
+    
     <body>
-	Package dedicated to the handling of textual aspects
+        Package dedicated to the handling of textual aspects.
+        
+        <h2>General processing</h2>
+        
+        <img src="doc-files/TextProcessing.jpg" alt="TextProcessing"
+             height="700" width="1260"/>
+        
+        <h2>How textual glyphs are handled</h2>
+
+        <h3>Glyphs selection</h3>
+
+        The general idea is to come up with glyphs that are very likely to
+        correspond to real text. Such glyphs are assigned a textual Shape, that
+        is either the Shape TEXT or the Shape CHARACTER. Glyph candidates come
+        from 3 sources:
+        
+        <ul>
+            <li>Standard glyph creation by section aggregation or glyph
+                aggregation.  This bottom-up strategy is implemented in {@link
+                omr.glyph.GlyphsBuilder#retrieveGlyphs}</li>
+            <li>Specific area division, starting from rectangular area at system
+                level, then subdivision along horizontal and vertical axes. This
+                top-down strategy is implemented in the {@link
+                omr.glyph.text.TextArea} class.</li>
+            <li>Individual glyph assignment by user manual interaction.</li>
+        </ul>
+        
+        <h3>Glyphs processing</h3>
+        
+        The special processing for textual glyphs is triggered during the
+        PATTERNS step, which among other patterns, calls the {@link
+        omr.glyph.text.TextInspector#runTextPattern} method.
+        
+        <p> Working at a system level, this method does the following:
+            
+            <ol><li>Retrieve additional textual glyphs (see the area division,
+                as described above),</li>
+                <li>Retrieve alignments of textual glyphs into instances of
+                    {@link omr.glyph.text.TextLine}</li>
+                <li>Process each TextLine in sequence:</li>
+                <ol>
+                    <li>Make sure no textual glyphs overlap (see {@link
+                        omr.glyph.text.TextLine#mergeEnclosedTexts})</li>
+                    <li>Try to aggregate non-textual glyphs that may exist on
+                        the line (see {@link
+                        omr.glyph.text.TextLine#includeAliens})</li>
+                    <li>Split the line into one or several meaningful instances
+                        of {@link omr.glyph.text.Sentence}.</li>
+                    <li>Finally, try to recognize each retrieved sentence
+                        through {@link omr.glyph.text.Sentence#recognize} which
+                        uses the OCR feature provided by the Tesseract
+                        tool.</li>
+                </ol>
+            </ol>
+        </p>
     </body>
 </html>

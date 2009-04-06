@@ -92,11 +92,11 @@ public class TextAreaBrowser
                 new Rectangle(0, 0, sheet.getWidth(), sheet.getHeight())),
             new HorizontalOrientation());
         // subdivide
-        area.subdivide(sheet);
+        area.subdivide();
 
         // Align text glyphs
         for (SystemInfo info : sheet.getSystems()) {
-            info.alignTextGlyphs();
+            info.retrieveTextLines();
         }
     }
 

@@ -3,11 +3,59 @@
 
 <html>
     <body>
-	Package focused on glyphs (non further structured items) found in a picture.
-
-    <h4>Glyph Data Model:<br/>
-        <img src="doc-files/Glyphs.jpg"/>
-    </h4>
-
+	Package focused on glyphs (non further structured items) found in a
+	picture.
+	
+	<h4>Glyph Data Model</h4> <img src="doc-files/Glyphs.jpg"/>
+	<h4>Glyph Life Cycle</h4>
+	<h5>Creation</h5>
+	<ul>
+	    <li>Many glyphs are created through the {@link
+		omr.glyph.GlyphsBuilder#retrieveGlyphs} method which builds
+		glyphs out of connected unknown sections, and then use {@link
+		omr.glyph.GlyphsBuilder#addGlyph} to actually record the glyph
+		into the lag and its containing system.</li>
+	    <li>Some glyphs are created by building a compound out of other
+		glyphs, by {@link omr.glyph.GlyphsBuilder#buildCompound}. These
+		compounds have no effect until they are inserted via {@link
+		omr.glyph.GlyphsBuilder#addGlyph}.</li>
+	</ul>
+	<h5>Insertion</h5> This is done by {@link
+	omr.glyph.GlyphsBuilder#addGlyph} which performs the following actions:
+	<ol>
+	    <li>If the glyph is a compound (made of other glyphs) then its parts
+		are made pointing back to the compound, they are removed from
+		the system collection of glyphs, and their member sections are
+		made pointing to the compound. Doing so, the former parts are no
+		longer "active", only the compound is "active".</li>
+	    <li>The glyph is recorded in the lag, and if found identical to some
+		existing glyph, the existing glyph is returned, otherwise this
+		new glyph is recorded and assigned a lag-based unique ID.</li>
+	    <li>Finally, the glyph is recorded in the system collection of
+		glyphs.</li>
+	</ol>
+	<h5>Deletion</h5> A (recorded) glyph is never totally deleted, it can be
+	reused then by chance an identical glyph is inserted into the lag. This
+	allows to cache the glyph parameters, moments, forbidden shapes, OCR
+	content, etc.
+	<p>What {@link omr.glyph.GlyphsBuilder#removeGlyph} does is simply:
+	    <ol>
+		<li>Removing the glyph from the system collection of
+		    glyphs.</li>
+		<li>Cutting the link from its member sections, making this glyph
+		    "inactive".</li>
+	    </ol>
+	</p>
+	<h4>Glyph display</h4> A glyph is made visible via its member sections
+	(except for the "selected" glyph(s) which use a specific highlighting
+	mode). Several glyphs may contain the same section, but since the
+	section can point back to at most one glyph, there is at most one
+	"active" glyph for any given section, the other glyphs are thus
+	"inactive".
+	<p>While stand-alone (i.e. non-member) sections are displayed using a
+	    set of 3 different colors, so that adjacent sections can be
+	    differentiated, member-sections are colorized with the same color
+	    imposed by their containing glyph. Usually, the glyph color is
+	    determined by the glyph assigned shape.</p>
     </body>
 </html>

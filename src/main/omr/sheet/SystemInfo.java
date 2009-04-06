@@ -19,7 +19,7 @@ import omr.glyph.GlyphsBuilder;
 import omr.glyph.PatternsChecker;
 import omr.glyph.SlurInspector;
 import omr.glyph.StemInspector;
-import omr.glyph.text.TextGlyphLine;
+import omr.glyph.text.TextLine;
 import omr.glyph.text.TextInspector;
 
 import omr.log.Logger;
@@ -129,7 +129,7 @@ public class SystemInfo
         glyphs);
 
     /** Ordered collection of lines of text glyphs */
-    private SortedSet<TextGlyphLine> textLines = new TreeSet<TextGlyphLine>();
+    private SortedSet<TextLine> textLines = new TreeSet<TextLine>();
 
     ////////////////////////////////////////////////////////////////////////////
 
@@ -599,15 +599,15 @@ public class SystemInfo
         glyphs.add(glyph);
     }
 
-    //-----------------//
-    // alignTextGlyphs //
-    //-----------------//
+    //-------------------//
+    // retrieveTextLines //
+    //-------------------//
     /**
      * Align the various text glyphs in horizontal text lines
      */
-    public void alignTextGlyphs ()
+    public void retrieveTextLines ()
     {
-        textInspector.alignTextGlyphs();
+        textInspector.retrieveTextLines();
     }
 
     //------------------------//
@@ -995,7 +995,7 @@ public class SystemInfo
      * sequences of text glyphs.
      * @return the (perhaps empty) ordered collection of text lines found
      */
-    public SortedSet<TextGlyphLine> getTextLines ()
+    public SortedSet<TextLine> getTextLines ()
     {
         return textLines;
     }

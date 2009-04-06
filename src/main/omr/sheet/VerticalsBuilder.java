@@ -543,7 +543,8 @@ public class VerticalsBuilder
 
         public boolean check (GlyphSection section)
         {
-            // We process section for which glyph is null, NOISE, STRUCTURE
+            // We process section for which glyph is null
+            // or NO_LEGAL_SHAPE, NOISE, STRUCTURE
             boolean result = (section.getGlyph() == null) ||
                              !section.getGlyph()
                                      .isWellKnown();

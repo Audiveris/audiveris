@@ -65,7 +65,6 @@ public class PatternsChecker
         int stemModifs = 0;
         int slurModifs = 0;
         int textModifs = 0;
-
         // Clefs
         system.removeInactiveGlyphs();
         clefModifs = system.runClefPattern();

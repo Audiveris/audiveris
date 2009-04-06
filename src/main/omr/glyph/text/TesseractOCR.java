@@ -282,9 +282,10 @@ public class TesseractOCR
 
         in.close();
 
-        //        for (String aLine : lines) {
-        //            logger.info("dll ocr: \"" + aLine + "\"");
-        //        }
+//        for (String aLine : lines) {
+//            logger.info("dll ocr: \"" + aLine + "\"");
+//        }
+
         return lines;
     }
 

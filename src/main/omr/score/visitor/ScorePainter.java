@@ -502,7 +502,8 @@ public class ScorePainter
 
             // Draw slot vertical lines ?
             if (PaintingParameters.getInstance()
-                                  .isSlotPainting()) {
+                                  .isSlotPainting() &&
+                (measure.getSlots() != null)) {
                 for (Slot slot : measure.getSlots()) {
                     drawSlot(false, measure, slot, slotColor);
                 }

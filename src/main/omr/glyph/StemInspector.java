@@ -98,6 +98,10 @@ public class StemInspector
 
                     // Discard "bad" ones
                     for (Glyph g : bads) {
+                        if (logger.isFineEnabled()) {
+                            logger.finest("Deassigning bad glyph " + g);
+                        }
+
                         g.setShape((Shape) null);
                     }
                 }

@@ -13,7 +13,7 @@ import omr.glyph.Evaluator;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphNetwork;
-import omr.glyph.ui.SymbolsController;
+import omr.glyph.Shape;
 
 import omr.lag.ui.RunBoard;
 import omr.lag.ui.ScrollLagView;

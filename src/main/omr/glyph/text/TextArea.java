@@ -30,7 +30,8 @@ import java.awt.Rectangle;
 import java.util.*;
 
 /**
- * Class <code>TextArea</code> handles an area likely to contain some text
+ * Class <code>TextArea</code> handles a rectangular area likely to contain
+ * some text
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -49,6 +50,9 @@ public class TextArea
 
     /** The containing system */
     private final SystemInfo system;
+
+    /** The containing sheet, if any */
+    private final Sheet sheet;
 
     /** The parent area, if any */
     private final TextArea parent;
@@ -105,6 +109,13 @@ public class TextArea
                      Oriented     orientation)
     {
         this.system = system;
+
+        if (system != null) {
+            sheet = system.getSheet();
+        } else {
+            sheet = null;
+        }
+
         this.parent = parent;
         this.roi = roi;
         this.orientation = orientation;
@@ -240,26 +251,23 @@ public class TextArea
     // subdivide //
     //-----------//
     /**
-     * Subdivide the area in subareas and evaluate each of the (sub) areas
-     * @param sheet the related sheet
+     * Subdivide the area in subareas and evaluate each of the (sub) areas as a
+     * potential textual glyph
      */
-    public void subdivide (Sheet sheet)
+    public void subdivide ()
     {
-        if (splitArea(sheet, false) > 1) {
+        if (splitArea(false) > 1) {
             if (logger.isFineEnabled()) {
                 logger.fine("Node " + this);
             }
 
             // The area can still be divided
-            splitArea(sheet, true);
-        } else {
-            // This area is a leaf
-            if (logger.isFineEnabled()) {
-                logger.fine("Leaf " + this);
-            }
+            splitArea(true);
+        } else if (logger.isFineEnabled()) {
+            logger.fine("Leaf " + this);
         }
 
-        if (evaluateArea(sheet)) {
+        if (isTextualArea()) {
             if (logger.isFineEnabled()) {
                 logger.fine("Text found in " + parent);
             }
@@ -274,7 +282,7 @@ public class TextArea
         // Recurse
         if (subareas != null) {
             for (TextArea subarea : subareas) {
-                subarea.subdivide(sheet);
+                subarea.subdivide();
             }
         }
     }
@@ -335,6 +343,95 @@ public class TextArea
     private void setTextLeaf (boolean textLeaf)
     {
         this.textLeaf = textLeaf;
+    }
+
+    //---------------//
+    // isTextualArea //
+    //---------------//
+    /**
+     * Check whether the content of this area can be recognized as a single text
+     * compound, and if so, actually assign the shape to the underlying glyph
+     * (either the only glyph in the area, or the compound glyph newly built for
+     * this purpose)
+     * @return true if check is positive
+     */
+    private boolean isTextualArea ()
+    {
+        // We cannot evaluate glyphs that do not belong to a system
+        if (system == null) {
+            return false;
+        }
+
+        // Retrieve glyphs in the provided rectangular area
+        Set<Glyph> glyphs = sheet.getVerticalLag()
+                                 .lookupGlyphs(roi.getAbsoluteContour());
+
+        // A system is not exactly a rectangular area
+        // So some further glyph filtering is needed
+        for (Iterator<Glyph> it = glyphs.iterator(); it.hasNext();) {
+            Glyph glyph = it.next();
+
+            if (sheet.getSystemOf(glyph) != system) {
+                if (glyph.getId() == 100) {
+                    logger.info("Removing 100");
+                }
+
+                it.remove();
+            }
+        }
+
+        // Purge the glyph collection of unwanted glyphs
+        for (Iterator<Glyph> it = glyphs.iterator(); it.hasNext();) {
+            Glyph glyph = it.next();
+
+            // Glyph for which TEXT is forbidden
+            if (glyph.isShapeForbidden(Shape.TEXT)) {
+                if (glyph.getId() == 100) {
+                    logger.info("Forbidden 100");
+                }
+
+                it.remove();
+            }
+
+            // Glyph already member of a sentence ??? TBD
+        }
+
+        if (!glyphs.isEmpty()) {
+            Glyph glyph;
+
+            if (glyphs.size() > 1) {
+                glyph = system.buildCompound(glyphs);
+            } else {
+                glyph = glyphs.iterator()
+                              .next();
+            }
+
+            Evaluator  evaluator = GlyphNetwork.getInstance();
+            Evaluation vote = evaluator.vote(
+                glyph,
+                GlyphInspector.getSymbolMaxDoubt());
+
+            if (vote != null) {
+                if (logger.isFineEnabled()) {
+                    logger.fine("Vote: " + vote.toString());
+                }
+
+                if (vote.shape.isText()) {
+                    if (glyph.getId() == 0) {
+                        glyph = system.addGlyph(glyph);
+                    }
+
+                    system.computeGlyphFeatures(glyph);
+
+                    // No! glyph.setTextArea(this);
+                    glyph.setShape(vote.shape, vote.doubt);
+
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     //--------------//
@@ -428,88 +525,6 @@ public class TextArea
         }
     }
 
-    //--------------//
-    // evaluateArea //
-    //--------------//
-    /**
-     * Check whether the content of this area can be recognized as a single text
-     * compound, and if so, actually assign the shape to the underlying glyph
-     * (either the only glyph in the area, or the compound glyph newly built for
-     * this purpose)
-     * @return true if check is positive
-     */
-    private boolean evaluateArea (Sheet sheet)
-    {
-        // We cannot evaluate glyphs out of a system
-        if (system == null) {
-            return false;
-        }
-
-        // Retrieve glyphs in the provided rectangular area
-        Set<Glyph> glyphs = sheet.getVerticalLag()
-                                 .lookupGlyphs(roi.getAbsoluteContour());
-
-        // A system is not exactly a rectangular area
-        // So some further glyph filtering is needed
-        for (Iterator<Glyph> it = glyphs.iterator(); it.hasNext();) {
-            Glyph glyph = it.next();
-
-            if (sheet.getSystemOf(glyph) != system) {
-                it.remove();
-            }
-        }
-
-        // Purge the glyph collection of unwanted glyphs
-        for (Iterator<Glyph> it = glyphs.iterator(); it.hasNext();) {
-            Glyph glyph = it.next();
-
-            // Glyph not part of the system
-
-            // Glyph for which TEXT is forbidden
-            if (glyph.isShapeForbidden(Shape.TEXT)) {
-                it.remove();
-            }
-
-            // Glyph already member of a sentence ??? TBD
-        }
-
-        if (!glyphs.isEmpty()) {
-            Glyph glyph;
-
-            if (glyphs.size() > 1) {
-                glyph = system.buildCompound(glyphs);
-            } else {
-                glyph = glyphs.iterator()
-                              .next();
-            }
-
-            Evaluator  evaluator = GlyphNetwork.getInstance();
-            Evaluation vote = evaluator.vote(
-                glyph,
-                GlyphInspector.getSymbolMaxDoubt());
-
-            if (vote != null) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("Vote: " + vote.toString());
-                }
-
-                if (vote.shape.isText()) {
-                    if (glyph.getId() == 0) {
-                        glyph = system.addGlyph(glyph);
-                    }
-
-                    system.computeGlyphFeatures(glyph);
-                    // No! glyph.setTextArea(this);
-                    glyph.setShape(vote.shape, vote.doubt);
-
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
     //---------------//
     // firstBucketAt //
     //---------------//
@@ -559,17 +574,14 @@ public class TextArea
     //-----------//
     /**
      * Try to perform a split in the projection orientation
-     * @param sheet the related sheet
-     * @param building should we actually create the subareas
+     * @param building should we actually create the subareas?
      * @return the number of subareas identified (whether they are actually
      * created or not)
      */
-    private int splitArea (Sheet   sheet,
-                           boolean building)
+    private int splitArea (boolean building)
     {
         // Make sure the histogram is available
         int[]     histo = getHistogram();
-
         int       children = 0;
         Scale     scale = sheet.getScale();
         boolean   spacing = true;

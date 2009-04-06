@@ -13,7 +13,6 @@ import omr.check.Checkable;
 import omr.check.Result;
 import omr.check.SuccessResult;
 
-import omr.glyph.text.Sentence;
 import omr.glyph.text.TextInfo;
 
 import omr.lag.Section;
@@ -36,6 +35,7 @@ import java.awt.image.BufferedImage;
 import java.util.*;
 
 import javax.xml.bind.annotation.*;
+
 
 /**
  * Class <code>Glyph</code> represents any glyph found, such as stem, ledger,
@@ -331,7 +331,7 @@ public class Glyph
      *
      * @return member sections
      */
-    public Set<GlyphSection> getMembers ()
+    public SortedSet<GlyphSection> getMembers ()
     {
         return members;
     }
@@ -557,20 +557,15 @@ public class Glyph
 
         if (oldShape != null) {
             forbidShape(oldShape);
-
-            // No text, no sentence
-            if (oldShape.isText()) {
-                Sentence sentence = getTextInfo()
-                                        .getSentence();
-
-                if ((sentence != null) && ((shape == null) || !shape.isText())) {
-                    sentence.removeItem(this);
-                }
-            }
         }
 
-        // Remove the new shape from the blacklist if any
-        if (shape != null) {
+        if (shape == null) {
+            // Set the part shape to null as well (rather than NO_LEGAL_SHAPE)
+            for (Glyph part : this.getParts()) {
+                part.setShape(shape, doubt);
+            }
+        } else {
+            // Remove the new shape from the blacklist if any
             allowShape(shape);
         }
 
@@ -1084,7 +1079,7 @@ public class Glyph
     //-------------//
     /**
      * A glyph is considered as well known if it has a registered shape other
-     * than noise and stucture
+     * than NO_LEGAL_SHAPE, NOISE and STRUCTURE.
      *
      * @return true if so
      */
@@ -1729,3 +1724,5 @@ public class Glyph
         clearTranslations();
     }
 }
+
+   

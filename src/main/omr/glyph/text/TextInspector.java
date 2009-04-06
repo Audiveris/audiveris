@@ -52,14 +52,14 @@ public class TextInspector
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------------//
-    // alignTextGlyphs //
-    //-----------------//
+    //-------------------//
+    // retrieveTextLines //
+    //-------------------//
     /**
      * Align the various text glyphs in horizontal text lines
      * @return the number of recognized textual items
      */
-    public int alignTextGlyphs ()
+    public int retrieveTextLines ()
     {
         int modifs = 0;
 
@@ -75,40 +75,39 @@ public class TextInspector
             }
 
             // (Re)assign an id to each line
-            if (logger.isFineEnabled()) {
-                logger.fine("System#" + system.getId());
-            }
-
             int index = 0;
 
-            for (TextGlyphLine line : system.getTextLines()) {
+            for (TextLine line : system.getTextLines()) {
                 line.setId(++index);
 
                 if (logger.isFineEnabled()) {
-                    logger.fine(line.toString());
+                    logger.fine(this + " " + line.toString());
                 }
 
-                line.processGlyphs();
+                line.process();
             }
         } catch (Error error) {
-            logger.warning("Error in TextInspector.alignTextGlyphs: " + error);
+            logger.warning(
+                "Error in TextInspector.retrieveTextLines: " + error);
         } catch (Exception ex) {
-            logger.warning("Exception in TextInspector.alignTextGlyphs", ex);
+            logger.warning("Exception in TextInspector.retrieveTextLines", ex);
         }
 
         return modifs;
     }
 
-    //--------------------//
+    //----------------//
     // runTextPattern //
-    //--------------------//
+    //----------------//
     /**
-     * Retrieve the various glyphs and series of glyphs that could represent
-     * text portions in the system at hand
+     * Besides the existing text-shaped glyphs, using system area subdivision,
+     * try to retrieve additional series of glyphs that could represent text
+     * portions in the system at hand
      * @return the number of text glyphs built
      */
     public int runTextPattern ()
     {
+        // Create a TextArea on the whole system
         TextArea area = new TextArea(
             system,
             null,
@@ -117,10 +116,20 @@ public class TextInspector
             new HorizontalOrientation());
 
         // Subdivide the area, to find and build text glyphs (words most likely)
-        area.subdivide(system.getSheet());
+        area.subdivide();
 
         // Process alignments of text items
-        return alignTextGlyphs();
+        return retrieveTextLines();
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return getClass()
+                   .getSimpleName() + " System#" + system.getId();
     }
 
     //----------//
@@ -133,21 +142,21 @@ public class TextInspector
      * @param lines the collections of text glyph lines
      * @return true if the glyph was really added
      */
-    private boolean feedLine (Glyph                    item,
-                              SortedSet<TextGlyphLine> lines)
+    private boolean feedLine (Glyph               item,
+                              SortedSet<TextLine> lines)
     {
         boolean added = false;
 
         if (logger.isFineEnabled()) {
-            logger.fine("Feeding a GlyphTextLine with " + item);
+            logger.fine(this + " feedLine with " + item);
         }
 
         // First look for a suitable existing text line
         final int maxDy = system.getScoreSystem()
                                 .getScale()
-                                .toPixels(TextGlyphLine.getMaxItemDy());
+                                .toPixels(TextLine.getMaxItemDy());
 
-        for (TextGlyphLine line : lines) {
+        for (TextLine line : lines) {
             if (line.isAlignedWith(item.getLocation(), maxDy)) {
                 added = line.addItem(item);
 
@@ -161,7 +170,7 @@ public class TextInspector
         }
 
         // No compatible line, so create a brand new one
-        TextGlyphLine line = new TextGlyphLine(system);
+        TextLine line = new TextLine(system);
         added = line.addItem(item);
         lines.add(line);
 

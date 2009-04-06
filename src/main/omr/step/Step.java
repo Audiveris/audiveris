@@ -9,6 +9,8 @@
 //
 package omr.step;
 
+import omr.glyph.Glyph;
+
 import omr.log.Logger;
 
 import omr.script.StepTask;
@@ -446,7 +448,7 @@ public enum Step {
     //----------//
     /**
      * Class <code>StepConstant</code> is a subclass of
-     * {@link} omr.constant.Constant, meant to store a {@link Step} value.
+     * {@link omr.constant.Constant}, meant to store a {@link Step} value.
      */
     public static class Constant
         extends omr.constant.Constant

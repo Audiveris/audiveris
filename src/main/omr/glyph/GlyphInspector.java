@@ -279,6 +279,7 @@ public class GlyphInspector
                 boolean success = false;
 
                 if (overlap <= maxNaturalOverlap) {
+                    // TODO: implement this case !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                     //                    logger.info(
                     //                        "Natural glyph rebuilt as #" + compound.getId());
                     //                    success = true;
@@ -466,8 +467,11 @@ public class GlyphInspector
             if (Shape.Clefs.contains(vote.shape)) {
                 compound = system.addGlyph(compound);
                 compound.setShape(vote.shape, Evaluation.ALGORITHM);
-                logger.info(
-                    vote.shape + " rebuilt as glyph#" + compound.getId());
+
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        vote.shape + " rebuilt as glyph#" + compound.getId());
+                }
 
                 return true;
             }
@@ -535,7 +539,11 @@ public class GlyphInspector
                 if (vote.shape == Shape.SHARP) {
                     compound = system.addGlyph(compound);
                     compound.setShape(vote.shape, Evaluation.ALGORITHM);
-                    logger.info("SHARP rebuilt as glyph#" + compound.getId());
+
+                    if (logger.isFineEnabled()) {
+                        logger.fine(
+                            "SHARP rebuilt as glyph#" + compound.getId());
+                    }
 
                     return true;
                 }
