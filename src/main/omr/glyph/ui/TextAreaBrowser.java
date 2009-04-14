@@ -96,7 +96,7 @@ public class TextAreaBrowser
 
         // Align text glyphs
         for (SystemInfo info : sheet.getSystems()) {
-            info.retrieveTextLines();
+            info.retrieveSentences();
         }
     }
 

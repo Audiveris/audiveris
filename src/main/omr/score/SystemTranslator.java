@@ -276,7 +276,7 @@ public class SystemTranslator
     //            // Browse the system collection of TextGlyphLines that contain
     //            // sentences of text glyphs
     //            for (TextGlyphLine line : system.getInfo()
-    //                                            .getTextLines()) {
+    //                                            .getSentences()) {
     //                logger.info("Translating " + line);
     //
     //                // Loop on contained sentences

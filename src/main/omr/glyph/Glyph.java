@@ -36,7 +36,6 @@ import java.util.*;
 
 import javax.xml.bind.annotation.*;
 
-
 /**
  * Class <code>Glyph</code> represents any glyph found, such as stem, ledger,
  * accidental, note head, etc...
@@ -1538,6 +1537,19 @@ public class Glyph
         return getAreaCenter();
     }
 
+    //--------//
+    // isText //
+    //--------//
+    /**
+     * Check whether the glyph shape is a text (or a character)
+     *
+     * @return true if text or character
+     */
+    public boolean isText ()
+    {
+        return (shape != null) && shape.isText();
+    }
+
     //-------------//
     // getTextInfo //
     //-------------//
@@ -1724,5 +1736,3 @@ public class Glyph
         clearTranslations();
     }
 }
-
-   

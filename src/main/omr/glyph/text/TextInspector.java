@@ -9,7 +9,9 @@
 //
 package omr.glyph.text;
 
+import omr.glyph.Evaluation;
 import omr.glyph.Glyph;
+import omr.glyph.Shape;
 
 import omr.lag.HorizontalOrientation;
 
@@ -17,7 +19,7 @@ import omr.log.Logger;
 
 import omr.sheet.SystemInfo;
 
-import java.util.SortedSet;
+import java.util.*;
 
 /**
  * Class <code>TextInspector</code> handles the inspection of textual items in
@@ -38,6 +40,9 @@ public class TextInspector
     /** Dedicated system */
     private final SystemInfo system;
 
+    /** Used to assign a unique ID to system sentences */
+    private int sentenceCount = 0;
+
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -53,44 +58,40 @@ public class TextInspector
     //~ Methods ----------------------------------------------------------------
 
     //-------------------//
-    // retrieveTextLines //
+    // retrieveSentences //
     //-------------------//
     /**
-     * Align the various text glyphs in horizontal text lines
+     * Aggregate the various text glyphs in horizontal sentences
      * @return the number of recognized textual items
      */
-    public int retrieveTextLines ()
+    public int retrieveSentences ()
     {
         int modifs = 0;
 
-        try {
-            // Keep the previous work! No textLines.clear();
-            for (Glyph glyph : system.getGlyphs()) {
-                if ((glyph.getShape() != null) && glyph.getShape()
-                                                       .isText()) {
-                    if (feedLine(glyph, system.getTextLines())) {
-                        modifs++;
-                    }
+        // Keep the previous work! No sentences.clear();
+        for (Glyph glyph : system.getGlyphs()) {
+            if (glyph.isText()) {
+                if (feedSentence(glyph)) {
+                    modifs++;
                 }
             }
+        }
 
-            // (Re)assign an id to each line
-            int index = 0;
+        // Extend the sentence skeletons
+        for (Sentence sentence : system.getSentences()) {
+            // Make sure the various text items do not overlap
+            sentence.mergeEnclosedTexts();
 
-            for (TextLine line : system.getTextLines()) {
-                line.setId(++index);
+            // Be greedy wrt nearby glyphs not (yet) assigned a text shape
+            sentence.includeAliens();
+        }
 
-                if (logger.isFineEnabled()) {
-                    logger.fine(this + " " + line.toString());
-                }
+        // Merge sentences if needed
+        mergeSentences();
 
-                line.process();
-            }
-        } catch (Error error) {
-            logger.warning(
-                "Error in TextInspector.retrieveTextLines: " + error);
-        } catch (Exception ex) {
-            logger.warning("Exception in TextInspector.retrieveTextLines", ex);
+        // Recognize content of each sentence
+        for (Sentence sentence : system.getSentences()) {
+            sentence.recognize();
         }
 
         return modifs;
@@ -115,11 +116,11 @@ public class TextInspector
                 system.getBounds()),
             new HorizontalOrientation());
 
-        // Subdivide the area, to find and build text glyphs (words most likely)
+        // Find and build additional text glyphs (words most likely)
         area.subdivide();
 
         // Process alignments of text items
-        return retrieveTextLines();
+        return retrieveSentences();
     }
 
     //----------//
@@ -132,52 +133,96 @@ public class TextInspector
                    .getSimpleName() + " System#" + system.getId();
     }
 
-    //----------//
-    // feedLine //
-    //----------//
+    //--------------//
+    // feedSentence //
+    //--------------//
     /**
-     * Populate a Text line with this text glyph
+     * Populate a Sentence with this text glyph, either by aggregating the glyph
+     * to an existing sentence or by creating a new sentence
      *
-     * @param item the text item to host in a text line
-     * @param lines the collections of text glyph lines
-     * @return true if the glyph was really added
+     * @param item the text item to host in a sentence
+     * @return true if a sentence has been modified or created
      */
-    private boolean feedLine (Glyph               item,
-                              SortedSet<TextLine> lines)
+    private boolean feedSentence (Glyph item)
     {
-        boolean added = false;
-
         if (logger.isFineEnabled()) {
-            logger.fine(this + " feedLine with " + item);
+            logger.fine(this + " feedSentence with " + item);
         }
 
-        // First look for a suitable existing text line
-        final int maxDy = system.getScoreSystem()
-                                .getScale()
-                                .toPixels(TextLine.getMaxItemDy());
-
-        for (TextLine line : lines) {
-            if (line.isAlignedWith(item.getLocation(), maxDy)) {
-                added = line.addItem(item);
-
+        // First look for an existing sentence that could host the item
+        for (Sentence sentence : system.getSentences()) {
+            if (sentence.isCloseTo(item)) {
                 if (logger.isFineEnabled()) {
                     logger.fine(
-                        "Inserted glyph #" + item.getId() + " into " + line);
+                        "Inserting glyph #" + item.getId() + " into " +
+                        sentence);
                 }
 
-                return added;
+                return sentence.addItem(item);
             }
         }
 
-        // No compatible line, so create a brand new one
-        TextLine line = new TextLine(system);
-        added = line.addItem(item);
-        lines.add(line);
+        // No compatible sentence found, so create a brand new one
+        Sentence sentence = new Sentence(system, item, ++sentenceCount);
+
+        system.getSentences()
+              .add(sentence);
 
         if (logger.isFineEnabled()) {
-            logger.fine("Created new " + line);
+            logger.fine("Created new " + sentence);
         }
 
-        return added;
+        return true;
+    }
+
+    //----------------//
+    // mergeSentences //
+    //----------------//
+    /**
+     * Merge the sentences that are very close to each other.
+     */
+    private void mergeSentences ()
+    {
+        boolean        finished = false;
+        List<Sentence> list = new ArrayList<Sentence>(system.getSentences());
+
+        while (!finished) {
+            finished = true;
+
+            oneLoop: 
+            for (Sentence one : list) {
+                for (Sentence two : list.subList(
+                    list.indexOf(one) + 1,
+                    list.size())) {
+                    if (one.isCloseTo(two)) {
+                        finished = false;
+                        list.remove(one);
+                        list.remove(two);
+
+                        Glyph compound = system.addGlyph(one.mergeOf(two));
+                        compound.setShape(Shape.TEXT, Evaluation.ALGORITHM);
+
+                        Sentence s = new Sentence(
+                            system,
+                            compound,
+                            ++sentenceCount);
+                        list.add(s);
+
+                        if (logger.isFineEnabled()) {
+                            logger.fine(
+                                " Sentence #" + s.getId() + " merging " + one +
+                                " & " + two);
+                        }
+
+                        break oneLoop;
+                    }
+                }
+            }
+        }
+
+        system.getSentences()
+              .clear();
+        system.getSentences()
+              .addAll(list);
     }
 }

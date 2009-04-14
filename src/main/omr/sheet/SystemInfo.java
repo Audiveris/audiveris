@@ -19,7 +19,7 @@ import omr.glyph.GlyphsBuilder;
 import omr.glyph.PatternsChecker;
 import omr.glyph.SlurInspector;
 import omr.glyph.StemInspector;
-import omr.glyph.text.TextLine;
+import omr.glyph.text.Sentence;
 import omr.glyph.text.TextInspector;
 
 import omr.log.Logger;
@@ -128,8 +128,8 @@ public class SystemInfo
     private final SortedSet<Glyph> glyphsView = Collections.unmodifiableSortedSet(
         glyphs);
 
-    /** Ordered collection of lines of text glyphs */
-    private SortedSet<TextLine> textLines = new TreeSet<TextLine>();
+    /** Set of sentences made of text glyphs */
+    private Set<Sentence> sentences = new LinkedHashSet<Sentence>();
 
     ////////////////////////////////////////////////////////////////////////////
 
@@ -599,17 +599,6 @@ public class SystemInfo
         glyphs.add(glyph);
     }
 
-    //-------------------//
-    // retrieveTextLines //
-    //-------------------//
-    /**
-     * Align the various text glyphs in horizontal text lines
-     */
-    public void retrieveTextLines ()
-    {
-        textInspector.retrieveTextLines();
-    }
-
     //------------------------//
     // allocateScoreStructure //
     //------------------------//
@@ -879,6 +868,17 @@ public class SystemInfo
     }
 
     //-------------------//
+    // retrieveSentences //
+    //-------------------//
+    /**
+     * Align the various text glyphs in horizontal text lines
+     */
+    public void retrieveSentences ()
+    {
+        textInspector.retrieveSentences();
+    }
+
+    //-------------------//
     // retrieveVerticals //
     //-------------------//
     /**
@@ -974,6 +974,18 @@ public class SystemInfo
         return sb.toString();
     }
 
+    //--------------//
+    // getSentences //
+    //--------------//
+    /**
+     * Report the various sentences retrieved in this system.
+     * @return the (perhaps empty) collection of sentences found
+     */
+    public Set<Sentence> getSentences ()
+    {
+        return sentences;
+    }
+
     //----------//
     // getSheet //
     //----------//
@@ -984,20 +996,6 @@ public class SystemInfo
     public Sheet getSheet ()
     {
         return sheet;
-    }
-
-    //--------------//
-    // getTextLines //
-    //--------------//
-    /**
-     * Report the various lines of text retrieved in this system, ordered by
-     * their ordinate. Each such line contains one or more sentences that are
-     * sequences of text glyphs.
-     * @return the (perhaps empty) ordered collection of text lines found
-     */
-    public SortedSet<TextLine> getTextLines ()
-    {
-        return textLines;
     }
 
     //---------------//

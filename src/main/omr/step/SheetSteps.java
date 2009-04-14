@@ -679,7 +679,7 @@ public class SheetSteps
         public void doSystem (SystemInfo system)
             throws StepException
         {
-            system.getTextLines().clear();
+            system.getSentences().clear();
             for (int iter = 0;
                  iter < constants.MaxPatternsIterations.getValue(); iter++) {
                 if (!system.runPatterns()) {

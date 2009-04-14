@@ -165,6 +165,19 @@ public class GlyphInspector
         return constants.symbolMaxDoubt.getValue();
     }
 
+    //-----------------//
+    // getTextMaxDoubt //
+    //-----------------//
+    /**
+     * Report the maximum doubt for a text symbol
+     *
+     * @return maximum acceptable doubt value
+     */
+    public static double getTextMaxDoubt ()
+    {
+        return constants.textMaxDoubt.getValue();
+    }
+
     //----------------//
     // evaluateGlyphs //
     //----------------//
@@ -772,6 +785,9 @@ public class GlyphInspector
         Evaluation.Doubt symbolMaxDoubt = new Evaluation.Doubt(
             1.0001,
             "Maximum doubt for a symbol");
+        Evaluation.Doubt textMaxDoubt = new Evaluation.Doubt(
+            3.0,
+            "Maximum doubt for a text symbol");
         Evaluation.Doubt minCompoundPartDoubt = new Evaluation.Doubt(
             1.020,
             "Minimum doubt for a suitable compound part");

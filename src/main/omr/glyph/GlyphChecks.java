@@ -150,6 +150,11 @@ public class GlyphChecks
                     return null;
                 }
             }
+        } else if (Shape.Pedals.contains(shape)) {
+            // Pedal marks must be below the staff
+            if (glyph.getPitchPosition() <= 4) {
+                return null;
+            }
         }
 
         // Pass-through by default

@@ -372,10 +372,6 @@ public class TextArea
             Glyph glyph = it.next();
 
             if (sheet.getSystemOf(glyph) != system) {
-                if (glyph.getId() == 100) {
-                    logger.info("Removing 100");
-                }
-
                 it.remove();
             }
         }
@@ -386,10 +382,6 @@ public class TextArea
 
             // Glyph for which TEXT is forbidden
             if (glyph.isShapeForbidden(Shape.TEXT)) {
-                if (glyph.getId() == 100) {
-                    logger.info("Forbidden 100");
-                }
-
                 it.remove();
             }
 

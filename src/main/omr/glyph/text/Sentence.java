@@ -13,10 +13,13 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.*;
+import omr.glyph.Glyph;
 
 import omr.lag.HorizontalOrientation;
 
 import omr.log.Logger;
+
+import omr.math.Population;
 
 import omr.score.Score;
 import omr.score.common.PageRectangle;
@@ -33,10 +36,7 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
-import omr.util.Implement;
-
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Class <code>Sentence</code> encapsulates a consistent ordered set of text
@@ -54,7 +54,6 @@ import java.util.TreeSet;
  * @version $Id$
  */
 public class Sentence
-    implements Comparable<Sentence>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -66,49 +65,77 @@ public class Sentence
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Containing system info */
+    /** The containing system */
     private final SystemInfo systemInfo;
 
     /** The containing system part */
-    private SystemPart systemPart;
+    private final SystemPart systemPart;
 
-    /** The containing text glyph line */
-    private final TextLine line;
+    /** The sentence id */
+    private final String id;
 
-    /** Ordered collection of text items */
+    /** Abscissa-ordered collection of text items */
     private final SortedSet<Glyph> items = new TreeSet<Glyph>();
 
-    /** Type of this text sentence */
+    /** Role of this text sentence */
     private TextType type;
 
-    /** The string value of the sentence, if any, assigned manually or by OCR */
-    private String content;
+    /** Max vertical pixel distance between a text item and the sentence */
+    private final int maxItemDy;
+
+    /** Max horizontal pixel distance between a glyph item and a sentence */
+    private final int maxItemDx;
+
+    // Following are cached data, invalidated whenever items is modified -------
+
+    /** The sentence starting point (in units) within the containing system */
+    private SystemPoint location;
 
     /** The text area for this sentence */
     private TextArea textArea;
 
-    /** The starting point (in units) within the containing system */
-    private SystemPoint location;
+    /** The mean text baseline ordinate in pixels */
+    private Integer y;
 
-    /** Minimum horizontal gap between 2 sentences (cached for optimization) */
-    private Integer minSentenceGap;
+    /** Are we within staves height, thus impacted by first barline border */
+    private Boolean withinStaves;
+
+    /** The bounding box */
+    private PixelRectangle contourBox;
+
+    /** The string value of the sentence, if any, assigned manually or by OCR */
+    private String content;
 
     //~ Constructors -----------------------------------------------------------
 
+    //----------//
+    // Sentence //
+    //----------//
     /**
      * Creates a new Sentence object.
      *
      * @param systemInfo The containing system
      * @param glyph A first glyph that gives birth to this sentence
+     * @param id A unique ID within the containing system
      */
     Sentence (SystemInfo systemInfo,
-              TextLine   line,
-              Glyph      glyph)
+              Glyph      glyph,
+              int        id)
     {
         this.systemInfo = systemInfo;
-        this.line = line;
+        this.id = systemInfo.getId() + ":" + id;
 
-        addGlyph(glyph);
+        addItem(glyph);
+
+        ScoreSystem system = systemInfo.getScoreSystem();
+        systemPart = system.getPartAt(
+            system.toSystemPoint(items.first().getCentroid()));
+
+        // Compute parameters one for all
+        Scale scale = systemInfo.getScoreSystem()
+                                .getScale();
+        maxItemDy = scale.toPixels(constants.maxItemDy);
+        maxItemDx = scale.toPixels(constants.maxItemDx);
 
         if (logger.isFineEnabled()) {
             logger.fine("Created " + this);
@@ -126,19 +153,10 @@ public class Sentence
      */
     public String getContentFromItems ()
     {
-        //        Scale          scale = systemInfo.getScoreSystem()
-        //                                         .getScale();
-        //        PixelRectangle lastBox = items.last()
-        //                                      .getContourBox();
-        //        PixelRectangle firstBox = items.first()
-        //                                       .getContourBox();
-        //        int            sentenceWidth = scale.pixelsToUnits(
-        //            (lastBox.x + lastBox.width) - firstBox.x);
         StringBuilder sb = null;
 
-        // Use each item string at proper location
-        for (Glyph item : getGlyphs()) {
-            ///PixelRectangle box = item.getContourBox();
+        // Use each item string
+        for (Glyph item : items) {
             String str = item.getTextInfo()
                              .getContent();
 
@@ -184,9 +202,21 @@ public class Sentence
      */
     public void setGlyphsTranslation (Object entity)
     {
-        for (Glyph item : getGlyphs()) {
+        for (Glyph item : items) {
             item.setTranslation(entity);
         }
+    }
+
+    //-------//
+    // getId //
+    //-------//
+    /**
+     * Report the ID of this instance
+     * @return the id
+     */
+    public String getId ()
+    {
+        return id;
     }
 
     //-------------//
@@ -194,7 +224,7 @@ public class Sentence
     //-------------//
     /**
      * Report the system-based starting point of this sentence
-     * @return the staring point (x: left side, y: baseline)
+     * @return the starting point (x: left side, y: baseline)
      */
     public SystemPoint getLocation ()
     {
@@ -231,12 +261,6 @@ public class Sentence
      */
     public SystemPart getSystemPart ()
     {
-        if (systemPart == null) {
-            ScoreSystem system = systemInfo.getScoreSystem();
-            systemPart = system.getPartAt(
-                system.toSystemPoint(items.first().getCentroid()));
-        }
-
         return systemPart;
     }
 
@@ -300,25 +324,224 @@ public class Sentence
         return type;
     }
 
+    //---------//
+    // addItem //
+    //---------//
+    /**
+     * Add a glyph to this sentence
+     * @param item the glyph to add
+     * @return true if item did not already exist in the glyphs set
+     */
+    public boolean addItem (Glyph item)
+    {
+        item.getTextInfo()
+            .setSentence(this);
+        invalidateCache();
+
+        return items.add(item);
+    }
+
+    //------------//
+    // removeItem //
+    //------------//
+    /**
+     * Remove the provided item from this sentence
+     * @param glyph the glyph to remove
+     */
+    public void removeItem (Glyph glyph)
+    {
+        items.remove(glyph);
+        invalidateCache();
+
+        glyph.getTextInfo()
+             .setSentence(null);
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder("{Sentence #");
+        sb.append(getId());
+
+        try {
+            sb.append(" y:");
+            getY();
+            sb.append(y);
+        } catch (Exception ex) {
+            sb.append("unknown");
+        }
+
+        sb.append(" ")
+          .append(Glyph.toString("items", items));
+
+        if (content != null) {
+            sb.append(" content:")
+              .append('"')
+              .append(content)
+              .append('"');
+        }
+
+        sb.append("}");
+
+        return sb.toString();
+    }
+
     //-----------//
-    // compareTo //
+    // isCloseTo //
     //-----------//
     /**
-     * Needed to implement an x-ordered comparison
-     * @param other the other sentence to be compared to
-     * @return -1,0,+1 according to the comparison result
+     * Check whether the provided glyph is close to this sentence (and could
+     * thus be part of it)
+     * @param glyph the provided glyph to check wrt this sentence
+     * @param fatBox the fat sentence contour box for the sentence
+     * @return true if close enough vertically and horizontally
      */
-    @Implement(Comparable.class)
-    public int compareTo (Sentence other)
+    boolean isCloseTo (Glyph          glyph,
+                       PixelRectangle fatBox)
     {
-        return items.first()
-                    .compareTo(other.items.first());
+        return fatBox.contains(glyph.getAreaCenter()) &&
+               !acrossEntryBarline(glyph);
+    }
+
+    //-----------//
+    // isCloseTo //
+    //-----------//
+    /**
+     * Check whether the provided glyph is close to this sentence (and could
+     * thus be part of it)
+     * @param glyph the provided glyph to check wrt this sentence
+     * @return true if close enough vertically and horizontally
+     */
+    boolean isCloseTo (Glyph glyph)
+    {
+        PixelRectangle fatBox = getContourBox();
+        fatBox.grow(maxItemDx, maxItemDy);
+
+        return isCloseTo(glyph, fatBox);
+    }
+
+    //-----------//
+    // isCloseTo //
+    //-----------//
+    /**
+     * Check whether the other sentence is close to this sentence (and could
+     * thus be merged)
+     * @param other the provided other sentence
+     * @return true if close enough vertically and horizontally
+     */
+    boolean isCloseTo (Sentence other)
+    {
+        PixelRectangle fatBox = getContourBox();
+        fatBox.grow(maxItemDx, 0);
+
+        return fatBox.intersects(other.getContourBox()) &&
+               !acrossEntryBarline(other);
+    }
+
+    //---------------//
+    // includeAliens //
+    //---------------//
+    /**
+     * Try to extend the line (which is made of only text items so far) with
+     * 'alien' non-text shape items, but which together could make text lines
+     */
+    void includeAliens ()
+    {
+        Collection<Glyph> aliens = getAliens();
+
+        // Pre-insert all candidates in proper place in the glyphs sequence
+        items.addAll(aliens);
+
+        Glyph alien;
+
+        while ((alien = getFirstAlien()) != null) {
+            if (!resolveAlien(alien)) {
+                removeItem(alien);
+            }
+        }
+    }
+
+    //--------------------//
+    // mergeEnclosedTexts //
+    //--------------------//
+    /**
+     * If a text glyph overlaps with another text glyph, make it one glyph
+     */
+    void mergeEnclosedTexts ()
+    {
+        boolean done = false;
+
+        while (!done) {
+            done = true;
+
+            innerLoop: 
+            for (Glyph inner : items) {
+                PixelRectangle innerBox = inner.getContourBox();
+
+                for (Glyph outer : items) {
+                    if (outer == inner) {
+                        continue;
+                    }
+
+                    PixelRectangle outerBox = outer.getContourBox();
+
+                    if (outerBox.intersects(innerBox)) {
+                        Glyph compound = systemInfo.buildCompound(
+                            Arrays.asList(outer, inner));
+                        compound = systemInfo.addGlyph(compound);
+                        systemInfo.computeGlyphFeatures(compound);
+                        compound.setShape(Shape.TEXT);
+
+                        addItem(compound);
+
+                        if (outer != compound) {
+                            removeItem(outer);
+                        }
+
+                        if (inner != compound) {
+                            removeItem(inner);
+                        }
+
+                        if (logger.isFineEnabled()) {
+                            logger.fine(
+                                "System#" + systemInfo.getId() + " text#" +
+                                inner.getId() + " merged with text#" +
+                                outer.getId() + " to create text#" +
+                                compound.getId());
+                        }
+
+                        done = false;
+
+                        break innerLoop;
+                    }
+                }
+            }
+        }
+    }
+
+    //---------//
+    // mergeOf //
+    //---------//
+    /**
+     * Report the glyph built from the merge with the other sentence
+     * @param other
+     * @return the resulting glyph
+     */
+    Glyph mergeOf (Sentence other)
+    {
+        List<Glyph> allGlyphs = new ArrayList<Glyph>(items);
+        allGlyphs.addAll(other.items);
+
+        return systemInfo.buildCompound(allGlyphs);
     }
 
     //-----------//
     // recognize //
     //-----------//
-    public void recognize ()
+    void recognize ()
     {
         if (logger.isFineEnabled()) {
             logger.fine(this + " recognize");
@@ -356,12 +579,10 @@ public class Sentence
         if (glyph.getTextInfo()
                  .getContent() == null) {
             try {
-                String content = TesseractOCR.getInstance()
-                                             .recognize(
-                    glyph.getImage(),
-                    language)
-                                             .get(0);
-                logger.info("Glyph#" + glyph.getId() + "->" + content);
+                content = TesseractOCR.getInstance()
+                                      .recognize(glyph.getImage(), language)
+                                      .get(0);
+                logger.info(this.toString());
                 glyph.getTextInfo()
                      .setOcrContent(content);
             } catch (Exception ex) {
@@ -369,102 +590,141 @@ public class Sentence
             }
         }
 
-        addGlyph(glyph);
+        addItem(glyph);
     }
 
-    //    //------------//
-    //    // removeItem //
-    //    //------------//
-    //    /**
-    //     * Remove the provided glyph from this sentence
-    //     * @param glyph the glyph to removeItem
-    //     */
-    //    public void removeItem (Glyph glyph)
-    //    {
-    //        if ((items.size() == 1) && (items.first() == glyph)) {
-    //            line.removeSentence(this);
-    //        } else {
-    //            items.remove(glyph);
-    //            invalidateCache();
-    //        }
-    //
-    //        glyph.getTextInfo()
-    //             .setSentence(null);
-    //        line.removeItem(glyph);
-    //    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        StringBuilder sb = new StringBuilder("{Sentence");
-        sb.append(" ")
-          .append(Glyph.toString("items", items));
-
-        if (content != null) {
-            sb.append(" content:")
-              .append('"')
-              .append(content)
-              .append('"');
-        }
-
-        sb.append("}");
-
-        return sb.toString();
-    }
-
-    //------//
-    // feed //
-    //------//
+    //-----------//
+    // getAliens //
+    //-----------//
     /**
-     * Try to add the provided glyph as one of the sentence items (based on the
-     * distance between the glyph and the sentence)
-     * @param glyph the provided glyph to add if possible
-     * @return true if the provided glyph has been successfully added
+     * Gather all the collection of non-text glyphs that could actually be part
+     * of the final text line
+     * @return the found collection of (non text assigned, yet compatible)
+     * candidates
      */
-    boolean feed (Glyph glyph)
+    private Collection<Glyph> getAliens ()
     {
-        if (canIncludeGlyph(glyph)) {
-            addGlyph(glyph);
+        final Collection<Glyph> candidates = new ArrayList<Glyph>();
+        final PixelRectangle    fatBox = getContourBox();
+        fatBox.grow(maxItemDx, maxItemDy);
 
-            return true;
-        } else {
-            return false;
+        // Check alien glyphs aligned with this line
+        for (Glyph glyph : systemInfo.getGlyphs()) {
+            Shape shape = glyph.getShape();
+
+            // Be rather permissive regarding shape
+            if (!glyph.isKnown() ||
+                (!glyph.isManualShape() &&
+                ((shape == Shape.CLUTTER) || (shape == Shape.DOT) ||
+                (shape == Shape.COMBINING_STEM) || (shape == Shape.WHOLE_NOTE) ||
+                (shape == Shape.STRUCTURE)))) {
+                // Check that sentence fat box contains the alien glyph
+                if (isCloseTo(glyph, fatBox)) {
+                    candidates.add(glyph);
+                }
+            }
         }
+
+        if (logger.isFineEnabled()) {
+            logger.fine(this + " " + Glyph.toString("aliens", candidates));
+        }
+
+        return candidates;
     }
 
     //---------------//
     // getContourBox //
     //---------------//
+    /**
+     * Report the sentence contour, as the union of contours of all its items
+     * @return the global sentence contour
+     */
     private PixelRectangle getContourBox ()
     {
-        PixelRectangle box = null;
-
-        for (Glyph item : getGlyphs()) {
-            if (box == null) {
-                box = item.getContourBox();
-            } else {
-                box = box.union(item.getContourBox());
+        if (contourBox == null) {
+            for (Glyph item : items) {
+                if (contourBox == null) {
+                    contourBox = new PixelRectangle(item.getContourBox());
+                } else {
+                    contourBox.add(item.getContourBox());
+                }
             }
         }
 
-        return box;
+        if (contourBox != null) {
+            return new PixelRectangle(contourBox); // Return a copy (safer...)
+        } else {
+            return null;
+        }
     }
 
-    //-------------------//
-    // getMinSentenceGap //
-    //-------------------//
-    private int getMinSentenceGap ()
+    //---------------//
+    // getFirstAlien //
+    //---------------//
+    /**
+     * Report the first alien glyph in the current sequence of line items
+     * @return the first occurrence of non-text glyph in the line items
+     */
+    private Glyph getFirstAlien ()
     {
-        if (minSentenceGap == null) {
-            Scale scale = systemInfo.getScoreSystem()
-                                    .getScale();
-            minSentenceGap = scale.toPixels(constants.minSentenceGap);
+        for (Glyph glyph : items) {
+            if ((glyph.getShape() != Shape.NO_LEGAL_SHAPE) && !glyph.isText()) {
+                return glyph;
+            }
         }
 
-        return minSentenceGap;
+        return null;
+    }
+
+    //--------------//
+    // getItemAfter //
+    //--------------//
+    /**
+     * Report the item right after the provided one in the sequence of line
+     * items
+     * @param start the item whose successor is desired, or null if the very
+     * first item is desired
+     * @return the item that follow 'start', or null if none exists
+     */
+    private Glyph getItemAfter (Glyph start)
+    {
+        boolean started = start == null;
+
+        for (Glyph glyph : items) {
+            if (started) {
+                return glyph;
+            }
+
+            if (glyph == start) {
+                started = true;
+            }
+        }
+
+        return null;
+    }
+
+    //---------------//
+    // getItemBefore //
+    //---------------//
+    /**
+     * Report the item right before the provided stop item in the line sequence
+     * of items
+     * @param stop the item whose preceding instance is desired
+     * @return the very last item found before the 'stop' item, or null
+     */
+    private Glyph getItemBefore (Glyph stop)
+    {
+        Glyph prev = null;
+
+        for (Glyph glyph : items) {
+            if (glyph == stop) {
+                return prev;
+            }
+
+            prev = glyph;
+        }
+
+        return prev;
     }
 
     //-------------//
@@ -490,78 +750,92 @@ public class Sentence
         return textArea;
     }
 
-    //----------//
-    // addGlyph //
-    //----------//
-    /**
-     * Add a (textual) glyph to this sentence
-     * @param glyph the textual glyph to addToGlyphsCollection
-     */
-    private void addGlyph (Glyph glyph)
+    //----------------//
+    // isWithinStaves //
+    //----------------//
+    private boolean isWithinStaves ()
     {
-        items.add(glyph);
-        glyph.getTextInfo()
-             .setSentence(this);
-        invalidateCache();
+        if (withinStaves == null) {
+            if (!items.isEmpty()) {
+                ScoreSystem system = systemInfo.getScoreSystem();
+                SystemPoint first = system.toSystemPoint(
+                    items.first().getLocation());
+                withinStaves = system.getStaffPosition(first) == StaffPosition.within;
+            }
+        }
+
+        return withinStaves;
     }
 
-    //-------------------//
-    // areInSameSentence //
-    //-------------------//
+    //------//
+    // getY //
+    //------//
     /**
-     * Check whether the two glyphs provided can be considered as two portions
-     * in a row of the same sentence (their order is not relevant)
-     * @param g1 first glyph
-     * @param g2 secong glyph
-     * @return true if they are close enough
+     * Report the baseline pixel ordinate of this line
+     *
+     * @return the mean line pixel ordinate, or null (this is the case when the
+     * line contains no glyph)
      */
-    private boolean areInSameSentence (Glyph g1,
-                                       Glyph g2)
+    private int getY ()
     {
-        int x1 = g1.getTextInfo()
-                   .getTextStart().x;
-        int x2 = g2.getTextInfo()
-                   .getTextStart().x;
+        if (y == null) {
+            Population population = new Population();
 
-        if (x1 < x2) {
-            x1 += g1.getContourBox().width;
-        } else {
-            x2 += g2.getContourBox().width;
+            for (Glyph item : items) {
+                population.includeValue(item.getLocation().y);
+            }
+
+            if (population.getCardinality() > 0) {
+                y = (int) Math.rint(population.getMeanValue());
+            }
         }
 
-        return (Math.abs(x1 - x2)) < getMinSentenceGap();
+        return y;
     }
 
-    //-----------------//
-    // canIncludeGlyph //
-    //-----------------//
+    //--------------------//
+    // acrossEntryBarline //
+    //--------------------//
     /**
-     * Check whether the sentence could include the provided glyph as one of its
-     * items
-     * @param glyph the provided glyph to check for inclusion
-     * @return true if the provided glyph is compatible with the sentence
+     * Check whether this and the other sentence are separated by the border of
+     * the entry barline
+     * @param other the other sentence
+     * @return true if they are separated
      */
-    private boolean canIncludeGlyph (Glyph glyph)
+    private boolean acrossEntryBarline (Sentence other)
     {
-        final int x = glyph.getAreaCenter().x;
-
-        // Already within the sentence width?
-        if ((x >= items.first().getAreaCenter().x) &&
-            (x <= items.last().getAreaCenter().x)) {
-            return true;
+        if (!isWithinStaves() && !other.isWithinStaves()) {
+            return false;
         }
 
-        // Close to left side?
-        if (areInSameSentence(glyph, items.first())) {
-            return true;
+        ScoreSystem system = systemInfo.getScoreSystem();
+        SystemPoint itemPt = system.toSystemPoint(items.first().getLocation());
+        SystemPoint otherPt = system.toSystemPoint(
+            other.items.first().getLocation());
+
+        return system.isLeftOfStaves(itemPt) != system.isLeftOfStaves(otherPt);
+    }
+
+    //--------------------//
+    // acrossEntryBarline //
+    //--------------------//
+    /**
+     * Check whether the provided glyph and this sentence are separated by the
+     * border of the entry barline
+     * @param glyph the provided glyph
+     * @return true if they are separated
+     */
+    private boolean acrossEntryBarline (Glyph glyph)
+    {
+        if (!isWithinStaves()) {
+            return false;
         }
 
-        // Close to right side?
-        if (areInSameSentence(items.last(), glyph)) {
-            return true;
-        }
+        ScoreSystem system = systemInfo.getScoreSystem();
+        SystemPoint itemPt = system.toSystemPoint(items.first().getLocation());
+        SystemPoint glyphPt = system.toSystemPoint(glyph.getLocation());
 
-        return false;
+        return system.isLeftOfStaves(itemPt) != system.isLeftOfStaves(glyphPt);
     }
 
     //-----------//
@@ -678,6 +952,71 @@ public class Sentence
     {
         location = null;
         textArea = null;
+        y = null;
+        withinStaves = null;
+        contourBox = null;
+        content = null;
+    }
+
+    //--------------//
+    // resolveAlien //
+    //--------------//
+    /**
+     * Make every possible effort to include the provided candidate as a true
+     * member of the line collection of items.
+     * @param candidate the candidate (non-text) glyph
+     * @return true if successful, false otherwise
+     */
+    private boolean resolveAlien (Glyph alien)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("Resolving alien #" + alien.getId());
+        }
+
+        // Going both ways, stopping at line ends
+        Glyph first = alien;
+
+        while (first != null) {
+            Glyph last = alien;
+
+            // Extending to the end
+            while (last != null) {
+                // Test on crossing the barline
+                if (!acrossEntryBarline(last)) {
+                    Merge merge = new Merge(first, last);
+
+                    if (merge.isOk()) {
+                        merge.insert();
+
+                        Glyph glyph = merge.compound;
+
+                        if (glyph.getId() == 0) {
+                            glyph = systemInfo.addGlyph(glyph);
+                        }
+
+                        systemInfo.computeGlyphFeatures(glyph);
+                        glyph.setShape(merge.vote.shape, merge.vote.doubt);
+
+                        if (logger.isFineEnabled()) {
+                            logger.fine(
+                                "Candidate #" + alien.getId() +
+                                " solved from #" + first.getId() + " to " +
+                                last.getId() + " as #" +
+                                merge.compound.getId());
+                        }
+
+                        return true;
+                    }
+                }
+
+                last = getItemAfter(last);
+            }
+
+            // Extending to the beginning
+            first = getItemBefore(first);
+        }
+
+        return false;
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -690,9 +1029,12 @@ public class Sentence
     {
         //~ Instance fields ----------------------------------------------------
 
-        Scale.Fraction  minSentenceGap = new Scale.Fraction(
+        Scale.Fraction  maxItemDy = new Scale.Fraction(
+            0,
+            "Maximum vertical distance between a text line and a text item");
+        Scale.Fraction  maxItemDx = new Scale.Fraction(
             20,
-            "Minimum horizontal distance between two sentences on the same line");
+            "Maximum horizontal distance between an alien and a text item");
         Scale.Fraction  maxRightDx = new Scale.Fraction(
             2,
             "Maximum horizontal distance on the right end of the staff");
@@ -711,5 +1053,82 @@ public class Sentence
         Constant.String defaultLanguageCode = new Constant.String(
             "deu",
             "3-letter code for the default sheet language");
+    }
+
+    //-------//
+    // Merge //
+    //-------//
+    private class Merge
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        private List<Glyph> parts = new ArrayList<Glyph>();
+        private Glyph       compound;
+        private Evaluation  vote;
+
+        //~ Constructors -------------------------------------------------------
+
+        public Merge (Glyph first,
+                      Glyph last)
+        {
+            boolean started = false;
+
+            for (Glyph glyph : items) {
+                if (glyph == first) {
+                    started = true;
+                }
+
+                if (started) {
+                    parts.add(glyph);
+                }
+
+                if (glyph == last) {
+                    break;
+                }
+            }
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        public boolean isOk ()
+        {
+            if (parts.size() > 1) {
+                compound = systemInfo.buildCompound(parts);
+            } else if (parts.size() == 1) {
+                compound = parts.get(0);
+            } else {
+                compound = null;
+
+                return false;
+            }
+
+            Evaluator evaluator = GlyphNetwork.getInstance();
+
+            vote = evaluator.vote(compound, GlyphInspector.getTextMaxDoubt());
+
+            return (vote != null) && vote.shape.isText();
+        }
+
+        public Merge add (Glyph glyph)
+        {
+            parts.add(glyph);
+            compound = null;
+
+            return this;
+        }
+
+        public void insert ()
+        {
+            items.removeAll(parts);
+            items.add(compound);
+        }
+
+        public Merge remove (Glyph glyph)
+        {
+            parts.remove(glyph);
+            compound = null;
+
+            return this;
+        }
     }
 }
