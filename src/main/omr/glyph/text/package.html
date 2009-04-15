@@ -44,12 +44,12 @@
                 <li>Process each TextLine in sequence:</li>
                 <ol>
                     <li>Make sure no textual glyphs overlap (see {@link
-                        omr.glyph.text.TextLine#mergeEnclosedTexts})</li>
+                        omr.glyph.text.Sentence#mergeEnclosedTexts})</li>
                     <li>Try to aggregate non-textual glyphs that may exist on
                         the line (see {@link
-                        omr.glyph.text.TextLine#includeAliens})</li>
-                    <li>Split the line into one or several meaningful instances
-                        of {@link omr.glyph.text.Sentence}.</li>
+                        omr.glyph.text.Sentence#includeAliens})</li>
+                    <li>Merge sentences close to each other via
+                        {@link omr.glyph.text.TextInspector#mergeSentences}.</li>
                     <li>Finally, try to recognize each retrieved sentence
                         through {@link omr.glyph.text.Sentence#recognize} which
                         uses the OCR feature provided by the Tesseract

@@ -2,24 +2,24 @@
 fontsize=14
 
 	// My own comments
-</help_text><element><type>com.umlet.element.base.Class</type><coordinates><x>250</x><y>20</y><w>110</w><h>80</h></coordinates><panel_attributes>Sentence
+</help_text><element><type>com.umlet.element.base.Class</type><coordinates><x>180</x><y>10</y><w>80</w><h>80</h></coordinates><panel_attributes>Sentence
 --
-content
 location
-type</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Class</type><coordinates><x>10</x><y>190</y><w>100</w><h>40</h></coordinates><panel_attributes>SystemInfo
-</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Class</type><coordinates><x>250</x><y>160</y><w>110</w><h>80</h></coordinates><panel_attributes>Glyph
+content
+type</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Class</type><coordinates><x>10</x><y>100</y><w>100</w><h>30</h></coordinates><panel_attributes>SystemInfo
+</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Class</type><coordinates><x>180</x><y>170</y><w>80</w><h>80</h></coordinates><panel_attributes>Glyph
 --
-shape
-textContent
-pseudoContent</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>340</x><y>20</y><w>160</w><h>40</h></coordinates><panel_attributes>lt=&lt;-
-m1=0..1</panel_attributes><additional_attributes>140;20;20;20</additional_attributes></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>340</x><y>40</y><w>160</w><h>160</h></coordinates><panel_attributes>lt=-&gt;
-m2=0..1</panel_attributes><additional_attributes>20;140;140;20</additional_attributes></element><element><type>com.umlet.element.base.Class</type><coordinates><x>480</x><y>20</y><w>100</w><h>60</h></coordinates><panel_attributes>TextArea
+shape</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>240</x><y>0</y><w>100</w><h>40</h></coordinates><panel_attributes>lt=&lt;-
+m1=0..1</panel_attributes><additional_attributes>80;20;20;20</additional_attributes></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>350</x><y>50</y><w>40</w><h>140</h></coordinates><panel_attributes>lt=-&gt;
+m2=0..1</panel_attributes><additional_attributes>20;120;20;20</additional_attributes></element><element><type>com.umlet.element.base.Class</type><coordinates><x>320</x><y>10</y><w>110</w><h>60</h></coordinates><panel_attributes>TextArea
 --
 baseline
-xHeight</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>90</x><y>190</y><w>180</w><h>40</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;-&gt;</panel_attributes><additional_attributes>20;20;160;20</additional_attributes></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>29</x><y>40</y><w>63</w><h>170</h></coordinates><panel_attributes>
-lt=&lt;&lt;&lt;&lt;-
-m2={y-sorted}
-	</panel_attributes><additional_attributes>31;150;31;20</additional_attributes></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>90</x><y>40</y><w>180</w><h>140</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;-&gt;
-m2={x-sorted}</panel_attributes><additional_attributes>20;20;160;120</additional_attributes></element><element><type>com.umlet.element.base.Class</type><coordinates><x>10</x><y>20</y><w>100</w><h>40</h></coordinates><panel_attributes>TextGlyphLine</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>90</x><y>20</y><w>180</w><h>40</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-
-m2={x-sorted}</panel_attributes><additional_attributes>20;20;160;20</additional_attributes></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>279</x><y>80</y><w>63</w><h>100</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;-
-m2={x-sorted}</panel_attributes><additional_attributes>31;20;31;80</additional_attributes></element></umlet_diagram>
+xHeight</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>90</x><y>100</y><w>110</w><h>100</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;-&gt;
+r2={x-sorted}</panel_attributes><additional_attributes>20;20;90;80</additional_attributes></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>189</x><y>70</y><w>63</w><h>120</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;-
+r2=items
+m2={x-sorted}</panel_attributes><additional_attributes>31;20;31;100</additional_attributes></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>90</x><y>0</y><w>110</w><h>130</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes><additional_attributes>20;110;90;20</additional_attributes></element><element><type>com.umlet.element.base.Class</type><coordinates><x>320</x><y>170</y><w>110</w><h>80</h></coordinates><panel_attributes>TextInfo
+--
+manualContent
+ocrContent
+pseudoContent</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>240</x><y>160</y><w>100</w><h>40</h></coordinates><panel_attributes>lt=-&gt;
+m2=0..1</panel_attributes><additional_attributes>20;20;80;20</additional_attributes></element></umlet_diagram>

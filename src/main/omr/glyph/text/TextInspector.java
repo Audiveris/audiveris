@@ -145,10 +145,6 @@ public class TextInspector
      */
     private boolean feedSentence (Glyph item)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine(this + " feedSentence with " + item);
-        }
-
         // First look for an existing sentence that could host the item
         for (Sentence sentence : system.getSentences()) {
             if (sentence.isCloseTo(item)) {

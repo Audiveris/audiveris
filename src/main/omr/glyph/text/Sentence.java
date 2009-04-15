@@ -77,8 +77,8 @@ public class Sentence
     /** Abscissa-ordered collection of text items */
     private final SortedSet<Glyph> items = new TreeSet<Glyph>();
 
-    /** Role of this text sentence */
-    private TextType type;
+    // Scaled parameters
+    //--------------------------------------------------------------------------
 
     /** Max vertical pixel distance between a text item and the sentence */
     private final int maxItemDy;
@@ -86,7 +86,8 @@ public class Sentence
     /** Max horizontal pixel distance between a glyph item and a sentence */
     private final int maxItemDx;
 
-    // Following are cached data, invalidated whenever items is modified -------
+    // Cached data, invalidated whenever items are modified
+    //--------------------------------------------------------------------------
 
     /** The sentence starting point (in units) within the containing system */
     private SystemPoint location;
@@ -105,6 +106,9 @@ public class Sentence
 
     /** The string value of the sentence, if any, assigned manually or by OCR */
     private String content;
+
+    /** Role of this text sentence */
+    private TextType type;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -943,6 +947,7 @@ public class Sentence
         withinStaves = null;
         contourBox = null;
         content = null;
+        type = null;
     }
 
     //------------//
