@@ -324,39 +324,6 @@ public class Sentence
         return type;
     }
 
-    //---------//
-    // addItem //
-    //---------//
-    /**
-     * Add a glyph to this sentence
-     * @param item the glyph to add
-     * @return true if item did not already exist in the glyphs set
-     */
-    public boolean addItem (Glyph item)
-    {
-        item.getTextInfo()
-            .setSentence(this);
-        invalidateCache();
-
-        return items.add(item);
-    }
-
-    //------------//
-    // removeItem //
-    //------------//
-    /**
-     * Remove the provided item from this sentence
-     * @param glyph the glyph to remove
-     */
-    public void removeItem (Glyph glyph)
-    {
-        items.remove(glyph);
-        invalidateCache();
-
-        glyph.getTextInfo()
-             .setSentence(null);
-    }
-
     //----------//
     // toString //
     //----------//
@@ -439,6 +406,23 @@ public class Sentence
 
         return fatBox.intersects(other.getContourBox()) &&
                !acrossEntryBarline(other);
+    }
+
+    //---------//
+    // addItem //
+    //---------//
+    /**
+     * Add a glyph to this sentence
+     * @param item the glyph to add
+     * @return true if item did not already exist in the glyphs set
+     */
+    boolean addItem (Glyph item)
+    {
+        item.getTextInfo()
+            .setSentence(this);
+        invalidateCache();
+
+        return items.add(item);
     }
 
     //---------------//
@@ -541,6 +525,9 @@ public class Sentence
     //-----------//
     // recognize //
     //-----------//
+    /**
+     * Use OCR utility to assign a content to this sentence
+     */
     void recognize ()
     {
         if (logger.isFineEnabled()) {
@@ -958,6 +945,22 @@ public class Sentence
         content = null;
     }
 
+    //------------//
+    // removeItem //
+    //------------//
+    /**
+     * Remove the provided item from this sentence
+     * @param glyph the glyph to remove
+     */
+    private void removeItem (Glyph glyph)
+    {
+        items.remove(glyph);
+        invalidateCache();
+
+        glyph.getTextInfo()
+             .setSentence(null);
+    }
+
     //--------------//
     // resolveAlien //
     //--------------//
@@ -1058,6 +1061,11 @@ public class Sentence
     //-------//
     // Merge //
     //-------//
+    /**
+     * This utility class tries to operate a merge of all sentence items from
+     *  a first item to a last item inclusive, while checking whether the
+     * resulting compound glyph would be assigned a TEXT shape.
+     */
     private class Merge
     {
         //~ Instance fields ----------------------------------------------------
@@ -1068,6 +1076,11 @@ public class Sentence
 
         //~ Constructors -------------------------------------------------------
 
+        /**
+         * Remember the sequence of sentence items between first and last
+         * @param first beginning of the sequence
+         * @param last end of the sequence
+         */
         public Merge (Glyph first,
                       Glyph last)
         {
@@ -1090,6 +1103,10 @@ public class Sentence
 
         //~ Methods ------------------------------------------------------------
 
+        /**
+         * Check whether the current sequence could be assigned the TEXT shape
+         * @return true if evaluated as TEXT
+         */
         public boolean isOk ()
         {
             if (parts.size() > 1) {
@@ -1109,26 +1126,14 @@ public class Sentence
             return (vote != null) && vote.shape.isText();
         }
 
-        public Merge add (Glyph glyph)
-        {
-            parts.add(glyph);
-            compound = null;
-
-            return this;
-        }
-
+        /**
+         * Replace, in the Sentence set of items, the sequence from first to
+         * last by the text compound.
+         */
         public void insert ()
         {
             items.removeAll(parts);
             items.add(compound);
-        }
-
-        public Merge remove (Glyph glyph)
-        {
-            parts.remove(glyph);
-            compound = null;
-
-            return this;
         }
     }
 }
