@@ -5,7 +5,6 @@ fontsize=14
 </help_text><element><type>com.umlet.element.base.Class</type><coordinates><x>180</x><y>10</y><w>80</w><h>80</h></coordinates><panel_attributes>Sentence
 --
 location
-content
 type</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Class</type><coordinates><x>10</x><y>100</y><w>100</w><h>30</h></coordinates><panel_attributes>SystemInfo
 </panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Class</type><coordinates><x>180</x><y>170</y><w>80</w><h>80</h></coordinates><panel_attributes>Glyph
 --
