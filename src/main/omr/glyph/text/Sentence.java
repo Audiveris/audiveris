@@ -12,8 +12,12 @@ package omr.glyph.text;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.*;
+import omr.glyph.Evaluation;
+import omr.glyph.Evaluator;
 import omr.glyph.Glyph;
+import omr.glyph.GlyphInspector;
+import omr.glyph.GlyphNetwork;
+import omr.glyph.Shape;
 
 import omr.lag.HorizontalOrientation;
 
@@ -103,9 +107,6 @@ public class Sentence
 
     /** The bounding box */
     private PixelRectangle contourBox;
-
-    /** The string value of the sentence, if any, assigned manually or by OCR */
-    private String content;
 
     /** Role of this text sentence */
     private TextType type;
@@ -278,7 +279,9 @@ public class Sentence
      */
     public String getTextContent ()
     {
-        return content;
+        return items.first()
+                    .getTextInfo()
+                    .getContent();
     }
 
     //---------------//
@@ -348,10 +351,10 @@ public class Sentence
         sb.append(" ")
           .append(Glyph.toString("items", items));
 
-        if (content != null) {
+        if (getTextContent() != null) {
             sb.append(" content:")
               .append('"')
-              .append(content)
+              .append(getTextContent())
               .append('"');
         }
 
@@ -570,12 +573,14 @@ public class Sentence
         if (glyph.getTextInfo()
                  .getContent() == null) {
             try {
-                content = TesseractOCR.getInstance()
-                                      .recognize(glyph.getImage(), language)
-                                      .get(0);
-                logger.info(this.toString());
+                String content = TesseractOCR.getInstance()
+                                             .recognize(
+                    glyph.getImage(),
+                    language)
+                                             .get(0);
                 glyph.getTextInfo()
                      .setOcrContent(content);
+                logger.info(this.toString());
             } catch (Exception ex) {
                 logger.warning("OCR error with glyph #" + glyph.getId(), ex);
             }
@@ -946,7 +951,6 @@ public class Sentence
         y = null;
         withinStaves = null;
         contourBox = null;
-        content = null;
         type = null;
     }
 
