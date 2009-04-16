@@ -489,10 +489,8 @@ public enum Shape {
 
     /** Thin bar line */
     THIN_BARLINE("Thin bar line"),
-
     /** Thick bar line */
-    THICK_BARLINE("Thick bar line"),
-
+    THICK_BARLINE("Thick bar line"), 
     /** Double thin bar line */
     DOUBLE_BARLINE("Double thin bar line"), 
 
@@ -506,10 +504,10 @@ public enum Shape {
     LEFT_REPEAT_SIGN("Thick / Thin bar line + REPEAT_DOTS"), 
 
     /** REPEAT_DOTS + Thin / Thick bar line */
-    RIGHT_REPEAT_SIGN("REPEAT_DOTS + Thin / Thick bar line"),
+    RIGHT_REPEAT_SIGN("REPEAT_DOTS + Thin / Thick bar line"), 
 
     /** REPEAT_DOTS + Thin / Thick / Thin + REPEAT_DOTS */
-    BACK_TO_BACK_REPEAT_SIGN("REPEAT_DOTS + Thin / Thick / Thin + REPEAT_DOTS"),
+    BACK_TO_BACK_REPEAT_SIGN("REPEAT_DOTS + Thin / Thick / Thin + REPEAT_DOTS"), 
 
     /** Vertical dots */
     REPEAT_DOTS("Vertical dots"), 
@@ -583,13 +581,13 @@ public enum Shape {
     HALF_REST("Rest for a 1/2", WHOLE_OR_HALF_REST), 
     /** This shape is a kludge to get proper icon, to be improved */
     MULTI_REST_DISPLAY, FORWARD, 
+    /** A glyph which is nothing but part of a larger glyph */
+    GLYPH_PART("Part of a larger glyph"),
     /**
      * Specific value, meaning that we have not been able to determine a
-     * legal shape
+     * time signature shape
      */
-
-    /** No Legal Shape */
-    NO_LEGAL_SHAPE("No Legal Shape");
+    NO_LEGAL_TIME("No Legal Time Shape");
     //
     // =========================================================================
     /**
@@ -697,8 +695,9 @@ public enum Shape {
      */
     public boolean isWellKnown ()
     {
-        return (this != NO_LEGAL_SHAPE) && !Garbage.getShapes()
-                                                   .contains(this);
+        return (this != NO_LEGAL_TIME) && (this != GLYPH_PART) &&
+               !Garbage.getShapes()
+                       .contains(this);
     }
 
     //-------------//

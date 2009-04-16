@@ -129,7 +129,7 @@ public class ScoreChecker
                 } else { // Normal complex shape
                     logger.info("*** complex " + timeSignature);
                 }
-            } else if (shape == Shape.NO_LEGAL_SHAPE) {
+            } else if (shape == Shape.NO_LEGAL_TIME) {
                 timeSignature.addError("Illegal " + timeSignature);
             } else if (Shape.SingleTimes.contains(shape)) {
                 timeSignature.addError(

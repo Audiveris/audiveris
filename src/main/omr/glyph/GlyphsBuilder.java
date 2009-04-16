@@ -120,7 +120,7 @@ public class GlyphsBuilder
         // Get rid of composing parts if any
         for (Glyph part : glyph.getParts()) {
             part.setPartOf(glyph);
-            part.setShape(Shape.NO_LEGAL_SHAPE);
+            part.setShape(Shape.GLYPH_PART);
             removeGlyph(part);
         }
 

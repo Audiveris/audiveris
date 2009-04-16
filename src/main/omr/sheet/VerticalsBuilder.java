@@ -544,7 +544,7 @@ public class VerticalsBuilder
         public boolean check (GlyphSection section)
         {
             // We process section for which glyph is null
-            // or NO_LEGAL_SHAPE, NOISE, STRUCTURE
+            // or GLYPH_PART, NO_LEGAL_TIME, NOISE, STRUCTURE
             boolean result = (section.getGlyph() == null) ||
                              !section.getGlyph()
                                      .isWellKnown();

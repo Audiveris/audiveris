@@ -659,7 +659,7 @@ public class Sentence
     private Glyph getFirstAlien ()
     {
         for (Glyph glyph : items) {
-            if ((glyph.getShape() != Shape.NO_LEGAL_SHAPE) && !glyph.isText()) {
+            if ((glyph.getShape() != Shape.GLYPH_PART) && !glyph.isText()) {
                 return glyph;
             }
         }

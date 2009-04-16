@@ -245,8 +245,8 @@ public class Glyph
     //---------//
     /**
      * A glyph is considered as known if it has a registered shape other than
-     * NOISE (Notice that CLUTTER as well as NO_LEGAL_SHAPE are considered as
-     * being known).
+     * NOISE (Notice that CLUTTER as well as NO_LEGAL_TIME and GLYPH_PART are
+     * considered as being known).
      *
      * @return true if known
      */
@@ -559,9 +559,9 @@ public class Glyph
         }
 
         if (shape == null) {
-            // Set the part shape to null as well (rather than NO_LEGAL_SHAPE)
+            // Set the part shape to null as well (rather than GLYPH_PART)
             for (Glyph part : this.getParts()) {
-                part.setShape(shape, doubt);
+                part.setShape(null, doubt);
             }
         } else {
             // Remove the new shape from the blacklist if any
@@ -1077,8 +1077,8 @@ public class Glyph
     // isWellKnown //
     //-------------//
     /**
-     * A glyph is considered as well known if it has a registered shape other
-     * than NO_LEGAL_SHAPE, NOISE and STRUCTURE.
+     * A glyph is considered as well known if it has a registered well known
+     * shape
      *
      * @return true if so
      */

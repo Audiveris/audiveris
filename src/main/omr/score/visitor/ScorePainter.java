@@ -844,7 +844,7 @@ public class ScorePainter
             final SystemPart part = timeSignature.getPart();
 
             if (shape != null) {
-                if (shape == NO_LEGAL_SHAPE) {
+                if (shape == NO_LEGAL_TIME) {
                     // If this is an illegal shape, do not draw anything.
                     // TBD: we could draw a special sign for this
                 } else if (Shape.MultiTimes.contains(shape)) {

@@ -54,7 +54,7 @@ public class TimeSignature
      * Precise time signature shape (if any, since we may have no predefined
      * shape for complex time signatures). Since a time signature may be
      * composed incrementally through several glyphs, its shape is determined
-     * only when needed. In case of failure, a NO_LEGAL_SHAPE is assigned,
+     * only when needed. In case of failure, a NO_LEGAL_TIME shape is assigned,
      * preventing any further computation until a reset is performed on this
      * item (such a reset is performed for example when an additional glyph is
      * added to the item).
@@ -138,7 +138,7 @@ public class TimeSignature
         throws InvalidTimeSignature
     {
         if (denominator == null) {
-            if (shape == NO_LEGAL_SHAPE) {
+            if (shape == NO_LEGAL_TIME) {
                 throw new InvalidTimeSignature();
             } else {
                 computeRational();
@@ -181,7 +181,7 @@ public class TimeSignature
         throws InvalidTimeSignature
     {
         if (numerator == null) {
-            if (shape == NO_LEGAL_SHAPE) {
+            if (shape == NO_LEGAL_TIME) {
                 throw new InvalidTimeSignature();
             } else {
                 computeRational();
