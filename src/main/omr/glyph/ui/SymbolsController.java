@@ -11,7 +11,7 @@ package omr.glyph.ui;
 
 import omr.glyph.*;
 import omr.glyph.Shape;
-import omr.glyph.text.TextType;
+import omr.glyph.text.TextRole;
 
 import omr.log.Logger;
 
@@ -76,7 +76,7 @@ public class SymbolsController
      * @param textContent the content as a string (if not empty)
      */
     public Task asyncAssignText (final Collection<Glyph> glyphs,
-                                 final TextType          textType,
+                                 final TextRole          textType,
                                  final String            textContent)
     {
         return launch(
@@ -169,7 +169,7 @@ public class SymbolsController
     // syncAssignText //
     //----------------//
     protected Collection<Glyph> syncAssignText (Collection<Glyph> glyphs,
-                                                TextType          textType,
+                                                TextRole          textType,
                                                 String            textContent)
     {
         if (logger.isFineEnabled()) {

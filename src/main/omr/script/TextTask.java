@@ -9,7 +9,7 @@
 package omr.script;
 
 import omr.glyph.Glyph;
-import omr.glyph.text.TextType;
+import omr.glyph.text.TextRole;
 
 import omr.sheet.Sheet;
 
@@ -33,7 +33,7 @@ public class TextTask
 
     /** Type of the textual glyph */
     @XmlAttribute
-    private final TextType type;
+    private final TextRole type;
 
     /** String content of the textual glyph */
     @XmlAttribute
@@ -51,7 +51,7 @@ public class TextTask
      * @param content The content as a string
      * @param glyphs the impacted glyph(s)
      */
-    public TextTask (TextType          type,
+    public TextTask (TextRole          type,
                      String            content,
                      Collection<Glyph> glyphs)
     {

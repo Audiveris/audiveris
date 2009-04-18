@@ -52,6 +52,9 @@ public class TextInfo
     /** OCR-based content if any */
     private String ocrContent;
 
+    /** Language used for OCR */
+    private String ocrLanguage;
+
     /** Dummy text content as placeholder, if any */
     private String pseudoContent;
 
@@ -100,15 +103,30 @@ public class TextInfo
         this.manualContent = manualContent;
     }
 
+    //------------------//
+    // getManualContent //
+    //------------------//
+    /**
+     * Report the manually assigned text meaning of the glyph
+     * @return manualContent the manual string value for this glyph, if any
+     */
+    public String getManualContent ()
+    {
+        return manualContent;
+    }
+
     //---------------//
     // setOcrContent //
     //---------------//
     /**
      * Remember the text content as provided by the OCR engine
+     * @param ocrLanguage the Language provided to the OCR for recognition
      * @param ocrContent the OCR string value for this text glyph
      */
-    public void setOcrContent (String ocrContent)
+    public void setOcrContent (String ocrLanguage,
+                               String ocrContent)
     {
+        this.ocrLanguage = ocrLanguage;
         this.ocrContent = ocrContent;
     }
 
@@ -122,6 +140,18 @@ public class TextInfo
     public String getOcrContent ()
     {
         return ocrContent;
+    }
+
+    //----------------//
+    // getOcrLanguage //
+    //----------------//
+    /**
+     * Report which language was used to OCR the glyph content
+     * @return the language code, if any
+     */
+    public String getOcrLanguage ()
+    {
+        return ocrLanguage;
     }
 
     //------------------//
@@ -138,8 +168,8 @@ public class TextInfo
                 final int nbChar = (int) Math.rint(
                     ((double) glyph.getContourBox().width) / sentence.getTextHeight());
 
-                if (getTextType() != null) {
-                    pseudoContent = getTextType()
+                if (getTextRole() != null) {
+                    pseudoContent = getTextRole()
                                         .getStringHolder(nbChar);
                 }
             }
@@ -196,6 +226,23 @@ public class TextInfo
         return textArea;
     }
 
+    //-------------//
+    // getTextRole //
+    //-------------//
+    /**
+     * Convenient method that report the text role of the sentence, if any, that
+     * contains this text glyph
+     * @return the text role of the enclosing sentence, or null
+     */
+    public TextRole getTextRole ()
+    {
+        if (sentence != null) {
+            return sentence.getTextType();
+        } else {
+            return null;
+        }
+    }
+
     //--------------//
     // getTextStart //
     //--------------//
@@ -209,23 +256,6 @@ public class TextInfo
         return new PixelPoint(
             glyph.getContourBox().x,
             getTextArea().getBaseline());
-    }
-
-    //-------------//
-    // getTextType //
-    //-------------//
-    /**
-     * Convenient method that report the text type of the sentence, if any, that
-     * contains this text glyph
-     * @return the text type of the enclosing sentence, or null
-     */
-    public TextType getTextType ()
-    {
-        if (sentence != null) {
-            return sentence.getTextType();
-        } else {
-            return null;
-        }
     }
 
     //--------------------//
@@ -254,7 +284,9 @@ public class TextInfo
         }
 
         if (ocrContent != null) {
-            sb.append(" ocr:")
+            sb.append(" (")
+              .append(ocrLanguage)
+              .append(")ocr:")
               .append(ocrContent);
         }
 

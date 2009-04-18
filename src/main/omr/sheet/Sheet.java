@@ -559,11 +559,22 @@ public class Sheet
      * Link scale information to this sheet
      *
      * @param scale the computed (or read from score file) scale
+     * @throws StepException
      */
     public void setScale (Scale scale)
         throws StepException
     {
         this.scale = scale;
+        score.setScale(scale);
+
+        // Remember current sheet dimensions in pixels
+        width = getPicture()
+                    .getWidth();
+        height = getPicture()
+                     .getHeight();
+
+        score.setDimension(
+            scale.toUnits(new PixelDimension(getWidth(), getHeight())));
 
         // Check we've got something usable
         if (scale.mainFore() == 0) {
@@ -645,6 +656,8 @@ public class Sheet
     public void setSkew (Skew skew)
     {
         this.skew = skew;
+        score.setSkewAngle(
+            (int) Math.rint(getSkew().angle() * ScoreConstants.BASE));
 
         // Update displayed image if any
         if (getPicture()
@@ -1143,11 +1156,7 @@ public class Sheet
             logger.fine("Allocating score");
         }
 
-        score = new Score(
-            scale.toUnits(new PixelDimension(getWidth(), getHeight())),
-            (int) Math.rint(getSkew().angle() * ScoreConstants.BASE),
-            scale,
-            getPath());
+        score = new Score(getPath());
 
         // Mutual referencing
         score.setSheet(this);

@@ -208,6 +208,8 @@ public enum Step {
      * Processing is done synchronously, so if asynchronicity is desired, it
      * must be handled by the caller.
      *
+     * <p>There is a mutual exclusion with {@link SheetSteps#rebuildAfter}
+     *
      * @param sheet the sheet on which analysis is performed
      * @param param a potential parameter (depending on the processing)
      * @return the created or modified sheet
@@ -215,25 +217,33 @@ public enum Step {
     public Sheet performUntil (Sheet  sheet,
                                Object param)
     {
-        // Determine the starting step
-        Step          from = (sheet == null) ? first
-                             : getFollowingStep(
-            sheet.getSheetSteps().getLatestStep());
-
-        // The precise collection of steps to perform
-        EnumSet<Step> steps = EnumSet.noneOf(Step.class);
-
-        for (Step step : EnumSet.range(from, this)) {
-            if (step.isMandatory) {
-                steps.add(step);
-            }
-        }
-
-        // Last step is always included
-        steps.add(this);
-
         try {
-            sheet = doStepRange(steps, sheet, param, null);
+            // We need a sheet to synchronize upon
+            if (sheet == null) {
+                sheet = first.doOneStep(sheet, param, null);
+            }
+
+            synchronized (sheet.getSheetSteps()) {
+                // Determine the starting step
+                Step from = getFollowingStep(
+                    sheet.getSheetSteps().getLatestStep());
+
+                if (from.compareTo(this) <= 0) {
+                    // The precise collection of steps to perform
+                    EnumSet<Step> steps = EnumSet.noneOf(Step.class);
+
+                    for (Step step : EnumSet.range(from, this)) {
+                        if (step.isMandatory) {
+                            steps.add(step);
+                        }
+                    }
+
+                    // Last step is always included
+                    steps.add(this);
+
+                    sheet = doStepRange(steps, sheet, param, null);
+                }
+            }
         } catch (Exception ex) {
             logger.warning("Error in processing " + this, ex);
         }

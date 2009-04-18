@@ -29,8 +29,6 @@ import omr.score.visitor.ScoreChecker;
 import omr.score.visitor.ScoreCleaner;
 import omr.score.visitor.ScoreFixer;
 
-import omr.script.MidiWriteTask;
-
 import omr.sheet.HorizontalsBuilder;
 import omr.sheet.LinesBuilder;
 import omr.sheet.Scale;
@@ -45,6 +43,8 @@ import java.io.*;
 import java.util.*;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * Class <code>SheetSteps</code> handles the actual progress of steps for a
@@ -184,49 +184,6 @@ public class SheetSteps
             .doStep(systems);
     }
 
-    //----------//
-    // doSystem //
-    //----------//
-    /**
-     * Convenient method to launch the processing of a given system in a
-     * given step
-     * @param step the provided step
-     * @param system the provided system
-     * @exception StepException if processing goes wrong
-     */
-    public void doSystem (Step       step,
-                          SystemInfo system)
-        throws StepException
-    {
-        SheetTask task = getTask(step);
-
-        if (task instanceof SystemTask) {
-            SystemTask systemTask = (SystemTask) task;
-            systemTask.doSystem(system);
-        } else {
-            logger.severe("Illegal system processing from step " + step);
-        }
-    }
-
-    //------//
-    // doit //
-    //------//
-    /**
-     * Convenient method to launch the processing of a given step
-     * @param step the provided step
-     * @exception StepException if processing goes wrong
-     */
-    public void doit (Step                   step,
-                      Collection<SystemInfo> systems)
-        throws StepException
-    {
-        SheetTask task = getTask(step);
-
-        task.started();
-        task.doit(systems);
-        task.done();
-    }
-
     //--------------//
     // rebuildAfter //
     //--------------//
@@ -242,6 +199,9 @@ public class SheetSteps
      * "persistent", which means their impact continues past the end of their
      * containing measure, all the following systems must be flagged as well.
      * </li></ul>
+     *
+     * <p>There is a mutual exclusion with {@link Step#performUntil} method.
+     *
      * @param step the step, after which to restart
      * @param glyphs the collection of modified glyphs, or null to flag all
      * systems
@@ -249,13 +209,13 @@ public class SheetSteps
      * glyphs collection is not null
      * @param imposed flag to indicate that update is imposed
      */
-    public void rebuildAfter (Step              step,
-                              Collection<Glyph> glyphs,
-                              Collection<Shape> shapes,
-                              boolean           imposed)
+    public synchronized void rebuildAfter (Step              step,
+                                           Collection<Glyph> glyphs,
+                                           Collection<Shape> shapes,
+                                           boolean           imposed)
     {
         if (SwingUtilities.isEventDispatchThread()) {
-            logger.severe("updateLastSteps should not run on EDT!");
+            logger.severe("Method rebuildAfter should not run on EDT!");
         }
 
         if (step == null) {
@@ -440,6 +400,7 @@ public class SheetSteps
             try {
                 picture = new Picture(imageFile);
                 sheet.setPicture(picture);
+                sheet.createScore();
             } catch (FileNotFoundException ex) {
                 logger.warning("Cannot find file " + imageFile);
                 throw new StepException(ex);
@@ -662,6 +623,16 @@ public class SheetSteps
                       Step  step)
         {
             super(sheet, step);
+
+//            // Get notified of any modification in score language
+//            sheet.getScore()
+//                 .addLanguageListener(
+//                new ChangeListener() {
+//                        public void stateChanged (ChangeEvent e)
+//                        {
+//                            logger.warning("PatternsTask got notified.");
+//                        }
+//                    });
         }
 
         //~ Methods ------------------------------------------------------------
@@ -679,7 +650,9 @@ public class SheetSteps
         public void doSystem (SystemInfo system)
             throws StepException
         {
-            system.getSentences().clear();
+            system.getSentences()
+                  .clear();
+
             for (int iter = 0;
                  iter < constants.MaxPatternsIterations.getValue(); iter++) {
                 if (!system.runPatterns()) {

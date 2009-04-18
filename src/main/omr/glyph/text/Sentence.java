@@ -25,19 +25,15 @@ import omr.log.Logger;
 
 import omr.math.Population;
 
-import omr.score.Score;
-import omr.score.common.PageRectangle;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.common.SystemPoint;
 import omr.score.common.SystemRectangle;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.ScoreSystem.StaffPosition;
-import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
 
 import omr.sheet.Scale;
-import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import java.util.*;
@@ -109,7 +105,7 @@ public class Sentence
     private PixelRectangle contourBox;
 
     /** Role of this text sentence */
-    private TextType type;
+    private TextRole type;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -305,7 +301,7 @@ public class Sentence
      * Force the text type (role) of the sentence within the score
      * @param type the role of this sentence
      */
-    public void setTextType (TextType type)
+    public void setTextType (TextRole type)
     {
         this.type = type;
 
@@ -316,16 +312,16 @@ public class Sentence
     }
 
     //-------------//
-    // getTextType //
+    // getTextRole //
     //-------------//
     /**
      * Report the text type (role) of the sentence within the score
      * @return the role of this sentence
      */
-    public TextType getTextType ()
+    public TextRole getTextType ()
     {
         if (type == null) {
-            type = guessType();
+            type = TextRole.guessType(this, systemInfo);
         }
 
         return type;
@@ -413,6 +409,32 @@ public class Sentence
 
         return fatBox.intersects(other.getContourBox()) &&
                !acrossEntryBarline(other);
+    }
+
+    //---------------//
+    // getContourBox //
+    //---------------//
+    /**
+     * Report the sentence contour, as the union of contours of all its items
+     * @return the global sentence contour
+     */
+    PixelRectangle getContourBox ()
+    {
+        if (contourBox == null) {
+            for (Glyph item : items) {
+                if (contourBox == null) {
+                    contourBox = new PixelRectangle(item.getContourBox());
+                } else {
+                    contourBox.add(item.getContourBox());
+                }
+            }
+        }
+
+        if (contourBox != null) {
+            return new PixelRectangle(contourBox); // Return a copy (safer...)
+        } else {
+            return null;
+        }
     }
 
     //---------//
@@ -549,15 +571,7 @@ public class Sentence
             logger.fine(this + " type:" + type + " height:" + getTextHeight());
         }
 
-        // Default language
-        Score  score = systemInfo.getScoreSystem()
-                                 .getScore();
-        String language = score.getLanguage();
-
-        if (language == null) {
-            language = constants.defaultLanguageCode.getValue();
-        }
-
+        // The (only) glyph for the sentence
         Glyph glyph = null;
 
         if (items.size() > 1) {
@@ -570,23 +584,39 @@ public class Sentence
             glyph = items.first();
         }
 
-        if (glyph.getTextInfo()
-                 .getContent() == null) {
-            try {
-                String content = TesseractOCR.getInstance()
-                                             .recognize(
-                    glyph.getImage(),
-                    language)
-                                             .get(0);
-                glyph.getTextInfo()
-                     .setOcrContent(content);
-                logger.info(this.toString());
-            } catch (Exception ex) {
-                logger.warning("OCR error with glyph #" + glyph.getId(), ex);
+        addItem(glyph);
+
+        TextInfo info = glyph.getTextInfo();
+
+        // Use OCR only if no manual text has been defined for the sentence glyph
+        if (info.getManualContent() == null) {
+            // Current language
+            String language = systemInfo.getScoreSystem()
+                                        .getScore()
+                                        .getLanguage();
+
+            if (language == null) {
+                language = constants.defaultLanguageCode.getValue();
+            }
+
+            // If we have no content or if a new language is being used for OCR
+            if ((info.getOcrContent() == null) ||
+                !language.equals(info.getOcrLanguage())) {
+                try {
+                    info.setOcrContent(
+                        language,
+                        TesseractOCR.getInstance().recognize(
+                            glyph.getImage(),
+                            language).get(0));
+
+                    logger.info(this.toString());
+                } catch (Exception ex) {
+                    logger.warning(
+                        "OCR error with glyph #" + glyph.getId(),
+                        ex);
+                }
             }
         }
-
-        addItem(glyph);
     }
 
     //-----------//
@@ -626,32 +656,6 @@ public class Sentence
         }
 
         return candidates;
-    }
-
-    //---------------//
-    // getContourBox //
-    //---------------//
-    /**
-     * Report the sentence contour, as the union of contours of all its items
-     * @return the global sentence contour
-     */
-    private PixelRectangle getContourBox ()
-    {
-        if (contourBox == null) {
-            for (Glyph item : items) {
-                if (contourBox == null) {
-                    contourBox = new PixelRectangle(item.getContourBox());
-                } else {
-                    contourBox.add(item.getContourBox());
-                }
-            }
-        }
-
-        if (contourBox != null) {
-            return new PixelRectangle(contourBox); // Return a copy (safer...)
-        } else {
-            return null;
-        }
     }
 
     //---------------//
@@ -834,110 +838,6 @@ public class Sentence
         return system.isLeftOfStaves(itemPt) != system.isLeftOfStaves(glyphPt);
     }
 
-    //-----------//
-    // guessType //
-    //-----------//
-    /**
-     * Try to infer the role of this sentence. For the time being, this is a
-     * simple algorithm based on sentence location within the page,
-     * but perhaps a neural network approach would better fit this task.
-     */
-    private TextType guessType ()
-    {
-        Sheet           sheet = systemInfo.getSheet();
-        ScoreSystem     system = systemInfo.getScoreSystem();
-        Scale           scale = system.getScale();
-        PageRectangle   pageBox = scale.toUnits(getContourBox());
-        SystemRectangle box = getSystemContour();
-        SystemPoint     left = new SystemPoint(box.x, box.y + (box.height / 2));
-        SystemPoint     right = new SystemPoint(
-            box.x + box.width,
-            box.y + (box.height / 2));
-
-        // First system in page?
-        boolean       firstSystem = system.getId() == 1;
-
-        // Last system in page?
-        boolean       lastSystem = sheet.getSystems()
-                                        .size() == system.getId();
-
-        // Vertical position wrt staves
-        StaffPosition position = system.getStaffPosition(left);
-
-        // Vertical distance from staff
-        Staff   staff = system.getStaffAt(left);
-        int     staffDy = Math.abs(staff.getPageTopLeft().y - pageBox.y);
-        boolean closeToStaff = staffDy <= scale.toUnits(constants.maxStaffDy);
-
-        // Begins before the part?
-        boolean leftOfStaves = system.isLeftOfStaves(left);
-
-        // At the center of page width?
-        int     maxCenterDx = scale.toUnits(constants.maxCenterDx);
-        int     pageCenter = scale.pixelsToUnits(sheet.getWidth() / 2);
-        boolean pageCentered = Math.abs(
-            (pageBox.x + (pageBox.width / 2)) - pageCenter) <= maxCenterDx;
-
-        // Right aligned with staves
-        int     maxRightDx = scale.toUnits(constants.maxRightDx);
-        boolean rightAligned = Math.abs(right.x - system.getDimension().width) <= maxRightDx;
-
-        // Short Sentence?
-        int     maxShortLength = scale.toUnits(constants.maxShortLength);
-        boolean shortSentence = pageBox.width <= maxShortLength;
-
-        int     minTitleHeight = scale.toUnits(constants.minTitleHeight);
-        boolean highText = box.height >= minTitleHeight;
-
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                this + " firstSystem=" + firstSystem + " lastSystem=" +
-                lastSystem + " position=" + position + " closeToStaff=" +
-                closeToStaff + " leftOfStaves=" + leftOfStaves +
-                " pageCentered=" + pageCentered + " rightAligned=" +
-                rightAligned + " shortSentence=" + shortSentence +
-                " highText=" + highText);
-        }
-
-        // Decisions ...
-        switch (position) {
-        case above : // Title, Number, Creator, Direction (Accord)
-
-            if (leftOfStaves || rightAligned) {
-                return TextType.Creator;
-            } else if (closeToStaff) {
-                return TextType.Direction;
-            } else if (pageCentered) { // Title, Number
-
-                if (highText) {
-                    return TextType.Title;
-                } else {
-                    return TextType.Number;
-                }
-            }
-
-            break;
-
-        case within : // Name, Lyrics, Direction
-
-            if (leftOfStaves) {
-                return TextType.Name;
-            } else if (shortSentence) {
-                return TextType.Direction;
-            } else {
-                return TextType.Lyrics;
-            }
-
-        case below :
-
-            if (pageCentered && shortSentence && lastSystem) {
-                return TextType.Rights;
-            }
-        }
-
-        return null;
-    }
-
     //-----------------//
     // invalidateCache //
     //-----------------//
@@ -1047,21 +947,6 @@ public class Sentence
         Scale.Fraction  maxItemDx = new Scale.Fraction(
             20,
             "Maximum horizontal distance between an alien and a text item");
-        Scale.Fraction  maxRightDx = new Scale.Fraction(
-            2,
-            "Maximum horizontal distance on the right end of the staff");
-        Scale.Fraction  maxCenterDx = new Scale.Fraction(
-            30,
-            "Maximum horizontal distance around center of page");
-        Scale.Fraction  maxShortLength = new Scale.Fraction(
-            30,
-            "Maximum length for a short sentence (no lyrics)");
-        Scale.Fraction  maxStaffDy = new Scale.Fraction(
-            7,
-            "Maximum distance above staff for a direction");
-        Scale.Fraction  minTitleHeight = new Scale.Fraction(
-            3,
-            "Minimum height for a title text");
         Constant.String defaultLanguageCode = new Constant.String(
             "deu",
             "3-letter code for the default sheet language");

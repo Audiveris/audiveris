@@ -10,7 +10,7 @@
 package omr.glyph;
 
 import omr.glyph.text.Sentence;
-import omr.glyph.text.TextType;
+import omr.glyph.text.TextRole;
 
 import omr.log.Logger;
 
@@ -105,7 +105,7 @@ public class SymbolsModel
      * @param doubt the doubt wrt this assignment
      */
     public void assignText (Collection<Glyph> glyphs,
-                            TextType          textType,
+                            TextRole          textType,
                             String            textContent,
                             double            doubt)
     {

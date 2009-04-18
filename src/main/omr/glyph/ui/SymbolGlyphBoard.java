@@ -12,7 +12,7 @@ package omr.glyph.ui;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import omr.glyph.text.TextInfo;
-import omr.glyph.text.TextType;
+import omr.glyph.text.TextRole;
 
 import omr.log.Logger;
 
@@ -177,7 +177,7 @@ class SymbolGlyphBoard
 
         // Additional combo for text type
         paramAction = new ParamAction();
-        textCombo = new JComboBox(TextType.values());
+        textCombo = new JComboBox(TextRole.values());
         textCombo.addActionListener(paramAction);
         textCombo.setToolTipText("Type of the Text");
 
@@ -231,8 +231,6 @@ class SymbolGlyphBoard
                 return;
             }
 
-            //        logger.info(
-            //            "SymbolGlyphBoard " + event + " selfUpdating=" + selfUpdating);
             super.onEvent(event);
 
             if (event instanceof GlyphEvent) {
@@ -250,7 +248,7 @@ class SymbolGlyphBoard
                 // Text Information
                 if (textCombo != null) {
                     selfUpdatingText = true;
-                    textCombo.setSelectedItem(TextType.NoType);
+                    textCombo.setSelectedItem(TextRole.Unknown);
 
                     if ((glyph != null) &&
                         (glyph.getShape() != null) &&
@@ -266,8 +264,8 @@ class SymbolGlyphBoard
                             textField.setText("");
                         }
 
-                        if (textInfo.getTextType() != null) {
-                            textCombo.setSelectedItem(textInfo.getTextType());
+                        if (textInfo.getTextRole() != null) {
+                            textCombo.setSelectedItem(textInfo.getTextRole());
                         }
                     } else {
                         textCombo.setEnabled(false);
@@ -406,7 +404,7 @@ class SymbolGlyphBoard
                                 .getSymbolsController()
                                 .asyncAssignText(
                     glyphs,
-                    (TextType) textCombo.getSelectedItem(),
+                    (TextRole) textCombo.getSelectedItem(),
                     textField.getText());
             }
         }

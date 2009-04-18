@@ -17,7 +17,6 @@ import omr.log.Logger;
 import omr.score.common.PagePoint;
 import omr.score.common.ScorePoint;
 import omr.score.common.UnitDimension;
-import omr.score.entity.Measure;
 import omr.score.entity.ScoreNode;
 import omr.score.entity.ScorePart;
 import omr.score.entity.ScoreSystem;
@@ -80,7 +79,7 @@ public class Score
     private String radix;
 
     /** Sheet dimension in units */
-    private UnitDimension dimension = new UnitDimension(0, 0);
+    private UnitDimension dimension;
 
     /** Sheet skew angle in radians */
     private int skewAngle;
@@ -95,7 +94,7 @@ public class Score
     private Integer durationDivisor;
 
     /** ScorePart list for the whole score */
-    private List<ScorePart> partList;
+    private List<ScorePart> partList = new ArrayList<ScorePart>();
 
     /** The most recent system pointed at */
     private WeakReference<ScoreSystem> recentSystemRef = null;
@@ -139,20 +138,11 @@ public class Score
     /**
      * Create a Score, with the specified parameters
      *
-     * @param dimension the score dimension, expressed in units
-     * @param skewAngle the detected skew angle, in radians, clockwise
-     * @param scale the global scale
      * @param imagePath full name of the original sheet file
      */
-    public Score (UnitDimension dimension,
-                  int           skewAngle,
-                  Scale         scale,
-                  String        imagePath)
+    public Score (String imagePath)
     {
         this();
-        this.dimension = dimension;
-        this.skewAngle = skewAngle;
-        this.scale = scale;
 
         setImagePath(imagePath);
 
@@ -223,6 +213,18 @@ public class Score
     }
 
     //--------------//
+    // setDimension //
+    //--------------//
+    /**
+     * Assign score dimension
+     * @param dimension the score dimension, expressed in units
+     */
+    public void setDimension (UnitDimension dimension)
+    {
+        this.dimension = dimension;
+    }
+
+    //--------------//
     // getDimension //
     //--------------//
     /**
@@ -277,7 +279,11 @@ public class Score
      */
     public ScoreSystem getFirstSystem ()
     {
-        return (ScoreSystem) children.get(0);
+        if (children.isEmpty()) {
+            return null;
+        } else {
+            return (ScoreSystem) children.get(0);
+        }
     }
 
     //--------------//
@@ -372,7 +378,11 @@ public class Score
      */
     public ScoreSystem getLastSystem ()
     {
-        return (ScoreSystem) children.get(children.size() - 1);
+        if (children.isEmpty()) {
+            return null;
+        } else {
+            return (ScoreSystem) children.get(children.size() - 1);
+        }
     }
 
     //-------------------//
@@ -490,6 +500,18 @@ public class Score
     }
 
     //----------//
+    // setScale //
+    //----------//
+    /**
+     * Assign proper scale for this score
+     * @param scale the general scale for the score
+     */
+    public void setScale (Scale scale)
+    {
+        this.scale = scale;
+    }
+
+    //----------//
     // getScale //
     //----------//
     /**
@@ -527,6 +549,18 @@ public class Score
     public Sheet getSheet ()
     {
         return sheet;
+    }
+
+    //--------------//
+    // setSkewAngle //
+    //--------------//
+    /**
+     * Assign score global skew angle
+     * @param skewAngle the detected skew angle, in radians, clockwise
+     */
+    public void setSkewAngle (int skewAngle)
+    {
+        this.skewAngle = skewAngle;
     }
 
     //--------------//
@@ -694,7 +728,7 @@ public class Score
     {
         // Build a ScorePart list based on the parts of the ref system
         int index = 0;
-        partList = new ArrayList<ScorePart>();
+        partList.clear();
 
         for (TreeNode node : refSystem.getParts()) {
             SystemPart sp = (SystemPart) node;
@@ -750,7 +784,8 @@ public class Score
         for (TreeNode node : getSystems()) {
             ScoreSystem sys = (ScoreSystem) node;
             SystemPart  part = sys.getLastPart();
-            sb.append(" System#" + sys.getId() + "=" + part.getMeasures().size());
+            sb.append(
+                " System#" + sys.getId() + "=" + part.getMeasures().size());
         }
 
         logger.info(sb.toString());

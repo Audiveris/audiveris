@@ -20,10 +20,14 @@ import omr.score.midi.MidiAbstractions;
 
 import omr.selection.UserEvent;
 
+import omr.step.Step;
+
 import omr.ui.*;
 import omr.ui.field.LField;
 import omr.ui.field.LIntegerField;
 import omr.ui.util.Panel;
+
+import omr.util.Worker;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
@@ -92,6 +96,33 @@ public class ScoreBoard
     /** Map of score part panes */
     private final Map<ScorePart, PartPane> panes = new HashMap<ScorePart, PartPane>();
 
+    /** Listener called whenever a new score language is selected */
+    private final ActionListener languageListener = new ActionListener() {
+        public void actionPerformed (ActionEvent e)
+        {
+            // Check this is a real change
+            String scoreLanguage = score.getLanguage();
+            String newLanguage = langCodes[langCombo.getSelectedIndex()];
+
+            if (!newLanguage.equals(scoreLanguage)) {
+                score.setLanguage(newLanguage);
+                logger.info("New score language: " + newLanguage);
+                new Worker<Void>() {
+                        @Override
+                        public Void construct ()
+                        {
+                            score.getSheet()
+                                 .getSheetSteps()
+                                 .rebuildAfter(Step.LEAVES, null, null, true);
+
+                            return null;
+                        }
+                    }.start();
+            }
+        }
+    };
+
+
     //~ Constructors -----------------------------------------------------------
 
     //------------//
@@ -111,14 +142,7 @@ public class ScoreBoard
 
         // ComboBox for text language
         langCombo = new JComboBox(langMap.values().toArray());
-        langCombo.addActionListener(
-            new ActionListener() {
-                    public void actionPerformed (ActionEvent e)
-                    {
-                        score.setLanguage(
-                            langCodes[langCombo.getSelectedIndex()]);
-                    }
-                });
+        langCombo.addActionListener(languageListener);
         langCombo.setToolTipText("Dominant language for textual items");
 
         if (score.getLanguage() != null) {
@@ -155,11 +179,18 @@ public class ScoreBoard
         } else {
             rangeBox.setSelected(false);
             firstId.setEnabled(false);
-            firstId.setValue(
-                score.getFirstSystem().getFirstPart().getFirstMeasure().getId());
+
+            if (score.getFirstSystem() != null) {
+                firstId.setValue(
+                    score.getFirstSystem().getFirstPart().getFirstMeasure().getId());
+            }
+
             lastId.setEnabled(false);
-            lastId.setValue(
-                score.getLastSystem().getLastPart().getLastMeasure().getId());
+
+            if (score.getLastSystem() != null) {
+                lastId.setValue(
+                    score.getLastSystem().getLastPart().getLastMeasure().getId());
+            }
         }
     }
 
@@ -296,31 +327,35 @@ public class ScoreBoard
         }
 
         // First Measure
-        int maxMeasureId = score.getLastSystem()
-                                .getLastPart()
-                                .getLastMeasure()
-                                .getId();
+        if (score.getLastSystem() != null) {
+            int maxMeasureId = score.getLastSystem()
+                                    .getLastPart()
+                                    .getLastMeasure()
+                                    .getId();
 
-        if ((firstId.getValue() < 1) || (firstId.getValue() > maxMeasureId)) {
-            logger.warning(
-                "First measure Id is not within [1.." + maxMeasureId + "]");
+            if ((firstId.getValue() < 1) ||
+                (firstId.getValue() > maxMeasureId)) {
+                logger.warning(
+                    "First measure Id is not within [1.." + maxMeasureId + "]");
 
-            return false;
-        }
+                return false;
+            }
 
-        // Last Measure
-        if ((lastId.getValue() < 1) || (lastId.getValue() > maxMeasureId)) {
-            logger.warning(
-                "Last measure Id is not within [1.." + maxMeasureId + "]");
+            // Last Measure
+            if ((lastId.getValue() < 1) || (lastId.getValue() > maxMeasureId)) {
+                logger.warning(
+                    "Last measure Id is not within [1.." + maxMeasureId + "]");
 
-            return false;
-        }
+                return false;
+            }
 
-        // First & last consistency
-        if (firstId.getValue() > lastId.getValue()) {
-            logger.warning("First measure Id is greater than last measure Id");
+            // First & last consistency
+            if (firstId.getValue() > lastId.getValue()) {
+                logger.warning(
+                    "First measure Id is greater than last measure Id");
 
-            return false;
+                return false;
+            }
         }
 
         // Each score part
@@ -341,7 +376,7 @@ public class ScoreBoard
     {
         // Prepare constraints for rows
         StringBuilder sb = new StringBuilder();
-        sb.append("pref");
+        sb.append("pref,1dlu,pref");
 
         for (int i = 0; i < score.getPartList()
                                  .size(); i++) {

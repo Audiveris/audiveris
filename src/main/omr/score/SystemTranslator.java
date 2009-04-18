@@ -12,7 +12,7 @@ package omr.score;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import omr.glyph.text.Sentence;
-import omr.glyph.text.TextType;
+import omr.glyph.text.TextRole;
 
 import omr.log.Logger;
 
@@ -1015,7 +1015,7 @@ public class SystemTranslator
                 systemBox.y + systemBox.height);
 
             if (glyph.getTextInfo()
-                     .getTextType() == TextType.Lyrics) {
+                     .getTextRole() == TextRole.Lyrics) {
                 // Take the staff just above, if any
                 currentStaff = system.getStaffAbove(currentCenter);
             }

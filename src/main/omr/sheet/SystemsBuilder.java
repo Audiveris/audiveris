@@ -184,7 +184,6 @@ public class SystemsBuilder
     {
         try {
             sheet.setVerticalLag(lag);
-            sheet.createScore();
 
             // Retrieve the initial collection of good barline candidates
             // Results are updated shapes in vLag glyphs
