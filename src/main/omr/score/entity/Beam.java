@@ -312,8 +312,8 @@ public class Beam
                     //                        other.getContextString() + " equality between " +
                     //                        this.toLongString() + " and " + other.toLongString());
                     logger.warning(
-                        "x=" + x + " y=" + y + " yOther=" + yOther + " yHead=" +
-                        yHead);
+                        "Beam comparison data " + "x=" + x + " y=" + y +
+                        " yOther=" + yOther + " yHead=" + yHead);
                     Dumper.dump(this, "this");
                     Dumper.dump(other, "other");
                 }
