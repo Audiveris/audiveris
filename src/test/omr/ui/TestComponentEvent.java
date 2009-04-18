@@ -1,13 +1,12 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                  T e s t C o m p o n e n t E v e n t                  //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2007. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                    T e s t C o m p o n e n t E v e n t                     //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
+//  This software is released under the GNU General Public License.           //
+//  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
+//----------------------------------------------------------------------------//
+//
 package omr.ui;
 
 import java.awt.*;
@@ -22,7 +21,7 @@ public class TestComponentEvent
     JFrame frame = new JFrame(getClass().getName().toString());
     JTabbedPane tabbedPane = new JTabbedPane();
     JButton button = new JButton(new ToggleAction());
-    
+
     public static void main (String... args)
     {
         new TestComponentEvent().play();
@@ -38,12 +37,12 @@ public class TestComponentEvent
         button.setText("Toggle");
         button.setName("LeBouton");
         pane.add(button, BorderLayout.NORTH);
-        
+
         tabbedPane.setName("LeTabbedPane");
         pane.add(tabbedPane, BorderLayout.CENTER);
         tabbedPane.addComponentListener(this);
         tabbedPane.addChangeListener(this);
-        
+
         for (int i = 0; i < 5; i++) {
             createTab(i);
         }
@@ -53,10 +52,10 @@ public class TestComponentEvent
         frame.setLocation(100, 100);
         frame.setSize(300, 120);
         frame.setVisible(true);
-        
+
         System.out.println("**** Frame shown ****");
     }
-    
+
     private void createTab (int index)
     {
         JPanel tab = new JPanel();
@@ -65,7 +64,7 @@ public class TestComponentEvent
         tab.add(new JLabel("Texte de " + tab.getName()));
         tabbedPane.addTab(tab.getName(), tab);
     }
-    
+
     class ToggleAction
             extends AbstractAction
     {
@@ -88,7 +87,7 @@ public class TestComponentEvent
 
     public void stateChanged(ChangeEvent e) {
         // This is for tabbed pane
-        System.out.println("Changed " + e.getSource().getClass().getName() 
+        System.out.println("Changed " + e.getSource().getClass().getName()
         + " to " + tabbedPane.getTitleAt(tabbedPane.getSelectedIndex()));
     }
 }
