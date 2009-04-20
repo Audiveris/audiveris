@@ -409,16 +409,25 @@ public class TextArea
                 }
 
                 if (vote.shape.isText()) {
-                    if (glyph.getId() == 0) {
-                        glyph = system.addGlyph(glyph);
+                    // Check that this glyph is not forbidden as text
+                    Glyph original = sheet.getVerticalLag()
+                                          .getOriginal(glyph);
+
+                    if ((original != null) &&
+                        original.isShapeForbidden(Shape.TEXT)) {
+                        return false;
+                    } else {
+                        if (glyph.getId() == 0) {
+                            glyph = system.addGlyph(glyph);
+                        }
+
+                        system.computeGlyphFeatures(glyph);
+
+                        // No! glyph.setTextArea(this);
+                        glyph.setShape(vote.shape, vote.doubt);
+
+                        return true;
                     }
-
-                    system.computeGlyphFeatures(glyph);
-
-                    // No! glyph.setTextArea(this);
-                    glyph.setShape(vote.shape, vote.doubt);
-
-                    return true;
                 }
             }
         }

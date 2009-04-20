@@ -74,8 +74,8 @@ class SymbolGlyphBoard
     /** Spinner just for symbol glyphs */
     private JSpinner symbolSpinner;
 
-    /** ComboBox for text type */
-    private JComboBox textCombo;
+    /** ComboBox for text role */
+    private JComboBox roleCombo;
 
     /** Input/Output : textual content */
     protected final JTextField textField = new SField(
@@ -177,9 +177,9 @@ class SymbolGlyphBoard
 
         // Additional combo for text type
         paramAction = new ParamAction();
-        textCombo = new JComboBox(TextRole.values());
-        textCombo.addActionListener(paramAction);
-        textCombo.setToolTipText("Type of the Text");
+        roleCombo = new JComboBox(TextRole.values());
+        roleCombo.addActionListener(paramAction);
+        roleCombo.setToolTipText("Role of the Text");
 
         // Text field
         textField.setHorizontalAlignment(JTextField.LEFT);
@@ -246,14 +246,14 @@ class SymbolGlyphBoard
                 }
 
                 // Text Information
-                if (textCombo != null) {
+                if (roleCombo != null) {
                     selfUpdatingText = true;
-                    textCombo.setSelectedItem(TextRole.Unknown);
+                    roleCombo.setSelectedItem(TextRole.Unknown);
 
                     if ((glyph != null) &&
                         (glyph.getShape() != null) &&
                         (glyph.getShape().isText())) {
-                        textCombo.setEnabled(true);
+                        roleCombo.setEnabled(true);
                         textField.setEnabled(true);
 
                         TextInfo textInfo = glyph.getTextInfo();
@@ -265,10 +265,10 @@ class SymbolGlyphBoard
                         }
 
                         if (textInfo.getTextRole() != null) {
-                            textCombo.setSelectedItem(textInfo.getTextRole());
+                            roleCombo.setSelectedItem(textInfo.getTextRole());
                         }
                     } else {
-                        textCombo.setEnabled(false);
+                        roleCombo.setEnabled(false);
                         textField.setEnabled(false);
                         textField.setText("");
                     }
@@ -336,8 +336,8 @@ class SymbolGlyphBoard
         r += 2; // --------------------------------
                 // For text information
 
-        if (textCombo != null) {
-            builder.add(textCombo, cst.xyw(3, r, 1));
+        if (roleCombo != null) {
+            builder.add(roleCombo, cst.xyw(3, r, 1));
             builder.add(textField, cst.xyw(5, r, 7));
         }
 
@@ -396,15 +396,15 @@ class SymbolGlyphBoard
                 // Read text information
                 if (logger.isFineEnabled()) {
                     logger.fine(
-                        "Text='" + textField.getText().trim() + "' Type=" +
-                        textCombo.getSelectedItem());
+                        "Text='" + textField.getText().trim() + "' Role=" +
+                        roleCombo.getSelectedItem());
                 }
 
                 SheetsController.selectedSheet()
                                 .getSymbolsController()
                                 .asyncAssignText(
                     glyphs,
-                    (TextRole) textCombo.getSelectedItem(),
+                    (TextRole) roleCombo.getSelectedItem(),
                     textField.getText());
             }
         }

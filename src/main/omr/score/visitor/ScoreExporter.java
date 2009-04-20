@@ -1487,7 +1487,7 @@ public class ScoreExporter
         }
 
         switch (text.getSentence()
-                    .getTextType()) {
+                    .getTextRole()) {
         case Title :
             getWork()
                 .setWorkTitle(text.getContent());

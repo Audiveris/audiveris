@@ -42,6 +42,10 @@ import java.util.*;
  * Class <code>Sentence</code> encapsulates a consistent ordered set of text
  * glyphs (loosely similar to words) that represents a whole expression.
  *
+ * <p>Since Sentence instances are recreated from scratch in the PATTERNS step,
+ * whereas glyphs never die, content and role information should be stored in
+ * the TextInfo of their first and only glyph.
+ *
  * <h4>Textual glyph Data Model:<br/>
  *    <img src="doc-files/Sentence.jpg"/>
  * </h4>
@@ -103,9 +107,6 @@ public class Sentence
 
     /** The bounding box */
     private PixelRectangle contourBox;
-
-    /** Role of this text sentence */
-    private TextRole type;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -295,36 +296,17 @@ public class Sentence
     }
 
     //-------------//
-    // setTextType //
-    //-------------//
-    /**
-     * Force the text type (role) of the sentence within the score
-     * @param type the role of this sentence
-     */
-    public void setTextType (TextRole type)
-    {
-        this.type = type;
-
-        for (Glyph item : getGlyphs()) {
-            item.getTextInfo()
-                .resetPseudoContent();
-        }
-    }
-
-    //-------------//
     // getTextRole //
     //-------------//
     /**
      * Report the text type (role) of the sentence within the score
      * @return the role of this sentence
      */
-    public TextRole getTextType ()
+    public TextRole getTextRole ()
     {
-        if (type == null) {
-            type = TextRole.guessType(this, systemInfo);
-        }
-
-        return type;
+        return items.first()
+                    .getTextInfo()
+                    .getTextRole();
     }
 
     //----------//
@@ -352,6 +334,13 @@ public class Sentence
               .append('"')
               .append(getTextContent())
               .append('"');
+        }
+
+        TextRole role = getTextRole();
+
+        if (role != null) {
+            sb.append(" role:")
+              .append(role);
         }
 
         sb.append("}");
@@ -435,6 +424,18 @@ public class Sentence
         } else {
             return null;
         }
+    }
+
+    //-----------//
+    // getSystem //
+    //-----------//
+    /**
+     * Report the containing system
+     * @return the containing system
+     */
+    SystemInfo getSystem ()
+    {
+        return systemInfo;
     }
 
     //---------//
@@ -564,12 +565,7 @@ public class Sentence
         }
 
         // Make sure these parameters are computed
-        getTextType();
         getTextHeight();
-
-        if (logger.isFineEnabled()) {
-            logger.fine(this + " type:" + type + " height:" + getTextHeight());
-        }
 
         // The (only) glyph for the sentence
         Glyph glyph = null;
@@ -579,14 +575,19 @@ public class Sentence
             glyph = systemInfo.addGlyph(compound);
             glyph.setShape(Shape.TEXT, Evaluation.ALGORITHM);
             items.clear();
-            items.add(glyph);
         } else {
-            glyph = items.first();
+            glyph = systemInfo.addGlyph(items.first());
         }
 
         addItem(glyph);
 
         TextInfo info = glyph.getTextInfo();
+        getTextRole();
+
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                this + " role:" + getTextRole() + " height:" + getTextHeight());
+        }
 
         // Use OCR only if no manual text has been defined for the sentence glyph
         if (info.getManualContent() == null) {
@@ -637,6 +638,11 @@ public class Sentence
         // Check alien glyphs aligned with this line
         for (Glyph glyph : systemInfo.getGlyphs()) {
             Shape shape = glyph.getShape();
+
+            // Do not reassign non-text as text
+            if (glyph.isShapeForbidden(Shape.TEXT)) {
+                continue;
+            }
 
             // Be rather permissive regarding shape
             if (!glyph.isKnown() ||
@@ -851,7 +857,6 @@ public class Sentence
         y = null;
         withinStaves = null;
         contourBox = null;
-        type = null;
     }
 
     //------------//
@@ -901,11 +906,6 @@ public class Sentence
                         merge.insert();
 
                         Glyph glyph = merge.compound;
-
-                        if (glyph.getId() == 0) {
-                            glyph = systemInfo.addGlyph(glyph);
-                        }
-
                         systemInfo.computeGlyphFeatures(glyph);
                         glyph.setShape(merge.vote.shape, merge.vote.doubt);
 

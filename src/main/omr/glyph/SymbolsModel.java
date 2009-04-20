@@ -9,7 +9,7 @@
 //
 package omr.glyph;
 
-import omr.glyph.text.Sentence;
+import omr.glyph.text.TextInfo;
 import omr.glyph.text.TextRole;
 
 import omr.log.Logger;
@@ -100,29 +100,25 @@ public class SymbolsModel
     /**
      * Assign a collection of glyphs as textual element
      * @param glyphs the collection of glyphs
-     * @param textType the text role
+     * @param textRole the text role
      * @param textContent the ascii content
      * @param doubt the doubt wrt this assignment
      */
     public void assignText (Collection<Glyph> glyphs,
-                            TextRole          textType,
+                            TextRole          textRole,
                             String            textContent,
                             double            doubt)
     {
         // Do the job
         for (Glyph glyph : glyphs) {
-            // Assign text type
-            Sentence sentence = glyph.getTextInfo()
-                                     .getSentence();
+            TextInfo info = glyph.getTextInfo();
 
-            if (sentence != null) {
-                sentence.setTextType(textType);
-            }
+            // Assign text role
+            info.setTextRole(textRole);
 
             // Assign text only if it is not empty
             if ((textContent != null) && (textContent.length() > 0)) {
-                glyph.getTextInfo()
-                     .setManualContent(textContent);
+                info.setManualContent(textContent);
             }
         }
     }

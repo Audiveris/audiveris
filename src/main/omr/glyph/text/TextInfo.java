@@ -61,6 +61,9 @@ public class TextInfo
     /** Containing text sentence if any */
     private Sentence sentence;
 
+    /** Role of this text item */
+    private TextRole role;
+
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -227,20 +230,35 @@ public class TextInfo
     }
 
     //-------------//
+    // setTextRole //
+    //-------------//
+    /**
+     * Force the text type (role) of the textual glyph within the score
+     * @param type the role of this textual item
+     */
+    public void setTextRole (TextRole type)
+    {
+        this.role = type;
+
+        resetPseudoContent();
+    }
+
+    //-------------//
     // getTextRole //
     //-------------//
     /**
-     * Convenient method that report the text role of the sentence, if any, that
-     * contains this text glyph
-     * @return the text role of the enclosing sentence, or null
+     * Report the text type (role) of the textual glyph within the score
+     * @return the role of this textual glyph
      */
     public TextRole getTextRole ()
     {
-        if (sentence != null) {
-            return sentence.getTextType();
-        } else {
-            return null;
+        if (role == null) {
+            if (sentence != null) {
+                setTextRole(TextRole.guessRole(glyph, sentence.getSystem()));
+            }
         }
+
+        return role;
     }
 
     //--------------//

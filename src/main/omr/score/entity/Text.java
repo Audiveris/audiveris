@@ -246,21 +246,21 @@ public abstract class Text
         final SystemPart  systemPart = sentence.getSystemPart();
         final ScoreSystem system = systemPart.getSystem();
 
-        if (sentence.getTextType() == null) {
+        if (sentence.getTextRole() == null) {
             systemPart.addError(
                 sentence.getGlyphs().first(),
-                "Sentence with no text type defined");
+                "Sentence with no role defined");
 
             return;
         }
 
         if (logger.isFineEnabled()) {
             logger.fine(
-                "Populating " + sentence + " " + sentence.getTextType() +
+                "Populating " + sentence + " " + sentence.getTextRole() +
                 " \"" + sentence.getTextContent() + "\"");
         }
 
-        switch (sentence.getTextType()) {
+        switch (sentence.getTextRole()) {
         case Lyrics :
 
             // Create as many lyrics items as needed
@@ -273,7 +273,7 @@ public abstract class Text
                 if (itemStr == null) {
                     int nbChar = (int) Math.rint(
                         (double) itemBox.width / sentence.getTextHeight());
-                    itemStr = sentence.getTextType()
+                    itemStr = sentence.getTextRole()
                                       .getStringHolder(nbChar);
                 }
 
@@ -354,7 +354,7 @@ public abstract class Text
     {
         StringBuilder sb = new StringBuilder();
         sb.append("{Text ")
-          .append(sentence.getTextType())
+          .append(sentence.getTextRole())
           .append(internalsString());
 
         if (getContent() != null) {

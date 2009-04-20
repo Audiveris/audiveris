@@ -11,6 +11,8 @@ package omr.glyph.text;
 
 import omr.constant.ConstantSet;
 
+import omr.glyph.Glyph;
+
 import omr.log.Logger;
 
 import omr.score.common.PageRectangle;
@@ -35,17 +37,17 @@ public enum TextRole {
     /** No role known */
     Unknown,
     /** (Part of) lyrics */
-    Lyrics,
+    Lyrics, 
     /** Title of the opus */
-    Title,
+    Title, 
     /** Playing instruction */
-    Direction,
+    Direction, 
     /** Number for this opus */
-    Number,
+    Number, 
     /** Name for the part */
-    Name,
+    Name, 
     /** A creator (composer, etc...) */
-    Creator,
+    Creator, 
     /** Copyright notice */
     Rights;
     /**/
@@ -77,21 +79,24 @@ public enum TextRole {
     }
 
     //-----------//
-    // guessType //
+    // guessRole //
     //-----------//
     /**
-     * Try to infer the role of this sentence. For the time being, this is a
+     * Try to infer the role of this textual item. For the time being, this is a
      * simple algorithm based on sentence location within the page,
      * but perhaps a neural network approach would better fit this task.
+     * @param glyph
+     * @param systemInfo
+     * @return
      */
-    static TextRole guessType (Sentence   sentence,
+    static TextRole guessRole (Glyph      glyph,
                                SystemInfo systemInfo)
     {
         Sheet           sheet = systemInfo.getSheet();
         ScoreSystem     system = systemInfo.getScoreSystem();
         Scale           scale = system.getScale();
-        PageRectangle   pageBox = scale.toUnits(sentence.getContourBox());
-        SystemRectangle box = sentence.getSystemContour();
+        PageRectangle   pageBox = scale.toUnits(glyph.getContourBox());
+        SystemRectangle box = system.toSystemRectangle(pageBox);
         SystemPoint     left = new SystemPoint(box.x, box.y + (box.height / 2));
         SystemPoint     right = new SystemPoint(
             box.x + box.width,
@@ -134,7 +139,7 @@ public enum TextRole {
 
         if (logger.isFineEnabled()) {
             logger.fine(
-                sentence + " firstSystem=" + firstSystem + " lastSystem=" +
+                glyph + " firstSystem=" + firstSystem + " lastSystem=" +
                 lastSystem + " position=" + position + " closeToStaff=" +
                 closeToStaff + " leftOfStaves=" + leftOfStaves +
                 " pageCentered=" + pageCentered + " rightAligned=" +

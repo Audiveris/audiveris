@@ -72,20 +72,20 @@ public class SymbolsController
      * glyphs
      *
      * @param glyphs the impacted glyphs
-     * @param textType the type (role) of this textual element
+     * @param textRole the type (role) of this textual element
      * @param textContent the content as a string (if not empty)
      */
     public Task asyncAssignText (final Collection<Glyph> glyphs,
-                                 final TextRole          textType,
+                                 final TextRole          textRole,
                                  final String            textContent)
     {
         return launch(
-            new TextTask(textType, textContent, glyphs),
+            new TextTask(textRole, textContent, glyphs),
             glyphs,
             new GlyphsRunnable() {
                     public Collection<Glyph> run ()
                     {
-                        return syncAssignText(glyphs, textType, textContent);
+                        return syncAssignText(glyphs, textRole, textContent);
                     }
                 });
     }
@@ -169,7 +169,7 @@ public class SymbolsController
     // syncAssignText //
     //----------------//
     protected Collection<Glyph> syncAssignText (Collection<Glyph> glyphs,
-                                                TextRole          textType,
+                                                TextRole          textRole,
                                                 String            textContent)
     {
         if (logger.isFineEnabled()) {
@@ -177,7 +177,7 @@ public class SymbolsController
         }
 
         getModel()
-            .assignText(glyphs, textType, textContent, Evaluation.MANUAL);
+            .assignText(glyphs, textRole, textContent, Evaluation.MANUAL);
 
         return glyphs;
     }
