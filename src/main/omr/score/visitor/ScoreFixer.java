@@ -15,15 +15,13 @@ import omr.log.Logger;
 
 import omr.score.Score;
 import omr.score.common.ScorePoint;
+import omr.score.common.SystemPoint;
 import omr.score.common.SystemRectangle;
 import omr.score.entity.Measure;
 import omr.score.entity.ScorePart;
 import omr.score.entity.ScoreSystem;
-import omr.score.entity.Staff;
 import omr.score.entity.Text;
 import static omr.score.ui.ScoreConstants.*;
-
-import java.awt.Point;
 
 /**
  * Class <code>ScoreFixer</code> visits the score hierarchy to fix
@@ -141,15 +139,18 @@ public class ScoreFixer
     {
         if (firstPass) {
             // First pass on contained entities to retrieve contours
-            // Initialize system contours with staves contours and margins
+            // Initialize system contours with staves contours
             systemContour = new SystemRectangle(
                 0,
                 0,
-                system.getDimension().width + (2 * STAFF_MARGIN_WIDTH),
-                system.getDimension().height + STAFF_HEIGHT +
-                (2 * STAFF_MARGIN_HEIGHT));
+                system.getDimension().width,
+                system.getDimension().height + STAFF_HEIGHT);
 
             system.acceptChildren(this);
+
+            // Now add margins
+            systemContour.width += (+2 * STAFF_MARGIN_WIDTH);
+            systemContour.height += (2 * STAFF_MARGIN_HEIGHT);
 
             // Write down the system contour
             if (logger.isFineEnabled()) {
@@ -161,18 +162,12 @@ public class ScoreFixer
 
             int top = system.getContour().y + system.getDummyOffset();
 
-            if (highestTop > top) {
+            if (top < highestTop) {
                 highestTop = top;
             }
         } else {
             // Second pass to align all first staves, and to set display origins
-            systemContour = system.getContour();
-            systemContour.y = highestTop - system.getDummyOffset();
-
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "Second pass " + system + " contour:" + systemContour);
-            }
+            SystemRectangle contour = system.getContour();
 
             // Is there a Previous System ?
             ScoreSystem prevSystem = (ScoreSystem) system.getPreviousSibling();
@@ -182,17 +177,24 @@ public class ScoreFixer
 
             if (prevSystem == null) {
                 // Very first system in the score
-                origin.x = -systemContour.x + STAFF_MARGIN_WIDTH;
+                origin.x = STAFF_MARGIN_WIDTH - contour.x;
             } else {
                 // Not the first system
                 origin.x = (prevSystem.getDisplayOrigin().x +
                            prevSystem.getDimension().width) + INTER_SYSTEM;
             }
 
-            origin.y = -systemContour.y + STAFF_MARGIN_HEIGHT +
+            origin.y = STAFF_MARGIN_HEIGHT - highestTop +
+                       system.getDummyOffset() +
                        ((scorePart != null) ? scorePart.getDisplayOrdinate() : 0);
 
             system.setDisplayOrigin(origin);
+
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "Second pass " + system + " origin:" +
+                    system.getDisplayOrigin());
+            }
 
             firstPass = false;
             system.acceptChildren(this);

@@ -175,9 +175,17 @@ public class ScoreSystem
     //------------//
     // getContour //
     //------------//
+    /**
+     * Return a copy of the system contour box
+     * @return a COPY of the system contour
+     */
     public SystemRectangle getContour ()
     {
-        return systemContour;
+        if (systemContour == null) {
+            return null;
+        } else {
+            return (SystemRectangle) systemContour.clone();
+        }
     }
 
     //--------------//

@@ -17,7 +17,6 @@ import omr.log.Logger;
 import omr.score.Score;
 import omr.score.ScoreSheetBridge;
 import omr.score.common.PagePoint;
-import omr.score.common.PixelRectangle;
 import omr.score.common.ScorePoint;
 import omr.score.common.ScoreRectangle;
 import omr.score.common.SystemPoint;
@@ -31,7 +30,6 @@ import omr.score.visitor.ScorePainter;
 import omr.selection.MouseMovement;
 import omr.selection.ScoreLocationEvent;
 import omr.selection.SelectionHint;
-import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
 
 import omr.sheet.Sheet;
