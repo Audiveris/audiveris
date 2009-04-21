@@ -87,7 +87,7 @@ public enum TextRole {
      * but perhaps a neural network approach would better fit this task.
      * @param glyph
      * @param systemInfo
-     * @return
+     * @return the role inferred for the provided sentence glyph
      */
     static TextRole guessRole (Glyph      glyph,
                                SystemInfo systemInfo)
