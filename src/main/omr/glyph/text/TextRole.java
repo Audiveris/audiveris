@@ -85,8 +85,8 @@ public enum TextRole {
      * Try to infer the role of this textual item. For the time being, this is a
      * simple algorithm based on sentence location within the page,
      * but perhaps a neural network approach would better fit this task.
-     * @param glyph
-     * @param systemInfo
+     * @param glyph the (only) sentence glyph
+     * @param systemInfo the containing system
      * @return the role inferred for the provided sentence glyph
      */
     static TextRole guessRole (Glyph      glyph,
