@@ -12,7 +12,6 @@ package omr.score.entity;
 import omr.glyph.Glyph;
 
 import omr.score.common.PixelPoint;
-import omr.score.common.ScorePoint;
 import omr.score.common.SystemPoint;
 import static omr.score.ui.ScoreConstants.*;
 import omr.score.visitor.ScoreVisitor;
@@ -60,10 +59,6 @@ public abstract class SystemNode
         for (TreeNode c = this; c != null; c = c.getParent()) {
             if (c instanceof ScoreSystem) {
                 system = (ScoreSystem) c;
-
-                if (c != this) {
-                    system.setDirty();
-                }
 
                 break;
             }
@@ -114,21 +109,22 @@ public abstract class SystemNode
 
         return sb.toString();
     }
-//
-//    //------------------//
-//    // getDisplayOrigin //
-//    //------------------//
-//    /**
-//     * Report the origin for the containing system, in the horizontal score
-//     * display, since coordinates use SystemPoint.
-//     *
-//     * @return the (system) display origin
-//     */
-//    public ScorePoint getDisplayOrigin ()
-//    {
-//        return getSystem()
-//                   .getDisplayOrigin();
-//    }
+
+    //
+    //    //------------------//
+    //    // getDisplayOrigin //
+    //    //------------------//
+    //    /**
+    //     * Report the origin for the containing system, in the horizontal score
+    //     * display, since coordinates use SystemPoint.
+    //     *
+    //     * @return the (system) display origin
+    //     */
+    //    public ScorePoint getDisplayOrigin ()
+    //    {
+    //        return getSystem()
+    //                   .getDisplayOrigin();
+    //    }
 
     //-----------//
     // getSystem //

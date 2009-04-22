@@ -53,11 +53,7 @@ public class ScoreFixer
     /** Contour of the current system */
     private SystemRectangle systemContour;
 
-    /**
-     * Retrieve max offset above first part and use it to align first staves
-     * This is usually a negative value, since the ref point is the topLeft
-     * of first system staff.
-     */
+    /** Retrieve max offset above first part and use it to align first staves */
     private int highestTop = 0;
 
     //~ Constructors -----------------------------------------------------------
@@ -143,10 +139,11 @@ public class ScoreFixer
                 system.getDimension().width,
                 system.getDimension().height + STAFF_HEIGHT);
 
+            // Perhaps extend this contour with text items
             system.acceptChildren(this);
 
             // Now add margins
-            systemContour.width += (+2 * STAFF_MARGIN_WIDTH);
+            systemContour.width += (2 * STAFF_MARGIN_WIDTH);
             systemContour.height += (2 * STAFF_MARGIN_HEIGHT);
 
             // Write down the system contour
@@ -163,7 +160,7 @@ public class ScoreFixer
                 highestTop = top;
             }
         } else {
-            // Second pass to align all first staves, and to set display origins
+            // Second pass to properly set system display origin
             SystemRectangle contour = system.getContour();
 
             // Is there a Previous System ?
@@ -172,18 +169,33 @@ public class ScoreFixer
             ScorePart   scorePart = system.getFirstPart()
                                           .getScorePart();
 
-            if (prevSystem == null) {
-                // Very first system in the score
-                origin.x = STAFF_MARGIN_WIDTH - contour.x;
-            } else {
-                // Not the first system
-                origin.x = (prevSystem.getDisplayOrigin().x +
-                           prevSystem.getDimension().width) + INTER_SYSTEM;
-            }
+            if (HORIZONTAL_LAYOUT) {
+                if (prevSystem == null) {
+                    // Very first system in the score
+                    origin.x = STAFF_MARGIN_WIDTH - contour.x;
+                } else {
+                    // Not the first system
+                    origin.x = (prevSystem.getDisplayOrigin().x +
+                               prevSystem.getDimension().width) + INTER_SYSTEM_WIDTH;
+                }
 
-            origin.y = STAFF_MARGIN_HEIGHT - highestTop +
-                       system.getDummyOffset() +
-                       ((scorePart != null) ? scorePart.getDisplayOrdinate() : 0);
+                origin.y = STAFF_MARGIN_HEIGHT - highestTop +
+                           system.getDummyOffset() +
+                           ((scorePart != null)
+                            ? scorePart.getDisplayOrdinate() : 0);
+            } else {
+                if (prevSystem == null) {
+                    // Very first system in the score
+                    origin.y = STAFF_MARGIN_HEIGHT - contour.y;
+                } else {
+                    // Not the first system
+                    origin.y = (prevSystem.getDisplayOrigin().y +
+                               prevSystem.getDimension().height + STAFF_HEIGHT) +
+                               INTER_SYSTEM_HEIGHT;
+                }
+
+                origin.x = STAFF_MARGIN_WIDTH - contour.x;
+            }
 
             system.setDisplayOrigin(origin);
 

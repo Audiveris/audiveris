@@ -28,6 +28,12 @@ public class ScoreConstants
     /** Specific application parameters */
     private static final Constants constants = new Constants();
 
+    /**
+     * Should we display systems using a horizontal layout (side by side) rather
+     * than a vertical layout (systems one above the other).
+     */
+    public static final boolean HORIZONTAL_LAYOUT = constants.horizontalLayout.getValue();
+
     /** Height in pixels of a staff display */
     public static final int STAFF_AREA_HEIGHT = constants.staffAreaheight.getValue();
 
@@ -44,7 +50,10 @@ public class ScoreConstants
     public static final int SCORE_INIT_Y = constants.scoreInitY.getValue();
 
     /** Horizontal gutter in pixels between two systems */
-    public static final int INTER_SYSTEM = constants.interSystem.getValue();
+    public static final int INTER_SYSTEM_WIDTH = constants.interSystemWidth.getValue();
+
+    /** Vertical gutter in pixels between two systems */
+    public static final int INTER_SYSTEM_HEIGHT = constants.interSystemHeight.getValue();
 
     /** Vertical distance in pixels between two lines of a standard staff :
        {@value} */
@@ -82,6 +91,9 @@ public class ScoreConstants
     {
         //~ Instance fields ----------------------------------------------------
 
+        Constant.Boolean horizontalLayout = new Constant.Boolean(
+            true,
+            "Should systems be displayed side by side? (need restart)");
         Constant.Integer lineNb = new Constant.Integer(
             "Lines",
             5,
@@ -89,9 +101,12 @@ public class ScoreConstants
         PixelCount       interPage = new PixelCount(
             200,
             "Horizontal gutter between two pages");
-        PixelCount       interSystem = new PixelCount(
+        PixelCount       interSystemWidth = new PixelCount(
             100,
             "Horizontal gutter between two systems");
+        PixelCount       interSystemHeight = new PixelCount(
+            200,
+            "Vertical gutter between two systems");
         PixelCount       scoreInitX = new PixelCount(
             300,
             "Horizontal offset of the score origin");

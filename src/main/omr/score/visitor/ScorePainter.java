@@ -704,7 +704,7 @@ public class ScorePainter
 
         // Check whether our system is impacted)
         final Rectangle clip = g.getClipBounds();
-        final int       xMargin = 2 * INTER_SYSTEM;
+        final int       xMargin = 2 * INTER_SYSTEM_WIDTH;
         final int       systemLeft = system.getRightPosition() + xMargin;
         final int       systemRight = system.getDisplayOrigin().x - xMargin;
 

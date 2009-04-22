@@ -956,11 +956,11 @@ public class Score
 
             // How do we locate the point wrt the system  ?
             switch (system.locate(scrPt)) {
-            case -1 : // Point is on left of system, give up.
+            case -1 : // Point is before system (but after previous), give up.
             case 0 : // Point is within system.
                 return setRecentSystem(system);
 
-            case +1 : // Point is on right of system, go on.
+            case +1 : // Point is after the system, go on.
                 break;
             }
         }

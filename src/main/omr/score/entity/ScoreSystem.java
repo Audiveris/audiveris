@@ -31,7 +31,6 @@ import omr.util.TreeNode;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Class <code>ScoreSystem</code> encapsulates a system in a score.
@@ -69,7 +68,10 @@ public class ScoreSystem
     /** Id for debug */
     private final int id;
 
-    /** Top left corner of the system in the containing page */
+    /**
+     * Top left corner of the system in the containing page. This points to the
+     * first real staff, and does not count the preceding dummy staves if any.
+     */
     private PagePoint topLeft;
 
     /** Actual display origin in the score view */
@@ -86,9 +88,6 @@ public class ScoreSystem
 
     /** Duration of this system */
     private Integer actualDuration;
-
-    /** Flag the fact that data has been modified and view must be updated */
-    private AtomicBoolean systemDirty = new AtomicBoolean(false);
 
     /** Contour of all system entities to be displayed, origin being topLeft */
     private volatile SystemRectangle systemContour;
@@ -156,14 +155,6 @@ public class ScoreSystem
         return actualDuration;
     }
 
-    //------------------//
-    // getAndResetDirty //
-    //------------------//
-    public boolean getAndResetDirty ()
-    {
-        return systemDirty.getAndSet(false);
-    }
-
     //------------//
     // setContour //
     //------------//
@@ -221,19 +212,12 @@ public class ScoreSystem
         return dimension;
     }
 
-    //----------//
-    // setDirty //
-    //----------//
-    public void setDirty ()
-    {
-        systemDirty.set(true);
-    }
-
     //------------------//
     // setDisplayOrigin //
     //------------------//
     /**
-     * Assign origin for score display
+     * Assign origin for score display, which is the location in the ScoreView
+     * of the topLeft corner of the (first real part of the) system
      *
      * @param displayOrigin display origin for this system
      */
@@ -246,7 +230,7 @@ public class ScoreSystem
     // getDisplayOrigin //
     //------------------//
     /**
-     * Report the origin for this system, in the horizontal score display
+     * Report the origin for this system, in the ScoreView display
      *
      * @return the display origin
      */
@@ -260,9 +244,10 @@ public class ScoreSystem
     //----------------//
     /**
      * Report the vertical offset of the first part wrt the system, which is 0
-     * for a standard system, and non zero when the system begins with a dummy
-     * part.
-     * @return the vertical offset (in unit) of the dummy part, or 0 if none
+     * for a standard system, and a positive value when the system begins with
+     * a dummy part.
+     * @return the positive vertical offset (in unit) of the dummy part, or 0
+     * if none
      */
     public int getDummyOffset ()
     {
@@ -276,9 +261,11 @@ public class ScoreSystem
     // getFirstPart //
     //--------------//
     /**
-     * Report the first part in this system
+     * Report the very first part in this system, which may be a dummy one.
+     * Use {@link #getFirstRealPart} instead to point to the first real part.
      *
      * @return the first part entity
+     * @see #getFirstRealPart()
      */
     public SystemPart getFirstPart ()
     {
@@ -290,9 +277,10 @@ public class ScoreSystem
     // getFirstRealPart //
     //------------------//
     /**
-     * Report the first non artificial part in this system
+     * Report the first non dummy part in this system
      *
      * @return the real first part entity
+     * @see #getFirstPart()
      */
     public SystemPart getFirstRealPart ()
     {
@@ -575,28 +563,16 @@ public class ScoreSystem
     }
 
     //------------//
-    // setTopLeft //
-    //------------//
-    /**
-     * Set the coordinates of the top left cormer of the system in the score
-     *
-     * @param topLeft the upper left point, with coordinates in units, in
-     * virtual score page
-     */
-    public void setTopLeft (PagePoint topLeft)
-    {
-        this.topLeft = topLeft;
-    }
-
-    //------------//
     // getTopLeft //
     //------------//
     /**
      * Report the coordinates of the upper left corner of this system in its
-     * containing score
+     * containing score (not counting preceding dummy staves if any).
+     * To point to the upper left corner, including dummy staves, use
+     * getTopLeft() + getDummyOffset();
      *
      * @return the top left corner
-     * @see #setTopLeft
+     * @see #getDummyOffset
      */
     public PagePoint getTopLeft ()
     {
@@ -653,15 +629,27 @@ public class ScoreSystem
      */
     public int locate (ScorePoint scrPt)
     {
-        if (scrPt.x < displayOrigin.x) {
-            return -1;
-        }
+        if (HORIZONTAL_LAYOUT) {
+            if (scrPt.x < displayOrigin.x) {
+                return -1;
+            }
 
-        if (scrPt.x > getRightPosition()) {
-            return +1;
-        }
+            if (scrPt.x > getRightPosition()) {
+                return +1;
+            }
 
-        return 0;
+            return 0;
+        } else {
+            if (scrPt.y < displayOrigin.y) {
+                return -1;
+            }
+
+            if (scrPt.y > (displayOrigin.y + dimension.height + STAFF_HEIGHT)) {
+                return +1;
+            }
+
+            return 0;
+        }
     }
 
     //--------//
@@ -776,8 +764,8 @@ public class ScoreSystem
     public PagePoint toPagePoint (ScorePoint scrPt)
     {
         return new PagePoint(
-            (topLeft.x + scrPt.x) - displayOrigin.x,
-            (topLeft.y + scrPt.y) - displayOrigin.y);
+            topLeft.x + (scrPt.x - displayOrigin.x),
+            topLeft.y + (scrPt.y - displayOrigin.y));
     }
 
     //-------------//

@@ -43,8 +43,6 @@ import java.io.*;
 import java.util.*;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 /**
  * Class <code>SheetSteps</code> handles the actual progress of steps for a
