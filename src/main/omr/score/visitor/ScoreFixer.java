@@ -15,7 +15,6 @@ import omr.log.Logger;
 
 import omr.score.Score;
 import omr.score.common.ScorePoint;
-import omr.score.common.SystemPoint;
 import omr.score.common.SystemRectangle;
 import omr.score.entity.Measure;
 import omr.score.entity.ScorePart;
@@ -26,8 +25,14 @@ import static omr.score.ui.ScoreConstants.*;
 /**
  * Class <code>ScoreFixer</code> visits the score hierarchy to fix
  * internal data.
- * Run computations on the tree of score, systems, etc, so that all display
- * data, such as origins and widths are available for display use.
+ * <ul>
+ * <li>Run computations so that all display data, such as origins and widths
+ * are available for display use.</li>
+ * <li>Reset Measure abscissae</li>
+ * <li>Assign Measure ids</li>
+ * <li>Compute System contours</li>
+ * <li>Compute System display origins</li>
+ * </ul>
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -41,9 +46,6 @@ public class ScoreFixer
     private static final Logger logger = Logger.getLogger(ScoreFixer.class);
 
     //~ Instance fields --------------------------------------------------------
-
-    /** Flag to assign or not measure ids */
-    private final boolean assignMeasureId;
 
     /** Flag to indicate first pass */
     private boolean firstPass = true;
@@ -65,12 +67,9 @@ public class ScoreFixer
     //------------//
     /**
      * Creates a new ScoreFixer object.
-     *
-     * @param assignMeasureId Should we assign measure ids?
      */
-    public ScoreFixer (boolean assignMeasureId)
+    public ScoreFixer ()
     {
-        this.assignMeasureId = assignMeasureId;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -86,27 +85,25 @@ public class ScoreFixer
             measure.resetAbscissae();
         }
 
-        if (assignMeasureId) {
-            // Set measure id, based on a preceding measure, whatever the part
-            Measure precedingMeasure = measure.getPreceding();
+        // Set measure id, based on a preceding measure, whatever the part
+        Measure precedingMeasure = measure.getPreceding();
 
-            // No preceding system?
-            if (precedingMeasure == null) {
-                ScoreSystem prevSystem = (ScoreSystem) measure.getSystem()
-                                                              .getPreviousSibling();
+        // No preceding system?
+        if (precedingMeasure == null) {
+            ScoreSystem prevSystem = (ScoreSystem) measure.getSystem()
+                                                          .getPreviousSibling();
 
-                if (prevSystem != null) { // No preceding part
-                    precedingMeasure = prevSystem.getFirstRealPart()
-                                                 .getLastMeasure();
-                }
+            if (prevSystem != null) { // No preceding part
+                precedingMeasure = prevSystem.getFirstRealPart()
+                                             .getLastMeasure();
             }
+        }
 
-            if (precedingMeasure != null) {
-                measure.setId(precedingMeasure.getId() + 1);
-            } else {
-                // Very first measure
-                measure.setId(measure.isImplicit() ? 0 : 1);
-            }
+        if (precedingMeasure != null) {
+            measure.setId(precedingMeasure.getId() + 1);
+        } else {
+            // Very first measure
+            measure.setId(measure.isImplicit() ? 0 : 1);
         }
 
         return true;

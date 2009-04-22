@@ -136,7 +136,7 @@ public class SystemTranslator
             syst.refineLyricSyllables();
         }
 
-        score.accept(new ScoreFixer(true));
+        score.accept(new ScoreFixer());
 
         // Invalidate score data within MidiAgent, if needed
         try {

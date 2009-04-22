@@ -558,7 +558,7 @@ public class SystemsBuilder
 
         // Update score internal data
         sheet.getScore()
-             .accept(new ScoreFixer(true));
+             .accept(new ScoreFixer());
 
         // Update score view if any
         ScoreView scoreView = sheet.getScore()

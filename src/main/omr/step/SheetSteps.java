@@ -468,7 +468,7 @@ public class SheetSteps
 
             // Update score internal data
             sheet.getScore()
-                 .accept(new ScoreFixer(true));
+                 .accept(new ScoreFixer());
             sheet.getScore()
                  .dumpMeasureCounts(null);
         }
@@ -624,15 +624,15 @@ public class SheetSteps
         {
             super(sheet, step);
 
-//            // Get notified of any modification in score language
-//            sheet.getScore()
-//                 .addLanguageListener(
-//                new ChangeListener() {
-//                        public void stateChanged (ChangeEvent e)
-//                        {
-//                            logger.warning("PatternsTask got notified.");
-//                        }
-//                    });
+            //            // Get notified of any modification in score language
+            //            sheet.getScore()
+            //                 .addLanguageListener(
+            //                new ChangeListener() {
+            //                        public void stateChanged (ChangeEvent e)
+            //                        {
+            //                            logger.warning("PatternsTask got notified.");
+            //                        }
+            //                    });
         }
 
         //~ Methods ------------------------------------------------------------
