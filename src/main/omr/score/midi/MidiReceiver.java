@@ -413,7 +413,7 @@ public class MidiReceiver
     private void showSlot ()
     {
         if (score != null) {
-            score.getView()
+            score.getFirstView()
                  .highLight(currentMeasure, currentSlot);
         }
     }

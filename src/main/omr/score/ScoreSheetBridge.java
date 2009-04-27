@@ -12,10 +12,10 @@ package omr.score;
 import omr.log.Logger;
 
 import omr.score.common.PagePoint;
+import omr.score.common.PageRectangle;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
-import omr.score.common.ScorePoint;
-import omr.score.common.ScoreRectangle;
+import omr.score.common.ScoreLocation;
 import omr.score.entity.ScoreSystem;
 
 import omr.selection.LocationEvent;
@@ -100,10 +100,10 @@ public class ScoreSheetBridge
     // update //
     //--------//
     /**
-     * Notification of selection objects (disabled when already bridging, to
-     * avoid endless loop)
+     * Purpose of this bridge is to convert sheet location to score location
+     * and vice versa.
      *
-     * @param event the notified event
+     * @param event the notified event, either sheet or score location event
      */
     @Implement(EventSubscriber.class)
     public void onEvent (LocationEvent event)
@@ -118,29 +118,29 @@ public class ScoreSheetBridge
                 logger.fine("Bridge : onEvent " + event);
             }
 
+            // This function is disabled when we are already bridging,
+            // in order to avoid endless loop.
             if (!bridging) {
-                bridging = true; // Prevent re-entry
+                bridging = true;
 
                 if (event instanceof SheetLocationEvent) {
-                    // Forward to Score side
+                    // Forward location information from Sheet to Score side
+                    ScoreLocation      scoreLocation = null;
                     SheetLocationEvent sheetLocation = (SheetLocationEvent) event;
-                    ScoreRectangle     scoreRect = null;
 
                     if (sheetLocation.rectangle != null) {
-                        PagePoint pagPt = sheet.getScale()
-                                               .toPagePoint(
+                        // Which system ?
+                        PagePoint   pagPt = sheet.getScale()
+                                                 .toPagePoint(
                             new PixelPoint(
                                 sheetLocation.rectangle.x +
                                 (sheetLocation.rectangle.width / 2),
                                 sheetLocation.rectangle.y +
                                 (sheetLocation.rectangle.height / 2)));
-
-                        if (pagPt != null) {
-                            // Which system ?
-                            ScoreSystem system = score.pageLocateSystem(pagPt);
-                            ScorePoint  scrPt = system.toScorePoint(pagPt);
-                            scoreRect = new ScoreRectangle(scrPt);
-                        }
+                        ScoreSystem system = score.pageLocateSystem(pagPt);
+                        scoreLocation = new ScoreLocation(
+                            system.getId(),
+                            system.toSystemRectangle(sheetLocation.rectangle));
                     }
 
                     eventService.publish(
@@ -148,31 +148,29 @@ public class ScoreSheetBridge
                             this,
                             event.hint,
                             sheetLocation.movement,
-                            scoreRect));
+                            scoreLocation));
                 } else if (event instanceof ScoreLocationEvent) {
-                    // Forward to Sheet side
-                    ScoreLocationEvent scoreLocation = (ScoreLocationEvent) event;
+                    // Forward location information from Score to Sheet side
+                    ScoreLocationEvent scoreLocationEvent = (ScoreLocationEvent) event;
+                    ScoreLocation      scoreLocation = scoreLocationEvent.location;
                     PixelRectangle     pixRect = null;
 
                     if (scoreLocation.rectangle != null) {
-                        // We forge a ScorePoint from the display point
-                        ScorePoint  scrPt = new ScorePoint(
-                            scoreLocation.rectangle.x,
-                            scoreLocation.rectangle.y);
-
-                        // The enclosing system
-                        ScoreSystem system = score.scoreLocateSystem(scrPt);
-                        PagePoint   pagPt = system.toPagePoint(scrPt);
-                        PixelPoint  pixPt = sheet.getScale()
-                                                 .toPixelPoint(pagPt, null);
-                        pixRect = new PixelRectangle(pixPt);
+                        ScoreSystem   system = score.getSystemById(
+                            scoreLocation.systemId);
+                        PageRectangle pagRect = system.toPageRectangle(
+                            scoreLocation.rectangle);
+                        pixRect = (PixelRectangle) system.getScale()
+                                                         .toPixels(
+                            pagRect,
+                            new PixelRectangle());
                     }
 
                     eventService.publish(
                         new SheetLocationEvent(
                             this,
                             event.hint,
-                            scoreLocation.movement,
+                            scoreLocationEvent.movement,
                             pixRect));
                 }
 
@@ -181,5 +179,14 @@ public class ScoreSheetBridge
         } catch (Exception ex) {
             logger.warning(getClass().getName() + " onEvent error", ex);
         }
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return getName();
     }
 }

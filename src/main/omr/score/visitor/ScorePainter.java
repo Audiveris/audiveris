@@ -51,6 +51,9 @@ import omr.score.entity.Tuplet;
 import omr.score.entity.Wedge;
 import static omr.score.ui.ScoreConstants.*;
 import omr.score.ui.ScoreController;
+import omr.score.ui.ScoreOrientation;
+import omr.score.ui.ScoreView;
+import omr.score.ui.SystemView;
 
 import omr.sheet.Scale;
 
@@ -106,6 +109,9 @@ public class ScorePainter
 
     //~ Instance fields --------------------------------------------------------
 
+    /** Related score view, with a specific system layout */
+    private final ScoreView scoreView;
+
     /** Graphic context */
     private final Graphics2D g;
 
@@ -148,12 +154,15 @@ public class ScorePainter
     /**
      * Creates a new ScorePainter object.
      *
+     * @param scoreView the score view with its layout orientation
      * @param initialGraphics the Graphic context, already properly scaled
      * @param zoom the zoom factor (a temporary fix to "descale" for symbols)
      */
-    public ScorePainter (Graphics initialGraphics,
-                         Zoom     zoom)
+    public ScorePainter (ScoreView scoreView,
+                         Graphics  initialGraphics,
+                         Zoom      zoom)
     {
+        this.scoreView = scoreView;
         g = (Graphics2D) initialGraphics.create();
         this.zoom = zoom;
 
@@ -692,10 +701,16 @@ public class ScorePainter
     @Override
     public boolean visit (ScoreSystem system)
     {
+        SystemView systemView = scoreView.getSystemView(system);
+
+        if (systemView == null) {
+            return false;
+        }
+
         // Check that displayOrigin has been set, otherwise there is no point
         // in displaying the system, which is currently being built and which
         // will later use ScoreFixer to assign proper displayOrigin
-        if (system.getDisplayOrigin() == null) {
+        if (systemView.getDisplayOrigin() == null) {
             return false;
         }
 
@@ -705,20 +720,26 @@ public class ScorePainter
         // Check whether our system is impacted)
         final Rectangle clip = g.getClipBounds();
         final int       xMargin = 2 * INTER_SYSTEM_WIDTH;
-        final int       systemLeft = system.getRightPosition() + xMargin;
-        final int       systemRight = system.getDisplayOrigin().x - xMargin;
+        final int       systemLeft = systemView.getRightPosition() + xMargin;
+        final int       systemRight = systemView.getDisplayOrigin().x -
+                                      xMargin;
 
         if ((clip.x > systemLeft) || ((clip.x + clip.width) < systemRight)) {
             return false;
         } else {
             final UnitDimension dim = system.getDimension();
-            final Point         origin = system.getDisplayOrigin();
+            final Point         origin = systemView.getDisplayOrigin();
 
             Color               oldColor = g.getColor();
             g.setColor(Color.lightGray);
 
-            // Write system # at the top of the display
-            g.drawString("S" + system.getId(), origin.x, 24);
+            // Write system # at the top of the display (if horizontal layout)
+            // and at the left of the display (if vertical layout)
+            if (systemView.getOrientation() == ScoreOrientation.HORIZONTAL) {
+                g.drawString("S" + system.getId(), origin.x, 24);
+            } else {
+                g.drawString("S" + system.getId(), 0, origin.y);
+            }
 
             // Now use system topLeft as the origin
             g.translate(origin.x, origin.y);
@@ -955,9 +976,7 @@ public class ScorePainter
         final Score score = ScoreController.getCurrentScore();
 
         if (score != null) {
-            score.getView()
-                 .getComponent()
-                 .repaint();
+            score.updateViews();
         }
     }
 

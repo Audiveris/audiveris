@@ -70,6 +70,9 @@ public class ScoreBoard
     /** ComboBox for text language */
     private JComboBox langCombo;
 
+    /** ComboBox for system layout */
+    private JComboBox layoutCombo;
+
     /** Tempo */
     private final LIntegerField tempo = new LIntegerField(
         "Tempo",
@@ -122,6 +125,28 @@ public class ScoreBoard
         }
     };
 
+    /** Listener called whenever a new system layout is selected */
+    private final ActionListener layoutListener = new ActionListener() {
+        public void actionPerformed (ActionEvent e)
+        {
+            // Check this is a real change
+            ScoreOrientation       scoreOrientation = score.getOrientation();
+            final ScoreOrientation newOrientation = (ScoreOrientation) layoutCombo.getSelectedItem();
+
+            if (newOrientation != scoreOrientation) {
+                new Worker<Void>() {
+                        @Override
+                        public Void construct ()
+                        {
+                            score.setOrientation(newOrientation);
+
+                            return null;
+                        }
+                    }.start();
+            }
+        }
+    };
+
 
     //~ Constructors -----------------------------------------------------------
 
@@ -147,6 +172,15 @@ public class ScoreBoard
 
         if (score.getLanguage() != null) {
             langCombo.setSelectedItem(langMap.get(score.getLanguage()));
+        }
+
+        // ComboBox for system layout
+        layoutCombo = new JComboBox(ScoreOrientation.values());
+        layoutCombo.addActionListener(layoutListener);
+        layoutCombo.setToolTipText("System layout in score view");
+
+        if (score.getOrientation() != null) {
+            layoutCombo.setSelectedItem(score.getOrientation());
         }
 
         // rangeBox
@@ -264,17 +298,23 @@ public class ScoreBoard
     private Panel getGlobalPane ()
     {
         Panel        panel = new Panel();
-        FormLayout   layout = Panel.makeFormLayout(2, 3);
+        FormLayout   layout = Panel.makeFormLayout(4, 3);
         PanelBuilder builder = new PanelBuilder(layout, panel);
         builder.setDefaultDialogBorder();
 
         CellConstraints cst = new CellConstraints();
         int             r = 1;
         builder.addSeparator("Global Data");
-        r += 2;
-        builder.add(new JLabel("Lang"), cst.xy(1, r));
-        builder.add(langCombo, cst.xy(3, r));
 
+        r += 2; //---------------------------------------
+        builder.add(new JLabel("Text"), cst.xy(5, r));
+        builder.add(langCombo, cst.xyw(7, r, 5));
+
+        r += 2; //---------------------------------------
+        builder.add(new JLabel("Layout"), cst.xy(5, r));
+        builder.add(layoutCombo, cst.xyw(7, r, 5));
+
+        r += 2; //---------------------------------------
         builder.add(tempo.getLabel(), cst.xy(5, r));
         builder.add(tempo.getField(), cst.xy(7, r));
 

@@ -9,7 +9,7 @@
 //
 package omr.selection;
 
-import omr.score.common.ScoreRectangle;
+import omr.score.common.ScoreLocation;
 
 import java.awt.Rectangle;
 
@@ -32,10 +32,10 @@ public class ScoreLocationEvent
     //~ Instance fields --------------------------------------------------------
 
     /**
-     * The location rectangle, which can be degenerated to a point when both
-     * width and height values equal zero
+     * The location information, which combines containing system with rectangle
+     * related to that system
      */
-    public final ScoreRectangle rectangle;
+    public final ScoreLocation location;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -46,17 +46,17 @@ public class ScoreLocationEvent
      * Creates a new ScoreLocationEvent object, with value for each final data
      *
      * @param source the entity that created this event
-     * @param rectangle the location within the score space
      * @param hint how the event originated
      * @param movement what is the originating mouse movement
+     * @param location the location within the score space
      */
-    public ScoreLocationEvent (Object         source,
-                               SelectionHint  hint,
-                               MouseMovement  movement,
-                               ScoreRectangle rectangle)
+    public ScoreLocationEvent (Object        source,
+                               SelectionHint hint,
+                               MouseMovement movement,
+                               ScoreLocation location)
     {
         super(source, hint, movement);
-        this.rectangle = rectangle;
+        this.location = location;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -65,14 +65,21 @@ public class ScoreLocationEvent
     // getData //
     //---------//
     @Override
-    public ScoreRectangle getData ()
+    public ScoreLocation getData ()
     {
-        return rectangle;
+        return location;
     }
 
+    //--------------//
+    // getRectangle //
+    //--------------//
     @Override
     public Rectangle getRectangle ()
     {
-        return getData();
+        if (location == null) {
+            return null;
+        } else {
+            return location.rectangle;
+        }
     }
 }

@@ -126,7 +126,8 @@ public abstract class UserEvent
               .append(movement);
         }
 
-        sb.append(internalString());
+        sb.append(" ")
+          .append(internalString());
         sb.append("}");
 
         return sb.toString();
@@ -136,11 +137,16 @@ public abstract class UserEvent
     // internalString //
     //----------------//
     /**
-     * Report a string that dscribes the internals of the specific subclass
-     * @return the (sub)class internans as a string
+     * Report a string that describes the internals of the specific subclass
+     * @return the (sub)class internals as a string
      */
     protected String internalString ()
     {
-        return " " + getData();
+        if (getData() != null) {
+            return getData()
+                       .toString();
+        } else {
+            return "";
+        }
     }
 }

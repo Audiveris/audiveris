@@ -84,7 +84,7 @@ public class SelectionService
             List subscribers = service.getSubscribers(eventClass);
 
             if (!subscribers.isEmpty()) {
-                Object last = service.getLastEvent(eventClass);
+                UserEvent last = (UserEvent) service.getLastEvent(eventClass);
                 logger.info(
                     "-- " + eventClass.getSimpleName() + ": " +
                     subscribers.size() + ((last != null) ? (" " + last) : ""));

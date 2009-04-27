@@ -826,6 +826,19 @@ public class Sheet
         return editor;
     }
 
+    //---------------//
+    // getSystemById //
+    //---------------//
+    /**
+     * Report the system info for which id is provided
+     * @param id id of desired system
+     * @return the desired system info
+     */
+    public SystemInfo getSystemById (int id)
+    {
+        return systems.get(id - 1);
+    }
+
     //-------------//
     // getSystemOf //
     //-------------//

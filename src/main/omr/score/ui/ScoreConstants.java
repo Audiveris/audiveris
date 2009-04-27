@@ -28,12 +28,6 @@ public class ScoreConstants
     /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /**
-     * Should we display systems using a horizontal layout (side by side) rather
-     * than a vertical layout (systems one above the other).
-     */
-    public static final boolean HORIZONTAL_LAYOUT = constants.horizontalLayout.getValue();
-
     /** Height in pixels of a staff display */
     public static final int STAFF_AREA_HEIGHT = constants.staffAreaheight.getValue();
 
@@ -91,9 +85,6 @@ public class ScoreConstants
     {
         //~ Instance fields ----------------------------------------------------
 
-        Constant.Boolean horizontalLayout = new Constant.Boolean(
-            true,
-            "Should systems be displayed side by side? (need restart)");
         Constant.Integer lineNb = new Constant.Integer(
             "Lines",
             5,

@@ -13,7 +13,6 @@ import omr.log.Logger;
 
 import omr.score.common.PagePoint;
 import omr.score.common.PixelPoint;
-import omr.score.common.ScorePoint;
 import omr.score.common.SystemPoint;
 import static omr.score.ui.ScoreConstants.*;
 import omr.score.visitor.ScoreVisitor;
@@ -51,9 +50,6 @@ public class Staff
 
     /** Top left corner of the staff (relative to the system top left corner) */
     private final SystemPoint systemTopLeft;
-
-    /** Actual cached display origin */
-    private ScorePoint displayOrigin;
 
     /** Related info from sheet analysis */
     private StaffInfo info;
@@ -243,19 +239,6 @@ public class Staff
         return (int) Math.rint(((pitchPosition + 4) * INTER_LINE) / 2.0);
     }
 
-    //------------------//
-    // setDisplayOrigin //
-    //------------------//
-    /**
-     * Assign proper staff display origin
-     *
-     * @param displayOrigin staff display origin
-     */
-    public void setDisplayOrigin (ScorePoint displayOrigin)
-    {
-        this.displayOrigin = displayOrigin;
-    }
-
     //----------//
     // setWidth //
     //----------//
@@ -289,8 +272,6 @@ public class Staff
               .append(width);
             sb.append(" size=")
               .append(height);
-            sb.append(" origin=")
-              .append(displayOrigin);
             sb.append("}");
 
             return sb.toString();

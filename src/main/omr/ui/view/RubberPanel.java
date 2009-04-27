@@ -14,9 +14,11 @@ import omr.constant.ConstantSet;
 import omr.log.Logger;
 
 import omr.score.common.PixelRectangle;
+import omr.score.common.ScoreLocation;
 
 import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
+import omr.selection.ScoreLocationEvent;
 import omr.selection.SelectionHint;
 import static omr.selection.SelectionHint.*;
 import omr.selection.SelectionService;
@@ -245,7 +247,7 @@ public class RubberPanel
         LocationEvent locationEvent = (LocationEvent) locationService.getLastEvent(
             locationClass);
 
-        return (locationEvent != null) ? locationEvent.getData() : null;
+        return (locationEvent != null) ? locationEvent.getRectangle() : null;
     }
 
     //---------//
@@ -317,7 +319,8 @@ public class RubberPanel
 
             if (event instanceof LocationEvent) {
                 LocationEvent locationEvent = (LocationEvent) event;
-                showFocusLocation(locationEvent.getRectangle());
+                Rectangle     rect = getEventRectangle(locationEvent);
+                showFocusLocation(rect);
             }
         } catch (Exception ex) {
             logger.warning(getClass().getName() + " onEvent error", ex);
@@ -349,7 +352,7 @@ public class RubberPanel
     //---------//
     public void publish (LocationEvent locationEvent)
     {
-        locationService.publish(locationClass, locationEvent);
+        locationService.publish(locationEvent);
     }
 
     //-------------------//
@@ -504,6 +507,15 @@ public class RubberPanel
 
         // Unsubscribe to location events
         locationService.unsubscribe(locationClass, this);
+    }
+
+    //-------------------//
+    // getEventRectangle //
+    //-------------------//
+    protected Rectangle getEventRectangle (LocationEvent event)
+    {
+        // By default, use directly the event carried rectangle
+        return event.getRectangle();
     }
 
     //------------------//

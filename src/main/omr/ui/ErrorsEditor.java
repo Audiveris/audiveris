@@ -13,8 +13,9 @@ import omr.glyph.Glyph;
 
 import omr.log.Logger;
 
-import omr.score.common.ScoreRectangle;
+import omr.score.common.ScoreLocation;
 import omr.score.common.SystemPoint;
+import omr.score.common.SystemRectangle;
 import omr.score.entity.Measure;
 import omr.score.entity.MeasureNode;
 import omr.score.entity.ScoreSystem;
@@ -314,8 +315,9 @@ public class ErrorsEditor
                                     ErrorsEditor.this,
                                     SelectionHint.LOCATION_INIT,
                                     null,
-                                    new ScoreRectangle(
-                                        system.toScorePoint(sysPt))));
+                                    new ScoreLocation(
+                                        system.getId(),
+                                        new SystemRectangle(sysPt))));
                         } catch (Exception ex) {
                             logger.warning(
                                 "Failed pointing to " + record.node,

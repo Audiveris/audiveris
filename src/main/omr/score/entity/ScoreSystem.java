@@ -16,8 +16,6 @@ import omr.score.common.PagePoint;
 import omr.score.common.PageRectangle;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
-import omr.score.common.ScorePoint;
-import omr.score.common.ScoreRectangle;
 import omr.score.common.SystemPoint;
 import omr.score.common.SystemRectangle;
 import omr.score.common.UnitDimension;
@@ -73,9 +71,6 @@ public class ScoreSystem
      * first real staff, and does not count the preceding dummy staves if any.
      */
     private PagePoint topLeft;
-
-    /** Actual display origin in the score view */
-    private ScorePoint displayOrigin;
 
     /** Related info from sheet analysis */
     private SystemInfo info;
@@ -210,33 +205,6 @@ public class ScoreSystem
     public UnitDimension getDimension ()
     {
         return dimension;
-    }
-
-    //------------------//
-    // setDisplayOrigin //
-    //------------------//
-    /**
-     * Assign origin for score display, which is the location in the ScoreView
-     * of the topLeft corner of the (first real part of the) system
-     *
-     * @param displayOrigin display origin for this system
-     */
-    public void setDisplayOrigin (ScorePoint displayOrigin)
-    {
-        this.displayOrigin = displayOrigin;
-    }
-
-    //------------------//
-    // getDisplayOrigin //
-    //------------------//
-    /**
-     * Report the origin for this system, in the ScoreView display
-     *
-     * @return the display origin
-     */
-    public ScorePoint getDisplayOrigin ()
-    {
-        return displayOrigin;
     }
 
     //----------------//
@@ -422,27 +390,6 @@ public class ScoreSystem
         return getChildren();
     }
 
-    //------------------//
-    // getRightPosition //
-    //------------------//
-    /**
-     * Return the actual display position of the right side.
-     *
-     * @return the display abscissa of the right system edge
-     */
-    public int getRightPosition ()
-    {
-        if (displayOrigin == null) {
-            logger.warning("ScoreSystem.getRightPosition. displayOrigin=null");
-        } else if (dimension == null) {
-            logger.warning("ScoreSystem.getRightPosition. dimension=null");
-        } else {
-            return (displayOrigin.x + dimension.width) - 1;
-        }
-
-        return 0; // ?????
-    }
-
     //---------------//
     // getStaffAbove //
     //---------------//
@@ -621,41 +568,6 @@ public class ScoreSystem
     // locate //
     //--------//
     /**
-     * Return the position of given ScorePoint, relative to the system.
-     *
-     * @param scrPt the ScorePoint in the score display
-     *
-     * @return -1 for left, 0 for middle, +1 for right
-     */
-    public int locate (ScorePoint scrPt)
-    {
-        if (HORIZONTAL_LAYOUT) {
-            if (scrPt.x < displayOrigin.x) {
-                return -1;
-            }
-
-            if (scrPt.x > getRightPosition()) {
-                return +1;
-            }
-
-            return 0;
-        } else {
-            if (scrPt.y < displayOrigin.y) {
-                return -1;
-            }
-
-            if (scrPt.y > (displayOrigin.y + dimension.height + STAFF_HEIGHT)) {
-                return +1;
-            }
-
-            return 0;
-        }
-    }
-
-    //--------//
-    // locate //
-    //--------//
-    /**
      * Return the position of given PagePoint, relative to the system
      *
      * @param pagPt the given PagePoint
@@ -754,24 +666,6 @@ public class ScoreSystem
     // toPagePoint //
     //-------------//
     /**
-     * Compute the point in the sheet that corresponds to a given point in the
-     * score display
-     *
-     * @param scrPt the point in the score display
-     * @return the corresponding page point
-     * @see #toScorePoint
-     */
-    public PagePoint toPagePoint (ScorePoint scrPt)
-    {
-        return new PagePoint(
-            topLeft.x + (scrPt.x - displayOrigin.x),
-            topLeft.y + (scrPt.y - displayOrigin.y));
-    }
-
-    //-------------//
-    // toPagePoint //
-    //-------------//
-    /**
      * Compute the pagepoint that correspond to a given systempoint, which is
      * basically a translation using the coordinates of the system topLeft
      * corner.
@@ -782,6 +676,25 @@ public class ScoreSystem
     public PagePoint toPagePoint (SystemPoint sysPt)
     {
         return new PagePoint(sysPt.x + topLeft.x, sysPt.y + topLeft.y);
+    }
+
+    //-----------------//
+    // toPageRectangle //
+    //-----------------//
+    /**
+     * Compute the page rectangle that corresonds to a given page rectangle,
+     * which boils down to a simple translation using the coordinates of the
+     * ystem topLeft corner.
+     * @param sysRect the rectangle in the system
+     * @return the page rectangle
+     */
+    public PageRectangle toPageRectangle (SystemRectangle sysRect)
+    {
+        return new PageRectangle(
+            sysRect.x + topLeft.x,
+            sysRect.y + topLeft.y,
+            sysRect.width,
+            sysRect.height);
     }
 
     //--------------//
@@ -799,52 +712,6 @@ public class ScoreSystem
     {
         return getScale()
                    .toPixelPoint(toPagePoint(sysPt));
-    }
-
-    //--------------//
-    // toScorePoint //
-    //--------------//
-    /**
-     * Compute the score display point that correspond to a given sheet point,
-     * since systems are displayed horizontally in the score display, while they
-     * are located one under the other in a sheet.
-     *
-     * @param pagPt the point in the sheet
-     * @return the score point
-     * @see #toPagePoint
-     */
-    public ScorePoint toScorePoint (PagePoint pagPt)
-    {
-        return new ScorePoint(
-            displayOrigin.x + (pagPt.x - topLeft.x),
-            displayOrigin.y + (pagPt.y - topLeft.y));
-    }
-
-    //--------------//
-    // toScorePoint //
-    //--------------//
-    /**
-     * Compute the score display point that correspond to a given sheet point,
-     * since systems are displayed horizontally in the score display, while they
-     * are located one under the other in a sheet.
-     *
-     * @param sysPt the point in the system
-     * @return the score point
-     * @see #toPagePoint
-     */
-    public ScorePoint toScorePoint (SystemPoint sysPt)
-    {
-        return toScorePoint(toPagePoint(sysPt));
-    }
-
-    //------------------//
-    // toScoreRectangle //
-    //------------------//
-    public ScoreRectangle toScoreRectangle (SystemRectangle sysRect)
-    {
-        ScorePoint org = toScorePoint(new SystemPoint(sysRect.x, sysRect.y));
-
-        return new ScoreRectangle(org.x, org.y, sysRect.width, sysRect.height);
     }
 
     //----------//

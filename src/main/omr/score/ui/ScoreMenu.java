@@ -26,8 +26,6 @@ import omr.score.entity.SystemPart;
 import omr.score.midi.MidiActions;
 import omr.score.midi.MidiAgent;
 
-import omr.selection.GlyphSetEvent;
-
 import java.awt.Component;
 import java.awt.event.*;
 import java.util.*;
@@ -54,6 +52,9 @@ public class ScoreMenu
     /** The related score */
     private final Score score;
 
+    /** The related score view */
+    private final ScoreView scoreView;
+
     /** Set of actions to update menu according to current selections */
     private final Collection<DynAction> dynActions = new HashSet<DynAction>();
 
@@ -76,11 +77,13 @@ public class ScoreMenu
     /**
      * Create the popup menu
      *
-     * @param score the related score
+     * @param scoreView the related score view
      */
-    public ScoreMenu (Score score)
+    public ScoreMenu (ScoreView scoreView)
     {
-        this.score = score;
+        this.scoreView = scoreView;
+
+        score = scoreView.getScore();
         popup = new JPopupMenu();
         defineLayout();
     }
@@ -111,9 +114,10 @@ public class ScoreMenu
     public void updateMenu (ScorePoint scrPt)
     {
         // Analyze the context
-        system = score.scoreLocateSystem(scrPt);
+        system = scoreView.scoreLocateSystem(scrPt);
 
-        PagePoint   pagPt = system.toPagePoint(scrPt);
+        SystemView  systemView = scoreView.getSystemView(system);
+        PagePoint   pagPt = systemView.toPagePoint(scrPt);
         SystemPoint sysPt = system.toSystemPoint(pagPt);
         SystemPart  part = system.getPartAt(sysPt);
         measure = part.getMeasureAt(sysPt);

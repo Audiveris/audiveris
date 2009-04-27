@@ -46,13 +46,4 @@ public abstract class LocationEvent
     //~ Methods ----------------------------------------------------------------
 
     public abstract Rectangle getRectangle ();
-
-    //-----------//
-    // getEntity //
-    //-----------//
-    @Override
-    public Rectangle getData ()
-    {
-        return getRectangle();
-    }
 }

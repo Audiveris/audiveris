@@ -17,16 +17,20 @@ import omr.log.Logger;
 import omr.score.Score;
 import omr.score.ScoreSheetBridge;
 import omr.score.common.PagePoint;
+import omr.score.common.ScoreLocation;
 import omr.score.common.ScorePoint;
 import omr.score.common.ScoreRectangle;
 import omr.score.common.SystemPoint;
+import omr.score.common.SystemRectangle;
 import omr.score.common.UnitDimension;
 import omr.score.entity.Measure;
+import omr.score.entity.ScorePart;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Slot;
 import static omr.score.ui.ScoreConstants.*;
 import omr.score.visitor.ScorePainter;
 
+import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
 import omr.selection.ScoreLocationEvent;
 import omr.selection.SelectionHint;
@@ -45,13 +49,16 @@ import omr.ui.view.Zoom;
 import omr.util.TreeNode;
 
 import java.awt.*;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.*;
 
 /**
- * Class <code>ScoreView</code> encapsulates the horizontal display of all the
- * score systems which may encompass several pages & systems. It knows about the
- * display zoom ratio of the score.
+ * Class <code>ScoreView</code> encapsulates the display of all the systems of
+ * a score (which may encompass several pages & systems). It has an orientation
+ * (horizontal or vertical) as well as a display zoom ratio.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -72,8 +79,14 @@ public class ScoreView
     private final Score score;
 
     /**
+     * Should we display systems using a horizontal layout (side by side) rather
+     * than a vertical layout (systems one above the other).
+     */
+    private ScoreOrientation orientation = constants.defaultOrientation.getValue();
+
+    /**
      * Display zoom. NOTA: To use a value different from 0.5, the definition
-     * of symbols bimaps must be redone at scale 1, and the painting of these
+     * of symbols bitmaps must be redone at scale 1, and the painting of these
      * symbols must be simplified to use the graphics context directly (see the
      * ScorePainter class for modifications)
      */
@@ -96,6 +109,12 @@ public class ScoreView
 
     /** Related popup menu */
     private final ScoreMenu scoreMenu;
+
+    /** The most recent system pointed at */
+    private WeakReference<ScoreSystem> recentSystemRef = null;
+
+    /** Sequence of system views, ordered by system id */
+    private List<SystemView> systemViews;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -124,12 +143,12 @@ public class ScoreView
         compoundPanel.add(info, BorderLayout.SOUTH);
 
         // Cross referencing between score and its view
-        score.setView(this);
+        score.addView(this);
 
         // Popup
-        scoreMenu = new ScoreMenu(score);
+        scoreMenu = new ScoreMenu(this);
 
-        // Compute origin of all members
+        // Compute origin of all systems
         computeModelSize();
 
         // Bridge companion between Score and Sheet locations both ways
@@ -151,6 +170,15 @@ public class ScoreView
         return compoundPanel;
     }
 
+    //----------------//
+    // setOrientation //
+    //----------------//
+    public void setOrientation (ScoreOrientation orientation)
+    {
+        this.orientation = orientation;
+        update();
+    }
+
     //----------//
     // getScore //
     //----------//
@@ -162,6 +190,28 @@ public class ScoreView
     public Score getScore ()
     {
         return score;
+    }
+
+    //---------------//
+    // getSystemView //
+    //---------------//
+    /**
+     * Report the specific system view for the system in this specific score
+     * view
+     * @param system the provided system
+     * @return the specific system view
+     */
+    public SystemView getSystemView (ScoreSystem system)
+    {
+        return getSystemView(system.getId());
+    }
+
+    //--------------//
+    // getViewIndex //
+    //--------------//
+    public int getViewIndex ()
+    {
+        return score.getViewIndex(this);
     }
 
     //-------//
@@ -187,35 +237,6 @@ public class ScoreView
         }
     }
 
-    //------------------//
-    // computeModelSize //
-    //------------------//
-    /**
-     * Run computations on the collection of systems so that they are displayed
-     * in a nice manner, with all first staves aligned horizontally
-     */
-    public void computeModelSize ()
-    {
-        ScoreRectangle scoreContour = null;
-
-        for (TreeNode node : score.getSystems()) {
-            ScoreSystem    system = (ScoreSystem) node;
-            ScoreRectangle absSystemContour = system.toScoreRectangle(
-                system.getContour());
-
-            if (scoreContour == null) {
-                scoreContour = absSystemContour;
-            } else {
-                Rectangle r = scoreContour.union(absSystemContour);
-                scoreContour = new ScoreRectangle(r.x, r.y, r.width, r.height);
-            }
-        }
-
-        view.setModelSize(
-            new Dimension(scoreContour.width, scoreContour.height));
-        zoom.fireStateChanged();
-    }
-
     //-----------//
     // highLight //
     //-----------//
@@ -237,13 +258,85 @@ public class ScoreView
                 });
     }
 
-    //---------//
-    // repaint //
-    //---------//
-    public void repaint ()
+    //-------------------//
+    // scoreLocateSystem //
+    //-------------------//
+    /**
+     * Retrieve the system 'scrPt' is pointing to, according to the current
+     * layout.
+     *
+     * @param scrPt the point in the SCORE horizontal display
+     * @return the nearest system
+     */
+    public ScoreSystem scoreLocateSystem (ScorePoint scrPt)
     {
-        scrollPane.getComponent()
-                  .repaint();
+        ScoreSystem recentSystem = getRecentSystem();
+
+        if (recentSystem != null) {
+            // Check first with most recent system (loosely)
+            SystemView systemView = getSystemView(recentSystem);
+
+            switch (systemView.locate(scrPt)) {
+            case -1 :
+
+                // Check w/ previous system
+                ScoreSystem prevSystem = (ScoreSystem) recentSystem.getPreviousSibling();
+
+                if (prevSystem == null) {
+                    // Very first system
+                    return recentSystem;
+                } else {
+                    if (getSystemView(prevSystem)
+                            .locate(scrPt) > 0) {
+                        return recentSystem;
+                    }
+                }
+
+                break;
+
+            case 0 :
+                return recentSystem;
+
+            case +1 :
+
+                // Check w/ next system
+                ScoreSystem nextSystem = (ScoreSystem) recentSystem.getNextSibling();
+
+                if (nextSystem == null) {
+                    // Very last system
+                    return recentSystem;
+                } else {
+                    if (getSystemView(nextSystem)
+                            .locate(scrPt) < 0) {
+                        return recentSystem;
+                    }
+                }
+
+                break;
+            }
+        }
+
+        // Recent system is not OK, Browse though all the score systems
+        ScoreSystem system = null;
+
+        for (TreeNode node : score.getSystems()) {
+            system = (ScoreSystem) node;
+
+            SystemView systemView = getSystemView(system);
+
+            // How do we locate the point wrt the system  ?
+            switch (systemView.locate(scrPt)) {
+            case -1 : // Point is before system (but after previous), give up.
+            case 0 : // Point is within system.
+                return setRecentSystem(system);
+
+            case +1 : // Point is after the system, go on.
+                break;
+            }
+        }
+
+        // Return the last system in the score
+        return setRecentSystem(system);
     }
 
     //----------//
@@ -260,6 +353,144 @@ public class ScoreView
         return "{ScoreView " + score.getRadix() + "}";
     }
 
+    //--------//
+    // update //
+    //--------//
+    /**
+     * Update the display when some parameters or size have changed
+     */
+    public void update ()
+    {
+        computeModelSize();
+        view.updateSelection();
+    }
+
+    //-----------------//
+    // setRecentSystem //
+    //-----------------//
+    private ScoreSystem setRecentSystem (ScoreSystem system)
+    {
+        recentSystemRef = new WeakReference<ScoreSystem>(system);
+
+        return system;
+    }
+
+    //-----------------//
+    // getRecentSystem //
+    //-----------------//
+    private ScoreSystem getRecentSystem ()
+    {
+        return (recentSystemRef == null) ? null : recentSystemRef.get();
+    }
+
+    //---------------//
+    // getSystemView //
+    //---------------//
+    private SystemView getSystemView (int id)
+    {
+        return systemViews.get(id - 1);
+    }
+
+    //------------------//
+    // computeModelSize //
+    //------------------//
+    /**
+     * Run computations on the collection of systems so that they are displayed
+     * in a nice manner, using  horizontal or vertical layout
+     */
+    private void computeModelSize ()
+    {
+        // Get a fresh set of system views
+        createSystemViews();
+
+        // Browse all system views and compute the union of all rectangles
+        ScoreRectangle scoreContour = null;
+
+        for (TreeNode node : score.getSystems()) {
+            ScoreSystem    system = (ScoreSystem) node;
+            SystemView     systemView = getSystemView(system);
+            ScoreRectangle absSystemContour = systemView.toScoreRectangle(
+                system.getContour());
+
+            if (scoreContour == null) {
+                scoreContour = absSystemContour;
+            } else {
+                Rectangle r = scoreContour.union(absSystemContour);
+                scoreContour = new ScoreRectangle(r.x, r.y, r.width, r.height);
+            }
+        }
+
+        view.setModelSize(
+            new Dimension(scoreContour.width, scoreContour.height));
+        /////////////////////////zoom.fireStateChanged();
+    }
+
+    //-------------------//
+    // createSystemViews //
+    //-------------------//
+    /**
+     * Set the display parameters of each system
+     */
+    private void createSystemViews ()
+    {
+        ///logger.warning("createSystemViews", new Throwable("Bingo"));
+        final int        highestTop = score.getHighestSystemTop();
+        List<SystemView> views = new ArrayList<SystemView>();
+        SystemView       prevSystemView = null;
+
+        for (TreeNode node : score.getSystems()) {
+            ScoreSystem     system = (ScoreSystem) node;
+            SystemRectangle contour = system.getContour();
+            ScorePoint      origin = new ScorePoint();
+
+            if (orientation == ScoreOrientation.HORIZONTAL) {
+                if (prevSystemView == null) {
+                    // Very first system in the score
+                    origin.x = STAFF_MARGIN_WIDTH - contour.x;
+                } else {
+                    // Not the first system
+                    origin.x = (prevSystemView.getDisplayOrigin().x +
+                               prevSystemView.getSystem().getDimension().width) +
+                               INTER_SYSTEM_WIDTH;
+                }
+
+                ScorePart scorePart = system.getFirstPart()
+                                            .getScorePart();
+                origin.y = STAFF_MARGIN_HEIGHT - highestTop +
+                           system.getDummyOffset() +
+                           ((scorePart != null)
+                            ? scorePart.getDisplayOrdinate() : 0);
+            } else {
+                if (prevSystemView == null) {
+                    // Very first system in the score
+                    origin.y = STAFF_MARGIN_HEIGHT - contour.y;
+                } else {
+                    // Not the first system
+                    origin.y = (prevSystemView.getDisplayOrigin().y +
+                               prevSystemView.getSystem()
+                                             .getDimension().height +
+                               STAFF_HEIGHT) + INTER_SYSTEM_HEIGHT;
+                }
+
+                origin.x = STAFF_MARGIN_WIDTH - contour.x;
+            }
+
+            // Create an immutable view for this system
+            recentSystemRef = null;
+
+            SystemView systemView = new SystemView(system, orientation, origin);
+            views.add(systemView);
+            prevSystemView = systemView;
+
+            if (logger.isFineEnabled()) {
+                logger.fine(system + " origin:" + origin);
+            }
+        }
+
+        // Write the new collection of SystemView instances
+        systemViews = views;
+    }
+
     //-----------//
     // tellPoint //
     //-----------//
@@ -269,14 +500,15 @@ public class ScoreView
     {
         StringBuilder sb = new StringBuilder();
 
-        //        if (scrPt != null) {
-        //            sb.append("ScorePoint")
-        //              .append(" X:")
-        //              .append(scrPt.x)
-        //              .append(" Y:")
-        //              .append(scrPt.y)
-        //              .append(" ");
-        //        }
+        if (scrPt != null) {
+            sb.append("ScorePoint")
+              .append(" X:")
+              .append(scrPt.x)
+              .append(" Y:")
+              .append(scrPt.y)
+              .append(" ");
+        }
+
         if (pagPt != null) {
             sb.append("PagePoint")
               .append(" X:")
@@ -300,10 +532,29 @@ public class ScoreView
 
     //~ Inner Classes ----------------------------------------------------------
 
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        ScoreOrientation.Constant defaultOrientation = new ScoreOrientation.Constant(
+            ScoreOrientation.HORIZONTAL,
+            "Default orientation for score systems");
+        PixelCount                measureMargin = new PixelCount(
+            10,
+            "Number of pixels as margin when highlighting a measure");
+        Constant.Boolean          popupEnabled = new Constant.Boolean(
+            true,
+            "Should we allow popup menu in score view?");
+    }
+
     //--------//
     // MyView //
     //--------//
-    public class MyView
+    private class MyView
         extends RubberPanel
     {
         //~ Instance fields ----------------------------------------------------
@@ -336,11 +587,7 @@ public class ScoreView
             subscribe();
 
             // Force selection update
-            ScoreRectangle location = (ScoreRectangle) getSelectedLocation();
-
-            if (location != null) {
-                publish(new ScoreLocationEvent(this, null, null, location));
-            }
+            updateSelection();
         }
 
         //~ Methods ------------------------------------------------------------
@@ -442,16 +689,18 @@ public class ScoreView
 
                 if (event instanceof ScoreLocationEvent) {
                     // Display location coordinates
-                    ScoreLocationEvent scoreLocation = (ScoreLocationEvent) event;
+                    ScoreLocation scoreLocation = ((ScoreLocationEvent) event).location;
 
                     if (scoreLocation != null) {
-                        Rectangle rect = scoreLocation.rectangle;
+                        SystemRectangle rect = scoreLocation.rectangle;
 
                         if (rect != null) {
-                            ScorePoint  scrPt = new ScorePoint(rect.x, rect.y);
-                            ScoreSystem system = score.scoreLocateSystem(scrPt);
-                            PagePoint   pagPt = system.toPagePoint(scrPt);
-                            SystemPoint sysPt = system.toSystemPoint(pagPt);
+                            int         id = scoreLocation.systemId;
+                            SystemView  systemView = getSystemView(id);
+                            ScoreSystem system = systemView.getSystem();
+                            SystemPoint sysPt = new SystemPoint(rect.x, rect.y);
+                            ScorePoint  scrPt = systemView.toScorePoint(sysPt);
+                            PagePoint   pagPt = system.toPagePoint(sysPt);
                             tellPoint(scrPt, pagPt, sysPt);
                         } else {
                             tellPoint(null, null, null);
@@ -471,7 +720,7 @@ public class ScoreView
         @Override
         public void render (Graphics g)
         {
-            ScorePainter painter = new ScorePainter(g, zoom);
+            ScorePainter painter = new ScorePainter(ScoreView.this, g, zoom);
             score.accept(painter);
 
             if (highlightedSlot != null) {
@@ -483,12 +732,35 @@ public class ScoreView
             }
         }
 
+        //-------------------//
+        // getEventRectangle //
+        //-------------------//
+        @Override
+        protected Rectangle getEventRectangle (LocationEvent event)
+        {
+            if (event instanceof ScoreLocationEvent) {
+                ScoreLocationEvent locationEvent = (ScoreLocationEvent) event;
+                ScoreLocation      location = locationEvent.getData();
+
+                if (location != null) {
+                    ScoreSystem system = score.getSystemById(location.systemId);
+                    SystemView  systemView = getSystemView(system);
+
+                    return systemView.toScoreRectangle(location.rectangle);
+                } else {
+                    return null;
+                }
+            } else {
+                return super.getEventRectangle(event);
+            }
+        }
+
         //------------------//
         // setFocusLocation //
         //------------------//
         /**
          * Modifies the location information. This method simply posts the
-         * location information on the sheet event service.
+         * score location information on the sheet event service.
          *
          * @param rect the location information
          * @param movement the button movement
@@ -503,31 +775,42 @@ public class ScoreView
                 logger.fine("setFocusLocation rect=" + rect + " hint=" + hint);
             }
 
-            // Write & forward the new pixel selection
-            score.getSheet()
-                 .getSelectionService()
-                 .publish(
-                new ScoreLocationEvent(
-                    this,
-                    hint,
-                    movement,
-                    new ScoreRectangle(rect)));
+            ScoreLocation scoreLocation = null;
+
+            if (rect != null) {
+                ScorePoint  scrPt = new ScorePoint(rect.x, rect.y);
+                ScoreSystem system = scoreLocateSystem(scrPt);
+                SystemView  systemView = getSystemView(system);
+                SystemPoint sysPt = systemView.toSystemPoint(scrPt);
+                scoreLocation = new ScoreLocation(system.getId(), sysPt);
+            }
+
+            // Write & forward the new selection
+            publish(
+                new ScoreLocationEvent(this, hint, movement, scoreLocation));
         }
-    }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
+        //--------------------------//
+        // getSelectedScoreLocation //
+        //--------------------------//
+        private ScoreLocation getSelectedScoreLocation ()
+        {
+            ScoreLocationEvent locationEvent = (ScoreLocationEvent) locationService.getLastEvent(
+                locationClass);
 
-        PixelCount       measureMargin = new PixelCount(
-            10,
-            "Number of pixels as margin when highlighting a measure");
-        Constant.Boolean popupEnabled = new Constant.Boolean(
-            true,
-            "Should we allow popup menu in score view?");
+            return (locationEvent != null) ? locationEvent.getData() : null;
+        }
+
+        //-----------------//
+        // updateSelection //
+        //-----------------//
+        private void updateSelection ()
+        {
+            ScoreLocation location = (ScoreLocation) getSelectedScoreLocation();
+
+            if (location != null) {
+                publish(new ScoreLocationEvent(this, null, null, location));
+            }
+        }
     }
 }

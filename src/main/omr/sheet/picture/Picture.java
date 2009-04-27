@@ -1002,4 +1002,13 @@ public class Picture
             1,
             "Subsampling ratio between 0 and 1, or 1 for no subsampling (memory intensive)");
     }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return getName();
+    }
 }

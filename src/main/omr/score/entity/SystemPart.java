@@ -618,7 +618,6 @@ public class SystemPart
                         getFirstStaff().getWidth(),
                         nextStaff.getHeight());
                     dummyStaff.setDummy(true);
-                    dummyStaff.setDisplayOrigin(new ScorePoint());
 
                     // Create dummy Clef
                     Clef nextClef = nextMeasure.getFirstMeasureClef(

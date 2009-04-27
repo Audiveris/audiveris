@@ -80,14 +80,14 @@ public class ScoreController
 
         if (score != null) {
             // Make sure we have a proper score view
-            ScoreView view = score.getView();
+            ScoreView view = score.getFirstView();
 
             if (view == null) {
                 // Build a brand new display on this score
                 view = new ScoreView(score);
             } else {
                 // So that scroll bars be OK
-                view.computeModelSize();
+                view.update();
             }
 
             // Make sure the view is part of the related sheet assembly

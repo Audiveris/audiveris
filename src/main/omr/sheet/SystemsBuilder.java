@@ -560,14 +560,8 @@ public class SystemsBuilder
         sheet.getScore()
              .accept(new ScoreFixer());
 
-        // Update score view if any
-        ScoreView scoreView = sheet.getScore()
-                                   .getView();
-
-        if (scoreView != null) {
-            scoreView.computeModelSize();
-            scoreView.repaint();
-        }
+        // Update score views if any
+        sheet.getScore().updateViews();
     }
 
     //~ Inner Classes ----------------------------------------------------------

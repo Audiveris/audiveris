@@ -15,7 +15,6 @@ import omr.constant.ConstantSet;
 import omr.log.Logger;
 
 import omr.score.common.PagePoint;
-import omr.score.common.ScorePoint;
 import omr.score.common.UnitDimension;
 import omr.score.entity.ScoreNode;
 import omr.score.entity.ScorePart;
@@ -23,6 +22,7 @@ import omr.score.entity.ScoreSystem;
 import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
 import omr.score.ui.ScoreConstants;
+import omr.score.ui.ScoreOrientation;
 import omr.score.ui.ScoreTree;
 import omr.score.ui.ScoreView;
 import omr.score.visitor.ScoreReductor;
@@ -96,11 +96,8 @@ public class Score
     /** ScorePart list for the whole score */
     private List<ScorePart> partList = new ArrayList<ScorePart>();
 
-    /** The most recent system pointed at */
-    private WeakReference<ScoreSystem> recentSystemRef = null;
-
-    /** The view on this score if any */
-    private ScoreView view;
+    /** The sequence of views on this score */
+    private List<ScoreView> views = new ArrayList<ScoreView>();
 
     /** The specified tempo, if any */
     private Integer tempo;
@@ -113,6 +110,15 @@ public class Score
 
     /** Browser tree on this score */
     private ScoreTree scoreTree;
+
+    /** The most recent system pointed at */
+    private WeakReference<ScoreSystem> recentSystemRef = null;
+
+    /** The highest system top */
+    private int highestSystemTop;
+
+    /** Preferred orientation for system layout */
+    private ScoreOrientation orientation;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -287,6 +293,39 @@ public class Score
     }
 
     //--------------//
+    // getFirstView //
+    //--------------//
+    /**
+     * Report the first view on this score
+     * (actually the only one for the time being)
+     * @return the (first) view on the score, if any
+     */
+    public ScoreView getFirstView ()
+    {
+        if (!views.isEmpty()) {
+            return views.get(0);
+        } else {
+            return null;
+        }
+    }
+
+    //---------------------//
+    // setHighestSystemTop //
+    //---------------------//
+    public void setHighestSystemTop (int highestSystemTop)
+    {
+        this.highestSystemTop = highestSystemTop;
+    }
+
+    //---------------------//
+    // getHighestSystemTop //
+    //---------------------//
+    public int getHighestSystemTop ()
+    {
+        return highestSystemTop;
+    }
+
+    //--------------//
     // setImagePath //
     //--------------//
     /**
@@ -439,6 +478,33 @@ public class Score
         return measureRange;
     }
 
+    //----------------//
+    // setOrientation //
+    //----------------//
+    /**
+     * @param orientation the orientation to set
+     */
+    public void setOrientation (ScoreOrientation orientation)
+    {
+        this.orientation = orientation;
+        logger.info("New score system layout: " + orientation);
+
+        for (ScoreView view : views) {
+            view.setOrientation(orientation);
+        }
+    }
+
+    //----------------//
+    // getOrientation //
+    //----------------//
+    /**
+     * @return the orientation
+     */
+    public ScoreOrientation getOrientation ()
+    {
+        return orientation;
+    }
+
     //-------------//
     // setPartList //
     //-------------//
@@ -528,6 +594,7 @@ public class Score
     //----------//
     // setSheet //
     //----------//
+
     /**
      * Register the name of the corresponding sheet entity
      *
@@ -587,6 +654,20 @@ public class Score
     public double getSkewAngleDouble ()
     {
         return (double) skewAngle / (double) ScoreConstants.BASE;
+    }
+
+    //---------------//
+    // getSystemById //
+    //---------------//
+    /**
+     * Report the system for which id is provided
+     * @param id id of desired system
+     * @return the desired system
+     */
+    public ScoreSystem getSystemById (int id)
+    {
+        return (ScoreSystem) getSystems()
+                                 .get(id - 1);
     }
 
     //------------//
@@ -654,34 +735,17 @@ public class Score
         return velocity;
     }
 
-    //---------//
-    // setView //
-    //---------//
+    //--------------//
+    // getViewIndex //
+    //--------------//
     /**
-     * Define the related UI view
-     *
-     * @param view the dedicated ScoreView
+     * Report the index of the provided view in the sequence of all views
+     * @param view the view ro look up
+     * @return the sequence index, or -1 if not found
      */
-    public void setView (ScoreView view)
+    public int getViewIndex (ScoreView view)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("setView view=" + view);
-        }
-
-        this.view = view;
-    }
-
-    //---------//
-    // getView //
-    //---------//
-    /**
-     * Report the UI view, if any
-     *
-     * @return the view, or null otherwise
-     */
-    public ScoreView getView ()
-    {
-        return view;
+        return views.indexOf(view);
     }
 
     //--------//
@@ -693,6 +757,24 @@ public class Score
         return visitor.visit(this);
     }
 
+    //---------//
+    // addView //
+    //---------//
+    /**
+     * Define the related UI view
+     *
+     * @param view the dedicated ScoreView
+     */
+    public void addView (ScoreView view)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("addView view=" + view);
+        }
+
+        views.remove(view);
+        views.add(view);
+    }
+
     //-------//
     // close //
     //-------//
@@ -701,8 +783,8 @@ public class Score
      */
     public void close ()
     {
-        // Close related view if any
-        if (view != null) {
+        // Close related views if any
+        for (ScoreView view : views) {
             view.close();
         }
 
@@ -868,7 +950,9 @@ public class Score
             switch (system.locate(pagPt)) {
             case -1 : // Point is above this system, give up.
             case 0 : // Point is within system.
-                return recentSystem = system;
+                recentSystemRef = new WeakReference<ScoreSystem>(system);
+
+                return system;
 
             case +1 : // Point is below this system, go on.
                 break;
@@ -876,7 +960,9 @@ public class Score
         }
 
         // Return the last system in the score
-        return recentSystem = system;
+        recentSystemRef = new WeakReference<ScoreSystem>(system);
+
+        return system;
     }
 
     //-------//
@@ -890,83 +976,6 @@ public class Score
         // Discard systems
         getSystems()
             .clear();
-    }
-
-    //-------------------//
-    // scoreLocateSystem //
-    //-------------------//
-    /**
-     * Retrieve the system 'scrPt' is pointing to, knowing that Systems in the
-     * <b>SCORE</b> display, are arranged horizontally one after the other,
-     * while they were arranged vertically in the related Sheet.
-     *
-     * @param scrPt the point in the SCORE horizontal display
-     *
-     * @return the nearest system
-     */
-    public ScoreSystem scoreLocateSystem (ScorePoint scrPt)
-    {
-        ScoreSystem recentSystem = getRecentSystem();
-
-        if (recentSystem != null) {
-            // Check first with most recent system (loosely)
-            switch (recentSystem.locate(scrPt)) {
-            case -1 :
-
-                // Check w/ previous system
-                ScoreSystem prevSystem = (ScoreSystem) recentSystem.getPreviousSibling();
-
-                if (prevSystem == null) { // Very first system
-
-                    return recentSystem;
-                } else {
-                    if (prevSystem.locate(scrPt) > 0) {
-                        return recentSystem;
-                    }
-                }
-
-                break;
-
-            case 0 :
-                return recentSystem;
-
-            case +1 :
-
-                // Check w/ next system
-                ScoreSystem nextSystem = (ScoreSystem) recentSystem.getNextSibling();
-
-                if (nextSystem == null) { // Very last system
-
-                    return recentSystem;
-                } else {
-                    if (nextSystem.locate(scrPt) < 0) {
-                        return recentSystem;
-                    }
-                }
-
-                break;
-            }
-        }
-
-        // Recent system is not OK, Browse though all the score systems
-        ScoreSystem system = null;
-
-        for (TreeNode node : children) {
-            system = (ScoreSystem) node;
-
-            // How do we locate the point wrt the system  ?
-            switch (system.locate(scrPt)) {
-            case -1 : // Point is before system (but after previous), give up.
-            case 0 : // Point is within system.
-                return setRecentSystem(system);
-
-            case +1 : // Point is after the system, go on.
-                break;
-            }
-        }
-
-        // Return the last system in the score
-        return setRecentSystem(system);
     }
 
     //------------------//
@@ -1003,22 +1012,17 @@ public class Score
         }
     }
 
-    //-----------------//
-    // setRecentSystem //
-    //-----------------//
-    private ScoreSystem setRecentSystem (ScoreSystem system)
+    //-------------//
+    // updateViews //
+    //-------------//
+    /**
+     * Update all views for this score
+     */
+    public void updateViews ()
     {
-        recentSystemRef = new WeakReference<ScoreSystem>(system);
-
-        return system;
-    }
-
-    //-----------------//
-    // getRecentSystem //
-    //-----------------//
-    private ScoreSystem getRecentSystem ()
-    {
-        return (recentSystemRef == null) ? null : recentSystemRef.get();
+        for (ScoreView view : views) {
+            view.update();
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------

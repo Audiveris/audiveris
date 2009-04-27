@@ -57,4 +57,18 @@ public class SystemRectangle
     {
         super(x, y, width, height);
     }
+
+    //-----------------//
+    // SystemRectangle //
+    //-----------------//
+    /**
+     * Constructs a <code>SystemRectangle</code> and initializes it with just
+     * the upper left point
+     *
+     * @param sysPt the upper left point in its containing system
+     */
+    public SystemRectangle (SystemPoint sysPt)
+    {
+        super(sysPt.x, sysPt.y, 0, 0);
+    }
 }
