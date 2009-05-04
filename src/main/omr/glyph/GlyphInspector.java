@@ -282,7 +282,7 @@ public class GlyphInspector
                 }
 
                 if (logger.isFineEnabled()) {
-                    logger.fine("close stems: " + Glyph.toString(glyph, other));
+                    logger.fine("close stems: " + Glyphs.toString(glyph, other));
                 }
 
                 // "hide" the stems to not perturb evaluation
@@ -356,7 +356,7 @@ public class GlyphInspector
                 Collection<Glyph> glyphs = system.lookupIntersectedGlyphs(oBox);
 
                 if (logger.isFineEnabled()) {
-                    logger.fine(Glyph.toString(glyphs));
+                    logger.fine(Glyphs.toString(glyphs));
                 }
 
                 if (!foundClef(glyphs)) {
@@ -423,7 +423,7 @@ public class GlyphInspector
         if (neighbors.size() > 1) {
             if (logger.isFineEnabled()) {
                 logger.finest(
-                    "neighbors=" + Glyph.toString(neighbors) + " seed=" + seed);
+                    "neighbors=" + Glyphs.toString(neighbors) + " seed=" + seed);
             }
 
             Glyph compound = system.buildCompound(neighbors);
@@ -459,7 +459,7 @@ public class GlyphInspector
      */
     private boolean checkClef (Collection<Glyph> glyphs)
     {
-        Glyph.purgeManualShapes(glyphs);
+        Glyphs.purgeManualShapes(glyphs);
 
         if (glyphs.isEmpty()) {
             return false;
@@ -531,7 +531,7 @@ public class GlyphInspector
 
             // Look for glyphs in this outer box
             final Set<Glyph> glyphs = lag.lookupGlyphs(system.getGlyphs(), box);
-            Glyph.purgeManualShapes(glyphs);
+            Glyphs.purgeManualShapes(glyphs);
 
             if (glyphs.isEmpty()) {
                 return false;

@@ -12,6 +12,7 @@ package omr.score.entity;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
+import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
@@ -167,14 +168,6 @@ public class KeySignature
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //-------//
-    // newId //
-    //-------//
-    private static int newId ()
-    {
-        return globalId.incrementAndGet();
-    }
 
     //-------------//
     // getAlterFor //
@@ -429,7 +422,7 @@ public class KeySignature
               .append(getContour());
             sb.append(" pitch=")
               .append(getPitchPosition());
-            sb.append(Glyph.toString(glyphs));
+            sb.append(Glyphs.toString(glyphs));
         } catch (Exception e) {
             sb.append("INVALID");
         }
@@ -709,6 +702,14 @@ public class KeySignature
         default :
             return 0; // Not correct TBD
         }
+    }
+
+    //-------//
+    // newId //
+    //-------//
+    private static int newId ()
+    {
+        return globalId.incrementAndGet();
     }
 
     //---------//

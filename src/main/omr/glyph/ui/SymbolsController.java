@@ -173,7 +173,7 @@ public class SymbolsController
                                                 String            textContent)
     {
         if (logger.isFineEnabled()) {
-            logger.fine("syncAssignText " + Glyph.toString(glyphs));
+            logger.fine("syncAssignText " + Glyphs.toString(glyphs));
         }
 
         getModel()
@@ -192,7 +192,7 @@ public class SymbolsController
     protected Collection<Glyph> syncDeassignGlyphSet (Collection<Glyph> glyphs)
     {
         if (logger.isFineEnabled()) {
-            logger.fine("syncDeassignGlyphSet " + Glyph.toString(glyphs));
+            logger.fine("syncDeassignGlyphSet " + Glyphs.toString(glyphs));
         }
 
         // Use a copy of the glyph list
@@ -227,7 +227,7 @@ public class SymbolsController
     protected Collection<Glyph> syncFixLargeSlurs (Collection<Glyph> glyphs)
     {
         if (logger.isFineEnabled()) {
-            logger.fine("syncFixLargeSlurs " + Glyph.toString(glyphs));
+            logger.fine("syncFixLargeSlurs " + Glyphs.toString(glyphs));
         }
 
         getModel()
@@ -243,7 +243,7 @@ public class SymbolsController
                                                      final boolean           isShort)
     {
         if (logger.isFineEnabled()) {
-            logger.fine("syncSegmentGlyphSet " + Glyph.toString(glyphs));
+            logger.fine("syncSegmentGlyphSet " + Glyphs.toString(glyphs));
         }
 
         getModel()

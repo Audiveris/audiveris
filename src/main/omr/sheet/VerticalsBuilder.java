@@ -20,6 +20,7 @@ import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
+import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 
 import omr.lag.Section;
@@ -226,7 +227,7 @@ public class VerticalsBuilder
         if (logger.isFineEnabled()) {
             logger.fine(
                 "Searching verticals among " + sticks.size() + " sticks from " +
-                Glyph.toString(sticks));
+                Glyphs.toString(sticks));
         }
 
         for (Stick stick : sticks) {

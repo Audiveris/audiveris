@@ -12,6 +12,7 @@ package omr.score.entity;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
+import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 
 import omr.score.common.PixelRectangle;
@@ -224,7 +225,7 @@ public abstract class MeasureElement
               .append(getBox().height)
               .append("]");
             // Glyphs
-            sb.append(Glyph.toString(glyphs));
+            sb.append(Glyphs.toString(glyphs));
         } catch (NullPointerException e) {
             sb.append(" INVALID");
         }

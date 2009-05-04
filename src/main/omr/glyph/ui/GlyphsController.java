@@ -283,7 +283,7 @@ public class GlyphsController
                      .addTask(scriptTask);
 
                 // Remember impacted glyphs & their related shapes
-                Set<Shape> shapes = Glyph.shapesOf(glyphs);
+                Set<Shape> shapes = Glyphs.shapesOf(glyphs);
 
                 // Do the job & Update following steps
                 sheet.rebuildAfter(
@@ -349,7 +349,7 @@ public class GlyphsController
         if (logger.isFineEnabled()) {
             logger.fine(
                 "syncAssignGlyphSet " + (compound ? "compound " : "") +
-                Glyph.toString(glyphs) + " to " + shape);
+                Glyphs.toString(glyphs) + " to " + shape);
         }
 
         model.assignGlyphSet(glyphs, shape, compound, Evaluation.MANUAL);
@@ -374,7 +374,7 @@ public class GlyphsController
     protected Collection<Glyph> syncDeassignGlyphSet (Collection<Glyph> glyphs)
     {
         if (logger.isFineEnabled()) {
-            logger.fine("syncDeassignGlyphSet " + Glyph.toString(glyphs));
+            logger.fine("syncDeassignGlyphSet " + Glyphs.toString(glyphs));
         }
 
         model.deassignGlyphSet(glyphs);

@@ -13,7 +13,7 @@ import omr.glyph.Evaluator;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphNetwork;
-import omr.glyph.Shape;
+import omr.glyph.Glyphs;
 
 import omr.lag.ui.RunBoard;
 import omr.lag.ui.ScrollLagView;
@@ -296,7 +296,7 @@ public class SymbolsEditor
                                 // No compound is allowed and displayed
                                 logger.warning(
                                     "Glyphs from different systems " +
-                                    Glyph.toString(glyphs));
+                                    Glyphs.toString(glyphs));
                             }
                         } else if (glyphs.size() == 1) {
                             compound = glyphs.iterator()

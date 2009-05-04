@@ -11,6 +11,7 @@ package omr.script;
 
 import omr.glyph.Glyph;
 import omr.glyph.GlyphSignature;
+import omr.glyph.Glyphs;
 
 import omr.sheet.Sheet;
 
@@ -106,7 +107,7 @@ public abstract class GlyphTask
     protected String internalsString ()
     {
         if (glyphs != null) {
-            return Glyph.toString(glyphs);
+            return Glyphs.toString(glyphs);
         }
 
         if (sigs != null) {

@@ -17,6 +17,7 @@ import omr.glyph.Evaluator;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphNetwork;
+import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 
 import omr.lag.HorizontalOrientation;
@@ -327,7 +328,7 @@ public class Sentence
         }
 
         sb.append(" ")
-          .append(Glyph.toString("items", items));
+          .append(Glyphs.toString("items", items));
 
         if (getTextContent() != null) {
             sb.append(" content:")
@@ -658,7 +659,7 @@ public class Sentence
         }
 
         if (logger.isFineEnabled()) {
-            logger.fine(this + " " + Glyph.toString("aliens", candidates));
+            logger.fine(this + " " + Glyphs.toString("aliens", candidates));
         }
 
         return candidates;

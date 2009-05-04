@@ -15,6 +15,7 @@ import omr.glyph.Evaluation;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphNetwork;
+import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 
 import omr.log.Logger;
@@ -465,10 +466,10 @@ public class ScoreChecker
         SystemInfo        systemInfo = oldSig.getSystem()
                                              .getInfo();
         Collection<Glyph> glyphs = systemInfo.lookupIntersectedGlyphs(
-            Glyph.getContourBox(oldSig.getGlyphs()));
+            Glyphs.getContourBox(oldSig.getGlyphs()));
 
         if (logger.isFineEnabled()) {
-            logger.fine("oldSig " + Glyph.toString(glyphs));
+            logger.fine("oldSig " + Glyphs.toString(glyphs));
         }
 
         Glyph compound = systemInfo.buildCompound(glyphs);

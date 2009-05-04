@@ -15,6 +15,7 @@ import omr.glyph.Glyph;
 import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphInspector.CompoundAdapter;
 import omr.glyph.GlyphSection;
+import omr.glyph.Glyphs;
 import omr.glyph.GlyphsBuilder;
 import omr.glyph.PatternsChecker;
 import omr.glyph.SlurInspector;
@@ -844,7 +845,7 @@ public class SystemInfo
         if (logger.isFineEnabled()) {
             logger.fine(
                 "removeInactiveGlyphs: " + toRemove.size() + " " +
-                Glyph.toString(toRemove));
+                Glyphs.toString(toRemove));
         }
 
         for (Glyph glyph : toRemove) {

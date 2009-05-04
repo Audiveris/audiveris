@@ -12,9 +12,9 @@ package omr.sheet;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
+import omr.glyph.Glyphs;
 
 import omr.log.Logger;
 
@@ -159,7 +159,7 @@ public class VerticalArea
         if (logger.isFineEnabled()) {
             logger.fine(
                 "End of scanning Vertical Area, found " + sticks.size() +
-                " stick(s): " + Glyph.toString(sticks));
+                " stick(s): " + Glyphs.toString(sticks));
         }
     }
 

@@ -10,6 +10,7 @@
 package omr.selection;
 
 import omr.glyph.Glyph;
+import omr.glyph.Glyphs;
 
 import java.util.Set;
 
@@ -72,6 +73,6 @@ public class GlyphSetEvent
     @Override
     protected String internalString ()
     {
-        return Glyph.toString(glyphs);
+        return Glyphs.toString(glyphs);
     }
 }

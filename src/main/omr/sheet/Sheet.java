@@ -14,6 +14,7 @@ import omr.Main;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
+import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.SymbolsModel;
 import omr.glyph.ui.SymbolsController;
@@ -911,14 +912,14 @@ public class Sheet
                         throw new IllegalArgumentException(
                             "getSystemOf. Glyphs from different systems (" +
                             getSystemOf(glyph) + " and " + system + ") " +
-                            Glyph.toString(glyphs));
+                            Glyphs.toString(glyphs));
                     }
                 }
             }
         }
 
         if (!toRemove.isEmpty()) {
-            logger.warning("No system for " + Glyph.toString(toRemove));
+            logger.warning("No system for " + Glyphs.toString(toRemove));
             glyphs.removeAll(toRemove);
         }
 

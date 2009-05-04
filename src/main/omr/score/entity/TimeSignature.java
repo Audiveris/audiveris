@@ -12,6 +12,7 @@ package omr.score.entity;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
+import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
@@ -311,7 +312,7 @@ public class TimeSignature
      */
     public boolean isManual ()
     {
-        return Glyph.containsManualShape(getGlyphs());
+        return Glyphs.containsManualShape(getGlyphs());
     }
 
     //-------//
@@ -361,7 +362,7 @@ public class TimeSignature
             if (!getGlyphs()
                      .isEmpty()) {
                 sb.append(" ")
-                  .append(Glyph.toString(getGlyphs()));
+                  .append(Glyphs.toString(getGlyphs()));
             }
         } catch (InvalidTimeSignature e) {
             sb.append(" INVALID");
