@@ -14,11 +14,9 @@ import omr.constant.ConstantSet;
 import omr.log.Logger;
 
 import omr.score.common.PixelRectangle;
-import omr.score.common.ScoreLocation;
 
 import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
-import omr.selection.ScoreLocationEvent;
 import omr.selection.SelectionHint;
 import static omr.selection.SelectionHint.*;
 import omr.selection.SelectionService;
