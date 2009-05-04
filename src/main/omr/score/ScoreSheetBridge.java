@@ -16,6 +16,8 @@ import omr.score.common.PageRectangle;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.common.ScoreLocation;
+import omr.score.common.SystemPoint;
+import omr.score.common.SystemRectangle;
 import omr.score.entity.ScoreSystem;
 
 import omr.selection.LocationEvent;
@@ -138,9 +140,14 @@ public class ScoreSheetBridge
                                 sheetLocation.rectangle.y +
                                 (sheetLocation.rectangle.height / 2)));
                         ScoreSystem system = score.pageLocateSystem(pagPt);
+
+                        // Convert to the point at the center of the rectangle
+                        SystemPoint sysPt = system.toSystemPoint(pagPt);
                         scoreLocation = new ScoreLocation(
                             system.getId(),
-                            system.toSystemRectangle(sheetLocation.rectangle));
+                            new SystemRectangle(sysPt.x, sysPt.y, 0, 0));
+
+                        ///system.toSystemRectangle(sheetLocation.rectangle));
                     }
 
                     eventService.publish(

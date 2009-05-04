@@ -239,10 +239,14 @@ public class RubberPanel
         rubber.setMouseMonitor(this);
     }
 
-    //---------------------//
-    // getSelectedLocation //
-    //---------------------//
-    public Rectangle getSelectedLocation ()
+    //----------------------//
+    // getSelectedRectangle //
+    //----------------------//
+    /**
+     * Report the rectangle currently selected, or null
+     * @return the absolute rectangle selected
+     */
+    public Rectangle getSelectedRectangle ()
     {
         LocationEvent locationEvent = (LocationEvent) locationService.getLastEvent(
             locationClass);
@@ -318,9 +322,15 @@ public class RubberPanel
             }
 
             if (event instanceof LocationEvent) {
-                LocationEvent locationEvent = (LocationEvent) event;
-                Rectangle     rect = getEventRectangle(locationEvent);
-                showFocusLocation(rect);
+                LocationEvent   locationEvent = (LocationEvent) event;
+                final Rectangle rect = getEventRectangle(locationEvent);
+                SwingUtilities.invokeLater(
+                    new Runnable() {
+                            public void run ()
+                            {
+                                showFocusLocation(rect);
+                            }
+                        });
             }
         } catch (Exception ex) {
             logger.warning(getClass().getName() + " onEvent error", ex);
@@ -406,7 +416,7 @@ public class RubberPanel
      *
      * @param rect the location information
      */
-    public void showFocusLocation (Rectangle rect)
+    public void showFocusLocation (final Rectangle rect)
     {
         if (logger.isFineEnabled()) {
             logger.fine(
@@ -424,25 +434,18 @@ public class RubberPanel
             // Check whether the rectangle is fully visible,
             // if not, scroll so as to make (most of) it visible
             Rectangle scaledRect = zoom.scaled(rect);
+            int       margin = constants.focusMargin.getValue();
 
-            // Needed to work around a strange behavior of 'contains' method
-            if (scaledRect.width == 0) {
-                scaledRect.width = 1;
-            }
-
-            if (scaledRect.height == 0) {
-                scaledRect.height = 1;
+            // Workaround
+            if (margin == 0) {
+                scaledRect.grow(1, 1);
+            } else {
+                scaledRect.grow(margin, margin);
             }
 
             if (!getVisibleRect()
                      .contains(scaledRect)) {
-                int margin = constants.focusMargin.getValue();
-                scrollRectToVisible(
-                    new Rectangle(
-                        zoom.scaled(rect.x) - margin,
-                        zoom.scaled(rect.y) - margin,
-                        zoom.scaled(rect.width + (2 * margin)),
-                        zoom.scaled(rect.height) + (2 * margin)));
+                scrollRectToVisible(scaledRect);
             }
         }
 
@@ -461,7 +464,7 @@ public class RubberPanel
     public void stateChanged (ChangeEvent e)
     {
         // Force a redisplay
-        showFocusLocation(getSelectedLocation());
+        showFocusLocation(getSelectedRectangle());
     }
 
     //-----------//

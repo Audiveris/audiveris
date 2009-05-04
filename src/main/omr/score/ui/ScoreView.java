@@ -173,6 +173,10 @@ public class ScoreView
     //----------------//
     // setOrientation //
     //----------------//
+    /**
+     * Dynamically change the orientation of the score display
+     * @param orientation the new orientation
+     */
     public void setOrientation (ScoreOrientation orientation)
     {
         this.orientation = orientation;
@@ -204,14 +208,6 @@ public class ScoreView
     public SystemView getSystemView (ScoreSystem system)
     {
         return getSystemView(system.getId());
-    }
-
-    //--------------//
-    // getViewIndex //
-    //--------------//
-    public int getViewIndex ()
-    {
-        return score.getViewIndex(this);
     }
 
     //-------//
@@ -422,7 +418,7 @@ public class ScoreView
 
         view.setModelSize(
             new Dimension(scoreContour.width, scoreContour.height));
-        /////////////////////////zoom.fireStateChanged();
+        zoom.fireStateChanged();
     }
 
     //-------------------//
@@ -433,7 +429,6 @@ public class ScoreView
      */
     private void createSystemViews ()
     {
-        ///logger.warning("createSystemViews", new Throwable("Bingo"));
         final int        highestTop = score.getHighestSystemTop();
         List<SystemView> views = new ArrayList<SystemView>();
         SystemView       prevSystemView = null;
@@ -591,6 +586,40 @@ public class ScoreView
         }
 
         //~ Methods ------------------------------------------------------------
+
+        //----------------------//
+        // getSelectedRectangle //
+        //----------------------//
+        /**
+         * This method overrides the computation of selected rectangle, because
+         * the score location is a combination of system id and of a system
+         * rectangle relative to the system. So we must compute the related
+         * absolute rectangle
+         * @return the absolute (non system-based) selected rectangle, if any
+         */
+        @Override
+        public Rectangle getSelectedRectangle ()
+        {
+            ScoreLocationEvent locationEvent = (ScoreLocationEvent) locationService.getLastEvent(
+                locationClass);
+
+            if (locationEvent != null) {
+                ScoreLocation scoreLocation = locationEvent.location;
+
+                if (scoreLocation != null) {
+                    SystemRectangle rect = scoreLocation.rectangle;
+
+                    if (rect != null) {
+                        int        id = scoreLocation.systemId;
+                        SystemView systemView = getSystemView(id);
+
+                        return systemView.toScoreRectangle(rect);
+                    }
+                }
+            }
+
+            return null;
+        }
 
         //-----------------//
         // contextSelected //

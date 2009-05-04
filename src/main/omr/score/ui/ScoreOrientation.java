@@ -28,8 +28,9 @@ public enum ScoreOrientation {
     // Constant //
     //----------//
     /**
-     * Class <code>StepConstant</code> is a subclass of
-     * {@link omr.constant.Constant}, meant to store a {@link Step} value.
+     * Class <code>Constant</code> is a subclass of
+     * {@link omr.constant.Constant}, meant to persist a
+     * {@link ScoreOrientation} value.
      */
     public static class Constant
         extends omr.constant.Constant
@@ -39,7 +40,7 @@ public enum ScoreOrientation {
          *
          * @param unit         the enclosing unit
          * @param name         the constant name
-         * @param defaultValue the default Step value
+         * @param defaultValue the default orientation value
          * @param description  the semantic of the constant
          */
         public Constant (java.lang.String unit,
@@ -54,7 +55,7 @@ public enum ScoreOrientation {
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later
          *
-         * @param defaultValue the default Step value
+         * @param defaultValue the default orientation value
          * @param description  the semantic of the constant
          */
         public Constant (ScoreOrientation defaultValue,
@@ -92,7 +93,7 @@ public enum ScoreOrientation {
         /**
          * Set a new value to the constant
          *
-         * @param val the new orientation value
+         * @param string the new orientation value
          */
         @Override
         public void setValue (java.lang.String string)
