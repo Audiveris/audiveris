@@ -28,6 +28,50 @@ public class PatternsChecker
     private static final Logger logger = Logger.getLogger(
         PatternsChecker.class);
 
+    /** Sequence of patterns to run */
+    private static Pattern[] patterns = new Pattern[] {
+                                            
+    //
+    new Pattern("Clef") {
+            public int run (SystemInfo system)
+            {
+                return system.runClefPattern();
+            }
+        }
+    ,
+                                            
+    new Pattern("Alter") {
+            public int run (SystemInfo system)
+            {
+                return system.runAlterPattern();
+            }
+        }
+    ,
+                                            
+    new Pattern("Stem") {
+            public int run (SystemInfo system)
+            {
+                return system.runStemPattern();
+            }
+        }
+    ,
+                                            
+    new Pattern("Slur") {
+            public int run (SystemInfo system)
+            {
+                return system.runSlurPattern();
+            }
+        }
+    ,
+                                            
+    new Pattern("Text") {
+            public int run (SystemInfo system)
+            {
+                return system.runTextPattern();
+            }
+        }
+                                        };
+
     //~ Instance fields --------------------------------------------------------
 
     /** Dedicated system */
@@ -43,7 +87,7 @@ public class PatternsChecker
      *
      * @param system the dedicated system
      */
-    public PatternsChecker (SystemInfo system)
+    public PatternsChecker (final SystemInfo system)
     {
         this.system = system;
     }
@@ -54,48 +98,56 @@ public class PatternsChecker
     // runPatterns //
     //-------------//
     /**
-     * Run the whole series of pattern on the glyphs of the dedicated system
-     *
-     * @return true if some progress has been made
+     * Run the sequence of pattern on the dedicated system
+     * @return the number of modifications made
      */
     public boolean runPatterns ()
     {
-        int clefModifs = 0;
-        int alterModifs = 0;
-        int stemModifs = 0;
-        int slurModifs = 0;
-        int textModifs = 0;
-        // Clefs
-        system.removeInactiveGlyphs();
-        clefModifs = system.runClefPattern();
+        int           totalModifs = 0;
+        StringBuilder sb = new StringBuilder();
 
-        // Close Stems (sharps & naturals)
-        system.removeInactiveGlyphs();
-        alterModifs = system.runAlterPattern();
+        for (Pattern pattern : patterns) {
+            system.inspectGlyphs(GlyphInspector.getLeafMaxDoubt());
 
-        // Stems
-        system.removeInactiveGlyphs();
-        stemModifs = system.runStemPattern();
+            int modifs = pattern.run(system);
 
-        // Slurs
-        system.removeInactiveGlyphs();
-        system.retrieveGlyphs();
-        slurModifs = system.runSlurPattern();
+            if (logger.isFineEnabled()) {
+                sb.append(" ")
+                  .append(pattern.name)
+                  .append(":")
+                  .append(modifs);
+            }
 
-        // Texts
-        system.removeInactiveGlyphs();
-        system.retrieveGlyphs();
-        textModifs = system.runTextPattern();
-
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "System#" + system.getId() + " clef:" + clefModifs + " alter:" +
-                alterModifs + " stems:" + stemModifs + " slurs:" + slurModifs +
-                " texts:" + textModifs);
+            totalModifs += modifs;
         }
 
-        // Progress made?
-        return (clefModifs + alterModifs + stemModifs + slurModifs +
-               textModifs) > 0;
+        if (logger.isFineEnabled()) {
+            logger.fine("S#" + system.getId() + " Patterns" + sb);
+        }
+
+        return totalModifs != 0;
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //---------//
+    // Pattern //
+    //---------//
+    private abstract static class Pattern
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        public final String name;
+
+        //~ Constructors -------------------------------------------------------
+
+        public Pattern (String name)
+        {
+            this.name = name;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        public abstract int run (SystemInfo system);
     }
 }

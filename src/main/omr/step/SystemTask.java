@@ -41,13 +41,11 @@ public abstract class SystemTask
     //------------//
     /**
      * Create a system-based task for a given sheet
-     * @param sheet the related sheet
      * @param step the step that governs this task
      */
-    protected SystemTask (Sheet sheet,
-                          Step  step)
+    protected SystemTask (Step step)
     {
-        super(sheet, step);
+        super(step);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -57,10 +55,12 @@ public abstract class SystemTask
     //----------//
     /**
      * Actually perform the step on the given system
+     * @param sheet the related sheet
      * @param system the system on which the step must be performed
      * @throws StepException raised if processing failed
      */
-    public abstract void doSystem (SystemInfo system)
+    public abstract void doSystem (Sheet      sheet,
+                                   SystemInfo system)
         throws StepException;
 
     //------//
@@ -72,17 +72,18 @@ public abstract class SystemTask
      * @param systems systems to process (null means all systems)
      * @throws StepException raised if processing failed
      */
-    public void doit (Collection<SystemInfo> systems)
+    public void doit (Sheet                  sheet,
+                      Collection<SystemInfo> systems)
         throws StepException
     {
         // Preliminary actions
-        doProlog(systems);
+        doProlog(sheet, systems);
 
         // Processing system per system
-        doitPerSystem(systems);
+        doitPerSystem(sheet, systems);
 
         // Final actions
-        doEpilog(systems);
+        doEpilog(sheet, systems);
     }
 
     //----------//
@@ -90,10 +91,12 @@ public abstract class SystemTask
     //----------//
     /**
      * Final processing for this step, once all systems have been processed
+     * @param sheet the related sheet
      * @param systems the systems which have been updated
      * @throws StepException raised if processing failed
      */
-    protected void doEpilog (Collection<SystemInfo> systems)
+    protected void doEpilog (Sheet                  sheet,
+                             Collection<SystemInfo> systems)
         throws StepException
     {
         // Empty by default
@@ -105,10 +108,12 @@ public abstract class SystemTask
     /**
      * Do preliminary common work before all systems processings are launched in
      * parallel
+     * @param sheet the related sheet
      * @param systems the systems which will be updated
      * @throws StepException raised if processing failed
      */
-    protected void doProlog (Collection<SystemInfo> systems)
+    protected void doProlog (Sheet                  sheet,
+                             Collection<SystemInfo> systems)
         throws StepException
     {
         // Empty by default
@@ -117,7 +122,8 @@ public abstract class SystemTask
     //---------------//
     // doitPerSystem //
     //---------------//
-    private void doitPerSystem (Collection<SystemInfo> systems)
+    private void doitPerSystem (final Sheet            sheet,
+                                Collection<SystemInfo> systems)
     {
         try {
             Collection<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
@@ -140,7 +146,7 @@ public abstract class SystemTask
                                             system.getId());
                                     }
 
-                                    doSystem(system);
+                                    doSystem(sheet, system);
                                 } catch (Exception ex) {
                                     logger.warning(
                                         "Interrupt on " + system,

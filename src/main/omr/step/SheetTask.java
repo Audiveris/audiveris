@@ -33,9 +33,6 @@ public abstract class SheetTask
 
     //~ Instance fields --------------------------------------------------------
 
-    /** The related sheet */
-    protected final Sheet sheet;
-
     /** The related step for this task */
     protected final Step step;
 
@@ -52,13 +49,10 @@ public abstract class SheetTask
     //-----------//
     /**
      * Creates a task at sheet level
-     * @param sheet the processed sheet
      * @param step the step performed by the task
      */
-    protected SheetTask (Sheet sheet,
-                         Step  step)
+    protected SheetTask (Step step)
     {
-        this.sheet = sheet;
         this.step = step;
     }
 
@@ -69,8 +63,9 @@ public abstract class SheetTask
     //-----------//
     /**
      * Make the related user interface visible for this step
+     * @param sheet the related sheet
      */
-    public void displayUI ()
+    public void displayUI (Sheet sheet)
     {
         // Void by default
     }
@@ -80,9 +75,12 @@ public abstract class SheetTask
     //------//
     /**
      * Actually perform the step
+     * @param sheet the related sheet
+     * @param systems the collection of systems to process
      * @throws StepException raised if processing failed
      */
-    public abstract void doit (Collection<SystemInfo> systems)
+    public abstract void doit (Sheet                  sheet,
+                               Collection<SystemInfo> systems)
         throws StepException;
 
     //--------//
@@ -114,14 +112,16 @@ public abstract class SheetTask
     //--------//
     /**
      * Run the step
+     * @param sheet the related sheet
      * @param systems systems to process (null means all systems)
      * @throws StepException raised if processing failed
      */
-    public void doStep (Collection<SystemInfo> systems)
+    public void doStep (Sheet                  sheet,
+                        Collection<SystemInfo> systems)
         throws StepException
     {
         started();
-        doit(systems);
+        doit(sheet, systems);
         done();
     }
 

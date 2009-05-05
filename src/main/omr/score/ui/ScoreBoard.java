@@ -116,7 +116,7 @@ public class ScoreBoard
                         {
                             score.getSheet()
                                  .getSheetSteps()
-                                 .rebuildAfter(Step.LEAVES, null, null, true);
+                                 .rebuildAfter(Step.VERTICALS, null, null, true);
 
                             return null;
                         }

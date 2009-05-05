@@ -61,13 +61,31 @@ public class SheetSteps
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(SheetSteps.class);
 
+    /** The tasks that relate to each step */
+    private static final Map<Step, SheetTask> tasks = new LinkedHashMap<Step, SheetTask>();
+
+    static {
+        // Register all tasks
+        tasks.put(LOAD, new LoadTask(LOAD));
+        tasks.put(SCALE, new ScaleTask(SCALE));
+        tasks.put(SKEW, new SkewTask(SKEW));
+        tasks.put(LINES, new LinesTask(LINES));
+        tasks.put(HORIZONTALS, new HorizontalsTask(HORIZONTALS));
+        tasks.put(SYSTEMS, new SystemsTask(SYSTEMS));
+        tasks.put(MEASURES, new MeasuresTask(MEASURES));
+        tasks.put(SYMBOLS, new SymbolsTask(SYMBOLS));
+        tasks.put(VERTICALS, new VerticalsTask(VERTICALS));
+        tasks.put(PATTERNS, new PatternsTask(PATTERNS));
+        tasks.put(SCORE, new ScoreTask(SCORE));
+        tasks.put(PLAY, new PlayTask(PLAY));
+        tasks.put(MIDI, new MidiWriteTask(MIDI));
+        tasks.put(EXPORT, new ExportTask(EXPORT));
+    }
+
     //~ Instance fields --------------------------------------------------------
 
     /** The related sheet instance */
     private final Sheet sheet;
-
-    /** The tasks that relate to each step */
-    private final Map<Step, SheetTask> tasks = new LinkedHashMap<Step, SheetTask>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -81,23 +99,6 @@ public class SheetSteps
     public SheetSteps (Sheet sheet)
     {
         this.sheet = sheet;
-
-        // Register all tasks
-        tasks.put(LOAD, new LoadTask(sheet, LOAD));
-        tasks.put(SCALE, new ScaleTask(sheet, SCALE));
-        tasks.put(SKEW, new SkewTask(sheet, SKEW));
-        tasks.put(LINES, new LinesTask(sheet, LINES));
-        tasks.put(HORIZONTALS, new HorizontalsTask(sheet, HORIZONTALS));
-        tasks.put(SYSTEMS, new SystemsTask(sheet, SYSTEMS));
-        tasks.put(MEASURES, new MeasuresTask(sheet, MEASURES));
-        tasks.put(SYMBOLS, new SymbolsTask(sheet, SYMBOLS));
-        tasks.put(VERTICALS, new VerticalsTask(sheet, VERTICALS));
-        tasks.put(LEAVES, new LeavesTask(sheet, LEAVES));
-        tasks.put(PATTERNS, new PatternsTask(sheet, PATTERNS));
-        tasks.put(SCORE, new ScoreTask(sheet, SCORE));
-        tasks.put(PLAY, new PlayTask(sheet, PLAY));
-        tasks.put(MIDI, new MidiWriteTask(sheet, MIDI));
-        tasks.put(EXPORT, new ExportTask(sheet, EXPORT));
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -162,7 +163,7 @@ public class SheetSteps
     public void displayUI (Step step)
     {
         getTask(step)
-            .displayUI();
+            .displayUI(sheet);
     }
 
     //--------//
@@ -179,7 +180,7 @@ public class SheetSteps
         throws StepException
     {
         getTask(step)
-            .doStep(systems);
+            .doStep(sheet, systems);
     }
 
     //--------------//
@@ -255,7 +256,7 @@ public class SheetSteps
      * @param step the provided step
      * @return the actual task (SheetTask or SystemTask)
      */
-    private SheetTask getTask (Step step)
+    private static SheetTask getTask (Step step)
     {
         return tasks.get(step);
     }
@@ -292,16 +293,16 @@ public class SheetSteps
     {
         //~ Constructors -------------------------------------------------------
 
-        ExportTask (Sheet sheet,
-                    Step  step)
+        ExportTask (Step step)
         {
-            super(sheet, step);
+            super(step);
         }
 
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public void doit (Collection<SystemInfo> unused)
+        public void doit (Sheet                  sheet,
+                          Collection<SystemInfo> unused)
             throws StepException
         {
             ScoreManager.getInstance()
@@ -320,16 +321,16 @@ public class SheetSteps
     {
         //~ Constructors -------------------------------------------------------
 
-        HorizontalsTask (Sheet sheet,
-                         Step  step)
+        HorizontalsTask (Step step)
         {
-            super(sheet, step);
+            super(step);
         }
 
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public void doit (Collection<SystemInfo> unused)
+        public void doit (Sheet                  sheet,
+                          Collection<SystemInfo> unused)
             throws StepException
         {
             sheet.setHorizontalsBuilder(new HorizontalsBuilder(sheet));
@@ -348,16 +349,16 @@ public class SheetSteps
     {
         //~ Constructors -------------------------------------------------------
 
-        LinesTask (Sheet sheet,
-                   Step  step)
+        LinesTask (Step step)
         {
-            super(sheet, step);
+            super(step);
         }
 
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public void doit (Collection<SystemInfo> unused)
+        public void doit (Sheet                  sheet,
+                          Collection<SystemInfo> unused)
             throws StepException
         {
             sheet.setLinesBuilder(new LinesBuilder(sheet));
@@ -381,16 +382,16 @@ public class SheetSteps
 
         //~ Constructors -------------------------------------------------------
 
-        LoadTask (Sheet sheet,
-                  Step  step)
+        LoadTask (Step step)
         {
-            super(sheet, step);
+            super(step);
         }
 
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public void doit (Collection<SystemInfo> unused)
+        public void doit (Sheet                  sheet,
+                          Collection<SystemInfo> unused)
             throws StepException
         {
             File imageFile = sheet.getImageFile();
@@ -430,34 +431,35 @@ public class SheetSteps
     /**
      * Step to retrieve  measures
      */
-    private class MeasuresTask
+    private static class MeasuresTask
         extends SystemTask
     {
         //~ Constructors -------------------------------------------------------
 
-        MeasuresTask (Sheet sheet,
-                      Step  step)
+        MeasuresTask (Step step)
         {
-            super(sheet, step);
+            super(step);
         }
 
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public void displayUI ()
+        public void displayUI (Sheet sheet)
         {
             Main.getGui().scoreController.setScoreView(sheet.getScore());
         }
 
         @Override
-        public void doSystem (SystemInfo system)
+        public void doSystem (Sheet      sheet,
+                              SystemInfo system)
             throws StepException
         {
             system.buildMeasures(); // For Measures
         }
 
         @Override
-        protected void doEpilog (Collection<SystemInfo> systems)
+        protected void doEpilog (Sheet                  sheet,
+                                 Collection<SystemInfo> systems)
             throws StepException
         {
             if (logger.isFineEnabled()) {
@@ -483,16 +485,16 @@ public class SheetSteps
     {
         //~ Constructors -------------------------------------------------------
 
-        MidiWriteTask (Sheet sheet,
-                       Step  step)
+        MidiWriteTask (Step step)
         {
-            super(sheet, step);
+            super(step);
         }
 
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public void doit (Collection<SystemInfo> unused)
+        public void doit (Sheet                  sheet,
+                          Collection<SystemInfo> unused)
             throws StepException
         {
             try {
@@ -504,107 +506,6 @@ public class SheetSteps
         }
     }
 
-    //-----------//
-    // ScaleTask //
-    //-----------//
-    /**
-     * Step to determine the main scale of the sheet. The scale is the mean
-     * distance, in pixels, between two consecutive staff lines. This is based
-     * on the population of vertical runs, since most frequent foreground runs
-     * come from staff lines, and most frequent background runs come from inter
-     * staff lines.
-     */
-    private static class ScaleTask
-        extends SheetTask
-    {
-        //~ Constructors -------------------------------------------------------
-
-        ScaleTask (Sheet sheet,
-                   Step  step)
-        {
-            super(sheet, step);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public void doit (Collection<SystemInfo> unused)
-            throws StepException
-        {
-            Scale scale = new Scale(sheet);
-            sheet.setScale(scale);
-        }
-    }
-
-    //-------------//
-    // SystemsTask //
-    //-------------//
-    /**
-     * Step to retrieve bar sticks, and thus systems
-     */
-    private static class SystemsTask
-        extends SheetTask
-    {
-        //~ Constructors -------------------------------------------------------
-
-        SystemsTask (Sheet sheet,
-                     Step  step)
-        {
-            super(sheet, step);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public void displayUI ()
-        {
-            Main.getGui().scoreController.setScoreView(sheet.getScore());
-        }
-
-        @Override
-        public void doit (Collection<SystemInfo> systems)
-            throws StepException
-        {
-            sheet.getSystemsBuilder()
-                 .buildSystems();
-        }
-    }
-
-    //------------//
-    // LeavesTask //
-    //------------//
-    /**
-     * Step to extract newly segmented leaves, since sections belonging to stems
-     * are properly assigned.
-     */
-    private class LeavesTask
-        extends SystemTask
-    {
-        //~ Constructors -------------------------------------------------------
-
-        LeavesTask (Sheet sheet,
-                    Step  step)
-        {
-            super(sheet, step);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public void displayUI ()
-        {
-            getTask(SYMBOLS)
-                .displayUI();
-        }
-
-        @Override
-        public void doSystem (SystemInfo system)
-            throws StepException
-        {
-            system.inspectGlyphs(GlyphInspector.getLeafMaxDoubt());
-        }
-    }
-
     //--------------//
     // PatternsTask //
     //--------------//
@@ -612,40 +513,30 @@ public class SheetSteps
      * Step to run processing of specific patterns arounds clefs, sharps,
      * naturals, stems, slurs, ect
      */
-    private class PatternsTask
+    private static class PatternsTask
         extends SystemTask
     {
         //~ Constructors -------------------------------------------------------
 
-        PatternsTask (Sheet sheet,
-                      Step  step)
+        PatternsTask (Step step)
         {
-            super(sheet, step);
-
-            //            // Get notified of any modification in score language
-            //            sheet.getScore()
-            //                 .addLanguageListener(
-            //                new ChangeListener() {
-            //                        public void stateChanged (ChangeEvent e)
-            //                        {
-            //                            logger.warning("PatternsTask got notified.");
-            //                        }
-            //                    });
+            super(step);
         }
 
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public void displayUI ()
+        public void displayUI (Sheet sheet)
         {
             getTask(SYMBOLS)
-                .displayUI();
+                .displayUI(sheet);
             getTask(VERTICALS)
-                .displayUI();
+                .displayUI(sheet);
         }
 
         @Override
-        public void doSystem (SystemInfo system)
+        public void doSystem (Sheet      sheet,
+                              SystemInfo system)
             throws StepException
         {
             system.getSentences()
@@ -671,19 +562,51 @@ public class SheetSteps
     {
         //~ Constructors -------------------------------------------------------
 
-        PlayTask (Sheet sheet,
-                  Step  step)
+        PlayTask (Step step)
         {
-            super(sheet, step);
+            super(step);
         }
 
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public void doit (Collection<SystemInfo> unused)
+        public void doit (Sheet                  sheet,
+                          Collection<SystemInfo> unused)
             throws StepException
         {
             new MidiActions.PlayTask(sheet.getScore(), null).execute();
+        }
+    }
+
+    //-----------//
+    // ScaleTask //
+    //-----------//
+    /**
+     * Step to determine the main scale of the sheet. The scale is the mean
+     * distance, in pixels, between two consecutive staff lines. This is based
+     * on the population of vertical runs, since most frequent foreground runs
+     * come from staff lines, and most frequent background runs come from inter
+     * staff lines.
+     */
+    private static class ScaleTask
+        extends SheetTask
+    {
+        //~ Constructors -------------------------------------------------------
+
+        ScaleTask (Step step)
+        {
+            super(step);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void doit (Sheet                  sheet,
+                          Collection<SystemInfo> unused)
+            throws StepException
+        {
+            Scale scale = new Scale(sheet);
+            sheet.setScale(scale);
         }
     }
 
@@ -693,29 +616,29 @@ public class SheetSteps
     /**
      * Step to translate recognized glyphs into score items
      */
-    private class ScoreTask
+    private static class ScoreTask
         extends SystemTask
     {
         //~ Constructors -------------------------------------------------------
 
-        ScoreTask (Sheet sheet,
-                   Step  step)
+        ScoreTask (Step step)
         {
-            super(sheet, step);
+            super(step);
         }
 
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public void displayUI ()
+        public void displayUI (Sheet sheet)
         {
             // Symbols may have been updated (beam hooks for example)
             getTask(SYMBOLS)
-                .displayUI();
+                .displayUI(sheet);
         }
 
         @Override
-        public void doEpilog (Collection<SystemInfo> systems)
+        public void doEpilog (Sheet                  sheet,
+                              Collection<SystemInfo> systems)
             throws StepException
         {
             if (logger.isFineEnabled()) {
@@ -735,7 +658,8 @@ public class SheetSteps
         }
 
         @Override
-        public void doSystem (SystemInfo system)
+        public void doSystem (Sheet      sheet,
+                              SystemInfo system)
             throws StepException
         {
             final int         iterNb = constants.MaxScoreIterations.getValue();
@@ -794,16 +718,16 @@ public class SheetSteps
     {
         //~ Constructors -------------------------------------------------------
 
-        SkewTask (Sheet sheet,
-                  Step  step)
+        SkewTask (Step step)
         {
-            super(sheet, step);
+            super(step);
         }
 
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public void doit (Collection<SystemInfo> unused)
+        public void doit (Sheet                  sheet,
+                          Collection<SystemInfo> unused)
             throws StepException
         {
             sheet.setSkewBuilder(new SkewBuilder(sheet));
@@ -818,31 +742,65 @@ public class SheetSteps
      * Step to process all glyphs, built with connected sections from the
      * current collection of non-recognized sections.
      */
-    private class SymbolsTask
+    private static class SymbolsTask
         extends SystemTask
     {
         //~ Constructors -------------------------------------------------------
 
-        SymbolsTask (Sheet sheet,
-                     Step  step)
+        SymbolsTask (Step step)
         {
-            super(sheet, step);
+            super(step);
         }
 
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public void displayUI ()
+        public void displayUI (Sheet sheet)
         {
             sheet.getSymbolsEditor()
                  .refresh();
         }
 
         @Override
-        public void doSystem (SystemInfo system)
+        public void doSystem (Sheet      sheet,
+                              SystemInfo system)
             throws StepException
         {
             system.inspectGlyphs(GlyphInspector.getSymbolMaxDoubt());
+        }
+    }
+
+    //-------------//
+    // SystemsTask //
+    //-------------//
+    /**
+     * Step to retrieve bar sticks, and thus systems
+     */
+    private static class SystemsTask
+        extends SheetTask
+    {
+        //~ Constructors -------------------------------------------------------
+
+        SystemsTask (Step step)
+        {
+            super(step);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void displayUI (Sheet sheet)
+        {
+            Main.getGui().scoreController.setScoreView(sheet.getScore());
+        }
+
+        @Override
+        public void doit (Sheet                  sheet,
+                          Collection<SystemInfo> systems)
+            throws StepException
+        {
+            sheet.getSystemsBuilder()
+                 .buildSystems();
         }
     }
 
@@ -854,21 +812,20 @@ public class SheetSteps
      * recognize newly segmented leaves, since sections belonging to stems are
      * properly assigned.
      */
-    private class VerticalsTask
+    private static class VerticalsTask
         extends SystemTask
     {
         //~ Constructors -------------------------------------------------------
 
-        VerticalsTask (Sheet sheet,
-                       Step  step)
+        VerticalsTask (Step step)
         {
-            super(sheet, step);
+            super(step);
         }
 
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public void displayUI ()
+        public void displayUI (Sheet sheet)
         {
             // Create verticals display
             sheet.getVerticalsController()
@@ -876,7 +833,8 @@ public class SheetSteps
         }
 
         @Override
-        public void doSystem (SystemInfo system)
+        public void doSystem (Sheet      sheet,
+                              SystemInfo system)
             throws StepException
         {
             system.retrieveVerticals();

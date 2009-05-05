@@ -82,12 +82,6 @@ public enum Step {
     VERTICALS(true, "Verticals", "Extract verticals"), 
 
     /**
-     * Process leaves, which are glyphs attached to stems and aggregates unknown
-     * leaves into compound glyphs
-     */
-    LEAVES(true, SYMBOLS.label, "Recognize Leaves & Compounds"), 
-
-    /**
      * Process specific patterns (true,clefs, sharps, naturals, stems, slurs, ...)
      */
     PATTERNS(true, SYMBOLS.label, "Specific patterns"), 
