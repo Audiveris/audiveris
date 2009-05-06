@@ -59,9 +59,17 @@ public class StepMenu
             menu = new JMenu();
         }
 
+        Step prevStep = null;
+
         // List of Steps classes in proper order
         for (Step step : Step.values()) {
+            if ((prevStep != null) &&
+                (prevStep.isMandatory != step.isMandatory)) {
+                menu.addSeparator();
+            }
+
             menu.add(new StepItem(step));
+            prevStep = step;
         }
 
         // Listener to modify attributes on-the-fly
@@ -143,16 +151,14 @@ public class StepMenu
     // StepItem //
     //----------//
     /**
-     * Class <code>StepItem</code> implements a menu item linked to a given step
+     * Class <code>StepItem</code> implements a checkable menu item
+     * linked to a given step
      */
     private static class StepItem
         extends JCheckBoxMenuItem
     {
         //~ Constructors -------------------------------------------------------
 
-        //----------//
-        // StepItem //
-        //----------//
         public StepItem (Step step)
         {
             super(new StepAction(step));
@@ -160,9 +166,6 @@ public class StepMenu
 
         //~ Methods ------------------------------------------------------------
 
-        //--------------//
-        // displayState //
-        //--------------//
         public void displayState (Sheet sheet)
         {
             StepAction action = (StepAction) getAction();
@@ -176,10 +179,10 @@ public class StepMenu
                                               .isDone(action.step);
 
                     setState(done);
-                    setEnabled(!done);
+                    action.setEnabled(!done);
                 } else {
                     setState(false);
-                    setEnabled(true);
+                    action.setEnabled(true);
                 }
             }
         }
@@ -216,10 +219,9 @@ public class StepMenu
             for (int i = 0; i < menu.getItemCount(); i++) {
                 JMenuItem menuItem = menu.getItem(i);
 
+                // Adjust the status for each step
                 if (menuItem instanceof StepItem) {
                     StepItem item = (StepItem) menuItem;
-
-                    // Adjust the status for each step
                     item.displayState(sheet);
                 }
             }
