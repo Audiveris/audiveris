@@ -738,6 +738,9 @@ public class GlyphInspector
                    ((glyph.getShape() == Shape.DOT) ||
                    (glyph.getShape() == Shape.SLUR) ||
                    (glyph.getShape() == Shape.CLUTTER) ||
+                   (glyph.getShape() == Shape.VOID_NOTEHEAD) ||
+                   (glyph.getShape() == Shape.VOID_NOTEHEAD_2) ||
+                   (glyph.getShape() == Shape.VOID_NOTEHEAD_3) ||
                    (glyph.getDoubt() >= getMinCompoundPartDoubt()))));
         }
 
@@ -780,10 +783,10 @@ public class GlyphInspector
             1.2,
             "Maximum doubt for cleanup phase");
         Evaluation.Doubt leafMaxDoubt = new Evaluation.Doubt(
-            1.01,
+            1.2,
             "Maximum acceptance doubt for a leaf");
         Evaluation.Doubt symbolMaxDoubt = new Evaluation.Doubt(
-            1.0001,
+            1.2,
             "Maximum doubt for a symbol");
         Evaluation.Doubt textMaxDoubt = new Evaluation.Doubt(
             3.0,
