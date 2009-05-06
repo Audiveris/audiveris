@@ -1254,6 +1254,11 @@ public class Glyph
             return 0;
         }
 
+        if (this.getContourBox() == null) {
+            omr.util.Dumper.dump(this);
+            logger.warning("BINGO: Glyph w/ no contourbox " + this);
+        }
+
         Point ref = this.getContourBox()
                         .getLocation();
         Point otherRef = other.getContourBox()

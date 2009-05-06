@@ -179,6 +179,18 @@ public class BeamItem
         return center;
     }
 
+    //----------//
+    // getGlyph //
+    //----------//
+    /**
+     * Report the underlying glyph
+     * @return the underlying glyph
+     */
+    public Glyph getGlyph ()
+    {
+        return glyph;
+    }
+
     //--------//
     // isHook //
     //--------//

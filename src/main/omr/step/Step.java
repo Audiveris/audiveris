@@ -9,8 +9,6 @@
 //
 package omr.step;
 
-import omr.glyph.Glyph;
-
 import omr.log.Logger;
 
 import omr.script.StepTask;
@@ -82,9 +80,10 @@ public enum Step {
     VERTICALS(true, "Verticals", "Extract verticals"), 
 
     /**
-     * Process specific patterns (true,clefs, sharps, naturals, stems, slurs, ...)
+     * Process specific patterns at sheet glyph level
+     * (true,clefs, sharps, naturals, stems, slurs, ...)
      */
-    PATTERNS(true, SYMBOLS.label, "Specific patterns"), 
+    PATTERNS(true, SYMBOLS.label, "Specific sheet glyph patterns"), 
 
     /**
      * Translate glyphs into score entities

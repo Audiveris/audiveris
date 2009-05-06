@@ -104,13 +104,13 @@ public class SystemTranslator
     //~ Methods ----------------------------------------------------------------
 
     //----------------//
-    // TranslateFinal //
+    // translateFinal //
     //----------------//
     /**
      * Final actions to be done, starting on this first impacted system,
      * until the very last system in the score
      */
-    public void TranslateFinal ()
+    public void translateFinal ()
     {
         system = systemInfo.getScoreSystem();
 

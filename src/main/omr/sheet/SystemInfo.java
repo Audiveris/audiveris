@@ -93,7 +93,7 @@ public class SystemInfo
     /** Dedicated system translator */
     private final SystemTranslator translator;
 
-    /** Dedicated patterns checker */
+    /** Dedicated glyph patterns checker */
     private final PatternsChecker patternsChecker;
 
     /** Staves of this system */
@@ -1174,7 +1174,7 @@ public class SystemInfo
      */
     public void translateFinal ()
     {
-        translator.TranslateFinal();
+        translator.translateFinal();
     }
 
     //-----------------//

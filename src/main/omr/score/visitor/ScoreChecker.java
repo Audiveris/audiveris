@@ -23,6 +23,7 @@ import omr.log.Logger;
 import omr.score.Score;
 import omr.score.common.PixelRectangle;
 import omr.score.common.SystemPoint;
+import omr.score.entity.Beam;
 import omr.score.entity.BeamGroup;
 import omr.score.entity.Chord;
 import omr.score.entity.Dynamics;
@@ -34,6 +35,8 @@ import omr.score.entity.TimeSignature.InvalidTimeSignature;
 
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
+
+import omr.util.Wrapper;
 
 import java.util.*;
 
@@ -62,7 +65,7 @@ public class ScoreChecker
 
     //~ Instance fields --------------------------------------------------------
 
-    private final boolean[] modified;
+    private final Wrapper<Boolean> modified;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -73,12 +76,112 @@ public class ScoreChecker
      * Creates a new ScoreChecker object.
      * @param modified An out parameter, to tell if entities have been modified
      */
-    public ScoreChecker (boolean[] modified)
+    public ScoreChecker (Wrapper<Boolean> modified)
     {
         this.modified = modified;
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //------------//
+    // visit Beam //
+    //------------//
+    /**
+     * Check that all beam hooks are legal
+     * @param beam the beam to check
+     * @return true
+     */
+    @Override
+    public boolean visit (Beam beam)
+    {
+        if (!beam.isHook()) {
+            return true;
+        }
+
+        Glyph            glyph = beam.getItems()
+                                     .first()
+                                     .getGlyph();
+        SortedSet<Chord> chords = beam.getChords();
+
+        if (chords.size() > 1) {
+            beam.addError(glyph, "Beam hook connected to several chords");
+
+            return true;
+        }
+
+        // Check that there is at least one full beam on the same chord
+        for (Beam b : chords.first()
+                            .getBeams()) {
+            if (!b.isHook()) {
+                return true;
+            }
+        }
+
+        // No real beam found on the same chord, so let's discard the hook
+        logger.info("Removing false beam hook glyph#" + glyph.getId());
+        glyph.setShape(null);
+        modified.value = true;
+
+        return true;
+    }
+
+    //----------------//
+    // visit Dynamics //
+    //----------------//
+    /**
+     * Check that each dynamics shape can be computed
+     * @param dynamics the dynamics item
+     * @return true
+     */
+    @Override
+    public boolean visit (Dynamics dynamics)
+    {
+        dynamics.getShape();
+
+        return true;
+    }
+
+    //---------------//
+    // visit Measure //
+    //---------------//
+    /**
+     * This method is used to detect & fix unrecognized beam hooks
+     * @param measure the measure to browse
+     * @return true. The real output is stored in the modified[] array which is
+     * used to return a boolean if at least a beam_hook has been fixed.
+     */
+    @Override
+    public boolean visit (Measure measure)
+    {
+        ///logger.info("Checking " + measure);
+        final Scale       scale = measure.getScale();
+        final int         xMargin = scale.toPixels(constants.stemXMargin);
+        final int         yMargin = scale.toPixels(constants.stemYMargin);
+        final ScoreSystem system = measure.getSystem();
+        final SystemInfo  systemInfo = system.getInfo();
+
+        // Check the beam groups for non-recognized hooks
+        for (BeamGroup group : measure.getBeamGroups()) {
+            SortedSet<Chord> chords = group.getChords();
+
+            for (Chord chord : chords) {
+                Glyph stem = chord.getStem();
+
+                if (stem != null) { // We could have rests w/o stem!
+
+                    final PixelRectangle box = stem.getContourBox();
+                    box.grow(xMargin, yMargin);
+
+                    final Collection<Glyph> glyphs = systemInfo.lookupIntersectedGlyphs(
+                        box,
+                        stem);
+                    searchHooks(chord, glyphs);
+                }
+            }
+        }
+
+        return true;
+    }
 
     //-------------//
     // visit Score //
@@ -148,123 +251,7 @@ public class ScoreChecker
         return true;
     }
 
-    //----------------//
-    // visit Dynamics //
-    //----------------//
-    /**
-     * Check that each dynamics shape can be computed
-     * @param dynamics the dynamics item
-     * @return true
-     */
-    @Override
-    public boolean visit (Dynamics dynamics)
-    {
-        dynamics.getShape();
-
-        return true;
-    }
-
-    //---------------//
-    // visit Measure //
-    //---------------//
-    /**
-     * This method is used to detect & fix unrecognized beam hooks
-     * @param measure the measure to browse
-     * @return true. The real output is stored in the modified[] array which is
-     * used to return a boolean if at least a beam_hook has been fixed.
-     */
-    @Override
-    public boolean visit (Measure measure)
-    {
-        ///logger.info("Checking " + measure);
-        final Scale       scale = measure.getScale();
-        final int         xMargin = scale.toPixels(constants.stemXMargin);
-        final int         yMargin = scale.toPixels(constants.stemYMargin);
-        final ScoreSystem system = measure.getSystem();
-        final SystemInfo  systemInfo = system.getInfo();
-
-        // Check the beam groups for non-recognized hooks
-        for (BeamGroup group : measure.getBeamGroups()) {
-            SortedSet<Chord> chords = group.getChords();
-
-            for (Chord chord : chords) {
-                Glyph stem = chord.getStem();
-
-                if (stem != null) { // We could have rests w/o stem!
-
-                    final PixelRectangle    stemBox = stem.getContourBox();
-                    final PixelRectangle    box = new PixelRectangle(
-                        stemBox.x - xMargin,
-                        stemBox.y - yMargin,
-                        stemBox.width + (2 * xMargin),
-                        stemBox.height + (2 * yMargin));
-                    final Collection<Glyph> glyphs = systemInfo.lookupIntersectedGlyphs(
-                        box,
-                        stem);
-                    checkHooks(chord, glyphs);
-                }
-            }
-        }
-
-        return true;
-    }
-
-    //------------//
-    // checkHooks //
-    //------------//
-    /**
-     * Check for unrecognized beam hooks in the glyphs around the provided chord
-     * @param chord the provided chord
-     * @param glyphs the surrounding glyphs
-     */
-    private void checkHooks (Chord             chord,
-                             Collection<Glyph> glyphs)
-    {
-        // Up(+1) or down(-1) stem?
-        final int          stemDir = chord.getStemDir();
-        final int          yMiddle = chord.getCenter().y;
-        final ScoreSystem  system = chord.getSystem();
-        final double       hookMaxDoubt = GlyphInspector.getHookMaxDoubt();
-        final GlyphNetwork network = GlyphNetwork.getInstance();
-
-        for (Glyph glyph : glyphs) {
-            if (glyph.getShape() != null) {
-                continue;
-            }
-
-            if (logger.isFineEnabled()) {
-                logger.fine("Spurious glyph#" + glyph.getId());
-            }
-
-            // Check we are on the tail (beam) end of the stem
-            SystemPoint center = system.toSystemPoint(glyph.getAreaCenter());
-
-            if (((center.y - yMiddle) * stemDir) > 0) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("Glyph#" + glyph.getId() + " not on beam side");
-                }
-
-                continue;
-            }
-
-            // Check if a beam appears in the top evaluations
-            for (Evaluation vote : network.getEvaluations(glyph)) {
-                if (vote.doubt > hookMaxDoubt) {
-                    break;
-                }
-
-                if (Shape.Beams.contains(vote.shape)) {
-                    glyph.setShape(vote.shape, Evaluation.ALGORITHM);
-                    logger.info(
-                        "glyph#" + glyph.getId() + " recognized as " +
-                        vote.shape);
-                    modified[0] = true;
-
-                    break;
-                }
-            }
-        }
-    }
+    //- Utilities --------------------------------------------------------------
 
     //-----------------//
     // checkSimpleTime //
@@ -395,7 +382,7 @@ public class ScoreChecker
     /**
      * Report a suitable manually assigned time signature, if any. For this, we
      * need to find a manual time sig, after having checked that all manual time
-     * sigs in the measure are consistent. This method
+     * sigs in the measure are consistent.
      * @param measure the reference measure
      * @return the suitable manual sig, if any
      * @throws InconsistentTimeSignatures if at least two manual sigs differ
@@ -477,6 +464,63 @@ public class ScoreChecker
         compound = systemInfo.addGlyph(compound);
         compound.setShape(shape, Evaluation.ALGORITHM);
         logger.info(shape + " assigned to glyph#" + compound.getId());
+    }
+
+    //-------------//
+    // searchHooks //
+    //-------------//
+    /**
+     * Search unrecognized beam hooks among the glyphs around the provided chord
+     * @param chord the provided chord
+     * @param glyphs the surrounding glyphs
+     */
+    private void searchHooks (Chord             chord,
+                              Collection<Glyph> glyphs)
+    {
+        // Up(+1) or down(-1) stem?
+        final int          stemDir = chord.getStemDir();
+        final int          yMiddle = chord.getCenter().y;
+        final ScoreSystem  system = chord.getSystem();
+        final double       hookMaxDoubt = GlyphInspector.getHookMaxDoubt();
+        final GlyphNetwork network = GlyphNetwork.getInstance();
+
+        for (Glyph glyph : glyphs) {
+            if (glyph.getShape() != null) {
+                continue;
+            }
+
+            if (logger.isFineEnabled()) {
+                logger.fine("Spurious glyph#" + glyph.getId());
+            }
+
+            // Check we are on the tail (beam) end of the stem
+            SystemPoint center = system.toSystemPoint(glyph.getAreaCenter());
+
+            if (((center.y - yMiddle) * stemDir) > 0) {
+                if (logger.isFineEnabled()) {
+                    logger.fine("Glyph#" + glyph.getId() + " not on beam side");
+                }
+
+                continue;
+            }
+
+            // Check if a beam appears in the top evaluations
+            for (Evaluation vote : network.getEvaluations(glyph)) {
+                if (vote.doubt > hookMaxDoubt) {
+                    break;
+                }
+
+                if (Shape.Beams.contains(vote.shape)) {
+                    glyph.setShape(vote.shape, Evaluation.ALGORITHM);
+                    logger.info(
+                        "glyph#" + glyph.getId() + " recognized as " +
+                        vote.shape);
+                    modified.value = true;
+
+                    break;
+                }
+            }
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------

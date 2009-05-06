@@ -14,8 +14,8 @@ import omr.log.Logger;
 import omr.sheet.SystemInfo;
 
 /**
- * Class <code>PatternsChecker</code> gathers a series of specific patterns to
- * process (verify, recognize, fix, ...) glyphs in their environment.
+ * Class <code>PatternsChecker</code> gathers a series of specific patterns
+ * to process (verify, recognize, fix, ...) glyphs in their sheet environment.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -30,7 +30,7 @@ public class PatternsChecker
 
     /** Sequence of patterns to run */
     private static Pattern[] patterns = new Pattern[] {
-                                            
+
     //
     new Pattern("Clef") {
             public int run (SystemInfo system)
@@ -39,7 +39,7 @@ public class PatternsChecker
             }
         }
     ,
-                                            
+
     new Pattern("Alter") {
             public int run (SystemInfo system)
             {
@@ -47,7 +47,7 @@ public class PatternsChecker
             }
         }
     ,
-                                            
+
     new Pattern("Stem") {
             public int run (SystemInfo system)
             {
@@ -55,7 +55,7 @@ public class PatternsChecker
             }
         }
     ,
-                                            
+
     new Pattern("Slur") {
             public int run (SystemInfo system)
             {
@@ -63,7 +63,7 @@ public class PatternsChecker
             }
         }
     ,
-                                            
+
     new Pattern("Text") {
             public int run (SystemInfo system)
             {
@@ -122,7 +122,7 @@ public class PatternsChecker
         }
 
         if ((totalModifs > 0) && logger.isFineEnabled()) {
-            logger.fine("S#" + system.getId() + " Patterns" + sb);
+            logger.fine("S#" + system.getId() + " SheetPatterns" + sb);
         }
 
         return totalModifs != 0;

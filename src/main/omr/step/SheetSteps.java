@@ -39,6 +39,8 @@ import omr.sheet.picture.ImageFormatException;
 import omr.sheet.picture.Picture;
 import static omr.step.Step.*;
 
+import omr.util.Wrapper;
+
 import java.io.*;
 import java.util.*;
 
@@ -503,6 +505,33 @@ public class SheetSteps
         }
     }
 
+    //----------//
+    // PlayTask //
+    //----------//
+    /**
+     * Step to play the whole score, using a MIDI sequencer
+     */
+    private static class PlayTask
+        extends SheetTask
+    {
+        //~ Constructors -------------------------------------------------------
+
+        PlayTask (Sheet sheet,
+                  Step  step)
+        {
+            super(sheet, step);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void doit (Collection<SystemInfo> unused)
+            throws StepException
+        {
+            new MidiActions.PlayTask(sheet.getScore(), null).execute();
+        }
+    }
+
     //-----------//
     // ScaleTask //
     //-----------//
@@ -573,8 +602,8 @@ public class SheetSteps
     // PatternsTask //
     //--------------//
     /**
-     * Step to run processing of specific patterns arounds clefs, sharps,
-     * naturals, stems, slurs, ect
+     * Step to run processing of specific sheet glyph patterns arounds clefs,
+     * sharps, naturals, stems, slurs, etc
      */
     private class PatternsTask
         extends SystemTask
@@ -611,33 +640,6 @@ public class SheetSteps
                     return; // No more progress made
                 }
             }
-        }
-    }
-
-    //----------//
-    // PlayTask //
-    //----------//
-    /**
-     * Step to play the whole score, using a MIDI sequencer
-     */
-    private static class PlayTask
-        extends SheetTask
-    {
-        //~ Constructors -------------------------------------------------------
-
-        PlayTask (Sheet sheet,
-                  Step  step)
-        {
-            super(sheet, step);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public void doit (Collection<SystemInfo> unused)
-            throws StepException
-        {
-            new MidiActions.PlayTask(sheet.getScore(), null).execute();
         }
     }
 
@@ -692,19 +694,22 @@ public class SheetSteps
         public void doSystem (SystemInfo system)
             throws StepException
         {
-            final int         iterNb = constants.MaxScoreIterations.getValue();
-            final ScoreSystem scoreSystem = system.getScoreSystem();
-            final boolean[]   modified = new boolean[1];
-            modified[0] = true;
+            final int              iterNb = constants.MaxScoreIterations.getValue();
+            final ScoreSystem      scoreSystem = system.getScoreSystem();
+            final Wrapper<Boolean> modified = new Wrapper<Boolean>();
+            modified.value = true;
 
-            for (int iter = 1; modified[0] && (iter <= iterNb); iter++) {
-                modified[0] = false;
+            for (int iter = 1; modified.value && (iter <= iterNb); iter++) {
+                modified.value = false;
 
                 if (logger.isFineEnabled()) {
                     logger.fine(
                         "System#" + system.getId() + " translation iter #" +
                         iter);
                 }
+
+                // Relaunch the glyph patterns (perhaps a bit brutal ...)
+                system.runPatterns();
 
                 // Clear errors for this system only
                 system.getSheet()
