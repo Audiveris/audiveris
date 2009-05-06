@@ -121,7 +121,7 @@ public class PatternsChecker
             totalModifs += modifs;
         }
 
-        if (logger.isFineEnabled()) {
+        if ((totalModifs > 0) && logger.isFineEnabled()) {
             logger.fine("S#" + system.getId() + " Patterns" + sb);
         }
 
