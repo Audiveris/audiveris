@@ -119,7 +119,10 @@ public class ScoreChecker
         }
 
         // No real beam found on the same chord, so let's discard the hook
-        logger.info("Removing false beam hook glyph#" + glyph.getId());
+        if (logger.isFineEnabled()) {
+            logger.fine("Removing false beam hook glyph#" + glyph.getId());
+        }
+
         glyph.setShape(null);
         modified.value = true;
 
@@ -513,9 +516,13 @@ public class ScoreChecker
 
                 if (Shape.Beams.contains(vote.shape)) {
                     glyph.setShape(vote.shape, Evaluation.ALGORITHM);
-                    logger.info(
-                        "glyph#" + glyph.getId() + " recognized as " +
-                        vote.shape);
+
+                    if (logger.isFineEnabled()) {
+                        logger.fine(
+                            "glyph#" + glyph.getId() + " recognized as " +
+                            vote.shape);
+                    }
+
                     modified.value = true;
 
                     break;
