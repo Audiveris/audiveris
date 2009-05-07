@@ -235,6 +235,12 @@ public enum Step {
                     steps.add(this);
 
                     sheet = doStepRange(steps, sheet, param, null);
+                } else {
+                    if (monitor != null) {
+                        // Update sheet (& score) dependent entities
+                        SheetsController.getInstance()
+                                        .setSelectedSheet(sheet);
+                    }
                 }
             }
         } catch (Exception ex) {
@@ -270,7 +276,7 @@ public enum Step {
         // The range of steps to re-perform
         EnumSet<Step> stepRange = EnumSet.range(
             this.next(),
-            sheet.getSheetSteps().getLatestStep());
+            sheet.getSheetSteps().getLatestMandatoryStep());
 
         try {
             doStepRange(stepRange, sheet, null, systems);

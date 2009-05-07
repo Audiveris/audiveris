@@ -277,15 +277,21 @@ public class MainGui
 
                             if (sheet != null) {
                                 // Frame title tells sheet name + step
-                                sb.append(sheet.getRadix())
-                                  .append(" - ")
-                                  .append(
-                                    sheet.getSheetSteps().getLatestStep())
-                                  .append(" - ");
+                                sb.append(sheet.getRadix());
+
+                                Step lastStep = sheet.getSheetSteps()
+                                                     .getLatestStep();
+
+                                if (lastStep != null) {
+                                    sb.append(" - ")
+                                      .append(lastStep)
+                                      .append(" -");
+                                }
                             }
 
                             // Update frame title
-                            sb.append(
+                            sb.append(" ")
+                              .append(
                                 app.getContext().getResourceMap().getString(
                                     "mainFrame.title"));
                             frame.setTitle(sb.toString());

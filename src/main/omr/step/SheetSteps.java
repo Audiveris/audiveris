@@ -117,6 +117,28 @@ public class SheetSteps
                    .isDone();
     }
 
+    //------------------------//
+    // getLatestMandatoryStep //
+    //------------------------//
+    /**
+     * Report the latest mandatory step done so far with the related sheet
+     * @return the latest mandatory step done, or null
+     */
+    public Step getLatestMandatoryStep ()
+    {
+        Step last = null;
+
+        for (Step step : Step.values()) {
+            if (step.isMandatory && isDone(step)) {
+                last = step;
+            } else {
+                break;
+            }
+        }
+
+        return last;
+    }
+
     //---------------//
     // getLatestStep //
     //---------------//
@@ -241,7 +263,7 @@ public class SheetSteps
 
         // Rebuild after specified step, if needed
         if (sheet.getSheetSteps()
-                 .getLatestStep()
+                 .getLatestMandatoryStep()
                  .compareTo(step) > 0) {
             step.reperformNextSteps(sheet, impactedSystems);
         }
