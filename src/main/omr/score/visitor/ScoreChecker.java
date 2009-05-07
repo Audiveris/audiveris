@@ -45,6 +45,7 @@ import java.util.*;
  * global checking on score nodes.
  * <p>We use it for: <ul>
  * <li>Improving the recognition of beam hooks</li>
+ * <li>Fixing false beam hooks</li>
  * <li>Forcing consistency among time signatures</li>
  * <li>Making sure all dynamics can be assigned a shape</li>
  * </ul>
