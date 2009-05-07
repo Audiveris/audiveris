@@ -655,8 +655,6 @@ public class ScoreView
         public void highLight (Measure measure,
                                Slot    slot)
         {
-            logger.warning("highLight method needs to be rewritten");
-
             this.highlightedMeasure = measure;
             this.highlightedSlot = slot;
 
@@ -669,27 +667,30 @@ public class ScoreView
                 return;
             }
 
-            UnitDimension dimension = measure.getSystem()
-                                             .getDimension();
+            ScoreSystem   system = measure.getSystem();
+            UnitDimension dimension = system.getDimension();
+            SystemView    systemView = getSystemView(system);
 
             // If the current measure is at the beginning of a system,
             // make the most of this (new) system as visible as possible
+            // We need absolute rectangle (non system-based)
             if (measure.getPreviousSibling() == null) {
-                Rectangle rect = new Rectangle(
+                SystemRectangle rect = new SystemRectangle(
                     0,
                     0,
                     dimension.width,
                     dimension.height + STAFF_HEIGHT);
-                showFocusLocation(rect);
+
+                showFocusLocation(systemView.toScoreRectangle(rect));
             }
 
             // Make the measure rectangle visible
-            Rectangle rect = new Rectangle(
+            SystemRectangle rect = new SystemRectangle(
                 (measure.getLeftX()) - margin,
                 -margin,
                 measure.getWidth() + (2 * margin),
                 dimension.height + STAFF_HEIGHT + (2 * margin));
-            showFocusLocation(rect);
+            showFocusLocation(systemView.toScoreRectangle(rect));
         }
 
         //---------//
@@ -753,7 +754,7 @@ public class ScoreView
             score.accept(painter);
 
             if (highlightedSlot != null) {
-                painter.drawSlot(
+                painter.drawAbsoluteSlot(
                     true,
                     highlightedMeasure,
                     highlightedSlot,

@@ -17,13 +17,11 @@ import omr.score.entity.Note;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Slot;
 import omr.score.entity.SystemPart;
-import omr.score.ui.ScoreView;
 
 import omr.util.Implement;
 import omr.util.TreeNode;
 
 import javax.sound.midi.*;
-import javax.swing.*;
 
 /**
  * Class <code>MidiReceiver</code> receives Midi events from the Midi sequencer

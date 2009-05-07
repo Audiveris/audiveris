@@ -182,11 +182,11 @@ public class ScorePainter
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------//
-    // drawSlot //
-    //----------//
+    //------------------//
+    // drawAbsoluteSlot //
+    //------------------//
     /**
-     * Draw a time slot in the score display
+     * Draw a time slot in the score display, with graphics not yet translated.
      *
      * @param wholeSystem if true, the slot will embrace the whole system,
      * otherwise only the part is embraced
@@ -194,33 +194,20 @@ public class ScorePainter
      * @param slot the slot to draw
      * @param color the color to use in drawing
      */
-    public void drawSlot (boolean wholeSystem,
-                          Measure measure,
-                          Slot    slot,
-                          Color   color)
+    public void drawAbsoluteSlot (boolean wholeSystem,
+                                  Measure measure,
+                                  Slot    slot,
+                                  Color   color)
     {
-        final Color oldColor = g.getColor();
-        g.setColor(color);
+        final ScoreSystem system = measure.getSystem();
+        final SystemView  systemView = scoreView.getSystemView(system);
+        final Point origin = systemView.getDisplayOrigin();
+        
+        // Now use system topLeft as the origin
+        g.setTransform(savedTransform);
+        g.translate(origin.x, origin.y);
 
-        final int           x = slot.getX();
-        final UnitDimension systemDimension = measure.getSystem()
-                                                     .getDimension();
-
-        if (wholeSystem) {
-            // Draw for the system height
-            g.drawLine(x, 0, x, systemDimension.height + STAFF_HEIGHT);
-        } else {
-            // Draw for the part height
-            g.drawLine(
-                x,
-                measure.getPart()
-                       .getFirstStaff()
-                       .getTopLeft().y,
-                x,
-                measure.getPart().getLastStaff().getTopLeft().y + STAFF_HEIGHT);
-        }
-
-        g.setColor(oldColor);
+        drawSlot(wholeSystem, measure, slot, color);
     }
 
     //------------------//
@@ -978,6 +965,48 @@ public class ScorePainter
         if (score != null) {
             score.updateViews();
         }
+    }
+
+    //----------//
+    // drawSlot //
+    //----------//
+    /**
+     * Draw a time slot in the score display, using the current graphics assumed
+     * to be translated to the system origin.
+     *
+     * @param wholeSystem if true, the slot will embrace the whole system,
+     * otherwise only the part is embraced
+     * @param measure the containing measure
+     * @param slot the slot to draw
+     * @param color the color to use in drawing
+     */
+    private void drawSlot (boolean wholeSystem,
+                           Measure measure,
+                           Slot    slot,
+                           Color   color)
+    {
+        final Color oldColor = g.getColor();
+        g.setColor(color);
+
+        final int           x = slot.getX();
+        final UnitDimension systemDimension = measure.getSystem()
+                                                     .getDimension();
+
+        if (wholeSystem) {
+            // Draw for the system height
+            g.drawLine(x, 0, x, systemDimension.height + STAFF_HEIGHT);
+        } else {
+            // Draw for the part height
+            g.drawLine(
+                x,
+                measure.getPart()
+                       .getFirstStaff()
+                       .getTopLeft().y,
+                x,
+                measure.getPart().getLastStaff().getTopLeft().y + STAFF_HEIGHT);
+        }
+
+        g.setColor(oldColor);
     }
 
     //-----------//
