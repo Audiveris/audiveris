@@ -110,6 +110,12 @@ public class ScoreChecker
             return true;
         }
 
+        if (chords.isEmpty()) {
+            beam.addError(glyph, "Beam hook connected to no chords");
+
+            return true;
+        }
+
         // Check that there is at least one full beam on the same chord
         for (Beam b : chords.first()
                             .getBeams()) {
