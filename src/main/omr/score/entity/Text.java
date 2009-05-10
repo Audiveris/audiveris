@@ -8,11 +8,9 @@
 //----------------------------------------------------------------------------//
 package omr.score.entity;
 
-import omr.constant.Constant;
-import omr.constant.ConstantSet;
-
 import omr.glyph.Glyph;
 import omr.glyph.text.Sentence;
+import omr.glyph.text.TextInfo;
 
 import omr.log.Logger;
 
@@ -31,7 +29,7 @@ import java.awt.Font;
  * is meaningful: for example "Ludwig van Beethoven" is meaningful as a Creator
  * Text, but the various glyphs "Ludwig", "van", "Beethoven" are not.
  * For lyrics, since we can have very long sentences, and since the positioning
- * of every syllable must done with precision, we handle one LyricsItem Text
+ * of every syllable must be done with precision, we handle one LyricsItem Text
  * entity per isolated textual glyph.</p>
  *
  * <p>Working at the sentence level also allows a better accuracy in the setting
@@ -49,17 +47,8 @@ public abstract class Text
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Specific application parameters */
-    private static final Constants constants = new Constants();
-
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Text.class);
-
-    /** The basic font used for text entities */
-    protected static Font lyricsFont = new Font(
-        constants.lyricsFontName.getValue(),
-        Font.PLAIN,
-        constants.lyricsFontSize.getValue());
 
     //~ Instance fields --------------------------------------------------------
 
@@ -110,8 +99,9 @@ public abstract class Text
         box = sentence.getSystemContour();
 
         // Proper font
-        determineFontSize();
+        font = TextInfo.basicFont.deriveFont(sentence.getFontSize());
 
+        ///determineFontSize();
         if (logger.isFineEnabled()) {
             logger.fine("Created " + this);
         }
@@ -147,8 +137,20 @@ public abstract class Text
      */
     public static int getLyricsFontSize ()
     {
-        //        return (int) Math.rint(lyricsFont.getSize2D() / 1.8);
-        return lyricsFont.getSize();
+        return TextInfo.basicFont.getSize();
+    }
+
+    //---------------------//
+    // getExportedFontSize //
+    //---------------------//
+    /**
+     * Report the font size to be exported for this text to MusicXML
+     *
+     * @return the exported font size
+     */
+    public int getExportedFontSize ()
+    {
+        return (int) Math.rint(TextInfo.EXPORT_RATIO * getFontSize());
     }
 
     //-------------//
@@ -161,7 +163,6 @@ public abstract class Text
      */
     public int getFontSize ()
     {
-        //        return (int) Math.rint(font.getSize2D() / 1.8);
         return font.getSize();
     }
 
@@ -187,7 +188,7 @@ public abstract class Text
      */
     public static Font getLyricsFont ()
     {
-        return lyricsFont;
+        return TextInfo.basicFont;
     }
 
     //-------------//
@@ -376,17 +377,34 @@ public abstract class Text
         return sb.toString();
     }
 
-    //-------------------//
-    // determineFontSize //
-    //-------------------//
-    /**
-     * Determine the proper font size
-     */
-    protected void determineFontSize ()
-    {
-        float size = (float) Math.rint(1.9f * sentence.getTextHeight());
-        font = lyricsFont.deriveFont(size);
-    }
+//    //-------------------//
+//    // determineFontSize //
+//    //-------------------//
+//    /**
+//     * Determine the proper font size. <ol>
+//     * <li>The definition of Font-Size is the vertical distance between the
+//     * baseline of one line to the baseline of the following line in a single
+//     * spaced text.</li>
+//     * <li>Here we don't have several lines and thus can't measure the
+//     * interline. However we can measure the xHeight (typical height of an 'x'
+//     * character and use the fact that interline is about 2.3 times xHeight.
+//     * (This ratio varies a bit with the font unfortunately).</li>
+//     * <li>A font size is measured in 'point' units, worth 1/72 of an inch</li>
+//     * <li>Finally, we don't know the scan resolution value, so we rely on the
+//     * modifiable application constant defaultResolution.</li>
+//     * </ol>
+//     */
+//    protected void determineFontSize ()
+//    {
+//        float size = (2.3f * 72 * sentence.getTextHeight()) / constants.defaultResolution.getValue();
+//
+//        // Round to next integer???
+//        ///size = (float) Math.rint(size);
+//
+//        //float size = (float) Math.rint(1.9f * sentence.getTextHeight());
+//        ///float size = (float) Math.rint(1.0f * sentence.getTextHeight());
+//        font = TextInfo.basicFont.deriveFont(size);
+//    }
 
     //-----------------//
     // internalsString //
@@ -554,22 +572,5 @@ public abstract class Text
         {
             super(sentence);
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        Constant.Integer lyricsFontSize = new Constant.Integer(
-            "points",
-            30,
-            "Standard font point size for lyrics");
-        Constant.String  lyricsFontName = new Constant.String(
-            "Serif", //"Sans Serif",
-            "Standard font name for lyrics");
     }
 }

@@ -16,8 +16,6 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
-import omr.sheet.picture.PictureLoader;
-
 import omr.util.FileUtil;
 import omr.util.Implement;
 
@@ -52,8 +50,8 @@ public class TesseractOCR
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(TesseractOCR.class);
 
-    /** Language option for Tesseract */
-    private static final String LANGUAGE_OPTION = "-l";
+    //    /** Language option for Tesseract */
+    //    private static final String LANGUAGE_OPTION = "-l";
 
     /** Singleton */
     private static OCR INSTANCE = new TesseractOCR();
@@ -131,27 +129,27 @@ public class TesseractOCR
         return map;
     }
 
-    //------//
-    // main //
-    //------//
-    /**
-     * Just to test this class in a standalone manner
-     * @param args unused
-     */
-    public static void main (String... args)
-    {
-        try {
-            BufferedImage img = PictureLoader.loadImageIO(
-                new File("examples/tempImageFile0.tif"));
-
-            new TesseractOCR().recognize(img, "fra");
-            new TesseractOCR().recognize(img, null);
-        } catch (IOException ex) {
-            logger.warning("IOException", ex);
-        } catch (InterruptedException ex) {
-            logger.warning("InterruptedException", ex);
-        }
-    }
+    //    //------//
+    //    // main //
+    //    //------//
+    //    /**
+    //     * Just to test this class in a standalone manner
+    //     * @param args unused
+    //     */
+    //    public static void main (String... args)
+    //    {
+    //        try {
+    //            BufferedImage img = PictureLoader.loadImageIO(
+    //                new File("examples/tempImageFile0.tif"));
+    //
+    //            new TesseractOCR().recognize(img, "fra");
+    //            new TesseractOCR().recognize(img, null);
+    //        } catch (IOException ex) {
+    //            logger.warning("IOException", ex);
+    //        } catch (InterruptedException ex) {
+    //            logger.warning("InterruptedException", ex);
+    //        }
+    //    }
 
     //-----------//
     // recognize //
@@ -162,8 +160,8 @@ public class TesseractOCR
      * @throws InterruptedException
      */
     @Implement(OCR.class)
-    public List<String> recognize (BufferedImage image,
-                                   String        languageCode)
+    public List<OcrLine> recognize (BufferedImage image,
+                                    String        languageCode)
         throws IOException, InterruptedException
     {
         // Store the input image on disk, to be later cleaned up
@@ -177,11 +175,12 @@ public class TesseractOCR
 
         Dimension dim = new Dimension(image.getWidth(), image.getHeight());
 
-        if (false) {
-            return useTesseract(imageFile, txtFile, languageCode);
-        } else {
-            return useDllTest(imageFile, txtFile, languageCode, dim);
-        }
+        //        if (false) {
+        //            return useTesseract(imageFile, txtFile, languageCode);
+        //        } else {
+        return useDllTest(imageFile, txtFile, languageCode, dim);
+
+        //        }
     }
 
     //---------------//
@@ -197,7 +196,8 @@ public class TesseractOCR
      * @throws java.io.FileNotFoundException
      * @throws java.io.IOException
      */
-    private List<String> getCodedLines (File txtFile)
+    private List<OcrLine> getCodedLines (File      txtFile,
+                                         Dimension dim)
         throws UnsupportedEncodingException, FileNotFoundException, IOException
     {
         /* -- One example --
@@ -234,18 +234,18 @@ public class TesseractOCR
         BufferedReader in = new BufferedReader(
             new InputStreamReader(new FileInputStream(txtFile)));
 
-        List<String> lines = new ArrayList<String>();
-        LineDesc     line = null;
-        String       str;
-        boolean      afterSpace = false;
-        boolean      afterDash = false;
+        List<OcrLine> lines = new ArrayList<OcrLine>();
+        LineDesc      line = null;
+        String        str;
+        boolean       afterSpace = false;
+        boolean       afterDash = false;
 
         while ((str = in.readLine()) != null) {
             ///logger.info("str=\"" + str + "\"");
             if (str.equals("<para>")) {
                 // End of whole text
                 if (line != null) {
-                    lines.add(line.toString());
+                    lines.add(line.getOcrLine());
                     line = null;
                 }
 
@@ -255,7 +255,7 @@ public class TesseractOCR
             } else if (str.equals("<nl>")) {
                 // End of a line, beginning of a New line
                 if (line != null) {
-                    lines.add(line.toString());
+                    lines.add(line.getOcrLine());
                     line = null;
                 }
 
@@ -282,47 +282,46 @@ public class TesseractOCR
 
         in.close();
 
-//        for (String aLine : lines) {
-//            logger.info("dll ocr: \"" + aLine + "\"");
-//        }
-
+        //        for (String aLine : lines) {
+        //            logger.info("dll ocr: \"" + aLine + "\"");
+        //        }
         return lines;
     }
 
-    //----------//
-    // getLines //
-    //----------//
-    /**
-     * Read the lines of text as written by tesseract
-     * @param txtFile the file written by tesseract
-     * @return the list of lines
-     * @throws java.io.UnsupportedEncodingException
-     * @throws java.io.FileNotFoundException
-     * @throws java.io.IOException
-     */
-    private List<String> getLines (File txtFile)
-        throws UnsupportedEncodingException, FileNotFoundException, IOException
-    {
-        BufferedReader in = new BufferedReader(
-            new InputStreamReader(new FileInputStream(txtFile), "UTF-8"));
-
-        List<String>   lines = new ArrayList<String>();
-        String         str;
-
-        while ((str = in.readLine()) != null) {
-            if (str.length() > 0) {
-                lines.add(str);
-            }
-        }
-
-        in.close();
-
-        for (String line : lines) {
-            logger.info("ocr: \"" + line + "\"");
-        }
-
-        return lines;
-    }
+    //    //----------//
+    //    // getLines //
+    //    //----------//
+    //    /**
+    //     * Read the lines of text as written by tesseract
+    //     * @param txtFile the file written by tesseract
+    //     * @return the list of lines
+    //     * @throws java.io.UnsupportedEncodingException
+    //     * @throws java.io.FileNotFoundException
+    //     * @throws java.io.IOException
+    //     */
+    //    private List<String> getLines (File txtFile)
+    //        throws UnsupportedEncodingException, FileNotFoundException, IOException
+    //    {
+    //        BufferedReader in = new BufferedReader(
+    //            new InputStreamReader(new FileInputStream(txtFile), "UTF-8"));
+    //
+    //        List<String>   lines = new ArrayList<String>();
+    //        String         str;
+    //
+    //        while ((str = in.readLine()) != null) {
+    //            if (str.length() > 0) {
+    //                lines.add(str);
+    //            }
+    //        }
+    //
+    //        in.close();
+    //
+    //        for (String line : lines) {
+    //            logger.info("ocr: \"" + line + "\"");
+    //        }
+    //
+    //        return lines;
+    //    }
 
     //------------//
     // decodeChar //
@@ -366,13 +365,13 @@ public class TesseractOCR
         commaPos = tail.indexOf(",");
         rightPos = tail.indexOf(")");
 
-        int trX = Integer.parseInt(tail.substring(leftPos + 1, commaPos));
-        int trY = Integer.parseInt(tail.substring(commaPos + 1, rightPos));
+        int       trX = Integer.parseInt(tail.substring(leftPos + 1, commaPos));
+        int       trY = Integer.parseInt(
+            tail.substring(commaPos + 1, rightPos));
 
-        // Slight corrections on top right point
-        trX -= 1;
-        trY += 1;
-
+        //         Slight corrections on top right point
+        //        trX -= 1;
+        //        trY += 1;
         Rectangle box = new Rectangle(blX, trY, trX - blX, blY - trY);
         CharDesc  desc = new CharDesc(codePoint, box, afterSpace, afterDash);
 
@@ -431,10 +430,10 @@ public class TesseractOCR
     //------------//
     // useDllTest //
     //------------//
-    private List<String> useDllTest (File      imageFile,
-                                     File      txtFile,
-                                     String    languageCode,
-                                     Dimension dim)
+    private List<OcrLine> useDllTest (File      imageFile,
+                                      File      txtFile,
+                                      String    languageCode,
+                                      Dimension dim)
         throws IOException, InterruptedException
     {
         // Generate the command for dlltest process
@@ -462,53 +461,53 @@ public class TesseractOCR
 
         if (result == 0) {
             // Read & report the resulting string(s)
-            return getCodedLines(txtFile);
-        } else {
-            throw new RuntimeException(errorMessage(result));
-        }
-    }
-
-    //--------------//
-    // useTesseract //
-    //--------------//
-    private List<String> useTesseract (File   imageFile,
-                                       File   txtFile,
-                                       String languageCode)
-        throws IOException, InterruptedException
-    {
-        // Generate the command for tesseract process
-        List<String> cmd = new ArrayList<String>();
-        cmd.add(constants.tesseractPath.getValue() + "/tesseract");
-        cmd.add(imageFile.getName());
-        cmd.add(FileUtil.getNameSansExtension(txtFile));
-
-        if (languageCode != null) {
-            cmd.add(LANGUAGE_OPTION);
-            cmd.add(languageCode);
-        }
-
-        if (logger.isFineEnabled()) {
-            logger.fine("cmd=" + cmd);
-        }
-
-        // Launch tesseract process
-        ProcessBuilder pb = new ProcessBuilder();
-        pb.directory(imageFile.getParentFile());
-        pb.command(cmd);
-        pb.redirectErrorStream(true);
-
-        int result = pb.start()
-                       .waitFor();
-
-        if (result == 0) {
-            // Read & report the resulting string(s)
-            return getLines(txtFile);
+            return getCodedLines(txtFile, dim);
         } else {
             throw new RuntimeException(errorMessage(result));
         }
     }
 
     //~ Inner Classes ----------------------------------------------------------
+
+    //    //--------------//
+    //    // useTesseract //
+    //    //--------------//
+    //    private List<String> useTesseract (File   imageFile,
+    //                                       File   txtFile,
+    //                                       String languageCode)
+    //        throws IOException, InterruptedException
+    //    {
+    //        // Generate the command for tesseract process
+    //        List<String> cmd = new ArrayList<String>();
+    //        cmd.add(constants.tesseractPath.getValue() + "/tesseract");
+    //        cmd.add(imageFile.getName());
+    //        cmd.add(FileUtil.getNameSansExtension(txtFile));
+    //
+    //        if (languageCode != null) {
+    //            cmd.add(LANGUAGE_OPTION);
+    //            cmd.add(languageCode);
+    //        }
+    //
+    //        if (logger.isFineEnabled()) {
+    //            logger.fine("cmd=" + cmd);
+    //        }
+    //
+    //        // Launch tesseract process
+    //        ProcessBuilder pb = new ProcessBuilder();
+    //        pb.directory(imageFile.getParentFile());
+    //        pb.command(cmd);
+    //        pb.redirectErrorStream(true);
+    //
+    //        int result = pb.start()
+    //                       .waitFor();
+    //
+    //        if (result == 0) {
+    //            // Read & report the resulting string(s)
+    //            return getLines(txtFile);
+    //        } else {
+    //            throw new RuntimeException(errorMessage(result));
+    //        }
+    //    }
 
     //-----------//
     // Constants //

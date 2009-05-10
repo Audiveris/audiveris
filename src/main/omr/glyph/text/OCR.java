@@ -43,11 +43,36 @@ public interface OCR
      * @param image the provided textual image
      * @param languageCode the code of the (dominant?) language of the text,
      * or null if this language is unknown
-     * @return a list of text lines
+     * @return a list of OcrLine instances
      * @throws IOException
      * @throws InterruptedException
      */
-    List<String> recognize (BufferedImage image,
-                            String        languageCode)
+    List<OcrLine> recognize (BufferedImage image,
+                             String        languageCode)
         throws IOException, InterruptedException;
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    /**
+     * Structure to report useful info on decoded line
+     */
+    public static class OcrLine
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Detected font size */
+        public final float fontSize;
+
+        /** Detected line content */
+        public final String value;
+
+        //~ Constructors -------------------------------------------------------
+
+        public OcrLine (float  fontSize,
+                        String value)
+        {
+            this.fontSize = fontSize;
+            this.value = value;
+        }
+    }
 }

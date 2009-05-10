@@ -9,6 +9,9 @@
 //
 package omr.glyph.text;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.glyph.Glyph;
 
 import omr.lag.HorizontalOrientation;
@@ -16,6 +19,10 @@ import omr.lag.HorizontalOrientation;
 import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
+
+import java.awt.Font;
+import java.awt.font.FontRenderContext;
+import java.awt.geom.Rectangle2D;
 
 /**
  * Class <code>TextInfo</code> handles the textual aspects of a glyph. It
@@ -35,8 +42,29 @@ public class TextInfo
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
+
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(TextInfo.class);
+
+    /** The basic font used for text entities */
+    public static final Font basicFont = new Font(
+        constants.basicFontName.getValue(),
+        Font.PLAIN,
+        constants.basicFontSize.getValue());
+
+    /** Utility font context, used to compute text characteristics */
+    private static FontRenderContext frc = new FontRenderContext(
+        null,
+        false,
+        true);
+
+    /**
+     * The ratio to be applied to a font size when exporting to XML
+     * TODO: try to figure the reason for this value!
+     */
+    public static final float EXPORT_RATIO = 0.25f;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -64,6 +92,9 @@ public class TextInfo
     /** Role of this text item */
     private TextRole role;
 
+    /** Font size */
+    private Float fontSize;
+
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -77,13 +108,47 @@ public class TextInfo
 
     //~ Methods ----------------------------------------------------------------
 
+    //-----------------//
+    // computeFontSize //
+    //-----------------//
+    /**
+     * Convenient method to compute a font size using a string content and width
+     * @param content the string value
+     * @param width the string width in pixels
+     * @return the computed font size
+     */
+    public static float computeFontSize (String content,
+                                         int    width)
+    {
+        Rectangle2D rect = basicFont.getStringBounds(content, frc);
+        float       ratio = width / (float) rect.getWidth();
+
+        return basicFont.getSize2D() * ratio;
+    }
+
+    //--------------//
+    // computeWidth //
+    //--------------//
+    /**
+     * Convenient method to report the width of a string in a given font
+     * @param content the string value
+     * @param font the provided font
+     * @return the computed width
+     */
+    public static double computeWidth (String content,
+                                       Font   font)
+    {
+        return font.getStringBounds(content, frc)
+                   .getWidth();
+    }
+
     //------------//
     // getContent //
     //------------//
     /**
      * Report the content (the string value) of this text glyph if any
      * @return the text meaning of this glyph if any, either entered manually
-     * of via an OCR function
+     * or via an OCR function
      */
     public String getContent ()
     {
@@ -92,6 +157,26 @@ public class TextInfo
         } else {
             return ocrContent;
         }
+    }
+
+    //-------------//
+    // getFontSize //
+    //-------------//
+    /**
+     * Report the proper font size for the textual glyph
+     * @return the fontSize
+     */
+    public Float getFontSize ()
+    {
+        if (fontSize == null) {
+            if (getContent() != null) {
+                fontSize = computeFontSize(
+                    getContent(),
+                    glyph.getContourBox().width);
+            }
+        }
+
+        return fontSize;
     }
 
     //------------------//
@@ -104,6 +189,7 @@ public class TextInfo
     public void setManualContent (String manualContent)
     {
         this.manualContent = manualContent;
+        fontSize = null;
     }
 
     //------------------//
@@ -131,6 +217,7 @@ public class TextInfo
     {
         this.ocrLanguage = ocrLanguage;
         this.ocrContent = ocrContent;
+        fontSize = null;
     }
 
     //---------------//
@@ -296,6 +383,11 @@ public class TextInfo
     {
         StringBuilder sb = new StringBuilder("{Text");
 
+        if (getFontSize() != null) {
+            sb.append(" fontSize:")
+              .append(getFontSize());
+        }
+
         if (manualContent != null) {
             sb.append(" manual:")
               .append(manualContent);
@@ -329,5 +421,28 @@ public class TextInfo
     void setTextArea (TextArea textArea)
     {
         this.textArea = textArea;
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        Constant.Integer defaultResolution = new Constant.Integer(
+            "dpi",
+            300,
+            "Default resolution of sheet scan");
+        Constant.Integer basicFontSize = new Constant.Integer(
+            "points",
+            10,
+            "Standard font point size for texts");
+        Constant.String  basicFontName = new Constant.String(
+            "Serif", //"Sans Serif",
+            "Standard font name for texts");
     }
 }

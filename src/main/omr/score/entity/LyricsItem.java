@@ -361,18 +361,6 @@ public class LyricsItem
         addError(seed, "Could not find note for " + this);
     }
 
-    //---------------------//
-    // determineFontSize //
-    //---------------------//
-    /**
-     * For lyrics items, we force the size of the related font
-     */
-    @Override
-    protected void determineFontSize ()
-    {
-        font = lyricsFont;
-    }
-
     //-----------------//
     // internalsString //
     //-----------------//

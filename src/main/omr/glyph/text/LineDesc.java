@@ -11,12 +11,8 @@ package omr.glyph.text;
 
 import omr.log.Logger;
 
-import omr.score.entity.Text;
-
 import java.awt.Font;
 import java.awt.Rectangle;
-import java.awt.font.FontRenderContext;
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,16 +30,13 @@ public class LineDesc
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(LineDesc.class);
 
-    // A VERIFIER
-    private static FontRenderContext frc = new FontRenderContext(
-        null,
-        false,
-        false);
-
     //~ Instance fields --------------------------------------------------------
 
     /** Chars that compose this line */
     private final List<CharDesc> chars = new ArrayList<CharDesc>();
+
+    /** The measured font size */
+    private Float fontSize;
 
     /** The string value of this line, with chars precisely positioned */
     private String content;
@@ -65,6 +58,37 @@ public class LineDesc
 
     //~ Methods ----------------------------------------------------------------
 
+    //-------------//
+    // getFontSize //
+    //-------------//
+    /**
+     * Report the font size measured for this line
+     * @return the measured font size
+     */
+    public Float getFontSize ()
+    {
+        if (fontSize == null) {
+            fontSize = computeFontSize();
+        }
+
+        return fontSize;
+    }
+
+    //------------//
+    // getOcrLine //
+    //------------//
+    public OCR.OcrLine getOcrLine ()
+    {
+        Rectangle firstBox = chars.get(0)
+                                  .getBox();
+        Rectangle lastBox = chars.get(chars.size() - 1)
+                                 .getBox();
+        int       realWidth = (lastBox.x + lastBox.width) - firstBox.x - 1;
+        float     size = TextInfo.computeFontSize(toString(), realWidth);
+
+        return new OCR.OcrLine(size, toString());
+    }
+
     //---------//
     // addChar //
     //---------//
@@ -73,6 +97,7 @@ public class LineDesc
         chars.add(charDesc);
 
         // Invalidate content
+        fontSize = null;
         content = null;
     }
 
@@ -89,16 +114,12 @@ public class LineDesc
     {
         if (content == null) {
             // Allocate suitable empty output buffer
-            Font          font = Text.getLyricsFont()
-                                     .deriveFont(computeFontSize());
+            Font          font = TextInfo.basicFont.deriveFont(getFontSize());
 
             // Retrieve half standard space width with this font
-            double        halfSpace = font.getStringBounds(" ", frc)
-                                          .getWidth() / 2;
-
+            double        halfSpace = TextInfo.computeWidth(" ", font) / 2;
             Rectangle     firstBox = chars.get(0)
                                           .getBox();
-
             StringBuilder sb = new StringBuilder();
 
             // Loop on char descriptions
@@ -112,10 +133,10 @@ public class LineDesc
 
                 if (ch.afterSpace || ch.isDash() || ch.afterDash) {
                     // Add the spaces needed to insert char at target location
-                    int pixelTarget = ch.getBox().x - firstBox.x;
+                    double pixelTarget = ch.getBox().x - firstBox.x -
+                                         halfSpace;
 
-                    while (font.getStringBounds(sb.toString(), frc)
-                               .getWidth() < (pixelTarget - halfSpace)) {
+                    while (TextInfo.computeWidth(sb.toString(), font) < pixelTarget) {
                         sb.append(" ");
                     }
                 }
@@ -134,44 +155,21 @@ public class LineDesc
     // computeFontSize //
     //-----------------//
     /**
-     * Compute the font size using the whole set of chars
+     * Compute the font size using the whole set of chars (w/o spaces)
      * @return the computed font size
      */
     private float computeFontSize ()
     {
         StringBuilder sb = new StringBuilder();
-        int           pixelCount = 0;
+        int           width = 0;
 
+        // Here we assume that the boxes can be put side by side
+        // and correspond to the way characters are measured by getStringBounds
         for (CharDesc charDesc : chars) {
-            pixelCount += charDesc.getBox().width;
+            width += charDesc.getBox().width;
             sb.append(charDesc.toString());
         }
 
-        Font        font = Text.getLyricsFont();
-        Rectangle2D rect = font.getStringBounds(sb.toString(), frc);
-        float       size = 1.0f * (float) ((pixelCount * font.getSize2D()) / rect.getWidth());
-
-        return size;
-    }
-
-    //----------------------//
-    // computeMeanCharWidth //
-    //----------------------//
-    /**
-     * Compute the average width (in pixels) of a char among all line chars.
-     * @return the mean char width
-     */
-    private double computeMeanCharWidth ()
-    {
-        int pixelCount = 0;
-        int charCount = 0;
-
-        for (CharDesc charDesc : chars) {
-            pixelCount += charDesc.getBox().width;
-            charCount += charDesc.toString()
-                                 .length();
-        }
-
-        return (double) pixelCount / (double) charCount;
+        return TextInfo.computeFontSize(sb.toString(), width);
     }
 }

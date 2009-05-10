@@ -183,6 +183,20 @@ public class Sentence
         }
     }
 
+    //-------------//
+    // getFontSize //
+    //-------------//
+    /**
+     * Report the font size of this sentence
+     * @return the font size
+     */
+    public Float getFontSize ()
+    {
+        return items.first()
+                    .getTextInfo()
+                    .getFontSize();
+    }
+
     //-----------//
     // getGlyphs //
     //-----------//
@@ -329,6 +343,11 @@ public class Sentence
 
         sb.append(" ")
           .append(Glyphs.toString("items", items));
+
+        if (getFontSize() != null) {
+            sb.append(" size:")
+              .append(getFontSize());
+        }
 
         if (getTextContent() != null) {
             sb.append(" content:")
@@ -605,12 +624,12 @@ public class Sentence
             if ((info.getOcrContent() == null) ||
                 !language.equals(info.getOcrLanguage())) {
                 try {
-                    info.setOcrContent(
-                        language,
-                        TesseractOCR.getInstance().recognize(
-                            glyph.getImage(),
-                            language).get(0));
-
+                    OCR         ocr = TesseractOCR.getInstance();
+                    OCR.OcrLine ocrLine = ocr.recognize(
+                        glyph.getImage(),
+                        language)
+                                             .get(0);
+                    info.setOcrContent(language, ocrLine.value);
                     logger.info(this.toString());
                 } catch (Exception ex) {
                     logger.warning(

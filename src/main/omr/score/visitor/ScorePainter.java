@@ -201,8 +201,8 @@ public class ScorePainter
     {
         final ScoreSystem system = measure.getSystem();
         final SystemView  systemView = scoreView.getSystemView(system);
-        final Point origin = systemView.getDisplayOrigin();
-        
+        final Point       origin = systemView.getDisplayOrigin();
+
         // Now use system topLeft as the origin
         g.setTransform(savedTransform);
         g.translate(origin.x, origin.y);
@@ -798,13 +798,9 @@ public class ScorePainter
 
         // Text can be outside the boundaries of a system
 
-        // Use font size according to the zoom ratio
-        //        logger.info(
-        //            text.getClass().getSimpleName() + " " + text.getContent() +
-        //            " size:" + text.getFontSize());
-        float fontSize = text.getFontSize();
-        Font  font = text.getFont()
-                         .deriveFont(fontSize);
+        // Don't ask me why using this 0.9 ratio gives better display sizes
+        Font font = text.getFont()
+                        .deriveFont(text.getFontSize() * 0.9f);
         g.setFont(font);
         g.setColor(Color.BLUE);
 
