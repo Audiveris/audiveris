@@ -28,7 +28,7 @@ import javax.xml.bind.annotation.*;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class ExportTask
-    extends Task
+    extends ScriptTask
 {
     //~ Instance fields --------------------------------------------------------
 

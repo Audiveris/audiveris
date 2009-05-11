@@ -25,7 +25,7 @@ import javax.xml.bind.annotation.*;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class StepTask
-    extends Task
+    extends ScriptTask
 {
     //~ Instance fields --------------------------------------------------------
 

@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.*;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class MidiWriteTask
-    extends Task
+    extends ScriptTask
 {
     //~ Instance fields --------------------------------------------------------
 

@@ -76,11 +76,9 @@ public class TextTask
     // run //
     //-----//
     @Override
-    public void run (Sheet sheet)
+    public void runEpilog (Sheet sheet)
         throws StepException
     {
-        super.run(sheet);
-
         sheet.getSymbolsController()
              .asyncAssignText(glyphs, type, content);
     }

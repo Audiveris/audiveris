@@ -57,11 +57,9 @@ public class SlurTask
     // run //
     //-----//
     @Override
-    public void run (Sheet sheet)
+    public void runEpilog (Sheet sheet)
         throws StepException
     {
-        super.run(sheet);
-
         try {
             sheet.getSymbolsController()
                  .asyncFixLargeSlurs(glyphs)

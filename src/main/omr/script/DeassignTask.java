@@ -58,10 +58,9 @@ public class DeassignTask
     // run //
     //-----//
     @Override
-    public void run (Sheet sheet)
+    public void runEpilog (Sheet sheet)
         throws StepException
     {
-        super.run(sheet);
         sheet.getSymbolsController()
              .asyncDeassignGlyphSet(glyphs);
     }

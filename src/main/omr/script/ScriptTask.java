@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                                  T a s k                                   //
+//                            S c r i p t T a s k                             //
 //                                                                            //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
@@ -21,19 +21,19 @@ import omr.step.StepException;
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
-public abstract class Task
+public abstract class ScriptTask
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    protected static final Logger logger = Logger.getLogger(Task.class);
+    protected static final Logger logger = Logger.getLogger(ScriptTask.class);
 
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new Task object.
      */
-    protected Task ()
+    protected ScriptTask ()
     {
     }
 

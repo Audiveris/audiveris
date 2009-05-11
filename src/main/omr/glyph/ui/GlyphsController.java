@@ -270,7 +270,7 @@ public class GlyphsController
      * @param runnable the (synchronous) job
      * @return the launched Swing Application Framework task
      */
-    protected Task launch (final omr.script.Task   scriptTask,
+    protected Task launch (final omr.script.ScriptTask   scriptTask,
                            final Collection<Glyph> glyphs,
                            final GlyphsRunnable    runnable)
     {

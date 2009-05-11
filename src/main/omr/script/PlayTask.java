@@ -25,7 +25,7 @@ import javax.xml.bind.annotation.*;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class PlayTask
-    extends Task
+    extends ScriptTask
 {
     //~ Constructors -----------------------------------------------------------
 

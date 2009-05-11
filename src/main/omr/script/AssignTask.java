@@ -75,18 +75,6 @@ public class AssignTask
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----//
-    // run //
-    //-----//
-    @Override
-    public void run (Sheet sheet)
-        throws StepException
-    {
-        super.run(sheet);
-        sheet.getSymbolsController()
-             .asyncAssignGlyphSet(glyphs, shape, compound);
-    }
-
     //-----------------//
     // internalsString //
     //-----------------//
@@ -105,5 +93,16 @@ public class AssignTask
           .append(shape);
 
         return sb.toString() + super.internalsString();
+    }
+
+    //-----//
+    // run //
+    //-----//
+    @Override
+    protected void runEpilog (Sheet sheet)
+        throws StepException
+    {
+        sheet.getSymbolsController()
+             .asyncAssignGlyphSet(glyphs, shape, compound);
     }
 }

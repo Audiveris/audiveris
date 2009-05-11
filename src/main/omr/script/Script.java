@@ -58,7 +58,7 @@ public class Script
         , @XmlElement(name = "text", type = TextTask.class)
         , @XmlElement(name = "boundary", type = BoundaryTask.class)
     })
-    private final List<Task> tasks = new ArrayList<Task>();
+    private final List<ScriptTask> tasks = new ArrayList<ScriptTask>();
 
     /** Nb of tasks when stored, if any */
     private int storedTasksNb = 0;
@@ -141,7 +141,7 @@ public class Script
      *
      * @param task the task to add at the end of the current sequence
      */
-    public void addTask (Task task)
+    public void addTask (ScriptTask task)
     {
         tasks.add(task);
 
@@ -161,7 +161,7 @@ public class Script
         System.out.println();
         System.out.println(toString());
 
-        for (Task task : tasks) {
+        for (ScriptTask task : tasks) {
             System.out.println(task.toString());
         }
     }
@@ -200,7 +200,7 @@ public class Script
 
         // Run the tasks in sequence
         try {
-            for (Task task : tasks) {
+            for (ScriptTask task : tasks) {
                 // Actually run this task
                 if (logger.isFineEnabled()) {
                     logger.fine(

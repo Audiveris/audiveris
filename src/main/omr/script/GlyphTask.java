@@ -32,7 +32,7 @@ import javax.xml.bind.annotation.*;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public abstract class GlyphTask
-    extends Task
+    extends ScriptTask
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -73,8 +73,14 @@ public abstract class GlyphTask
     //-----//
     // run //
     //-----//
+    /**
+     * Method made final to force the retrieval of glyphs. Additional processing
+     * should take place in an overridden runEpilog method
+     * @param sheet the related sheet
+     * @throws omr.step.StepException
+     */
     @Override
-    public void run (Sheet sheet)
+    public final void run (Sheet sheet)
         throws StepException
     {
         // Make sure the glyphs are available
@@ -98,6 +104,9 @@ public abstract class GlyphTask
                 }
             }
         }
+
+        // Now the real processing
+        runEpilog(sheet);
     }
 
     //-----------------//
@@ -116,6 +125,17 @@ public abstract class GlyphTask
 
         return "";
     }
+
+    //-----------//
+    // runEpilog //
+    //-----------//
+    /**
+     * Do the real processing
+     * @param sheet the related sheet
+     * @throws StepException
+     */
+    protected abstract void runEpilog (Sheet sheet)
+        throws StepException;
 
     //---------------//
     // setGlyphsSigs //
