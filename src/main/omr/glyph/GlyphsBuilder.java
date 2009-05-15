@@ -173,6 +173,25 @@ public class GlyphsBuilder
         return compound;
     }
 
+    //------------//
+    // buildGlyph //
+    //------------//
+    /**
+     * Build a glyph from a collection of sections
+     * @param sections the provided members of the future glyph
+     * @return the newly built glyph
+     */
+    public Glyph buildGlyph (Collection<GlyphSection> sections)
+    {
+        Glyph glyph = new Stick(scale.interline());
+
+        for (GlyphSection section : sections) {
+            glyph.addSection(section, true);
+        }
+
+        return glyph;
+    }
+
     //----------------------//
     // computeGlyphFeatures //
     //----------------------//
@@ -234,9 +253,9 @@ public class GlyphsBuilder
     public void removeGlyph (Glyph glyph)
     {
         if (!system.removeFromGlyphsCollection(glyph)) {
-//            logger.warning(
-//                "Glyph #" + glyph.getId() + " not found in system #" +
-//                system.getId());
+            //            logger.warning(
+            //                "Glyph #" + glyph.getId() + " not found in system #" +
+            //                system.getId());
         }
 
         // Cut link from its member sections, if pointing to this glyph

@@ -9,6 +9,8 @@
 //
 package omr.glyph;
 
+import omr.lag.Section;
+
 import omr.log.Logger;
 
 import omr.sheet.Sheet;
@@ -217,6 +219,26 @@ public class GlyphsModel
                 }
             }
         }
+    }
+
+    //------------------//
+    // assignSectionSet //
+    //------------------//
+    /**
+     * Assign a shape to the selected collection of sections.
+     *
+     * @param sections the collection of sections to be aggregated as a glyph
+     * @param shape the shape to be assigned
+     * @param doubt the doubt we have wrt the assigned shape
+     */
+    public void assignSectionSet (Collection<GlyphSection> sections,
+                                  Shape               shape,
+                                  double              doubt)
+    {
+        // Build & insert one glyph out of the sections
+        SystemInfo system = sheet.getSystemOfSections(sections);
+        Glyph      glyph = system.buildGlyph(sections);
+        assignGlyph(glyph, shape, doubt);
     }
 
     //---------------//

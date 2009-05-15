@@ -9,11 +9,13 @@
 //
 package omr.lag;
 
-import omr.lag.ui.LagView;
 import omr.graph.Vertex;
+
+import omr.lag.ui.LagView;
 
 import omr.log.Logger;
 
+import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
 import omr.sheet.picture.Picture;
@@ -112,6 +114,23 @@ public class Section<L extends Lag, S extends Section<L, S>>
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //---------------//
+    // getAreaCenter //
+    //---------------//
+    /**
+     * Report the section area center.
+     *
+     * @return the area center point
+     */
+    public PixelPoint getAreaCenter ()
+    {
+        PixelRectangle box = getContourBox();
+
+        return new PixelPoint(
+            box.x + (box.width / 2),
+            box.y + (box.height / 2));
+    }
 
     //----------//
     // toString //
@@ -607,7 +626,6 @@ public class Section<L extends Lag, S extends Section<L, S>>
      * time (and safe) to compute section parameters such as contour, view,
      * etc...
      */
-
     @SuppressWarnings("unchecked")
     public void complete ()
     {

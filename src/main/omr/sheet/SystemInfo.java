@@ -639,6 +639,19 @@ public class SystemInfo
         }
     }
 
+    //------------//
+    // buildGlyph //
+    //------------//
+    /**
+     * Build a glyph from a collection of sections
+     * @param sections the provided members of the future glyph
+     * @return the newly built glyph
+     */
+    public Glyph buildGlyph (Collection<GlyphSection> sections)
+    {
+        return glyphsBuilder.buildGlyph(sections);
+    }
+
     //---------------//
     // buildMeasures //
     //---------------//

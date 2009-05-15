@@ -107,6 +107,31 @@ public class CheckPanel<C extends Checkable>
     }
 
     //----------//
+    // setSuite //
+    //----------//
+    /**
+     * Assign a (new) suite to the check pane
+     *
+     * @param suite the (new) check suite to be used
+     */
+    public void setSuite (CheckSuite<C> suite)
+    {
+        this.suite = suite;
+
+        if (suite != null) {
+            createValueFields(); // Values
+            createBoundFields(); // Bounds
+            buildComponent(); // Create/update component
+        }
+
+        // Refresh the display
+        if (component != null) {
+            component.validate();
+            component.repaint();
+        }
+    }
+
+    //----------//
     // passForm //
     //----------//
     /**
@@ -134,52 +159,56 @@ public class CheckPanel<C extends Checkable>
             Check<C> check = suite.getChecks()
                                   .get(index);
 
-            // Run this check
-            check.pass(object, result, false);
-            grade += (result.flag * suite.getWeights()
-                                         .get(index));
+            try {
+                // Run this check
+                check.pass(object, result, false);
+                grade += (result.flag * suite.getWeights()
+                                             .get(index));
 
-            // Update proper field to display check result
-            JTextField field = null;
+                // Update proper field to display check result
+                JTextField field = null;
 
-            switch (result.flag) {
-            case Check.RED :
+                switch (result.flag) {
+                case Check.RED :
+                    failed = true;
+
+                    if (check.isCovariant()) {
+                        field = values[index][0];
+                        field.setToolTipText("Value is too low");
+                    } else {
+                        field = values[index][2];
+                        field.setToolTipText("Value is too high");
+                    }
+
+                    field.setForeground(RED_COLOR);
+
+                    break;
+
+                case Check.ORANGE :
+                    field = values[index][1];
+                    field.setToolTipText("Value is acceptable");
+                    field.setForeground(ORANGE_COLOR);
+
+                    break;
+
+                case Check.GREEN :
+
+                    if (check.isCovariant()) {
+                        field = values[index][2];
+                    } else {
+                        field = values[index][0];
+                    }
+
+                    field.setToolTipText("Value is OK");
+                    field.setForeground(GREEN_COLOR);
+
+                    break;
+                }
+
+                field.setText(textOf(result.value));
+            } catch (Exception ex) {
                 failed = true;
-
-                if (check.isCovariant()) {
-                    field = values[index][0];
-                    field.setToolTipText("Value is too low");
-                } else {
-                    field = values[index][2];
-                    field.setToolTipText("Value is too high");
-                }
-
-                field.setForeground(RED_COLOR);
-
-                break;
-
-            case Check.ORANGE :
-                field = values[index][1];
-                field.setToolTipText("Value is acceptable");
-                field.setForeground(ORANGE_COLOR);
-
-                break;
-
-            case Check.GREEN :
-
-                if (check.isCovariant()) {
-                    field = values[index][2];
-                } else {
-                    field = values[index][0];
-                }
-
-                field.setToolTipText("Value is OK");
-                field.setForeground(GREEN_COLOR);
-
-                break;
             }
-
-            field.setText(textOf(result.value));
         }
 
         // Global suite result
@@ -199,31 +228,6 @@ public class CheckPanel<C extends Checkable>
             }
 
             globalField.setText(textOf(grade));
-        }
-    }
-
-    //----------//
-    // setSuite //
-    //----------//
-    /**
-     * Assign a (new) suite to the check pane
-     *
-     * @param suite the (new) check suite to be used
-     */
-    public void setSuite (CheckSuite<C> suite)
-    {
-        this.suite = suite;
-
-        if (suite != null) {
-            createValueFields(); // Values
-            createBoundFields(); // Bounds
-            buildComponent(); // Create/update component
-        }
-
-        // Refresh the display
-        if (component != null) {
-            component.validate();
-            component.repaint();
         }
     }
 

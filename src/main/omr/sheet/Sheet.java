@@ -20,6 +20,9 @@ import omr.glyph.SymbolsModel;
 import omr.glyph.ui.SymbolsController;
 import omr.glyph.ui.SymbolsEditor;
 
+import omr.lag.Section;
+import omr.lag.Sections;
+
 import omr.log.Logger;
 
 import omr.score.Score;
@@ -872,10 +875,21 @@ public class Sheet
      */
     public SystemInfo getSystemOf (Glyph glyph)
     {
-        Rectangle box = glyph.getContourBox();
+        return getSystemOf(glyph.getAreaCenter());
+    }
 
-        return getSystemOf(
-            new PixelPoint(box.x + (box.width / 2), box.y + (box.height / 2)));
+    //-------------//
+    // getSystemOf //
+    //-------------//
+    /**
+     * Report the system, if any, which contains the provided vertical section
+     * (the precise point is the glyph area center)
+     * @param section the provided section
+     * @return the containing system, or null
+     */
+    public SystemInfo getSystemOf (Section section)
+    {
+        return getSystemOf(section.getAreaCenter());
     }
 
     //-------------//
@@ -921,6 +935,54 @@ public class Sheet
         if (!toRemove.isEmpty()) {
             logger.warning("No system for " + Glyphs.toString(toRemove));
             glyphs.removeAll(toRemove);
+        }
+
+        return system;
+    }
+
+    //---------------------//
+    // getSystemOfSections //
+    //---------------------//
+    /**
+     * Report the system that contains ALL sections provided.
+     * If all sections do not belong to the same system, exception is thrown
+     * @param sections the collection of sections
+     * @return the containing system
+     * @exception IllegalArgumentException raised if section collection is not OK
+     */
+    public SystemInfo getSystemOfSections (Collection<GlyphSection> sections)
+    {
+        if ((sections == null) || sections.isEmpty()) {
+            throw new IllegalArgumentException(
+                "getSystemOfSections. Sections collection is null or empty");
+        }
+
+        SystemInfo               system = null;
+        Collection<GlyphSection> toRemove = new ArrayList<GlyphSection>();
+
+        for (GlyphSection section : sections) {
+            SystemInfo sectionSystem = getSystemOf(section);
+
+            if (sectionSystem == null) {
+                toRemove.add(section);
+            } else {
+                if (system == null) {
+                    system = sectionSystem;
+                } else {
+                    // Make sure we are still in the same system
+                    if (sectionSystem != system) {
+                        throw new IllegalArgumentException(
+                            "getSystemOfSections. Sections from different systems (" +
+                            getSystemOf(section) + " and " + system + ") " +
+                            Sections.toString(sections));
+                    }
+                }
+            }
+        }
+
+        if (!toRemove.isEmpty()) {
+            logger.warning("No system for " + Sections.toString(toRemove));
+            sections.removeAll(toRemove);
         }
 
         return system;
