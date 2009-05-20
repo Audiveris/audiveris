@@ -116,7 +116,11 @@ public class ScoreBoard
                         {
                             score.getSheet()
                                  .getSheetSteps()
-                                 .rebuildAfter(Step.VERTICALS, null, null, true);
+                                 .rebuildAfter(
+                                Step.VERTICALS,
+                                null,
+                                null,
+                                true);
 
                             return null;
                         }
@@ -234,17 +238,20 @@ public class ScoreBoard
     // commit //
     //--------//
     /**
-     * Checks the values and commitPart them if they are OK
+     * Checks the values and commit them if they are OK
      *
      * @return true if committed, false otherwise
      */
     public boolean commit ()
     {
-        if (checkData()) {
+        if (dataIsValid()) {
             // Each score part
             for (ScorePart scorePart : score.getPartList()) {
-                panes.get(scorePart)
-                     .commitPart();
+                PartPane part = panes.get(scorePart);
+
+                if (part != null) {
+                    part.commitPart();
+                }
             }
 
             // Score global data
@@ -307,12 +314,16 @@ public class ScoreBoard
         builder.addSeparator("Global Data");
 
         r += 2; //---------------------------------------
-        builder.add(new JLabel("Text"), cst.xy(5, r));
-        builder.add(langCombo, cst.xyw(7, r, 5));
+
+        JLabel textLabel = new JLabel("Text language", SwingConstants.RIGHT);
+        builder.add(textLabel, cst.xyw(5, r, 3));
+        builder.add(langCombo, cst.xyw(9, r, 3));
 
         r += 2; //---------------------------------------
-        builder.add(new JLabel("Layout"), cst.xy(5, r));
-        builder.add(layoutCombo, cst.xyw(7, r, 5));
+
+        JLabel layoutLabel = new JLabel("Score layout", SwingConstants.RIGHT);
+        builder.add(layoutLabel, cst.xyw(5, r, 3));
+        builder.add(layoutCombo, cst.xyw(9, r, 3));
 
         r += 2; //---------------------------------------
         builder.add(tempo.getLabel(), cst.xy(5, r));
@@ -347,10 +358,10 @@ public class ScoreBoard
         return panel;
     }
 
-    //-----------//
-    // checkData //
-    //-----------//
-    private boolean checkData ()
+    //-------------//
+    // dataIsValid //
+    //-------------//
+    private boolean dataIsValid ()
     {
         // Tempo
         if ((tempo.getValue() < 0) || (tempo.getValue() > 1000)) {
@@ -366,8 +377,18 @@ public class ScoreBoard
             return false;
         }
 
-        // First Measure
-        if (score.getLastSystem() != null) {
+        // Each score part
+        for (ScorePart scorePart : score.getPartList()) {
+            PartPane part = panes.get(scorePart);
+
+            if ((part != null) && !part.checkPart()) {
+                return false;
+            }
+        }
+
+        // Measure range
+        if (rangeBox.isSelected() && (score.getLastSystem() != null)) {
+            // First Measure
             int maxMeasureId = score.getLastSystem()
                                     .getLastPart()
                                     .getLastMeasure()
@@ -376,7 +397,8 @@ public class ScoreBoard
             if ((firstId.getValue() < 1) ||
                 (firstId.getValue() > maxMeasureId)) {
                 logger.warning(
-                    "First measure Id is not within [1.." + maxMeasureId + "]");
+                    "First measure Id is not within [1.." + maxMeasureId +
+                    "]: " + firstId.getValue());
 
                 return false;
             }
@@ -384,7 +406,8 @@ public class ScoreBoard
             // Last Measure
             if ((lastId.getValue() < 1) || (lastId.getValue() > maxMeasureId)) {
                 logger.warning(
-                    "Last measure Id is not within [1.." + maxMeasureId + "]");
+                    "Last measure Id is not within [1.." + maxMeasureId +
+                    "]: " + lastId.getValue());
 
                 return false;
             }
@@ -394,14 +417,6 @@ public class ScoreBoard
                 logger.warning(
                     "First measure Id is greater than last measure Id");
 
-                return false;
-            }
-        }
-
-        // Each score part
-        for (ScorePart scorePart : score.getPartList()) {
-            if (!panes.get(scorePart)
-                      .checkPart()) {
                 return false;
             }
         }

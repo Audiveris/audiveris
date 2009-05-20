@@ -19,10 +19,28 @@ package omr.score.ui;
  */
 public enum ScoreOrientation {
     /** Systems displayed side by side */
-    HORIZONTAL,
+    HORIZONTAL("Horizontal"),
     /** System displayed one above the other */
-    VERTICAL;
+    VERTICAL("Vertical");
     //
+    public final String description;
+
+    //------------------//
+    // ScoreOrientation //
+    //------------------//
+    private ScoreOrientation (String description)
+    {
+        this.description = description;
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return description;
+    }
 
     //----------//
     // Constant //
@@ -87,7 +105,7 @@ public enum ScoreOrientation {
         @Override
         protected ScoreOrientation decode (java.lang.String str)
         {
-            return ScoreOrientation.valueOf(str);
+            return ScoreOrientation.valueOf(str.toUpperCase());
         }
 
         /**
