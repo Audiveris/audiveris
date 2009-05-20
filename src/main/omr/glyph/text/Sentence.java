@@ -19,6 +19,7 @@ import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
+import omr.glyph.text.tesseract.TesseractOCR;
 
 import omr.lag.HorizontalOrientation;
 
@@ -126,7 +127,7 @@ public class Sentence
               int        id)
     {
         this.systemInfo = systemInfo;
-        this.id = systemInfo.getId() + ":" + id;
+        this.id = systemInfo.getId() + "." + id;
 
         addItem(glyph);
 
@@ -190,7 +191,7 @@ public class Sentence
      * Report the font size of this sentence
      * @return the font size
      */
-    public Float getFontSize ()
+    public Integer getFontSize ()
     {
         return items.first()
                     .getTextInfo()
@@ -624,13 +625,24 @@ public class Sentence
             if ((info.getOcrContent() == null) ||
                 !language.equals(info.getOcrLanguage())) {
                 try {
-                    OCR         ocr = TesseractOCR.getInstance();
-                    OCR.OcrLine ocrLine = ocr.recognize(
+                    OCR           ocr = TesseractOCR.getInstance();
+                    List<OcrLine> lines = ocr.recognize(
                         glyph.getImage(),
-                        language)
-                                             .get(0);
-                    info.setOcrContent(language, ocrLine.value);
-                    logger.info(this.toString());
+                        language);
+
+                    if (!lines.isEmpty()) {
+                        OcrLine ocrLine = lines.get(0);
+                        info.setOcrInfo(language, ocrLine.value, ocrLine);
+                        logger.info(this.toString());
+
+                        if (lines.size() > 1) {
+                            logger.warning(
+                                "Sentence with more than one line at glyph #" +
+                                glyph.getId());
+                        }
+                    } else {
+                        logger.warning("No line for glyph #" + glyph.getId());
+                    }
                 } catch (Exception ex) {
                     logger.warning(
                         "OCR error with glyph #" + glyph.getId(),

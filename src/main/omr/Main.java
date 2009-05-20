@@ -86,6 +86,9 @@ public class Main
     /** Specific folder name for icons */
     private static final String ICONS_FOLDER_NAME = "icons";
 
+    /** Specific folder name for OCR utility */
+    private static final String OCR_FOLDER_NAME = "ocr";
+
     /** Specific folder name for documentation */
     private static final String DOC_FOLDER_NAME = "www";
 
@@ -211,6 +214,19 @@ public class Main
     public static File getIconsFolder ()
     {
         return new File(homeFolder, ICONS_FOLDER_NAME);
+    }
+
+    //--------------//
+    // getOcrFolder //
+    //--------------//
+    /**
+     * Report the folder where Tesseract OCR material is stored
+     *
+     * @return the directory for tesseract / tesjeract files
+     */
+    public static File getOcrFolder ()
+    {
+        return new File(homeFolder, OCR_FOLDER_NAME);
     }
 
     //--------------//

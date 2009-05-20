@@ -14,6 +14,9 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.*;
 import omr.glyph.Shape;
+import omr.glyph.text.OcrLine;
+import omr.glyph.text.TextInfo;
+import omr.glyph.text.tesseract.CharDesc;
 
 import omr.lag.ui.LagView;
 
@@ -208,6 +211,7 @@ public class GlyphLagView
     /**
      * Colorize a glyph according to its shape current status
      *
+     * @param viewIndex index to proper section views
      * @param glyph the glyph at hand
      */
     public void colorizeGlyph (int   viewIndex,
@@ -223,6 +227,7 @@ public class GlyphLagView
      * Colorize a glyph with a specific color. If this color is null, then the
      * glyph is actually reset to its default section colors
      *
+     * @param viewIndex index to proper section views
      * @param glyph the glyph at hand
      * @param color the specific color (may be null, to trigger a reset)
      */
@@ -540,6 +545,21 @@ public class GlyphLagView
                                          .isLinePainting()) {
                     if (glyph instanceof Stick) {
                         drawStickLine((Stick) glyph, g);
+                    }
+                }
+
+                // Draw character boxes for textual glyphs
+                if (glyph.isText()) {
+                    TextInfo  info = glyph.getTextInfo();
+                    OcrLine   ocrLine = info.getOcrLine();
+                    Rectangle glyphBox = glyph.getContourBox();
+
+                    if (ocrLine != null) {
+                        for (CharDesc ch : ocrLine.lineDesc.getChars()) {
+                            Rectangle b = ch.getBox();
+                            b.translate(glyphBox.x, glyphBox.y);
+                            g.drawRect(b.x, b.y, b.width, b.height);
+                        }
                     }
                 }
             }

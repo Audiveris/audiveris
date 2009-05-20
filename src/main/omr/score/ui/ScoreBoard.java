@@ -9,7 +9,7 @@
 //
 package omr.score.ui;
 
-import omr.glyph.text.TesseractOCR;
+import omr.glyph.text.tesseract.TesseractOCR;
 
 import omr.log.Logger;
 

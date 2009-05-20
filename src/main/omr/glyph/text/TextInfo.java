@@ -35,6 +35,9 @@ import java.awt.geom.Rectangle2D;
  * the ocr content. Access to the pseudo content is done only through the {@link
  * #getPseudoContent} method.</p>
  *
+ * <p>The font size is taken from OCR if available, otherwise it is computed
+ * from physical characteristics.</p>
+ *
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
@@ -60,11 +63,14 @@ public class TextInfo
         false,
         true);
 
+    /** (So far empirical) ratio between width and point values */
+    public static final float FONT_WIDTH_POINT_RATIO = 4.4f;
+
     /**
-     * The ratio to be applied to a font size when exporting to XML
-     * TODO: try to figure the reason for this value!
+     * Ratio applied to a font point size to get a correct display.
+     * TODO: If someone could explain why this ratio is not 1
      */
-    public static final float EXPORT_RATIO = 0.25f;
+    public static final float FONT_DISPLAY_RATIO = 4.0f;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -76,6 +82,9 @@ public class TextInfo
 
     /** Mabual content if any */
     private String manualContent;
+
+    /** Detailed OCR info about this line */
+    private OcrLine ocrLine;
 
     /** OCR-based content if any */
     private String ocrContent;
@@ -93,7 +102,7 @@ public class TextInfo
     private TextRole role;
 
     /** Font size */
-    private Float fontSize;
+    private Integer fontSize;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -121,7 +130,8 @@ public class TextInfo
                                          int    width)
     {
         Rectangle2D rect = basicFont.getStringBounds(content, frc);
-        float       ratio = width / (float) rect.getWidth();
+
+        float       ratio = width / (float) rect.getWidth() / FONT_WIDTH_POINT_RATIO;
 
         return basicFont.getSize2D() * ratio;
     }
@@ -139,7 +149,7 @@ public class TextInfo
                                        Font   font)
     {
         return font.getStringBounds(content, frc)
-                   .getWidth();
+                   .getWidth() * FONT_WIDTH_POINT_RATIO;
     }
 
     //------------//
@@ -166,13 +176,14 @@ public class TextInfo
      * Report the proper font size for the textual glyph
      * @return the fontSize
      */
-    public Float getFontSize ()
+    public Integer getFontSize ()
     {
         if (fontSize == null) {
-            if (getContent() != null) {
-                fontSize = computeFontSize(
-                    getContent(),
-                    glyph.getContourBox().width);
+            if ((ocrLine != null) && (ocrLine.isFontSizeValid())) {
+                fontSize = ocrLine.fontSize;
+            } else {
+                fontSize = (int) Math.rint(
+                    computeFontSize(getContent(), glyph.getContourBox().width));
             }
         }
 
@@ -189,6 +200,7 @@ public class TextInfo
     public void setManualContent (String manualContent)
     {
         this.manualContent = manualContent;
+
         fontSize = null;
     }
 
@@ -205,22 +217,6 @@ public class TextInfo
     }
 
     //---------------//
-    // setOcrContent //
-    //---------------//
-    /**
-     * Remember the text content as provided by the OCR engine
-     * @param ocrLanguage the Language provided to the OCR for recognition
-     * @param ocrContent the OCR string value for this text glyph
-     */
-    public void setOcrContent (String ocrLanguage,
-                               String ocrContent)
-    {
-        this.ocrLanguage = ocrLanguage;
-        this.ocrContent = ocrContent;
-        fontSize = null;
-    }
-
-    //---------------//
     // getOcrContent //
     //---------------//
     /**
@@ -230,6 +226,33 @@ public class TextInfo
     public String getOcrContent ()
     {
         return ocrContent;
+    }
+
+    //------------//
+    // setOcrInfo //
+    //------------//
+    /**
+     * Remember the information as provided by the OCR engine
+     * @param ocrLanguage the Language provided to the OCR for recognition
+     * @param ocrContent the OCR string value for this text glyph
+     * @param ocrLine the detailed OCR line about this glyph
+     */
+    public void setOcrInfo (String  ocrLanguage,
+                            String  ocrContent,
+                            OcrLine ocrLine)
+    {
+        this.ocrLanguage = ocrLanguage;
+        this.ocrContent = ocrContent;
+
+        if (ocrLine != null) {
+            this.ocrLine = ocrLine;
+
+            if (ocrLine.isFontSizeValid()) {
+                fontSize = ocrLine.fontSize;
+            } else {
+                fontSize = null;
+            }
+        }
     }
 
     //----------------//
@@ -242,6 +265,18 @@ public class TextInfo
     public String getOcrLanguage ()
     {
         return ocrLanguage;
+    }
+
+    //------------//
+    // getOcrLine //
+    //------------//
+    /**
+     * Report the detailed OCR information
+     * @return the ocrLine
+     */
+    public OcrLine getOcrLine ()
+    {
+        return ocrLine;
     }
 
     //------------------//
@@ -363,6 +398,21 @@ public class TextInfo
             getTextArea().getBaseline());
     }
 
+    //------//
+    // dump //
+    //------//
+    /**
+     * Write detailed text information on the standard output
+     */
+    public void dump ()
+    {
+        logger.info(this.toString());
+
+        if (ocrLine != null) {
+            ocrLine.lineDesc.dump();
+        }
+    }
+
     //--------------------//
     // resetPseudoContent //
     //--------------------//
@@ -381,28 +431,34 @@ public class TextInfo
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{Text");
+        StringBuilder sb = new StringBuilder("{TextInfo");
 
-        if (getFontSize() != null) {
+        if (fontSize != null) {
             sb.append(" fontSize:")
-              .append(getFontSize());
+              .append(fontSize);
         }
 
         if (manualContent != null) {
             sb.append(" manual:")
-              .append(manualContent);
+              .append("\"")
+              .append(manualContent)
+              .append("\"");
         }
 
         if (ocrContent != null) {
-            sb.append(" (")
+            sb.append(" ocr(")
               .append(ocrLanguage)
-              .append(")ocr:")
-              .append(ocrContent);
+              .append("):")
+              .append("\"")
+              .append(ocrContent)
+              .append("\"");
         }
 
         if (pseudoContent != null) {
             sb.append(" pseudo:")
-              .append(pseudoContent);
+              .append("\"")
+              .append(pseudoContent)
+              .append("\"");
         }
 
         sb.append("}");

@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Interface <code>OCR</code> encapsulates the interaction with the OCR engine.
+ * Interface <code>OCR</code> encapsulates the interaction with an OCR engine.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -50,29 +50,4 @@ public interface OCR
     List<OcrLine> recognize (BufferedImage image,
                              String        languageCode)
         throws IOException, InterruptedException;
-
-    //~ Inner Classes ----------------------------------------------------------
-
-    /**
-     * Structure to report useful info on decoded line
-     */
-    public static class OcrLine
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /** Detected font size */
-        public final float fontSize;
-
-        /** Detected line content */
-        public final String value;
-
-        //~ Constructors -------------------------------------------------------
-
-        public OcrLine (float  fontSize,
-                        String value)
-        {
-            this.fontSize = fontSize;
-            this.value = value;
-        }
-    }
 }

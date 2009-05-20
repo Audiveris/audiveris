@@ -16,6 +16,7 @@ import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 import omr.glyph.text.Sentence;
+import omr.glyph.text.TextInfo;
 
 import omr.log.Logger;
 
@@ -798,9 +799,10 @@ public class ScorePainter
 
         // Text can be outside the boundaries of a system
 
-        // Don't ask me why using this 0.9 ratio gives better display sizes
+        // Don't ask me why we need this ratio for display
         Font font = text.getFont()
-                        .deriveFont(text.getFontSize() * 0.9f);
+                        .deriveFont(
+            text.getFontSize() * TextInfo.FONT_DISPLAY_RATIO);
         g.setFont(font);
         g.setColor(Color.BLUE);
 

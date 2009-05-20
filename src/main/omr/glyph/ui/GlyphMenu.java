@@ -156,6 +156,9 @@ public class GlyphMenu
         // Dump current glyph
         popup.add(new JMenuItem(new DumpAction()));
 
+        // Dump current glyph text info
+        popup.add(new JMenuItem(new DumpTextAction()));
+
         // Display score counterpart
         popup.add(new JMenuItem(new TranslationAction()));
 
@@ -419,6 +422,50 @@ public class GlyphMenu
                 setEnabled(false);
                 putValue(NAME, "Dump");
                 putValue(SHORT_DESCRIPTION, "No glyph to dump");
+            }
+        }
+    }
+
+    //----------------//
+    // DumpTextAction //
+    //----------------//
+    /**
+     * Dump the text information of each glyph in the selected collection of
+     * glyphs
+     */
+    private class DumpTextAction
+        extends DynAction
+    {
+        //~ Methods ------------------------------------------------------------
+
+        public void actionPerformed (ActionEvent e)
+        {
+            for (Glyph glyph : glyphLag.getSelectedGlyphSet()) {
+                glyph.getTextInfo().dump();
+            }
+        }
+
+        @Override
+        public void update ()
+        {
+            if (glyphNb > 0) {
+                setEnabled(true);
+
+                StringBuilder sb = new StringBuilder();
+                sb.append("Dump text of ")
+                  .append(glyphNb)
+                  .append(" glyph");
+
+                if (glyphNb > 1) {
+                    sb.append("s");
+                }
+
+                putValue(NAME, sb.toString());
+                putValue(SHORT_DESCRIPTION, "Dump text of selected glyphs");
+            } else {
+                setEnabled(false);
+                putValue(NAME, "Dump text");
+                putValue(SHORT_DESCRIPTION, "No glyph to dump text");
             }
         }
     }

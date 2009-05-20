@@ -54,10 +54,10 @@ public abstract class Worker<T>
     // Worker //
     //--------//
     /**
-     * Prepare a thread that will call the <code>construct</code> method
-     * and then exit. You need to start() this worker.
+     * Prepare a Worker with a specified stack size
+     * @param stackSize the worker stack size, specified in bytes
      */
-    public Worker ()
+    public Worker (long stackSize)
     {
         Runnable doConstruct = new Runnable() {
             public void run ()
@@ -77,13 +77,27 @@ public abstract class Worker<T>
             }
         };
 
-        Thread t = new Thread(doConstruct);
+        Thread t = new Thread(null, doConstruct, "Worker", stackSize);
         t.setPriority(Thread.MIN_PRIORITY);
         threadVar = new ThreadVar(t);
 
         if (logger.isFineEnabled()) {
             logger.fine(getClass().getName() + " created");
         }
+    }
+
+    //--------//
+    // Worker //
+    //--------//
+    /**
+     * Prepare a thread that will call the <code>construct</code> method
+     * and then exit. You need to start() this worker.
+     * The worker will use the default stakc size.
+     */
+    public Worker ()
+    {
+        // Use default stack size
+        this(0L);
     }
 
     //~ Methods ----------------------------------------------------------------

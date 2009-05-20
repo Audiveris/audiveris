@@ -1539,7 +1539,7 @@ public class ScoreExporter
         Credit        pmCredit = factory.createCredit();
         FormattedText creditWords = factory.createFormattedText();
         creditWords.setValue(text.getContent());
-        creditWords.setFontSize("" + text.getExportedFontSize());
+        creditWords.setFontSize("" + text.getFontSize());
 
         // Position is wrt to page
         PagePoint pt = text.getSystem()
@@ -1739,7 +1739,7 @@ public class ScoreExporter
             pmWords.setDefaultY(yOf(words.getPoint(), staff));
 
             // font-size
-            pmWords.setFontSize("" + words.getText().getExportedFontSize());
+            pmWords.setFontSize("" + words.getText().getFontSize());
 
             // relative-x
             pmWords.setRelativeX(
