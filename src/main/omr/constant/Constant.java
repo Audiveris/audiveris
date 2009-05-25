@@ -543,7 +543,7 @@ public abstract class Constant
         }
 
         @Override
-        protected Object decode (java.lang.String str)
+        protected java.lang.Boolean decode (java.lang.String str)
         {
             return java.lang.Boolean.valueOf(str);
         }
@@ -642,7 +642,7 @@ public abstract class Constant
         }
 
         @Override
-        protected Object decode (java.lang.String str)
+        protected java.awt.Color decode (java.lang.String str)
         {
             return java.awt.Color.decode(str);
         }
@@ -711,7 +711,7 @@ public abstract class Constant
         }
 
         @Override
-        protected Object decode (java.lang.String str)
+        protected java.lang.Double decode (java.lang.String str)
         {
             return new java.lang.Double(str);
         }
@@ -780,7 +780,7 @@ public abstract class Constant
         }
 
         @Override
-        protected Object decode (java.lang.String str)
+        protected java.lang.Integer decode (java.lang.String str)
         {
             return new java.lang.Integer(str);
         }
@@ -875,7 +875,7 @@ public abstract class Constant
         }
 
         @Override
-        protected Object decode (java.lang.String str)
+        protected java.lang.String decode (java.lang.String str)
         {
             return str;
         }
