@@ -45,7 +45,6 @@ import omr.score.entity.TimeSignature;
 import omr.score.entity.Tuplet;
 import omr.score.entity.Wedge;
 import omr.score.midi.MidiAgent;
-import omr.score.ui.ScoreView;
 import omr.score.visitor.ScoreFixer;
 import omr.score.visitor.ScoreTimeFixer;
 
@@ -222,7 +221,7 @@ public class SystemTranslator
     private void translate (Translator translator)
     {
         system = systemInfo.getScoreSystem();
-        
+
         // Browse the system collection of glyphs
         for (Glyph glyph : system.getInfo()
                                  .getGlyphs()) {
@@ -1031,7 +1030,9 @@ public class SystemTranslator
             if (sentence != null) {
                 Text.populate(sentence, sentence.getLocation());
             } else {
-                logger.warning("No sentence for glyph #" + glyph.getId());
+                logger.warning(
+                    "No sentence for glyph #" + glyph.getId() +
+                    ". Cannot translate to score entity.");
             }
         }
     }

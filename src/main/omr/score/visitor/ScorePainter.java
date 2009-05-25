@@ -629,6 +629,24 @@ public class ScorePainter
         return true;
     }
 
+    //----------------//
+    // visit Ornament //
+    //----------------//
+    @Override
+    public boolean visit (Ornament ornament)
+    {
+        return visit((MeasureElement) ornament);
+    }
+
+    //-------------//
+    // visit Pedal //
+    //-------------//
+    @Override
+    public boolean visit (Pedal pedal)
+    {
+        return visit((MeasureElement) pedal);
+    }
+
     //-------------//
     // visit Score //
     //-------------//
@@ -638,6 +656,15 @@ public class ScorePainter
         score.acceptChildren(this);
 
         return false;
+    }
+
+    //-------------//
+    // visit Segno //
+    //-------------//
+    @Override
+    public boolean visit (Segno segno)
+    {
+        return visit((MeasureElement) segno);
     }
 
     //------------//
@@ -804,7 +831,13 @@ public class ScorePainter
                         .deriveFont(
             text.getFontSize() * TextInfo.FONT_DISPLAY_RATIO);
         g.setFont(font);
-        g.setColor(Color.BLUE);
+
+        // Special color for text with unknown role
+        if (text instanceof Text.DefaultText) {
+            g.setColor(Color.GRAY);
+        } else {
+            g.setColor(Color.BLUE);
+        }
 
         // Force y alignment for items of the same sentence
         Sentence sentence = text.getSentence();
@@ -876,33 +909,6 @@ public class ScorePainter
         }
 
         return true;
-    }
-
-    //-------------//
-    // visit Pedal //
-    //-------------//
-    @Override
-    public boolean visit (Pedal pedal)
-    {
-        return visit((MeasureElement) pedal);
-    }
-
-    //-------------//
-    // visit Segno //
-    //-------------//
-    @Override
-    public boolean visit (Segno segno)
-    {
-        return visit((MeasureElement) segno);
-    }
-
-    //----------------//
-    // visit Ornament //
-    //----------------//
-    @Override
-    public boolean visit (Ornament ornament)
-    {
-        return visit((MeasureElement) ornament);
     }
 
     //--------------//

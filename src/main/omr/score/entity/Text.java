@@ -11,6 +11,7 @@ package omr.score.entity;
 import omr.glyph.Glyph;
 import omr.glyph.text.Sentence;
 import omr.glyph.text.TextInfo;
+import omr.glyph.text.TextRole;
 
 import omr.log.Logger;
 
@@ -234,12 +235,11 @@ public abstract class Text
         final SystemPart  systemPart = sentence.getSystemPart();
         final ScoreSystem system = systemPart.getSystem();
 
-        if (sentence.getTextRole() == null) {
+        if ((sentence.getTextRole() == null) ||
+            (sentence.getTextRole() == TextRole.Unknown)) {
             systemPart.addError(
                 sentence.getGlyphs().first(),
                 "Sentence with no role defined");
-
-            return;
         }
 
         if (logger.isFineEnabled()) {

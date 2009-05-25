@@ -183,7 +183,7 @@ public enum TextRole {
             }
         }
 
-        return null;
+        return TextRole.Unknown;
     }
 
     //-----------//
