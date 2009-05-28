@@ -11,6 +11,7 @@ package omr.glyph.text.tesseract;
 
 import omr.glyph.text.OcrChar;
 import omr.glyph.text.OcrLine;
+import omr.glyph.text.TextInfo;
 
 import omr.log.Logger;
 
@@ -99,7 +100,7 @@ class UseTessDllDll
      * Report all the OCR-detected lines out of the provided image file
      * @param imageFile the image file
      * @param languageCode the dominant language, or null
-     * @param optional label
+     * @param label optional label
      * @return the sequence of detected lines
      * @throws java.io.FileNotFoundException
      * @throws java.io.IOException
@@ -144,7 +145,6 @@ class UseTessDllDll
         List<OcrLine> lines = new ArrayList<OcrLine>();
         List<OcrChar> lineChars = new ArrayList<OcrChar>();
         int           lastPointSize = -1;
-        byte[]        bytes = new byte[1000];
 
         try {
             for (int index = 0; index < chars.length; index++) {
@@ -152,28 +152,7 @@ class UseTessDllDll
 
                 // Compute the number of bytes for this UTF8 sequence
                 int byteCount = utf8ByteCount(ch.char_code);
-
-                for (int i = 0; i < byteCount; i++) {
-                    bytes[i] = (byte) chars[index + i].char_code;
-                }
-
-                // Get correct string value
-                String  str = new String(
-                    Arrays.copyOf(bytes, byteCount),
-                    "UTF8");
-
-                // Copy char box information (with slight corrections)
-                OcrChar charDesc = new OcrChar(
-                    str,
-                    new PixelRectangle(
-                        ch.left,
-                        ch.top + 1, // Correction
-                        ch.right - ch.left,
-                        ch.bottom - ch.top),
-                    ch.point_size,
-                    ch.blanks);
-
-                lineChars.add(charDesc);
+                lineChars.add(buildCharDesc(chars, index, byteCount));
 
                 // Let's move to the very last byte of the sequence
                 // To use its formatting data
@@ -219,6 +198,57 @@ class UseTessDllDll
     {
         return ((ch.formatting & 0x40) != 0) // newLine 
                 ||((ch.formatting & 0x80) != 0); // newPara
+    }
+
+    //---------------//
+    // buildCharDesc //
+    //---------------//
+    /**
+     * Extract and translate the character value out of the UTF8 sequence, while
+     * fixing extension character if any
+     * @param chars the global char sequence returned by Tesseract
+     * @param index the starting index in the chars sequence
+     * @param byteCount the number of bytes of the UTF8 sequence
+     * @return the proper string value
+     * @throws java.io.UnsupportedEncodingException if UTF8 sequence is wrong
+     */
+    private OcrChar buildCharDesc (EANYCodeChar[] chars,
+                                   int            index,
+                                   int            byteCount)
+        throws UnsupportedEncodingException
+    {
+        EANYCodeChar   ch = chars[index];
+
+        // Copy char box information (with slight corrections)
+        PixelRectangle box = new PixelRectangle(
+            ch.left,
+            ch.top + 1, // Correction
+            ch.right - ch.left,
+            ch.bottom - ch.top);
+
+        // Get correct string value
+        String str = null;
+
+        // Check for extension character badly recognized, using aspect
+        double aspect = (double) box.width / (double) box.height;
+
+        if (aspect >= TextInfo.getMinExtensionAspect()) {
+            if (logger.isFineEnabled()) {
+                logger.fine("Suspecting an Extension character");
+            }
+
+            str = TextInfo.EXTENSION_STRING;
+        } else {
+            byte[] bytes = new byte[1000];
+
+            for (int i = 0; i < byteCount; i++) {
+                bytes[i] = (byte) chars[index + i].char_code;
+            }
+
+            str = new String(Arrays.copyOf(bytes, byteCount), "UTF8");
+        }
+
+        return new OcrChar(str, box, ch.point_size, ch.blanks);
     }
 
     //-----------//

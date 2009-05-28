@@ -57,26 +57,15 @@ public class TextInfo
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(TextInfo.class);
 
-    /** Character used for elision */
-    public static final char ELISION_CHAR = '?'; // TBD
-
-    /** String equivalent of Character used for elision */
+    /** String equivalent of Character used for elision (undertie) */
     public static final String ELISION_STRING = new String(
-        new char[] { ELISION_CHAR });
+        Character.toChars(0x203F));
 
-    /** Character used for extension */
-    public static final char EXTENSION_CHAR = '_'; // TBD
-
-    /** String equivalent of Character used for extension */
-    public static final String EXTENSION_STRING = new String(
-        new char[] { EXTENSION_CHAR });
-
-    /** Character used for hyphen */
-    public static final char HYPHEN_CHAR = '-';
+    /** String equivalent of Character used for extension (underscore) */
+    public static final String EXTENSION_STRING = "_";
 
     /** String equivalent of Character used for hyphen */
-    public static final String HYPHEN_STRING = new String(
-        new char[] { HYPHEN_CHAR });
+    public static final String HYPHEN_STRING = "-";
 
     /** The basic font used for text entities */
     public static final Font basicFont = new Font(
@@ -169,6 +158,14 @@ public class TextInfo
     {
         return getContent()
                    .equals(HYPHEN_STRING);
+    }
+
+    //-----------------------//
+    // getMinExtensionAspect //
+    //-----------------------//
+    public static double getMinExtensionAspect ()
+    {
+        return constants.minExtensionAspect.getValue();
     }
 
     //-----------------//
@@ -644,6 +641,9 @@ public class TextInfo
         Constant.String  basicFontName = new Constant.String(
             "Serif", //"Sans Serif",
             "Standard font name for texts");
+        Constant.Ratio   minExtensionAspect = new Constant.Ratio(
+            10d,
+            "Minimum width/height ratio for an extension character");
     }
 
     //-----------//
@@ -725,12 +725,11 @@ public class TextInfo
                 }
 
                 String str = charDesc.content;
-                char   c = str.charAt(0);
 
                 // Special characters (returned as stand-alone words)
-                if ((c == EXTENSION_CHAR) ||
-                    (c == ELISION_CHAR) ||
-                    (c == HYPHEN_CHAR)) {
+                if (str.equals(EXTENSION_STRING) ||
+                    str.equals(ELISION_STRING) ||
+                    str.equals(HYPHEN_STRING)) {
                     if (word.length() > 0) {
                         pos--;
                     } else {

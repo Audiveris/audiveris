@@ -18,7 +18,6 @@ import omr.glyph.text.TextInfo;
 import omr.log.Logger;
 
 import omr.score.common.SystemPoint;
-import omr.score.common.SystemRectangle;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
@@ -136,14 +135,11 @@ public class LyricsItem
         this.width = width;
         this.content = content;
 
-        // Kind can be infered from content?
-        char c = content.charAt(0);
-
-        if (c == TextInfo.ELISION_CHAR) {
+        if (content.equals(TextInfo.ELISION_STRING)) {
             itemKind = ItemKind.Elision;
-        } else if (c == TextInfo.EXTENSION_CHAR) {
+        } else if (content.equals(TextInfo.EXTENSION_STRING)) {
             itemKind = ItemKind.Extension;
-        } else if (c == TextInfo.HYPHEN_CHAR) {
+        } else if (content.equals(TextInfo.HYPHEN_STRING)) {
             itemKind = ItemKind.Hyphen;
         } else {
             itemKind = ItemKind.Syllable;
@@ -163,6 +159,22 @@ public class LyricsItem
     public String getContent ()
     {
         return content;
+    }
+
+    //-------------//
+    // setItemKind //
+    //-------------//
+    public void setItemKind (ItemKind itemKind)
+    {
+        this.itemKind = itemKind;
+    }
+
+    //-------------//
+    // getItemKind //
+    //-------------//
+    public ItemKind getItemKind ()
+    {
+        return itemKind;
     }
 
     //---------------//
@@ -187,68 +199,6 @@ public class LyricsItem
     public SyllabicType getSyllabicType ()
     {
         return syllabicType;
-    }
-
-//    //-------------------//
-//    // createLyricsItems //
-//    //-------------------//
-//    /**
-//     * With the provided content, create one or several lyrics items
-//     *
-//     * @param sentence the containing sentence
-//     * @param glyph the underlying glyph
-//     * @param location The starting point (left side, base line) wrt system
-//     * @param content Text of the glyph, which may comprise several syllables
-//     * @param box The bounding box of the glyph
-//     */
-//    public static void createLyricsItems (Sentence        sentence,
-//                                          Glyph           glyph,
-//                                          SystemPoint     location,
-//                                          String          content,
-//                                          SystemRectangle box)
-//    {
-//        // Scaling ratio
-//        double    ratio = (double) box.width / content.length();
-//
-//        // Parse the content string
-//        MyScanner scanner = new MyScanner(content);
-//        glyph.clearTranslations();
-//
-//        while (scanner.hasNext()) {
-//            int             start = scanner.getWordStart();
-//            String          word = scanner.next();
-//            SystemPoint     loc = new SystemPoint(
-//                location.x + (int) Math.rint(start * ratio),
-//                location.y);
-//            SystemRectangle itemBox = new SystemRectangle(
-//                box.x + (int) Math.rint(start * ratio),
-//                box.y,
-//                (int) Math.rint(word.length() * ratio),
-//                box.height);
-//
-//            if (logger.isFineEnabled()) {
-//                logger.fine(word + " at " + loc + " start=" + start);
-//            }
-//
-//            glyph.addTranslation(
-//                new LyricsItem(sentence, loc, glyph, itemBox.width, word));
-//        }
-//    }
-
-    //-------------//
-    // setItemKind //
-    //-------------//
-    public void setItemKind (ItemKind itemKind)
-    {
-        this.itemKind = itemKind;
-    }
-
-    //-------------//
-    // getItemKind //
-    //-------------//
-    public ItemKind getItemKind ()
-    {
-        return itemKind;
     }
 
     //--------//
