@@ -522,10 +522,10 @@ public class GlyphLagView
                                 .getSelectedGlyphSet();
 
         if ((glyphs != null) && !glyphs.isEmpty()) {
-
             // Decorations first
             Stroke oldStroke = UIUtilities.SetAbsoluteStroke(g, 1f);
             g.setColor(Color.blue);
+
             for (Glyph glyph : glyphs) {
                 // Draw circle arc or stick average line
                 if (glyph.getShape() == Shape.SLUR) {
@@ -549,15 +549,18 @@ public class GlyphLagView
                     }
                 }
 
-                // Draw character boxes for textual glyphs
+                // Draw character boxes for textual glyphs?
                 if (glyph.isText()) {
-                    TextInfo info = glyph.getTextInfo();
-                    OcrLine  ocrLine = info.getOcrLine();
+                    if (ViewParameters.getInstance()
+                                      .isLetterBoxPainting()) {
+                        TextInfo info = glyph.getTextInfo();
+                        OcrLine  ocrLine = info.getOcrLine();
 
-                    if (ocrLine != null) {
-                        for (OcrChar ch : ocrLine.getChars()) {
-                            Rectangle b = ch.getBox();
-                            g.drawRect(b.x, b.y, b.width, b.height);
+                        if (ocrLine != null) {
+                            for (OcrChar ch : ocrLine.getChars()) {
+                                Rectangle b = ch.getBox();
+                                g.drawRect(b.x, b.y, b.width, b.height);
+                            }
                         }
                     }
                 }

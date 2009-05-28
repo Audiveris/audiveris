@@ -59,6 +59,24 @@ public class ViewParameters
         return constants.circlePainting.getValue();
     }
 
+    //----------------------//
+    // setLetterBoxPainting //
+    //----------------------//
+    public void setLetterBoxPainting (boolean value)
+    {
+        boolean oldValue = constants.letterBoxPainting.getValue();
+        constants.letterBoxPainting.setValue(value);
+        firePropertyChange("letterBoxPainting", oldValue, value);
+    }
+
+    //---------------------//
+    // isLetterBoxPainting //
+    //---------------------//
+    public boolean isLetterBoxPainting ()
+    {
+        return constants.letterBoxPainting.getValue();
+    }
+
     //-----------------//
     // setLinePainting //
     //-----------------//
@@ -87,6 +105,18 @@ public class ViewParameters
      */
     @Action(selectedProperty = "circlePainting")
     public void toggleCircles (ActionEvent e)
+    {
+    }
+
+    //---------------//
+    // toggleLetters //
+    //---------------//
+    /**
+     * Action that toggles the display of letter boxes in selected glyphs
+     * @param e the event that triggered this action
+     */
+    @Action(selectedProperty = "letterBoxPainting")
+    public void toggleLetters (ActionEvent e)
     {
     }
 
@@ -121,6 +151,11 @@ public class ViewParameters
         final Constant.Boolean circlePainting = new Constant.Boolean(
             true,
             "Should the slur circles be painted");
+
+        /** Should the letter boxes be painted */
+        final Constant.Boolean letterBoxPainting = new Constant.Boolean(
+            true,
+            "Should the letter boxes be painted");
     }
 
     //--------//
