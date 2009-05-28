@@ -186,16 +186,16 @@ public class Sheet
         try {
             // We make sure we have a canonical form for the file name
             this.imageFile = imageFile.getCanonicalFile();
+            
+            // Insert in list of handled sheets
+            SheetsManager.getInstance()
+                         .insertInstance(this);
+
+            // Update UI information if so needed
+            displayAssembly();
         } catch (IOException ex) {
             logger.warning(ex.toString(), ex);
         }
-
-        // Insert in list of handled sheets
-        SheetsManager.getInstance()
-                     .insertInstance(this);
-
-        // Update UI information if so needed
-        displayAssembly();
     }
 
     //-------//
