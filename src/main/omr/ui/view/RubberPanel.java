@@ -583,6 +583,7 @@ public class RubberPanel
             if (rubber != null) {
                 rubber.render(initialGraphics);
             }
+            g.dispose();
         }
     }
 

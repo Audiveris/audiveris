@@ -373,7 +373,7 @@ public class Rubber
     //--------//
     /**
      * Render the rubber rectangle. This should be called late, typically
-     * when everything else has already been painted. Note that needs an
+     * when everything else has already been painted. Note that this needs an
      * unscaled graphics, since we want to draw the rubber lines (vertical
      * and horizontal) perfectly on top of image pixels.
      *
@@ -382,7 +382,7 @@ public class Rubber
     public void render (Graphics unscaledGraphics)
     {
         if (rect != null) {
-            Graphics2D g = (Graphics2D) unscaledGraphics;
+            Graphics2D g = (Graphics2D) unscaledGraphics.create();
             g.setXORMode(Color.white);
 
             Rectangle r = new Rectangle(rect);
@@ -400,10 +400,9 @@ public class Rubber
             // Draw horizontal & vertical rules (point or rectangle)
             g.setColor(ruleColor);
 
-            int    x = scaled(rect.x + (rect.width / 2));
-            int    y = scaled(rect.y + (rect.height / 2));
-            Stroke oldStroke = g.getStroke();
-            float  pixelSize = scaled(1);
+            int   x = scaled(rect.x + (rect.width / 2));
+            int   y = scaled(rect.y + (rect.height / 2));
+            float pixelSize = scaled(1);
 
             if (pixelSize < 1) {
                 pixelSize = 1f;
@@ -428,7 +427,7 @@ public class Rubber
                 g.drawLine(0, y, bounds.width, y); // Horizontal
             }
 
-            g.setStroke(oldStroke); // Reset stroke
+            g.dispose();
         }
     }
 

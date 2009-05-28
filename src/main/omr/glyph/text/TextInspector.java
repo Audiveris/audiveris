@@ -94,6 +94,13 @@ public class TextInspector
             sentence.recognize();
         }
 
+        // Special handling of lyrics items
+        for (Sentence sentence : system.getSentences()) {
+            if (sentence.getTextRole() == TextRole.Lyrics) {
+                sentence.splitIntoWords();
+            }
+        }
+
         return modifs;
     }
 

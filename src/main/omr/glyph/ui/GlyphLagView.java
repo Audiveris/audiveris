@@ -14,9 +14,9 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.*;
 import omr.glyph.Shape;
+import omr.glyph.text.OcrChar;
 import omr.glyph.text.OcrLine;
 import omr.glyph.text.TextInfo;
-import omr.glyph.text.tesseract.CharDesc;
 
 import omr.lag.ui.LagView;
 
@@ -41,6 +41,8 @@ import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
 
 import omr.stick.Stick;
+
+import omr.ui.util.UIUtilities;
 import static omr.util.Synchronicity.*;
 
 import java.awt.*;
@@ -520,6 +522,7 @@ public class GlyphLagView
                                 .getSelectedGlyphSet();
 
         if ((glyphs != null) && !glyphs.isEmpty()) {
+            Stroke oldStroke = UIUtilities.SetAbsoluteStroke(g, 1f);
             g.setColor(Color.black);
             g.setXORMode(Color.darkGray);
 
@@ -550,19 +553,19 @@ public class GlyphLagView
 
                 // Draw character boxes for textual glyphs
                 if (glyph.isText()) {
-                    TextInfo  info = glyph.getTextInfo();
-                    OcrLine   ocrLine = info.getOcrLine();
-                    Rectangle glyphBox = glyph.getContourBox();
+                    TextInfo info = glyph.getTextInfo();
+                    OcrLine  ocrLine = info.getOcrLine();
 
                     if (ocrLine != null) {
-                        for (CharDesc ch : ocrLine.lineDesc.getChars()) {
+                        for (OcrChar ch : ocrLine.getChars()) {
                             Rectangle b = ch.getBox();
-                            b.translate(glyphBox.x, glyphBox.y);
                             g.drawRect(b.x, b.y, b.width, b.height);
                         }
                     }
                 }
             }
+
+            ((Graphics2D) g).setStroke(oldStroke);
         }
     }
 

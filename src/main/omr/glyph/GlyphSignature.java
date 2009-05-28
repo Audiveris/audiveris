@@ -53,18 +53,18 @@ public class GlyphSignature
         contourBox = glyph.getContourBox();
     }
 
-    /**
-     * Just for debugging, to be able to forge a signature
-     *
-     * @param weight
-     * @param contourBox
-     */
-    public GlyphSignature (int       weight,
-                           Rectangle contourBox)
-    {
-        this.weight = weight;
-        this.contourBox = contourBox;
-    }
+    //    /**
+    //     * Just for debugging, to be able to forge a signature
+    //     *
+    //     * @param weight
+    //     * @param contourBox
+    //     */
+    //    public GlyphSignature (int       weight,
+    //                           Rectangle contourBox)
+    //    {
+    //        this.weight = weight;
+    //        this.contourBox = contourBox;
+    //    }
 
     //----------------//
     // GlyphSignature //
@@ -160,19 +160,23 @@ public class GlyphSignature
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder();
-        sb.append("{Sig ")
-          .append("weight=")
-          .append(weight)
-          .append(" Rectangle[x=")
-          .append(contourBox.x)
-          .append(",y=")
-          .append(contourBox.y)
-          .append(",width=")
-          .append(contourBox.width)
-          .append(",height=")
-          .append(contourBox.height)
-          .append("}");
+        StringBuilder sb = new StringBuilder("{Sig");
+        sb.append(" weight=")
+          .append(weight);
+
+        if (contourBox != null) {
+            sb.append(" Rectangle[x=")
+              .append(contourBox.x)
+              .append(",y=")
+              .append(contourBox.y)
+              .append(",width=")
+              .append(contourBox.width)
+              .append(",height=")
+              .append(contourBox.height)
+              .append("]");
+        }
+
+        sb.append("}");
 
         return sb.toString();
     }

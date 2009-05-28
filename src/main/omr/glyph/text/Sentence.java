@@ -350,18 +350,18 @@ public class Sentence
               .append(getFontSize());
         }
 
-        if (getTextContent() != null) {
-            sb.append(" content:")
-              .append('"')
-              .append(getTextContent())
-              .append('"');
-        }
-
         TextRole role = getTextRole();
 
         if (role != null) {
             sb.append(" role:")
               .append(role);
+        }
+
+        if (getTextContent() != null) {
+            sb.append(" content:")
+              .append('"')
+              .append(getTextContent())
+              .append('"');
         }
 
         sb.append("}");
@@ -632,6 +632,12 @@ public class Sentence
 
                     if (!lines.isEmpty()) {
                         OcrLine ocrLine = lines.get(0);
+
+                        // Convert from glyph-based to absolute coordinates
+                        ocrLine.translate(
+                            glyph.getContourBox().x,
+                            glyph.getContourBox().y);
+
                         info.setOcrInfo(language, ocrLine.value, ocrLine);
                         logger.info(this.toString());
 
@@ -649,6 +655,34 @@ public class Sentence
                         ex);
                 }
             }
+        }
+    }
+
+    //----------------//
+    // splitIntoWords //
+    //----------------//
+    /**
+     * Split the long glyph of this (Lyrics) sentence into word glyphs
+     */
+    void splitIntoWords ()
+    {
+        // Make sure the split hasn't been done yet
+        if (items.size() > 1) {
+            return;
+        } else if (items.isEmpty()) {
+            logger.severe("splitIntoWords. Sentence with no items: " + this);
+        } else {
+            if (logger.isFineEnabled()) {
+                logger.fine("Splitting lyrics of " + this);
+            }
+
+            Collection<Glyph> words = items.first()
+                                           .getTextInfo()
+                                           .splitIntoWords();
+
+            // Replace the single long item by this collection of word items
+            items.clear();
+            items.addAll(words);
         }
     }
 

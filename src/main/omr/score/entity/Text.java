@@ -265,12 +265,13 @@ public abstract class Text
                                       .getStringHolder(nbChar);
                 }
 
-                LyricsItem.createLyricsItems(
-                    sentence,
-                    item,
-                    new SystemPoint(itemBox.x, location.y),
-                    itemStr,
-                    system.toSystemRectangle(item.getContourBox()));
+                item.setTranslation(
+                    new LyricsItem(
+                        sentence,
+                        new SystemPoint(itemBox.x, location.y),
+                        item,
+                        itemBox.width,
+                        itemStr));
             }
 
             break;

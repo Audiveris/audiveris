@@ -13,6 +13,8 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
+import omr.glyph.GlyphSection;
+import omr.glyph.Shape;
 
 import omr.lag.HorizontalOrientation;
 
@@ -20,9 +22,13 @@ import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
 
-import java.awt.Font;
+import omr.sheet.SystemInfo;
+
+import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
+import java.util.*;
+import java.util.List;
 
 /**
  * Class <code>TextInfo</code> handles the textual aspects of a glyph. It
@@ -50,6 +56,27 @@ public class TextInfo
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(TextInfo.class);
+
+    /** Character used for elision */
+    public static final char ELISION_CHAR = '?'; // TBD
+
+    /** String equivalent of Character used for elision */
+    public static final String ELISION_STRING = new String(
+        new char[] { ELISION_CHAR });
+
+    /** Character used for extension */
+    public static final char EXTENSION_CHAR = '_'; // TBD
+
+    /** String equivalent of Character used for extension */
+    public static final String EXTENSION_STRING = new String(
+        new char[] { EXTENSION_CHAR });
+
+    /** Character used for hyphen */
+    public static final char HYPHEN_CHAR = '-';
+
+    /** String equivalent of Character used for hyphen */
+    public static final String HYPHEN_STRING = new String(
+        new char[] { HYPHEN_CHAR });
 
     /** The basic font used for text entities */
     public static final Font basicFont = new Font(
@@ -80,7 +107,7 @@ public class TextInfo
     /** Related text area parameters */
     private TextArea textArea;
 
-    /** Mabual content if any */
+    /** Manual content if any */
     private String manualContent;
 
     /** Detailed OCR info about this line */
@@ -117,6 +144,33 @@ public class TextInfo
 
     //~ Methods ----------------------------------------------------------------
 
+    //-----------//
+    // isElision //
+    //-----------//
+    public boolean isElision ()
+    {
+        return getContent()
+                   .equals(ELISION_STRING);
+    }
+
+    //-------------//
+    // isExtension //
+    //-------------//
+    public boolean isExtension ()
+    {
+        return getContent()
+                   .equals(EXTENSION_STRING);
+    }
+
+    //----------//
+    // isHyphen //
+    //----------//
+    public boolean isHyphen ()
+    {
+        return getContent()
+                   .equals(HYPHEN_STRING);
+    }
+
     //-----------------//
     // computeFontSize //
     //-----------------//
@@ -126,11 +180,14 @@ public class TextInfo
      * @param width the string width in pixels
      * @return the computed font size
      */
-    public static float computeFontSize (String content,
+    public static Float computeFontSize (String content,
                                          int    width)
     {
-        Rectangle2D rect = basicFont.getStringBounds(content, frc);
+        if (content == null) {
+            return null;
+        }
 
+        Rectangle2D rect = basicFont.getStringBounds(content, frc);
         float       ratio = width / (float) rect.getWidth() / FONT_WIDTH_POINT_RATIO;
 
         return basicFont.getSize2D() * ratio;
@@ -182,8 +239,13 @@ public class TextInfo
             if ((ocrLine != null) && (ocrLine.isFontSizeValid())) {
                 fontSize = ocrLine.fontSize;
             } else {
-                fontSize = (int) Math.rint(
-                    computeFontSize(getContent(), glyph.getContourBox().width));
+                Float fs = computeFontSize(
+                    getContent(),
+                    glyph.getContourBox().width);
+
+                if (fs != null) {
+                    fontSize = (int) Math.rint(fs);
+                }
             }
         }
 
@@ -409,7 +471,7 @@ public class TextInfo
         logger.info(this.toString());
 
         if (ocrLine != null) {
-            ocrLine.lineDesc.dump();
+            ocrLine.dump();
         }
     }
 
@@ -423,6 +485,64 @@ public class TextInfo
     public void resetPseudoContent ()
     {
         pseudoContent = null;
+    }
+
+    //----------------//
+    // splitIntoWords //
+    //----------------//
+    /**
+     * Split this (supposedly long lyrics line) sentence into separate words,
+     * one word for each lyrics item.
+     * @return The collection of (word) glyphs created
+     */
+    public Collection<Glyph> splitIntoWords ()
+    {
+        if (ocrLine == null) {
+            logger.severe("Trying to split a glyph with no OCR value");
+
+            return null;
+        }
+
+        // Parse the content string
+        Collection<Glyph> words = new ArrayList<Glyph>();
+        List<OcrChar>     glyphChars = ocrLine.getChars();
+        MyScanner         scanner = new MyScanner(glyphChars);
+        SystemInfo        system = sentence.getSystem();
+
+        while (scanner.hasNext()) {
+            int                     start = scanner.getWordStart();
+            int                     stop = scanner.getWordStop();
+            String                  word = scanner.next();
+            List<OcrChar>           wordChars = glyphChars.subList(
+                start,
+                stop + 1);
+
+            // Isolate proper word glyph from its enclosed sections
+            SortedSet<GlyphSection> sections = retrieveWordSections(wordChars);
+
+            if (!sections.isEmpty()) {
+                Glyph wordGlyph = system.buildGlyph(sections);
+                wordGlyph = system.addGlyph(wordGlyph);
+                wordGlyph.setShape(Shape.TEXT);
+
+                // Build the TextInfo for this glyph
+                TextInfo ti = wordGlyph.getTextInfo();
+                ti.setOcrInfo(
+                    this.ocrLanguage,
+                    word,
+                    new OcrLine(getFontSize(), wordChars, word));
+                ti.setSentence(this.sentence);
+                ti.role = this.role;
+
+                if (logger.isFineEnabled()) {
+                    logger.fine("LyricsItem \"" + word + "\" " + wordGlyph);
+                }
+
+                words.add(wordGlyph);
+            }
+        }
+
+        return words;
     }
 
     //----------//
@@ -466,17 +586,41 @@ public class TextInfo
         return sb.toString();
     }
 
-    //-------------//
-    // setTextArea //
-    //-------------//
+    //----------------------//
+    // retrieveWordSections //
+    //----------------------//
     /**
-     * Define the related text area for this glyph
-     * @param textArea the related text area which can provide horizontal and
-     * vertical histograms
+     * Retrieve the glyph sections that compose a given word
+     * @param wordChars the char descriptors for each word character
+     * @return the set of word-enclosed sections
      */
-    void setTextArea (TextArea textArea)
+    private SortedSet<GlyphSection> retrieveWordSections (List<OcrChar> wordChars)
     {
-        this.textArea = textArea;
+        // Isolate proper word glyph from its enclosed sections
+        SortedSet<GlyphSection> sections = new TreeSet<GlyphSection>();
+
+        for (OcrChar charDesc : wordChars) {
+            Rectangle charBox = charDesc.getBox();
+
+            // Slight fix (on Tesseract output)
+            charBox.x -= 1;
+            charBox.width += 1;
+
+            for (GlyphSection section : glyph.getMembers()) {
+                if (charBox.contains(section.getContourBox())) {
+                    sections.add(section);
+                }
+            }
+        }
+
+        if (sections.isEmpty()) {
+            logger.warning(
+                "Text Glyph#" + glyph.getId() +
+                " has no section for word beginning at " +
+                wordChars.get(0).getBox());
+        }
+
+        return sections;
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -500,5 +644,120 @@ public class TextInfo
         Constant.String  basicFontName = new Constant.String(
             "Serif", //"Sans Serif",
             "Standard font name for texts");
+    }
+
+    //-----------//
+    // MyScanner //
+    //-----------//
+    /**
+     * A specific scanner to scan content, since we need to know the current
+     * position within the lineDesc, to infer proper word location.
+     */
+    private static class MyScanner
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Precise description of each (non blank) character */
+        private List<OcrChar> chars;
+
+        /** Current position in the sequence of chars */
+        private int pos = -1;
+
+        /** Position of first char of current word */
+        private int wordStart = 0;
+
+        /** Position of last char of current word */
+        private int wordStop = 0;
+
+        /** Current word */
+        private String currentWord;
+
+        //~ Constructors -------------------------------------------------------
+
+        public MyScanner (List<OcrChar> chars)
+        {
+            this.chars = chars;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        public int getWordStart ()
+        {
+            return wordStart;
+        }
+
+        public int getWordStop ()
+        {
+            return wordStop;
+        }
+
+        public boolean hasNext ()
+        {
+            if (currentWord == null) {
+                currentWord = getNextWord();
+            }
+
+            return currentWord != null;
+        }
+
+        public String next ()
+        {
+            String tempWord = currentWord;
+            currentWord = null;
+
+            return tempWord;
+        }
+
+        private String getNextWord ()
+        {
+            StringBuilder word = new StringBuilder();
+
+            for (pos = pos + 1; pos < chars.size(); pos++) {
+                OcrChar charDesc = chars.get(pos);
+
+                // White space
+                if (charDesc.hasSpacesBefore()) {
+                    if (word.length() > 0) {
+                        pos--;
+
+                        return word.toString();
+                    }
+                }
+
+                String str = charDesc.content;
+                char   c = str.charAt(0);
+
+                // Special characters (returned as stand-alone words)
+                if ((c == EXTENSION_CHAR) ||
+                    (c == ELISION_CHAR) ||
+                    (c == HYPHEN_CHAR)) {
+                    if (word.length() > 0) {
+                        pos--;
+                    } else {
+                        wordStart = pos;
+                        wordStop = pos;
+                        word.append(str);
+                    }
+
+                    return word.toString();
+                } else {
+                    // Standard word content
+                    if (word.length() == 0) {
+                        wordStart = pos;
+                    }
+
+                    wordStop = pos;
+
+                    word.append(str);
+                }
+            }
+
+            // We have reached the end
+            if (word.length() > 0) {
+                return word.toString();
+            } else {
+                return null;
+            }
+        }
     }
 }
