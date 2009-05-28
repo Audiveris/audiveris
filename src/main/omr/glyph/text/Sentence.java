@@ -624,36 +624,31 @@ public class Sentence
             // If we have no content or if a new language is being used for OCR
             if ((info.getOcrContent() == null) ||
                 !language.equals(info.getOcrLanguage())) {
-                try {
-                    OCR           ocr = TesseractOCR.getInstance();
-                    List<OcrLine> lines = ocr.recognize(
-                        glyph.getImage(),
-                        language,
-                        "g" + glyph.getId() + ".");
+                OCR           ocr = TesseractOCR.getInstance();
+                List<OcrLine> lines = ocr.recognize(
+                    glyph.getImage(),
+                    language,
+                    "g" + glyph.getId() + ".");
 
-                    if (!lines.isEmpty()) {
-                        OcrLine ocrLine = lines.get(0);
+                if ((lines != null) && !lines.isEmpty()) {
+                    OcrLine ocrLine = lines.get(0);
 
-                        // Convert from glyph-based to absolute coordinates
-                        ocrLine.translate(
-                            glyph.getContourBox().x,
-                            glyph.getContourBox().y);
+                    // Convert from glyph-based to absolute coordinates
+                    ocrLine.translate(
+                        glyph.getContourBox().x,
+                        glyph.getContourBox().y);
+                    info.setOcrInfo(language, ocrLine.value, ocrLine);
+                    logger.info(
+                        "Glyph#" + glyph.getId() + " (" + language + ")->\"" +
+                        ocrLine.value + "\"");
 
-                        info.setOcrInfo(language, ocrLine.value, ocrLine);
-                        logger.info(this.toString());
-
-                        if (lines.size() > 1) {
-                            logger.warning(
-                                "Sentence with more than one line at glyph #" +
-                                glyph.getId());
-                        }
-                    } else {
-                        logger.warning("No line for glyph #" + glyph.getId());
+                    if (lines.size() > 1) {
+                        logger.warning(
+                            "Sentence with more than one line at glyph #" +
+                            glyph.getId());
                     }
-                } catch (Exception ex) {
-                    logger.warning(
-                        "OCR error with glyph #" + glyph.getId(),
-                        ex);
+                } else {
+                    logger.warning("No OCR line for glyph #" + glyph.getId());
                 }
             }
         }

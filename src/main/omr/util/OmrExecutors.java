@@ -45,6 +45,7 @@ public class OmrExecutors
     private static Pool highs = new Highs();
     private static Pool lows = new Lows();
     private static Pool cachedLows = new CachedLows();
+    private static Pool ocrs = new Ocrs();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -107,6 +108,19 @@ public class OmrExecutors
         return cpuNb;
     }
 
+    //----------------//
+    // getOcrExecutor //
+    //----------------//
+    /**
+     * Return the (single) pool of OCR threads
+     *
+     * @return the OCR pool, allocated if needed
+     */
+    public static ExecutorService getOcrExecutor ()
+    {
+        return ocrs.getPool();
+    }
+
     //----------//
     // shutdown //
     //----------//
@@ -119,7 +133,7 @@ public class OmrExecutors
             logger.fine("Closing all pools");
         }
 
-        for (Pool pool : Arrays.asList(cachedLows, lows, highs)) {
+        for (Pool pool : Arrays.asList(cachedLows, lows, highs, ocrs)) {
             if (pool.isActive()) {
                 pool.close();
             } else {
@@ -259,7 +273,7 @@ public class OmrExecutors
         protected ExecutorService createPool ()
         {
             return Executors.newCachedThreadPool(
-                new Factory(getName(), Thread.MIN_PRIORITY));
+                new Factory(getName(), Thread.MIN_PRIORITY, 0));
         }
     }
 
@@ -274,12 +288,14 @@ public class OmrExecutors
         private final ThreadGroup   group;
         private final String        threadPrefix;
         private final int           threadPriority;
+        private final long          stackSize;
         private final AtomicInteger threadNumber = new AtomicInteger(0);
 
         //~ Constructors -------------------------------------------------------
 
         Factory (String threadPrefix,
-                 int    threadPriority)
+                 int    threadPriority,
+                 long   stackSize)
         {
             SecurityManager s = System.getSecurityManager();
             group = (s != null) ? s.getThreadGroup()
@@ -287,6 +303,7 @@ public class OmrExecutors
                             .getThreadGroup();
             this.threadPrefix = threadPrefix;
             this.threadPriority = threadPriority;
+            this.stackSize = stackSize;
         }
 
         //~ Methods ------------------------------------------------------------
@@ -294,7 +311,7 @@ public class OmrExecutors
         @Implement(ThreadFactory.class)
         public Thread newThread (Runnable r)
         {
-            Thread t = new Thread(group, r, getOneThreadName(), 0);
+            Thread t = new Thread(group, r, getOneThreadName(), stackSize);
 
             if (t.isDaemon()) {
                 t.setDaemon(false);
@@ -333,7 +350,7 @@ public class OmrExecutors
         {
             return Executors.newFixedThreadPool(
                 useParallelism() ? (cpuNb + 1) : 1,
-                new Factory(getName(), Thread.NORM_PRIORITY));
+                new Factory(getName(), Thread.NORM_PRIORITY, 0));
         }
     }
 
@@ -357,7 +374,31 @@ public class OmrExecutors
         {
             return Executors.newFixedThreadPool(
                 useParallelism() ? (cpuNb + 1) : 1,
-                new Factory(getName(), Thread.MIN_PRIORITY));
+                new Factory(getName(), Thread.MIN_PRIORITY, 0));
+        }
+    }
+
+    //------//
+    // Ocrs //
+    //------//
+    /** One-thread pool with high priority */
+    private static class Ocrs
+        extends Pool
+    {
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public String getName ()
+        {
+            return "ocr";
+        }
+
+        @Override
+        protected ExecutorService createPool ()
+        {
+            return Executors.newFixedThreadPool(
+                1,
+                new Factory(getName(), Thread.NORM_PRIORITY, 10000000L));
         }
     }
 }

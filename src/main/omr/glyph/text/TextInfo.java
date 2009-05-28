@@ -398,7 +398,7 @@ public class TextInfo
         if (textArea == null) {
             try {
                 textArea = new TextArea(
-                    null, // NO SYSTEM !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    null, // NO SYSTEM (TBD)
                     null,
                     glyph.getLag().createAbsoluteRoi(glyph.getContourBox()),
                     new HorizontalOrientation());

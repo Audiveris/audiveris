@@ -10,7 +10,6 @@
 package omr.glyph.text;
 
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -45,11 +44,8 @@ public interface OCR
      * or null if this language is unknown
      * @param label an optional label related to the image, null otherwise
      * @return a list of OcrLine instances
-     * @throws IOException
-     * @throws InterruptedException
      */
     List<OcrLine> recognize (BufferedImage image,
                              String        languageCode,
-                             String        label)
-        throws IOException, InterruptedException;
+                             String        label);
 }

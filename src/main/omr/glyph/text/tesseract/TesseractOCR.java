@@ -20,6 +20,8 @@ import omr.util.Implement;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriter;
@@ -122,22 +124,25 @@ public class TesseractOCR
     //-----------//
     /**
      * {@inheritDoc}
-     * @throws IOException
-     * @throws InterruptedException
      */
     @Implement(OCR.class)
     public List<OcrLine> recognize (BufferedImage image,
                                     String        languageCode,
                                     String        label)
-        throws IOException, InterruptedException
     {
-        // Store the input image on disk, to be later cleaned up
-        File imageFile = storeOnDisk(image, label);
-        imageFile.deleteOnExit();
+        try {
+            // Store the input image on disk, to be later cleaned up
+            File imageFile = storeOnDisk(image, label);
+            imageFile.deleteOnExit();
 
-        // Use the tessdll.dll implementation
-        return UseTessDllDll.getInstance()
-                            .retrieveLines(imageFile, languageCode, label);
+            // Use the tessdll.dll implementation
+            return UseTessDllDll.getInstance()
+                                .retrieveLines(imageFile, languageCode, label);
+        } catch (Exception ex) {
+            logger.warning("Error in OCR recognize", ex);
+
+            return null;
+        }
     }
 
     //--------------//

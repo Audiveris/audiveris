@@ -17,16 +17,17 @@ import omr.log.Logger;
 
 import omr.score.common.PixelRectangle;
 
-import omr.util.Worker;
+import omr.util.OmrExecutors;
 
 import net.gencsoy.tesjeract.EANYCodeChar;
 import net.gencsoy.tesjeract.Tesjeract;
 
 import java.io.*;
-import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel.MapMode;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Class <code>UseTessDllDll</code> is a TesseractOCR companion, which uses
@@ -105,31 +106,38 @@ class UseTessDllDll
      * @throws java.io.FileNotFoundException
      * @throws java.io.IOException
      */
-    public List<OcrLine> retrieveLines (File   imageFile,
-                                        String languageCode,
-                                        String label)
-        throws FileNotFoundException, IOException
+    public List<OcrLine> retrieveLines (File         imageFile,
+                                        final String languageCode,
+                                        final String label)
+        throws FileNotFoundException, IOException, InterruptedException,
+                   ExecutionException
     {
         if (logger.isFineEnabled()) {
             logger.fine("OCR on " + imageFile);
         }
 
-        MappedByteBuffer buf = new FileInputStream(imageFile).getChannel()
-                                                             .map(
+        FileInputStream         fis = new FileInputStream(imageFile);
+        final MappedByteBuffer  buf = fis.getChannel()
+                                         .map(
             MapMode.READ_ONLY,
             0,
             imageFile.length());
 
-        // Serialize access to OCR external utility
-        // TODO: implement a specific OcrExecutor to reuse worker thread(s)
-        synchronized (UseTessDllDll.class) {
-            OcrWorker worker = new OcrWorker(buf, languageCode, label);
-            worker.start();
+        Callable<List<OcrLine>> task = new Callable<List<OcrLine>>() {
+            public List<OcrLine> call ()
+                throws Exception
+            {
+                Tesjeract      tess = new Tesjeract(languageCode);
+                EANYCodeChar[] chars = tess.recognizeAllWords(buf);
 
-            List<OcrLine> lines = worker.get();
+                return getLines(chars, label);
+            }
+        };
 
-            return lines;
-        }
+        // Launch task and wait for its result ...
+        return OmrExecutors.getOcrExecutor()
+                           .submit(task)
+                           .get();
     }
 
     //----------//
@@ -322,48 +330,5 @@ class UseTessDllDll
 
         // This is not a legal sequence start
         return 0;
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
-
-    //-----------//
-    // OcrWorker //
-    //-----------//
-    /**
-     * An asynchronous Worker for OCR work with sufficient stack size
-     */
-    private class OcrWorker
-        extends Worker<List<OcrLine>>
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        private final ByteBuffer buffer;
-        private final String     languageCode;
-        private final String     label;
-
-        //~ Constructors -------------------------------------------------------
-
-        public OcrWorker (ByteBuffer buffer,
-                          String     languageCode,
-                          String     label)
-        {
-            // Sufficient stack size
-            super(10000000L);
-            this.buffer = buffer;
-            this.languageCode = languageCode;
-            this.label = label;
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public List<OcrLine> construct ()
-        {
-            Tesjeract      tess = new Tesjeract(languageCode);
-            EANYCodeChar[] chars = tess.recognizeAllWords(buffer);
-            List<OcrLine>  lines = getLines(chars, label);
-
-            return lines;
-        }
     }
 }
