@@ -11,6 +11,9 @@ package omr.sheet;
 
 import omr.log.Logger;
 
+import omr.score.Score;
+import omr.score.ui.ScoreOrientation;
+
 import omr.script.ScriptActions;
 
 import omr.sheet.ui.SheetsController;
@@ -106,6 +109,24 @@ public class SheetsManager
     }
 
     //---------------------//
+    // setScoreOrientation //
+    //---------------------//
+    /**
+     * Assign a system orientation to all scores
+     * @param orientation the desired orientation
+     */
+    public void setScoreOrientation (ScoreOrientation orientation)
+    {
+        for (Sheet sheet : instances) {
+            Score score = sheet.getScore();
+
+            if (score != null) {
+                score.setOrientation(orientation);
+            }
+        }
+    }
+
+    //---------------------//
     // areAllScriptsStored //
     //---------------------//
     /**
@@ -128,6 +149,7 @@ public class SheetsManager
     //-------//
     /**
      * Close a sheet instance
+     * @param sheet the sheet to close
      */
     public void close (Sheet sheet)
     {

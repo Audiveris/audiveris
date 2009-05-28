@@ -12,6 +12,12 @@ package omr.score.visitor;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.score.ui.ScoreOrientation;
+
+import omr.sheet.SheetsManager;
+
+import omr.util.Worker;
+
 import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.Action;
 
@@ -63,6 +69,15 @@ public class PaintingParameters
         return constants.markPainting.getValue();
     }
 
+    //---------------------//
+    // getScoreOrientation //
+    //---------------------//
+    public ScoreOrientation getScoreOrientation ()
+    {
+        return constants.verticalLayout.getValue() ? ScoreOrientation.VERTICAL
+               : ScoreOrientation.HORIZONTAL;
+    }
+
     //-----------------//
     // setSlotPainting //
     //-----------------//
@@ -84,6 +99,27 @@ public class PaintingParameters
         return constants.slotPainting.getValue();
     }
 
+    //-------------------//
+    // setVerticalLayout //
+    //-------------------//
+    public void setVerticalLayout (boolean value)
+    {
+        boolean oldValue = constants.verticalLayout.getValue();
+        constants.verticalLayout.setValue(value);
+        firePropertyChange(
+            "verticalLayout",
+            oldValue,
+            constants.verticalLayout.getValue());
+    }
+
+    //------------------//
+    // isVerticalLayout //
+    //------------------//
+    public boolean isVerticalLayout ()
+    {
+        return constants.verticalLayout.getValue();
+    }
+
     //------------------//
     // setVoicePainting //
     //------------------//
@@ -103,6 +139,28 @@ public class PaintingParameters
     public boolean isVoicePainting ()
     {
         return constants.voicePainting.getValue();
+    }
+
+    //--------------//
+    // toggleLayout //
+    //--------------//
+    /**
+     * Action that toggles the layout of the systems
+     * @param e the event that triggered this action
+     */
+    @Action(selectedProperty = "verticalLayout")
+    public void toggleLayout (ActionEvent e)
+    {
+        new Worker<Void>() {
+                @Override
+                public Void construct ()
+                {
+                    SheetsManager.getInstance()
+                                 .setScoreOrientation(getScoreOrientation());
+
+                    return null;
+                }
+            }.start();
     }
 
     //-------------//
@@ -153,6 +211,11 @@ public class PaintingParameters
         extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
+
+        /** Should the systems be painted vertically */
+        final Constant.Boolean verticalLayout = new Constant.Boolean(
+            true,
+            "Should the systems be painted vertically");
 
         /** Should the slots be painted */
         final Constant.Boolean slotPainting = new Constant.Boolean(

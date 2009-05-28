@@ -487,7 +487,10 @@ public class Score
     public void setOrientation (ScoreOrientation orientation)
     {
         this.orientation = orientation;
-        logger.info("New score system layout: " + orientation);
+
+        if (logger.isFineEnabled()) {
+            logger.fine("New score system layout: " + orientation);
+        }
 
         for (ScoreView view : views) {
             view.setOrientation(orientation);

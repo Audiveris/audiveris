@@ -28,6 +28,7 @@ import omr.score.entity.ScorePart;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Slot;
 import static omr.score.ui.ScoreConstants.*;
+import omr.score.visitor.PaintingParameters;
 import omr.score.visitor.ScorePainter;
 
 import omr.selection.LocationEvent;
@@ -82,7 +83,8 @@ public class ScoreView
      * Should we display systems using a horizontal layout (side by side) rather
      * than a vertical layout (systems one above the other).
      */
-    private ScoreOrientation orientation = constants.defaultOrientation.getValue();
+    private ScoreOrientation orientation = PaintingParameters.getInstance()
+                                                             .getScoreOrientation();
 
     /**
      * Display zoom. NOTA: To use a value different from 0.5, the definition
@@ -535,13 +537,10 @@ public class ScoreView
     {
         //~ Instance fields ----------------------------------------------------
 
-        ScoreOrientation.Constant defaultOrientation = new ScoreOrientation.Constant(
-            ScoreOrientation.HORIZONTAL,
-            "Default orientation for score systems");
-        PixelCount                measureMargin = new PixelCount(
+        PixelCount       measureMargin = new PixelCount(
             10,
             "Number of pixels as margin when highlighting a measure");
-        Constant.Boolean          popupEnabled = new Constant.Boolean(
+        Constant.Boolean popupEnabled = new Constant.Boolean(
             true,
             "Should we allow popup menu in score view?");
     }
