@@ -9,6 +9,7 @@
 //
 package omr.glyph.text.tesseract;
 
+import omr.glyph.text.OcrChar;
 import omr.glyph.text.OcrLine;
 
 import omr.log.Logger;
@@ -115,14 +116,13 @@ class UseTessDllDll
             imageFile.length());
 
         // Serialize access to OCR external utility
+        // TODO: implement a specific OcrExecutor to reuse worker thread(s)
         synchronized (UseTessDllDll.class) {
-            ///logger.info("Launching OcrWorker");
             OcrWorker worker = new OcrWorker(buf, languageCode);
             worker.start();
 
             List<OcrLine> lines = worker.get();
 
-            ///logger.info("Getting lines from OcrWorker");
             return lines;
         }
     }
@@ -133,7 +133,7 @@ class UseTessDllDll
     private List<OcrLine> getLines (EANYCodeChar[] chars)
     {
         List<OcrLine> lines = new ArrayList<OcrLine>();
-        LineDesc      lineDesc = null;
+        List<OcrChar> lineChars = new ArrayList<OcrChar>();
         int           lastPointSize = -1;
         byte[]        bytes = new byte[1000];
 
@@ -149,14 +149,14 @@ class UseTessDllDll
                 }
 
                 // Get correct string value
-                String   str = new String(
+                String  str = new String(
                     Arrays.copyOf(bytes, byteCount),
                     "UTF8");
 
                 // Slight corrections on top right point
                 //        trX -= 1;
                 //        trY += 1;
-                CharDesc charDesc = new CharDesc(
+                OcrChar charDesc = new OcrChar(
                     str,
                     new Rectangle(
                         ch.left,
@@ -166,11 +166,7 @@ class UseTessDllDll
                     ch.point_size,
                     ch.blanks);
 
-                if (lineDesc == null) {
-                    lineDesc = new LineDesc(charDesc);
-                } else {
-                    lineDesc.addChar(charDesc);
-                }
+                lineChars.add(charDesc);
 
                 // Let's move to the very last byte of the sequence
                 // To use its formatting data
@@ -180,12 +176,8 @@ class UseTessDllDll
 
                 // End of line?
                 if (isNewLine(ch)) {
-                    lines.add(
-                        new OcrLine(
-                            lastPointSize,
-                            lineDesc.getContent(),
-                            lineDesc));
-                    lineDesc = null;
+                    lines.add(new OcrLine(lastPointSize, lineChars, null));
+                    lineChars.clear();
                 }
             }
 
@@ -195,9 +187,8 @@ class UseTessDllDll
             }
 
             // Just in case we've missed the end (useful? TBD)
-            if (lineDesc != null) {
-                lines.add(
-                    new OcrLine(lastPointSize, lineDesc.getContent(), lineDesc));
+            if (!lineChars.isEmpty()) {
+                lines.add(new OcrLine(lastPointSize, lineChars, null));
             }
 
             return lines;
