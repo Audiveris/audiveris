@@ -102,9 +102,6 @@ public class TextInfo
     /** Detailed OCR info about this line */
     private OcrLine ocrLine;
 
-    /** OCR-based content if any */
-    private String ocrContent;
-
     /** Language used for OCR */
     private String ocrLanguage;
 
@@ -219,7 +216,7 @@ public class TextInfo
         if (manualContent != null) {
             return manualContent;
         } else {
-            return ocrContent;
+            return getOcrContent();
         }
     }
 
@@ -284,7 +281,11 @@ public class TextInfo
      */
     public String getOcrContent ()
     {
-        return ocrContent;
+        if (ocrLine == null) {
+            return null;
+        } else {
+            return ocrLine.value;
+        }
     }
 
     //------------//
@@ -292,25 +293,19 @@ public class TextInfo
     //------------//
     /**
      * Remember the information as provided by the OCR engine
-     * @param ocrLanguage the Language provided to the OCR for recognition
-     * @param ocrContent the OCR string value for this text glyph
+     * @param ocrLanguage the language provided to OCR engine for recognition
      * @param ocrLine the detailed OCR line about this glyph
      */
     public void setOcrInfo (String  ocrLanguage,
-                            String  ocrContent,
                             OcrLine ocrLine)
     {
         this.ocrLanguage = ocrLanguage;
-        this.ocrContent = ocrContent;
+        this.ocrLine = ocrLine;
 
-        if (ocrLine != null) {
-            this.ocrLine = ocrLine;
-
-            if (ocrLine.isFontSizeValid()) {
-                fontSize = ocrLine.fontSize;
-            } else {
-                fontSize = null;
-            }
+        if (ocrLine.isFontSizeValid()) {
+            fontSize = ocrLine.fontSize;
+        } else {
+            fontSize = null;
         }
     }
 
@@ -526,7 +521,6 @@ public class TextInfo
                 TextInfo ti = wordGlyph.getTextInfo();
                 ti.setOcrInfo(
                     this.ocrLanguage,
-                    word,
                     new OcrLine(getFontSize(), wordChars, word));
                 ti.setSentence(this.sentence);
                 ti.role = this.role;
@@ -562,12 +556,12 @@ public class TextInfo
               .append("\"");
         }
 
-        if (ocrContent != null) {
+        if (getOcrContent() != null) {
             sb.append(" ocr(")
               .append(ocrLanguage)
               .append("):")
               .append("\"")
-              .append(ocrContent)
+              .append(getOcrContent())
               .append("\"");
         }
 

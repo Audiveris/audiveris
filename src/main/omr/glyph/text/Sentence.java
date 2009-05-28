@@ -637,7 +637,7 @@ public class Sentence
                     ocrLine.translate(
                         glyph.getContourBox().x,
                         glyph.getContourBox().y);
-                    info.setOcrInfo(language, ocrLine.value, ocrLine);
+                    info.setOcrInfo(language, ocrLine);
                     logger.info(
                         "Glyph#" + glyph.getId() + " (" + language + ")->\"" +
                         ocrLine.value + "\"");

@@ -156,11 +156,13 @@ public class OcrLine
         StringBuilder sb = new StringBuilder();
 
         // Loop on char descriptions
+        int index = 0;
+
         for (OcrChar ch : chars) {
             Rectangle box = ch.getBox();
 
             // Do we need to insert spaces?
-            if (ch.hasSpacesBefore()) {
+            if ((index != 0) && ch.hasSpacesBefore()) {
                 StringBuilder spaces = new StringBuilder();
                 spaces.append(" "); // At least one!
 
@@ -176,30 +178,9 @@ public class OcrLine
 
             sb.append(ch.content);
             lastRight = box.x + box.width;
+            index++;
         }
 
         return sb.toString();
     }
-
-    //    //-----------------//
-    //    // computeFontSize //
-    //    //-----------------//
-    //    /**
-    //     * Compute the font size using the whole set of chars (w/o spaces)
-    //     * @return the computed font size
-    //     */
-    //    private int computeFontSize ()
-    //    {
-    //        StringBuilder sb = new StringBuilder();
-    //        int           width = 0;
-    //
-    //        // Here we assume that the boxes can be put side by side
-    //        // and correspond to the way characters are measured by getStringBounds
-    //        for (OcrChar ch : chars) {
-    //            width += ch.getBox().width;
-    //            sb.append(ch.content);
-    //        }
-    //
-    //        return (int) Math.rint(TextInfo.computeFontSize(sb.toString(), width));
-    //    }
 }
