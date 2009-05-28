@@ -43,11 +43,13 @@ public interface OCR
      * @param image the provided textual image
      * @param languageCode the code of the (dominant?) language of the text,
      * or null if this language is unknown
+     * @param label an optional label related to the image, null otherwise
      * @return a list of OcrLine instances
      * @throws IOException
      * @throws InterruptedException
      */
     List<OcrLine> recognize (BufferedImage image,
-                             String        languageCode)
+                             String        languageCode,
+                             String        label)
         throws IOException, InterruptedException;
 }

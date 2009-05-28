@@ -14,12 +14,13 @@ import omr.glyph.text.OcrLine;
 
 import omr.log.Logger;
 
+import omr.score.common.PixelRectangle;
+
 import omr.util.Worker;
 
 import net.gencsoy.tesjeract.EANYCodeChar;
 import net.gencsoy.tesjeract.Tesjeract;
 
-import java.awt.Rectangle;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
@@ -98,17 +99,20 @@ class UseTessDllDll
      * Report all the OCR-detected lines out of the provided image file
      * @param imageFile the image file
      * @param languageCode the dominant language, or null
+     * @param optional label
      * @return the sequence of detected lines
      * @throws java.io.FileNotFoundException
      * @throws java.io.IOException
      */
     public List<OcrLine> retrieveLines (File   imageFile,
-                                        String languageCode)
+                                        String languageCode,
+                                        String label)
         throws FileNotFoundException, IOException
     {
-        //new File("u:/soft/JnaTests/examples/tempImageFile0.tif");
-        //new File("u:/soft/JnaTests/examples/Binary-8.png");
-        //new File("u:/soft/JnaTests/examples/tempImageFile-8.bmp");
+        if (logger.isFineEnabled()) {
+            logger.fine("OCR on " + imageFile);
+        }
+
         MappedByteBuffer buf = new FileInputStream(imageFile).getChannel()
                                                              .map(
             MapMode.READ_ONLY,
@@ -118,7 +122,7 @@ class UseTessDllDll
         // Serialize access to OCR external utility
         // TODO: implement a specific OcrExecutor to reuse worker thread(s)
         synchronized (UseTessDllDll.class) {
-            OcrWorker worker = new OcrWorker(buf, languageCode);
+            OcrWorker worker = new OcrWorker(buf, languageCode, label);
             worker.start();
 
             List<OcrLine> lines = worker.get();
@@ -130,8 +134,13 @@ class UseTessDllDll
     //----------//
     // getLines //
     //----------//
-    private List<OcrLine> getLines (EANYCodeChar[] chars)
+    private List<OcrLine> getLines (EANYCodeChar[] chars,
+                                    String         label)
     {
+        if (logger.isFineEnabled()) {
+            dumpChars(chars, label);
+        }
+
         List<OcrLine> lines = new ArrayList<OcrLine>();
         List<OcrChar> lineChars = new ArrayList<OcrChar>();
         int           lastPointSize = -1;
@@ -153,14 +162,12 @@ class UseTessDllDll
                     Arrays.copyOf(bytes, byteCount),
                     "UTF8");
 
-                // Slight corrections on top right point
-                //        trX -= 1;
-                //        trY += 1;
+                // Copy char box information (with slight corrections)
                 OcrChar charDesc = new OcrChar(
                     str,
-                    new Rectangle(
+                    new PixelRectangle(
                         ch.left,
-                        ch.top + 1,
+                        ch.top + 1, // Correction
                         ch.right - ch.left,
                         ch.bottom - ch.top),
                     ch.point_size,
@@ -183,7 +190,7 @@ class UseTessDllDll
 
             // Debugging: we've found nothing
             if (lines.isEmpty()) {
-                dumpChars(chars);
+                dumpChars(chars, label);
             }
 
             // Just in case we've missed the end (useful? TBD)
@@ -194,7 +201,7 @@ class UseTessDllDll
             return lines;
         } catch (Exception ex) {
             logger.warning("Error decoding tesseract output", ex);
-            dumpChars(chars);
+            dumpChars(chars, label);
 
             return null;
         }
@@ -220,10 +227,13 @@ class UseTessDllDll
     /**
      * Dump the raw char descriptions as read from Tesseract
      * @param chars the sequence of raw char descriptions
+     * @param the optional label
      */
-    private static void dumpChars (EANYCodeChar[] chars)
+    private static void dumpChars (EANYCodeChar[] chars,
+                                   String         label)
     {
-        System.out.println("--Raw Tesseract output:");
+        System.out.println(
+            "-- " + ((label != null) ? label : "") + " Raw Tesseract output:");
         System.out.println(
             "char     code  left right   top   bot  font  conf  size blanks   format");
 
@@ -299,16 +309,19 @@ class UseTessDllDll
 
         private final ByteBuffer buffer;
         private final String     languageCode;
+        private final String     label;
 
         //~ Constructors -------------------------------------------------------
 
         public OcrWorker (ByteBuffer buffer,
-                          String     languageCode)
+                          String     languageCode,
+                          String     label)
         {
             // Sufficient stack size
             super(10000000L);
             this.buffer = buffer;
             this.languageCode = languageCode;
+            this.label = label;
         }
 
         //~ Methods ------------------------------------------------------------
@@ -318,7 +331,7 @@ class UseTessDllDll
         {
             Tesjeract      tess = new Tesjeract(languageCode);
             EANYCodeChar[] chars = tess.recognizeAllWords(buffer);
-            List<OcrLine>  lines = getLines(chars);
+            List<OcrLine>  lines = getLines(chars, label);
 
             return lines;
         }

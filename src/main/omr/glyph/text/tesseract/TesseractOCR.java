@@ -127,16 +127,17 @@ public class TesseractOCR
      */
     @Implement(OCR.class)
     public List<OcrLine> recognize (BufferedImage image,
-                                    String        languageCode)
+                                    String        languageCode,
+                                    String        label)
         throws IOException, InterruptedException
     {
         // Store the input image on disk, to be later cleaned up
-        File imageFile = storeOnDisk(image);
+        File imageFile = storeOnDisk(image, label);
         imageFile.deleteOnExit();
 
         // Use the tessdll.dll implementation
         return UseTessDllDll.getInstance()
-                            .retrieveLines(imageFile, languageCode);
+                            .retrieveLines(imageFile, languageCode, label);
     }
 
     //--------------//
@@ -174,12 +175,16 @@ public class TesseractOCR
      * TODO: One day, we should try to avoid the use of an intermediate file,
      * and directly pass a memory buffer to tesseract.
      * @param image the input image
+     * @param optional label
      * @return the written file
      */
-    private File storeOnDisk (BufferedImage image)
+    private File storeOnDisk (BufferedImage image,
+                              String        label)
         throws IOException
     {
-        File              outputFile = File.createTempFile("ocr", ".tif");
+        File              outputFile = File.createTempFile(
+            (label != null) ? label : "ocr",
+            ".tif");
         ImageOutputStream ios = ImageIO.createImageOutputStream(outputFile);
 
         // Take the first suitable TIFF writer

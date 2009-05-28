@@ -522,14 +522,12 @@ public class GlyphLagView
                                 .getSelectedGlyphSet();
 
         if ((glyphs != null) && !glyphs.isEmpty()) {
+
+            // Decorations first
             Stroke oldStroke = UIUtilities.SetAbsoluteStroke(g, 1f);
-            g.setColor(Color.black);
-            g.setXORMode(Color.darkGray);
-
+            g.setColor(Color.blue);
             for (Glyph glyph : glyphs) {
-                renderGlyphArea(glyph, g);
-
-                // Draw circle arc here ?
+                // Draw circle arc or stick average line
                 if (glyph.getShape() == Shape.SLUR) {
                     if (ViewParameters.getInstance()
                                       .isCirclePainting()) {
@@ -566,6 +564,14 @@ public class GlyphLagView
             }
 
             ((Graphics2D) g).setStroke(oldStroke);
+
+            // Glyph areas second, using XOR mode for the area
+            g.setColor(Color.black);
+            g.setXORMode(Color.darkGray);
+
+            for (Glyph glyph : glyphs) {
+                renderGlyphArea(glyph, g);
+            }
         }
     }
 

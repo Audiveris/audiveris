@@ -628,7 +628,8 @@ public class Sentence
                     OCR           ocr = TesseractOCR.getInstance();
                     List<OcrLine> lines = ocr.recognize(
                         glyph.getImage(),
-                        language);
+                        language,
+                        "g" + glyph.getId() + ".");
 
                     if (!lines.isEmpty()) {
                         OcrLine ocrLine = lines.get(0);

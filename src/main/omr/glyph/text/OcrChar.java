@@ -9,7 +9,7 @@
 //
 package omr.glyph.text;
 
-import java.awt.Rectangle;
+import omr.score.common.PixelRectangle;
 
 /**
  * Class <code>OcrChar</code> manages information about a OCR-decoded character
@@ -24,8 +24,8 @@ public class OcrChar
     /** Character value */
     public final String content;
 
-    /** Character bounding box, relative to top-left origin (often the glyph) */
-    private final Rectangle box;
+    /** Character bounding box, relative to top-left image origin */
+    private final PixelRectangle box;
 
     /** Font size of char */
     public final int fontSize;
@@ -46,10 +46,10 @@ public class OcrChar
      * @param fontSize the font size for this char
      * @param blanks the number of spaces before this char
      */
-    public OcrChar (String    content,
-                    Rectangle box,
-                    int       fontSize,
-                    int       blanks)
+    public OcrChar (String         content,
+                    PixelRectangle box,
+                    int            fontSize,
+                    int            blanks)
     {
         this.content = content;
         this.box = box;
@@ -66,9 +66,9 @@ public class OcrChar
      * Return the bounding box of the char
      * @return (a copy of) the box
      */
-    public Rectangle getBox ()
+    public PixelRectangle getBox ()
     {
-        return new Rectangle(box);
+        return new PixelRectangle(box);
     }
 
     //--------//
@@ -102,8 +102,9 @@ public class OcrChar
         StringBuilder sb = new StringBuilder("{");
         sb.append(getClass().getSimpleName());
 
-        sb.append(" ")
-          .append(content);
+        sb.append(" \"")
+          .append(content)
+          .append("\"");
 
         sb.append(" ")
           .append(getBox());
