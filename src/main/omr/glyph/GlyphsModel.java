@@ -176,12 +176,10 @@ public class GlyphsModel
             if (isTransient) {
                 SystemInfo system = sheet.getSystemOf(glyph);
                 glyph = system.addGlyph(glyph);
-                logger.info(
-                    "Inserted compound #" + glyph.getId() + " as " + shape);
             }
 
             logger.info(
-                "Assign " + (isTransient ? "transient " : "") + "glyph#" +
+                "Assign " + (isTransient ? "compound " : "") + "glyph#" +
                 glyph.getId() + " to " + shape);
 
             // Remember the latest shape assigned
@@ -232,8 +230,8 @@ public class GlyphsModel
      * @param doubt the doubt we have wrt the assigned shape
      */
     public void assignSectionSet (Collection<GlyphSection> sections,
-                                  Shape               shape,
-                                  double              doubt)
+                                  Shape                    shape,
+                                  double                   doubt)
     {
         // Build & insert one glyph out of the sections
         SystemInfo system = sheet.getSystemOfSections(sections);
