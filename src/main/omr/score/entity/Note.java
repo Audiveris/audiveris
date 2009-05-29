@@ -13,6 +13,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
+import omr.glyph.ShapeRange;
 
 import omr.log.Logger;
 
@@ -189,7 +190,7 @@ public class Note
         this.packIndex = 0;
 
         // Rest?
-        isRest = Shape.Rests.contains(shape);
+        isRest = ShapeRange.Rests.contains(shape);
 
         // Staff
         setStaff(staff);
@@ -235,7 +236,7 @@ public class Note
         this.packIndex = packIndex;
 
         // Rest?
-        isRest = Shape.Rests.contains(glyph.getShape());
+        isRest = ShapeRange.Rests.contains(glyph.getShape());
 
         // Location center
         setCenter(getSystem().toSystemPoint(center));
@@ -911,7 +912,7 @@ public class Note
         // Make sure centroid and box center are close to each other,
         // otherwise force ordinate using the interline value.
         // This trick applies for heads, not for rests
-        if (!Shape.Rests.contains(glyph.getShape())) {
+        if (!ShapeRange.Rests.contains(glyph.getShape())) {
             if (centerY > (centroid.y + maxDy)) {
                 // Force heads at top
                 return new PixelPoint(

@@ -12,6 +12,7 @@ package omr.glyph.ui;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.Shape;
+import omr.glyph.ShapeRange;
 
 import omr.selection.GlyphEvent;
 import omr.selection.SelectionHint;
@@ -85,8 +86,8 @@ public class BarMenu
 
         // Manually assign a shape
         JMenu assignMenu = new JMenu(new AssignAction());
-        Shape.addRangeShapeItems(
-            Shape.Barlines,
+        ShapeRange.addRangeShapeItems(
+            ShapeRange.Barlines,
             assignMenu,
             new ActionListener() {
                     @Implement(ActionListener.class)
@@ -105,8 +106,8 @@ public class BarMenu
 
         // Build a compound, with menu for shape selection
         JMenu compoundMenu = new JMenu(new CompoundAction());
-        Shape.addRangeShapeItems(
-            Shape.Barlines,
+        ShapeRange.addRangeShapeItems(
+            ShapeRange.Barlines,
             compoundMenu,
             new ActionListener() {
                     @Implement(ActionListener.class)

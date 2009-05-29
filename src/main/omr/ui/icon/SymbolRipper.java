@@ -12,6 +12,7 @@ package omr.ui.icon;
 import omr.Main;
 
 import omr.glyph.Shape;
+import omr.glyph.ShapeRange;
 
 import omr.log.Logger;
 
@@ -516,7 +517,7 @@ public class SymbolRipper
 
             // Update the shape menu accordingly
             menu.removeAll();
-            Shape.addShapeItems(menu, shapeListener);
+            ShapeRange.addShapeItems(menu, shapeListener);
         }
     }
 
@@ -577,7 +578,7 @@ public class SymbolRipper
 
                     // Update the shape menu accordingly
                     menu.removeAll();
-                    Shape.addShapeItems(menu, shapeListener);
+                    ShapeRange.addShapeItems(menu, shapeListener);
                 } catch (Exception ex) {
                     logger.info("Symbol just stored is not a known shape");
                 }

@@ -11,6 +11,7 @@ package omr.glyph;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
+import static omr.glyph.ShapeRange.*;
 
 import omr.log.Logger;
 
@@ -73,7 +74,7 @@ public class GlyphChecks
             } else {
                 return null;
             }
-        } else if (Shape.Clefs.contains(shape)) {
+        } else if (Clefs.contains(shape)) {
             // Check reasonable height
             if (glyph.getNormalizedHeight() > constants.maxClefHeight.getValue()) {
                 return null;
@@ -83,7 +84,7 @@ public class GlyphChecks
             if (Math.abs(glyph.getPitchPosition()) >= 15) {
                 return null;
             }
-        } else if (Shape.HeadAndFlags.contains(shape)) {
+        } else if (HeadAndFlags.contains(shape)) {
             // Check that we do have a stem on left side
             if (glyph.getLeftStem() == null) {
                 return null;
@@ -111,11 +112,11 @@ public class GlyphChecks
             if (!validBeamHookSlope(glyph)) {
                 return null;
             }
-        } else if (Shape.Times.contains(shape)) {
+        } else if (Times.contains(shape)) {
             final double absPos = Math.abs(glyph.getPitchPosition());
             final double maxDy = constants.maxTimePitchPositionMargin.getValue();
 
-            if (Shape.MultiTimes.contains(shape)) {
+            if (MultiTimes.contains(shape)) {
                 // A full time shape must be on 0 position
                 if (absPos > maxDy) {
                     return null;
@@ -131,15 +132,15 @@ public class GlyphChecks
                     return null;
                 }
             }
-        } else if (Shape.Dynamics.contains(shape)) {
+        } else if (Dynamics.contains(shape)) {
             // Check distance from closest staff
             if (Math.abs(glyph.getPitchPosition()) >= 15) {
                 return null;
             }
-        } else if (Shape.Notes.contains(shape) ||
-                   Shape.NoteHeads.contains(shape) ||
-                   Shape.Rests.contains(shape) ||
-                   Shape.HeadAndFlags.contains(shape)) {
+        } else if (Notes.contains(shape) ||
+                   NoteHeads.contains(shape) ||
+                   Rests.contains(shape) ||
+                   HeadAndFlags.contains(shape)) {
             // A note / rest cannot be too far from a staff
             if (Math.abs(glyph.getPitchPosition()) >= 15) {
                 return null;
@@ -150,7 +151,7 @@ public class GlyphChecks
                     return null;
                 }
             }
-        } else if (Shape.Pedals.contains(shape)) {
+        } else if (Pedals.contains(shape)) {
             // Pedal marks must be below the staff
             if (glyph.getPitchPosition() <= 4) {
                 return null;

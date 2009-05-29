@@ -477,7 +477,7 @@ public class GlyphInspector
                 break;
             }
 
-            if (Shape.Clefs.contains(vote.shape)) {
+            if (ShapeRange.Clefs.contains(vote.shape)) {
                 compound = system.addGlyph(compound);
                 compound.setShape(vote.shape, Evaluation.ALGORITHM);
 

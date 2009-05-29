@@ -167,7 +167,7 @@ public class GlyphsController
                                      final boolean           compound)
     {
         // Special case for bars, delegate to SystemsBuilder if needed
-        if ((Shape.Barlines.contains(shape) || hasBars(glyphs)) &&
+        if ((ShapeRange.Barlines.contains(shape) || hasBars(glyphs)) &&
             (getModel() != sheet.getSystemsBuilder()
                                 .getController()
                                 .getModel())) {
@@ -270,9 +270,9 @@ public class GlyphsController
      * @param runnable the (synchronous) job
      * @return the launched Swing Application Framework task
      */
-    protected Task launch (final omr.script.ScriptTask   scriptTask,
-                           final Collection<Glyph> glyphs,
-                           final GlyphsRunnable    runnable)
+    protected Task launch (final omr.script.ScriptTask scriptTask,
+                           final Collection<Glyph>     glyphs,
+                           final GlyphsRunnable        runnable)
     {
         Task task = new BasicTask() {
             protected Void doInBackground ()

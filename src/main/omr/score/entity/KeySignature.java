@@ -15,6 +15,7 @@ import omr.glyph.Glyph;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
+import omr.glyph.ShapeRange;
 
 import omr.log.Logger;
 
@@ -325,9 +326,9 @@ public class KeySignature
         for (Glyph g : neighbors) {
             Shape shape = g.getShape();
 
-            if (Shape.StemSymbols.contains(shape) ||
-                Shape.Notes.getShapes()
-                           .contains(shape)) {
+            if (ShapeRange.StemSymbols.contains(shape) ||
+                ShapeRange.Notes.getShapes()
+                                .contains(shape)) {
                 if (logger.isFineEnabled()) {
                     logger.fine("Cannot accept " + shape + " as neighbor");
                 }

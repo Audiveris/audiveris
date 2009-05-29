@@ -15,6 +15,7 @@ import omr.glyph.Glyph;
 import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphLag;
 import omr.glyph.Shape;
+import omr.glyph.ShapeRange;
 
 import omr.selection.GlyphEvent;
 import omr.selection.SelectionHint;
@@ -101,7 +102,7 @@ public class GlyphMenu
 
         // Manually assign a shape
         JMenu assignMenu = new JMenu(new AssignAction());
-        Shape.addShapeItems(
+        ShapeRange.addShapeItems(
             assignMenu,
             new ActionListener() {
                     @Implement(ActionListener.class)
@@ -131,7 +132,7 @@ public class GlyphMenu
 
         // Build a compound, with menu for shape selection
         JMenu compoundMenu = new JMenu(new CompoundAction());
-        Shape.addShapeItems(
+        ShapeRange.addShapeItems(
             compoundMenu,
             new ActionListener() {
                     @Implement(ActionListener.class)
@@ -441,7 +442,8 @@ public class GlyphMenu
         public void actionPerformed (ActionEvent e)
         {
             for (Glyph glyph : glyphLag.getSelectedGlyphSet()) {
-                glyph.getTextInfo().dump();
+                glyph.getTextInfo()
+                     .dump();
             }
         }
 

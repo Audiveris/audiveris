@@ -15,6 +15,7 @@ import omr.glyph.Glyph;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
+import omr.glyph.ShapeRange;
 
 import omr.log.Logger;
 
@@ -296,7 +297,7 @@ public class TimeSignature
         // Then, processing depends on single/multi time signature
         Shape shape = glyph.getShape();
 
-        if (SingleTimes.contains(shape)) {
+        if (ShapeRange.SingleTimes.contains(shape)) {
             return populateSingleTime(glyph, measure, staff);
         } else {
             return populateMultiTime(glyph, measure, staff);

@@ -390,7 +390,7 @@ public class ConstantManager
                 FileOutputStream out = new FileOutputStream(file);
                 properties.store(
                     out,
-                    " Audiveris properties file. Do not edit");
+                    " Audiveris user properties file. Do not edit");
                 out.close();
             } catch (FileNotFoundException ex) {
                 logger.warning(

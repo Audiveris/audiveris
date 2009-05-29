@@ -17,6 +17,7 @@ import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
+import omr.glyph.ShapeRange;
 
 import omr.log.Logger;
 
@@ -245,7 +246,7 @@ public class ScoreChecker
                 }
             } else if (shape == Shape.NO_LEGAL_TIME) {
                 timeSignature.addError("Illegal " + timeSignature);
-            } else if (Shape.SingleTimes.contains(shape)) {
+            } else if (ShapeRange.SingleTimes.contains(shape)) {
                 timeSignature.addError(
                     "Orphan time signature shape : " + shape);
             } else { // Normal simple shape
@@ -520,7 +521,7 @@ public class ScoreChecker
                     break;
                 }
 
-                if (Shape.Beams.contains(vote.shape)) {
+                if (ShapeRange.Beams.contains(vote.shape)) {
                     glyph.setShape(vote.shape, Evaluation.ALGORITHM);
 
                     if (logger.isFineEnabled()) {

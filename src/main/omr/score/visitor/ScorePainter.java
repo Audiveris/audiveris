@@ -15,6 +15,7 @@ import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
+import omr.glyph.ShapeRange;
 import omr.glyph.text.Sentence;
 import omr.glyph.text.TextInfo;
 
@@ -550,7 +551,7 @@ public class ScorePainter
 
         if (stem != null) {
             // Note is attached to a stem, link the note display to the stem one
-            if (Shape.HeadAndFlags.contains(shape)) {
+            if (ShapeRange.HeadAndFlags.contains(shape)) {
                 displayShape = Shape.NOTEHEAD_BLACK;
             } else {
                 displayShape = shape;
@@ -886,7 +887,7 @@ public class ScorePainter
                 if (shape == NO_LEGAL_TIME) {
                     // If this is an illegal shape, do not draw anything.
                     // TBD: we could draw a special sign for this
-                } else if (Shape.MultiTimes.contains(shape)) {
+                } else if (ShapeRange.MultiTimes.contains(shape)) {
                     // It is a complete (one-symbol) time signature
                     paintSymbol(shape, timeSignature.getCenter());
                 }

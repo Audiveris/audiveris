@@ -234,7 +234,7 @@ public class Glyph
      */
     public boolean isBar ()
     {
-        return Shape.Barlines.contains(getShape());
+        return ShapeRange.Barlines.contains(getShape());
     }
 
     //-----------//
@@ -288,7 +288,7 @@ public class Glyph
      */
     public boolean isClef ()
     {
-        return Shape.Clefs.contains(getShape());
+        return ShapeRange.Clefs.contains(getShape());
     }
 
     //----------//
@@ -1004,8 +1004,8 @@ public class Glyph
      */
     public boolean isTime ()
     {
-        return Shape.SingleTimes.contains(getShape()) ||
-               Shape.MultiTimes.contains(getShape());
+        return ShapeRange.SingleTimes.contains(getShape()) ||
+               ShapeRange.MultiTimes.contains(getShape());
     }
 
     //------------------//

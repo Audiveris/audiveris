@@ -11,6 +11,7 @@ package omr.score;
 
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
+import static omr.glyph.ShapeRange.*;
 import omr.glyph.text.Sentence;
 import omr.glyph.text.TextRole;
 
@@ -26,7 +27,6 @@ import omr.score.entity.BeamItem;
 import omr.score.entity.Chord;
 import omr.score.entity.Clef;
 import omr.score.entity.Coda;
-import omr.score.entity.Dynamics;
 import omr.score.entity.Fermata;
 import omr.score.entity.KeySignature;
 import omr.score.entity.Measure;
@@ -229,7 +229,7 @@ public class SystemTranslator
 
             if (glyph.isWellKnown() &&
                 (shape != Shape.CLUTTER) &&
-                (!glyph.isTranslated() || Shape.HeadAndFlags.contains(shape))) {
+                (!glyph.isTranslated() || HeadAndFlags.contains(shape))) {
                 // Check for glyph relevance
                 if (translator.isRelevant(glyph)) {
                     // Determine part/staff/measure containment
@@ -411,7 +411,7 @@ public class SystemTranslator
 
         public boolean isRelevant (Glyph glyph)
         {
-            return Shape.Accidentals.contains(glyph.getShape());
+            return Accidentals.contains(glyph.getShape());
         }
 
         public void translate (Glyph glyph)
@@ -465,7 +465,7 @@ public class SystemTranslator
         {
             Shape shape = glyph.getShape();
 
-            return Shape.Beams.contains(shape) && (shape != Shape.SLUR);
+            return Beams.contains(shape) && (shape != Shape.SLUR);
         }
 
         @Override
@@ -517,10 +517,8 @@ public class SystemTranslator
         {
             Shape shape = glyph.getShape();
 
-            return Shape.Rests.contains(shape) ||
-                   Shape.NoteHeads.contains(shape) ||
-                   Shape.Notes.contains(shape) ||
-                   Shape.HeadAndFlags.contains(shape);
+            return Rests.contains(shape) || NoteHeads.contains(shape) ||
+                   Notes.contains(shape) || HeadAndFlags.contains(shape);
         }
 
         @Override
@@ -568,7 +566,7 @@ public class SystemTranslator
 
         public boolean isRelevant (Glyph glyph)
         {
-            return Shape.Clefs.contains(glyph.getShape());
+            return Clefs.contains(glyph.getShape());
         }
 
         @Override
@@ -657,13 +655,16 @@ public class SystemTranslator
         {
             Shape shape = glyph.getShape();
 
-            return Shape.Dynamics.contains(shape) &&
-                   (shape != Shape.CRESCENDO) && (shape != Shape.DECRESCENDO);
+            return Dynamics.contains(shape) && (shape != Shape.CRESCENDO) &&
+                   (shape != Shape.DECRESCENDO);
         }
 
         public void translate (Glyph glyph)
         {
-            Dynamics.populate(glyph, currentMeasure, currentCenter);
+            omr.score.entity.Dynamics.populate(
+                glyph,
+                currentMeasure,
+                currentCenter);
         }
     }
 
@@ -713,8 +714,7 @@ public class SystemTranslator
         {
             Shape shape = glyph.getShape();
 
-            return Shape.Flags.contains(shape) ||
-                   Shape.HeadAndFlags.contains(shape);
+            return Flags.contains(shape) || HeadAndFlags.contains(shape);
         }
 
         @Override
@@ -1054,7 +1054,7 @@ public class SystemTranslator
 
         public boolean isRelevant (Glyph glyph)
         {
-            return Shape.Times.contains(glyph.getShape());
+            return Times.contains(glyph.getShape());
         }
 
         public void translate (Glyph glyph)
@@ -1084,7 +1084,7 @@ public class SystemTranslator
 
         public boolean isRelevant (Glyph glyph)
         {
-            return Shape.Tuplets.contains(glyph.getShape());
+            return Tuplets.contains(glyph.getShape());
         }
 
         public void translate (Glyph glyph)

@@ -10,6 +10,7 @@
 package omr.glyph.ui;
 
 import omr.glyph.Shape;
+import omr.glyph.ShapeRange;
 
 import omr.ui.MainGui;
 
@@ -181,7 +182,7 @@ public class ShapeColorChooser
     {
         //~ Instance fields ----------------------------------------------------
 
-        public Shape.Range     current;
+        public ShapeRange      current;
         private SelectAction   select = new SelectAction();
         private JButton        selectButton = new JButton(select);
         private PasteAction    paste = new PasteAction();
@@ -190,7 +191,7 @@ public class ShapeColorChooser
             public void actionPerformed (ActionEvent e)
             {
                 JMenuItem source = (JMenuItem) e.getSource();
-                current = Shape.Range.valueOf(source.getText());
+                current = ShapeRange.valueOf(source.getText());
 
                 if (current != null) {
                     banner.setText(current.getName());
@@ -248,7 +249,7 @@ public class ShapeColorChooser
         private void buildRangesMenu ()
         {
             menu.removeAll();
-            Shape.Range.addRangeItems(menu, selectionListener);
+            ShapeRange.addRangeItems(menu, selectionListener);
         }
 
         //~ Inner Classes ------------------------------------------------------
@@ -402,7 +403,10 @@ public class ShapeColorChooser
             menu.removeAll();
 
             // Add all shapes within current range
-            Shape.addRangeShapeItems(ranges.current, menu, selectionListener);
+            ShapeRange.addRangeShapeItems(
+                ranges.current,
+                menu,
+                selectionListener);
         }
 
         private void prepareDefaultOption ()

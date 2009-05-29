@@ -43,7 +43,7 @@ public class StemInspector
             Shape   shape = glyph.getShape();
 
             boolean res = glyph.isWellKnown() &&
-                          Shape.StemSymbols.contains(shape) &&
+                          ShapeRange.StemSymbols.contains(shape) &&
                           (shape != Shape.BEAM_HOOK);
 
             return res;

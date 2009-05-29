@@ -10,8 +10,9 @@
 package omr.glyph.ui;
 
 import omr.glyph.Glyph;
-import omr.glyph.ui.GlyphsController;
 import omr.glyph.Shape;
+import omr.glyph.ShapeRange;
+import omr.glyph.ui.GlyphsController;
 
 import omr.log.Logger;
 
@@ -87,9 +88,9 @@ class ShapeFocusBoard
 
     //~ Instance fields --------------------------------------------------------
 
-    private final GlyphLagView view;
-    private final GlyphsController  glyphModel;
-    private final Sheet        sheet;
+    private final GlyphLagView     view;
+    private final GlyphsController glyphModel;
+    private final Sheet            sheet;
 
     /** Counter on symbols assigned to the current shape */
     private Counter assignedCounter = new Counter();
@@ -117,10 +118,10 @@ class ShapeFocusBoard
      * @param glyphModel the related glyph model
      * @param filterListener the action linked to filter button
      */
-    public ShapeFocusBoard (Sheet          sheet,
-                            GlyphLagView   view,
-                            GlyphsController    glyphModel,
-                            ActionListener filterListener)
+    public ShapeFocusBoard (Sheet            sheet,
+                            GlyphLagView     view,
+                            GlyphsController glyphModel,
+                            ActionListener   filterListener)
     {
         super(
             sheet.getRadix() + "-ShapeFocusBoard",
@@ -161,7 +162,7 @@ class ShapeFocusBoard
                     }
                 });
         pm.add(noFocus);
-        Shape.addShapeItems(
+        ShapeRange.addShapeItems(
             pm,
             new ActionListener() {
                     public void actionPerformed (ActionEvent e)
