@@ -117,16 +117,16 @@ public class HorizontalArea
         //~ Instance fields ----------------------------------------------------
 
         Scale.Fraction coreSectionLength = new Scale.Fraction(
-            2.0,
+            1.2,
             "Minimum length of a section to be processed");
         Constant.Ratio maxAdjacency = new Constant.Ratio(
             0.5d,
             "Maximum adjacency ratio to be a true horizontal line");
         Scale.Fraction maxDeltaCoord = new Scale.Fraction(
-            0.25,
+            0.1,
             "Maximum difference of ordinates when merging two sticks");
         Scale.Fraction maxDeltaPos = new Scale.Fraction(
-            0.2,
+            0.1,
             "Maximum difference of abscissa (in units) when merging two sticks");
         Constant.Angle maxDeltaSlope = new Constant.Angle(
             0.01d,

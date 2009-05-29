@@ -218,7 +218,7 @@ public class ScoreTree
 
         /** Should we hide empty dummy containers */
         Constant.Boolean hideEmptyDummies = new Constant.Boolean(
-            true,
+            false,
             "Should we hide empty dummy containers");
     }
 

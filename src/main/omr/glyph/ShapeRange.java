@@ -345,7 +345,7 @@ public class ShapeRange
             "Color code for range " + name);
 
         // Assign the range display color
-        if (!constantColor.isDefaultValue()) {
+        if (!constantColor.isSourceValue()) {
             setColor(constantColor.getValue());
         } else {
             // Use the default color

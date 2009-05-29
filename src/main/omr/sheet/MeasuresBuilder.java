@@ -236,7 +236,7 @@ public class MeasuresBuilder
                 staves.add((Staff) node);
             }
 
-            MeasureLoop: 
+            MeasureLoop:
             for (Iterator mit = part.getMeasures()
                                     .iterator(); mit.hasNext();) {
                 Measure measure = (Measure) mit.next();
@@ -533,17 +533,17 @@ public class MeasuresBuilder
 
         /** Maximum horizontal shift in bars between staves in a system */
         Scale.Fraction maxAlignShiftDx = new Scale.Fraction(
-            0.2,
+            0.5,
             "Maximum horizontal shift in bars between staves in a system");
 
         /** Maximum horizontal distance between the two bars of a double bar */
         Scale.Fraction maxDoubleBarDx = new Scale.Fraction(
-            0.75,
+            2.0,
             "Maximum horizontal distance between the two bars of a double bar");
 
         /** Minimum width for a measure */
         Scale.Fraction minMeasureWidth = new Scale.Fraction(
-            0.75,
+            2.0,
             "Minimum width for a measure");
         Scale.Fraction maxBarOffset = new Scale.Fraction(
             1.0,

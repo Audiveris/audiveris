@@ -579,41 +579,41 @@ public class HorizontalsBuilder
             0.33,
             "Height of half area to look for chunks");
         Constant.Ratio   chunkRatioHigh = new Constant.Ratio(
-            0.25,
+            0.05,
             "HighMaximum ratio of alien pixels to detect chunks");
         Constant.Ratio   chunkRatioLow = new Constant.Ratio(
-            0.25,
+            0.02,
             "LowMaximum ratio of alien pixels to detect chunks");
         Scale.Fraction   chunkWidth = new Scale.Fraction(
             0.33,
             "Width of half area to look for chunks");
         Constant.Boolean displayFrame = new Constant.Boolean(
-            false,
+            true,
             "Should we display a frame on the horizontal sticks");
         Scale.Fraction   extensionMinPointNb = new Scale.Fraction(
             0.2,
             "Minimum number of points to compute extension of" +
             " crossing objects during cleanup");
         Constant.Ratio   maxAdjacencyHigh = new Constant.Ratio(
-            0.70,
+            0.2,
             "High Maximum adjacency ratio for an ending");
         Constant.Ratio   maxAdjacencyLow = new Constant.Ratio(
-            0.60,
+            0.1,
             "Low Maximum adjacency ratio for an ending");
         Scale.Fraction   maxLengthHigh = new Scale.Fraction(
-            3.5,
+            3.1,
             "High Maximum length for a horizontal");
         Scale.Fraction   maxLengthLow = new Scale.Fraction(
-            2.5,
+            2.2,
             "Low Maximum length for a horizontal");
         Scale.Fraction   maxStaffDistanceHigh = new Scale.Fraction(
-            7,
+            6,
             "High Maximum staff distance for a horizontal");
         Scale.Fraction   maxStaffDistanceLow = new Scale.Fraction(
-            5,
+            4,
             "Low Maximum staff distance for a horizontal");
         Scale.Fraction   maxThicknessHigh = new Scale.Fraction(
-            0.3,
+            0.45,
             "High Maximum thickness of an interesting stick");
         Scale.Fraction   maxThicknessLow = new Scale.Fraction(
             0.3,
@@ -622,22 +622,22 @@ public class HorizontalsBuilder
             0.50,
             "Minimum result for suite of check");
         Constant.Ratio   minDensityHigh = new Constant.Ratio(
-            0.9,
+            0.7,
             "High Minimum density for a horizontal");
         Constant.Ratio   minDensityLow = new Constant.Ratio(
-            0.8,
+            0.6,
             "Low Minimum density for a horizontal");
         Scale.Fraction   minEndingLengthHigh = new Scale.Fraction(
-            10,
+            15,
             "High Minimum length for an ending");
         Scale.Fraction   minEndingLengthLow = new Scale.Fraction(
-            5,
+            10,
             "Low Minimum length for an ending");
         Scale.Fraction   minLedgerLengthHigh = new Scale.Fraction(
-            3.5,
+            1.5,
             "High Minimum length for a ledger");
         Scale.Fraction   minLedgerLengthLow = new Scale.Fraction(
-            2.5,
+            1.3,
             "Low Minimum length for a ledger");
         Scale.Fraction   minStaffDistanceHigh = new Scale.Fraction(
             0.8,
@@ -646,10 +646,10 @@ public class HorizontalsBuilder
             0.6,
             "Low Minimum staff distance for a horizontal");
         Scale.Fraction   minThicknessHigh = new Scale.Fraction(
-            0.3,
+            0.23,
             "High Minimum thickness of an interesting stick");
         Scale.Fraction   minThicknessLow = new Scale.Fraction(
-            0.3,
+            0.06,
             "Low Minimum thickness of an interesting stick");
     }
 

@@ -246,7 +246,20 @@ public class UnitManager
         System.out.println("\nUnitManager. All Units:");
         System.out.println("=======================");
 
-        for (Node node : mapOfNodes.values()) {
+        // Use alphabetical order for easier reading
+        List<Node> nodes = new ArrayList<Node>(mapOfNodes.values());
+        Collections.sort(
+            nodes,
+            new Comparator<Node>() {
+                    public int compare (Node n1,
+                                        Node n2)
+                    {
+                        return n1.getName()
+                                 .compareTo(n2.getName());
+                    }
+                });
+
+        for (Node node : nodes) {
             if (node instanceof UnitNode) {
                 UnitNode    unit = (UnitNode) node;
 

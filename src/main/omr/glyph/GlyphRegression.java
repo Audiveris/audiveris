@@ -248,7 +248,7 @@ public class GlyphRegression
     {
         //~ Instance fields ----------------------------------------------------
 
-        Constant.Ratio weightMax = new Constant.Ratio(5e3, "Maximum weight");
+        Constant.Ratio weightMax = new Constant.Ratio(2500, "Maximum weight");
     }
 
     //-----------//

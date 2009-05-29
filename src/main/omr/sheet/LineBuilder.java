@@ -606,7 +606,7 @@ public class LineBuilder
         //~ Instance fields ----------------------------------------------------
 
         Scale.Fraction coreSectionLength = new Scale.Fraction(
-            10d,
+            4.5d,
             "Minimum section length to be considered a staff line core section");
         Scale.Fraction extensionMinLength = new Scale.Fraction(
             0.25d,

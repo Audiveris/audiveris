@@ -66,11 +66,11 @@ public class Note
 
 
         /** La */ A,
-        /** Si */ B, 
-        /** Do */ C, 
-        /** Re */ D, 
-        /** Mi */ E, 
-        /** Fa */ F, 
+        /** Si */ B,
+        /** Do */ C,
+        /** Re */ D,
+        /** Mi */ E,
+        /** Fa */ F,
         /** Sol */ G;
     }
 
@@ -719,7 +719,7 @@ public class Note
         final Set<Note> candidates = new HashSet<Note>();
 
         // An accidental impacts the note right after (even if duplicated)
-        ChordLoop: 
+        ChordLoop:
         for (TreeNode node : measure.getChords()) {
             final Chord chord = (Chord) node;
 
@@ -1060,14 +1060,14 @@ public class Note
          * Maximum dx between accidental and note
          */
         Scale.Fraction maxAccidDx = new Scale.Fraction(
-            1d,
+            4d,
             "Maximum dx between accidental and note");
 
         /**
          * Maximum absolute dy between note and accidental
          */
         Scale.Fraction maxAccidDy = new Scale.Fraction(
-            1d,
+            0.5d,
             "Maximum absolute dy between note and accidental");
 
         /**
@@ -1088,7 +1088,7 @@ public class Note
          * Maximum absolute dy between note center and centroid
          */
         Scale.Fraction maxCenterDy = new Scale.Fraction(
-            0.5d,
+            0.1d,
             "Maximum absolute dy between note center and centroid");
     }
 }

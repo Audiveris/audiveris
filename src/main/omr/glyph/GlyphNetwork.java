@@ -581,21 +581,21 @@ public class GlyphNetwork
             0.5,
             "Initial weight amplitude");
         Constant.Ratio   learningRate = new Constant.Ratio(
-            0.25,
+            0.2,
             "Learning Rate");
         Constant.Integer listEpochs = new Constant.Integer(
             "Epochs",
-            2000,
+            8000,
             "Number of epochs for training on list of glyphs");
         Constant.Integer quorum = new Constant.Integer(
             "Glyphs",
             10,
             "Minimum number of glyphs for each shape");
         Evaluation.Doubt maxError = new Evaluation.Doubt(
-            1E-4,
+            1E-3,
             "Threshold to stop training");
         Constant.Ratio   momentum = new Constant.Ratio(
-            0.02,
+            0.2,
             "Training momentum");
     }
 }

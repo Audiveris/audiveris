@@ -649,7 +649,7 @@ public class LinesBuilder
 
         /** Should we display a frame on Lags ? */
         Constant.Boolean displayFrame = new Constant.Boolean(
-            false,
+            true,
             "Should we display a frame on Lags ?");
 
         /** Should we display original staff lines */

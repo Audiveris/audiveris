@@ -429,7 +429,7 @@ public class GlyphInspector
             Glyph compound = system.buildCompound(neighbors);
 
             if (adapter.isValid(compound)) {
-                // If this compound duplicates an original glyph, 
+                // If this compound duplicates an original glyph,
                 // make sure the shape was not forbidden in the original
                 Glyph original = system.getSheet()
                                        .getVerticalLag()
@@ -774,7 +774,7 @@ public class GlyphInspector
         //~ Instance fields ----------------------------------------------------
 
         Scale.Fraction   boxWiden = new Scale.Fraction(
-            0.15,
+            0.3,
             "Box widening to check intersection with compound");
         Evaluation.Doubt alterMaxDoubt = new Evaluation.Doubt(
             6,
@@ -783,10 +783,10 @@ public class GlyphInspector
             1.2,
             "Maximum doubt for cleanup phase");
         Evaluation.Doubt leafMaxDoubt = new Evaluation.Doubt(
-            1.2,
+            1.04,
             "Maximum acceptance doubt for a leaf");
         Evaluation.Doubt symbolMaxDoubt = new Evaluation.Doubt(
-            1.2,
+            1.1,
             "Maximum doubt for a symbol");
         Evaluation.Doubt textMaxDoubt = new Evaluation.Doubt(
             3.0,

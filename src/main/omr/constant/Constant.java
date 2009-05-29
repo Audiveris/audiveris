@@ -53,8 +53,8 @@ public abstract class Constant
     /** Unit (if relevant) used by the quantity measured */
     private final java.lang.String quantityUnit;
 
-    /** Default value to be used if needed */
-    private final java.lang.String defaultString;
+    /** Source-provided value to be used if needed */
+    private final java.lang.String sourceString;
 
     /** Semantic */
     private final java.lang.String description;
@@ -90,24 +90,24 @@ public abstract class Constant
      * external property is not yet defined.
      *
      * @param quantityUnit  Unit used as base for measure, if relevant
-     * @param defaultString Default value, expressed by a string literal which
+     * @param sourceString Source value, expressed by a string literal which
      * cannot be null
      * @param description A quick description of the purpose of this constant
      */
     protected Constant (java.lang.String quantityUnit,
-                        java.lang.String defaultString,
+                        java.lang.String sourceString,
                         java.lang.String description)
     {
-        if (defaultString == null) {
+        if (sourceString == null) {
             logger.warning(
-                "*** Constant with no defaultString. Description: " +
+                "*** Constant with no sourceString. Description: " +
                 description);
             throw new IllegalArgumentException(
-                "Any constant must have a default String");
+                "Any constant must have a source-provided String");
         }
 
         this.quantityUnit = quantityUnit;
-        this.defaultString = defaultString;
+        this.sourceString = sourceString;
         this.description = description;
 
         //        System.out.println(
@@ -128,33 +128,6 @@ public abstract class Constant
     public java.lang.String getCurrentString ()
     {
         return getTuple().currentString;
-    }
-
-    //------------------//
-    // getDefaultString //
-    //------------------//
-    /**
-     * Report the constant default string
-     *
-     * @return the default string
-     */
-    public java.lang.String getDefaultString ()
-    {
-        return defaultString;
-    }
-
-    //----------------//
-    // isDefaultValue //
-    //----------------//
-    /**
-     * Report whether the current constant value is the default one (not altered
-     * by either properties read from disk, of value changed later
-     * @return true if still the default, false otherwise
-     */
-    public boolean isDefaultValue ()
-    {
-        return getCurrentString()
-                   .equals(defaultString);
     }
 
     //----------------//
@@ -249,6 +222,33 @@ public abstract class Constant
         }
     }
 
+    //-----------------//
+    // getSourceString //
+    //-----------------//
+    /**
+     * Report the constant source string
+     *
+     * @return the source string
+     */
+    public java.lang.String getSourceString ()
+    {
+        return sourceString;
+    }
+
+    //---------------//
+    // isSourceValue //
+    //---------------//
+    /**
+     * Report whether the current constant value is the source one (not altered
+     * by either properties read from disk, of value changed later
+     * @return true if still the source value, false otherwise
+     */
+    public boolean isSourceValue ()
+    {
+        return getCurrentString()
+                   .equals(sourceString);
+    }
+
     //----------//
     // setValue //
     //----------//
@@ -292,7 +292,7 @@ public abstract class Constant
                 setTuple(prop, decode(prop));
             } else {
                 // Use source value
-                setTuple(defaultString, decode(defaultString));
+                setTuple(sourceString, decode(sourceString));
             }
 
             // Very last thing
@@ -416,6 +416,37 @@ public abstract class Constant
                 return;
             }
         }
+    }
+
+    //----------------//
+    // getValueOrigin //
+    //----------------//
+    /**
+     * Convenient method, reporting the origin of the current value for this
+     * constant, either SRC, DEF or USR.
+     * @return a mnemonic for the value origin
+     */
+    java.lang.String getValueOrigin ()
+    {
+        ConstantManager  mgr = ConstantManager.getInstance();
+        java.lang.String cur = getCurrentString();
+        java.lang.String usr = mgr.getConstantUserValue(qualifiedName);
+        java.lang.String def = mgr.getConstantDefaultValue(qualifiedName);
+        java.lang.String src = sourceString;
+
+        if (cur.equals(src)) {
+            return "SRC";
+        }
+
+        if (cur.equals(def)) {
+            return "DEF";
+        }
+
+        if (cur.equals(usr)) {
+            return "USR";
+        }
+
+        return "???";
     }
 
     //----------//

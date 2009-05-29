@@ -780,7 +780,7 @@ public enum Shape {
             "Color code for shape " + name());
 
         // Assign the shape display color
-        if (!constantColor.isDefaultValue()) {
+        if (!constantColor.isSourceValue()) {
             // Use the shape specific color
             setColor(constantColor.getValue());
         } else {

@@ -309,31 +309,31 @@ public class VerticalsBuilder
         //~ Instance fields ----------------------------------------------------
 
         Constant.Ratio maxStemAdjacencyHigh = new Constant.Ratio(
-            0.70,
+            0.75,
             "High Maximum adjacency ratio for a stem stick");
         Constant.Ratio maxStemAdjacencyLow = new Constant.Ratio(
             0.60,
             "Low Maximum adjacency ratio for a stem stick");
         Check.Grade    minCheckResult = new Check.Grade(
-            0.50,
+            0.4,
             "Minimum result for suite of check");
         Constant.Ratio minDensityHigh = new Constant.Ratio(
-            0.9,
+            0.75,
             "High Minimum density for a stem");
         Constant.Ratio minDensityLow = new Constant.Ratio(
-            0.8,
+            0.35,
             "Low Minimum density for a stem");
         Constant.Ratio minStemAspectHigh = new Constant.Ratio(
-            12.5,
+            8.33,
             "High Minimum aspect ratio for a stem stick");
         Constant.Ratio minStemAspectLow = new Constant.Ratio(
-            10.0,
+            6.67,
             "Low Minimum aspect ratio for a stem stick");
         Scale.Fraction minStemLengthHigh = new Scale.Fraction(
-            3.5,
+            3.0,
             "High Minimum length for a stem");
         Scale.Fraction minStemLengthLow = new Scale.Fraction(
-            2.5,
+            2.4,
             "Low Minimum length for a stem");
         Scale.Fraction minShortStemLengthLow = new Scale.Fraction(
             1.5,

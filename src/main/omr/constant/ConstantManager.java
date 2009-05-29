@@ -285,6 +285,22 @@ public class ConstantManager
         userHolder.store();
     }
 
+    //-------------------------//
+    // getConstantDefaultValue //
+    //-------------------------//
+    String getConstantDefaultValue (String qName)
+    {
+        return defaultHolder.getProperty(qName);
+    }
+
+    //----------------------//
+    // getConstantUserValue //
+    //----------------------//
+    String getConstantUserValue (String qName)
+    {
+        return userHolder.getProperty(qName);
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
     //----------------//
@@ -343,7 +359,7 @@ public class ConstantManager
                 Constant constant = constants.get(entry.getKey());
 
                 if ((constant != null) &&
-                    constant.getDefaultString()
+                    constant.getSourceString()
                             .equals(entry.getValue())) {
                     props.add((String) entry.getKey());
                 }
@@ -468,7 +484,7 @@ public class ConstantManager
 
                 final String   current = constant.getCurrentString();
                 final String   def = defaultHolder.getProperty(key);
-                final String   source = constant.getDefaultString();
+                final String   source = constant.getSourceString();
 
                 if ((def != null) && current.equals(def)) {
                     if (properties.remove(key) != null) {

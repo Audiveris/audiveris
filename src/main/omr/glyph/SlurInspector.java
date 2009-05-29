@@ -481,7 +481,7 @@ public class SlurInspector
 
         /** Maximum distance to approximating circle for a slur */
         Scale.Fraction maxCircleDistance = new Scale.Fraction(
-            0.12,
+            0.16,
             "Maximum distance to approximating circle" + " for a slur");
 
         /** Normalized weight threshold between small and large spurious slurs */

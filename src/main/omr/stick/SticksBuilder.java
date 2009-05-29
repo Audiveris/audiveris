@@ -801,11 +801,11 @@ public class SticksBuilder
         //~ Instance fields ----------------------------------------------------
 
         Constant.Ratio   minSectionAspect = new Constant.Ratio(
-            5.0d,
+            6.7d,
             "Minimum value for section aspect (length / thickness)");
         Constant.Integer minSectionGrayLevel = new Constant.Integer(
             "ByteLevel",
-            85,
+            46,
             "Minimum gray level value for section internal");
     }
 }

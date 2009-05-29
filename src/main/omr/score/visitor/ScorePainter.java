@@ -1303,12 +1303,12 @@ public class ScorePainter
         /** Alpha parameter for slot axis transparency (0 .. 255) */
         final Constant.Integer slotAlpha = new Constant.Integer(
             "ByteLevel",
-            20,
+            50,
             "Alpha parameter for slot axis transparency (0 .. 255)");
 
         /** dx between note and augmentation dot */
         final Scale.Fraction dotDx = new Scale.Fraction(
-            0.3,
+            0.5,
             "dx between note and augmentation dot");
 
         /** Half length of a ledger */

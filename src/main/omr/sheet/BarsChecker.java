@@ -193,7 +193,7 @@ public class BarsChecker
                 // (they start AND end with precise staves horizontal limits)
                 if ((context.topIdx != -1) && (context.botIdx != -1)) {
                     // Here, we have both part & system defining bars
-                    // System bars occur first 
+                    // System bars occur first
                     // (since glyphs are sorted by increasing abscissa)
                     stick.setResult(BAR_PART_DEFINING);
 
@@ -523,7 +523,7 @@ public class BarsChecker
         //~ Instance fields ----------------------------------------------------
 
         Scale.Fraction maxBarThickness = new Scale.Fraction(
-            0.75,
+            1.0,
             "Maximum thickness of an interesting vertical stick");
         Scale.Fraction maxDeltaLength = new Scale.Fraction(
             0.2,
@@ -532,25 +532,25 @@ public class BarsChecker
             0.33,
             "Height of half area to look for chunks");
         Constant.Ratio chunkRatioHigh = new Constant.Ratio(
-            0.25,
+            0.14,
             "High Minimum ratio of alien pixels to detect chunks");
         Constant.Ratio chunkRatioLow = new Constant.Ratio(
-            0.25,
+            0.08,
             "Low Minimum ratio of alien pixels to detect chunks");
         Scale.Fraction chunkWidth = new Scale.Fraction(
             0.33,
             "Width of half area to look for chunks");
         Constant.Ratio maxAdjacencyHigh = new Constant.Ratio(
-            0.25d,
+            0.3d,
             "High Maximum adjacency ratio for a bar stick");
         Constant.Ratio maxAdjacencyLow = new Constant.Ratio(
             0.25d,
             "Low Maximum adjacency ratio for a bar stick");
         Scale.Fraction maxStaffShiftDyHigh = new Scale.Fraction(
-            10,
+            4.0,
             "High Maximum vertical distance between a bar edge and the staff line");
         Scale.Fraction maxStaffShiftDyLow = new Scale.Fraction(
-            0.125,
+            0.2,
             "Low Maximum vertical distance between a bar edge and the staff line");
         Scale.Fraction maxStaffDHeightHigh = new Scale.Fraction(
             0.4,
