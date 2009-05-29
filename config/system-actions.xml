@@ -44,6 +44,7 @@
     <action domain="MIDI" section="EDIT"   class="omr.score.midi.MidiActions" method="stopMidi"  toolbar="true"/>
     <action domain="MIDI" section="EXPORT" class="omr.score.midi.MidiActions" method="writeMidi" />
 
+    <action domain="VIEW" section="IMPORT" class="omr.score.visitor.PaintingParameters"          method="toggleLayout"  item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="IMPORT" class="omr.score.visitor.PaintingParameters"          method="toggleSlots"   item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="IMPORT" class="omr.score.visitor.PaintingParameters"          method="toggleVoices"  item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="IMPORT" class="omr.score.visitor.PaintingParameters"          method="toggleMarks"   item="javax.swing.JCheckBoxMenuItem"/>
