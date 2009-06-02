@@ -622,7 +622,7 @@ public class RubberPanel
         //~ Instance fields ----------------------------------------------------
 
         PixelCount focusMargin = new PixelCount(
-            50,
+            20,
             "Margin visible around a focus");
     }
 }

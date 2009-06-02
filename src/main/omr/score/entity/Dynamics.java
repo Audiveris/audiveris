@@ -242,7 +242,7 @@ public class Dynamics
 
         /** Maximum abscissa difference */
         Scale.Fraction maxDx = new Scale.Fraction(
-            1,
+            1.5,
             "Maximum abscissa difference");
 
         /** Maximum ordinate difference */

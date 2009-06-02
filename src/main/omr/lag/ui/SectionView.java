@@ -262,7 +262,7 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
             false,
             "Should we render the section foreground density");
         Constant.Ratio   brightness = new Constant.Ratio(
-            0.4d,
+            0.7d,
             "Color brightness (range 0.0 .. 1.0)");
         Constant.Ratio   saturation = new Constant.Ratio(
             0.4d,

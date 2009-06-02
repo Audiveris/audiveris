@@ -1392,7 +1392,7 @@ public class Chord
                     " with multiple tied chords: " + distantChords);
             }
 
-            // Prepare the split of this chord, using the most distant note from 
+            // Prepare the split of this chord, using the most distant note from
             // chord head
             SortedSet<Note> tiedNotes = new TreeSet<Note>(noteHeadComparator);
 
@@ -1439,7 +1439,7 @@ public class Chord
         // Check for a note/rest nearby:
         // - on the left w/ same even pitch (note w/ even pitch)
         // - slighly above or below (note with odd pitch = on a staff line)
-        ChordLoop: 
+        ChordLoop:
         for (TreeNode node : measure.getChords()) {
             Chord chord = (Chord) node;
 
@@ -1678,7 +1678,7 @@ public class Chord
             logger.fine("Initial notes=" + getNotes());
         }
 
-        // Same measure & slot 
+        // Same measure & slot
         Chord alien = new Chord(getMeasure(), slot);
 
         // Same stem?
@@ -1817,7 +1817,7 @@ public class Chord
          * Maximum dx between note and augmentation dot
          */
         Scale.Fraction maxAugmentationDotDx = new Scale.Fraction(
-            1.5d,
+            1.7d,
             "Maximum dx between note and augmentation dot");
 
         /**

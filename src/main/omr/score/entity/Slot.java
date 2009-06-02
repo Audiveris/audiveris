@@ -801,7 +801,7 @@ public class Slot
         int slotTime = Integer.MAX_VALUE;
 
         for (Chord chord : activeChords) {
-            if (!chord.isWholeDuration()) { // Skip the "whole" chords 
+            if (!chord.isWholeDuration()) { // Skip the "whole" chords
 
                 Integer endTime = chord.getEndTime();
 
@@ -836,7 +836,7 @@ public class Slot
          * Maximum horizontal distance between a slot and a glyph candidate
          */
         Scale.Fraction maxDx = new Scale.Fraction(
-            1.25,
+            0.3,
             "Maximum horizontal distance between a slot and a glyph candidate");
     }
 
