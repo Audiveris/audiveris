@@ -13,15 +13,20 @@ import omr.log.Logger;
 
 import omr.score.Score;
 import omr.score.ui.ScoreOrientation;
+import omr.score.visitor.PaintingParameters;
 
 import omr.script.ScriptActions;
 
 import omr.sheet.ui.SheetsController;
 
 import omr.util.Dumper;
+import omr.util.Implement;
 import omr.util.Memory;
 import omr.util.NameSet;
+import omr.util.Worker;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.*;
 
 /**
@@ -32,6 +37,7 @@ import java.util.*;
  * @version $Id$
  */
 public class SheetsManager
+    implements PropertyChangeListener
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -62,6 +68,11 @@ public class SheetsManager
      */
     private SheetsManager ()
     {
+        // Listen to system layout property
+        PaintingParameters.getInstance()
+                          .addPropertyChangeListener(
+            PaintingParameters.VERTICAL_LAYOUT,
+            this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -106,24 +117,6 @@ public class SheetsManager
         }
 
         return INSTANCE;
-    }
-
-    //---------------------//
-    // setScoreOrientation //
-    //---------------------//
-    /**
-     * Assign a system orientation to all scores
-     * @param orientation the desired orientation
-     */
-    public void setScoreOrientation (ScoreOrientation orientation)
-    {
-        for (Sheet sheet : instances) {
-            Score score = sheet.getScore();
-
-            if (score != null) {
-                score.setOrientation(orientation);
-            }
-        }
     }
 
     //---------------------//
@@ -250,5 +243,29 @@ public class SheetsManager
         // Insert in sheet history
         getHistory()
             .add(sheet.getPath());
+    }
+
+    //----------------//
+    // propertyChange //
+    //----------------//
+    @Implement(PropertyChangeListener.class)
+    public void propertyChange (PropertyChangeEvent evt)
+    {
+        new Worker<Void>() {
+                @Override
+                public Void construct ()
+                {
+                    for (Sheet sheet : instances) {
+                        Score score = sheet.getScore();
+
+                        if (score != null) {
+                            score.setOrientation(
+                                PaintingParameters.getInstance().getScoreOrientation());
+                        }
+                    }
+
+                    return null;
+                }
+            }.start();
     }
 }

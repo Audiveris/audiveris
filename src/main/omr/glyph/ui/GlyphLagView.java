@@ -44,9 +44,12 @@ import omr.stick.Stick;
 
 import omr.ui.util.UIUtilities;
 import static omr.util.Synchronicity.*;
+import omr.util.WeakPropertyChangeListener;
 
 import java.awt.*;
 import java.awt.geom.CubicCurve2D;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.*;
 
 /**
@@ -58,6 +61,7 @@ import java.util.*;
  */
 public class GlyphLagView
     extends LagView<GlyphLag, GlyphSection>
+    implements PropertyChangeListener
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -121,6 +125,11 @@ public class GlyphLagView
         } else {
             this.specificGlyphs = new ArrayList<Glyph>(0);
         }
+
+        // (Weakly) listening on ViewParameters properties
+        ViewParameters.getInstance()
+                      .addPropertyChangeListener(
+            new WeakPropertyChangeListener(this));
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -419,6 +428,15 @@ public class GlyphLagView
         } catch (Exception ex) {
             logger.warning(getClass().getName() + " onEvent error", ex);
         }
+    }
+
+    //----------------//
+    // propertyChange //
+    //----------------//
+    public void propertyChange (PropertyChangeEvent evt)
+    {
+        // Whatever the property change, we simply repaint the view
+        repaint();
     }
 
     //---------//

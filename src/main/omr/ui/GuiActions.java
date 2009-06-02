@@ -84,6 +84,9 @@ public class GuiActions
     /** Create this action just once */
     private static AboutAction aboutAction;
 
+    /** Should the errors window be displayed */
+    public static final String ERRORS_DISPLAYED = "errorsDisplayed";
+
     //~ Methods ----------------------------------------------------------------
 
     //--------------------//
@@ -107,7 +110,7 @@ public class GuiActions
         boolean oldValue = constants.errorsDisplayed.getValue();
         constants.errorsDisplayed.setValue(value);
         firePropertyChange(
-            "errorsDisplayed",
+            ERRORS_DISPLAYED,
             oldValue,
             constants.errorsDisplayed.getValue());
     }
@@ -284,15 +287,9 @@ public class GuiActions
      * Action that toggles the display of errors window
      * @param e the event that triggered this action
      */
-    @Action(selectedProperty = "errorsDisplayed")
+    @Action(selectedProperty = ERRORS_DISPLAYED)
     public void toggleErrors (ActionEvent e)
     {
-        Sheet sheet = SheetsController.selectedSheet();
-
-        if (sheet != null) {
-            sheet.getAssembly()
-                 .assemblySelected();
-        }
     }
 
     //------------------------//

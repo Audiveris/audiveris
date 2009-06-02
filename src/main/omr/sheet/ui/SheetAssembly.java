@@ -36,10 +36,13 @@ import omr.ui.view.ScrollView;
 import omr.ui.view.Zoom;
 
 import omr.util.Implement;
+import omr.util.WeakPropertyChangeListener;
 
 import org.bushe.swing.event.EventService;
 
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.*;
 
 import javax.swing.*;
@@ -65,8 +68,7 @@ import javax.swing.event.*;
  * @version $Id$
  */
 public class SheetAssembly
-    implements ChangeListener // -> stateChanged() on tab selection
-
+    implements ChangeListener, PropertyChangeListener
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -161,6 +163,12 @@ public class SheetAssembly
 
         splitPane.setBorder(null);
         splitPane.setDividerSize(2);
+
+        // Weakly listen to GUI Actions parameters
+        GuiActions.getInstance()
+                  .addPropertyChangeListener(
+            GuiActions.ERRORS_DISPLAYED,
+            new WeakPropertyChangeListener(this));
 
         if (logger.isFineEnabled()) {
             logger.fine("SheetAssembly created.");
@@ -297,10 +305,7 @@ public class SheetAssembly
         // Force scroll bar computations
         zoom.fireStateChanged();
         viewTabs.add(
-            new omr.sheet.ui.SheetAssembly.ViewTab(
-                step.label,
-                boardsPane,
-                sv));
+            new omr.sheet.ui.SheetAssembly.ViewTab(step.label, boardsPane, sv));
 
         // Actually insert a Swing tab
         tabbedPane.addTab(step.label, sv.getComponent());
@@ -408,6 +413,15 @@ public class SheetAssembly
             splitPane.setTopComponent(null);
             scoreView = null;
         }
+    }
+
+    //----------------//
+    // propertyChange //
+    //----------------//
+    @Implement(PropertyChangeListener.class)
+    public void propertyChange (PropertyChangeEvent evt)
+    {
+        assemblySelected();
     }
 
     //-----------//

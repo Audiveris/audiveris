@@ -955,23 +955,6 @@ public class ScorePainter
         return true;
     }
 
-    //----------------//
-    // repaintDisplay //
-    //----------------//
-    /**
-     * A poorman's way to trigger a display repaint of the current score
-     * (typically when a score display parameter has been modified by the user)
-     */
-    static void repaintDisplay ()
-    {
-        // Update current score display if any
-        final Score score = ScoreController.getCurrentScore();
-
-        if (score != null) {
-            score.updateViews();
-        }
-    }
-
     //----------//
     // drawSlot //
     //----------//

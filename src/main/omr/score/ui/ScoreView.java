@@ -47,9 +47,13 @@ import omr.ui.view.RubberPanel;
 import omr.ui.view.ScrollView;
 import omr.ui.view.Zoom;
 
+import omr.util.Implement;
 import omr.util.TreeNode;
+import omr.util.WeakPropertyChangeListener;
 
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
@@ -550,6 +554,7 @@ public class ScoreView
     //--------//
     private class MyView
         extends RubberPanel
+        implements PropertyChangeListener
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -582,6 +587,11 @@ public class ScoreView
 
             // Force selection update
             updateSelection();
+
+            // Weakly listen to PaintingParameters properties
+            PaintingParameters.getInstance()
+                              .addPropertyChangeListener(
+                new WeakPropertyChangeListener(this));
         }
 
         //~ Methods ------------------------------------------------------------
@@ -741,6 +751,15 @@ public class ScoreView
             } catch (Exception ex) {
                 logger.warning(getClass().getName() + " onEvent error", ex);
             }
+        }
+
+        //----------------//
+        // propertyChange //
+        //----------------//
+        @Implement(PropertyChangeListener.class)
+        public void propertyChange (PropertyChangeEvent evt)
+        {
+            repaint();
         }
 
         //--------//

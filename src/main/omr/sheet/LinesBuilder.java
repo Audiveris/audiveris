@@ -570,11 +570,6 @@ public class LinesBuilder
     public static class LinesParameters
         extends AbstractBean
     {
-        //~ Static fields/initializers -----------------------------------------
-
-        /** Singleton */
-        private static volatile LinesParameters INSTANCE;
-
         //~ Methods ------------------------------------------------------------
 
         //-------------//

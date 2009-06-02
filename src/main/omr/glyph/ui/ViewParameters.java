@@ -18,7 +18,8 @@ import org.jdesktop.application.Action;
 import java.awt.event.ActionEvent;
 
 /**
- * Class <code>ViewParameters</code> handles parameters for GlyphLagView
+ * Class <code>ViewParameters</code> handles parameters for GlyphLagView,
+ * using properties referenced through their programmatic name to avoid typos.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -30,6 +31,15 @@ public class ViewParameters
 
     /** Specific application parameters */
     private static final Constants constants = new Constants();
+
+    /** Should the slur circles be painted  */
+    public static final String CIRCLE_PAINTING = "circlePainting";
+
+    /** Should the letter boxes be painted */
+    public static final String LETTER_BOX_PAINTING = "letterBoxPainting";
+
+    /** Should the stick lines be painted */
+    public static final String LINE_PAINTING = "linePainting";
 
     //~ Methods ----------------------------------------------------------------
 
@@ -48,7 +58,7 @@ public class ViewParameters
     {
         boolean oldValue = constants.circlePainting.getValue();
         constants.circlePainting.setValue(value);
-        firePropertyChange("circlePainting", oldValue, value);
+        firePropertyChange(CIRCLE_PAINTING, oldValue, value);
     }
 
     //------------------//
@@ -66,7 +76,7 @@ public class ViewParameters
     {
         boolean oldValue = constants.letterBoxPainting.getValue();
         constants.letterBoxPainting.setValue(value);
-        firePropertyChange("letterBoxPainting", oldValue, value);
+        firePropertyChange(LETTER_BOX_PAINTING, oldValue, value);
     }
 
     //---------------------//
@@ -84,7 +94,7 @@ public class ViewParameters
     {
         boolean oldValue = constants.linePainting.getValue();
         constants.linePainting.setValue(value);
-        firePropertyChange("linePainting", oldValue, value);
+        firePropertyChange(LINE_PAINTING, oldValue, value);
     }
 
     //----------------//
@@ -103,7 +113,7 @@ public class ViewParameters
      * slur-shaped glyphs
      * @param e the event that triggered this action
      */
-    @Action(selectedProperty = "circlePainting")
+    @Action(selectedProperty = CIRCLE_PAINTING)
     public void toggleCircles (ActionEvent e)
     {
     }
@@ -115,7 +125,7 @@ public class ViewParameters
      * Action that toggles the display of letter boxes in selected glyphs
      * @param e the event that triggered this action
      */
-    @Action(selectedProperty = "letterBoxPainting")
+    @Action(selectedProperty = LETTER_BOX_PAINTING)
     public void toggleLetters (ActionEvent e)
     {
     }
@@ -127,7 +137,7 @@ public class ViewParameters
      * Action that toggles the display of mean line in selected sticks
      * @param e the event that triggered this action
      */
-    @Action(selectedProperty = "linePainting")
+    @Action(selectedProperty = LINE_PAINTING)
     public void toggleLines (ActionEvent e)
     {
     }

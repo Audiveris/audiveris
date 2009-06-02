@@ -14,10 +14,6 @@ import omr.constant.ConstantSet;
 
 import omr.score.ui.ScoreOrientation;
 
-import omr.sheet.SheetsManager;
-
-import omr.util.Worker;
-
 import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.Action;
 
@@ -38,6 +34,18 @@ public class PaintingParameters
     /** Specific application parameters */
     private static final Constants constants = new Constants();
 
+    /** Should the marks be painted */
+    public static final String MARK_PAINTING = "markPainting";
+
+    /** Should the slots be painted */
+    public static final String SLOT_PAINTING = "slotPainting";
+
+    /** Should the systems be painted vertically */
+    public static final String VERTICAL_LAYOUT = "verticalLayout";
+
+    /** Should the voices be painted */
+    public static final String VOICE_PAINTING = "voicePainting";
+
     //~ Methods ----------------------------------------------------------------
 
     //-------------//
@@ -56,7 +64,7 @@ public class PaintingParameters
         boolean oldValue = constants.markPainting.getValue();
         constants.markPainting.setValue(value);
         firePropertyChange(
-            "markPainting",
+            MARK_PAINTING,
             oldValue,
             constants.markPainting.getValue());
     }
@@ -86,7 +94,7 @@ public class PaintingParameters
         boolean oldValue = constants.slotPainting.getValue();
         constants.slotPainting.setValue(value);
         firePropertyChange(
-            "slotPainting",
+            SLOT_PAINTING,
             oldValue,
             constants.slotPainting.getValue());
     }
@@ -107,7 +115,7 @@ public class PaintingParameters
         boolean oldValue = constants.verticalLayout.getValue();
         constants.verticalLayout.setValue(value);
         firePropertyChange(
-            "verticalLayout",
+            VERTICAL_LAYOUT,
             oldValue,
             constants.verticalLayout.getValue());
     }
@@ -128,7 +136,7 @@ public class PaintingParameters
         boolean oldValue = constants.voicePainting.getValue();
         constants.voicePainting.setValue(value);
         firePropertyChange(
-            "voicePainting",
+            VOICE_PAINTING,
             oldValue,
             constants.voicePainting.getValue());
     }
@@ -148,19 +156,9 @@ public class PaintingParameters
      * Action that toggles the layout of the systems
      * @param e the event that triggered this action
      */
-    @Action(selectedProperty = "verticalLayout")
+    @Action(selectedProperty = VERTICAL_LAYOUT)
     public void toggleLayout (ActionEvent e)
     {
-        new Worker<Void>() {
-                @Override
-                public Void construct ()
-                {
-                    SheetsManager.getInstance()
-                                 .setScoreOrientation(getScoreOrientation());
-
-                    return null;
-                }
-            }.start();
     }
 
     //-------------//
@@ -170,10 +168,9 @@ public class PaintingParameters
      * Action that toggles the display of computed marks in the score
      * @param e the event that triggered this action
      */
-    @Action(selectedProperty = "markPainting")
+    @Action(selectedProperty = MARK_PAINTING)
     public void toggleMarks (ActionEvent e)
     {
-        ScorePainter.repaintDisplay();
     }
 
     //-------------//
@@ -183,10 +180,9 @@ public class PaintingParameters
      * Action that toggles the display of vertical time slots
      * @param e the event that triggered this action
      */
-    @Action(selectedProperty = "slotPainting")
+    @Action(selectedProperty = SLOT_PAINTING)
     public void toggleSlots (ActionEvent e)
     {
-        ScorePainter.repaintDisplay();
     }
 
     //--------------//
@@ -196,10 +192,9 @@ public class PaintingParameters
      * Action that toggles the display of voices with specific colors
      * @param e the event that triggered this action
      */
-    @Action(selectedProperty = "voicePainting")
+    @Action(selectedProperty = VOICE_PAINTING)
     public void toggleVoices (ActionEvent e)
     {
-        ScorePainter.repaintDisplay();
     }
 
     //~ Inner Classes ----------------------------------------------------------
