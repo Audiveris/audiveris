@@ -228,7 +228,7 @@ public class ShapeRange
                                       ActionListener listener)
     {
         // All ranges of glyph shapes
-        for (Field field : Shape.class.getDeclaredFields()) {
+        for (Field field : ShapeRange.class.getDeclaredFields()) {
             if (field.getType() == ShapeRange.class) {
                 JMenuItem  menuItem = new JMenuItem(field.getName());
                 ShapeRange range = valueOf(field.getName());
@@ -291,7 +291,7 @@ public class ShapeRange
                                       ActionListener listener)
     {
         // All ranges of glyph shapes
-        for (Field field : Shape.class.getDeclaredFields()) {
+        for (Field field : ShapeRange.class.getDeclaredFields()) {
             if (field.getType() == ShapeRange.class) {
                 JMenu      menu = new JMenu(field.getName());
                 ShapeRange range = ShapeRange.valueOf(field.getName());
