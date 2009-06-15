@@ -39,8 +39,8 @@ public interface VertexView
      * Render the vertex
      *
      * @param g the graphics context
-     *
      * @param drawBorders should vertex borders be drawn
+     * 
      * @return true if actually rendered, i.e. is displayed
      */
     boolean render (Graphics g,
