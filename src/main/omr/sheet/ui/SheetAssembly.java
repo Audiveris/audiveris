@@ -379,7 +379,7 @@ public class SheetAssembly
 
         MainGui gui = Main.getGui();
         gui.removeBoardsPane(); // Disconnect boards pane
-        gui.hideErrorsPane(); // Disconnect errors pane (USEFUL??? TBD)
+        gui.hideErrorsPane(); // Disconnect errors pane (USEFUL??? TODO)
         gui.sheetSetController.close(sheet);
 
         // Disconnect all keyboard bindings from PixelBoard's (as a workaround
@@ -551,7 +551,7 @@ public class SheetAssembly
                       .setValue(prev.getHorizontalScrollBar().getValue());
         }
 
-        // Make connections to events        
+        // Make connections to events
         scrollView.getView()
                   .subscribe();
 

@@ -145,7 +145,7 @@ public class VerticalArea
             scale.toPixels(constants.maxDeltaPos),
             constants.maxDeltaSlope.getValue());
 
-        // Sort sticks found (TBD: is this useful?)
+        // Sort sticks found (TODO: is this useful?)
         Collections.sort(
             sticks,
             new Comparator<Stick>() {

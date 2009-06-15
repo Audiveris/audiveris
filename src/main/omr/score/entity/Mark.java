@@ -47,7 +47,7 @@ public class Mark
     /** Position of the mark symbol with respect to the mark location */
     private final Position position;
 
-    /** The shape of the mark, should be an icon in fact TBD */
+    /** The shape of the mark, should be an icon in fact TODO */
     private final Shape shape;
 
     /** Additional data, perhaps depending on shape for example */

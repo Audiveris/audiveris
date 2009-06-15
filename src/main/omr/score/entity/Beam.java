@@ -391,7 +391,7 @@ public class Beam
     {
         for (BeamItem item : items) {
             //////////////////////////////////////////////////////////////////
-            // TBD for a beam (non hook) both stems must exist and be linked
+            // TODO for a beam (non hook) both stems must exist and be linked
             //////////////////////////////////////////////////////////////////
             linkChordsOnStem("left", item.getLeftStem());
             linkChordsOnStem("right", item.getRightStem());

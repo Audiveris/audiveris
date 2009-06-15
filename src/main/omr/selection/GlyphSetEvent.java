@@ -45,6 +45,7 @@ public class GlyphSetEvent
      *
      * @param source the entity that created this event
      * @param hint hint about event origin (or null)
+     * @param movement the user movement
      * @param glyphs the selected collection of glyphs (or null)
      */
     public GlyphSetEvent (Object        source,

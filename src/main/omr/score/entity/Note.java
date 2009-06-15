@@ -35,7 +35,7 @@ import java.util.*;
 /**
  * Class <code>Note</code> represents the characteristics of a note. Besides a
  * regular note (standard note, or rest), it can also be a cue note or a grace
- * note (these last two variants are not handled yet, TBD).
+ * note (these last two variants are not handled yet, TODO).
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -754,7 +754,7 @@ public class Note
         }
 
         // Select the best note candidate, the one whose ordinate is closest
-        // TBD: Bug here? what if the note is duplicated ("shared" by 2 chords)?
+        // TODO: Bug here? what if the note is duplicated ("shared" by 2 chords)?
         if (!candidates.isEmpty()) {
             int  bestDy = Integer.MAX_VALUE;
             Note bestNote = null;

@@ -1302,7 +1302,7 @@ public class Measure
 
         for (int im = 0; im < imMax; im++) {
             Integer measureFinal = null;
-            partLoop: 
+            partLoop:
             for (TreeNode node : system.getParts()) {
                 SystemPart part = (SystemPart) node;
 
@@ -1402,7 +1402,7 @@ public class Measure
         //        lyriclines = new LyricList(this);
         //        texts = new TextList(this);
 
-        // Should this be a MeasureNode ??? TBD
+        // Should this be a MeasureNode ??? TODO
         slots = new TreeSet<Slot>();
         beamGroups = new ArrayList<BeamGroup>();
         wholeChords = new ArrayList<Chord>();

@@ -11,16 +11,22 @@ package omr.glyph.ui;
 
 import omr.glyph.*;
 
+import omr.lag.Sections;
+
 import omr.log.Logger;
 
 import omr.script.AssignTask;
 import omr.script.DeassignTask;
+import omr.script.SectionAssignTask;
 
 import omr.selection.GlyphEvent;
 import omr.selection.SelectionHint;
 import omr.selection.SelectionService;
 
 import omr.sheet.Sheet;
+import omr.sheet.SystemsBuilder.BarsController;
+
+import omr.step.Step;
 
 import omr.util.BasicTask;
 
@@ -166,15 +172,15 @@ public class GlyphsController
                                      final Shape             shape,
                                      final boolean           compound)
     {
-        // Special case for bars, delegate to SystemsBuilder if needed
+        // Special case for bars: delegate to SystemsBuilder if needed
+        BarsController barsController = sheet.getSystemsBuilder()
+                                             .getController();
+
         if ((ShapeRange.Barlines.contains(shape) || hasBars(glyphs)) &&
-            (getModel() != sheet.getSystemsBuilder()
-                                .getController()
-                                .getModel())) {
-            return sheet.getSystemsBuilder()
-                        .getController()
-                        .asyncAssignGlyphSet(glyphs, shape, compound);
+            (getModel() != barsController.getModel())) {
+            return barsController.asyncAssignGlyphSet(glyphs, shape, compound);
         } else {
+            // Normal processing
             return launch(
                 new AssignTask(shape, compound, glyphs),
                 glyphs,
@@ -185,6 +191,42 @@ public class GlyphsController
                         }
                     });
         }
+    }
+
+    //-----------------------//
+    // asyncAssignSectionSet //
+    //-----------------------//
+    /**
+     * Asynchronouly assign a shape to the glyph built from a selected
+     * collection of sections and record this action in the script
+     *
+     * @param sections the provided collection of sections
+     * @param shape the shape to be assigned
+     * @return the task that carries out the processing
+     */
+    public Task asyncAssignSectionSet (final Collection<GlyphSection> sections,
+                                       final Shape                    shape)
+    {
+        // Collect which glyphs are impacted
+        Set<Glyph> impactedGlyphs = new LinkedHashSet<Glyph>();
+
+        for (GlyphSection section : sections) {
+            Glyph glyph = section.getGlyph();
+
+            if (glyph != null) {
+                impactedGlyphs.add(glyph);
+            }
+        }
+
+        return launch(
+            new SectionAssignTask(shape, sections),
+            impactedGlyphs,
+            new GlyphsRunnable() {
+                    public Collection<Glyph> run ()
+                    {
+                        return syncAssignSectionSet(sections, shape);
+                    }
+                });
     }
 
     //-----------------------//
@@ -266,12 +308,12 @@ public class GlyphsController
     /**
      * Launch an asynchronous task on glyphs
      * @param scriptTask the sheet task to be registered in the script
-     * @param glyphs the set of glyphs concerned by the action
+     * @param originalGlyphs the set of original glyphs concerned by the action
      * @param runnable the (synchronous) job
      * @return the launched Swing Application Framework task
      */
     protected Task launch (final omr.script.ScriptTask scriptTask,
-                           final Collection<Glyph>     glyphs,
+                           final Collection<Glyph>     originalGlyphs,
                            final GlyphsRunnable        runnable)
     {
         Task task = new BasicTask() {
@@ -282,14 +324,20 @@ public class GlyphsController
                 sheet.getScript()
                      .addTask(scriptTask);
 
-                // Remember impacted glyphs & their related shapes
-                Set<Shape> shapes = Glyphs.shapesOf(glyphs);
+                // Remember impacted shapes before glyphs shapes are modified
+                Set<Shape>        shapes = Glyphs.shapesOf(originalGlyphs);
 
-                // Do the job & Update following steps
-                sheet.rebuildAfter(
-                    model.getRelatedStep(),
-                    runnable.run(),
-                    shapes);
+                // Do the job and remember modified glyphs (perhaps null)
+                Collection<Glyph> modifiedGlyphs = runnable.run();
+
+                // Augment shapes collection if needed
+                if (modifiedGlyphs != null) {
+                    shapes.addAll(Glyphs.shapesOf(modifiedGlyphs));
+                }
+
+                // Update following steps
+                Step step = model.getRelatedStep();
+                sheet.rebuildAfter(step, modifiedGlyphs, shapes);
 
                 // Refresh the controlled glyphlag views
                 refreshViews();
@@ -363,6 +411,38 @@ public class GlyphsController
     }
 
     //----------------------//
+    // syncAssignSectionSet //
+    //----------------------//
+    /**
+     * Synchronously assign a shape to the selected collection of sections and
+     * record this action in the script
+     *
+     * @param sections the collection of sections to be assigned
+     * @param shape the shape to be assigned
+     * @return the collection of impacted glyphs, or null if all systems need
+     * to be updated in the following steps
+     */
+    protected Collection<Glyph> syncAssignSectionSet (Collection<GlyphSection> sections,
+                                                      Shape                    shape)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                "syncAssignSectionSet " + Sections.toString(sections) + " to " +
+                shape);
+        }
+
+        Glyph glyph = model.assignSectionSet(
+            sections,
+            shape,
+            Evaluation.MANUAL);
+
+        // Publish modifications
+        publish(glyph);
+
+        return Collections.singleton(glyph);
+    }
+
+    //----------------------//
     // syncDeassignGlyphSet //
     //----------------------//
     /**
@@ -399,9 +479,9 @@ public class GlyphsController
 
         /**
          * Do the glyphs processing
-         * @return the collection of glyphs used to limit the update of
-         * following steps, a null value indicates no limitation so that all
-         * systems get updated.
+         * @return the collection of modified glyphs used to limit the update
+         * of the following steps, a null value indicates no limitation so that
+         * all systems get updated.
          */
         Collection<Glyph> run ();
     }

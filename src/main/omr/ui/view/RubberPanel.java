@@ -150,7 +150,7 @@ public class RubberPanel
      * <p><b>Nota</b>: Setting the location selection does not
      * automatically register this view on the selection object. If
      * such registering is needed, it must be done manually through method
-     * {@link #subscribe}. (TBD Question: Why?)
+     * {@link #subscribe}. (TODO: Question: Why?)
      *
      * @param locationService the proper location service to be updated
      * @param locationClass the location class of interest (score or sheet)

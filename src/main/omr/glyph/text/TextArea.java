@@ -385,14 +385,14 @@ public class TextArea
                 it.remove();
             }
 
-            // Glyph already member of a sentence ??? TBD
+            // TODO: Glyph already member of a sentence ???
         }
 
         if (!glyphs.isEmpty()) {
             Glyph glyph;
 
             if (glyphs.size() > 1) {
-                glyph = system.buildCompound(glyphs);
+                glyph = system.buildTransientCompound(glyphs);
             } else {
                 glyph = glyphs.iterator()
                               .next();

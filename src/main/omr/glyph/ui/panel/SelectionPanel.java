@@ -268,7 +268,7 @@ class SelectionPanel
             Glyph  glyph;
             double grade;
         }
-        // What for ? TBD
+        // What for ? TODO
         inputParams();
 
         // Train regression on them

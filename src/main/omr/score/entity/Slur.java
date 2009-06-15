@@ -640,7 +640,7 @@ public class Slur
 
                 if (prevNode != null) {
                     if (comparator.compare(prevNode, currNode) != 0) {
-                        // Discard this node 
+                        // Discard this node
                         it.remove();
 
                         // And the following ones as well
@@ -675,7 +675,7 @@ public class Slur
         return (n1 != null) && (n2 != null) && (n1.getStep() == n2.getStep()) &&
                (n1.getOctave() == n2.getOctave());
 
-        // TBD: what about alteration, if we have not processed them yet ???
+        // TODO: what about alteration, if we have not processed them yet ???
     }
 
     //-----------------------//

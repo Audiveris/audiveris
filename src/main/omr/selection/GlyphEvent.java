@@ -44,6 +44,7 @@ public class GlyphEvent
      *
      * @param source the entity that created this event
      * @param hint hint about event origin (or null)
+     * @param movement the mouse movement
      * @param glyph the selected glyph (or null)
      */
     public GlyphEvent (Object        source,

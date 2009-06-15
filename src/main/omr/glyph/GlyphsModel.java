@@ -9,8 +9,6 @@
 //
 package omr.glyph;
 
-import omr.lag.Section;
-
 import omr.log.Logger;
 
 import omr.sheet.Sheet;
@@ -152,25 +150,27 @@ public class GlyphsModel
     // assignGlyph //
     //-------------//
     /**
-     * Assign a Shape to a glyph
+     * Assign a Shape to a glyph, inserting the glyph to its containing system
+     * and lag if it is still transient
      *
      * @param glyph the glyph to be assigned
      * @param shape the assigned shape, which may be null
-     * @param doubt the doubt about shape (Evaluation.MANUAL?)
+     * @param doubt the doubt about shape
+     * @return the assigned glyph (perhaps an original glyph)
      */
-    public void assignGlyph (Glyph  glyph,
-                             Shape  shape,
-                             double doubt)
+    protected Glyph assignGlyph (Glyph  glyph,
+                                 Shape  shape,
+                                 double doubt)
     {
         if (glyph == null) {
-            return;
+            return null;
         }
 
         // Do a manual assignment of the shape to the glyph
         glyph.setShape(shape, doubt);
 
         if (shape != null) {
-            boolean isTransient = glyph.getId() == 0;
+            boolean isTransient = glyph.isTransient();
 
             // If this is a transient glyph, insert it
             if (isTransient) {
@@ -185,6 +185,8 @@ public class GlyphsModel
             // Remember the latest shape assigned
             latestShape = shape;
         }
+
+        return glyph;
     }
 
     //----------------//
@@ -207,7 +209,7 @@ public class GlyphsModel
         if (compound) {
             // Build & insert one compound
             SystemInfo system = sheet.getSystemOf(glyphs);
-            Glyph      glyph = system.buildCompound(glyphs);
+            Glyph      glyph = system.buildTransientCompound(glyphs);
             assignGlyph(glyph, shape, doubt);
         } else {
             // Assign each glyph individually
@@ -228,15 +230,17 @@ public class GlyphsModel
      * @param sections the collection of sections to be aggregated as a glyph
      * @param shape the shape to be assigned
      * @param doubt the doubt we have wrt the assigned shape
+     * @return the newly built glyph
      */
-    public void assignSectionSet (Collection<GlyphSection> sections,
-                                  Shape                    shape,
-                                  double                   doubt)
+    public Glyph assignSectionSet (Collection<GlyphSection> sections,
+                                   Shape                    shape,
+                                   double                   doubt)
     {
         // Build & insert one glyph out of the sections
         SystemInfo system = sheet.getSystemOfSections(sections);
         Glyph      glyph = system.buildGlyph(sections);
-        assignGlyph(glyph, shape, doubt);
+
+        return assignGlyph(glyph, shape, doubt);
     }
 
     //---------------//
@@ -247,7 +251,7 @@ public class GlyphsModel
      *
      * @param glyph the glyph to deassign
      */
-    public void deassignGlyph (Glyph glyph)
+    protected void deassignGlyph (Glyph glyph)
     {
         // Assign the null shape to the glyph
         assignGlyph(glyph, null, Evaluation.ALGORITHM);

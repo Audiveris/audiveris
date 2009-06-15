@@ -886,7 +886,7 @@ public class ScorePainter
             if (shape != null) {
                 if (shape == NO_LEGAL_TIME) {
                     // If this is an illegal shape, do not draw anything.
-                    // TBD: we could draw a special sign for this
+                    // TODO: we could draw a special sign for this
                 } else if (ShapeRange.MultiTimes.contains(shape)) {
                     // It is a complete (one-symbol) time signature
                     paintSymbol(shape, timeSignature.getCenter());

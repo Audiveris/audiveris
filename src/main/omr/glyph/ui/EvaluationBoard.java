@@ -18,7 +18,6 @@ import omr.glyph.Glyph;
 import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Shape;
-import omr.glyph.ui.GlyphsController;
 
 import omr.log.Logger;
 
@@ -28,8 +27,6 @@ import omr.selection.SelectionHint;
 import omr.selection.UserEvent;
 
 import omr.sheet.Sheet;
-
-import omr.step.Step;
 
 import omr.ui.Board;
 import omr.ui.util.Panel;

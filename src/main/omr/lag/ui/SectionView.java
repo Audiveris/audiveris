@@ -9,11 +9,12 @@
 //
 package omr.lag.ui;
 
-import omr.lag.*;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.graph.VertexView;
+
+import omr.lag.*;
 
 import omr.log.Logger;
 
@@ -211,7 +212,8 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
      * means if (part of) the section has been drawn
      */
     @Implement(VertexView.class)
-    public boolean render (Graphics g)
+    public boolean render (Graphics g,
+                           boolean  drawBorders)
     {
         Rectangle clip = g.getClipBounds();
         Rectangle rect = getRectangle();
@@ -222,6 +224,14 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
             Polygon polygon = section.getContour();
             g.fillPolygon(polygon.xpoints, polygon.ypoints, polygon.npoints);
 
+            if (drawBorders) {
+                g.setColor(Color.black);
+                g.drawPolygon(
+                    polygon.xpoints,
+                    polygon.ypoints,
+                    polygon.npoints);
+            }
+
             // Display the section foreground value? To be improved!!!
             if (constants.displayDensity.getValue()) {
                 g.setColor(Color.black);
@@ -230,6 +240,37 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
                     rect.x + ((rect.width / 2) - 8),
                     rect.y + ((rect.height / 2) + 5));
             }
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    //----------------//
+    // renderSelected //
+    //----------------//
+    /**
+     * Render the section using the provided graphics object, while showing that
+     * the section has been selected
+     *
+     * @param g the graphics environment (which may be applying transformation
+     * such as scale)
+     * @return true if the section is concerned by the clipping rectangle, which
+     * means if (part of) the section has been drawn
+     */
+    @Implement(VertexView.class)
+    public boolean renderSelected (Graphics g)
+    {
+        Rectangle clip = g.getClipBounds();
+        Rectangle rect = getRectangle();
+
+        if (clip.intersects(rect)) {
+            Polygon polygon = section.getContour();
+            g.setColor(Color.white);
+            g.fillPolygon(polygon.xpoints, polygon.ypoints, polygon.npoints);
+            g.setColor(Color.black);
+            g.drawPolygon(polygon.xpoints, polygon.ypoints, polygon.npoints);
 
             return true;
         } else {

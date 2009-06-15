@@ -856,7 +856,7 @@ public class Chord
         }
 
         clone.dotsNumber = dotsNumber;
-        clone.flagsNumber = flagsNumber; // Not sure TBD
+        clone.flagsNumber = flagsNumber; // Not sure TODO
 
         // Insure correct ordering of chords within their container
         Collections.sort(getParent().getChildren(), chordComparator);
@@ -1486,7 +1486,7 @@ public class Chord
         }
 
         if (bestChord != null) {
-            // TBD: we should also handle case of double dots !
+            // TODO: we should also handle case of double dots !
             bestChord.dotsNumber = 1;
             glyph.setTranslation(bestChord);
 
@@ -1695,7 +1695,7 @@ public class Chord
         alien.dotsNumber = dotsNumber;
 
         // Beams are not copied
-        alien.flagsNumber = flagsNumber; // Not sure TBD
+        alien.flagsNumber = flagsNumber; // Not sure TODO
 
         // Notes, sorted from head
         Collections.sort(getNotes(), noteHeadComparator);

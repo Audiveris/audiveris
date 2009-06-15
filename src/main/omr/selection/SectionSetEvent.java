@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                          S e c t i o n E v e n t                           //
+//                       S e c t i o n S e t E v e n t                        //
 //                                                                            //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
@@ -10,48 +10,50 @@
 package omr.selection;
 
 import omr.lag.Section;
+import omr.lag.Sections;
+
+import java.util.Set;
 
 /**
- * Class <code>SectionEvent</code> represents a Section selection
+ * Class <code>SectionSetEvent</code> represents a Section Set selection
  *
  * <dl>
- * <dt><b>Publishers:</b><dd>GlyphLag, Lag, LagView
- * <dt><b>Subscribers:</b><dd>GlyphLag, Lag
- * <dt><b>Readers:</b><dd>GlyphLagView, SectionBoard
+ * <dt><b>Publishers:</b><dd>TODO
+ * <dt><b>Subscribers:</b><dd>TODO
+ * <dt><b>Readers:</b><dd>TODO
  * </dl>
- *
- * @param <S> The precise section subtype used in the event
+ * @param <S> precise section type
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
-public class SectionEvent<S extends Section>
+public class SectionSetEvent<S extends Section>
     extends LagEvent
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** The selected section, which may be null */
-    public final S section;
+    /** The selected section set, which may be null */
+    public final Set<S> sections;
 
     //~ Constructors -----------------------------------------------------------
 
-    //--------------//
-    // SectionEvent //
-    //--------------//
+    //-----------------//
+    // SectionSetEvent //
+    //-----------------//
     /**
-     * Creates a new SectionEvent object.
+     * Creates a new SectionSetEvent object.
      *
      * @param source the entity that created this event
      * @param hint hint about event origin (or null)
      * @param movement the mouse movement
-     * @param section the selected section (or null)
+     * @param sections the selected collection of sections (or null)
      */
-    public SectionEvent (Object        source,
-                         SelectionHint hint,
-                         MouseMovement movement,
-                         S             section)
+    public SectionSetEvent (Object        source,
+                            SelectionHint hint,
+                            MouseMovement movement,
+                            Set<S>        sections)
     {
         super(source, hint, movement);
-        this.section = section;
+        this.sections = sections;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -60,8 +62,17 @@ public class SectionEvent<S extends Section>
     // getEntity //
     //-----------//
     @Override
-    public S getData ()
+    public Set<S> getData ()
     {
-        return section;
+        return sections;
+    }
+
+    //----------------//
+    // internalString //
+    //----------------//
+    @Override
+    protected String internalString ()
+    {
+        return Sections.toString(sections);
     }
 }

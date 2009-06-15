@@ -426,7 +426,7 @@ public class GlyphInspector
                     "neighbors=" + Glyphs.toString(neighbors) + " seed=" + seed);
             }
 
-            Glyph compound = system.buildCompound(neighbors);
+            Glyph compound = system.buildTransientCompound(neighbors);
 
             if (adapter.isValid(compound)) {
                 // If this compound duplicates an original glyph,
@@ -465,7 +465,7 @@ public class GlyphInspector
             return false;
         }
 
-        Glyph compound = system.buildCompound(glyphs);
+        Glyph compound = system.buildTransientCompound(glyphs);
         system.computeGlyphFeatures(compound);
 
         final Evaluation[] votes = GlyphNetwork.getInstance()
@@ -537,7 +537,7 @@ public class GlyphInspector
                 return false;
             }
 
-            Glyph compound = system.buildCompound(glyphs);
+            Glyph compound = system.buildTransientCompound(glyphs);
             system.computeGlyphFeatures(compound);
 
             final Evaluation[] votes = GlyphNetwork.getInstance()

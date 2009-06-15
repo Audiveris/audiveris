@@ -268,6 +268,12 @@ public class Rubber
     @Override
     public void mouseDragged (MouseEvent e)
     {
+        if (mouseMonitor == null) {
+            return;
+        }
+
+        setCursor(e);
+
         if (isDragWanted(e)) {
             final Rectangle vr = component.getVisibleRect();
             vr.setBounds(
@@ -284,13 +290,18 @@ public class Rubber
                     });
         } else if (isRubberWanted(e)) {
             updateSize(e);
-
-            if (mouseMonitor != null) {
-                mouseMonitor.rectangleSelected(rect, DRAGGING);
-            }
+            mouseMonitor.rectangleSelected(rect, DRAGGING);
         } else {
             // Behavior equivalent to simple selection
-            mousePressed(e);
+            reset(e);
+
+            if (isAdditionWanted(e)) {
+                mouseMonitor.pointAdded(getCenter(), DRAGGING);
+            } else if (isContextWanted(e)) {
+                mouseMonitor.contextSelected(getCenter(), DRAGGING);
+            } else {
+                mouseMonitor.pointSelected(getCenter(), DRAGGING);
+            }
         }
     }
 
@@ -307,25 +318,22 @@ public class Rubber
     {
         reset(e);
 
-        if (mouseMonitor != null) {
-            if (isDragWanted(e)) {
-                e.getComponent()
-                 .setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
-            } else if (isAdditionWanted(e)) {
-                mouseMonitor.pointAdded(getCenter(), PRESSING);
-            } else if (isContextWanted(e)) {
-                mouseMonitor.contextSelected(getCenter(), PRESSING);
-            } else if (isRubberWanted(e)) {
-                e.getComponent()
-                 .setCursor(
-                    Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
-            } else if (isRezoomWanted(e)) {
-                e.getComponent()
-                 .setCursor(
-                    Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
-            } else {
-                mouseMonitor.pointSelected(getCenter(), PRESSING);
-            }
+        if (mouseMonitor == null) {
+            return;
+        }
+
+        setCursor(e);
+
+        if (isAdditionWanted(e)) {
+            mouseMonitor.pointAdded(getCenter(), PRESSING);
+        } else if (isContextWanted(e)) {
+            mouseMonitor.contextSelected(getCenter(), PRESSING);
+        } else if (isRubberWanted(e)) {
+            mouseMonitor.pointSelected(getCenter(), PRESSING);
+        } else if (isRezoomWanted(e)) {
+            mouseMonitor.pointSelected(getCenter(), PRESSING);
+        } else {
+            mouseMonitor.pointSelected(getCenter(), PRESSING);
         }
     }
 
@@ -340,32 +348,34 @@ public class Rubber
     @Override
     public void mouseReleased (MouseEvent e)
     {
-        if (mouseMonitor != null) {
-            if (isRezoomWanted(e)) {
-                updateSize(e);
-                mouseMonitor.rectangleZoomed(rect, RELEASING);
-            } else if (isDragWanted(e)) {
-                Rectangle vr = component.getVisibleRect();
-                rawRect.setBounds(
-                    vr.x + (vr.width / 2),
-                    vr.y + (vr.height / 2),
-                    0,
-                    0);
-                normalize();
-            } else if (isAdditionWanted(e)) {
-                mouseMonitor.pointAdded(getCenter(), RELEASING);
-            } else if (rect != null) {
-                if ((rect.width != 0) && (rect.height != 0)) {
-                    updateSize(e);
-                    mouseMonitor.rectangleSelected(rect, RELEASING);
-                } else {
-                    mouseMonitor.pointSelected(getCenter(), RELEASING);
-                }
-            }
-
-            e.getComponent()
-             .setCursor(Cursor.getDefaultCursor());
+        if (mouseMonitor == null) {
+            return;
         }
+
+        if (isRezoomWanted(e)) {
+            updateSize(e);
+            mouseMonitor.rectangleZoomed(rect, RELEASING);
+        } else if (isDragWanted(e)) {
+            Rectangle vr = component.getVisibleRect();
+            rawRect.setBounds(
+                vr.x + (vr.width / 2),
+                vr.y + (vr.height / 2),
+                0,
+                0);
+            normalize();
+        } else if (isAdditionWanted(e)) {
+            mouseMonitor.pointAdded(getCenter(), RELEASING);
+        } else if (rect != null) {
+            if ((rect.width != 0) && (rect.height != 0)) {
+                updateSize(e);
+                mouseMonitor.rectangleSelected(rect, RELEASING);
+            } else {
+                mouseMonitor.pointSelected(getCenter(), RELEASING);
+            }
+        }
+
+        e.getComponent()
+         .setCursor(Cursor.getDefaultCursor());
     }
 
     //--------//
@@ -598,6 +608,32 @@ public class Rubber
         int offmask = BUTTON2_DOWN_MASK | BUTTON3_DOWN_MASK;
 
         return (e.getModifiersEx() & (onmask | offmask)) == onmask;
+    }
+
+    //-----------//
+    // setCursor //
+    //-----------//
+    private void setCursor (MouseEvent e)
+    {
+        if (isDragWanted(e)) {
+            e.getComponent()
+             .setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+        } else if (isAdditionWanted(e)) {
+            e.getComponent()
+             .setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+        } else if (isContextWanted(e)) {
+            e.getComponent()
+             .setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        } else if (isRubberWanted(e)) {
+            e.getComponent()
+             .setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
+        } else if (isRezoomWanted(e)) {
+            e.getComponent()
+             .setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
+        } else {
+            e.getComponent()
+             .setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
     }
 
     //-- private access ---------------------------------------------------

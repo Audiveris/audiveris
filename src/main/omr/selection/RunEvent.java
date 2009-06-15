@@ -40,12 +40,16 @@ public class RunEvent
      * Creates a new RunEvent object.
      *
      * @param source the entity that created this event
+     * @param hint how the event originated
+     * @param movement the mouse movement
      * @param run the selected run (or null)
      */
     public RunEvent (Object source,
+                     SelectionHint hint,
+                     MouseMovement movement,
                      Run    run)
     {
-        super(source, null);
+        super(source, hint, movement);
         this.run = run;
     }
 

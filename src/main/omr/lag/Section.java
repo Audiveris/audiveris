@@ -69,7 +69,6 @@ public class Section<L extends Lag, S extends Section<L, S>>
         }
     };
 
-
     //~ Instance fields --------------------------------------------------------
 
     /** Position of first run */
@@ -946,7 +945,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
             logger.fine("Merging " + this + " with " + other);
         }
 
-        runs.addAll(other.runs);
+        runs.addAll(other.getRuns());
         computeParameters();
 
         if (logger.isFineEnabled()) {

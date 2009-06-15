@@ -421,7 +421,7 @@ public class BeamGroup
         // Make sure all chords are part of the same group
         // We use the fact that for any given slot, there must be at most one
         // chord for this beam group
-        // Another possibility might be to use beam slope and proximity TBD
+        // Another possibility might be to use beam slope and proximity TODO
         for (Slot slot : measure.getSlots()) {
             Chord prevChord = null;
 

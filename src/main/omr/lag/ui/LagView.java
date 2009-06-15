@@ -11,6 +11,8 @@ package omr.lag.ui;
 
 import omr.constant.Constant;
 
+import omr.glyph.ui.ViewParameters;
+
 import omr.graph.DigraphView;
 
 import omr.lag.*;
@@ -21,11 +23,14 @@ import omr.selection.MouseMovement;
 import omr.selection.RunEvent;
 import omr.selection.SectionEvent;
 import omr.selection.SectionIdEvent;
+import omr.selection.SectionSetEvent;
 import omr.selection.SelectionHint;
+import static omr.selection.SelectionHint.*;
 import omr.selection.SelectionService;
 import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
 
+import omr.ui.util.UIUtilities;
 import omr.ui.view.RubberPanel;
 
 import org.bushe.swing.event.EventSubscriber;
@@ -70,7 +75,9 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
 
     static {
         eventClasses = new ArrayList<Class<?extends UserEvent>>();
+        eventClasses.add(SectionEvent.class);
         eventClasses.add(SectionIdEvent.class);
+        eventClasses.add(SectionSetEvent.class);
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -101,6 +108,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
      * @param lag              the lag to be displayed
      * @param specificSections the collection of 'specific' sections, or null
      * @param showingSpecifics (ref of) a flag for showing specifics sections
+     * @param locationService which service provides location information
      */
     public LagView (L                lag,
                     Collection<S>    specificSections,
@@ -114,8 +122,6 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         // Location service        
         this.locationService = locationService;
         lagSelectionService = lag.getSelectionService();
-        selfSubscribe(SectionEvent.class);
-        selfSubscribe(SectionIdEvent.class);
         setLocationService(locationService, SheetLocationEvent.class);
 
         // Remember specific sections
@@ -183,6 +189,14 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         // Now look into 'normal' sections
         return lag.getVertexById(id);
     }
+
+    //
+    //    //-----------------------//
+    //    // getSelectedSectionSet //
+    //    //-----------------------//
+    //    public Set<S> getSelectedSectionSet ()
+    //    {
+    //    }
 
     //---------------------//
     // getSpecificSections //
@@ -308,6 +322,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
      * @param event the notified event
      */
     @Override
+    @SuppressWarnings("unchecked")
     public void onEvent (UserEvent event)
     {
         try {
@@ -316,99 +331,15 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
                 return;
             }
 
-            ///logger.info("LagView. event=" + event);
-
             // Default behavior : making point visible & drawing the markers
             super.onEvent(event);
 
-            // Lookup for Run/Section pointed by this pixel location
-            // Search and forward run & section info
-            // Optimization : do the lookup only if observers other
-            // than this controller are present
-            if (event instanceof SheetLocationEvent) { // Location
-
-                if ((subscribersCount(RunEvent.class) > 0) ||
-                    (subscribersCount(SectionEvent.class) > 1)) { // myself!
-
-                    SheetLocationEvent sheetLocation = (SheetLocationEvent) event;
-                    Rectangle          rect = sheetLocation.getData();
-                    S                  section = null;
-
-                    if (rect != null) {
-                        if ((sheetLocation.hint == SelectionHint.LOCATION_ADD) ||
-                            (sheetLocation.hint == SelectionHint.LOCATION_INIT)) {
-                            Point pt = rect.getLocation();
-
-                            if (showingSpecifics()) {
-                                // First look in specific sections
-                                lag.invalidateLookupCache();
-                                section = lookupSpecificSection(pt);
-                            } else {
-                                // Look into lag
-                                section = lag.lookupSection(
-                                    lag.getVertices(),
-                                    pt);
-                            }
-
-                            publish(
-                                new SectionEvent<S>(
-                                    this,
-                                    sheetLocation.hint,
-                                    section));
-
-                            Point apt = lag.switchRef(pt, null);
-                            publish(
-                                new RunEvent(
-                                    this,
-                                    (section != null) ? section.getRunAt(apt.y)
-                                                                        : null));
-                        }
-                    }
-                }
-            } else if (event instanceof SectionIdEvent) { // Section ID
-
-                SectionIdEvent idEvent = (SectionIdEvent) event;
-                Integer        id = idEvent.id;
-
-                if ((id != null) & (id != 0)) {
-                    publish(new RunEvent(this, null));
-
-                    if (!specificSections.isEmpty()) {
-                        // Lookup a specific section with proper ID
-                        for (S section : specificSections) {
-                            if (section.getId() == id) {
-                                publish(
-                                    new SectionEvent<S>(
-                                        this,
-                                        idEvent.hint,
-                                        section));
-
-                                break;
-                            }
-                        }
-                    } else {
-                        // Lookup a lag section with proper ID
-                        publish(
-                            new SectionEvent<S>(
-                                this,
-                                idEvent.hint,
-                                lag.getVertexById(id)));
-                    }
-                }
-            } else if (event instanceof SectionEvent) { // Section
-
-                SectionEvent sectionEvent = (SectionEvent) event;
-
-                if (sectionEvent.hint == SelectionHint.SECTION_INIT) {
-                    // Display section contour
-                    Section section = sectionEvent.section;
-                    locationService.publish(
-                        new SheetLocationEvent(
-                            this,
-                            sectionEvent.hint,
-                            null,
-                            (section != null) ? section.getContourBox() : null));
-                }
+            if (event instanceof SheetLocationEvent) { // Location => Section(s) & Run
+                handleEvent((SheetLocationEvent) event);
+            } else if (event instanceof SectionIdEvent) { // Section ID => Section
+                handleEvent((SectionIdEvent) event);
+            } else if (event instanceof SectionEvent) { // Section => contour & SectionSet update
+                handleEvent((SectionEvent) event);
             }
         } catch (Exception ex) {
             logger.warning(getClass().getName() + " onEvent error", ex);
@@ -450,19 +381,27 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     @Override
     public void render (Graphics g)
     {
+        // Should we draw the section borders?
+        boolean      drawBorders = ViewParameters.getInstance()
+                                                 .isSectionSelectionEnabled();
+
         // Determine my view index in the sequence of lag views
-        final int vIndex = lag.viewIndexOf(this);
+        final int    vIndex = lag.viewIndexOf(this);
+        final Stroke oldStroke = UIUtilities.SetAbsoluteStroke(g, 1f);
 
         // Render all sections, using the colors they have been assigned
-        renderCollection(g, lag.getVertices(), vIndex);
+        renderCollection(g, lag.getVertices(), vIndex, drawBorders);
 
-        // Render also all specific sections ?
+        // Render also all specific sections?
         if ((showingSpecifics != null) && showingSpecifics.getValue()) {
-            renderCollection(g, specificSections, vIndex);
+            renderCollection(g, specificSections, vIndex, drawBorders);
         }
 
         // Paint additional items, such as recognized items, etc...
         renderItems(g);
+
+        // Restore stoke
+        ((Graphics2D) g).setStroke(oldStroke);
     }
 
     //-----------//
@@ -546,13 +485,33 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     //-------------//
     /**
      * Room for rendering additional items, on top of the basic lag itself.
-     * Default implementation is void of course.
+     * This default implementation paints the selected section set if any
      *
      * @param g the graphic context
      */
     protected void renderItems (Graphics g)
     {
-        // Just a placeholder
+        // Only in Section selection mode
+        if (!ViewParameters.getInstance()
+                           .isSectionSelectionEnabled()) {
+            return;
+        }
+
+        // Check we have a non-empty collection of selected sections
+        Set<S> sections = getLag()
+                              .getSelectedSectionSet();
+
+        if ((sections == null) || sections.isEmpty()) {
+            return;
+        }
+
+        // Determine my view index in the sequence of lag views
+        final int vIndex = lag.viewIndexOf(this);
+
+        for (S section : sections) {
+            SectionView view = (SectionView) section.getView(vIndex);
+            view.renderSelected(g);
+        }
     }
 
     //---------------//
@@ -583,6 +542,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
      * Convenient method to retrieve the number of subscribers on the lag event
      * service for a specific class
      * @param classe the specific classe
+     * @return the number of subscribers interested in the specific class
      */
     protected int subscribersCount (Class<?extends UserEvent> classe)
     {
@@ -620,16 +580,227 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         }
     }
 
+    //-------------//
+    // handleEvent //
+    //-------------//
+    /**
+     * Interest in Section => section contour + update SectionSet
+     * @param sectionEvent
+     */
+    private void handleEvent (SectionEvent<S> sectionEvent)
+    {
+        SelectionHint hint = sectionEvent.hint;
+        MouseMovement movement = sectionEvent.movement;
+        S             section = sectionEvent.section;
+
+        if (hint == SelectionHint.SECTION_INIT) {
+            // Publish section contour
+            publish(
+                new SheetLocationEvent(
+                    this,
+                    hint,
+                    null,
+                    (section != null) ? section.getContourBox() : null));
+        }
+
+        // In section-selection mode, update section set
+        if (ViewParameters.getInstance()
+                          .isSectionSelectionEnabled() &&
+            (subscribersCount(SectionSetEvent.class) > 0)) {
+            // Update section set
+            Set<S> sections = getLag()
+                                  .getSelectedSectionSet();
+
+            if (sections == null) {
+                sections = new LinkedHashSet<S>();
+            }
+
+            if (hint == LOCATION_ADD) {
+                if (section != null) {
+                    if (movement == MouseMovement.PRESSING) {
+                        // Adding to (or Removing from) the set of glyphs
+                        if (sections.contains(section)) {
+                            sections.remove(section);
+                        } else {
+                            sections.add(section);
+                        }
+                    } else if (movement == MouseMovement.DRAGGING) {
+                        // Always adding to the set of glyphs
+                        sections.add(section);
+                    }
+
+                    publish(
+                        new SectionSetEvent<S>(this, hint, movement, sections));
+                }
+            } else {
+                // Overwriting the set of sections
+                if (section != null) {
+                    // Make a one-section set
+                    sections.clear();
+                    sections.add(section);
+                } else if (!sections.isEmpty()) {
+                    // Empty the section set
+                    sections.clear();
+                }
+
+                publish(new SectionSetEvent<S>(this, hint, movement, sections));
+            }
+        }
+    }
+
+    //-------------//
+    // handleEvent //
+    //-------------//
+    /**
+     * Interest in SectionId => Section
+     * @param idEvent
+     */
+    private void handleEvent (SectionIdEvent idEvent)
+    {
+        Integer id = idEvent.id;
+
+        if ((id == null) || (id == 0)) {
+            return;
+        }
+
+        SelectionHint hint = idEvent.hint;
+        MouseMovement movement = idEvent.movement;
+
+        // Always publish a null Run
+        publish(new RunEvent(this, hint, movement, null));
+
+        // Publish proper Section
+        if (!specificSections.isEmpty()) {
+            // Lookup a specific section with proper ID
+            for (S section : specificSections) {
+                if (section.getId() == id) {
+                    publish(new SectionEvent<S>(this, hint, movement, section));
+
+                    return;
+                }
+            }
+        }
+
+        // Lookup a lag section with proper ID
+        publish(
+            new SectionEvent<S>(this, hint, movement, lag.getVertexById(id)));
+    }
+
+    //-------------//
+    // handleEvent //
+    //-------------//
+    /**
+     * Interest in SheetLocation => Section(s) & Run
+     * @param sheetLocation
+     */
+    private void handleEvent (SheetLocationEvent sheetLocationEvent)
+    {
+        ///logger.info("LagView. sheetLocation:" + sheetLocationEvent);
+
+        // Lookup for Run/Section pointed by this pixel location
+        // Search and forward run & section info
+        Rectangle rect = sheetLocationEvent.getData();
+
+        if (rect == null) {
+            return;
+        }
+
+        SelectionHint hint = sheetLocationEvent.hint;
+        MouseMovement movement = sheetLocationEvent.movement;
+
+        // Optimization : do the lookup only if observers other
+        // than this controller are present
+        if ((subscribersCount(RunEvent.class) == 0) &&
+            (subscribersCount(SectionEvent.class) <= 1)) {
+            return;
+        }
+
+        if ((hint != SelectionHint.LOCATION_ADD) &&
+            (hint != SelectionHint.LOCATION_INIT)) {
+            return;
+        }
+
+        // Section selection mode?
+        if (ViewParameters.getInstance()
+                          .isSectionSelectionEnabled()) {
+            // Non-degenerated rectangle? look for enclosed sections
+            if ((rect.width > 0) && (rect.height > 0)) {
+                if (subscribersCount(SectionSetEvent.class) > 0) {
+                    // Look for enclosed glyphs
+                    Set<S> sectionsFound = getLag()
+                                               .lookupSections(rect);
+                    // Publish no Run information
+                    publish(new RunEvent(this, hint, movement, null));
+
+                    // Publish (first) Section found
+                    S section = sectionsFound.isEmpty() ? null
+                                : sectionsFound.iterator()
+                                               .next();
+                    publish(new SectionEvent<S>(this, hint, movement, section));
+
+                    // Publish whole SectionSet
+                    publish(
+                        new SectionSetEvent<S>(
+                            this,
+                            hint,
+                            movement,
+                            sectionsFound));
+                }
+            } else {
+                // Just section addition / removal
+                Point pt = rect.getLocation();
+
+                // No specifics, look into lag
+                S     section = lag.lookupSection(lag.getVertices(), pt);
+
+                // Publish Run information
+                Point apt = lag.switchRef(pt, null);
+                Run   run = (section != null) ? section.getRunAt(apt.y) : null;
+                publish(new RunEvent(this, hint, movement, run));
+
+                // Publish Section information
+                publish(new SectionEvent<S>(this, hint, movement, section));
+            }
+        } else {
+            // We are in glyph selection mode
+            Point pt = rect.getLocation();
+            S     section = null;
+
+            // Should we first look in specific sections?
+            if (showingSpecifics()) {
+                lag.invalidateLookupCache();
+                section = lookupSpecificSection(pt);
+            }
+
+            // If not found in specifics, now look into lag
+            if (section == null) {
+                section = lag.lookupSection(lag.getVertices(), pt);
+            }
+
+            // Publish Run information
+            Point apt = lag.switchRef(pt, null);
+            Run   run = (section != null) ? section.getRunAt(apt.y) : null;
+            publish(new RunEvent(this, hint, movement, run));
+
+            // Publish Section information
+            publish(new SectionEvent<S>(this, hint, movement, section));
+
+            // Publish no SectionSet
+            publish(new SectionSetEvent<S>(this, hint, movement, null));
+        }
+    }
+
     //------------------//
     // renderCollection //
     //------------------//
     private void renderCollection (Graphics      g,
                                    Collection<S> collection,
-                                   int           index)
+                                   int           index,
+                                   boolean       drawBorders)
     {
         for (S section : collection) {
             SectionView view = (SectionView) section.getView(index);
-            view.render(g);
+            view.render(g, drawBorders);
         }
     }
 }

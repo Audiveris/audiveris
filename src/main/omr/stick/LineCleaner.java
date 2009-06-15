@@ -122,7 +122,7 @@ public class LineCleaner
             "Maximum adjacency for a section to be a border");
         Constant.Angle maxDeltaSlope = new Constant.Angle(
             0.5d,
-            "Maximum difference of side tangent slopes when patching TBD");
+            "Maximum difference of side tangent slopes when patching. TODO");
     }
 
     //--------------//
@@ -337,7 +337,7 @@ public class LineCleaner
 
                 // Is this objectSection just a border of the line ?
                 if (borderEnabled) {
-                    if (objectSection.getRunNb() == 1) { // Too restrictive ??? TBD
+                    if (objectSection.getRunNb() == 1) { // Too restrictive ??? TODO
 
                         double adjacency = (direction > 0)
                                            ? objectSection.getFirstAdjacency()
@@ -467,8 +467,8 @@ public class LineCleaner
                                     ", length=" + runLength);
                             }
 
-                            //Run newRun = new Run(start, length, Picture.FOREGROUND); // TBD
-                            Run newRun = new Run(start, runLength, 127); // TBD for the 127 value of course
+                            //Run newRun = new Run(start, length, Picture.FOREGROUND); // TODO
+                            Run newRun = new Run(start, runLength, 127); // TODO for the 127 value of course
 
                             if (patchSection == null) {
                                 patchSection = lag.createSection(y, newRun);

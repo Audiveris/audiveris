@@ -470,7 +470,7 @@ public class ScoreChecker
             logger.fine("oldSig " + Glyphs.toString(glyphs));
         }
 
-        Glyph compound = systemInfo.buildCompound(glyphs);
+        Glyph compound = systemInfo.buildTransientCompound(glyphs);
         systemInfo.computeGlyphFeatures(compound);
         compound = systemInfo.addGlyph(compound);
         compound.setShape(shape, Evaluation.ALGORITHM);

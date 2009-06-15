@@ -694,7 +694,7 @@ public class Stick
     //    public void computeDensities (int nWidth,
     //                                  int nHeight)
     //    {
-    //        final int maxDist = 20; // TBD of course
+    //        final int maxDist = 20; // TODO of course
     //
     //        // Allocate and initialize density histograms
     //        int[] histoLeft = new int[maxDist];

@@ -74,6 +74,7 @@ public class SymbolsController
      * @param glyphs the impacted glyphs
      * @param textRole the type (role) of this textual element
      * @param textContent the content as a string (if not empty)
+     * @return the task that carries out the processing
      */
     public Task asyncAssignText (final Collection<Glyph> glyphs,
                                  final TextRole          textRole,
@@ -120,6 +121,7 @@ public class SymbolsController
      *
      * @param glyphs glyphs to segment in order to retrieve stems
      * @param isShort looking for short (or standard) stems
+     * @return the task that carries out the processing
      */
     public Task asyncSegmentGlyphSet (final Collection<Glyph> glyphs,
                                       final boolean           isShort)

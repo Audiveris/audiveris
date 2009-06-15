@@ -304,126 +304,14 @@ public class GlyphLagView
             super.onEvent(event);
 
             // Additional tasks about glyphs
-            if (event instanceof SheetLocationEvent) {
-                // Interest in sheet location => active glyph(s)
-                SheetLocationEvent sheetLocation = (SheetLocationEvent) event;
-
-                if ((sheetLocation.hint == LOCATION_ADD) ||
-                    (sheetLocation.hint == LOCATION_INIT)) {
-                    Rectangle rect = sheetLocation.rectangle;
-
-                    if (rect != null) {
-                        if ((rect.width > 0) || (rect.height > 0)) {
-                            // This is a non-degenerated rectangle
-                            // Look for enclosed active glyphs
-                            if (subscribersCount(GlyphSetEvent.class) > 0) {
-                                // Look for enclosed glyphs
-                                Set<Glyph> glyphsFound = lookupGlyphs(rect);
-
-                                if (!glyphsFound.isEmpty()) {
-                                    publish(
-                                        new GlyphEvent(
-                                            this,
-                                            sheetLocation.hint,
-                                            sheetLocation.movement,
-                                            glyphsFound.iterator().next()));
-                                } else {
-                                    publish(
-                                        new GlyphEvent(
-                                            this,
-                                            sheetLocation.hint,
-                                            sheetLocation.movement,
-                                            null));
-                                }
-
-                                publish(
-                                    new GlyphSetEvent(
-                                        this,
-                                        sheetLocation.hint,
-                                        sheetLocation.movement,
-                                        glyphsFound));
-                            }
-                        } else {
-                            // This is just a point
-                            // If a section has just been found,
-                            // forward its assigned glyph if any
-                            if ((subscribersCount(GlyphEvent.class) > 0) &&
-                                (subscribersCount(SectionEvent.class) > 0)) { // TBD GlyphLag itself
-
-                                Glyph        glyph = null;
-                                GlyphSection section = getLag()
-                                                           .getSelectedSection();
-
-                                if (section != null) {
-                                    glyph = section.getGlyph();
-                                }
-
-                                publish(
-                                    new GlyphEvent(
-                                        this,
-                                        sheetLocation.hint,
-                                        null,
-                                        glyph));
-                            }
-                        }
-                    }
-                }
-            } else if (event instanceof SectionEvent) {
-                // Interest in Section => assigned glyph
-                SectionEvent<GlyphSection> sectionEvent = (SectionEvent<GlyphSection>) event;
-
-                if (sectionEvent.hint == SECTION_INIT) {
-                    // Select related Glyph if any
-                    GlyphSection section = sectionEvent.section;
-
-                    if (section != null) {
-                        publish(
-                            new GlyphEvent(
-                                this,
-                                sectionEvent.hint,
-                                sectionEvent.movement,
-                                section.getGlyph()));
-                    }
-                }
-            } else if (event instanceof GlyphEvent) {
-                // Interest in Glyph => glyph contour
-                GlyphEvent glyphEvent = (GlyphEvent) event;
-                Glyph      glyph = glyphEvent.glyph;
-
-                if ((glyphEvent.hint == GLYPH_INIT) ||
-                    (glyphEvent.hint == GLYPH_MODIFIED)) {
-                    // Display glyph contour
-                    if (glyph != null) {
-                        ///locationService.setEntity(glyph.getContourBox(), hint);
-                        locationService.publish(
-                            new SheetLocationEvent(
-                                this,
-                                glyphEvent.hint,
-                                glyphEvent.movement,
-                                glyph.getContourBox()));
-                    }
-                }
-
-                if (glyphEvent.hint != GLYPH_TRANSIENT) {
-                    // Update (vertical) glyph set
-                    updateGlyphSet(glyph, glyphEvent.hint);
-                }
-            } else if (event instanceof GlyphIdEvent) {
-                // Interest in Glyph ID => glyph
-                GlyphIdEvent glyphIdEvent = (GlyphIdEvent) event;
-                int          id = glyphIdEvent.getData();
-
-                // Nullify Run & Section entities
-                publish(new RunEvent(this, null));
-                publish(new SectionEvent(this, glyphIdEvent.hint, null));
-
-                // Report Glyph entity (which may be null)
-                publish(
-                    new GlyphEvent(
-                        this,
-                        glyphIdEvent.hint,
-                        null,
-                        getLag().getGlyph(id)));
+            if (event instanceof SheetLocationEvent) { // Location => Glyph(s)
+                handleEvent((SheetLocationEvent) event);
+            } else if (event instanceof SectionEvent) { // Section => Glyph
+                handleEvent((SectionEvent<GlyphSection>) event);
+            } else if (event instanceof GlyphEvent) { // Glyph => glyph contour & GlyphSet update
+                handleEvent((GlyphEvent) event);
+            } else if (event instanceof GlyphIdEvent) { // Glyph Id => Glyph
+                handleEvent((GlyphIdEvent) event);
             }
         } catch (Exception ex) {
             logger.warning(getClass().getName() + " onEvent error", ex);
@@ -535,64 +423,75 @@ public class GlyphLagView
     @Override
     protected void renderItems (Graphics g)
     {
+        // Only in Glyph selection mode (?)
+        // TODO: Do we want to combine display of selected glyphs & selected sections???
+        if (ViewParameters.getInstance()
+                          .isSectionSelectionEnabled()) {
+            super.renderItems(g);
+
+            return;
+        }
+
         // Mark the current members of the glyph set
         Set<Glyph> glyphs = getLag()
                                 .getSelectedGlyphSet();
 
-        if ((glyphs != null) && !glyphs.isEmpty()) {
-            // Decorations first
-            Stroke oldStroke = UIUtilities.SetAbsoluteStroke(g, 1f);
-            g.setColor(Color.blue);
+        if ((glyphs == null) || glyphs.isEmpty()) {
+            return;
+        }
 
-            for (Glyph glyph : glyphs) {
-                // Draw circle arc or stick average line
-                if (glyph.getShape() == Shape.SLUR) {
-                    if (ViewParameters.getInstance()
-                                      .isCirclePainting()) {
-                        Circle circle = SlurInspector.computeCircle(glyph);
+        // Decorations first
+        Stroke oldStroke = UIUtilities.SetAbsoluteStroke(g, 1f);
+        g.setColor(Color.blue);
 
-                        if (logger.isFineEnabled()) {
-                            logger.fine(
-                                String.format(
-                                    "dist=%g " + circle.toString(),
-                                    circle.getDistance()));
-                        }
+        for (Glyph glyph : glyphs) {
+            // Draw circle arc or stick average line
+            if (glyph.getShape() == Shape.SLUR) {
+                if (ViewParameters.getInstance()
+                                  .isCirclePainting()) {
+                    Circle circle = SlurInspector.computeCircle(glyph);
 
-                        drawCircle(circle, g);
+                    if (logger.isFineEnabled()) {
+                        logger.fine(
+                            String.format(
+                                "dist=%g " + circle.toString(),
+                                circle.getDistance()));
                     }
-                } else if (ViewParameters.getInstance()
-                                         .isLinePainting()) {
-                    if (glyph instanceof Stick) {
-                        drawStickLine((Stick) glyph, g);
-                    }
+
+                    drawCircle(circle, g);
                 }
+            } else if (ViewParameters.getInstance()
+                                     .isLinePainting()) {
+                if (glyph instanceof Stick) {
+                    drawStickLine((Stick) glyph, g);
+                }
+            }
 
-                // Draw character boxes for textual glyphs?
-                if (glyph.isText()) {
-                    if (ViewParameters.getInstance()
-                                      .isLetterBoxPainting()) {
-                        TextInfo info = glyph.getTextInfo();
-                        OcrLine  ocrLine = info.getOcrLine();
+            // Draw character boxes for textual glyphs?
+            if (glyph.isText()) {
+                if (ViewParameters.getInstance()
+                                  .isLetterBoxPainting()) {
+                    TextInfo info = glyph.getTextInfo();
+                    OcrLine  ocrLine = info.getOcrLine();
 
-                        if (ocrLine != null) {
-                            for (OcrChar ch : ocrLine.getChars()) {
-                                Rectangle b = ch.getBox();
-                                g.drawRect(b.x, b.y, b.width, b.height);
-                            }
+                    if (ocrLine != null) {
+                        for (OcrChar ch : ocrLine.getChars()) {
+                            Rectangle b = ch.getBox();
+                            g.drawRect(b.x, b.y, b.width, b.height);
                         }
                     }
                 }
             }
+        }
 
-            ((Graphics2D) g).setStroke(oldStroke);
+        ((Graphics2D) g).setStroke(oldStroke);
 
-            // Glyph areas second, using XOR mode for the area
-            g.setColor(Color.black);
-            g.setXORMode(Color.darkGray);
+        // Glyph areas second, using XOR mode for the area
+        g.setColor(Color.black);
+        g.setXORMode(Color.darkGray);
 
-            for (Glyph glyph : glyphs) {
-                renderGlyphArea(glyph, g);
-            }
+        for (Glyph glyph : glyphs) {
+            renderGlyphArea(glyph, g);
         }
     }
 
@@ -659,14 +558,119 @@ public class GlyphLagView
         }
     }
 
-    //----------------//
-    // updateGlyphSet //
-    //----------------//
-    private void updateGlyphSet (Glyph         glyph,
-                                 SelectionHint hint)
+    //-------------//
+    // handleEvent //
+    //-------------//
+    /**
+     *  Interest in sheet location => [active] glyph(s)
+     * @param sheetLocation
+     */
+    private void handleEvent (SheetLocationEvent sheetLocationEvent)
     {
-        if (subscribersCount(GlyphSetEvent.class) > 0) {
-            // Get current glyph set
+        if (ViewParameters.getInstance()
+                          .isSectionSelectionEnabled()) {
+            return;
+        }
+
+        SelectionHint hint = sheetLocationEvent.hint;
+        MouseMovement movement = sheetLocationEvent.movement;
+        Rectangle     rect = sheetLocationEvent.rectangle;
+
+        if ((hint != LOCATION_ADD) && (hint != LOCATION_INIT)) {
+            return;
+        }
+
+        if (rect == null) {
+            return;
+        }
+
+        if ((rect.width > 0) || (rect.height > 0)) {
+            // This is a non-degenerated rectangle
+            // Look for enclosed active glyphs
+            if (subscribersCount(GlyphSetEvent.class) > 0) {
+                // Look for enclosed glyphs
+                Set<Glyph> glyphsFound = lookupGlyphs(rect);
+
+                // Publish Glyph
+                Glyph glyph = glyphsFound.isEmpty() ? null
+                              : glyphsFound.iterator()
+                                           .next();
+                publish(new GlyphEvent(this, hint, movement, glyph));
+
+                // Publish GlyphSet
+                publish(new GlyphSetEvent(this, hint, movement, glyphsFound));
+            }
+        } else {
+            // This is just a point
+            // If a section has just been found,
+            // forward its assigned glyph if any
+            if ((subscribersCount(GlyphEvent.class) > 0) &&
+                (subscribersCount(SectionEvent.class) > 0)) { // TODO GlyphLag itself
+
+                Glyph        glyph = null;
+                GlyphSection section = getLag()
+                                           .getSelectedSection();
+
+                if (section != null) {
+                    glyph = section.getGlyph();
+                }
+
+                // Publish Glyph
+                publish(new GlyphEvent(this, hint, movement, glyph));
+            }
+        }
+    }
+
+    //-------------//
+    // handleEvent //
+    //-------------//
+    /**
+     * Interest in Section => assigned glyph
+     * @param sectionEvent
+     */
+    private void handleEvent (SectionEvent<GlyphSection> sectionEvent)
+    {
+        SelectionHint hint = sectionEvent.hint;
+        MouseMovement movement = sectionEvent.movement;
+        GlyphSection  section = sectionEvent.section;
+
+        if (hint == SECTION_INIT) {
+            // Select related Glyph if any
+            if (section != null) {
+                publish(
+                    new GlyphEvent(this, hint, movement, section.getGlyph()));
+            }
+        }
+    }
+
+    //-------------//
+    // handleEvent //
+    //-------------//
+    /**
+     * Interest in Glyph => glyph contour & GlyphSet update
+     * @param glyphEvent
+     */
+    private void handleEvent (GlyphEvent glyphEvent)
+    {
+        SelectionHint hint = glyphEvent.hint;
+        MouseMovement movement = glyphEvent.movement;
+        Glyph         glyph = glyphEvent.glyph;
+
+        if ((hint == GLYPH_INIT) || (hint == GLYPH_MODIFIED)) {
+            // Display glyph contour
+            if (glyph != null) {
+                PixelRectangle box = glyph.getContourBox();
+                publish(new SheetLocationEvent(this, hint, movement, box));
+            }
+        }
+
+        // In glyph-selection mode, for non-transient glyphs
+        // (and only if we have interested subscribers)
+        if ((hint != GLYPH_TRANSIENT) &&
+            !ViewParameters.getInstance()
+                           .isSectionSelectionEnabled() &&
+            (subscribersCount(GlyphSetEvent.class) > 0)) {
+            // Update (vertical) glyph set
             Set<Glyph> glyphs = getLag()
                                     .getSelectedGlyphSet();
 
@@ -675,19 +679,18 @@ public class GlyphLagView
             }
 
             if (hint == LOCATION_ADD) {
-                // Adding / Removing
+                // Adding to (or Removing from) the set of glyphs
                 if (glyph != null) {
-                    // Add to (or remove from) glyph set
                     if (glyphs.contains(glyph)) {
                         glyphs.remove(glyph);
                     } else {
                         glyphs.add(glyph);
                     }
 
-                    publish(new GlyphSetEvent(this, hint, null, glyphs));
+                    publish(new GlyphSetEvent(this, hint, movement, glyphs));
                 }
             } else {
-                // Overwriting
+                // Overwriting the set of glyphs
                 if (glyph != null) {
                     // Make a one-glyph set
                     glyphs.clear();
@@ -697,9 +700,32 @@ public class GlyphLagView
                     glyphs.clear();
                 }
 
-                publish(new GlyphSetEvent(this, hint, null, glyphs));
+                publish(new GlyphSetEvent(this, hint, movement, glyphs));
             }
         }
+    }
+
+    //-------------//
+    // handleEvent //
+    //-------------//
+    /**
+     * Interest in Glyph ID => glyph
+     * @param glyphIdEvent
+     */
+    private void handleEvent (GlyphIdEvent glyphIdEvent)
+    {
+        SelectionHint hint = glyphIdEvent.hint;
+        MouseMovement movement = glyphIdEvent.movement;
+        int           id = glyphIdEvent.getData();
+
+        // Nullify Run  entity
+        publish(new RunEvent(this, hint, movement, null));
+
+        // Nullify Section entity
+        publish(new SectionEvent<GlyphSection>(this, hint, movement, null));
+
+        // Report Glyph entity (which may be null)
+        publish(new GlyphEvent(this, hint, movement, getLag().getGlyph(id)));
     }
 
     //~ Inner Classes ----------------------------------------------------------

@@ -189,6 +189,18 @@ public class Glyph
 
     //~ Methods ----------------------------------------------------------------
 
+    //-------------//
+    // isTransient //
+    //-------------//
+    /**
+     * Test whether the glyph is transient (not yet inserted into lag)
+     * @return true if transient
+     */
+    public boolean isTransient ()
+    {
+        return id == 0;
+    }
+
     //----------//
     // isActive //
     //----------//

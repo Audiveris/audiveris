@@ -45,6 +45,7 @@ public class SelectionService
         allEventClasses.add(ScoreLocationEvent.class);
         allEventClasses.add(SectionEvent.class);
         allEventClasses.add(SectionIdEvent.class);
+        allEventClasses.add(SectionSetEvent.class);
         allEventClasses.add(SheetEvent.class);
         allEventClasses.add(SheetLocationEvent.class);
         allEventClasses.add(UserEvent.class);

@@ -43,7 +43,7 @@ public class SectionIdEvent
                            SelectionHint hint,
                            Integer       id)
     {
-        super(source, hint);
+        super(source, hint, null);
         this.id = id;
     }
 

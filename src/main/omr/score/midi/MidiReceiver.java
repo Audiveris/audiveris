@@ -34,7 +34,7 @@ import javax.sound.midi.*;
  *
  * <p>We forward the related slot information directly to the score display.
  * Perhaps we should keep the sheet display in sync too, in that case, we could
- * use some new "Slot Selection" mechanism. TBD.
+ * use some new "Slot Selection" mechanism. TODO.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -364,7 +364,7 @@ public class MidiReceiver
                     mid - part.getFirstMeasure().getId());
 
                 ///logger.fine("Slots nb=" + measure.getSlots().size());
-                slotLoop: 
+                slotLoop:
                 for (Slot slot : measure.getSlots()) {
                     int slotTick = getTickTime(measure, slot);
 

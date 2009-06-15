@@ -37,7 +37,6 @@ import omr.log.Logger;
 import omr.score.entity.ScorePart;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.SystemPart;
-import omr.score.ui.ScoreView;
 import omr.score.visitor.ScoreFixer;
 import omr.score.visitor.SheetPainter;
 
@@ -561,7 +560,8 @@ public class SystemsBuilder
              .accept(new ScoreFixer());
 
         // Update score views if any
-        sheet.getScore().updateViews();
+        sheet.getScore()
+             .updateViews();
     }
 
     //~ Inner Classes ----------------------------------------------------------

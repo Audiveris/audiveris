@@ -643,13 +643,31 @@ public class SystemInfo
     // buildGlyph //
     //------------//
     /**
-     * Build a glyph from a collection of sections
+     * Build a glyph from a collection of sections, and make the sections point
+     * back to the glyph
      * @param sections the provided members of the future glyph
      * @return the newly built glyph
      */
     public Glyph buildGlyph (Collection<GlyphSection> sections)
     {
         return glyphsBuilder.buildGlyph(sections);
+    }
+
+    //---------------------//
+    // buildTransientGlyph //
+    //---------------------//
+    /**
+     * Make a new glyph out of a collection of sections.
+     * This glyph is transient, since until it is properly inserted by use of
+     * {@link #addGlyph}, this building has no impact on either the containing
+     * lag, the containing system, nor the contained sections themselves.
+     *
+     * @param sections the collection of sections
+     * @return the brand new transient glyph
+     */
+    public Glyph buildTransientGlyph (Collection<GlyphSection> sections)
+    {
+        return glyphsBuilder.buildTransientGlyph(sections);
     }
 
     //---------------//
@@ -1012,12 +1030,12 @@ public class SystemInfo
         return sheet;
     }
 
-    //---------------//
-    // buildCompound //
-    //---------------//
+    //------------------------//
+    // buildTransientCompound //
+    //------------------------//
     /**
      * Make a new glyph out of a collection of (sub) glyphs, by merging all
-     * their member sections. This compound is temporary, since until it is
+     * their member sections. This compound is transient, since until it is
      * properly inserted by use of {@link #addGlyph}, this building has no
      * impact on either the containing lag, the containing system, nor the
      * contained sections themselves.
@@ -1025,9 +1043,9 @@ public class SystemInfo
      * @param parts the collection of (sub) glyphs
      * @return the brand new (compound) glyph
      */
-    public Glyph buildCompound (Collection<Glyph> parts)
+    public Glyph buildTransientCompound (Collection<Glyph> parts)
     {
-        return glyphsBuilder.buildCompound(parts);
+        return glyphsBuilder.buildTransientCompound(parts);
     }
 
     //----------------------//

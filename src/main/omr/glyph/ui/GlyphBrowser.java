@@ -326,7 +326,7 @@ class GlyphBrowser
         display = new Display();
         component.add(display, BorderLayout.CENTER);
 
-        // Check if all this is really needed ... TBD
+        // TODO: Check if all this is really needed ...
         component.invalidate();
         component.validate();
         component.repaint();

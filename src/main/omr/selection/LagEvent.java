@@ -32,10 +32,12 @@ public abstract class LagEvent
      * Creates a new LagEvent object.
      * @param source the actual entity that created this event
      * @param hint how the event originated
+     * @param movement the mouse movement
      */
     public LagEvent (Object        source,
-                     SelectionHint hint)
+                     SelectionHint hint,
+                     MouseMovement movement)
     {
-        super(source, hint, null);
+        super(source, hint, movement);
     }
 }

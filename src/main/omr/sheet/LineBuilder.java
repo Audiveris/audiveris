@@ -366,7 +366,7 @@ public class LineBuilder
                 Run       run = null;
 
                 do {
-                    run = lag.getFirstRectRun(gapStart, gapStop, yMin, yMax); // HB : check order TBD
+                    run = lag.getFirstRectRun(gapStart, gapStop, yMin, yMax); // HB : check order TODO
 
                     if (run != null) {
                         if ((run.getStart() - gapStart) > maxGapWidth) {

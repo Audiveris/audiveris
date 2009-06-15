@@ -53,6 +53,12 @@ public class ScoreActions
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScoreActions.class);
 
+    /** Should we rebuild the score on each user action */
+    private static final String REBUILD_ALLOWED = "rebuildAllowed";
+
+    /** Is a Score available */
+    private static final String SCORE_AVAILABLE = "scoreAvailable";
+
     /** Singleton */
     private static ScoreActions INSTANCE;
 
@@ -188,7 +194,7 @@ public class ScoreActions
     {
         boolean oldValue = this.rebuildAllowed;
         this.rebuildAllowed = value;
-        firePropertyChange("rebuildAllowed", oldValue, value);
+        firePropertyChange(REBUILD_ALLOWED, oldValue, value);
     }
 
     //------------------//
@@ -206,7 +212,7 @@ public class ScoreActions
      * Launch the tree display of the current score.
      * @param e
      */
-    @Action(enabledProperty = "scoreAvailable")
+    @Action(enabledProperty = SCORE_AVAILABLE)
     public void browseScore (ActionEvent e)
     {
         MainGui.getInstance()
@@ -220,7 +226,7 @@ public class ScoreActions
      * Launch the dialog to set up score parameters.
      * @param e the event that triggered this action
      */
-    @Action(enabledProperty = "scoreAvailable")
+    @Action(enabledProperty = SCORE_AVAILABLE)
     public void defineParameters (ActionEvent e)
     {
         Score score = ScoreController.getCurrentScore();
@@ -246,7 +252,7 @@ public class ScoreActions
      * Dump the internals of a score to system output
      * @param e the event that triggered this action
      */
-    @Action(enabledProperty = "scoreAvailable")
+    @Action(enabledProperty = SCORE_AVAILABLE)
     public void dumpScore (ActionEvent e)
     {
         ScoreController.getCurrentScore()
@@ -261,7 +267,7 @@ public class ScoreActions
      * @param e the event that triggered this action
      * @return the task to launch in background
      */
-    @Action(enabledProperty = "scoreAvailable")
+    @Action(enabledProperty = SCORE_AVAILABLE)
     public Task rebuildScore (ActionEvent e)
     {
         return new RebuildTask();
@@ -275,7 +281,7 @@ public class ScoreActions
      * @param e the event that triggered this action
      * @return the task to launch in background
      */
-    @Action(enabledProperty = "scoreAvailable")
+    @Action(enabledProperty = SCORE_AVAILABLE)
     public Task storeScore (ActionEvent e)
     {
         return new StoreTask();
@@ -285,10 +291,10 @@ public class ScoreActions
     // toggleRebuild //
     //---------------//
     /**
-     * Action that toggles thr rebuild of score on every user edition
+     * Action that toggles the rebuild of score on every user edition
      * @param e the event that triggered this action
      */
-    @Action(selectedProperty = "rebuildAllowed")
+    @Action(selectedProperty = REBUILD_ALLOWED)
     public void toggleRebuild (ActionEvent e)
     {
     }

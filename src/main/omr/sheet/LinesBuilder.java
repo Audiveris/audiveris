@@ -394,7 +394,7 @@ public class LinesBuilder
         final double maxDiff = scale.toPixelsDouble(
             constants.maxInterlineDiffFrac);
 
-        // Desired length of series (TBD)
+        // Desired length of series (TODO)
         final int  interlineNb = 4;
 
         int        firstPeak = 0;

@@ -186,7 +186,7 @@ public class Sheet
         try {
             // We make sure we have a canonical form for the file name
             this.imageFile = imageFile.getCanonicalFile();
-            
+
             // Insert in list of handled sheets
             SheetsManager.getInstance()
                          .insertInstance(this);
@@ -1171,7 +1171,7 @@ public class Sheet
             // Colorization of all known score items
             score.accept(new ScoreColorizer(lag, viewIndex, color));
         } else {
-            // Nothing to colorize ? TBD
+            // Nothing to colorize ? TODO
         }
     }
 
@@ -1303,24 +1303,6 @@ public class Sheet
     {
         sheetSteps.rebuildAfter(step, glyphs, shapes, false); //Not imposed
     }
-
-    //
-    //    //-----------------------//
-    //    // registerLagController //
-    //    //-----------------------//
-    //    /**
-    //     * Register a lag controller for SheetLocation events
-    //     *
-    //     * @param lag the lag at hand
-    //     */
-    //    public void registerLagController (GlyphLagController controller)
-    //    {
-    //        // Input for location events
-    //        eventService.subscribeStrongly(SheetLocationEvent.class, controller);
-    //
-    //        //        // Output for location events
-    //        //        controller.setLocationService(eventService);
-    //    }
 
     //----------------//
     // splitBarSticks //

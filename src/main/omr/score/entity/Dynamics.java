@@ -130,7 +130,7 @@ public class Dynamics
         super(measure, true, point, chord, glyph);
 
         if (chord != null) {
-            chord.addDirection(this); ////// TBD: Not always !!!!!!!!!!!!!!!!!!!
+            chord.addDirection(this); ////// TODO: Not always !!!!!!!!!!!!!!!!!!!
         }
     }
 

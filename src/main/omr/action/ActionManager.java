@@ -386,10 +386,15 @@ public class ActionManager
             action = getActionInstance(instance, desc.methodName);
 
             if (action != null) {
-                // Insertion on Tool Bar?
-                if ((desc.onToolbar != null) && desc.onToolbar) {
-                    JButton button = toolBar.add(action);
+                // Insertion of a button on Tool Bar?
+                if (desc.buttonClassName != null) {
+                    Class<?extends AbstractButton> buttonClass = (Class<?extends AbstractButton>) classLoader.loadClass(
+                        desc.buttonClassName);
+                    AbstractButton                 button = buttonClass.newInstance();
+                    button.setAction(action);
+                    toolBar.add(button);
                     button.setBorder(UIUtilities.getToolBorder());
+                    button.setText("");
                 }
             } else {
                 logger.severe(

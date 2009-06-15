@@ -13,8 +13,10 @@ import omr.glyph.Evaluator;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphNetwork;
+import omr.glyph.GlyphSection;
 import omr.glyph.Glyphs;
 
+import omr.lag.Sections;
 import omr.lag.ui.RunBoard;
 import omr.lag.ui.ScrollLagView;
 import omr.lag.ui.SectionBoard;
@@ -26,6 +28,7 @@ import omr.score.visitor.SheetPainter;
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphSetEvent;
 import omr.selection.MouseMovement;
+import omr.selection.SectionSetEvent;
 import omr.selection.SelectionHint;
 import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
@@ -258,17 +261,20 @@ public class SymbolsEditor
         // onEvent //
         //---------//
         /**
-         * On reception of GLYPH_SET information, we build a transient compound
-         * glyph which is then dispatched. Such glyph is always generated
-         * (a null glyph if the set is null or empty, a simple glyph if the set
-         * contains just one glyph, and a true compound glyph when the set
-         * contains several glyphs)
+         * On reception of GLYPH_SET or SECTION_SET information, we build a
+         * transient compound glyph which is then dispatched.
+         *
+         * Such glyph is always generated (a null glyph if the set is null or
+         * empty, a simple glyph if the set contains just one glyph, and a true
+         * compound glyph when the set contains several glyphs)
          *
          * @param event the notified event
          */
         @Override
         public void onEvent (UserEvent event)
         {
+            ///logger.info("*** " + getName() + " " + event);
+
             try {
                 // Ignore RELEASING
                 if (event.movement == MouseMovement.RELEASING) {
@@ -278,40 +284,10 @@ public class SymbolsEditor
                 // Default lag view behavior, including specifics
                 super.onEvent(event);
 
-                if (event instanceof GlyphSetEvent) {
-                    GlyphSetEvent glyphsEvent = (GlyphSetEvent) event;
-                    Set<Glyph>    glyphs = glyphsEvent.getData();
-                    Glyph         compound = null;
-
-                    if (glyphs != null) {
-                        if (glyphs.size() > 1) {
-                            try {
-                                SystemInfo system = sheet.getSystemOf(glyphs);
-
-                                if (system != null) {
-                                    compound = system.buildCompound(glyphs);
-                                }
-                            } catch (IllegalArgumentException ex) {
-                                // All glyphs do not belong to the same system
-                                // No compound is allowed and displayed
-                                logger.warning(
-                                    "Glyphs from different systems " +
-                                    Glyphs.toString(glyphs));
-                            }
-                        } else if (glyphs.size() == 1) {
-                            compound = glyphs.iterator()
-                                             .next();
-                        }
-                    }
-
-                    sheet.getVerticalLag()
-                         .getSelectionService()
-                         .publish(
-                        new GlyphEvent(
-                            this,
-                            SelectionHint.GLYPH_TRANSIENT,
-                            null,
-                            compound));
+                if (event instanceof GlyphSetEvent) { // GlyphSet => Compound
+                    handleEvent((GlyphSetEvent) event);
+                } else if (event instanceof SectionSetEvent) { // SectionSet => Compound
+                    handleEvent((SectionSetEvent) event);
                 }
             } catch (Exception ex) {
                 logger.warning(getClass().getName() + " onEvent error", ex);
@@ -329,6 +305,99 @@ public class SymbolsEditor
 
             // Normal display of selected items
             super.renderItems(g);
+        }
+
+        //-------------//
+        // handleEvent //
+        //-------------//
+        /**
+         * Interest in GlyphSet => Compound
+         * @param glyphSetEvent
+         */
+        private void handleEvent (GlyphSetEvent glyphSetEvent)
+        {
+            if (ViewParameters.getInstance()
+                              .isSectionSelectionEnabled()) {
+                return;
+            }
+
+            MouseMovement movement = glyphSetEvent.movement;
+            Set<Glyph>    glyphs = glyphSetEvent.getData();
+            Glyph         compound = null;
+
+            if (glyphs != null) {
+                if (glyphs.size() > 1) {
+                    try {
+                        SystemInfo system = sheet.getSystemOf(glyphs);
+
+                        if (system != null) {
+                            compound = system.buildTransientCompound(glyphs);
+                        }
+                    } catch (IllegalArgumentException ex) {
+                        // All glyphs do not belong to the same system
+                        // No compound is allowed and displayed
+                        logger.warning(
+                            "Glyphs from different systems " +
+                            Glyphs.toString(glyphs));
+                    }
+                } else if (glyphs.size() == 1) {
+                    compound = glyphs.iterator()
+                                     .next();
+                }
+            }
+
+            publish(
+                new GlyphEvent(
+                    this,
+                    SelectionHint.GLYPH_TRANSIENT,
+                    movement,
+                    compound));
+        }
+
+        //-------------//
+        // handleEvent //
+        //-------------//
+        /**
+         *  Interest in SectionSetEvent => transient Glyph
+         * @param sectionSetEvent
+         */
+        @SuppressWarnings("unchecked")
+        private void handleEvent (SectionSetEvent sectionSetEvent)
+        {
+            if (!ViewParameters.getInstance()
+                               .isSectionSelectionEnabled()) {
+                return;
+            }
+
+            Set<GlyphSection> sections = sectionSetEvent.getData();
+
+            if ((sections == null) || sections.isEmpty()) {
+                return;
+            }
+
+            MouseMovement movement = sectionSetEvent.movement;
+            Glyph         compound = null;
+
+            try {
+                SystemInfo system = sheet.getSystemOfSections(sections);
+
+                if (system != null) {
+                    compound = system.buildTransientGlyph(sections);
+                }
+
+                publish(
+                    new GlyphEvent(
+                        this,
+                        SelectionHint.GLYPH_TRANSIENT,
+                        movement,
+                        compound));
+            } catch (IllegalArgumentException ex) {
+                // All sections do not belong to the same system
+                // No compound is allowed and displayed
+                logger.warning(
+                    "Sections from different systems " +
+                    Sections.toString(sections));
+            }
         }
     }
 }

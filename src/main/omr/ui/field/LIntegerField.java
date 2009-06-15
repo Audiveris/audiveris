@@ -73,7 +73,7 @@ public class LIntegerField
     // getValue //
     //----------//
     /**
-     * Extract the current integer value form the text field (TBD: better
+     * Extract the current integer value form the text field (TODO: better
      * handling of exceptions)
      *
      * @return current integer value

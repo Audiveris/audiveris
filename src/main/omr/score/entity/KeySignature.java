@@ -83,7 +83,7 @@ public class KeySignature
                                                      B, E, A, D, G, C, F
                                                  };
 
-    /** Unique Id (for debugging). Having a static variable is stupid !!! TBD */
+    /** Unique Id (for debugging). Having a static variable is stupid !!! TODO */
     private static AtomicInteger globalId = new AtomicInteger(0);
 
     //~ Instance fields --------------------------------------------------------
@@ -592,7 +592,7 @@ public class KeySignature
                                 ks.addError("Cannot copy key");
                             }
 
-                            // TBD deassign glyphs that do not contribute to the key ?
+                            // TODO deassign glyphs that do not contribute to the key ?
                         }
                     }
                 }
@@ -701,7 +701,7 @@ public class KeySignature
             return 1;
 
         default :
-            return 0; // Not correct TBD
+            return 0; // Not correct TODO
         }
     }
 

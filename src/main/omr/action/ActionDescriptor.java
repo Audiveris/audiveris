@@ -48,11 +48,11 @@ public class ActionDescriptor
     public String itemClassName;
 
     /**
-     * Should a toolbar button be generated for this action,
-     * default is false
+     * Which kind of (toolbar) button should be generated for this action,
+     * default is null
      */
-    @XmlAttribute(name = "toolbar")
-    public Boolean onToolbar;
+    @XmlAttribute(name = "button")
+    public String buttonClassName;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -94,9 +94,9 @@ public class ActionDescriptor
               .append(itemClassName);
         }
 
-        if (onToolbar != null) {
-            sb.append(" toolbar:")
-              .append(onToolbar);
+        if (buttonClassName != null) {
+            sb.append(" button:")
+              .append(buttonClassName);
         }
 
         sb.append("}");

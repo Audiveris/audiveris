@@ -9,15 +9,19 @@
 //
 package omr.lag.ui;
 
-import omr.lag.*;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
+
+import omr.glyph.GlyphSection;
+
+import omr.lag.*;
 
 import omr.log.Logger;
 
 import omr.selection.MouseMovement;
 import omr.selection.SectionEvent;
 import omr.selection.SectionIdEvent;
+import omr.selection.SectionSetEvent;
 import omr.selection.SelectionHint;
 import omr.selection.UserEvent;
 
@@ -40,6 +44,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Set;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -69,9 +74,13 @@ public class SectionBoard
     static {
         eventClasses = new ArrayList<Class<?extends UserEvent>>();
         eventClasses.add(SectionEvent.class);
+        eventClasses.add(SectionSetEvent.class);
     }
 
     //~ Instance fields --------------------------------------------------------
+
+    /** Counter of section selection */
+    protected final JLabel count = new JLabel("");
 
     // Section input devices
     //
@@ -230,6 +239,7 @@ public class SectionBoard
      *
      * @param event the section event
      */
+    @SuppressWarnings("unchecked")
     @Implement(EventSubscriber.class)
     public void onEvent (UserEvent event)
     {
@@ -244,94 +254,9 @@ public class SectionBoard
             }
 
             if (event instanceof SectionEvent) {
-                if (updating) {
-                    ///logger.warning("double updating");
-                    return;
-                }
-
-                // Update section fields in this board
-                updating = true;
-
-                final SectionEvent sectionEvent = (SectionEvent) event;
-                final Section      section = (sectionEvent != null)
-                                             ? sectionEvent.section : null;
-                dump.setEnabled(section != null);
-
-                Integer sectionId = null;
-
-                if (idSelecting) {
-                    sectionId = (Integer) id.getValue();
-                }
-
-                emptyFields(getComponent());
-
-                if (section == null) {
-                    lagName.setText("");
-
-                    // If the user is currently using the Id spinner, make sure we
-                    // display the right Id value in the spinner, even if there is
-                    // no corresponding section
-                    if (idSelecting) {
-                        id.setValue(sectionId);
-                    } else {
-                        id.setValue(NO_VALUE);
-                    }
-
-                    if (constants.hideRelationFields.getValue()) {
-                        direction.setVisible(false);
-                        layer.setVisible(false);
-                        role.setVisible(false);
-                    }
-                } else {
-                    // We have a valid section, let's display its fields
-                    lagName.setText(section.getGraph().getName());
-                    id.setValue(section.getId());
-
-                    Rectangle box = section.getContourBox();
-                    x.setValue(box.x);
-                    y.setValue(box.y);
-                    width.setValue(box.width);
-                    height.setValue(box.height);
-                    weight.setValue(section.getWeight());
-
-                    // Additional relation fields for a StickSection
-                    if (section instanceof StickSection) {
-                        StickSection  ss = (StickSection) section;
-                        StickRelation relation = ss.getRelation();
-
-                        if (relation != null) {
-                            if (constants.hideRelationFields.getValue()) {
-                                layer.setVisible(true);
-                            }
-
-                            layer.setValue(relation.layer);
-
-                            if (constants.hideRelationFields.getValue()) {
-                                direction.setVisible(true);
-                            }
-
-                            direction.setValue(relation.direction);
-
-                            if (relation.role != null) {
-                                role.setText(relation.role.toString());
-
-                                if (constants.hideRelationFields.getValue()) {
-                                    role.setVisible(true);
-                                }
-                            } else {
-                                if (constants.hideRelationFields.getValue()) {
-                                    role.setVisible(false);
-                                }
-                            }
-                        } else if (constants.hideRelationFields.getValue()) {
-                            direction.setVisible(false);
-                            layer.setVisible(false);
-                            role.setVisible(false);
-                        }
-                    }
-                }
-
-                updating = false;
+                handleEvent((SectionEvent) event);
+            } else if (event instanceof SectionSetEvent) {
+                handleEvent((SectionSetEvent<GlyphSection>) event);
             }
         } catch (Exception ex) {
             logger.warning(getClass().getName() + " onEvent error", ex);
@@ -350,8 +275,9 @@ public class SectionBoard
         CellConstraints cst = new CellConstraints();
 
         int             r = 1; // --------------------------------
-        builder.addSeparator("Section", cst.xyw(1, r, 8));
-        builder.add(lagName, cst.xy(9, r));
+        builder.addSeparator("Section", cst.xyw(1, r, 6));
+        builder.add(lagName, cst.xy(7, r));
+        builder.add(count, cst.xy(9, r));
         builder.add(dump, cst.xy(11, r));
 
         r += 2; // --------------------------------
@@ -382,6 +308,126 @@ public class SectionBoard
         builder.add(direction.getField(), cst.xy(7, r));
 
         builder.add(role, cst.xyw(9, r, 3));
+    }
+
+    //-------------//
+    // handleEvent //
+    //-------------//
+    /**
+     * Interest in Section
+     * @param sectionEvent
+     */
+    private void handleEvent (SectionEvent sectionEvent)
+    {
+        if (updating) {
+            return;
+        }
+
+        try {
+            // Update section fields in this board
+            updating = true;
+
+            final Section section = (sectionEvent != null)
+                                    ? sectionEvent.section : null;
+            dump.setEnabled(section != null);
+
+            Integer sectionId = null;
+
+            if (idSelecting) {
+                sectionId = (Integer) id.getValue();
+            }
+
+            emptyFields(getComponent());
+
+            if (section == null) {
+                lagName.setText("");
+
+                // If the user is currently using the Id spinner, make sure we
+                // display the right Id value in the spinner, even if there is
+                // no corresponding section
+                if (idSelecting) {
+                    id.setValue(sectionId);
+                } else {
+                    id.setValue(NO_VALUE);
+                }
+
+                if (constants.hideRelationFields.getValue()) {
+                    direction.setVisible(false);
+                    layer.setVisible(false);
+                    role.setVisible(false);
+                }
+            } else {
+                // We have a valid section, let's display its fields
+                lagName.setText(section.getGraph().getName());
+                id.setValue(section.getId());
+
+                Rectangle box = section.getContourBox();
+                x.setValue(box.x);
+                y.setValue(box.y);
+                width.setValue(box.width);
+                height.setValue(box.height);
+                weight.setValue(section.getWeight());
+
+                // Additional relation fields for a StickSection
+                if (section instanceof StickSection) {
+                    StickSection  ss = (StickSection) section;
+                    StickRelation relation = ss.getRelation();
+
+                    if (relation != null) {
+                        if (constants.hideRelationFields.getValue()) {
+                            layer.setVisible(true);
+                        }
+
+                        layer.setValue(relation.layer);
+
+                        if (constants.hideRelationFields.getValue()) {
+                            direction.setVisible(true);
+                        }
+
+                        direction.setValue(relation.direction);
+
+                        if (relation.role != null) {
+                            role.setText(relation.role.toString());
+
+                            if (constants.hideRelationFields.getValue()) {
+                                role.setVisible(true);
+                            }
+                        } else {
+                            if (constants.hideRelationFields.getValue()) {
+                                role.setVisible(false);
+                            }
+                        }
+                    } else if (constants.hideRelationFields.getValue()) {
+                        direction.setVisible(false);
+                        layer.setVisible(false);
+                        role.setVisible(false);
+                    }
+                }
+            }
+        } finally {
+            updating = false;
+        }
+    }
+
+    //-------------//
+    // handleEvent //
+    //-------------//
+    /**
+     * Interest in SectionSet
+     * @param sectionSetEvent
+     */
+    private void handleEvent (SectionSetEvent<GlyphSection> sectionSetEvent)
+    {
+        // Display count of sections in the section set
+        Set<GlyphSection> sections = sectionSetEvent.getData();
+
+        if ((sections != null) && !sections.isEmpty()) {
+//            logger.info(
+//                getClass().getSimpleName() + " " + Sections.toString(sections));
+            count.setText(Integer.toString(sections.size()));
+        } else {
+            count.setText("");
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------

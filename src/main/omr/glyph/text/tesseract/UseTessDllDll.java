@@ -180,7 +180,7 @@ class UseTessDllDll
                 dumpChars(chars, label);
             }
 
-            // Just in case we've missed the end (useful? TBD)
+            // TODO: (is this useful?) Just in case we've missed the end
             if (!lineChars.isEmpty()) {
                 lines.add(new OcrLine(lastPointSize, lineChars, null));
             }
@@ -204,7 +204,7 @@ class UseTessDllDll
      */
     private static boolean isNewLine (EANYCodeChar ch)
     {
-        return ((ch.formatting & 0x40) != 0) // newLine 
+        return ((ch.formatting & 0x40) != 0) // newLine
                 ||((ch.formatting & 0x80) != 0); // newPara
     }
 
@@ -308,9 +308,9 @@ class UseTessDllDll
     {
         // Unicode          Byte1    Byte2    Byte3    Byte4
         // -------          -----    -----    -----    -----
-        // U+0000-U+007F 	0xxxxxxx
-        // U+0080-U+07FF 	110yyyxx 10xxxxxx
-        // U+0800-U+FFFF 	1110yyyy 10yyyyxx 10xxxxxx
+        // U+0000-U+007F        0xxxxxxx
+        // U+0080-U+07FF        110yyyxx 10xxxxxx
+        // U+0800-U+FFFF        1110yyyy 10yyyyxx 10xxxxxx
         // U+10000-U+10FFFF 11110zzz 10zzyyyy 10yyyyxx 10xxxxxx
         if ((code & 0x80) == 0x00) {
             return 1;

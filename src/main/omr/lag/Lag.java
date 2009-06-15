@@ -17,6 +17,7 @@ import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
 import omr.selection.SectionEvent;
+import omr.selection.SectionSetEvent;
 import omr.selection.SelectionService;
 
 import omr.util.Implement;
@@ -34,13 +35,15 @@ import java.util.List;
  * sections.
  *
  * <p>A lag may have a related UI selection service accessible through {@link
- * #getSelectionService}. This selection service handles Run and Section events,
- * a derived class such as GlyphLag being able to add other events. The {@link
- * #getSelectedSection} method is just a convenient way to retrieve the last
- * selected section from the lag selection service.</p>
+ * #getSelectionService}. This selection service handles Run, Section and
+ * SectionSet events, a derived class such as GlyphLag being able to add other
+ * events. The {@link #getSelectedSection} and {@link #getSelectedSectionSet}
+ * methods are just convenient ways to retrieve the last selected section or
+ * sectionSet from the lag selection service.</p>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
+ *
  * @param <L> precise lag (sub)type
  * @param <S> precise section (sub)type
  */
@@ -67,7 +70,10 @@ public class Lag<L extends Lag<L, S>, S extends Section>
     /** Cache of last section found through a lookup action */
     private S cachedSection;
 
-    /** Hosted event service for UI events related to this lag (Run, Section) */
+    /**
+     * Hosted event service for UI events related to this lag
+     * (Run, Section, SectionSet and more)
+     */
     protected SelectionService lagSelectionService;
 
     //~ Constructors -----------------------------------------------------------
@@ -190,6 +196,21 @@ public class Lag<L extends Lag<L, S>, S extends Section>
                        .getSelection(SectionEvent.class); // Unchecked
     }
 
+    //-----------------------//
+    // getSelectedSectionSet //
+    //-----------------------//
+    /**
+     * Convenient method to report the UI currently selected set of Sections,
+     * if any, in this lag
+     * @return the UI selected section set, or null if none
+     */
+    @SuppressWarnings("unchecked")
+    public Set<S> getSelectedSectionSet ()
+    {
+        return (Set<S>) getSelectionService()
+                            .getSelection(SectionSetEvent.class); // Unchecked
+    }
+
     //---------------------//
     // getSelectionService //
     //---------------------//
@@ -307,6 +328,31 @@ public class Lag<L extends Lag<L, S>, S extends Section>
         cachedSection = cached;
 
         return cached;
+    }
+
+    //----------------//
+    // lookupSections //
+    //----------------//
+    /**
+     * Lookup for sections that are contained in the provided
+     * rectangle. Specific sections are not considered.
+     *
+     * @param rect the given rectangle
+     *
+     * @return the set of sections found, which may be empty
+     */
+    public Set<S> lookupSections (Rectangle rect)
+    {
+        Rectangle target = switchRef(rect, null);
+        Set<S>    found = new LinkedHashSet<S>();
+
+        for (S section : getSections()) {
+            if (target.contains(section.getBounds())) {
+                found.add(section);
+            }
+        }
+
+        return found;
     }
 
     //---------------//

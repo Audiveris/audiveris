@@ -49,6 +49,7 @@ public class Script
     /** Sequence of tasks that compose the script */
     @XmlElements({@XmlElement(name = "step", type = StepTask.class)
         , @XmlElement(name = "assign", type = AssignTask.class)
+        , @XmlElement(name = "section-assign", type = SectionAssignTask.class)
         , @XmlElement(name = "deassign", type = DeassignTask.class)
         , @XmlElement(name = "segment", type = SegmentTask.class)
         , @XmlElement(name = "export", type = ExportTask.class)

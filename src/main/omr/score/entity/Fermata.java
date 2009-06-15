@@ -83,7 +83,7 @@ public class Fermata
         // With placement depending on fermata upright / inverted
         // Beware of whole rests for which there is no related slot
         //
-        // TBD: Fermata is said to apply to barline as well, but this feature is
+        // TODO: Fermata is said to apply to barline as well, but this feature is
         // not yet implemented
         Chord chord;
 

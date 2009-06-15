@@ -524,7 +524,7 @@ public class Sentence
                     PixelRectangle outerBox = outer.getContourBox();
 
                     if (outerBox.intersects(innerBox)) {
-                        Glyph compound = systemInfo.buildCompound(
+                        Glyph compound = systemInfo.buildTransientCompound(
                             Arrays.asList(outer, inner));
                         compound = systemInfo.addGlyph(compound);
                         systemInfo.computeGlyphFeatures(compound);
@@ -570,7 +570,7 @@ public class Sentence
         List<Glyph> allGlyphs = new ArrayList<Glyph>(items);
         allGlyphs.addAll(other.items);
 
-        return systemInfo.buildCompound(allGlyphs);
+        return systemInfo.buildTransientCompound(allGlyphs);
     }
 
     //-----------//
@@ -592,7 +592,7 @@ public class Sentence
         Glyph glyph = null;
 
         if (items.size() > 1) {
-            Glyph compound = systemInfo.buildCompound(items);
+            Glyph compound = systemInfo.buildTransientCompound(items);
             glyph = systemInfo.addGlyph(compound);
             glyph.setShape(Shape.TEXT, Evaluation.ALGORITHM);
             items.clear();
@@ -1066,7 +1066,7 @@ public class Sentence
         public boolean isOk ()
         {
             if (parts.size() > 1) {
-                compound = systemInfo.buildCompound(parts);
+                compound = systemInfo.buildTransientCompound(parts);
             } else if (parts.size() == 1) {
                 compound = parts.get(0);
             } else {

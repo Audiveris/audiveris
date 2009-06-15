@@ -121,11 +121,13 @@ public class Vertex<D extends Digraph, V extends Vertex<D, V>>
     /**
      * Create an edge between two vertices
      *
+     * @param <D> precise digraph type
+     * @param <V> precise vertex type
      * @param source departure vertex
      * @param target arrival vertex
      */
-    public static <V extends Vertex<D, V>, D extends Digraph<D, V>> void addEdge (V source,
-                                                                                  V target)
+    public static <D extends Digraph, V extends Vertex<D, V>> void addEdge (V source,
+                                                                            V target)
     {
         if (logger.isFineEnabled()) {
             logger.fine("adding edge from " + source + " to " + target);

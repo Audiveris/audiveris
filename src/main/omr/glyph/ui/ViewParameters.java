@@ -12,6 +12,8 @@ package omr.glyph.ui;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.log.Logger;
+
 import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.Action;
 
@@ -29,6 +31,9 @@ public class ViewParameters
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(ViewParameters.class);
+
     /** Specific application parameters */
     private static final Constants constants = new Constants();
 
@@ -40,6 +45,14 @@ public class ViewParameters
 
     /** Should the stick lines be painted */
     public static final String LINE_PAINTING = "linePainting";
+
+    /** Should the Sections selection be enabled  */
+    public static final String SECTION_SELECTION_ENABLED = "sectionSelectionEnabled";
+
+    //~ Instance fields --------------------------------------------------------
+
+    /** Dynamic flag to remember if section selection is enabled */
+    private boolean sectionSelectionEnabled = false;
 
     //~ Methods ----------------------------------------------------------------
 
@@ -105,6 +118,24 @@ public class ViewParameters
         return constants.linePainting.getValue();
     }
 
+    //----------------------------//
+    // setSectionSelectionEnabled //
+    //----------------------------//
+    public void setSectionSelectionEnabled (boolean value)
+    {
+        boolean oldValue = sectionSelectionEnabled;
+        sectionSelectionEnabled = value;
+        firePropertyChange(SECTION_SELECTION_ENABLED, oldValue, value);
+    }
+
+    //---------------------------//
+    // isSectionSelectionEnabled //
+    //---------------------------//
+    public boolean isSectionSelectionEnabled ()
+    {
+        return sectionSelectionEnabled;
+    }
+
     //---------------//
     // toggleCircles //
     //---------------//
@@ -142,6 +173,19 @@ public class ViewParameters
     {
     }
 
+    //----------------//
+    // toggleSections //
+    //----------------//
+    /**
+     * Action that toggles the ability to select Sections (rather than Glyphs)
+     * @param e the event that triggered this action
+     */
+    @Action(selectedProperty = SECTION_SELECTION_ENABLED)
+    public void toggleSections (ActionEvent e)
+    {
+        logger.info("SectionSelection enabled:" + isSectionSelectionEnabled());
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
     //-----------//
@@ -152,11 +196,6 @@ public class ViewParameters
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** Should the lines be painted */
-        final Constant.Boolean linePainting = new Constant.Boolean(
-            false,
-            "Should the stick lines be painted");
-
         /** Should the circles be painted */
         final Constant.Boolean circlePainting = new Constant.Boolean(
             true,
@@ -166,6 +205,11 @@ public class ViewParameters
         final Constant.Boolean letterBoxPainting = new Constant.Boolean(
             true,
             "Should the letter boxes be painted");
+
+        /** Should the lines be painted */
+        final Constant.Boolean linePainting = new Constant.Boolean(
+            false,
+            "Should the stick lines be painted");
     }
 
     //--------//

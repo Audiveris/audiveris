@@ -249,7 +249,7 @@ public class ScoreExporter
             toTenths(arpeggiate.getPoint().x - current.note.getCenterLeft().x));
 
         // number ???
-        // TBD
+        // TODO
         return false;
     }
 
@@ -616,7 +616,7 @@ public class ScoreExporter
                              .add(current.pmPrint);
 
             if (isFirst.system) {
-                // New Page ? TBD
+                // New Page ? TODO
 
                 // Divisions
                 try {
@@ -951,7 +951,7 @@ public class ScoreExporter
                               .add(factory.createNoteStem(pmStem));
             }
 
-            // Staff ? 
+            // Staff ?
             if (current.part.isMultiStaff()) {
                 current.pmNote.getContent()
                               .add(
@@ -1238,7 +1238,7 @@ public class ScoreExporter
                 logger.fine("Populating " + current.part);
             }
 
-            isFirst.system = true; // TBD: to be reviewed when adding pages
+            isFirst.system = true; // TODO: to be reviewed when adding pages
             slurNumbers.clear(); // Reset slur numbers
             score.acceptChildren(this);
 
@@ -1619,7 +1619,7 @@ public class ScoreExporter
             .add(pmTuplet);
 
         // Bracket
-        // TBD
+        // TODO
 
         // Placement
         if (tuplet.getChord() == current.note.getChord()) { // i.e. start

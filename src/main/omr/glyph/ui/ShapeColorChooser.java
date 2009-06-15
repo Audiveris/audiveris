@@ -66,7 +66,7 @@ public class ShapeColorChooser
     //-------------------//
     /**
      * Create an instance of ShapeColorChooser (should be improved to always
-     * reuse the same instance. TBD)
+     * reuse the same instance. TODO)
      */
     private ShapeColorChooser ()
     {

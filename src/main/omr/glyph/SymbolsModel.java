@@ -64,19 +64,20 @@ public class SymbolsModel
     // assignGlyph //
     //-------------//
     /**
-     * Assign a Shape to a glyph
+     * Assign a Shape to a glyph, inserting the glyph to its containing system
+     * and lag if it is still transient
      *
      * @param glyph the glyph to be assigned
      * @param shape the assigned shape, which may be null
-     * @param doubt the doubt about shape (Evaluation.MANUAL_NO_DOUBT?)
+     * @param doubt the doubt about shape 
      */
     @Override
-    public void assignGlyph (Glyph  glyph,
-                             Shape  shape,
-                             double doubt)
+    protected Glyph assignGlyph (Glyph  glyph,
+                                Shape  shape,
+                                double doubt)
     {
         if (glyph == null) {
-            return;
+            return null;
         }
 
         // Test on glyph weight (noise-like)
@@ -89,9 +90,11 @@ public class SymbolsModel
 
             if (system != null) {
                 system.computeGlyphFeatures(glyph);
-                super.assignGlyph(glyph, shape, doubt);
+                return super.assignGlyph(glyph, shape, doubt);
             }
         }
+
+        return glyph;
     }
 
     //------------//

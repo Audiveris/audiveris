@@ -74,7 +74,7 @@ public class SystemView
     /**
      * Report the origin for this system, in the ScoreView display
      *
-     * @return the display origin (TBD: a copy instead?)
+     * @return the display origin (TODO: a copy instead?)
      */
     public ScorePoint getDisplayOrigin ()
     {
