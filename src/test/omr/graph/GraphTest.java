@@ -10,8 +10,6 @@
 package omr.graph;
 
 import omr.util.BaseTestCase;
-
-import junit.framework.*;
 import static junit.framework.Assert.*;
 
 import java.util.*;
@@ -96,7 +94,7 @@ public class GraphTest
 
         MyDigraph g2 = new MyDigraph();
 
-        MyVertex v = g2.createVertex();
+        MyVertex  v = g2.createVertex();
 
         try {
             MyVertex.addEdge(v1, v);
@@ -336,10 +334,14 @@ public class GraphTest
     static class MyDigraph
         extends Digraph<MyDigraph, MyVertex>
     {
+        //~ Constructors -------------------------------------------------------
+
         public MyDigraph ()
         {
             super("MyDigraph", MyVertex.class);
         }
+
+        //~ Methods ------------------------------------------------------------
 
         @Override
         public String toString ()
@@ -351,6 +353,8 @@ public class GraphTest
     static class MyVertex
         extends Vertex<MyDigraph, MyVertex>
     {
+        //~ Methods ------------------------------------------------------------
+
         @Override
         public String toString ()
         {
