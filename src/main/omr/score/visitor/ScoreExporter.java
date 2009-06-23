@@ -851,8 +851,7 @@ public class ScoreExporter
                 }
             } else {
                 // Chord indication for every other note
-                current.pmNote.getContent()
-                              .add(factory.createNoteChord(new Empty()));
+                current.pmNote.setChord(new Empty());
 
                 // Arpeggiate also?
                 for (Notation node : chord.getNotations()) {
@@ -865,9 +864,8 @@ public class ScoreExporter
             // Rest ?
             if (note.isRest()) {
                 DisplayStepOctave displayStepOctave = factory.createDisplayStepOctave();
-                /// ??? Set Step or Octave ???
-                current.pmNote.getContent()
-                              .add(factory.createNoteRest(displayStepOctave));
+                /// TODO ??? Set Step or Octave ???
+                current.pmNote.setRest(displayStepOctave);
             } else {
                 // Pitch
                 Pitch pitch = factory.createPitch();
@@ -878,8 +876,7 @@ public class ScoreExporter
                     pitch.setAlter(createDecimal(note.getAlter()));
                 }
 
-                current.pmNote.getContent()
-                              .add(factory.createNotePitch(pitch));
+                current.pmNote.setPitch(pitch);
             }
 
             // Default-x (use left side of the note wrt measure)
@@ -898,9 +895,7 @@ public class ScoreExporter
                         "" + chord.getTupletFactor().getDenominator()));
                 timeModification.setNormalNotes(
                     new BigInteger("" + chord.getTupletFactor().getNumerator()));
-                current.pmNote.getContent()
-                              .add(
-                    factory.createNoteTimeModification(timeModification));
+                current.pmNote.setTimeModification(timeModification);
             }
 
             // Duration
@@ -914,10 +909,8 @@ public class ScoreExporter
                     dur = chord.getDuration();
                 }
 
-                current.pmNote.getContent()
-                              .add(
-                    factory.createNoteDuration(
-                        createDecimal(score.simpleDurationOf(dur))));
+                current.pmNote.setDuration(
+                    createDecimal(score.simpleDurationOf(dur)));
             } catch (Exception ex) {
                 if (score.getDurationDivisor() != null) {
                     logger.warning("Not able to get duration of note", ex);
@@ -925,15 +918,12 @@ public class ScoreExporter
             }
 
             // Voice
-            current.pmNote.getContent()
-                          .add(
-                factory.createNoteVoice("" + chord.getVoice().getId()));
+            current.pmNote.setVoice("" + chord.getVoice().getId());
 
             // Type
             NoteType noteType = factory.createNoteType();
             noteType.setValue("" + getNoteTypeName(note));
-            current.pmNote.getContent()
-                          .add(factory.createNoteType(noteType));
+            current.pmNote.setType(noteType);
 
             // Stem ?
             if (chord.getStem() != null) {
@@ -947,30 +937,25 @@ public class ScoreExporter
                     pmStem.setValue(StemValue.DOWN);
                 }
 
-                current.pmNote.getContent()
-                              .add(factory.createNoteStem(pmStem));
+                current.pmNote.setStem(pmStem);
             }
 
             // Staff ?
             if (current.part.isMultiStaff()) {
-                current.pmNote.getContent()
-                              .add(
-                    factory.createNoteStaff(new BigInteger("" + staff.getId())));
+                current.pmNote.setStaff(new BigInteger("" + staff.getId()));
             }
 
             // Dots
             for (int i = 0; i < chord.getDotsNumber(); i++) {
-                current.pmNote.getContent()
-                              .add(
-                    factory.createNoteDot(factory.createEmptyPlacement()));
+                current.pmNote.getDot()
+                              .add(factory.createEmptyPlacement());
             }
 
             // Accidental ?
             if (note.getAccidental() != null) {
                 Accidental accidental = factory.createAccidental();
                 accidental.setValue(accidentalTextOf(note.getAccidental()));
-                current.pmNote.getContent()
-                              .add(factory.createNoteAccidental(accidental));
+                current.pmNote.setAccidental(accidental);
             }
 
             // Beams ?
@@ -997,8 +982,8 @@ public class ScoreExporter
                     }
                 }
 
-                current.pmNote.getContent()
-                              .add(factory.createNoteBeam(pmBeam));
+                current.pmNote.getBeam()
+                              .add(pmBeam);
             }
 
             // Ties / Slurs
@@ -1017,16 +1002,14 @@ public class ScoreExporter
 
                         TextElementData pmText = factory.createTextElementData();
                         pmText.setValue(syllable.getContent());
-                        pmLyric.getContent()
-                               .add(factory.createLyricText(pmText));
+                        pmLyric.getElisionAndSyllabicAndText()
+                               .add(pmText);
 
-                        pmLyric.getContent()
-                               .add(
-                            factory.createLyricSyllabic(
-                                getSyllabic(syllable.getSyllabicType())));
+                        pmLyric.getElisionAndSyllabicAndText()
+                               .add(getSyllabic(syllable.getSyllabicType()));
 
-                        current.pmNote.getContent()
-                                      .add(factory.createNoteLyric(pmLyric));
+                        current.pmNote.getLyric()
+                                      .add(pmLyric);
                     }
                 }
             }
@@ -1305,8 +1288,8 @@ public class ScoreExporter
             // Tie element
             Tie tie = factory.createTie();
             tie.setType(isStart ? StartStop.START : StartStop.STOP);
-            current.pmNote.getContent()
-                          .add(factory.createNoteTie(tie));
+            current.pmNote.getTie()
+                          .add(tie);
 
             // Tied element
             Tied tied = factory.createTied();
@@ -1912,8 +1895,8 @@ public class ScoreExporter
         // Notations allocated?
         if (current.notations == null) {
             current.notations = factory.createNotations();
-            current.pmNote.getContent()
-                          .add(factory.createNoteNotations(current.notations));
+            current.pmNote.getNotations()
+                          .add(current.notations);
         }
 
         return current.notations;
