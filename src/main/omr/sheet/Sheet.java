@@ -641,12 +641,58 @@ public class Sheet
         return selectionService;
     }
 
+    //-----------------//
+    // getShapedGlyphs //
+    //-----------------//
+    /**
+     * Report the collection of glyphs whose shape is identical to the provided
+     * shape
+     * @param shape the imposed shape
+     * @return the (perhaps empty) collection of active glyphs with right shape
+     */
+    public Collection<Glyph> getShapedGlyphs (Shape shape)
+    {
+        List<Glyph> found = new ArrayList<Glyph>();
+
+        for (Glyph glyph : getActiveGlyphs()) {
+            if (glyph.getShape() == shape) {
+                found.add(glyph);
+            }
+        }
+
+        return found;
+    }
+
     //---------------//
     // getSheetSteps //
     //---------------//
     public SheetSteps getSheetSteps ()
     {
         return sheetSteps;
+    }
+
+    //------------------//
+    // getSimilarGlyphs //
+    //------------------//
+    /**
+     * Report the collection of glyphs whose physical parameters are "similar"
+     * to those of a provided glyph example
+     * @param example the provided glyph example
+     * @return the (perhaps empty) collection of glyphs found similar to the
+     * provided example
+     */
+    public Collection<Glyph> getSimilarGlyphs (Glyph example)
+    {
+
+        List<Glyph> found = new ArrayList<Glyph>();
+
+//        for (Glyph glyph : getActiveGlyphs()) {
+//            if (glyph.getShape() == shape) {
+//                found.add(glyph);
+//            }
+//        }
+
+        return found;
     }
 
     //---------//

@@ -9,7 +9,7 @@
 //
 package omr.glyph.ui;
 
-import omr.glyph.Evaluator;
+import omr.glyph.GlyphEvaluator;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphNetwork;
@@ -73,7 +73,7 @@ public class SymbolsEditor
     private final Sheet sheet;
 
     /** Evaluator to check for NOISE glyphs */
-    private final Evaluator evaluator = GlyphNetwork.getInstance();
+    private final GlyphEvaluator evaluator = GlyphNetwork.getInstance();
 
     /** Related Lag view */
     private final GlyphLagView view;
@@ -94,15 +94,15 @@ public class SymbolsEditor
      * handling of glyphs
      *
      * @param sheet the sheet whose glyphs are considered
-     * @param symbolsModel the symbols model for this sheet
+     * @param symbolsController the symbols controller for this sheet
      */
     public SymbolsEditor (Sheet             sheet,
-                          SymbolsController symbolsModel)
+                          SymbolsController symbolsController)
     {
         this.sheet = sheet;
-        this.symbolsBuilder = symbolsModel;
+        this.symbolsBuilder = symbolsController;
 
-        GlyphLag lag = symbolsModel.getLag();
+        GlyphLag lag = symbolsController.getLag();
 
         view = new MyView(lag);
         view.setLocationService(
@@ -111,8 +111,7 @@ public class SymbolsEditor
 
         focus = new ShapeFocusBoard(
             sheet,
-            view,
-            symbolsModel,
+            symbolsController,
             new ActionListener() {
                     @Implement(ActionListener.class)
                     public void actionPerformed (ActionEvent e)
@@ -121,7 +120,12 @@ public class SymbolsEditor
                     }
                 });
 
-        glyphMenu = new GlyphMenu(sheet, symbolsModel, evaluator, focus, lag);
+        glyphMenu = new GlyphMenu(
+            sheet,
+            symbolsController,
+            evaluator,
+            focus,
+            lag);
 
         final String  unit = sheet.getRadix() + ":SymbolsEditor";
 
@@ -132,13 +136,16 @@ public class SymbolsEditor
             new RunBoard(unit, lag),
             new SectionBoard(
                 unit,
-                symbolsModel.getLag().getLastVertexId(),
+                symbolsController.getLag().getLastVertexId(),
                 lag),
-            new SymbolGlyphBoard(unit + "-SymbolGlyphBoard", symbolsModel, 0),
+            new SymbolGlyphBoard(
+                unit + "-SymbolGlyphBoard",
+                symbolsController,
+                0),
             focus,
             new EvaluationBoard(
                 unit + "-Evaluation-ActiveBoard",
-                symbolsModel,
+                symbolsController,
                 sheet,
                 view));
 
@@ -274,7 +281,6 @@ public class SymbolsEditor
         public void onEvent (UserEvent event)
         {
             ///logger.info("*** " + getName() + " " + event);
-
             try {
                 // Ignore RELEASING
                 if (event.movement == MouseMovement.RELEASING) {

@@ -9,12 +9,10 @@
 //
 package omr.glyph;
 
-import omr.Main;
-
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.Evaluator.StartingMode;
+import omr.glyph.GlyphEvaluator.StartingMode;
 
 import omr.log.Logger;
 
@@ -48,7 +46,7 @@ import javax.xml.bind.JAXBException;
  * @version $Id$
  */
 public class GlyphNetwork
-    extends Evaluator
+    extends GlyphEvaluator
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -62,16 +60,12 @@ public class GlyphNetwork
     private static GlyphNetwork INSTANCE;
 
     /** Neural network backup file name */
-    private static final String NETWORK_FILE_NAME = "neural-network.xml";
-
-    /** URL for default backup within distribution */
-    private static final String NETWORK_DEFAULT_URL = "/config/" +
-                                                      NETWORK_FILE_NAME;
+    private static final String BACKUP_FILE_NAME = "neural-network.xml";
 
     //~ Instance fields --------------------------------------------------------
 
     /** The underlying neural network */
-    private NeuralNetwork network;
+    private NeuralNetwork engine;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -83,25 +77,25 @@ public class GlyphNetwork
      */
     private GlyphNetwork ()
     {
-        // Deserialize from binary file(s)
-        network = unmarshal();
+        // Unmarshal from backup data
+        engine = (NeuralNetwork) unmarshal();
 
         // Basic check
-        if (network != null) {
-            if (network.getOutputSize() != outSize) {
+        if (engine != null) {
+            if (engine.getOutputSize() != shapeCount) {
                 final String msg = "Neural Network data is obsolete," +
                                    " it must be retrained from scratch";
                 logger.warning(msg);
                 JOptionPane.showMessageDialog(null, msg);
 
-                network = null;
+                engine = null;
             }
         }
 
-        if (network == null) {
+        if (engine == null) {
             // Get a brand new one (not trained)
             logger.info("Creating a brand new GlyphNetwork");
-            network = createNetwork();
+            engine = createNetwork();
         }
     }
 
@@ -135,12 +129,12 @@ public class GlyphNetwork
             return noiseEvaluations;
         } else {
             double[]     ins = feedInput(glyph, null);
-            double[]     outs = new double[outSize];
-            Evaluation[] evals = new Evaluation[outSize];
+            double[]     outs = new double[shapeCount];
+            Evaluation[] evals = new Evaluation[shapeCount];
 
-            network.run(ins, null, outs);
+            engine.run(ins, null, outs);
 
-            for (int s = 0; s < outSize; s++) {
+            for (int s = 0; s < shapeCount; s++) {
                 Shape shape = GlyphChecks.specificCheck(
                     Shape.values()[s],
                     glyph);
@@ -187,23 +181,6 @@ public class GlyphNetwork
         return constants.amplitude.getValue();
     }
 
-    //----------------//
-    // getEvaluations //
-    //----------------//
-    @Override
-    public Evaluation[] getEvaluations (Glyph glyph)
-    {
-        List<Evaluation> kept = new ArrayList<Evaluation>();
-
-        for (Evaluation eval : getAllEvaluations(glyph)) {
-            if (!glyph.isShapeForbidden(eval.shape)) {
-                kept.add(eval);
-            }
-        }
-
-        return kept.toArray(new Evaluation[0]);
-    }
-
     //-----------------//
     // setLearningRate //
     //-----------------//
@@ -216,7 +193,7 @@ public class GlyphNetwork
     public void setLearningRate (double learningRate)
     {
         constants.learningRate.setValue(learningRate);
-        network.setLearningRate(learningRate);
+        engine.setLearningRate(learningRate);
     }
 
     //-----------------//
@@ -244,7 +221,7 @@ public class GlyphNetwork
     public void setListEpochs (int listEpochs)
     {
         constants.listEpochs.setValue(listEpochs);
-        network.setEpochs(listEpochs);
+        engine.setEpochs(listEpochs);
     }
 
     //---------------//
@@ -271,7 +248,7 @@ public class GlyphNetwork
     public void setMaxError (double maxError)
     {
         constants.maxError.setValue(maxError);
-        network.setMaxError(maxError);
+        engine.setMaxError(maxError);
     }
 
     //-------------//
@@ -298,7 +275,7 @@ public class GlyphNetwork
     public void setMomentum (double momentum)
     {
         constants.momentum.setValue(momentum);
-        network.setMomentum(momentum);
+        engine.setMomentum(momentum);
     }
 
     //-------------//
@@ -338,7 +315,7 @@ public class GlyphNetwork
      */
     public NeuralNetwork getNetwork ()
     {
-        return network;
+        return engine;
     }
 
     //------//
@@ -350,31 +327,7 @@ public class GlyphNetwork
     @Override
     public void dump ()
     {
-        network.dump();
-    }
-
-    //---------//
-    // marshal //
-    //---------//
-    /**
-     * Store the neural network in XML format, always as the custom file
-     */
-    public void marshal ()
-    {
-        final File file = getCustomFile();
-
-        try {
-            OutputStream os = new FileOutputStream(file);
-            network.marshal(os);
-            os.close();
-            logger.info("Glyph network marshalled to " + file);
-        } catch (FileNotFoundException ex) {
-            logger.warning("Could not find file " + file);
-        } catch (IOException ex) {
-            logger.warning("IO error on file " + file);
-        } catch (JAXBException ex) {
-            logger.warning("Error marshalling glyph network from " + file);
-        }
+        engine.dump();
     }
 
     //------//
@@ -386,7 +339,7 @@ public class GlyphNetwork
     @Override
     public void stop ()
     {
-        network.stop();
+        engine.stop();
     }
 
     //-------//
@@ -414,7 +367,7 @@ public class GlyphNetwork
         int    quorum = constants.quorum.getValue();
 
         // Determine cardinality for each shape
-        List[] shapeGlyphs = new List[outSize];
+        List[] shapeGlyphs = new List[shapeCount];
 
         for (int i = 0; i < shapeGlyphs.length; i++) {
             shapeGlyphs[i] = new ArrayList<Glyph>();
@@ -457,11 +410,11 @@ public class GlyphNetwork
         int        ig = 0;
 
         for (Glyph glyph : newGlyphs) {
-            double[] ins = new double[inSize];
+            double[] ins = new double[paramCount];
             feedInput(glyph, ins);
             inputs[ig] = ins;
 
-            double[] des = new double[outSize];
+            double[] des = new double[shapeCount];
             Arrays.fill(des, 0);
 
             des[glyph.getShape()
@@ -473,25 +426,40 @@ public class GlyphNetwork
 
         // Starting options
         if (mode == StartingMode.SCRATCH) {
-            network = createNetwork();
+            engine = createNetwork();
         }
 
         // Train on the patterns
-        network.train(inputs, desiredOutputs, monitor);
+        engine.train(inputs, desiredOutputs, monitor);
     }
 
-    //---------------//
-    // getCustomFile //
-    //---------------//
-    /**
-     * Report the custom file used to store or load the internal evaluator data
-     *
-     * @return the evaluator custom backup file
-     */
-    private File getCustomFile ()
+    //-------------//
+    // getFileName //
+    //-------------//
+    @Override
+    protected String getFileName ()
     {
-        // The custom file, if any, is located in the configuration folder
-        return new File(Main.getConfigFolder(), NETWORK_FILE_NAME);
+        return BACKUP_FILE_NAME;
+    }
+
+    //---------//
+    // marshal //
+    //---------//
+    @Override
+    protected void marshal (OutputStream os)
+        throws FileNotFoundException, IOException, JAXBException
+    {
+        engine.marshal(os);
+    }
+
+    //-----------//
+    // unmarshal //
+    //-----------//
+    @Override
+    protected NeuralNetwork unmarshal (InputStream is)
+        throws JAXBException, IOException
+    {
+        return NeuralNetwork.unmarshal(is);
     }
 
     //---------------//
@@ -502,70 +470,14 @@ public class GlyphNetwork
         // Note : We allocate a hidden layer with as many cells as the output
         // layer
         NeuralNetwork nn = new NeuralNetwork(
-            inSize,
-            outSize,
-            outSize,
+            paramCount,
+            shapeCount,
+            shapeCount,
             getAmplitude(),
             getLearningRate(),
             getMomentum(),
             getMaxError(),
             getListEpochs());
-
-        return nn;
-    }
-
-    //-----------//
-    // unmarshal //
-    //-----------//
-    private NeuralNetwork unmarshal (InputStream is,
-                                     String      name)
-    {
-        try {
-            NeuralNetwork nn = NeuralNetwork.unmarshal(is);
-            is.close();
-
-            return nn;
-        } catch (FileNotFoundException ex) {
-            logger.warning("Cannot find or read " + name);
-        } catch (IOException ex) {
-            logger.warning("IO error on " + name);
-        } catch (JAXBException ex) {
-            logger.warning("Error unmarshalling glyph network from " + name);
-        }
-
-        return null;
-    }
-
-    //-----------//
-    // unmarshal //
-    //-----------//
-    private NeuralNetwork unmarshal ()
-    {
-        NeuralNetwork nn = null;
-
-        // Look for a custom version first
-        File file = getCustomFile();
-
-        if (file.exists()) {
-            try {
-                logger.fine("Unmarshalling GlyphNetwork from " + file);
-                nn = unmarshal(
-                    new java.io.FileInputStream(file),
-                    file.getPath());
-            } catch (FileNotFoundException ex) {
-                logger.warning("Cannot find file " + file, ex);
-            }
-        }
-
-        // If no custom file is loaded, use system default from distribution
-        if (nn == null) {
-            logger.fine(
-                "Unmarshalling GlyphNetwork from resource " +
-                NETWORK_DEFAULT_URL);
-            nn = unmarshal(
-                getClass().getResourceAsStream(NETWORK_DEFAULT_URL),
-                " resource " + NETWORK_DEFAULT_URL);
-        }
 
         return nn;
     }

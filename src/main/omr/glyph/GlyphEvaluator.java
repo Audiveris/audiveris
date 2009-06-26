@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                             E v a l u a t o r                              //
+//                        G l y p h E v a l u a t o r                         //
 //                                                                            //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
@@ -9,7 +9,8 @@
 //
 package omr.glyph;
 
-import omr.constant.Constant;
+import omr.Main;
+
 import omr.constant.ConstantSet;
 
 import omr.log.Logger;
@@ -19,18 +20,20 @@ import omr.math.NeuralNetwork;
 
 import omr.sheet.Scale;
 
-import java.util.Comparator;
-import java.util.List;
+import java.io.*;
+import java.util.*;
+
+import javax.xml.bind.JAXBException;
 
 /**
- * Class <code>Evaluator</code> is an abstract class that gathers data and
+ * Class <code>GlyphEvaluator</code> is an abstract class that gathers data and
  * processing common to any evaluator working on glyph characteristics to infer
  * glyph shape.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-public abstract class Evaluator
+public abstract class GlyphEvaluator
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -38,7 +41,7 @@ public abstract class Evaluator
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Evaluator.class);
+    private static final Logger logger = Logger.getLogger(GlyphEvaluator.class);
 
     /** Number of useful moments : {@value} */
     public static final int inMoments = 10;
@@ -47,10 +50,10 @@ public abstract class Evaluator
      * Number of useful input parameters : nb of moments +
      * stemNumber, isWithLedger, pitchPosition = {@value}
      */
-    public static final int inSize = inMoments + 2;
+    public static final int paramCount = inMoments + 2;
 
     /** Number of shapes to differentiate */
-    public static final int outSize = Shape.LastPhysicalShape.ordinal() + 1;
+    public static final int shapeCount = Shape.LastPhysicalShape.ordinal() + 1;
 
     /** A special evaluation array, used to report NOISE */
     static final Evaluation[] noiseEvaluations = {
@@ -142,6 +145,19 @@ public abstract class Evaluator
         return LabelsHolder.labels[index];
     }
 
+    //--------------------//
+    // getParameterLabels //
+    //--------------------//
+    /**
+     * Report the parameters labels
+     *
+     * @return the array of parameters labels
+     */
+    public static String[] getParameterLabels ()
+    {
+        return LabelsHolder.labels;
+    }
+
     //-----------//
     // feedInput //
     //-----------//
@@ -159,7 +175,7 @@ public abstract class Evaluator
                                       double[] ins)
     {
         if (ins == null) {
-            ins = new double[inSize];
+            ins = new double[paramCount];
         }
 
         // We take all the first moments
@@ -206,7 +222,18 @@ public abstract class Evaluator
      *
      * @return the ordered best evaluations
      */
-    public abstract Evaluation[] getEvaluations (Glyph glyph);
+    public Evaluation[] getEvaluations (Glyph glyph)
+    {
+        List<Evaluation> kept = new ArrayList<Evaluation>();
+
+        for (Evaluation eval : getAllEvaluations(glyph)) {
+            if (!glyph.isShapeForbidden(eval.shape)) {
+                kept.add(eval);
+            }
+        }
+
+        return kept.toArray(new Evaluation[0]);
+    }
 
     //------//
     // stop //
@@ -232,6 +259,30 @@ public abstract class Evaluator
     public abstract void train (List<Glyph>  base,
                                 Monitor      monitor,
                                 StartingMode mode);
+
+    //---------//
+    // marshal //
+    //---------//
+    /**
+     * Store the engine in XML format, always as a custom file
+     */
+    public void marshal ()
+    {
+        final File file = getCustomFile();
+
+        try {
+            OutputStream os = new FileOutputStream(file);
+            marshal(os);
+            os.close();
+            logger.info("Engine marshalled to " + file);
+        } catch (FileNotFoundException ex) {
+            logger.warning("Could not find file " + file);
+        } catch (IOException ex) {
+            logger.warning("IO error on file " + file);
+        } catch (JAXBException ex) {
+            logger.warning("Error marshalling engine to " + file);
+        }
+    }
 
     //------//
     // vote //
@@ -272,6 +323,102 @@ public abstract class Evaluator
         }
     }
 
+    //---------//
+    // marshal //
+    //---------//
+    protected abstract void marshal (OutputStream os)
+        throws FileNotFoundException, IOException, JAXBException;
+
+    //---------------//
+    // getCustomFile //
+    //---------------//
+    /**
+     * Report the custom file used to store or load the internal evaluator data
+     *
+     * @return the evaluator custom backup file
+     */
+    protected File getCustomFile ()
+    {
+        // The custom file, if any, is located in the configuration folder
+        return new File(Main.getConfigFolder(), getFileName());
+    }
+
+    //---------------//
+    // getDefaultUrl //
+    //---------------//
+    /**
+     * Report the name of the resource used to retrieve the evaluator marshalled
+     * data from the distribution resource
+     * @return the data resource name
+     */
+    protected String getDefaultUrl ()
+    {
+        return "/config/" + getFileName();
+    }
+
+    //-------------//
+    // getFileName //
+    //-------------//
+    /**
+     * Report the simple file name, including extension but excluding parent,
+     * which contains the marshalled data of the evaluator
+     * @return the file name
+     */
+    protected abstract String getFileName ();
+
+    //-----------//
+    // unmarshal //
+    //-----------//
+    /**
+     * Unmarshal the evaluation engine from the most suitable backup, which
+     * is first a custom file, and second the distribution resource.
+     * @return the engine, or null if failed
+     */
+    protected Object unmarshal ()
+    {
+        Object engine = null;
+
+        // Look for a custom version first
+        File file = getCustomFile();
+
+        if (file.exists()) {
+            try {
+                logger.fine(
+                    "Unmarshalling " + getName() + " engine from " + file);
+                engine = unmarshal(
+                    new java.io.FileInputStream(file),
+                    file.getPath());
+            } catch (FileNotFoundException ex) {
+                logger.warning("Cannot find file " + file, ex);
+            }
+        }
+
+        // If no custom file is loaded, use system default from distribution
+        if (engine == null) {
+            String url = getDefaultUrl();
+            logger.fine(
+                "Unmarshalling " + getName() + " engine from resource " + url);
+            engine = unmarshal(
+                getClass().getResourceAsStream(url),
+                "resource " + url);
+        }
+
+        return engine;
+    }
+
+    //-----------//
+    // unmarshal //
+    //-----------//
+    /**
+     * The specific unmarshalling method which builds a suitable engine
+     * @param is the input stream to read
+     * @return the newly built evaluation engine
+     * @throws JAXBException
+     * @throws IOException
+     */
+    protected abstract Object unmarshal (InputStream is)
+        throws JAXBException, IOException;
+
     //--------------//
     // boolAsDouble //
     //--------------//
@@ -282,6 +429,33 @@ public abstract class Evaluator
         } else {
             return 0d;
         }
+    }
+
+    //-----------//
+    // unmarshal //
+    //-----------//
+    private Object unmarshal (InputStream is,
+                              String      name)
+    {
+        if (is == null) {
+            logger.warning(
+                "No data stream for " + getName() + " engine as " + name);
+        } else {
+            try {
+                Object engine = unmarshal(is);
+                is.close();
+
+                return engine;
+            } catch (FileNotFoundException ex) {
+                logger.warning("Cannot find or read " + name);
+            } catch (IOException ex) {
+                logger.warning("IO error on " + name);
+            } catch (JAXBException ex) {
+                logger.warning("Error unmarshalling evaluator from " + name);
+            }
+        }
+
+        return null;
     }
 
     //~ Inner Interfaces -------------------------------------------------------
@@ -328,7 +502,7 @@ public abstract class Evaluator
     {
         //~ Static fields/initializers -----------------------------------------
 
-        public static final String[] labels = new String[inSize];
+        public static final String[] labels = new String[paramCount];
 
         static {
             // We take all the first moments

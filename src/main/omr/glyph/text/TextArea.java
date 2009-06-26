@@ -398,7 +398,7 @@ public class TextArea
                               .next();
             }
 
-            Evaluator  evaluator = GlyphNetwork.getInstance();
+            GlyphEvaluator  evaluator = GlyphNetwork.getInstance();
             Evaluation vote = evaluator.vote(
                 glyph,
                 GlyphInspector.getSymbolMaxDoubt());

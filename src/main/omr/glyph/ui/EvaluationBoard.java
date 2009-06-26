@@ -13,7 +13,7 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
-import omr.glyph.Evaluator;
+import omr.glyph.GlyphEvaluator;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphNetwork;
@@ -86,7 +86,7 @@ class EvaluationBoard
     //~ Instance fields --------------------------------------------------------
 
     /** The evaluator this display is related to */
-    private final Evaluator evaluator = GlyphNetwork.getInstance();
+    private final GlyphEvaluator evaluator = GlyphNetwork.getInstance();
 
     /** Related glyph model */
     private final GlyphsController glyphController;

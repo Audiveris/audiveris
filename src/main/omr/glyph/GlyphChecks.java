@@ -38,7 +38,7 @@ public class GlyphChecks
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Evaluator.class);
+    private static final Logger logger = Logger.getLogger(GlyphChecks.class);
 
     //~ Constructors -----------------------------------------------------------
 

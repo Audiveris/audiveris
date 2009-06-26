@@ -12,7 +12,7 @@ package omr.glyph.ui.panel;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
-import omr.glyph.Evaluator;
+import omr.glyph.GlyphEvaluator;
 import omr.glyph.Glyph;
 import omr.glyph.ui.*;
 
@@ -64,7 +64,7 @@ class ValidationPanel
     private ExecutorService executor = Executors.newSingleThreadExecutor();
 
     /** The evaluator to validate */
-    private final Evaluator evaluator;
+    private final GlyphEvaluator evaluator;
 
     /** User progress bar to visualize the validation process */
     private JProgressBar progressBar = new JProgressBar();
@@ -131,7 +131,7 @@ class ValidationPanel
      */
     public ValidationPanel (GlyphTrainer.Task task,
                             String            standardWidth,
-                            Evaluator         evaluator,
+                            GlyphEvaluator         evaluator,
                             SelectionPanel    selectionPanel,
                             TrainingPanel     trainingPanel)
     {

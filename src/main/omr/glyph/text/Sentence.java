@@ -13,7 +13,7 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
-import omr.glyph.Evaluator;
+import omr.glyph.GlyphEvaluator;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphNetwork;
@@ -1075,7 +1075,7 @@ public class Sentence
                 return false;
             }
 
-            Evaluator evaluator = GlyphNetwork.getInstance();
+            GlyphEvaluator evaluator = GlyphNetwork.getInstance();
 
             vote = evaluator.vote(compound, GlyphInspector.getTextMaxDoubt());
 

@@ -76,6 +76,9 @@ public class GlyphTrainer
     /** Panel for Neural network validation */
     private final ValidationPanel validationPanel;
 
+    /** Panel for Regression training */
+    private final TrainingPanel regressionPanel;
+
     /** Current task */
     private final Task task = new Task();
 
@@ -127,6 +130,10 @@ public class GlyphTrainer
             GlyphNetwork.getInstance(),
             selectionPanel,
             networkPanel);
+        regressionPanel = new RegressionPanel(
+            task,
+            standardWidth,
+            selectionPanel);
         frame.add(createGlobalPanel());
 
         // Initial state
@@ -206,7 +213,7 @@ public class GlyphTrainer
         FormLayout      layout = new FormLayout(
             "pref",
             "pref," + panelInterline + "," + "pref," + panelInterline + "," +
-            "pref");
+            "pref," + panelInterline + "," + "pref");
 
         CellConstraints cst = new CellConstraints();
         PanelBuilder    builder = new PanelBuilder(layout, new Panel());
@@ -220,6 +227,9 @@ public class GlyphTrainer
 
         r += 2; // --------------------------------
         builder.add(validationPanel.getComponent(), cst.xy(1, r));
+
+        r += 2; // --------------------------------
+        builder.add(regressionPanel.getComponent(), cst.xy(1, r));
 
         return builder.getPanel();
     }

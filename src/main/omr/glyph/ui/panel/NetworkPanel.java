@@ -9,7 +9,7 @@
 //
 package omr.glyph.ui.panel;
 
-import omr.glyph.Evaluator;
+import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.ui.panel.TrainingPanel.DumpAction;
 
@@ -181,11 +181,11 @@ class NetworkPanel
 
         trainAction = new NetworkTrainAction(
             "Re-Train",
-            Evaluator.StartingMode.SCRATCH,
+            GlyphEvaluator.StartingMode.SCRATCH,
             /* confirmationRequired => */ true);
         incrementalTrainAction = new NetworkTrainAction(
             "Inc-Train",
-            Evaluator.StartingMode.INCREMENTAL,
+            GlyphEvaluator.StartingMode.INCREMENTAL,
             /* confirmationRequired => */ false);
 
         defineSpecificLayout();
@@ -291,7 +291,6 @@ class NetworkPanel
                         bestIndex.setValue(index);
                         bestError.setValue(mse);
 
-                        ///setFrameTitle(mse);
                         if (errorListener != null) {
                             errorListener.stateChanged(errorEvent);
                         }
@@ -314,6 +313,7 @@ class NetworkPanel
      * @param unused not used
      */
     @Implement(Observer.class)
+    @Override
     public void update (Observable obs,
                         Object     unused)
     {
@@ -524,7 +524,7 @@ class NetworkPanel
         //~ Constructors -------------------------------------------------------
 
         public NetworkTrainAction (String                 title,
-                                   Evaluator.StartingMode mode,
+                                   GlyphEvaluator.StartingMode mode,
                                    boolean                confirmationRequired)
         {
             super(title);

@@ -9,7 +9,7 @@
 //
 package omr.glyph.ui.panel;
 
-import omr.glyph.Evaluator;
+import omr.glyph.GlyphEvaluator;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Shape;
@@ -51,7 +51,7 @@ import javax.swing.JRadioButton;
  * @version $Id$
  */
 class TrainingPanel
-    implements Evaluator.Monitor, Observer
+    implements GlyphEvaluator.Monitor, Observer
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -71,15 +71,15 @@ class TrainingPanel
     protected TrainAction trainAction;
 
     /** The underlying evaluator to be trained */
-    protected Evaluator evaluator;
+    protected GlyphEvaluator evaluator;
 
     /** User progress bar to visualize the training process */
     protected JProgressBar progressBar = new JProgressBar();
 
-    /** Common JGoogies constraints for this class and its subclass if any */
+    /** Common JGoodies constraints for this class and its subclass if any */
     protected CellConstraints cst = new CellConstraints();
 
-    /** Common JGoogies builder for this class and its subclass if any */
+    /** Common JGoodies builder for this class and its subclass if any */
     protected PanelBuilder builder;
 
     /** Repository of known glyphs */
@@ -119,7 +119,7 @@ class TrainingPanel
      */
     public TrainingPanel (GlyphTrainer.Task task,
                           String            standardWidth,
-                          Evaluator         evaluator,
+                          GlyphEvaluator         evaluator,
                           SelectionPanel    selectionPanel,
                           int               totalRows)
     {
@@ -164,7 +164,7 @@ class TrainingPanel
     {
     }
 
-    @Implement(Evaluator.Monitor.class)
+    @Implement(GlyphEvaluator.Monitor.class)
     public void glyphProcessed (final Glyph glyph)
     {
     }
@@ -245,8 +245,9 @@ class TrainingPanel
         wholeButton.setSelected(true);
 
         // Evaluator Title & Progress Bar
-        int r = 1; // ----------------------------
-        builder.addSeparator("Training", cst.xyw(1, r, 7));
+        int    r = 1; // ----------------------------
+        String title = evaluator.getName() + " Training";
+        builder.addSeparator(title, cst.xyw(1, r, 7));
         builder.add(progressBar, cst.xyw(9, r, 7));
 
         r += 2; // ----------------------------
@@ -331,7 +332,7 @@ class TrainingPanel
         //~ Instance fields ----------------------------------------------------
 
         // Specific training starting mode
-        protected Evaluator.StartingMode mode = Evaluator.StartingMode.SCRATCH;
+        protected GlyphEvaluator.StartingMode mode = GlyphEvaluator.StartingMode.SCRATCH;
         protected boolean                confirmationRequired = true;
 
         //~ Constructors -------------------------------------------------------

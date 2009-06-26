@@ -199,7 +199,7 @@ public class NeuralNetwork
     /**
      * Report the number of cells in the input layer
      *
-     * @return the size of inpur layer
+     * @return the size of input layer
      */
     public int getInputSize ()
     {

@@ -10,7 +10,7 @@
 package omr.glyph.ui;
 
 import omr.glyph.Evaluation;
-import omr.glyph.Evaluator;
+import omr.glyph.GlyphEvaluator;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphLag;
@@ -44,7 +44,7 @@ public class GlyphMenu
     private final Sheet             sheet;
     private final ShapeFocusBoard   shapeFocus;
     private final SymbolsController symbolsController;
-    private final Evaluator         evaluator;
+    private final GlyphEvaluator         evaluator;
 
     /** Set of actions to update menu according to selected glyphs */
     private final Set<DynAction> dynActions = new HashSet<DynAction>();
@@ -80,7 +80,7 @@ public class GlyphMenu
      */
     public GlyphMenu (Sheet                   sheet,
                       final SymbolsController symbolsController,
-                      Evaluator               evaluator,
+                      GlyphEvaluator               evaluator,
                       ShapeFocusBoard         shapeFocus,
                       final GlyphLag          glyphLag)
     {
@@ -166,6 +166,9 @@ public class GlyphMenu
         popup.addSeparator(); //----------------------------------------------
 
         // Display all glyphs of the same shape
+        popup.add(new JMenuItem(new ShapeAction()));
+
+        // Display all glyphs similar to the curent glyph
         popup.add(new JMenuItem(new SimilarAction()));
     }
 
@@ -599,6 +602,47 @@ public class GlyphMenu
         }
     }
 
+    //-------------//
+    // ShapeAction //
+    //-------------//
+    /**
+     * Set the focus on all glyphs with the same shape
+     */
+    private class ShapeAction
+        extends DynAction
+    {
+        //~ Methods ------------------------------------------------------------
+
+        public void actionPerformed (ActionEvent e)
+        {
+            Set<Glyph> glyphs = glyphLag.getSelectedGlyphSet();
+
+            if ((glyphs != null) && (glyphs.size() == 1)) {
+                Glyph glyph = glyphs.iterator()
+                                    .next();
+
+                if (glyph.getShape() != null) {
+                    shapeFocus.setCurrentShape(glyph.getShape());
+                }
+            }
+        }
+
+        public void update ()
+        {
+            Glyph glyph = glyphLag.getSelectedGlyph();
+
+            if ((glyph != null) && (glyph.getShape() != null)) {
+                setEnabled(true);
+                putValue(NAME, "Show all " + glyph.getShape() + "'s");
+                putValue(SHORT_DESCRIPTION, "Display all glyphs of this shape");
+            } else {
+                setEnabled(false);
+                putValue(NAME, "Show all");
+                putValue(SHORT_DESCRIPTION, "No shape defined");
+            }
+        }
+    }
+
     //------------------------//
     // ShortStemSegmentAction //
     //------------------------//
@@ -635,7 +679,7 @@ public class GlyphMenu
     // SimilarAction //
     //---------------//
     /**
-     * Set the focus on all glyphs with the same shape
+     * Set the focus on all glyphs similar to the selected glyph
      */
     private class SimilarAction
         extends DynAction
@@ -650,8 +694,8 @@ public class GlyphMenu
                 Glyph glyph = glyphs.iterator()
                                     .next();
 
-                if (glyph.getShape() != null) {
-                    shapeFocus.setCurrentShape(glyph.getShape());
+                if (glyph != null) {
+                    shapeFocus.setSimilarGlyph(glyph);
                 }
             }
         }
@@ -660,14 +704,16 @@ public class GlyphMenu
         {
             Glyph glyph = glyphLag.getSelectedGlyph();
 
-            if ((glyph != null) && (glyph.getShape() != null)) {
+            if (glyph != null) {
                 setEnabled(true);
-                putValue(NAME, "Show similar " + glyph.getShape() + "'s");
-                putValue(SHORT_DESCRIPTION, "Display all similar glyphs");
+                putValue(NAME, "Show similar glyphs");
+                putValue(
+                    SHORT_DESCRIPTION,
+                    "Display all glyphs similar to this one");
             } else {
                 setEnabled(false);
                 putValue(NAME, "Show similar");
-                putValue(SHORT_DESCRIPTION, "No shape defined");
+                putValue(SHORT_DESCRIPTION, "No glyph selected");
             }
         }
     }

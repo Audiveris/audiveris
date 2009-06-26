@@ -82,7 +82,7 @@ public class SymbolsModel
 
         // Test on glyph weight (noise-like)
         // To prevent to assign a non-noise shape to a noise glyph
-        if ((shape == Shape.NOISE) || Evaluator.isBigEnough(glyph)) {
+        if ((shape == Shape.NOISE) || GlyphEvaluator.isBigEnough(glyph)) {
             // Force a recomputation of glyph parameters
             // (since environment may have changed since the time they
             // have been computed)

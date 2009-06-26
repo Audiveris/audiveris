@@ -10,9 +10,9 @@
 package omr.glyph.ui;
 
 import omr.glyph.Glyph;
+import omr.glyph.GlyphRegression;
 import omr.glyph.Shape;
 import omr.glyph.ShapeRange;
-import omr.glyph.ui.GlyphsController;
 
 import omr.log.Logger;
 
@@ -43,9 +43,9 @@ import javax.swing.*;
 import javax.swing.event.*;
 
 /**
- * Class <code>ShapeFocusBoard</code> handles the shape that receives current
- * focus, and all glyphs whose shape corresponds to the focus (for example all
- * treble clefs glyphs if such is the focus)
+ * Class <code>ShapeFocusBoard</code> handles a user iteration within a
+ * collection of glyphs. The collection may be built from glyphs of a given
+ * shape, or from glyphs similar to a given glyph, etc.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -88,12 +88,10 @@ class ShapeFocusBoard
 
     //~ Instance fields --------------------------------------------------------
 
-    private final GlyphLagView     view;
-    private final GlyphsController glyphModel;
-    private final Sheet            sheet;
+    private final Sheet sheet;
 
-    /** Counter on symbols assigned to the current shape */
-    private Counter assignedCounter = new Counter();
+    /** Browser on the collection of glyphs */
+    private Browser browser = new Browser();
 
     /** Button to select the shape focus */
     private JButton selectButton = new JButton();
@@ -115,22 +113,19 @@ class ShapeFocusBoard
      *
      * @param sheet the related sheet
      * @param view the displayed lag view
-     * @param glyphModel the related glyph model
+     * @param controller the related glyph controller
      * @param filterListener the action linked to filter button
      */
     public ShapeFocusBoard (Sheet            sheet,
-                            GlyphLagView     view,
-                            GlyphsController glyphModel,
+                            GlyphsController controller,
                             ActionListener   filterListener)
     {
         super(
             sheet.getRadix() + "-ShapeFocusBoard",
-            glyphModel.getLag().getSelectionService(),
+            controller.getLag().getSelectionService(),
             eventClasses);
 
         this.sheet = sheet;
-        this.view = view;
-        this.glyphModel = glyphModel;
 
         // Tool Tips
         selectButton.setToolTipText("Select candidate shape");
@@ -190,7 +185,7 @@ class ShapeFocusBoard
      */
     public void setCurrentShape (Shape currentShape)
     {
-        assignedCounter.resetIds();
+        browser.resetIds();
 
         if (currentShape != null) {
             // Update the shape button
@@ -200,7 +195,7 @@ class ShapeFocusBoard
             // Count the number of glyphs assigned to current shape
             for (Glyph glyph : sheet.getActiveGlyphs()) {
                 if (glyph.getShape() == currentShape) {
-                    assignedCounter.addId(glyph.getId());
+                    browser.addId(glyph.getId());
                 }
             }
         } else {
@@ -209,7 +204,7 @@ class ShapeFocusBoard
             selectButton.setIcon(null);
         }
 
-        assignedCounter.refresh();
+        browser.refresh();
     }
 
     //-------------//
@@ -242,6 +237,47 @@ class ShapeFocusBoard
 
         // To please the compiler
         return true;
+    }
+
+    //-----------------//
+    // setSimilarGlyph //
+    //-----------------//
+    /**
+     * Define the glyphs collection as all glyphs whose physical appearance is
+     * "similar" to the appearance of the provided glyph example
+     * @param example the provided example
+     */
+    public void setSimilarGlyph (Glyph example)
+    {
+        browser.resetIds();
+
+        if (example != null) {
+            GlyphRegression  evaluator = GlyphRegression.getInstance();
+            double[]         pattern = GlyphRegression.feedInput(example, null);
+            List<DistIdPair> pairs = new ArrayList<DistIdPair>();
+
+            // Retrieve the glyphs similar to the example
+            for (Glyph glyph : sheet.getActiveGlyphs()) {
+                double dist = evaluator.measureDistance(glyph, pattern);
+                pairs.add(new DistIdPair(dist, glyph.getId()));
+            }
+
+            Collections.sort(pairs);
+
+            for (DistIdPair pair : pairs) {
+                browser.addId(pair.id);
+            }
+
+            // Update the shape button
+            selectButton.setText("Glyphs similar to #" + example.getId());
+            selectButton.setIcon(null);
+        } else {
+            // Void the shape button
+            selectButton.setText("- No Focus -");
+            selectButton.setIcon(null);
+        }
+
+        browser.refresh();
     }
 
     //---------//
@@ -306,16 +342,44 @@ class ShapeFocusBoard
         r += 2; // --------------------------------
         builder.add(filterButton, cst.xy(1, r));
 
-        builder.add(assignedCounter.val, cst.xy(5, r));
-        builder.add(assignedCounter.spinner, cst.xy(7, r));
+        builder.add(browser.count, cst.xy(5, r));
+        builder.add(browser.spinner, cst.xy(7, r));
     }
 
     //~ Inner Classes ----------------------------------------------------------
 
+    //------------//
+    // DistIdPair //
+    //------------//
+    private static class DistIdPair
+        implements Comparable<DistIdPair>
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final double dist;
+        final int    id;
+
+        //~ Constructors -------------------------------------------------------
+
+        public DistIdPair (double dist,
+                           int    id)
+        {
+            this.dist = dist;
+            this.id = id;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        public int compareTo (DistIdPair o)
+        {
+            return Double.compare(dist, o.dist);
+        }
+    }
+
     //---------//
-    // Counter //
+    // Browser //
     //---------//
-    private class Counter
+    private class Browser
         implements ChangeListener
     {
         //~ Instance fields ----------------------------------------------------
@@ -324,15 +388,15 @@ class ShapeFocusBoard
         ArrayList<Integer> ids = new ArrayList<Integer>();
 
         // Number of glyphs
-        JLabel   val = new JLabel("", SwingConstants.RIGHT);
+        JLabel   count = new JLabel("", SwingConstants.RIGHT);
         JSpinner spinner = new JSpinner(new SpinnerListModel());
 
         //~ Constructors -------------------------------------------------------
 
         //---------//
-        // Counter //
+        // Browser //
         //---------//
-        public Counter ()
+        public Browser ()
         {
             resetIds();
             spinner.addChangeListener(this);
@@ -356,10 +420,10 @@ class ShapeFocusBoard
         public void refresh ()
         {
             if (ids.size() > 1) { // To skip first NO_VALUE item
-                val.setText(Integer.toString(ids.size() - 1));
+                count.setText(0 + "/" + (ids.size() - 1));
                 spinner.setEnabled(true);
             } else {
-                val.setText("");
+                count.setText("");
                 spinner.setEnabled(false);
             }
 
@@ -383,10 +447,11 @@ class ShapeFocusBoard
         {
             int id = (Integer) spinner.getValue();
 
+            int index = ids.indexOf(id);
+            count.setText(index + "/" + (ids.size() - 1));
+
             if (id != NO_VALUE) {
-                glyphModel.getLag()
-                          .getSelectionService()
-                          .publish(
+                selectionService.publish(
                     new GlyphIdEvent(this, SelectionHint.GLYPH_INIT, null, id));
             }
         }

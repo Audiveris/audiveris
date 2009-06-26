@@ -16,24 +16,30 @@ import omr.glyph.ui.GlyphRepository;
 
 import omr.log.Logger;
 
-import omr.math.Population;
+import omr.math.LinearEvaluator;
+import omr.math.LinearEvaluator.Sample;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+import javax.xml.bind.JAXBException;
+
 /**
- * Class <code>GlyphRegression</code> is a glyph evaluator based on a {@link
- * omr.math.Population}.
- *
- * <p>Note that this evaluator has been deprecated. It is used internally and
- * temporarily in the selection of core sheets among the training material. It
- * is no longer visible by the end user.
+ * Class <code>GlyphRegression</code> is a glyph evaluator that encapsulates a
+ * {@link LinearEvaluator} working on glyph parameters.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class GlyphRegression
-    extends Evaluator
+    extends GlyphEvaluator
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -44,13 +50,16 @@ public class GlyphRegression
     private static final Logger logger = Logger.getLogger(
         GlyphRegression.class);
 
+    /** LinearEvaluator backup file name */
+    private static final String BACKUP_FILE_NAME = "linear-evaluator.xml";
+
     /** The singleton */
     private static GlyphRegression INSTANCE;
 
     //~ Instance fields --------------------------------------------------------
 
-    /** All shape descriptions */
-    private ShapeDesc[] shapeDescs;
+    /** The encapsulated linear evaluator */
+    private LinearEvaluator engine;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -62,12 +71,29 @@ public class GlyphRegression
      */
     private GlyphRegression ()
     {
-        // Allocate shape descriptors, as a brand new one
-        logger.fine("Creating a brand new GlyphRegression");
-        shapeDescs = new ShapeDesc[outSize];
+        // Unmarshal from backup data
+        engine = (LinearEvaluator) unmarshal();
 
-        for (int s = outSize - 1; s >= 0; s--) {
-            shapeDescs[s] = new ShapeDesc(Shape.values()[s]);
+        // Basic check
+        if (engine != null) {
+            if ((engine.getInputSize() != paramCount) ||
+                (engine.getOutputSize() != shapeCount)) {
+                final String msg = "Linear Evaluator data is obsolete," +
+                                   " it must be retrained from scratch";
+                logger.warning(msg);
+                JOptionPane.showMessageDialog(null, msg);
+
+                engine = null;
+            }
+        }
+
+        if (engine == null) {
+            // Get a brand new one (not trained)
+            logger.info("Creating a brand new LinearEvaluator");
+            engine = new LinearEvaluator(
+                paramCount,
+                getParameterLabels(),
+                shapeCount);
         }
     }
 
@@ -102,16 +128,19 @@ public class GlyphRegression
             return noiseEvaluations;
         } else {
             double[]     ins = feedInput(glyph, null);
-            Evaluation[] evals = new Evaluation[outSize];
+            Evaluation[] evals = new Evaluation[shapeCount];
+            Shape[]      values = Shape.values();
 
-            for (int s = 0; s < outSize; s++) {
-                ShapeDesc desc = shapeDescs[s];
-                Shape     shape = GlyphChecks.specificCheck(desc.shape, glyph);
+            for (int s = 0; s < shapeCount; s++) {
+                Shape shape = values[s];
+                shape = GlyphChecks.specificCheck(shape, glyph);
 
                 if (shape != null) {
-                    evals[s] = new Evaluation(shape, desc.distance(ins));
+                    evals[s] = new Evaluation(
+                        shape,
+                        measureDistance(ins, shape));
                 } else {
-                    evals[s] = new Evaluation(desc.shape, Double.MAX_VALUE);
+                    evals[s] = new Evaluation(values[s], Double.MAX_VALUE);
                 }
             }
 
@@ -120,15 +149,6 @@ public class GlyphRegression
 
             return evals;
         }
-    }
-
-    //----------------//
-    // getEvaluations //
-    //----------------//
-    @Override
-    public Evaluation[] getEvaluations (Glyph glyph)
-    {
-        return getAllEvaluations(glyph);
     }
 
     //---------//
@@ -146,9 +166,7 @@ public class GlyphRegression
     @Override
     public void dump ()
     {
-        for (ShapeDesc desc : shapeDescs) {
-            desc.dump();
-        }
+        engine.dump();
     }
 
     //--------------//
@@ -164,7 +182,7 @@ public class GlyphRegression
     public void dumpDistance (Glyph glyph,
                               Shape shape)
     {
-        shapeDescs[shape.ordinal()].dumpDistance(glyph);
+        //        shapeDescs[shape.ordinal()].dumpDistance(glyph);
     }
 
     //-----------------//
@@ -180,7 +198,58 @@ public class GlyphRegression
     public double measureDistance (Glyph glyph,
                                    Shape shape)
     {
-        return shapeDescs[shape.ordinal()].distance(glyph);
+        return engine.categoryDistance(
+            feedInput(glyph, null),
+            shape.toString());
+    }
+
+    //-----------------//
+    // measureDistance //
+    //-----------------//
+    /**
+     * Measure the "distance" information between a given glyph and a shape.
+     *
+     * @param ins the input parameters
+     * @param shape the shape to measure distance from
+     * @return the measured distance
+     */
+    public double measureDistance (double[] ins,
+                                   Shape    shape)
+    {
+        return engine.categoryDistance(ins, shape.toString());
+    }
+
+    //-----------------//
+    // measureDistance //
+    //-----------------//
+    /**
+     * Measure the "distance" information between two glyphs
+     *
+     * @param one the first glyph
+     * @param two the second glyph
+     * @return the measured distance
+     */
+    public double measureDistance (Glyph one,
+                                   Glyph two)
+    {
+        return measureDistance(one, feedInput(two, null));
+    }
+
+    //-----------------//
+    // measureDistance //
+    //-----------------//
+    /**
+     * Measure the "distance" information between a glyph and an array of
+     * parameters (generally fed from another glyph)
+     *
+     * @param glyph the given glyph
+     * @param ins the array (size = paramCount) of parameters
+     * @return the measured distance
+     */
+    public double measureDistance (Glyph    glyph,
+                                   double[] ins)
+    {
+        return engine.patternDistance(feedInput(glyph, null), ins);
     }
 
     //-------//
@@ -204,27 +273,16 @@ public class GlyphRegression
             return;
         }
 
-        // Reset counters ?
-        if (mode == StartingMode.SCRATCH) {
-            for (ShapeDesc desc : shapeDescs) {
-                for (Population population : desc.populations) {
-                    population.reset();
-                }
-            }
-        }
-
-        // Accumulate
-        double[] ins = new double[inSize];
+        // Prepare the collection of samples
+        Collection<Sample> samples = new ArrayList<Sample>();
 
         for (Glyph glyph : base) {
-            if (monitor != null) {
-                monitor.glyphProcessed(glyph);
-            }
-
             try {
-                ShapeDesc desc = shapeDescs[glyph.getShape()
-                                                 .ordinal()];
-                desc.include(feedInput(glyph, ins));
+                Shape  shape = glyph.getShape();
+                Sample sample = new Sample(
+                    shape.toString(),
+                    feedInput(glyph, null));
+                samples.add(sample);
             } catch (Exception ex) {
                 logger.warning(
                     "Weird glyph shape: " + glyph.getShape() + " file=" +
@@ -232,10 +290,40 @@ public class GlyphRegression
             }
         }
 
-        // Determine means & weights
-        for (ShapeDesc desc : shapeDescs) {
-            desc.compute();
-        }
+        // Do the training
+        engine.train(samples);
+
+        // Save to disk
+        marshal();
+    }
+
+    //-------------//
+    // getFileName //
+    //-------------//
+    @Override
+    protected String getFileName ()
+    {
+        return BACKUP_FILE_NAME;
+    }
+
+    //---------//
+    // marshal //
+    //---------//
+    @Override
+    protected void marshal (OutputStream os)
+        throws FileNotFoundException, IOException, JAXBException
+    {
+        engine.marshal(os);
+    }
+
+    //-----------//
+    // unmarshal //
+    //-----------//
+    @Override
+    protected LinearEvaluator unmarshal (InputStream is)
+        throws JAXBException
+    {
+        return LinearEvaluator.unmarshal(is);
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -249,163 +337,5 @@ public class GlyphRegression
         //~ Instance fields ----------------------------------------------------
 
         Constant.Ratio weightMax = new Constant.Ratio(2500, "Maximum weight");
-    }
-
-    //-----------//
-    // ShapeDesc //
-    //-----------//
-    /**
-     * Class <code>ShapeDesc</code> gathers all characteristics needed to
-     * recognize the shape of a glyph
-     */
-    private static class ShapeDesc
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        // The related shape
-        final Shape        shape;
-
-        // Mean for each criteria
-        final double[]     means = new double[inSize];
-
-        // Counters to compute mean value & std deviation
-        final Population[] populations = new Population[inSize];
-
-        // Weight for each criteria
-        final double[] weights = new double[inSize];
-
-        //~ Constructors -------------------------------------------------------
-
-        //-----------//
-        // ShapeDesc //
-        //-----------//
-        ShapeDesc (Shape shape)
-        {
-            this.shape = shape;
-
-            // Allocate population counters
-            for (int c = inSize - 1; c >= 0; c--) {
-                populations[c] = new Population();
-            }
-
-            Arrays.fill(means, 0);
-            Arrays.fill(weights, 0);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        //---------//
-        // compute //
-        //---------//
-        public void compute ()
-        {
-            double weightMax = constants.weightMax.getValue();
-
-            if (populations[0].getCardinality() >= 2) {
-                for (int c = 0; c < inSize; c++) {
-                    Population population = populations[c];
-                    means[c] = population.getMeanValue();
-                    weights[c] = Math.min(
-                        weightMax,
-                        1d / (inSize * population.getStandardDeviation()));
-                }
-            }
-        }
-
-        //----------//
-        // distance //
-        //----------//
-        public double distance (Glyph glyph)
-        {
-            return distance(feedInput(glyph, null));
-        }
-
-        //----------//
-        // distance //
-        //----------//
-        public double distance (double[] ins)
-        {
-            if (populations[0].getCardinality() >= 2) {
-                double dist = 0;
-
-                for (int c = 0; c < inSize; c++) {
-                    double d = (means[c] - ins[c]) * weights[c];
-                    dist += (d * d);
-                }
-
-                return dist;
-            } else {
-                return 50e50;
-            }
-        }
-
-        //------//
-        // dump //
-        //------//
-        public void dump ()
-        {
-            System.out.printf(
-                "\n%30s %3d\n",
-                shape.toString(),
-                populations[0].getCardinality());
-
-            if (populations[0].getCardinality() >= 2) {
-                for (int c = 0; c < inSize; c++) {
-                    System.out.printf(
-                        "%2d %7s -> mean=% e std=% e wgt=% e\n",
-                        c,
-                        getParameterLabel(c),
-                        means[c],
-                        populations[c].getStandardDeviation(),
-                        weights[c]);
-                }
-            }
-        }
-
-        //--------------//
-        // dumpDistance //
-        //--------------//
-        public double dumpDistance (Glyph glyph)
-        {
-            return dumpDistance(feedInput(glyph, null));
-        }
-
-        //--------------//
-        // dumpDistance //
-        //--------------//
-        public double dumpDistance (double[] ins)
-        {
-            if (populations[0].getCardinality() >= 2) {
-                double dist = 0;
-
-                for (int c = 0; c < inSize; c++) {
-                    double dm = Math.abs(means[c] - ins[c]);
-                    double wdm = weights[c] * dm;
-                    dist += (wdm * wdm);
-                    System.out.printf(
-                        "%2d-> dm:%e wgt:%e wdm:%e\n",
-                        c,
-                        dm,
-                        weights[c],
-                        wdm);
-                }
-
-                System.out.printf("Dist to %s=%e\n", shape, dist);
-
-                return dist;
-            } else {
-                return 50e50;
-            }
-        }
-
-        //---------//
-        // include //
-        //---------//
-        public void include (double[] ins)
-        {
-            for (int c = inSize - 1; c >= 0; c--) {
-                populations[c].includeValue(ins[c]);
-            }
-        }
     }
 }

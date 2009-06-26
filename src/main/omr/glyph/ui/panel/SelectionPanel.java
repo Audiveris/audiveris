@@ -12,7 +12,7 @@ package omr.glyph.ui.panel;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.Evaluator;
+import omr.glyph.GlyphEvaluator;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphRegression;
 import omr.glyph.ui.*;
@@ -286,7 +286,7 @@ class SelectionPanel
         }
 
         // Quickly train the regression evaluator
-        regression.train(glyphs, null, Evaluator.StartingMode.SCRATCH);
+        regression.train(glyphs, null, GlyphEvaluator.StartingMode.SCRATCH);
 
         // Measure every glyph
         List<NotedGlyph> palmares = new ArrayList<NotedGlyph>(gNames.size());
@@ -324,7 +324,7 @@ class SelectionPanel
         Set<NotedGlyph> set = new HashSet<NotedGlyph>();
 
         // Allocate shape-based counters
-        int[] counters = new int[Evaluator.outSize];
+        int[] counters = new int[GlyphEvaluator.shapeCount];
         Arrays.fill(counters, 0);
 
         final int maxSimilar = (similar.getValue() + 1) / 2;

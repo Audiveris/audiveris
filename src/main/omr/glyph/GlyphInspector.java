@@ -188,7 +188,7 @@ public class GlyphInspector
      */
     public void evaluateGlyphs (double maxDoubt)
     {
-        Evaluator evaluator = GlyphNetwork.getInstance();
+        GlyphEvaluator evaluator = GlyphNetwork.getInstance();
 
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.getShape() == null) {

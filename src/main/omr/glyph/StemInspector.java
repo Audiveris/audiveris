@@ -118,7 +118,7 @@ public class StemInspector
 
         // Try to recognize each glyph in turn
         List<Glyph>     symbols = new ArrayList<Glyph>();
-        final Evaluator evaluator = GlyphNetwork.getInstance();
+        final GlyphEvaluator evaluator = GlyphNetwork.getInstance();
         final double    maxDoubt = GlyphInspector.getPatternsMaxDoubt();
 
         for (Glyph glyph : system.getGlyphs()) {
