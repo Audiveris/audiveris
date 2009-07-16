@@ -1,0 +1,213 @@
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                   L i n e a r E v a l u a t o r T e s t                    //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2006. All rights reserved.               //
+//  This software is released under the terms of the GNU General Public       //
+//  License. Please contact the author at herve.bitteur@laposte.net           //
+//  to report bugs & suggestions.                                             //
+//----------------------------------------------------------------------------//
+//
+package omr.math;
+
+import omr.math.LinearEvaluator.Sample;
+
+import org.junit.AfterClass;
+import static org.junit.Assert.*;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.List;
+
+/**
+ * Class <code>LinearEvaluatorTest</code> gathers unitary tests on
+ * LinearEvaluator class
+ *
+ * @author Herv&eacute Bitteur
+ * @version $Id$
+ */
+public class LinearEvaluatorTest
+{
+    //~ Static fields/initializers ---------------------------------------------
+
+    private static final int          inSize = 2;
+    private static final String[]     inNames = new String[] { "first", "second" };
+    private static final int          outSize = 3;
+    private static final String       filePath = "linear.xml";
+    private static final List<Sample> samples = Arrays.asList(
+        new Sample("A", new double[] { 10, 20 }),
+        new Sample("A", new double[] { 11, 23 }),
+        new Sample("A", new double[] { 9, 20 }),
+        new Sample("B", new double[] { 5, 40 }),
+        new Sample("B", new double[] { 7, 50 }),
+        new Sample("C", new double[] { 100, 200 }),
+        new Sample("C", new double[] { 90, 205 }),
+        new Sample("C", new double[] { 95, 220 }),
+        new Sample("C", new double[] { 98, 210 }));
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new LinearEvaluatorTest object.
+     */
+    public LinearEvaluatorTest ()
+    {
+    }
+
+    //~ Methods ----------------------------------------------------------------
+
+    @BeforeClass
+    public static void setUpClass ()
+        throws Exception
+    {
+    }
+
+    @AfterClass
+    public static void tearDownClass ()
+        throws Exception
+    {
+    }
+
+    /**
+     * Test of categoryDistance method, of class LinearEvaluator.
+     */
+    @Test
+    public void testCategoryDistance ()
+    {
+        System.out.println("\n--categoryDistance");
+
+        double[]        pattern = new double[] { 14, 26 };
+        String          category = "A";
+        LinearEvaluator instance = createTrainedInstance();
+        double          expResult = 12.16;
+        double          result = instance.categoryDistance(pattern, category);
+        assertEquals(expResult, result, 0.01);
+    }
+
+    /**
+     * Test of dump method, of class LinearEvaluator.
+     */
+    @Test
+    public void testDump ()
+    {
+        System.out.println("\n--dump");
+
+        LinearEvaluator instance = createTrainedInstance();
+        instance.dump();
+    }
+
+    /**
+     * Test of dumpDistance method, of class LinearEvaluator.
+     */
+    @Test
+    public void testDumpDistance ()
+    {
+        System.out.println("\n--dumpDistance");
+
+        double[]        pattern = new double[] { 14, 26 };
+        String          category = "A";
+        LinearEvaluator instance = createTrainedInstance();
+        instance.dumpDistance(pattern, category);
+    }
+
+    /**
+     * Test of patternDistance method, of class LinearEvaluator.
+     */
+    @Test
+    public void testManyPatternDistance ()
+    {
+        System.out.println("\n--manyPatternDistance");
+
+        LinearEvaluator instance = createTrainedInstance();
+        double[]        one = new double[] { 10, 20 };
+        System.out.println("Distances to " + Arrays.toString(one));
+
+        for (Sample sample : samples) {
+            double result = instance.patternDistance(one, sample.pattern);
+            System.out.println("dist:" + result + " " + sample);
+        }
+    }
+
+    /**
+     * Test of marshal method, of class LinearEvaluator.
+     * @throws Exception
+     */
+    @Test
+    public void testMarshal ()
+        throws Exception
+    {
+        System.out.println("\n--marshal");
+
+        OutputStream    os = new FileOutputStream(filePath);
+        LinearEvaluator instance = createTrainedInstance();
+        instance.marshal(os);
+        os.close();
+    }
+
+    /**
+     * Test of patternDistance method, of class LinearEvaluator.
+     */
+    @Test
+    public void testPatternDistance ()
+    {
+        System.out.println("\n--patternDistance");
+
+        double[]        one = new double[] { 10, 20 };
+        double[]        two = new double[] { 5, 40 };
+        LinearEvaluator instance = createTrainedInstance();
+        double          expResult = 30.94;
+        double          result = instance.patternDistance(one, two);
+        assertEquals(expResult, result, 0.1);
+    }
+
+    /**
+     * Test of train method, of class LinearEvaluator.
+     */
+    @Test
+    public void testTrain ()
+    {
+        System.out.println("\n--train");
+
+        LinearEvaluator instance = createTrainedInstance();
+        instance.dump();
+    }
+
+    /**
+     * Test of unmarshal method, of class LinearEvaluator.
+     * @throws Exception
+     */
+    @Test
+    public void testUnmarshal ()
+        throws Exception
+    {
+        System.out.println("\n--unmarshal");
+
+        InputStream     in = new FileInputStream(filePath);
+
+        ///LinearEvaluator expResult = null;
+        LinearEvaluator result = LinearEvaluator.unmarshal(in);
+        result.dump();
+
+        ///assertEquals(expResult, result);
+    }
+
+    private LinearEvaluator createRawInstance ()
+    {
+        LinearEvaluator le = new LinearEvaluator(inSize, inNames, outSize);
+
+        return le;
+    }
+
+    private LinearEvaluator createTrainedInstance ()
+    {
+        LinearEvaluator le = createRawInstance();
+        le.train(samples);
+
+        return le;
+    }
+}

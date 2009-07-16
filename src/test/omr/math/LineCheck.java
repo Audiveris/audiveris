@@ -1,13 +1,12 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                           L i n e C h e c k                           //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2007. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                             L i n e C h e c k                              //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
+//  This software is released under the GNU General Public License.           //
+//  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
+//----------------------------------------------------------------------------//
+//
 package omr.math;
 
 import omr.util.BaseTestCase;

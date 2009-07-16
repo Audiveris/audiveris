@@ -1,13 +1,12 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                         M o m e n t s T e s t                         //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2007. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                           M o m e n t s T e s t                            //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
+//  This software is released under the GNU General Public License.           //
+//  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
+//----------------------------------------------------------------------------//
+//
 package omr.math;
 
 //import org.testng.annotations.*;
