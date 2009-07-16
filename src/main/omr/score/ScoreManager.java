@@ -19,7 +19,6 @@ import omr.log.Logger;
 import omr.score.midi.MidiAbstractions;
 import omr.score.midi.MidiAgent;
 import omr.score.ui.ScoreActions;
-import omr.score.visitor.ScoreExporter;
 
 import omr.script.ExportTask;
 import omr.script.MidiWriteTask;

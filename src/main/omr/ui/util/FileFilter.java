@@ -9,7 +9,6 @@
 //-----------------------------------------------------------------------//
 package omr.ui.util;
 
-import omr.util.FileUtil;
 import omr.util.Implement;
 
 import java.io.File;
@@ -125,13 +124,11 @@ public class FileFilter
             return true;
         }
 
-        final String extension = FileUtil.getExtension(f);
+        String path = f.getAbsolutePath();
 
-        if (extension != null) {
-            for (int i = 0, n = extensions.length; i < n; i++) {
-                if (extension.equals(extensions[i])) {
-                    return true;
-                }
+        for (String ext : extensions) {
+            if (path.endsWith(ext)) {
+                return true;
             }
         }
 

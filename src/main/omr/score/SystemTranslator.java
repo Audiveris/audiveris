@@ -45,8 +45,6 @@ import omr.score.entity.TimeSignature;
 import omr.score.entity.Tuplet;
 import omr.score.entity.Wedge;
 import omr.score.midi.MidiAgent;
-import omr.score.visitor.ScoreFixer;
-import omr.score.visitor.ScoreTimeFixer;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;

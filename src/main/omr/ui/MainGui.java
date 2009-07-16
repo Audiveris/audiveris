@@ -20,7 +20,7 @@ import omr.log.Logger;
 
 import omr.score.midi.MidiAgent;
 import omr.score.ui.ScoreController;
-import omr.score.visitor.ScoreExporter;
+import omr.score.ScoreExporter;
 
 import omr.selection.MouseMovement;
 import omr.selection.SheetEvent;
@@ -377,6 +377,9 @@ public class MainGui
         }
 
         Main.setGui(this);
+        
+        // Just in case we already have messages pending
+        notifylog();
 
         Main.launchSheets();
         Main.launchScripts();

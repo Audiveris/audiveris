@@ -402,7 +402,7 @@ public class ActionManager
                     desc.className);
             }
         } catch (Throwable ex) {
-            logger.warning("Error while registering action " + desc, ex);
+            logger.warning("Error while registering " + desc, ex);
         } finally {
             return action;
         }
@@ -444,9 +444,9 @@ public class ActionManager
                         item.setText(desc.methodName);
 
                         ApplicationAction action = registerAction(desc);
-                        action.setSelected(action.isSelected());
 
                         if (action != null) {
+                            action.setSelected(action.isSelected());
                             item.setAction(action);
                             menu.add(item);
                         } else {

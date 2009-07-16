@@ -23,7 +23,7 @@ import omr.lag.ui.SectionBoard;
 
 import omr.log.Logger;
 
-import omr.score.visitor.SheetPainter;
+import omr.sheet.ui.SheetPainter;
 
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphSetEvent;

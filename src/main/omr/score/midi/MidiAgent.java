@@ -13,7 +13,7 @@ import omr.log.Logger;
 import omr.score.MeasureRange;
 import omr.score.Score;
 import omr.score.ui.ScoreActions;
-import omr.score.visitor.ScoreExporter;
+import omr.score.ScoreExporter;
 
 import omr.util.Worker;
 

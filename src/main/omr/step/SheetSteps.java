@@ -25,9 +25,9 @@ import omr.score.entity.Measure;
 import omr.score.entity.ScoreSystem;
 import omr.score.midi.MidiActions;
 import omr.score.ui.ScoreActions;
-import omr.score.visitor.ScoreChecker;
-import omr.score.visitor.ScoreCleaner;
-import omr.score.visitor.ScoreFixer;
+import omr.score.ScoreChecker;
+import omr.score.ScoreCleaner;
+import omr.score.ScoreFixer;
 
 import omr.sheet.HorizontalsBuilder;
 import omr.sheet.LinesBuilder;

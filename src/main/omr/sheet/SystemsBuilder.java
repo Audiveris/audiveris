@@ -37,8 +37,8 @@ import omr.log.Logger;
 import omr.score.entity.ScorePart;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.SystemPart;
-import omr.score.visitor.ScoreFixer;
-import omr.score.visitor.SheetPainter;
+import omr.score.ScoreFixer;
+import omr.sheet.ui.SheetPainter;
 
 import omr.script.BoundaryTask;
 

@@ -30,9 +30,9 @@ import omr.score.common.PixelDimension;
 import omr.score.common.PixelPoint;
 import omr.score.entity.SystemNode;
 import omr.score.ui.ScoreConstants;
-import omr.score.visitor.ScoreColorizer;
+import omr.sheet.ui.ScoreColorizer;
 import omr.score.visitor.ScoreVisitor;
-import omr.score.visitor.SheetPainter;
+import omr.sheet.ui.SheetPainter;
 import omr.score.visitor.Visitable;
 
 import omr.script.Script;

@@ -112,7 +112,6 @@ class ShapeFocusBoard
      * companions
      *
      * @param sheet the related sheet
-     * @param view the displayed lag view
      * @param controller the related glyph controller
      * @param filterListener the action linked to filter button
      */

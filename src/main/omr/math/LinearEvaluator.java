@@ -60,6 +60,9 @@ public class LinearEvaluator
     /** To avoid infinity */
     public static double INFINITE_DISTANCE = 50e50;
 
+    /** To indicate no weight value */
+    public static final double NO_WEIGHT_VALUE = -1;
+
     //~ Instance fields --------------------------------------------------------
 
     /** Size of output range (the number of defined categories) */
@@ -70,7 +73,7 @@ public class LinearEvaluator
     @XmlAttribute(name = "input-size")
     private final int inputSize;
 
-    /** The name of each input parameter */
+    /** The name of each input parameter (array of inputSize strings) */
     private final String[] inputNames;
 
     /** A descriptor for each output category */
@@ -78,7 +81,7 @@ public class LinearEvaluator
     @XmlElement(name = "categories")
     private final SortedMap<String, CategoryDesc> categoryDescs;
 
-    /** Category-independant param weights */
+    /** Category-independant param weights (array of inputSize weights) */
     @XmlElementWrapper(name = "global-weights")
     @XmlElement(name = "weight")
     private final double[] paramWeights;
@@ -172,7 +175,7 @@ public class LinearEvaluator
             throw new IllegalArgumentException("Unknown category: " + category);
         }
 
-        return desc.distance(pattern);
+        return desc.distance(pattern, paramWeights);
     }
 
     //------//
@@ -215,7 +218,7 @@ public class LinearEvaluator
                               String   category)
     {
         categoryDescs.get(category)
-                     .dumpDistance(pattern);
+                     .dumpDistance(pattern, paramWeights);
     }
 
     //---------//
@@ -301,22 +304,35 @@ public class LinearEvaluator
             }
 
             desc.include(sample.pattern);
+            logger.info("Accu " + desc.getId() + " count:" + desc.getCardinality());
         }
 
         // Determine means & weights
         for (CategoryDesc desc : categoryDescs.values()) {
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "Computing " + desc.getId() + " count:" +
+                    desc.getCardinality());
+            }
+
             desc.compute();
         }
 
         // Compute global weights (average of shape-dependant weights)
         for (int p = 0; p < inputSize; p++) {
-            double weight = 0;
+            int    weightCount = 0;
+            double globalWeight = 0;
 
             for (CategoryDesc desc : categoryDescs.values()) {
-                weight += desc.params[p].weight;
+                double weight = desc.params[p].weight;
+
+                if (weight != NO_WEIGHT_VALUE) {
+                    weightCount++;
+                    globalWeight += weight;
+                }
             }
 
-            paramWeights[p] = weight / outputSize;
+            paramWeights[p] = globalWeight / weightCount;
         }
     }
 
@@ -414,7 +430,8 @@ public class LinearEvaluator
         //~ Instance fields ----------------------------------------------------
 
         /** Number of values in a pattern */
-        private final int inputSize;
+        @XmlElement(name = "input-size")
+        private  int inputSize;
 
         /** Category id */
         @XmlElement(name = "id")
@@ -437,13 +454,13 @@ public class LinearEvaluator
                              int      inputSize,
                              String[] inputNames)
         {
-            super();
+            logger.info("Creating CategoryDesc id:" + id);
             this.id = id;
             this.inputSize = inputSize;
-            params = new ParamDesc[inputSize];
+            params = new ParamDesc[this.inputSize];
 
-            for (int p = 0; p < inputSize; p++) {
-                params[p] = new ParamDesc(inputNames[p]);
+            for (int p = 0; p < this.inputSize; p++) {
+                params[p] = new ParamDesc(p, inputNames[p]);
             }
         }
 
@@ -452,7 +469,7 @@ public class LinearEvaluator
          */
         private CategoryDesc ()
         {
-            inputSize = -1;
+            ///inputSize = -1;
             id = null;
             params = null;
         }
@@ -474,32 +491,33 @@ public class LinearEvaluator
 
         public void compute ()
         {
-            for (ParamDesc param : params) {
-                try {
-                    param.compute();
-                } catch (Exception ex) {
-                    logger.warning(
-                        "Category#" + id + " cannot compute parameters ex:" +
-                        ex);
+            if (getCardinality() > 0) {
+                for (ParamDesc param : params) {
+                    try {
+                        param.compute();
+                    } catch (Exception ex) {
+                        logger.fine(
+                            "Category#" + id +
+                            " cannot compute parameters ex:" + ex);
+                    }
                 }
+            } else {
+                logger.warning("Category#" + id + " has no sample");
             }
         }
 
-        public double distance (double[] pattern)
+        public double distance (double[] pattern,
+                                double[] paramWeights)
         {
-            if (getCardinality() >= 2) {
-                double dist = 0;
+            double dist = 0;
 
-                for (int p = 0; p < inputSize; p++) {
-                    dist += params[p].weightedDelta(pattern[p]);
-                }
-
-                dist /= inputSize;
-
-                return dist;
-            } else {
-                return LinearEvaluator.INFINITE_DISTANCE;
+            for (int p = 0; p < inputSize; p++) {
+                dist += params[p].weightedDelta(pattern[p], paramWeights[p]);
             }
+
+            dist /= inputSize;
+
+            return dist;
         }
 
         public void dump ()
@@ -512,7 +530,8 @@ public class LinearEvaluator
             }
         }
 
-        public double dumpDistance (double[] pattern)
+        public double dumpDistance (double[] pattern,
+                                    double[] paramWeights)
         {
             if ((pattern == null) || (pattern.length != inputSize)) {
                 throw new IllegalArgumentException(
@@ -524,7 +543,9 @@ public class LinearEvaluator
 
                 for (int p = 0; p < inputSize; p++) {
                     ParamDesc param = params[p];
-                    double    wDelta = param.weightedDelta(pattern[p]);
+                    double    wDelta = param.weightedDelta(
+                        pattern[p],
+                        paramWeights[p]);
                     dist += wDelta;
                     System.out.printf(
                         "%2d-> weight:%e wDelta:%e\n",
@@ -538,7 +559,7 @@ public class LinearEvaluator
 
                 return dist;
             } else {
-                return LinearEvaluator.INFINITE_DISTANCE;
+                return INFINITE_DISTANCE;
             }
         }
 
@@ -616,16 +637,22 @@ public class LinearEvaluator
 
         /** Weight for this parameter */
         @XmlAttribute(name = "weight")
-        double weight;
+        double weight = NO_WEIGHT_VALUE;
 
         /** Name used for this parameter */
         @XmlAttribute(name = "name")
         String name;
 
+        /** Parameter index in input pattern */
+        @XmlAttribute(name = "id")
+        int id;
+
         //~ Constructors -------------------------------------------------------
 
-        public ParamDesc (String name)
+        public ParamDesc (int    id,
+                          String name)
         {
+            this.id = id;
             this.name = name;
         }
 
@@ -641,20 +668,30 @@ public class LinearEvaluator
         /** Compute the param characteristics out of its data sample */
         public void compute ()
         {
-            double weightMax = 2500;
             mean = sample.getMeanValue();
-            weight = Math.min(weightMax, 1 / sample.getVariance());
+
+            if (sample.getCardinality() > 1) {
+                double var = sample.getVariance();
+                weight = 1 / var;
+            }
         }
 
         public void dump ()
         {
             StringBuilder sb = new StringBuilder();
-            sb.append("name=")
+            sb.append("id=")
+              .append(id);
+            sb.append(" name=")
               .append(name);
             sb.append(" mean=")
               .append(mean);
-            sb.append(" weight=")
-              .append(weight);
+            sb.append(" weight=");
+
+            if (weight == NO_WEIGHT_VALUE) {
+                sb.append("NO_WEIGHT_VALUE");
+            } else {
+                sb.append(weight);
+            }
 
             if ((sample != null) & (sample.getCardinality() >= 2)) {
                 sb.append(" var=")
@@ -672,15 +709,21 @@ public class LinearEvaluator
         public void reset ()
         {
             sample.reset();
-            mean = weight = 0;
+            mean = 0;
+            weight = NO_WEIGHT_VALUE;
         }
 
         /** Report the weighted square delta of a value vs param mean value */
-        public double weightedDelta (double val)
+        public double weightedDelta (double val,
+                                     double stdWeight)
         {
             double dif = mean - val;
 
-            return dif * dif * weight;
+            if (weight != NO_WEIGHT_VALUE) {
+                return dif * dif * weight;
+            } else {
+                return dif * dif * stdWeight;
+            }
         }
     }
 }

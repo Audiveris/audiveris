@@ -25,7 +25,6 @@ import omr.score.ui.ScoreConstants;
 import omr.score.ui.ScoreOrientation;
 import omr.score.ui.ScoreTree;
 import omr.score.ui.ScoreView;
-import omr.score.visitor.ScoreReductor;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;

@@ -30,7 +30,7 @@ public class ScriptManager
     private static final Logger logger = Logger.getLogger(ScriptManager.class);
 
     /** File extension for script files */
-    public static final String SCRIPT_EXTENSION = ".script";
+    public static final String SCRIPT_EXTENSION = ".script.xml";
 
     /** Un/marshalling context for use with JAXB */
     private static JAXBContext jaxbContext;

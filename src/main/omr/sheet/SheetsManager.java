@@ -13,7 +13,7 @@ import omr.log.Logger;
 
 import omr.score.Score;
 import omr.score.ui.ScoreOrientation;
-import omr.score.visitor.PaintingParameters;
+import omr.score.ui.PaintingParameters;
 
 import omr.script.ScriptActions;
 

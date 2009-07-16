@@ -28,8 +28,6 @@ import omr.score.entity.ScorePart;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Slot;
 import static omr.score.ui.ScoreConstants.*;
-import omr.score.visitor.PaintingParameters;
-import omr.score.visitor.ScorePainter;
 
 import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
