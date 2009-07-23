@@ -138,6 +138,20 @@ public class Population
         s2 += (val * val);
     }
 
+    //-------------------//
+    // includePopulation //
+    //-------------------//
+    /**
+     * Add a whole population to this one
+     * @param other the other population to include
+     */
+    public void includePopulation (Population other)
+    {
+        n += other.n;
+        s += other.s;
+        s2 += other.s2;
+    }
+
     //-------//
     // reset //
     //-------//
