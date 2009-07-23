@@ -1,0 +1,1923 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<linear-evaluator>
+    <defaults>
+        <parameter name="weight" weight="0.1734463903709265"/>
+        <parameter name="width" weight="0.14816014486109713"/>
+        <parameter name="height" weight="0.22170176508120978"/>
+        <parameter name="n20" weight="1.789364518074133"/>
+        <parameter name="n11" weight="74.22683117629012"/>
+        <parameter name="n02" weight="6.291392016557391"/>
+        <parameter name="n30" weight="7.195752633305226"/>
+        <parameter name="n21" weight="60.2585014286859"/>
+        <parameter name="n12" weight="255.44825005394603"/>
+        <parameter name="n03" weight="13.338150803380596"/>
+        <parameter name="ledger" weight="11.16398744527849"/>
+        <parameter name="stemNb" weight="1.8437121369918474"/>
+    </defaults>
+    <categories>
+        <item id="ARPEGGIATO">
+            <parameter name="weight" training="NOMINAL" weight="25.19663373100518" mean="2.0522264536041424"/>
+            <parameter name="width" training="NOMINAL" weight="315.18828451879074" mean="0.6559139784946234"/>
+            <parameter name="height" training="NOMINAL" weight="3.9470077661035323" mean="5.680555555555556"/>
+            <parameter name="n20" training="NOMINAL" weight="1132527.6416645632" mean="0.009464633292325934"/>
+            <parameter name="n11" training="NOMINAL" weight="209253.5632918532" mean="-0.0022142062909064645"/>
+            <parameter name="n02" training="NOMINAL" weight="110.86356702416147" mean="1.18638511397529"/>
+            <parameter name="n30" training="NOMINAL" weight="3.001632212259045E8" mean="2.6036044843612093E-5"/>
+            <parameter name="n21" training="NOMINAL" weight="1.890951881731625E7" mean="4.11789381158701E-5"/>
+            <parameter name="n12" training="NOMINAL" weight="392833.64189167105" mean="0.0017759018576288805"/>
+            <parameter name="n03" training="NOMINAL" weight="1906.4850856538735" mean="0.0013272189781703646"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="BEAM">
+            <parameter name="weight" training="NOMINAL" weight="1.3349033190169857" mean="1.8108854039470734"/>
+            <parameter name="width" training="NOMINAL" weight="0.4317975244303716" mean="3.1852709803837684"/>
+            <parameter name="height" training="NOMINAL" weight="20.60027597092556" mean="0.7700001950001967"/>
+            <parameter name="n20" training="NOMINAL" weight="17.173863665822044" mean="0.4726189265332475"/>
+            <parameter name="n11" training="NOMINAL" weight="593.2443333827489" mean="-0.0031208448708458917"/>
+            <parameter name="n02" training="NOMINAL" weight="8498.80666918257" mean="0.02153507218256209"/>
+            <parameter name="n30" training="NOMINAL" weight="3301.8496495707013" mean="-7.288415384414495E-4"/>
+            <parameter name="n21" training="NOMINAL" weight="167304.49871362434" mean="-6.38691752387929E-5"/>
+            <parameter name="n12" training="NOMINAL" weight="1177884.4133099732" mean="5.15176641719012E-5"/>
+            <parameter name="n03" training="NOMINAL" weight="8159416.605032647" mean="-3.0782351002224993E-6"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="NOMINAL" weight="389.00129032256604" mean="1.9974259974259974"/>
+        </item>
+        <item id="BEAM_2">
+            <parameter name="weight" training="NOMINAL" weight="0.9224135363894026" mean="3.357007575757576"/>
+            <parameter name="width" training="NOMINAL" weight="1.4308322674355591" mean="2.7621212121212118"/>
+            <parameter name="height" training="NOMINAL" weight="8.8090047604218" mean="1.825757575757576"/>
+            <parameter name="n20" training="NOMINAL" weight="298.7740423589428" mean="0.1922857702668679"/>
+            <parameter name="n11" training="NOMINAL" weight="857.3691825015993" mean="-0.02206474486658909"/>
+            <parameter name="n02" training="NOMINAL" weight="1407.6299477648831" mean="0.0665015603261154"/>
+            <parameter name="n30" training="NOMINAL" weight="30620.68382879062" mean="-0.0017239824265943145"/>
+            <parameter name="n21" training="NOMINAL" weight="510763.75125917804" mean="-2.2391115054146818E-4"/>
+            <parameter name="n12" training="NOMINAL" weight="216676.6715458108" mean="-2.506177534279608E-4"/>
+            <parameter name="n03" training="NOMINAL" weight="2333714.2438765503" mean="-1.6667527247522074E-4"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="2.0"/>
+        </item>
+        <item id="BEAM_3">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="3.84375"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="2.25"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="3.5"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.10946928568780026"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.06267763897151157"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.17552451693216134"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="3.911824106833761E-4"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-7.701747378384828E-4"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="0.0011967580920489067"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="-4.527997602344318E-4"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="2.0"/>
+        </item>
+        <item id="BEAM_HOOK">
+            <parameter name="weight" training="NOMINAL" weight="107.28388663480263" mean="0.5493194713161693"/>
+            <parameter name="width" training="NOMINAL" weight="45.926370941272275" mean="0.9847693002999303"/>
+            <parameter name="height" training="NOMINAL" weight="81.50143768619606" mean="0.6266804305846588"/>
+            <parameter name="n20" training="NOMINAL" weight="1515.7755392370711" mean="0.1410783861284117"/>
+            <parameter name="n11" training="NOMINAL" weight="6514.738458766916" mean="-4.2723512795798913E-4"/>
+            <parameter name="n02" training="NOMINAL" weight="8324.608613498585" mean="0.05183352677395445"/>
+            <parameter name="n30" training="NOMINAL" weight="116109.20605078158" mean="2.615958920495071E-4"/>
+            <parameter name="n21" training="NOMINAL" weight="627711.9624011632" mean="-8.203529859350619E-5"/>
+            <parameter name="n12" training="NOMINAL" weight="582286.4632333851" mean="3.960710466959108E-5"/>
+            <parameter name="n03" training="NOMINAL" weight="1870766.667226339" mean="-8.717182566860564E-5"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="1.0"/>
+        </item>
+        <item id="BRACE">
+            <parameter name="weight" training="NOMINAL" weight="1.4407564845949667" mean="5.06510042845565"/>
+            <parameter name="width" training="NOMINAL" weight="69.35129921894416" mean="1.058879205589732"/>
+            <parameter name="height" training="NOMINAL" weight="0.3219514719346833" mean="14.792048619022301"/>
+            <parameter name="n20" training="NOMINAL" weight="902368.7386875327" mean="0.009329551991449279"/>
+            <parameter name="n11" training="NOMINAL" weight="5749.032435399434" mean="0.008042162296425985"/>
+            <parameter name="n02" training="NOMINAL" weight="4.0842191907888825" mean="3.4432155167932397"/>
+            <parameter name="n30" training="NOMINAL" weight="1.3384381839455487E8" mean="-9.35193234320176E-7"/>
+            <parameter name="n21" training="NOMINAL" weight="3241291.3024450177" mean="1.0830281480505977E-5"/>
+            <parameter name="n12" training="NOMINAL" weight="3604.9028958648687" mean="-0.050071159072036124"/>
+            <parameter name="n03" training="NOMINAL" weight="18.138064425427086" mean="0.019663160044031174"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="BRACKET">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="1.734375"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.0"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="4.5"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.02591346825276684"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="0.0014016938779538995"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.9845828754247314"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.005216171582618797"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-1.2244132962594247E-4"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="0.09414174273471781"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="-0.01512586806978729"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="BREATH_MARK">
+            <parameter name="weight" training="NOMINAL" weight="106.05131637857926" mean="0.5310019841269842"/>
+            <parameter name="width" training="NOMINAL" weight="227.61290322579492" mean="0.6785714285714285"/>
+            <parameter name="height" training="NOMINAL" weight="44.63468634686359" mean="1.2043650793650793"/>
+            <parameter name="n20" training="NOMINAL" weight="93326.51994816886" mean="0.05614734621872578"/>
+            <parameter name="n11" training="NOMINAL" weight="205013.02472563818" mean="-0.00814985413365322"/>
+            <parameter name="n02" training="NOMINAL" weight="70982.42429468641" mean="0.18969365081109268"/>
+            <parameter name="n30" training="NOMINAL" weight="1.6286016688484602E7" mean="-0.0010864022842276154"/>
+            <parameter name="n21" training="NOMINAL" weight="1555187.4291383198" mean="-0.0011787331428010023"/>
+            <parameter name="n12" training="NOMINAL" weight="185064.57741674577" mean="-0.015431929500812564"/>
+            <parameter name="n03" training="NOMINAL" weight="11024.019533619681" mean="0.04379614362954362"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="BREVE">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="2.53125"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="2.375"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="2.0"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.2314098013702363"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="2.836627207912053E-4"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.09625533455265947"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="-3.1517289322384256E-4"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-9.413039146260146E-4"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="1.1642278889597349E-5"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="-7.098463757275413E-4"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="CAESURA">
+            <parameter name="weight" training="NOMINAL" weight="16.197722195316175" mean="1.1131944444444444"/>
+            <parameter name="width" training="NOMINAL" weight="5.877551020408149" mean="2.041666666666667"/>
+            <parameter name="height" training="NOMINAL" weight="3.1249999999999973" mean="2.4"/>
+            <parameter name="n20" training="NOMINAL" weight="435.69187924242397" mean="0.2429549490473097"/>
+            <parameter name="n11" training="NOMINAL" weight="1122.0032649701113" mean="-0.20799887472038855"/>
+            <parameter name="n02" training="NOMINAL" weight="13354.931714918344" mean="0.3415076594184081"/>
+            <parameter name="n30" training="NOMINAL" weight="64667.27343610501" mean="-2.2031400497882995E-4"/>
+            <parameter name="n21" training="NOMINAL" weight="34005.406075891384" mean="-0.0017457389042803719"/>
+            <parameter name="n12" training="NOMINAL" weight="3247.86461895277" mean="0.0054084477625799"/>
+            <parameter name="n03" training="NOMINAL" weight="700.591865365658" mean="-0.014787657625619788"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="CHARACTER">
+            <parameter name="weight" training="NOMINAL" weight="2.6862539349422887" mean="2.15"/>
+            <parameter name="width" training="NOMINAL" weight="2.229965156794426" mean="1.85"/>
+            <parameter name="height" training="NOMINAL" weight="5.925925925925919" mean="2.3"/>
+            <parameter name="n20" training="NOMINAL" weight="98.27218708051065" mean="0.12440886064279003"/>
+            <parameter name="n11" training="NOMINAL" weight="2231.73141589312" mean="4.6749132103900907E-4"/>
+            <parameter name="n02" training="NOMINAL" weight="63.138278504054085" mean="0.23534959138596875"/>
+            <parameter name="n30" training="NOMINAL" weight="65443.92310241791" mean="0.0014303990940691814"/>
+            <parameter name="n21" training="NOMINAL" weight="3480.2475630963104" mean="-0.0015746898088775225"/>
+            <parameter name="n12" training="NOMINAL" weight="7670.665286962759" mean="-7.6837525586E-4"/>
+            <parameter name="n03" training="NOMINAL" weight="2226.092383926276" mean="0.01815193074491104"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="CLUTTER">
+            <parameter name="weight" training="NOMINAL" weight="1.6293198717081185" mean="0.6062704230119635"/>
+            <parameter name="width" training="NOMINAL" weight="1.1735413044091807" mean="0.961148631415717"/>
+            <parameter name="height" training="NOMINAL" weight="0.6056707896794186" mean="1.4367373091253688"/>
+            <parameter name="n20" training="NOMINAL" weight="5.522520630944726" mean="0.26003639584207644"/>
+            <parameter name="n11" training="NOMINAL" weight="105.99491012921888" mean="0.003541647983851575"/>
+            <parameter name="n02" training="NOMINAL" weight="4.9459302852290055" mean="0.4680378326942244"/>
+            <parameter name="n30" training="NOMINAL" weight="688.697243919461" mean="-0.003718910825841792"/>
+            <parameter name="n21" training="NOMINAL" weight="311.354975359853" mean="-0.002200241154327784"/>
+            <parameter name="n12" training="NOMINAL" weight="567.9215425256783" mean="-0.004066188228272428"/>
+            <parameter name="n03" training="NOMINAL" weight="323.9638151521316" mean="-0.010822459169742097"/>
+            <parameter name="ledger" training="NOMINAL" weight="14.264516129032257" mean="0.07462686567164178"/>
+            <parameter name="stemNb" training="NOMINAL" weight="16.75" mean="0.029850746268656716"/>
+        </item>
+        <item id="CODA">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="2.046875"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="2.125"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="2.625"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.11737005419264612"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="9.251319417364803E-19"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.16838845157958454"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-1.1387229814171621E-4"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="3.707966741048E-18"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="4.5894662883425263E-4"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="COMBINING_FLAG_1">
+            <parameter name="weight" training="NOMINAL" weight="92.28176374063996" mean="0.583775391950152"/>
+            <parameter name="width" training="NOMINAL" weight="72.68799135503404" mean="0.991948475501107"/>
+            <parameter name="height" training="NOMINAL" weight="5.765041193164611" mean="2.455788582762268"/>
+            <parameter name="n20" training="NOMINAL" weight="548.5419137927569" mean="0.1647543648433391"/>
+            <parameter name="n11" training="NOMINAL" weight="197.14944010753047" mean="0.2727357595309019"/>
+            <parameter name="n02" training="NOMINAL" weight="24.821596558485666" mean="0.6121762593928189"/>
+            <parameter name="n30" training="NOMINAL" weight="7589.13622959516" mean="-0.00647637961087752"/>
+            <parameter name="n21" training="NOMINAL" weight="1785.0668331561078" mean="0.006646470278714903"/>
+            <parameter name="n12" training="NOMINAL" weight="241.88819085248807" mean="0.06856719471333762"/>
+            <parameter name="n03" training="NOMINAL" weight="16.764516850699458" mean="0.325403145659062"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="NOMINAL" weight="26.520000000000046" mean="1.0384615384615385"/>
+        </item>
+        <item id="COMBINING_FLAG_1_UP">
+            <parameter name="weight" training="NOMINAL" weight="171.05207591169733" mean="0.652004876964303"/>
+            <parameter name="width" training="NOMINAL" weight="106.16294665908488" mean="0.9796413381939698"/>
+            <parameter name="height" training="NOMINAL" weight="38.562860621165726" mean="2.4721818001942655"/>
+            <parameter name="n20" training="NOMINAL" weight="638.3275665424173" mean="0.138473301303774"/>
+            <parameter name="n11" training="NOMINAL" weight="293.8660862139832" mean="-0.2268855195983121"/>
+            <parameter name="n02" training="NOMINAL" weight="66.41921526094961" mean="0.49372841897811864"/>
+            <parameter name="n30" training="NOMINAL" weight="16278.964428219657" mean="-0.004631112799197379"/>
+            <parameter name="n21" training="NOMINAL" weight="2848.0648046580727" mean="-0.005151830063451247"/>
+            <parameter name="n12" training="NOMINAL" weight="475.08837962753336" mean="0.04463660063824651"/>
+            <parameter name="n03" training="NOMINAL" weight="53.21855442089045" mean="-0.1896705375581067"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="1.0"/>
+        </item>
+        <item id="COMBINING_FLAG_2">
+            <parameter name="weight" training="NOMINAL" weight="15.33337059185162" mean="0.986842105263158"/>
+            <parameter name="width" training="NOMINAL" weight="131.5717539863264" mean="1.0855263157894737"/>
+            <parameter name="height" training="NOMINAL" weight="7.8162319428940314" mean="3.12171052631579"/>
+            <parameter name="n20" training="NOMINAL" weight="8824.890450177083" mean="0.12270176631481573"/>
+            <parameter name="n11" training="NOMINAL" weight="4572.421931130227" mean="0.15705477559910666"/>
+            <parameter name="n02" training="NOMINAL" weight="225.61017722787975" mean="0.48039910885392684"/>
+            <parameter name="n30" training="NOMINAL" weight="124249.86217950495" mean="0.0018686714168070332"/>
+            <parameter name="n21" training="NOMINAL" weight="100825.24351423889" mean="0.01289656941450724"/>
+            <parameter name="n12" training="NOMINAL" weight="2586.702502106148" mean="0.05814966804552171"/>
+            <parameter name="n03" training="NOMINAL" weight="124.25810983221237" mean="0.19813865057453894"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="1.0"/>
+        </item>
+        <item id="COMBINING_FLAG_2_UP">
+            <parameter name="weight" training="NOMINAL" weight="9.215295988468013" mean="1.059960757156048"/>
+            <parameter name="width" training="NOMINAL" weight="110.89919999999282" mean="1.2653508771929822"/>
+            <parameter name="height" training="NOMINAL" weight="7.216992919616675" mean="3.320175438596491"/>
+            <parameter name="n20" training="NOMINAL" weight="2458.539480324054" mean="0.15225379038700507"/>
+            <parameter name="n11" training="NOMINAL" weight="6089.018653658273" mean="-0.1883652099507254"/>
+            <parameter name="n02" training="NOMINAL" weight="1679.379344517623" mean="0.5127689692601343"/>
+            <parameter name="n30" training="NOMINAL" weight="40033.633182825295" mean="-0.001380754611773693"/>
+            <parameter name="n21" training="NOMINAL" weight="18703.97596080756" mean="-0.01297774935598948"/>
+            <parameter name="n12" training="NOMINAL" weight="19815.360406805405" mean="0.0678415724623455"/>
+            <parameter name="n03" training="NOMINAL" weight="1558.0863513165716" mean="-0.2245407453921521"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="1.0"/>
+        </item>
+        <item id="COMBINING_FLAG_3">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="2.15625"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.25"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="4.125"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.07148938461351152"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="0.08930653345874846"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.4153943461214151"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.0012677108819820436"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.006050823577270156"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="0.015296547919317515"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.041100203098674605"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="1.0"/>
+        </item>
+        <item id="COMBINING_FLAG_3_UP">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="2.15625"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.25"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="4.125"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.07148938461351147"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.08930653345874846"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.4153943461214152"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.001267710881982068"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-0.006050823577270151"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="0.015296547919317597"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="-0.04110020309867499"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="1.0"/>
+        </item>
+        <item id="COMBINING_FLAG_4">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="2.859375"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.25"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="5.125"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.0540924803299735"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="0.06671336661071486"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.5092074214239181"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="8.560066349807023E-4"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.003937491471160725"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="0.008413760385679966"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.03203079452933791"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="1.0"/>
+        </item>
+        <item id="COMBINING_FLAG_4_UP">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="2.859375"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.25"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="5.125"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.0540924803299735"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.06671336661071486"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.5092074214239177"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="8.56006634980672E-4"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-0.003937491471160725"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="0.008413760385679968"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="-0.03203079452933707"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="1.0"/>
+        </item>
+        <item id="COMBINING_FLAG_5">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="3.5625"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.25"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="6.125"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.043504951591042826"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="0.05323770336891783"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.6164623696630003"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="6.268391859796066E-4"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.002821765911982961"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="0.005372340170437979"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.031683482123185926"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="1.0"/>
+        </item>
+        <item id="COMBINING_FLAG_5_UP">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="3.5625"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.25"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="6.125"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.04350495159104278"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.05323770336891781"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.6164623696630003"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="6.26839185979611E-4"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-0.0028217659119829487"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="0.0053723401704377765"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="-0.031683482123186446"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="1.0"/>
+        </item>
+        <item id="COMMON_TIME">
+            <parameter name="weight" training="NOMINAL" weight="10.360519532222508" mean="1.5335879629629632"/>
+            <parameter name="width" training="NOMINAL" weight="199.0783410138495" mean="1.652777777777778"/>
+            <parameter name="height" training="NOMINAL" weight="11.842105263158036" mean="2.1333333333333333"/>
+            <parameter name="n20" training="NOMINAL" weight="265.0988802470819" mean="0.15596025274863468"/>
+            <parameter name="n11" training="NOMINAL" weight="1949.0953596167385" mean="-0.02072503709109637"/>
+            <parameter name="n02" training="NOMINAL" weight="247.04740306414462" mean="0.25615596509224225"/>
+            <parameter name="n30" training="NOMINAL" weight="1668.1405757128684" mean="0.024360717671281423"/>
+            <parameter name="n21" training="NOMINAL" weight="3655.633814140885" mean="-0.002375106099262962"/>
+            <parameter name="n12" training="NOMINAL" weight="13531.139174047637" mean="0.010705475207889429"/>
+            <parameter name="n03" training="NOMINAL" weight="286.5476302456927" mean="0.0026596427116647122"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="CRESCENDO">
+            <parameter name="weight" training="NOMINAL" weight="0.15111644081803968" mean="4.783906933971136"/>
+            <parameter name="width" training="NOMINAL" weight="0.017666027376076504" mean="13.576754385964913"/>
+            <parameter name="height" training="NOMINAL" weight="34.72402417964247" mean="1.451937134502924"/>
+            <parameter name="n20" training="NOMINAL" weight="0.32206406866074944" mean="2.901065485377755"/>
+            <parameter name="n11" training="NOMINAL" weight="16091.63496073455" mean="-0.004282124329942372"/>
+            <parameter name="n02" training="NOMINAL" weight="1963.3232761949423" mean="0.03986395541645657"/>
+            <parameter name="n30" training="NOMINAL" weight="32.41603140641561" mean="-0.0804596162447491"/>
+            <parameter name="n21" training="NOMINAL" weight="206437.56949320855" mean="-3.4922204462679857E-4"/>
+            <parameter name="n12" training="NOMINAL" weight="3606.917389617718" mean="0.04622933540549844"/>
+            <parameter name="n03" training="NOMINAL" weight="1.4091975479183412E8" mean="-3.509313616689795E-5"/>
+            <parameter name="ledger" training="NOMINAL" weight="3.7333333333333334" mean="0.375"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="CUT_TIME">
+            <parameter name="weight" training="NOMINAL" weight="7.907758604032062" mean="1.980002572016461"/>
+            <parameter name="width" training="NOMINAL" weight="3888.0000000013815" mean="1.7685185185185184"/>
+            <parameter name="height" training="NOMINAL" weight="1727.9999999880165" mean="3.1527777777777772"/>
+            <parameter name="n20" training="NOMINAL" weight="1533.0031395213612" mean="0.10548576224886301"/>
+            <parameter name="n11" training="NOMINAL" weight="98798.49162553827" mean="-0.013119738122558932"/>
+            <parameter name="n02" training="NOMINAL" weight="9808.618256584783" mean="0.21168470418105736"/>
+            <parameter name="n30" training="NOMINAL" weight="30908.637744117703" mean="0.00771529198661322"/>
+            <parameter name="n21" training="NOMINAL" weight="1.3255793580683383E8" mean="-0.003106742736489605"/>
+            <parameter name="n12" training="NOMINAL" weight="746695.8483246783" mean="0.009669228729818654"/>
+            <parameter name="n03" training="NOMINAL" weight="31485.04033355631" mean="0.03117937918737812"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="C_CLEF">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="6.5"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="2.625"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="4.0"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.10276436751465065"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="3.489976223858665E-18"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.21152690458579881"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.006669721877655601"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-2.947120911076675E-18"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="9.78176654975218E-4"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DAL_SEGNO">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="1.890625"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="3.0"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="1.5"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.35549499142282015"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.00441813745053092"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.10376445547175601"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="-0.016078860504289076"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.006980588697037411"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="6.27985517088399E-4"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="-0.007050489738790393"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DASH">
+            <parameter name="weight" training="NOMINAL" weight="325.08172448831385" mean="0.21720679012345678"/>
+            <parameter name="width" training="NOMINAL" weight="15552.000000005526" mean="1.1157407407407407"/>
+            <parameter name="height" training="NOMINAL" weight="431.99999999999676" mean="0.19444444444444442"/>
+            <parameter name="n20" training="NOMINAL" weight="92.26008130630537" mean="0.49405864197530863"/>
+            <parameter name="n11" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="n02" training="NOMINAL" weight="76800.00000000047" mean="0.013194444444444446"/>
+            <parameter name="n30" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="n21" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="n12" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="n03" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DA_CAPO">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="1.890625"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="3.375"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="1.5"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.3937742265154846"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.0010369386095087762"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.10911566832866602"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.04270508221380322"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.012813068379471503"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="0.009676160793170066"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="-0.006516287048540806"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DECRESCENDO">
+            <parameter name="weight" training="NOMINAL" weight="0.12137549027054628" mean="5.766243633696865"/>
+            <parameter name="width" training="NOMINAL" weight="0.01696847317895687" mean="14.847789115646261"/>
+            <parameter name="height" training="NOMINAL" weight="118.88954265846577" mean="1.340702947845805"/>
+            <parameter name="n20" training="NOMINAL" weight="0.33352278520395984" mean="3.0386052253192184"/>
+            <parameter name="n11" training="NOMINAL" weight="3476.15661040549" mean="-0.012434942931172102"/>
+            <parameter name="n02" training="NOMINAL" weight="2094.925725847353" mean="0.02972165243742673"/>
+            <parameter name="n30" training="NOMINAL" weight="95.47758212994995" mean="0.048483239714582925"/>
+            <parameter name="n21" training="NOMINAL" weight="40033.35349986474" mean="-0.002571649927263517"/>
+            <parameter name="n12" training="NOMINAL" weight="5704.03304137607" mean="-0.03214878271729664"/>
+            <parameter name="n03" training="NOMINAL" weight="4257517.951553514" mean="3.144111636954823E-4"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DOT">
+            <parameter name="weight" training="NOMINAL" weight="657.3159364721474" mean="0.19054664415241446"/>
+            <parameter name="width" training="NOMINAL" weight="292.6777941166414" mean="0.4988933581038843"/>
+            <parameter name="height" training="NOMINAL" weight="236.49600693997257" mean="0.470321276590626"/>
+            <parameter name="n20" training="NOMINAL" weight="24711.925024884746" mean="0.08468992759388322"/>
+            <parameter name="n11" training="NOMINAL" weight="49317.08620895577" mean="-0.002165920473592277"/>
+            <parameter name="n02" training="NOMINAL" weight="24244.4888278854" mean="0.0755168891586013"/>
+            <parameter name="n30" training="NOMINAL" weight="614569.7141400852" mean="-3.8858165580457973E-4"/>
+            <parameter name="n21" training="NOMINAL" weight="1274346.2505859411" mean="2.5545282941777968E-5"/>
+            <parameter name="n12" training="NOMINAL" weight="771080.8889982229" mean="3.297115223157197E-4"/>
+            <parameter name="n03" training="NOMINAL" weight="393698.17922458256" mean="-1.655839463510075E-4"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DOUBLE_FLAT">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="1.578125"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.75"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="2.375"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.1665062564240939"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="0.020296010583314976"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.1733120345413622"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.004713589472961563"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-0.0011367524588496883"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.025797207434912674"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="-0.04838159884673223"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DOUBLE_SHARP">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="0.75"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.0"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="1.0"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.11414930555555555"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.11414930555555555"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DYNAMICS_CHAR_M">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="1.40625"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.875"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="1.125"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.1679934842249656"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.004352537722908089"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.07489060356652956"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="-0.0035720836533833142"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.0022209172608503042"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-6.021935485926677E-4"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.0026088541672847363"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DYNAMICS_CHAR_R">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="0.71875"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.25"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="1.125"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.1664055436837347"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.06879263581819677"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.13869739870140524"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.03792886510439423"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-0.010864216236770117"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.02017229946406875"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.03469093877640808"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DYNAMICS_CHAR_S">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="0.734375"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="0.875"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="1.25"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.07343327104784099"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.02144033595638731"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.1793828197990811"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="-7.150841062382091E-4"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.0013354095544722924"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="6.55060325395216E-4"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="-0.009171263048028996"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DYNAMICS_CHAR_Z">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="0.765625"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.25"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="1.125"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.0857301167030744"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.03705938852008941"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.15072004436926786"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="-0.004025513753950197"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-4.387711859314141E-4"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="0.002875529813233286"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="-0.004824401446938794"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DYNAMICS_F">
+            <parameter name="weight" training="NOMINAL" weight="8.154285082380484" mean="1.2253833048498453"/>
+            <parameter name="width" training="NOMINAL" weight="27.353973669253616" mean="1.9442340067340067"/>
+            <parameter name="height" training="NOMINAL" weight="13.393613629116453" mean="2.274410774410774"/>
+            <parameter name="n20" training="NOMINAL" weight="4516.064155800029" mean="0.17418129343718292"/>
+            <parameter name="n11" training="NOMINAL" weight="1787.0157087083296" mean="-0.2261326828258439"/>
+            <parameter name="n02" training="NOMINAL" weight="661.8340698861354" mean="0.3791568601968314"/>
+            <parameter name="n30" training="NOMINAL" weight="106480.18515587918" mean="0.0010016193204915608"/>
+            <parameter name="n21" training="NOMINAL" weight="43890.00013214255" mean="-5.933570173476951E-4"/>
+            <parameter name="n12" training="NOMINAL" weight="9646.761505968563" mean="-0.002876612723348488"/>
+            <parameter name="n03" training="NOMINAL" weight="3467.2687659246103" mean="0.0074119067449103715"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DYNAMICS_FF">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="3.53125"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="3.25"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="2.5"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.15000310573103984"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.09000763741278835"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.15482015088394943"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.0019192648483429783"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-1.1846664520765762E-4"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.004387359887246132"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.008286068844206011"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DYNAMICS_FFF">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="5.328125"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="4.25"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="2.5"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.1835767785418989"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.060288958734076775"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.1040350596382453"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="9.23388109024928E-4"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-0.0011588434628974154"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.0015399078697889818"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.004029477569369286"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DYNAMICS_FFFF">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="7.125"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="5.25"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="2.5"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.2244265526369808"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.04521414821294546"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.07809673556775892"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="1.17868971628273E-4"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-9.316021952308999E-4"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.001012233516458064"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.0025487062910981278"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DYNAMICS_FFFFF">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="8.53125"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="6.375"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="2.5"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.29034271888018476"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.03943866381977725"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.06453706474461814"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.0036132295108773807"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-0.0010710230632495214"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.0012419782173738179"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.0023735133026127047"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DYNAMICS_FFFFFF">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="10.15625"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="7.375"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="2.5"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.338521238962223"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.032928862994993174"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.054171671370050044"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.0031349030686591956"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-9.80675647070007E-4"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-9.455160708396115E-4"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.001734967653612278"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DYNAMICS_FP">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="3.640625"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="3.25"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="2.5"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.17425901946481487"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.036497960327881225"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.120013804873726"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="-0.002146376402539258"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.016930699279947725"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.014439247729244657"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="-5.124962829257296E-4"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DYNAMICS_FZ">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="2.65625"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="2.75"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="2.5"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.17779589863627077"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.07707205373498882"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.15319504376144882"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="-0.009836373503475276"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.03589465570529508"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.027598974467056857"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.006905035354704116"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DYNAMICS_MF">
+            <parameter name="weight" training="NOMINAL" weight="5.825696007314134" mean="2.6821145124716557"/>
+            <parameter name="width" training="NOMINAL" weight="8.52517116391432" mean="2.9940476190476186"/>
+            <parameter name="height" training="NOMINAL" weight="39.27272727273072" mean="2.2678571428571432"/>
+            <parameter name="n20" training="NOMINAL" weight="3122.9446070837807" mean="0.20313663043439356"/>
+            <parameter name="n11" training="NOMINAL" weight="18704.905620000856" mean="-0.04356412831962462"/>
+            <parameter name="n02" training="NOMINAL" weight="7140.097277008435" mean="0.10345119367473413"/>
+            <parameter name="n30" training="NOMINAL" weight="27106.302904755637" mean="-7.374646177628714E-4"/>
+            <parameter name="n21" training="NOMINAL" weight="64412.12459941389" mean="-0.03411645830202123"/>
+            <parameter name="n12" training="NOMINAL" weight="115154.34980727726" mean="0.01964132397518749"/>
+            <parameter name="n03" training="NOMINAL" weight="521761.0296993312" mean="0.00677791351382508"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DYNAMICS_MP">
+            <parameter name="weight" training="NOMINAL" weight="5.076038228586513" mean="3.0298996913580245"/>
+            <parameter name="width" training="NOMINAL" weight="162.00000000005755" mean="3.4444444444444446"/>
+            <parameter name="height" training="NOMINAL" weight="2591.9999999979373" mean="1.7361111111111112"/>
+            <parameter name="n20" training="NOMINAL" weight="32808.45920640223" mean="0.2612134055221984"/>
+            <parameter name="n11" training="NOMINAL" weight="670.1660116933406" mean="-0.018687898502824967"/>
+            <parameter name="n02" training="NOMINAL" weight="2079.9452904831855" mean="0.0731015290607107"/>
+            <parameter name="n30" training="NOMINAL" weight="5983.077954776832" mean="-0.005704130540663738"/>
+            <parameter name="n21" training="NOMINAL" weight="6031.586763062444" mean="-0.00610790335466885"/>
+            <parameter name="n12" training="NOMINAL" weight="15409.907631199027" mean="-0.00389268374956089"/>
+            <parameter name="n03" training="NOMINAL" weight="3.4979211905420625E8" mean="0.007441384100590025"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DYNAMICS_P">
+            <parameter name="weight" training="NOMINAL" weight="11.70614949554899" mean="1.2482227199094413"/>
+            <parameter name="width" training="NOMINAL" weight="11.530451186145164" mean="1.7975509182939529"/>
+            <parameter name="height" training="NOMINAL" weight="132.24649673831138" mean="1.7155645352239777"/>
+            <parameter name="n20" training="NOMINAL" weight="6602.780812788183" mean="0.15681603209280337"/>
+            <parameter name="n11" training="NOMINAL" weight="11533.910299941586" mean="-0.09083660320781783"/>
+            <parameter name="n02" training="NOMINAL" weight="1530.3074591931534" mean="0.18642599418758432"/>
+            <parameter name="n30" training="NOMINAL" weight="10984.122368132133" mean="0.0163480043196743"/>
+            <parameter name="n21" training="NOMINAL" weight="245284.05389595887" mean="0.0094326595724255"/>
+            <parameter name="n12" training="NOMINAL" weight="35657.585657082855" mean="-0.028769780557902604"/>
+            <parameter name="n03" training="NOMINAL" weight="215309.60208021782" mean="0.019495645968940562"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DYNAMICS_PP">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="3.375"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="3.5"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="1.75"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.2332088604379418"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.03455849432251183"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.07401959733653417"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.003052930295563595"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.002081300732040244"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.0063459977300643145"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.004728622019489448"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DYNAMICS_PPP">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="5.125"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="5.125"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="1.75"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.34029776279181995"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.023146604218960795"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.04860033929245088"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.0014512178997862827"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="9.989055265345631E-4"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.0036156199354284817"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.002761118088265001"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DYNAMICS_PPPP">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="6.8125"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="6.625"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="1.75"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.45105645317595294"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.017189238619366824"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.03658452098369996"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.0028552028586519966"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="3.2960043106633366E-4"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.0023559265165780515"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.0017468724828096783"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DYNAMICS_PPPPP">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="8.453125"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="8.0"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="1.75"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.5593087981147908"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.01320295213816565"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.029575445946932524"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.0035348826313147045"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="3.9247036088709794E-4"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.0016065701619712971"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.0012196401335185588"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DYNAMICS_PPPPPP">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="10.125"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="9.5"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="1.75"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.6713295012699001"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.011025326512021072"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.024721093657386225"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.0051211409052584755"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="1.3163513698456105E-4"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.0012023702883791896"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="9.271334111511646E-4"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DYNAMICS_RF">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="2.484375"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="2.875"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="2.5"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.2249383750543266"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.09495061670347298"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.16636504121348974"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="-0.017749866913964574"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-0.03413621904647979"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="0.020208043077374564"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.017021950019192912"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DYNAMICS_RFZ">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="3.375"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="3.5"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="2.5"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.2546077992430022"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.04743068256871413"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.10126947667403334"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="-0.028170426892261104"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.004174480920570606"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.002191303858979655"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.005555758622444113"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DYNAMICS_SF">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="2.609375"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="2.5"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="2.5"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.14982084935511011"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.0959077935777482"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.16668496615002626"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.012890791810609188"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-0.025785655813112516"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="0.014218267370767422"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.008104062212334473"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DYNAMICS_SFFZ">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="5.1875"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="4.125"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="2.5"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.2245152314148456"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.04454554318303842"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.08144753312859518"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.00989711202499634"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.004146898024362642"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.0031920248939756456"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.0023136173109037186"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DYNAMICS_SFP">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="4.515625"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="3.625"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="2.625"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.19548671461073852"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.021732511670914334"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.09284356939590717"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="1.867117166952973E-4"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.005046251317394479"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.001207566727983565"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="-0.0012008950679170134"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DYNAMICS_SFPP">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="6.125"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="5.25"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="2.5"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.3134610153932446"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.005393858266963596"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.059889530377436224"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.003921258603651953"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.0018694220083449243"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.004297287434140787"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="1.047441386964536E-4"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="DYNAMICS_SFZ">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="3.484375"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="3.125"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="2.5"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.19391866810489625"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.0520205162203357"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.10154247343471562"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.008897763309602747"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.003541409115572713"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.003780979742090985"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.0037624532678022004"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="EIGHTH_REST">
+            <parameter name="weight" training="NOMINAL" weight="125.09464997663463" mean="0.6991497603144449"/>
+            <parameter name="width" training="NOMINAL" weight="447.20382442141306" mean="1.0844204800474162"/>
+            <parameter name="height" training="NOMINAL" weight="227.7158267238895" mean="1.947780566240321"/>
+            <parameter name="n20" training="NOMINAL" weight="7048.450856805495" mean="0.1066266284323914"/>
+            <parameter name="n11" training="NOMINAL" weight="3526.0360202521033" mean="0.04924578172952594"/>
+            <parameter name="n02" training="NOMINAL" weight="501.355597687704" mean="0.35519155415982623"/>
+            <parameter name="n30" training="NOMINAL" weight="57532.17484243764" mean="-0.004493265890239387"/>
+            <parameter name="n21" training="NOMINAL" weight="15272.845616318717" mean="-0.026508207758365588"/>
+            <parameter name="n12" training="NOMINAL" weight="10452.391642230512" mean="0.017929127412727917"/>
+            <parameter name="n03" training="NOMINAL" weight="463.89336477222236" mean="0.2178056339977767"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="FERMATA">
+            <parameter name="weight" training="NOMINAL" weight="25.198214914110046" mean="1.5087592907533385"/>
+            <parameter name="width" training="NOMINAL" weight="54.789698459944596" mean="2.686904761904762"/>
+            <parameter name="height" training="NOMINAL" weight="99.4658939619408" mean="1.5884920634920636"/>
+            <parameter name="n20" training="NOMINAL" weight="233.71857630621525" mean="0.3383217238130457"/>
+            <parameter name="n11" training="NOMINAL" weight="10182.441080244886" mean="-0.0015307387445885742"/>
+            <parameter name="n02" training="NOMINAL" weight="5883.057185303153" mean="0.11529388190827931"/>
+            <parameter name="n30" training="NOMINAL" weight="10387.391033912652" mean="0.0043415469447157795"/>
+            <parameter name="n21" training="NOMINAL" weight="880.3415028170145" mean="0.05701371540394775"/>
+            <parameter name="n12" training="NOMINAL" weight="472264.2341917453" mean="7.657742864730741E-4"/>
+            <parameter name="n03" training="NOMINAL" weight="141552.79578855433" mean="0.020128944693297738"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="FERMATA_BELOW">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="1.609375"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="2.625"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="1.625"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.302663943052565"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.008418388124389704"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.10625074927223356"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="-0.004554507331788052"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-0.049083699670748916"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="0.0012541178137500746"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="-0.02211952453085928"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="FLAT">
+            <parameter name="weight" training="NOMINAL" weight="10.940648220163778" mean="0.8081337060656485"/>
+            <parameter name="width" training="NOMINAL" weight="216.74021576457977" mean="0.9300994004184486"/>
+            <parameter name="height" training="NOMINAL" weight="5.35059902191781" mean="2.57395313505002"/>
+            <parameter name="n20" training="NOMINAL" weight="1315.1739744138051" mean="0.1102870401187519"/>
+            <parameter name="n11" training="NOMINAL" weight="1068.4409707753343" mean="0.05178785096630845"/>
+            <parameter name="n02" training="NOMINAL" weight="55.23161868979032" mean="0.44861885078625063"/>
+            <parameter name="n30" training="NOMINAL" weight="14203.588717398397" mean="0.012579689098426577"/>
+            <parameter name="n21" training="NOMINAL" weight="25755.05511481988" mean="-0.004632903395990524"/>
+            <parameter name="n12" training="NOMINAL" weight="960.0520644388931" mean="-0.09646799277521541"/>
+            <parameter name="n03" training="NOMINAL" weight="63.95194174335002" mean="-0.20157058745779396"/>
+            <parameter name="ledger" training="NOMINAL" weight="57.009009009009006" mean="0.017699115044247787"/>
+            <parameter name="stemNb" training="NOMINAL" weight="113.0" mean="0.008849557522123894"/>
+        </item>
+        <item id="F_CLEF">
+            <parameter name="weight" training="NOMINAL" weight="4.118687952716113" mean="2.7238847870051703"/>
+            <parameter name="width" training="NOMINAL" weight="15.172420502691516" mean="2.724415204678362"/>
+            <parameter name="height" training="NOMINAL" weight="11.317349803517452" mean="3.177897395002658"/>
+            <parameter name="n20" training="NOMINAL" weight="16425.221258032834" mean="0.1731923152064958"/>
+            <parameter name="n11" training="NOMINAL" weight="1130358.4057909243" mean="-0.025291749394041215"/>
+            <parameter name="n02" training="NOMINAL" weight="24049.990095274636" mean="0.24228302851883665"/>
+            <parameter name="n30" training="NOMINAL" weight="207381.94581186792" mean="-0.006810173962342736"/>
+            <parameter name="n21" training="NOMINAL" weight="398302.1310546988" mean="-0.012533128071285045"/>
+            <parameter name="n12" training="NOMINAL" weight="207424.750522347" mean="-0.03862910249221379"/>
+            <parameter name="n03" training="NOMINAL" weight="80988.61169050014" mean="0.07012080356344336"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="F_CLEF_OTTAVA_ALTA">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="4.125"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="2.875"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="4.625"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.10787035950065382"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="0.001520129845284798"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.3017981119737315"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.004728946959032531"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.007990101427325145"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.03647914900247008"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.015287639277788425"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="F_CLEF_OTTAVA_BASSA">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="3.859375"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="2.75"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="4.5"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.11384004752600724"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.0446632848953127"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.4043243014254946"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.005657851952690974"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-0.023380373895452795"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.038114285005900014"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.17750565917964792"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="GRACE_NOTE_NO_SLASH">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="1.359375"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.5"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="2.75"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.09731020587605518"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.1095849221643637"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.4404430389838771"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.007114260805590437"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.020114966098760644"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.03231690024381087"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="-0.06777151961536791"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="GRACE_NOTE_SLASH">
+            <parameter name="weight" training="NOMINAL" weight="48.17928995154885" mean="1.2713871792103084"/>
+            <parameter name="width" training="NOMINAL" weight="38.64936582515732" mean="1.6992063492063492"/>
+            <parameter name="height" training="NOMINAL" weight="43.36333945942008" mean="2.721201814058957"/>
+            <parameter name="n20" training="NOMINAL" weight="5962.761467638013" mean="0.1078549503882134"/>
+            <parameter name="n11" training="NOMINAL" weight="1982.5865063645203" mean="-0.14034224593584718"/>
+            <parameter name="n02" training="NOMINAL" weight="274.4300874604539" mean="0.4631193545929641"/>
+            <parameter name="n30" training="NOMINAL" weight="7767.693366136382" mean="0.013102145715907457"/>
+            <parameter name="n21" training="NOMINAL" weight="3700.777015207023" mean="0.005673549190589444"/>
+            <parameter name="n12" training="NOMINAL" weight="2673.034855963189" mean="-0.033688673766753545"/>
+            <parameter name="n03" training="NOMINAL" weight="1015.227406452137" mean="0.011114715903881982"/>
+            <parameter name="ledger" training="NOMINAL" weight="3.4999999999999996" mean="0.5714285714285714"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="G_CLEF">
+            <parameter name="weight" training="NOMINAL" weight="1.1751824917625568" mean="6.343244054578566"/>
+            <parameter name="width" training="NOMINAL" weight="40.236300390455085" mean="2.783463418989734"/>
+            <parameter name="height" training="NOMINAL" weight="2.8687479539891774" mean="7.515984089010409"/>
+            <parameter name="n20" training="NOMINAL" weight="29109.223082018874" mean="0.06702408637802258"/>
+            <parameter name="n11" training="NOMINAL" weight="758.7004652136519" mean="7.851217534075185E-7"/>
+            <parameter name="n02" training="NOMINAL" weight="686.679469056005" mean="0.5826276141081348"/>
+            <parameter name="n30" training="NOMINAL" weight="257967.4369960512" mean="-6.702894638608565E-5"/>
+            <parameter name="n21" training="NOMINAL" weight="186449.777610173" mean="0.010251725754402686"/>
+            <parameter name="n12" training="NOMINAL" weight="19391.445872752847" mean="0.016849401172568314"/>
+            <parameter name="n03" training="NOMINAL" weight="308.54595355027266" mean="-0.02803408038610819"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="G_CLEF_OTTAVA_ALTA">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="7.453125"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="2.625"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="8.375"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.05049482403851034"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.03133622250820416"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.6373105964016855"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="-0.0024644531645043287"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.01109114720291553"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="0.008859649587464243"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="-0.09948898137945077"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="G_CLEF_OTTAVA_BASSA">
+            <parameter name="weight" training="NOMINAL" weight="6.763661731296691" mean="7.919775722789115"/>
+            <parameter name="width" training="NOMINAL" weight="35.327839783040545" mean="2.8705357142857144"/>
+            <parameter name="height" training="NOMINAL" weight="7.94370954123255" mean="8.764880952380953"/>
+            <parameter name="n20" training="NOMINAL" weight="514968.7737016641" mean="0.05325505163219252"/>
+            <parameter name="n11" training="NOMINAL" weight="616.3257190471803" mean="0.028105743521579865"/>
+            <parameter name="n02" training="NOMINAL" weight="11542.728278936394" mean="0.6176170785396866"/>
+            <parameter name="n30" training="NOMINAL" weight="3144575.745673339" mean="-0.0010912028950626441"/>
+            <parameter name="n21" training="NOMINAL" weight="57883.71364780207" mean="0.0047728653681133205"/>
+            <parameter name="n12" training="NOMINAL" weight="47751.75463935848" mean="0.02609780495798008"/>
+            <parameter name="n03" training="NOMINAL" weight="4879.815977222462" mean="0.03216281488809087"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="HEAD_AND_FLAG_1">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="1.765625"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.25"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="3.625"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.07348137982128998"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="0.043807007707410854"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.6796590903578013"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="-0.0015930928710216762"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-0.00974969022194324"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.09812495102156805"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="-0.377083949879566"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="1.0"/>
+        </item>
+        <item id="HEAD_AND_FLAG_1_UP">
+            <parameter name="weight" training="NOMINAL" weight="58.518997010228254" mean="1.5670581908174248"/>
+            <parameter name="width" training="NOMINAL" weight="213.9033551381934" mean="1.1881466486729644"/>
+            <parameter name="height" training="NOMINAL" weight="20.823423176157455" mean="3.8615047233468287"/>
+            <parameter name="n20" training="NOMINAL" weight="101290.44165183161" mean="0.0678693169476358"/>
+            <parameter name="n11" training="NOMINAL" weight="10854.317139225353" mean="-0.0718265188145959"/>
+            <parameter name="n02" training="NOMINAL" weight="73.6275248250353" mean="0.8388564698951015"/>
+            <parameter name="n30" training="NOMINAL" weight="1969790.2823404213" mean="4.392527571977081E-4"/>
+            <parameter name="n21" training="NOMINAL" weight="145818.4601133358" mean="0.006486180088144284"/>
+            <parameter name="n12" training="NOMINAL" weight="5570.557993359614" mean="-0.10082590161761779"/>
+            <parameter name="n03" training="NOMINAL" weight="65.40222465760489" mean="0.6308736873486617"/>
+            <parameter name="ledger" training="NOMINAL" weight="7.090909090909091" mean="0.15384615384615385"/>
+            <parameter name="stemNb" training="NOMINAL" weight="5.200000000000003" mean="1.2307692307692308"/>
+        </item>
+        <item id="HEAD_AND_FLAG_2">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="2.5625"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.25"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="4.625"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.05299115110053539"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="0.05294467578822119"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.8024416088710254"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="-2.8742568461801013E-4"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-0.005372289828754514"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.06032384617340905"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="-0.03916827674976491"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="1.0"/>
+        </item>
+        <item id="HEAD_AND_FLAG_2_UP">
+            <parameter name="weight" training="NOMINAL" weight="9.216192073247294" mean="2.058114035087719"/>
+            <parameter name="width" training="NOMINAL" weight="468.32432432426486" mean="1.2061403508771928"/>
+            <parameter name="height" training="NOMINAL" weight="6.682607018896786" mean="4.320175438596491"/>
+            <parameter name="n20" training="NOMINAL" weight="96444.90851396741" mean="0.06342161271764551"/>
+            <parameter name="n11" training="NOMINAL" weight="87672.76215643615" mean="-0.05762343527736033"/>
+            <parameter name="n02" training="NOMINAL" weight="713.3169142118729" mean="0.8925339075240651"/>
+            <parameter name="n30" training="NOMINAL" weight="1251480.1343081652" mean="1.7942263715934977E-4"/>
+            <parameter name="n21" training="NOMINAL" weight="3685518.276549455" mean="0.00901347110995991"/>
+            <parameter name="n12" training="NOMINAL" weight="335081.65066209715" mean="-0.06450213541317867"/>
+            <parameter name="n03" training="NOMINAL" weight="128.72289876096383" mean="0.18979991588115605"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="1.0"/>
+        </item>
+        <item id="HEAD_AND_FLAG_3">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="3.21875"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.25"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="5.125"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.0433224915738331"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="0.045639944835260765"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.6979113092748692"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="2.0507375638273483E-4"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-0.0030158999227411745"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.035605451661570496"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.01686012199982848"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="1.0"/>
+        </item>
+        <item id="HEAD_AND_FLAG_3_UP">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="3.21875"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.25"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="5.125"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.043322491573833194"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.04939202563860879"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.6924515741351682"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="2.0507375638269414E-4"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.0030489206615556133"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.027777294405977666"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="-0.014175683017706256"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="1.0"/>
+        </item>
+        <item id="HEAD_AND_FLAG_4">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="3.921875"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.25"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="6.125"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.036332286289517575"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="0.040739440612180246"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.8001905213861469"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="2.1597374641527784E-4"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-0.0023160475175124256"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.02705376569850437"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.06500560302946351"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="1.0"/>
+        </item>
+        <item id="HEAD_AND_FLAG_4_UP">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="3.921875"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.25"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="6.125"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.03633228628951749"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.043264158647706275"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.7954203447792031"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="2.1597374641529605E-4"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.0023281158767137875"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.020898338981118238"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="-0.061298020304630114"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="1.0"/>
+        </item>
+        <item id="HEAD_AND_FLAG_5">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="4.625"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.25"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="7.125"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.03126553924496081"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="0.036457844920340314"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.904040111148401"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="2.059188941331939E-4"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-0.0018269956025245076"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.020978754722730884"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.09479477547775723"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="1.0"/>
+        </item>
+        <item id="HEAD_AND_FLAG_5_UP">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="4.625"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.25"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="7.125"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.03126553924496082"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.03827196501194399"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.8998411989418211"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="2.0591889413316424E-4"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.0018312677985443046"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.01601238045660566"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="-0.09060169958331664"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="1.0"/>
+        </item>
+        <item id="INVERTED_MORDENT">
+            <parameter name="weight" training="NOMINAL" weight="175.49953322674762" mean="1.4370480371900827"/>
+            <parameter name="width" training="NOMINAL" weight="527.9999999998199" mean="2.465909090909091"/>
+            <parameter name="height" training="NOMINAL" weight="202.0173913043558" mean="1.8125"/>
+            <parameter name="n20" training="NOMINAL" weight="19994.02855179803" mean="0.22633915948944638"/>
+            <parameter name="n11" training="NOMINAL" weight="535707.7955728552" mean="0.007391526811066883"/>
+            <parameter name="n02" training="NOMINAL" weight="2834.267443113966" mean="0.07862085591113736"/>
+            <parameter name="n30" training="NOMINAL" weight="20889.311101183976" mean="-0.008503789280640321"/>
+            <parameter name="n21" training="NOMINAL" weight="29690.55509119641" mean="0.008413604111911414"/>
+            <parameter name="n12" training="NOMINAL" weight="571757.2913868788" mean="-3.684304570061996E-4"/>
+            <parameter name="n03" training="NOMINAL" weight="46483.853709178606" mean="-0.006197485104401288"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="INVERTED_TURN">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="1.5"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="2.375"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="1.0"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.3224001283998839"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-8.149323640046055E-4"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.058565492983217525"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.00547470937508434"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.00274526277278684"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-7.118670639006615E-4"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="-4.115304594721558E-4"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="MORDENT">
+            <parameter name="weight" training="NOMINAL" weight="29.893648422900576" mean="1.0939759814049586"/>
+            <parameter name="width" training="NOMINAL" weight="103.7142857142793" mean="2.409090909090909"/>
+            <parameter name="height" training="NOMINAL" weight="528.0000000000675" mean="1.0340909090909092"/>
+            <parameter name="n20" training="NOMINAL" weight="210.50358306384553" mean="0.361726954162197"/>
+            <parameter name="n11" training="NOMINAL" weight="133105.2227246349" mean="0.013231350768132241"/>
+            <parameter name="n02" training="NOMINAL" weight="6722.398115624203" mean="0.055951378283403054"/>
+            <parameter name="n30" training="NOMINAL" weight="20037.16861818626" mean="-0.011846139436798166"/>
+            <parameter name="n21" training="NOMINAL" weight="10235.421977574146" mean="0.012191748040242124"/>
+            <parameter name="n12" training="NOMINAL" weight="326493.27266576665" mean="-0.0016891981079250225"/>
+            <parameter name="n03" training="NOMINAL" weight="236773.10205770808" mean="-0.0026685765559179477"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="MULTI_REST">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="0.546875"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="0.625"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="0.875"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.05892857142857143"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.11607142857142858"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="NATURAL">
+            <parameter name="weight" training="NOMINAL" weight="11.636772237773242" mean="1.0818466249706282"/>
+            <parameter name="width" training="NOMINAL" weight="132.70852157680156" mean="0.7642621089989513"/>
+            <parameter name="height" training="NOMINAL" weight="2.1430823852550884" mean="3.222052674684253"/>
+            <parameter name="n20" training="NOMINAL" weight="7510.928656652625" mean="0.056114967315355514"/>
+            <parameter name="n11" training="NOMINAL" weight="5687.6057894842315" mean="0.06083634257435964"/>
+            <parameter name="n02" training="NOMINAL" weight="166.48653460269196" mean="0.47102655403802707"/>
+            <parameter name="n30" training="NOMINAL" weight="647273.4382210645" mean="-9.100395186733847E-4"/>
+            <parameter name="n21" training="NOMINAL" weight="325093.42448341777" mean="-0.0010837826231036556"/>
+            <parameter name="n12" training="NOMINAL" weight="44239.03800275452" mean="-6.195745807240198E-4"/>
+            <parameter name="n03" training="NOMINAL" weight="1394.6301109351746" mean="0.007444236325297212"/>
+            <parameter name="ledger" training="NOMINAL" weight="37.0" mean="0.02702702702702703"/>
+            <parameter name="stemNb" training="NOMINAL" weight="37.0" mean="0.02702702702702703"/>
+        </item>
+        <item id="NOISE">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="0.0625"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="0.5"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="0.25"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.328125"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.09375"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.0625"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.03125"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.0234375"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.01171875"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="NOTEHEAD_BLACK">
+            <parameter name="weight" training="NOMINAL" weight="126.36613567589866" mean="0.941436169430244"/>
+            <parameter name="width" training="NOMINAL" weight="261.0659844130813" mean="1.1416104299971521"/>
+            <parameter name="height" training="NOMINAL" weight="262.3783960682537" mean="1.0429370070560087"/>
+            <parameter name="n20" training="NOMINAL" weight="35914.56654858416" mean="0.09191747770792838"/>
+            <parameter name="n11" training="NOMINAL" weight="102290.66287454723" mean="-0.023756067765562387"/>
+            <parameter name="n02" training="NOMINAL" weight="39782.82027411711" mean="0.0765526426312667"/>
+            <parameter name="n30" training="NOMINAL" weight="249514.24434829323" mean="9.338317825554765E-5"/>
+            <parameter name="n21" training="NOMINAL" weight="1499298.257495182" mean="-1.683311691821256E-5"/>
+            <parameter name="n12" training="NOMINAL" weight="370365.5340377075" mean="-9.2962725066303E-5"/>
+            <parameter name="n03" training="NOMINAL" weight="536075.0265008983" mean="1.1291374254124208E-4"/>
+            <parameter name="ledger" training="NOMINAL" weight="8.734757886009715" mean="0.13177257525083613"/>
+            <parameter name="stemNb" training="NOMINAL" weight="75.71288135593194" mean="1.0133779264214047"/>
+        </item>
+        <item id="NOTEHEAD_BLACK_2">
+            <parameter name="weight" training="NOMINAL" weight="36.98790653999579" mean="2.0249660371012785"/>
+            <parameter name="width" training="NOMINAL" weight="151.42582310449387" mean="1.1771885521885521"/>
+            <parameter name="height" training="NOMINAL" weight="268.6253855468143" mean="2.072764683875796"/>
+            <parameter name="n20" training="NOMINAL" weight="149505.75606347498" mean="0.046415124208035674"/>
+            <parameter name="n11" training="NOMINAL" weight="1410349.253002533" mean="-0.010634061800826699"/>
+            <parameter name="n02" training="NOMINAL" weight="8010.749809981062" mean="0.16699807619540408"/>
+            <parameter name="n30" training="NOMINAL" weight="2051502.995875676" mean="-2.5764060478391637E-4"/>
+            <parameter name="n21" training="NOMINAL" weight="1.3615968707175888E7" mean="6.541430138118857E-5"/>
+            <parameter name="n12" training="NOMINAL" weight="1181819.7521525444" mean="3.0167698829120106E-4"/>
+            <parameter name="n03" training="NOMINAL" weight="2069647.7552437908" mean="-2.7168403538126715E-4"/>
+            <parameter name="ledger" training="NOMINAL" weight="7.630434782608696" mean="0.14814814814814814"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="1.0"/>
+        </item>
+        <item id="NOTEHEAD_BLACK_3">
+            <parameter name="weight" training="NOMINAL" weight="27.861140915724132" mean="3.0063904132717267"/>
+            <parameter name="width" training="NOMINAL" weight="230.99756947007393" mean="1.207611832611833"/>
+            <parameter name="height" training="NOMINAL" weight="45.11961066931953" mean="3.136844636844636"/>
+            <parameter name="n20" training="NOMINAL" weight="448315.69662474946" mean="0.031070826883657858"/>
+            <parameter name="n11" training="NOMINAL" weight="95440.96269068083" mean="-0.0064017842015561596"/>
+            <parameter name="n02" training="NOMINAL" weight="849.3851909839553" mean="0.2661272289570756"/>
+            <parameter name="n30" training="NOMINAL" weight="6270201.774267606" mean="-5.4286255221507965E-5"/>
+            <parameter name="n21" training="NOMINAL" weight="2368816.972041622" mean="6.444063413814785E-7"/>
+            <parameter name="n12" training="NOMINAL" weight="261625.02712619194" mean="-9.713500448360955E-5"/>
+            <parameter name="n03" training="NOMINAL" weight="24248.726469086683" mean="0.0028627765641275763"/>
+            <parameter name="ledger" training="NOMINAL" weight="6.1764705882352935" mean="0.19047619047619047"/>
+            <parameter name="stemNb" training="NOMINAL" weight="20.999999999999996" mean="1.0476190476190477"/>
+        </item>
+        <item id="ONE_HUNDRED_TWENTY_EIGHTH_REST">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="3.5625"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="2.125"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="5.875"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.06357261411068478"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.14839198160837605"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.6620211752064068"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.002060447298926022"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-0.004162750297887275"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="0.001877055527861438"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.060886985885061515"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="OTTAVA_ALTA">
+            <parameter name="weight" training="NOMINAL" weight="21.340575541110262" mean="2.1438078703703702"/>
+            <parameter name="width" training="NOMINAL" weight="61.349112426036825" mean="2.9652777777777777"/>
+            <parameter name="height" training="NOMINAL" weight="10367.999999991749" mean="1.8819444444444444"/>
+            <parameter name="n20" training="NOMINAL" weight="534.4614361474999" mean="0.309161501143445"/>
+            <parameter name="n11" training="NOMINAL" weight="15097.204211549986" mean="-0.07556643797730114"/>
+            <parameter name="n02" training="NOMINAL" weight="6060.87168461303" mean="0.10754215638023537"/>
+            <parameter name="n30" training="NOMINAL" weight="1130.7164549343677" mean="0.07686896822169051"/>
+            <parameter name="n21" training="NOMINAL" weight="24055.011254849065" mean="-0.010597649903223873"/>
+            <parameter name="n12" training="NOMINAL" weight="1.7328013374778736E7" mean="-0.019040908923682744"/>
+            <parameter name="n03" training="NOMINAL" weight="7180844.454611291" mean="0.01671342197671305"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="OTTAVA_BASSA">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="2.359375"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="2.875"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="2.125"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.2674853817263169"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.08046701797382538"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.10732742420673427"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.038973934635053074"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-0.00928357204642041"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.012909799897364072"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.014903550436300704"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="PEDAL_MARK">
+            <parameter name="weight" training="NOMINAL" weight="5.312475477582135" mean="2.193213296398892"/>
+            <parameter name="width" training="NOMINAL" weight="12.020811654526726" mean="3.0460526315789473"/>
+            <parameter name="height" training="IDENTICAL_VALUES" weight="0.0" mean="2.0"/>
+            <parameter name="n20" training="NOMINAL" weight="2735.8204492708396" mean="0.2990889637181059"/>
+            <parameter name="n11" training="NOMINAL" weight="30464.734255136922" mean="0.07612153695040386"/>
+            <parameter name="n02" training="NOMINAL" weight="1481.4104200281354" mean="0.14202786368698717"/>
+            <parameter name="n30" training="NOMINAL" weight="116621.3107849168" mean="0.030607294919528967"/>
+            <parameter name="n21" training="NOMINAL" weight="332723.9344776575" mean="0.0052911976591730496"/>
+            <parameter name="n12" training="NOMINAL" weight="33687.579186459436" mean="-0.022068281369436338"/>
+            <parameter name="n03" training="NOMINAL" weight="29128.078951395342" mean="-0.016271458000727306"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="PEDAL_UP_MARK">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="1.46875"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.75"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="1.75"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.11918511553316692"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.0035336582452828373"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.11645450670853277"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.0016617536174675668"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.0014602434275348267"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-2.246816952259626E-4"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="-0.0017093912731617087"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="QUARTER_REST">
+            <parameter name="weight" training="NOMINAL" weight="36.19893801352563" mean="1.1481948344387094"/>
+            <parameter name="width" training="NOMINAL" weight="278.6490490129765" mean="1.059133439659756"/>
+            <parameter name="height" training="NOMINAL" weight="15.64303079355873" mean="2.899758373205741"/>
+            <parameter name="n20" training="NOMINAL" weight="11925.257292658982" mean="0.044183776000043355"/>
+            <parameter name="n11" training="NOMINAL" weight="1034.3186075900305" mean="-0.050501969666032764"/>
+            <parameter name="n02" training="NOMINAL" weight="1032.5351294847026" mean="0.4341237874422849"/>
+            <parameter name="n30" training="NOMINAL" weight="740056.0452532828" mean="1.0468534220622492E-4"/>
+            <parameter name="n21" training="NOMINAL" weight="42102.152714630014" mean="0.007031439761637419"/>
+            <parameter name="n12" training="NOMINAL" weight="36241.80831754018" mean="-0.010879222644693081"/>
+            <parameter name="n03" training="NOMINAL" weight="603.1638033471482" mean="-0.022399764766852934"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="SEGNO">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="3.078125"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="2.125"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="2.75"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.10416621432335603"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="0.015308344014085373"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.19182210763294358"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="-5.413718802187661E-4"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-0.0023913000355353254"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="0.0014077955204281334"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.0018784481964469605"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="SHARP">
+            <parameter name="weight" training="NOMINAL" weight="26.83539979692222" mean="1.3150115948749976"/>
+            <parameter name="width" training="NOMINAL" weight="86.93989820170793" mean="0.9962567288978189"/>
+            <parameter name="height" training="NOMINAL" weight="7.594145079468085" mean="2.8221522682207487"/>
+            <parameter name="n20" training="NOMINAL" weight="36324.73075198789" mean="0.05127943613350039"/>
+            <parameter name="n11" training="NOMINAL" weight="16738.474804991503" mean="-0.016136631424755434"/>
+            <parameter name="n02" training="NOMINAL" weight="751.6061722183603" mean="0.3437504474772145"/>
+            <parameter name="n30" training="NOMINAL" weight="1438661.355300785" mean="-3.6140124781052017E-4"/>
+            <parameter name="n21" training="NOMINAL" weight="948630.8527125482" mean="-1.8568723821075936E-4"/>
+            <parameter name="n12" training="NOMINAL" weight="70912.17889137185" mean="0.0014250829145693294"/>
+            <parameter name="n03" training="NOMINAL" weight="8798.237081968968" mean="-0.0028607957554296595"/>
+            <parameter name="ledger" training="NOMINAL" weight="83.00000000000001" mean="0.012048192771084338"/>
+            <parameter name="stemNb" training="NOMINAL" weight="21.537974683544306" mean="0.04819277108433735"/>
+        </item>
+        <item id="SIXTEENTH_REST">
+            <parameter name="weight" training="NOMINAL" weight="18.205066212701297" mean="1.3329692787069367"/>
+            <parameter name="width" training="NOMINAL" weight="141.7613865100315" mean="1.342531810294969"/>
+            <parameter name="height" training="NOMINAL" weight="38.311550517483134" mean="2.756094563331405"/>
+            <parameter name="n20" training="NOMINAL" weight="23579.378602242006" mean="0.07113004856629844"/>
+            <parameter name="n11" training="NOMINAL" weight="21164.377526162403" mean="-0.03464181868099929"/>
+            <parameter name="n02" training="NOMINAL" weight="142.0593961740253" mean="0.35234553559407966"/>
+            <parameter name="n30" training="NOMINAL" weight="143431.24191148372" mean="0.004610085408446768"/>
+            <parameter name="n21" training="NOMINAL" weight="64348.66201980161" mean="-0.010860873968152955"/>
+            <parameter name="n12" training="NOMINAL" weight="15807.873122629944" mean="0.011295643484161805"/>
+            <parameter name="n03" training="NOMINAL" weight="921.5279901796807" mean="0.08762048480264742"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="SIXTY_FOURTH_REST">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="2.90625"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.875"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="4.875"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.058953028630322035"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.11115244847747953"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.5509300052712913"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.0019895458989802636"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-0.0037582143025295207"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-4.1291672351403876E-4"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.07401572787729341"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="SLUR">
+            <parameter name="weight" training="NOMINAL" weight="0.2685460157556993" mean="1.9994800711981389"/>
+            <parameter name="width" training="NOMINAL" weight="0.014764785215221137" mean="9.234842662211081"/>
+            <parameter name="height" training="NOMINAL" weight="0.2872659074659894" mean="2.006972988025618"/>
+            <parameter name="n20" training="NOMINAL" weight="0.16049631508906737" mean="2.9424794973723727"/>
+            <parameter name="n11" training="NOMINAL" weight="3.469237574117975" mean="-0.21952947210076396"/>
+            <parameter name="n02" training="NOMINAL" weight="8.710147560439985" mean="0.18421822078190034"/>
+            <parameter name="n30" training="NOMINAL" weight="3.6077958737089575" mean="0.0026674072672625395"/>
+            <parameter name="n21" training="NOMINAL" weight="1.4707856100999028" mean="-0.020155008530690147"/>
+            <parameter name="n12" training="NOMINAL" weight="14.934296414357075" mean="0.007660693232877255"/>
+            <parameter name="n03" training="NOMINAL" weight="15.804866614416673" mean="-0.013319912996716912"/>
+            <parameter name="ledger" training="NOMINAL" weight="11.494736842105263" mean="0.09523809523809523"/>
+            <parameter name="stemNb" training="NOMINAL" weight="104.99999999999999" mean="0.009523809523809525"/>
+        </item>
+        <item id="STRUCTURE">
+            <parameter name="weight" training="NOMINAL" weight="0.042494688987354624" mean="4.131812123564476"/>
+            <parameter name="width" training="NOMINAL" weight="0.10902235842939706" mean="3.0682765096660884"/>
+            <parameter name="height" training="NOMINAL" weight="0.3036693575757175" mean="4.917562036131098"/>
+            <parameter name="n20" training="NOMINAL" weight="17.668515326773072" mean="0.21042773174915444"/>
+            <parameter name="n11" training="NOMINAL" weight="122.07406546566108" mean="-0.1428185945928727"/>
+            <parameter name="n02" training="NOMINAL" weight="13.547295665905077" mean="0.7299982533038086"/>
+            <parameter name="n30" training="NOMINAL" weight="695.0004673252649" mean="3.7895825162219247E-4"/>
+            <parameter name="n21" training="NOMINAL" weight="205.59900974992794" mean="-0.008305078921409838"/>
+            <parameter name="n12" training="NOMINAL" weight="79.10901270247729" mean="-0.007307752402844827"/>
+            <parameter name="n03" training="NOMINAL" weight="2.181778914960512" mean="0.06211577552496634"/>
+            <parameter name="ledger" training="NOMINAL" weight="4.899254426840634" mean="0.2850539291217257"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="TEXT">
+            <parameter name="weight" training="NOMINAL" weight="0.07821654545943112" mean="3.50138435003631"/>
+            <parameter name="width" training="NOMINAL" weight="0.02717691588900852" mean="7.708333333333335"/>
+            <parameter name="height" training="NOMINAL" weight="4.178086560757232" mean="1.7818627450980404"/>
+            <parameter name="n20" training="NOMINAL" weight="0.05817307264534058" mean="2.535256546065544"/>
+            <parameter name="n11" training="NOMINAL" weight="356.4571281671414" mean="0.020024348854547507"/>
+            <parameter name="n02" training="NOMINAL" weight="1060.9853522386436" mean="0.07207452119766002"/>
+            <parameter name="n30" training="NOMINAL" weight="0.05883700382202452" mean="0.9690736161772415"/>
+            <parameter name="n21" training="NOMINAL" weight="701.0758038553655" mean="-0.004452936821808664"/>
+            <parameter name="n12" training="NOMINAL" weight="3862.67050192138" mean="-0.005996862586729768"/>
+            <parameter name="n03" training="NOMINAL" weight="43655.427521424084" mean="-0.004821938154722295"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="THIRTY_SECOND_REST">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="2.15625"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.625"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="3.875"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.0597180176189997"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.07562692346328417"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.4534758750901806"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.0027410280170665066"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-0.005798243927384404"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="0.0028568842123631675"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.0846855873071597"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="TIME_EIGHT">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="1.953125"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.5"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="2.0"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.10374787200000031"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="0.008337920000000002"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.15223120000000004"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="-0.001501114916440554"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="1.1951127187948575E-4"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.001738631365020905"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.0020200945791686736"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="TIME_FIVE">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="1.890625"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.375"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="2.0"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.08127694304627409"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="0.005215739113696918"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.19558517177788393"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="-3.6184008800413972E-6"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-2.5571135538816615E-4"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.0016142928083301734"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.0019000192485609827"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="TIME_FOUR">
+            <parameter name="weight" training="NOMINAL" weight="16.036151729930076" mean="1.1864748482037442"/>
+            <parameter name="width" training="NOMINAL" weight="50.55588205749126" mean="1.4124729437229437"/>
+            <parameter name="height" training="NOMINAL" weight="274.55757436549936" mean="1.9710497835497836"/>
+            <parameter name="n20" training="NOMINAL" weight="27891.675548163807" mean="0.0805086111571242"/>
+            <parameter name="n11" training="NOMINAL" weight="2972.133680013287" mean="-0.008487025109376472"/>
+            <parameter name="n02" training="NOMINAL" weight="435.56405308813044" mean="0.25405303059971357"/>
+            <parameter name="n30" training="NOMINAL" weight="13485.085202085018" mean="-0.01836658473636883"/>
+            <parameter name="n21" training="NOMINAL" weight="77825.05917224163" mean="0.014488521871362922"/>
+            <parameter name="n12" training="NOMINAL" weight="61248.911118971955" mean="0.015913551262578755"/>
+            <parameter name="n03" training="NOMINAL" weight="6768.322225673844" mean="-0.028985004853705573"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="TIME_FOUR_FOUR">
+            <parameter name="weight" training="NOMINAL" weight="5.138626633096538" mean="2.813066893424036"/>
+            <parameter name="width" training="NOMINAL" weight="51.834710743803896" mean="1.5267857142857144"/>
+            <parameter name="height" training="NOMINAL" weight="2257.920000027682" mean="4.1101190476190474"/>
+            <parameter name="n20" training="NOMINAL" weight="405108.02416386816" mean="0.038513537040547344"/>
+            <parameter name="n11" training="NOMINAL" weight="6254.457532645428" mean="9.72915935633316E-4"/>
+            <parameter name="n02" training="NOMINAL" weight="319.14688280840755" mean="0.49760176762063596"/>
+            <parameter name="n30" training="NOMINAL" weight="105644.44082740691" mean="-0.004245480395569866"/>
+            <parameter name="n21" training="NOMINAL" weight="3555340.5618544035" mean="0.004137051345009309"/>
+            <parameter name="n12" training="NOMINAL" weight="67146.60348713529" mean="0.001153502398651115"/>
+            <parameter name="n03" training="NOMINAL" weight="633216.8716047778" mean="-0.0037418469652232868"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="TIME_NINE">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="2.140625"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.5"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="2.0"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.08537492226854927"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="8.186351698891642E-4"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.14419842880382436"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="4.556084454020838E-4"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-0.002101958754579832"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.004481637607197292"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.0033311045347450235"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="TIME_ONE">
+            <parameter name="weight" training="IDENTICAL_VALUES" weight="0.0" mean="1.21875"/>
+            <parameter name="width" training="IDENTICAL_VALUES" weight="0.0" mean="1.125"/>
+            <parameter name="height" training="IDENTICAL_VALUES" weight="0.0" mean="2.0"/>
+            <parameter name="n20" training="IDENTICAL_VALUES" weight="0.0" mean="0.036557110706519055"/>
+            <parameter name="n11" training="IDENTICAL_VALUES" weight="0.0" mean="0.016322763364183486"/>
+            <parameter name="n02" training="IDENTICAL_VALUES" weight="0.0" mean="0.2856952451996832"/>
+            <parameter name="n30" training="IDENTICAL_VALUES" weight="0.0" mean="-0.0024982432139985244"/>
+            <parameter name="n21" training="IDENTICAL_VALUES" weight="0.0" mean="0.0011334193734554693"/>
+            <parameter name="n12" training="IDENTICAL_VALUES" weight="0.0" mean="0.006073412864452581"/>
+            <parameter name="n03" training="IDENTICAL_VALUES" weight="0.0" mean="0.022754809304507042"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="TIME_SEVEN">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="1.65625"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.625"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="2.0"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.08951286128817762"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-6.910066699355757E-4"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.22867136125795148"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="-0.0072830458751541845"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-0.020927980229672866"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.01571020044068917"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.04377798600115245"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="TIME_SIX">
+            <parameter name="weight" training="IDENTICAL_VALUES" weight="0.0" mean="2.078125"/>
+            <parameter name="width" training="IDENTICAL_VALUES" weight="0.0" mean="1.5"/>
+            <parameter name="height" training="IDENTICAL_VALUES" weight="0.0" mean="2.0"/>
+            <parameter name="n20" training="IDENTICAL_VALUES" weight="0.0" mean="0.0912055546605786"/>
+            <parameter name="n11" training="IDENTICAL_VALUES" weight="0.0" mean="-0.001278140231578442"/>
+            <parameter name="n02" training="IDENTICAL_VALUES" weight="0.0" mean="0.14550037362330023"/>
+            <parameter name="n30" training="IDENTICAL_VALUES" weight="0.0" mean="2.3650182866499013E-4"/>
+            <parameter name="n21" training="IDENTICAL_VALUES" weight="0.0" mean="0.0015150670814186224"/>
+            <parameter name="n12" training="IDENTICAL_VALUES" weight="0.0" mean="0.004926192247706137"/>
+            <parameter name="n03" training="IDENTICAL_VALUES" weight="0.0" mean="2.7586503886071947E-4"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="TIME_SIXTEEN">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="3.296875"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="2.75"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="2.0"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.18637890383695466"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="8.965362849695234E-4"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.09685621094087253"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="-0.005731316344716979"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-0.00181965902597292"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-4.841702969957448E-4"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.002021292830185557"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="TIME_SIX_EIGHT">
+            <parameter name="weight" training="NOMINAL" weight="3.3433716710192964" mean="3.3798087142468454"/>
+            <parameter name="width" training="NOMINAL" weight="122.24508886808887" mean="1.5328282828282827"/>
+            <parameter name="height" training="NOMINAL" weight="122.68742543082213" mean="4.0688131313131315"/>
+            <parameter name="n20" training="NOMINAL" weight="30635.788581482146" mean="0.05916473299101744"/>
+            <parameter name="n11" training="NOMINAL" weight="31393.52654359154" mean="0.010367818064693439"/>
+            <parameter name="n02" training="NOMINAL" weight="287.9877545900855" mean="0.402069666296389"/>
+            <parameter name="n30" training="NOMINAL" weight="1804645.7388979169" mean="1.278127431213866E-4"/>
+            <parameter name="n21" training="NOMINAL" weight="521753.9647396883" mean="5.034073646605312E-4"/>
+            <parameter name="n12" training="NOMINAL" weight="31305.199518015987" mean="6.606047760921788E-4"/>
+            <parameter name="n03" training="NOMINAL" weight="4721.607062912623" mean="5.963977463420358E-4"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="TIME_THREE">
+            <parameter name="weight" training="NOMINAL" weight="3.072406268597508" mean="1.7215909090909092"/>
+            <parameter name="width" training="NOMINAL" weight="107.55555555554596" mean="1.4318181818181817"/>
+            <parameter name="height" training="NOMINAL" weight="967.9999999998212" mean="1.9772727272727273"/>
+            <parameter name="n20" training="NOMINAL" weight="2514.0878044584665" mean="0.09889026476942797"/>
+            <parameter name="n11" training="NOMINAL" weight="15593.524651817655" mean="-0.0043657777484942505"/>
+            <parameter name="n02" training="NOMINAL" weight="184.29928878810185" mean="0.20745013812370605"/>
+            <parameter name="n30" training="NOMINAL" weight="24094.89395459713" mean="-0.005797587754852148"/>
+            <parameter name="n21" training="NOMINAL" weight="177131.28610549183" mean="-1.9511910930134488E-4"/>
+            <parameter name="n12" training="NOMINAL" weight="1182445.558839936" mean="-6.80573180479891E-4"/>
+            <parameter name="n03" training="NOMINAL" weight="4516.60887522418" mean="-0.009953453612454474"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="TIME_THREE_FOUR">
+            <parameter name="weight" training="NOMINAL" weight="1.6639692786219917" mean="3.1080836776859506"/>
+            <parameter name="width" training="NOMINAL" weight="107.55555555554596" mean="1.4318181818181817"/>
+            <parameter name="height" training="NOMINAL" weight="68.83555555558755" mean="4.0397727272727275"/>
+            <parameter name="n20" training="NOMINAL" weight="58713.33991956502" mean="0.04514082056812819"/>
+            <parameter name="n11" training="NOMINAL" weight="112256.46205605191" mean="0.01177537438382669"/>
+            <parameter name="n02" training="NOMINAL" weight="285.43662188352346" mean="0.4409077848218495"/>
+            <parameter name="n30" training="NOMINAL" weight="200782.34513383463" mean="-0.0032364472346870553"/>
+            <parameter name="n21" training="NOMINAL" weight="225981.45057894068" mean="-0.004640193166171693"/>
+            <parameter name="n12" training="NOMINAL" weight="71708.33062746828" mean="0.003943964196396003"/>
+            <parameter name="n03" training="NOMINAL" weight="28417.071431335924" mean="0.046505420325778916"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="TIME_TWELVE">
+            <parameter name="weight" training="IDENTICAL_VALUES" weight="0.0" mean="3.3125"/>
+            <parameter name="width" training="IDENTICAL_VALUES" weight="0.0" mean="3.0"/>
+            <parameter name="height" training="IDENTICAL_VALUES" weight="0.0" mean="2.0"/>
+            <parameter name="n20" training="IDENTICAL_VALUES" weight="0.0" mean="0.21906632656488123"/>
+            <parameter name="n11" training="IDENTICAL_VALUES" weight="0.0" mean="-6.161756013353234E-4"/>
+            <parameter name="n02" training="IDENTICAL_VALUES" weight="0.0" mean="0.10339953451506947"/>
+            <parameter name="n30" training="IDENTICAL_VALUES" weight="0.0" mean="-0.015887911282867703"/>
+            <parameter name="n21" training="IDENTICAL_VALUES" weight="0.0" mean="-0.007653510234515591"/>
+            <parameter name="n12" training="IDENTICAL_VALUES" weight="0.0" mean="-5.105338570040159E-4"/>
+            <parameter name="n03" training="IDENTICAL_VALUES" weight="0.0" mean="0.001697837951232677"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="TIME_TWO">
+            <parameter name="weight" training="NOMINAL" weight="4.808988475642908" mean="1.414660724827121"/>
+            <parameter name="width" training="NOMINAL" weight="65.3455218632956" mean="1.4452110389610389"/>
+            <parameter name="height" training="NOMINAL" weight="75.30881185498868" mean="1.966991341991342"/>
+            <parameter name="n20" training="NOMINAL" weight="3957.274184505324" mean="0.11186297209412349"/>
+            <parameter name="n11" training="NOMINAL" weight="810.9181900960467" mean="-0.04967354589992494"/>
+            <parameter name="n02" training="NOMINAL" weight="293.7315346389785" mean="0.24942611150875166"/>
+            <parameter name="n30" training="NOMINAL" weight="26547.560250467373" mean="-0.00654866524359317"/>
+            <parameter name="n21" training="NOMINAL" weight="14823.586981985332" mean="0.002913035839037705"/>
+            <parameter name="n12" training="NOMINAL" weight="6837.888675049974" mean="0.00473912552939295"/>
+            <parameter name="n03" training="NOMINAL" weight="1388.7798163882858" mean="-0.028193993502215887"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="TIME_TWO_FOUR">
+            <parameter name="weight" training="NOMINAL" weight="4.693127983253506" mean="3.020988432637268"/>
+            <parameter name="width" training="NOMINAL" weight="142.46449575901812" mean="1.5414876476906554"/>
+            <parameter name="height" training="NOMINAL" weight="87.0139386666112" mean="4.006757966344432"/>
+            <parameter name="n20" training="NOMINAL" weight="75864.65907207796" mean="0.04673890799112808"/>
+            <parameter name="n11" training="NOMINAL" weight="28652.845534467728" mean="0.012003519289836081"/>
+            <parameter name="n02" training="NOMINAL" weight="164.477173946715" mean="0.4457146140254685"/>
+            <parameter name="n30" training="NOMINAL" weight="253826.96939975175" mean="-0.0038040694473163027"/>
+            <parameter name="n21" training="NOMINAL" weight="681448.7518016074" mean="-0.0044024816814368355"/>
+            <parameter name="n12" training="NOMINAL" weight="121292.28295212056" mean="0.010718769746785201"/>
+            <parameter name="n03" training="NOMINAL" weight="4713.364869378603" mean="0.020470068607098713"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="TIME_TWO_TWO">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="4.1875"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.625"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="4.125"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.04422154029917233"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.006920315996316115"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.35054246408301515"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="-2.717876413987535E-4"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-0.0013741175980714717"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-3.8111752771283967E-4"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="-1.6109100362154692E-4"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="TIME_ZERO">
+            <parameter name="weight" training="IDENTICAL_VALUES" weight="0.0" mean="2.171875"/>
+            <parameter name="width" training="IDENTICAL_VALUES" weight="0.0" mean="1.625"/>
+            <parameter name="height" training="IDENTICAL_VALUES" weight="0.0" mean="2.0"/>
+            <parameter name="n20" training="IDENTICAL_VALUES" weight="0.0" mean="0.09905409609479239"/>
+            <parameter name="n11" training="IDENTICAL_VALUES" weight="0.0" mean="6.292776451164427E-5"/>
+            <parameter name="n02" training="IDENTICAL_VALUES" weight="0.0" mean="0.13483430170102312"/>
+            <parameter name="n30" training="IDENTICAL_VALUES" weight="0.0" mean="0.001474943494820589"/>
+            <parameter name="n21" training="IDENTICAL_VALUES" weight="0.0" mean="-3.901015183080502E-4"/>
+            <parameter name="n12" training="IDENTICAL_VALUES" weight="0.0" mean="-0.0010575064208765872"/>
+            <parameter name="n03" training="IDENTICAL_VALUES" weight="0.0" mean="-3.9351312325429925E-4"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="TR">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="1.484375"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="2.0"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="1.5"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.1577256888759293"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.01810293045633475"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.09232840064149293"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.024034660309503755"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-0.01063343894632557"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-0.006989332882368992"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.0052814919674394395"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="TUPLET_SIX">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="0.8125"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.0"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="1.25"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.09390646335912602"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.02209689349112426"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.16309171597633135"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="9.65351934082458E-4"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-0.0010912888440259717"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="0.006598525088979459"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.008404354165718326"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="TUPLET_THREE">
+            <parameter name="weight" training="NOMINAL" weight="29.982781956080622" mean="0.6160202506928697"/>
+            <parameter name="width" training="NOMINAL" weight="62.34371420780034" mean="1.0182980599647269"/>
+            <parameter name="height" training="NOMINAL" weight="25.539228062335255" mean="1.4268077601410931"/>
+            <parameter name="n20" training="NOMINAL" weight="2631.506806041669" mean="0.10810015471702134"/>
+            <parameter name="n11" training="NOMINAL" weight="2092.7682403832787" mean="-0.07092968911891015"/>
+            <parameter name="n02" training="NOMINAL" weight="121.35580930242084" mean="0.32852025497418136"/>
+            <parameter name="n30" training="NOMINAL" weight="6568.096362427407" mean="-0.023148133852670574"/>
+            <parameter name="n21" training="NOMINAL" weight="7901.146103510693" mean="0.01884399498658274"/>
+            <parameter name="n12" training="NOMINAL" weight="13867.352665909726" mean="-0.013697445332170877"/>
+            <parameter name="n03" training="NOMINAL" weight="2132.0662008933564" mean="-0.02804523260053865"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="TURN">
+            <parameter name="weight" training="NOMINAL" weight="9.55385457116742" mean="0.9836998456790124"/>
+            <parameter name="width" training="NOMINAL" weight="18.06796398489706" mean="2.024305555555556"/>
+            <parameter name="height" training="NOMINAL" weight="353.4545454545416" mean="0.9305555555555556"/>
+            <parameter name="n20" training="NOMINAL" weight="1766.8716704548733" mean="0.37473912449331603"/>
+            <parameter name="n11" training="NOMINAL" weight="13460.924766906694" mean="0.013406925816699439"/>
+            <parameter name="n02" training="NOMINAL" weight="6556.779564418581" mean="0.07617870098974341"/>
+            <parameter name="n30" training="NOMINAL" weight="95430.80964707614" mean="0.0030748971805318295"/>
+            <parameter name="n21" training="NOMINAL" weight="305191.8452237134" mean="2.615479027169599E-4"/>
+            <parameter name="n12" training="NOMINAL" weight="5963553.354100502" mean="-1.54026733558471E-4"/>
+            <parameter name="n03" training="NOMINAL" weight="5520519.107952727" mean="3.8274600762028884E-4"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="TURN_SLASH">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="1.625"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="2.375"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="1.75"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.27759000199135186"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="9.716730200273073E-4"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.06783664514110153"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.003678974979509317"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-0.0021500028507326105"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-4.4704797268226614E-5"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.001120697818523994"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="TURN_UP">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="1.5"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.0"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="2.375"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.05856549298321751"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-8.149323640046118E-4"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.3224001283998846"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="-4.115304594722063E-4"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-7.118670639006768E-4"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="0.002745262772786796"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.005474709375084224"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="VOID_NOTEHEAD">
+            <parameter name="weight" training="NOMINAL" weight="60.837739847549855" mean="0.5952367334216435"/>
+            <parameter name="width" training="NOMINAL" weight="111.35166085410229" mean="1.1784350570064868"/>
+            <parameter name="height" training="NOMINAL" weight="33.47910598024052" mean="1.0367949510806658"/>
+            <parameter name="n20" training="NOMINAL" weight="379.8420442244585" mean="0.18410847678945952"/>
+            <parameter name="n11" training="NOMINAL" weight="1146.9389951433056" mean="-0.0035155769415459097"/>
+            <parameter name="n02" training="NOMINAL" weight="498.653221242429" mean="0.16712143165289325"/>
+            <parameter name="n30" training="NOMINAL" weight="2129.3749901212923" mean="-0.006117028792966419"/>
+            <parameter name="n21" training="NOMINAL" weight="5037.046515335406" mean="-0.006067342389658799"/>
+            <parameter name="n12" training="NOMINAL" weight="11597.540519190547" mean="-0.003584666077771518"/>
+            <parameter name="n03" training="NOMINAL" weight="10166.345071497622" mean="0.0022828541556515593"/>
+            <parameter name="ledger" training="NOMINAL" weight="4.739583333333333" mean="0.2967032967032967"/>
+            <parameter name="stemNb" training="NOMINAL" weight="90.99999999999966" mean="1.010989010989011"/>
+        </item>
+        <item id="VOID_NOTEHEAD_2">
+            <parameter name="weight" training="NOMINAL" weight="20.78681220761867" mean="1.4699074074074074"/>
+            <parameter name="width" training="NOMINAL" weight="85.68595041322342" mean="1.2986111111111112"/>
+            <parameter name="height" training="NOMINAL" weight="648.0000000002302" mean="2.0277777777777777"/>
+            <parameter name="n20" training="NOMINAL" weight="1.1842150544657607E7" mean="0.08675816555411017"/>
+            <parameter name="n11" training="NOMINAL" weight="8034.664462196467" mean="-0.00271177088316926"/>
+            <parameter name="n02" training="NOMINAL" weight="432.50460599058636" mean="0.2429647670809511"/>
+            <parameter name="n30" training="NOMINAL" weight="845489.0239890073" mean="-6.355139558872081E-4"/>
+            <parameter name="n21" training="NOMINAL" weight="85895.4052554492" mean="0.0016319445579740923"/>
+            <parameter name="n12" training="NOMINAL" weight="6472684.871860603" mean="-1.1264077750710672E-4"/>
+            <parameter name="n03" training="NOMINAL" weight="40740.53945717889" mean="-0.002863415548937972"/>
+            <parameter name="ledger" training="NOMINAL" weight="2.0" mean="0.5"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="1.0"/>
+        </item>
+        <item id="VOID_NOTEHEAD_3">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="2.4375"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.375"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="3.0"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.05770179032013339"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="-0.007066928387194642"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.3102494563293382"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="-7.645250682176534E-4"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="-4.249794880622357E-4"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="8.997461462454637E-5"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="3.4828388552716783E-4"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="1.0"/>
+        </item>
+        <item id="WHOLE_NOTE">
+            <parameter name="weight" training="NOMINAL" weight="22.150380423917483" mean="0.9591319444444444"/>
+            <parameter name="width" training="NOMINAL" weight="146.93877551020987" mean="1.8083333333333333"/>
+            <parameter name="height" training="NOMINAL" weight="449.9999999998397" mean="1.0333333333333332"/>
+            <parameter name="n20" training="NOMINAL" weight="219.69702004518354" mean="0.27590535449506426"/>
+            <parameter name="n11" training="NOMINAL" weight="58592.0166841879" mean="-1.827385994023975E-5"/>
+            <parameter name="n02" training="NOMINAL" weight="6469.778859286617" mean="0.08103543232464552"/>
+            <parameter name="n30" training="NOMINAL" weight="151590.05042995262" mean="0.0024677773125167278"/>
+            <parameter name="n21" training="NOMINAL" weight="2.1909274230564588E8" mean="6.296298088003463E-4"/>
+            <parameter name="n12" training="NOMINAL" weight="888490.6496659815" mean="1.5418715334307388E-4"/>
+            <parameter name="n03" training="NOMINAL" weight="2312358.740577472" mean="5.342927605847092E-6"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="WHOLE_NOTE_2">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="2.21875"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.75"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="2.0"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.11409968190416042"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="0.0014514781607718105"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.14879825221912713"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="2.3038809381223854E-4"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="2.3949761229267126E-4"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-2.1071107156655854E-4"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="-1.6251499853355063E-4"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="WHOLE_NOTE_3">
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="3.328125"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="1.75"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="3.0"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.0760664546027737"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="9.676521071812105E-4"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.2243944529661164"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="1.2540739392265138E-4"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="1.3036598771820333E-4"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="-1.1469657966512322E-4"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="-8.846196043473634E-5"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0"/>
+        </item>
+        <item id="WHOLE_OR_HALF_REST">
+            <parameter name="weight" training="NOMINAL" weight="118.70633878760526" mean="0.7276383038807617"/>
+            <parameter name="width" training="NOMINAL" weight="53.70169961033597" mean="1.3185715514275895"/>
+            <parameter name="height" training="NOMINAL" weight="475.9930762901948" mean="0.5771085467679895"/>
+            <parameter name="n20" training="NOMINAL" weight="9978.906762602115" mean="0.18295853260995815"/>
+            <parameter name="n11" training="NOMINAL" weight="663892.8903564338" mean="-4.406278876642102E-4"/>
+            <parameter name="n02" training="NOMINAL" weight="219064.11303269424" mean="0.03756689229219958"/>
+            <parameter name="n30" training="NOMINAL" weight="1.986837228086693E7" mean="7.233689724896427E-5"/>
+            <parameter name="n21" training="NOMINAL" weight="1576892.9880828408" mean="1.8216670391663856E-4"/>
+            <parameter name="n12" training="NOMINAL" weight="5.1409273267597616E7" mean="-3.742733997701299E-5"/>
+            <parameter name="n03" training="NOMINAL" weight="6.076774850159184E7" mean="-3.559529839738678E-5"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" mean="0.0"/>
+        </item>
+    </categories>
+</linear-evaluator>
