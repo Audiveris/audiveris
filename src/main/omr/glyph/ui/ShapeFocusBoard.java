@@ -9,12 +9,17 @@
 //
 package omr.glyph.ui;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.glyph.Glyph;
 import omr.glyph.GlyphRegression;
 import omr.glyph.Shape;
 import omr.glyph.ShapeRange;
 
 import omr.log.Logger;
+
+import omr.math.LinearEvaluator.Printer;
 
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphIdEvent;
@@ -54,6 +59,9 @@ class ShapeFocusBoard
     extends Board
 {
     //~ Static fields/initializers ---------------------------------------------
+
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
@@ -267,6 +275,29 @@ class ShapeFocusBoard
                 browser.addId(pair.id);
             }
 
+            // To get a detailed table of the distances (debugging)
+            if (constants.printDistances.getValue()) {
+                Printer printer = evaluator.getEngine().new Printer(11);
+                String  indent = "                  ";
+                System.out.println(indent + printer.getDefaults());
+                System.out.println(indent + printer.getNames());
+                System.out.println(indent + printer.getDashes());
+
+                for (DistIdPair pair : pairs) {
+                    Glyph    glyph = sheet.getVerticalsController()
+                                          .getGlyphById(pair.id);
+                    double[] gPat = GlyphRegression.feedInput(glyph, null);
+                    Shape    shape = glyph.getShape();
+                    System.out.printf(
+                        "%18s",
+                        (shape != null) ? shape.toString() : "");
+                    System.out.println(printer.getDeltas(gPat, pattern));
+                    System.out.printf("g#%04d d:%9f", pair.id, pair.dist);
+                    System.out.println(
+                        printer.getWeightedDeltas(gPat, pattern));
+                }
+            }
+
             // Update the shape button
             selectButton.setText("Glyphs similar to #" + example.getId());
             selectButton.setIcon(null);
@@ -283,35 +314,37 @@ class ShapeFocusBoard
     // onEvent //
     //---------//
     /**
-     * Notification about selection objects (the shape of a just modified glyph,
-     * if not null, is used as the new shape focus)
+     * Notification about selection objects
+     * We used to use it on a just modified glyph, to set the new shape focus
+     * But this conflicts with the ability to browse a collection of similar
+     * glyphs and assign them on the fly
      *
      * @param event the notified event
      */
     @Implement(EventSubscriber.class)
     public void onEvent (UserEvent event)
     {
-        try {
-            // Ignore RELEASING
-            if (event.movement == MouseMovement.RELEASING) {
-                return;
-            }
-
-            if (event instanceof GlyphEvent) {
-                GlyphEvent glyphEvent = (GlyphEvent) event;
-
-                if (glyphEvent.hint == SelectionHint.GLYPH_MODIFIED) {
-                    // Use glyph assigned shape as current shape, if not null
-                    Glyph glyph = glyphEvent.getData();
-
-                    if ((glyph != null) && (glyph.getShape() != null)) {
-                        setCurrentShape(glyph.getShape());
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            logger.warning(getClass().getName() + " onEvent error", ex);
-        }
+        //        try {
+        //            // Ignore RELEASING
+        //            if (event.movement == MouseMovement.RELEASING) {
+        //                return;
+        //            }
+        //
+        //            if (event instanceof GlyphEvent) {
+        //                GlyphEvent glyphEvent = (GlyphEvent) event;
+        //
+        //                if (glyphEvent.hint == SelectionHint.GLYPH_MODIFIED) {
+        //                    // Use glyph assigned shape as current shape, if not null
+        //                    Glyph glyph = glyphEvent.getData();
+        //
+        //                    if ((glyph != null) && (glyph.getShape() != null)) {
+        //                        setCurrentShape(glyph.getShape());
+        //                    }
+        //                }
+        //            }
+        //        } catch (Exception ex) {
+        //            logger.warning(getClass().getName() + " onEvent error", ex);
+        //        }
     }
 
     //--------------//
@@ -372,6 +405,12 @@ class ShapeFocusBoard
         public int compareTo (DistIdPair o)
         {
             return Double.compare(dist, o.dist);
+        }
+
+        @Override
+        public String toString ()
+        {
+            return "dist:" + dist + " glyph#" + id;
         }
     }
 
@@ -454,5 +493,18 @@ class ShapeFocusBoard
                     new GlyphIdEvent(this, SelectionHint.GLYPH_INIT, null, id));
             }
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        Constant.Boolean printDistances = new Constant.Boolean(
+            false,
+            "Should we print out distance details when looking for similar glyphs?");
     }
 }

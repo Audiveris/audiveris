@@ -76,8 +76,7 @@ public class GlyphRegression
 
         // Basic check
         if (engine != null) {
-            if ((engine.getInputSize() != paramCount) ||
-                (engine.getOutputSize() != shapeCount)) {
+            if (engine.getInputSize() != paramCount) {
                 final String msg = "Linear Evaluator data is obsolete," +
                                    " it must be retrained from scratch";
                 logger.warning(msg);
@@ -90,10 +89,7 @@ public class GlyphRegression
         if (engine == null) {
             // Get a brand new one (not trained)
             logger.info("Creating a brand new LinearEvaluator");
-            engine = new LinearEvaluator(
-                paramCount,
-                getParameterLabels(),
-                shapeCount);
+            engine = new LinearEvaluator(getParameterLabels());
         }
     }
 
@@ -149,6 +145,14 @@ public class GlyphRegression
 
             return evals;
         }
+    }
+
+    /**
+     * @return the engine
+     */
+    public LinearEvaluator getEngine ()
+    {
+        return engine;
     }
 
     //---------//
