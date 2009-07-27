@@ -730,42 +730,38 @@ public class ScorePainter
         // Restore saved transform
         g.setTransform(savedTransform);
 
-        // Check whether our system is impacted)
-        final Rectangle clip = g.getClipBounds();
-        final int       xMargin = 2 * INTER_SYSTEM_WIDTH;
-        final int       systemLeft = systemView.getRightPosition() + xMargin;
-        final int       systemRight = systemView.getDisplayOrigin().x -
-                                      xMargin;
+        // Check whether our system is impacted
+        final UnitDimension dim = system.getDimension();
+        final Point         origin = systemView.getDisplayOrigin();
+        final Rectangle     systemRect = new Rectangle(origin, dim);
+        systemRect.grow(INTER_SYSTEM_WIDTH, INTER_SYSTEM_HEIGHT);
 
-        if ((clip.x > systemLeft) || ((clip.x + clip.width) < systemRight)) {
+        if (!systemRect.intersects(g.getClipBounds())) {
             return false;
-        } else {
-            final UnitDimension dim = system.getDimension();
-            final Point         origin = systemView.getDisplayOrigin();
-
-            Color               oldColor = g.getColor();
-            g.setColor(Color.lightGray);
-
-            // Write system # at the top of the display (if horizontal layout)
-            // and at the left of the display (if vertical layout)
-            if (systemView.getOrientation() == ScoreOrientation.HORIZONTAL) {
-                g.drawString("S" + system.getId(), origin.x, 24);
-            } else {
-                g.drawString("S" + system.getId(), 0, origin.y);
-            }
-
-            // Now use system topLeft as the origin
-            g.translate(origin.x, origin.y);
-
-            // Draw the system left edge
-            g.drawLine(0, 0, 0, dim.height + STAFF_HEIGHT);
-
-            // Draw the system right edge
-            g.drawLine(dim.width, 0, dim.width, dim.height + STAFF_HEIGHT);
-            g.setColor(oldColor);
-
-            return true;
         }
+
+        final Color oldColor = g.getColor();
+        g.setColor(Color.lightGray);
+
+        // Write system # at the top of the display (if horizontal layout)
+        // and at the left of the display (if vertical layout)
+        if (systemView.getOrientation() == ScoreOrientation.HORIZONTAL) {
+            g.drawString("S" + system.getId(), origin.x, 24);
+        } else {
+            g.drawString("S" + system.getId(), 0, origin.y);
+        }
+
+        // Now use system topLeft as the origin
+        g.translate(origin.x, origin.y);
+
+        // Draw the system left edge
+        g.drawLine(0, 0, 0, dim.height + STAFF_HEIGHT);
+
+        // Draw the system right edge
+        g.drawLine(dim.width, 0, dim.width, dim.height + STAFF_HEIGHT);
+        g.setColor(oldColor);
+
+        return true;
     }
 
     //------------------//
