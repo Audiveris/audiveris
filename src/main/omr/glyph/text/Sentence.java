@@ -13,8 +13,8 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
-import omr.glyph.GlyphEvaluator;
 import omr.glyph.Glyph;
+import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Glyphs;
@@ -618,7 +618,7 @@ public class Sentence
                                         .getLanguage();
 
             if (language == null) {
-                language = constants.defaultLanguageCode.getValue();
+                language = Language.getDefaultLanguage();
             }
 
             // If we have no content or if a new language is being used for OCR
@@ -1009,9 +1009,6 @@ public class Sentence
         Scale.Fraction  maxItemDx = new Scale.Fraction(
             20,
             "Maximum horizontal distance between an alien and a text item");
-        Constant.String defaultLanguageCode = new Constant.String(
-            "deu",
-            "3-letter code for the default sheet language");
     }
 
     //-------//

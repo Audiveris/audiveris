@@ -20,8 +20,6 @@ import omr.util.Implement;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriter;
@@ -53,7 +51,10 @@ public class TesseractOCR
 
     //~ Constructors -----------------------------------------------------------
 
-    /**
+    /** Map
+       private SortedMap<String, String> supportedLanguages;
+       //~ Constructors -----------------------------------------------------------
+       /**
      * Creates a new TesseractOCR object.
      */
     private TesseractOCR ()
@@ -81,18 +82,11 @@ public class TesseractOCR
      * {@inheritDoc}
      */
     @Implement(OCR.class)
-    public Map<String, String> getSupportedLanguages ()
+    public Set<String> getSupportedLanguages ()
     {
-        Map<String, String> map = new LinkedHashMap<String, String>();
+        Set<String> codes = new TreeSet<String>();
 
         try {
-            // Retrieve correspondences between codes and names
-            Properties      langNames = new Properties();
-            FileInputStream fis = new FileInputStream(
-                new File(Main.getConfigFolder(), "ISO639-3.xml"));
-            langNames.loadFromXML(fis);
-            fis.close();
-
             // Retrieve all implemented codes
             String[] dirNames = new File(ocrHome, "tessdata").list(
                 new FilenameFilter() {
@@ -103,20 +97,18 @@ public class TesseractOCR
                         }
                     });
 
-            // Fill the language map with only the implemented languages
+            // Fill the language set with only the implemented languages
             if (dirNames != null) {
                 for (String fileName : dirNames) {
                     String code = fileName.replace(".inttemp", "");
-                    map.put(code, langNames.getProperty(code, code));
+                    codes.add(code);
                 }
             }
-        } catch (IOException ex) {
-            logger.warning("Missing config/ISO639-3.xml file", ex);
         } catch (Exception ex) {
             logger.warning("Error in loading languages", ex);
         }
 
-        return map;
+        return codes;
     }
 
     //-----------//
@@ -138,7 +130,11 @@ public class TesseractOCR
             // Use the tessdll.dll implementation
             return UseTessDllDll.getInstance()
                                 .retrieveLines(imageFile, languageCode, label);
-        } catch (Exception ex) {
+        } catch (UnsatisfiedLinkError ex) {
+            logger.severe("Install error of OCR", ex);
+
+            return null;
+        } catch (Throwable ex) {
             logger.warning("Error in OCR recognize", ex);
 
             return null;

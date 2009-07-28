@@ -675,11 +675,11 @@ public class ScoreExporter
                     }
 
                     // Default velocity?
-                    if (score.getVelocity() != null) {
+                    if (score.getVolume() != null) {
                         Sound sound = factory.createSound();
                         current.pmMeasure.getNoteOrBackupOrForward()
                                          .add(sound);
-                        sound.setDynamics(createDecimal(score.getVelocity()));
+                        sound.setDynamics(createDecimal(score.getVolume()));
                     }
                 } else {
                     // SystemDistance

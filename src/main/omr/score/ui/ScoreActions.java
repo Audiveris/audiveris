@@ -27,6 +27,7 @@ import omr.step.Step;
 import omr.ui.MainGui;
 
 import omr.util.BasicTask;
+import omr.util.Wrapper;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
@@ -129,11 +130,13 @@ public class ScoreActions
      * score parameters
      *
      * @param score the provided score
-     * @return true if parameters are accepted, false if not
+     * @return true if parameters are applied, false otherwise
      */
     public static boolean parametersAreConfirmed (Score score)
     {
-        final boolean[]   apply = new boolean[1];
+        final Wrapper<Boolean> apply = new Wrapper<Boolean>();
+        apply.value = false;
+
         final ScoreBoard  scoreBoard = new ScoreBoard("Parameters", score);
         final JOptionPane optionPane = new JOptionPane(
             scoreBoard.getComponent(),
@@ -158,23 +161,20 @@ public class ScoreActions
                             Object obj = optionPane.getValue();
                             int    value = ((Integer) obj).intValue();
 
-                            apply[0] = value == JOptionPane.OK_OPTION;
+                            apply.value = new Boolean(
+                                value == JOptionPane.OK_OPTION);
 
                             // Exit only if user gives up or enters correct data
-                            if (!apply[0]) {
+                            if (!apply.value || scoreBoard.commit()) {
                                 dialog.setVisible(false);
                                 dialog.dispose();
                             } else {
-                                if (scoreBoard.commit()) {
-                                    dialog.setVisible(false);
-                                    dialog.dispose();
-                                } else {
-                                    // I'm ashamed! TBI
-                                    try {
-                                        optionPane.setValue(
-                                            JOptionPane.UNINITIALIZED_VALUE);
-                                    } catch (Exception ignored) {
-                                    }
+                                // Incorrect data, so don't exit yet
+                                try {
+                                    // TODO: Is there a more civilized way?
+                                    optionPane.setValue(
+                                        JOptionPane.UNINITIALIZED_VALUE);
+                                } catch (Exception ignored) {
                                 }
                             }
                         }
@@ -184,7 +184,7 @@ public class ScoreActions
         dialog.pack();
         dialog.setVisible(true);
 
-        return apply[0];
+        return apply.value;
     }
 
     //-------------------//
@@ -317,7 +317,7 @@ public class ScoreActions
 
         // Score global data
         score.setTempo(score.getDefaultTempo());
-        score.setVelocity(score.getDefaultVelocity());
+        score.setVolume(score.getDefaultVolume());
 
         return true;
     }

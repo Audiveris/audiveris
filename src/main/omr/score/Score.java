@@ -101,8 +101,8 @@ public class Score
     /** The specified tempo, if any */
     private Integer tempo;
 
-    /** The specified velocity, if any */
-    private Integer velocity;
+    /** The specified volume, if any */
+    private Integer volume;
 
     /** Potential measure range, if not all score is to be played */
     private MeasureRange measureRange;
@@ -204,17 +204,17 @@ public class Score
         return constants.defaultTempo.getValue();
     }
 
-    //--------------------//
-    // getDefaultVelocity //
-    //--------------------//
+    //------------------//
+    // getDefaultVolume //
+    //------------------//
     /**
-     * Report default value for Midi velocity (volume)
+     * Report default value for Midi volume (volume)
      *
-     * @return the default velocity value
+     * @return the default volume value
      */
-    public int getDefaultVelocity ()
+    public int getDefaultVolume ()
     {
-        return constants.defaultVelocity.getValue();
+        return constants.defaultVolume.getValue();
     }
 
     //--------------//
@@ -711,30 +711,30 @@ public class Score
         return tempo;
     }
 
-    //-------------//
-    // setVelocity //
-    //-------------//
+    //-----------//
+    // setVolume //
+    //-----------//
     /**
-     * Assign a velocity value
+     * Assign a volume value
      *
-     * @param velocity the velocity value to be assigned
+     * @param volume the volume value to be assigned
      */
-    public void setVelocity (Integer velocity)
+    public void setVolume (Integer velocity)
     {
-        this.velocity = velocity;
+        this.volume = velocity;
     }
 
-    //-------------//
-    // getVelocity //
-    //-------------//
+    //-----------//
+    // getVolume //
+    //-----------//
     /**
-     * Report the assigned velocity, if any
+     * Report the assigned volume, if any
      *
-     * @return the assigned velocity, or null
+     * @return the assigned volume, or null
      */
-    public Integer getVelocity ()
+    public Integer getVolume ()
     {
-        return velocity;
+        return volume;
     }
 
     //--------------//
@@ -1044,9 +1044,9 @@ public class Score
             "Default tempo, stated in number of quarters per minute");
 
         // Default Velocity
-        Constant.Integer defaultVelocity = new Constant.Integer(
+        Constant.Integer defaultVolume = new Constant.Integer(
             "Volume",
             100,
-            "Default Velocity in 0..127 range");
+            "Default Volume in 0..127 range");
     }
 }

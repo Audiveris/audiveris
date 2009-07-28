@@ -30,7 +30,7 @@ public class PatternsChecker
 
     /** Sequence of patterns to run */
     private static Pattern[] patterns = new Pattern[] {
-
+                                            
     //
     new Pattern("Clef") {
             public int run (SystemInfo system)
@@ -39,7 +39,7 @@ public class PatternsChecker
             }
         }
     ,
-
+                                            
     new Pattern("Alter") {
             public int run (SystemInfo system)
             {
@@ -47,7 +47,7 @@ public class PatternsChecker
             }
         }
     ,
-
+                                            
     new Pattern("Stem") {
             public int run (SystemInfo system)
             {
@@ -55,7 +55,7 @@ public class PatternsChecker
             }
         }
     ,
-
+                                            
     new Pattern("Slur") {
             public int run (SystemInfo system)
             {
@@ -63,7 +63,7 @@ public class PatternsChecker
             }
         }
     ,
-
+                                            
     new Pattern("Text") {
             public int run (SystemInfo system)
             {
@@ -107,18 +107,24 @@ public class PatternsChecker
         StringBuilder sb = new StringBuilder();
 
         for (Pattern pattern : patterns) {
-            system.inspectGlyphs(GlyphInspector.getLeafMaxDoubt());
+            try {
+                system.inspectGlyphs(GlyphInspector.getLeafMaxDoubt());
 
-            int modifs = pattern.run(system);
+                int modifs = pattern.run(system);
 
-            if (logger.isFineEnabled()) {
-                sb.append(" ")
-                  .append(pattern.name)
-                  .append(":")
-                  .append(modifs);
+                if (logger.isFineEnabled()) {
+                    sb.append(" ")
+                      .append(pattern.name)
+                      .append(":")
+                      .append(modifs);
+                }
+
+                totalModifs += modifs;
+            } catch (Throwable ex) {
+                logger.warning(
+                    "System #" + system.getId() + " error running pattern " +
+                    pattern.name);
             }
-
-            totalModifs += modifs;
         }
 
         if ((totalModifs > 0) && logger.isFineEnabled()) {
@@ -149,5 +155,11 @@ public class PatternsChecker
         //~ Methods ------------------------------------------------------------
 
         public abstract int run (SystemInfo system);
+
+        @Override
+        public String toString ()
+        {
+            return "pattern:" + name;
+        }
     }
 }

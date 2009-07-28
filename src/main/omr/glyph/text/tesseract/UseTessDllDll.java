@@ -45,27 +45,28 @@ class UseTessDllDll
     private static final Logger logger = Logger.getLogger(UseTessDllDll.class);
 
     static {
-        /** Load needed libraries */
-        System.load(
-            new File(TesseractOCR.ocrHome, "tessdll.dll").getAbsolutePath());
-        System.load(
-            new File(TesseractOCR.ocrHome, "tesjeract.dll").getAbsolutePath());
-
         /** Check that TESSDATA_PREFIX environment variable is set */
         String prefix = System.getenv("TESSDATA_PREFIX");
 
         if (prefix == null) {
             logger.severe(
                 "TESSDATA_PREFIX environment variable is not set." +
-                " It must point to the parent folder of \"tessdata\"");
+                " It must point to the parent folder of \"tessdata\"" +
+                ", typically \"" + TesseractOCR.ocrHome + '"');
+        } else {
+            /** Check that tessdata folder is found */
+            File tessdata = new File(prefix, "tessdata");
+
+            if (!tessdata.exists()) {
+                logger.severe("\"tessdata\" folder should be in " + prefix);
+            }
         }
 
-        /** Check that tessdata folder is found */
-        File tessdata = new File(prefix, "tessdata");
-
-        if (!tessdata.exists()) {
-            logger.severe("\"tessdata\" folder should be in " + prefix);
-        }
+        /** Load needed libraries */
+        System.load(
+            new File(TesseractOCR.ocrHome, "tessdll.dll").getAbsolutePath());
+        System.load(
+            new File(TesseractOCR.ocrHome, "tesjeract.dll").getAbsolutePath());
     }
 
     /** Singleton */
@@ -73,9 +74,9 @@ class UseTessDllDll
 
     //~ Constructors -----------------------------------------------------------
 
-    //------------//
+    //---------------//
     // UseTessDllDll //
-    //------------//
+    //---------------//
     private UseTessDllDll ()
     {
     }
@@ -308,9 +309,9 @@ class UseTessDllDll
     {
         // Unicode          Byte1    Byte2    Byte3    Byte4
         // -------          -----    -----    -----    -----
-        // U+0000-U+007F        0xxxxxxx
-        // U+0080-U+07FF        110yyyxx 10xxxxxx
-        // U+0800-U+FFFF        1110yyyy 10yyyyxx 10xxxxxx
+        // U+0000-U+007F    0xxxxxxx
+        // U+0080-U+07FF    110yyyxx 10xxxxxx
+        // U+0800-U+FFFF    1110yyyy 10yyyyxx 10xxxxxx
         // U+10000-U+10FFFF 11110zzz 10zzyyyy 10yyyyxx 10xxxxxx
         if ((code & 0x80) == 0x00) {
             return 1;
