@@ -10,6 +10,7 @@
 //
 package omr.math;
 
+import omr.math.LinearEvaluator.Printer;
 import omr.math.LinearEvaluator.Sample;
 
 import org.junit.AfterClass;
@@ -35,9 +36,7 @@ public class LinearEvaluatorTest
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final int          inSize = 2;
     private static final String[]     inNames = new String[] { "first", "second" };
-    private static final int          outSize = 3;
     private static final String       filePath = "linear.xml";
     private static final List<Sample> samples = Arrays.asList(
         new Sample("A", new double[] { 10, 20 }),
@@ -48,7 +47,10 @@ public class LinearEvaluatorTest
         new Sample("C", new double[] { 100, 200 }),
         new Sample("C", new double[] { 90, 205 }),
         new Sample("C", new double[] { 95, 220 }),
-        new Sample("C", new double[] { 98, 210 }));
+        new Sample("C", new double[] { 98, 210 }),
+        new Sample("D", new double[] { 30, 60 }),
+        new Sample("E", new double[] { 80, 20 }),
+        new Sample("E", new double[] { 80, 25 }));
 
     //~ Constructors -----------------------------------------------------------
 
@@ -160,9 +162,29 @@ public class LinearEvaluatorTest
         double[]        one = new double[] { 10, 20 };
         double[]        two = new double[] { 5, 40 };
         LinearEvaluator instance = createTrainedInstance();
-        double          expResult = 30.94;
+        double          expResult = 28.82;
         double          result = instance.patternDistance(one, two);
         assertEquals(expResult, result, 0.1);
+    }
+
+    /**
+     * Test of patternDeltasmethod, of class LinearEvaluator.
+     */
+    @Test
+    public void testPrinter ()
+    {
+        System.out.println("\n--Printer");
+
+        double[]        one = new double[] { 10, 20 };
+        double[]        two = new double[] { 5, 40 };
+        LinearEvaluator instance = createTrainedInstance();
+        Printer         printer = instance.new Printer(12);
+
+        System.out.println("defaults: " + printer.getDefaults());
+        System.out.println("   names: " + printer.getNames());
+        System.out.println("          " + printer.getDashes());
+        System.out.println("  deltas: " + printer.getDeltas(one, two));
+        System.out.println(" wDeltas: " + printer.getWeightedDeltas(one, two));
     }
 
     /**
@@ -189,16 +211,13 @@ public class LinearEvaluatorTest
 
         InputStream     in = new FileInputStream(filePath);
 
-        ///LinearEvaluator expResult = null;
         LinearEvaluator result = LinearEvaluator.unmarshal(in);
         result.dump();
-
-        ///assertEquals(expResult, result);
     }
 
     private LinearEvaluator createRawInstance ()
     {
-        LinearEvaluator le = new LinearEvaluator(inSize, inNames, outSize);
+        LinearEvaluator le = new LinearEvaluator(inNames);
 
         return le;
     }
