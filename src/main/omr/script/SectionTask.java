@@ -140,6 +140,7 @@ public abstract class SectionTask
     //----------------//
     // setSectionsIds //
     //----------------//
+    @SuppressWarnings("unused")
     private void setSectionsIds (Collection<Integer> ids)
     {
         if (logger.isFineEnabled()) {
@@ -155,6 +156,7 @@ public abstract class SectionTask
     //----------------//
     // getSectionsIds //
     //----------------//
+    @SuppressWarnings("unused")
     @XmlElement(name = "section")
     private Collection<Integer> getSectionsIds ()
     {

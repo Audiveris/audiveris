@@ -255,7 +255,7 @@ public class Logger
     public void severe (String    msg,
                         Throwable thrown)
     {
-        super.severe(msg);
+        super.severe(msg + " [" + thrown + "]");
         thrown.printStackTrace();
     }
 

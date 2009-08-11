@@ -22,7 +22,7 @@ import java.util.*;
 
 /**
  * Class <code>Language</code> handles the collection of language codes with
- * their related full name.
+ * their related full name, as well as the default language.
  *
  * <p>Note: This is implemented as a (sorted) map, since a compiled enum would
  * not provide the ability to add new items dynamically.
@@ -87,19 +87,11 @@ public class Language
         return constants.defaultLanguageCode.getValue();
     }
 
-    //-------------------//
-    // getKnownLanguages //
-    //-------------------//
-    public static SortedMap<String, String> getKnownLanguages ()
-    {
-        return knowns;
-    }
-
     //--------//
     // nameOf //
     //--------//
     /**
-     * Report the name related to a code
+     * Report the language name mapped to a language code
      * @param code the language code
      * @return the language full name, or null if unknown
      */
@@ -119,7 +111,7 @@ public class Language
         //~ Instance fields ----------------------------------------------------
 
         Constant.String defaultLanguageCode = new Constant.String(
-            "fra",
+            "eng",
             "3-letter code for the default sheet language");
     }
 }

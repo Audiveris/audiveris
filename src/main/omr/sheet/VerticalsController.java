@@ -14,9 +14,12 @@ import omr.check.CheckBoard;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.Evaluation;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
+import omr.glyph.GlyphSection;
 import omr.glyph.GlyphsModel;
+import omr.glyph.Shape;
 import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphLagView;
 import omr.glyph.ui.GlyphsController;
@@ -27,14 +30,13 @@ import omr.lag.ui.SectionBoard;
 
 import omr.log.Logger;
 
-import omr.score.visitor.SheetPainter;
-
 import omr.selection.GlyphEvent;
 import omr.selection.MouseMovement;
 import omr.selection.SelectionService;
 import omr.selection.UserEvent;
 
 import omr.sheet.ui.PixelBoard;
+import omr.sheet.ui.SheetPainter;
 
 import omr.step.Step;
 import omr.step.StepException;
@@ -95,51 +97,6 @@ public class VerticalsController
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //    //---------------//
-    //    // deassignGlyph //
-    //    //---------------//
-    //    /**
-    //     * This method is limited to deassignment of stems
-    //     *
-    //     * @param glyph the glyph to deassign
-    //     * @param record request to record this action in the script
-    //     */
-    //    @Override
-    //    public void deassignGlyph (Synchronicity         processing,
-    //                               final Glyph           glyph,
-    //                               final ScriptRecording record)
-    //    {
-    //        Shape shape = glyph.getShape();
-    //
-    //        switch (shape) {
-    //        case COMBINING_STEM :
-    //            sheet.getSymbolsController()
-    //                 .deassignGlyph(processing, glyph, record);
-    //
-    //            break;
-    //
-    //        default :
-    //        }
-    //    }
-    //
-    //    //------------------//
-    //    // deassignGlyphSet //
-    //    //------------------//
-    //    /**
-    //     * This method is limited to deassignment of stems
-    //     *
-    //     * @param glyphs the collection of glyphs to be de-assigned
-    //     * @param record true if this action is to be recorded in the script
-    //     */
-    //    @Override
-    //    public void deassignGlyphSet (Synchronicity     processing,
-    //                                  Collection<Glyph> glyphs,
-    //                                  ScriptRecording   record)
-    //    {
-    //        sheet.getSymbolsController()
-    //             .deassignGlyphSet(processing, glyphs, record);
-    //    }
 
     //---------//
     // refresh //

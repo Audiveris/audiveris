@@ -44,18 +44,15 @@ public class TesseractOCR
     private static final Logger logger = Logger.getLogger(TesseractOCR.class);
 
     /** Singleton */
-    private static OCR INSTANCE = new TesseractOCR();
+    private static final OCR INSTANCE = new TesseractOCR();
 
     /** Folder where all OCR material is available */
-    public static File ocrHome = Main.getOcrFolder();
+    public static final File ocrHome = Main.getOcrFolder();
 
     //~ Constructors -----------------------------------------------------------
 
-    /** Map
-       private SortedMap<String, String> supportedLanguages;
-       //~ Constructors -----------------------------------------------------------
-       /**
-     * Creates a new TesseractOCR object.
+    /**
+     * Creates the TesseractOCR singleton.
      */
     private TesseractOCR ()
     {
@@ -68,7 +65,7 @@ public class TesseractOCR
     //-------------//
     /**
      * Report the singleton
-     * @return the TesseractCOR instance
+     * @return the TesseractOCR instance
      */
     public static OCR getInstance ()
     {
@@ -138,33 +135,6 @@ public class TesseractOCR
             logger.warning("Error in OCR recognize", ex);
 
             return null;
-        }
-    }
-
-    //--------------//
-    // errorMessage //
-    //--------------//
-    /**
-     * Description of the Tesseract error carried by its process return code
-     * @param result the rpocess return code
-     * @return the related description
-     */
-    @SuppressWarnings("unused")
-    static String errorMessage (int result)
-    {
-        switch (result) {
-        case 1 :
-            return "Errors accessing files. " +
-                   "There may be spaces in your image's filename.";
-
-        case 29 :
-            return "Cannot recognize the image or its selected region.";
-
-        case 31 :
-            return "Unsupported image format.";
-
-        default :
-            return "Errors occurred.";
         }
     }
 

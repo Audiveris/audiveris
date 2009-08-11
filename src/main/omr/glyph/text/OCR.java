@@ -11,10 +11,10 @@ package omr.glyph.text;
 
 import java.awt.image.BufferedImage;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 /**
- * Interface <code>OCR</code> encapsulates the interaction with an OCR engine.
+ * Interface <code>OCR</code> defines the interaction with an OCR engine.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -27,11 +27,10 @@ public interface OCR
     // getSupportedLanguages //
     //-----------------------//
     /**
-     * Report the collection of supported languages, as a map from language
-     * 3-letter code to language name
-     * @return the map code -> name
+     * Report the set of supported language codes
+     * @return the set of supported 3-letter codes
      */
-    Map<String, String> getSupportedLanguages ();
+    Set<String> getSupportedLanguages ();
 
     //-----------//
     // recognize //
@@ -42,7 +41,8 @@ public interface OCR
      * @param image the provided textual image
      * @param languageCode the code of the (dominant?) language of the text,
      * or null if this language is unknown
-     * @param label an optional label related to the image, null otherwise
+     * @param label an optional label related to the image, null otherwise.
+     * This is meant for debugging the temporary files.
      * @return a list of OcrLine instances
      */
     List<OcrLine> recognize (BufferedImage image,

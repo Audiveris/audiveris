@@ -43,7 +43,8 @@ import javax.swing.*;
 
 /**
  * Class <code>ScoreBoard</code> is a board that manages score information as
- * both a display and possible input from user.
+ * both a display and possible input from user (text language, midi parameters,
+ * parts name and instrument, measure range selection).
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -148,9 +149,14 @@ public class ScoreBoard
     //--------------//
     private void defineLayout ()
     {
-        FormLayout   layout = Panel.makeFormLayout(
-            6 + (3 * score.getPartList().size()),
-            3);
+        // Compute the total number of logical rows
+        int logRowCount = 0;
+
+        for (Pane pane : panes) {
+            logRowCount += pane.getLogicalRowCount();
+        }
+
+        FormLayout   layout = Panel.makeFormLayout(logRowCount, 3);
         PanelBuilder builder = new PanelBuilder(layout, getComponent());
         builder.setDefaultDialogBorder();
 
@@ -163,7 +169,7 @@ public class ScoreBoard
                 r += 2;
             }
 
-            r = 2 + pane.defineLayout(builder, cst, r);
+            r = pane.defineLayout(builder, cst, r);
         }
     }
 
@@ -217,6 +223,15 @@ public class ScoreBoard
 
         /** Commit the modifications */
         public abstract void commit ();
+
+        /**
+         * Report the count of needed logical rows
+         * Typically 2 (the label separator plus 1 line of data)
+         */
+        public int getLogicalRowCount ()
+        {
+            return 2;
+        }
     }
 
     //--------------//
@@ -299,7 +314,7 @@ public class ScoreBoard
             builder.add(textLabel, cst.xyw(5, r, 3));
             builder.add(langCombo, cst.xyw(9, r, 3));
 
-            return r;
+            return r + 2;
         }
 
         /** Report the code out of a label */
@@ -472,7 +487,7 @@ public class ScoreBoard
             builder.add(lastId.getLabel(), cst.xy(9, r));
             builder.add(lastId.getField(), cst.xy(11, r));
 
-            return r;
+            return r + 2;
         }
 
         public void itemStateChanged (ItemEvent e)
@@ -555,7 +570,7 @@ public class ScoreBoard
             builder.add(volume.getLabel(), cst.xy(9, r));
             builder.add(volume.getField(), cst.xy(11, r));
 
-            return r;
+            return r + 2;
         }
     }
 
@@ -565,6 +580,10 @@ public class ScoreBoard
     private class PartPane
         extends Panel
     {
+        //~ Static fields/initializers -----------------------------------------
+
+        public static final int logicalRowCount = 3;
+
         //~ Instance fields ----------------------------------------------------
 
         /** The underlying model  */
@@ -690,6 +709,13 @@ public class ScoreBoard
         //~ Methods ------------------------------------------------------------
 
         @Override
+        public int getLogicalRowCount ()
+        {
+            return PartPane.logicalRowCount * score.getPartList()
+                                                   .size();
+        }
+
+        @Override
         public boolean isValid ()
         {
             // Each score part
@@ -722,18 +748,12 @@ public class ScoreBoard
                                  CellConstraints cst,
                                  int             r)
         {
-            boolean empty = true;
-
             for (ScorePart scorePart : score.getPartList()) {
-                if (!empty) {
-                    r += 2;
-                }
-
                 PartPane partPane = new PartPane(scorePart);
                 r = partPane.defineLayout(builder, cst, r);
                 partPanes.put(scorePart, partPane);
                 builder.add(partPane, cst.xy(1, r));
-                empty = false;
+                r += 2;
             }
 
             return r;

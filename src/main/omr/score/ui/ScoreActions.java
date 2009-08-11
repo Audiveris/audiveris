@@ -32,6 +32,7 @@ import omr.util.Wrapper;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
 
+import java.awt.Rectangle;
 import java.awt.event.*;
 import java.beans.*;
 
@@ -148,6 +149,7 @@ public class ScoreActions
             score.getRadix() + " parameters",
             true); // Modal flag
         dialog.setContentPane(optionPane);
+        dialog.setName("scoreBoard");
 
         optionPane.addPropertyChangeListener(
             new PropertyChangeListener() {

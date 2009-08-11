@@ -22,7 +22,6 @@ import omr.glyph.ui.panel.GlyphTrainer;
 
 import omr.log.Logger;
 
-import omr.sheet.Sheet;
 import omr.sheet.ui.SheetsController;
 
 import omr.ui.treetable.JTreeTable;

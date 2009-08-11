@@ -9,8 +9,8 @@
 //
 package omr.glyph.ui;
 
-import omr.glyph.GlyphEvaluator;
 import omr.glyph.Glyph;
+import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.GlyphSection;
@@ -23,8 +23,6 @@ import omr.lag.ui.SectionBoard;
 
 import omr.log.Logger;
 
-import omr.sheet.ui.SheetPainter;
-
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphSetEvent;
 import omr.selection.MouseMovement;
@@ -36,6 +34,7 @@ import omr.selection.UserEvent;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 import omr.sheet.ui.PixelBoard;
+import omr.sheet.ui.SheetPainter;
 
 import omr.step.Step;
 
@@ -238,29 +237,40 @@ public class SymbolsEditor
         public void contextSelected (Point         pt,
                                      MouseMovement movement)
         {
-            // Retrieve the selected glyphs
-            Set<Glyph> glyphs = sheet.getVerticalLag()
-                                     .getSelectedGlyphSet();
+            if (!ViewParameters.getInstance()
+                               .isSectionSelectionEnabled()) {
+                // Retrieve the selected glyphs
+                Set<Glyph> glyphs = sheet.getVerticalLag()
+                                         .getSelectedGlyphSet();
 
-            // To display point information
-            if ((glyphs == null) || glyphs.isEmpty()) {
-                pointSelected(pt, movement); // This may change glyph selection
-                glyphs = sheet.getVerticalLag()
-                              .getSelectedGlyphSet();
-            }
+                // To display point information
+                if ((glyphs == null) || glyphs.isEmpty()) {
+                    pointSelected(pt, movement); // This may change glyph selection
+                    glyphs = sheet.getVerticalLag()
+                                  .getSelectedGlyphSet();
+                }
 
-            if ((glyphs != null) && !glyphs.isEmpty()) {
-                // Update the popup menu according to selected glyphs
-                glyphMenu.updateMenu();
+                if ((glyphs != null) && !glyphs.isEmpty()) {
+                    // Update the popup menu according to selected glyphs
+                    glyphMenu.updateMenu();
 
-                // Show the popup menu
-                glyphMenu.getPopup()
-                         .show(
-                    this,
-                    getZoom().scaled(pt.x),
-                    getZoom().scaled(pt.y));
+                    // Show the popup menu
+                    glyphMenu.getPopup()
+                             .show(
+                        this,
+                        getZoom().scaled(pt.x),
+                        getZoom().scaled(pt.y));
+                } else {
+                    // Popup with no glyph selected ?
+                }
             } else {
-                // Popup with no glyph selected ?
+                logger.info("SymbolsEditor. contextSelected section mode");
+
+                // Retrieve the selected sections
+                Set<GlyphSection> sections = sheet.getVerticalLag()
+                                                  .getSelectedSectionSet();
+
+                // Build a glyph on the fly
             }
         }
 

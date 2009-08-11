@@ -2,6 +2,9 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 
 <html>
+    <head>
+        <title>Package omr.glyph</title>
+    </head>
     <body>
 	Package focused on glyphs (non further structured items) found in a
 	picture.
@@ -16,9 +19,9 @@
 		omr.glyph.GlyphsBuilder#addGlyph} to actually record the glyph
 		into the lag and its containing system.</li>
 	    <li>Some glyphs are created by building a compound out of other
-		glyphs, by {@link omr.glyph.GlyphsBuilder#buildCompound}. These
-		compounds have no effect until they are inserted via {@link
-		omr.glyph.GlyphsBuilder#addGlyph}.</li>
+		glyphs, by {@link omr.glyph.GlyphsBuilder#buildTransientCompound}.
+                These compounds have no effect until they are inserted via
+                {@link omr.glyph.GlyphsBuilder#addGlyph}.</li>
 	</ul>
 	<h5>Insertion</h5> This is done by {@link
 	omr.glyph.GlyphsBuilder#addGlyph} which performs the following actions:

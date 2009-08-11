@@ -120,6 +120,19 @@ public class GlyphsController
     }
 
     //----------------//
+    // setLatestShape //
+    //----------------//
+    /**
+     * Assign the latest shape
+     *
+     * @param shape the latest shape
+     */
+    public void setLatestShapeAssigned (Shape shape)
+    {
+        model.setLatestShape(shape);
+    }
+
+    //----------------//
     // getLatestShape //
     //----------------//
     /**

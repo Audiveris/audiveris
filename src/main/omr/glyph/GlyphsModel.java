@@ -108,6 +108,19 @@ public class GlyphsModel
     }
 
     //----------------//
+    // setLatestShape //
+    //----------------//
+    /**
+     * Assign the latest shape
+     *
+     * @param shape the current / latest shape
+     */
+    public void setLatestShape (Shape shape)
+    {
+        latestShape = shape;
+    }
+
+    //----------------//
     // getLatestShape //
     //----------------//
     /**
@@ -144,49 +157,6 @@ public class GlyphsModel
     public Sheet getSheet ()
     {
         return sheet;
-    }
-
-    //-------------//
-    // assignGlyph //
-    //-------------//
-    /**
-     * Assign a Shape to a glyph, inserting the glyph to its containing system
-     * and lag if it is still transient
-     *
-     * @param glyph the glyph to be assigned
-     * @param shape the assigned shape, which may be null
-     * @param doubt the doubt about shape
-     * @return the assigned glyph (perhaps an original glyph)
-     */
-    protected Glyph assignGlyph (Glyph  glyph,
-                                 Shape  shape,
-                                 double doubt)
-    {
-        if (glyph == null) {
-            return null;
-        }
-
-        // Do a manual assignment of the shape to the glyph
-        glyph.setShape(shape, doubt);
-
-        if (shape != null) {
-            boolean isTransient = glyph.isTransient();
-
-            // If this is a transient glyph, insert it
-            if (isTransient) {
-                SystemInfo system = sheet.getSystemOf(glyph);
-                glyph = system.addGlyph(glyph);
-            }
-
-            logger.info(
-                "Assign " + (isTransient ? "compound " : "") + "glyph#" +
-                glyph.getId() + " to " + shape);
-
-            // Remember the latest shape assigned
-            latestShape = shape;
-        }
-
-        return glyph;
     }
 
     //----------------//
@@ -243,20 +213,6 @@ public class GlyphsModel
         return assignGlyph(glyph, shape, doubt);
     }
 
-    //---------------//
-    // deassignGlyph //
-    //---------------//
-    /**
-     * Deassign the shape of a glyph
-     *
-     * @param glyph the glyph to deassign
-     */
-    protected void deassignGlyph (Glyph glyph)
-    {
-        // Assign the null shape to the glyph
-        assignGlyph(glyph, null, Evaluation.ALGORITHM);
-    }
-
     //------------------//
     // deassignGlyphSet //
     //------------------//
@@ -270,5 +226,62 @@ public class GlyphsModel
         for (Glyph glyph : new ArrayList<Glyph>(glyphs)) {
             deassignGlyph(glyph);
         }
+    }
+
+    //-------------//
+    // assignGlyph //
+    //-------------//
+    /**
+     * Assign a Shape to a glyph, inserting the glyph to its containing system
+     * and lag if it is still transient
+     *
+     * @param glyph the glyph to be assigned
+     * @param shape the assigned shape, which may be null
+     * @param doubt the doubt about shape
+     * @return the assigned glyph (perhaps an original glyph)
+     */
+    protected Glyph assignGlyph (Glyph  glyph,
+                                 Shape  shape,
+                                 double doubt)
+    {
+        if (glyph == null) {
+            return null;
+        }
+
+        // Do a manual assignment of the shape to the glyph
+        glyph.setShape(shape, doubt);
+
+        if (shape != null) {
+            boolean isTransient = glyph.isTransient();
+
+            // If this is a transient glyph, insert it
+            if (isTransient) {
+                SystemInfo system = sheet.getSystemOf(glyph);
+                glyph = system.addGlyph(glyph);
+            }
+
+            logger.info(
+                "Assign " + (isTransient ? "compound " : "") + "glyph#" +
+                glyph.getId() + " to " + shape);
+
+            // Remember the latest shape assigned
+            setLatestShape(shape);
+        }
+
+        return glyph;
+    }
+
+    //---------------//
+    // deassignGlyph //
+    //---------------//
+    /**
+     * Deassign the shape of a glyph
+     *
+     * @param glyph the glyph to deassign
+     */
+    protected void deassignGlyph (Glyph glyph)
+    {
+        // Assign the null shape to the glyph
+        assignGlyph(glyph, null, Evaluation.ALGORITHM);
     }
 }

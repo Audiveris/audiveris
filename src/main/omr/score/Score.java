@@ -719,9 +719,9 @@ public class Score
      *
      * @param volume the volume value to be assigned
      */
-    public void setVolume (Integer velocity)
+    public void setVolume (Integer volume)
     {
-        this.volume = velocity;
+        this.volume = volume;
     }
 
     //-----------//

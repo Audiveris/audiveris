@@ -10,8 +10,8 @@
 package omr.glyph.ui;
 
 import omr.glyph.Evaluation;
-import omr.glyph.GlyphEvaluator;
 import omr.glyph.Glyph;
+import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphLag;
 import omr.glyph.Shape;
@@ -44,7 +44,7 @@ public class GlyphMenu
     private final Sheet             sheet;
     private final ShapeFocusBoard   shapeFocus;
     private final SymbolsController symbolsController;
-    private final GlyphEvaluator         evaluator;
+    private final GlyphEvaluator    evaluator;
 
     /** Set of actions to update menu according to selected glyphs */
     private final Set<DynAction> dynActions = new HashSet<DynAction>();
@@ -80,7 +80,7 @@ public class GlyphMenu
      */
     public GlyphMenu (Sheet                   sheet,
                       final SymbolsController symbolsController,
-                      GlyphEvaluator               evaluator,
+                      GlyphEvaluator          evaluator,
                       ShapeFocusBoard         shapeFocus,
                       final GlyphLag          glyphLag)
     {
@@ -94,6 +94,7 @@ public class GlyphMenu
 
         // Direct link to latest shape assigned
         popup.add(new JMenuItem(new IdemAction()));
+        popup.add(new JMenuItem(new CopyAction()));
 
         popup.addSeparator(); //----------------------------------------------
 
@@ -315,6 +316,54 @@ public class GlyphMenu
         }
     }
 
+    //------------//
+    // CopyAction //
+    //------------//
+    /**
+     * Copy the shape of the selected glyph shape (in order to replicate the
+     * assignment to another glyph later)
+     */
+    private class CopyAction
+        extends DynAction
+    {
+        //~ Methods ------------------------------------------------------------
+
+        public void actionPerformed (ActionEvent e)
+        {
+            Glyph glyph = glyphLag.getSelectedGlyph();
+
+            if (glyph != null) {
+                Shape shape = glyph.getShape();
+
+                if (shape != null) {
+                    symbolsController.setLatestShapeAssigned(shape);
+                }
+            }
+        }
+
+        @Override
+        public void update ()
+        {
+            Glyph glyph = glyphLag.getSelectedGlyph();
+
+            if (glyph != null) {
+                Shape shape = glyph.getShape();
+
+                if (shape != null) {
+                    setEnabled(true);
+                    putValue(NAME, "Remember " + shape);
+                    putValue(SHORT_DESCRIPTION, "Remember this shape");
+
+                    return;
+                }
+            }
+
+            setEnabled(false);
+            putValue(NAME, "Remember");
+            putValue(SHORT_DESCRIPTION, "No shape to remember");
+        }
+    }
+
     //----------------//
     // DeassignAction //
     //----------------//
@@ -484,12 +533,17 @@ public class GlyphMenu
     private class IdemAction
         extends DynAction
     {
+        //~ Instance fields ----------------------------------------------------
+
+        private final String PREFIX = "Assign as ";
+
         //~ Methods ------------------------------------------------------------
 
         public void actionPerformed (ActionEvent e)
         {
             JMenuItem source = (JMenuItem) e.getSource();
-            Shape     shape = Shape.valueOf(source.getText());
+            Shape     shape = Shape.valueOf(
+                source.getText().substring(PREFIX.length()));
             Glyph     glyph = glyphLag.getSelectedGlyph();
 
             if (glyph != null) {
@@ -507,11 +561,11 @@ public class GlyphMenu
 
             if ((glyphNb > 0) && (latest != null)) {
                 setEnabled(true);
-                putValue(NAME, latest.toString());
+                putValue(NAME, PREFIX + latest.toString());
                 putValue(SHORT_DESCRIPTION, "Assign latest shape");
             } else {
                 setEnabled(false);
-                putValue(NAME, "Idem");
+                putValue(NAME, PREFIX);
                 putValue(SHORT_DESCRIPTION, "No shape to assign again");
             }
         }
