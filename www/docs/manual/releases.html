@@ -77,10 +77,19 @@
                     <TH>Introduction</TH>
                     <TD>
                         <UL>
+<<<<<<< releases.html
+                            <LI>Release 3.2 has been a long work, with a lot of
+                                new features. It exhibits a special focus on the
+                                integration of the Tesseract public OCR to
+                                handle all textual informations, and a
+                                significant redesign of key processing
+                                steps</LI>
+=======
                             <LI>Release 3.2 is now a work in progress, with a
                                 special focus on the integration of the
                                 Tesseract public OCR to handle the lyrics and
                                 other textual informations</LI>
+>>>>>>> 1.22
                         </UL>
                     </TD>
                 </TR>
@@ -89,6 +98,26 @@
                     <TH>Distribution Changes</TH>
                     <TD>
                         <UL>
+<<<<<<< releases.html
+			    <LI><u>Application</u>: We have switched to the
+				Swing Application Framework, in order to use a
+				standard approach for such tasks as: application
+				lifecycle, resources, actions, session
+				persistency,... all in an OS-independent
+				way. This framework is bypassed when Audiveris
+				runs in batch mode.</LI>
+			    <LI><u>EventBus</u>: This event bus from Michael
+				Bushe has been added for notification of user
+				selections, using specific user event
+				types.</LI>
+			    <LI><u>PDFRenderer</u>: The PDFRenderer tool has
+				been added to allow the reading of PDF
+				images.</LI>
+			    <LI><u>Tesseract</u>: The opensource Tessaract OCR
+				is the engine for text recognition.</LI>
+			    <LI><u>Tesjeract</u>: Access to Tesseract C++
+				software from Java via a JNI bridge.</LI>
+=======
 			    <LI><u>Application</u>: We have switched to the
 				Swing Application Framework, in order to use a
 				standard approach for such tasks as: application
@@ -102,6 +131,7 @@
 				images.</LI>
 			    <LI><u>Tesseract</u>: The opensource Tessaract OCR
 				has been added for text recognition.</LI>
+>>>>>>> 1.22
                         </UL>
                     </TD>
                 </TR>
@@ -110,6 +140,69 @@
                     <TH>New Features</TH>
                     <TD>
                         <UL>
+<<<<<<< releases.html
+			    <LI><u>Barlines</u>: Systems building and Measure
+				building have been redesigned, to allow easy
+				assignment or deassignment of a measure barline
+				by user interaction. The former BARS step is now
+				split into SYSTEMS and MEASURES steps.</LI>
+			    <LI><u>Drag'n Drop</u>: Audiveris now supports
+				drag'n drop features, dragging a image file to
+				the Audiveris main window loads the sheet and
+				perform a (customizable) default step.</LI>
+			    <LI><u>Image</u>: PDF format has been added to the
+				collection of image formats that Audiveris can
+				load, thanks to the PDFRenderer companion
+				tool.</LI>
+                            <LI><u>Midi</u>: The user now has the ability to
+                                select and playback just a sequence of measures,
+                                besides the whole score.</LI>
+			    <LI><u>Patterns</u>: After automatic glyph
+				recognition, a series of tests are gathered in
+				various glyph patterns to handle specific cases
+				(slurs, beams hooks, sharps, naturals, broken
+				clefs, imposed time signatures, etc). Thus the
+				PATTERNS step replaces the former CLEANUP
+				step.</LI>
+			    <LI><u>Parts</u>: Systems can now have different
+				numbers of parts from one system to the
+				other.</LI>
+			    <LI><u>Score Layout</u>: The user can dynamically
+				change the layout of the score display, between
+				a vertical layout (like the original sheet) and
+				a horizontal layout (more like a timeline).</LI>
+			    <LI><u>Score Rebuild</u>: The user has the ability to
+				rebuild the score entities at any time. When
+				dealing with very large systems, one can also
+				disable the automatic score rebuild.</LI>
+			    <LI><u>Section Selection</u>: Besides glyph
+				selection, the user can now select one or
+				several sections, thus building a glyph by
+				hand. This allows the splitting of glyphs at
+				section borders.</LI>
+			    <LI><u>Similar Glyphs</u>: The use can now browse
+				through a sequence of glyphs "similar" to a
+				selected glyph. This is helpful when dealing
+				with similar cases all around a music sheet. The
+				"similarity" is handled by a specific Linear
+				Evaluator since a Neural Network is not linear
+				at all.</LI>
+			    <LI><u>Steps</u>: Some steps, the ones that follow
+				the SCORE step, are flagged as not mandatory and
+				can be re-performed at will.</LI>
+			    <LI><u>System Boundaries</u>: The boundaries of any
+				system area are now defined by broken lines,
+				that the user can modify by mouse
+				movements. This allows a more flexible
+				definition of which glyphs belong to a
+				system.</LI>
+			    <LI><u>Text</u>: A whole hierarchy of text items is
+				now defined to precisely handle Lyrics as well
+				as Titles, Directions and the like. The actual
+				text content can be entered manually via the
+				glyph board and automatically via the OCR
+				mechanism.</LI>
+=======
 			    <LI><u>Barlines</u>: Systems building and Measure
 				building have been redesigned, to allow easy
 				assignment or deassignment of a measure barline
@@ -132,6 +225,7 @@
 				text content can be entered manually via the
 				glyph board or automatically via the OCR
 				mechanism.</LI>
+>>>>>>> 1.22
                         </UL>
                     </TD>
                 </TR>
@@ -140,6 +234,17 @@
                     <TH>Bug Fixes</TH>
                     <TD>
                         <UL>
+<<<<<<< releases.html
+			    <LI><u>Message Log</u>: The Log window now displays
+				all messages, including the ones that were
+				logged before the GUI was launched.</LI>
+			    <LI><u>Local Browsing</u>: The user is now able to
+				navigate to the Audiveris documentation stored
+				locally in the installation folder.</LI>
+			    <LI><u>Vertex removal</u>: The removal of a vertex
+				sometimes lead to a double removal attempt.</LI>
+=======
+>>>>>>> 1.22
                         </UL>
                     </TD>
                 </TR>
@@ -148,6 +253,15 @@
                     <TH>Known Issues</TH>
                     <TD>
                         <UL>
+			    <LI><u>Injection</u>: The user needs the ability to
+				directly enter score entities of his own. To be
+				addressed in the next release.</LI>
+			    <LI><u>Parameters</u>: Besides the generic constants
+				mechanism (accessed via Tools | Options menu),
+				we need a more user-oriented way to deal with
+				global parameters such as: default text
+				language, step triggered on Drag'n Drop,
+				etc.</LI>
                         </UL>
                     </TD>
                 </TR>
@@ -156,9 +270,29 @@
                     <TH>Other Changes</TH>
                     <TD>
                         <UL>
+<<<<<<< releases.html
+			    <LI><u>Bus</u>: Introduced the EventBus companion
+				tool, to replace the proprietary Selection
+				mechanism for handling the notifications of user
+				selections.</LI>
+			    <LI><u>MusicXML</u>: Upgraded the export step to
+				comply with the new JAXB binding of
+				ProxyMusic.</LI>
+			    <LI><u>Threading</u>: Multi-threading is given much
+				attention, using Brian Goetz JCIP
+				annotations.</LI>
+			    <LI><u>UML</u>: Used the basic UMLet tool, which is
+				very convenient for simple UML drawings found
+				here and there in Audiveris doc.</LI>
+			    <LI><u>Statistics</u>: Added on Audiveris home page
+				a link to the Ohloh statistics about this
+				software. Cost is estimated a bit above 1
+				million $, just for the code ...</LI>
+=======
 			    <LI>Introduced the EventBus companion tool, to
 			    replace the proprietary Selection mechanism in
 			    handling the current user selections.</LI>
+>>>>>>> 1.22
                         </UL>
                     </TD>
                 </TR>
