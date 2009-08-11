@@ -14,12 +14,9 @@ import omr.check.CheckBoard;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.Evaluation;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
-import omr.glyph.GlyphSection;
 import omr.glyph.GlyphsModel;
-import omr.glyph.Shape;
 import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphLagView;
 import omr.glyph.ui.GlyphsController;
