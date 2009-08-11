@@ -19,13 +19,17 @@
      
 <actions>
     
-    <action domain="TOOL" section="END"    class="omr.ui.GuiActions"            method="dumpEventServices"/>
-
+<!--
     <action domain="Text" section="IMPORT" class="omr.glyph.ui.TextAreaBrowser" method="retrieveTextAreas" />
     <action domain="Text" section="EDIT"   class="omr.glyph.ui.TextAreaBrowser" method="showHorizontalHistogram" />
     <action domain="Text" section="EDIT"   class="omr.glyph.ui.TextAreaBrowser" method="showVerticalHistogram" />
-
+-->
     <!-- Just as an example -->
-    <action domain="Misc" section="END"   class="MyClass" method="dumpCurrentScore" />
+    <action domain="Misc" section="END"    class="omr.ui.GuiActions"            method="dumpEventServices"/>
+    <action domain="Misc" section="END"    class="MyClass"                      method="dumpCurrentScore" />
+
+<!--
+    <action domain="Misc" section="END"    class="MyClass"                      method="buildFromSections" />
+-->
 
 </actions>
