@@ -34,6 +34,10 @@ import javax.xml.bind.annotation.*;
  * underlying persistency of any GlyphTask. The XML file will thus contain the
  * ids of the member sections of the related glyphs.</p>
  *
+ * <h4>Glyphs and sections in a script:<br/>
+ *    <img src="doc-files/script.jpg"/>
+ * </h4>
+ *
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
