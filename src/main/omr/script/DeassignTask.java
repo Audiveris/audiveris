@@ -13,8 +13,6 @@ import omr.glyph.Glyph;
 
 import omr.sheet.Sheet;
 
-import omr.step.StepException;
-
 import java.util.Collection;
 
 /**
@@ -59,10 +57,11 @@ public class DeassignTask
     //-----//
     @Override
     public void runEpilog (Sheet sheet)
-        throws StepException
+        throws Exception
     {
         sheet.getSymbolsController()
-             .asyncDeassignGlyphSet(glyphs);
+             .asyncDeassignGlyphs(glyphs)
+             .get();
     }
 
     //-----------------//
@@ -71,6 +70,6 @@ public class DeassignTask
     @Override
     protected String internalsString ()
     {
-        return " deassign" + super.internalsString();
+        return " deassign " + super.internalsString();
     }
 }

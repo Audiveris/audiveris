@@ -16,7 +16,8 @@ import omr.score.common.PixelRectangle;
 import java.util.*;
 
 /**
- * Class <code>Glyphs</code> handles features related to a collection of glyphs
+ * Class <code>Glyphs</code> is just a collection of static convenient methods,
+ * providing features related to a collection of glyphs.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -58,8 +59,8 @@ public class Glyphs
     // containsManualShape //
     //---------------------//
     /**
-     * Check whether a collection of glyphs contains at least one manually
-     * assigned shape
+     * Check whether a collection of glyphs contains at least one glyph with a
+     * manually assigned shape
      * @param glyphs the glyph collection to check
      * @return true if there is at least one manually assigned shape
      */
@@ -74,11 +75,36 @@ public class Glyphs
         return false;
     }
 
+    //----------//
+    // glyphsOf //
+    //----------//
+    /**
+     * Report the set of glyphs that are pointed back by the provided collection
+     * of sections
+     * @param sections the provided sections
+     * @return the set of active containing glyphs
+     */
+    public static Set<Glyph> glyphsOf (Collection<GlyphSection> sections)
+    {
+        Set<Glyph> glyphs = new LinkedHashSet<Glyph>();
+
+        for (GlyphSection section : sections) {
+            Glyph glyph = section.getGlyph();
+
+            if (glyph != null) {
+                glyphs.add(glyph);
+            }
+        }
+
+        return glyphs;
+    }
+
     //-------------------//
     // purgeManualShapes //
     //-------------------//
     /**
-     * Purge a collection of glyphs from manually assigned shapes
+     * Purge a collection of glyphs of those which exhibit a manually assigned
+     * shape
      * @param glyphs the glyph collection to purge
      */
     public static void purgeManualShapes (Collection<Glyph> glyphs)
@@ -90,6 +116,57 @@ public class Glyphs
                 it.remove();
             }
         }
+    }
+
+    //------------//
+    // sectionsOf //
+    //------------//
+    /**
+     * Report the set of sections contained by the provided collection of glyphs
+     * @param glyphs the provided glyphs
+     * @return the set of all member sections
+     */
+    public static Set<GlyphSection> sectionsOf (Collection<Glyph> glyphs)
+    {
+        Set<GlyphSection> sections = new TreeSet<GlyphSection>();
+
+        for (Glyph glyph : glyphs) {
+            sections.addAll(glyph.getMembers());
+        }
+
+        return sections;
+    }
+
+    //-----//
+    // set //
+    //-----//
+    /**
+     * Build a mutable set with the provided glyphs
+     * @param glyphs the provided glyphs
+     * @return a mutable sorted set composed of these glyphs
+     */
+    public static SortedSet<Glyph> set (Glyph... glyphs)
+    {
+        SortedSet<Glyph> set = new TreeSet<Glyph>();
+
+        for (Glyph glyph : glyphs) {
+            set.add(glyph);
+        }
+
+        return set;
+    }
+
+    //-----//
+    // set //
+    //-----//
+    /**
+     * Build a mutable set with the provided glyphs
+     * @param glyphs the provided glyphs
+     * @return a mutable sorted set composed of these glyphs
+     */
+    public static SortedSet<Glyph> set (Collection<Glyph> glyphs)
+    {
+        return new TreeSet<Glyph>(glyphs);
     }
 
     //----------//
@@ -120,8 +197,8 @@ public class Glyphs
     // toString //
     //----------//
     /**
-     * Convenient method, to build a string with just the ids of the glyph
-     * collection, introduced by the provided label
+     * Build a string with just the ids of the glyph collection, introduced by
+     * the provided label
      *
      * @param label the string that introduces the list of IDs
      * @param glyphs the collection of glyphs
@@ -152,8 +229,8 @@ public class Glyphs
     // toString //
     //----------//
     /**
-     * Convenient method, to build a string with just the ids of the glyph
-     * array, introduced by the provided label
+     * Build a string with just the ids of the glyph array, introduced by the
+     * provided label
      *
      * @param label the string that introduces the list of IDs
      * @param glyphs the array of glyphs
@@ -169,8 +246,8 @@ public class Glyphs
     // toString //
     //----------//
     /**
-     * Convenient method, to build a string with just the ids of the glyph
-     * collection, introduced by the label "glyphs"
+     * Build a string with just the ids of the glyph collection, introduced by
+     * the label "glyphs"
      *
      * @param glyphs the collection of glyphs
      * @return the string built
@@ -184,8 +261,8 @@ public class Glyphs
     // toString //
     //----------//
     /**
-     * Convenient method, to build a string with just the ids of the glyph
-     * array, introduced by the label "glyphs"
+     * Build a string with just the ids of the glyph array, introduced by the
+     * label "glyphs"
      *
      * @param glyphs the array of glyphs
      * @return the string built

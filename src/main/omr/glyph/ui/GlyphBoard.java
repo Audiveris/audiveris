@@ -261,6 +261,7 @@ public class GlyphBoard
     @Override
     public void onEvent (UserEvent event)
     {
+        ///logger.info("GlyphBoard event:" + event);
         try {
             // Ignore RELEASING
             if (event.movement == MouseMovement.RELEASING) {
@@ -481,7 +482,7 @@ public class GlyphBoard
                                     throws Exception
                                 {
                                     // Following actions must be done in sequence
-                                    Task task = controller.asyncDeassignGlyphSet(
+                                    Task task = controller.asyncDeassignGlyphs(
                                         glyphs);
                                     task.get();
 
@@ -501,7 +502,7 @@ public class GlyphBoard
                             }.execute();
                     } else {
                         // We have selection for glyph only
-                        controller.asyncDeassignGlyphSet(
+                        controller.asyncDeassignGlyphs(
                             Collections.singleton(glyph));
                     }
                 }

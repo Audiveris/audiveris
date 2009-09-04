@@ -13,6 +13,8 @@ import omr.lag.Section;
 
 import omr.log.Logger;
 
+import omr.sheet.SystemInfo;
+
 import omr.util.Implement;
 
 import java.awt.Point;
@@ -45,6 +47,9 @@ public class GlyphSection
      * use the setGlyph() method instead.
      */
     private Glyph glyph;
+
+    /** The containing system, if any */
+    private SystemInfo system;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -120,6 +125,30 @@ public class GlyphSection
     }
 
     //-----------//
+    // setSystem //
+    //-----------//
+    /**
+     * Assign a containing system
+     * @param system the system to set
+     */
+    public void setSystem (SystemInfo system)
+    {
+        this.system = system;
+    }
+
+    //-----------//
+    // getSystem //
+    //-----------//
+    /**
+     * Report the containing system
+     * @return the system (may be null)
+     */
+    public SystemInfo getSystem ()
+    {
+        return system;
+    }
+
+    //-----------//
     // compareTo //
     //-----------//
     /**
@@ -179,6 +208,11 @@ public class GlyphSection
                 sb.append(":")
                   .append(glyph.getShape());
             }
+        }
+
+        if (system != null) {
+            sb.append(" syst:")
+              .append(system.getId());
         }
 
         if (this.getClass()

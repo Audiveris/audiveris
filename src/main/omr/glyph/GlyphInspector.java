@@ -232,7 +232,7 @@ public class GlyphInspector
     {
         // First retrieve the collection of all stems in the system
         // Ordered naturally by their abscissa
-        final SortedSet<Glyph> stems = new TreeSet<Glyph>();
+        final SortedSet<Glyph> stems = Glyphs.set();
 
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.isStem() && glyph.isActive()) {

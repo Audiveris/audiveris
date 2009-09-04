@@ -68,7 +68,7 @@ public class TimeSignature
      * sorted on glyph abscissa. This can be just one : e.g. TIME_SIX_EIGHT for
      * 6/8, or several : e.g. TIME_SIX + TIME_TWELVE for 6/12
      */
-    private SortedSet<Glyph> glyphs = new TreeSet<Glyph>();
+    private SortedSet<Glyph> glyphs = Glyphs.set();
 
     /** Flag a time sig not created out of its glyphs */
     private final boolean isDummy;

@@ -128,13 +128,33 @@ public class GlyphsBuilder
         Glyph oldGlyph = vLag.addGlyph(glyph);
 
         if (oldGlyph != glyph) {
-            // Perhaps some members to carry over
+            // Perhaps some members to carry over (TODO: check this!)
             oldGlyph.copyStemInformation(glyph);
         }
 
         system.addToGlyphsCollection(oldGlyph);
 
         return oldGlyph;
+    }
+
+    //------------//
+    // buildGlyph //
+    //------------//
+    /**
+     * Build a glyph from a collection of sections, with a link back from the
+     * sections to the glyph
+     * @param sections the provided members of the future glyph
+     * @return the newly built glyph
+     */
+    public Glyph buildGlyph (Collection<GlyphSection> sections)
+    {
+        Glyph glyph = new Stick(scale.interline());
+
+        for (GlyphSection section : sections) {
+            glyph.addSection(section, true);
+        }
+
+        return glyph;
     }
 
     //------------------------//
@@ -192,7 +212,7 @@ public class GlyphsBuilder
 
         for (GlyphSection section : sections) {
             compound.addSection(section, /* linkSections => */
-                                      false);
+                                false);
 
             if (compound.getLag() == null) {
                 compound.setLag(section.getGraph());
@@ -203,26 +223,6 @@ public class GlyphsBuilder
         computeGlyphFeatures(compound);
 
         return compound;
-    }
-
-    //------------//
-    // buildGlyph //
-    //------------//
-    /**
-     * Build a glyph from a collection of sections, with a link back from the
-     * sections to the glyph
-     * @param sections the provided members of the future glyph
-     * @return the newly built glyph
-     */
-    public Glyph buildGlyph (Collection<GlyphSection> sections)
-    {
-        Glyph glyph = new Stick(scale.interline());
-
-        for (GlyphSection section : sections) {
-            glyph.addSection(section, true);
-        }
-
-        return glyph;
     }
 
     //----------------------//
@@ -252,13 +252,13 @@ public class GlyphsBuilder
 
         int stemNb = 0;
 
-        if (checkStemIntersect(system.getGlyphs(), glyph, /* onLeft => */
-                               true)) {
+        // Look left
+        if (checkStemIntersect(system.getGlyphs(), glyph, true)) {
             stemNb++;
         }
 
-        if (checkStemIntersect(system.getGlyphs(), glyph, /* onLeft => */
-                               false)) {
+        // Look right
+        if (checkStemIntersect(system.getGlyphs(), glyph, false)) {
             stemNb++;
         }
 

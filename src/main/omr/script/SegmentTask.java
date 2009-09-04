@@ -65,8 +65,13 @@ public class SegmentTask
     public void runEpilog (Sheet sheet)
         throws StepException
     {
-        sheet.getSymbolsController()
-             .asyncSegmentGlyphSet(glyphs, isShort);
+        try {
+            sheet.getSymbolsController()
+                 .asyncSegment(glyphs, isShort)
+                 .get();
+        } catch (Exception ex) {
+            logger.warning("Error in running SegmentTask", ex);
+        }
     }
 
     //-----------------//

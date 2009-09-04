@@ -354,11 +354,7 @@ public class ScoreActions
             try {
                 SheetsController.selectedSheet()
                                 .getSheetSteps()
-                                .rebuildAfter(
-                    Step.SYMBOLS,
-                    null,
-                    null, /* imposed => */
-                    true);
+                                .rebuildAfter(Step.SYMBOLS, null, true);
             } catch (Exception ex) {
                 logger.warning("Could not refresh score", ex);
             }

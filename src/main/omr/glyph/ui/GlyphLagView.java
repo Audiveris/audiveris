@@ -191,7 +191,7 @@ public class GlyphLagView
     }
 
     //-----------------------//
-    // asyncDeassignGlyphSet //
+    // asyncDeassignGlyphs //
     //-----------------------//
     /**
      * Deassign the shape of a glyph
@@ -201,7 +201,7 @@ public class GlyphLagView
     public void asyncDeassignGlyphSet (Set<Glyph> glyphs)
     {
         if (controller != null) {
-            controller.asyncDeassignGlyphSet(glyphs);
+            controller.asyncDeassignGlyphs(glyphs);
         }
     }
 
@@ -693,11 +693,9 @@ public class GlyphLagView
                 // Overwriting the set of glyphs
                 if (glyph != null) {
                     // Make a one-glyph set
-                    glyphs.clear();
-                    glyphs.add(glyph);
-                } else if (!glyphs.isEmpty()) {
-                    // Empty the glyph set
-                    glyphs.clear();
+                    glyphs = Glyphs.set(glyph);
+                } else {
+                    glyphs = Glyphs.set();
                 }
 
                 publish(new GlyphSetEvent(this, hint, movement, glyphs));

@@ -13,10 +13,11 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
-import omr.glyph.GlyphEvaluator;
 import omr.glyph.Glyph;
+import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphNetwork;
+import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 
 import omr.log.Logger;
@@ -393,8 +394,8 @@ class EvaluationBoard
                 Shape shape = Shape.valueOf(button.getText());
 
                 // Actually assign the shape
-                glyphController.asyncAssignGlyphSet(
-                    Collections.singleton(glyph),
+                glyphController.asyncAssignGlyphs(
+                    Glyphs.set(glyph),
                     shape,
                     false);
             }

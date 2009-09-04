@@ -10,22 +10,19 @@
 package omr.script;
 
 import omr.glyph.GlyphSection;
-
-import omr.lag.Sections;
+import omr.glyph.SectionSets;
 
 import omr.sheet.Sheet;
 
 import omr.step.StepException;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import javax.xml.bind.annotation.*;
 
 /**
  * Class <code>SectionTask</code> is a script task which is applied to a
- * collection of sections
+ * collection of section sets
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -37,10 +34,8 @@ public abstract class SectionTask
     //~ Instance fields --------------------------------------------------------
 
     /** The collection of sections which are concerned by this task */
-    protected List<GlyphSection> sections;
-
-    /** The ids of these sections */
-    protected Collection<Integer> ids;
+    @XmlElement(name = "sets")
+    protected SectionSets sectionSets;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -50,22 +45,21 @@ public abstract class SectionTask
     /**
      * Creates a new SectionTask object.
      *
-     * @param sections the collection of sections concerned by this task
+     * @param sectionSets the collection of section sets concerned by this task
      */
-    public SectionTask (Collection<GlyphSection> sections)
+    public SectionTask (Collection<Collection<GlyphSection>> sectionSets)
     {
-        this.sections = new ArrayList<GlyphSection>(sections);
+        this.sectionSets = new SectionSets(sectionSets);
     }
 
     //-------------//
     // SectionTask //
     //-------------//
     /**
-     * Constructor needed by no-arg constructors of subclasses (for JAXB)
+     * No-arg constructor needed for JAXB
      */
     protected SectionTask ()
     {
-        sections = null; // Dummy value
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -74,8 +68,9 @@ public abstract class SectionTask
     // run //
     //-----//
     /**
-     * Method made final to force the retrieval of sections. Additional
-     * processing should take place in an overridden runEpilog method
+     * Method made final to force the retrieval of section sets beforehand.
+     * Additional processing should take place in an overridden runEpilog method
+     *
      * @param sheet the related sheet
      * @throws omr.step.StepException
      */
@@ -83,27 +78,8 @@ public abstract class SectionTask
     public final void run (Sheet sheet)
         throws StepException
     {
-        // Make sure the sections are available
-        if (sections == null) {
-            if (ids == null) {
-                throw new StepException("No sections defined");
-            }
-
-            sections = new ArrayList<GlyphSection>();
-
-            for (int id : ids) {
-                GlyphSection section = sheet.getVerticalLag()
-                                            .getVertexById(id);
-
-                if (section == null) {
-                    logger.warning(
-                        "Cannot find section for " + id,
-                        new Throwable());
-                } else {
-                    sections.add(section);
-                }
-            }
-        }
+        // Make sure the concrete sections are available
+        sectionSets.getSets(sheet);
 
         // Now the real processing
         runEpilog(sheet);
@@ -115,15 +91,11 @@ public abstract class SectionTask
     @Override
     protected String internalsString ()
     {
-        if (sections != null) {
-            return Sections.toString(sections);
+        if (sectionSets != null) {
+            return sectionSets.toString();
+        } else {
+            return "";
         }
-
-        if (ids != null) {
-            return " ids:" + ids.toString();
-        }
-
-        return "";
     }
 
     //-----------//
@@ -136,44 +108,4 @@ public abstract class SectionTask
      */
     protected abstract void runEpilog (Sheet sheet)
         throws StepException;
-
-    //----------------//
-    // setSectionsIds //
-    //----------------//
-    @SuppressWarnings("unused")
-    private void setSectionsIds (Collection<Integer> ids)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("setGlyphsIds this.sigs=" + this.ids + " sigs=" + ids);
-        }
-
-        if (this.ids != ids) {
-            this.ids.clear();
-            this.ids.addAll(ids);
-        }
-    }
-
-    //----------------//
-    // getSectionsIds //
-    //----------------//
-    @SuppressWarnings("unused")
-    @XmlElement(name = "section")
-    private Collection<Integer> getSectionsIds ()
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("getSectionsIds this.ids=" + this.ids);
-        }
-
-        if (ids == null) {
-            ids = new ArrayList<Integer>();
-
-            if (sections != null) {
-                for (GlyphSection section : sections) {
-                    ids.add(section.getId());
-                }
-            }
-        }
-
-        return ids;
-    }
 }

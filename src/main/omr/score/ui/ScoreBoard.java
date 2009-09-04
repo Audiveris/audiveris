@@ -291,11 +291,7 @@ public class ScoreBoard
                         {
                             score.getSheet()
                                  .getSheetSteps()
-                                 .rebuildAfter(
-                                Step.VERTICALS,
-                                null,
-                                null,
-                                true);
+                                 .rebuildAfter(Step.VERTICALS, null, true);
 
                             return null;
                         }

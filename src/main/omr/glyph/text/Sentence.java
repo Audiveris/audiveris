@@ -81,7 +81,7 @@ public class Sentence
     private final String id;
 
     /** Abscissa-ordered collection of text items */
-    private final SortedSet<Glyph> items = new TreeSet<Glyph>();
+    private final SortedSet<Glyph> items = Glyphs.set();
 
     // Scaled parameters
     //--------------------------------------------------------------------------

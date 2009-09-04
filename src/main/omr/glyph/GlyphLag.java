@@ -120,7 +120,7 @@ public class GlyphLag
         if (activeGlyphs == null) {
             synchronized (this) {
                 if (activeGlyphs == null) {
-                    activeGlyphs = new TreeSet<Glyph>(activeMap.values());
+                    activeGlyphs = Glyphs.set(activeMap.values());
                 }
             }
         }

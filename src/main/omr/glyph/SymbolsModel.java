@@ -223,7 +223,7 @@ public class SymbolsModel
         }
 
         if (!slurs.isEmpty()) {
-            assignGlyphSet(slurs, Shape.SLUR, false, Evaluation.MANUAL);
+            assignGlyphs(slurs, Shape.SLUR, false, Evaluation.MANUAL);
         }
     }
 
@@ -233,7 +233,7 @@ public class SymbolsModel
     public void segmentGlyphSet (Collection<Glyph> glyphs,
                                  boolean           isShort)
     {
-        deassignGlyphSet(glyphs);
+        deassignGlyphs(glyphs);
 
         for (Glyph glyph : new ArrayList<Glyph>(glyphs)) {
             SystemInfo system = sheet.getSystemOf(glyph);

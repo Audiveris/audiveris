@@ -288,7 +288,7 @@ public class TextAreaBrowser
             Sheet sheet = SheetsController.selectedSheet();
             alignTexts(sheet);
             sheet.getSheetSteps()
-                 .rebuildAfter(Step.SYMBOLS, null, null, true);
+                 .rebuildAfter(Step.SYMBOLS, null, true);
 
             return null;
         }

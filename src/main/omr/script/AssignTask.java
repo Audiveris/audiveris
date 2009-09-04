@@ -14,15 +14,17 @@ import omr.glyph.Shape;
 
 import omr.sheet.Sheet;
 
-import omr.step.StepException;
-
 import java.util.Collection;
 
 import javax.xml.bind.annotation.XmlAttribute;
 
 /**
- * Class <code>AssignTask</code> is a script task which assigns a shape to a
- * collection of glyphs
+ * Class <code>AssignTask</code> is a script task which assigns a shape
+ * to a collection of glyphs.
+ *
+ * <p>Il the compound flag is set, a compound glyph may is composed from the
+ * provided glyphs and assigned the shape. Otherwise, each provided glyph is
+ * assigned the shape.</p>
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -85,8 +87,7 @@ public class AssignTask
         sb.append(" assign");
 
         if (compound) {
-            sb.append(" ")
-              .append("compound");
+            sb.append(" compound");
         }
 
         sb.append(" ")
@@ -100,9 +101,9 @@ public class AssignTask
     //-----//
     @Override
     protected void runEpilog (Sheet sheet)
-        throws StepException
+        throws Exception
     {
         sheet.getSymbolsController()
-             .asyncAssignGlyphSet(glyphs, shape, compound);
+             .asyncAssignGlyphs(glyphs, shape, compound);
     }
 }

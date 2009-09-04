@@ -20,7 +20,7 @@ import java.util.*;
 
 /**
  * Class <code>GlyphsModel</code> is a common model for synchronous glyph
- * handling.
+ * and section handling.
  *
  * <p>Nota: User gesture should trigger actions in GlyphsController which will
  * asynchronously delegate to this model.
@@ -152,7 +152,7 @@ public class GlyphsModel
     //----------//
     /**
      * Report the model underlying sheet
-     * @return the unerlying sheet instance
+     * @return the underlying sheet instance
      */
     public Sheet getSheet ()
     {
@@ -160,7 +160,7 @@ public class GlyphsModel
     }
 
     //----------------//
-    // assignGlyphSet //
+    // assignGlyphs //
     //----------------//
     /**
      * Assign a shape to the selected collection of glyphs.
@@ -171,10 +171,10 @@ public class GlyphsModel
      *                 individual glyph
      * @param doubt the doubt we have wrt the assigned shape
      */
-    public void assignGlyphSet (Collection<Glyph> glyphs,
-                                Shape             shape,
-                                boolean           compound,
-                                double            doubt)
+    public void assignGlyphs (Collection<Glyph> glyphs,
+                              Shape             shape,
+                              boolean           compound,
+                              double            doubt)
     {
         if (compound) {
             // Build & insert one compound
@@ -191,9 +191,9 @@ public class GlyphsModel
         }
     }
 
-    //------------------//
-    // assignSectionSet //
-    //------------------//
+    //----------------//
+    // assignSections //
+    //----------------//
     /**
      * Assign a shape to the selected collection of sections.
      *
@@ -202,26 +202,28 @@ public class GlyphsModel
      * @param doubt the doubt we have wrt the assigned shape
      * @return the newly built glyph
      */
-    public Glyph assignSectionSet (Collection<GlyphSection> sections,
-                                   Shape                    shape,
-                                   double                   doubt)
+    public Glyph assignSections (Collection<GlyphSection> sections,
+                                 Shape                    shape,
+                                 double                   doubt)
     {
         // Build & insert one glyph out of the sections
-        SystemInfo system = sheet.getSystemOfSections(sections);
+        SystemInfo system = sections.iterator()
+                                    .next()
+                                    .getSystem();
         Glyph      glyph = system.buildGlyph(sections);
 
         return assignGlyph(glyph, shape, doubt);
     }
 
-    //------------------//
-    // deassignGlyphSet //
-    //------------------//
+    //----------------//
+    // deassignGlyphs //
+    //----------------//
     /**
      * De-Assign a collection of glyphs.
      *
      * @param glyphs the collection of glyphs to be de-assigned
      */
-    public void deassignGlyphSet (Collection<Glyph> glyphs)
+    public void deassignGlyphs (Collection<Glyph> glyphs)
     {
         for (Glyph glyph : new ArrayList<Glyph>(glyphs)) {
             deassignGlyph(glyph);
@@ -248,17 +250,11 @@ public class GlyphsModel
             return null;
         }
 
-        // Do a manual assignment of the shape to the glyph
-        glyph.setShape(shape, doubt);
-
         if (shape != null) {
-            boolean isTransient = glyph.isTransient();
+            SystemInfo system = sheet.getSystemOf(glyph);
+            glyph = system.addGlyph(glyph);
 
-            // If this is a transient glyph, insert it
-            if (isTransient) {
-                SystemInfo system = sheet.getSystemOf(glyph);
-                glyph = system.addGlyph(glyph);
-            }
+            boolean isTransient = glyph.isTransient();
 
             logger.info(
                 "Assign " + (isTransient ? "compound " : "") + "glyph#" +
@@ -267,6 +263,9 @@ public class GlyphsModel
             // Remember the latest shape assigned
             setLatestShape(shape);
         }
+
+        // Do a manual assignment of the shape to the glyph
+        glyph.setShape(shape, doubt);
 
         return glyph;
     }

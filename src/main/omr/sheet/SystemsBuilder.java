@@ -20,7 +20,9 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
+import omr.glyph.GlyphSection;
 import omr.glyph.GlyphsModel;
+import omr.glyph.Impact;
 import omr.glyph.Shape;
 import omr.glyph.ui.BarMenu;
 import omr.glyph.ui.GlyphBoard;
@@ -34,11 +36,10 @@ import omr.lag.ui.SectionBoard;
 
 import omr.log.Logger;
 
+import omr.score.ScoreFixer;
 import omr.score.entity.ScorePart;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.SystemPart;
-import omr.score.ScoreFixer;
-import omr.sheet.ui.SheetPainter;
 
 import omr.script.BoundaryTask;
 
@@ -49,7 +50,10 @@ import omr.selection.SelectionService;
 import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
 
+import omr.sheet.BarsChecker.BarCheckSuite;
+import omr.sheet.SystemsBuilder.BarsController;
 import omr.sheet.ui.PixelBoard;
+import omr.sheet.ui.SheetPainter;
 
 import omr.step.Step;
 import omr.step.StepException;
@@ -599,13 +603,11 @@ public class SystemsBuilder
                         if (boundary.getLimit(side) == brokenLine) {
                             return launch(
                                 new BoundaryTask(system, side, brokenLine),
-                                null,
-                                new GlyphsRunnable() {
-                                        public Collection<Glyph> run ()
+                                Impact.createDummyImpact(sheet),
+                                new ImpactRunnable() {
+                                        public void run (Impact impact)
                                         {
                                             useBoundaries();
-
-                                            return null;
                                         }
                                     });
                         }
@@ -616,42 +618,59 @@ public class SystemsBuilder
             return null;
         }
 
-        //--------------------//
-        // syncAssignGlyphSet //
-        //--------------------//
+        //------------//
+        // syncAssign //
+        //------------//
         /**
          * Assign a shape to the selected collection of glyphs.
          *
-         * @param glyphs the collection of glyphs to be assigned
-         * @param shape the shape to be assigned
+         * @param impact the assignment context
          * @param compound flag to indicate a compound is desired
          */
         @Override
-        protected Collection<Glyph> syncAssignGlyphSet (Collection<Glyph> glyphs,
-                                                        Shape             shape,
-                                                        boolean           compound)
+        protected void syncAssign (Impact  impact,
+                                   boolean compound)
         {
-            super.syncAssignGlyphSet(glyphs, shape, compound);
+            super.syncAssign(impact, compound);
             localUpdate();
 
-            return null; // To trigger update for all systems
+            ///return null; // To trigger update for all systems
         }
 
-        //----------------------//
-        // syncDeassignGlyphSet //
-        //----------------------//
+//        //--------------------//
+//        // syncAssignSections //
+//        //--------------------//
+//        /**
+//         * Synchronously assign a shape to the selected collection of sections
+//         *
+//         * @param sections the collection of sections to be assigned
+//         * @param shape the shape to be assigned
+//         */
+//        @Override
+//        protected void syncAssignSections (Collection<GlyphSection> sections,
+//                                           Shape                    shape)
+//        {
+//            super.syncAssignSections(sections, shape);
+//            localUpdate();
+//
+//            // Force update for all systems
+//        }
+
+        //--------------//
+        // syncDeassign //
+        //--------------//
         /**
          * Remove a set of bars
          *
-         * @param glyphs the collection of glyphs to be de-assigned
+         * @param impact the deassignment context
          */
         @Override
-        protected Collection<Glyph> syncDeassignGlyphSet (Collection<Glyph> glyphs)
+        protected void syncDeassign (Impact impact)
         {
-            super.syncDeassignGlyphSet(glyphs);
+            super.syncDeassign(impact);
             localUpdate();
 
-            return null; // To trigger update for all systems
+            //return null; // To trigger update for all systems
         }
     }
 

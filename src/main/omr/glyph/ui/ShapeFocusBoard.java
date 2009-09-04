@@ -23,7 +23,6 @@ import omr.math.LinearEvaluator.Printer;
 
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphIdEvent;
-import omr.selection.MouseMovement;
 import omr.selection.SelectionHint;
 import omr.selection.UserEvent;
 
@@ -55,7 +54,7 @@ import javax.swing.event.*;
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-class ShapeFocusBoard
+public class ShapeFocusBoard
     extends Board
 {
     //~ Static fields/initializers ---------------------------------------------

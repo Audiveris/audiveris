@@ -30,9 +30,7 @@ import omr.score.common.PixelDimension;
 import omr.score.common.PixelPoint;
 import omr.score.entity.SystemNode;
 import omr.score.ui.ScoreConstants;
-import omr.sheet.ui.ScoreColorizer;
 import omr.score.visitor.ScoreVisitor;
-import omr.sheet.ui.SheetPainter;
 import omr.score.visitor.Visitable;
 
 import omr.script.Script;
@@ -43,7 +41,9 @@ import omr.selection.SheetLocationEvent;
 import omr.sheet.picture.Picture;
 import omr.sheet.picture.PictureView;
 import omr.sheet.ui.PixelBoard;
+import omr.sheet.ui.ScoreColorizer;
 import omr.sheet.ui.SheetAssembly;
+import omr.sheet.ui.SheetPainter;
 
 import omr.step.SheetSteps;
 import omr.step.Step;
@@ -683,15 +683,13 @@ public class Sheet
      */
     public Collection<Glyph> getSimilarGlyphs (Glyph example)
     {
-
         List<Glyph> found = new ArrayList<Glyph>();
 
-//        for (Glyph glyph : getActiveGlyphs()) {
-//            if (glyph.getShape() == shape) {
-//                found.add(glyph);
-//            }
-//        }
-
+        //        for (Glyph glyph : getActiveGlyphs()) {
+        //            if (glyph.getShape() == shape) {
+        //                found.add(glyph);
+        //            }
+        //        }
         return found;
     }
 
@@ -915,13 +913,16 @@ public class Sheet
     //-------------//
     /**
      * Report the system, if any, which contains the provided glyph
-     * (the precise point is the glyph area center)
+     * (as determined by the first section of the glyph)
      * @param glyph the provided glyph
      * @return the containing system, or null
      */
     public SystemInfo getSystemOf (Glyph glyph)
     {
-        return getSystemOf(glyph.getAreaCenter());
+        ///return getSystemOf(glyph.getAreaCenter());
+        return glyph.getMembers()
+                    .first()
+                    .getSystem();
     }
 
     //-------------//
@@ -933,9 +934,10 @@ public class Sheet
      * @param section the provided section
      * @return the containing system, or null
      */
-    public SystemInfo getSystemOf (Section section)
+    public SystemInfo getSystemOf (GlyphSection section)
     {
-        return getSystemOf(section.getAreaCenter());
+        ///return getSystemOf(section.getAreaCenter());
+        return section.getSystem();
     }
 
     //-------------//
@@ -1007,7 +1009,7 @@ public class Sheet
         Collection<GlyphSection> toRemove = new ArrayList<GlyphSection>();
 
         for (GlyphSection section : sections) {
-            SystemInfo sectionSystem = getSystemOf(section);
+            SystemInfo sectionSystem = section.getSystem();
 
             if (sectionSystem == null) {
                 toRemove.add(section);
@@ -1019,7 +1021,7 @@ public class Sheet
                     if (sectionSystem != system) {
                         throw new IllegalArgumentException(
                             "getSystemOfSections. Sections from different systems (" +
-                            getSystemOf(section) + " and " + system + ") " +
+                            section.getSystem() + " and " + system + ") " +
                             Sections.toString(sections));
                     }
                 }
@@ -1343,11 +1345,10 @@ public class Sheet
     //-------------//
     // rebuildAfter //
     //-------------//
-    public void rebuildAfter (Step                    step,
-                              final Collection<Glyph> glyphs,
-                              final Collection<Shape> shapes)
+    public void rebuildAfter (Step                  step,
+                              SortedSet<SystemInfo> impactedSystems)
     {
-        sheetSteps.rebuildAfter(step, glyphs, shapes, false); //Not imposed
+        sheetSteps.rebuildAfter(step, impactedSystems, false); //Not imposed
     }
 
     //----------------//
@@ -1469,8 +1470,11 @@ public class Sheet
                                         .getSections()) {
             SystemInfo system = getSystemOf(
                 section.getGraph().switchRef(section.getCentroid(), null));
+            // Link section -> system
+            section.setSystem(system);
 
             if (system != null) {
+                // Link system <>-> section
                 system.getMutableVerticalSections()
                       .add(section);
             }

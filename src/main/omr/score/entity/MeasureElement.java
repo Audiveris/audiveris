@@ -49,7 +49,7 @@ public abstract class MeasureElement
     private Shape shape;
 
     /** The glyph(s) that compose this element, sorted by abscissa */
-    private final SortedSet<Glyph> glyphs = new TreeSet<Glyph>();
+    private final SortedSet<Glyph> glyphs = Glyphs.set();
 
     /** Is this a start (rather than a stop) */
     private final boolean start;

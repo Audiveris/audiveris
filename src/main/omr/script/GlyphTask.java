@@ -10,10 +10,12 @@
 package omr.script;
 
 import omr.glyph.Glyph;
-import omr.glyph.GlyphSignature;
+import omr.glyph.GlyphSection;
 import omr.glyph.Glyphs;
+import omr.glyph.SectionSets;
 
 import omr.sheet.Sheet;
+import omr.sheet.SystemInfo;
 
 import omr.step.StepException;
 
@@ -25,7 +27,12 @@ import javax.xml.bind.annotation.*;
 
 /**
  * Class <code>GlyphTask</code> is a script task which is applied to a
- * collection of glyphs
+ * collection of glyphs.
+ * <p>Since sections are stable (they are assigned once and for all, the
+ * relationship between a section and its containing system can be modified only
+ * when system boundaries change in SystemsBuilder) they are used for the
+ * underlying persistency of any GlyphTask. The XML file will thus contain the
+ * ids of the member sections of the related glyphs.</p>
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -39,8 +46,9 @@ public abstract class GlyphTask
     /** The collection of glyphs which are concerned by this task */
     protected List<Glyph> glyphs;
 
-    /** The signatures of these glyphs */
-    protected Collection<GlyphSignature> sigs;
+    /** The collection of underlying section sets */
+    @XmlElement(name = "glyphs")
+    private SectionSets sectionSets;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -55,6 +63,7 @@ public abstract class GlyphTask
     public GlyphTask (Collection<Glyph> glyphs)
     {
         this.glyphs = new ArrayList<Glyph>(glyphs);
+        sectionSets = SectionSets.createFromGlyphs(glyphs);
     }
 
     //-----------//
@@ -74,8 +83,10 @@ public abstract class GlyphTask
     // run //
     //-----//
     /**
-     * Method made final to force the retrieval of glyphs. Additional processing
-     * should take place in an overridden runEpilog method
+     * Method made final to make sure the concrete sections - and thus the
+     * related concrete glyphs - are available before processing be launched
+     * (this is needed for the case of unmarshalled instance).
+     * The actual processing should take place in an overridden runEpilog method
      * @param sheet the related sheet
      * @throws omr.step.StepException
      */
@@ -83,30 +94,27 @@ public abstract class GlyphTask
     public final void run (Sheet sheet)
         throws StepException
     {
-        // Make sure the glyphs are available
+        // Make sure the concrete sections and glyphs are available
         if (glyphs == null) {
-            if (sigs == null) {
-                throw new StepException("No glyphs defined");
-            }
-
             glyphs = new ArrayList<Glyph>();
 
-            for (GlyphSignature sig : sigs) {
-                Glyph glyph = sheet.getVerticalLag()
-                                   .getOriginal(sig);
-
-                if (glyph == null) {
-                    logger.warning(
-                        "Cannot find glyph for " + sig,
-                        new Throwable());
-                } else {
-                    glyphs.add(glyph);
-                }
+            for (Collection<GlyphSection> set : sectionSets.getSets(sheet)) {
+                SystemInfo system = set.iterator()
+                                       .next()
+                                       .getSystem();
+                Glyph      glyph = system.addGlyph(system.buildGlyph(set));
+                glyphs.add(glyph);
             }
         }
 
         // Now the real processing
-        runEpilog(sheet);
+        try {
+            runEpilog(sheet);
+        } catch (Exception ex) {
+            logger.warning(
+                "Error in running " + this.getClass().getSimpleName(),
+                ex);
+        }
     }
 
     //-----------------//
@@ -116,14 +124,10 @@ public abstract class GlyphTask
     protected String internalsString ()
     {
         if (glyphs != null) {
-            return Glyphs.toString(glyphs);
+            return " " + Glyphs.toString(glyphs);
+        } else {
+            return " no-glyphs";
         }
-
-        if (sigs != null) {
-            return " sigs:" + sigs.toString();
-        }
-
-        return "";
     }
 
     //-----------//
@@ -132,47 +136,8 @@ public abstract class GlyphTask
     /**
      * Do the real processing
      * @param sheet the related sheet
-     * @throws StepException
+     * @throws Exception
      */
     protected abstract void runEpilog (Sheet sheet)
-        throws StepException;
-
-    //---------------//
-    // setGlyphsSigs //
-    //---------------//
-    private void setGlyphsSigs (Collection<GlyphSignature> sigs)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "setGlyphsSigs this.sigs=" + this.sigs + " sigs=" + sigs);
-        }
-
-        if (this.sigs != sigs) {
-            this.sigs.clear();
-            this.sigs.addAll(sigs);
-        }
-    }
-
-    //---------------//
-    // getGlyphsSigs //
-    //---------------//
-    @XmlElement(name = "glyph")
-    private Collection<GlyphSignature> getGlyphsSigs ()
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("getGlyphsSigs this.sigs=" + this.sigs);
-        }
-
-        if (sigs == null) {
-            sigs = new ArrayList<GlyphSignature>();
-
-            if (glyphs != null) {
-                for (Glyph glyph : glyphs) {
-                    sigs.add(glyph.getSignature());
-                }
-            }
-        }
-
-        return sigs;
-    }
+        throws Exception;
 }

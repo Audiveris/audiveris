@@ -113,7 +113,7 @@ public class KeySignature
      * The glyph(s) that compose the key signature, a collection which is kept
      * sorted on glyph abscissa.
      */
-    private SortedSet<Glyph> glyphs = new TreeSet<Glyph>();
+    private SortedSet<Glyph> glyphs = Glyphs.set();
 
     //~ Constructors -----------------------------------------------------------
 

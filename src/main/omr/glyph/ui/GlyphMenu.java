@@ -41,7 +41,6 @@ public class GlyphMenu
     //~ Instance fields --------------------------------------------------------
 
     // Links to partnering entities
-    private final Sheet             sheet;
     private final ShapeFocusBoard   shapeFocus;
     private final SymbolsController symbolsController;
     private final GlyphEvaluator    evaluator;
@@ -72,19 +71,16 @@ public class GlyphMenu
     /**
      * Create the popup menu
      *
-     * @param sheet the related sheet
      * @param symbolsController the top companion
      * @param evaluator the glyph evaluator
      * @param shapeFocus the current shape focus
      * @param glyphLag the related glyph lag
      */
-    public GlyphMenu (Sheet                   sheet,
-                      final SymbolsController symbolsController,
+    public GlyphMenu (final SymbolsController symbolsController,
                       GlyphEvaluator          evaluator,
                       ShapeFocusBoard         shapeFocus,
                       final GlyphLag          glyphLag)
     {
-        this.sheet = sheet;
         this.symbolsController = symbolsController;
         this.evaluator = evaluator;
         this.shapeFocus = shapeFocus;
@@ -110,7 +106,7 @@ public class GlyphMenu
                     public void actionPerformed (final ActionEvent e)
                     {
                         JMenuItem source = (JMenuItem) e.getSource();
-                        symbolsController.asyncAssignGlyphSet(
+                        symbolsController.asyncAssignGlyphs(
                             glyphLag.getSelectedGlyphSet(),
                             Shape.valueOf(source.getText()),
                             false);
@@ -140,7 +136,7 @@ public class GlyphMenu
                     public void actionPerformed (ActionEvent e)
                     {
                         JMenuItem source = (JMenuItem) e.getSource();
-                        symbolsController.asyncAssignGlyphSet(
+                        symbolsController.asyncAssignGlyphs(
                             glyphLag.getSelectedGlyphSet(),
                             Shape.valueOf(source.getText()),
                             true);
@@ -382,7 +378,7 @@ public class GlyphMenu
 
             // Actually deassign the whole set
             Set<Glyph> glyphs = glyphLag.getSelectedGlyphSet();
-            symbolsController.asyncDeassignGlyphSet(glyphs);
+            symbolsController.asyncDeassignGlyphs(glyphs);
 
             // Update focus on current glyph, if reused in a compound
             if (glyph != null) {
@@ -547,7 +543,7 @@ public class GlyphMenu
             Glyph     glyph = glyphLag.getSelectedGlyph();
 
             if (glyph != null) {
-                symbolsController.asyncAssignGlyphSet(
+                symbolsController.asyncAssignGlyphs(
                     Collections.singleton(glyph),
                     shape,
                     false);
@@ -618,7 +614,7 @@ public class GlyphMenu
             Glyph glyph = glyphLag.getSelectedGlyph();
 
             if ((glyph != null) && (glyph == proposedGlyph)) {
-                symbolsController.asyncAssignGlyphSet(
+                symbolsController.asyncAssignGlyphs(
                     Collections.singleton(glyph),
                     proposedShape,
                     false);
@@ -711,7 +707,7 @@ public class GlyphMenu
         public void actionPerformed (ActionEvent e)
         {
             Set<Glyph> glyphs = glyphLag.getSelectedGlyphSet();
-            symbolsController.asyncSegmentGlyphSet(glyphs, true); // isShort
+            symbolsController.asyncSegment(glyphs, true); // isShort
         }
 
         @Override
@@ -786,7 +782,7 @@ public class GlyphMenu
         public void actionPerformed (ActionEvent e)
         {
             Set<Glyph> glyphs = glyphLag.getSelectedGlyphSet();
-            symbolsController.asyncSegmentGlyphSet(glyphs, false); // isShort
+            symbolsController.asyncSegment(glyphs, false); // isShort
         }
 
         @Override

@@ -94,7 +94,7 @@ public class BarMenu
                     public void actionPerformed (final ActionEvent e)
                     {
                         JMenuItem source = (JMenuItem) e.getSource();
-                        glyphsController.asyncAssignGlyphSet(
+                        glyphsController.asyncAssignGlyphs(
                             glyphLag.getSelectedGlyphSet(),
                             Shape.valueOf(source.getText()),
                             false);
@@ -114,7 +114,7 @@ public class BarMenu
                     public void actionPerformed (ActionEvent e)
                     {
                         JMenuItem source = (JMenuItem) e.getSource();
-                        glyphsController.asyncAssignGlyphSet(
+                        glyphsController.asyncAssignGlyphs(
                             glyphLag.getSelectedGlyphSet(),
                             Shape.valueOf(source.getText()),
                             true);
@@ -289,7 +289,7 @@ public class BarMenu
 
             // Actually deassign the whole set
             Set<Glyph> glyphs = glyphLag.getSelectedGlyphSet();
-            glyphsController.asyncDeassignGlyphSet(glyphs);
+            glyphsController.asyncDeassignGlyphs(glyphs);
 
             // Update focus on current glyph, if reused in a compound
             if (glyph != null) {
@@ -404,7 +404,7 @@ public class BarMenu
             Glyph     glyph = glyphLag.getSelectedGlyph();
 
             if (glyph != null) {
-                glyphsController.asyncAssignGlyphSet(
+                glyphsController.asyncAssignGlyphs(
                     Collections.singleton(glyph),
                     shape,
                     false);

@@ -44,7 +44,7 @@ import omr.util.Implement;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.util.*;
+import java.util.Set;
 
 /**
  * Class <code>SymbolsEditor</code> defines a UI pane from which all symbol
@@ -119,12 +119,7 @@ public class SymbolsEditor
                     }
                 });
 
-        glyphMenu = new GlyphMenu(
-            sheet,
-            symbolsController,
-            evaluator,
-            focus,
-            lag);
+        glyphMenu = new GlyphMenu(symbolsController, evaluator, focus, lag);
 
         final String  unit = sheet.getRadix() + ":SymbolsEditor";
 
@@ -191,7 +186,7 @@ public class SymbolsEditor
         //~ Methods ------------------------------------------------------------
 
         //-----------------------//
-        // asyncDeassignGlyphSet //
+        // asyncDeassignGlyphs //
         //-----------------------//
         @Override
         public void asyncDeassignGlyphSet (Set<Glyph> glyphs)
@@ -264,13 +259,20 @@ public class SymbolsEditor
                     // Popup with no glyph selected ?
                 }
             } else {
-                logger.info("SymbolsEditor. contextSelected section mode");
-
                 // Retrieve the selected sections
                 Set<GlyphSection> sections = sheet.getVerticalLag()
                                                   .getSelectedSectionSet();
+                // Update the popup menu according to selected sections
+                glyphMenu.updateMenu();
 
-                // Build a glyph on the fly
+                if ((sections != null) && !sections.isEmpty()) {
+                    // Show the popup menu
+                    glyphMenu.getPopup()
+                             .show(
+                        this,
+                        getZoom().scaled(pt.x),
+                        getZoom().scaled(pt.y));
+                }
             }
         }
 
@@ -407,6 +409,13 @@ public class SymbolsEditor
                         SelectionHint.GLYPH_TRANSIENT,
                         movement,
                         compound));
+
+                publish(
+                    new GlyphSetEvent(
+                        this,
+                        SelectionHint.GLYPH_TRANSIENT,
+                        movement,
+                        Glyphs.set(compound)));
             } catch (IllegalArgumentException ex) {
                 // All sections do not belong to the same system
                 // No compound is allowed and displayed

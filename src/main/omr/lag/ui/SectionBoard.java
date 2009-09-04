@@ -422,8 +422,6 @@ public class SectionBoard
         Set<GlyphSection> sections = sectionSetEvent.getData();
 
         if ((sections != null) && !sections.isEmpty()) {
-//            logger.info(
-//                getClass().getSimpleName() + " " + Sections.toString(sections));
             count.setText(Integer.toString(sections.size()));
         } else {
             count.setText("");

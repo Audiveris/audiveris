@@ -76,17 +76,19 @@ public class SymbolsController
      * @param textContent the content as a string (if not empty)
      * @return the task that carries out the processing
      */
-    public Task asyncAssignText (final Collection<Glyph> glyphs,
-                                 final TextRole          textRole,
-                                 final String            textContent)
+    public Task asyncAssignText (Collection<Glyph> glyphs,
+                                 final TextRole    textRole,
+                                 final String      textContent)
     {
+        Impact impact = Impact.createGlyphsImpact(sheet, null, glyphs);
+
         return launch(
             new TextTask(textRole, textContent, glyphs),
-            glyphs,
-            new GlyphsRunnable() {
-                    public Collection<Glyph> run ()
+            impact,
+            new ImpactRunnable() {
+                    public void run (Impact impact)
                     {
-                        return syncAssignText(glyphs, textRole, textContent);
+                        syncAssignText(impact, textRole, textContent);
                     }
                 });
     }
@@ -100,22 +102,25 @@ public class SymbolsController
      * @param glyphs the slur glyphs to fix
      * @return the task that carries out the processing
      */
-    public Task asyncFixLargeSlurs (final Collection<Glyph> glyphs)
+    public Task asyncFixLargeSlurs (Collection<Glyph> glyphs)
     {
+        Impact impact = Impact.createGlyphsImpact(sheet, null, glyphs);
+
         return launch(
             new SlurTask(glyphs),
-            glyphs,
-            new GlyphsRunnable() {
-                    public Collection<Glyph> run ()
+            impact,
+            new ImpactRunnable() {
+                    public void run (Impact impact)
                     {
-                        return syncFixLargeSlurs(glyphs);
+                        getModel()
+                            .fixLargeSlurs(impact.getInitialGlyphs());
                     }
                 });
     }
 
-    //----------------------//
-    // asyncSegmentGlyphSet //
-    //----------------------//
+    //--------------//
+    // asyncSegment //
+    //--------------//
     /**
      * Asynchronously segment a set of glyphs on their stems
      *
@@ -123,16 +128,21 @@ public class SymbolsController
      * @param isShort looking for short (or standard) stems
      * @return the task that carries out the processing
      */
-    public Task asyncSegmentGlyphSet (final Collection<Glyph> glyphs,
-                                      final boolean           isShort)
+    public Task asyncSegment (Collection<Glyph> glyphs,
+                                      final boolean     isShort)
     {
+        Impact impact = Impact.createGlyphsImpact(sheet, null, glyphs);
+
         return launch(
             new SegmentTask(isShort, glyphs),
-            glyphs,
-            new GlyphsRunnable() {
-                    public Collection<Glyph> run ()
+            impact,
+            new ImpactRunnable() {
+                    public void run (Impact impact)
                     {
-                        return syncSegmentGlyphSet(glyphs, isShort);
+                        getModel()
+                            .segmentGlyphSet(
+                            impact.getInitialGlyphs(),
+                            isShort);
                     }
                 });
     }
@@ -155,6 +165,16 @@ public class SymbolsController
     }
 
     //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return getClass()
+                   .getSimpleName();
+    }
+
+    //----------//
     // getModel //
     //----------//
     /**
@@ -170,49 +190,52 @@ public class SymbolsController
     //----------------//
     // syncAssignText //
     //----------------//
-    protected Collection<Glyph> syncAssignText (Collection<Glyph> glyphs,
-                                                TextRole          textRole,
-                                                String            textContent)
+    protected void syncAssignText (Impact   impact,
+                                   TextRole textRole,
+                                   String   textContent)
     {
         if (logger.isFineEnabled()) {
-            logger.fine("syncAssignText " + Glyphs.toString(glyphs));
+            logger.fine("syncAssignText " + impact);
         }
 
         getModel()
-            .assignText(glyphs, textRole, textContent, Evaluation.MANUAL);
-
-        return glyphs;
+            .assignText(
+            impact.getInitialGlyphs(),
+            textRole,
+            textContent,
+            Evaluation.MANUAL);
     }
 
-    //----------------------//
-    // syncDeassignGlyphSet //
-    //----------------------//
+    //--------------//
+    // syncDeassign //
+    //--------------//
     /**
      * {@inheritDoc}
      */
     @Override
-    protected Collection<Glyph> syncDeassignGlyphSet (Collection<Glyph> glyphs)
+    protected void syncDeassign (Impact impact)
     {
         if (logger.isFineEnabled()) {
-            logger.fine("syncDeassignGlyphSet " + Glyphs.toString(glyphs));
+            logger.fine("syncDeassign " + impact);
         }
 
         // Use a copy of the glyph list
-        List<Glyph> glyphsCopy = new ArrayList<Glyph>(glyphs);
+        List<Glyph> nonStemGlyphs = new ArrayList<Glyph>(
+            impact.getInitialGlyphs());
 
         // Put the stems apart
         List<Glyph> stems = new ArrayList<Glyph>();
 
-        for (Glyph glyph : glyphsCopy) {
+        for (Glyph glyph : nonStemGlyphs) {
             if (glyph.getShape() == Shape.COMBINING_STEM) {
                 stems.add(glyph);
             }
         }
 
-        glyphsCopy.removeAll(stems);
+        nonStemGlyphs.removeAll(stems);
 
-        // First phase, process the (standard) glyphs
-        super.syncDeassignGlyphSet(glyphs);
+        // First phase, process the (non-stem) glyphs
+        model.deassignGlyphs(nonStemGlyphs);
 
         // Second phase dedicated to stems, if any
         if (!stems.isEmpty()) {
@@ -220,37 +243,7 @@ public class SymbolsController
                 .cancelStems(stems);
         }
 
-        return glyphs;
-    }
-
-    //-------------------//
-    // syncFixLargeSlurs //
-    //-------------------//
-    protected Collection<Glyph> syncFixLargeSlurs (Collection<Glyph> glyphs)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("syncFixLargeSlurs " + Glyphs.toString(glyphs));
-        }
-
-        getModel()
-            .fixLargeSlurs(glyphs);
-
-        return glyphs;
-    }
-
-    //-----------------//
-    // segmentGlyphSet //
-    //-----------------//
-    protected Collection<Glyph> syncSegmentGlyphSet (final Collection<Glyph> glyphs,
-                                                     final boolean           isShort)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("syncSegmentGlyphSet " + Glyphs.toString(glyphs));
-        }
-
-        getModel()
-            .segmentGlyphSet(glyphs, isShort);
-
-        return glyphs;
+        // Publish modifications
+        publish(impact.getInitialGlyphs());
     }
 }
