@@ -13,8 +13,6 @@ import omr.score.ScoreManager;
 
 import omr.sheet.Sheet;
 
-import omr.step.StepException;
-
 import java.io.File;
 
 import javax.xml.bind.annotation.*;
@@ -66,7 +64,6 @@ public class ExportTask
     //-----//
     @Override
     public void run (Sheet sheet)
-        throws StepException
     {
         ScoreManager.getInstance()
                     .export(sheet.getScore(), new File(path));

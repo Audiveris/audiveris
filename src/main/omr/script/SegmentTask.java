@@ -62,16 +62,12 @@ public class SegmentTask
     // run //
     //-----//
     @Override
-    public void runEpilog (Sheet sheet)
-        throws StepException
+    public void run (Sheet sheet)
+        throws Exception
     {
-        try {
-            sheet.getSymbolsController()
-                 .asyncSegment(glyphs, isShort)
-                 .get();
-        } catch (Exception ex) {
-            logger.warning("Error in running SegmentTask", ex);
-        }
+        sheet.getSymbolsController()
+             .asyncSegment(glyphs, isShort)
+             .get();
     }
 
     //-----------------//

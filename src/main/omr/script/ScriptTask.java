@@ -39,6 +39,18 @@ public abstract class ScriptTask
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------//
+    // prolog //
+    //--------//
+    /**
+     * Prolog if any, to be called before the run() method
+     * @param sheet the sheet to run this task against
+     */
+    public void prolog (Sheet sheet)
+    {
+        // Empty by default
+    }
+
     //-----//
     // run //
     //-----//
@@ -46,10 +58,10 @@ public abstract class ScriptTask
      * Actually run this task
      *
      * @param sheet the sheet to run this task against
-     * @exception StepException raised if processing error occurs
+     * @exception Exception
      */
     public abstract void run (Sheet sheet)
-        throws StepException;
+        throws Exception;
 
     //----------//
     // toString //

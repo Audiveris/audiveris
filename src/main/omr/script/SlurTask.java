@@ -57,16 +57,12 @@ public class SlurTask
     // run //
     //-----//
     @Override
-    public void runEpilog (Sheet sheet)
-        throws StepException
+    public void run (Sheet sheet)
+        throws Exception
     {
-        try {
-            sheet.getSymbolsController()
-                 .asyncFixLargeSlurs(glyphs)
-                 .get();
-        } catch (Exception ex) {
-            logger.warning("Error in running asyncFixLargeSlurs", ex);
-        }
+        sheet.getSymbolsController()
+             .asyncFixLargeSlurs(glyphs)
+             .get();
     }
 
     //-----------------//

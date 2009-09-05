@@ -83,21 +83,14 @@ public abstract class GlyphTask
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----//
-    // run //
-    //-----//
-    /**
-     * Method made final to make sure the concrete sections - and thus the
-     * related concrete glyphs - are available before processing be launched
-     * (this is needed for the case of unmarshalled instance).
-     * The actual processing should take place in an overridden runEpilog method
-     * @param sheet the related sheet
-     * @throws omr.step.StepException
-     */
+    //--------//
+    // prolog //
+    //--------//
     @Override
-    public final void run (Sheet sheet)
-        throws StepException
+    public void prolog (Sheet sheet)
     {
+        super.prolog(sheet);
+
         // Make sure the concrete sections and glyphs are available
         if (glyphs == null) {
             glyphs = new ArrayList<Glyph>();
@@ -109,15 +102,6 @@ public abstract class GlyphTask
                 Glyph      glyph = system.addGlyph(system.buildGlyph(set));
                 glyphs.add(glyph);
             }
-        }
-
-        // Now the real processing
-        try {
-            runEpilog(sheet);
-        } catch (Exception ex) {
-            logger.warning(
-                "Error in running " + this.getClass().getSimpleName(),
-                ex);
         }
     }
 
@@ -133,15 +117,4 @@ public abstract class GlyphTask
             return " no-glyphs";
         }
     }
-
-    //-----------//
-    // runEpilog //
-    //-----------//
-    /**
-     * Do the real processing
-     * @param sheet the related sheet
-     * @throws Exception
-     */
-    protected abstract void runEpilog (Sheet sheet)
-        throws Exception;
 }

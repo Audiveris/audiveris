@@ -15,6 +15,7 @@ import omr.log.Logger;
 
 import omr.script.AssignTask;
 import omr.script.DeassignTask;
+import omr.script.ScriptTask;
 
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphSetEvent;
@@ -289,9 +290,9 @@ public class GlyphsController
      * @param runnable the (synchronous) job
      * @return the launched Swing Application Framework task
      */
-    protected Task launch (final omr.script.ScriptTask scriptTask,
-                           final Impact                impact,
-                           final ImpactRunnable        runnable)
+    protected Task launch (final ScriptTask     scriptTask,
+                           final Impact         impact,
+                           final ImpactRunnable runnable)
     {
         Task task = new BasicTask() {
             protected Void doInBackground ()

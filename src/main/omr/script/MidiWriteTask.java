@@ -67,15 +67,10 @@ public class MidiWriteTask
     //-----//
     @Override
     public void run (Sheet sheet)
-        throws StepException
+        throws Exception
     {
-        try {
-            ScoreManager.getInstance()
-                        .midiWrite(sheet.getScore(), new File(path));
-        } catch (Exception ex) {
-            Logger.getLogger(MidiWriteTask.class.getName())
-                  .warning("Midi write failed", ex);
-        }
+        ScoreManager.getInstance()
+                    .midiWrite(sheet.getScore(), new File(path));
     }
 
     //-----------------//

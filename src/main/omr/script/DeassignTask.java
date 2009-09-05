@@ -56,7 +56,7 @@ public class DeassignTask
     // run //
     //-----//
     @Override
-    public void runEpilog (Sheet sheet)
+    public void run (Sheet sheet)
         throws Exception
     {
         sheet.getSymbolsController()

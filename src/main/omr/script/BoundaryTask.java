@@ -77,7 +77,7 @@ public class BoundaryTask
     //-----//
     @Override
     public void run (Sheet sheet)
-        throws StepException
+        throws Exception
     {
         SystemInfo system = sheet.getSystems()
                                  .get(systemId - 1);
@@ -87,14 +87,10 @@ public class BoundaryTask
         brokenLine.resetPoints(line.getPoints());
 
         // Update the following steps if any
-        try {
-            sheet.getSystemsBuilder()
-                 .getController()
-                 .asyncModifyBoundaries(brokenLine)
-                 .get();
-        } catch (Exception ex) {
-            logger.warning("Error running task " + this, ex);
-        }
+        sheet.getSystemsBuilder()
+             .getController()
+             .asyncModifyBoundaries(brokenLine)
+             .get();
     }
 
     //-----------------//

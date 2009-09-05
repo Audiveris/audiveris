@@ -12,8 +12,6 @@ import omr.score.midi.MidiActions;
 
 import omr.sheet.Sheet;
 
-import omr.step.StepException;
-
 import javax.xml.bind.annotation.*;
 
 /**
@@ -44,8 +42,8 @@ public class PlayTask
     //-----//
     @Override
     public void run (Sheet sheet)
-        throws StepException
     {
+        // We launch the playing and don't wait for its completion
         new MidiActions.PlayTask(sheet.getScore(), null).execute();
     }
 

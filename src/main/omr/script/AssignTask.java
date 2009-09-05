@@ -77,6 +77,18 @@ public class AssignTask
 
     //~ Methods ----------------------------------------------------------------
 
+    //-----//
+    // run //
+    //-----//
+    @Override
+    public void run (Sheet sheet)
+        throws Exception
+    {
+        sheet.getSymbolsController()
+             .asyncAssignGlyphs(glyphs, shape, compound)
+             .get();
+    }
+
     //-----------------//
     // internalsString //
     //-----------------//
@@ -94,16 +106,5 @@ public class AssignTask
           .append(shape);
 
         return sb.toString() + super.internalsString();
-    }
-
-    //-----//
-    // run //
-    //-----//
-    @Override
-    protected void runEpilog (Sheet sheet)
-        throws Exception
-    {
-        sheet.getSymbolsController()
-             .asyncAssignGlyphs(glyphs, shape, compound);
     }
 }

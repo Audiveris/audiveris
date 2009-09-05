@@ -207,7 +207,12 @@ public class Script
                         "Launching " + task + " on sheet " + sheet.getRadix());
                 }
 
-                task.run(sheet);
+                try {
+                    task.prolog(sheet);
+                    task.run(sheet);
+                } catch (Exception ex) {
+                    logger.warning("Error in running " + task, ex);
+                }
             }
 
             if (logger.isFineEnabled()) {
