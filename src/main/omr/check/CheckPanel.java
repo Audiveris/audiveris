@@ -114,7 +114,7 @@ public class CheckPanel<C extends Checkable>
      *
      * @param suite the (new) check suite to be used
      */
-    public synchronized void setSuite (CheckSuite<C> suite)
+    public void setSuite (CheckSuite<C> suite)
     {
         this.suite = suite;
 
