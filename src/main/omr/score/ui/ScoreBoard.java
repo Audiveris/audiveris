@@ -112,10 +112,6 @@ public class ScoreBoard
     public boolean commit (Sheet sheet)
     {
         if (dataIsValid()) {
-            score.getSheet()
-                 .getScript()
-                 .addTask(task);
-
             try {
                 task.launch(sheet); // Just launch it
             } catch (Exception ex) {
