@@ -151,6 +151,11 @@ public class SymbolsController
                    .getSimpleName();
     }
 
+    // TODO:
+    // I'm not sure if the code below is needed
+    // For the time being there is just syncAssign in GlyphsController
+    //
+
     //    //--------------//
     //    // syncDeassign //
     //    //--------------//

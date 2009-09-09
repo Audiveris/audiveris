@@ -240,7 +240,7 @@ public class GlyphsController
 
         SortedSet<Glyph> glyphs = context.getInitialGlyphs();
 
-        if (shape != null) {
+        if (shape != null) { // Assignment
             model.assignGlyphs(
                 glyphs,
                 context.getAssignedShape(),
@@ -257,7 +257,7 @@ public class GlyphsController
                     publish(glyph);
                 }
             }
-        } else {
+        } else { // Deassignment
             model.deassignGlyphs(glyphs);
 
             // Publish modifications

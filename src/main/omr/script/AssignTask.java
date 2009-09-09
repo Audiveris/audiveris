@@ -121,9 +121,6 @@ public class AssignTask
     public void core (Sheet sheet)
         throws Exception
     {
-        //        sheet.getSymbolsController()
-        //             .asyncAssignGlyphs(glyphs, shape, compound)
-        //             .get();
         sheet.getSymbolsController()
              .syncAssign(this);
     }

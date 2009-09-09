@@ -599,17 +599,6 @@ public class SystemsBuilder
                         if (boundary.getLimit(side) == brokenLine) {
                             return new BoundaryTask(system, side, brokenLine).launch(
                                 sheet);
-
-                            //
-                            //                            return launch(
-                            //                                new BoundaryTask(system, side, brokenLine),
-                            //                                Impact.createDummyImpact(sheet),
-                            //                                new ImpactRunnable() {
-                            //                                        public void run (Impact impact)
-                            //                                        {
-                            //                                            useBoundaries();
-                            //                                        }
-                            //                                    });
                         }
                     }
                 }
@@ -617,61 +606,6 @@ public class SystemsBuilder
 
             return null;
         }
-
-        //        //------------//
-        //        // syncAssign //
-        //        //------------//
-        //        /**
-        //         * Assign a shape to the selected collection of glyphs.
-        //         *
-        //         * @param impact the assignment context
-        //         * @param compound flag to indicate a compound is desired
-        //         */
-        //        @Override
-        //        protected void syncAssign (Impact  impact,
-        //                                   boolean compound)
-        //        {
-        //            super.syncAssign(impact, compound);
-        //            rebuildAllSystems();
-        //
-        //            ///return null; // To trigger update for all systems
-        //        }
-
-        //        //--------------------//
-        //        // syncAssignSections //
-        //        //--------------------//
-        //        /**
-        //         * Synchronously assign a shape to the selected collection of sections
-        //         *
-        //         * @param sections the collection of sections to be assigned
-        //         * @param shape the shape to be assigned
-        //         */
-        //        @Override
-        //        protected void syncAssignSections (Collection<GlyphSection> sections,
-        //                                           Shape                    shape)
-        //        {
-        //            super.syncAssignSections(sections, shape);
-        //            rebuildAllSystems();
-        //
-        //            // Force update for all systems
-        //        }
-
-        //        //--------------//
-        //        // syncDeassign //
-        //        //--------------//
-        //        /**
-        //         * Remove a set of bars
-        //         *
-        //         * @param impact the deassignment context
-        //         */
-        //        @Override
-        //        protected void syncDeassign (Impact impact)
-        //        {
-        //            super.syncDeassign(impact);
-        //            rebuildAllSystems();
-        //
-        //            //return null; // To trigger update for all systems
-        //        }
     }
 
     //-----------//

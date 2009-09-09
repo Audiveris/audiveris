@@ -247,7 +247,7 @@ public enum Step {
             logger.warning("Error in processing " + this, ex);
         }
 
-        // Record to script
+        // Record the step task to script
         if (sheet != null) {
             sheet.getScript()
                  .addTask(new StepTask(this));
