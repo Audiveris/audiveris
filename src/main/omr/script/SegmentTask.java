@@ -13,8 +13,6 @@ import omr.glyph.Glyph;
 
 import omr.sheet.Sheet;
 
-import omr.step.StepException;
-
 import java.util.Collection;
 
 /**
@@ -58,16 +56,16 @@ public class SegmentTask
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----//
-    // run //
-    //-----//
+    //------//
+    // core //
+    //------//
     @Override
-    public void run (Sheet sheet)
+    public void core (Sheet sheet)
         throws Exception
     {
         sheet.getSymbolsController()
-             .asyncSegment(glyphs, isShort)
-             .get();
+             .getModel()
+             .segmentGlyphSet(getInitialGlyphs(), isShort);
     }
 
     //-----------------//
@@ -84,6 +82,6 @@ public class SegmentTask
               .append("short");
         }
 
-        return sb.toString() + super.internalsString();
+        return sb + super.internalsString();
     }
 }

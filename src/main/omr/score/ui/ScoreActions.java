@@ -20,6 +20,7 @@ import omr.score.Score;
 import omr.score.entity.ScorePart;
 import omr.score.midi.MidiAgent;
 
+import omr.sheet.Sheet;
 import omr.sheet.ui.SheetsController;
 
 import omr.step.Step;
@@ -32,7 +33,6 @@ import omr.util.Wrapper;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
 
-import java.awt.Rectangle;
 import java.awt.event.*;
 import java.beans.*;
 
@@ -101,6 +101,45 @@ public class ScoreActions
     }
 
     //-----------------//
+    // setTextLanguage //
+    //-----------------//
+    /**
+     * Set the default language code for textual elements of the score / sheet
+     * @param sheet the related sheet
+     * @param code the language code to use
+     * @return the launched Swing Application Framework task
+     */
+    public static Task setTextLanguage (final Sheet  sheet,
+                                        final String code)
+    {
+        final Score score = sheet.getScore();
+
+        Task        task = new BasicTask() {
+            protected Void doInBackground ()
+                throws Exception
+            {
+                //                // Record this task into the sheet script
+                //                sheet.getScript()
+                //                     .addTask(new LanguageTask(code));
+
+                // Do the job and update the impact data if needed
+                score.setLanguage(code);
+
+                // Update the following steps on the impacted systems
+                score.getSheet()
+                     .getSheetSteps()
+                     .rebuildAfter(Step.VERTICALS, null, true);
+
+                return null;
+            }
+        };
+
+        task.execute();
+
+        return task;
+    }
+
+    //-----------------//
     // checkParameters //
     //-----------------//
     /**
@@ -133,7 +172,7 @@ public class ScoreActions
      * @param score the provided score
      * @return true if parameters are applied, false otherwise
      */
-    public static boolean parametersAreConfirmed (Score score)
+    public static boolean parametersAreConfirmed (final Score score)
     {
         final Wrapper<Boolean> apply = new Wrapper<Boolean>();
         apply.value = false;
@@ -167,7 +206,8 @@ public class ScoreActions
                                 value == JOptionPane.OK_OPTION);
 
                             // Exit only if user gives up or enters correct data
-                            if (!apply.value || scoreBoard.commit()) {
+                            if (!apply.value ||
+                                scoreBoard.commit(score.getSheet())) {
                                 dialog.setVisible(false);
                                 dialog.dispose();
                             } else {

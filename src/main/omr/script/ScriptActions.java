@@ -18,6 +18,7 @@ import omr.log.Logger;
 
 import omr.sheet.Sheet;
 import omr.sheet.ui.SheetActions;
+import omr.sheet.ui.SheetsController;
 
 import omr.ui.util.FileFilter;
 import omr.ui.util.UIUtilities;
@@ -31,9 +32,10 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 import javax.swing.JOptionPane;
-import omr.sheet.ui.SheetsController;
 
 /**
  * Class <code>ScriptActions</code> gathers UI actions related to script
@@ -93,7 +95,7 @@ public class ScriptActions
     //-------------//
     public static boolean checkStored (Script script)
     {
-        if (!script.isStored() && constants.closeConfirmation.getValue()) {
+        if (script.isModified() && constants.closeConfirmation.getValue()) {
             int answer = JOptionPane.showConfirmDialog(
                 null,
                 "Save script for sheet " + script.getSheet().getRadix() + "?");
@@ -274,6 +276,8 @@ public class ScriptActions
         protected Void doInBackground ()
             throws InterruptedException
         {
+            FileOutputStream fos = null;
+
             try {
                 java.io.File folder = new java.io.File(file.getParent());
 
@@ -281,13 +285,17 @@ public class ScriptActions
                     logger.info("Creating folder " + folder);
                 }
 
+                fos = new java.io.FileOutputStream(file);
                 omr.script.ScriptManager.getInstance()
-                                        .store(
-                    script,
-                    new java.io.FileOutputStream(file));
+                                        .store(script, fos);
                 logger.info("Script stored as " + file);
             } catch (FileNotFoundException ex) {
                 logger.warning("Cannot find script file " + file, ex);
+            } finally {
+                try {
+                    fos.close();
+                } catch (IOException ignored) {
+                }
             }
 
             return null;

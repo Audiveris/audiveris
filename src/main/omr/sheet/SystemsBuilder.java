@@ -20,10 +20,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
-import omr.glyph.GlyphSection;
 import omr.glyph.GlyphsModel;
-import omr.glyph.Impact;
-import omr.glyph.Shape;
 import omr.glyph.ui.BarMenu;
 import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphLagView;
@@ -193,13 +190,50 @@ public class SystemsBuilder
             barsChecker.retrieveCandidates();
 
             // Processing
-            rebuildSystems();
+            doBuildSystems();
         } finally {
             // Display the resulting stickarea if so asked for
             if (constants.displayFrame.getValue() && (Main.getGui() != null)) {
                 displayFrame();
             }
         }
+    }
+
+    //-------------------//
+    // rebuildAllSystems //
+    //-------------------//
+    public void rebuildAllSystems ()
+    {
+        // Update the retrieved systems
+        try {
+            doBuildSystems();
+        } catch (StepException ex) {
+            logger.warning("Error rebuilding systems info", ex);
+        }
+
+        // Update the view accordingly
+        if (lagView != null) {
+            lagView.colorizeAllGlyphs();
+            lagView.repaint();
+        }
+    }
+
+    //---------------//
+    // useBoundaries //
+    //---------------//
+    public void useBoundaries ()
+    {
+        // Split the entities (horizontals sections, vertical sections,
+        // vertical sticks) to the system they belong to.
+        splitSystemEntities();
+
+        // Update score internal data
+        sheet.getScore()
+             .accept(new ScoreFixer());
+
+        // Update score views if any
+        sheet.getScore()
+             .updateViews();
     }
 
     //-------------------//
@@ -225,7 +259,7 @@ public class SystemsBuilder
      * For each SystemInfo, build the corresponding System entity with all its
      * depending Parts and Staves
      */
-    private void allocateScoreStructure (Collection<SystemInfo> systems)
+    private void allocateScoreStructure ()
         throws StepException
     {
         // Clear Score -> Systems
@@ -234,11 +268,10 @@ public class SystemsBuilder
              .clear();
 
         // Systems to (re)allocate
-        Collection<SystemInfo> systemsToAllocate = (systems != null) ? systems
-                                                   : this.systems;
+        Collection<SystemInfo> systemsToAllocate = systems;
 
         for (SystemInfo system : systemsToAllocate) {
-            system.allocateScoreStructure();
+            system.allocateScoreStructure(); // system Parts & Staves
         }
 
         // Define score parts
@@ -451,36 +484,17 @@ public class SystemsBuilder
              .addViewTab(Step.SYSTEMS, slv, boardsPane);
     }
 
-    //-------------//
-    // localUpdate //
-    //-------------//
-    private void localUpdate ()
-    {
-        // Update the retrieved systems
-        try {
-            rebuildSystems();
-        } catch (StepException ex) {
-            logger.warning("Error rebuilding systems info", ex);
-        }
-
-        // Update the view accordingly
-        if (lagView != null) {
-            lagView.colorizeAllGlyphs();
-            lagView.repaint();
-        }
-    }
-
     //----------------//
-    // rebuildSystems //
+    // doBuildSystems //
     //----------------//
-    private void rebuildSystems ()
+    private void doBuildSystems ()
         throws StepException
     {
         // Build systems and parts on sheet/glyph side
         buildSystemsAndParts();
 
         // Create score counterparts
-        allocateScoreStructure(null);
+        allocateScoreStructure();
 
         // Report number of systems retrieved
         reportResults();
@@ -550,24 +564,6 @@ public class SystemsBuilder
         return modified;
     }
 
-    //---------------//
-    // useBoundaries //
-    //---------------//
-    private void useBoundaries ()
-    {
-        // Finally split the entities (horizontals sections, vertical
-        // sections, vertical sticks) to the system they belong to
-        splitSystemEntities();
-
-        // Update score internal data
-        sheet.getScore()
-             .accept(new ScoreFixer());
-
-        // Update score views if any
-        sheet.getScore()
-             .updateViews();
-    }
-
     //~ Inner Classes ----------------------------------------------------------
 
     //----------------//
@@ -601,15 +597,19 @@ public class SystemsBuilder
 
                     for (SystemBoundary.Side side : SystemBoundary.Side.values()) {
                         if (boundary.getLimit(side) == brokenLine) {
-                            return launch(
-                                new BoundaryTask(system, side, brokenLine),
-                                Impact.createDummyImpact(sheet),
-                                new ImpactRunnable() {
-                                        public void run (Impact impact)
-                                        {
-                                            useBoundaries();
-                                        }
-                                    });
+                            return new BoundaryTask(system, side, brokenLine).launch(
+                                sheet);
+
+                            //
+                            //                            return launch(
+                            //                                new BoundaryTask(system, side, brokenLine),
+                            //                                Impact.createDummyImpact(sheet),
+                            //                                new ImpactRunnable() {
+                            //                                        public void run (Impact impact)
+                            //                                        {
+                            //                                            useBoundaries();
+                            //                                        }
+                            //                                    });
                         }
                     }
                 }
@@ -618,60 +618,60 @@ public class SystemsBuilder
             return null;
         }
 
-        //------------//
-        // syncAssign //
-        //------------//
-        /**
-         * Assign a shape to the selected collection of glyphs.
-         *
-         * @param impact the assignment context
-         * @param compound flag to indicate a compound is desired
-         */
-        @Override
-        protected void syncAssign (Impact  impact,
-                                   boolean compound)
-        {
-            super.syncAssign(impact, compound);
-            localUpdate();
+        //        //------------//
+        //        // syncAssign //
+        //        //------------//
+        //        /**
+        //         * Assign a shape to the selected collection of glyphs.
+        //         *
+        //         * @param impact the assignment context
+        //         * @param compound flag to indicate a compound is desired
+        //         */
+        //        @Override
+        //        protected void syncAssign (Impact  impact,
+        //                                   boolean compound)
+        //        {
+        //            super.syncAssign(impact, compound);
+        //            rebuildAllSystems();
+        //
+        //            ///return null; // To trigger update for all systems
+        //        }
 
-            ///return null; // To trigger update for all systems
-        }
+        //        //--------------------//
+        //        // syncAssignSections //
+        //        //--------------------//
+        //        /**
+        //         * Synchronously assign a shape to the selected collection of sections
+        //         *
+        //         * @param sections the collection of sections to be assigned
+        //         * @param shape the shape to be assigned
+        //         */
+        //        @Override
+        //        protected void syncAssignSections (Collection<GlyphSection> sections,
+        //                                           Shape                    shape)
+        //        {
+        //            super.syncAssignSections(sections, shape);
+        //            rebuildAllSystems();
+        //
+        //            // Force update for all systems
+        //        }
 
-//        //--------------------//
-//        // syncAssignSections //
-//        //--------------------//
-//        /**
-//         * Synchronously assign a shape to the selected collection of sections
-//         *
-//         * @param sections the collection of sections to be assigned
-//         * @param shape the shape to be assigned
-//         */
-//        @Override
-//        protected void syncAssignSections (Collection<GlyphSection> sections,
-//                                           Shape                    shape)
-//        {
-//            super.syncAssignSections(sections, shape);
-//            localUpdate();
-//
-//            // Force update for all systems
-//        }
-
-        //--------------//
-        // syncDeassign //
-        //--------------//
-        /**
-         * Remove a set of bars
-         *
-         * @param impact the deassignment context
-         */
-        @Override
-        protected void syncDeassign (Impact impact)
-        {
-            super.syncDeassign(impact);
-            localUpdate();
-
-            //return null; // To trigger update for all systems
-        }
+        //        //--------------//
+        //        // syncDeassign //
+        //        //--------------//
+        //        /**
+        //         * Remove a set of bars
+        //         *
+        //         * @param impact the deassignment context
+        //         */
+        //        @Override
+        //        protected void syncDeassign (Impact impact)
+        //        {
+        //            super.syncDeassign(impact);
+        //            rebuildAllSystems();
+        //
+        //            //return null; // To trigger update for all systems
+        //        }
     }
 
     //-----------//

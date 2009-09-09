@@ -110,6 +110,7 @@ public class MeasuresBuilder
     public void buildMeasures ()
     {
         scoreSystem = system.getScoreSystem();
+
         allocateMeasures();
         checkMeasures();
     }
@@ -236,7 +237,7 @@ public class MeasuresBuilder
                 staves.add((Staff) node);
             }
 
-            MeasureLoop:
+            MeasureLoop: 
             for (Iterator mit = part.getMeasures()
                                     .iterator(); mit.hasNext();) {
                 Measure measure = (Measure) mit.next();

@@ -403,7 +403,7 @@ class SymbolGlyphBoard
 
                 SheetsController.selectedSheet()
                                 .getSymbolsController()
-                                .asyncAssignText(
+                                .asyncAssignTexts(
                     glyphs,
                     (TextRole) roleCombo.getSelectedItem(),
                     textField.getText());

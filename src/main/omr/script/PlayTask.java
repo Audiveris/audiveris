@@ -37,11 +37,11 @@ public class PlayTask
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----//
-    // run //
-    //-----//
+    //------//
+    // core //
+    //------//
     @Override
-    public void run (Sheet sheet)
+    public void core (Sheet sheet)
     {
         // We launch the playing and don't wait for its completion
         new MidiActions.PlayTask(sheet.getScore(), null).execute();
@@ -53,6 +53,20 @@ public class PlayTask
     @Override
     protected String internalsString ()
     {
-        return " play";
+        return " play" + super.internalsString();
+    }
+
+    //--------------//
+    // isRecordable //
+    //--------------//
+    /**
+     * PlayTask is not meant to be recorded each time the user plays the score.
+     * However, one can always add a &lt;play/&gt; line, manually in a script.
+     * @return false
+     */
+    @Override
+    boolean isRecordable ()
+    {
+        return false;
     }
 }

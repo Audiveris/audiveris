@@ -106,8 +106,9 @@ public class ScriptManager
                                .createMarshaller();
             m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
             m.marshal(script, output);
+
             // Flag the script with this event
-            script.setStored();
+            script.setModified(false);
         } catch (JAXBException ex) {
             logger.warning("Cannot marshal script", ex);
         }

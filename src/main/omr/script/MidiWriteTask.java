@@ -8,13 +8,9 @@
 //----------------------------------------------------------------------------//
 package omr.script;
 
-import omr.log.Logger;
-
 import omr.score.ScoreManager;
 
 import omr.sheet.Sheet;
-
-import omr.step.StepException;
 
 import java.io.File;
 
@@ -62,11 +58,11 @@ public class MidiWriteTask
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----//
-    // run //
-    //-----//
+    //------//
+    // core //
+    //------//
     @Override
-    public void run (Sheet sheet)
+    public void core (Sheet sheet)
         throws Exception
     {
         ScoreManager.getInstance()
@@ -79,6 +75,6 @@ public class MidiWriteTask
     @Override
     protected String internalsString ()
     {
-        return " write " + path;
+        return " write " + path + super.internalsString();
     }
 }

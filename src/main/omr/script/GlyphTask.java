@@ -13,15 +13,14 @@ import omr.glyph.Glyph;
 import omr.glyph.GlyphSection;
 import omr.glyph.Glyphs;
 import omr.glyph.SectionSets;
+import omr.glyph.Shape;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
-import omr.step.StepException;
+import omr.step.Step;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import javax.xml.bind.annotation.*;
 
@@ -47,12 +46,18 @@ public abstract class GlyphTask
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** The collection of glyphs which are concerned by this task */
-    protected List<Glyph> glyphs;
-
-    /** The collection of underlying section sets */
+    /** The collection of underlying section sets (representing glyphs) */
     @XmlElement(name = "glyphs")
-    private SectionSets sectionSets;
+    protected final SectionSets sectionSets;
+
+    /** The collection of glyphs which are concerned by this task */
+    protected SortedSet<Glyph> glyphs;
+
+    /** The set of (pre) impacted systems, using status before action */
+    protected SortedSet<SystemInfo> initialSystems;
+
+    /** The related sheet */
+    protected Sheet sheet;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -66,7 +71,9 @@ public abstract class GlyphTask
      */
     public GlyphTask (Collection<Glyph> glyphs)
     {
-        this.glyphs = new ArrayList<Glyph>(glyphs);
+        this.glyphs = new TreeSet<Glyph>();
+        this.glyphs.addAll(glyphs);
+
         sectionSets = SectionSets.createFromGlyphs(glyphs);
     }
 
@@ -79,9 +86,60 @@ public abstract class GlyphTask
     protected GlyphTask ()
     {
         glyphs = null; // Dummy value
+        sectionSets = null; // Dummy value
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //--------------------//
+    // getImpactedSystems //
+    //--------------------//
+    /**
+     * Report the set of systems that are impacted by the action
+     * @return the ordered set of impacted systems
+     */
+    public SortedSet<SystemInfo> getImpactedSystems ()
+    {
+        SortedSet<SystemInfo> impactedSystems = new TreeSet<SystemInfo>();
+        impactedSystems.addAll(initialSystems);
+        impactedSystems.addAll(retrieveCurrentImpact());
+
+        return impactedSystems;
+    }
+
+    //------------------//
+    // getInitialGlyphs //
+    //------------------//
+    /**
+     * Report the collection of initial glyphs
+     * @return the impactedGlyphs
+     */
+    public SortedSet<Glyph> getInitialGlyphs ()
+    {
+        return glyphs;
+    }
+
+    //--------//
+    // epilog //
+    //--------//
+    @Override
+    public void epilog (Sheet sheet)
+    {
+        sheet.rebuildAfter(Step.VERTICALS, getImpactedSystems());
+
+        super.epilog(sheet);
+    }
+
+    //------------------//
+    // impactAllSystems //
+    //------------------//
+    /**
+     * Set the impacted systems as all systems
+     */
+    public void impactAllSystems ()
+    {
+        initialSystems.addAll(sheet.getSystems());
+    }
 
     //--------//
     // prolog //
@@ -90,10 +148,12 @@ public abstract class GlyphTask
     public void prolog (Sheet sheet)
     {
         super.prolog(sheet);
+        this.sheet = sheet;
+        initialSystems = retrieveCurrentImpact();
 
         // Make sure the concrete sections and glyphs are available
         if (glyphs == null) {
-            glyphs = new ArrayList<Glyph>();
+            glyphs = new TreeSet<Glyph>();
 
             for (Collection<GlyphSection> set : sectionSets.getSets(sheet)) {
                 SystemInfo system = set.iterator()
@@ -111,10 +171,65 @@ public abstract class GlyphTask
     @Override
     protected String internalsString ()
     {
+        StringBuilder sb = new StringBuilder();
+
         if (glyphs != null) {
-            return " " + Glyphs.toString(glyphs);
+            sb.append(" ")
+              .append(Glyphs.toString(glyphs));
         } else {
-            return " no-glyphs";
+            sb.append(" no-glyphs");
         }
+
+        return sb + super.internalsString();
+    }
+
+    //-----------------------//
+    // retrieveCurrentImpact //
+    //-----------------------//
+    /**
+     * Report the set of systems that are impacted by the action, as determined
+     * by the *current status* of the glyphs *currently* pointed by the sections
+     * @return the ordered set of impacted systems
+     */
+    protected SortedSet<SystemInfo> retrieveCurrentImpact ()
+    {
+        SortedSet<SystemInfo> impactedSystems = new TreeSet<SystemInfo>();
+
+        for (Collection<GlyphSection> set : sectionSets.getSets(sheet)) {
+            for (GlyphSection section : set) {
+                SystemInfo system = section.getSystem();
+                Glyph      glyph = section.getGlyph();
+
+                if (system != null) {
+                    impactedSystems.add(system);
+                }
+
+                if (glyph != null) {
+                    Shape shape = glyph.getShape();
+
+                    if ((shape != null) && shape.isPersistent()) {
+                        // Include all following systems
+                        impactedSystems.addAll(remaining(system));
+                    }
+                }
+            }
+        }
+
+        return impactedSystems;
+    }
+
+    //-----------//
+    // remaining //
+    //-----------//
+    /**
+     * Report the collection of systems that follow the provided one
+     * @param system the one after which we pick any system
+     * @return the remaining portion of the sequence of systems in the sheet
+     */
+    private Collection<SystemInfo> remaining (SystemInfo system)
+    {
+        List<SystemInfo> all = sheet.getSystems();
+
+        return all.subList(all.indexOf(system) + 1, all.size());
     }
 }

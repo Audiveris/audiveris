@@ -32,7 +32,7 @@ public class Impact
     private final Shape assignedShape;
 
     /** The impacted glyphs */
-    private SortedSet<Glyph> initialGlyphs;
+    private SortedSet<Glyph> glyphs;
 
     /** The impacted vertical section sets */
     private final SectionSets sectionSets;
@@ -94,7 +94,7 @@ public class Impact
     }
 
     //-------------------//
-    // createDummyImpact //
+    // createDummyImpact // for Boundary
     //-------------------//
     /**
      * Creates a dummy Impact
@@ -107,7 +107,7 @@ public class Impact
     }
 
     //--------------------//
-    // createGlyphsImpact //
+    // createGlyphsImpact // for assign, deassign, text, slur, segment
     //--------------------//
     /**
      * Creates an Impact from a  collection of glyphs
@@ -125,7 +125,7 @@ public class Impact
             shape,
             SectionSets.createFromGlyphs(glyphs));
 
-        impact.initialGlyphs = Glyphs.set(glyphs);
+        impact.glyphs = Glyphs.set(glyphs);
 
         return impact;
     }
@@ -139,7 +139,7 @@ public class Impact
      */
     public SortedSet<Glyph> getInitialGlyphs ()
     {
-        return initialGlyphs;
+        return glyphs;
     }
 
     //----------------//
@@ -175,9 +175,9 @@ public class Impact
               .append(assignedShape);
         }
 
-        if (initialGlyphs != null) {
+        if (glyphs != null) {
             sb.append(" ")
-              .append(Glyphs.toString(initialGlyphs));
+              .append(Glyphs.toString(glyphs));
         }
 
         sb.append("}");

@@ -22,8 +22,9 @@ import javax.xml.bind.annotation.*;
 
 /**
  * Class <code>Script</code> handles a complete script applied to a sheet. A
- * script is a sequence of tasks. A script can be recorded as the user interacts
- * with the sheet data. It can be stored, reloaded and replayed.
+ * script is a sequence of {@link ScriptTask} instances tasks that are recorded
+ * as the user interacts with the sheet data.
+ * A script can be stored and reloaded/replayed.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -47,21 +48,22 @@ public class Script
     private final String sheetPath;
 
     /** Sequence of tasks that compose the script */
-    @XmlElements({@XmlElement(name = "step", type = StepTask.class)
-        , @XmlElement(name = "assign", type = AssignTask.class)
-        , @XmlElement(name = "deassign", type = DeassignTask.class)
-        , @XmlElement(name = "segment", type = SegmentTask.class)
+    @XmlElements({@XmlElement(name = "assign", type = AssignTask.class)
+        , @XmlElement(name = "barline", type = BarlineTask.class)
+        , @XmlElement(name = "boundary", type = BoundaryTask.class)
         , @XmlElement(name = "export", type = ExportTask.class)
         , @XmlElement(name = "midi", type = MidiWriteTask.class)
+        , @XmlElement(name = "parameters", type = ParametersTask.class)
         , @XmlElement(name = "play", type = PlayTask.class)
+        , @XmlElement(name = "segment", type = SegmentTask.class)
         , @XmlElement(name = "slur", type = SlurTask.class)
+        , @XmlElement(name = "step", type = StepTask.class)
         , @XmlElement(name = "text", type = TextTask.class)
-        , @XmlElement(name = "boundary", type = BoundaryTask.class)
     })
     private final List<ScriptTask> tasks = new ArrayList<ScriptTask>();
 
-    /** Nb of tasks when stored, if any */
-    private int storedTasksNb = 0;
+    /** Flag a script that needs to be stored */
+    private boolean modified;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -90,6 +92,18 @@ public class Script
 
     //~ Methods ----------------------------------------------------------------
 
+    //------------//
+    // isModified //
+    //------------//
+    /**
+     * Has the script been modified (wrt its backup on disk)?
+     * @return the modified
+     */
+    public boolean isModified ()
+    {
+        return modified;
+    }
+
     //----------//
     // getSheet //
     //----------//
@@ -103,36 +117,6 @@ public class Script
         return sheet;
     }
 
-    //-----------//
-    // setStored //
-    //-----------//
-    /**
-     * Flag the script as being currently consistent with its backup
-     */
-    public void setStored ()
-    {
-        storedTasksNb = tasks.size();
-    }
-
-    //----------//
-    // isStored //
-    //----------//
-    /**
-     * Check whether the script is consistent with its backup on disk
-     *
-     * @return true if OK
-     */
-    public boolean isStored ()
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "tasks.size()=" + tasks.size() + " storedTasksNb=" +
-                storedTasksNb);
-        }
-
-        return tasks.size() <= storedTasksNb;
-    }
-
     //---------//
     // addTask //
     //---------//
@@ -144,9 +128,10 @@ public class Script
     public void addTask (ScriptTask task)
     {
         tasks.add(task);
+        setModified(true);
 
         if (logger.isFineEnabled()) {
-            logger.fine("Script: added task " + task);
+            logger.fine("Script: added " + task);
         }
     }
 
@@ -171,7 +156,8 @@ public class Script
     //-----//
     /**
      * This methods runs sequentially and synchronously the various tasks of the
-     * script. It is up to the caller to run this method in a separate thread.
+     * script. It is up to the caller to run this method in a separate thread
+     * if so desired.
      */
     public void run ()
     {
@@ -201,29 +187,29 @@ public class Script
         // Run the tasks in sequence
         try {
             for (ScriptTask task : tasks) {
-                // Actually run this task
                 if (logger.isFineEnabled()) {
                     logger.fine(
-                        "Launching " + task + " on sheet " + sheet.getRadix());
+                        "Running " + task + " on sheet " + sheet.getRadix());
                 }
 
                 try {
-                    task.prolog(sheet);
+                    // Run the task synchronously (prolog/core/epilog)
                     task.run(sheet);
                 } catch (Exception ex) {
-                    logger.warning("Error in running " + task, ex);
+                    logger.warning("Error running " + task, ex);
+                    throw new RuntimeException(task.toString());
                 }
             }
 
             if (logger.isFineEnabled()) {
-                logger.fine("All tasks launched on sheet " + sheet.getRadix());
+                logger.fine("All tasks run on sheet " + sheet.getRadix());
             }
         } catch (Exception ex) {
-            logger.warning("Task aborted", ex);
+            logger.warning("Script aborted", ex);
         } finally {
-            // Flag the active script as up-to-date
+            // Flag the (active) script as up-to-date
             sheet.getScript()
-                 .setStored();
+                 .setModified(false);
         }
     }
 
@@ -235,6 +221,10 @@ public class Script
     {
         StringBuilder sb = new StringBuilder();
         sb.append("{Script");
+
+        if (modified) {
+            sb.append(" modified");
+        }
 
         if (sheetPath != null) {
             sb.append(" ")
@@ -252,5 +242,17 @@ public class Script
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //-------------//
+    // setModified //
+    //-------------//
+    /**
+     * Flag the script as modified (wrt disk)
+     * @param modified the modified to set
+     */
+    void setModified (boolean modified)
+    {
+        this.modified = modified;
     }
 }

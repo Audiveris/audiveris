@@ -52,11 +52,11 @@ public class DeassignTask
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----//
-    // run //
-    //-----//
+    //------//
+    // core //
+    //------//
     @Override
-    public void run (Sheet sheet)
+    public void core (Sheet sheet)
         throws Exception
     {
         sheet.getSymbolsController()
@@ -70,6 +70,6 @@ public class DeassignTask
     @Override
     protected String internalsString ()
     {
-        return " deassign " + super.internalsString();
+        return " deassign" + super.internalsString();
     }
 }

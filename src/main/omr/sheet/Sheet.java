@@ -1346,7 +1346,7 @@ public class Sheet
     // rebuildAfter //
     //-------------//
     public void rebuildAfter (Step                  step,
-                              SortedSet<SystemInfo> impactedSystems)
+                              Collection<SystemInfo> impactedSystems)
     {
         sheetSteps.rebuildAfter(step, impactedSystems, false); //Not imposed
     }

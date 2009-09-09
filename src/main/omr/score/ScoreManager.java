@@ -135,11 +135,6 @@ public class ScoreManager
                 logger.info("Creating folder " + folder);
             }
 
-            // Record this task in the sheet script
-            score.getSheet()
-                 .getScript()
-                 .addTask(new ExportTask(xmlFile.getPath()));
-
             // Actually export the score material
             try {
                 ScoreExporter exporter = new ScoreExporter(score);
@@ -218,11 +213,6 @@ public class ScoreManager
             if (folder.mkdirs()) {
                 logger.info("Creating folder " + folder);
             }
-
-            // Record this task in the sheet script
-            score.getSheet()
-                 .getScript()
-                 .addTask(new MidiWriteTask(midiFile.getPath()));
 
             // Actually write the Midi file
             try {

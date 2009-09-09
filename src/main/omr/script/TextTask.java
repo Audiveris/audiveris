@@ -8,12 +8,11 @@
 //----------------------------------------------------------------------------//
 package omr.script;
 
+import omr.glyph.Evaluation;
 import omr.glyph.Glyph;
 import omr.glyph.text.TextRole;
 
 import omr.sheet.Sheet;
-
-import omr.step.StepException;
 
 import java.util.Collection;
 
@@ -72,16 +71,16 @@ public class TextTask
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----//
-    // run //
-    //-----//
+    //------//
+    // core //
+    //------//
     @Override
-    public void run (Sheet sheet)
+    public void core (Sheet sheet)
         throws Exception
     {
         sheet.getSymbolsController()
-             .asyncAssignText(glyphs, type, content)
-             .get();
+             .getModel()
+             .assignText(getInitialGlyphs(), type, content, Evaluation.MANUAL);
     }
 
     //-----------------//
@@ -100,6 +99,6 @@ public class TextTask
           .append(content)
           .append("\"");
 
-        return sb.toString() + super.internalsString();
+        return sb + super.internalsString();
     }
 }

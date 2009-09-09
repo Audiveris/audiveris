@@ -14,9 +14,7 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.Glyph;
 import omr.glyph.GlyphInspector;
-import omr.glyph.Shape;
 
 import omr.log.Logger;
 
@@ -205,69 +203,69 @@ public class SheetSteps
             .doStep(systems);
     }
 
-//    //--------------//
-//    // rebuildAfter //
-//    //--------------//
-//    /**
-//     * Update the steps already done, starting right after the provided step.
-//     * This method will try to minimize the systems to rebuild in each step, by
-//     * determining the actual impact of the glyphs and shapes.<ul>
-//     * <li>The glyphs are used to flag the systems containing these glyphs. So
-//     * the best way to trigger the rebuild of all systems is to pass a null
-//     * collection of glyphs.</li>
-//     * <li>The shapes are used to flag or not the systems that follow the ones
-//     * directly impacted by the modified glyphs. If some of the shapes are
-//     * "persistent", which means their impact continues past the end of their
-//     * containing measure, all the following systems must be flagged as well.
-//     * </li></ul>
-//     *
-//     * <p>There is a mutual exclusion with {@link Step#performUntil} method.
-//     *
-//     * @param step the step, after which to restart
-//     * @param glyphs the collection of modified glyphs, or null to flag all
-//     * systems
-//     * @param shapes the collection of the modified shapes, only useful if
-//     * glyphs collection is not null
-//     * @param imposed flag to indicate that update is imposed
-//     */
-//    public synchronized void rebuildAfter (Step              step,
-//                                           Collection<Glyph> glyphs,
-//                                           Collection<Shape> shapes,
-//                                           boolean           imposed)
-//    {
-//        if (SwingUtilities.isEventDispatchThread()) {
-//            logger.severe("Method rebuildAfter should not run on EDT!");
-//        }
-//
-//        if (step == null) {
-//            return;
-//        }
-//
-//        // Check whether the update must really be done
-//        if (!imposed && !ScoreActions.getInstance()
-//                                     .isRebuildAllowed()) {
-//            return;
-//        }
-//
-//        // Determine impacted systems, from the collection of modified glyphs
-//        final SortedSet<SystemInfo> impactedSystems = (glyphs != null)
-//                                                      ? sheet.getImpactedSystems(
-//            glyphs,
-//            shapes) : new TreeSet<SystemInfo>(sheet.getSystems());
-//
-//        if (logger.isFineEnabled()) {
-//            logger.fine(
-//                "Rebuild launched after " + step + " on" +
-//                SystemInfo.toString(impactedSystems));
-//        }
-//
-//        // Rebuild after specified step, if needed
-//        if (sheet.getSheetSteps()
-//                 .getLatestMandatoryStep()
-//                 .compareTo(step) > 0) {
-//            step.reperformNextSteps(sheet, impactedSystems);
-//        }
-//    }
+    //    //--------------//
+    //    // rebuildAfter //
+    //    //--------------//
+    //    /**
+    //     * Update the steps already done, starting right after the provided step.
+    //     * This method will try to minimize the systems to rebuild in each step, by
+    //     * determining the actual impact of the glyphs and shapes.<ul>
+    //     * <li>The glyphs are used to flag the systems containing these glyphs. So
+    //     * the best way to trigger the rebuild of all systems is to pass a null
+    //     * collection of glyphs.</li>
+    //     * <li>The shapes are used to flag or not the systems that follow the ones
+    //     * directly impacted by the modified glyphs. If some of the shapes are
+    //     * "persistent", which means their impact continues past the end of their
+    //     * containing measure, all the following systems must be flagged as well.
+    //     * </li></ul>
+    //     *
+    //     * <p>There is a mutual exclusion with {@link Step#performUntil} method.
+    //     *
+    //     * @param step the step, after which to restart
+    //     * @param glyphs the collection of modified glyphs, or null to flag all
+    //     * systems
+    //     * @param shapes the collection of the modified shapes, only useful if
+    //     * glyphs collection is not null
+    //     * @param imposed flag to indicate that update is imposed
+    //     */
+    //    public synchronized void rebuildAfter (Step              step,
+    //                                           Collection<Glyph> glyphs,
+    //                                           Collection<Shape> shapes,
+    //                                           boolean           imposed)
+    //    {
+    //        if (SwingUtilities.isEventDispatchThread()) {
+    //            logger.severe("Method rebuildAfter should not run on EDT!");
+    //        }
+    //
+    //        if (step == null) {
+    //            return;
+    //        }
+    //
+    //        // Check whether the update must really be done
+    //        if (!imposed && !ScoreActions.getInstance()
+    //                                     .isRebuildAllowed()) {
+    //            return;
+    //        }
+    //
+    //        // Determine impacted systems, from the collection of modified glyphs
+    //        final SortedSet<SystemInfo> impactedSystems = (glyphs != null)
+    //                                                      ? sheet.getImpactedSystems(
+    //            glyphs,
+    //            shapes) : new TreeSet<SystemInfo>(sheet.getSystems());
+    //
+    //        if (logger.isFineEnabled()) {
+    //            logger.fine(
+    //                "Rebuild launched after " + step + " on" +
+    //                SystemInfo.toString(impactedSystems));
+    //        }
+    //
+    //        // Rebuild after specified step, if needed
+    //        if (sheet.getSheetSteps()
+    //                 .getLatestMandatoryStep()
+    //                 .compareTo(step) > 0) {
+    //            step.reperformNextSteps(sheet, impactedSystems);
+    //        }
+    //    }
 
     //--------------//
     // rebuildAfter //
@@ -284,9 +282,9 @@ public class SheetSteps
      * if all systems must be rebuilt
      * @param imposed flag to indicate that update is imposed
      */
-    public synchronized void rebuildAfter (Step                  step,
-                                           SortedSet<SystemInfo> impactedSystems,
-                                           boolean               imposed)
+    public synchronized void rebuildAfter (Step                   step,
+                                           Collection<SystemInfo> impactedSystems,
+                                           boolean                imposed)
     {
         if (SwingUtilities.isEventDispatchThread()) {
             logger.severe("Method rebuildAfter should not run on EDT!");

@@ -59,11 +59,11 @@ public class ExportTask
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----//
-    // run //
-    //-----//
+    //------//
+    // core //
+    //------//
     @Override
-    public void run (Sheet sheet)
+    public void core (Sheet sheet)
     {
         ScoreManager.getInstance()
                     .export(sheet.getScore(), new File(path));
@@ -75,6 +75,6 @@ public class ExportTask
     @Override
     protected String internalsString ()
     {
-        return " export " + path;
+        return " export " + path + super.internalsString();
     }
 }

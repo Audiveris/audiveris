@@ -58,11 +58,11 @@ public class StepTask
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----//
-    // run //
-    //-----//
+    //------//
+    // core //
+    //------//
     @Override
-    public void run (final Sheet sheet)
+    public void core (final Sheet sheet)
         throws StepException
     {
         if (!sheet.getSheetSteps()
@@ -89,6 +89,21 @@ public class StepTask
     @Override
     protected String internalsString ()
     {
-        return " step " + step;
+        return " step " + step + super.internalsString();
+    }
+
+    //--------------//
+    // isRecordable //
+    //--------------//
+    /**
+     * This is an implementation trick, because of a "chicken and egg problem"
+     * to allow to run the LOAD step while the sheet does not exist yet!
+     * @see omr.step.Step#performUntil(omr.sheet.Sheet, java.lang.Object)
+     * @return false!
+     */
+    @Override
+    boolean isRecordable ()
+    {
+        return false;
     }
 }

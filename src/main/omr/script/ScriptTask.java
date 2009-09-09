@@ -13,10 +13,26 @@ import omr.log.Logger;
 
 import omr.sheet.Sheet;
 
-import omr.step.StepException;
+import omr.util.BasicTask;
+
+import org.jdesktop.application.Task;
 
 /**
- * Class <code>Task</code> is meant for all possible tasks within a score script
+ * Class <code>Task</code> is the root class of all possible tasks within a
+ * score script.
+ *
+ * <p>The processing of any task is defined by its {@link #core} method. In
+ * order to factorize pre and post processing, a subclass may also redefine the
+ * {@link #prolog} and {@link #epilog} methods respectively.</p>
+ *
+ * <p>The whole processing of a task is run synchronously by the {@link #run}
+ * method, and this is what the calling {@link Script} engine does. To run a
+ * task asynchronously, use the {@link #launch} method, and this is what any
+ * UI module should do.</p>
+ *
+ * <p>Running a task has the side-effect of writing this task in the current
+ * sheet script, unless the task is defined as not recordable. This is the case
+ * of the {@link PlayTask}.</p>
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -31,7 +47,7 @@ public abstract class ScriptTask
     //~ Constructors -----------------------------------------------------------
 
     /**
-     * Creates a new Task object.
+     * Creates a new ScriptTask object.
      */
     protected ScriptTask ()
     {
@@ -39,12 +55,63 @@ public abstract class ScriptTask
 
     //~ Methods ----------------------------------------------------------------
 
+    //------//
+    // core //
+    //------//
+    /**
+     * Run the core of this task.
+     *
+     * @param sheet the sheet to run this task against
+     * @exception Exception
+     */
+    public abstract void core (Sheet sheet)
+        throws Exception;
+
+    //--------//
+    // epilog //
+    //--------//
+    /**
+     * Epilog if any, to be called after the run() method
+     * @param sheet the sheet to run this epilog against
+     */
+    public void epilog (Sheet sheet)
+    {
+        // Empty by default
+    }
+
+    //--------//
+    // launch //
+    //--------//
+    /**
+     * Launch this task asynchronously (prolog + core + epilog).
+     * This is meant to be called by UI code, for maximum responsiveness of the
+     * user interface.
+     * @param sheet the related sheet
+     * @return the launched SAF task
+     */
+    public Task launch (final Sheet sheet)
+    {
+        Task task = new BasicTask() {
+            protected Void doInBackground ()
+                throws Exception
+            {
+                ScriptTask.this.run(sheet);
+
+                return null;
+            }
+        };
+
+        task.execute();
+
+        return task;
+    }
+
     //--------//
     // prolog //
     //--------//
     /**
      * Prolog if any, to be called before the run() method
-     * @param sheet the sheet to run this task against
+     * @param sheet the sheet to run this prolog against
      */
     public void prolog (Sheet sheet)
     {
@@ -55,13 +122,28 @@ public abstract class ScriptTask
     // run //
     //-----//
     /**
-     * Actually run this task
+     * Run this task synchronously (prolog + core + epilog)
+     * This is meant to be called by the script engine, to ensure that every
+     * task is completed before the next is run.
+     * This method is final, subclasses should define core() and potentially
+     * customize prolog() and epilog().
      *
      * @param sheet the sheet to run this task against
      * @exception Exception
      */
-    public abstract void run (Sheet sheet)
-        throws Exception;
+    public final void run (Sheet sheet)
+        throws Exception
+    {
+        prolog(sheet);
+        core(sheet);
+        epilog(sheet);
+
+        // Record the task instance in the current script?
+        if (isRecordable()) {
+            sheet.getScript()
+                 .addTask(this);
+        }
+    }
 
     //----------//
     // toString //
@@ -70,7 +152,7 @@ public abstract class ScriptTask
     public String toString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("{Task ");
+        sb.append("{Task");
         sb.append(internalsString());
         sb.append("}");
 
@@ -81,10 +163,27 @@ public abstract class ScriptTask
     // internalsString //
     //-----------------//
     /**
-     * Return the string of the internals of this class, for inclusion in a
-     * toString
+     * Return the string of the internals of this class, typically for inclusion
+     * in a toString. The overriding methods should comply with the following
+     * rule: return either a totally empty string, or a string that begins with
+     * a " " followed by some content.
      *
      * @return the string of internals
      */
-    protected abstract String internalsString ();
+    protected String internalsString ()
+    {
+        return "";
+    }
+
+    //--------------//
+    // isRecordable //
+    //--------------//
+    /**
+     * Report whether this task should be written in the current script
+     * @return true if recordable
+     */
+    boolean isRecordable ()
+    {
+        return true;
+    }
 }

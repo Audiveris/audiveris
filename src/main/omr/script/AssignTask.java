@@ -19,8 +19,8 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlAttribute;
 
 /**
- * Class <code>AssignTask</code> is a script task which assigns a shape
- * to a collection of glyphs.
+ * Class <code>AssignTask</code> is a script task which assigns (or deassign)
+ * a shape to a collection of glyphs.
  *
  * <p>Il the compound flag is set, a compound glyph may is composed from the
  * provided glyphs and assigned the shape. Otherwise, each provided glyph is
@@ -34,7 +34,7 @@ public class AssignTask
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** Assigned shape */
+    /** Assigned shape (or null for a deassignment) */
     @XmlAttribute
     private final Shape shape;
 
@@ -50,7 +50,7 @@ public class AssignTask
     /**
      * Create an assignment task
      *
-     * @param shape the shape to be assigned
+     * @param shape the assigned shape (or null for a de-assignment)
      * @param compound true if all glyphs are to be merged into one compound
      * which is assigned to the given shape, false if each and every glyph is to
      * be assigned to the given shape
@@ -68,8 +68,21 @@ public class AssignTask
     //------------//
     // AssignTask //
     //------------//
+    /**
+     * Convenient way to create an deassignment task
+     *
+     * @param glyphs the collection of glyphs to deassign
+     */
+    public AssignTask (Collection<Glyph> glyphs)
+    {
+        this(null, false, glyphs);
+    }
+
+    //------------//
+    // AssignTask //
+    //------------//
     /** No-arg constructor needed for JAXB */
-    private AssignTask ()
+    protected AssignTask ()
     {
         shape = null;
         compound = false;
@@ -77,16 +90,42 @@ public class AssignTask
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----//
-    // run //
-    //-----//
+    //------------------//
+    // getAssignedShape //
+    //------------------//
+    /**
+     * Report the assigned shape (for an assignment impact)
+     * @return the assignedShape (null for a deasssignment)
+     */
+    public Shape getAssignedShape ()
+    {
+        return shape;
+    }
+
+    //------------//
+    // isCompound //
+    //------------//
+    /**
+     * Report whether the assignment is a compound
+     * @return true for a compound assignment, false otherwise
+     */
+    public boolean isCompound ()
+    {
+        return compound;
+    }
+
+    //------//
+    // core //
+    //------//
     @Override
-    public void run (Sheet sheet)
+    public void core (Sheet sheet)
         throws Exception
     {
+        //        sheet.getSymbolsController()
+        //             .asyncAssignGlyphs(glyphs, shape, compound)
+        //             .get();
         sheet.getSymbolsController()
-             .asyncAssignGlyphs(glyphs, shape, compound)
-             .get();
+             .syncAssign(this);
     }
 
     //-----------------//
@@ -102,9 +141,14 @@ public class AssignTask
             sb.append(" compound");
         }
 
+        if (shape != null) {
+            sb.append(" ")
+              .append(shape);
+        }
+
         sb.append(" ")
           .append(shape);
 
-        return sb.toString() + super.internalsString();
+        return sb + super.internalsString();
     }
 }

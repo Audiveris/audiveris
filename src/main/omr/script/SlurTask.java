@@ -13,8 +13,6 @@ import omr.glyph.Glyph;
 
 import omr.sheet.Sheet;
 
-import omr.step.StepException;
-
 import java.util.Collection;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -53,16 +51,16 @@ public class SlurTask
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----//
-    // run //
-    //-----//
+    //------//
+    // core //
+    //------//
     @Override
-    public void run (Sheet sheet)
+    public void core (Sheet sheet)
         throws Exception
     {
         sheet.getSymbolsController()
-             .asyncFixLargeSlurs(glyphs)
-             .get();
+             .getModel()
+             .fixLargeSlurs(getInitialGlyphs());
     }
 
     //-----------------//
@@ -74,6 +72,6 @@ public class SlurTask
         StringBuilder sb = new StringBuilder();
         sb.append(" slur");
 
-        return sb.toString() + super.internalsString();
+        return sb + super.internalsString();
     }
 }

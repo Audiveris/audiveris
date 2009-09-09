@@ -12,7 +12,6 @@ package omr.score.entity;
 import omr.log.Logger;
 
 import omr.score.common.PagePoint;
-import omr.score.common.ScorePoint;
 import omr.score.common.SystemPoint;
 import omr.score.visitor.ScoreVisitor;
 

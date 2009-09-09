@@ -13,8 +13,6 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemBoundary;
 import omr.sheet.SystemInfo;
 
-import omr.step.StepException;
-
 import omr.util.BrokenLine;
 
 import javax.xml.bind.annotation.*;
@@ -72,11 +70,11 @@ public class BoundaryTask
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----//
-    // run //
-    //-----//
+    //------//
+    // core //
+    //------//
     @Override
-    public void run (Sheet sheet)
+    public void core (Sheet sheet)
         throws Exception
     {
         SystemInfo system = sheet.getSystems()
@@ -88,9 +86,7 @@ public class BoundaryTask
 
         // Update the following steps if any
         sheet.getSystemsBuilder()
-             .getController()
-             .asyncModifyBoundaries(brokenLine)
-             .get();
+             .useBoundaries();
     }
 
     //-----------------//
@@ -108,6 +104,6 @@ public class BoundaryTask
           .append(line);
         sb.append(" ");
 
-        return sb.toString();
+        return sb.toString() + super.internalsString();
     }
 }

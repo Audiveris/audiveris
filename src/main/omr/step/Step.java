@@ -247,7 +247,7 @@ public enum Step {
             logger.warning("Error in processing " + this, ex);
         }
 
-        // Record to script?
+        // Record to script
         if (sheet != null) {
             sheet.getScript()
                  .addTask(new StepTask(this));
@@ -456,7 +456,7 @@ public enum Step {
     // Constant //
     //----------//
     /**
-     * Class <code>StepConstant</code> is a subclass of
+     * Class <code>Constant</code> is a subclass of
      * {@link omr.constant.Constant}, meant to store a {@link Step} value.
      */
     public static class Constant

@@ -19,16 +19,16 @@ import omr.score.Score;
 import omr.score.entity.ScorePart;
 import omr.score.midi.MidiAbstractions;
 
+import omr.script.ParametersTask;
+
 import omr.selection.UserEvent;
 
-import omr.step.Step;
+import omr.sheet.Sheet;
 
 import omr.ui.*;
 import omr.ui.field.LField;
 import omr.ui.field.LIntegerField;
 import omr.ui.util.Panel;
-
-import omr.util.Worker;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
@@ -68,6 +68,9 @@ public class ScoreBoard
     /** Collection of individual data panes */
     private final List<Pane> panes = new ArrayList<Pane>();
 
+    /** Related script task */
+    private ParametersTask task;
+
     //~ Constructors -----------------------------------------------------------
 
     //------------//
@@ -103,13 +106,22 @@ public class ScoreBoard
     /**
      * Check the values and commit them if all are OK
      *
+     * @param sheet the related sheet
      * @return true if committed, false otherwise
      */
-    public boolean commit ()
+    public boolean commit (Sheet sheet)
     {
         if (dataIsValid()) {
-            for (Pane pane : panes) {
-                pane.commit();
+            score.getSheet()
+                 .getScript()
+                 .addTask(task);
+
+            try {
+                task.launch(sheet); // Just launch it
+            } catch (Exception ex) {
+                logger.warning("Could not run ParametersTask", ex);
+
+                return false;
             }
 
             return true;
@@ -135,8 +147,12 @@ public class ScoreBoard
      */
     private boolean dataIsValid ()
     {
+        task = new ParametersTask();
+
         for (Pane pane : panes) {
             if (!pane.isValid()) {
+                task = null; // Cleaner
+
                 return false;
             }
         }
@@ -205,6 +221,14 @@ public class ScoreBoard
         }
 
         /**
+         * Commit the modifications
+         * (for the items that are not handled by the ParametersTask)
+         */
+        public void commit ()
+        {
+        }
+
+        /**
          * Build the related user interface
          * @param builder the shared panel builder
          * @param cst the cell constraints
@@ -215,15 +239,6 @@ public class ScoreBoard
                                           CellConstraints cst,
                                           int             r);
 
-        /** Are all the pane data valid? */
-        public boolean isValid ()
-        {
-            return true; // By default
-        }
-
-        /** Commit the modifications */
-        public abstract void commit ();
-
         /**
          * Report the count of needed logical rows
          * Typically 2 (the label separator plus 1 line of data)
@@ -231,6 +246,12 @@ public class ScoreBoard
         public int getLogicalRowCount ()
         {
             return 2;
+        }
+
+        /** Are all the pane data valid? */
+        public boolean isValid ()
+        {
+            return true; // By default
         }
     }
 
@@ -267,35 +288,22 @@ public class ScoreBoard
         @Override
         public boolean isValid ()
         {
+            String item = (String) langCombo.getItemAt(
+                langCombo.getSelectedIndex());
+            task.setLanguage(codeOf(item));
+
             return true;
         }
 
         @Override
         public void commit ()
         {
-            final String item = (String) langCombo.getItemAt(
-                langCombo.getSelectedIndex());
-            final String code = codeOf(item);
-
+            /** Since this info is not registered in the ParametersTask */
             if (langBox.isSelected()) {
-                // Make this language the default
-                Language.setDefaultLanguage(code);
-            }
-
-            // Text language for this score
-            if (!code.equals(score.getLanguage())) {
-                score.setLanguage(code);
-                new Worker<Void>() {
-                        @Override
-                        public Void construct ()
-                        {
-                            score.getSheet()
-                                 .getSheetSteps()
-                                 .rebuildAfter(Step.VERTICALS, null, true);
-
-                            return null;
-                        }
-                    }.start();
+                // Make the selected language the global default
+                String item = (String) langCombo.getItemAt(
+                    langCombo.getSelectedIndex());
+                Language.setDefaultLanguage(codeOf(item));
             }
         }
 
@@ -461,6 +469,7 @@ public class ScoreBoard
         @Override
         public void commit ()
         {
+            /** Since this info is not registered in the ParametersTask */
             if (rangeBox.isSelected()) {
                 score.setMeasureRange(
                     new MeasureRange(
@@ -545,14 +554,10 @@ public class ScoreBoard
                 return false;
             }
 
-            return true;
-        }
+            task.setTempo(tempo.getValue());
+            task.setVolume(volume.getValue());
 
-        @Override
-        public void commit ()
-        {
-            score.setTempo(tempo.getValue());
-            score.setVolume(volume.getValue());
+            return true;
         }
 
         @Override
@@ -636,9 +641,11 @@ public class ScoreBoard
                 logger.warning("Please supply a non empty part name");
 
                 return false;
-            }
+            } else {
+                task.addPart(name.getText(), midiBox.getSelectedIndex() + 1);
 
-            return true;
+                return true;
+            }
         }
 
         //------------//
@@ -716,27 +723,14 @@ public class ScoreBoard
         {
             // Each score part
             for (ScorePart scorePart : score.getPartList()) {
-                PartPane part = partPanes.get(scorePart);
+                PartPane partPane = partPanes.get(scorePart);
 
-                if ((part != null) && !part.checkPart()) {
+                if ((partPane != null) && !partPane.checkPart()) {
                     return false;
                 }
             }
 
             return true;
-        }
-
-        @Override
-        public void commit ()
-        {
-            // Each score part
-            for (ScorePart scorePart : score.getPartList()) {
-                PartPane part = partPanes.get(scorePart);
-
-                if (part != null) {
-                    part.commitPart();
-                }
-            }
         }
 
         @Override
