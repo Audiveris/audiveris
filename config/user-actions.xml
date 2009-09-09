@@ -27,9 +27,6 @@
     <!-- Just as an example -->
     <action domain="Misc" section="END"    class="omr.ui.GuiActions"            method="dumpEventServices"/>
     <action domain="Misc" section="END"    class="MyClass"                      method="dumpCurrentScore" />
-
-<!--
-    <action domain="Misc" section="END"    class="MyClass"                      method="buildFromSections" />
--->
+    <action domain="Misc" section="END"    class="MyClass"                      method="dumpCurrentScript" />
 
 </actions>
