@@ -2,9 +2,13 @@
 //                                                                            //
 //                    T e s t C o m p o n e n t E v e n t                     //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
+//----------------------------------------------------------------------------//
+// </editor-fold>
 //----------------------------------------------------------------------------//
 //
 package omr.ui;
