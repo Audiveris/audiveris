@@ -2,11 +2,13 @@
 //                                                                            //
 //                         S c r i p t M a n a g e r                          //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-///
+// </editor-fold>
 package omr.script;
 
 import omr.log.Logger;
@@ -125,12 +127,21 @@ public class ScriptManager
             synchronized (this) {
                 if (jaxbContext == null) {
                     jaxbContext = JAXBContext.newInstance(
+                        AssignTask.class,
+                        BarlineTask.class,
+                        BoundaryTask.class,
+                        ExportTask.class,
+                        GlyphTask.class,
+                        MidiWriteTask.class,
+                        ParametersTask.class,
+                        PlayTask.class,
                         Script.class,
+                        ScriptTask.class,
+                        SegmentTask.class,
                         SlurTask.class,
                         StepTask.class,
-                        AssignTask.class,
-                        DeassignTask.class,
-                        SegmentTask.class);
+                        TextTask.class
+                        );
                 }
             }
         }

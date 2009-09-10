@@ -2,13 +2,18 @@
 //                                                                            //
 //                          B o u n d a r y T a s k                           //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.script;
 
+import java.awt.Point;
+import java.util.ArrayList;
+import java.util.List;
 import omr.sheet.Sheet;
 import omr.sheet.SystemBoundary;
 import omr.sheet.SystemInfo;
@@ -57,7 +62,15 @@ public class BoundaryTask
     {
         systemId = system.getId();
         this.side = side;
-        this.line = line;
+
+        // Make a deep copy of the line points
+        List<Point> points = new ArrayList<Point>();
+        for (Point p : line.getPoints()) {
+            points.add(new Point(p));
+        }
+        this.line = new BrokenLine(points);
+
+        logger.info("Created BoundaryTask " + this);
     }
 
     //--------------//
@@ -83,6 +96,8 @@ public class BoundaryTask
                                       .getLimit(side);
         // Modify the points and update listeners
         brokenLine.resetPoints(line.getPoints());
+
+logger.info("DEBUG core brokenLine=" + brokenLine)        ;
 
         // Update the following steps if any
         sheet.getSystemsBuilder()
