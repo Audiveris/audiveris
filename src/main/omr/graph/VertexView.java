@@ -2,11 +2,13 @@
 //                                                                            //
 //                            V e r t e x V i e w                             //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.graph;
 
 import java.awt.*;
@@ -40,7 +42,7 @@ public interface VertexView
      *
      * @param g the graphics context
      * @param drawBorders should vertex borders be drawn
-     * 
+     *
      * @return true if actually rendered, i.e. is displayed
      */
     boolean render (Graphics g,

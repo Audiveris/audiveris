@@ -2,11 +2,13 @@
 //                                                                            //
 //                      S y s t e m T r a n s l a t o r                       //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.score;
 
 import omr.glyph.Glyph;

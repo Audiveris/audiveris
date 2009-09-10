@@ -2,11 +2,13 @@
 //                                                                            //
 //                              T e x t R o l e                               //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.glyph.text;
 
 import omr.constant.ConstantSet;
@@ -37,17 +39,17 @@ public enum TextRole {
     /** No role known */
     Unknown,
     /** (Part of) lyrics */
-    Lyrics, 
+    Lyrics,
     /** Title of the opus */
-    Title, 
+    Title,
     /** Playing instruction */
-    Direction, 
+    Direction,
     /** Number for this opus */
-    Number, 
+    Number,
     /** Name for the part */
-    Name, 
+    Name,
     /** A creator (composer, etc...) */
-    Creator, 
+    Creator,
     /** Copyright notice */
     Rights;
     /**/

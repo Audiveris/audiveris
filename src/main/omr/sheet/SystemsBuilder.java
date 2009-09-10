@@ -2,11 +2,13 @@
 //                                                                            //
 //                        S y s t e m s B u i l d e r                         //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.sheet;
 
 import omr.Main;
@@ -584,11 +586,15 @@ public class SystemsBuilder
 
         //~ Methods ------------------------------------------------------------
 
-        public Task asyncModifyBoundaries (final BrokenLine brokenLine)
+        public Task asyncModifyBoundaries (final BrokenLine      brokenLine,
+                                           final Set<SystemInfo> modifiedSystems)
         {
-            if (logger.isFineEnabled()) {
-                logger.fine("asyncModifyBoundaries " + brokenLine);
-            }
+            //            if (logger.isFineEnabled()) {
+            //                logger.fine(
+            logger.info(
+                "asyncModifyBoundaries " + brokenLine + " modifiedSystems:" +
+                modifiedSystems);
+            //            }
 
             if (brokenLine != null) {
                 // Retrieve containing system
@@ -793,25 +799,32 @@ public class SystemsBuilder
                     // Update system boundary?
                     SheetLocationEvent sheetLocation = (SheetLocationEvent) event;
 
-                    ///logger.info(sheetLocation.toString());
                     if (sheetLocation.hint == SelectionHint.LOCATION_INIT) {
                         Rectangle rect = sheetLocation.rectangle;
 
                         if (rect != null) {
                             if (event.movement != MouseMovement.RELEASING) {
+                                // While user is dragging, simply modify the line
                                 updateBoundary(
                                     new Point(
                                         rect.x + (rect.width / 2),
                                         rect.y + (rect.height / 2)));
-                            } else if (lastPoint != null) {
+                            } else if (lastLine != null) {
+                                // User has released the mouse with a known line
+                                logger.info("======================splitSystemEntities======================");
+
                                 // Perform boundary modifs synchronously
                                 Set<SystemInfo> modifs = splitSystemEntities();
 
                                 // If modifs, launch updates asynchronously
-                                if (!modifs.isEmpty()) {
-                                    barsController.asyncModifyBoundaries(
-                                        lastLine);
-                                }
+                                ///if (!modifs.isEmpty()) {
+                                barsController.asyncModifyBoundaries(
+                                    lastLine,
+                                    modifs);
+                                lastPoint = null;
+                                lastLine = null;
+
+                                ///}
                             }
                         }
                     }
@@ -880,6 +893,8 @@ public class SystemsBuilder
                     lastLine.removePoint(refPoint);
                     refPoint = null;
                 }
+
+                logger.info("DEBUG lastLine=" + lastLine);
             } else {
                 // Are we close to a segment, to define a new ref point?
                 SystemInfo system = sheet.getSystemsNear(pt)

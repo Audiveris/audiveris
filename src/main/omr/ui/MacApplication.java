@@ -1,12 +1,14 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                         M a c A p p l i c a t i o n                        //
+//                        M a c A p p l i c a t i o n                         //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Brenton Partridge 2007-2008. All rights reserved.           //
 //  This software is released under the GNU General Public License.           //
-//  Contact dev@audiveris.dev.java.net to report bugs & suggestions.          //
+//  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.ui;
 
 import omr.log.Logger;
@@ -128,50 +130,6 @@ public class MacApplication
         return null;
     }
 
-    private static Object getEvent (Object[] args)
-    {
-        if (args.length > 0) {
-            Object arg = args[0];
-
-            if (arg != null) {
-                try {
-                    if ((eventClass != null) &&
-                        eventClass.isAssignableFrom(arg.getClass())) {
-                        return arg;
-                    }
-                } catch (Exception e) {
-                }
-            }
-        }
-
-        return null;
-    }
-
-    private static void setHandled (Object event)
-    {
-        try {
-            Method handled = eventClass.getMethod("setHandled", boolean.class);
-            handled.invoke(event, true);
-        } catch (Exception e) {
-        }
-    }
-
-    private static String getFilename (Object event)
-    {
-        try {
-            Method filename = eventClass.getMethod("getFilename");
-            Object rval = filename.invoke(event);
-
-            if (rval == null) {
-                return null;
-            } else {
-                return (String) rval;
-            }
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
     /**
      * Registers actions for preferences, about, and quit.
      * @return true if successful, false if platform is not
@@ -220,6 +178,50 @@ public class MacApplication
             logger.warning("Unable to setup Mac OS X GUI integration", ex);
 
             return false;
+        }
+    }
+
+    private static Object getEvent (Object[] args)
+    {
+        if (args.length > 0) {
+            Object arg = args[0];
+
+            if (arg != null) {
+                try {
+                    if ((eventClass != null) &&
+                        eventClass.isAssignableFrom(arg.getClass())) {
+                        return arg;
+                    }
+                } catch (Exception e) {
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static String getFilename (Object event)
+    {
+        try {
+            Method filename = eventClass.getMethod("getFilename");
+            Object rval = filename.invoke(event);
+
+            if (rval == null) {
+                return null;
+            } else {
+                return (String) rval;
+            }
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static void setHandled (Object event)
+    {
+        try {
+            Method handled = eventClass.getMethod("setHandled", boolean.class);
+            handled.invoke(event, true);
+        } catch (Exception e) {
         }
     }
 }

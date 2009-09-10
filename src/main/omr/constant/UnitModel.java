@@ -2,11 +2,13 @@
 //                                                                            //
 //                             U n i t M o d e l                              //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.constant;
 
 import omr.log.Logger;
@@ -65,24 +67,24 @@ public class UnitModel
         /**
          * Editable column dedicated to {@link omr.log.Logger} entity if any
          */
-        LOGGER("Logger", true, 30, String.class), 
+        LOGGER("Logger", true, 30, String.class),
 
         /**
          * Editable column for constant current value, with related tool tip
          * retrieved from the constant declaration
          */
-        VALUE("Value", true, 100, String.class), 
+        VALUE("Value", true, 100, String.class),
 
         /**
          * Column that recalls the constant type, and thus the possible range of
          * values
          */
-        TYPE("Type", false, 40, String.class), 
+        TYPE("Type", false, 40, String.class),
 
         /**
          * Column for the units, if any, used for the value
          */
-        UNIT("Unit", false, 40, String.class), 
+        UNIT("Unit", false, 40, String.class),
 
         /**
          * Column relevant only for constants which are fractions of interline,
@@ -91,7 +93,7 @@ public class UnitModel
          * currently selected Sheet. If there is no current Sheet, then just a
          * question mark (?)  is displayed
          */
-        PIXEL("Pixels", false, 20, String.class), 
+        PIXEL("Pixels", false, 20, String.class),
 
         /**
          * Column containing a flag to indicate whether the constant value has
@@ -461,7 +463,7 @@ public class UnitModel
                 if (constant instanceof Scale.Fraction ||
                     constant instanceof Scale.AreaFraction) {
                     // Compute the equivalent in pixels of this interline-based
-                    // fraction or area fraction, provided that we have a 
+                    // fraction or area fraction, provided that we have a
                     // current sheet and its scale is available.
                     Sheet sheet = SheetsController.selectedSheet();
 

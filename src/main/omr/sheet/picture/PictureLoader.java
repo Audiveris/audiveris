@@ -1,13 +1,14 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                        P i c t u r e L o a d e r                           //
+//                         P i c t u r e L o a d e r                          //
 //                                                                            //
-//  Copyright (C) Brenton Partridge 2007-2008.                                //
-//  All rights reserved.                                                      //
-//  This software is released under the GNU General Public License.           //
-//  Contact dev@audiveris.dev.java.net to report bugs & suggestions.          //
 //----------------------------------------------------------------------------//
-//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
+//  Copyright (C) Brenton Partridge 2007-2008.                                //
+//  This software is released under the GNU General Public License.           //
+//  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
+//----------------------------------------------------------------------------//
+// </editor-fold>
 package omr.sheet.picture;
 
 import omr.constant.Constant;
@@ -193,10 +194,10 @@ public class PictureLoader
             try {
                 /*
                    PDFFile pdffile = new PDFFile(buf);
-                
+
                    // get the first page
                    PDFPage page = pdffile.getPage(0);
-                
+
                    // do the actual drawing
                    PDFRenderer renderer = new PDFRenderer(page, g2,
                        [bounding box], null, Color.RED);

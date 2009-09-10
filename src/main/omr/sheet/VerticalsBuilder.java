@@ -2,11 +2,13 @@
 //                                                                            //
 //                      V e r t i c a l s B u i l d e r                       //
 //                                                                            //
-//  Copyright (C) Herve Bitteur 2007. All rights reserved.                    //
-//  This software is released under the GNU General Public License.           //
-//  Please contact author at herve.bitteur@laposte.net for bugs & suggestions //
 //----------------------------------------------------------------------------//
-//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
+//  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
+//  This software is released under the GNU General Public License.           //
+//  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
+//----------------------------------------------------------------------------//
+// </editor-fold>
 package omr.sheet;
 
 import omr.check.Check;

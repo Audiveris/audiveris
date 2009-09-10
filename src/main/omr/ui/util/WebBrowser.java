@@ -2,10 +2,13 @@
 //                                                                            //
 //                            W e b B r o w s e r                             //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Brenton Partridge 2007.  All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
+// </editor-fold>
 package omr.ui.util;
 
 import omr.Main;

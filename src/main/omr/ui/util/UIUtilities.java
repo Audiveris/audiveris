@@ -2,12 +2,13 @@
 //                                                                            //
 //                           U I U t i l i t i e s                            //
 //                                                                            //
-//  Copyright (C) Herve Bitteur and Brenton Partridge 2000-2007.              //
-//  All rights reserved.                                                      //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
+//  Copyright (C) Herve Bitteur and Brenton Partridge 2000-2009.              //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.ui.util;
 
 import omr.log.Logger;

@@ -2,12 +2,13 @@
 //                                                                            //
 //                               P i c t u r e                                //
 //                                                                            //
-//  Copyright (C) Herve Bitteur and Brenton Partridge 2000-2007.              //
-//  All rights reserved.                                                      //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
+//  Copyright (C) Herve Bitteur and Brenton Partridge 2000-2009.              //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.sheet.picture;
 
 import omr.constant.Constant;

@@ -1,12 +1,14 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                                M a i n G u i                               //
+//                               M a i n G u i                                //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.ui;
 
 import omr.Main;
@@ -377,7 +379,7 @@ public class MainGui
         }
 
         Main.setGui(this);
-        
+
         // Just in case we already have messages pending
         notifylog();
 

@@ -2,11 +2,13 @@
 //                                                                            //
 //                              S e n t e n c e                               //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.glyph.text;
 
 import omr.constant.Constant;
@@ -512,7 +514,7 @@ public class Sentence
         while (!done) {
             done = true;
 
-            innerLoop: 
+            innerLoop:
             for (Glyph inner : items) {
                 PixelRectangle innerBox = inner.getContourBox();
 

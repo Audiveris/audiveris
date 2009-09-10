@@ -2,11 +2,13 @@
 //                                                                            //
 //            W e a k P r o p e r t y C h a n g e L i s t e n e r             //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.util;
 
 import java.beans.PropertyChangeEvent;

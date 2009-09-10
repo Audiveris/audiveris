@@ -2,11 +2,13 @@
 //                                                                            //
 //                               A c t i o n s                                //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.action;
 
 import omr.log.Logger;
@@ -52,15 +54,15 @@ public class Actions
         /** Domain of sheet actions */
         SHEET,
         /** Domain of individual steps */
-        STEP, 
+        STEP,
         /** Domain of score actions */
-        SCORE, 
+        SCORE,
         /** Domain of MIDI features */
-        MIDI, 
+        MIDI,
         /** Domain of various view features */
-        VIEW, 
+        VIEW,
         /** Domain of utilities */
-        TOOL, 
+        TOOL,
         /** Domain of help information */
         HELP;
     }
@@ -76,9 +78,9 @@ public class Actions
         /** Section #1 */
         IMPORT,
         /** Section #2 */
-        EDIT, 
+        EDIT,
         /** Section #3 */
-        EXPORT, 
+        EXPORT,
         /** Section #4 */
         END;
     }

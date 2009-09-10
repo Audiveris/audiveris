@@ -2,10 +2,14 @@
 //                                                                            //
 //                         S y m b o l P i c t u r e                          //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
+// </editor-fold>
+// </editor-fold>
 //
 package omr.ui.icon;
 
@@ -90,7 +94,7 @@ public class SymbolPicture
     @Implement(PixelSource.class)
     public final int getMaxForeground ()
     {
-        // Exactly 255 is the background (white) value, so anything else up to 
+        // Exactly 255 is the background (white) value, so anything else up to
         // 254 included is foreground (black)
         return 254;
     }

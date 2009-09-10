@@ -2,11 +2,13 @@
 //                                                                            //
 //                          G l y p h T r a i n e r                           //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.glyph.ui.panel;
 
 import omr.constant.ConstantManager;
@@ -259,7 +261,7 @@ public class GlyphTrainer
             /** No ongoing activity */
             INACTIVE,
             /** Selecting glyph to build a population for training */
-            SELECTING, 
+            SELECTING,
             /** Using the population to train the evaluator */
             TRAINING;
         }

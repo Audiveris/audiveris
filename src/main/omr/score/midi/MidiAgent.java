@@ -2,10 +2,13 @@
 //                                                                            //
 //                             M i d i A g e n t                              //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
+// </editor-fold>
 package omr.score.midi;
 
 import omr.log.Logger;
@@ -70,7 +73,7 @@ public class MidiAgent
         /** Playback is not started or paused, sequence position is irrelevant */
         STOPPED,
         /** Playback has started */
-        PLAYING, 
+        PLAYING,
         /** Playback is paused, current sequence position is kept */
         PAUSED;
     }

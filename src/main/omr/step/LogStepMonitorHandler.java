@@ -2,11 +2,13 @@
 //                                                                            //
 //                 L o g S t e p M o n i t o r H a n d l e r                  //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Brenton Partridge 2007. All rights reserved.                //
 //  This software is released under the GNU General Public License.           //
-//  Contact herve.bitteur@laposte.net to report bugs & suggestions.           //
+//  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.step;
 
 import omr.log.LogLevelsFilter;

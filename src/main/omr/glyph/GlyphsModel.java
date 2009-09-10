@@ -2,11 +2,13 @@
 //                                                                            //
 //                           G l y p h s M o d e l                            //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.glyph;
 
 import omr.log.Logger;
@@ -159,9 +161,9 @@ public class GlyphsModel
         return sheet;
     }
 
-    //----------------//
+    //--------------//
     // assignGlyphs //
-    //----------------//
+    //--------------//
     /**
      * Assign a shape to the selected collection of glyphs.
      *
@@ -284,3 +286,11 @@ public class GlyphsModel
         assignGlyph(glyph, null, Evaluation.ALGORITHM);
     }
 }
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                           G l y p h s M o d e l                            //
+//                                                                            //
+//  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
+//  This software is released under the GNU General Public License.           //
+//  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
+//----------------------------------------------------------------------------//

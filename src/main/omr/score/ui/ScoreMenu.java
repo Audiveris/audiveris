@@ -2,11 +2,13 @@
 //                                                                            //
 //                             S c o r e M e n u                              //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.score.ui;
 
 import omr.glyph.Glyph;
@@ -142,21 +144,21 @@ public class ScoreMenu
     //--------------//
     private void defineLayout ()
     {
-        // Measure 
+        // Measure
         popup.add(new MeasureItem());
         popup.add(new JMenuItem(new PlayMeasureAction()));
         popup.add(new JMenuItem(new DumpMeasureAction()));
 
         popup.addSeparator();
 
-        // Slot 
+        // Slot
         popup.add(new SlotItem());
         popup.add(new JMenuItem(new DumpSlotChordsAction()));
         popup.add(new JMenuItem(new DumpSlotVoicesAction()));
 
         popup.addSeparator();
 
-        // Chord 
+        // Chord
         popup.add(new ChordItem());
     }
 

@@ -2,11 +2,13 @@
 //                                                                            //
 //                             C l a s s U t i l                              //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.util;
 
 
@@ -44,7 +46,7 @@ public class ClassUtil
         // More complex case, return the caller, just before the skipped classes
         // First, search back to a method in the skipped classes, if any
         int ix;
-        searchingForSkipped: 
+        searchingForSkipped:
         for (ix = 0; ix < stack.length; ix++) {
             StackTraceElement frame = stack[ix];
             String            cname = frame.getClassName();
@@ -57,7 +59,7 @@ public class ClassUtil
         }
 
         // Now search for the first frame before the skipped classes
-        searchingForNonSkipped: 
+        searchingForNonSkipped:
         for (; ix < stack.length; ix++) {
             StackTraceElement frame = stack[ix];
             String            cname = frame.getClassName();

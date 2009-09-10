@@ -2,11 +2,13 @@
 //                                                                            //
 //                          S h e e t P a i n t e r                           //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.score.visitor;
 
 import omr.glyph.Glyph;
@@ -230,7 +232,7 @@ public class SheetPainter
 
             g.setColor(Color.black);
 
-            // Stems 
+            // Stems
             for (Glyph glyph : systemInfo.getGlyphs()) {
                 if (glyph.isStem()) {
                     Stick stick = (Stick) glyph;

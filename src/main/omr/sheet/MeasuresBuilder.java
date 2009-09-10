@@ -2,11 +2,13 @@
 //                                                                            //
 //                       M e a s u r e s B u i l d e r                        //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.sheet;
 
 import omr.check.FailureResult;
@@ -237,7 +239,7 @@ public class MeasuresBuilder
                 staves.add((Staff) node);
             }
 
-            MeasureLoop: 
+            MeasureLoop:
             for (Iterator mit = part.getMeasures()
                                     .iterator(); mit.hasNext();) {
                 Measure measure = (Measure) mit.next();

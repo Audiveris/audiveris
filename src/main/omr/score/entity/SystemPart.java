@@ -2,11 +2,13 @@
 //                                                                            //
 //                            S y s t e m P a r t                             //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.score.entity;
 
 import omr.log.Logger;
@@ -765,7 +767,7 @@ public class SystemPart
             Collections.sort(precedingOrphans, Slur.verticalComparator);
 
             // Connect the orphans as much as possible
-            SlurLoop: 
+            SlurLoop:
             for (Slur slur : orphans) {
                 for (Slur prevSlur : precedingOrphans) {
                     if (slur.canExtend(prevSlur)) {

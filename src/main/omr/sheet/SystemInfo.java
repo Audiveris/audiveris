@@ -2,11 +2,13 @@
 //                                                                            //
 //                            S y s t e m I n f o                             //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.sheet;
 
 import omr.check.CheckSuite;
@@ -1138,7 +1140,7 @@ public class SystemInfo
      */
     public int runAlterPattern ()
     {
-        return glyphInspector.runAlterPattern();
+        return glyphInspector.runAlterPattern();
     }
 
     //----------------//

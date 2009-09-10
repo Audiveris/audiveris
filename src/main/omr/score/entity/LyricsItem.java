@@ -2,11 +2,13 @@
 //                                                                            //
 //                            L y r i c s I t e m                             //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.score.entity;
 
 import omr.constant.ConstantSet;
@@ -65,9 +67,9 @@ public class LyricsItem
         /** Just an elision */
         Elision,
         /** Just an extension */
-        Extension, 
+        Extension,
         /** A hyphen between syllables */
-        Hyphen, 
+        Hyphen,
         /** A real syllable */
         Syllable;
     }
@@ -80,9 +82,9 @@ public class LyricsItem
         /** Single-syllable word */
         SINGLE,
         /** Syllable that begins a word */
-        BEGIN, 
+        BEGIN,
         /** Syllable at the middle of a word */
-        MIDDLE, 
+        MIDDLE,
         /** Syllable that ends a word */
         END;
     }

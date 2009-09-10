@@ -2,11 +2,13 @@
 //                                                                            //
 //                         T e x t I n s p e c t o r                          //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.glyph.text;
 
 import omr.glyph.Evaluation;
@@ -192,7 +194,7 @@ public class TextInspector
         while (!finished) {
             finished = true;
 
-            oneLoop: 
+            oneLoop:
             for (Sentence one : list) {
                 for (Sentence two : list.subList(
                     list.indexOf(one) + 1,

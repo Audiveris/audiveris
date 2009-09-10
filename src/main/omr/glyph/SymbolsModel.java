@@ -2,11 +2,13 @@
 //                                                                            //
 //                          S y m b o l s M o d e l                           //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.glyph;
 
 import omr.glyph.text.TextInfo;
@@ -69,7 +71,7 @@ public class SymbolsModel
      *
      * @param glyph the glyph to be assigned
      * @param shape the assigned shape, which may be null
-     * @param doubt the doubt about shape 
+     * @param doubt the doubt about shape
      */
     @Override
     protected Glyph assignGlyph (Glyph  glyph,

@@ -1,12 +1,14 @@
-//-----------------------------------------------------------------------//
-//                                                                       //
-//                              R u b b e r                              //
-//                                                                       //
-//  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.          //
-//  This software is released under the terms of the GNU General Public  //
-//  License. Please contact the author at herve.bitteur@laposte.net      //
-//  to report bugs & suggestions.                                        //
-//-----------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                                R u b b e r                                 //
+//                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
+//  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
+//  This software is released under the GNU General Public License.           //
+//  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
+//----------------------------------------------------------------------------//
+// </editor-fold>
 package omr.ui.view;
 
 import omr.constant.Constant;
@@ -431,7 +433,7 @@ public class Rubber
                 g.drawLine(x, y - legLength, x, y + legLength); // Vertical
                 g.drawLine(x - legLength, y, x + legLength, y); // Horizontal
             } else {
-                // Draw full vertical & horizontal lines 
+                // Draw full vertical & horizontal lines
                 Rectangle bounds = component.getBounds(null);
                 g.drawLine(x, 0, x, bounds.height); // Vertical
                 g.drawLine(0, y, bounds.width, y); // Horizontal

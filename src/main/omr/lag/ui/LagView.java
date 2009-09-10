@@ -2,11 +2,13 @@
 //                                                                            //
 //                               L a g V i e w                                //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.lag.ui;
 
 import omr.constant.Constant;
@@ -119,7 +121,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         this.lag = lag;
         lag.addView(this);
 
-        // Location service        
+        // Location service
         this.locationService = locationService;
         lagSelectionService = lag.getSelectionService();
         setLocationService(locationService, SheetLocationEvent.class);

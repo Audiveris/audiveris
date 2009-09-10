@@ -2,11 +2,13 @@
 //                                                                            //
 //                            C h e c k P a n e l                             //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.check;
 
 import omr.constant.Constant;
@@ -556,7 +558,7 @@ public class CheckPanel<C extends Checkable>
                 }
             }
 
-            // If at least one modification has been made, update the whole 
+            // If at least one modification has been made, update the whole
             // table with both suite parameters and object results
             if (modified) {
                 setSuite(suite);

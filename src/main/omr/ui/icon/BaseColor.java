@@ -1,11 +1,14 @@
-/*
- * BaseColor.java
- *
- * Created on 8 decembre 2006, 17:13
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                             B a s e C o l o r                              //
+//                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
+//  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
+//  This software is released under the GNU General Public License.           //
+//  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
+//----------------------------------------------------------------------------//
+// </editor-fold>
 package omr.ui.icon;
 
 import javax.xml.bind.*;

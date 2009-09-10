@@ -2,11 +2,13 @@
 //                                                                            //
 //                              G l y p h L a g                               //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.glyph;
 
 import omr.lag.Lag;
@@ -302,7 +304,7 @@ public class GlyphLag
 
         for (Glyph glyph : collection) {
             boolean inRect = true;
-            sectionTest: 
+            sectionTest:
             for (GlyphSection section : glyph.getMembers()) {
                 if (!rect.contains(section.getContourBox())) {
                     inRect = false;

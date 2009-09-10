@@ -2,11 +2,13 @@
 //                                                                            //
 //                       P a t t e r n s C h e c k e r                        //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.glyph;
 
 import omr.log.Logger;
@@ -30,7 +32,7 @@ public class PatternsChecker
 
     /** Sequence of patterns to run */
     private static Pattern[] patterns = new Pattern[] {
-                                            
+
     //
     new Pattern("Clef") {
             public int run (SystemInfo system)
@@ -39,7 +41,7 @@ public class PatternsChecker
             }
         }
     ,
-                                            
+
     new Pattern("Alter") {
             public int run (SystemInfo system)
             {
@@ -47,7 +49,7 @@ public class PatternsChecker
             }
         }
     ,
-                                            
+
     new Pattern("Stem") {
             public int run (SystemInfo system)
             {
@@ -55,7 +57,7 @@ public class PatternsChecker
             }
         }
     ,
-                                            
+
     new Pattern("Slur") {
             public int run (SystemInfo system)
             {
@@ -63,7 +65,7 @@ public class PatternsChecker
             }
         }
     ,
-                                            
+
     new Pattern("Text") {
             public int run (SystemInfo system)
             {

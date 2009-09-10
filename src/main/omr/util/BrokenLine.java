@@ -2,11 +2,13 @@
 //                                                                            //
 //                            B r o k e n L i n e                             //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.util;
 
 import omr.constant.Constant;
@@ -84,6 +86,18 @@ public class BrokenLine
     public BrokenLine (Point... points)
     {
         resetPoints(Arrays.asList(points));
+    }
+
+    //------------//
+    // BrokenLine //
+    //------------//
+    /**
+     * Creates a new BrokenLine object with a few initial points
+     * @param points collection of initial points
+     */
+    public BrokenLine (Collection<Point> points)
+    {
+        resetPoints(points);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -248,11 +262,8 @@ public class BrokenLine
      */
     public Point findPoint (Point point)
     {
-        Rectangle window = new Rectangle(
-            point.x - stickyDistance,
-            point.y - stickyDistance,
-            2 * stickyDistance,
-            2 * stickyDistance);
+        Rectangle window = new Rectangle(point);
+        window.grow(stickyDistance, stickyDistance);
 
         for (Point pt : points) {
             if (window.contains(pt)) {
@@ -410,10 +421,10 @@ public class BrokenLine
      */
     public void resetPoints (Collection<Point> points)
     {
-        this.points.clear();
-
         if (points != null) {
-            this.points.addAll(points);
+            Collection<Point> newPoints = new ArrayList<Point>(points);
+            this.points.clear();
+            this.points.addAll(newPoints);
         }
 
         fireListeners();
@@ -503,6 +514,7 @@ public class BrokenLine
      * Called after all the properties (except IDREF) are unmarshalled for this
      * object, but before this object is set to the parent object.
      */
+    @SuppressWarnings("unused")
     private void afterUnmarshal (Unmarshaller um,
                                  Object       parent)
     {
@@ -520,6 +532,7 @@ public class BrokenLine
     /**
      * Called immediately before the marshalling of this object begins.
      */
+    @SuppressWarnings("unused")
     private void beforeMarshal (Marshaller m)
     {
         // Convert points -> xps

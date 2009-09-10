@@ -2,11 +2,13 @@
 //                                                                            //
 //                            G l y p h B o a r d                             //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.glyph.ui;
 
 import omr.constant.ConstantSet;
@@ -486,7 +488,7 @@ public class GlyphBoard
                                         glyphs);
                                     task.get();
 
-                                    // Update focus on current glyph, 
+                                    // Update focus on current glyph,
                                     // even if reused in a compound
                                     Glyph newGlyph = glyph.getFirstSection()
                                                           .getGlyph();
