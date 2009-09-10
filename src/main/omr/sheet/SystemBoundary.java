@@ -68,6 +68,7 @@ public class SystemBoundary
     //----------------//
     /**
      * Creates a new SystemBoundary object with north and south borders
+     * @param system the related system
      * @param north the northern limit
      * @param south the southern limit
      */

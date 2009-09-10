@@ -60,6 +60,9 @@ public class BrokenLine
     /** Default sticky distance */
     private int stickyDistance = getDefaultStickyDistance();
 
+    /** Max distance for colinearity */
+    private int colinearDistance = constants.colinearDistance.getValue();
+
     /** Set of insterested listeners */
     private final Set<Listener> listeners = new LinkedHashSet<Listener>();
 
@@ -135,7 +138,7 @@ public class BrokenLine
                 getPoint(index + 1));
             double        dist = line.ptLineDist(point);
 
-            return dist <= stickyDistance;
+            return dist <= colinearDistance;
         } else {
             return false;
         }
@@ -422,7 +425,12 @@ public class BrokenLine
     public void resetPoints (Collection<Point> points)
     {
         if (points != null) {
-            Collection<Point> newPoints = new ArrayList<Point>(points);
+            Collection<Point> newPoints = new ArrayList<Point>();
+
+            for (Point p : points) {
+                newPoints.add(new Point(p)); // Use a point COPY
+            }
+
             this.points.clear();
             this.points.addAll(newPoints);
         }
@@ -467,45 +475,6 @@ public class BrokenLine
             }
         }
     }
-
-    //    //--------------//
-    //    // setXmlPoints //
-    //    //--------------//
-    //    /** Trick for XML binding */
-    //    ///@XmlElementWrapper(name = "points")
-    //    ///@XmlElement(name = "point")
-    //    private void setXmlPoints (List<PointFacade> xps)
-    //    {
-    //        logger.warning("setXmlPoints1. xps=" + xps + " points=" + points);
-    //        points.clear();
-    //
-    //        for (PointFacade xp : xps) {
-    //            points.add(xp.getPoint());
-    //        }
-    //
-    //        logger.warning("setXmlPoints2. xps=" + xps + " points=" + points);
-    //    }
-    //
-    //    //--------------//
-    //    // getXmlPoints //
-    //    //--------------//
-    //    /** Trick for XML binding */
-    //    private List<PointFacade> getXmlPoints ()
-    //    {
-    //        logger.warning("getXmlPoints1. xps=" + xps + " points=" + points);
-    //
-    //        if (xps == null) {
-    //            xps = new ArrayList<PointFacade>();
-    //        } else {
-    //            for (Point p : points) {
-    //                xps.add(new PointFacade(p));
-    //            }
-    //        }
-    //
-    //        logger.warning("getXmlPoints2. xps=" + xps + " points=" + points);
-    //
-    //        return xps;
-    //    }
 
     //----------------//
     // afterUnmarshal //
@@ -571,5 +540,11 @@ public class BrokenLine
             "pixels",
             5,
             "Maximum distance from a point or segment to get stuck to it");
+
+        /** Max distance from a point to a segment to be colinear */
+        Constant.Integer colinearDistance = new Constant.Integer(
+            "pixels",
+            2,
+            "Max distance from a point to a segment to be colinear");
     }
 }

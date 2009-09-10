@@ -69,8 +69,6 @@ public class BoundaryTask
             points.add(new Point(p));
         }
         this.line = new BrokenLine(points);
-
-        logger.info("Created BoundaryTask " + this);
     }
 
     //--------------//
@@ -96,8 +94,6 @@ public class BoundaryTask
                                       .getLimit(side);
         // Modify the points and update listeners
         brokenLine.resetPoints(line.getPoints());
-
-logger.info("DEBUG core brokenLine=" + brokenLine)        ;
 
         // Update the following steps if any
         sheet.getSystemsBuilder()

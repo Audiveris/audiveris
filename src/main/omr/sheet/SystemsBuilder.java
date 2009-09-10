@@ -589,12 +589,11 @@ public class SystemsBuilder
         public Task asyncModifyBoundaries (final BrokenLine      brokenLine,
                                            final Set<SystemInfo> modifiedSystems)
         {
-            //            if (logger.isFineEnabled()) {
-            //                logger.fine(
-            logger.info(
-                "asyncModifyBoundaries " + brokenLine + " modifiedSystems:" +
-                modifiedSystems);
-            //            }
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "asyncModifyBoundaries " + brokenLine +
+                    " modifiedSystems:" + modifiedSystems);
+            }
 
             if (brokenLine != null) {
                 // Retrieve containing system
@@ -811,7 +810,6 @@ public class SystemsBuilder
                                         rect.y + (rect.height / 2)));
                             } else if (lastLine != null) {
                                 // User has released the mouse with a known line
-                                logger.info("======================splitSystemEntities======================");
 
                                 // Perform boundary modifs synchronously
                                 Set<SystemInfo> modifs = splitSystemEntities();
@@ -860,8 +858,10 @@ public class SystemsBuilder
 
             // Are we close to the latest refPoint?
             if (lastPoint != null) {
-                if ((Math.abs(lastPoint.x - pt.x) <= maxDraggingDelta) &&
-                    (Math.abs(lastPoint.y - pt.y) <= maxDraggingDelta)) {
+                Rectangle rect = new Rectangle(lastPoint);
+                rect.grow(maxDraggingDelta, maxDraggingDelta);
+
+                if (rect.contains(pt)) {
                     refPoint = lastPoint;
                 }
             }
@@ -893,8 +893,6 @@ public class SystemsBuilder
                     lastLine.removePoint(refPoint);
                     refPoint = null;
                 }
-
-                logger.info("DEBUG lastLine=" + lastLine);
             } else {
                 // Are we close to a segment, to define a new ref point?
                 SystemInfo system = sheet.getSystemsNear(pt)
