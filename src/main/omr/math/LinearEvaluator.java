@@ -2,11 +2,13 @@
 //                                                                            //
 //                       L i n e a r E v a l u a t o r                        //
 //                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
-//
+// </editor-fold>
 package omr.math;
 
 import omr.log.Logger;
@@ -808,12 +810,12 @@ public class LinearEvaluator
              * Just one data element
              * => a mean value, but artificial (average) weight
              */
-            SINGLE_DATA, 
+            SINGLE_DATA,
             /**
              * Several data elements, but with identical values
              * => a mean value, but infinite weight
              */
-            IDENTICAL_VALUES, 
+            IDENTICAL_VALUES,
             /**
              * Several data elements, with some variation in the values
              * => a mean value and weight computed as 1/variance
