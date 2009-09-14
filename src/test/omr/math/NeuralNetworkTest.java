@@ -9,8 +9,6 @@
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-//----------------------------------------------------------------------------//
-//
 package omr.math;
 
 import omr.util.BaseTestCase;
@@ -147,7 +145,9 @@ public class NeuralNetworkTest
 
         nn.dump();
 
-        File file = new File("nn.xml");
+        File dir = new File("temp");
+        dir.mkdirs();
+        File file = new File(dir, "nn.xml");
 
         // Marshalling
         System.out.println("Marshalling to " + file);

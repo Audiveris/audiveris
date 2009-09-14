@@ -9,8 +9,6 @@
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-//----------------------------------------------------------------------------//
-//
 package omr.math;
 
 import omr.util.BaseTestCase;

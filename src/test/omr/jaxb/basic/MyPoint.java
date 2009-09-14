@@ -1,11 +1,14 @@
-/*
- * MyPoint.java
- *
- * Created on 24 octobre 2006, 12:33
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                               M y P o i n t                                //
+//                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
+//  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
+//  This software is released under the GNU General Public License.           //
+//  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
+//----------------------------------------------------------------------------//
+// </editor-fold>
 package omr.jaxb.basic;
 
 import java.awt.Point;

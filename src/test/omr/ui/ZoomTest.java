@@ -9,8 +9,6 @@
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-//----------------------------------------------------------------------------//
-//
 package omr.ui;
 
 import omr.ui.field.LDoubleField;

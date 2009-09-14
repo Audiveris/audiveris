@@ -9,13 +9,10 @@
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-//----------------------------------------------------------------------------//
-//
 package omr.jaxb.basic;
 
 import omr.util.BaseTestCase;
 import omr.util.Dumper;
-import static junit.framework.Assert.*;
 
 import java.awt.Point;
 import java.io.*;
@@ -103,8 +100,8 @@ public class BasicTest
 
             Marshaller m = jaxbContext.createMarshaller();
             m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-            m.marshal(waiter, new FileOutputStream(fileName + ".out.xml"));
-            System.out.println("Marshalled to " + fileName + ".out.xml");
+            m.marshal(waiter, new FileOutputStream(fileName));
+            System.out.println("Marshalled to " + fileName);
         } catch (JAXBException ex) {
             ex.printStackTrace();
         } catch (FileNotFoundException ex) {
@@ -114,6 +111,8 @@ public class BasicTest
 
     public void testMarshall ()
     {
-        play("u:/soft/audiveris/src/test/omr/jaxb/basic/basic-data.xml");
+        File dir = new File("temp");
+        dir.mkdirs();
+        play(new File(dir, "basic-data.xml").toString());
     }
 }

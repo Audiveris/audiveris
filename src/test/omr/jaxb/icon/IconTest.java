@@ -9,8 +9,6 @@
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-//----------------------------------------------------------------------------//
-//
 package omr.jaxb.icon;
 
 import omr.ui.icon.IconManager;
@@ -92,8 +90,6 @@ public class IconTest
     //--------------//
     public void testMarshall ()
     {
-        play("/soft/audiveris/src/test/omr/jaxb/icon/icon-data.xml");
-
-        //convert();
+        play("src/test/omr/jaxb/icon/icon-data.xml");
     }
 }

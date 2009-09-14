@@ -9,8 +9,6 @@
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-//----------------------------------------------------------------------------//
-//
 package omr.math;
 
 import omr.math.LinearEvaluator.Printer;
@@ -21,6 +19,7 @@ import static org.junit.Assert.*;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -40,7 +39,8 @@ public class LinearEvaluatorTest
     //~ Static fields/initializers ---------------------------------------------
 
     private static final String[]     inNames = new String[] { "first", "second" };
-    private static final String       filePath = "linear.xml";
+    private static final String       dirName = "temp";
+    private static final String       fileName = "linear.xml";
     private static final List<Sample> samples = Arrays.asList(
         new Sample("A", new double[] { 10, 20 }),
         new Sample("A", new double[] { 11, 23 }),
@@ -148,7 +148,11 @@ public class LinearEvaluatorTest
     {
         System.out.println("\n--marshal");
 
-        OutputStream    os = new FileOutputStream(filePath);
+        File dir = new File(dirName);
+        File file = new File(dir, fileName);
+        dir.mkdirs();
+
+        OutputStream    os = new FileOutputStream(file);
         LinearEvaluator instance = createTrainedInstance();
         instance.marshal(os);
         os.close();
@@ -165,7 +169,7 @@ public class LinearEvaluatorTest
         double[]        one = new double[] { 10, 20 };
         double[]        two = new double[] { 5, 40 };
         LinearEvaluator instance = createTrainedInstance();
-        double          expResult = 28.82;
+        double          expResult = 0.03;
         double          result = instance.patternDistance(one, two);
         assertEquals(expResult, result, 0.1);
     }
@@ -212,7 +216,9 @@ public class LinearEvaluatorTest
     {
         System.out.println("\n--unmarshal");
 
-        InputStream     in = new FileInputStream(filePath);
+        File            dir = new File(dirName);
+        File            file = new File(dir, fileName);
+        InputStream     in = new FileInputStream(file);
 
         LinearEvaluator result = LinearEvaluator.unmarshal(in);
         result.dump();
