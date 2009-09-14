@@ -93,7 +93,11 @@ public class BoundaryTask
         BrokenLine brokenLine = system.getBoundary()
                                       .getLimit(side);
         // Modify the points and update listeners
-        brokenLine.resetPoints(line.getPoints());
+        List<Point> copy = new ArrayList<Point>();
+        for (Point p : line.getPoints()) {
+            copy.add(new Point(p));
+        }
+        brokenLine.resetPoints(copy);
 
         // Update the following steps if any
         sheet.getSystemsBuilder()
