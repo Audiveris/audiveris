@@ -425,12 +425,7 @@ public class BrokenLine
     public void resetPoints (Collection<Point> points)
     {
         if (points != null) {
-            Collection<Point> newPoints = new ArrayList<Point>();
-
-            for (Point p : points) {
-                newPoints.add(new Point(p)); // Use a point COPY
-            }
-
+            Collection<Point> newPoints = new ArrayList<Point>(points);
             this.points.clear();
             this.points.addAll(newPoints);
         }
