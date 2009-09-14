@@ -1,0 +1,145 @@
+<!-- +=====================================================================+ -->
+<!-- |                                                                     | -->
+<!-- |                  b u i l d . o n e j a r . x m l                    | -->
+<!-- |                                                                     | -->
+<!-- | abstract: ant build for packaging Audiveris in a single jar         | -->
+<!-- |           (not used for the time being)                             | -->
+<!-- | location: ${basedir}/src/onejar.xml                                 | -->
+<!-- | author:   herve.bitteur@laposte.net                                 | -->
+<!-- |                                                                     | -->
+<!-- +=====================================================================+ -->
+
+<project name="onejar" basedir="..">
+
+    <!-- OneJar task definition -->
+    <property name="build-onejar.version" value="0.96"/>
+    
+    <taskdef name="one-jar"
+	     classname="com.simontuffs.onejar.ant.OneJarTask" 
+	     classpath="${onejar.jar}"
+	     onerror="report"/>
+    
+    <!-- ======================= -->
+    <!--  D I S T - O N E J A R  -->
+    <!-- ======================= -->
+    <target name="dist-onejar"
+	    depends="jar"
+            description="Bundles a stand-alone OneJAR distribution">
+                
+        <echo>Bundling: OneJAR: Copying natives to ${dist.dir}/natives </echo>
+        <copy todir="${dist.dir}/natives/linux">
+            <fileset dir="${natives.dir}"  includes="*.so"/>
+        </copy>
+        <copy todir="${dist.dir}/natives/win">
+            <fileset dir="${natives.dir}"  includes="*.dll"/>
+        </copy>
+        <copy todir="${dist.dir}/natives/mac">
+            <fileset dir="${natives.dir}"  includes="*.dylib"/>
+            <fileset dir="${natives.dir}"  includes="*.jnilib"/>
+        </copy>
+
+        <echo>Bundling: OneJAR is composing ${full.name}-all.jar</echo>
+        <one-jar destfile="${dist.dir}/${full.name}-all.jar" manifest="onejar.mf" update="true">
+            <main>
+                <fileset dir="${build.classes.dir}/" />
+            </main>
+            <lib>
+                <fileset file="${dist.dir}/lib/*.*" />
+            </lib>
+            <binlib>
+                <fileset file="${natives.dir}/*.*" />
+            </binlib>
+            <fileset file="${basedir}/properties.cfg"></fileset><!-- optional -->
+        </one-jar>
+        <echo file="${dist.dir}/README.txt" append="true">
+Run the stand-alone distribution from the command line using:
+java -jar -Xmx256m ${full.name}-all.jar
+        </echo>
+
+        <echo>Bundling: OneJAR is preparing ${full.name}-win.jar</echo>
+        <one-jar destfile="${dist.dir}/${full.name}-win.jar" manifest="onejar.mf" update="true">
+            <main>
+                <fileset dir="${build.classes.dir}/" />
+            </main>
+            <lib>
+                <fileset file="${dist.dir}/lib/*.*" />
+            </lib>
+            <binlib>
+                <fileset file="${dist.dir}/natives/win/*.*" />
+            </binlib>
+        </one-jar>
+<!--
+        <echo>Bundling: OneJAR is preparing ${full.name}-linux.jar</echo>
+        <one-jar destfile="${dist.dir}/${full.name}-linux.jar" manifest="onejar.mf" update="true">
+            <main>
+                <fileset dir="${build.classes.dir}/" />
+            </main>
+            <lib>
+                <fileset file="${dist.dir}/lib/*.*" />
+            </lib>
+            <binlib>
+                <fileset file="${dist.dir}/natives/linux/*.*" />
+            </binlib>
+        </one-jar>
+-->
+<!--	
+        <echo>Bundling: OneJAR is preparing ${full.name}-mac.jar</echo>
+        <one-jar destfile="${dist.dir}/${full.name}-mac.jar" manifest="onejar.mf" update="true">
+            <main>
+                <fileset dir="${build.classes.dir}/" />
+            </main>
+            <lib>
+                <fileset file="${dist.dir}/lib/*.*" />
+            </lib>
+            <binlib>
+                <fileset file="${dist.dir}/natives/mac/*.*" />
+            </binlib>
+        </one-jar>
+-->     
+        <echo>Bundling: OneJAR is done.</echo>
+    </target>
+    
+    <!-- ================= -->
+    <!--  D I S T - Z I P  -->
+    <!-- ================= -->
+    <target name="dist-zip"
+	    depends="dist-onejar"
+	    description="Creating zip archives of the standalone OneJAR for windows / linux / mac">
+                
+	<echo>Bundling: Creating JAR Launchers</echo>
+	<mkdir  dir="${release.dir}" />
+	<mkdir  dir="${release.dir}/${full.name}-mac" />
+	<mkdir  dir="${release.dir}/${full.name}-win" />
+	<echo  file="${release.dir}/${full.name}-win/${full.name}.bat">java -jar -Xmx256m ${full.name}-win.jar</echo>
+	<copy todir="${release.dir}/${full.name}-win/"
+	      file="${dist.dir}/${full.name}-win.jar" />
+	<mkdir  dir="${release.dir}/${full.name}-linux" />
+	<echo  file="${release.dir}/${full.name}-linux/${full.name}.sh">java -jar -Xmx256m ${full.name}-linux.jar</echo>
+	<copy todir="${release.dir}/${full.name}-linux/"
+	      file="${dist.dir}/${full.name}-linux.jar" />
+
+	<echo>Bundling: Creating ZIP Archives</echo>
+	<zip destfile="${release.dir}/${full.name}-win.zip"
+	     basedir="${release.dir}/${full.name}-win" update="true" />
+	<zip destfile="${release.dir}/${full.name}-linux.zip"
+	     basedir="${release.dir}/${full.name}-linux" update="true" />
+	<move todir="${release.dir}/${full.name}-mac/"
+	      file="${dist.dir}/${full.name}-mac.jar" >
+	</move>
+	<zip destfile="${release.dir}/${full.name}-mac.zip"
+	     basedir="${release.dir}/${full.name}-mac" update="true" />
+
+	<echo>Bundling: Cleaning up temporary files</echo>
+	<delete dir="${release.dir}/${full.name}-win" />
+	<delete dir="${release.dir}/${full.name}-linux" />
+	<delete dir="${release.dir}/${full.name}-mac" />
+	<delete file="${dist.dir}/${full.name}-win.jar" />
+	<delete file="${dist.dir}/${full.name}-linux.jar" />
+
+    </target>
+    
+    <target name="-post-clean">
+	<delete dir="${release.dir}" />
+    </target>
+
+</project>
