@@ -41,6 +41,8 @@
     
     <!-- Tools classpath -->
     <path id="tools.classpath">
+        <pathelement path="${barebones.jar}"/>
+
         <pathelement path="${eventbus.jar}"/>
 
         <pathelement path="${jama.jar}"/>
@@ -67,6 +69,8 @@
 	<pathelement path="${swingappfwk.jar}"/>
 
 	<pathelement path="${swingworker.jar}"/>
+
+	<pathelement path="${tesjeract.jar}"/>
 
 	<pathelement path="${xenoplay.jar}"/>
     </path>
@@ -109,7 +113,7 @@
     <!-- ================================================================ -->
 
     <!-- Load internal targets common to Emacs and NetBeans -->
-    <import file="${dev.dir}/build-targets.xml"/>
+    <import file="${dev.dir}/build-common.xml"/>
     
     <!-- ========================= -->
     <!--  - C L E A N - B U I L D  -->
@@ -147,6 +151,7 @@
     <target name="-copy-libs">
         <mkdir dir="${dist.dir}/lib"/>
 
+	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${barebones.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${eventbus.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${icons.buttons.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${icons.music.jar}"/>
@@ -159,6 +164,7 @@
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${proxymusic.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${swingappfwk.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${swingworker.jar}"/>
+	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${tesjeract.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${xenoplay.jar}"/>
         <copy todir="${dist.dir}/lib" verbose="$verbose" file="${java.home}/lib/ext/jai_imageio.jar"/>
         <copy todir="${dist.dir}/lib" verbose="$verbose" file="${java.home}/lib/ext/clibwrapper_jiio.jar"/>
@@ -420,26 +426,6 @@
  	    <arg line="${run.script}"/>
         </java>
     </target>
-    
-    <!-- ======== -->
-    <!--  S A V E -->
-    <!-- ======== -->
-    <target name="save"
-        depends="-init"
-        description="Make a backup of all important files." >
-	
-        <mkdir dir="${backup.dir}/${ant.project.name}"/>
-
-        <!-- Save relevant directories -->
-        <zip
-            update="yes"
-            destfile="${backup.dir}/${ant.project.name}/${DSTAMP}-${machine.name}-src.zip" >
-            <fileset dir="${basedir}"  
-                     includes="build.xml, src/**, config/**, icons/**, www/**, train/*.def, nb/jp/**"
-                     excludes="${dist.excludes},www/docs/api/**,www/branding/**,nb/jp/dist/**"/>
-        </zip>
-
-    </target>
 
     <!-- ========= -->
     <!--  T E S T  -->
@@ -514,29 +500,5 @@
         </java>
 	
     </target>
-    
-    <!-- ============= -->
-    <!--  U P L O A D  -->
-    <!-- ============= -->
-    <target name="upload"
-            depends="save"
-            description="Upload backup to personal pages on an FTP server.">
-
-	<echo message="Uploading backup file ..."/>
-	<copy
-	    verbose="${verbose}"
-	    todir="${netbackup.dir}/${ant.project.name}">
-	    <fileset dir="${backup.dir}/${ant.project.name}">
-		<include name="**/${DSTAMP}-${machine.name}-*.zip"/>
-	    </fileset>
-	</copy>
-    </target>
-    
-    <!-- ======= -->
-    <!--  U M L  -->
-    <!-- ======= -->
-    <target name="uml"
-            depends="-uml"
-	    description="Generation of UML drawings"/>
 
 </project>

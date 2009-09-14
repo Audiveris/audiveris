@@ -61,7 +61,7 @@
     <!--  D I S T  -->
     <!-- ========= -->
     <target name="dist"
- 	    depends="clean, jar, javadoc, audiveris-targets.-dist"
+ 	    depends="clean, jar, javadoc, audiveris-common.-dist"
             description="Rebuild and package the whole distribution.">
     </target>
 
@@ -76,7 +76,7 @@
     <!--  J A V A D O C  -->
     <!-- =============== -->
     <target name="javadoc"
-            depends="init, audiveris-targets.-javadoc-build, -post-javadoc, -post-post-javadoc,-javadoc-browse"
+            depends="init, audiveris-common.-javadoc-build, -post-javadoc, -post-post-javadoc,-javadoc-browse"
             description="Build Javadoc."/>
     
     <!-- ======= -->
@@ -100,7 +100,7 @@
     <target name="-javadoc-browse"
 	    if="netbeans.home"
 	    unless="no.javadoc.preview"
-	    depends="init,audiveris-targets.-javadoc-build">
+	    depends="init,audiveris-common.-javadoc-build">
         <nbbrowse file="${dist.javadoc.dir}/index.html"/>
     </target>
 
@@ -119,19 +119,20 @@
     <!--  - P R E - J A R  -->
     <!-- ================= -->
     <target name="-pre-jar"
-	    depends="audiveris-targets.-pre-jar" />
+	    depends="audiveris-common.-pre-jar" />
 
     <!-- === Imports ======================================================== -->
 
     <!-- Load NetBeans implementation targets -->
     <import file="nbproject/build-impl.xml"/>
-<!--    <import file="nbproject/profiler-build-impl.xml"/> -->
 
     <!-- Next line will be inserted the first time you use the profiler -->
-<!--     <import file="nbproject/profiler-build-impl.xml"/> -->
+    
+    <import file="nbproject/profiler-build-impl.xml"/>
+    
     
     <!-- Load internal targets common to Emacs/Ant and NetBeans -->
-    <import file="${dev.dir}/build-targets.xml"/>
+    <import file="${dev.dir}/build-common.xml"/>
     
 <!--
 
