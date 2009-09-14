@@ -398,6 +398,10 @@ SplashScreen-Image: ../examples/chula.png
 	
     </target>
 
+
+    <import file="${dev.dir}/build-utils.xml"/>
+
+
     <!--
     <import file="${dev.dir}/build-onejar.xml"/>
     -->
