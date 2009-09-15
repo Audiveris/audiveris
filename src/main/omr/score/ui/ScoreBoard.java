@@ -115,7 +115,12 @@ public class ScoreBoard
     {
         if (dataIsValid()) {
             try {
-                task.launch(sheet); // Just launch it
+                // Just launch the prepared task
+                task.launch(sheet);
+                // Also carry out the actions not covered by the task
+                for (Pane pane : panes) {
+                    pane.commit();
+                }
             } catch (Exception ex) {
                 logger.warning("Could not run ParametersTask", ex);
 
