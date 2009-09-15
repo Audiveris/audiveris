@@ -366,6 +366,7 @@ public class Score
     public void setLanguage (String language)
     {
         this.language = language;
+        logger.info("Language set as '" + language + "'");
     }
 
     //-------------//
