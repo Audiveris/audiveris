@@ -1,0 +1,454 @@
+#almtoolbox {
+	padding-bottom: 5px;
+	min-width: 650px;
+	border: none;
+	clear: both; 
+}
+
+#almtopnav {
+	padding: 0;
+	clear: both;
+	border-bottom: 6px solid #e2e6ea;
+}
+
+#almtopnav ul {
+	float: left;
+	/* hide from macie5\*/
+	float: none;
+	/* resume */
+	 margin: 0;
+	padding: 4px 0 0 5px;
+	list-style: none;
+	height: 20px;
+}
+
+#almtopnav li {
+	float: left;
+	background-color: #abd;
+	margin-left: 5px;
+	padding: 0px;
+	height: 20px;
+	padding: 0px;
+}
+
+li#selectedtab { 
+	/* hide from macie5\*/	
+	display: block; 
+	/* resume */
+	background-color: #e2e6ea;
+	font-weight: bold;
+}
+
+#almtopnav ul li a {
+	float: left;
+	display: block;
+	padding: 3px 6px;
+	font-weight: bold;
+	text-decoration: none;	
+	color: #333 !important;
+}
+
+#almtopnav a.homeon {
+	padding-left: 20px;
+	background-image: url("../images/home.gif");
+	background-repeat: no-repeat;
+	background-position: 2px;
+}
+
+#almtopnav a.homeoff {
+	padding-left: 20px;
+	background-image: url("../images/homeOff.gif");
+	background-repeat: no-repeat;
+	background-position: 2px;
+}
+
+#almtopnav ul li a#selectedtab {
+	float: none;
+	display: inline;
+}
+
+#almtopnav li a:hover {
+	background: #caedff;
+	text-decoration: none;
+}
+
+#almtopnav ul li#selectedtab a:hover {
+	background:	#e2e6ea;
+}
+
+#almtopnav a.homeon:hover {
+  background: #e2e6ea url("../images/home.gif") no-repeat 2px !important;
+	padding-left: 20px;
+}
+
+#almtopnav a.homeoff:hover {
+	background: #caedff url("../images/home.gif") 2px no-repeat ;
+	padding-left: 20px;
+}
+
+#almtopnav a.unselected:hover {
+	color: #333 !important;
+}
+
+#almtopnav a.almtopnav_button {
+	margin: 1px 3px 0 1px;
+	width: 11px;
+	height: 11px;
+	padding: 0px;
+}
+
+#almtopnav	ul span#tab_current_text {	
+	padding: 3px 6px 3px 3px; !important;
+}
+
+/* Commented Backslash Hack hides rule from IE5-Mac - fix top tabs for consistency on IE-Win \*/
+* html #almtopnav a.almtopnav_button {
+	margin-right: 0;
+}
+/* End IE hack */
+
+.close_button, .open_button {
+	margin: 3px 3px 0 0;
+	float: left;
+	width: 11px;
+	height: 11px;
+}
+
+#almtopnav .hide {
+	display: none;
+}
+
+#tab_current_text {
+float: left;
+}
+
+#close_stagebar, .close_button {
+	background: url("../images/button-close.gif") no-repeat left top;
+}
+
+#close_stagebar:hover, .close_button:hover {
+	background: url("../images/button-close-over.gif") no-repeat left top !important;
+}
+
+#open_stagebar, .open_button {
+	background: url("../images/button-open.gif") no-repeat left top;
+}
+
+#open_stagebar:hover, .open_button:hover {
+	background: url("../images/button-open-over.gif") no-repeat left top !important;
+}
+
+#stagebar {
+	clear: both;
+}
+
+.stagerow {
+	background: #e2e6ea url("../images/tabborder.gif") repeat-x bottom left;
+	padding: 5px 10px 0 10px;
+}
+
+.stagerow table {
+	border: 0;
+	width: 100%;
+	clear: both;
+	text-align: center;
+	background: url("../images/tabborder.gif") repeat-x bottom left;
+	padding: 0;
+}
+
+.stagerow td {
+	padding: 0 0 0 10px;
+	line-height: 1.1em !important;
+	border-right: 1px solid #9CACCC;
+	text-decoration: none;
+	text-align: center;
+	min-width: 48px; /* Doesn't do anything in IE5-Mac */
+}
+
+.stage_div {
+	padding: 0 10px 5px 0;
+	text-align: center;
+	margin: 2px 0 0 0;
+}
+
+/* Hack for IE5 */
+* html .stage_div {
+	width: 100%; /* Fill up gap to the right of selected tab */
+	padding-bottom: 4px;
+	margin-left: -5px; /* Center elements within tab */
+}
+/* End IE5 hack */
+
+.stagerow .stage_current, .stagerow .stage_current_last {
+	border: none;
+	cursor: auto;
+	border-right: 1px solid #9CACCC;
+	border-left: 1px solid #9CACCC;
+	border-top: 1px solid #9CACCC;
+	background-color: #fff;
+}
+
+.stagerow .stage_current .stage_div, .stagerow .stage_current_last .stage_div {
+	margin: 0;
+	padding-top: 2px;
+}
+
+/* Hack for IE5-Mac */
+* html .stagerow td {
+	line-height: 1.2em !important;
+}
+
+* html .stagerow .stage_current .stage_div, * html .stagerow .stage_current_last .stage_div {
+	width: 100%; /* Fill up gap to the right of selected tab */
+	padding-top: 2px;
+	padding-right: 5px;
+	margin-left: -3px;
+}
+/* End IE5-Mac hack */
+
+/* Commented Backslash Hack hides rule from IE5-Mac - fix centering on IE-Win \*/
+* html .stagerow td {
+	padding-left: 20px;
+}
+
+* html .stagerow .stage_current {
+	padding-left: 10px;
+}
+
+* html .stagerow .stage_current_last {
+	padding-left: 10px;
+	padding-right: 2px;
+}
+
+* html .stage_div {
+	padding-bottom: 5px;
+}
+/* End IE hack */
+
+.stagerow .stage_noborder {
+	border: none;
+}
+
+.icon {
+	padding-top: 2px;
+}
+
+div.icon_caption {
+	display: block;
+	text-align: center;
+}
+
+div.icon_caption a {
+	color: #000 !important;
+	text-decoration: none;
+}
+
+#activitybox {
+	background-color: #E9F6FD;
+	border: 1px solid #9caccc;
+	clear:both;
+}
+
+.activitybox_topleft {
+	padding-top: 8px;
+	padding-bottom: 8px;
+	width: 100%;
+}
+
+.activitybox_topleft td {
+	padding: 0 10px;
+	border-right: 1px solid #9caccc;
+}
+
+.activitybox_topleft td.activitytable_right {
+	border: none;
+}
+
+#activitybox h2 {
+	text-align: center;
+	border: none;
+	border-bottom: 1px dashed #369;
+	font-size: 1.2em;
+	margin: 0px;
+	padding: 0px;
+	margin-bottom: 3px;
+	padding-bottom: 3px;
+	background-color: #E9F6FD;
+}
+
+/* Commented Backslash Hack hides rule from IE5-Mac - pads activity box header in IE-Win \*/
+* html #activitybox h2 {
+	padding-top: 8px;
+}
+/* End IE hack */
+
+#activitybox div {
+	padding-top: 3px;
+	padding-bottom: 3px;
+}
+
+.add_icon, .add_icon2 {
+	padding-left: 14px;
+	background-image: url("../images/add-new-artifact.gif");
+	background-repeat: no-repeat;
+	background-position: 0 .5em;
+}
+
+.download_icon, .download_icon2 {
+	padding-left: 14px;
+	background-image: url("../images/download.gif");
+	background-repeat: no-repeat;
+	background-position: 0 .5em;
+}
+
+.edit_icon, .edit_icon2 {
+	padding-left: 14px;
+	background-image: url("../images/edit.gif");
+	background-repeat: no-repeat;
+	background-position: 0 .5em;
+}
+
+.launch_icon, .launch_icon2 {
+	padding-left: 14px;
+	background-image: url("../images/launch.gif");
+	background-repeat: no-repeat;
+	background-position: 0 .5em;
+}
+
+.report_icon, .report_icon2 {
+	padding-left: 14px;
+	background-image: url("../images/generate-report.gif");
+	background-repeat: no-repeat;
+	background-position: 0 .5em;
+}
+
+.view_icon, .view_icon2 {
+	padding-left: 14px;
+	background-image: url("../images/query-artifacts.gif");
+	background-repeat: no-repeat;
+	background-position: 0 .5em;
+}
+
+/* Extra spacing for alternate icon divs */
+.add_icon2, .download_icon2, .edit_icon2, .launch_icon2, .report_icon2, .view_icon2 {
+	margin-bottom: 4px;
+}
+
+#activitybox ul {
+	margin-top: 0;
+	margin-left: 0;
+	margin-bottom: 0;
+	padding: 0;
+	margin-top: 3px;
+}
+
+#activitybox ul li {
+	padding-left: 8px;
+	margin: 0 0 3px 6px;
+	list-style-type: none;
+	background-image: url("../images/bullet-small.gif");
+	background-repeat: no-repeat;
+	background-position: .1em .6em;
+}
+
+.doctable_tasknav {	
+	font-family: Verdana, Arial, Helvetica, sans-serif !important;
+	font-size: xx-small;
+	voice-family: "\"}\"";
+	voice-family: inherit;
+	font-size: x-small;
+	margin: 5px 0 5px 2px;
+}
+
+.doctable_footer {
+	font-size: x-small;
+	margin: 2px 0 0 2px;
+}
+
+.uploadDocForm {
+	margin-top: 5px;
+}
+
+h1.alm_h1 {
+	margin-top: 0 !important;
+}
+
+
+/* Styles for document tables */
+table.documents {
+	width: 100%;
+}
+
+.documents .col1 {
+	width: 50%;
+}
+
+.documents .col2 {
+	width: 15%;
+}
+
+.documents .col3 {
+	width: 50%;
+}
+
+.documents .col4 {
+	width: 5%;
+}
+
+.documents .col5 {
+	width: 10%;
+}
+
+.documents .col6 {
+	width: 25%;
+}
+
+/* Styles for resource_links tables */
+table.resource_links {
+	width: 100%;
+}
+
+.resource_links .col1 {
+	width: 50%;
+}
+
+.resource_links .col2 {
+	width: 50%;
+}
+
+/* Styles for milestone tables */
+table.milestones {
+	width: 100%;
+}
+
+.milestones .col1 {
+	width: 50%;
+}
+
+.milestones .col2 {
+	width: 30%;
+}
+
+.milestones .col3 {
+	width: 20%;
+}
+	
+.editTasknav {
+	font-family: Verdana, Arial, Helvetica, sans-serif !important;
+	font-size: xx-small;
+	voice-family: "\"}\"";
+	voice-family: inherit;
+	font-size: x-small;
+	text-align: right;
+	padding-top: 1px;
+	clear:both;
+}
+
+#projectprocess .h2, #projecthome .h2 {
+	margin-top: 0.25em;
+}
+
+.pagecomponent {
+	margin-top: 0.75em;
+	margin-bottom: 0.5em;
+}

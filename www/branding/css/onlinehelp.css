@@ -1,0 +1,131 @@
+/* Styles for Online Help */
+
+/*Specific to Help Docs*/
+
+body.docs #toc li, body.docs #toc li li {
+	background-image: url(../images/strich.gif);
+	background-repeat: no-repeat;
+	background-position: .5em .5em;
+}
+
+body.docs div#toc {
+	font-family: Verdana, Helvetica, Arial, sans-serif;
+	font-size: xx-small;
+	voice-family: "\"}\"";
+	voice-family: inherit;
+	font-size: x-small;
+}
+
+body.docs div.docs {
+	background-color: #fff;
+	border-left: 1px solid #ddd;
+	border-top: 1px solid #ddd;
+}
+
+body.docs {
+	background: #eee url(../images/help_logo.gif) top right no-repeat !important;
+}
+
+body#legalnotices {
+	background-image: none !important;
+}
+
+body.docs #toc {
+	position: absolute;
+	top: 61px;
+	left: 0px;
+	width: 120px;
+	padding: 0 20px 0 0;
+}
+
+body.docs #toc ul, #toc ol {
+	margin-left: 0;
+	padding-left: 0;
+}
+
+body.docs #toc li {
+	margin-top: 7px;
+	padding-left: 10px;
+	list-style-type: none;
+}
+
+body.docs div.docs {
+	margin: 61px 0 0 150px;
+	padding: 1em 2em 1em 1em !important;
+}
+
+.docs h3, .docs h4 {
+	margin-bottom: .1em;
+	padding-top: .3em;
+}
+
+body.docs {
+	margin: 0;
+	padding: 0;
+}
+
+.docs {
+	line-height: 1.4;
+}
+
+.docs h1, .docs h2, .docs h3 {
+	font-family: Georgia, "Times New Roman", serif !important;
+}	
+	
+.docs h1 {
+	color: #000;
+	font-size: 1.6em;
+	font-weight: bold;
+}
+.docs h2 {
+	color: #000;
+	border-bottom: 2px solid #666;
+	margin: 0;
+	margin-top: 12px;
+	font-size: 1.3em;
+	border:0px;
+}
+
+.docs h3 {
+	color: #000;
+	border-bottom: 1px solid #666;
+	margin: 0;
+	margin-top: 1em;
+	font-size: 1.1em;
+	border:0px;
+}
+
+.docs h4 {
+	color: #000;
+	font-weight: bold;
+	margin-top: 1em;
+	border:0px;
+}
+
+.docs th {
+	background-color: #bbb;
+}
+
+.doclayout th {
+	background-color: #fff;
+}
+
+.doclayout th {
+	width: 12em;
+}
+
+.docs dt {
+	margin-top: 20px;
+}
+
+.docsummary, .doclinks {
+	background-color: #d3e3ee; 
+	padding: 1px 6px 12px 6px; 
+  margin-left: -0.5em; 
+  margin-right: -0.5em;
+}
+
+.doclinks {
+	margin-top: 1.5em;
+	background-color: #E2F9E3;
+}
