@@ -27,6 +27,81 @@
     <!-- Load the environment variables -->
     <property environment="env"/>
 
+
+    <!-- ================= -->
+    <!--  C H E C K O U T  -->
+    <!-- ================= -->
+    <target name="checkout"
+            depends="-init"
+            description="Export module audiveris from CVS.">
+
+	<delete verbose="${verbose}" dir="${export.dir}"/>
+
+	<!-- Nota : Use of export triggers a bug in ant cvs, so this
+	     workaround for first checking out everything, then
+	     updating for the desired tag. Correct direct command
+	     should be : line="export -r ${tag.version} audiveris"
+	     -->
+	<cvs
+ 	    cvsRoot=":pserver:${cvs.login}:${cvs.password}@audiveris.dev.java.net:/cvs"
+ 	    dest="${export.dir}">
+	    <commandline>
+		<argument line="checkout audiveris"/>
+	    </commandline>
+	
+	    <commandline>
+		<argument line="update -r ${tag.version} audiveris"/>
+	    </commandline>
+	</cvs>
+
+    </target>
+
+    <!-- ============================= -->
+    <!--  B U I L D - C H E C K O U T  -->
+    <!-- ============================= -->
+    <target name="build-checkout"
+	    description="Build the checkout">
+	<ant
+	    dir="${export.dir}/audiveris/src"
+	    inheritAll="false">
+	    <target name="dist"/>
+	</ant>
+
+    </target>
+
+    <!-- ============================= -->
+    <!--  B U I L D - F R O M - C V S  -->
+    <!-- ============================= -->
+    <target name="build-from-CVS"
+	    depends="checkout, build-checkout"
+	    description="Build everything from CVS" />
+    
+    <!-- ============= -->
+    <!--  F O R M A T  -->
+    <!-- ============= -->
+    <target name="format"
+	    description="Format Java source with Jalopy.">
+	<jalopy
+	    convention="${dev.dir}/java-convention.xml"
+	    history="file"
+	    historymethod="adler32"
+	    loglevel="info"
+	    threads="1"
+	    classpathref="build.classpath" >
+	    <fileset dir="${src.dir}">
+		<include name="**/*.java" />
+		<exclude name="**/package-info.java"/>
+	    </fileset>
+	</jalopy>
+    </target>
+    
+    <!-- ===================== -->
+    <!--  P R O P E R T I E S  -->
+    <!-- ===================== -->
+    <target name="properties"
+        description="Print out all properties for the build file.">
+        <echoproperties/>
+    </target>
     
     <!-- ======== -->
     <!--  S A V E -->
@@ -65,14 +140,6 @@
 	    </fileset>
 	</copy>
     </target>
-    
-    <!-- ======= -->
-    <!--  U M L  -->
-    <!-- ======= -->
-    <target name="uml"
-            depends="-uml"
-	    description="Generation of UML drawings"/>
-    
 
     <target name="global-update" description="garbage">
         <replaceregexp replace=""

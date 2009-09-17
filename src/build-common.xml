@@ -30,14 +30,6 @@
 	</classpath>
     </taskdef>
     
-    <!-- ===================== -->
-    <!--  P R O P E R T I E S  -->
-    <!-- ===================== -->
-    <target name="properties"
-        description="Print out all properties for the build file.">
-        <echoproperties/>
-    </target>
-    
     <!-- ========================= -->
     <!--  - B U I L D - I C O N S  -->
     <!-- ========================= -->
@@ -141,25 +133,6 @@
 	</zip>
     </target>
     
-    <!-- =============== -->
-    <!--  - F O R M A T  -->
-    <!-- =============== -->
-    <target name="-format">
-	<!--          description="Format Java source with Jalopy." -->
-	<jalopy
-	    convention="${dev.dir}/java-convention.xml"
-	    history="file"
-	    historymethod="adler32"
-	    loglevel="info"
-	    threads="1"
-	    classpathref="build.classpath" >
-	    <fileset dir="${src.dir}">
-		<include name="**/*.java" />
-		<exclude name="**/package-info.java"/>
-	    </fileset>
-	</jalopy>
-    </target>
-    
     <!-- =========== -->
     <!--  - I N I T  -->
     <!-- =========== -->
@@ -180,7 +153,7 @@
     <!--  - J A V A D O C - B U I L D  -->
     <!-- ============================= -->
     <target name="-javadoc-build"
-            depends="-uml">
+            depends="uml">
         <!--         description="Generate project documentation." -->
         
 <!--         <echo>DEBUG build-common -javadoc-build</echo> -->
@@ -365,12 +338,12 @@ SplashScreen-Image: ../examples/chula.png
 
     </target>
 
-    <!-- ========= -->
-    <!--  - U M L  -->
-    <!-- ========= -->
-    <target name="-uml">
-	<!-- Generation of UML drawings with Umlet utility -->
-
+    <!-- ======= -->
+    <!--  U M L  -->
+    <!-- ======= -->
+    <target name="uml"
+	    description="Generation of UML drawings with Umlet utility">
+	
 	<for param="file">
 	    <path>
 		<fileset dir="${src.dir}" includes="**/*.uxf">
