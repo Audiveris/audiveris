@@ -493,7 +493,9 @@ public class Main
      */
     private static boolean isWindows ()
     {
-        logger.info("OS is '" + System.getProperty("os.name") + "'");
+        if (logger.isFineEnabled()) {
+            logger.fine("OS is '" + System.getProperty("os.name") + "'");
+        }
 
         return System.getProperty("os.name")
                      .toLowerCase()
