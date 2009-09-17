@@ -244,7 +244,7 @@ public class ScoreChecker
                     timeSignature.addError(
                         "Time signature with no rational value");
                 } else { // Normal complex shape
-                    logger.info("*** complex " + timeSignature);
+                    logger.fine("Complex " + timeSignature);
                 }
             } else if (shape == Shape.NO_LEGAL_TIME) {
                 timeSignature.addError("Illegal " + timeSignature);
