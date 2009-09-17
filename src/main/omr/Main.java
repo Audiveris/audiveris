@@ -115,10 +115,14 @@ public class Main
     /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Tells if using Mac OS X for special GUI functionality */
-    public static final boolean MAC_OS_X = System.getProperty("os.name")
-                                                 .toLowerCase()
-                                                 .startsWith("mac os x");
+    /** Tells if using Linux */
+    public static final boolean LINUX = isLinux();
+
+    /** Tells if using Mac OS X */
+    public static final boolean MAC_OS_X = isMac();
+
+    /** Tells if using Windows */
+    public static final boolean WINDOWS = isWindows();
 
     /** Parameters read from CLI */
     private static CLI.Parameters parameters;
@@ -310,6 +314,9 @@ public class Main
     //---------------//
     // launchScripts //
     //---------------//
+    /**
+     * Launch the processing of scripts listed on command line
+     */
     public static void launchScripts ()
     {
         // Launch desired scripts in parallel
@@ -353,6 +360,9 @@ public class Main
     //--------------//
     // launchSheets //
     //--------------//
+    /**
+     * Launch the processing of sheets listed on command line
+     */
     public static void launchSheets ()
     {
         // Launch desired step on each sheet in parallel
@@ -444,6 +454,50 @@ public class Main
                 logger.fine("End of main");
             }
         }
+    }
+
+    //---------//
+    // isLinux //
+    //---------//
+    /**
+     * Are we using a Linux OS
+     * @return true if so
+     */
+    private static boolean isLinux ()
+    {
+        return System.getProperty("os.name")
+                     .toLowerCase()
+                     .startsWith("Linux");
+    }
+
+    //-------//
+    // isMac //
+    //-------//
+    /**
+     * Are we using a Mac OS
+     * @return true if so
+     */
+    private static boolean isMac ()
+    {
+        return System.getProperty("os.name")
+                     .toLowerCase()
+                     .startsWith("mac os x");
+    }
+
+    //-----------//
+    // isWindows //
+    //-----------//
+    /**
+     * Are we using a Windows OS
+     * @return true if so
+     */
+    private static boolean isWindows ()
+    {
+        logger.info("OS is '" + System.getProperty("os.name") + "'");
+
+        return System.getProperty("os.name")
+                     .toLowerCase()
+                     .startsWith("windows");
     }
 
     //-------------//
