@@ -195,7 +195,7 @@ public class IconManager
         SymbolIcon icon = symbolIcons.get(name);
 
         if (icon == null) {
-            // Look for description file
+            // Look for description file as a resource
             String resName = "/icons/" + name + FILE_EXTENSION;
 
             if (logger.isFineEnabled()) {
@@ -206,15 +206,19 @@ public class IconManager
 
             InputStream is = Main.class.getResourceAsStream(resName);
 
-            // Brenton patch
+            // Brenton patch: Look for description file as a local file
             if (is == null) {
                 try {
-                    String iconFolder = Main.getIconsFolder()
-                                            .getPath();
-                    File   iconFile = new File(
-                        iconFolder,
+                    File iconFile = new File(
+                        Main.getIconsFolder(),
                         name + FILE_EXTENSION);
                     is = new FileInputStream(iconFile);
+
+                    if (logger.isFineEnabled()) {
+                        logger.fine(
+                            "Trying to load Icon '" + name + "' from local " +
+                            iconFile);
+                    }
                 } catch (FileNotFoundException e) {
                     logger.fine("Cannot find icon file " + e.getMessage());
                 }
@@ -419,27 +423,6 @@ public class IconManager
         return rows;
     }
 
-    //------------//
-    // ARGBtoChar //
-    //------------//
-    /**
-     * Encode a pixel value using a table of 8 different chars for
-     * different gray levels
-     *
-     * @param argb the pixel value, in the ARGB format
-     * @return the proper char
-     */
-    private char ARGBtoChar (int argb)
-    {
-        int a = (argb & 0xff000000) >>> 24; // Alpha
-        int r = (argb & 0x00ff0000) >>> 16; // Red
-        int g = (argb & 0x0000ff00) >>> 8; // Green
-        int b = (argb & 0x000000ff) >>> 0; // Blue
-        int index = (int) Math.rint((a * (r + g + b)) / (108.0 * 255)); // 3 * 36
-
-        return charTable[index];
-    }
-
     //----------//
     // getAlpha //
     //----------//
@@ -488,6 +471,27 @@ public class IconManager
         }
 
         return jaxbContext;
+    }
+
+    //------------//
+    // ARGBtoChar //
+    //------------//
+    /**
+     * Encode a pixel value using a table of 8 different chars for
+     * different gray levels
+     *
+     * @param argb the pixel value, in the ARGB format
+     * @return the proper char
+     */
+    private char ARGBtoChar (int argb)
+    {
+        int a = (argb & 0xff000000) >>> 24; // Alpha
+        int r = (argb & 0x00ff0000) >>> 16; // Red
+        int g = (argb & 0x0000ff00) >>> 8; // Green
+        int b = (argb & 0x000000ff) >>> 0; // Blue
+        int index = (int) Math.rint((a * (r + g + b)) / (108.0 * 255)); // 3 * 36
+
+        return charTable[index];
     }
 
     //-------------//
