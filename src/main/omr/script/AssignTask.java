@@ -140,11 +140,6 @@ public class AssignTask
             sb.append(" compound");
         }
 
-        if (shape != null) {
-            sb.append(" ")
-              .append(shape);
-        }
-
         sb.append(" ")
           .append(shape);
 
