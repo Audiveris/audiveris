@@ -36,7 +36,6 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
@@ -52,6 +51,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.*;
+import omr.score.ui.ScoreDependent;
 
 /**
  * Class <code>GuiActions</code> gathers individual actions trigerred from the
@@ -61,7 +61,7 @@ import javax.swing.*;
  * @version $Id$
  */
 public class GuiActions
-    extends AbstractBean
+    extends ScoreDependent
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -163,6 +163,7 @@ public class GuiActions
      *  Action that opens a window where units options (logger level, constants)
      * can be managed
      * @param e the event that triggered this action
+     * @return the SAF task
      */
     @Action
     public Task defineOptions (ActionEvent e)
@@ -190,7 +191,7 @@ public class GuiActions
      * Action to erase the dump the content of all event services
      * @param e the event which triggered this action
      */
-    @Action
+    @Action(enabledProperty = "sheetAvailable")
     public void dumpEventServices (ActionEvent e)
     {
         SheetsController.getInstance()
