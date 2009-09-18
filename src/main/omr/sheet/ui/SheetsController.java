@@ -246,12 +246,18 @@ public class SheetsController
         SelectionService.dumpSubscribers(
             "Sheet events",
             sheet.getSelectionService());
-        SelectionService.dumpSubscribers(
-            "hLag events",
-            sheet.getHorizontalLag().getSelectionService());
-        SelectionService.dumpSubscribers(
-            "vLag events",
-            sheet.getVerticalLag().getSelectionService());
+
+        if (sheet.getHorizontalLag() != null) {
+            SelectionService.dumpSubscribers(
+                "hLag events",
+                sheet.getHorizontalLag().getSelectionService());
+        }
+
+        if (sheet.getVerticalLag() != null) {
+            SelectionService.dumpSubscribers(
+                "vLag events",
+                sheet.getVerticalLag().getSelectionService());
+        }
     }
 
     //---------//
