@@ -25,8 +25,8 @@
     <action domain="Text" section="EDIT"   class="omr.glyph.ui.TextAreaBrowser" method="showVerticalHistogram" />
 -->
     <!-- Just as an example -->
-    <action domain="Misc" section="END"    class="omr.ui.GuiActions"            method="dumpEventServices"/>
-    <action domain="Misc" section="END"    class="MyClass"                      method="dumpCurrentScore" />
-    <action domain="Misc" section="END"    class="MyClass"                      method="dumpCurrentScript" />
+    <action domain="Debug" section="EDIT"  class="omr.ui.GuiActions"            method="dumpEventServices"/>
+    <action domain="Debug" section="EDIT"  class="MyClass"                      method="dumpCurrentScript" />
+    <action domain="Debug" section="END"   class="MyClass"                      method="dumpCurrentScore" />
 
 </actions>
