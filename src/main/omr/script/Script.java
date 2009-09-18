@@ -141,15 +141,14 @@ public class Script
     // dump //
     //------//
     /**
-     * Meant for debug, dumps the script to the output console
+     * Meant for debug
      */
     public void dump ()
     {
-        System.out.println();
-        System.out.println(toString());
+        logger.info(toString());
 
         for (ScriptTask task : tasks) {
-            System.out.println(task.toString());
+            logger.info(task.toString());
         }
     }
 
