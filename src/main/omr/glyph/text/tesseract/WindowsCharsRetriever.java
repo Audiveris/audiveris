@@ -13,6 +13,7 @@ package omr.glyph.text.tesseract;
 
 import omr.log.Logger;
 
+import omr.util.ClassUtil;
 import omr.util.Implement;
 
 import net.gencsoy.tesjeract.EANYCodeChar;
@@ -37,31 +38,6 @@ class WindowsCharsRetriever
     private static final Logger logger = Logger.getLogger(
         WindowsCharsRetriever.class);
 
-    static {
-        /** Check that TESSDATA_PREFIX environment variable is set */
-        String prefix = System.getenv("TESSDATA_PREFIX");
-
-        if (prefix == null) {
-            logger.severe(
-                "TESSDATA_PREFIX environment variable is not set." +
-                " It must point to the parent folder of \"tessdata\"" +
-                ", typically \"" + TesseractOCR.ocrHome + '"');
-        } else {
-            /** Check that tessdata folder is found */
-            File tessdata = new File(prefix, "tessdata");
-
-            if (!tessdata.exists()) {
-                logger.severe("\"tessdata\" folder should be in " + prefix);
-            }
-        }
-
-        /** Load needed libraries */
-        System.load(
-            new File(TesseractOCR.ocrHome, "tessdll.dll").getAbsolutePath());
-        System.load(
-            new File(TesseractOCR.ocrHome, "tesjeract.dll").getAbsolutePath());
-    }
-
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -69,6 +45,7 @@ class WindowsCharsRetriever
      */
     public WindowsCharsRetriever ()
     {
+        initialize();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -88,5 +65,42 @@ class WindowsCharsRetriever
         Tesjeract tess = new Tesjeract(languageCode);
 
         return tess.recognizeAllWords(tifImageBuffer);
+    }
+
+    //------------//
+    // initialize //
+    //------------//
+    /**
+     * Responsible for checking and initializing this retriever
+     */
+    private void initialize ()
+    {
+        /** Check that TESSDATA_PREFIX environment variable is set */
+        String prefix = System.getenv("TESSDATA_PREFIX");
+
+        if (prefix == null) {
+            throw new RuntimeException(
+                "TESSDATA_PREFIX environment variable is not set");
+        } else {
+            /** Check that prefix ends with a "/" or "\" */
+            if (!prefix.endsWith("/") && !prefix.endsWith("\\")) {
+                throw new RuntimeException(
+                    "TESSDATA_PREFIX (" + prefix +
+                    ") should end with a '/' or '\\'");
+            }
+
+            /** Check that tessdata folder is found */
+            File tessdata = new File(prefix, "tessdata");
+
+            if (!tessdata.exists()) {
+                throw new RuntimeException(
+                    "\"tessdata\" folder should be in " + prefix);
+            }
+        }
+
+        /** Load needed libraries */
+        ClassUtil.load(new File(TesseractOCR.ocrHome, "tessdll.dll"));
+
+        ClassUtil.load(new File(TesseractOCR.ocrHome, "tesjeract.dll"));
     }
 }

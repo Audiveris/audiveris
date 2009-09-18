@@ -102,8 +102,13 @@ public abstract class Text
 
         box = sentence.getSystemContour();
 
-        // Proper font
-        font = TextInfo.basicFont.deriveFont((float) sentence.getFontSize());
+        // Proper font ?
+        if (sentence.getFontSize() != null) {
+            font = TextInfo.basicFont.deriveFont(
+                (float) sentence.getFontSize());
+        } else {
+            font = TextInfo.basicFont;
+        }
 
         ///determineFontSize();
         if (logger.isFineEnabled()) {

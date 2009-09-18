@@ -289,9 +289,12 @@ public class ScoreChecker
                     sig = new TimeSignature(measure, staff, bestSig);
 
                     try {
-                        logger.info(
-                            sig.getContextString() + " Created time sig " +
-                            sig.getNumerator() + "/" + sig.getDenominator());
+                        if (logger.isFineEnabled()) {
+                            logger.fine(
+                                sig.getContextString() + " Created time sig " +
+                                sig.getNumerator() + "/" +
+                                sig.getDenominator());
+                        }
                     } catch (InvalidTimeSignature ignored) {
                         logger.warning("InvalidTimeSignature", ignored);
                     }

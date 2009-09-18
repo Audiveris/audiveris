@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.util;
 
+import omr.log.Logger;
+
+import java.io.File;
 
 /**
  * Class <code>ClassUtil</code> provides utilities related to Class handling.
@@ -20,6 +23,11 @@ package omr.util;
  */
 public class ClassUtil
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(ClassUtil.class);
+
     //~ Methods ----------------------------------------------------------------
 
     //-----------------//
@@ -46,7 +54,7 @@ public class ClassUtil
         // More complex case, return the caller, just before the skipped classes
         // First, search back to a method in the skipped classes, if any
         int ix;
-        searchingForSkipped:
+        searchingForSkipped: 
         for (ix = 0; ix < stack.length; ix++) {
             StackTraceElement frame = stack[ix];
             String            cname = frame.getClassName();
@@ -59,7 +67,7 @@ public class ClassUtil
         }
 
         // Now search for the first frame before the skipped classes
-        searchingForNonSkipped:
+        searchingForNonSkipped: 
         for (; ix < stack.length; ix++) {
             StackTraceElement frame = stack[ix];
             String            cname = frame.getClassName();
@@ -76,6 +84,25 @@ public class ClassUtil
 
         // We haven't found a suitable frame
         return null;
+    }
+
+    //------//
+    // load //
+    //------//
+    /**
+     * Try to load a (library) file
+     * @param file the file to load, which must point to the precise location
+     */
+    public static void load (File file)
+    {
+        String path = file.getAbsolutePath();
+
+        try {
+            System.load(path);
+        } catch (Throwable ex) {
+            logger.warning("Could not load " + path, ex);
+            throw new RuntimeException(ex);
+        }
     }
 
     //--------//

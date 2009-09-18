@@ -650,7 +650,7 @@ public class Sentence
                             glyph.getId());
                     }
                 } else {
-                    logger.warning("No OCR line for glyph #" + glyph.getId());
+                    logger.fine("No OCR line for glyph #" + glyph.getId());
                 }
             }
         }
