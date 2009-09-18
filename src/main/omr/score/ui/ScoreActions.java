@@ -354,9 +354,6 @@ public class ScoreActions
 
             // Part midi program
             scorePart.setMidiProgram(scorePart.getDefaultProgram());
-
-            // Replicate the score tempo
-            scorePart.setTempo(score.getDefaultTempo());
         }
 
         // Score global data

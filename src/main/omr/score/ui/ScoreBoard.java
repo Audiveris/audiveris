@@ -19,7 +19,6 @@ import omr.log.Logger;
 import omr.score.MeasureRange;
 import omr.score.Score;
 import omr.score.entity.ScorePart;
-import omr.score.entity.SystemPart;
 import omr.score.midi.MidiAbstractions;
 
 import omr.script.ParametersTask;
@@ -659,21 +658,6 @@ public class ScoreBoard
 
                 return true;
             }
-        }
-
-        //------------//
-        // commitPart //
-        //------------//
-        public void commitPart ()
-        {
-            // Part name
-            scorePart.setName(name.getText());
-
-            // Part midi program
-            scorePart.setMidiProgram(midiBox.getSelectedIndex() + 1);
-
-            // Replicate the score tempo
-            scorePart.setTempo(midiPane.tempo.getValue());
         }
 
         //--------------//

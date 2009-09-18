@@ -669,11 +669,11 @@ public class ScoreExporter
                         toTenths(current.system.getTopLeft().y));
 
                     // Default tempo?
-                    if (current.part.getTempo() != null) {
+                    if (score.getTempo() != null) {
                         Sound sound = factory.createSound();
                         current.pmMeasure.getNoteOrBackupOrForward()
                                          .add(sound);
-                        sound.setTempo(createDecimal(current.part.getTempo()));
+                        sound.setTempo(createDecimal(score.getTempo()));
                     }
 
                     // Default velocity?

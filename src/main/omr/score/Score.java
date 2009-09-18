@@ -714,6 +714,19 @@ public class Score
         return tempo;
     }
 
+    //--------------//
+    // getViewIndex //
+    //--------------//
+    /**
+     * Report the index of the provided view in the sequence of all views
+     * @param view the view ro look up
+     * @return the sequence index, or -1 if not found
+     */
+    public int getViewIndex (ScoreView view)
+    {
+        return views.indexOf(view);
+    }
+
     //-----------//
     // setVolume //
     //-----------//
@@ -738,19 +751,6 @@ public class Score
     public Integer getVolume ()
     {
         return volume;
-    }
-
-    //--------------//
-    // getViewIndex //
-    //--------------//
-    /**
-     * Report the index of the provided view in the sequence of all views
-     * @param view the view ro look up
-     * @return the sequence index, or -1 if not found
-     */
-    public int getViewIndex (ScoreView view)
-    {
-        return views.indexOf(view);
     }
 
     //--------//

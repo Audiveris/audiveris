@@ -15,8 +15,8 @@ import omr.log.Logger;
 
 import omr.score.MeasureRange;
 import omr.score.Score;
-import omr.score.ui.ScoreActions;
 import omr.score.ScoreExporter;
+import omr.score.ui.ScoreActions;
 
 import omr.util.Worker;
 
@@ -73,7 +73,7 @@ public class MidiAgent
         /** Playback is not started or paused, sequence position is irrelevant */
         STOPPED,
         /** Playback has started */
-        PLAYING,
+        PLAYING, 
         /** Playback is paused, current sequence position is kept */
         PAUSED;
     }
@@ -223,7 +223,9 @@ public class MidiAgent
         if (ScoreActions.checkParameters(score)) {
             logger.info(
                 "Playing " + score.getRadix() +
-                ((measureRange != null) ? (" " + measureRange) : " ") + "...");
+                ((measureRange != null) ? (" " + measureRange) : "") +
+                " tempo:" + score.getTempo() + " volume:" + score.getVolume() +
+                " ...");
 
             // Make sure the document (and the Midi sequence) is available
             retrieveDocument(measureRange);

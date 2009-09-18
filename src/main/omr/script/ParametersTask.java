@@ -147,9 +147,6 @@ public class ParametersTask
 
                 // Part midi program
                 scorePart.setMidiProgram(data.program);
-
-                // Replicate the score tempo
-                scorePart.setTempo(tempo);
             } catch (Exception ex) {
                 logger.warning(
                     "Error in script Parameters part#" + (i + 1),

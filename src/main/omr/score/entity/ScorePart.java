@@ -59,9 +59,6 @@ public class ScorePart
     /** Instrument MIDI program, if any */
     private Integer midiProgram; // = 71;
 
-    /** Tempo information, if any */
-    private Integer tempo; // = 60;
-
     /** List of staff ids */
     private List<Integer> ids = new ArrayList<Integer>();
 
@@ -235,22 +232,6 @@ public class ScorePart
     public List<Integer> getStaffIds ()
     {
         return ids;
-    }
-
-    //----------//
-    // setTempo //
-    //----------//
-    public void setTempo (Integer tempo)
-    {
-        this.tempo = tempo;
-    }
-
-    //----------//
-    // getTempo //
-    //----------//
-    public Integer getTempo ()
-    {
-        return tempo;
     }
 
     //--------//
