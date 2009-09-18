@@ -19,6 +19,7 @@ import omr.log.Logger;
 import omr.score.MeasureRange;
 import omr.score.Score;
 import omr.score.entity.ScorePart;
+import omr.score.entity.SystemPart;
 import omr.score.midi.MidiAbstractions;
 
 import omr.script.ParametersTask;
@@ -94,7 +95,16 @@ public class ScoreBoard
         panes.add(new LanguagePane());
         panes.add(midiPane = new MidiPane());
         panes.add(new ScorePane());
-        panes.add(new MeasurePane());
+
+        // Add measure pane iff we have measures
+        if (!score.getSystems()
+                  .isEmpty() &&
+            !score.getFirstSystem()
+                  .getFirstPart()
+                  .getMeasures()
+                  .isEmpty()) {
+            panes.add(new MeasurePane());
+        }
 
         // Layout
         defineLayout();
@@ -117,6 +127,7 @@ public class ScoreBoard
             try {
                 // Just launch the prepared task
                 task.launch(sheet);
+
                 // Also carry out the actions not covered by the task
                 for (Pane pane : panes) {
                     pane.commit();
@@ -410,17 +421,16 @@ public class ScoreBoard
             } else {
                 rangeBox.setSelected(false);
                 firstId.setEnabled(false);
-
-                if (score.getFirstSystem() != null) {
-                    firstId.setValue(
-                        score.getFirstSystem().getFirstPart().getFirstMeasure().getId());
-                }
-
                 lastId.setEnabled(false);
 
-                if (score.getLastSystem() != null) {
+                try {
+                    firstId.setValue(
+                        score.getFirstSystem().getFirstPart().getFirstMeasure().getId());
                     lastId.setValue(
                         score.getLastSystem().getLastPart().getLastMeasure().getId());
+                } catch (Exception ex) {
+                    logger.warning("Error on score measure range", ex);
+                    rangeBox.setEnabled(false); // Safer
                 }
             }
         }
