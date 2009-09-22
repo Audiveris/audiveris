@@ -15,8 +15,7 @@
         <link rel="stylesheet" type="text/css" href=
         "branding/css/tigris.css" />
         <link rel="stylesheet" type="text/css" href="branding/css/inst.css" />
-        <script type="text/javascript" src="branding/js/util.js">
-</script>
+
         <script type="text/javascript">
 //<![CDATA[
         // Special nonav prefix for java.net hosted files
@@ -50,7 +49,10 @@
         <p>
             <em>Updated: <script type="text/javascript">
 //<![CDATA[
-            document.write(getCVSDate("$Id$"));
+            var as = "$Id$".split(" ");
+            var d = new Date(as[3]);
+            var months = new Array("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+            document.write(d.getDate() + "-" + months[d.getMonth()] + "-" + d.getFullYear());
             //]]>
             </script></em>
         </p>
@@ -61,8 +63,8 @@
                 the scanned music sheet input to the MusicXML output.
             </p>
             <p>
-                <strong>Version 3.2</strong>, released on 20-Sep-2009, provides
-                many new features, most notably the integration with
+                <strong>Version 3.2a</strong>, released on 22-Sep-2009, provides
+                a lot of new features, most notably the integration with
                 <strong>Google Tesseract OCR</strong> (available under Windows
                 only for the time being).
             </p>
@@ -117,8 +119,8 @@
             <h3>
                 <a name="Foreseen-Contributions" id=
                 "Foreseen-Contributions">Foreseen Contributions</a>
-
             </h3>
+
             <ul>
                 <li>Implement the connection with Tesseract OCR for <strong>
                     Linux</strong> and for <strong>Mac OS</strong>. So far this
@@ -333,11 +335,11 @@
                 document.write("<iframe src='docs/manual/chula.xml.html' width='100%' height='200' frameborder='0'><\/iframe>");
             //]]>
             </script>
+
             <h3>
                 Download
             </h3>
             <div class="filebrowse">
-
                 <ul>
                     <li class="leafnode">
                         <a href=
@@ -345,6 +347,7 @@
                         Download area</a>: The latest stable release is
                         provided in two distributions:
                         <ol>
+
                             <li>A binary release with documentation meant for
                             end users,
                             </li>
@@ -353,7 +356,6 @@
                             training material.
                             </li>
                         </ol>
-
                     </li>
                     <li class="leafnode">
                         <a href=
@@ -361,42 +363,42 @@
                         CVS repository</a>: For the very latest version of any
                         software item.
                     </li>
+
                 </ul>
             </div>
             <h3>
                 Installation
             </h3>
-
             <p>
                 Just extract the binary (or full) release in the directory of
                 your choice. The Audiveris main jar file is located in the
                 <strong>dist</strong> sub-folder.
             </p>
+
             <p>
                 Launch the program by a double-click on the jar file, or use a
                 CLI command such as:<br />
                 <code>java -jar
                 <i>&lt;install-dir&gt;</i>/dist/audiveris-3.2.jar</code>
-
             </p>
             <p>
                 <strong>Very important notice</strong>: OCR is available under
                 Windows only and needs:
             </p>
+
             <ul>
                 <li>
                     <strong>Microsoft VC++ 2008</strong> to be installed
                     beforehand (the free express edition is fine).
                 </li>
-
                 <li>The system environment variable
                 <strong>TESSDATA_PREFIX</strong> to be set to
                 <strong><i>&lt;install-dir&gt;</i>/ocr/</strong> (including the
                 final "/" character) so that Tesseract software can retrieve
                 its own data.
                 </li>
-            </ul>
 
+            </ul>
             <h3>
                 Documentation (also in archives)
             </h3>
@@ -416,5 +418,6 @@
             </div><br />
             <br />
         </div>
+
     </body>
 </html>
