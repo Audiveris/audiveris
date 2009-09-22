@@ -37,19 +37,17 @@
             Audiveris Quick Example
         </h1>
         <address>
-            Author: <a href="mailto:users@audiveris.dev.java.net">Herv&eacute;
-            Bitteur</a>
-
-        </address>
-        <address>
             Updated: <script type="text/javascript">
 //<![CDATA[
-            document.write(parent.parent.getCVSDate("$Id$"));
+            var as = "$Id$".split(" ");
+            var d = new Date(as[3]);
+            var months = new Array("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+            document.write(d.getDate() + "-" + months[d.getMonth()] + "-" + d.getFullYear());
             //]]>
             </script>
         </address>
         <p>
-            Purpose of this document is to describe a very simple yet realistic
+            The purpose of this document is to describe a very simple, yet realistic,
             use of Audiveris, so that you can get acquainted with some of its
             major features.
         </p>
@@ -57,7 +55,7 @@
 
             <b>Nota</b>: Your own experience on the same music sheet may vary
             because some parameters may have evolved, for example you may be
-            using a different Neural Network and therefore the glyph
+            using a different Neural Network definition file and therefore the glyph
             recognition may produce different results.
         </p>
         <!-- ======================= Initial actions ======================= -->
@@ -73,7 +71,7 @@
             Audiveris distribution archive.
             </li>
             <li>Then the easiest way is to double-click on the jar file named
-            <b>audiveris-3.2.jar</b> located in the <b>dist</b> subfolder.
+            <b>audiveris-3.2a.jar</b> located in the <b>dist</b> subfolder.
             </li>
             <li>You can also use the following command:
                 <p>
@@ -97,7 +95,7 @@
             From the <b><i>Sheet</i></b> menu, select the <b><i>Open</i></b>
 
             item and in the dialog box which appears, select the
-            <b>chula.png</b> file located in the <b>/examples</b> folder.
+            <b>chula.png</b> file located in the <b>examples</b> folder.
         </p>
         <p>
             This loads the image out of the selected file, and the application
@@ -127,7 +125,7 @@
         </p>
         <p>
             This opens a small dialog box about relevant score parameters. In
-            the <b>Text</b> section, select the <b>fra - French</b>
+            the <b>Text</b> section, select the "<b>fra - French</b>"
             alternative. Notice also that you have the ability to make this
             selection as the default for any score from now on, simply by
             putting a mark in the checkbox.<br />
@@ -221,7 +219,7 @@
         <div class="warningmessage">
             <b>Nota</b>: Your actual results may vary according to the
             environment, notably the value of the various application
-            parameters (which can be viewed and modified in the Options window)
+            parameters (which can be viewed and modified in the Tools|Options window)
             or even the training of the neural network.
         </div>
         <h3>
@@ -340,7 +338,7 @@
         </p>
         <p>
             This time there is no direct indication of a "guilty" glyph.
-            Clicking of this message moves us to the middle of measure 7 (of
+            Clicking on this message moves us to the middle of measure 7 (of
             part 1 in system 1).
         </p>
         <p>
@@ -359,24 +357,24 @@
             shapes as we did previously.
         </p>
         <p>
-            We have another way, since there are other beam hooks in sight: we
+            But we have another way, since there are other beam hooks in sight: we
             can make a "copy/paste" of the shape name.
         </p>
         <p>
             Select another beam hook (left click), and in the popup menu (right
-            click), select the "Remember BEAM_HOOK" item.
+            click), select the "Copy BEAM_HOOK" item.
         </p>
         <p>
 
-            <img src="../images/chula-remember.png" alt="Copy a shape" title=
+            <img src="../images/chula-copy.png" alt="Copy a shape" title=
             "Copy a known beam hook" />
         </p>
         <p>
             Then select (left click) the red beam hook glyph we want to assign,
-            and in the popup menu (right click), choose "Assign BEAM_HOOK"
+            and in the popup menu (right click), choose "Paste BEAM_HOOK"
         </p>
         <p>
-            <img src="../images/chula-assign-latest.png" alt="Paste a shape"
+            <img src="../images/chula-paste.png" alt="Paste a shape"
             title="Paste the beam hook shape" />
         </p>
         <h3>
@@ -389,7 +387,7 @@
         </p>
         <p>
             The situation is similar to the previous error. Selecting this
-            error moves us to the midle of measure 13 (of part 1 of system 2)
+            error moves us to the middle of measure 13 (of part 1 of system 2)
         </p>
 
         <p>
@@ -397,14 +395,14 @@
             title="Unrecognized sixteen rest shape" />
         </p>
         <p>
-            When we selecting the red glyph (a sixteenth rest), this time the
+            When we select the red glyph (a sixteenth rest), this time the
             SIXTEENTH_REST appears in the top 5. One click on the proper
             button, and the related shape is immediately assigned to the glyph
             at hand.
         </p>
         <p>
             You may have noted that in this top 5, the sixteen_rest shape was
-            listed with a red foreground color, to mean that the confidence was
+            listed with a red foreground color, to indicate that the confidence was
             too low. Actually the program uses the inverse of confidence, let's
             say a doubt, whose value (1.295) is above an acceptance threshold.
             You can also notice how fast the doubt value increases even within
@@ -480,7 +478,7 @@
         </p>
         <p>
 
-            Audiveris now provides the ability to manually compose a glyph by
+            A new feature of Audiveris is the ability to manually compose a glyph by
             selecting its desired sections, in the containing LAG.
         </p>
         <p>
@@ -499,7 +497,7 @@
             Normally, user selections are performed at <b>glyph</b> level. We
             can switch to selection at <b>section</b> level, in the
             <b>Views</b> menu, using the "<b>Enable section selection</b>"
-            item. A more direct way is to use the toggle button, in the
+            item. Only vertical sections can be selected for the time being. A more direct way is to use the toggle button, in the
             toolbar, which represents a bean.
         </p>
 
@@ -523,7 +521,7 @@
             simplified: You don't even have to release the mouse button when
             moving from one section to the other, simply browse the sections as
             you would do with an eraser, and all the touched sections will be
-            added to the selection. To really remove a given section from the
+            added to the selection in a "greedy" mode. To really remove a given section from the
             current selection, release the mouse button and press down the
             button again on the section to remove (always keeping the CTRL key
             down).
@@ -562,7 +560,7 @@
         <p>
             The recognition of textual glyphs is delegated to a companion tool,
             the Tesseract OCR engine. No tool is 100% perfect and Google makes
-            no exception here.
+            no exception here...
         </p>
         <p>
             The word "propose" (glyph #714) has been OCR'ed as something like
@@ -571,16 +569,21 @@
         </p>
         <ol>
 
-            <li>Select the glyph with a left-button click on the glyph in the
+            <li>Select the glyph with a left-button click in the
             Sheet display.
             </li>
             <li>The column on the right side of the application window is
-            dedicated to a series of boards (Pixel, Run, Section, Glyph, Focus,
+            dedicated to a series of boards arranged in a vertical sequence (Pixel, Run, Section, Glyph, Focus,
             Neural). Use the Glyph board to enter the proper content for this
             glyph (validate by pressing Enter) and select Direction as the role
             for this piece of text.
             </li>
         </ol>
+
+        <p>Remark: A text glyph, even with proper content, needs to be assigned a "role (direction, title, creator, etc) to be atranslated to a score entity.
+            Otherwise, it will appear in the score display, but with a gray color, and will mot be exported into the XML output.
+
+        </p>
         <p>
             <img src="../images/chula-text.png" alt="Correcting text content"
             title="The board for glyph parameters" />
@@ -602,7 +605,7 @@
         </h3>
         <p>
 
-            You can decide to store the script of your actions related to
+            You can decide to store the script of your user actions related to
             'chula' sheet, by selecting the <b><i>Store script</i></b> item in
             the <b><i>Sheet</i></b> menu.
         </p>
@@ -612,7 +615,7 @@
         </p>
 
         <p>
-            Note that unless you have set the application constant
+            Note that, unless you have set the application constant
             script.ScriptActions.closeConfirmation to false in the
             Tools|Options menu, if you close the current sheet without saving
             your script first you will be asked for saving the related script
@@ -645,9 +648,10 @@
             series of your manual actions done again. From that point on, you
             can make additional actions through the user interface, these
             actions will be added at the end of the sheet script. It's a
-            convenient way to work again on a previous session for example. If
-            you are curious, have a look at the 'chula.script' file, which is a
-            simple xml file where all your actions are easily recognized.
+            convenient way to work again on a previous session for example.
+        </p>
+        <p>If you are curious, have a look at the 'chula.script.xml' file, which is a
+            simple xml file where all your actions are easily recognized. Note that glyphs are defined only by the set of their member sections.
         </p>
         <!-- ======================== Output Actions ======================= -->
         <h2>
@@ -747,7 +751,7 @@
             stopping.
         </p>
         <p>
-            During the playback, the Score display is kept in sync, using a
+            During the playback, the Score display is kept in sync, using a moving
             (violet) vertical bar on the current time slot:<br />
             <img alt="" title="Time slot highlighted while playing" src=
             "../images/chula-midi-playing.png" />
@@ -800,7 +804,7 @@
         <p>
             We can simply connect another tool, thanks to the emerging MusicXML
             standard. For example you can download a free demo version of
-            Finale 2007, which for among other features correctly handles the
+            Finale 2007, which among other features correctly handles the
             repeat signs, and more.
         </p>
         <p>
