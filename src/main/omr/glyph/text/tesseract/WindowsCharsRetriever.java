@@ -99,8 +99,7 @@ class WindowsCharsRetriever
         }
 
         /** Load needed libraries */
-        ClassUtil.load(new File(TesseractOCR.ocrHome, "tessdll.dll"));
-
+        ClassUtil.load(new File(TesseractOCR.ocrHome, "tessdll.dll"));        
         ClassUtil.load(new File(TesseractOCR.ocrHome, "tesjeract.dll"));
     }
 }
