@@ -91,7 +91,7 @@ public class GlyphMenu
         popup = new JPopupMenu(); //------------------------------------------
 
         // Direct link to latest shape assigned
-        popup.add(new JMenuItem(new IdemAction()));
+        popup.add(new JMenuItem(new PasteAction()));
         popup.add(new JMenuItem(new CopyAction()));
 
         popup.addSeparator(); //----------------------------------------------
@@ -349,16 +349,16 @@ public class GlyphMenu
 
                 if (shape != null) {
                     setEnabled(true);
-                    putValue(NAME, "Remember " + shape);
-                    putValue(SHORT_DESCRIPTION, "Remember this shape");
+                    putValue(NAME, "Copy " + shape);
+                    putValue(SHORT_DESCRIPTION, "Copy this shape");
 
                     return;
                 }
             }
 
             setEnabled(false);
-            putValue(NAME, "Remember");
-            putValue(SHORT_DESCRIPTION, "No shape to remember");
+            putValue(NAME, "Copy");
+            putValue(SHORT_DESCRIPTION, "No shape to copy");
         }
     }
 
@@ -522,18 +522,49 @@ public class GlyphMenu
         }
     }
 
-    //------------//
-    // IdemAction //
-    //------------//
+    //-----------------//
+    // LargeSlurAction //
+    //-----------------//
     /**
-     * Assign the same latest shape to the glyph(s) at end
+     * Cleanup a glyph with focus on its slur shape
      */
-    private class IdemAction
+    private class LargeSlurAction
+        extends DynAction
+    {
+        //~ Methods ------------------------------------------------------------
+
+        public void actionPerformed (ActionEvent e)
+        {
+            Set<Glyph> glyphs = glyphLag.getSelectedGlyphSet();
+            symbolsController.asyncFixLargeSlurs(glyphs);
+        }
+
+        public void update ()
+        {
+            putValue(NAME, "Cleanup large Slur");
+
+            if (glyphNb > 0) {
+                setEnabled(true);
+                putValue(SHORT_DESCRIPTION, "Extract slur from large glyph");
+            } else {
+                setEnabled(false);
+                putValue(SHORT_DESCRIPTION, "No slur to fix");
+            }
+        }
+    }
+
+    //-------------//
+    // PasteAction //
+    //-------------//
+    /**
+     * Paste the latest shape to the glyph(s) at end
+     */
+    private class PasteAction
         extends DynAction
     {
         //~ Instance fields ----------------------------------------------------
 
-        private final String PREFIX = "Assign as ";
+        private final String PREFIX = "Paste ";
 
         //~ Methods ------------------------------------------------------------
 
@@ -565,37 +596,6 @@ public class GlyphMenu
                 setEnabled(false);
                 putValue(NAME, PREFIX);
                 putValue(SHORT_DESCRIPTION, "No shape to assign again");
-            }
-        }
-    }
-
-    //-----------------//
-    // LargeSlurAction //
-    //-----------------//
-    /**
-     * Cleanup a glyph with focus on its slur shape
-     */
-    private class LargeSlurAction
-        extends DynAction
-    {
-        //~ Methods ------------------------------------------------------------
-
-        public void actionPerformed (ActionEvent e)
-        {
-            Set<Glyph> glyphs = glyphLag.getSelectedGlyphSet();
-            symbolsController.asyncFixLargeSlurs(glyphs);
-        }
-
-        public void update ()
-        {
-            putValue(NAME, "Cleanup large Slur");
-
-            if (glyphNb > 0) {
-                setEnabled(true);
-                putValue(SHORT_DESCRIPTION, "Extract slur from large glyph");
-            } else {
-                setEnabled(false);
-                putValue(SHORT_DESCRIPTION, "No slur to fix");
             }
         }
     }
