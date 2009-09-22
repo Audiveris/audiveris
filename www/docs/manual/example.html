@@ -46,25 +46,25 @@
             //]]>
             </script>
         </address>
+
         <p>
-            The purpose of this document is to describe a very simple, yet realistic,
-            use of Audiveris, so that you can get acquainted with some of its
-            major features.
+            The purpose of this document is to describe a very simple, yet
+            realistic, use of Audiveris, so that you can get acquainted with
+            some of its major features.
         </p>
         <p>
-
             <b>Nota</b>: Your own experience on the same music sheet may vary
             because some parameters may have evolved, for example you may be
-            using a different Neural Network definition file and therefore the glyph
-            recognition may produce different results.
+            using a different Neural Network definition file and therefore the
+            glyph recognition may produce different results.
         </p>
         <!-- ======================= Initial actions ======================= -->
         <h2>
             <a name="INITIAL" id="INITIAL">Initial actions</a>
+
         </h2>
         <h3>
             <a name="LAUNCHING" id="LAUNCHING">Launch Audiveris</a>
-
         </h3>
         <ul>
             <li>First, navigate to the directory where you have extracted the
@@ -73,30 +73,31 @@
             <li>Then the easiest way is to double-click on the jar file named
             <b>audiveris-3.2a.jar</b> located in the <b>dist</b> subfolder.
             </li>
+
             <li>You can also use the following command:
                 <p>
-
                     <code>$&gt; java -jar dist/audiveris-3.2.jar</code>
                 </p>
                 <p>
                     or, if for example you need more memory:
                 </p>
                 <p>
+
                     <code>$&gt; java -Xms128m -Xmx256m -jar
                     dist/audiveris-3.2.jar</code>
-
                 </p>
             </li>
         </ul>
         <h3>
             <a name="LOAD" id="LOAD">Load an image</a>
         </h3>
+
         <p>
             From the <b><i>Sheet</i></b> menu, select the <b><i>Open</i></b>
-
             item and in the dialog box which appears, select the
             <b>chula.png</b> file located in the <b>examples</b> folder.
         </p>
+
         <p>
             This loads the image out of the selected file, and the application
             window now looks like the following. Note that the image width
@@ -106,11 +107,11 @@
         <p>
             <img src="../images/chula-load.png" alt="Chula after load" title=
             "Display just after loading the Chula image file" />
-
         </p>
         <h3>
             <a name="PARAMS" id="PARAMS">Setting Score Parameters</a>
         </h3>
+
         <p>
             You may have noticed that the image contains a few words in French.
             Unless you have set French as the default language, Audiveris will
@@ -118,23 +119,23 @@
             select the French language for this score, through the <b>Score</b>
             menu and its <b>Set Parameters</b> item.
         </p>
-
         <p>
             <img src="../images/chula-set-parameters.png" alt="" title=
             "Setting score parameters" />
         </p>
+
         <p>
             This opens a small dialog box about relevant score parameters. In
             the <b>Text</b> section, select the "<b>fra - French</b>"
             alternative. Notice also that you have the ability to make this
             selection as the default for any score from now on, simply by
             putting a mark in the checkbox.<br />
-
             You can skip the other parameters for the time being.
         </p>
         <p>
             <img src="../images/chula-parameters-init.png" alt="" title=
             "Score initial parameters" />
+
         </p>
         <!-- ====================== Automatic actions ====================== -->
         <h2>
@@ -142,7 +143,6 @@
         </h2>
         <h3>
             <a name="SCORE-STEP" id="SCORE-STEP">Let Audiveris work</a>
-
         </h3>
 
         <p>
@@ -219,8 +219,8 @@
         <div class="warningmessage">
             <b>Nota</b>: Your actual results may vary according to the
             environment, notably the value of the various application
-            parameters (which can be viewed and modified in the Tools|Options window)
-            or even the training of the neural network.
+            parameters (which can be viewed and modified in the Tools|Options
+            window) or even the training of the neural network.
         </div>
         <h3>
             <a name="ERRORS" id="ERRORS">The errors window</a>
@@ -357,8 +357,8 @@
             shapes as we did previously.
         </p>
         <p>
-            But we have another way, since there are other beam hooks in sight: we
-            can make a "copy/paste" of the shape name.
+            But we have another way, since there are other beam hooks in sight:
+            we can make a "copy/paste" of the shape name.
         </p>
         <p>
             Select another beam hook (left click), and in the popup menu (right
@@ -374,8 +374,8 @@
             and in the popup menu (right click), choose "Paste BEAM_HOOK"
         </p>
         <p>
-            <img src="../images/chula-paste.png" alt="Paste a shape"
-            title="Paste the beam hook shape" />
+            <img src="../images/chula-paste.png" alt="Paste a shape" title=
+            "Paste the beam hook shape" />
         </p>
         <h3>
 
@@ -402,12 +402,12 @@
         </p>
         <p>
             You may have noted that in this top 5, the sixteen_rest shape was
-            listed with a red foreground color, to indicate that the confidence was
-            too low. Actually the program uses the inverse of confidence, let's
-            say a doubt, whose value (1.295) is above an acceptance threshold.
-            You can also notice how fast the doubt value increases even within
-            the top 5 suggestions, which is typical of the behavior of a neural
-            network.
+            listed with a red foreground color, to indicate that the confidence
+            was too low. Actually the program uses the inverse of confidence,
+            let's say a doubt, whose value (1.295) is above an acceptance
+            threshold. You can also notice how fast the doubt value increases
+            even within the top 5 suggestions, which is typical of the behavior
+            of a neural network.
         </p>
         <h3>
 
@@ -478,8 +478,8 @@
         </p>
         <p>
 
-            A new feature of Audiveris is the ability to manually compose a glyph by
-            selecting its desired sections, in the containing LAG.
+            A new feature of Audiveris is the ability to manually compose a
+            glyph by selecting its desired sections, in the containing LAG.
         </p>
         <p>
             A short side note about LAG ((Line Adjacency Graph):
@@ -497,8 +497,9 @@
             Normally, user selections are performed at <b>glyph</b> level. We
             can switch to selection at <b>section</b> level, in the
             <b>Views</b> menu, using the "<b>Enable section selection</b>"
-            item. Only vertical sections can be selected for the time being. A more direct way is to use the toggle button, in the
-            toolbar, which represents a bean.
+            item. Only vertical sections can be selected for the time being. A
+            more direct way is to use the toggle button, in the toolbar, which
+            represents a bean.
         </p>
 
         <p>
@@ -521,10 +522,10 @@
             simplified: You don't even have to release the mouse button when
             moving from one section to the other, simply browse the sections as
             you would do with an eraser, and all the touched sections will be
-            added to the selection in a "greedy" mode. To really remove a given section from the
-            current selection, release the mouse button and press down the
-            button again on the section to remove (always keeping the CTRL key
-            down).
+            added to the selection in a "greedy" mode. To really remove a given
+            section from the current selection, release the mouse button and
+            press down the button again on the section to remove (always
+            keeping the CTRL key down).
         </p>
         <p>
             Note, as you select the sections of the "eighth rest" portion of
@@ -569,24 +570,26 @@
         </p>
         <ol>
 
-            <li>Select the glyph with a left-button click in the
-            Sheet display.
+            <li>Select the glyph with a left-button click in the Sheet display.
             </li>
             <li>The column on the right side of the application window is
-            dedicated to a series of boards arranged in a vertical sequence (Pixel, Run, Section, Glyph, Focus,
-            Neural). Use the Glyph board to enter the proper content for this
-            glyph (validate by pressing Enter) and select Direction as the role
-            for this piece of text.
+            dedicated to a series of boards arranged in a vertical sequence
+            (Pixel, Run, Section, Glyph, Focus, Neural). Use the Glyph board to
+            enter the proper content for this glyph (validate by pressing
+            Enter) and select Direction as the role for this piece of text.
             </li>
         </ol>
-
-        <p>Remark: A text glyph, even with proper content, needs to be assigned a "role (direction, title, creator, etc) to be atranslated to a score entity.
-            Otherwise, it will appear in the score display, but with a gray color, and will mot be exported into the XML output.
-
+        <p>
+            Remark: A text glyph, even with proper content, needs to be
+            assigned a "role (direction, title, creator, etc) to be atranslated
+            to a score entity. Otherwise, it will appear in the score display,
+            but with a gray color, and will mot be exported into the XML
+            output.
         </p>
         <p>
             <img src="../images/chula-text.png" alt="Correcting text content"
             title="The board for glyph parameters" />
+
         </p>
         <p>
             Also, on the upper right side of the sheet, the notation "Danse
@@ -595,25 +598,24 @@
             the glyph board, validate by pressing the Enter key, and the
             modification is done.
         </p>
-
         <!-- ============================ Script =========================== -->
         <h2>
             <a name="SCRIPT" id="SCRIPT">Script</a>
         </h2>
+
         <h3>
             <a name="SCRIPT_WRITING" id="SCRIPT_WRITING">Script writing</a>
         </h3>
         <p>
-
             You can decide to store the script of your user actions related to
             'chula' sheet, by selecting the <b><i>Store script</i></b> item in
             the <b><i>Sheet</i></b> menu.
         </p>
+
         <p>
             Select the location, and your script is written by default as
             <b>chula.script.xml</b> file.
         </p>
-
         <p>
             Note that, unless you have set the application constant
             script.ScriptActions.closeConfirmation to false in the
@@ -624,6 +626,7 @@
         <p>
             <img src="../images/chula-script.png" alt="Script prompt" title=
             "Script prompt" />
+
         </p>
         <p>
             Here is the content of <b>chula.script.xml</b>:
@@ -632,16 +635,15 @@
         document.write("<iframe src='chula.script.xml.html' width='100%' height='200' frameborder='1'><\/iframe>");
         //]]>
         </script>
-
         <h3>
             <a name="SCRIPT_REPLAY" id="SCRIPT_REPLAY">Script replay</a>
         </h3>
+
         <p>
             You can replay any script, by simply selecting the <b><i>Open
             script</i></b> item in the <b><i>Sheet</i></b> menu, and choosing a
             script file.
         </p>
-
         <p>
             For example, just choose the script you've just stored, and watch
             'chula' image be reloaded, the various steps performed, and the
@@ -650,8 +652,12 @@
             actions will be added at the end of the sheet script. It's a
             convenient way to work again on a previous session for example.
         </p>
-        <p>If you are curious, have a look at the 'chula.script.xml' file, which is a
-            simple xml file where all your actions are easily recognized. Note that glyphs are defined only by the set of their member sections.
+        <p>
+
+            If you are curious, have a look at the 'chula.script.xml' file,
+            which is a simple xml file where all your actions are easily
+            recognized. Note that glyphs are defined only by the set of their
+            member sections.
         </p>
         <!-- ======================== Output Actions ======================= -->
         <h2>
@@ -751,8 +757,8 @@
             stopping.
         </p>
         <p>
-            During the playback, the Score display is kept in sync, using a moving
-            (violet) vertical bar on the current time slot:<br />
+            During the playback, the Score display is kept in sync, using a
+            moving (violet) vertical bar on the current time slot:<br />
             <img alt="" title="Time slot highlighted while playing" src=
             "../images/chula-midi-playing.png" />
         </p>
