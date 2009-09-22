@@ -8,7 +8,7 @@
 <!-- |                                                                     | -->
 <!-- +=====================================================================+ -->
 
-<project name="audiveris-common" basedir="..">
+<project name="common" basedir="..">
     
     <description>
 	This project gathers all the targets that are common to NetBeans and
@@ -29,11 +29,11 @@
 	    <fileset dir="${jalopy.dir}" includes="*.jar" />
 	</classpath>
     </taskdef>
-    
+
     <!-- ========================= -->
     <!--  - B U I L D - I C O N S  -->
     <!-- ========================= -->
-    <target name="-build-icons">
+    <target name="-build-icons" unless="has.music_icons">
         <!-- Make a separate archive for icons -->
         <jar basedir="${basedir}"
 	     destfile="${icons.dir}/music_icons.jar"
@@ -50,14 +50,69 @@
 	<delete verbose="${verbose}" file="${icons.music.jar}"/>
     </target>
     
-    <!-- =========== -->
-    <!--  - D I S T  -->
-    <!-- =========== -->
-    <target name="-dist"
+    <!-- =================== -->
+    <!--  - B I N - D I S T  -->
+    <!-- =================== -->
+    <target name="-bin-dist"
 	    depends="-launcher">
-<!--         description="Rebuild and package the whole distribution." -->
+<!--         description="Build the binary needed for a release." -->
 
         <mkdir dir="${dist.dir}"/>
+	
+        <!-- Generate the release zip archive -->
+        <zip 
+            destfile="${dist.dir}/${full.name}-bin-${DSTAMP}.zip" >
+        
+            <!-- Launcher -->
+            <zipfileset dir="${dist.dir}" prefix="dist"
+                     includes="*.bat"
+                     excludes="${dist.excludes}"
+                     />
+        
+            <!-- Jar file -->
+            <zipfileset dir="${dist.dir}" prefix="dist"
+                     includes="*.jar"
+                     excludes="${dist.excludes}"
+                     />
+
+            <!-- lib jar files -->
+            <zipfileset dir="${dist.dir}/lib" prefix="dist/lib"
+                     includes="**"
+                     excludes="${dist.excludes}"
+                     />
+
+            <!-- ocr files -->
+            <zipfileset dir="${ocr.dir}" prefix="ocr"
+                     includes="**"
+                     excludes="${dist.excludes}"
+                     />
+        
+            <!-- config files -->
+            <zipfileset dir="${config.dir}" prefix="config"
+                     includes="**"
+                     excludes="${dist.excludes}"
+                     />
+
+            <!-- Examples files -->
+            <zipfileset dir="${examples.dir}" prefix="examples"
+                     includes="**"
+                     excludes="${dist.excludes}"
+                     />
+
+            <!-- Www files (w/o javadoc) -->
+            <zipfileset dir="${www.dir}" prefix="www"
+                     includes="**"
+                     excludes="${dist.excludes},**/api/**"
+                     />
+	</zip>
+    </target>
+    
+    <!-- ===================== -->
+    <!--  - F U L L - D I S T  -->
+    <!-- ===================== -->
+    <target name="-full-dist"
+	    depends="-launcher">
+<!--         description="Build the whole release distribution." -->
 
 	<!-- Special copy for NetBeans -->
         <copy
@@ -71,7 +126,7 @@
 	
         <!-- Generate the global zip archive -->
         <zip 
-            destfile="${dist.dir}/${full.name}-${DSTAMP}.zip" >
+            destfile="${dist.dir}/${full.name}-full-${DSTAMP}.zip" >
 
             <!-- Special build.xml file for NetBeans on top dir-->
 	    <zipfileset dir="${basedir}" includes="build-for-netbeans.xml"/>
@@ -87,9 +142,15 @@
                      includes="*.jar"
                      excludes="${dist.excludes}"
                      />
-        
+
             <!-- lib jar files -->
             <zipfileset dir="${dist.dir}/lib" prefix="dist/lib"
+                     includes="**"
+                     excludes="${dist.excludes}"
+                     />
+
+            <!-- ocr files -->
+            <zipfileset dir="${ocr.dir}" prefix="ocr"
                      includes="**"
                      excludes="${dist.excludes}"
                      />
@@ -145,7 +206,11 @@
         <available
             property="junit.jar.present"
             file="${junit.jar}"
-        />
+	    />
+        <available
+	    property="has.music_icons"
+	    file="${icons.dir}/music_icons.jar"
+	    />
         
     </target>
     
@@ -239,7 +304,7 @@
         <!-- .bat file for windows -->
         <echo file="${dist.dir}/${name}.bat" append="false">@ECHO OFF
 REM ${name}.bat
-java -Xmx128M -Djava.util.logging.config.file=../config/logging.properties -jar ${full.name}.jar
+java -Xmx256M -jar ${full.name}.jar
         </echo>
         
     </target>

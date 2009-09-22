@@ -144,11 +144,12 @@
     <!-- ================= -->
     <target name="-compile"
         depends="-do-compile, -post-compile"/>
-    
+
     <!-- ===================== -->
     <!--  - C O P Y - L I B S  -->
     <!-- ===================== -->
-    <target name="-copy-libs">
+    <target name="-copy-libs"
+	    depends="-build-icons">
         <mkdir dir="${dist.dir}/lib"/>
 
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${barebones.jar}"/>
@@ -173,7 +174,7 @@
         <copy todir="${dist.dir}/lib" verbose="$verbose" file="${java.home}/lib/ext/mlibwrapper_jai.jar"/>
 
     </target>
-    
+
     <!-- =============================== -->
     <!--  - C O P Y - R E S O U R C E S  -->
     <!-- =============================== -->
@@ -258,11 +259,19 @@
     <!-- =========================== -->
     <!--  - P O S T - C O M P I L E  -->
     <!-- =========================== -->
-    <target name="-post-compile" depends="-copy-resources,-build-icons"/>        
+    <target name="-post-compile" depends="-copy-resources"/>        
     
     <!-- ================================================================ -->
     <!-- =======================  Public Targets  ======================= -->
     <!-- ================================================================ -->
+    
+    <!-- ======================= -->
+    <!--  B U I L D - I C O N S  -->
+    <!-- ======================= -->
+    <target name="build-icons"
+ 	    depends="-build-icons"
+            description="Build the symbol icon jar">
+    </target>
 
     <!-- =========== -->
     <!--  C L E A N  -->
@@ -271,13 +280,21 @@
             depends="-clean-build, -clean-icons, -clean-jar, -clean-dist"
 	    description="Remove all the generated outputs.">
     </target>
-    
-    <!-- ========= -->
-    <!--  D I S T  -->
-    <!-- ========= -->
-    <target name="dist"
- 	    depends="clean, jar, -launcher, javadoc, -dist"
-            description="Rebuild and package the whole distribution.">
+
+    <!-- ================= -->
+    <!--  B I N - D I S T  -->
+    <!-- ================= -->
+    <target name="bin-dist"
+ 	    depends="jar, -bin-dist"
+            description="Build and package the binary distribution.">
+    </target>
+
+    <!-- =================== -->
+    <!--  F U L L - D I S T  -->
+    <!-- =================== -->
+    <target name="full-dist"
+ 	    depends="-full-dist"
+            description="Build and package the whole distribution.">
     </target>
     
     <!-- ======= -->
@@ -418,31 +435,6 @@
 	    </fileset>
 	    <report format="frames" todir="${build.test.results.dir}/html"/>
 	</junitreport>
-	
-    </target>
-
-    <!-- =============== -->
-    <!--  T E S T - U I  -->
-    <!-- =============== -->
-    <target name="test-ui" depends="-compile-tests" if="junit.jar.present"
-            description="Run all unit tests from TestRunner GUI." >
-
-	<echo message="Launching TestRunner ..."/>
-        
-        <java classname="junit.swingui.TestRunner"
-            classpathref="run.test.classpath"
-            failonerror="true"
-            fork="true"
-            maxmemory="128m">
- 	    
-            <!-- Configuration file for logging -->
-            <sysproperty key="java.util.logging.config.file"
-                value="${config.dir}/logging.properties"/>
-
-<!--             <arg line="omr.graph.GraphTest"/>  -->
-<!--             <arg line="omr.math.LineTest"/>  -->
-<!--             <arg line="omr.math.PopulationTest"/>  -->
-        </java>
 	
     </target>
 

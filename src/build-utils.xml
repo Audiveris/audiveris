@@ -140,27 +140,5 @@
 	    </fileset>
 	</copy>
     </target>
-
-    <target name="global-update" description="garbage">
-        <replaceregexp replace=""
-                         match="//  to report bugs .*//$" >
-            <fileset dir="${src.dir}" 
-                     includes="**/Main.java"
-                     />
-        </replaceregexp>
-    </target>
-
-    <target name="zip-java" description="zip all Java files">
-        <zip
-            destfile="${src.dir}/../newfiles.zip" >
-
-            <!-- Launcher -->
-            <zipfileset dir="${src.dir}/.."
-                     includes="**/*.java"
-                     />
-
-        </zip>
-    </target>
-
     
 </project>
