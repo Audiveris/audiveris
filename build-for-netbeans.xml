@@ -56,27 +56,28 @@
     <!-- ================================================================ -->
     <!-- =======================  Public Targets  ======================= -->
     <!-- ================================================================ -->
-    
-    <!-- ========= -->
-    <!--  D I S T  -->
-    <!-- ========= -->
-    <target name="dist"
- 	    depends="clean, jar, javadoc, audiveris-common.-dist"
-            description="Rebuild and package the whole distribution.">
+
+    <!-- ================= -->
+    <!--  B I N - D I S T  -->
+    <!-- ================= -->
+    <target name="bin-dist"
+ 	    depends="clean, jar, common.-bin-dist"
+            description="Rebuild and package the binary distribution.">
     </target>
 
-    <!-- ============= -->
-    <!--  F O R M A T  -->
-    <!-- ============= -->
-    <target name="format"
-            depends="-format"
-            description="Format Java source with Jalopy."/>
+    <!-- =================== -->
+    <!--  F U L L - D I S T  -->
+    <!-- =================== -->
+    <target name="full-dist"
+ 	    depends="common.-full-dist"
+            description="Rebuild and package the whole distribution.">
+    </target>
     
     <!-- =============== -->
     <!--  J A V A D O C  -->
     <!-- =============== -->
     <target name="javadoc"
-            depends="init, audiveris-common.-javadoc-build, -post-javadoc, -post-post-javadoc,-javadoc-browse"
+            depends="init, common.-javadoc-build, -post-javadoc, -post-post-javadoc,-javadoc-browse"
             description="Build Javadoc."/>
     
     <!-- ======= -->
@@ -100,7 +101,7 @@
     <target name="-javadoc-browse"
 	    if="netbeans.home"
 	    unless="no.javadoc.preview"
-	    depends="init,audiveris-common.-javadoc-build">
+	    depends="init,common.-javadoc-build">
         <nbbrowse file="${dist.javadoc.dir}/index.html"/>
     </target>
 
@@ -119,7 +120,7 @@
     <!--  - P R E - J A R  -->
     <!-- ================= -->
     <target name="-pre-jar"
-	    depends="audiveris-common.-pre-jar" />
+	    depends="common.-pre-jar" />
 
     <!-- === Imports ======================================================== -->
 
