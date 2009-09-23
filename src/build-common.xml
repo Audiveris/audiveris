@@ -193,16 +193,16 @@
 
 	</zip>
     </target>
-    
+
     <!-- =========== -->
     <!--  - I N I T  -->
     <!-- =========== -->
     <target name="-init">
 <!--         description="Initialize the environment." -->
-        
+
         <!-- Create the time stamp -->
         <tstamp/>
-	
+
         <available
             property="junit.jar.present"
             file="${junit.jar}"
@@ -211,7 +211,7 @@
 	    property="has.music_icons"
 	    file="${icons.dir}/music_icons.jar"
 	    />
-        
+
     </target>
     
     <!-- ============================= -->

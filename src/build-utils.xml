@@ -103,42 +103,4 @@
         <echoproperties/>
     </target>
     
-    <!-- ======== -->
-    <!--  S A V E -->
-    <!-- ======== -->
-    <target name="save"
-        depends="-init"
-        description="Make a backup of all important files." >
-	
-        <mkdir dir="${backup.dir}/${ant.project.name}"/>
-
-        <!-- Save relevant directories -->
-        <zip
-            update="yes"
-            destfile="${backup.dir}/${ant.project.name}/${DSTAMP}-${machine.name}-src.zip" >
-            <fileset dir="${basedir}"  
-                     includes="build.xml, src/**, config/**, icons/**, www/**, train/*.def, nb/jp/**"
-                     excludes="${dist.excludes},www/docs/api/**,www/branding/**,nb/jp/dist/**"/>
-        </zip>
-
-    </target>
-
-    
-    <!-- ============= -->
-    <!--  U P L O A D  -->
-    <!-- ============= -->
-    <target name="upload"
-            depends="save"
-            description="Upload backup to personal pages on an FTP server.">
-
-	<echo message="Uploading backup file ..."/>
-	<copy
-	    verbose="${verbose}"
-	    todir="${netbackup.dir}/${ant.project.name}">
-	    <fileset dir="${backup.dir}/${ant.project.name}">
-		<include name="**/${DSTAMP}-${machine.name}-*.zip"/>
-	    </fileset>
-	</copy>
-    </target>
-    
 </project>
