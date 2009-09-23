@@ -22,7 +22,7 @@
         "../../branding/css/inst.css" /><!-- -->
         <!-- Small javascript utilities -->
 
-        <script type="text/javascript" src="../../branding/js/util.js">
+        <script type="text/javascript" src="util.js">
 </script>
         <style type="text/css">
 /*<![CDATA[*/
@@ -39,10 +39,7 @@
         <address>
             Updated: <script type="text/javascript">
 //<![CDATA[
-            var as = "$Id$".split(" ");
-            var d = new Date(as[3]);
-            var months = new Array("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
-            document.write(d.getDate() + "-" + months[d.getMonth()] + "-" + d.getFullYear());
+            document.write(getCVSDate("$Id$"));
             //]]>
             </script>
         </address>
@@ -71,20 +68,20 @@
             Audiveris distribution archive.
             </li>
             <li>Then the easiest way is to double-click on the jar file named
-            <b>audiveris-3.2a.jar</b> located in the <b>dist</b> subfolder.
+            <b>audiveris-3.2a.jar</b> or similar, located in the <b>dist</b>
+            subfolder.
             </li>
 
             <li>You can also use the following command:
                 <p>
-                    <code>$&gt; java -jar dist/audiveris-3.2.jar</code>
+                    <code>$&gt; java -jar dist/audiveris-3.2a.jar</code>
                 </p>
                 <p>
                     or, if for example you need more memory:
                 </p>
                 <p>
-
                     <code>$&gt; java -Xms128m -Xmx256m -jar
-                    dist/audiveris-3.2.jar</code>
+                    dist/audiveris-3.2a.jar</code>
                 </p>
             </li>
         </ul>
