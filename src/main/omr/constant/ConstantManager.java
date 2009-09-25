@@ -124,11 +124,12 @@ public class ConstantManager
     private static final String DEFAULT_FILE_NAME = "run.default.properties";
 
     /** User properties file name */
-    private static final String USER_FILE_NAME = System.getProperty(
-        "user.home") +
-                                                 (Main.MAC_OS_X
-                                                  ? "/Library/Preferences/Audiveris/run.properties"
-                                                  : "/.audiveris/run.properties");
+    private static final String USER_FILE_NAME = "run.properties";
+
+    /** User properties file folder */
+    private static final File USER_FILE_FOLDER = new File(
+        System.getProperty("user.home") +
+        (Main.MAC_OS_X ? "/Library/Preferences/Audiveris" : "/.audiveris"));
 
     /** The singleton */
     private static final ConstantManager INSTANCE = new ConstantManager();
@@ -143,11 +144,13 @@ public class ConstantManager
 
     /** Default properties */
     private final DefaultHolder defaultHolder = new DefaultHolder(
+        "/" + Main.getConfigFolder().getName() + "/" + DEFAULT_FILE_NAME,
         new File(Main.getConfigFolder(), DEFAULT_FILE_NAME));
 
     /** User properties */
     private final UserHolder userHolder = new UserHolder(
-        new File(USER_FILE_NAME),
+        null,
+        new File(USER_FILE_FOLDER, USER_FILE_NAME),
         defaultHolder);
 
     //~ Constructors -----------------------------------------------------------
@@ -312,13 +315,21 @@ public class ConstantManager
     {
         //~ Instance fields ----------------------------------------------------
 
+        /** Null if no related file */
         protected final File file;
+
+        /** Null if no related resource*/
+        protected final String resourceName;
+
+        /** The handled properties */
         protected Properties properties;
 
         //~ Constructors -------------------------------------------------------
 
-        public AbstractHolder (File file)
+        public AbstractHolder (String resourceName,
+                               File   file)
         {
+            this.resourceName = resourceName;
             this.file = file;
         }
 
@@ -345,7 +356,7 @@ public class ConstantManager
             SortedSet<String> props = new TreeSet<String>();
 
             for (Object obj : properties.keySet()) {
-                if (!constants.containsKey(obj)) {
+                if (!constants.containsKey((String) obj)) {
                     props.add((String) obj);
                 }
             }
@@ -358,7 +369,7 @@ public class ConstantManager
             SortedSet<String> props = new TreeSet<String>();
 
             for (Entry<Object, Object> entry : properties.entrySet()) {
-                Constant constant = constants.get(entry.getKey());
+                Constant constant = constants.get((String) entry.getKey());
 
                 if ((constant != null) &&
                     constant.getSourceString()
@@ -372,57 +383,54 @@ public class ConstantManager
 
         public void load ()
         {
+            // First, load from resource
+            if (resourceName != null) {
+                loadFromResource();
+            }
+
+            // Second, load from local file
+            if (file != null) {
+                loadFromFile();
+            }
+        }
+
+        private void loadFromFile ()
+        {
             try {
-                FileInputStream in = new FileInputStream(file);
+                InputStream in = new FileInputStream(file);
                 properties.load(in);
                 in.close();
             } catch (FileNotFoundException ex) {
-                // This is not at all a fatal error, let the user know this.
-                logger.info(
-                    "[" + ConstantManager.class.getName() + "]" +
-                    " No property file " + file);
+                // This is not at all an error
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "[" + ConstantManager.class.getName() + "]" +
+                        " No property file " + file.getAbsolutePath());
+                }
             } catch (IOException ex) {
                 logger.severe(
                     "Error loading constants file " + file.getAbsolutePath());
             }
         }
 
-        public void store ()
+        private void loadFromResource ()
         {
-            // First purge properties
-            cleanup();
-
-            // Then, save the remaining values
             try {
-                if (logger.isFineEnabled()) {
-                    logger.fine("Store constants into " + file);
-                }
+                InputStream in = Main.class.getResourceAsStream(resourceName);
 
-                // First make sure the directory exists (Brenton patch)
-                if (file.getParentFile()
-                        .mkdirs()) {
-                    logger.info("Creating " + file);
+                if (in != null) {
+                    properties.load(in);
+                    in.close();
+                } else {
+                    // We should have a resource available
+                    logger.warning(
+                        "[" + ConstantManager.class.getName() + "]" +
+                        " No property resource " + resourceName);
                 }
-
-                // Then write down the properties
-                FileOutputStream out = new FileOutputStream(file);
-                properties.store(
-                    out,
-                    " Audiveris user properties file. Do not edit");
-                out.close();
-            } catch (FileNotFoundException ex) {
-                logger.warning(
-                    "Property file " + file.getAbsolutePath() +
-                    " not found or not writable");
             } catch (IOException ex) {
-                logger.warning(
-                    "Error while storing the property file " +
-                    file.getAbsolutePath());
+                logger.severe(
+                    "Error loading constants resource " + resourceName);
             }
-        }
-
-        protected void cleanup ()
-        {
         }
     }
 
@@ -434,9 +442,10 @@ public class ConstantManager
     {
         //~ Constructors -------------------------------------------------------
 
-        public DefaultHolder (File file)
+        public DefaultHolder (String resourceName,
+                              File   file)
         {
-            super(file);
+            super(resourceName, file);
             properties = new Properties();
             load();
         }
@@ -459,10 +468,11 @@ public class ConstantManager
 
         //~ Constructors -------------------------------------------------------
 
-        public UserHolder (File           file,
+        public UserHolder (String         resourceName,
+                           File           file,
                            AbstractHolder defaultHolder)
         {
-            super(file);
+            super(resourceName, file);
             this.defaultHolder = defaultHolder;
             properties = new Properties(defaultHolder.properties);
             load();
@@ -476,7 +486,6 @@ public class ConstantManager
          * that need to reflect the current values which differ from DEFAULT or
          * from source.
          */
-        @Override
         public void cleanup ()
         {
             // Browse all constant entries
@@ -513,6 +522,40 @@ public class ConstantManager
                         }
                     }
                 }
+            }
+        }
+
+        public void store ()
+        {
+            // First purge properties
+            cleanup();
+
+            // Then, save the remaining values
+            try {
+                if (logger.isFineEnabled()) {
+                    logger.fine("Store constants into " + file);
+                }
+
+                // First make sure the directory exists (Brenton patch)
+                if (file.getParentFile()
+                        .mkdirs()) {
+                    logger.info("Creating " + file);
+                }
+
+                // Then write down the properties
+                FileOutputStream out = new FileOutputStream(file);
+                properties.store(
+                    out,
+                    " Audiveris user properties file. Do not edit");
+                out.close();
+            } catch (FileNotFoundException ex) {
+                logger.warning(
+                    "Property file " + file.getAbsolutePath() +
+                    " not found or not writable");
+            } catch (IOException ex) {
+                logger.warning(
+                    "Error while storing the property file " +
+                    file.getAbsolutePath());
             }
         }
     }

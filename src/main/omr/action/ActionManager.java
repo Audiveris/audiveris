@@ -231,7 +231,8 @@ public class ActionManager
             if (input == null) {
                 // Then look for a resource
                 input = getClass()
-                            .getResourceAsStream("config/" + name);
+                            .getResourceAsStream(
+                    "/" + Main.getConfigFolder().getName() + "/" + name);
             }
 
             if (input != null) {

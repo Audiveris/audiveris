@@ -41,23 +41,46 @@ public class Language
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Language.class);
 
+    /** file name */
+    private static final String LANG_FILE_NAME = "ISO639-3.xml";
+
     /** Map of language code -> language full name */
     private static SortedMap<String, String> knowns = new TreeMap<String, String>();
 
     static {
         try {
             // Retrieve correspondences between codes and names
-            Properties      langNames = new Properties();
-            FileInputStream fis = new FileInputStream(
-                new File(Main.getConfigFolder(), "ISO639-3.xml"));
-            langNames.loadFromXML(fis);
-            fis.close();
+            Properties  langNames = new Properties();
+
+            // Choose the proper input stream
+            InputStream input = null;
+
+            // Look for a local file first
+            File file = new File(Main.getConfigFolder(), LANG_FILE_NAME);
+
+            if (file.exists()) {
+                try {
+                    input = new FileInputStream(file);
+                } catch (FileNotFoundException ex) {
+                    logger.warning("Cannot find " + file, ex);
+                }
+            }
+
+            if (input == null) {
+                // Then look for a resource
+                input = Main.class.getResourceAsStream(
+                    "/" + Main.getConfigFolder().getName() + "/" +
+                    LANG_FILE_NAME);
+            }
+
+            langNames.loadFromXML(input);
+            input.close();
 
             for (String code : langNames.stringPropertyNames()) {
                 knowns.put(code, langNames.getProperty(code, code));
             }
         } catch (IOException ex) {
-            logger.severe("Missing config/ISO639-3.xml file", ex);
+            logger.severe("Error loading config/ISO639-3.xml", ex);
         }
     }
 
