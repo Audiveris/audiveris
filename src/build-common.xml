@@ -29,26 +29,6 @@
 	    <fileset dir="${jalopy.dir}" includes="*.jar" />
 	</classpath>
     </taskdef>
-
-    <!-- ========================= -->
-    <!--  - B U I L D - I C O N S  -->
-    <!-- ========================= -->
-    <target name="-build-icons" unless="has.music_icons">
-        <!-- Make a separate archive for icons -->
-        <jar basedir="${basedir}"
-	     destfile="${icons.dir}/music_icons.jar"
-	     includes="icons/*.xml"
-	     compress="true"
-	     />
-    </target>
-    
-    <!-- ========================= -->
-    <!--  - C L E A N - I C O N S  -->
-    <!-- ========================= -->
-    <target name="-clean-icons">
-<!--         description="Remove the icons archive." -->
-	<delete verbose="${verbose}" file="${icons.music.jar}"/>
-    </target>
     
     <!-- =================== -->
     <!--  - B I N - D I S T  -->
@@ -83,12 +63,6 @@
 
             <!-- ocr files -->
             <zipfileset dir="${ocr.dir}" prefix="ocr"
-                     includes="**"
-                     excludes="${dist.excludes}"
-                     />
-        
-            <!-- config files -->
-            <zipfileset dir="${config.dir}" prefix="config"
                      includes="**"
                      excludes="${dist.excludes}"
                      />
@@ -206,10 +180,6 @@
         <available
             property="junit.jar.present"
             file="${junit.jar}"
-	    />
-        <available
-	    property="has.music_icons"
-	    file="${icons.dir}/music_icons.jar"
 	    />
 
     </target>
@@ -390,15 +360,23 @@ Built-By: ${build.owner}
 Specification-Title: ${spec.title}
 Specification-Version: ${spec.version}
 Implementation-Version: ${impl.version} ${DSTAMP}
-SplashScreen-Image: ../examples/chula.png
 </echo>
 	<!-- Copy config files into a config folder in the classes dir -->
 	<mkdir dir="${build.classes.dir}/config" />
         <copy
             verbose="${verbose}"
             todir="${build.classes.dir}/config">
-            <fileset dir="${config.dir}"  
+            <fileset dir="${config.dir}"
                      includes="*"/>
+        </copy>
+
+	<!-- Copy icons files into an icons folder in the classes dir -->
+	<mkdir dir="${build.classes.dir}/icons" />
+        <copy
+            verbose="${verbose}"
+            todir="${build.classes.dir}/icons">
+            <fileset dir="${icons.dir}"
+                     includes="*.xml"/>
         </copy>
 
     </target>

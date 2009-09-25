@@ -93,7 +93,6 @@
     <path id="jar.classpath">
         <path refid="tools.classpath"/>
         <pathelement path="${icons.buttons.jar}"/>
-        <pathelement path="${icons.music.jar}"/>
     </path>
     
     <!-- Run classpath -->
@@ -148,14 +147,12 @@
     <!-- ===================== -->
     <!--  - C O P Y - L I B S  -->
     <!-- ===================== -->
-    <target name="-copy-libs"
-	    depends="-build-icons">
+    <target name="-copy-libs">
         <mkdir dir="${dist.dir}/lib"/>
 
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${barebones.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${eventbus.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${icons.buttons.jar}"/>
-	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${icons.music.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jama.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jcommon.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jfreechart.jar}"/>
@@ -264,20 +261,12 @@
     <!-- ================================================================ -->
     <!-- =======================  Public Targets  ======================= -->
     <!-- ================================================================ -->
-    
-    <!-- ======================= -->
-    <!--  B U I L D - I C O N S  -->
-    <!-- ======================= -->
-    <target name="build-icons"
- 	    depends="-build-icons"
-            description="Build the symbol icon jar">
-    </target>
 
     <!-- =========== -->
     <!--  C L E A N  -->
     <!-- =========== -->
     <target name="clean"
-            depends="-clean-build, -clean-icons, -clean-jar, -clean-dist"
+            depends="-clean-build, -clean-jar, -clean-dist"
 	    description="Remove all the generated outputs.">
     </target>
 
@@ -344,7 +333,7 @@
     <!--  R E J A R  -->
     <!-- =========== -->
     <target name="rejar"
-        depends="-clean-build, -clean-icons, jar"
+        depends="-clean-build, jar"
         description="Rebuild jar file from scratch.">
     </target>
     
