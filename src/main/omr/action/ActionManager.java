@@ -26,6 +26,7 @@ import omr.ui.util.SeparableMenu;
 import omr.ui.util.SeparableToolBar;
 import omr.ui.util.UIUtilities;
 
+import omr.util.ClassUtil;
 import omr.util.Implement;
 
 import org.bushe.swing.event.EventSubscriber;
@@ -215,25 +216,9 @@ public class ActionManager
         // We consider local folder first, then archive resources if needed
         for (String name : new String[] { "system-actions.xml", "user-actions.xml" }) {
             // Choose the proper input stream
-            InputStream input = null;
-
-            // Look for a local file
-            File file = new File(Main.getConfigFolder(), name);
-
-            if (file.exists()) {
-                try {
-                    input = new FileInputStream(file);
-                } catch (FileNotFoundException ex) {
-                    logger.warning("Cannot find " + file, ex);
-                }
-            }
-
-            if (input == null) {
-                // Then look for a resource
-                input = getClass()
-                            .getResourceAsStream(
-                    "/" + Main.getConfigFolder().getName() + "/" + name);
-            }
+            InputStream input = ClassUtil.getProperStream(
+                Main.getConfigFolder(),
+                name);
 
             if (input != null) {
                 try {

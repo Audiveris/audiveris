@@ -19,6 +19,8 @@ import omr.log.Logger;
 
 import omr.ui.PixelCount;
 
+import omr.util.ClassUtil;
+
 import java.awt.Color;
 import java.awt.image.*;
 import java.io.*;
@@ -195,34 +197,9 @@ public class IconManager
         SymbolIcon icon = symbolIcons.get(name);
 
         if (icon == null) {
-            // Look for description file as a resource
-            String resName = "/icons/" + name + FILE_EXTENSION;
-
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "Trying to load Icon '" + name + "' from resource " +
-                    resName);
-            }
-
-            InputStream is = Main.class.getResourceAsStream(resName);
-
-            // Brenton patch: Look for description file as a local file
-            if (is == null) {
-                try {
-                    File iconFile = new File(
-                        Main.getIconsFolder(),
-                        name + FILE_EXTENSION);
-                    is = new FileInputStream(iconFile);
-
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            "Trying to load Icon '" + name + "' from local " +
-                            iconFile);
-                    }
-                } catch (FileNotFoundException e) {
-                    logger.fine("Cannot find icon file " + e.getMessage());
-                }
-            }
+            InputStream is = ClassUtil.getProperStream(
+                Main.getIconsFolder(),
+                name + FILE_EXTENSION);
 
             if (is != null) {
                 // Then we de-serialize the icon description

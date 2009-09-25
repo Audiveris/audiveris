@@ -22,6 +22,8 @@ import omr.math.NeuralNetwork;
 
 import omr.sheet.Scale;
 
+import omr.util.ClassUtil;
+
 import java.io.*;
 import java.util.*;
 
@@ -378,34 +380,11 @@ public abstract class GlyphEvaluator
      */
     protected Object unmarshal ()
     {
-        Object engine = null;
+        InputStream input = ClassUtil.getProperStream(
+            Main.getConfigFolder(),
+            getFileName());
 
-        // Look for a custom version first
-        File file = getCustomFile();
-
-        if (file.exists()) {
-            try {
-                logger.fine(
-                    "Unmarshalling " + getName() + " engine from " + file);
-                engine = unmarshal(
-                    new java.io.FileInputStream(file),
-                    file.getPath());
-            } catch (FileNotFoundException ex) {
-                logger.warning("Cannot find file " + file, ex);
-            }
-        }
-
-        // If no custom file is loaded, use system default from distribution
-        if (engine == null) {
-            String url = getDefaultUrl();
-            logger.fine(
-                "Unmarshalling " + getName() + " engine from resource " + url);
-            engine = unmarshal(
-                getClass().getResourceAsStream(url),
-                "resource " + url);
-        }
-
-        return engine;
+        return unmarshal(input, getFileName());
     }
 
     //-----------//

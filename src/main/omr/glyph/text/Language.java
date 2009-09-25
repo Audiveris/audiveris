@@ -18,6 +18,8 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
+import omr.util.ClassUtil;
+
 import java.io.*;
 import java.util.*;
 
@@ -53,26 +55,9 @@ public class Language
             Properties  langNames = new Properties();
 
             // Choose the proper input stream
-            InputStream input = null;
-
-            // Look for a local file first
-            File file = new File(Main.getConfigFolder(), LANG_FILE_NAME);
-
-            if (file.exists()) {
-                try {
-                    input = new FileInputStream(file);
-                } catch (FileNotFoundException ex) {
-                    logger.warning("Cannot find " + file, ex);
-                }
-            }
-
-            if (input == null) {
-                // Then look for a resource
-                input = Main.class.getResourceAsStream(
-                    "/" + Main.getConfigFolder().getName() + "/" +
-                    LANG_FILE_NAME);
-            }
-
+            InputStream input = ClassUtil.getProperStream(
+                Main.getConfigFolder(),
+                LANG_FILE_NAME);
             langNames.loadFromXML(input);
             input.close();
 
