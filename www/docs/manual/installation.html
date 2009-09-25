@@ -1,120 +1,161 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML>
-    <HEAD>
-	<!-- 	$Id$	 -->
-	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=windows-1252"/>
-	<TITLE>Audiveris Installation Manual</TITLE>
-	<META NAME="AUTHOR" CONTENT="Herv&eacute; Bitteur"/>
-	<META NAME="CREATED" CONTENT="20050429;15271809"/>
-	<META NAME="CLASSIFICATION" CONTENT="Procedure for Audiveris installation"/>
-	<META NAME="DESCRIPTION" CONTENT="How to retrieve the Audiveris software and how to install it on your environment"/>
-                
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <!--  $Id$  -->
+        <meta http-equiv="CONTENT-TYPE" content=
+        "text/html; charset=us-ascii" />
+        <title>
+            Audiveris Installation Manual
+        </title>
+        <meta name="AUTHOR" content="Herv&eacute; Bitteur" />
+        <meta name="CREATED" content="20050429;15271809" />
+        <meta name="CLASSIFICATION" content=
+        "Procedure for Audiveris installation" />
+
+        <meta name="DESCRIPTION" content=
+        "How to retrieve the Audiveris software and how to install it on your environment" />
         <!-- The following links are meant to be solved on my local PC -->
         <!-- The java.net site uses its own style sheets -->
-        <LINK REL="stylesheet" TYPE="text/css" HREF="../../branding/css/tigris.css"/>
-        <LINK REL="stylesheet" TYPE="text/css" HREF="../../branding/css/inst.css"/>
+        <link rel="stylesheet" type="text/css" href=
+        "../../branding/css/tigris.css" />
+        <link rel="stylesheet" type="text/css" href=
+        "../../branding/css/inst.css" />
         <script type="text/javascript" src="util.js">
 </script>
-    </HEAD>
+        <style type="text/css">
+/*<![CDATA[*/
+        h1.c1 {text-align: center}
+        h2 {background-color: #d4e4b4 ;}
+        /*]]>*/
+        </style>
+    </head>
 
-    <BODY MARGINWIDTH="0" MARGINHEIGHT="0" CLASS="app" STYLE="text-align: justify;">
-	    
-	<H1 ALIGN=CENTER>Audiveris Installation Manual</H1>
-	
-	<DIV CLASS="warningmessage">
-	    <P CLASS="alert"><b>BEWARE:</b> This documentation has not yet been 
-		updated for Audiveris 3.2, please consider this file as obsolete.</P>
-	</DIV>
+    <body class="app">
+        <h1 class="c1">
+            Audiveris Installation Manual
+        </h1>
+        <address>
+            Updated : <script type="text/javascript">
+//<![CDATA[
+            document.write(getCVSDate("$Id$"));
+            //]]>
+            </script>
+        </address>
+        <h2>
 
-	<ADDRESS>Updated :
-	    <SCRIPT TYPE="text/javascript" >
-		document.write(getCVSDate("$Id$"));
-	    </SCRIPT>
-	</ADDRESS>
-	
-	<A NAME="REQUIREMENTS">
-	    <H2>System Requirements</H2>
-	</A>
-	
-	<UL>
-	    <LI><B>OS</B>: Audiveris is essentially a Java application, and as
-		such should be usable on a wide variety of platforms. It is
-		today being developed under <B>Windows&nbsp;XP</B> and
-		<B>Mac&nbsp;OS</B>, and tested
-		under <B>Solaris</B> and <B>Linux</B>.</LI>
-	    
-	    <LI><B>Java</B>: <B>Java&nbsp;6</B> is highly recommended since it
-		already contains the <B>JAXB&nbsp;2</B> component which is
-		needed for XML persistency. If you cannot use Java 6, which is
-		not available under Mac OS X as of this writing, you can
-		use <B>Java&nbsp;5</B> but you will have to
-		download <B>JAXB&nbsp;2</B> from the
-		<A href="https://jaxb.dev.java.net/">JAXB web site</A> and
-		install it on your own.</LI>
-	</UL>
-	
-	<A NAME="DOWNLOAD">
-	    <H2>Downloading Audiveris software</H2>
-	</A>
-	
-	<P>The latest version is always available on the
-	    <A HREF="https://audiveris.dev.java.net/nonav/servlets/ProjectDocumentList?folderID=3257&expandFolder=3257&folderID=3257">
-		Audiveris download area</A>.</P>
-	
-	<P>Just grab an archive like <B>audiveris-V.V-YYYYMMDD.zip</B> which
-	    contains the executable pieces, source code, documentation and
-	    training material. Then simply unzip the archive in the directory of
-	    your choice.</P>
-	
-	<P>Nota: If you are interested by previous distributions, you can browse
-	    the "archives" subfolder of the download area.</P>
-	
-	<A NAME="COMPANIONS">
-	    <H2>Companion tools</H2>
-	</A>
-	
-	<A NAME="JAI">
-	    <H3>Java Advanced Imaging (JAI)</H3>
-	</A>
-	
-	<P> <b>JAI</b> is the only companion that you need to install on your
-	    own into your JDK or JRE.</P>
-	<P> JAI has its high-level features coded in Java, and low-level
-	    primitives delegated to native libraries. Please refer to the
-	    download and installation information at the <A
-	    href="https://jai.dev.java.net/">JAI web site</A> since its
-	    installation depends on the target operating system. Audiveris uses
-	    the latest JAI version (1.1.3 as of this writing).</P>
-	
-	<table border="0">
-	    <tr>
-		<td>
-		    <p><B>Nota:</B> If not correctly installed, JAI cannot use
-			the native libraries and will run much slower. It then
-			issues the following warning:</p>
-		</td>
-		<td>
-		    <DIV CLASS="warningmessage">
-			Could not load mediaLib accelerator wrapper
-			classes. Continuing in pure Java mode.
-		    </DIV>
-		</td>
-	    </tr>
-	</table>
-	
-	<A NAME="JAXB">
-	    <H3>Java API for XML Binding (JAXB)</H3>
-	</A>
-	<P>[<I>Should we add a specific section on JAXB2 for Mac OS?</I>]</P>
-	
-	<A NAME="OTHER_COMPONENTS">
-	    <H3>Other components</H3>
-	</A>
-	
-	<P> All the other components need no special installation procedure,
-	    since their jar files are already provided in the <u>/lib</u> folder
-	    of the Audiveris installation directory and directly referenced from
-	    the Audiveris jar file. See the Implementation manual if you need
-	    more detailed information on these components.</P>
-    </BODY>
-</HTML>
+            <a name="DOWNLOAD" id="DOWNLOAD">Downloading Audiveris software</a>
+        </h2>
+        <p>
+            The latest version is always available on the <a href=
+            "https://audiveris.dev.java.net/nonav/servlets/ProjectDocumentList?folderID=3257&amp;expandFolder=3257&amp;folderID=3257">
+            Audiveris download area</a>.
+        </p>
+        <p>
+            There are two distribution per release:
+        </p>
+
+        <ul>
+            <li>A <strong>binary</strong> distribution which provides the
+            needed binary components to run the program. Example:
+            audiveris-3.2a-bin-20090925.zip
+            </li>
+            <li>A <strong>full</strong> distribution which, besides the binary
+            components, provides source code, JavaDoc, build procedures,
+            training material, etc. that is all the source items to modify and
+            rebuild the program. Example: audiveris-3.2a-full-20090925.zip
+            </li>
+        </ul>
+        <p>
+
+            Just grab your distribution of choice and expand the archive into
+            some directory. Nota: If you are interested in previous releases,
+            you can browse the "archives" subfolder of the download area.
+        </p>
+        <h2>
+            <a name="REQUIREMENTS" id="REQUIREMENTS">System Requirements</a>
+        </h2>
+        <ul>
+            <li>
+                <b>OS</b>: Audiveris is essentially a Java application, and as
+                such should be usable on a wide variety of platforms. It is
+                today being developed under <b>Windows</b> and tested under
+                <b>Mac&nbsp;OS</b>, <b>Solaris</b> and <b>Linux</b>.
+                <p>
+
+                    Note however that, since release 3.2a, Audiveris uses
+                    <strong>Google Tesseract OCR</strong> for the translation of
+                    textual glyphs. Tesseract was developed in C++, and as such
+                    its use is OS-dependent. Please refer to the <a href=
+                    "#Tesseract">Tesseract OCR</a> section below.
+                </p>
+            </li>
+            <li>
+                <b>Java</b>: <b>Java&nbsp;6</b> is highly recommended since it
+                already contains the <b>JAXB&nbsp;2</b> component which is
+                needed for XML persistency. If you cannot use Java 6, you can
+                use <b>Java&nbsp;5</b> but you will have to download
+                <b>JAXB&nbsp;2</b> from the <a href=
+                "https://jaxb.dev.java.net/">JAXB web site</a> and install it
+                on your own.
+            </li>
+
+        </ul>
+        <h2>
+            <a name="COMPANIONS" id="COMPANIONS">Companion tools</a>
+        </h2>
+        <h3>
+            <a name="Tesseract" id="Tesseract">Tesseract OCR</a>
+        </h3>
+        <p>
+
+            Tesseract OCR is a C++ program and Audiveris is a Java application.
+            For the time being, the connection between Audiveris and Tesseract
+            has been implemented for Windows only. (Help would be appreciated
+            from people knowledgeable about this kind of connection).
+        </p>
+        <p>
+            For <strong>Windows</strong> environment, the Tesseract
+            "tessdll.dll" component is used, via the Tesjeract Java companion.
+            The Tesseract part needs two specific actions:
+        </p>
+        <ul>
+            <li>The installation of <strong>Microsoft VC++ 2008</strong>. You
+            can use the express edition which is free. VC++ 2005 won't do the
+            job, since we need msvcp90d.dll.<br />
+
+                If VC++ 2008 is not installed, Audiveris will complain when
+                accessing OCR the first time, with a message such as: "<i>Error
+                while loading tessdll.dll</i>" or "<i>Error while loading
+                tesjeract.dll</i>"
+            </li>
+            <li>The definition of a system environment variable, named <strong>
+                TESSDATA_PREFIX</strong>, and whose value must be
+                <strong>&lt;install-dir&gt;/ocr/</strong>, including the final
+                "/" or "\" character. For example, my TESSDATA_PREFIX variable
+                has this value: "u:\soft\audiveris\ocr\", without the quotes.
+            </li>
+
+        </ul>
+        <p>
+            For <strong>non-Windows</strong> environments, since the connection
+            is not available yet, there will be a warning the first time the
+            OCR class is accessed, but the program will keep on running,
+            without the OCR features (the user will have to enter the text
+            content manually).
+        </p>
+        <h3>
+            <a name="OTHER_COMPONENTS" id="OTHER_COMPONENTS">Other
+            components</a>
+        </h3>
+
+        <p>
+            All the other components need no special installation procedure,
+            since their jar files are already provided in the
+            <strong>dist/lib</strong> folder of the Audiveris installation
+            directory and directly referenced from the manifest of the
+            Audiveris jar file. See the Implementation manual if you need more
+            detailed information on these components.
+        </p>
+    </body>
+</html>
