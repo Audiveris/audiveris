@@ -15,7 +15,6 @@
         <link rel="stylesheet" type="text/css" href=
         "branding/css/tigris.css" />
         <link rel="stylesheet" type="text/css" href="branding/css/inst.css" />
-
         <script type="text/javascript">
 //<![CDATA[
         // Special nonav prefix for java.net hosted files
@@ -42,10 +41,10 @@
         </style>
     </head>
     <body>
-
         <h1 class="title">
             Audiveris Music Scanner
         </h1>
+
         <p>
             <em>Updated: <script type="text/javascript">
 //<![CDATA[
@@ -58,15 +57,15 @@
         </p>
         <div class="donemessage">
             <p>
-
                 Audiveris is a complete music scanner going all the way from
                 the scanned music sheet input to the MusicXML output.
             </p>
             <p>
-                <strong>Version 3.2a</strong>, released on 22-Sep-2009, provides
-                a lot of new features, most notably the integration with
-                <strong>Google Tesseract OCR</strong> (available under Windows
-                only for the time being).
+
+                <strong>Version 3.2a</strong>, released on 22-Sep-2009,
+                provides a lot of new features, most notably the integration
+                with <strong>Google Tesseract OCR</strong> (available under
+                Windows only for the time being).
             </p>
             <p>
                 This is still a beta version, with some known bugs, and you can
@@ -77,24 +76,24 @@
                 scanned image with your report, to help us analyze the program
                 behavior).
             </p>
-
             <p>
                 Note there is room for external contribution. We urgently
                 <strong>need help on Linux and on Mac OS platforms</strong> to
                 implement the link with Tesseract. See the section below on
                 <a href="#Foreseen-Contributions">Foreseen Contributions</a>.
             </p>
-        </div><!--  -->
+
+        </div>
+        <p>
+            <img src="docs/images/whole-window.png" alt=
+            "Audiveris main window" />
+        </p><!--  -->
         <!-- ============== -->
         <!-- PROJECT COLUMN -->
         <!-- ============== -->
-
         <div id="project-column">
-            <a href="docs/images/whole-window.png"><img src=
-            "docs/images/whole-window.thumb.png" alt="Audiveris main window"
-            width="550" height="454" /></a><br />
-            <em>Audiveris main window (click for full-size image)</em>
             <h3>
+
                 Project Goals
             </h3>
             <p>
@@ -105,17 +104,187 @@
                 Midi Sequencer, or a Composition Editor can then read and
                 update this standard data.
             </p>
-
             <p>
                 There are already commercial tools in this area but Audiveris
                 is, to our knowledge, the first Java open-source OMR tool. It
                 is a cross-platform tool, written entirely in Java, and tested
                 on Windows, Solaris, Linux and Mac OS.
             </p>
+
             <p>
                 Audiveris works with printed music sheets only, the task of
                 recognizing hand-written scores being significantly harder.
             </p>
+            <h3>
+                Main Features
+            </h3>
+            <table width="100%">
+                <tr>
+                    <td rowspan="4" class="feature-domain">
+                        Input
+                    </td>
+
+                </tr>
+                <tr class="a">
+                    <td class="feature">
+                        Input image formats:
+                    </td>
+                    <td>
+                        <strong>All major formats:</strong> gif, png, tiff,
+                        bmp, etc.
+                    </td>
+                </tr>
+
+                <tr class="b">
+                    <td class="feature">
+                        Input PDF files:
+                    </td>
+                    <td>
+                        <strong>Yes</strong>
+                    </td>
+                </tr>
+                <tr class="a">
+
+                    <td class="feature">
+                        Direct scanner input:
+                    </td>
+                    <td>
+                        <strong>No</strong> (Lack of open-source twain
+                        interface)
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+
+                        <br />
+                    </td>
+                </tr>
+                <tr>
+                    <td rowspan="10" class="feature-domain">
+                        Processing
+                    </td>
+                </tr>
+                <tr class="a">
+
+                    <td class="feature">
+                        Support for handwritten scores:
+                    </td>
+                    <td>
+                        <strong>No</strong>
+                    </td>
+                </tr>
+                <tr class="b">
+                    <td class="feature">
+
+                        Number of pages per score:
+                    </td>
+                    <td>
+                        <strong>One</strong> (Improvement is planned)
+                    </td>
+                </tr>
+                <tr class="a">
+                    <td class="feature">
+                        Number of staves per system:
+                    </td>
+
+                    <td>
+                        <strong>Any</strong> (And can vary between systems)
+                    </td>
+                </tr>
+                <tr class="b">
+                    <td class="feature">
+                        Number of lines per staff:
+                    </td>
+                    <td>
+
+                        <strong>5</strong>
+                    </td>
+                </tr>
+                <tr class="a">
+                    <td class="feature">
+                        Support for tablatures:
+                    </td>
+                    <td>
+                        <strong>No</strong>
+
+                    </td>
+                </tr>
+                <tr class="b">
+                    <td class="feature">
+                        Number of voices per measure:
+                    </td>
+                    <td>
+                        <strong>Any</strong>
+                    </td>
+
+                </tr>
+                <tr class="a">
+                    <td class="feature">
+                        Customizable parameters:
+                    </td>
+                    <td>
+                        <strong>Yes</strong> For detailed tuning via user
+                        interface
+                    </td>
+                </tr>
+
+                <tr class="b">
+                    <td class="feature">
+                        Integrated learning:
+                    </td>
+                    <td>
+                        <strong>Yes</strong> To recognize new symbol shapes
+                    </td>
+                </tr>
+                <tr class="a">
+
+                    <td class="feature">
+                        User plugins:
+                    </td>
+                    <td>
+                        <strong>Yes</strong> To allow user extensions
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+
+                        <br />
+                    </td>
+                </tr>
+                <tr>
+                    <td rowspan="4" class="feature-domain">
+                        Output
+                    </td>
+                </tr>
+                <tr class="a">
+
+                    <td class="feature">
+                        MusicXML file:
+                    </td>
+                    <td>
+                        <strong>Yes</strong> Using MusicXML version 2.0
+                    </td>
+                </tr>
+                <tr class="b">
+                    <td class="feature">
+
+                        Integrated playback:
+                    </td>
+                    <td>
+                        <strong>Yes</strong> At score level and at measure
+                        level
+                    </td>
+                </tr>
+                <tr class="a">
+                    <td class="feature">
+                        MIDI file:
+                    </td>
+
+                    <td>
+                        <strong>Yes</strong>
+                    </td>
+                </tr>
+            </table>
             <h3>
                 <a name="Foreseen-Contributions" id=
                 "Foreseen-Contributions">Foreseen Contributions</a>
@@ -155,176 +324,6 @@
         <!-- MATERIAL COLUMN -->
         <!-- =============== -->
         <div id="material-column">
-            <h3>
-                Main Features
-            </h3>
-
-            <table width="100%">
-                <tr>
-                    <td rowspan="4" class="feature-domain">
-                        Input
-                    </td>
-                </tr>
-                <tr class="a">
-                    <td class="feature">
-                        Input image formats:
-                    </td>
-
-                    <td>
-                        <strong>All major formats:</strong> gif, png, tiff,
-                        bmp, etc.
-                    </td>
-                </tr>
-                <tr class="b">
-                    <td class="feature">
-                        Input PDF files:
-                    </td>
-                    <td>
-
-                        <strong>Yes</strong>
-                    </td>
-                </tr>
-                <tr class="a">
-                    <td class="feature">
-                        Direct scanner input:
-                    </td>
-                    <td>
-                        <strong>No</strong> (Lack of open-source twain
-                        interface)
-                    </td>
-
-                </tr>
-                <tr>
-                    <td>
-                        <br />
-                    </td>
-                </tr>
-                <tr>
-                    <td rowspan="10" class="feature-domain">
-                        Processing
-                    </td>
-
-                </tr>
-                <tr class="a">
-                    <td class="feature">
-                        Support for handwritten scores:
-                    </td>
-                    <td>
-                        <strong>No</strong>
-                    </td>
-                </tr>
-
-                <tr class="b">
-                    <td class="feature">
-                        Number of pages per score:
-                    </td>
-                    <td>
-                        <strong>One</strong> (Improvement is planned)
-                    </td>
-                </tr>
-                <tr class="a">
-
-                    <td class="feature">
-                        Number of staves per system:
-                    </td>
-                    <td>
-                        <strong>Any</strong> (And can vary between systems)
-                    </td>
-                </tr>
-                <tr class="b">
-                    <td class="feature">
-
-                        Number of lines per staff:
-                    </td>
-                    <td>
-                        <strong>5</strong>
-                    </td>
-                </tr>
-                <tr class="a">
-                    <td class="feature">
-                        Support for tablatures:
-                    </td>
-
-                    <td>
-                        <strong>No</strong>
-                    </td>
-                </tr>
-                <tr class="b">
-                    <td class="feature">
-                        Number of voices per measure:
-                    </td>
-                    <td>
-
-                        <strong>Any</strong>
-                    </td>
-                </tr>
-                <tr class="a">
-                    <td class="feature">
-                        Customizable parameters:
-                    </td>
-                    <td>
-                        <strong>Yes</strong> For detailed tuning via user
-                        interface
-                    </td>
-
-                </tr>
-                <tr class="b">
-                    <td class="feature">
-                        Integrated learning:
-                    </td>
-                    <td>
-                        <strong>Yes</strong> To recognize new symbol shapes
-                    </td>
-                </tr>
-
-                <tr class="a">
-                    <td class="feature">
-                        User plugins:
-                    </td>
-                    <td>
-                        <strong>Yes</strong> To allow user extensions
-                    </td>
-                </tr>
-                <tr>
-
-                    <td>
-                        <br />
-                    </td>
-                </tr>
-                <tr>
-                    <td rowspan="4" class="feature-domain">
-                        Output
-                    </td>
-                </tr>
-
-                <tr class="a">
-                    <td class="feature">
-                        MusicXML file:
-                    </td>
-                    <td>
-                        <strong>Yes</strong> Using MusicXML version 2.0
-                    </td>
-                </tr>
-                <tr class="b">
-
-                    <td class="feature">
-                        Integrated playback:
-                    </td>
-                    <td>
-                        <strong>Yes</strong> At score level and at measure
-                        level
-                    </td>
-                </tr>
-                <tr class="a">
-                    <td class="feature">
-
-                        MIDI file:
-                    </td>
-                    <td>
-                        <strong>Yes</strong>
-                    </td>
-                </tr>
-            </table>
             <h3>
                 Exported MusicXML
             </h3><script type="text/javascript">
@@ -382,8 +381,8 @@
                 <i>&lt;install-dir&gt;</i>/dist/audiveris-3.2.jar</code>
             </p>
             <p>
-                <strong>Very important notice</strong>: OCR is available under
-                Windows only and needs:
+                <strong>Very important notice</strong>: The OCR feature is
+                today available under Windows only and needs:
             </p>
 
             <ul>
@@ -400,7 +399,7 @@
 
             </ul>
             <h3>
-                Documentation (also in archives)
+                Documentation
             </h3>
             <div class="filebrowse">
                 <script type="text/javascript">
