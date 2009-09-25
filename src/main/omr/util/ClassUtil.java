@@ -100,7 +100,7 @@ public class ClassUtil
         try {
             System.load(path);
         } catch (Throwable ex) {
-            logger.warning("Could not load " + path, ex);
+            logger.warning("Error while loading " + path, ex);
             throw new RuntimeException(ex);
         }
     }
