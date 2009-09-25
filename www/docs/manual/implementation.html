@@ -22,18 +22,22 @@
         
         <LINK REL="stylesheet" TYPE="text/css"
               HREF="../../branding/css/inst.css"/>
+        <script type="text/javascript" src="util.js">
+</script>
     </HEAD>
     
     <BODY MARGINWIDTH="0" MARGINHEIGHT="0" CLASS="app" STYLE="text-align: justify;">
         
         <H1 ALIGN=CENTER>Audiveris Implementation Manual</H1>
+	
+	<DIV CLASS="warningmessage">
+	    <P CLASS="alert"><b>BEWARE:</b> This documentation has not yet been 
+		updated for Audiveris 3.2, please consider this file as obsolete.</P>
+	</DIV>
         
-        <ADDRESS>Author : <A
-                              HREF="mailto:herve.bitteur@laposte.net">Herv&eacute;
-                              Bitteur</A></ADDRESS>
         <ADDRESS>Updated :
             <SCRIPT TYPE="text/javascript" >
-                document.write(parent.parent.getCVSDate("$Id$"));
+                document.write(getCVSDate("$Id$"));
             </SCRIPT>
         </ADDRESS>
         
@@ -43,7 +47,116 @@
             adding new features, etc...</P>
 	<P><b>Note:</b> This documentation has been updated for Audiveris 3.1,
 	    but still lacks important sections</P>
-        
+
+            <h2>
+                Implementation
+            </h2>
+
+            <ul>
+                <li>Techniques
+                    <ul>
+                        <li>
+                            <strong>Linear Adjacency Graphs</strong> (LAG)
+                            record pixel information as a directed graph
+                            structure, composed of pixel contiguous runs
+                            organized in sections.
+                        </li>
+                        <li>
+                            <strong>Sticks</strong> are developed above LAGs to
+                            take advantage of the structuring sticks of a music
+                            sheet (staff lines, ledgers and legato signs are
+                            such horizontal sticks, while stems and barlines
+                            are vertical sticks).
+                        </li>
+
+                        <li>
+                            <strong>A Neural Network</strong> allows efficient
+                            pattern recognition as well as training based on
+                            user input for continuous improvement of the tool
+                            efficiency.
+                        </li>
+                    </ul>
+                </li>
+                <li>Technologies
+                    <ul>
+                        <li>
+                            <strong>Java Advanced Imaging</strong> (JAI) for
+                            number crunching in image processing.
+                        </li>
+
+                        <li>
+                            <strong>Swing</strong> for user interface, enhanced with
+                            <strong>JGoodies</strong>.
+                        </li>
+                        <li>
+                            <strong>Swing Application Framework</strong> for
+                            lifecycle, actions, etc.
+                        </li>
+                        <li>
+                            <strong>EventBus</strong> for
+                            decoupling UI events.
+                        </li>
+                        <li>
+                            <strong>JFreeChart</strong> for charts.
+                        </li>
+
+                        <li>
+                            <strong>JAXB 2</strong> for XML persistency.
+                        </li>
+                        <li>
+                            <strong>Jama</strong> for linear algebra.
+                        </li>
+                        <li>
+                            <strong>Java&nbsp;6</strong>.
+                        </li>
+
+                    </ul>
+                </li>
+                <li>Companions
+                    <ul>
+                        <li>
+                            <a href=
+                            "https://proxymusic.dev.java.net"><strong>ProxyMusic</strong></a>
+                            is a separate project, dedicated to the marshalling
+                            between Java objects and MusicXML V2.0 files.
+                        </li>
+                        <li>
+
+                            <a href=
+                            "http://www.xenoage.com/player/"><strong>XenoPlay</strong></a>
+                            is a project owned by Andreas Wenger, to provide a
+                            Java MIDI player interface to MusicXML content.
+                        </li>
+                        <li>
+                            <a href=
+                            "http://code.google.com/p/tesseract-ocr/"><strong>Tesseract</strong></a>
+                            is the well known open-source OCR released by
+                            Google. It is accessed via a JNI interface provided
+                            by <a href=
+                            "http://code.google.com/p/tesjeract/"><strong>Tesjeract</strong></a>
+                            project of Bahri Gencsoy.
+                        </li>
+
+                    </ul>
+                </li>
+                <li>Cocomo
+                    <ul>
+                        <li>This Java stand-alone application is made of 370
+                        classes and 120000 lines of commented Java code. In the
+                        little table below, selecting "code only" gives the
+                        most realistic estimate :-)<br />
+                            <br />
+                            <script type="text/javascript" src=
+                            "http://www.ohloh.net/p/3072/widgets/project_cocomo.js">
+</script>
+                        </li>
+
+                    </ul>
+                </li>
+            </ul>
+
+
+
         <A NAME="HIERARCHY">
             <H2>Folders Hierarchy</H2>
         </A>
