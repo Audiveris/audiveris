@@ -405,16 +405,17 @@ public class ActionManager
                                         JMenu  menu)
     {
         // Create all type sections for this menu
-        for (String section : Actions.getSectionNames()) {
+        for (int section : Actions.getSections()) {
             if (logger.isFineEnabled()) {
                 logger.fine("Starting section: " + section);
             }
 
+            // Use a separator between sections
             menu.addSeparator();
 
             for (ActionDescriptor desc : Actions.getAllDescriptors()) {
                 if (desc.domain.equalsIgnoreCase(domain) &&
-                    desc.section.equalsIgnoreCase(section)) {
+                    (desc.section == section)) {
                     if (logger.isFineEnabled()) {
                         logger.fine("Registering " + desc);
                     }

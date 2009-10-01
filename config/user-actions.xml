@@ -19,14 +19,9 @@
      
 <actions>
     
-<!--
-    <action domain="Text" section="IMPORT" class="omr.glyph.ui.TextAreaBrowser" method="retrieveTextAreas" />
-    <action domain="Text" section="EDIT"   class="omr.glyph.ui.TextAreaBrowser" method="showHorizontalHistogram" />
-    <action domain="Text" section="EDIT"   class="omr.glyph.ui.TextAreaBrowser" method="showVerticalHistogram" />
--->
     <!-- Just as an example -->
-    <action domain="Debug" section="EDIT"  class="omr.ui.GuiActions"            method="dumpEventServices"/>
-    <action domain="Debug" section="EDIT"  class="MyClass"                      method="dumpCurrentScript" />
-    <action domain="Debug" section="END"   class="MyClass"                      method="dumpCurrentScore" />
+    <action domain="Debug" section="20" class="omr.ui.GuiActions" method="dumpEventServices"/>
+    <action domain="Debug" section="20" class="MyClass"           method="dumpCurrentScript" />
+    <action domain="Debug" section="40" class="MyClass"           method="dumpCurrentScore" />
 
 </actions>
