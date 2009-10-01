@@ -38,9 +38,13 @@ public class ActionDescriptor
     @XmlAttribute(name = "domain")
     public String domain;
 
-    /** Which UI section should host this action */
+    /**
+     * Which UI section should host this action. Any value is OK, but items
+     * with the same section value will be gathered together in the menu, while
+     * different sections will be separated by a menu separator
+     */
     @XmlAttribute(name = "section")
-    public String section;
+    public Integer section;
 
     /**
      * Which kind of menu item should be generated for this action,

@@ -67,24 +67,6 @@ public class Actions
         HELP;
     }
 
-    /**
-     * Predefined list of section names within a domain. The user can add new
-     * section names, they will be added to the end of the predefined list.
-     */
-    public static enum Section {
-        //~ Enumeration constant initializers ----------------------------------
-
-
-        /** Section #1 */
-        IMPORT,
-        /** Section #2 */
-        EDIT,
-        /** Section #3 */
-        EXPORT,
-        /** Section #4 */
-        END;
-    }
-
     //~ Instance fields --------------------------------------------------------
 
     /** Collection of descriptors loaded by unmarshalling one file */
@@ -147,29 +129,23 @@ public class Actions
         return names;
     }
 
-    //-----------------//
-    // getSectionNames //
-    //-----------------//
+    //-------------//
+    // getSections //
+    //-------------//
     /**
-     * Report the whole collection of section names, starting with the
-     * predefined ones
-     * @return the collection of section names
+     * Report the whole collection of sections, the predefined ones and the
+     * added ones.
+     * @return the collection of sections
      */
-    public static Set<String> getSectionNames ()
+    public static SortedSet<Integer> getSections ()
     {
-        Set<String> names = new LinkedHashSet<String>();
+        SortedSet<Integer> sections = new TreeSet<Integer>();
 
-        // Predefined ones
-        for (Section section : Section.values()) {
-            names.add(section.name());
-        }
-
-        // User-specified ones
         for (ActionDescriptor desc : allDescriptors) {
-            names.add(desc.section);
+            sections.add(desc.section);
         }
 
-        return names;
+        return sections;
     }
 
     //-----------------//
@@ -211,9 +187,7 @@ public class Actions
                 continue;
             }
 
-            if (desc.section != null) {
-                desc.section = desc.section.toUpperCase();
-            } else {
+            if (desc.section == null) {
                 logger.warning("No section specified for " + desc);
                 it.remove();
 
