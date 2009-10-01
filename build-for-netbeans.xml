@@ -61,16 +61,16 @@
     <!--  B I N - D I S T  -->
     <!-- ================= -->
     <target name="bin-dist"
- 	    depends="clean, jar, common.-bin-dist"
-            description="Rebuild and package the binary distribution.">
+ 	    depends="clean, jar, -bin-dist"
+            description="Build the binary distribution">
     </target>
 
     <!-- =================== -->
     <!--  F U L L - D I S T  -->
     <!-- =================== -->
     <target name="full-dist"
- 	    depends="common.-full-dist"
-            description="Rebuild and package the whole distribution.">
+ 	    depends="bin-dist, -full-dist"
+            description="Build the full distribution">
     </target>
     
     <!-- =============== -->
@@ -104,17 +104,6 @@
 	    depends="init,common.-javadoc-build">
         <nbbrowse file="${dist.javadoc.dir}/index.html"/>
     </target>
-
-    <!-- ======================= -->
-    <!--  - P O S T - C L E A N  -->
-    <!-- ======================= -->
-    <target name="-post-clean"
-	    depends="-clean-icons"/>
-
-    <!-- =========================== -->
-    <!--  - P O S T - C O M P I L E  -->
-    <!-- =========================== -->
-    <target name="-post-compile" depends="-build-icons"/>        
 
     <!-- ================= -->
     <!--  - P R E - J A R  -->
