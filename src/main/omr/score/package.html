@@ -1,14 +1,26 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
-<!-- 	$Id$	 -->
-
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!--  $Id$  -->
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>
+            Package omr.score
+        </title>
+    </head>
     <body>
-	
-	Package handling score entities as interpretated from the sheet picture.
-	
-	<p>This is a hierarchy of classes : Score, Page, System, Slur, Stave, Measure, etc...
-         
-         <img src="doc-files/ScoreHierarchy.png" />
+        <p>
+            The score package, with its subpackages such as omr.score.midi,
+            handles the logical music information inferred from recognized
+            glyphs extracted from the physical sheet, and the internal
+            representation of such score can be stored on an external support
+            using various data formats, such as Midi or MusicXML.
+        </p>
 
+        <p>
+            This is a (somewhat obsolete picture of the) hierarchy of classes :
+            Score, Page, System, Slur, Stave, Measure, etc... <img src=
+            "doc-files/ScoreHierarchy.png" alt="Score entities" title=
+            "Score entities" />
+        </p>
     </body>
 </html>

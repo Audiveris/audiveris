@@ -1,95 +1,129 @@
-<!-- 	$Id$	 -->
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
-
-<html>
+<!--  $Id$  -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>
+            Package omr.glyph.ui
+        </title>
+        <style type="text/css">
+/*<![CDATA[*/
+        li.c1 {list-style: none; display: inline}
+        /*]]>*/
+        </style>
+    </head>
     <body>
-	Package dedicated to all user interfaces that deal with
-	glyphs. There are only a few top-level classes, each one using
-	dedicated companion classes:
-	<ul>
-	    <li>
-		<a href="GlyphBoard.html">GlyphBoard</a>, a general
-		glyph board used by all steps dealing with glyphs</li>
-	    <ul>
-		<li>
-		    <a
-		    href="SpinnerGlyphModel.html">SpinnerGlyphModel</a>,
-		    a spinner data model, specifically designed for
-		    glyph ids</li>
-	    </ul>
-	    <li>
-		<a href="GlyphLagView.html">GlyphLagView</a>, a
-		general view of a GlyphLag, used by steps dealing with
-		glyphs</li>
-	    <li>
-		<a href="GlyphRepository.html">GlyphRepository</a>,
-		the unique access to recorded glyphs descriptions</li>
-	    <li>
-		<a href="GlyphTrainer.html">GlyphTrainer</a>, a
-		comprehensive user interface to train and validate the
-		neural network evaluator</li>
-	    <ul>
-		<li>
-		    <a href="NetworkPanel.html">NetworkPanel</a>, the
-		    panel dedicated to training the neural network
-		    evaluator </li>
-		<li>
-		    <a href="SelectionPanel.html">SelectionPanel</a>,
-		    the user interface to select glyph population out
-		    of the repository </li>
-		<li>
-		    <a href="TrainingPanel.html">TrainingPanel</a>, a
-		    general panel for evaluator training, subclassed
-		    by NetworkPanel </li>
-		<li>
-		    <a
-		    href="ValidationPanel.html">ValidationPanel</a>,
-		    the user interface to validate the evaluator
-		    against a glyph population </li>
-	    </ul>
-	    <li>
-		<a href="GlyphVerifier.html">GlyphVerifier</a>, a user
-		interface dedicated to visual verification of recorded
-		glyphs and their assigned shape</li>
-	    <ul>
-		<li>
-		    <a href="GlyphBrowser.html">GlyphBrowser</a>, a
-		    user panel to navigate through the selected
-		    glyphs </li>
-	    </ul>
-	    <li>
-		<a
-		href="ShapeColorChooser.html">ShapeColorChooser</a>,
-		the user interface to assign a default color to a
-		shape, or a range of shapes </li>
-	    <li>
-		<a href="SymbolsEditor.html">SymbolsEditor</a> The
-		glyph user interface for dealing with glyphs in
-		sheets</li>
-	    <ul>
-		<li>
-		    <a
-		    href="EvaluationBoard.html">EvaluationBoard</a>, a
-		    board for evaluating and assigning shapes to
-		    glyphs </li>
-		<li>
-		    <a href="GlyphMenu.html">GlyphMenu</a>, the popup
-		    menu for SymbolsEditor </li>
-		<li>
-		    <a
-		    href="ShapeFocusBoard.html">ShapeFocusBoard</a>, a
-		    board dedicated to focus on chosen shapes </li>
-		<li>
-		    <a
-		    href="SymbolGlyphBoard.html">SymbolGlyphBoard</a>,
-		    a specific GlyphBoard meant for symbol
-		    glyphs </li>
-	    </ul>
-	</ul>
+        <p>
+            Package dedicated to all user interfaces that deal with glyphs.
+            There are only a few top-level classes, each one using dedicated
+            companion classes:
+        </p>
+        <ul>
+            <li>
+                <a href="GlyphBoard.html">GlyphBoard</a>, a general glyph board
+                used by all steps dealing with glyphs
+            </li>
+            <li class="c1">
+                <ul>
+                    <li>
 
-    <h4>Glyph Controller and Model:<br/>
-        <img src="doc-files/GlyphsController.jpg"/>
-    </h4>
+                        <a href="SpinnerGlyphModel.html">SpinnerGlyphModel</a>,
+                        a spinner data model, specifically designed for glyph
+                        ids
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a href="GlyphLagView.html">GlyphLagView</a>, a general view of
+                a GlyphLag, used by steps dealing with glyphs
+            </li>
+            <li>
+                <a href="GlyphRepository.html">GlyphRepository</a>, the unique
+                access to recorded glyphs descriptions
+            </li>
 
+            <li>
+                <a href="GlyphTrainer.html">GlyphTrainer</a>, a comprehensive
+                user interface to train and validate the neural network
+                evaluator
+            </li>
+            <li class="c1">
+                <ul>
+                    <li>
+                        <a href="NetworkPanel.html">NetworkPanel</a>, the panel
+                        dedicated to training the neural network evaluator
+                    </li>
+                    <li>
+
+                        <a href="SelectionPanel.html">SelectionPanel</a>, the
+                        user interface to select glyph population out of the
+                        repository
+                    </li>
+                    <li>
+                        <a href="TrainingPanel.html">TrainingPanel</a>, a
+                        general panel for evaluator training, subclassed by
+                        NetworkPanel
+                    </li>
+                    <li>
+                        <a href="ValidationPanel.html">ValidationPanel</a>, the
+                        user interface to validate the evaluator against a
+                        glyph population
+                    </li>
+                </ul>
+
+            </li>
+            <li>
+                <a href="GlyphVerifier.html">GlyphVerifier</a>, a user
+                interface dedicated to visual verification of recorded glyphs
+                and their assigned shape
+            </li>
+            <li class="c1">
+                <ul>
+                    <li>
+                        <a href="GlyphBrowser.html">GlyphBrowser</a>, a user
+                        panel to navigate through the selected glyphs
+                    </li>
+
+                </ul>
+            </li>
+            <li>
+                <a href="ShapeColorChooser.html">ShapeColorChooser</a>, the
+                user interface to assign a default color to a shape, or a range
+                of shapes
+            </li>
+            <li>
+                <a href="SymbolsEditor.html">SymbolsEditor</a> The glyph user
+                interface for dealing with glyphs in sheets
+            </li>
+
+            <li class="c1">
+                <ul>
+                    <li>
+                        <a href="EvaluationBoard.html">EvaluationBoard</a>, a
+                        board for evaluating and assigning shapes to glyphs
+                    </li>
+                    <li>
+                        <a href="GlyphMenu.html">GlyphMenu</a>, the popup menu
+                        for SymbolsEditor
+                    </li>
+                    <li>
+
+                        <a href="ShapeFocusBoard.html">ShapeFocusBoard</a>, a
+                        board dedicated to focus on chosen shapes
+                    </li>
+                    <li>
+                        <a href="SymbolGlyphBoard.html">SymbolGlyphBoard</a>, a
+                        specific GlyphBoard meant for symbol glyphs
+                    </li>
+                </ul>
+            </li>
+        </ul>
+        <h4>
+
+            Glyph Controller and Model:<br />
+            <img src="doc-files/GlyphsController.jpg" alt=
+            "GlyphsController and GlyphsModel" title=
+            "GlyphsController and GlyphsModel" />
+        </h4>
     </body>
 </html>
