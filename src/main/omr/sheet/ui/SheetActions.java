@@ -22,9 +22,7 @@ import omr.log.Logger;
 
 import omr.score.Score;
 
-import omr.sheet.*;
 import omr.sheet.Sheet;
-import omr.sheet.SheetsManager;
 
 import omr.step.Step;
 
@@ -43,8 +41,7 @@ import javax.swing.JOptionPane;
 
 /**
  * Class <code>SheetActions</code> simply gathers UI actions related to sheet
- * handling. These static member classes are ready to be picked by the plugins
- * mechanism.
+ * handling. These methods are ready to be picked up by the plugins mechanism.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -164,8 +161,7 @@ public class SheetActions
                 sheet.getLinesBuilder()
                      .displayChart();
             } else {
-                logger.warning(
-                    "Data from staff line builder" + " is not available");
+                logger.warning("Data from staff line builder is not available");
             }
         }
     }
@@ -331,7 +327,7 @@ public class SheetActions
 
         /** Valid extensions for image files */
         Constant.String validImageFiles = new Constant.String(
-            ".bmp .gif .jpg .png .tif .pdf",
+            ".bmp .gif .jpg .png .tiff .tif .pdf",
             "Valid image file extensions, whitespace-separated");
     }
 
