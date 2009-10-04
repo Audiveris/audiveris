@@ -11,8 +11,8 @@
 <!--
      This file gathers the user-addedclasses to be loaded as UI actions.
      
-     The order of menus in the menu bar and the order of sections in each menu 
-     are predefined, but the order of items within a section depends on this.
+     The order of menus in the menu bar are predefined, but the order of items
+     within a section depends on this.
      
      Version $Id$
      -->
@@ -20,8 +20,8 @@
 <actions>
     
     <!-- Just as an example -->
-    <action domain="Debug" section="20" class="omr.ui.GuiActions" method="dumpEventServices"/>
-    <action domain="Debug" section="20" class="MyClass"           method="dumpCurrentScript" />
-    <action domain="Debug" section="40" class="MyClass"           method="dumpCurrentScore" />
+    <action domain="DEBUG" section="20" class="omr.ui.GuiActions" method="dumpEventServices"/>
+    <action domain="DEBUG" section="20" class="MyClass"           method="dumpCurrentScript" />
+    <action domain="DEBUG" section="40" class="MyClass"           method="dumpCurrentScore" />
 
 </actions>

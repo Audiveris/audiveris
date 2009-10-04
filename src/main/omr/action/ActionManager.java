@@ -223,7 +223,7 @@ public class ActionManager
             if (input != null) {
                 try {
                     Actions.loadActionsFrom(input);
-                } catch (JAXBException ex) {
+                } catch (Exception ex) {
                     logger.warning("Error loading actions from " + name, ex);
                 } finally {
                     try {
