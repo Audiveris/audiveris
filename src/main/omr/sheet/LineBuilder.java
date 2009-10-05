@@ -612,7 +612,7 @@ public class LineBuilder
             "Minimum section length to be considered a staff line core section");
         Scale.Fraction extensionMinLength = new Scale.Fraction(
             0.25d,
-            "Minimum length to compute extension of crossing objects during cleanup");
+            "Minimum length to compute extension of crossing objects");
         Constant.Ratio maxAdjacency = new Constant.Ratio(
             0.5d,
             "Maximum adjacency ratio to flag a section as peripheral to a staff line");

@@ -813,7 +813,7 @@ public class GlyphInspector
             "Maximum length for close stems");
         Scale.Fraction   clefHalfWidth = new Scale.Fraction(
             2d,
-            "half width of a clef");
+            "Half width of a clef");
         Evaluation.Doubt clefMaxDoubt = new Evaluation.Doubt(
             3d,
             "Maximum doubt for clef verification");

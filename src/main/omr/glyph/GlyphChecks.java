@@ -246,9 +246,6 @@ public class GlyphChecks
     {
         //~ Instance fields ----------------------------------------------------
 
-        Scale.AreaFraction minWeight = new Scale.AreaFraction(
-            0.19,
-            "Minimum normalized weight to be considered not a noise");
         Scale.AreaFraction maxHeadBlackWeight = new Scale.AreaFraction(
             1.2,
             "Maximum normalized weight for a NOTEHEAD_BLACK");

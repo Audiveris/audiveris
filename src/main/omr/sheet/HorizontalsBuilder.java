@@ -36,12 +36,11 @@ import omr.lag.ui.SectionBoard;
 
 import omr.log.Logger;
 
-import omr.sheet.ui.SheetPainter;
-
 import omr.selection.GlyphEvent;
 import omr.selection.UserEvent;
 
 import omr.sheet.ui.PixelBoard;
+import omr.sheet.ui.SheetPainter;
 import omr.sheet.ui.SheetsController;
 
 import omr.step.Step;
@@ -594,8 +593,7 @@ public class HorizontalsBuilder
             "Should we display a frame on the horizontal sticks");
         Scale.Fraction   extensionMinPointNb = new Scale.Fraction(
             0.2,
-            "Minimum number of points to compute extension of" +
-            " crossing objects during cleanup");
+            "Minimum number of points to compute extension of crossing objects");
         Constant.Ratio   maxAdjacencyHigh = new Constant.Ratio(
             0.2,
             "High Maximum adjacency ratio for an ending");

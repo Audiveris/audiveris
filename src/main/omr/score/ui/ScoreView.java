@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.score.ui;
 
-import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.log.Logger;
@@ -541,12 +540,9 @@ public class ScoreView
     {
         //~ Instance fields ----------------------------------------------------
 
-        PixelCount       measureMargin = new PixelCount(
+        PixelCount measureMargin = new PixelCount(
             10,
             "Number of pixels as margin when highlighting a measure");
-        Constant.Boolean popupEnabled = new Constant.Boolean(
-            true,
-            "Should we allow popup menu in score view?");
     }
 
     //--------//
@@ -638,11 +634,6 @@ public class ScoreView
                                      MouseMovement movement)
         {
             super.pointSelected(pt, movement);
-
-            // Let the user disable this popup feature if so desired
-            if (!constants.popupEnabled.getValue()) {
-                return;
-            }
 
             // Context parameters
             ScorePoint scrPt = new ScorePoint(pt.x, pt.y);

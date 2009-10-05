@@ -672,7 +672,7 @@ public class TextArea
             "Minimum value for a horizontal gap between histogram packets");
         Constant.Ratio topHistoThreshold = new Constant.Ratio(
             0.1,
-            "Threhold to detect top of characters");
+            "Threshold to detect top of characters");
         Constant.Ratio mainHistoThreshold = new Constant.Ratio(
             0.5,
             "Main threhold to detect x-height of characters");

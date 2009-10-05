@@ -410,11 +410,6 @@ public class SheetsController
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** Default directory for selection of sheet image files */
-        Constant.String defaultSheetDirectory = new Constant.String(
-            "",
-            "Default directory for selection of sheet image files");
-
         /** Initial zoom ratio for displayed sheet pictures */
         Constant.Ratio initialZoomRatio = new Constant.Ratio(
             1d,
