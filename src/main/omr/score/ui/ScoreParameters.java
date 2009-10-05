@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                            S c o r e B o a r d                             //
+//                       S c o r e P a r a m e t e r s                        //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -23,11 +23,8 @@ import omr.score.midi.MidiAbstractions;
 
 import omr.script.ParametersTask;
 
-import omr.selection.UserEvent;
-
 import omr.sheet.Sheet;
 
-import omr.ui.*;
 import omr.ui.field.LField;
 import omr.ui.field.LIntegerField;
 import omr.ui.util.Panel;
@@ -44,28 +41,28 @@ import java.util.Map;
 import javax.swing.*;
 
 /**
- * Class <code>ScoreBoard</code> is a board that manages score information as
- * both a display and possible input from user (text language, midi parameters,
- * parts name and instrument, measure range selection).
+ * Class <code>ScoreParameters</code> is a dialog that manages score information
+ * as both a display and possible input from user (text language, midi
+ * parameters, parts name and instrument, measure range selection).
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-public class ScoreBoard
-    extends Board
+public class ScoreParameters
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ScoreBoard.class);
+    private static final Logger logger = Logger.getLogger(
+        ScoreParameters.class);
 
     //~ Instance fields --------------------------------------------------------
 
+    /** The swing component of this panel */
+    protected final Panel component;
+
     /** The related score */
     private final Score score;
-
-    /** Needed for reference from score pane */
-    private final MidiPane midiPane;
 
     /** Collection of individual data panes */
     private final List<Pane> panes = new ArrayList<Pane>();
@@ -75,24 +72,24 @@ public class ScoreBoard
 
     //~ Constructors -----------------------------------------------------------
 
-    //------------//
-    // ScoreBoard //
-    //------------//
+    //-----------------//
+    // ScoreParameters //
+    //-----------------//
     /**
-     * Create a ScoreBoard
+     * Create a ScoreParameters object
      *
-     * @param unitName name of the unit which declares a score board
      * @param score the related score
      */
-    public ScoreBoard (String unitName,
-                       Score  score)
+    public ScoreParameters (Score score)
     {
-        super(unitName + "-ScoreBoard", null, null);
         this.score = score;
+
+        component = new Panel();
+        component.setNoInsets();
 
         // Sequence of Pane instances
         panes.add(new LanguagePane());
-        panes.add(midiPane = new MidiPane());
+        panes.add(new MidiPane());
         panes.add(new ScorePane());
 
         // Add measure pane iff we have measures
@@ -110,6 +107,19 @@ public class ScoreBoard
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //--------------//
+    // getComponent //
+    //--------------//
+    /**
+     * Report the UI component
+     *
+     * @return the concrete component
+     */
+    public JPanel getComponent ()
+    {
+        return component;
+    }
 
     //--------//
     // commit //
@@ -141,14 +151,6 @@ public class ScoreBoard
         } else {
             return false;
         }
-    }
-
-    //---------//
-    // onEvent //
-    //---------//
-    public void onEvent (UserEvent event)
-    {
-        // void
     }
 
     //-------------//
@@ -208,7 +210,7 @@ public class ScoreBoard
     // Pane //
     //------//
     /**
-     * A pane is a sub-component of the ScoreBoard, able to host data, check
+     * A pane is a sub-component of the ScoreParameters, able to host data, check
      * data validity and apply the requested modifications.
      */
     private abstract static class Pane

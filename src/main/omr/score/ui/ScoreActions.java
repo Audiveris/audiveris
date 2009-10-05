@@ -179,7 +179,7 @@ public class ScoreActions
         final Wrapper<Boolean> apply = new Wrapper<Boolean>();
         apply.value = false;
 
-        final ScoreBoard  scoreBoard = new ScoreBoard("Parameters", score);
+        final ScoreParameters  scoreBoard = new ScoreParameters(score);
         final JOptionPane optionPane = new JOptionPane(
             scoreBoard.getComponent(),
             JOptionPane.QUESTION_MESSAGE,
