@@ -270,19 +270,11 @@
 	    description="Remove all the generated outputs.">
     </target>
 
-    <!-- ================= -->
-    <!--  B I N - D I S T  -->
-    <!-- ================= -->
-    <target name="bin-dist"
- 	    depends="jar, -bin-dist"
-            description="Build the binary distribution">
-    </target>
-
     <!-- =================== -->
     <!--  F U L L - D I S T  -->
     <!-- =================== -->
     <target name="full-dist"
- 	    depends="-full-dist"
+ 	    depends="clean, jar, -full-dist"
             description="Build the full distribution">
     </target>
     
