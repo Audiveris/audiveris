@@ -47,12 +47,12 @@
 
         <pathelement path="${jama.jar}"/>
 
-        <pathelement path="${java.home}/lib/ext/jai_imageio.jar"/>
-        <pathelement path="${java.home}/lib/ext/clibwrapper_jiio.jar"/>
+        <pathelement path="${jai.dir}/jai_imageio.jar"/>
+        <pathelement path="${jai.dir}/clibwrapper_jiio.jar"/>
 
-	<pathelement path="${java.home}/lib/ext/jai_codec.jar"/>
-        <pathelement path="${java.home}/lib/ext/jai_core.jar"/>
-        <pathelement path="${java.home}/lib/ext/mlibwrapper_jai.jar"/>
+	<pathelement path="${jai.dir}/jai_codec.jar"/>
+        <pathelement path="${jai.dir}/jai_core.jar"/>
+        <pathelement path="${jai.dir}/mlibwrapper_jai.jar"/>
 	
         <pathelement path="${jcip.jar}"/>
 
@@ -164,11 +164,11 @@
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${swingworker.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${tesjeract.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${xenoplay.jar}"/>
-        <copy todir="${dist.dir}/lib" verbose="$verbose" file="${java.home}/lib/ext/jai_imageio.jar"/>
-        <copy todir="${dist.dir}/lib" verbose="$verbose" file="${java.home}/lib/ext/clibwrapper_jiio.jar"/>
-        <copy todir="${dist.dir}/lib" verbose="$verbose" file="${java.home}/lib/ext/jai_codec.jar"/>
-        <copy todir="${dist.dir}/lib" verbose="$verbose" file="${java.home}/lib/ext/jai_core.jar"/>
-        <copy todir="${dist.dir}/lib" verbose="$verbose" file="${java.home}/lib/ext/mlibwrapper_jai.jar"/>
+        <copy todir="${dist.dir}/lib" verbose="$verbose" file="${jai.dir}/jai_imageio.jar"/>
+        <copy todir="${dist.dir}/lib" verbose="$verbose" file="${jai.dir}/clibwrapper_jiio.jar"/>
+        <copy todir="${dist.dir}/lib" verbose="$verbose" file="${jai.dir}/jai_codec.jar"/>
+        <copy todir="${dist.dir}/lib" verbose="$verbose" file="${jai.dir}/jai_core.jar"/>
+        <copy todir="${dist.dir}/lib" verbose="$verbose" file="${jai.dir}/mlibwrapper_jai.jar"/>
 
     </target>
 
