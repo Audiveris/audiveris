@@ -379,6 +379,15 @@ Implementation-Version: ${impl.version} ${DSTAMP}
                      includes="*.xml"/>
         </copy>
 
+	<!-- Purge build/classes folder from documentation items -->
+        <delete
+	    verbose="${verbose}"
+	    includeEmptyDirs="true">
+            <fileset dir="${build.classes.dir}" 
+                     includes="**/*.html,**/doc-files/*,**/doc-files" 
+                     />
+        </delete>
+
     </target>
 
     <!-- ======= -->
