@@ -22,9 +22,13 @@ import omr.score.entity.ScorePart;
 import omr.score.midi.MidiAbstractions;
 
 import omr.script.ParametersTask;
+import omr.script.ScriptActions;
 
 import omr.sheet.Sheet;
 
+import omr.step.Step;
+
+import omr.ui.FileDropHandler;
 import omr.ui.field.LField;
 import omr.ui.field.LIntegerField;
 import omr.ui.util.Panel;
@@ -88,6 +92,8 @@ public class ScoreParameters
         component.setNoInsets();
 
         // Sequence of Pane instances
+//        panes.add(new DnDPane());
+//        panes.add(new ScriptPane());
         panes.add(new LanguagePane());
         panes.add(new MidiPane());
         panes.add(new ScorePane());
@@ -206,6 +212,44 @@ public class ScoreParameters
 
     //~ Inner Classes ----------------------------------------------------------
 
+    //-------------//
+    // DefaultPane //
+    //-------------//
+    /**
+     * A pane with a checkBox to set parameter as a global default
+     */
+    private abstract static class DefaultPane
+        extends Pane
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Set as default? */
+        protected final JCheckBox defaultBox = new JCheckBox();
+
+        //~ Constructors -------------------------------------------------------
+
+        public DefaultPane (String label)
+        {
+            super(label);
+
+            defaultBox.setText("Set as default");
+            defaultBox.setToolTipText(
+                "Check to set parameter as global default");
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public int defineLayout (PanelBuilder    builder,
+                                 CellConstraints cst,
+                                 int             r)
+        {
+            builder.add(defaultBox, cst.xyw(3, r, 3));
+
+            return r;
+        }
+    }
+
     //------//
     // Pane //
     //------//
@@ -270,29 +314,86 @@ public class ScoreParameters
         }
     }
 
+    //---------//
+    // DnDPane //
+    //---------//
+    /**
+     * Which step should we trigger on Drag n' Drop?
+     */
+    private class DnDPane
+        extends Pane
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** ComboBox for desired step */
+        final JComboBox stepCombo;
+
+        //~ Constructors -------------------------------------------------------
+
+        public DnDPane ()
+        {
+            super("Drag 'n Drop");
+
+            // ComboBox for triggered step
+            stepCombo = createStepCombo();
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void commit ()
+        {
+            /** Since this info is not registered in the ParametersTask */
+            Step step = (Step) stepCombo.getItemAt(
+                stepCombo.getSelectedIndex());
+            FileDropHandler.setDefaultStep(step);
+        }
+
+        @Override
+        public int defineLayout (PanelBuilder    builder,
+                                 CellConstraints cst,
+                                 int             r)
+        {
+            JLabel stepLabel = new JLabel(
+                "Triggered step",
+                SwingConstants.RIGHT);
+            builder.add(stepLabel, cst.xyw(5, r, 3));
+            builder.add(stepCombo, cst.xyw(9, r, 3));
+
+            return r + 2;
+        }
+
+        /** Create a combo box filled with possible steps */
+        private JComboBox createStepCombo ()
+        {
+            JComboBox combo = new JComboBox(Step.values());
+            combo.setToolTipText("Step to trigger on Drag 'n Drop");
+
+            combo.setSelectedItem(FileDropHandler.getDefaultStep());
+
+            return combo;
+        }
+    }
+
     //--------------//
     // LanguagePane //
     //--------------//
+    /**
+     * Pane to set the dominant text language
+     */
     private class LanguagePane
-        extends Pane
+        extends DefaultPane
     {
         //~ Instance fields ----------------------------------------------------
 
         /** ComboBox for text language */
         final JComboBox langCombo;
 
-        /** Global language selection */
-        final JCheckBox langBox = new JCheckBox();
-
         //~ Constructors -------------------------------------------------------
 
         public LanguagePane ()
         {
             super("Text");
-
-            // langBox for global language assignment
-            langBox.setText("Set as default");
-            langBox.setToolTipText("Check to set language as global default");
 
             // ComboBox for text language
             langCombo = createLangCombo();
@@ -314,7 +415,7 @@ public class ScoreParameters
         public void commit ()
         {
             /** Since this info is not registered in the ParametersTask */
-            if (langBox.isSelected()) {
+            if (defaultBox.isSelected()) {
                 // Make the selected language the global default
                 String item = (String) langCombo.getItemAt(
                     langCombo.getSelectedIndex());
@@ -327,7 +428,7 @@ public class ScoreParameters
                                  CellConstraints cst,
                                  int             r)
         {
-            builder.add(langBox, cst.xyw(3, r, 3));
+            r = super.defineLayout(builder, cst, r);
 
             JLabel textLabel = new JLabel("Language", SwingConstants.RIGHT);
             builder.add(textLabel, cst.xyw(5, r, 3));
@@ -746,6 +847,57 @@ public class ScoreParameters
             }
 
             return r;
+        }
+    }
+
+    //------------//
+    // ScriptPane //
+    //------------//
+    /**
+     * Should we prompt the user for saving the script when sheet is closed?
+     */
+    private class ScriptPane
+        extends Pane
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** ComboBox for boolean */
+        final JComboBox boolCombo;
+
+        //~ Constructors -------------------------------------------------------
+
+        public ScriptPane ()
+        {
+            super("Script saving");
+
+            boolCombo = new JComboBox(
+                new Boolean[] { Boolean.FALSE, Boolean.TRUE });
+            boolCombo.setToolTipText("Should we prompt on closing?");
+            boolCombo.setSelectedItem(ScriptActions.isConfirmOnClose());
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void commit ()
+        {
+            Boolean item = (Boolean) boolCombo.getItemAt(
+                boolCombo.getSelectedIndex());
+            ScriptActions.setConfirmOnClose(item);
+        }
+
+        @Override
+        public int defineLayout (PanelBuilder    builder,
+                                 CellConstraints cst,
+                                 int             r)
+        {
+            JLabel scriptLabel = new JLabel(
+                "Prompt user",
+                SwingConstants.RIGHT);
+            builder.add(scriptLabel, cst.xyw(5, r, 3));
+            builder.add(boolCombo, cst.xyw(9, r, 3));
+
+            return r + 2;
         }
     }
 }

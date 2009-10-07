@@ -75,6 +75,16 @@ public class ScriptActions
 
     //~ Methods ----------------------------------------------------------------
 
+    public static void setConfirmOnClose (boolean bool)
+    {
+        constants.closeConfirmation.setValue(bool);
+    }
+
+    public static boolean isConfirmOnClose ()
+    {
+        return constants.closeConfirmation.getValue();
+    }
+
     //-------------//
     // getInstance //
     //-------------//

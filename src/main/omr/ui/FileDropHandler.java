@@ -37,7 +37,7 @@ import javax.swing.TransferHandler.TransferSupport;
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
-class FileDropHandler
+public class FileDropHandler
     extends TransferHandler
 {
     //~ Static fields/initializers ---------------------------------------------
@@ -50,6 +50,30 @@ class FileDropHandler
         FileDropHandler.class);
 
     //~ Methods ----------------------------------------------------------------
+
+    //----------------//
+    // setDefaultStep //
+    //----------------//
+    /**
+     * Assign the new default step on DnD
+     * @param step the new default step
+     */
+    public static void setDefaultStep (Step step)
+    {
+        constants.defaultStep.setValue(step);
+    }
+
+    //----------------//
+    // getDefaultStep //
+    //----------------//
+    /**
+     * Report the current default step on DnD
+     * @return the current default step
+     */
+    public static Step getDefaultStep ()
+    {
+        return constants.defaultStep.getValue();
+    }
 
     //-----------//
     // canImport //
@@ -112,7 +136,7 @@ class FileDropHandler
                 logger.info("Dropping file " + file);
 
                 // Targer step
-                final Step target = constants.defaultStep.getValue();
+                final Step target = getDefaultStep();
                 new BasicTask() {
                         Sheet sheet = null;
 
