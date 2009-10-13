@@ -16,6 +16,8 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.text.tesseract.TesseractOCR;
+
 import omr.log.Logger;
 
 import omr.util.ClassUtil;
@@ -69,6 +71,9 @@ public class Language
         }
     }
 
+    /** The related OCR */
+    private static final OCR ocr = TesseractOCR.getInstance();
+
     //~ Methods ----------------------------------------------------------------
 
     //--------------------//
@@ -97,6 +102,27 @@ public class Language
     public static String getDefaultLanguage ()
     {
         return constants.defaultLanguageCode.getValue();
+    }
+
+    /**
+     * Report the related OCR engine, if one is available
+     * @return the ocr the available OCR engine, or null
+     */
+    public static OCR getOcr ()
+    {
+        return ocr;
+    }
+
+    //-----------------------//
+    // getSupportedLanguages //
+    //-----------------------//
+    /**
+     * Report the set of supported language codes
+     * @return the set of supported 3-letter codes
+     */
+    public static Set<String> getSupportedLanguages ()
+    {
+        return ocr.getSupportedLanguages();
     }
 
     //--------//

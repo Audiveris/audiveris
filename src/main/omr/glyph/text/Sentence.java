@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.glyph.text;
 
-import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
@@ -21,7 +20,6 @@ import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
-import omr.glyph.text.tesseract.TesseractOCR;
 
 import omr.lag.HorizontalOrientation;
 
@@ -626,8 +624,7 @@ public class Sentence
             // If we have no content or if a new language is being used for OCR
             if ((info.getOcrContent() == null) ||
                 !language.equals(info.getOcrLanguage())) {
-                OCR           ocr = TesseractOCR.getInstance();
-                List<OcrLine> lines = ocr.recognize(
+                List<OcrLine> lines = Language.getOcr().recognize(
                     glyph.getImage(),
                     language,
                     "g" + glyph.getId() + ".");

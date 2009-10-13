@@ -11,10 +11,7 @@
 // </editor-fold>
 package omr.score.ui;
 
-
-// <editor-fold defaultstate="collapsed" desc="imports">                          //
 import omr.glyph.text.Language;
-import omr.glyph.text.tesseract.TesseractOCR;
 
 import omr.log.Logger;
 
@@ -45,8 +42,6 @@ import java.util.*;
 
 import javax.swing.*;
 import javax.swing.event.*;
-
-// </editor-fold>
 
 /**
  * Class <code>ScoreParameters</code> is a dialog that manages score information
@@ -687,8 +682,7 @@ public class ScoreParameters
             // Build the item list, only with the supported languages
             List<String> items = new ArrayList<String>();
 
-            for (String code : TesseractOCR.getInstance()
-                                           .getSupportedLanguages()) {
+            for (String code : Language.getSupportedLanguages()) {
                 items.add(itemOf(code));
             }
 
