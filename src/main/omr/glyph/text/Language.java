@@ -80,8 +80,11 @@ public class Language
      */
     public static void setDefaultLanguage (String code)
     {
-        logger.info("Default language is now '" + code + "'");
-        constants.defaultLanguageCode.setValue(code);
+        if (!getDefaultLanguage()
+                 .equals(code)) {
+            logger.info("Default language is now '" + code + "'");
+            constants.defaultLanguageCode.setValue(code);
+        }
     }
 
     //--------------------//

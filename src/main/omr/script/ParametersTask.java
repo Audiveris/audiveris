@@ -14,7 +14,9 @@ package omr.script;
 import omr.score.Score;
 import omr.score.entity.ScorePart;
 
+import omr.sheet.Scale.InterlineFraction;
 import omr.sheet.Sheet;
+import omr.sheet.picture.Picture;
 
 import omr.step.Step;
 
@@ -38,24 +40,39 @@ public class ParametersTask
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** MIDI volume */
-    @XmlAttribute(name = "volume")
-    private int volume;
+    /** Max foreground value */
+    @XmlAttribute(name = "foreground")
+    private Integer foreground;
 
-    /** MIDI tempo */
-    @XmlAttribute(name = "tempo")
-    private int tempo;
+    /** Histogram percentage for staves */
+    @XmlAttribute(name = "histo-ratio")
+    private Double histoRatio;
 
     /** Language code */
     @XmlAttribute(name = "language")
     private String language;
 
+    /** Slot horizontal margin */
+    @XmlElement(name = "slot-margin")
+    private InterlineFraction slotMargin;
+
+    /** MIDI volume */
+    @XmlAttribute(name = "volume")
+    private Integer volume;
+
+    /** MIDI tempo */
+    @XmlAttribute(name = "tempo")
+    private Integer tempo;
+
     /** Description data for each part */
     @XmlElement(name = "part")
     private List<PartData> parts = new ArrayList<PartData>();
 
-    /** Remember if we have changed the language */
+    /** Remember if we have changed these items */
+    private boolean foregroundChanged;
     private boolean languageChanged;
+    private boolean histoRatioChanged;
+    private boolean slotMarginChanged;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -69,6 +86,28 @@ public class ParametersTask
 
     //~ Methods ----------------------------------------------------------------
 
+    //---------------//
+    // setForeground //
+    //---------------//
+    /**
+     * @param foreground the maximum pixel value for foreground
+     */
+    public void setForeground (int foreground)
+    {
+        this.foreground = foreground;
+    }
+
+    //---------------//
+    // setHistoRatio //
+    //---------------//
+    /**
+     * @param ratio the percentage of histogram for staves
+     */
+    public void setHistoRatio (double ratio)
+    {
+        histoRatio = ratio;
+    }
+
     //-------------//
     // setLanguage //
     //-------------//
@@ -78,6 +117,17 @@ public class ParametersTask
     public void setLanguage (String language)
     {
         this.language = language;
+    }
+
+    //---------------//
+    // setSlotMargin //
+    //---------------//
+    /**
+     * @param slotMargin the new Slot horizontal margin
+     */
+    public void setSlotMargin (double slotMargin)
+    {
+        this.slotMargin = new InterlineFraction(slotMargin);
     }
 
     //----------//
@@ -123,17 +173,59 @@ public class ParametersTask
     public void core (Sheet sheet)
         throws Exception
     {
-        Score score = sheet.getScore();
+        Score         score = sheet.getScore();
+        Picture       picture = sheet.getPicture();
+        StringBuilder sb = new StringBuilder();
+
+        // Foreground
+        if ((foreground != null) && (foreground != picture.getMaxForeground())) {
+            picture.setMaxForeground(foreground);
+            sb.append(" foreground:")
+              .append(foreground);
+            foregroundChanged = true;
+        }
+
+        // Histo Frac
+        if ((histoRatio != null) && (histoRatio != sheet.getHistoRatio())) {
+            sheet.setHistoRatio(histoRatio);
+            sb.append(" histoRatio:")
+              .append(histoRatio);
+            histoRatioChanged = true;
+        }
 
         // Language
-        if (!language.equals(score.getLanguage())) {
-            languageChanged = true;
+        if ((language != null) && !language.equals(score.getLanguage())) {
             score.setLanguage(language);
+            sb.append(" language:")
+              .append(language);
+            languageChanged = true;
+        }
+
+        // Slot margin
+        if ((slotMargin != null) &&
+            (!slotMargin.equals(score.getSlotMargin()))) {
+            score.setSlotMargin(slotMargin);
+            sb.append(" slotMargin:")
+              .append(slotMargin);
+            slotMarginChanged = true;
         }
 
         // Midi tempo & volume
-        score.setTempo(tempo);
-        score.setVolume(volume);
+        if ((tempo != null) && (tempo != score.getTempo())) {
+            score.setTempo(tempo);
+            sb.append(" tempo:")
+              .append(tempo);
+        }
+
+        if ((volume != null) && (volume != score.getVolume())) {
+            score.setVolume(volume);
+            sb.append(" volume:")
+              .append(volume);
+        }
+
+        if (sb.length() > 0) {
+            logger.info("Parameters" + sb);
+        }
 
         // Parts
         for (int i = 0; i < parts.size(); i++) {
@@ -163,12 +255,29 @@ public class ParametersTask
     {
         Score score = sheet.getScore();
 
-        // Update the following steps on the impacted systems
-        // Only if we use a new language
+        Step  after = null;
+
+        if (slotMarginChanged) {
+            after = Step.PATTERNS;
+        }
+
         if (languageChanged) {
+            after = Step.VERTICALS;
+        }
+
+        if (histoRatioChanged) {
+            after = Step.SKEW;
+        }
+
+        if (foregroundChanged) {
+            after = Step.SKEW;
+        }
+
+        if (after != null) {
+            logger.info("Rebuilding after " + after);
             score.getSheet()
                  .getSheetSteps()
-                 .rebuildAfter(Step.VERTICALS, null, true);
+                 .rebuildAfter(after, null, true);
         }
 
         super.epilog(sheet);
@@ -182,15 +291,35 @@ public class ParametersTask
     {
         StringBuilder sb = new StringBuilder(" parameters");
 
+        if (foreground != null) {
+            sb.append(" foreground:")
+              .append(foreground);
+        }
+
+        if (histoRatio != null) {
+            sb.append(" histoRatio:")
+              .append(histoRatio);
+        }
+
+        if (slotMargin != null) {
+            sb.append(" slotMargin:")
+              .append(slotMargin);
+        }
+
         if (language != null) {
             sb.append(" language:")
               .append(language);
         }
 
-        sb.append(" tempo:")
-          .append(tempo);
-        sb.append(" volume:")
-          .append(volume);
+        if (tempo != null) {
+            sb.append(" tempo:")
+              .append(tempo);
+        }
+
+        if (volume != null) {
+            sb.append(" volume:")
+              .append(volume);
+        }
 
         for (PartData data : parts) {
             sb.append(" ")

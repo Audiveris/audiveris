@@ -382,7 +382,6 @@ public class SheetAssembly
         MainGui gui = Main.getGui();
         gui.removeBoardsPane(); // Disconnect boards pane
         gui.hideErrorsPane(); // Disconnect errors pane (USEFUL??? TODO)
-        gui.sheetSetController.close(sheet);
 
         // Disconnect all keyboard bindings from PixelBoard's (as a workaround
         // for a Swing memory leak)

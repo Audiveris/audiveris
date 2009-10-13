@@ -20,9 +20,9 @@ import omr.constant.*;
 
 import omr.log.Logger;
 
+import omr.score.ScoreExporter;
 import omr.score.midi.MidiAgent;
 import omr.score.ui.ScoreController;
-import omr.score.ScoreExporter;
 
 import omr.selection.MouseMovement;
 import omr.selection.SheetEvent;
@@ -689,8 +689,8 @@ public class MainGui
             MainGui gui = Main.getGui();
 
             if (gui != null) {
-                return SheetsManager.getInstance()
-                                    .areAllScriptsStored();
+                return SheetsController.getInstance()
+                                       .areAllScriptsStored();
             } else {
                 return true;
             }

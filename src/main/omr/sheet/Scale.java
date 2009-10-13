@@ -25,7 +25,11 @@ import static omr.score.ui.ScoreConstants.*;
 
 import omr.step.StepException;
 
+import omr.util.DoubleValue;
+
 import java.awt.Rectangle;
+
+import javax.xml.bind.annotation.XmlType;
 
 /**
  * Class <code>Scale</code> encapsulates what drives the scale of a given sheet,
@@ -333,6 +337,22 @@ public class Scale
     // toPixels //
     //----------//
     /**
+     * Compute the number of pixels that corresponds to the fraction of
+     * interline provided, according to the scale.
+     *
+     * @param frac a measure based on interline (1 = one interline)
+     *
+     * @return the actual number of pixels with the current scale
+     */
+    public int toPixels (InterlineFraction frac)
+    {
+        return (int) Math.rint(toPixelsDouble(frac));
+    }
+
+    //----------//
+    // toPixels //
+    //----------//
+    /**
      * Convert a dimension with components in units into its equivalent with
      * components in pixels. Reverse function of pixelsToUnits
      *
@@ -440,9 +460,25 @@ public class Scale
      * @return the equivalent in number of pixels
      * @see #toPixels
      */
+    public double toPixelsDouble (InterlineFraction frac)
+    {
+        return (double) interline * frac.doubleValue();
+    }
+
+    //----------------//
+    // toPixelsDouble //
+    //----------------//
+    /**
+     * Convenient method, working directly on a constant of interline fraction.
+     * Same as toPixels, but the result is a double instead of a rounded int.
+     *
+     * @param frac the interline fraction constant
+     * @return the equivalent in number of pixels
+     * @see #toPixels
+     */
     public double toPixelsDouble (Fraction frac)
     {
-        return (double) interline * frac.getValue();
+        return toPixelsDouble(frac.getWrappedValue());
     }
 
     //----------//
@@ -476,6 +512,22 @@ public class Scale
      * @return the actual number of units with the current scale
      */
     public int toUnits (Fraction frac)
+    {
+        return toUnits(frac.getWrappedValue());
+    }
+
+    //---------//
+    // toUnits //
+    //---------//
+    /**
+     * Compute the number of units that corresponds to the fraction of interline
+     * provided, according to the scale.
+     *
+     * @param frac a measure based on interline (1 = one interline)
+     *
+     * @return the actual number of units with the current scale
+     */
+    public int toUnits (InterlineFraction frac)
     {
         return (int) Math.rint(toUnitsDouble(frac));
     }
@@ -576,9 +628,24 @@ public class Scale
      * @return the equivalent in number of units
      * @see #toUnits
      */
+    public double toUnitsDouble (InterlineFraction frac)
+    {
+        return INTER_LINE * frac.doubleValue();
+    }
+
+    //---------------//
+    // toUnitsDouble //
+    //---------------//
+    /**
+     * Same as toUnits, but the result is a double instead of a rounded int.
+     *
+     * @param frac the interline fraction
+     * @return the equivalent in number of units
+     * @see #toUnits
+     */
     public double toUnitsDouble (Fraction frac)
     {
-        return INTER_LINE * frac.getValue();
+        return toUnitsDouble(frac.getWrappedValue());
     }
 
     //-------------//
@@ -616,7 +683,8 @@ public class Scale
     // AreaFraction //
     //--------------//
     /**
-     * A subclass of Double, meant to store a fraction of interline-based area.
+     * A subclass of Constant.Double, meant to store a fraction of
+     * interline-based area.
      */
     public static class AreaFraction
         extends Constant.Double
@@ -640,8 +708,9 @@ public class Scale
     // Fraction //
     //----------//
     /**
-     * A subclass of Double, meant to store a fraction of interline, since many
-     * distances on a music sheet are expressed in fraction of staff interline.
+     * A subclass of Constant.Double, meant to store a fraction of interline,
+     * since many distances on a music sheet are expressed in fraction of staff
+     * interline.
      */
     public static class Fraction
         extends Constant.Double
@@ -658,6 +727,74 @@ public class Scale
                          java.lang.String description)
         {
             super("Interline", defaultValue, description);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void setValue (double val)
+        {
+            setTuple(
+                java.lang.Double.toString(val),
+                new InterlineFraction(val));
+        }
+
+        @Override
+        public InterlineFraction getWrappedValue ()
+        {
+            return (InterlineFraction) getCachedValue();
+        }
+
+        @Override
+        protected InterlineFraction decode (java.lang.String str)
+        {
+            return new InterlineFraction(java.lang.Double.valueOf(str));
+        }
+    }
+
+    //-------------------//
+    // InterlineFraction //
+    //-------------------//
+    /**
+     * Class meant to host a double value, specified in fraction of interline.
+     */
+    public static class InterlineFraction
+        extends DoubleValue
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public InterlineFraction (double val)
+        {
+            super(val);
+        }
+
+        // Meant for JAXB
+        private InterlineFraction ()
+        {
+            super(0d);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        //--------//
+        // equals //
+        //--------//
+        @Override
+        public boolean equals (Object obj)
+        {
+            if (obj instanceof InterlineFraction) {
+                return ((InterlineFraction) obj).value == value;
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public int hashCode ()
+        {
+            int hash = 7;
+
+            return hash;
         }
     }
 }

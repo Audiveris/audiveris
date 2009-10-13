@@ -106,11 +106,11 @@ public class SheetActions
         if (sheet != null) {
             Score score = sheet.getScore();
 
-            if (score != null) {
-                score.close();
+            if (sheet.close()) {
+                if (score != null) {
+                    score.close();
+                }
             }
-
-            sheet.close();
         }
     }
 

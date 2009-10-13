@@ -13,9 +13,6 @@ package omr.ui.field;
 
 import java.util.Scanner;
 
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-
 /**
  * Class <code>LDoubleField</code> is an {@link LField}, whose field is
  * meant to handle a double value.

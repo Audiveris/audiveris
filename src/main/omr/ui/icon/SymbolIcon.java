@@ -179,9 +179,6 @@ public class SymbolIcon
      *
      * @return the array of strings for file storing
      */
-
-    //    @XmlElementWrapper(name = "image")
-    //    @XmlElement(name = "row")
     public String[] getBitmap ()
     {
         if (getIconHeight() != -1) {

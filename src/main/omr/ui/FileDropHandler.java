@@ -60,7 +60,10 @@ public class FileDropHandler
      */
     public static void setDefaultStep (Step step)
     {
-        constants.defaultStep.setValue(step);
+        if (step != getDefaultStep()) {
+            logger.info("Default drop step is now " + step);
+            constants.defaultStep.setValue(step);
+        }
     }
 
     //----------------//

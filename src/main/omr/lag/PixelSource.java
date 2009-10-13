@@ -35,6 +35,16 @@ public interface PixelSource
     int getHeight ();
 
     //------------------//
+    // setMaxForeground //
+    //------------------//
+    /**
+     * Assign a new maximum value for foreground (black) pixels
+     *
+     * @param level the new maximum foreground pixel value
+     */
+    void setMaxForeground (int level);
+
+    //------------------//
     // getMaxForeground //
     //------------------//
     /**

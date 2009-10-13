@@ -9,15 +9,11 @@
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-// </editor-fold>
-//
 package omr.ui.icon;
 
 import omr.lag.PixelSource;
 
 import omr.log.Logger;
-
-import omr.sheet.picture.Picture;
 
 import omr.util.Implement;
 
@@ -40,9 +36,6 @@ public class SymbolPicture
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Underlying SymbolIcon instance, used as the source of pixels */
-    private final SymbolIcon icon;
-
     /** Image data buffer */
     private final DataBuffer dataBuffer;
 
@@ -58,13 +51,22 @@ public class SymbolPicture
     /** Cached scaled height */
     private final int height;
 
+    /**
+     * Current max foreground pixel value.
+     * Exactly 255 is the background (white) value, so anything else up to
+     * 254 included is foreground (black)
+     */
+    private int maxForeground = 254;
+
     //~ Constructors -----------------------------------------------------------
 
-    /** Creates a new instance of SymbolPicture */
+    /** Creates a new instance of SymbolPicture
+     * @param icon the underlying icon
+     * @param factor the sizing factor
+     */
     public SymbolPicture (SymbolIcon icon,
                           int        factor)
     {
-        this.icon = icon;
         this.factor = factor;
 
         dataBuffer = icon.getImage()
@@ -94,9 +96,7 @@ public class SymbolPicture
     @Implement(PixelSource.class)
     public final int getMaxForeground ()
     {
-        // Exactly 255 is the background (white) value, so anything else up to
-        // 254 included is foreground (black)
-        return 254;
+        return maxForeground;
     }
 
     //----------//
@@ -111,7 +111,7 @@ public class SymbolPicture
 
         // SymbolIcon instances use alpha channel as the pixel level
         // With 0 as totally transparent so background (255)
-        // And with 255 as totally opaque so forground (0)
+        // And with 255 as totally opaque so foreground (0)
         return 255 - (elem >>> 24);
     }
 
@@ -122,5 +122,14 @@ public class SymbolPicture
     public final int getWidth ()
     {
         return width;
+    }
+
+    //------------------//
+    // setMaxForeground //
+    //------------------//
+    @Implement(PixelSource.class)
+    public void setMaxForeground (int level)
+    {
+        this.maxForeground = level;
     }
 }

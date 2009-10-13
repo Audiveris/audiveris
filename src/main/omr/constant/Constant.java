@@ -13,6 +13,7 @@ package omr.constant;
 
 import omr.log.Logger;
 
+import omr.util.DoubleValue;
 import omr.util.Implement;
 
 import net.jcip.annotations.ThreadSafe;
@@ -692,13 +693,6 @@ public abstract class Constant
     {
         //~ Constructors -------------------------------------------------------
 
-        /**
-         * Specific constructor, where 'unit' and 'name' are assigned later
-         *
-         * @param quantityUnit unit used by this value
-         * @param defaultValue the (double) default value
-         * @param description  the semantic of the constant
-         */
         public Double (java.lang.String quantityUnit,
                        double           defaultValue,
                        java.lang.String description)
@@ -711,42 +705,37 @@ public abstract class Constant
 
         //~ Methods ------------------------------------------------------------
 
-        /**
-         * Allows to set a new double value (passed as a string) to this
-         * constant. The string validity is actually checked.
-         *
-         * @param string the double value as a string
-         */
-        @Implement(Constant.class)
-        public void setValue (java.lang.String string)
-        {
-            setValue(java.lang.Double.valueOf(string).doubleValue());
-        }
-
-        /**
-         * Set a new value to the constant
-         *
-         * @param val the new (double) value
-         */
         public void setValue (double val)
         {
-            setTuple(java.lang.Double.toString(val), val);
+            setTuple(java.lang.Double.toString(val), new DoubleValue(val));
         }
 
-        /**
-         * Retrieve the current constant value
-         *
-         * @return the current (double) value
-         */
-        public double getValue ()
+        public void setValue (DoubleValue val)
         {
-            return ((java.lang.Double) getCachedValue()).doubleValue();
+            setTuple(val.toString(), val);
         }
 
         @Override
-        protected java.lang.Double decode (java.lang.String str)
+        public void setValue (java.lang.String string)
         {
-            return new java.lang.Double(str);
+            setValue(decode(string));
+        }
+
+        public double getValue ()
+        {
+            return ((DoubleValue) getCachedValue()).doubleValue();
+        }
+
+        public DoubleValue getWrappedValue ()
+        {
+            // Return a copy
+            return new DoubleValue(getValue());
+        }
+
+        @Override
+        protected DoubleValue decode (java.lang.String str)
+        {
+            return new DoubleValue(java.lang.Double.valueOf(str));
         }
     }
 
@@ -839,7 +828,7 @@ public abstract class Constant
         public Ratio (double           defaultValue,
                       java.lang.String description)
         {
-            super(null, defaultValue, description);
+            super(null, new java.lang.Double(defaultValue), description);
         }
     }
 

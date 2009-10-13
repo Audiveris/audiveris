@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.score.ui;
 
+
+// <editor-fold defaultstate="collapsed" desc="imports">                          //
 import omr.glyph.text.Language;
 import omr.glyph.text.tesseract.TesseractOCR;
 
@@ -25,10 +27,12 @@ import omr.script.ParametersTask;
 import omr.script.ScriptActions;
 
 import omr.sheet.Sheet;
+import omr.sheet.picture.Picture;
 
 import omr.step.Step;
 
 import omr.ui.FileDropHandler;
+import omr.ui.field.LDoubleField;
 import omr.ui.field.LField;
 import omr.ui.field.LIntegerField;
 import omr.ui.util.Panel;
@@ -37,12 +41,12 @@ import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
 
 import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.swing.*;
+import javax.swing.event.*;
+
+// </editor-fold>
 
 /**
  * Class <code>ScoreParameters</code> is a dialog that manages score information
@@ -92,20 +96,26 @@ public class ScoreParameters
         component.setNoInsets();
 
         // Sequence of Pane instances
-//        panes.add(new DnDPane());
-//        panes.add(new ScriptPane());
+        panes.add(new DnDPane());
+        panes.add(new ScriptPane());
+        panes.add(new ForegroundPane());
+        panes.add(new HistoPane());
+        panes.add(new SlotPane());
         panes.add(new LanguagePane());
-        panes.add(new MidiPane());
-        panes.add(new ScorePane());
 
-        // Add measure pane iff we have measures
-        if (!score.getSystems()
-                  .isEmpty() &&
-            !score.getFirstSystem()
-                  .getFirstPart()
-                  .getMeasures()
-                  .isEmpty()) {
-            panes.add(new MeasurePane());
+        if (score != null) {
+            panes.add(new MidiPane());
+            panes.add(new ScorePane());
+
+            // Add measure pane iff we have measures
+            if (!score.getSystems()
+                      .isEmpty() &&
+                !score.getFirstSystem()
+                      .getFirstPart()
+                      .getMeasures()
+                      .isEmpty()) {
+                panes.add(new MeasurePane());
+            }
         }
 
         // Layout
@@ -141,7 +151,9 @@ public class ScoreParameters
         if (dataIsValid()) {
             try {
                 // Just launch the prepared task
-                task.launch(sheet);
+                if (sheet != null) {
+                    task.launch(sheet);
+                }
 
                 // Also carry out the actions not covered by the task
                 for (Pane pane : panes) {
@@ -218,7 +230,7 @@ public class ScoreParameters
     /**
      * A pane with a checkBox to set parameter as a global default
      */
-    private abstract static class DefaultPane
+    private abstract class DefaultPane
         extends Pane
     {
         //~ Instance fields ----------------------------------------------------
@@ -235,6 +247,9 @@ public class ScoreParameters
             defaultBox.setText("Set as default");
             defaultBox.setToolTipText(
                 "Check to set parameter as global default");
+
+            // If no current score, push for a global setting
+            defaultBox.setSelected(score == null);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -375,6 +390,230 @@ public class ScoreParameters
         }
     }
 
+    //------------//
+    // DoublePane //
+    //------------//
+    /**
+     * Abstract Pane to handle a slider for double value and a SetAsDefault box
+     */
+    private class DoublePane
+        extends DefaultPane
+        implements ChangeListener
+    {
+        //~ Static fields/initializers -----------------------------------------
+
+        protected static final int   FACTOR = 100;
+
+        //~ Instance fields ----------------------------------------------------
+
+        /** Slider */
+        protected final JSlider slider;
+
+        /** Numeric value kept in sync */
+        protected final LDoubleField numValue;
+
+        //~ Constructors -------------------------------------------------------
+
+        public DoublePane (String separator,
+                           String label,
+                           String tip,
+                           int    minNumValue,
+                           int    maxNumValue,
+                           double initValue)
+        {
+            super(separator);
+
+            // Slider
+            slider = new JSlider(
+                JSlider.HORIZONTAL,
+                minNumValue,
+                maxNumValue,
+                (int) (initValue * FACTOR));
+            slider.setMajorTickSpacing(50);
+            slider.setMinorTickSpacing(10);
+            slider.setPaintTicks(true);
+
+            // Numeric value
+            numValue = new LDoubleField(false, label, tip, "%.2f");
+            numValue.setValue(dblValue());
+
+            // Numeric value is kept in sync with Slider
+            slider.addChangeListener(this);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public int getLogicalRowCount ()
+        {
+            return 3;
+        }
+
+        @Override
+        public int defineLayout (PanelBuilder    builder,
+                                 CellConstraints cst,
+                                 int             r)
+        {
+            r = super.defineLayout(builder, cst, r);
+            builder.add(numValue.getLabel(), cst.xy(9, r));
+            builder.add(numValue.getField(), cst.xy(11, r));
+
+            r += 2;
+            builder.add(slider, cst.xyw(3, r, 9));
+
+            return r + 2;
+        }
+
+        public void stateChanged (ChangeEvent e)
+        {
+            numValue.setValue(dblValue());
+        }
+
+        protected double dblValue ()
+        {
+            return (double) slider.getValue() / FACTOR;
+        }
+    }
+
+    //----------------//
+    // ForegroundPane //
+    //----------------//
+    /**
+     * Pane to define the upper limit for foreground pixels
+     */
+    private class ForegroundPane
+        extends DefaultPane
+        implements ChangeListener
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Slider for max foreground value */
+        final JSlider pixSlider;
+
+        /** Numeric value kept in sync */
+        final LIntegerField pixValue = new LIntegerField(
+            false,
+            "Level",
+            "Max level for foreground pixels");
+
+        //~ Constructors -------------------------------------------------------
+
+        public ForegroundPane ()
+        {
+            super("Foreground");
+
+            int initValue = (score != null)
+                            ? score.getSheet()
+                                   .getPicture()
+                                   .getMaxForeground()
+                            : Picture.getDefaultMaxForeground();
+
+            pixSlider = new JSlider(JSlider.HORIZONTAL, 0, 255, initValue);
+            pixSlider.setMajorTickSpacing(50);
+            pixSlider.setMinorTickSpacing(10);
+            pixSlider.setPaintTicks(true);
+
+            pixValue.setValue(initValue);
+
+            // If no current score, push for a global setting
+            defaultBox.setSelected(score == null);
+
+            // Kept in sync
+            pixSlider.addChangeListener(this);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public int getLogicalRowCount ()
+        {
+            return 3;
+        }
+
+        @Override
+        public boolean isValid ()
+        {
+            task.setForeground(pixSlider.getValue());
+
+            return true;
+        }
+
+        @Override
+        public void commit ()
+        {
+            if (defaultBox.isSelected()) {
+                Picture.setDefaultMaxForeground(pixSlider.getValue());
+            }
+        }
+
+        @Override
+        public int defineLayout (PanelBuilder    builder,
+                                 CellConstraints cst,
+                                 int             r)
+        {
+            r = super.defineLayout(builder, cst, r);
+            builder.add(pixValue.getLabel(), cst.xy(9, r));
+            builder.add(pixValue.getField(), cst.xy(11, r));
+
+            r += 2;
+            builder.add(pixSlider, cst.xyw(3, r, 9));
+
+            return r + 2;
+        }
+
+        public void stateChanged (ChangeEvent e)
+        {
+            pixValue.setValue(pixSlider.getValue());
+
+            if (!pixSlider.getValueIsAdjusting()) {
+                //logger.info("New maxForeground: " + histoSlider.getValue());
+            }
+        }
+    }
+
+    //-----------//
+    // HistoPane //
+    //-----------//
+    /**
+     * Pane to define the histogram threshold used for staff retrieval
+     */
+    private class HistoPane
+        extends DoublePane
+        implements ChangeListener
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public HistoPane ()
+        {
+            super(
+                "Staff Lines",
+                "Ratio",
+                "Ratio of horizontal histogram for staff lines",
+                0,
+                100,
+                (score != null) ? score.getSheet().getHistoRatio()
+                                : Sheet.getDefaultHistoRatio());
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public boolean isValid ()
+        {
+            task.setHistoRatio(dblValue());
+
+            return true;
+        }
+
+        @Override
+        public void commit ()
+        {
+            if (defaultBox.isSelected()) {
+                Sheet.setDefaultHistoRatio(dblValue());
+            }
+        }
+    }
+
     //--------------//
     // LanguagePane //
     //--------------//
@@ -414,7 +653,6 @@ public class ScoreParameters
         @Override
         public void commit ()
         {
-            /** Since this info is not registered in the ParametersTask */
             if (defaultBox.isSelected()) {
                 // Make the selected language the global default
                 String item = (String) langCombo.getItemAt(
@@ -457,7 +695,8 @@ public class ScoreParameters
             JComboBox combo = new JComboBox(items.toArray(new String[0]));
             combo.setToolTipText("Dominant language for textual items");
 
-            final String code = (score.getLanguage() != null)
+            final String code = ((score != null) &&
+                                (score.getLanguage() != null))
                                 ? score.getLanguage()
                                 : Language.getDefaultLanguage();
             combo.setSelectedItem(itemOf(code));
@@ -861,19 +1100,19 @@ public class ScoreParameters
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** ComboBox for boolean */
-        final JComboBox boolCombo;
+        /** CheckBox for boolean */
+        private final JCheckBox promptBox = new JCheckBox();
 
         //~ Constructors -------------------------------------------------------
 
         public ScriptPane ()
         {
-            super("Script saving");
+            super("Script");
 
-            boolCombo = new JComboBox(
-                new Boolean[] { Boolean.FALSE, Boolean.TRUE });
-            boolCombo.setToolTipText("Should we prompt on closing?");
-            boolCombo.setSelectedItem(ScriptActions.isConfirmOnClose());
+            promptBox.setText("Prompt for save");
+            promptBox.setToolTipText(
+                "Should we prompt for saving the script on score closing");
+            promptBox.setSelected(ScriptActions.isConfirmOnClose());
         }
 
         //~ Methods ------------------------------------------------------------
@@ -881,9 +1120,7 @@ public class ScoreParameters
         @Override
         public void commit ()
         {
-            Boolean item = (Boolean) boolCombo.getItemAt(
-                boolCombo.getSelectedIndex());
-            ScriptActions.setConfirmOnClose(item);
+            ScriptActions.setConfirmOnClose(promptBox.isSelected());
         }
 
         @Override
@@ -891,13 +1128,53 @@ public class ScoreParameters
                                  CellConstraints cst,
                                  int             r)
         {
-            JLabel scriptLabel = new JLabel(
-                "Prompt user",
-                SwingConstants.RIGHT);
-            builder.add(scriptLabel, cst.xyw(5, r, 3));
-            builder.add(boolCombo, cst.xyw(9, r, 3));
+            builder.add(promptBox, cst.xyw(3, r, 3));
 
             return r + 2;
+        }
+    }
+
+    //----------//
+    // SlotPane //
+    //----------//
+    /**
+     * Pane to define the abscissa margin around a common time slot
+     */
+    private class SlotPane
+        extends DoublePane
+        implements ChangeListener
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public SlotPane ()
+        {
+            super(
+                "Time Slots",
+                "Margin",
+                "Horizontal margin around Slots, in interline fractions",
+                0,
+                200,
+                ((score != null) && (score.getSlotMargin() != null))
+                                ? score.getSlotMargin().doubleValue()
+                                : Score.getDefaultSlotMargin().doubleValue());
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public boolean isValid ()
+        {
+            task.setSlotMargin(dblValue());
+
+            return true;
+        }
+
+        @Override
+        public void commit ()
+        {
+            if (defaultBox.isSelected()) {
+                Score.setDefaultSlotMargin(dblValue());
+            }
         }
     }
 }

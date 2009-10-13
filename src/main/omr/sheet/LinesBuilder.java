@@ -100,7 +100,7 @@ public class LinesBuilder
     /** Histogram eeded for displayChart */
     private int[] histo;
 
-    /** Threshold eeded for displayChart */
+    /** Threshold needed for displayChart */
     private int threshold;
 
     //~ Constructors -----------------------------------------------------------
@@ -320,7 +320,7 @@ public class LinesBuilder
             }
         }
 
-        threshold = (int) ((double) maxHisto * constants.histoThresholdFrac.getValue());
+        threshold = (int) (maxHisto * sheet.getHistoRatio());
 
         // Determine peaks in the histogram
         Peak peak = null;
@@ -653,11 +653,6 @@ public class LinesBuilder
         Constant.Boolean displayOriginalStaffLines = new Constant.Boolean(
             false,
             "Should we display original staff lines?");
-
-        /** Peak threshold stated as a ratio of maximum histogram value */
-        Constant.Ratio histoThresholdFrac = new Constant.Ratio(
-            0.5d,
-            "Peak threshold stated as a ratio of maximum histogram value");
 
         /** Maximum difference in length of two consecutives runs in the same section */
         Scale.Fraction maxDeltaLength = new Scale.Fraction(

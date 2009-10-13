@@ -117,6 +117,9 @@ public class Picture
     /** The image (writable) raster */
     private WritableRaster raster;
 
+    /** The current maximum value for foreground pixels */
+    private int maxForeground = getDefaultMaxForeground();
+
     /** The factor to apply to raw pixel value to get gray level on 0..255 */
     private int grayFactor = 1;
 
@@ -373,6 +376,25 @@ public class Picture
         return image.getAsBufferedImage(rectangle, null);
     }
 
+    //-------------------------//
+    // setDefaultMaxForeground //
+    //-------------------------//
+    public static void setDefaultMaxForeground (int level)
+    {
+        if (level != getDefaultMaxForeground()) {
+            constants.maxForegroundGrayLevel.setValue(level);
+            logger.info("Default max foreground is now " + level);
+        }
+    }
+
+    //-------------------------//
+    // getDefaultMaxForeground //
+    //-------------------------//
+    public static int getDefaultMaxForeground ()
+    {
+        return constants.maxForegroundGrayLevel.getValue();
+    }
+
     //--------------//
     // getDimension //
     //--------------//
@@ -401,12 +423,21 @@ public class Picture
     }
 
     //------------------//
+    // setMaxForeground //
+    //------------------//
+    @Implement(PixelSource.class)
+    public void setMaxForeground (int level)
+    {
+        this.maxForeground = level;
+    }
+
+    //------------------//
     // getMaxForeground //
     //------------------//
     @Implement(PixelSource.class)
     public int getMaxForeground ()
     {
-        return constants.maxForegroundGrayLevel.getValue();
+        return maxForeground;
     }
 
     //---------//
@@ -747,6 +778,15 @@ public class Picture
     }
 
     //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return getName();
+    }
+
+    //----------//
     // setImage //
     //----------//
     private void setImage (RenderedImage renderedImage)
@@ -1002,14 +1042,5 @@ public class Picture
         Constant.Ratio   binaryToGrayscaleSubsampling = new Constant.Ratio(
             1,
             "Subsampling ratio between 0 and 1, or 1 for no subsampling (memory intensive)");
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        return getName();
     }
 }

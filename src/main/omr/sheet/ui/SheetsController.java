@@ -84,9 +84,9 @@ public class SheetsController
 
     //~ Constructors -----------------------------------------------------------
 
-    //--------------------//
+    //------------------//
     // SheetsController //
-    //--------------------//
+    //------------------//
     /**
      * Create the SheetsController singleton
      */
@@ -166,6 +166,26 @@ public class SheetsController
         return (sheetEvent != null) ? sheetEvent.getData() : null;
     }
 
+    //---------------------//
+    // areAllScriptsStored //
+    //---------------------//
+    /**
+     * Report whether all the sheet scripts have been stored
+     * @return true if OK
+     */
+    public boolean areAllScriptsStored ()
+    {
+        for (SheetAssembly assembly : assemblies) {
+            Sheet sheet = assembly.getSheet();
+
+            if (!ScriptActions.checkStored(sheet.getScript())) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     //---------------//
     // selectedSheet //
     //---------------//
@@ -187,44 +207,43 @@ public class SheetsController
      * Remove the specified view from the tabbed pane
      *
      * @param sheet the sheet to close
+     * @return true if we have actually closed the sheet UI stuff
      */
-    public void close (Sheet sheet)
+    public boolean close (Sheet sheet)
     {
+        // Check whether the script has been saved (or user has declined)
+        if (!ScriptActions.checkStored(sheet.getScript())) {
+            return false;
+        }
+
         SheetAssembly assembly = sheet.getAssembly();
 
-        if (assembly != null) {
-            // Check whether the script has been written correctly
-            ScriptActions.checkStored(sheet.getScript());
+        int           sheetIndex = tabbedPane.indexOfComponent(
+            assembly.getComponent());
 
-            int sheetIndex = tabbedPane.indexOfComponent(
-                assembly.getComponent());
+        if (sheetIndex != -1) {
+            if (logger.isFineEnabled()) {
+                logger.fine("closing " + sheet);
+            }
 
-            if (sheetIndex != -1) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("closing " + sheet);
-                }
+            // Remove from assemblies
+            assemblies.remove(sheetIndex);
+            // Remove from tabs
+            tabbedPane.remove(sheetIndex);
 
-                // Remove from assemblies
-                assemblies.remove(sheetIndex);
-                // Remove from tabs
-                tabbedPane.remove(sheetIndex);
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "closed " + assembly.toString() + " assemblies=" +
+                    assemblies);
+            }
 
-                // Forward to SheetsManager
-                SheetsManager.getInstance()
-                             .close(sheet);
-
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "closed " + assembly.toString() + " assemblies=" +
-                        assemblies);
-                }
-
-                // Let others know (if this closing sheet was the current one)
-                if (sheet == getSelectedSheet()) {
-                    sheetSetService.publish(new SheetEvent(this, null));
-                }
+            // Let others know (if this closing sheet was the current one)
+            if (sheet == getSelectedSheet()) {
+                sheetSetService.publish(new SheetEvent(this, null));
             }
         }
+
+        return true;
     }
 
     //--------------------------//
@@ -386,12 +405,6 @@ public class SheetsController
         // Remember the new selected sheet
         SheetAssembly assembly = assemblies.get(sheetIndex);
         Sheet         sheet = assembly.getSheet();
-
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "SheetController: sheetTabSelected sheetIndex=" + sheetIndex +
-                " sheet=" + sheet);
-        }
 
         // Tell everyone about the new selected sheet
         sheetSetService.publish(new SheetEvent(this, sheet));

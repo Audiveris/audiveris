@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.score.entity;
 
-import omr.constant.ConstantSet;
-
 import omr.glyph.Glyph;
 
 import omr.log.Logger;
@@ -20,11 +18,12 @@ import omr.log.Logger;
 import omr.math.InjectionSolver;
 import omr.math.Population;
 
+import omr.score.Score;
 import omr.score.common.SystemPoint;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
 import omr.score.ui.ScoreConstants;
 
-import omr.sheet.Scale;
+import omr.sheet.Scale.InterlineFraction;
 
 import omr.util.TreeNode;
 
@@ -48,9 +47,6 @@ public class Slot
     implements Comparable<Slot>
 {
     //~ Static fields/initializers ---------------------------------------------
-
-    /** Specific application parameters */
-    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Slot.class);
@@ -135,8 +131,17 @@ public class Slot
      */
     public boolean isAlignedWith (SystemPoint sysPt)
     {
-        return Math.abs(sysPt.x - getX()) <= measure.getScale()
-                                                    .toUnits(constants.maxDx);
+        InterlineFraction slotMargin = measure.getScore()
+                                              .getSlotMargin();
+
+        if (slotMargin == null) {
+            slotMargin = Score.getDefaultSlotMargin();
+        }
+
+        int unitsMargin = measure.getScale()
+                                 .toUnits(slotMargin);
+
+        return Math.abs(sysPt.x - getX()) <= unitsMargin;
     }
 
     //-------//
@@ -825,22 +830,6 @@ public class Slot
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /**
-         * Maximum horizontal distance between a slot and a glyph candidate
-         */
-        Scale.Fraction maxDx = new Scale.Fraction(
-            0.3,
-            "Maximum horizontal distance between a slot and a glyph candidate");
-    }
 
     //------------//
     // MyDistance //

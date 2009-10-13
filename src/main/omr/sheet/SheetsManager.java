@@ -14,8 +14,8 @@ package omr.sheet;
 import omr.log.Logger;
 
 import omr.score.Score;
-import omr.score.ui.ScoreOrientation;
 import omr.score.ui.PaintingParameters;
+import omr.score.ui.ScoreOrientation;
 
 import omr.script.ScriptActions;
 
@@ -121,35 +121,25 @@ public class SheetsManager
         return INSTANCE;
     }
 
-    //---------------------//
-    // areAllScriptsStored //
-    //---------------------//
-    /**
-     * Report whether all the sheet scripts have been stored
-     * @return true if OK
-     */
-    public boolean areAllScriptsStored ()
-    {
-        for (Sheet sheet : instances) {
-            if (!ScriptActions.checkStored(sheet.getScript())) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     //-------//
     // close //
     //-------//
     /**
      * Close a sheet instance
      * @param sheet the sheet to close
+     * @return true if we have done the closing
      */
-    public void close (Sheet sheet)
+    public boolean close (Sheet sheet)
     {
         if (logger.isFineEnabled()) {
             logger.fine("close " + sheet);
+        }
+
+        // Remove from user selection if any
+        if (controller != null) {
+            if (!controller.close(sheet)) {
+                return false;
+            }
         }
 
         // Remove from list of instances
@@ -157,32 +147,10 @@ public class SheetsManager
             instances.remove(sheet);
         }
 
-        // Remove from user selection if any
-        if (controller != null) {
-            controller.close(sheet);
-        }
-
         // Suggestion to run the garbage collector
         Memory.gc();
-    }
 
-    //----------//
-    // closeAll //
-    //----------//
-    /**
-     * Close all the sheet instances, with their views if any
-     */
-    public void closeAll ()
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("closeAll");
-        }
-
-        for (Iterator<Sheet> it = instances.iterator(); it.hasNext();) {
-            Sheet sheet = it.next();
-            it.remove(); // Done here to avoid concurrent modification
-            sheet.close();
-        }
+        return true;
     }
 
     //---------------//

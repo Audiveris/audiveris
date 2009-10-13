@@ -30,6 +30,7 @@ import omr.score.ui.ScoreView;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
+import omr.sheet.Scale.InterlineFraction;
 import omr.sheet.Sheet;
 
 import omr.util.Dumper;
@@ -121,6 +122,9 @@ public class Score
     /** Preferred orientation for system layout */
     private ScoreOrientation orientation;
 
+    /** The score slot horizontal margin, expressed in interline fraction */
+    private InterlineFraction slotMargin;
+
     //~ Constructors -----------------------------------------------------------
 
     //-------//
@@ -191,6 +195,34 @@ public class Score
         }
 
         return scoreTree.getFrame();
+    }
+
+    //----------------------//
+    // setDefaultSlotMargin //
+    //----------------------//
+    /**
+     * Assign the default slot margin
+     * @param fraction the horizontal margin, expressed in interline fraction
+     */
+    public static void setDefaultSlotMargin (double fraction)
+    {
+        if (getDefaultSlotMargin()
+                .doubleValue() != fraction) {
+            logger.info("Default slot margin is now " + fraction);
+            constants.defaultSlotMargin.setValue(fraction);
+        }
+    }
+
+    //----------------------//
+    // getDefaultSlotMargin //
+    //----------------------//
+    /**
+     * Report the default horizontal Slot margin
+     * @return the slotMargin (in interline fraction)
+     */
+    public static InterlineFraction getDefaultSlotMargin ()
+    {
+        return constants.defaultSlotMargin.getWrappedValue();
     }
 
     //-----------------//
@@ -366,7 +398,6 @@ public class Score
     public void setLanguage (String language)
     {
         this.language = language;
-        logger.info("Language set as '" + language + "'");
     }
 
     //-------------//
@@ -659,6 +690,30 @@ public class Score
     public double getSkewAngleDouble ()
     {
         return (double) skewAngle / (double) ScoreConstants.BASE;
+    }
+
+    //---------------//
+    // setSlotMargin //
+    //---------------//
+    /**
+     * Assign the slot margin for this score
+     * @param fraction the horizontal margin, expressed in interline fraction
+     */
+    public void setSlotMargin (InterlineFraction fraction)
+    {
+        this.slotMargin = new InterlineFraction(fraction.doubleValue());
+    }
+
+    //---------------//
+    // getSlotMargin //
+    //---------------//
+    /**
+     * Report the current horizontal Slot margin
+     * @return the slotMargin (in interline fraction)
+     */
+    public InterlineFraction getSlotMargin ()
+    {
+        return slotMargin;
     }
 
     //---------------//
@@ -1051,5 +1106,12 @@ public class Score
             "Volume",
             100,
             "Default Volume in 0..127 range");
+
+        /**
+         * Default horizontal margin between a slot and a glyph candidate
+         */
+        Scale.Fraction defaultSlotMargin = new Scale.Fraction(
+            0.3,
+            "Default horizontal margin between a slot and a glyph candidate");
     }
 }

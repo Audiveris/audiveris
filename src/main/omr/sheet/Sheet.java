@@ -13,6 +13,8 @@ package omr.sheet;
 
 import omr.Main;
 
+import omr.constant.ConstantSet;
+
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
@@ -22,7 +24,6 @@ import omr.glyph.SymbolsModel;
 import omr.glyph.ui.SymbolsController;
 import omr.glyph.ui.SymbolsEditor;
 
-import omr.lag.Section;
 import omr.lag.Sections;
 
 import omr.log.Logger;
@@ -77,6 +78,9 @@ public class Sheet
     implements Visitable
 {
     //~ Static fields/initializers ---------------------------------------------
+
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Sheet.class);
@@ -159,6 +163,9 @@ public class Sheet
 
     /** Related errors editor */
     private volatile ErrorsEditor errorsEditor;
+
+    /** The histogram ratio to be used on this sheet to retrieve staves */
+    private double histoRatio = getDefaultHistoRatio();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -260,6 +267,33 @@ public class Sheet
         return assembly;
     }
 
+    //----------------------//
+    // setDefaultHistoRatio //
+    //----------------------//
+    /**
+     * Set the default value of histogram threhold for staff detection
+     * @param histoRatio the default ratio of maximum histogram value
+     */
+    public static void setDefaultHistoRatio (double histoRatio)
+    {
+        if (histoRatio != getDefaultHistoRatio()) {
+            logger.info("Default lines histogram ratio is now " + histoRatio);
+            constants.defaultStaffThreshold.setValue(histoRatio);
+        }
+    }
+
+    //----------------------//
+    // getDefaultHistoRatio //
+    //----------------------//
+    /**
+     * Report the default value of histogram threhold for staff detection
+     * @return the default ratio of maximum histogram value
+     */
+    public static double getDefaultHistoRatio ()
+    {
+        return constants.defaultStaffThreshold.getValue();
+    }
+
     //-----------------//
     // getErrorsEditor //
     //-----------------//
@@ -287,6 +321,30 @@ public class Sheet
     public int getHeight ()
     {
         return height;
+    }
+
+    //---------------//
+    // setHistoRatio //
+    //---------------//
+    /**
+     * Set the sheet value of histogram threhold for staff detection
+     * @param histoRatio the ratio of maximum histogram value
+     */
+    public void setHistoRatio (double histoRatio)
+    {
+        this.histoRatio = histoRatio;
+    }
+
+    //---------------//
+    // getHistoRatio //
+    //---------------//
+    /**
+     * Get the sheet value of histogram threhold for staff detection
+     * @return the ratio of maximum histogram value
+     */
+    public double getHistoRatio ()
+    {
+        return histoRatio;
     }
 
     //------------------//
@@ -378,60 +436,6 @@ public class Sheet
     public File getImageFile ()
     {
         return imageFile;
-    }
-
-    //--------------------//
-    // getImpactedSystems //
-    //--------------------//
-    /**
-     * Report the collection of systems that are impacted by a shape
-     * modification in the provided glyphs
-     *
-     * @param glyphs the glyphs for which we look for impacted systems
-     * @param shapes the collection of initial shapes of these glyphs
-     * @return the ordered collection of systems
-     */
-    public SortedSet<SystemInfo> getImpactedSystems (Collection<Glyph> glyphs,
-                                                     Collection<Shape> shapes)
-    {
-        // Flag to indicate that the impact may persist on the following systems
-        boolean persistent = false;
-
-        if (shapes != null) {
-            for (Shape shape : shapes) {
-                if (shape.isPersistent()) {
-                    persistent = true;
-
-                    break;
-                }
-            }
-        } else {
-            persistent = true; // More expensive, but safer
-        }
-
-        SortedSet<SystemInfo> impacted = new TreeSet<SystemInfo>();
-
-        if (glyphs != null) {
-            for (Glyph glyph : glyphs) {
-                SystemInfo system = getSystemOf(glyph);
-
-                if (system != null) {
-                    impacted.add(system);
-
-                    Shape shape = glyph.getShape();
-
-                    if (persistent ||
-                        ((shape != null) && shape.isPersistent())) {
-                        // Add the following systems
-                        int index = systems.indexOf(system);
-                        impacted.addAll(
-                            systems.subList(index + 1, systems.size()));
-                    }
-                }
-            }
-        }
-
-        return impacted;
     }
 
     //--------------//
@@ -671,28 +675,6 @@ public class Sheet
     public SheetSteps getSheetSteps ()
     {
         return sheetSteps;
-    }
-
-    //------------------//
-    // getSimilarGlyphs //
-    //------------------//
-    /**
-     * Report the collection of glyphs whose physical parameters are "similar"
-     * to those of a provided glyph example
-     * @param example the provided glyph example
-     * @return the (perhaps empty) collection of glyphs found similar to the
-     * provided example
-     */
-    public Collection<Glyph> getSimilarGlyphs (Glyph example)
-    {
-        List<Glyph> found = new ArrayList<Glyph>();
-
-        //        for (Glyph glyph : getActiveGlyphs()) {
-        //            if (glyph.getShape() == shape) {
-        //                found.add(glyph);
-        //            }
-        //        }
-        return found;
     }
 
     //---------//
@@ -1186,19 +1168,24 @@ public class Sheet
     //-------//
     /**
      * Close this sheet, as well as its assembly if any.
+     * @return true if we have actually closed ths sheet
      */
-    public void close ()
+    public boolean close ()
     {
-        // Close related UI assembly if any
-        if (assembly != null) {
-            assembly.close();
-        }
+        if (SheetsManager.getInstance()
+                         .close(this)) {
+            // Close related UI assembly if any
+            if (assembly != null) {
+                assembly.close();
+            }
 
-        SheetsManager.getInstance()
-                     .close(this);
+            if (picture != null) {
+                picture.close();
+            }
 
-        if (picture != null) {
-            picture.close();
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -1323,31 +1310,9 @@ public class Sheet
     }
 
     //-------------//
-    // lookupGlyph //
-    //-------------//
-    /**
-     * Look up for a glyph, knowing its coordinates
-     *
-     * @param source the coordinates of the point
-     *
-     * @return the found glyph, or null
-     */
-    public Glyph lookupGlyph (PixelPoint source)
-    {
-        Glyph      glyph = null;
-        SystemInfo system = getSystemOf(source);
-
-        if (system != null) {
-            return lookupSystemGlyph(system, source);
-        }
-
-        return null;
-    }
-
-    //-------------//
     // rebuildAfter //
     //-------------//
-    public void rebuildAfter (Step                  step,
+    public void rebuildAfter (Step                   step,
                               Collection<SystemInfo> impactedSystems)
     {
         sheetSteps.rebuildAfter(step, impactedSystems, false); //Not imposed
@@ -1359,6 +1324,7 @@ public class Sheet
     /**
      * Split the bar sticks among systems
      *
+     * @param barSticks the collection of all bar sticks
      * @return the set of modified systems
      */
     public Set<SystemInfo> splitBarSticks (Collection<?extends Glyph> barSticks)
@@ -1506,22 +1472,19 @@ public class Sheet
         return "{Sheet " + getPath() + "}";
     }
 
-    //-------------------//
-    // lookupSystemGlyph //
-    //-------------------//
-    private Glyph lookupSystemGlyph (SystemInfo system,
-                                     Point      source)
-    {
-        for (Glyph glyph : system.getGlyphs()) {
-            for (GlyphSection section : glyph.getMembers()) {
-                // Swap of x & y, since this is a vertical lag
-                if (section.contains(source.y, source.x)) {
-                    return glyph;
-                }
-            }
-        }
+    //~ Inner Classes ----------------------------------------------------------
 
-        // Not found
-        return null;
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Ratio of horizontal histogram to detect staves */
+        Constant.Ratio defaultStaffThreshold = new Constant.Ratio(
+            0.5d,
+            "Ratio of horizontal histogram to detect staves");
     }
 }

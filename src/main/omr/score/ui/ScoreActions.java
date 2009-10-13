@@ -103,45 +103,6 @@ public class ScoreActions
     }
 
     //-----------------//
-    // setTextLanguage //
-    //-----------------//
-    /**
-     * Set the default language code for textual elements of the score / sheet
-     * @param sheet the related sheet
-     * @param code the language code to use
-     * @return the launched Swing Application Framework task
-     */
-    public static Task setTextLanguage (final Sheet  sheet,
-                                        final String code)
-    {
-        final Score score = sheet.getScore();
-
-        Task        task = new BasicTask() {
-            protected Void doInBackground ()
-                throws Exception
-            {
-                //                // Record this task into the sheet script
-                //                sheet.getScript()
-                //                     .addTask(new LanguageTask(code));
-
-                // Do the job and update the impact data if needed
-                score.setLanguage(code);
-
-                // Update the following steps on the impacted systems
-                score.getSheet()
-                     .getSheetSteps()
-                     .rebuildAfter(Step.VERTICALS, null, true);
-
-                return null;
-            }
-        };
-
-        task.execute();
-
-        return task;
-    }
-
-    //-----------------//
     // checkParameters //
     //-----------------//
     /**
@@ -179,15 +140,18 @@ public class ScoreActions
         final Wrapper<Boolean> apply = new Wrapper<Boolean>();
         apply.value = false;
 
-        final ScoreParameters  scoreBoard = new ScoreParameters(score);
-        final JOptionPane optionPane = new JOptionPane(
+        final ScoreParameters scoreBoard = new ScoreParameters(score);
+        final JOptionPane     optionPane = new JOptionPane(
             scoreBoard.getComponent(),
             JOptionPane.QUESTION_MESSAGE,
             JOptionPane.OK_CANCEL_OPTION);
 
-        final JDialog     dialog = new JDialog(
+        final String          frameTitle = (score != null)
+                                           ? (score.getRadix() + " parameters")
+                                           : "Score parameters";
+        final JDialog         dialog = new JDialog(
             Main.getGui().getFrame(),
-            score.getRadix() + " parameters",
+            frameTitle,
             true); // Modal flag
         dialog.setContentPane(optionPane);
         dialog.setName("scoreBoard");
@@ -207,9 +171,11 @@ public class ScoreActions
                             apply.value = new Boolean(
                                 value == JOptionPane.OK_OPTION);
 
+                            Sheet sheet = (score != null) ? score.getSheet()
+                                          : null;
+
                             // Exit only if user gives up or enters correct data
-                            if (!apply.value ||
-                                scoreBoard.commit(score.getSheet())) {
+                            if (!apply.value || scoreBoard.commit(sheet)) {
                                 dialog.setVisible(false);
                                 dialog.dispose();
                             } else {
@@ -270,7 +236,7 @@ public class ScoreActions
      * Launch the dialog to set up score parameters.
      * @param e the event that triggered this action
      */
-    @Action(enabledProperty = SCORE_AVAILABLE)
+    @Action
     public void defineParameters (ActionEvent e)
     {
         Score score = ScoreController.getCurrentScore();
@@ -280,7 +246,7 @@ public class ScoreActions
             try {
                 MidiAgent agent = MidiAgent.getInstance();
 
-                if (agent.getScore() == score) {
+                if ((agent.getScore() == score) && (score != null)) {
                     agent.reset();
                 }
             } catch (Exception ex) {

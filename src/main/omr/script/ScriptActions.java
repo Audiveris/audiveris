@@ -38,6 +38,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import javax.swing.JOptionPane;
+import javax.xml.bind.JAXBException;
 
 /**
  * Class <code>ScriptActions</code> gathers UI actions related to script
@@ -75,11 +76,27 @@ public class ScriptActions
 
     //~ Methods ----------------------------------------------------------------
 
+    //-------------------//
+    // setConfirmOnClose //
+    //-------------------//
     public static void setConfirmOnClose (boolean bool)
     {
-        constants.closeConfirmation.setValue(bool);
+        if (bool != isConfirmOnClose()) {
+            if (bool) {
+                logger.info(
+                    "You will now be prompted for Script saving on close");
+            } else {
+                logger.info(
+                    "You will no longer be prompted for Script saving on close");
+            }
+
+            constants.closeConfirmation.setValue(bool);
+        }
     }
 
+    //------------------//
+    // isConfirmOnClose //
+    //------------------//
     public static boolean isConfirmOnClose ()
     {
         return constants.closeConfirmation.getValue();
@@ -107,7 +124,7 @@ public class ScriptActions
     //-------------//
     public static boolean checkStored (Script script)
     {
-        if (script.isModified() && constants.closeConfirmation.getValue()) {
+        if (script.isModified() && isConfirmOnClose()) {
             int answer = JOptionPane.showConfirmDialog(
                 null,
                 "Save script for sheet " + script.getSheet().getRadix() + "?");
@@ -303,6 +320,8 @@ public class ScriptActions
                 logger.info("Script stored as " + file);
             } catch (FileNotFoundException ex) {
                 logger.warning("Cannot find script file " + file, ex);
+            } catch (JAXBException ex) {
+                logger.warning("Cannot marshal script", ex);
             } finally {
                 try {
                     fos.close();

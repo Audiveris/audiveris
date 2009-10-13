@@ -95,25 +95,23 @@ public class ScriptManager
      *
      * @param script the script to store
      * @param output the output stream to be written
+     * @throws JAXBException 
      */
     public void store (Script       script,
                        OutputStream output)
+        throws JAXBException
     {
-        try {
-            if (logger.isFineEnabled()) {
-                logger.fine("Storing " + script);
-            }
-
-            Marshaller m = getJaxbContext()
-                               .createMarshaller();
-            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-            m.marshal(script, output);
-
-            // Flag the script with this event
-            script.setModified(false);
-        } catch (JAXBException ex) {
-            logger.warning("Cannot marshal script", ex);
+        if (logger.isFineEnabled()) {
+            logger.fine("Storing " + script);
         }
+
+        Marshaller m = getJaxbContext()
+                           .createMarshaller();
+        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+        m.marshal(script, output);
+
+        // Flag the script with this event
+        script.setModified(false);
     }
 
     //----------------//
@@ -140,8 +138,7 @@ public class ScriptManager
                         SegmentTask.class,
                         SlurTask.class,
                         StepTask.class,
-                        TextTask.class
-                        );
+                        TextTask.class);
                 }
             }
         }
