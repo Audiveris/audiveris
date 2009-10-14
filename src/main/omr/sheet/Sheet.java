@@ -165,7 +165,7 @@ public class Sheet
     private volatile ErrorsEditor errorsEditor;
 
     /** The histogram ratio to be used on this sheet to retrieve staves */
-    private double histoRatio = getDefaultHistoRatio();
+    private Double histoRatio;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -276,10 +276,7 @@ public class Sheet
      */
     public static void setDefaultHistoRatio (double histoRatio)
     {
-        if (histoRatio != getDefaultHistoRatio()) {
-            logger.info("Default lines histogram ratio is now " + histoRatio);
-            constants.defaultStaffThreshold.setValue(histoRatio);
-        }
+        constants.defaultStaffThreshold.setValue(histoRatio);
     }
 
     //----------------------//
@@ -339,11 +336,17 @@ public class Sheet
     // getHistoRatio //
     //---------------//
     /**
-     * Get the sheet value of histogram threhold for staff detection
+     * Get the sheet value of histogram threhold for staff detection.
+     * If the value is not yet set, it is set to the default value and returned.
      * @return the ratio of maximum histogram value
+     * @see #hasHistoRatio()
      */
     public double getHistoRatio ()
     {
+        if (!hasHistoRatio()) {
+            setHistoRatio(getDefaultHistoRatio());
+        }
+
         return histoRatio;
     }
 
@@ -1307,6 +1310,11 @@ public class Sheet
         }
 
         System.out.println("--- SystemInfos end ---");
+    }
+
+    public boolean hasHistoRatio ()
+    {
+        return histoRatio != null;
     }
 
     //-------------//

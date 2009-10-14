@@ -617,10 +617,6 @@ public class Sentence
                                         .getScore()
                                         .getLanguage();
 
-            if (language == null) {
-                language = Language.getDefaultLanguage();
-            }
-
             // If we have no content or if a new language is being used for OCR
             if ((info.getOcrContent() == null) ||
                 !language.equals(info.getOcrLanguage())) {

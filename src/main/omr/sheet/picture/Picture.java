@@ -118,7 +118,7 @@ public class Picture
     private WritableRaster raster;
 
     /** The current maximum value for foreground pixels */
-    private int maxForeground = getDefaultMaxForeground();
+    private Integer maxForeground;
 
     /** The factor to apply to raw pixel value to get gray level on 0..255 */
     private int grayFactor = 1;
@@ -381,10 +381,7 @@ public class Picture
     //-------------------------//
     public static void setDefaultMaxForeground (int level)
     {
-        if (level != getDefaultMaxForeground()) {
-            constants.maxForegroundGrayLevel.setValue(level);
-            logger.info("Default max foreground is now " + level);
-        }
+        constants.maxForegroundGrayLevel.setValue(level);
     }
 
     //-------------------------//
@@ -437,6 +434,10 @@ public class Picture
     @Implement(PixelSource.class)
     public int getMaxForeground ()
     {
+        if (!hasMaxForeground()) {
+            maxForeground = getDefaultMaxForeground();
+        }
+
         return maxForeground;
     }
 
@@ -644,6 +645,15 @@ public class Picture
         }
 
         System.out.println();
+    }
+
+    //------------------//
+    // hasMaxForeground //
+    //------------------//
+    @Implement(PixelSource.class)
+    public boolean hasMaxForeground ()
+    {
+        return maxForeground != null;
     }
 
     //--------//

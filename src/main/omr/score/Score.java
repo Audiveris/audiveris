@@ -14,6 +14,8 @@ package omr.score;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.text.Language;
+
 import omr.log.Logger;
 
 import omr.score.common.PagePoint;
@@ -206,11 +208,7 @@ public class Score
      */
     public static void setDefaultSlotMargin (double fraction)
     {
-        if (getDefaultSlotMargin()
-                .doubleValue() != fraction) {
-            logger.info("Default slot margin is now " + fraction);
-            constants.defaultSlotMargin.setValue(fraction);
-        }
+        constants.defaultSlotMargin.setValue(fraction);
     }
 
     //----------------------//
@@ -226,6 +224,19 @@ public class Score
     }
 
     //-----------------//
+    // setDefaultTempo //
+    //-----------------//
+    /**
+     * Assign default value for Midi tempo
+     *
+     * @param tempo the default tempo value
+     */
+    public static void setDefaultTempo (int tempo)
+    {
+        constants.defaultTempo.setValue(tempo);
+    }
+
+    //-----------------//
     // getDefaultTempo //
     //-----------------//
     /**
@@ -233,9 +244,22 @@ public class Score
      *
      * @return the default tempo value
      */
-    public int getDefaultTempo ()
+    public static int getDefaultTempo ()
     {
         return constants.defaultTempo.getValue();
+    }
+
+    //------------------//
+    // setDefaultVolume //
+    //------------------//
+    /**
+     * Assign default value for Midi volume
+     *
+     * @param volume the default volume value
+     */
+    public static void setDefaultVolume (int volume)
+    {
+        constants.defaultVolume.setValue(volume);
     }
 
     //------------------//
@@ -246,7 +270,7 @@ public class Score
      *
      * @return the default volume value
      */
-    public int getDefaultVolume ()
+    public static int getDefaultVolume ()
     {
         return constants.defaultVolume.getValue();
     }
@@ -405,10 +429,15 @@ public class Score
     //-------------//
     /**
      * Report the dominant language in the score text
+     * If the value is not yet set, it is set to the default value and returned.
      * @return the dominant language
      */
     public String getLanguage ()
     {
+        if (!hasLanguage()) {
+            language = Language.getDefaultLanguage();
+        }
+
         return language;
     }
 
@@ -709,10 +738,15 @@ public class Score
     //---------------//
     /**
      * Report the current horizontal Slot margin
+     * If the value is not yet set, it is set to the default value and returned.
      * @return the slotMargin (in interline fraction)
      */
     public InterlineFraction getSlotMargin ()
     {
+        if (!hasSlotMargin()) {
+            slotMargin = getDefaultSlotMargin();
+        }
+
         return slotMargin;
     }
 
@@ -761,11 +795,15 @@ public class Score
     //----------//
     /**
      * Report the assigned tempo, if any
-     *
+     * If the value is not yet set, it is set to the default value and returned.
      * @return the assigned tempo, or null
      */
     public Integer getTempo ()
     {
+        if (!hasTempo()) {
+            tempo = getDefaultTempo();
+        }
+
         return tempo;
     }
 
@@ -800,11 +838,15 @@ public class Score
     //-----------//
     /**
      * Report the assigned volume, if any
-     *
+     * If the value is not yet set, it is set to the default value and returned.
      * @return the assigned volume, or null
      */
     public Integer getVolume ()
     {
+        if (!hasVolume()) {
+            volume = getDefaultVolume();
+        }
+
         return volume;
     }
 
@@ -943,6 +985,54 @@ public class Score
     {
         ScoreManager.getInstance()
                     .export(this);
+    }
+
+    //-------------//
+    // hasLanguage //
+    //-------------//
+    /**
+     * Check whether a language has been defined for this score
+     * @return true if a language is defined
+     */
+    public boolean hasLanguage ()
+    {
+        return language != null;
+    }
+
+    //---------------//
+    // hasSlotMargin //
+    //---------------//
+    /**
+     * Check whether slotMargin is defined for this score
+     * @return true if slotMargin is defined
+     */
+    public boolean hasSlotMargin ()
+    {
+        return slotMargin != null;
+    }
+
+    //----------//
+    // hasTempo //
+    //----------//
+    /**
+     * Check whether a tempo has been defined for this score
+     * @return true if a tempo is defined
+     */
+    public boolean hasTempo ()
+    {
+        return tempo != null;
+    }
+
+    //-----------//
+    // hasVolume //
+    //-----------//
+    /**
+     * Check whether a volumehas been defined for this score
+     * @return true if a volume is defined
+     */
+    public boolean hasVolume ()
+    {
+        return volume != null;
     }
 
     //------------------//

@@ -668,16 +668,16 @@ public class ScoreExporter
                     systemLayout.setTopSystemDistance(
                         toTenths(current.system.getTopLeft().y));
 
-                    // Default tempo?
-                    if (score.getTempo() != null) {
+                    // Tempo?
+                    if (score.hasTempo()) {
                         Sound sound = factory.createSound();
                         current.pmMeasure.getNoteOrBackupOrForward()
                                          .add(sound);
                         sound.setTempo(createDecimal(score.getTempo()));
                     }
 
-                    // Default velocity?
-                    if (score.getVolume() != null) {
+                    // Volume?
+                    if (score.hasVolume()) {
                         Sound sound = factory.createSound();
                         current.pmMeasure.getNoteOrBackupOrForward()
                                          .add(sound);
@@ -1137,7 +1137,7 @@ public class ScoreExporter
         encoding.getEncodingDateOrEncoderOrSoftware()
                 .add(
             factory.createEncodingSoftware(
-                Main.getToolName() + " " + Main.getToolVersion()));
+                Main.getToolName() + " " + Main.getToolBuild()));
 
         // [Encoding]/EncodingDate
         // Let the Marshalling class handle it

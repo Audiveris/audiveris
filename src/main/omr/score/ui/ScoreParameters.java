@@ -97,9 +97,10 @@ public class ScoreParameters
         panes.add(new HistoPane());
         panes.add(new SlotPane());
         panes.add(new LanguagePane());
+        panes.add(new VolumePane());
+        panes.add(new TempoPane());
 
         if (score != null) {
-            panes.add(new MidiPane());
             panes.add(new ScorePane());
 
             // Add measure pane iff we have measures
@@ -385,91 +386,6 @@ public class ScoreParameters
         }
     }
 
-    //------------//
-    // DoublePane //
-    //------------//
-    /**
-     * Abstract Pane to handle a slider for double value and a SetAsDefault box
-     */
-    private class DoublePane
-        extends DefaultPane
-        implements ChangeListener
-    {
-        //~ Static fields/initializers -----------------------------------------
-
-        protected static final int   FACTOR = 100;
-
-        //~ Instance fields ----------------------------------------------------
-
-        /** Slider */
-        protected final JSlider slider;
-
-        /** Numeric value kept in sync */
-        protected final LDoubleField numValue;
-
-        //~ Constructors -------------------------------------------------------
-
-        public DoublePane (String separator,
-                           String label,
-                           String tip,
-                           int    minNumValue,
-                           int    maxNumValue,
-                           double initValue)
-        {
-            super(separator);
-
-            // Slider
-            slider = new JSlider(
-                JSlider.HORIZONTAL,
-                minNumValue,
-                maxNumValue,
-                (int) (initValue * FACTOR));
-            slider.setMajorTickSpacing(50);
-            slider.setMinorTickSpacing(10);
-            slider.setPaintTicks(true);
-
-            // Numeric value
-            numValue = new LDoubleField(false, label, tip, "%.2f");
-            numValue.setValue(dblValue());
-
-            // Numeric value is kept in sync with Slider
-            slider.addChangeListener(this);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public int getLogicalRowCount ()
-        {
-            return 3;
-        }
-
-        @Override
-        public int defineLayout (PanelBuilder    builder,
-                                 CellConstraints cst,
-                                 int             r)
-        {
-            r = super.defineLayout(builder, cst, r);
-            builder.add(numValue.getLabel(), cst.xy(9, r));
-            builder.add(numValue.getField(), cst.xy(11, r));
-
-            r += 2;
-            builder.add(slider, cst.xyw(3, r, 9));
-
-            return r + 2;
-        }
-
-        public void stateChanged (ChangeEvent e)
-        {
-            numValue.setValue(dblValue());
-        }
-
-        protected double dblValue ()
-        {
-            return (double) slider.getValue() / FACTOR;
-        }
-    }
-
     //----------------//
     // ForegroundPane //
     //----------------//
@@ -477,44 +393,26 @@ public class ScoreParameters
      * Pane to define the upper limit for foreground pixels
      */
     private class ForegroundPane
-        extends DefaultPane
-        implements ChangeListener
+        extends SliderPane
     {
-        //~ Instance fields ----------------------------------------------------
-
-        /** Slider for max foreground value */
-        final JSlider pixSlider;
-
-        /** Numeric value kept in sync */
-        final LIntegerField pixValue = new LIntegerField(
-            false,
-            "Level",
-            "Max level for foreground pixels");
-
         //~ Constructors -------------------------------------------------------
 
         public ForegroundPane ()
         {
-            super("Foreground");
-
-            int initValue = (score != null)
-                            ? score.getSheet()
-                                   .getPicture()
-                                   .getMaxForeground()
-                            : Picture.getDefaultMaxForeground();
-
-            pixSlider = new JSlider(JSlider.HORIZONTAL, 0, 255, initValue);
-            pixSlider.setMajorTickSpacing(50);
-            pixSlider.setMinorTickSpacing(10);
-            pixSlider.setPaintTicks(true);
-
-            pixValue.setValue(initValue);
-
-            // If no current score, push for a global setting
-            defaultBox.setSelected(score == null);
-
-            // Kept in sync
-            pixSlider.addChangeListener(this);
+            super(
+                "Foreground Pixels",
+                new LIntegerField(
+                    false,
+                    "Level",
+                    "Max level for foreground pixels"),
+                0,
+                255,
+                ((score != null) &&
+                                score.getSheet()
+                                     .getPicture()
+                                     .hasMaxForeground())
+                                ? score.getSheet().getPicture().getMaxForeground()
+                                : Picture.getDefaultMaxForeground());
         }
 
         //~ Methods ------------------------------------------------------------
@@ -528,7 +426,7 @@ public class ScoreParameters
         @Override
         public boolean isValid ()
         {
-            task.setForeground(pixSlider.getValue());
+            task.setForeground(intValue());
 
             return true;
         }
@@ -536,32 +434,10 @@ public class ScoreParameters
         @Override
         public void commit ()
         {
-            if (defaultBox.isSelected()) {
-                Picture.setDefaultMaxForeground(pixSlider.getValue());
-            }
-        }
-
-        @Override
-        public int defineLayout (PanelBuilder    builder,
-                                 CellConstraints cst,
-                                 int             r)
-        {
-            r = super.defineLayout(builder, cst, r);
-            builder.add(pixValue.getLabel(), cst.xy(9, r));
-            builder.add(pixValue.getField(), cst.xy(11, r));
-
-            r += 2;
-            builder.add(pixSlider, cst.xyw(3, r, 9));
-
-            return r + 2;
-        }
-
-        public void stateChanged (ChangeEvent e)
-        {
-            pixValue.setValue(pixSlider.getValue());
-
-            if (!pixSlider.getValueIsAdjusting()) {
-                //logger.info("New maxForeground: " + histoSlider.getValue());
+            if (defaultBox.isSelected() &&
+                (intValue() != Picture.getDefaultMaxForeground())) {
+                Picture.setDefaultMaxForeground(intValue());
+                logger.info("Default max foreground is now " + intValue());
             }
         }
     }
@@ -573,7 +449,7 @@ public class ScoreParameters
      * Pane to define the histogram threshold used for staff retrieval
      */
     private class HistoPane
-        extends DoublePane
+        extends SliderPane
         implements ChangeListener
     {
         //~ Constructors -------------------------------------------------------
@@ -582,11 +458,15 @@ public class ScoreParameters
         {
             super(
                 "Staff Lines",
-                "Ratio",
-                "Ratio of horizontal histogram for staff lines",
+                new LDoubleField(
+                    false,
+                    "Ratio",
+                    "Ratio of horizontal histogram for staff lines",
+                    "%.2f"),
                 0,
                 100,
-                (score != null) ? score.getSheet().getHistoRatio()
+                ((score != null) && (score.getSheet().hasHistoRatio()))
+                                ? score.getSheet().getHistoRatio()
                                 : Sheet.getDefaultHistoRatio());
         }
 
@@ -603,7 +483,10 @@ public class ScoreParameters
         @Override
         public void commit ()
         {
-            if (defaultBox.isSelected()) {
+            if (defaultBox.isSelected() &&
+                (dblValue() != Sheet.getDefaultHistoRatio())) {
+                logger.info(
+                    "Default lines histogram ratio is now " + dblValue());
                 Sheet.setDefaultHistoRatio(dblValue());
             }
         }
@@ -652,7 +535,13 @@ public class ScoreParameters
                 // Make the selected language the global default
                 String item = (String) langCombo.getItemAt(
                     langCombo.getSelectedIndex());
-                Language.setDefaultLanguage(codeOf(item));
+                String code = codeOf(item);
+
+                if (!Language.getDefaultLanguage()
+                             .equals(code)) {
+                    logger.info("Default language is now '" + code + "'");
+                    Language.setDefaultLanguage(code);
+                }
             }
         }
 
@@ -689,8 +578,7 @@ public class ScoreParameters
             JComboBox combo = new JComboBox(items.toArray(new String[0]));
             combo.setToolTipText("Dominant language for textual items");
 
-            final String code = ((score != null) &&
-                                (score.getLanguage() != null))
+            final String code = ((score != null) && score.hasLanguage())
                                 ? score.getLanguage()
                                 : Language.getDefaultLanguage();
             combo.setSelectedItem(itemOf(code));
@@ -856,76 +744,11 @@ public class ScoreParameters
     }
 
     //----------//
-    // MidiPane //
-    //----------//
-    private class MidiPane
-        extends Pane
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /** Tempo */
-        final LIntegerField tempo = new LIntegerField(
-            "Tempo",
-            "Tempo value in number of quarters per minute");
-
-        /** Volume */
-        final LIntegerField volume = new LIntegerField("Volume", "Volume");
-
-        //~ Constructors -------------------------------------------------------
-
-        public MidiPane ()
-        {
-            super("Midi");
-
-            tempo.setValue(
-                (score.getTempo() != null) ? score.getTempo()
-                                : score.getDefaultTempo());
-            volume.setValue(
-                (score.getVolume() != null) ? score.getVolume()
-                                : score.getDefaultVolume());
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public boolean isValid ()
-        {
-            if ((tempo.getValue() < 0) || (tempo.getValue() > 1000)) {
-                logger.warning("Tempo value should be in 0..1000 range");
-
-                return false;
-            }
-
-            if ((volume.getValue() < 0) || (volume.getValue() > 127)) {
-                logger.warning("Volume value should be in 0..127 range");
-
-                return false;
-            }
-
-            task.setTempo(tempo.getValue());
-            task.setVolume(volume.getValue());
-
-            return true;
-        }
-
-        @Override
-        public int defineLayout (PanelBuilder    builder,
-                                 CellConstraints cst,
-                                 int             r)
-        {
-            builder.add(tempo.getLabel(), cst.xy(5, r));
-            builder.add(tempo.getField(), cst.xy(7, r));
-
-            builder.add(volume.getLabel(), cst.xy(9, r));
-            builder.add(volume.getField(), cst.xy(11, r));
-
-            return r + 2;
-        }
-    }
-
-    //----------//
     // PartPane //
     //----------//
+    /**
+     * Pane for details of one part
+     */
     private class PartPane
         extends Panel
     {
@@ -1027,6 +850,9 @@ public class ScoreParameters
     //-----------//
     // ScorePane //
     //-----------//
+    /**
+     * Pane to define the details for each part
+     */
     private class ScorePane
         extends Pane
     {
@@ -1128,6 +954,125 @@ public class ScoreParameters
         }
     }
 
+    //------------//
+    // SliderPane //
+    //------------//
+    /**
+     * Abstract Pane to handle a slider + numeric value and a SetAsDefault box
+     */
+    private class SliderPane
+        extends DefaultPane
+        implements ChangeListener
+    {
+        //~ Static fields/initializers -----------------------------------------
+
+        protected static final int FACTOR = 100;
+
+        //~ Instance fields ----------------------------------------------------
+
+        /** Slider */
+        protected final JSlider slider;
+
+        /** Numeric value kept in sync */
+        protected final LField numValue;
+
+        //~ Constructors -------------------------------------------------------
+
+        public SliderPane (String       separator,
+                           LDoubleField numValue,
+                           int          minNumValue,
+                           int          maxNumValue,
+                           double       initValue)
+        {
+            super(separator);
+
+            // Slider
+            slider = new JSlider(
+                JSlider.HORIZONTAL,
+                minNumValue,
+                maxNumValue,
+                (int) (initValue * FACTOR));
+
+            // Numeric value
+            this.numValue = numValue;
+            numValue.setValue(dblValue());
+
+            commonInit();
+        }
+
+        public SliderPane (String        separator,
+                           LIntegerField numValue,
+                           int           minNumValue,
+                           int           maxNumValue,
+                           int           initValue)
+        {
+            super(separator);
+
+            // Slider
+            slider = new JSlider(
+                JSlider.HORIZONTAL,
+                minNumValue,
+                maxNumValue,
+                initValue);
+
+            // Numeric value
+            this.numValue = numValue;
+            numValue.setValue(intValue());
+
+            commonInit();
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public int getLogicalRowCount ()
+        {
+            return 3;
+        }
+
+        @Override
+        public int defineLayout (PanelBuilder    builder,
+                                 CellConstraints cst,
+                                 int             r)
+        {
+            r = super.defineLayout(builder, cst, r);
+            builder.add(numValue.getLabel(), cst.xy(9, r));
+            builder.add(numValue.getField(), cst.xy(11, r));
+
+            r += 2;
+            builder.add(slider, cst.xyw(3, r, 9));
+
+            return r + 2;
+        }
+
+        public void stateChanged (ChangeEvent e)
+        {
+            if (numValue instanceof LDoubleField) {
+                ((LDoubleField) numValue).setValue(dblValue());
+            }
+
+            if (numValue instanceof LIntegerField) {
+                ((LIntegerField) numValue).setValue(intValue());
+            }
+        }
+
+        protected double dblValue ()
+        {
+            return (double) slider.getValue() / FACTOR;
+        }
+
+        protected int intValue ()
+        {
+            return slider.getValue();
+        }
+
+        private void commonInit ()
+        {
+            // Numeric value is kept in sync with Slider
+            slider.addChangeListener(this);
+        }
+    }
+
     //----------//
     // SlotPane //
     //----------//
@@ -1135,8 +1080,7 @@ public class ScoreParameters
      * Pane to define the abscissa margin around a common time slot
      */
     private class SlotPane
-        extends DoublePane
-        implements ChangeListener
+        extends SliderPane
     {
         //~ Constructors -------------------------------------------------------
 
@@ -1144,11 +1088,14 @@ public class ScoreParameters
         {
             super(
                 "Time Slots",
-                "Margin",
-                "Horizontal margin around Slots, in interline fractions",
+                new LDoubleField(
+                    false,
+                    "Margin",
+                    "Horizontal margin around Slots, in interline fractions",
+                    "%.2f"),
                 0,
                 200,
-                ((score != null) && (score.getSlotMargin() != null))
+                ((score != null) && score.hasSlotMargin())
                                 ? score.getSlotMargin().doubleValue()
                                 : Score.getDefaultSlotMargin().doubleValue());
         }
@@ -1166,8 +1113,134 @@ public class ScoreParameters
         @Override
         public void commit ()
         {
-            if (defaultBox.isSelected()) {
-                Score.setDefaultSlotMargin(dblValue());
+            double val = dblValue();
+
+            if (defaultBox.isSelected() &&
+                (Score.getDefaultSlotMargin()
+                      .doubleValue() != val)) {
+                logger.info("Default slot margin is now " + val);
+                Score.setDefaultSlotMargin(val);
+            }
+        }
+    }
+
+    //-----------//
+    // TempoPane //
+    //-----------//
+    /**
+     * Pane for MIDI tempo
+     */
+    private class TempoPane
+        extends DefaultPane
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Tempo */
+        final LIntegerField tempo = new LIntegerField(
+            "Tempo",
+            "Tempo value in number of quarters per minute");
+
+        //~ Constructors -------------------------------------------------------
+
+        public TempoPane ()
+        {
+            super("Midi Tempo");
+
+            tempo.setValue(
+                ((score != null) && score.hasTempo()) ? score.getTempo()
+                                : Score.getDefaultTempo());
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public boolean isValid ()
+        {
+            int val = tempo.getValue();
+
+            if ((val < 0) || (val > 1000)) {
+                logger.warning("Tempo value should be in 0..1000 range");
+
+                return false;
+            }
+
+            task.setTempo(val);
+
+            return true;
+        }
+
+        @Override
+        public void commit ()
+        {
+            int val = tempo.getValue();
+
+            if (defaultBox.isSelected() && (val != Score.getDefaultTempo())) {
+                Score.setDefaultTempo(val);
+                logger.info("Default MIDI tempo is now " + val);
+            }
+        }
+
+        @Override
+        public int defineLayout (PanelBuilder    builder,
+                                 CellConstraints cst,
+                                 int             r)
+        {
+            r = super.defineLayout(builder, cst, r);
+            builder.add(tempo.getLabel(), cst.xy(9, r));
+            builder.add(tempo.getField(), cst.xy(11, r));
+
+            return r + 2;
+        }
+    }
+
+    //------------//
+    // VolumePane //
+    //------------//
+    /**
+     * Pane for MIDI volume
+     */
+    private class VolumePane
+        extends SliderPane
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public VolumePane ()
+        {
+            super(
+                "Midi Volume",
+                new LIntegerField(false, "Volume", "Volume for playback"),
+                0,
+                255,
+                ((score != null) && score.hasVolume()) ? score.getVolume()
+                                : Score.getDefaultVolume());
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public boolean isValid ()
+        {
+            int val = intValue();
+
+            if ((val < 0) || (val > 127)) {
+                logger.warning("Volume value should be in 0..127 range");
+
+                return false;
+            }
+
+            task.setVolume(val);
+
+            return true;
+        }
+
+        @Override
+        public void commit ()
+        {
+            int val = intValue();
+
+            if (defaultBox.isSelected() && (val != Score.getDefaultVolume())) {
+                Score.setDefaultVolume(val);
+                logger.info("Default MIDI volume is now " + val);
             }
         }
     }

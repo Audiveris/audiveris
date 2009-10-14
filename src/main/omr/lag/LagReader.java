@@ -13,9 +13,10 @@ package omr.lag;
 
 import omr.log.Logger;
 
+import omr.sheet.picture.Picture;
+
 import omr.util.Implement;
 
-import java.awt.*;
 import java.util.List;
 
 /**

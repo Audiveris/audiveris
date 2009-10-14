@@ -178,49 +178,64 @@ public class ParametersTask
         StringBuilder sb = new StringBuilder();
 
         // Foreground
-        if ((foreground != null) && (foreground != picture.getMaxForeground())) {
-            picture.setMaxForeground(foreground);
-            sb.append(" foreground:")
-              .append(foreground);
-            foregroundChanged = true;
+        if (foreground != null) {
+            if (!picture.hasMaxForeground() ||
+                !foreground.equals(picture.getMaxForeground())) {
+                picture.setMaxForeground(foreground);
+                sb.append(" foreground:")
+                  .append(foreground);
+                foregroundChanged = true;
+            }
         }
 
         // Histo Frac
-        if ((histoRatio != null) && (histoRatio != sheet.getHistoRatio())) {
-            sheet.setHistoRatio(histoRatio);
-            sb.append(" histoRatio:")
-              .append(histoRatio);
-            histoRatioChanged = true;
-        }
-
-        // Language
-        if ((language != null) && !language.equals(score.getLanguage())) {
-            score.setLanguage(language);
-            sb.append(" language:")
-              .append(language);
-            languageChanged = true;
+        if (histoRatio != null) {
+            if (!sheet.hasHistoRatio() ||
+                (!histoRatio.equals(sheet.getHistoRatio()))) {
+                sheet.setHistoRatio(histoRatio);
+                sb.append(" histoRatio:")
+                  .append(histoRatio);
+                histoRatioChanged = true;
+            }
         }
 
         // Slot margin
-        if ((slotMargin != null) &&
-            (!slotMargin.equals(score.getSlotMargin()))) {
-            score.setSlotMargin(slotMargin);
-            sb.append(" slotMargin:")
-              .append(slotMargin);
-            slotMarginChanged = true;
+        if (slotMargin != null) {
+            if (!score.hasSlotMargin() ||
+                !slotMargin.equals(score.getSlotMargin())) {
+                score.setSlotMargin(slotMargin);
+                sb.append(" slotMargin:")
+                  .append(slotMargin);
+                slotMarginChanged = true;
+            }
         }
 
-        // Midi tempo & volume
-        if ((tempo != null) && (tempo != score.getTempo())) {
-            score.setTempo(tempo);
-            sb.append(" tempo:")
-              .append(tempo);
+        // Language
+        if (language != null) {
+            if (!score.hasLanguage() || !language.equals(score.getLanguage())) {
+                score.setLanguage(language);
+                sb.append(" language:")
+                  .append(language);
+                languageChanged = true;
+            }
         }
 
-        if ((volume != null) && (volume != score.getVolume())) {
-            score.setVolume(volume);
-            sb.append(" volume:")
-              .append(volume);
+        // Midi tempo
+        if (tempo != null) {
+            if (!score.hasTempo() || !tempo.equals(score.getTempo())) {
+                score.setTempo(tempo);
+                sb.append(" tempo:")
+                  .append(tempo);
+            }
+        }
+
+        // Midi volume
+        if (volume != null) {
+            if (!score.hasVolume() || !volume.equals(score.getVolume())) {
+                score.setVolume(volume);
+                sb.append(" volume:")
+                  .append(volume);
+            }
         }
 
         if (sb.length() > 0) {

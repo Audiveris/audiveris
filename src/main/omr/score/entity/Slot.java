@@ -133,13 +133,8 @@ public class Slot
     {
         InterlineFraction slotMargin = measure.getScore()
                                               .getSlotMargin();
-
-        if (slotMargin == null) {
-            slotMargin = Score.getDefaultSlotMargin();
-        }
-
-        int unitsMargin = measure.getScale()
-                                 .toUnits(slotMargin);
+        int               unitsMargin = measure.getScale()
+                                               .toUnits(slotMargin);
 
         return Math.abs(sysPt.x - getX()) <= unitsMargin;
     }
