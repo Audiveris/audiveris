@@ -114,14 +114,10 @@ public class ScoreActions
      */
     public static boolean checkParameters (Score score)
     {
-        if (score.getTempo() == null) {
-            if (constants.promptParameters.getValue()) {
-                return parametersAreConfirmed(score);
-            } else {
-                return setDefaultParameters(score);
-            }
+        if (constants.promptParameters.getValue()) {
+            return parametersAreConfirmed(score);
         } else {
-            return true;
+            return fillParametersWithDefaults(score);
         }
     }
 
@@ -309,22 +305,37 @@ public class ScoreActions
     {
     }
 
-    //----------------------//
-    // setDefaultParameters //
-    //----------------------//
-    private static boolean setDefaultParameters (Score score)
+    //----------------------------//
+    // fillParametersWithDefaults //
+    //----------------------------//
+    /**
+     * For some needed key parameters, fill them with default values if they are
+     * not yet set.
+     * @param score the related score
+     * @return true
+     */
+    private static boolean fillParametersWithDefaults (Score score)
     {
         for (ScorePart scorePart : score.getPartList()) {
             // Part name
-            scorePart.setName(scorePart.getDefaultName());
+            if (scorePart.getName() == null) {
+                scorePart.setName(scorePart.getDefaultName());
+            }
 
             // Part midi program
-            scorePart.setMidiProgram(scorePart.getDefaultProgram());
+            if (scorePart.getMidiProgram() == null) {
+                scorePart.setMidiProgram(scorePart.getDefaultProgram());
+            }
         }
 
         // Score global data
-        score.setTempo(score.getDefaultTempo());
-        score.setVolume(score.getDefaultVolume());
+        if (!score.hasTempo()) {
+            score.setTempo(Score.getDefaultTempo());
+        }
+
+        if (!score.hasVolume()) {
+            score.setVolume(Score.getDefaultVolume());
+        }
 
         return true;
     }
@@ -340,7 +351,7 @@ public class ScoreActions
         //~ Instance fields ----------------------------------------------------
 
         Constant.Boolean promptParameters = new Constant.Boolean(
-            true,
+            false,
             "Should we prompt the user for score parameters?");
     }
 

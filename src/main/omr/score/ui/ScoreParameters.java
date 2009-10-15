@@ -41,12 +41,22 @@ import java.awt.event.*;
 import java.util.*;
 
 import javax.swing.*;
+import javax.swing.border.EtchedBorder;
 import javax.swing.event.*;
 
 /**
- * Class <code>ScoreParameters</code> is a dialog that manages score information
- * as both a display and possible input from user (text language, midi
- * parameters, parts name and instrument, measure range selection).
+ * Class <code>ScoreParameters</code> is a dialog that manages information
+ * as both a display and possible input from user for major Score/Sheet
+ * parameters such as:<ul>
+ * <li>Step trigerred by drag 'n drop</li>
+ * <li>Max value for foreground pixels</li>
+ * <li>Histogram threshold for staff lines detection</li>
+ * <li>Abscissa margin for time slots</li>
+ * <li>Text language</li>
+ * <li>Midi volume and tempo</li>
+ * <li>Parts name and instrument</li>
+ * <li>Measure range selection</li>
+ * </ul>
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -88,7 +98,6 @@ public class ScoreParameters
         this.score = score;
 
         component = new Panel();
-        component.setNoInsets();
 
         // Sequence of Pane instances
         panes.add(new DnDPane());
@@ -171,8 +180,9 @@ public class ScoreParameters
     // dataIsValid //
     //-------------//
     /**
-     * Make sure every user-entered data is valid
-     * @return true if every entry is valid
+     * Make sure every user-entered data is valid, and while doing so,
+     * feed a ParametersTask to be run on the related score/sheet
+     * @return true if everything is OK, false otherwise
      */
     private boolean dataIsValid ()
     {
@@ -195,13 +205,13 @@ public class ScoreParameters
     private void defineLayout ()
     {
         // Compute the total number of logical rows
-        int logRowCount = 0;
+        int logicalRowCount = 0;
 
         for (Pane pane : panes) {
-            logRowCount += pane.getLogicalRowCount();
+            logicalRowCount += pane.getLogicalRowCount();
         }
 
-        FormLayout   layout = Panel.makeFormLayout(logRowCount, 3);
+        FormLayout   layout = Panel.makeFormLayout(logicalRowCount, 3);
         PanelBuilder builder = new PanelBuilder(layout, getComponent());
         builder.setDefaultDialogBorder();
 
@@ -291,8 +301,8 @@ public class ScoreParameters
         }
 
         /**
-         * Commit the modifications
-         * (for the items that are not handled by the ParametersTask)
+         * Commit the modifications, for the items that are not handled by the
+         * ParametersTask, which means all actions related to default values.
          */
         public void commit ()
         {
@@ -318,7 +328,11 @@ public class ScoreParameters
             return 2;
         }
 
-        /** Are all the pane data valid? */
+        /**
+         * Check whether all the pane data are valid, and feed the
+         * ParametersTask accordingly
+         * @return true if everything is OK, false otherwise
+         */
         public boolean isValid ()
         {
             return true; // By default
@@ -346,7 +360,9 @@ public class ScoreParameters
             super("Drag 'n Drop");
 
             // ComboBox for triggered step
-            stepCombo = createStepCombo();
+            stepCombo = new JComboBox(Step.values());
+            stepCombo.setToolTipText("Step to trigger on Drag 'n Drop");
+            stepCombo.setSelectedItem(FileDropHandler.getDefaultStep());
         }
 
         //~ Methods ------------------------------------------------------------
@@ -372,17 +388,6 @@ public class ScoreParameters
             builder.add(stepCombo, cst.xyw(9, r, 3));
 
             return r + 2;
-        }
-
-        /** Create a combo box filled with possible steps */
-        private JComboBox createStepCombo ()
-        {
-            JComboBox combo = new JComboBox(Step.values());
-            combo.setToolTipText("Step to trigger on Drag 'n Drop");
-
-            combo.setSelectedItem(FileDropHandler.getDefaultStep());
-
-            return combo;
         }
     }
 

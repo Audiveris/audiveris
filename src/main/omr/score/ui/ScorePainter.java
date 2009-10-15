@@ -1281,7 +1281,7 @@ public class ScorePainter
         /** Alpha parameter for slot axis transparency (0 .. 255) */
         final Constant.Integer slotAlpha = new Constant.Integer(
             "ByteLevel",
-            50,
+            150,
             "Alpha parameter for slot axis transparency (0 .. 255)");
 
         /** dx between note and augmentation dot */
