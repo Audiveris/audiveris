@@ -11,13 +11,13 @@
 // </editor-fold>
 package omr.sheet;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.log.Logger;
 
 import omr.score.Score;
 import omr.score.ui.PaintingParameters;
-import omr.score.ui.ScoreOrientation;
-
-import omr.script.ScriptActions;
 
 import omr.sheet.ui.SheetsController;
 
@@ -27,8 +27,9 @@ import omr.util.Memory;
 import omr.util.NameSet;
 import omr.util.Worker;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import org.jdesktop.application.Action;
+
+import java.beans.*;
 import java.util.*;
 
 /**
@@ -43,6 +44,9 @@ public class SheetsManager
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
+
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(SheetsManager.class);
 
@@ -54,7 +58,7 @@ public class SheetsManager
     /** Instances of sheet */
     private List<Sheet> instances = new ArrayList<Sheet>();
 
-    /** Sheet file history */
+    /** Sheet file history  (filled only when sheets are successfully loaded) */
     private NameSet history;
 
     /** The UI controller, if any */
@@ -87,6 +91,30 @@ public class SheetsManager
         this.controller = controller;
     }
 
+    //--------------------------//
+    // setDefaultSheetDirectory //
+    //--------------------------//
+    /**
+     * Remember the directory where sheets should be found
+     * @param directory the latest sheet directory
+     */
+    public void setDefaultSheetDirectory (String directory)
+    {
+        constants.defaultSheetDirectory.setValue(directory);
+    }
+
+    //--------------------------//
+    // getDefaultSheetDirectory //
+    //--------------------------//
+    /**
+     * Report the directory where sheets should be found
+     * @return the latest sheet directory
+     */
+    public String getDefaultSheetDirectory ()
+    {
+        return constants.defaultSheetDirectory.getValue();
+    }
+
     //------------//
     // getHistory //
     //------------//
@@ -98,7 +126,7 @@ public class SheetsManager
     public NameSet getHistory ()
     {
         if (history == null) {
-            history = new NameSet("omr.sheet.Sheet.history", 10);
+            history = new NameSet("Sheets History", constants.sheetsHistory, 10);
         }
 
         return history;
@@ -159,6 +187,7 @@ public class SheetsManager
     /**
      * Dump all sheet instances
      */
+    @Action
     public void dumpAllSheets ()
     {
         java.lang.System.out.println("\n");
@@ -209,10 +238,6 @@ public class SheetsManager
 
         // Insert new sheet instances
         instances.add(sheet);
-
-        // Insert in sheet history
-        getHistory()
-            .add(sheet.getPath());
     }
 
     //----------------//
@@ -237,5 +262,26 @@ public class SheetsManager
                     return null;
                 }
             }.start();
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Backing constant for sheet history */
+        Constant.String sheetsHistory = new Constant.String(
+            "",
+            "History of loaded sheets");
+
+        /** Default directory for selection of sheet image files */
+        Constant.String defaultSheetDirectory = new Constant.String(
+            "",
+            "Default directory for selection of sheet image files");
     }
 }

@@ -131,7 +131,7 @@ public class StepMenu
                     protected Void doInBackground ()
                         throws Exception
                     {
-                        step.performUntil(sheet, null);
+                        step.performUntil(sheet);
 
                         return null;
                     }

@@ -55,7 +55,6 @@ import omr.step.StepException;
 
 import omr.ui.BoardsPane;
 import omr.ui.ErrorsEditor;
-import omr.ui.MainGui;
 
 import omr.util.BrokenLine;
 import omr.util.Dumper;
@@ -68,8 +67,11 @@ import java.util.List;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
- * Class <code>Sheet</code> encapsulates the original music image, as well as
- * pointers to all processings related to this image.
+ * Class <code>Sheet</code> is the corner stone for Sheet processing, keeping
+ * pointers to all processings related to the image. An instance of Sheet is
+ * created before any processing (including image loading) is done. Most of the
+ * processings take place in an instance of the companion class
+ * {@link SheetSteps}.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -176,17 +178,15 @@ public class Sheet
      * Create a new <code>Sheet</code> instance, based on a given image file.
      * Several files extensions are supported, including the most common ones.
      *
+     * <p>This constructor only constructs the minimum, no processing takes place
+     * (in particular no image is loaded), these processings are the purpose of
+     * the various Steps to be applied to this sheet.
+     *
      * @param imageFile a <code>File</code> value to specify the image file.
-     * @param force should we keep the sheet structure even if the image cannot
-     *                be loaded for whatever reason
-     * @throws StepException raised if, while 'force' is false, image file
-     *                  cannot be loaded
      */
-    public Sheet (File    imageFile,
-                  boolean force)
-        throws StepException
+    public Sheet (File imageFile)
     {
-        this();
+        sheetSteps = new SheetSteps(this);
 
         if (logger.isFineEnabled()) {
             logger.fine("creating Sheet from image " + imageFile);
@@ -201,21 +201,13 @@ public class Sheet
                          .insertInstance(this);
 
             // Update UI information if so needed
-            displayAssembly();
+            if (Main.getGui() != null) {
+                errorsEditor = new ErrorsEditor(this);
+                Main.getGui().sheetSetController.showSheet(this);
+            }
         } catch (IOException ex) {
             logger.warning(ex.toString(), ex);
         }
-    }
-
-    //-------//
-    // Sheet //
-    //-------//
-    /**
-     * Meant for local (and XML binder ?) use only
-     */
-    private Sheet ()
-    {
-        sheetSteps = new SheetSteps(this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -256,14 +248,6 @@ public class Sheet
      */
     public SheetAssembly getAssembly ()
     {
-        if (assembly == null) {
-            synchronized (this) {
-                if (assembly == null) {
-                    setAssembly(new SheetAssembly(this));
-                }
-            }
-        }
-
         return assembly;
     }
 
@@ -296,14 +280,6 @@ public class Sheet
     //-----------------//
     public ErrorsEditor getErrorsEditor ()
     {
-        if (errorsEditor == null) {
-            synchronized (this) {
-                if (errorsEditor == null) {
-                    errorsEditor = new ErrorsEditor(this);
-                }
-            }
-        }
-
         return errorsEditor;
     }
 
@@ -527,7 +503,6 @@ public class Sheet
         // Display sheet picture if not batch mode
         if (Main.getGui() != null) {
             PictureView pictureView = new PictureView(Sheet.this);
-            displayAssembly();
             assembly.addViewTab(
                 Step.LOAD,
                 pictureView,
@@ -831,18 +806,6 @@ public class Sheet
      */
     public SymbolsController getSymbolsController ()
     {
-        if (symbolsController == null) {
-            synchronized (this) {
-                if (symbolsController == null) {
-                    SymbolsModel model = new SymbolsModel(
-                        this,
-                        getVerticalLag());
-                    symbolsController = new SymbolsController(model);
-                    editor = new SymbolsEditor(this, symbolsController);
-                }
-            }
-        }
-
         return symbolsController;
     }
 
@@ -856,8 +819,6 @@ public class Sheet
      */
     public SymbolsEditor getSymbolsEditor ()
     {
-        getSymbolsController();
-
         return editor;
     }
 
@@ -917,13 +878,11 @@ public class Sheet
     //-------------//
     /**
      * Report the system, if any, which contains the provided vertical section
-     * (the precise point is the glyph area center)
      * @param section the provided section
      * @return the containing system, or null
      */
     public SystemInfo getSystemOf (GlyphSection section)
     {
-        ///return getSystemOf(section.getAreaCenter());
         return section.getSystem();
     }
 
@@ -1046,14 +1005,6 @@ public class Sheet
      */
     public SystemsBuilder getSystemsBuilder ()
     {
-        if (systemsBuilder == null) {
-            synchronized (this) {
-                if (systemsBuilder == null) {
-                    systemsBuilder = new SystemsBuilder(this);
-                }
-            }
-        }
-
         return systemsBuilder;
     }
 
@@ -1119,14 +1070,6 @@ public class Sheet
     //------------------------//
     public VerticalsController getVerticalsController ()
     {
-        if (verticalsController == null) {
-            synchronized (this) {
-                if (verticalsController == null) {
-                    verticalsController = new VerticalsController(this);
-                }
-            }
-        }
-
         return verticalsController;
     }
 
@@ -1278,19 +1221,30 @@ public class Sheet
         score.setSheet(this);
     }
 
-    //-----------------//
-    // displayAssembly //
-    //-----------------//
-    /**
-     * Display the related sheet view in the tabbed pane
-     */
-    public void displayAssembly ()
+    //----------------------------------//
+    // createSymbolsControllerAndEditor //
+    //----------------------------------//
+    public void createSymbolsControllerAndEditor ()
     {
-        MainGui gui = Main.getGui();
+        SymbolsModel model = new SymbolsModel(this, getVerticalLag());
+        symbolsController = new SymbolsController(model);
+        editor = new SymbolsEditor(this, symbolsController);
+    }
 
-        if (gui != null) {
-            gui.sheetSetController.showSheet(this);
-        }
+    //----------------------//
+    // createSystemsBuilder //
+    //----------------------//
+    public void createSystemsBuilder ()
+    {
+        systemsBuilder = new SystemsBuilder(this);
+    }
+
+    //---------------------------//
+    // createVerticalsController //
+    //---------------------------//
+    public void createVerticalsController ()
+    {
+        verticalsController = new VerticalsController(this);
     }
 
     //-----------------//
@@ -1312,14 +1266,21 @@ public class Sheet
         System.out.println("--- SystemInfos end ---");
     }
 
+    //---------------//
+    // hasHistoRatio //
+    //---------------//
+    /**
+     * Check whether the parameter histoRatio has a value
+     * @return true if so
+     */
     public boolean hasHistoRatio ()
     {
         return histoRatio != null;
     }
 
-    //-------------//
+    //--------------//
     // rebuildAfter //
-    //-------------//
+    //--------------//
     public void rebuildAfter (Step                   step,
                               Collection<SystemInfo> impactedSystems)
     {

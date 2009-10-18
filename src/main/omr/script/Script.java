@@ -11,11 +11,11 @@
 // </editor-fold>
 package omr.script;
 
+import java.io.File;
 import omr.log.Logger;
 
 import omr.sheet.Sheet;
 
-import omr.step.StepException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -176,13 +176,7 @@ public class Script
                 return;
             }
 
-            try {
-                sheet = new omr.sheet.Sheet(new java.io.File(sheetPath), false);
-            } catch (StepException ex) {
-                logger.warning("Cannot load sheet from " + sheetPath, ex);
-
-                return;
-            }
+            sheet = new Sheet(new File(sheetPath));
         }
 
         // Run the tasks in sequence

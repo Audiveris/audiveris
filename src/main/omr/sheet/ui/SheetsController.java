@@ -28,6 +28,8 @@ import omr.util.Implement;
 
 import org.bushe.swing.event.EventSubscriber;
 
+import org.jdesktop.application.Action;
+
 import java.util.ArrayList;
 
 import javax.swing.JComponent;
@@ -186,6 +188,17 @@ public class SheetsController
         return true;
     }
 
+    //-------------------//
+    // dumpAllAssemblies //
+    //-------------------//
+    @Action
+    public void dumpAllAssemblies ()
+    {
+        for (SheetAssembly assembly : assemblies) {
+            logger.info("Assembly of " + assembly.getSheet() + " " + assembly);
+        }
+    }
+
     //---------------//
     // selectedSheet //
     //---------------//
@@ -306,16 +319,11 @@ public class SheetsController
         }
 
         if (sheet != null) {
-            // Make sure we have a assembly on this sheet
-            SheetAssembly assembly = sheet.getAssembly();
+            // Create the assembly on this sheet
+            SheetAssembly assembly = new SheetAssembly(sheet);
 
-            if (assembly == null) {
-                // Build a brand new display on this sheet
-                assembly = new SheetAssembly(sheet);
-
-                // Initial zoom ratio
-                assembly.setZoomRatio(constants.initialZoomRatio.getValue());
-            }
+            // Initial zoom ratio
+            assembly.setZoomRatio(constants.initialZoomRatio.getValue());
 
             // Make sure the assembly is part of the tabbed pane
             int sheetIndex = tabbedPane.indexOfComponent(

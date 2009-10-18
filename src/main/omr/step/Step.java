@@ -42,65 +42,65 @@ public enum Step {
      * Determine the general scale of the sheet, based on the mean distance
      * between staff lines
      */
-    SCALE(true, LOAD.label, "Compute the global Skew, and rotate if needed"),
+    SCALE(true, LOAD.label, "Compute the global Skew, and rotate if needed"), 
 
     /**
      * Determine the average skew of the picture, and deskews it if needed
      */
-    SKEW(true, "Skew", "Detect & remove all Staff Lines"),
+    SKEW(true, "Skew", "Detect & remove all Staff Lines"), 
 
     /**
      * Retrieve the staff lines, erases their pixels and creates crossing
      * objects when needed
      */
-    LINES(true, "Lines", "Retrieve horizontal Dashes"),
+    LINES(true, "Lines", "Retrieve horizontal Dashes"), 
 
     /**
      * Retrieve the horizontal dashes (ledgers, endings)
      */
-    HORIZONTALS(true, "Horizontals", "Detect horizontal dashes"),
+    HORIZONTALS(true, "Horizontals", "Detect horizontal dashes"), 
 
     /**
      * Retrieve the vertical bar lines, and so the systems
      */
-    SYSTEMS(true, "Systems", "Detect vertical Bar sticks and thus systems"),
+    SYSTEMS(true, "Systems", "Detect vertical Bar sticks and thus systems"), 
 
     /**
      * Retrieve the measures from the bar line glyphs
      */
-    MEASURES(true, SYSTEMS.label, "Translate Bar glyphs to Measures"),
+    MEASURES(true, SYSTEMS.label, "Translate Bar glyphs to Measures"), 
 
     /**
      * Recognize isolated symbols glyphs and aggregates unknown symbols into
      * compound glyphs
      */
-    SYMBOLS(true, "Glyphs", "Recognize Symbols & Compounds"),
+    SYMBOLS(true, "Glyphs", "Recognize Symbols & Compounds"), 
 
     /**
      * Retrieve the vertical items such as stems
      */
-    VERTICALS(true, "Verticals", "Extract verticals"),
+    VERTICALS(true, "Verticals", "Extract verticals"), 
 
     /**
      * Process specific patterns at sheet glyph level
      * (true,clefs, sharps, naturals, stems, slurs, ...)
      */
-    PATTERNS(true, SYMBOLS.label, "Specific sheet glyph patterns"),
+    PATTERNS(true, SYMBOLS.label, "Specific sheet glyph patterns"), 
 
     /**
      * Translate glyphs into score entities
      */
-    SCORE(true, SYMBOLS.label, "Translate glyphs to score items"),
+    SCORE(true, SYMBOLS.label, "Translate glyphs to score items"), 
 
     /**
      * Play the whole score
      */
-    PLAY(false, SYMBOLS.label, "Play the whole score"),
+    PLAY(false, SYMBOLS.label, "Play the whole score"), 
 
     /**
      * Write the output MIDI file
      */
-    MIDI(false, SYMBOLS.label, "Write the output MIDI file"),
+    MIDI(false, SYMBOLS.label, "Write the output MIDI file"), 
 
     /**
      * Export the score into the MusicXML file
@@ -206,18 +206,15 @@ public enum Step {
      * <p>There is a mutual exclusion with {@link SheetSteps#rebuildAfter}
      *
      * @param sheet the sheet on which analysis is performed
-     * @param param a potential parameter (depending on the processing)
-     * @return the created or modified sheet
      */
-    public Sheet performUntil (Sheet  sheet,
-                               Object param)
+    public void performUntil (Sheet sheet)
     {
-        try {
-            // We need a sheet to synchronize upon
-            if (sheet == null) {
-                sheet = first.doOneStep(sheet, param, null);
-            }
+        if (sheet == null) {
+            throw new IllegalArgumentException(
+                "Cannot run performUntil() on a null sheet");
+        }
 
+        try {
             synchronized (sheet.getSheetSteps()) {
                 // Determine the starting step
                 Step from = getFollowingStep(
@@ -236,7 +233,7 @@ public enum Step {
                     // Last step is always included
                     steps.add(this);
 
-                    sheet = doStepRange(steps, sheet, param, null);
+                    sheet = doStepRange(steps, sheet, null);
                 } else {
                     if (monitor != null) {
                         // Update sheet (& score) dependent entities
@@ -250,12 +247,8 @@ public enum Step {
         }
 
         // Record the step task to script
-        if (sheet != null) {
-            sheet.getScript()
-                 .addTask(new StepTask(this));
-        }
-
-        return sheet;
+        sheet.getScript()
+             .addTask(new StepTask(this));
     }
 
     //--------------------//
@@ -281,9 +274,38 @@ public enum Step {
             sheet.getSheetSteps().getLatestMandatoryStep());
 
         try {
-            doStepRange(stepRange, sheet, null, systems);
+            doStepRange(stepRange, sheet, systems);
         } catch (Exception ex) {
             logger.warning("Error in re-processing after " + this, ex);
+        }
+    }
+
+    //----------------//
+    // reperformSteps //
+    //----------------//
+    /**
+     * Re-perform all tasks already done, starting from this step included,
+     * in order to update needed data
+     * @param sheet the related sheet, which cannot be null
+     * @param systems only the systems to reperform (null means all systems)
+     */
+    public void reperformSteps (Sheet                  sheet,
+                                Collection<SystemInfo> systems)
+    {
+        if (sheet == null) {
+            throw new IllegalArgumentException(
+                "Reperform step on a null sheet");
+        }
+
+        // The range of steps to re-perform
+        EnumSet<Step> stepRange = EnumSet.range(
+            this,
+            sheet.getSheetSteps().getLatestMandatoryStep());
+
+        try {
+            doStepRange(stepRange, sheet, systems);
+        } catch (Exception ex) {
+            logger.warning("Error in re-processing from " + this, ex);
         }
     }
 
@@ -296,12 +318,10 @@ public enum Step {
      *
      * @param stepRange the range of steps
      * @param sheet the sheet being analyzed
-     * @param param an optional parameter
      * @param systems systems to process (null means all systems)
      */
     private Sheet doStepRange (EnumSet<Step>          stepRange,
                                Sheet                  sheet,
-                               Object                 param,
                                Collection<SystemInfo> systems)
     {
         long startTime = 0;
@@ -315,11 +335,6 @@ public enum Step {
             if (sheet != null) {
                 sb.append(" sheet=")
                   .append(sheet.getRadix());
-            }
-
-            if (param != null) {
-                sb.append(" param=")
-                  .append(param);
             }
 
             if (systems != null) {
@@ -339,7 +354,7 @@ public enum Step {
             // The actual processing
             for (Step step : stepRange) {
                 notifyMsg(step.name());
-                sheet = step.doOneStep(sheet, param, systems);
+                sheet = step.doOneStep(sheet, systems);
 
                 if (monitor != null) {
                     monitor.animate();
@@ -349,7 +364,8 @@ public enum Step {
                 }
             }
         } catch (Exception ex) {
-            logger.warning("Processing aborted", ex);
+            // User has already been warned
+            //logger.warning("Processing aborted", ex);
         } finally {
             // Reset the progress bar?
             if (monitor != null) {
@@ -403,14 +419,12 @@ public enum Step {
      * Do this step, synchronously.
      *
      * @param sheet the sheet to be processed
-     * @param param the potential step parameter
      * @param systems systems to process (null means all systems)
      *
      * @return the (created or modified) sheet
      * @throws StepException
      */
     Sheet doOneStep (Sheet                  sheet,
-                     Object                 param,
                      Collection<SystemInfo> systems)
         throws StepException
     {
@@ -419,13 +433,6 @@ public enum Step {
         if (logger.isFineEnabled()) {
             logger.fine(this + " Starting");
             startTime = System.currentTimeMillis();
-        }
-
-        // Do we have the sheet already ?
-        if (sheet == null) {
-            // Load sheet using the provided parameter
-            sheet = new Sheet((File) param, /* force => */
-                              false);
         }
 
         // Standard processing on an existing sheet

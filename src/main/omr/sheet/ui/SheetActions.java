@@ -23,6 +23,7 @@ import omr.log.Logger;
 import omr.score.Score;
 
 import omr.sheet.Sheet;
+import omr.sheet.SheetsManager;
 
 import omr.step.Step;
 
@@ -125,13 +126,14 @@ public class SheetActions
     @Action
     public Task openSheet (ActionEvent e)
     {
-        File file = UIUtilities.fileChooser(
+        String suffixes = constants.validImageFiles.getValue();
+        File   file = UIUtilities.fileChooser(
             false,
             Main.getGui().getFrame(),
-            new File(constants.defaultSheetDirectory.getValue()),
+            new File(SheetsManager.getInstance().getDefaultSheetDirectory()),
             new FileFilter(
-                "Major image files",
-                constants.validImageFiles.getValue().split("\\s")));
+                "Major image files" + " (" + suffixes + ")",
+                suffixes.split("\\s")));
 
         if (file != null) {
             if (file.exists()) {
@@ -303,10 +305,8 @@ public class SheetActions
             throws InterruptedException
         {
             // Actually load the sheet picture
-            Step.LOAD.performUntil(null, file);
-
-            // Remember (even across runs) the parent directory
-            constants.defaultSheetDirectory.setValue(file.getParent());
+            Sheet sheet = new Sheet(file);
+            Step.LOAD.performUntil(sheet);
 
             return null;
         }
@@ -319,11 +319,6 @@ public class SheetActions
         extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
-
-        /** Default directory for selection of sheet image files */
-        Constant.String defaultSheetDirectory = new Constant.String(
-            "",
-            "Default directory for selection of sheet image files");
 
         /** Valid extensions for image files */
         Constant.String validImageFiles = new Constant.String(

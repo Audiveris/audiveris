@@ -33,6 +33,7 @@ import omr.sheet.HorizontalsBuilder;
 import omr.sheet.LinesBuilder;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
+import omr.sheet.SheetsManager;
 import omr.sheet.SkewBuilder;
 import omr.sheet.SystemInfo;
 import omr.sheet.picture.ImageFormatException;
@@ -205,70 +206,6 @@ public class SheetSteps
             .doStep(systems);
     }
 
-    //    //--------------//
-    //    // rebuildAfter //
-    //    //--------------//
-    //    /**
-    //     * Update the steps already done, starting right after the provided step.
-    //     * This method will try to minimize the systems to rebuild in each step, by
-    //     * determining the actual impact of the glyphs and shapes.<ul>
-    //     * <li>The glyphs are used to flag the systems containing these glyphs. So
-    //     * the best way to trigger the rebuild of all systems is to pass a null
-    //     * collection of glyphs.</li>
-    //     * <li>The shapes are used to flag or not the systems that follow the ones
-    //     * directly impacted by the modified glyphs. If some of the shapes are
-    //     * "persistent", which means their impact continues past the end of their
-    //     * containing measure, all the following systems must be flagged as well.
-    //     * </li></ul>
-    //     *
-    //     * <p>There is a mutual exclusion with {@link Step#performUntil} method.
-    //     *
-    //     * @param step the step, after which to restart
-    //     * @param glyphs the collection of modified glyphs, or null to flag all
-    //     * systems
-    //     * @param shapes the collection of the modified shapes, only useful if
-    //     * glyphs collection is not null
-    //     * @param imposed flag to indicate that update is imposed
-    //     */
-    //    public synchronized void rebuildAfter (Step              step,
-    //                                           Collection<Glyph> glyphs,
-    //                                           Collection<Shape> shapes,
-    //                                           boolean           imposed)
-    //    {
-    //        if (SwingUtilities.isEventDispatchThread()) {
-    //            logger.severe("Method rebuildAfter should not run on EDT!");
-    //        }
-    //
-    //        if (step == null) {
-    //            return;
-    //        }
-    //
-    //        // Check whether the update must really be done
-    //        if (!imposed && !ScoreActions.getInstance()
-    //                                     .isRebuildAllowed()) {
-    //            return;
-    //        }
-    //
-    //        // Determine impacted systems, from the collection of modified glyphs
-    //        final SortedSet<SystemInfo> impactedSystems = (glyphs != null)
-    //                                                      ? sheet.getImpactedSystems(
-    //            glyphs,
-    //            shapes) : new TreeSet<SystemInfo>(sheet.getSystems());
-    //
-    //        if (logger.isFineEnabled()) {
-    //            logger.fine(
-    //                "Rebuild launched after " + step + " on" +
-    //                SystemInfo.toString(impactedSystems));
-    //        }
-    //
-    //        // Rebuild after specified step, if needed
-    //        if (sheet.getSheetSteps()
-    //                 .getLatestMandatoryStep()
-    //                 .compareTo(step) > 0) {
-    //            step.reperformNextSteps(sheet, impactedSystems);
-    //        }
-    //    }
-
     //--------------//
     // rebuildAfter //
     //--------------//
@@ -284,12 +221,36 @@ public class SheetSteps
      * if all systems must be rebuilt
      * @param imposed flag to indicate that update is imposed
      */
-    public synchronized void rebuildAfter (Step                   step,
-                                           Collection<SystemInfo> impactedSystems,
-                                           boolean                imposed)
+    public void rebuildAfter (Step                   step,
+                              Collection<SystemInfo> impactedSystems,
+                              boolean                imposed)
+    {
+        if (step != null) {
+            rebuildFrom(step.next(), impactedSystems, imposed);
+        }
+    }
+
+    //-------------//
+    // rebuildFrom //
+    //-------------//
+    /**
+     * Update the steps already done, starting from the provided step.
+     * This method will try to minimize the systems to rebuild in each step, by
+     * processing only the provided "impacted" systems.
+     *
+     * <p>There is a mutual exclusion with {@link Step#performUntil} method.
+     *
+     * @param step the step to restart from
+     * @param impactedSystems the ordered set of systems to rebuild, or null
+     * if all systems must be rebuilt
+     * @param imposed flag to indicate that update is imposed
+     */
+    public synchronized void rebuildFrom (Step                   step,
+                                          Collection<SystemInfo> impactedSystems,
+                                          boolean                imposed)
     {
         if (SwingUtilities.isEventDispatchThread()) {
-            logger.severe("Method rebuildAfter should not run on EDT!");
+            logger.severe("Method rebuildFrom should not run on EDT!");
         }
 
         if (step == null) {
@@ -309,15 +270,16 @@ public class SheetSteps
 
         if (logger.isFineEnabled()) {
             logger.fine(
-                "Rebuild launched after " + step + " on" +
+                "Rebuild launched from " + step + " on" +
                 SystemInfo.toString(impactedSystems));
         }
 
-        // Rebuild after specified step, if needed
-        if (sheet.getSheetSteps()
-                 .getLatestMandatoryStep()
-                 .compareTo(step) > 0) {
-            step.reperformNextSteps(sheet, impactedSystems);
+        // Rebuild from specified step, if needed
+        Step latest = sheet.getSheetSteps()
+                           .getLatestMandatoryStep();
+
+        if ((latest == null) || (latest.compareTo(step) >= 0)) {
+            step.reperformSteps(sheet, impactedSystems);
         }
     }
 
@@ -497,6 +459,22 @@ public class SheetSteps
                 throw new StepException(ex);
             }
         }
+
+        @Override
+        public void done ()
+        {
+            // Remember (even across runs) the parent directory
+            SheetsManager.getInstance()
+                         .setDefaultSheetDirectory(
+                sheet.getImageFile().getParent());
+
+            // Insert in sheet history
+            SheetsManager.getInstance()
+                         .getHistory()
+                         .add(sheet.getPath());
+
+            super.done();
+        }
     }
 
     //--------------//
@@ -667,6 +645,7 @@ public class SheetSteps
         public void doit (Collection<SystemInfo> systems)
             throws StepException
         {
+            sheet.createSystemsBuilder();
             sheet.getSystemsBuilder()
                  .buildSystems();
         }
@@ -841,6 +820,14 @@ public class SheetSteps
         {
             sheet.setSkewBuilder(new SkewBuilder(sheet));
             sheet.setSkew(sheet.getSkewBuilder().buildInfo());
+
+            // If rotated, rescale the sheet
+            if (sheet.getPicture()
+                     .isRotated()) {
+                sheet.getSheetSteps()
+                     .getTask(Step.SCALE)
+                     .doit(unused);
+            }
         }
     }
 
@@ -876,6 +863,13 @@ public class SheetSteps
             throws StepException
         {
             system.inspectGlyphs(GlyphInspector.getSymbolMaxDoubt());
+        }
+
+        @Override
+        protected void doEpilog (Collection<SystemInfo> systems)
+            throws StepException
+        {
+            sheet.createSymbolsControllerAndEditor();
         }
     }
 
@@ -913,6 +907,13 @@ public class SheetSteps
             throws StepException
         {
             system.retrieveVerticals();
+        }
+
+        @Override
+        protected void doEpilog (Collection<SystemInfo> systems)
+            throws StepException
+        {
+            sheet.createVerticalsController();
         }
     }
 }

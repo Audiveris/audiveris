@@ -147,19 +147,9 @@ public class FileDropHandler
                         protected Void doInBackground ()
                             throws Exception
                         {
-                            sheet = target.performUntil(null, file);
+                            target.performUntil(new Sheet(file));
 
                             return null;
-                        }
-
-                        @Override
-                        protected void finished ()
-                        {
-                            // Select the assembly tab related to the target step
-                            if (sheet != null) {
-                                sheet.getAssembly()
-                                     .selectTab(target);
-                            }
                         }
                     }.execute();
             }

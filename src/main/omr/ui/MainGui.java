@@ -546,7 +546,9 @@ public class MainGui
         frame.setJMenuBar(mgr.getMenuBar());
 
         // Mac Application menu
-        MacApplication.setupMacMenus();
+        if (omr.Main.MAC_OS_X) {
+            MacApplication.setupMacMenus();
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -667,11 +669,12 @@ public class MainGui
         {
             File file = new File(e.getActionCommand());
 
-            if (file.exists()) {
-                new OpenTask(file).execute();
-            } else {
-                logger.warning("File not found " + file);
-            }
+            //            if (file.exists()) {
+            new OpenTask(file).execute();
+
+            //            } else {
+            //                logger.warning("File not found " + file);
+            //            }
         }
     }
 

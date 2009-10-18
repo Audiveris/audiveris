@@ -374,21 +374,11 @@ public class Main
                     @Override
                     public Void construct ()
                     {
-                        final Sheet sheet = parameters.targetStep.performUntil(
-                            null,
-                            file);
-
-                        // Select proper assembly tab, if UI is used
-                        if (getGui() != null) {
-                            SwingUtilities.invokeLater(
-                                new Runnable() {
-                                        public void run ()
-                                        {
-                                            sheet.getAssembly()
-                                                 .selectTab(
-                                                parameters.targetStep);
-                                        }
-                                    });
+                        if (file.exists()) {
+                            final Sheet sheet = new Sheet(file);
+                            parameters.targetStep.performUntil(sheet);
+                        } else {
+                            logger.warning("Cannot find " + file);
                         }
 
                         return null;

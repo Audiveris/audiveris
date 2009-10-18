@@ -25,6 +25,7 @@ import org.jdesktop.swingworker.SwingWorker;
 import java.io.File;
 import java.io.FileInputStream;
 import java.lang.reflect.*;
+import omr.sheet.Sheet;
 
 /**
  * Class <code>MacApplication</code> provides dynamic hooks into the
@@ -123,7 +124,8 @@ public class MacApplication
                 worker.execute();
             } else {
                 // Actually load the sheet picture
-                Step.LOAD.performUntil(null, new File(filename));
+                Sheet sheet = new Sheet(new File(filename));
+                Step.LOAD.performUntil(sheet);
             }
         }
 

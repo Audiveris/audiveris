@@ -49,14 +49,14 @@ public class NameSet
 
     //~ Instance fields --------------------------------------------------------
 
+    /** Global name for this set */
+    private final String setName;
+
     /** Backing constant */
     private final Constant.String constant;
 
     /** List of names in this set */
     private final List<String> names = new ArrayList<String>();
-
-    /** Name of this set */
-    private final String setName;
 
     /** Max number of names in this set */
     private final int maxNameNb;
@@ -70,21 +70,18 @@ public class NameSet
      * Creates a new set of names, with some customizing parameters.
      *
      * @param setName   Global name for this set
+     * @param constant the backing constant string
      * @param maxNameNb Maximum number of elements in this name set
      */
-    public NameSet (String setName,
-                    int    maxNameNb)
+    public NameSet (String          setName,
+                    Constant.String constant,
+                    int             maxNameNb)
     {
         this.setName = setName;
+        this.constant = constant;
         this.maxNameNb = maxNameNb;
 
         // Retrieve the list of names in history
-        constant = new Constant.String(
-            setName,
-            "names",
-            "",
-            "List of names in this name set");
-
         StringTokenizer st = new StringTokenizer(
             constant.getValue(),
             SEPARATOR);

@@ -69,7 +69,7 @@ public class StepTask
     {
         if (!sheet.getSheetSteps()
                   .isDone(step)) {
-            step.performUntil(sheet, null);
+            step.performUntil(sheet);
 
             // Display the related assembly tab
             SwingUtilities.invokeLater(

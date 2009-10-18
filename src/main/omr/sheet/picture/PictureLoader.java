@@ -83,6 +83,7 @@ public class PictureLoader
      * If not, or ImageIO has an error, PDF Renderer is used for files
      * ending with ".pdf" and JAI is used for all other files.
      *
+     * @param imgFile the image file to load
      * @return the RenderedImage (often but not always a BufferedImage),
      * guaranteed not to be null
      * @throws IllegalArgumentException if file does not exist
@@ -194,10 +195,8 @@ public class PictureLoader
             try {
                 /*
                    PDFFile pdffile = new PDFFile(buf);
-
                    // get the first page
                    PDFPage page = pdffile.getPage(0);
-
                    // do the actual drawing
                    PDFRenderer renderer = new PDFRenderer(page, g2,
                        [bounding box], null, Color.RED);
