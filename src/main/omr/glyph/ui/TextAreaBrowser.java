@@ -290,7 +290,7 @@ public class TextAreaBrowser
             Sheet sheet = SheetsController.selectedSheet();
             alignTexts(sheet);
             sheet.getSheetSteps()
-                 .rebuildAfter(Step.SYMBOLS, null, true);
+                 .rebuildFrom(Step.PATTERNS, null, true);
 
             return null;
         }

@@ -370,7 +370,7 @@ public class ScoreActions
             try {
                 SheetsController.selectedSheet()
                                 .getSheetSteps()
-                                .rebuildAfter(Step.SYMBOLS, null, true);
+                                .rebuildFrom(Step.VERTICALS, null, true);
             } catch (Exception ex) {
                 logger.warning("Could not refresh score", ex);
             }

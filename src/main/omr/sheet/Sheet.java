@@ -1278,15 +1278,6 @@ public class Sheet
         return histoRatio != null;
     }
 
-    //--------------//
-    // rebuildAfter //
-    //--------------//
-    public void rebuildAfter (Step                   step,
-                              Collection<SystemInfo> impactedSystems)
-    {
-        sheetSteps.rebuildAfter(step, impactedSystems, false); //Not imposed
-    }
-
     //----------------//
     // splitBarSticks //
     //----------------//

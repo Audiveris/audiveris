@@ -86,7 +86,8 @@ public class BarlineTask
     {
         sheet.getSystemsBuilder()
              .rebuildAllSystems();
-        sheet.rebuildAfter(Step.SYSTEMS, sheet.getSystems());
+        sheet.getSheetSteps()
+             .rebuildFrom(Step.MEASURES, sheet.getSystems(), false);
     }
 
     //-----------------//

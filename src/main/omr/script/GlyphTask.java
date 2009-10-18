@@ -127,7 +127,8 @@ public abstract class GlyphTask
     @Override
     public void epilog (Sheet sheet)
     {
-        sheet.rebuildAfter(Step.VERTICALS, getImpactedSystems());
+        sheet.getSheetSteps()
+             .rebuildFrom(Step.PATTERNS, getImpactedSystems(), false);
 
         super.epilog(sheet);
     }

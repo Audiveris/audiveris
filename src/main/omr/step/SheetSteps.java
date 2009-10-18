@@ -206,30 +206,6 @@ public class SheetSteps
             .doStep(systems);
     }
 
-    //--------------//
-    // rebuildAfter //
-    //--------------//
-    /**
-     * Update the steps already done, starting right after the provided step.
-     * This method will try to minimize the systems to rebuild in each step, by
-     * processing only the provided "impacted" systems.
-     *
-     * <p>There is a mutual exclusion with {@link Step#performUntil} method.
-     *
-     * @param step the step, after which to restart
-     * @param impactedSystems the ordered set of systems to rebuild, or null
-     * if all systems must be rebuilt
-     * @param imposed flag to indicate that update is imposed
-     */
-    public void rebuildAfter (Step                   step,
-                              Collection<SystemInfo> impactedSystems,
-                              boolean                imposed)
-    {
-        if (step != null) {
-            rebuildFrom(step.next(), impactedSystems, imposed);
-        }
-    }
-
     //-------------//
     // rebuildFrom //
     //-------------//
@@ -279,7 +255,14 @@ public class SheetSteps
                            .getLatestMandatoryStep();
 
         if ((latest == null) || (latest.compareTo(step) >= 0)) {
-            step.reperformSteps(sheet, impactedSystems);
+            // The range of steps to re-perform
+            EnumSet<Step> stepRange = EnumSet.range(step, latest);
+
+            try {
+                Step.doStepRange(stepRange, sheet, impactedSystems);
+            } catch (Exception ex) {
+                logger.warning("Error in re-processing from " + this, ex);
+            }
         }
     }
 

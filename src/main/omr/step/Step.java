@@ -19,7 +19,6 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 import omr.sheet.ui.SheetsController;
 
-import java.io.File;
 import java.util.Collection;
 import java.util.EnumSet;
 
@@ -217,8 +216,9 @@ public enum Step {
         try {
             synchronized (sheet.getSheetSteps()) {
                 // Determine the starting step
-                Step from = getFollowingStep(
-                    sheet.getSheetSteps().getLatestStep());
+                Step latest = sheet.getSheetSteps()
+                                   .getLatestStep();
+                Step from = (latest == null) ? first : latest.next();
 
                 if (from.compareTo(this) <= 0) {
                     // The precise collection of steps to perform
@@ -233,7 +233,7 @@ public enum Step {
                     // Last step is always included
                     steps.add(this);
 
-                    sheet = doStepRange(steps, sheet, null);
+                    doStepRange(steps, sheet, null);
                 } else {
                     if (monitor != null) {
                         // Update sheet (& score) dependent entities
@@ -251,64 +251,6 @@ public enum Step {
              .addTask(new StepTask(this));
     }
 
-    //--------------------//
-    // reperformNextSteps //
-    //--------------------//
-    /**
-     * Re-perform all tasks already done, starting from this step excluded,
-     * in order to update needed data
-     * @param sheet the related sheet, which cannot be null
-     * @param systems only the systems to reperform (null means all systems)
-     */
-    public void reperformNextSteps (Sheet                  sheet,
-                                    Collection<SystemInfo> systems)
-    {
-        if (sheet == null) {
-            throw new IllegalArgumentException(
-                "Reperform step on a null sheet");
-        }
-
-        // The range of steps to re-perform
-        EnumSet<Step> stepRange = EnumSet.range(
-            this.next(),
-            sheet.getSheetSteps().getLatestMandatoryStep());
-
-        try {
-            doStepRange(stepRange, sheet, systems);
-        } catch (Exception ex) {
-            logger.warning("Error in re-processing after " + this, ex);
-        }
-    }
-
-    //----------------//
-    // reperformSteps //
-    //----------------//
-    /**
-     * Re-perform all tasks already done, starting from this step included,
-     * in order to update needed data
-     * @param sheet the related sheet, which cannot be null
-     * @param systems only the systems to reperform (null means all systems)
-     */
-    public void reperformSteps (Sheet                  sheet,
-                                Collection<SystemInfo> systems)
-    {
-        if (sheet == null) {
-            throw new IllegalArgumentException(
-                "Reperform step on a null sheet");
-        }
-
-        // The range of steps to re-perform
-        EnumSet<Step> stepRange = EnumSet.range(
-            this,
-            sheet.getSheetSteps().getLatestMandatoryStep());
-
-        try {
-            doStepRange(stepRange, sheet, systems);
-        } catch (Exception ex) {
-            logger.warning("Error in re-processing from " + this, ex);
-        }
-    }
-
     //-------------//
     // doStepRange //
     //-------------//
@@ -320,9 +262,9 @@ public enum Step {
      * @param sheet the sheet being analyzed
      * @param systems systems to process (null means all systems)
      */
-    private Sheet doStepRange (EnumSet<Step>          stepRange,
-                               Sheet                  sheet,
-                               Collection<SystemInfo> systems)
+    public static void doStepRange (EnumSet<Step>          stepRange,
+                                    Sheet                  sheet,
+                                    Collection<SystemInfo> systems)
     {
         long startTime = 0;
 
@@ -354,7 +296,7 @@ public enum Step {
             // The actual processing
             for (Step step : stepRange) {
                 notifyMsg(step.name());
-                sheet = step.doOneStep(sheet, systems);
+                step.doOneStep(sheet, systems);
 
                 if (monitor != null) {
                     monitor.animate();
@@ -379,8 +321,6 @@ public enum Step {
                     "End of " + stepRange + " in " + (stopTime - startTime) +
                     " ms.");
             }
-
-            return sheet;
         }
     }
 
@@ -400,18 +340,6 @@ public enum Step {
         }
     }
 
-    //------------------//
-    // getFollowingStep //
-    //------------------//
-    private static Step getFollowingStep (Step of)
-    {
-        if (of == null) {
-            return first;
-        } else {
-            return of.next();
-        }
-    }
-
     //-----------//
     // doOneStep //
     //-----------//
@@ -420,12 +348,10 @@ public enum Step {
      *
      * @param sheet the sheet to be processed
      * @param systems systems to process (null means all systems)
-     *
-     * @return the (created or modified) sheet
      * @throws StepException
      */
-    Sheet doOneStep (Sheet                  sheet,
-                     Collection<SystemInfo> systems)
+    private void doOneStep (Sheet                  sheet,
+                            Collection<SystemInfo> systems)
         throws StepException
     {
         long startTime = 0;
@@ -457,8 +383,6 @@ public enum Step {
             logger.fine(
                 this + " completed in " + (stopTime - startTime) + " ms");
         }
-
-        return sheet;
     }
 
     //----------//

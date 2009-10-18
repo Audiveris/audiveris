@@ -270,29 +270,29 @@ public class ParametersTask
     {
         Score score = sheet.getScore();
 
-        Step  after = null;
+        Step  from = null;
 
         if (slotMarginChanged) {
-            after = Step.PATTERNS;
+            from = Step.SCORE;
         }
 
         if (languageChanged) {
-            after = Step.VERTICALS;
+            from = Step.PATTERNS;
         }
 
         if (histoRatioChanged) {
-            after = Step.SKEW;
+            from = Step.LINES;
         }
 
         if (foregroundChanged) {
-            after = Step.SKEW;
+            from = Step.LOAD;
         }
 
-        if (after != null) {
-            logger.info("Rebuilding after " + after);
+        if (from != null) {
+            logger.info("Rebuilding from " + from);
             score.getSheet()
                  .getSheetSteps()
-                 .rebuildAfter(after, null, true);
+                 .rebuildFrom(from, null, true);
         }
 
         super.epilog(sheet);
