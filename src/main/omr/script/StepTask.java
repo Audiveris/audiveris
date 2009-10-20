@@ -70,16 +70,6 @@ public class StepTask
         if (!sheet.getSheetSteps()
                   .isDone(step)) {
             step.performUntil(sheet);
-
-            // Display the related assembly tab
-            SwingUtilities.invokeLater(
-                new Runnable() {
-                        public void run ()
-                        {
-                            sheet.getAssembly()
-                                 .selectTab(step);
-                        }
-                    });
         } else if (logger.isFineEnabled()) {
             logger.fine(this + " already done");
         }

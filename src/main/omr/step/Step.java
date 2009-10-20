@@ -206,7 +206,7 @@ public enum Step {
      *
      * @param sheet the sheet on which analysis is performed
      */
-    public void performUntil (Sheet sheet)
+    public void performUntil (final Sheet sheet)
     {
         if (sheet == null) {
             throw new IllegalArgumentException(
@@ -262,8 +262,8 @@ public enum Step {
      * @param sheet the sheet being analyzed
      * @param systems systems to process (null means all systems)
      */
-    public static void doStepRange (EnumSet<Step>          stepRange,
-                                    Sheet                  sheet,
+    public static void doStepRange (final EnumSet<Step>    stepRange,
+                                    final Sheet            sheet,
                                     Collection<SystemInfo> systems)
     {
         long startTime = 0;
@@ -299,6 +299,8 @@ public enum Step {
             }
 
             // The actual processing
+            Step lastStep = null;
+
             for (Step step : stepRange) {
                 notifyMsg(step.name());
                 step.doOneStep(sheet, systems);
@@ -309,6 +311,21 @@ public enum Step {
                     SheetsController.getInstance()
                                     .setSelectedSheet(sheet);
                 }
+
+                lastStep = step;
+            }
+
+            // Display the assembly tab related to the last step
+            if (lastStep != null) {
+                final Step finalStep = lastStep;
+                SwingUtilities.invokeLater(
+                    new Runnable() {
+                            public void run ()
+                            {
+                                sheet.getAssembly()
+                                     .selectTab(finalStep);
+                            }
+                        });
             }
         } catch (Exception ex) {
             logger.warning("Processing aborted", ex);
