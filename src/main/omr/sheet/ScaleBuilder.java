@@ -215,7 +215,7 @@ public class ScaleBuilder
             this.sheet = sheet;
             this.picture = sheet.getPicture();
 
-            maxForeground = picture.getMaxForeground();
+            maxForeground = sheet.getMaxForeground();
 
             // Allocate histogram counters
             fore = new int[hMax + 2];

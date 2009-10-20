@@ -30,6 +30,7 @@ import omr.log.Logger;
 import omr.math.BasicLine;
 import omr.math.Line;
 
+import omr.sheet.Sheet;
 import omr.sheet.picture.Picture;
 
 import net.jcip.annotations.ThreadSafe;
@@ -57,6 +58,9 @@ public class LineCleaner
 
     //~ Instance fields --------------------------------------------------------
 
+    /** The related sheet */
+    private final Sheet sheet;
+
     /** The related lag */
     private final GlyphLag lag;
 
@@ -78,14 +82,17 @@ public class LineCleaner
     /**
      * Creates a new LineCleaner object, with contextual parameters
      *
+     * @param sheet the related sheet
      * @param lag the containing lag
      * @param picture the picture which hosts the pixels handled by the stick
      * @param minPointNb Minimum number of points to compute an extension axis
      */
-    public LineCleaner (GlyphLag lag,
+    public LineCleaner (Sheet    sheet,
+                        GlyphLag lag,
                         Picture  picture,
                         int      minPointNb)
     {
+        this.sheet = sheet;
         this.lag = lag;
         this.picture = picture;
         this.minPointNb = minPointNb;
@@ -235,7 +242,7 @@ public class LineCleaner
             write(lineStick.getMembers(), Picture.BACKGROUND);
 
             // But write patches to the picture
-            write(patches, picture.getMaxForeground());
+            write(patches, sheet.getMaxForeground());
         }
 
         //----------------//

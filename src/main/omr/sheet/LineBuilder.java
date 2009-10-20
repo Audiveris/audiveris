@@ -142,6 +142,7 @@ public class LineBuilder
         this.staffScale = staffScale;
 
         lineCleaner = new LineCleaner(
+            sheet,
             hLag,
             sheet.getPicture(),
             sheet.getScale().toPixels(constants.extensionMinLength));

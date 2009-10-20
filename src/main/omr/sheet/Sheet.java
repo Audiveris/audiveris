@@ -166,6 +166,9 @@ public class Sheet
     /** Related errors editor */
     private volatile ErrorsEditor errorsEditor;
 
+    /** The current maximum value for foreground pixels */
+    private Integer maxForeground;
+
     /** The histogram ratio to be used on this sheet to retrieve staves */
     private Double histoRatio;
 
@@ -199,6 +202,10 @@ public class Sheet
             // Insert in list of handled sheets
             SheetsManager.getInstance()
                          .insertInstance(this);
+
+            // Related score
+            score = new Score(getPath());
+            score.setSheet(this);
 
             // Update UI information if so needed
             if (Main.getGui() != null) {
@@ -273,6 +280,22 @@ public class Sheet
     public static double getDefaultHistoRatio ()
     {
         return constants.defaultStaffThreshold.getValue();
+    }
+
+    //-------------------------//
+    // setDefaultMaxForeground //
+    //-------------------------//
+    public static void setDefaultMaxForeground (int level)
+    {
+        constants.maxForegroundGrayLevel.setValue(level);
+    }
+
+    //-------------------------//
+    // getDefaultMaxForeground //
+    //-------------------------//
+    public static int getDefaultMaxForeground ()
+    {
+        return constants.maxForegroundGrayLevel.getValue();
     }
 
     //-----------------//
@@ -453,6 +476,26 @@ public class Sheet
     public LinesBuilder getLinesBuilder ()
     {
         return linesBuilder;
+    }
+
+    //------------------//
+    // setMaxForeground //
+    //------------------//
+    public void setMaxForeground (int level)
+    {
+        this.maxForeground = level;
+    }
+
+    //------------------//
+    // getMaxForeground //
+    //------------------//
+    public int getMaxForeground ()
+    {
+        if (!hasMaxForeground()) {
+            maxForeground = getDefaultMaxForeground();
+        }
+
+        return maxForeground;
     }
 
     //-------------//
@@ -1203,24 +1246,6 @@ public class Sheet
         }
     }
 
-    //-------------//
-    // createScore //
-    //-------------//
-    /**
-     * Simply create an empty Score instance and cross-link it with Sheet
-     */
-    public void createScore ()
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("Allocating score");
-        }
-
-        score = new Score(getPath());
-
-        // Mutual referencing
-        score.setSheet(this);
-    }
-
     //----------------------------------//
     // createSymbolsControllerAndEditor //
     //----------------------------------//
@@ -1276,6 +1301,14 @@ public class Sheet
     public boolean hasHistoRatio ()
     {
         return histoRatio != null;
+    }
+
+    //------------------//
+    // hasMaxForeground //
+    //------------------//
+    public boolean hasMaxForeground ()
+    {
+        return maxForeground != null;
     }
 
     //----------------//
@@ -1441,6 +1474,11 @@ public class Sheet
         extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
+
+        Constant.Integer maxForegroundGrayLevel = new Constant.Integer(
+            "ByteLevel",
+            200,
+            "Maximum gray level for a pixel to be considered as foreground (black)");
 
         /** Ratio of horizontal histogram to detect staves */
         Constant.Ratio defaultStaffThreshold = new Constant.Ratio(

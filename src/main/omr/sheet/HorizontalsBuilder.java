@@ -159,6 +159,7 @@ public class HorizontalsBuilder
         super(sheet, sheet.getHorizontalLag(), Step.HORIZONTALS);
 
         lineCleaner = new LineCleaner(
+            sheet,
             sheet.getHorizontalLag(),
             sheet.getPicture(),
             sheet.getScale().toPixels(constants.extensionMinPointNb));

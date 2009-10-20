@@ -433,8 +433,8 @@ public class SheetSteps
 
             try {
                 picture = new Picture(imageFile);
+                picture.setMaxForeground(sheet.getMaxForeground());
                 sheet.setPicture(picture);
-                sheet.createScore();
             } catch (FileNotFoundException ex) {
                 logger.warning("Cannot find file " + imageFile);
                 throw new StepException(ex);

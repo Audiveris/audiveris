@@ -306,8 +306,7 @@ public enum Step {
                 }
             }
         } catch (Exception ex) {
-            // User has already been warned
-            //logger.warning("Processing aborted", ex);
+            logger.warning("Processing aborted", ex);
         } finally {
             // Reset the progress bar?
             if (monitor != null) {

@@ -174,14 +174,13 @@ public class ParametersTask
         throws Exception
     {
         Score         score = sheet.getScore();
-        Picture       picture = sheet.getPicture();
         StringBuilder sb = new StringBuilder();
 
         // Foreground
         if (foreground != null) {
-            if (!picture.hasMaxForeground() ||
-                !foreground.equals(picture.getMaxForeground())) {
-                picture.setMaxForeground(foreground);
+            if (!sheet.hasMaxForeground() ||
+                !foreground.equals(sheet.getMaxForeground())) {
+                sheet.setMaxForeground(foreground);
                 sb.append(" foreground:")
                   .append(foreground);
                 foregroundChanged = true;

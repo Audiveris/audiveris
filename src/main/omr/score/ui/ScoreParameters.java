@@ -412,12 +412,10 @@ public class ScoreParameters
                     "Max level for foreground pixels"),
                 0,
                 255,
-                ((score != null) &&
-                                score.getSheet()
-                                     .getPicture()
-                                     .hasMaxForeground())
-                                ? score.getSheet().getPicture().getMaxForeground()
-                                : Picture.getDefaultMaxForeground());
+                ((score != null) && score.getSheet()
+                                         .hasMaxForeground())
+                                ? score.getSheet().getMaxForeground()
+                                : Sheet.getDefaultMaxForeground());
         }
 
         //~ Methods ------------------------------------------------------------
@@ -440,8 +438,8 @@ public class ScoreParameters
         public void commit ()
         {
             if (defaultBox.isSelected() &&
-                (intValue() != Picture.getDefaultMaxForeground())) {
-                Picture.setDefaultMaxForeground(intValue());
+                (intValue() != Sheet.getDefaultMaxForeground())) {
+                Sheet.setDefaultMaxForeground(intValue());
                 logger.info("Default max foreground is now " + intValue());
             }
         }

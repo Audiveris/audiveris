@@ -117,11 +117,11 @@ public class Picture
     /** The image (writable) raster */
     private WritableRaster raster;
 
-    /** The current maximum value for foreground pixels */
-    private Integer maxForeground;
-
     /** The factor to apply to raw pixel value to get gray level on 0..255 */
     private int grayFactor = 1;
+
+    /** The current maximum value for foreground pixels */
+    private Integer maxForeground;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -376,22 +376,6 @@ public class Picture
         return image.getAsBufferedImage(rectangle, null);
     }
 
-    //-------------------------//
-    // setDefaultMaxForeground //
-    //-------------------------//
-    public static void setDefaultMaxForeground (int level)
-    {
-        constants.maxForegroundGrayLevel.setValue(level);
-    }
-
-    //-------------------------//
-    // getDefaultMaxForeground //
-    //-------------------------//
-    public static int getDefaultMaxForeground ()
-    {
-        return constants.maxForegroundGrayLevel.getValue();
-    }
-
     //--------------//
     // getDimension //
     //--------------//
@@ -422,7 +406,6 @@ public class Picture
     //------------------//
     // setMaxForeground //
     //------------------//
-    @Implement(PixelSource.class)
     public void setMaxForeground (int level)
     {
         this.maxForeground = level;
@@ -431,13 +414,8 @@ public class Picture
     //------------------//
     // getMaxForeground //
     //------------------//
-    @Implement(PixelSource.class)
     public int getMaxForeground ()
     {
-        if (!hasMaxForeground()) {
-            maxForeground = getDefaultMaxForeground();
-        }
-
         return maxForeground;
     }
 
@@ -495,13 +473,12 @@ public class Picture
     public final void setPixel (Point pt,
                                 int   val)
     {
-        ///        dataBuffer.setElem(pt.x + (pt.y * dimensionWidth), val);
         int[] pixel = new int[1];
 
         if (grayFactor == 1) {
             pixel[0] = val;
         } else {
-            pixel[0] = (val + (grayFactor - getMaxForeground() - 1)) / grayFactor;
+            pixel[0] = (val + (grayFactor - maxForeground - 1)) / grayFactor;
         }
 
         raster.setPixel(pt.x, pt.y, pixel);
@@ -526,8 +503,6 @@ public class Picture
         pixel = raster.getPixel(x, y, pixel); // This allocates pixel!
 
         return grayFactor * pixel[0];
-
-        ///            return dataBuffer.getElem(x + (y * dimensionWidth));
     }
 
     //-----------------//
@@ -645,15 +620,6 @@ public class Picture
         }
 
         System.out.println();
-    }
-
-    //------------------//
-    // hasMaxForeground //
-    //------------------//
-    @Implement(PixelSource.class)
-    public boolean hasMaxForeground ()
-    {
-        return maxForeground != null;
     }
 
     //--------//
@@ -1045,11 +1011,7 @@ public class Picture
     {
         //~ Instance fields ----------------------------------------------------
 
-        Constant.Integer maxForegroundGrayLevel = new Constant.Integer(
-            "ByteLevel",
-            200,
-            "Maximum gray level for a pixel to be considered as foreground (black)");
-        Constant.Ratio   binaryToGrayscaleSubsampling = new Constant.Ratio(
+        Constant.Ratio binaryToGrayscaleSubsampling = new Constant.Ratio(
             1,
             "Subsampling ratio between 0 and 1, or 1 for no subsampling (memory intensive)");
     }
