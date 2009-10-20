@@ -265,6 +265,10 @@ public class ParametersTask
     //--------//
     // epilog //
     //--------//
+    /**
+     * Determine from which step we should rebuild the current score
+     * @param sheet the related sheet
+     */
     @Override
     public void epilog (Sheet sheet)
     {
@@ -281,14 +285,18 @@ public class ParametersTask
         }
 
         if (histoRatioChanged) {
-            from = Step.LINES;
+            // Nota: we should rebuild from LINES, but this step modifies
+            // the image (pixels removed, pixels added). So the have to restart
+            // from LOAD step instead.
+            from = Step.LOAD;
         }
 
         if (foregroundChanged) {
             from = Step.LOAD;
         }
 
-        if (from != null) {
+        if ((from != null) && sheet.getSheetSteps()
+                                   .shouldRebuildFrom(from)) {
             logger.info("Rebuilding from " + from);
             score.getSheet()
                  .getSheetSteps()

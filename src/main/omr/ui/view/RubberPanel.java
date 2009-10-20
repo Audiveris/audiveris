@@ -235,7 +235,7 @@ public class RubberPanel
         this.rubber = rubber;
 
         rubber.setZoom(zoom);
-        rubber.setComponent(this);
+        rubber.connectComponent(this);
         rubber.setMouseMonitor(this);
     }
 
@@ -260,14 +260,12 @@ public class RubberPanel
     /**
      * Assign a zoom to this panel
      *
-     * @param zoom the zomm assigned
+     * @param zoom the zoom assigned
      */
     public void setZoom (final Zoom zoom)
     {
         // Clean up if needed
-        if (this.zoom != null) {
-            this.zoom.removeChangeListener(this);
-        }
+        unsetZoom(zoom);
 
         this.zoom = zoom;
 
@@ -495,6 +493,35 @@ public class RubberPanel
     }
 
     //-------------//
+    // unsetRubber //
+    //-------------//
+    /**
+     * Cut the connection between this view and the rubber
+     * @param rubber the rubber to disconnect
+     */
+    public void unsetRubber (Rubber rubber)
+    {
+        rubber.setMouseMonitor(null);
+    }
+
+    //-----------//
+    // unsetZoom //
+    //-----------//
+    /**
+     * Deassign the zoom, unregistering this component as a zoom listener
+     * @param zoom the zoom to unregister from
+     * @return true if actually disconnected
+     */
+    public boolean unsetZoom (Zoom zoom)
+    {
+        if (zoom != null) {
+            return zoom.removeChangeListener(this);
+        } else {
+            return false;
+        }
+    }
+
+    //-------------//
     // unsubscribe //
     //-------------//
     /**
@@ -585,6 +612,7 @@ public class RubberPanel
             if (rubber != null) {
                 rubber.render(initialGraphics);
             }
+
             g.dispose();
         }
     }

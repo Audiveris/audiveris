@@ -41,7 +41,6 @@ import java.awt.event.*;
 import java.util.*;
 
 import javax.swing.*;
-import javax.swing.border.EtchedBorder;
 import javax.swing.event.*;
 
 /**
@@ -99,7 +98,7 @@ public class ScoreParameters
 
         component = new Panel();
 
-        // Sequence of Pane instances
+        // Sequence of Pane instances, w/ or w/o a score
         panes.add(new DnDPane());
         panes.add(new ScriptPane());
         panes.add(new ForegroundPane());
@@ -110,6 +109,7 @@ public class ScoreParameters
         panes.add(new TempoPane());
 
         if (score != null) {
+            // Part by part information
             panes.add(new ScorePane());
 
             // Add measure pane iff we have measures

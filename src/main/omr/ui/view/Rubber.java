@@ -159,7 +159,7 @@ public class Rubber
                    Zoom       zoom)
     {
         id = globalId.addAndGet(1);
-        setComponent(component);
+        connectComponent(component);
         setZoom(zoom);
     }
 
@@ -186,35 +186,6 @@ public class Rubber
         }
 
         return pt;
-    }
-
-    //--------------//
-    // setComponent //
-    //--------------//
-    /**
-     * Actually register the rubber as the mouse listener for the provided
-     * component.
-     *
-     * @param component the related component
-     */
-    public void setComponent (JComponent component)
-    {
-        // Clean up if needed
-        if (this.component != null) {
-            this.component.removeMouseListener(this);
-            this.component.removeMouseMotionListener(this);
-        }
-
-        // Remember the related component (to get visible rect, etc ...)
-        this.component = component;
-
-        // To be notified of mouse clicks
-        component.removeMouseListener(this); // No multiple notifications
-        component.addMouseListener(this);
-
-        // To be notified of mouse mouvements
-        component.removeMouseMotionListener(this); // No multiple notifs
-        component.addMouseMotionListener(this);
     }
 
     //-----------------//
@@ -257,6 +228,47 @@ public class Rubber
     public void setZoom (Zoom zoom)
     {
         this.zoom = zoom;
+    }
+
+    //------------------//
+    // connectComponent //
+    //------------------//
+    /**
+     * Actually register the rubber as the mouse listener for the provided
+     * component.
+     *
+     * @param component the related component
+     */
+    public void connectComponent (JComponent component)
+    {
+        // Clean up if needed
+        disconnectComponent(this.component);
+
+        // Remember the related component (to get visible rect, etc ...)
+        this.component = component;
+
+        // To be notified of mouse clicks
+        component.removeMouseListener(this); // No multiple notifications
+        component.addMouseListener(this);
+
+        // To be notified of mouse mouvements
+        component.removeMouseMotionListener(this); // No multiple notifs
+        component.addMouseMotionListener(this);
+    }
+
+    //---------------------//
+    // disconnectComponent //
+    //---------------------//
+    /**
+     * Disconnect the provided component
+     * @param component the component to disconnect
+     */
+    public void disconnectComponent (JComponent component)
+    {
+        if (component != null) {
+            component.removeMouseListener(this);
+            component.removeMouseMotionListener(this);
+        }
     }
 
     //--------------//

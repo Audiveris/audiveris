@@ -251,10 +251,10 @@ public class SheetSteps
         }
 
         // Rebuild from specified step, if needed
-        Step latest = sheet.getSheetSteps()
-                           .getLatestMandatoryStep();
+        if (shouldRebuildFrom(step)) {
+            Step          latest = sheet.getSheetSteps()
+                                        .getLatestMandatoryStep();
 
-        if ((latest == null) || (latest.compareTo(step) >= 0)) {
             // The range of steps to re-perform
             EnumSet<Step> stepRange = EnumSet.range(step, latest);
 
@@ -264,6 +264,22 @@ public class SheetSteps
                 logger.warning("Error in re-processing from " + this, ex);
             }
         }
+    }
+
+    //-------------------//
+    // shouldRebuildFrom //
+    //-------------------//
+    /**
+     * Check whether some steps need to be rebuilt, starting from step 'from'
+     * @param from the step to rebuild from
+     * @return true if some rebuilding must take place
+     */
+    public boolean shouldRebuildFrom (Step from)
+    {
+        Step latest = sheet.getSheetSteps()
+                           .getLatestMandatoryStep();
+
+        return (latest == null) || (latest.compareTo(from) >= 0);
     }
 
     //---------//

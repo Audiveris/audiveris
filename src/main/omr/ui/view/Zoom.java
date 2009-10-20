@@ -265,10 +265,11 @@ public class Zoom
      * Unregister a change listener
      *
      * @param listener the listener to remove
+     * @return true if actually removed
      */
-    public void removeChangeListener (ChangeListener listener)
+    public boolean removeChangeListener (ChangeListener listener)
     {
-        listeners.remove(listener);
+        return listeners.remove(listener);
     }
 
     //-------//

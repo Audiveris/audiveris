@@ -97,11 +97,10 @@ public class LinesBuilder
     /** Lag view on staff lines, if so desired */
     private GlyphLagView lagView;
 
-    /** Histogram eeded for displayChart */
+    /** Data needed for displayChart */
     private int[] histo;
-
-    /** Threshold needed for displayChart */
-    private int threshold;
+    private int    maxHisto;
+    private double histoRatio;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -185,7 +184,7 @@ public class LinesBuilder
      */
     public void displayChart ()
     {
-        writePlot(histo, threshold);
+        writePlot(histo, maxHisto, histoRatio);
     }
 
     //---------//
@@ -297,10 +296,7 @@ public class LinesBuilder
 
         // Initialize histogram to zeroes
         histo = new int[height];
-
-        for (int i = histo.length - 1; i >= 0; i--) {
-            histo[i] = 0;
-        }
+        Arrays.fill(histo, 0);
 
         // Visit all vertices (sections) of the lag
         for (GlyphSection section : lag.getVertices()) {
@@ -312,7 +308,7 @@ public class LinesBuilder
         }
 
         // Determine histogram threshold
-        int maxHisto = 0;
+        maxHisto = 0;
 
         for (int i = histo.length - 1; i >= 0; i--) {
             if (histo[i] > maxHisto) {
@@ -320,7 +316,9 @@ public class LinesBuilder
             }
         }
 
-        threshold = (int) (maxHisto * sheet.getHistoRatio());
+        histoRatio = sheet.getHistoRatio();
+
+        int  threshold = (int) (maxHisto * histoRatio);
 
         // Determine peaks in the histogram
         Peak peak = null;
@@ -520,23 +518,24 @@ public class LinesBuilder
     //-----------//
     // writePlot //
     //-----------//
-    private void writePlot (int[] histo,
-                            int   threshold)
+    private void writePlot (int[]  histo,
+                            int    maxHisto,
+                            double ratio)
     {
         XYSeriesCollection dataset = new XYSeriesCollection();
 
-        // Threshold
+        // Threshold line
         XYSeries thresholdSeries = new XYSeries(
-            "Threshold" + " [" + threshold + "]");
-        thresholdSeries.add(0, threshold);
-        thresholdSeries.add(-histo.length + 1, threshold);
+            "Staff ratio used" + " [" + ratio + "]");
+        thresholdSeries.add(0, ratio);
+        thresholdSeries.add(-histo.length + 1, ratio);
         dataset.addSeries(thresholdSeries);
 
         // Projection data
         XYSeries dataSeries = new XYSeries("Projections");
 
         for (int i = 0; i < histo.length; i++) {
-            dataSeries.add(-i, histo[i]);
+            dataSeries.add(-i, histo[i] / (double) maxHisto);
         }
 
         dataset.addSeries(dataSeries);
@@ -545,7 +544,7 @@ public class LinesBuilder
         JFreeChart chart = ChartFactory.createXYLineChart(
             sheet.getRadix() + " (Horizontal Projections)", // Title
             "Ordinate",
-            "Horizontal counts",
+            "Ratios of horizontal counts",
             dataset, // Dataset
             PlotOrientation.HORIZONTAL, // orientation,
             true, // Show legend
