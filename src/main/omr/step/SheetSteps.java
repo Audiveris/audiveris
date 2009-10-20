@@ -480,7 +480,7 @@ public class SheetSteps
     // MeasuresTask //
     //--------------//
     /**
-     * Step to retrieve  measures
+     * Step to retrieve measures
      */
     private class MeasuresTask
         extends SystemTask

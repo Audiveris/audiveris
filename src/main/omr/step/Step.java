@@ -293,6 +293,11 @@ public enum Step {
                 monitor.animate(true);
             }
 
+            // Systems are rebuilt from scratch in SYSTEMS step, so ...
+            if (stepRange.contains(Step.SYSTEMS)) {
+                systems = null;
+            }
+
             // The actual processing
             for (Step step : stepRange) {
                 notifyMsg(step.name());

@@ -269,11 +269,8 @@ public class SystemsBuilder
              .getSystems()
              .clear();
 
-        // Systems to (re)allocate
-        Collection<SystemInfo> systemsToAllocate = systems;
-
-        for (SystemInfo system : systemsToAllocate) {
-            system.allocateScoreStructure(); // system Parts & Staves
+        for (SystemInfo system : systems) {
+            system.allocateScoreStructure(); // ScoreSystem, Parts & Staves
         }
 
         // Define score parts

@@ -1140,7 +1140,9 @@ public class SystemInfo
      */
     public int runAlterPattern ()
     {
-        return glyphInspector.runAlterPattern();
+        return glyphInspector.runAlterPattern();
+
+
     }
 
     //----------------//
