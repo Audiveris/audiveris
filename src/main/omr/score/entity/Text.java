@@ -256,6 +256,12 @@ public abstract class Text
                 " \"" + sentence.getTextContent() + "\"");
         }
 
+        if (sentence.getTextRole() == null) {
+            logger.warning("No role for sentence " + sentence);
+
+            return;
+        }
+
         switch (sentence.getTextRole()) {
         case Lyrics :
 
