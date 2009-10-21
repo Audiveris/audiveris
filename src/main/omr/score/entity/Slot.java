@@ -567,8 +567,15 @@ public class Slot
                         "Slot#" + getId() + " Reusing voice#" + voice.getId());
                 }
 
-                chords.get(i)
-                      .setVoice(voice);
+                Chord ch = chords.get(i);
+
+                try {
+                    ch.setVoice(voice);
+                } catch (Exception ex) {
+                    ch.addError("Failed to set voice of chord");
+
+                    return;
+                }
             }
         }
 
@@ -581,12 +588,6 @@ public class Slot
         activeChords.removeAll(passingChords); // ?????
         activeChords.addAll(chords);
         Collections.sort(activeChords, chordComparator);
-
-        // Debug
-        //        if (this != measure.getSlots()
-        //                           .last()) {
-        //            measure.printVoices("At end of slot#" + getId() + " for ");
-        //        }
     }
 
     //---------------//
@@ -763,33 +764,29 @@ public class Slot
      */
     private void assignVoices (Collection<Chord> chords)
     {
-        try {
-            // Assign remaining non-mapped chords, using 1st voice available
-            for (Chord chord : chords) {
-                // Process only the chords that have no voice assigned yet
-                if (chord.getVoice() == null) {
-                    for (Voice voice : measure.getVoices()) {
-                        if (voice.isFree(this)) {
-                            chord.setVoice(voice);
+        // Assign remaining non-mapped chords, using 1st voice available
+        for (Chord chord : chords) {
+            // Process only the chords that have no voice assigned yet
+            if (chord.getVoice() == null) {
+                for (Voice voice : measure.getVoices()) {
+                    if (voice.isFree(this)) {
+                        chord.setVoice(voice);
 
-                            break;
-                        }
-                    }
-
-                    if (chord.getVoice() == null) {
-                        if (logger.isFineEnabled()) {
-                            logger.fine(
-                                chord.getContextString() + " Slot#" + id +
-                                " creating voice for Ch#" + chord.getId());
-                        }
-
-                        // Add a new voice
-                        new Voice(chord);
+                        break;
                     }
                 }
+
+                if (chord.getVoice() == null) {
+                    if (logger.isFineEnabled()) {
+                        logger.fine(
+                            chord.getContextString() + " Slot#" + id +
+                            " creating voice for Ch#" + chord.getId());
+                    }
+
+                    // Add a new voice
+                    new Voice(chord);
+                }
             }
-        } catch (Exception ex) {
-            logger.warning("Error assigning voices", ex);
         }
     }
 

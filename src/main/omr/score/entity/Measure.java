@@ -1261,8 +1261,14 @@ public class Measure
         }
 
         // Process slot after slot, if any
-        for (Slot slot : getSlots()) {
-            slot.buildVoices(activeChords);
+        try {
+            for (Slot slot : getSlots()) {
+                slot.buildVoices(activeChords);
+            }
+        } catch (Exception ex) {
+            logger.warning(
+                "Error building voices in measure " + this.getId(),
+                ex);
         }
 
         // Debug
@@ -1304,7 +1310,7 @@ public class Measure
 
         for (int im = 0; im < imMax; im++) {
             Integer measureFinal = null;
-            partLoop:
+            partLoop: 
             for (TreeNode node : system.getParts()) {
                 SystemPart part = (SystemPart) node;
 
