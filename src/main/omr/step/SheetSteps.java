@@ -29,6 +29,9 @@ import omr.score.entity.ScoreSystem;
 import omr.score.midi.MidiActions;
 import omr.score.ui.ScoreActions;
 
+import omr.selection.GlyphEvent;
+import omr.selection.SelectionService;
+
 import omr.sheet.HorizontalsBuilder;
 import omr.sheet.LinesBuilder;
 import omr.sheet.Scale;
@@ -855,6 +858,16 @@ public class SheetSteps
         {
             sheet.getSymbolsEditor()
                  .refresh();
+
+            // Update glyph board if needed (to see OCR'ed data)
+            SelectionService service = sheet.getVerticalLag()
+                                            .getSelectionService();
+            GlyphEvent       glyphEvent = (GlyphEvent) service.getLastEvent(
+                GlyphEvent.class);
+
+            if (glyphEvent != null) {
+                service.publish(glyphEvent);
+            }
         }
 
         @Override

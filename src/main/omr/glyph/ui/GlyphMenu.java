@@ -22,8 +22,6 @@ import omr.glyph.ShapeRange;
 import omr.selection.GlyphEvent;
 import omr.selection.SelectionHint;
 
-import omr.sheet.Sheet;
-
 import omr.util.Implement;
 
 import java.awt.event.*;
