@@ -239,6 +239,9 @@ public class ScoreChecker
             Shape shape = timeSignature.getShape();
 
             if (shape == null) {
+                // This is assumed to be a complex time sig
+                // (with no equivalent predefined shape)
+                // Just check we are able to get num and den
                 if ((timeSignature.getNumerator() == null) ||
                     (timeSignature.getDenominator() == null)) {
                     timeSignature.addError(
@@ -249,15 +252,18 @@ public class ScoreChecker
             } else if (shape == Shape.NO_LEGAL_TIME) {
                 timeSignature.addError("Illegal " + timeSignature);
             } else if (ShapeRange.SingleTimes.contains(shape)) {
+                // This time sig has the same of a single digit
+                // So some other part is still missing
                 timeSignature.addError(
                     "Orphan time signature shape : " + shape);
-            } else { // Normal simple shape
+            } else { // Normal predefined shape
 
                 if (!timeSignature.isDummy()) {
-                    checkSimpleTime(timeSignature);
+                    checkTimeSig(timeSignature);
                 }
             }
         } catch (InvalidTimeSignature its) {
+            // Error already posted in the errors window????
             logger.warning("visit. InvalidTimeSignature", its);
         }
 
@@ -266,17 +272,21 @@ public class ScoreChecker
 
     //- Utilities --------------------------------------------------------------
 
-    //-----------------//
-    // checkSimpleTime //
-    //-----------------//
-    private void checkSimpleTime (TimeSignature timeSignature)
+    //--------------//
+    // checkTimeSig //
+    //--------------//
+    /**
+     * Here we check time signature considered as "not complex" (TBD: why?)
+     * @param timeSignature the sig to check
+     */
+    private void checkTimeSig (TimeSignature timeSignature)
     {
         // Check others, similar abscissa, in all other staves of the system
         // Use score hierarchy, same system, all parts, same measure id
         // If there is no time sig, create a dummy one
         // If there is one, make sure the sig is identical
         // Priority to manually assigned shapes of course
-        TimeSignature bestSig = findBestTime(timeSignature.getMeasure());
+        TimeSignature bestSig = findBestTimeSig(timeSignature.getMeasure());
 
         if (bestSig != null) {
             for (Staff.SystemIterator sit = new Staff.SystemIterator(
@@ -308,21 +318,21 @@ public class ScoreChecker
         }
     }
 
-    //--------------//
-    // findBestTime //
-    //--------------//
+    //-----------------//
+    // findBestTimeSig //
+    //-----------------//
     /**
      * Report the best time signature for all parallel measures (among all the
      * parallel candidate time signatures)
-     * @param measure
+     * @param measure the reference measure
      * @return the best signature, or null if no suitable signature found
      */
-    private TimeSignature findBestTime (Measure measure)
+    private TimeSignature findBestTimeSig (Measure measure)
     {
         TimeSignature manualSig = null;
 
         try {
-            manualSig = findManualTime(measure); // Perhaps null
+            manualSig = findManualTimeSig(measure); // Perhaps null
         } catch (InconsistentTimeSignatures ex) {
             logger.warning("InconsistentTimeSignatures");
 
@@ -372,7 +382,7 @@ public class ScoreChecker
                     // Assign this manual sig to this incorrect sig?
 
                     ///oldSig.deassign();
-                    replaceSig(oldSig, manualSig);
+                    replaceTimeSig(oldSig, manualSig);
                 } else {
                     // Inconsistent sigs
                     if (logger.isFineEnabled()) {
@@ -392,9 +402,9 @@ public class ScoreChecker
         return bestSig;
     }
 
-    //----------------//
-    // findManualTime //
-    //----------------//
+    //-------------------//
+    // findManualTimeSig //
+    //-------------------//
     /**
      * Report a suitable manually assigned time signature, if any. For this, we
      * need to find a manual time sig, after having checked that all manual time
@@ -403,7 +413,7 @@ public class ScoreChecker
      * @return the suitable manual sig, if any
      * @throws InconsistentTimeSignatures if at least two manual sigs differ
      */
-    private TimeSignature findManualTime (Measure measure)
+    private TimeSignature findManualTimeSig (Measure measure)
         throws InconsistentTimeSignatures
     {
         TimeSignature manualSig = null;
@@ -428,9 +438,8 @@ public class ScoreChecker
                     }
 
                     // Still consistent?
-                    if ((num == manualSig.getNumerator()) &&
-                        (den == manualSig.getDenominator())) {
-                    } else {
+                    if ((num != manualSig.getNumerator()) ||
+                        (den != manualSig.getDenominator())) {
                         sig.addError("Inconsistent time signature");
                         manualSig.addError("Inconsistent time signature");
 
@@ -445,9 +454,9 @@ public class ScoreChecker
         return manualSig;
     }
 
-    //------------//
-    // replaceSig //
-    //------------//
+    //----------------//
+    // replaceTimeSig //
+    //----------------//
     /**
      * Replaces in situ the time signature 'oldSig' by the logical information
      * of 'newSig'. We use the intersected glyphs of the old sig as the glyphs
@@ -455,8 +464,8 @@ public class ScoreChecker
      * @param oldSig the old (incorrect) time sig
      * @param newSig the correct sig to assign in lieu of oldSig
      */
-    private void replaceSig (TimeSignature oldSig,
-                             TimeSignature newSig)
+    private void replaceTimeSig (TimeSignature oldSig,
+                                 TimeSignature newSig)
     {
         Shape shape = null;
 

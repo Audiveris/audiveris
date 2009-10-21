@@ -98,7 +98,8 @@ public class SheetPainter
                    .render(g);
         }
 
-        return true;
+        // Nothing lower than measure
+        return false;
     }
 
     //-------------//
@@ -143,16 +144,16 @@ public class SheetPainter
         return true;
     }
 
+    //-------------//
+    // visit Sheet //
+    //-------------//
     /**
      * Although a Sheet is not part of the Score hierarchy, this visitor has
      * been specifically extended to render all physical info of a sheet
      *
      * @param sheet the sheet to render initial elements
+     * @return true
      */
-
-    //-------------//
-    // visit Sheet //
-    //-------------//
     public boolean visit (Sheet sheet)
     {
         // Use specific color

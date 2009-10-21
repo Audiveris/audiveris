@@ -891,7 +891,7 @@ public class ScorePainter
                 for (Glyph glyph : timeSignature.getGlyphs()) {
                     final Shape s = glyph.getShape();
 
-                    if (s != null) {
+                    if (s != null && s != Shape.GLYPH_PART) {
                         final SystemPoint center = timeSignature.computeGlyphCenter(
                             glyph);
                         final Staff       staff = part.getStaffAt(center);

@@ -46,6 +46,21 @@ public class TimeSignature
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(TimeSignature.class);
 
+    /** Rational value of each (full) time sig shape */
+    private static Map<Shape, Rational> rationals = new HashMap<Shape, Rational>();
+
+    static {
+        for (Shape s : ShapeRange.MultiTimes) {
+            Rational nd = rationalOf(s);
+
+            if (nd == null) {
+                logger.severe("Rational for '" + s + "' is not defined");
+            } else {
+                rationals.put(s, nd);
+            }
+        }
+    }
+
     //~ Instance fields --------------------------------------------------------
 
     /** Rational component : numerator */
@@ -136,7 +151,7 @@ public class TimeSignature
      * Report the bottom part of the time signature
      *
      * @return the bottom part
-     * @throws omr.score.entity.TimeSignature.InvalidTimeSignature
+     * @throws InvalidTimeSignature
      */
     public Integer getDenominator ()
         throws InvalidTimeSignature
@@ -179,7 +194,7 @@ public class TimeSignature
      * Report the top part of the time signature
      *
      * @return the top part
-     * @throws omr.score.entity.TimeSignature.InvalidTimeSignature
+     * @throws InvalidTimeSignature
      */
     public Integer getNumerator ()
         throws InvalidTimeSignature
@@ -388,12 +403,12 @@ public class TimeSignature
     //-----------------//
     // getNumericValue //
     //-----------------//
-    private Integer getNumericValue (Glyph glyph)
+    private static Integer getNumericValue (Glyph glyph)
     {
-        Shape theShape = glyph.getShape();
+        Shape shape = glyph.getShape();
 
-        if (theShape != null) {
-            switch (theShape) {
+        if (shape != null) {
+            switch (shape) {
             case TIME_ZERO :
                 return 0;
 
@@ -435,18 +450,6 @@ public class TimeSignature
         return null;
     }
 
-    //----------------//
-    // assignRational //
-    //----------------//
-    private void assignRational (Shape shape,
-                                 int   numerator,
-                                 int   denominator)
-    {
-        this.shape = shape;
-        this.numerator = numerator;
-        this.denominator = denominator;
-    }
-
     //-----------------//
     // computeRational //
     //-----------------//
@@ -460,50 +463,22 @@ public class TimeSignature
         if (!glyphs.isEmpty()) {
             if (glyphs.size() == 1) {
                 // Just one symbol
-                Shape shape = glyphs.first()
-                                    .getShape();
+                Shape theShape = glyphs.first()
+                                       .getShape();
 
-                if (shape != null) {
-                    switch (shape) {
-                    case TIME_FOUR_FOUR :
-                        assignRational(shape, 4, 4);
-
-                        return;
-
-                    case TIME_TWO_TWO :
-                        assignRational(shape, 2, 2);
+                if (theShape != null) {
+                    if (ShapeRange.MultiTimes.contains(theShape)) {
+                        Rational nd = rationalOf(theShape);
+                        shape = theShape;
+                        numerator = nd.num;
+                        denominator = nd.den;
 
                         return;
-
-                    case TIME_TWO_FOUR :
-                        assignRational(shape, 2, 4);
-
-                        return;
-
-                    case TIME_THREE_FOUR :
-                        assignRational(shape, 3, 4);
-
-                        return;
-
-                    case TIME_SIX_EIGHT :
-                        assignRational(shape, 6, 8);
-
-                        return;
-
-                    case COMMON_TIME :
-                        assignRational(shape, 4, 4);
-
-                        return;
-
-                    case CUT_TIME :
-                        assignRational(shape, 2, 2);
-
-                        return;
-
-                    default :
-                        addError(glyphs.first(), "Weird single time component");
-                        throw new InvalidTimeSignature();
                     }
+
+                    addError(glyphs.first(), "Weird single time component");
+
+                    return;
                 }
             } else {
                 // Several symbols
@@ -546,6 +521,9 @@ public class TimeSignature
                             "Time signature component with no numeric value");
                     }
                 }
+
+                // Try to assign a predefined shape
+                shape = predefinedShape();
             }
 
             if (logger.isFineEnabled()) {
@@ -558,10 +536,23 @@ public class TimeSignature
     //-------------------//
     // populateMultiTime //
     //-------------------//
+    /**
+     * We create a full time signature with just the provided glyph (assumed to
+     * be the whole signature, perhaps composed of several digits, for example
+     * one digit for the numerator and one digit for the denominator)
+     * @param glyph the provided (multi-digit) glyph
+     * @param measure the containing measure
+     * @param staff the related satff
+     * @return true if successful
+     */
     private static boolean populateMultiTime (Glyph   glyph,
                                               Measure measure,
                                               Staff   staff)
     {
+        if (logger.isFineEnabled()) {
+            logger.fine("populateMultiTime with " + glyph);
+        }
+
         TimeSignature ts = measure.getTimeSignature(staff);
 
         if (ts == null) {
@@ -584,10 +575,21 @@ public class TimeSignature
     //--------------------//
     // populateSingleTime //
     //--------------------//
+    /**
+     * We add the provided glyph to a time signature composed of single digits
+     * @param glyph the provided (single-digit) glyph
+     * @param measure the containing measure
+     * @param staff the related staff
+     * @return true if successful
+     */
     private static boolean populateSingleTime (Glyph   glyph,
                                                Measure measure,
                                                Staff   staff)
     {
+        if (logger.isFineEnabled()) {
+            logger.fine("populateSingleTime with " + glyph);
+        }
+
         TimeSignature ts = measure.getTimeSignature(staff);
 
         if (ts != null) {
@@ -608,6 +610,7 @@ public class TimeSignature
                 return false;
             }
         } else {
+            // Start a brand new time sig
             ts = new TimeSignature(measure, staff);
         }
 
@@ -615,6 +618,70 @@ public class TimeSignature
         glyph.setTranslation(ts);
 
         return true;
+    }
+
+    //-----------------//
+    // predefinedShape //
+    //-----------------//
+    /**
+     * Look for a predefined shape, if any, that would correspond to the current
+     * num and den values of this time sig
+     * @return the shape found or null
+     */
+    private Shape predefinedShape ()
+    {
+        if ((numerator == null) || (denominator == null)) {
+            return null; // Safer
+        }
+
+        for (Shape s : ShapeRange.MultiTimes) {
+            Rational nd = rationals.get(s);
+
+            if ((nd != null) &&
+                (nd.num == numerator) &&
+                (nd.den == denominator)) {
+                return s;
+            }
+        }
+
+        return null;
+    }
+
+    //------------//
+    // rationalOf //
+    //------------//
+    /**
+     * Report the num/den pair of predefined timesig shapes
+     * @param shape the queried shape
+     * @return the related num/den or null
+     */
+    private static Rational rationalOf (Shape shape)
+    {
+        switch (shape) {
+        case TIME_FOUR_FOUR :
+            return new Rational(4, 4);
+
+        case TIME_TWO_TWO :
+            return new Rational(2, 2);
+
+        case TIME_TWO_FOUR :
+            return new Rational(2, 4);
+
+        case TIME_THREE_FOUR :
+            return new Rational(3, 4);
+
+        case TIME_SIX_EIGHT :
+            return new Rational(6, 8);
+
+        case COMMON_TIME :
+            return new Rational(4, 4);
+
+        case CUT_TIME :
+            return new Rational(2, 2);
+
+        default :
+            return null;
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -653,5 +720,28 @@ public class TimeSignature
             1d,
             "Minimum horizontal offset for a time" +
             " signature since start of measure");
+    }
+
+    //----------//
+    // Rational //
+    //----------//
+    /**
+     * Meant to host a pair numerator and denominator
+     */
+    private static class Rational
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final int num;
+        final int den;
+
+        //~ Constructors -------------------------------------------------------
+
+        public Rational (int num,
+                         int den)
+        {
+            this.num = num;
+            this.den = den;
+        }
     }
 }
