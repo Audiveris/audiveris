@@ -403,7 +403,7 @@ public class TextArea
             GlyphEvaluator  evaluator = GlyphNetwork.getInstance();
             Evaluation vote = evaluator.vote(
                 glyph,
-                GlyphInspector.getSymbolMaxDoubt());
+                GlyphInspector.getTextMaxDoubt());
 
             if (vote != null) {
                 if (logger.isFineEnabled()) {
