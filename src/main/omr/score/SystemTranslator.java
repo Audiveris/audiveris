@@ -29,6 +29,7 @@ import omr.score.entity.BeamItem;
 import omr.score.entity.Chord;
 import omr.score.entity.Clef;
 import omr.score.entity.Coda;
+import omr.score.entity.DotTranslator;
 import omr.score.entity.Fermata;
 import omr.score.entity.KeySignature;
 import omr.score.entity.Measure;
@@ -179,7 +180,7 @@ public class SystemTranslator
         // Flag (-> chord)
         translate(new FlagTranslator());
         // Augmentation dots (-> chord)
-        translate(new DotTranslator());
+        translate(new MyDotTranslator());
         // Tuplets
         translate(new TupletTranslator());
         // Finalize measure ties, voices & durations
@@ -610,32 +611,6 @@ public class SystemTranslator
         }
     }
 
-    //---------------//
-    // DotTranslator //
-    //---------------//
-    private class DotTranslator
-        extends Translator
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public DotTranslator ()
-        {
-            super("Dot");
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        public boolean isRelevant (Glyph glyph)
-        {
-            return glyph.getShape() == Shape.DOT;
-        }
-
-        public void translate (Glyph glyph)
-        {
-            Chord.populateDot(glyph, currentMeasure, currentCenter);
-        }
-    }
-
     //--------------------//
     // DynamicsTranslator //
     //--------------------//
@@ -843,6 +818,32 @@ public class SystemTranslator
 
         public void translate (Glyph glyph)
         {
+        }
+    }
+
+    //-----------------//
+    // MyDotTranslator //
+    //-----------------//
+    private class MyDotTranslator
+        extends Translator
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public MyDotTranslator ()
+        {
+            super("Dot");
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        public boolean isRelevant (Glyph glyph)
+        {
+            return glyph.getShape() == Shape.DOT;
+        }
+
+        public void translate (Glyph glyph)
+        {
+            DotTranslator.populateDot(glyph, currentMeasure, currentCenter);
         }
     }
 

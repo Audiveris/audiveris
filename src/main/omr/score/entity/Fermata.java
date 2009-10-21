@@ -17,8 +17,6 @@ import omr.glyph.Shape;
 import omr.log.Logger;
 
 import omr.score.common.SystemPoint;
-import omr.score.entity.AbstractNotation;
-import omr.score.entity.Chord;
 import omr.score.visitor.ScoreVisitor;
 
 /**

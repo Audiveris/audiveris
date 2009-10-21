@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.score.entity;
 
-import omr.constant.ConstantSet;
-
 import omr.glyph.Glyph;
 
 import omr.log.Logger;
@@ -24,10 +22,6 @@ import omr.score.common.SystemPoint;
 import omr.score.common.SystemRectangle;
 import omr.score.entity.Voice.ChordInfo;
 import omr.score.visitor.ScoreVisitor;
-
-import omr.sheet.Scale;
-
-import omr.stick.Stick;
 
 import omr.util.Implement;
 import omr.util.TreeNode;
@@ -48,9 +42,6 @@ public class Chord
     implements Comparable<Chord>
 {
     //~ Static fields/initializers ---------------------------------------------
-
-    /** Specific application parameters */
-    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Chord.class);
@@ -191,7 +182,7 @@ public class Chord
     public BeamGroup getBeamGroup ()
     {
         if (!getBeams()
-                .isEmpty()) {
+                 .isEmpty()) {
             return getBeams()
                        .first()
                        .getGroup();
@@ -224,6 +215,20 @@ public class Chord
     public Collection<?extends Direction> getDirections ()
     {
         return directions;
+    }
+
+    //---------------//
+    // setDotsNumber //
+    //---------------//
+    /**
+     * Define the number of augmentation dots that impact this chord
+     *
+     * @param dotsNumber the number of dots (should be the same for all notes
+     * within this chord)
+     */
+    public void setDotsNumber (int dotsNumber)
+    {
+        this.dotsNumber = dotsNumber;
     }
 
     //---------------//
@@ -453,7 +458,7 @@ public class Chord
     {
         if (super.getStaff() == null) {
             if (!getNotes()
-                    .isEmpty()) {
+                     .isEmpty()) {
                 Note note = (Note) getNotes()
                                        .get(0);
                 setStaff(note.getStaff());
@@ -696,7 +701,7 @@ public class Chord
     public boolean isWholeDuration ()
     {
         if (!getNotes()
-                .isEmpty()) {
+                 .isEmpty()) {
             Note note = (Note) getNotes()
                                    .get(0);
 
@@ -912,35 +917,6 @@ public class Chord
         return null;
     }
 
-    //-------------//
-    // populateDot //
-    //-------------//
-    /**
-     * Try to assign an augmentation dot to the relevant chord if any,
-     * otherwise try to assign it to a repeat barline.
-     *
-     * @param glyph the glyph of the given augmentation dot
-     * @param measure the containing measure
-     * @param dotCenter the system-based location of the dot
-     */
-    public static void populateDot (Glyph       glyph,
-                                    Measure     measure,
-                                    SystemPoint dotCenter)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("Chord Populating dot " + glyph);
-        }
-
-        // A dot can be: an augmentation dot; part of repeat dots; staccato
-        if (!tryAugmentation(glyph, measure, dotCenter)) {
-            if (!tryRepeat(glyph, measure, dotCenter)) {
-                if (!tryStaccato(glyph, measure, dotCenter)) {
-                    // No translation for this dot!
-                }
-            }
-        }
-    }
-
     //--------------//
     // populateFlag //
     //--------------//
@@ -1081,7 +1057,7 @@ public class Chord
      * Report a more detailed description than plain toStrïng
      * @return a detailed description
      */
-    public String toLongString()
+    public String toLongString ()
     {
         StringBuilder sb = new StringBuilder();
         sb.append(this);
@@ -1303,6 +1279,25 @@ public class Chord
         return 0;
     }
 
+    //-----------------//
+    // getHeadLocation //
+    //-----------------//
+    /**
+     * Compute the head location of a chord, given the chord head note
+     *
+     * @param note the head note
+     * @return the head location
+     */
+    private SystemPoint getHeadLocation (Note note)
+    {
+        Staff staff = note.getStaff();
+
+        return new SystemPoint(
+            tailLocation.x,
+            staff.getPageTopLeft().y - note.getSystem().getTopLeft().y +
+            Staff.pitchToUnit(Math.rint(note.getPitchPosition())));
+    }
+
     //----------------//
     // getRawDuration //
     //---------------//
@@ -1325,7 +1320,7 @@ public class Chord
         Integer rawDuration = null;
 
         if (!getNotes()
-                .isEmpty()) {
+                 .isEmpty()) {
             // All note heads are assumed to be the same within one chord
             Note note = (Note) getNotes()
                                    .get(0);
@@ -1418,181 +1413,6 @@ public class Chord
         }
     }
 
-    //-----------------//
-    // tryAugmentation //
-    //-----------------//
-    /**
-     * Try to assign a dot as a chord augmentation dot
-     *
-     * @param glyph the glyph of the given dot
-     * @param measure the containing measure
-     * @param dotCenter the system-based location of the dot
-     * @return true if assignment is successful
-     */
-    private static boolean tryAugmentation (Glyph       glyph,
-                                            Measure     measure,
-                                            SystemPoint dotCenter)
-    {
-        Scale      scale = measure.getScale();
-        final int  maxDx = scale.toUnits(constants.maxAugmentationDotDx);
-        final int  maxDy = scale.toUnits(constants.maxAugmentationDotDy);
-        Set<Chord> candidates = new HashSet<Chord>();
-
-        // Check for a note/rest nearby:
-        // - on the left w/ same even pitch (note w/ even pitch)
-        // - slighly above or below (note with odd pitch = on a staff line)
-        ChordLoop:
-        for (TreeNode node : measure.getChords()) {
-            Chord chord = (Chord) node;
-
-            for (TreeNode n : chord.getNotes()) {
-                Note note = (Note) n;
-
-                if (!note.getShape()
-                         .isWholeRest()) {
-                    SystemPoint noteRef = note.getCenterRight();
-                    SystemPoint toDot = new SystemPoint(
-                        dotCenter.x - noteRef.x,
-                        dotCenter.y - noteRef.y);
-
-                    if (logger.isFineEnabled()) {
-                        logger.info(measure.getContextString() + " " + toDot);
-                    }
-
-                    if ((toDot.x > 0) &&
-                        (toDot.x <= maxDx) &&
-                        (Math.abs(toDot.y) <= maxDy)) {
-                        candidates.add(chord);
-                    }
-                }
-            }
-        }
-
-        // Assign the dot to the candidate with longest rawDuration, which boils
-        // down to smallest number of flags/beams, as the note head is the same
-        if (logger.isFineEnabled()) {
-            logger.info(candidates.size() + " Candidates=" + candidates);
-        }
-
-        int   bestFb = Integer.MAX_VALUE;
-        Chord bestChord = null;
-
-        for (Chord chord : candidates) {
-            int fb = chord.getFlagsNumber() + chord.getBeams()
-                                                   .size();
-
-            if (fb < bestFb) {
-                bestFb = fb;
-                bestChord = chord;
-            }
-        }
-
-        if (bestChord != null) {
-            // TODO: we should also handle case of double dots !
-            bestChord.dotsNumber = 1;
-            glyph.setTranslation(bestChord);
-
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    bestChord.getContextString() + " Augmented " + bestChord);
-            }
-
-            return true;
-        }
-
-        return false;
-    }
-
-    //-----------//
-    // tryRepeat //
-    //-----------//
-    /**
-     * Try to assign a dot to the relevant repeat barline if any
-     *
-     * @param glyph the glyph of the given dot
-     * @param measure the containing measure
-     * @param dotCenter the system-based location of the dot
-     * @return true if assignment is successful
-     */
-    private static boolean tryRepeat (Glyph       glyph,
-                                      Measure     measure,
-                                      SystemPoint dotCenter)
-    {
-        // Check vertical pitch position within the staff : close to +1 or -1
-        double pitchDif = Math.abs(Math.abs(glyph.getPitchPosition()) - 1);
-
-        if (pitchDif > (2 * constants.maxRepeatDotDy.getValue())) {
-            return false;
-        }
-
-        // Check abscissa wrt the (ending) repeat barline on right
-        Barline     barline = measure.getBarline();
-        int         dx = barline.getLeftX() - dotCenter.x;
-        final Scale scale = measure.getScale();
-        final int   maxDx = scale.toUnits(constants.maxRepeatDotDx);
-
-        if ((dx > 0) && (dx <= maxDx)) {
-            barline.addStick((Stick) glyph);
-            glyph.setTranslation(barline);
-
-            return true;
-        }
-
-        // Check abscissa wrt the ending barline of the previous measure on left
-        Measure prevMeasure = (Measure) measure.getPreviousSibling();
-
-        if (prevMeasure != null) {
-            barline = prevMeasure.getBarline();
-            dx = dotCenter.x - barline.getRightX();
-
-            if ((dx > 0) && (dx <= maxDx)) {
-                barline.addStick((Stick) glyph);
-                glyph.setTranslation(barline);
-
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    //-------------//
-    // tryStaccato //
-    //-------------//
-    /**
-     * Try to assign a dot as a staccato
-     *
-     * @param glyph the glyph of the given dot
-     * @param measure the containing measure
-     * @param dotCenter the system-based location of the dot
-     * @return true if assignment is successful
-     */
-    private static boolean tryStaccato (Glyph       glyph,
-                                        Measure     measure,
-                                        SystemPoint dotCenter)
-    {
-        return false;
-    }
-
-    //-----------------//
-    // getHeadLocation //
-    //-----------------//
-    /**
-     * Compute the head location of a chord, given the chord head note
-     *
-     * @param note the head note
-     * @return the head location
-     */
-    private SystemPoint getHeadLocation (Note note)
-    {
-        Staff staff = note.getStaff();
-
-        return new SystemPoint(
-            tailLocation.x,
-            staff.getPageTopLeft().y - note.getSystem().getTopLeft().y +
-            Staff.pitchToUnit(Math.rint(note.getPitchPosition())));
-    }
-
     //------------------//
     // computeLocations //
     //------------------//
@@ -1605,7 +1425,7 @@ public class Chord
 
         // Find the note farthest from stem middle point
         if (!getNotes()
-                .isEmpty()) {
+                 .isEmpty()) {
             if (stem != null) {
                 SystemPoint middle = system.toSystemPoint(stem.getLocation());
                 Note        bestNote = null;
@@ -1765,7 +1585,7 @@ public class Chord
          * @param chord
          * @param alienNote
          */
-        public SplitOrder(Chord chord,
+        public SplitOrder (Chord chord,
                            Note  alienNote)
         {
             this.chord = chord;
@@ -1805,42 +1625,5 @@ public class Chord
         {
             return slur.isTie() && (getLocalNote(slur) == note);
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /**
-         * Maximum dx between note and augmentation dot
-         */
-        Scale.Fraction maxAugmentationDotDx = new Scale.Fraction(
-            1.7d,
-            "Maximum dx between note and augmentation dot");
-
-        /**
-         * Maximum absolute dy between note and augmentation dot
-         */
-        Scale.Fraction maxAugmentationDotDy = new Scale.Fraction(
-            1d,
-            "Maximum absolute dy between note and augmentation dot");
-
-        /**
-         * Margin for vertical position of a dot againt a repeat barline
-         */
-        Scale.Fraction maxRepeatDotDy = new Scale.Fraction(
-            0.5d,
-            "Margin for vertical position of a dot againt a repeat barline");
-
-        /**
-         * Maximum dx between dot and edge of repeat barline
-         */
-        Scale.Fraction maxRepeatDotDx = new Scale.Fraction(
-            1.5d,
-            "Maximum dx between dot and edge of repeat barline");
     }
 }
