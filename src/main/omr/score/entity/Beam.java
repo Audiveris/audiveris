@@ -253,11 +253,15 @@ public class Beam
         if (chords.isEmpty()) {
             addError("No chords connected to " + this);
         } else {
-            Chord   first = chords.first();
-            Chord   last = chords.last();
-            boolean started = false;
+            Chord            first = chords.first();
+            Chord            last = chords.last();
+            boolean          started = false;
 
-            for (Chord chord : group.getChords()) {
+            // Add interleaved chords if any, plus relevant chords of the group
+            SortedSet<Chord> adds = Chord.lookupInterleavedChords(first, last);
+            adds.addAll(group.getChords());
+
+            for (Chord chord : adds) {
                 if (chord == first) {
                     started = true;
                 }
@@ -397,6 +401,8 @@ public class Beam
             //////////////////////////////////////////////////////////////////
             linkChordsOnStem("left", item.getLeftStem());
             linkChordsOnStem("right", item.getRightStem());
+
+            // Include other stems in the middle
         }
     }
 

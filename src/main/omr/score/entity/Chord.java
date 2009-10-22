@@ -871,6 +871,71 @@ public class Chord
         return clone;
     }
 
+    //-------------------------//
+    // lookupInterleavedChords //
+    //-------------------------//
+    /**
+     * Look up for all chords interleaved between the given stemed chords
+     * @param left the chord on the left of the area
+     * @param right the chord on the right of the area
+     * @return the collection of interleaved chords, which may be empty
+     */
+    public static SortedSet<Chord> lookupInterleavedChords (Chord left,
+                                                            Chord right)
+    {
+        SortedSet<Chord> found = new TreeSet<Chord>();
+
+        // Define the area limited by the left and right chords with their stems
+        // and check for intersection with a rest note
+        Polygon polygon = new Polygon();
+        polygon.addPoint(left.headLocation.x, left.headLocation.y);
+        polygon.addPoint(left.tailLocation.x, left.tailLocation.y);
+        polygon.addPoint(right.tailLocation.x, right.tailLocation.y);
+        polygon.addPoint(right.headLocation.x, right.headLocation.y);
+
+        for (TreeNode node : left.getMeasure()
+                                 .getChords()) {
+            Chord chord = (Chord) node;
+
+            // Not interested in the bounding chords (TBC)
+            if ((chord == left) || (chord == right)) {
+                continue;
+            }
+
+            SystemRectangle box = chord.getBox();
+
+            if (polygon.intersects(box.x, box.y, box.width, box.height)) {
+                found.add(chord);
+            }
+        }
+
+        return found;
+    }
+
+    //--------//
+    // getBox //
+    //--------//
+    /**
+     * Report the bounding box of this chord, including its stem (if any) as
+     * well as all the notes of the chord.
+     * @return the chord bounding box
+     */
+    public SystemRectangle getBox ()
+    {
+        // Stem or similar info
+        SystemRectangle box = new SystemRectangle(getTailLocation());
+        box.add(getHeadLocation());
+
+        // Each and every note
+        for (TreeNode n : getNotes()) {
+            Note note = (Note) n;
+
+            box.add(note.getBox());
+        }
+
+        return box;
+    }
+
     //------------//
     // lookupRest //
     //------------//
