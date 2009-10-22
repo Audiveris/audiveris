@@ -24,7 +24,6 @@ import omr.script.ParametersTask;
 import omr.script.ScriptActions;
 
 import omr.sheet.Sheet;
-import omr.sheet.picture.Picture;
 
 import omr.step.Step;
 
@@ -47,6 +46,8 @@ import javax.swing.event.*;
  * Class <code>ScoreParameters</code> is a dialog that manages information
  * as both a display and possible input from user for major Score/Sheet
  * parameters such as:<ul>
+ * <li>Call-stack printed on exception</li>
+ * <li>Prompt for saving script on closing</li>
  * <li>Step trigerred by drag 'n drop</li>
  * <li>Max value for foreground pixels</li>
  * <li>Histogram threshold for staff lines detection</li>
@@ -99,8 +100,9 @@ public class ScoreParameters
         component = new Panel();
 
         // Sequence of Pane instances, w/ or w/o a score
-        panes.add(new DnDPane());
+        panes.add(new StackPane());
         panes.add(new ScriptPane());
+        panes.add(new DnDPane());
         panes.add(new ForegroundPane());
         panes.add(new HistoPane());
         panes.add(new SlotPane());
@@ -229,6 +231,47 @@ public class ScoreParameters
     }
 
     //~ Inner Classes ----------------------------------------------------------
+
+    //-------------//
+    // BooleanPane //
+    //-------------//
+    /**
+     * A template for pane with just one global boolean
+     */
+    private abstract static class BooleanPane
+        extends Pane
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** CheckBox for boolean */
+        protected final JCheckBox promptBox = new JCheckBox();
+
+        //~ Constructors -------------------------------------------------------
+
+        public BooleanPane (String  label,
+                            String  text,
+                            String  tip,
+                            boolean selected)
+        {
+            super(label);
+
+            promptBox.setText(text);
+            promptBox.setToolTipText(tip);
+            promptBox.setSelected(selected);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public int defineLayout (PanelBuilder    builder,
+                                 CellConstraints cst,
+                                 int             r)
+        {
+            builder.add(promptBox, cst.xyw(3, r, 3));
+
+            return r + 2;
+        }
+    }
 
     //-------------//
     // DefaultPane //
@@ -918,24 +961,18 @@ public class ScoreParameters
     /**
      * Should we prompt the user for saving the script when sheet is closed?
      */
-    private class ScriptPane
-        extends Pane
+    private static class ScriptPane
+        extends BooleanPane
     {
-        //~ Instance fields ----------------------------------------------------
-
-        /** CheckBox for boolean */
-        private final JCheckBox promptBox = new JCheckBox();
-
         //~ Constructors -------------------------------------------------------
 
         public ScriptPane ()
         {
-            super("Script");
-
-            promptBox.setText("Prompt for save");
-            promptBox.setToolTipText(
-                "Should we prompt for saving the script on score closing");
-            promptBox.setSelected(ScriptActions.isConfirmOnClose());
+            super(
+                "Script",
+                "Prompt for save",
+                "Should we prompt for saving the script on score closing",
+                ScriptActions.isConfirmOnClose());
         }
 
         //~ Methods ------------------------------------------------------------
@@ -944,16 +981,6 @@ public class ScoreParameters
         public void commit ()
         {
             ScriptActions.setConfirmOnClose(promptBox.isSelected());
-        }
-
-        @Override
-        public int defineLayout (PanelBuilder    builder,
-                                 CellConstraints cst,
-                                 int             r)
-        {
-            builder.add(promptBox, cst.xyw(3, r, 3));
-
-            return r + 2;
         }
     }
 
@@ -1124,6 +1151,35 @@ public class ScoreParameters
                 logger.info("Default slot margin is now " + val);
                 Score.setDefaultSlotMargin(val);
             }
+        }
+    }
+
+    //-----------//
+    // StackPane //
+    //-----------//
+    /**
+     * Should we print the call-stack when a warning with exception occurs
+     */
+    private static class StackPane
+        extends BooleanPane
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public StackPane ()
+        {
+            super(
+                "Call-Stack",
+                "Print call-stack",
+                "Should we print the call-stack when an exception occurs",
+                Logger.isPrintStackOnWarning());
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void commit ()
+        {
+            Logger.setPrintStackOnWarning(promptBox.isSelected());
         }
     }
 

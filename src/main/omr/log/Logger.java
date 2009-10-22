@@ -189,6 +189,22 @@ public class Logger
         setLevel(Level.parse(levelStr.toUpperCase()));
     }
 
+    //------------------------//
+    // setPrintStackOnWarning //
+    //------------------------//
+    public static void setPrintStackOnWarning (boolean val)
+    {
+        constants.printStackOnWarning.setValue(val);
+    }
+
+    //-----------------------//
+    // isPrintStackOnWarning //
+    //-----------------------//
+    public static boolean isPrintStackOnWarning ()
+    {
+        return constants.printStackOnWarning.getValue();
+    }
+
     //-----//
     // log //
     //-----//
