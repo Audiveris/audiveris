@@ -17,16 +17,17 @@ import omr.constant.ConstantSet;
 import omr.log.Logger;
 
 import java.util.Arrays;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Class <code>OmrExecutors</code> handles the two pools of threads
- * provided to the omr package, each pool containing a number of threads
- * equal to the machine number of processors plus one.
+ * Class <code>OmrExecutors</code> handles several pools of threads
+ * provided to the Audiveris application: <ul>
+ * <li>lowExecutor: a fixed nb (cpu+1) of threads with low priority</li>
+ * <li>highExecutor: a fixed nb (cpu+1) of threads with high priority</li>
+ * <li>cachedLowExecutor: a varying nb of threads with low priority</li>
+ * <li>ocrExecutor: one thread with high priority and large stack size</li>
+ * </ul>
  *
  * @author Herv&eacute Bitteur
  * @version $Id$

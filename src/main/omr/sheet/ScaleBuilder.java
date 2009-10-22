@@ -172,8 +172,6 @@ public class ScaleBuilder
     private void retrieveScale ()
         throws StepException
     {
-        new Throwable("retrieveScale").printStackTrace();
-
         Picture picture = sheet.getPicture();
         adapter = new Adapter(sheet, picture.getHeight() - 1);
 
