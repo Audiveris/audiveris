@@ -126,6 +126,12 @@ public class ScaleBuilder
             retrieveScale();
         }
 
+        if (mainBack == -1) {
+            logger.warning(
+                "Unable to retrieve white runs, check your image format");
+            throw new StepException("Illegal background values");
+        }
+
         return mainBack;
     }
 
@@ -146,6 +152,12 @@ public class ScaleBuilder
             retrieveScale();
         }
 
+        if (mainFore == -1) {
+            logger.warning(
+                "Unable to retrieve black runs, check your image format");
+            throw new StepException("Illegal foreground values");
+        }
+
         return mainFore;
     }
 
@@ -160,6 +172,8 @@ public class ScaleBuilder
     private void retrieveScale ()
         throws StepException
     {
+        new Throwable("retrieveScale").printStackTrace();
+
         Picture picture = sheet.getPicture();
         adapter = new Adapter(sheet, picture.getHeight() - 1);
 

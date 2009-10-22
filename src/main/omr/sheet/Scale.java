@@ -29,7 +29,6 @@ import omr.util.DoubleValue;
 
 import java.awt.Rectangle;
 
-import javax.xml.bind.annotation.XmlType;
 
 /**
  * Class <code>Scale</code> encapsulates what drives the scale of a given sheet,
