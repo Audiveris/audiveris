@@ -123,8 +123,8 @@ public class Scale
         throws StepException
     {
         builder = new ScaleBuilder(sheet);
-        mainFore = builder.getMainFore();
         mainBack = builder.getMainBack();
+        mainFore = builder.getMainFore();
         interline = mainFore + mainBack;
     }
 
