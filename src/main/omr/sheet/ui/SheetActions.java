@@ -127,13 +127,14 @@ public class SheetActions
     public Task openSheet (ActionEvent e)
     {
         String suffixes = constants.validImageFiles.getValue();
+        String allSuffixes = suffixes + " " + suffixes.toUpperCase();
         File   file = UIUtilities.fileChooser(
             false,
             Main.getGui().getFrame(),
             new File(SheetsManager.getInstance().getDefaultSheetDirectory()),
             new FileFilter(
                 "Major image files" + " (" + suffixes + ")",
-                suffixes.split("\\s")));
+                allSuffixes.split("\\s")));
 
         if (file != null) {
             if (file.exists()) {
