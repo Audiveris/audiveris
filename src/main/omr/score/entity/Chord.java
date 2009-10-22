@@ -885,13 +885,17 @@ public class Chord
     {
         SortedSet<Chord> found = new TreeSet<Chord>();
 
+        if ((left == null) || (right == null)) {
+            return found; // Safer
+        }
+
         // Define the area limited by the left and right chords with their stems
         // and check for intersection with a rest note
         Polygon polygon = new Polygon();
-        polygon.addPoint(left.headLocation.x, left.headLocation.y);
-        polygon.addPoint(left.tailLocation.x, left.tailLocation.y);
-        polygon.addPoint(right.tailLocation.x, right.tailLocation.y);
-        polygon.addPoint(right.headLocation.x, right.headLocation.y);
+        polygon.addPoint(left.getHeadLocation().x, left.getHeadLocation().y);
+        polygon.addPoint(left.getTailLocation().x, left.getTailLocation().y);
+        polygon.addPoint(right.getTailLocation().x, right.getTailLocation().y);
+        polygon.addPoint(right.getHeadLocation().x, right.getHeadLocation().y);
 
         for (TreeNode node : left.getMeasure()
                                  .getChords()) {
