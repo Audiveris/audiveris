@@ -767,9 +767,11 @@ public class SheetSteps
                 system.runPatterns();
 
                 // Clear errors for this system only
-                system.getSheet()
-                      .getErrorsEditor()
-                      .clearSystem(system.getId());
+                if (Main.getGui() != null) {
+                    system.getSheet()
+                          .getErrorsEditor()
+                          .clearSystem(system.getId());
+                }
 
                 // Cleanup the system, staves, measures, barlines, ...
                 // and clear glyph (& sentence) translations
@@ -881,7 +883,9 @@ public class SheetSteps
         protected void doEpilog (Collection<SystemInfo> systems)
             throws StepException
         {
-            sheet.createSymbolsControllerAndEditor();
+            if (Main.getGui() != null) {
+                sheet.createSymbolsControllerAndEditor();
+            }
         }
     }
 

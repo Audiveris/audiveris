@@ -25,12 +25,12 @@ import omr.ui.MainGui;
 
 import omr.util.Clock;
 import omr.util.OmrExecutors;
-import omr.util.Worker;
 
 import org.jdesktop.application.Application;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.Callable;
 
 import javax.swing.*;
 
@@ -235,6 +235,90 @@ public class Main
         return new File(homeFolder, OCR_FOLDER_NAME);
     }
 
+    //-----------------//
+    // getScriptsTasks //
+    //-----------------//
+    /**
+     * Prepare the processing of scripts listed on command line
+     */
+    public static List<Callable<Void>> getScriptsTasks ()
+    {
+        List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
+
+        // Launch desired scripts in parallel
+        for (String name : parameters.scriptNames) {
+            final String scriptName = name;
+
+            tasks.add(
+                new Callable<Void>() {
+                        public Void call ()
+                            throws Exception
+                        {
+                            long start = System.currentTimeMillis();
+                            File file = new File(scriptName);
+                            logger.info("Loading script file " + file + " ...");
+
+                            try {
+                                final Script script = ScriptManager.getInstance()
+                                                                   .load(
+                                    new FileInputStream(file));
+                                script.run();
+
+                                long stop = System.currentTimeMillis();
+                                logger.info(
+                                    "Script file " + file + " run in " +
+                                    (stop - start) + " ms");
+                            } catch (FileNotFoundException ex) {
+                                logger.warning(
+                                    "Cannot find script file " + file);
+                            }
+
+                            return null;
+                        }
+                    });
+        }
+
+        return tasks;
+    }
+
+    //----------------//
+    // getSheetsTasks //
+    //----------------//
+    /**
+     * Prepare the processing of sheets listed on command line
+     */
+    public static List<Callable<Void>> getSheetsTasks ()
+    {
+        List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
+
+        // Launch desired step on each sheet in parallel
+        for (String name : parameters.sheetNames) {
+            final File file = new File(name);
+
+            tasks.add(
+                new Callable<Void>() {
+                        public Void call ()
+                            throws Exception
+                        {
+                            logger.info(
+                                "Launching " + parameters.targetStep + " on " +
+                                file);
+
+                            if (file.exists()) {
+                                final Sheet sheet = new Sheet(file);
+                                parameters.targetStep.performUntil(sheet);
+                            } else {
+                                logger.warning("Cannot find " + file);
+                            }
+
+                            return null;
+                        }
+                    });
+        }
+
+        return tasks;
+    }
+
     //--------------//
     // setToolBuild //
     //--------------//
@@ -311,89 +395,6 @@ public class Main
         return new File(homeFolder, TRAIN_FOLDER_NAME);
     }
 
-    //---------------//
-    // launchScripts //
-    //---------------//
-    /**
-     * Launch the processing of scripts listed on command line
-     */
-    public static void launchScripts ()
-    {
-        // Launch desired scripts in parallel
-        for (String name : parameters.scriptNames) {
-            final String scriptName = name;
-
-            try {
-                Worker<Void> task = new Worker<Void>() {
-                    @Override
-                    public Void construct ()
-                    {
-                        long start = System.currentTimeMillis();
-                        File file = new File(scriptName);
-                        logger.info("Loading script file " + file + " ...");
-
-                        try {
-                            final Script script = ScriptManager.getInstance()
-                                                               .load(
-                                new FileInputStream(file));
-                            script.run();
-
-                            long stop = System.currentTimeMillis();
-                            logger.info(
-                                "Script file " + file + " run in " +
-                                (stop - start) + " ms");
-                        } catch (FileNotFoundException ex) {
-                            logger.warning("Cannot find script file " + file);
-                        }
-
-                        return null;
-                    }
-                };
-
-                task.start();
-            } catch (Exception ex) {
-                logger.warning("Error in processing script " + name, ex);
-            }
-        }
-    }
-
-    //--------------//
-    // launchSheets //
-    //--------------//
-    /**
-     * Launch the processing of sheets listed on command line
-     */
-    public static void launchSheets ()
-    {
-        // Launch desired step on each sheet in parallel
-        for (String name : parameters.sheetNames) {
-            final File file = new File(name);
-
-            try {
-                Worker<Void> task = new Worker<Void>() {
-                    @Override
-                    public Void construct ()
-                    {
-                        if (file.exists()) {
-                            final Sheet sheet = new Sheet(file);
-                            parameters.targetStep.performUntil(sheet);
-                        } else {
-                            logger.warning("Cannot find " + file);
-                        }
-
-                        return null;
-                    }
-                };
-
-                logger.info(
-                    "Submitting " + parameters.targetStep + " on " + file);
-                task.start();
-            } catch (Exception ex) {
-                logger.warning("Error in processing sheet " + file, ex);
-            }
-        }
-    }
-
     //------//
     // main //
     //------//
@@ -433,9 +434,20 @@ public class Main
 
             Application.launch(MainGui.class, args);
         } else {
-            // Launch the required tasks
-            launchSheets();
-            launchScripts();
+            // Launch the required tasks, if any
+            List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
+            tasks.addAll(getSheetsTasks());
+            tasks.addAll(getScriptsTasks());
+
+            if (!tasks.isEmpty()) {
+                try {
+                    logger.info("Submitting " + tasks.size() + " tasks");
+                    OmrExecutors.getCachedLowExecutor()
+                                .invokeAll(tasks);
+                } catch (Exception ex) {
+                    logger.warning("Error in processing tasks", ex);
+                }
+            }
 
             // Wait for batch completion and exit
             OmrExecutors.shutdown();

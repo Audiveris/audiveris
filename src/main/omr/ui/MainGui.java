@@ -43,6 +43,7 @@ import omr.ui.util.UIUtilities;
 
 import omr.util.Implement;
 import omr.util.JaiLoader;
+import omr.util.OmrExecutors;
 
 import org.bushe.swing.event.EventSubscriber;
 
@@ -53,7 +54,10 @@ import org.jdesktop.application.SingleFrameApplication;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.EventObject;
+import java.util.List;
+import java.util.concurrent.Callable;
 
 import javax.swing.*;
 
@@ -383,8 +387,15 @@ public class MainGui
         // Just in case we already have messages pending
         notifylog();
 
-        Main.launchSheets();
-        Main.launchScripts();
+        for (Callable<Void> task : Main.getSheetsTasks()) {
+            OmrExecutors.getCachedLowExecutor()
+                        .submit(task);
+        }
+
+        for (Callable<Void> task : Main.getScriptsTasks()) {
+            OmrExecutors.getCachedLowExecutor()
+                        .submit(task);
+        }
     }
 
     //---------//

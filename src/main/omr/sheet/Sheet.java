@@ -1148,8 +1148,10 @@ public class Sheet
                           Glyph      glyph,
                           String     text)
     {
-        getErrorsEditor()
-            .addError(container, glyph, text);
+        if (Main.getGui() != null) {
+            getErrorsEditor()
+                .addError(container, glyph, text);
+        }
     }
 
     //-------//

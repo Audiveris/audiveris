@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.util;
 
+import omr.log.Logger;
+
+import java.util.concurrent.*;
 
 /**
  * Class <code>JaiLoader</code> is designed to speed up the load time of the
@@ -22,20 +25,30 @@ package omr.util;
  * <code>ensureLoaded</code> is guaranteed to block until the initialization is
  * complete.
  *
- * @author Brenton Partridge
+ * @author Brenton Partridge (original version)
+ * @author Herv&eacute; Bitteur (Callable/Future version)
  * @version $Id$
  */
 public class JaiLoader
-    extends Worker<Void>
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** The loader itself */
-    private static final JaiLoader loader = new JaiLoader();
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(JaiLoader.class);
 
-    static {
-        loader.start();
-    }
+    /** A future which reflects whether JAI has been initialized **/
+    private static final Future<Void> loading = OmrExecutors.getCachedLowExecutor()
+                                                            .submit(
+        new Callable<Void>() {
+                public Void call ()
+                    throws Exception
+                {
+                    javax.media.jai.JAI.getBuildVersion();
+
+                    return null;
+                }
+            });
+
 
     //~ Constructors -----------------------------------------------------------
 
@@ -58,7 +71,11 @@ public class JaiLoader
      */
     public static void ensureLoaded ()
     {
-        loader.get();
+        try {
+            loading.get();
+        } catch (Exception ex) {
+            logger.severe("Cannot load JAI", ex);
+        }
     }
 
     //---------//
@@ -70,16 +87,5 @@ public class JaiLoader
     public static void preload ()
     {
         // Empty body, the purpose is just to trigger class elaboration
-    }
-
-    //-----------//
-    // construct //
-    //-----------//
-    @Override
-    public Void construct ()
-    {
-        javax.media.jai.JAI.getBuildVersion();
-
-        return null;
     }
 }

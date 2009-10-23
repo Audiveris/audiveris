@@ -18,7 +18,7 @@ import omr.score.Score;
 import omr.score.ScoreExporter;
 import omr.score.ui.ScoreActions;
 
-import omr.util.Worker;
+import omr.util.OmrExecutors;
 
 import com.xenoage.player.Player;
 import com.xenoage.player.musicxml.MusicXMLDocument;
@@ -26,6 +26,7 @@ import com.xenoage.player.musicxml.MusicXMLDocument;
 import org.w3c.dom.Document;
 
 import java.io.*;
+import java.util.concurrent.*;
 
 import javax.swing.JOptionPane;
 import javax.xml.parsers.*;
@@ -54,11 +55,23 @@ public class MidiAgent
     public static final int MIDI_FILE_TYPE = 1;
 
     /** A future which reflects whether Midi Agent has been initialized **/
-    private static final Loader loader = new Loader();
+    private static final Future<Void> loading = OmrExecutors.getCachedLowExecutor()
+                                                            .submit(
+        new Callable<Void>() {
+                public Void call ()
+                    throws Exception
+                {
+                    try {
+                        Object obj = Holder.INSTANCE;
+                    } catch (Exception ex) {
+                        logger.warning("Could not preload the Midi Agent", ex);
+                        throw ex;
+                    }
 
-    static {
-        loader.start();
-    }
+                    return null;
+                }
+            });
+
 
     //~ Enumerations -----------------------------------------------------------
 
@@ -127,6 +140,14 @@ public class MidiAgent
      */
     public static MidiAgent getInstance ()
     {
+        try {
+            loading.get();
+        } catch (Throwable ex) {
+            logger.severe("Cannot load Midi", ex);
+
+            return null;
+        }
+
         return Holder.INSTANCE;
     }
 
@@ -433,27 +454,6 @@ public class MidiAgent
         //~ Static fields/initializers -----------------------------------------
 
         public static final MidiAgent INSTANCE = new MidiAgent();
-    }
-
-    //--------//
-    // Loader //
-    //--------//
-    private static class Loader
-        extends Worker<Void>
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public Void construct ()
-        {
-            try {
-                getInstance();
-            } catch (Exception ex) {
-                logger.warning("Could not preload the Midi Agent", ex);
-            }
-
-            return null;
-        }
     }
 
     //-----------//

@@ -25,12 +25,13 @@ import omr.util.Dumper;
 import omr.util.Implement;
 import omr.util.Memory;
 import omr.util.NameSet;
-import omr.util.Worker;
+import omr.util.OmrExecutors;
 
 import org.jdesktop.application.Action;
 
 import java.beans.*;
 import java.util.*;
+import java.util.concurrent.Callable;
 
 /**
  * Class <code>SheetsManager</code> handles the set of sheet instances in
@@ -126,7 +127,10 @@ public class SheetsManager
     public NameSet getHistory ()
     {
         if (history == null) {
-            history = new NameSet("Sheets History", constants.sheetsHistory, 10);
+            history = new NameSet(
+                "Sheets History",
+                constants.sheetsHistory,
+                10);
         }
 
         return history;
@@ -246,22 +250,24 @@ public class SheetsManager
     @Implement(PropertyChangeListener.class)
     public void propertyChange (PropertyChangeEvent evt)
     {
-        new Worker<Void>() {
-                @Override
-                public Void construct ()
-                {
-                    for (Sheet sheet : instances) {
-                        Score score = sheet.getScore();
-
-                        if (score != null) {
-                            score.setOrientation(
-                                PaintingParameters.getInstance().getScoreOrientation());
-                        }
-                    }
-
-                    return null;
-                }
-            }.start();
+//        OmrExecutors.getCachedLowExecutor()
+//                    .submit(
+//            new Callable<Void>() {
+//                    public Void call ()
+//                        throws Exception
+//                    {
+//                        for (Sheet sheet : instances) {
+//                            Score score = sheet.getScore();
+//
+//                            if (score != null) {
+//                                score.setOrientation(
+//                                    PaintingParameters.getInstance().getScoreOrientation());
+//                            }
+//                        }
+//
+//                        return null;
+//                    }
+//                });
     }
 
     //~ Inner Classes ----------------------------------------------------------

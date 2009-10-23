@@ -22,9 +22,6 @@ import omr.score.midi.MidiAbstractions;
 import omr.score.midi.MidiAgent;
 import omr.score.ui.ScoreActions;
 
-import omr.script.ExportTask;
-import omr.script.MidiWriteTask;
-
 import omr.ui.util.FileFilter;
 import omr.ui.util.UIUtilities;
 

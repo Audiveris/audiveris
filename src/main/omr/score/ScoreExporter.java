@@ -17,7 +17,7 @@ import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
 import omr.log.Logger;
-
+import static omr.score.MusicXML.*;
 import omr.score.common.PagePoint;
 import omr.score.common.SystemPoint;
 import omr.score.common.SystemRectangle;
@@ -53,10 +53,9 @@ import omr.score.entity.Voice.ChordInfo;
 import omr.score.entity.Wedge;
 import omr.score.midi.MidiAbstractions;
 import omr.score.visitor.AbstractScoreVisitor;
-import static omr.score.MusicXML.*;
 
+import omr.util.OmrExecutors;
 import omr.util.TreeNode;
-import omr.util.Worker;
 
 import org.w3c.dom.Node;
 
@@ -70,6 +69,7 @@ import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
+import java.util.concurrent.*;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -90,11 +90,23 @@ public class ScoreExporter
     private static final Logger logger = Logger.getLogger(ScoreExporter.class);
 
     /** A future which reflects whether JAXB has been initialized **/
-    private static final Loader loader = new Loader();
+    private static final Future<Void> loading = OmrExecutors.getCachedLowExecutor()
+                                                            .submit(
+        new Callable<Void>() {
+                public Void call ()
+                    throws Exception
+                {
+                    try {
+                        Marshalling.getContext();
+                    } catch (JAXBException ex) {
+                        logger.warning("Error preloading JaxbContext", ex);
+                        throw ex;
+                    }
 
-    static {
-        loader.start();
-    }
+                    return null;
+                }
+            });
+
 
     //~ Instance fields --------------------------------------------------------
 
@@ -133,10 +145,13 @@ public class ScoreExporter
      * @param score the score to export (cannot be null)
      */
     public ScoreExporter (Score score)
+        throws InterruptedException, ExecutionException
     {
         if (score == null) {
             throw new IllegalArgumentException("Trying to export a null score");
         }
+
+        loading.get();
 
         this.score = score;
     }
@@ -2101,27 +2116,6 @@ public class ScoreExporter
             }
 
             return sb.toString();
-        }
-    }
-
-    //--------//
-    // Loader //
-    //--------//
-    private static class Loader
-        extends Worker<Void>
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public Void construct ()
-        {
-            try {
-                Marshalling.getContext();
-            } catch (JAXBException ex) {
-                logger.warning("Error preloading JaxbContext", ex);
-            }
-
-            return null;
         }
     }
 }

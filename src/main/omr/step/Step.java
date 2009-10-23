@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.step;
 
+import omr.Main;
+
 import omr.log.Logger;
 
 import omr.script.StepTask;
@@ -316,7 +318,7 @@ public enum Step {
             }
 
             // Display the assembly tab related to the last step
-            if (lastStep != null) {
+            if ((lastStep != null) && (Main.getGui() != null)) {
                 final Step finalStep = lastStep;
                 SwingUtilities.invokeLater(
                     new Runnable() {

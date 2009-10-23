@@ -16,15 +16,15 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
-import java.util.Arrays;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Class <code>OmrExecutors</code> handles several pools of threads
  * provided to the Audiveris application: <ul>
- * <li>lowExecutor: a fixed nb (cpu+1) of threads with low priority</li>
- * <li>highExecutor: a fixed nb (cpu+1) of threads with high priority</li>
+ * <li>lowExecutor: a fixed nb (#cpu+1) of threads with low priority</li>
+ * <li>highExecutor: a fixed nb (#cpu+1) of threads with high priority</li>
  * <li>cachedLowExecutor: a varying nb of threads with low priority</li>
  * <li>ocrExecutor: one thread with high priority and large stack size</li>
  * </ul>
@@ -43,8 +43,8 @@ public class OmrExecutors
     private static final Constants constants = new Constants();
 
     /** Number of processors available */
-    private static final int cpuNb = Runtime.getRuntime()
-                                            .availableProcessors();
+    private static final int cpuCount = Runtime.getRuntime()
+                                               .availableProcessors();
     private static Pool highs = new Highs();
     private static Pool lows = new Lows();
     private static Pool cachedLows = new CachedLows();
@@ -108,7 +108,7 @@ public class OmrExecutors
      */
     public static int getNumberOfCpus ()
     {
-        return cpuNb;
+        return cpuCount;
     }
 
     //----------------//
@@ -128,7 +128,7 @@ public class OmrExecutors
     // shutdown //
     //----------//
     /**
-     * Gracefully shut down  all the executors launched
+     * Gracefully shut down all the executors launched
      */
     public static void shutdown ()
     {
@@ -352,7 +352,7 @@ public class OmrExecutors
         protected ExecutorService createPool ()
         {
             return Executors.newFixedThreadPool(
-                useParallelism() ? (cpuNb + 1) : 1,
+                useParallelism() ? (cpuCount + 1) : 1,
                 new Factory(getName(), Thread.NORM_PRIORITY, 0));
         }
     }
@@ -376,7 +376,7 @@ public class OmrExecutors
         protected ExecutorService createPool ()
         {
             return Executors.newFixedThreadPool(
-                useParallelism() ? (cpuNb + 1) : 1,
+                useParallelism() ? (cpuCount + 1) : 1,
                 new Factory(getName(), Thread.MIN_PRIORITY, 0));
         }
     }

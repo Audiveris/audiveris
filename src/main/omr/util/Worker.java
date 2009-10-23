@@ -27,11 +27,17 @@ import omr.log.Logger;
  * <li>The interrupt() method allows to interrupt the worker.</li>
  * </ol>
  *
+ * <p>Nota: This class is now <b>deprecated</b> in favor of the use of
+ * {@link omr.util.OmrExecutors#getCachedLowExecutor()} which provides similar
+ * functionality plus has its lifecycle managed correctly when shutting down the
+ * application.</p>
+ *
  * @param <T> the type used to convey the result of the work
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
+@Deprecated
 public abstract class Worker<T>
 {
     //~ Static fields/initializers ---------------------------------------------
