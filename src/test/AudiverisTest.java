@@ -62,13 +62,17 @@ public class AudiverisTest
     {
         System.out.println("multipleCalls");
 
-        String[] args = new String[] {
-                            "-batch", "-step", "SYSTEMS", "examples/chula.png"
-                        };
+        String[] args1 = new String[] {
+                             "-batch", "-step", "EXPORT", "examples/chula.png"
+                         };
+        String[] args2 = new String[] {
+                             "-batch", "-step", "EXPORT", "examples/batuque.png",
+                             "examples/allegretto.png"
+                         };
         System.out.println("firstCall");
-        Audiveris.main(args);
+        Audiveris.main(args1);
         System.out.println("secondCall");
-        Audiveris.main(args);
+        Audiveris.main(args2);
         System.out.println("Finished");
 
         // TODO review the generated test code and remove the default call to fail.
