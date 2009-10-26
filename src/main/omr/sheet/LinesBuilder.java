@@ -92,7 +92,7 @@ public class LinesBuilder
     private List<StaffInfo> staves = new ArrayList<StaffInfo>();
 
     /** Related scale */
-    private final Scale scale;
+    private Scale scale;
 
     /** Lag view on staff lines, if so desired */
     private GlyphLagView lagView;
@@ -108,13 +108,11 @@ public class LinesBuilder
     // LinesBuilder //
     //--------------//
     /**
-     * This performs the retrieval of the various staves.
+     * Just allocate the LinesBuilder
      *
      * @param sheet the sheet on which the analysis is performed.
-     * @throws StepException when processing must be interrupted
      */
     public LinesBuilder (Sheet sheet)
-        throws StepException
     {
         super(
             sheet,
@@ -123,7 +121,33 @@ public class LinesBuilder
                 StickSection.class,
                 new HorizontalOrientation()),
             Step.LINES);
+    }
 
+    //~ Methods ----------------------------------------------------------------
+
+    //-----------//
+    // getStaves //
+    //-----------//
+    /**
+     * Report the list of staves found in the sheet
+     *
+     * @return the collection of staves found
+     */
+    public List<StaffInfo> getStaves ()
+    {
+        return staves;
+    }
+
+    //-----------//
+    // buildInfo //
+    //-----------//
+    /**
+     * Perform the retrieval of the various staves
+     * @throws StepException is processing must stop
+     */
+    public void buildInfo ()
+        throws StepException
+    {
         // Check output needed from previous steps
         scale = sheet.getScale(); // Will run Scale if not yet done
         sheet.getSkew(); // Will run Skew  if not yet done
@@ -144,7 +168,9 @@ public class LinesBuilder
         cleanup();
 
         // Determine limits in ordinate for each staff area
-        computeStaffLimits();
+        if (!staves.isEmpty()) {
+            computeStaffLimits();
+        }
 
         // User feedback
         if (staves.size() > 1) {
@@ -152,28 +178,19 @@ public class LinesBuilder
         } else if (!staves.isEmpty()) {
             logger.info(staves.size() + " staff");
         } else {
-            logger.warning("No staff found");
+            logger.warning(
+                "No staff found." + " Check Line plot." +
+                " Check Staff Lines ratio in score parameters.");
         }
 
         // Display the resulting lag is so asked for
         if (constants.displayFrame.getValue() && (Main.getGui() != null)) {
             displayFrame();
         }
-    }
 
-    //~ Methods ----------------------------------------------------------------
-
-    //-----------//
-    // getStaves //
-    //-----------//
-    /**
-     * Report the list of staves found in the sheet
-     *
-     * @return the collection of staves found
-     */
-    public List<StaffInfo> getStaves ()
-    {
-        return staves;
+        if (staves.isEmpty()) {
+            throw new StepException("Cannot proceed without staves");
+        }
     }
 
     //--------------//
@@ -318,6 +335,11 @@ public class LinesBuilder
 
         histoRatio = sheet.getHistoRatio();
 
+        // Write histo data if so asked for
+        if (constants.plotting.getValue()) {
+            displayChart();
+        }
+
         int  threshold = (int) (maxHisto * histoRatio);
 
         // Determine peaks in the histogram
@@ -355,11 +377,6 @@ public class LinesBuilder
                     logger.fine(i++ + " " + pk);
                 }
             }
-        }
-
-        // Write histo data if so asked for
-        if (constants.plotting.getValue()) {
-            displayChart();
         }
 
         return peaks;

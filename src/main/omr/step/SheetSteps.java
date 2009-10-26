@@ -400,6 +400,7 @@ public class SheetSteps
             throws StepException
         {
             sheet.setLinesBuilder(new LinesBuilder(sheet));
+            sheet.getLinesBuilder().buildInfo();
             sheet.setStaves(sheet.getLinesBuilder().getStaves());
         }
     }
