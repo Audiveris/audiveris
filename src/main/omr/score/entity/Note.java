@@ -68,11 +68,11 @@ public class Note
 
 
         /** La */ A,
-        /** Si */ B,
-        /** Do */ C,
-        /** Re */ D,
-        /** Mi */ E,
-        /** Fa */ F,
+        /** Si */ B, 
+        /** Do */ C, 
+        /** Re */ D, 
+        /** Mi */ E, 
+        /** Fa */ F, 
         /** Sol */ G;
     }
 
@@ -105,7 +105,7 @@ public class Note
     /** Accidental if any */
     private Shape accidental;
 
-    /** Accidental delta abscissa if any accidental*/
+    /** Accidental delta abscissa if any accidental */
     private int accidentalDx;
 
     /** Pitch alteration (not for rests) */
@@ -577,19 +577,17 @@ public class Note
     // getOctave //
     //-----------//
     /**
-     * Report the octave for this note
+     * Report the octave for this note, using the current clef, and the pitch
+     * position of the note
      *
      * @return the related octave
      */
     public int getOctave ()
     {
         if (octave == null) {
-            Clef  clef = getMeasure()
-                             .getClefBefore(getCenter());
-            Shape clefShape = (clef != null) ? clef.getShape() : Shape.G_CLEF;
             octave = Clef.octaveOf(
-                (int) Math.rint(getPitchPosition()),
-                clefShape);
+                getMeasure().getClefBefore(getCenter()),
+                (int) Math.rint(getPitchPosition()));
         }
 
         return octave;
@@ -612,7 +610,7 @@ public class Note
     // isRest //
     //--------//
     /**
-     * Check whether this note is a rest (or a 'real' note)
+     * Check whether this note is a rest (vs a 'real' note)
      *
      * @return true if a rest, false otherwise
      */
@@ -658,12 +656,9 @@ public class Note
     public Note.Step getStep ()
     {
         if (step == null) {
-            Clef  clef = getMeasure()
-                             .getClefBefore(getCenter());
-            Shape clefShape = (clef != null) ? clef.getShape() : Shape.G_CLEF;
             step = Clef.noteStepOf(
-                (int) Math.rint(getPitchPosition()),
-                clefShape);
+                getMeasure().getClefBefore(getCenter()),
+                (int) Math.rint(getPitchPosition()));
         }
 
         return step;
@@ -721,7 +716,7 @@ public class Note
         final Set<Note> candidates = new HashSet<Note>();
 
         // An accidental impacts the note right after (even if duplicated)
-        ChordLoop:
+        ChordLoop: 
         for (TreeNode node : measure.getChords()) {
             final Chord chord = (Chord) node;
 

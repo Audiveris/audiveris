@@ -255,46 +255,6 @@ public class SystemTranslator
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //        //----------------//
-    //        // translateTexts //
-    //        //----------------//
-    //        /**
-    //         * Drive the translation at system level of text glyphs. Since these
-    //         * glyphs must be processed by sentences, we need this special version
-    //         * rather than the general translate() method.
-    //         */
-    //        private void translateTexts ()
-    //        {
-    //            Translator translator = new TextTranslator();
-    //
-    //            // Browse the system collection of TextGlyphLines that contain
-    //            // sentences of text glyphs
-    //            for (TextGlyphLine line : system.getInfo()
-    //                                            .getSentences()) {
-    //                logger.info("Translating " + line);
-    //
-    //                // Loop on contained sentences
-    //                for (Sentence sentence : line.getSentences()) {
-    //                    logger.info("Translating " + sentence);
-    //
-    //                    // We are supposed to know the text type for the sentence
-    //                    // Lyrics are really long sentences, and we can translate
-    //                    // them item by item
-    //                    // Any other sentence must be translated as a whole entity
-    //                    for (Glyph glyph : sentence.getGlyphs()) {
-    //                        logger.info("Translating text glyph" + glyph);
-    //
-    //                        // Determine part/staff/measure containment
-    //                        translator.computeLocation(glyph);
-    //                        // Perform the translation on this glyph
-    //                        translator.translate(glyph);
-    //                    }
-    //                }
-    //            }
-    //
-    //            // Processing at end of system if any
-    //            translator.completeSystem();
-    //        }
     //------------//
     // Translator //
     //------------//
