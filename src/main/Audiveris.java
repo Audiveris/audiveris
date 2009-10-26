@@ -57,7 +57,7 @@ public final class Audiveris
 
     static {
         /** Workaround for Swing performance problem in java 1.6.0 u10&11 */
-        //System.setProperty("sun.java2d.d3d", "false");
+        System.setProperty("sun.java2d.d3d", "false");
 
         /** Turn off JAI native acceleration */
         System.setProperty("com.sun.media.jai.disableMediaLib", "true");
