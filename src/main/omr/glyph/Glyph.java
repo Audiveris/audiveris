@@ -106,12 +106,6 @@ public class Glyph
     /** A signature to retrieve this glyph */
     private GlyphSignature signature;
 
-    /** Contained leaves and stems */
-    private Set<Glyph> leaves = new HashSet<Glyph>();
-
-    /** Link to the glyph this one is a leaf of */
-    private Glyph leafOf;
-
     /** Contained parts, if this glyph is a compound */
     private Set<Glyph> parts = new LinkedHashSet<Glyph>();
 
@@ -1259,7 +1253,6 @@ public class Glyph
         }
     }
 
-
     //----------------//
     // computeMoments //
     //----------------//
@@ -1342,8 +1335,6 @@ public class Glyph
         System.out.println("   members=" + getMembers());
         System.out.println("   parts=" + parts);
         System.out.println("   partOf=" + partOf);
-        System.out.println("   leaves=" + leaves);
-        System.out.println("   leafOf=" + leafOf);
         System.out.println("   contourBox=" + getContourBox());
         System.out.println("   weight=" + getWeight());
         System.out.println("   result=" + getResult());
@@ -1421,15 +1412,6 @@ public class Glyph
                       .append("\"");
                 }
             }
-        }
-
-        if (leafOf != null) {
-            sb.append(" leafOf #")
-              .append(leafOf.getId());
-        }
-
-        if (!leaves.isEmpty()) {
-            sb.append(Glyphs.toString("leaves", leaves));
         }
 
         if (partOf != null) {
