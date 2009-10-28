@@ -13,8 +13,6 @@ package omr.lag;
 
 import omr.log.Logger;
 
-import omr.sheet.picture.Picture;
-
 import omr.util.Implement;
 
 import java.util.List;
@@ -39,9 +37,6 @@ public class LagReader
     private static final Logger logger = Logger.getLogger(LagReader.class);
 
     //~ Instance fields --------------------------------------------------------
-
-    /** The lag to populate*/
-    private final Lag lag;
 
     /** Runs found in each horizontal row or vertical column */
     private final List<List<Run>> runs;
@@ -77,7 +72,6 @@ public class LagReader
                       PixelSource     source,
                       int             minLength)
     {
-        this.lag = lag;
         this.runs = runs;
         this.source = source;
         this.minLength = minLength;

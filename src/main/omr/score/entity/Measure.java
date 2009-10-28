@@ -282,7 +282,7 @@ public class Measure
     public Clef getClefAfter (SystemPoint point)
     {
         // Which staff we are in
-        Clef clef = null;
+        Clef clef;
         int  staffId = getPart()
                            .getStaffAt(point)
                            .getId();
@@ -341,7 +341,7 @@ public class Measure
     public Clef getClefBefore (SystemPoint point,
                                Staff       staff)
     {
-        Clef clef = null;
+        Clef clef;
 
         // Which staff we are in
         int staffId = (staff != null) ? staff.getId()
@@ -469,10 +469,8 @@ public class Measure
      */
     public TimeSignature getCurrentTimeSignature ()
     {
-        TimeSignature ts = null;
-
         // Look in this measure
-        ts = getTimeSignature();
+        TimeSignature ts = getTimeSignature();
 
         if (ts != null) {
             return ts;
@@ -722,7 +720,7 @@ public class Measure
             throw new NullPointerException();
         }
 
-        KeySignature ks = null;
+        KeySignature ks;
         int          staffId = getPart()
                                    .getStaffAt(point)
                                    .getId();
@@ -867,7 +865,7 @@ public class Measure
     //----------//
     public void setLeftX (int val)
     {
-        leftX = new Integer(val);
+        leftX = val;
     }
 
     //----------//

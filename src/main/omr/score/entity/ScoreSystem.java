@@ -29,7 +29,6 @@ import omr.sheet.SystemInfo;
 import omr.util.TreeNode;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -58,7 +57,7 @@ public class ScoreSystem
         /** Above the first staff of the first (real)part */
         above,
         /** Somewhere within the staves of this system */
-        within,
+        within, 
         /** Below the last staff of the last part */
         below;
     }
@@ -561,7 +560,7 @@ public class ScoreSystem
             if (getPart(scorePart.getId()) == null) {
                 getFirstRealPart()
                     .createDummyPart(scorePart.getId());
-                sortPartsOnId();
+                Collections.sort(getParts(), SystemPart.idComparator);
             }
         }
     }
@@ -640,28 +639,6 @@ public class ScoreSystem
                 part.retrieveSlurConnections();
             }
         }
-    }
-
-    //---------------//
-    // sortPartsOnId //
-    //---------------//
-    /**
-     * Sort the parts of this system according to their part id
-     */
-    public void sortPartsOnId ()
-    {
-        Collections.sort(
-            getParts(),
-            new Comparator<TreeNode>() {
-                    public int compare (TreeNode o1,
-                                        TreeNode o2)
-                    {
-                        SystemPart p1 = (SystemPart) o1;
-                        SystemPart p2 = (SystemPart) o2;
-
-                        return Integer.signum(p1.getId() - p2.getId());
-                    }
-                });
     }
 
     //-------------//

@@ -294,9 +294,9 @@ public class MidiReceiver
                 ") division=" +
                 score.simpleDurationOf(omr.score.entity.Note.QUARTER_DURATION));
 
-            return new Double((double) midiTicks / (double) scoreTicks);
+            return (double) midiTicks / (double) scoreTicks;
         } else {
-            return new Double(1d);
+            return 1d;
         }
     }
 

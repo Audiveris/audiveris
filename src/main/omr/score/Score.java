@@ -919,7 +919,6 @@ public class Score
             Staff      firstStaff = sp.getFirstStaff();
             ScorePart  scorePart = new ScorePart(
                 sp,
-                this,
                 ++index,
                 firstStaff.getPageTopLeft().y - refSystem.getTopLeft().y);
             scorePart.setName("Part_" + index);

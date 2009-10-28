@@ -204,7 +204,7 @@ public enum Step {
      * Processing is done synchronously, so if asynchronicity is desired, it
      * must be handled by the caller.
      *
-     * <p>There is a mutual exclusion with {@link SheetSteps#rebuildAfter}
+     * <p>There is a mutual exclusion with {@link SheetSteps#rebuildFrom}
      *
      * @param sheet the sheet on which analysis is performed
      */

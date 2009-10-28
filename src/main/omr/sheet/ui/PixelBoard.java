@@ -108,7 +108,10 @@ public class PixelBoard
     public PixelBoard (String unitName,
                        Sheet  sheet)
     {
-        super(unitName + "-PixelBoard", sheet.getSelectionService(), eventClasses);
+        super(
+            unitName + "-PixelBoard",
+            sheet.getSelectionService(),
+            eventClasses);
 
         // Needed to process user input when RETURN/ENTER is pressed
         getComponent()
@@ -147,18 +150,15 @@ public class PixelBoard
             if (event instanceof SheetLocationEvent) {
                 // Display rectangle attributes
                 SheetLocationEvent sheetLocation = (SheetLocationEvent) event;
+                Rectangle          rect = sheetLocation.rectangle;
 
-                if (sheetLocation != null) {
-                    Rectangle rect = sheetLocation.rectangle;
+                if (rect != null) {
+                    x.setValue(rect.x);
+                    y.setValue(rect.y);
+                    width.setValue(rect.width);
+                    height.setValue(rect.height);
 
-                    if (rect != null) {
-                        x.setValue(rect.x);
-                        y.setValue(rect.y);
-                        width.setValue(rect.width);
-                        height.setValue(rect.height);
-
-                        return;
-                    }
+                    return;
                 }
 
                 x.setText("");
@@ -168,8 +168,7 @@ public class PixelBoard
             } else if (event instanceof PixelLevelEvent) {
                 // Display pixel grey level
                 PixelLevelEvent pixelLevelEvent = (PixelLevelEvent) event;
-                final Integer   pixelLevel = (pixelLevelEvent != null)
-                                             ? pixelLevelEvent.pixelLevel : null;
+                final Integer   pixelLevel = pixelLevelEvent.pixelLevel;
 
                 if (pixelLevel != null) {
                     level.setValue(pixelLevel);

@@ -183,7 +183,7 @@ public class GlyphChecks
 
         // Sort glyphs by abscissa
         List<Glyph> glyphs = new ArrayList<Glyph>(compound.getParts());
-        Collections.sort(glyphs);
+        Collections.sort(glyphs, Glyphs.globalComparator);
 
         final Scale scale = new Scale(glyphs.get(0).getInterline());
         final int   maxGap = scale.toPixels(constants.maxTextGap);

@@ -148,15 +148,7 @@ public class VerticalArea
             constants.maxDeltaSlope.getValue());
 
         // Sort sticks found (TODO: is this useful?)
-        Collections.sort(
-            sticks,
-            new Comparator<Stick>() {
-                    public int compare (Stick s1,
-                                        Stick s2)
-                    {
-                        return s1.getId() - s2.getId();
-                    }
-                });
+        Collections.sort(sticks, Glyphs.idComparator);
 
         if (logger.isFineEnabled()) {
             logger.fine(

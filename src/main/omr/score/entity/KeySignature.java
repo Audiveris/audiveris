@@ -115,7 +115,7 @@ public class KeySignature
      * The glyph(s) that compose the key signature, a collection which is kept
      * sorted on glyph abscissa.
      */
-    private SortedSet<Glyph> glyphs = Glyphs.set();
+    private SortedSet<Glyph> glyphs = Glyphs.sortedSet();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -693,9 +693,6 @@ public class KeySignature
     private static int clefToDelta (Shape clef)
     {
         switch (getClefKind(clef)) {
-        case G_CLEF :
-            return 0;
-
         case F_CLEF :
             return 2;
 
@@ -703,7 +700,8 @@ public class KeySignature
             return 1;
 
         default :
-            return 0; // Not correct TODO
+        case G_CLEF :
+            return 0;
         }
     }
 
@@ -969,7 +967,7 @@ public class KeySignature
                 ks.getCenter().y + Staff.pitchToUnit(delta)));
 
         // pitchPosition
-        pitchPosition = new Double(ks.getPitchPosition() + delta);
+        pitchPosition = ks.getPitchPosition() + delta;
     }
 
     //-------------//

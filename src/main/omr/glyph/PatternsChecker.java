@@ -125,7 +125,7 @@ public class PatternsChecker
             } catch (Throwable ex) {
                 logger.warning(
                     "System #" + system.getId() + " error running pattern " +
-                    pattern.name);
+                    pattern.name, ex);
             }
         }
 

@@ -23,11 +23,8 @@ import javax.xml.bind.annotation.*;
  * network, with one input layer, one hidden layer and one output layer. The
  * transfer function is the sigmoid.
  *
- * <p>This neuralNetwork class can be stored on disk in binary form (through the
- * {@link #serialize} and {@link #deserialize} methods) and in XML form (through
- * the {@link #marshal} and {@link #unmarshal} methods). The XML form is to be
- * preferred since is it much more stable than the binary with respect to slight
- * class modifications.
+ * <p>This neuralNetwork class can be stored on disk in XML form (through
+ * the {@link #marshal} and {@link #unmarshal} methods).
  *
  * <p>The class also allows in-memory {@link #backup} and {@link #restore}
  * operation, mainly used to save the most performant weight values during the
@@ -46,7 +43,7 @@ public class NeuralNetwork
     private static final Logger logger = Logger.getLogger(NeuralNetwork.class);
 
     /** Un/marshalling context for use with JAXB */
-    private static JAXBContext jaxbContext;
+    private static volatile JAXBContext jaxbContext;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -274,32 +271,6 @@ public class NeuralNetwork
         return new Backup(hiddenWeights, outputWeights);
     }
 
-    //-------------//
-    // deserialize //
-    //-------------//
-    /**
-     * Deserialize the provided binary file to allocate the corresponding
-     * NeuralNetwork
-     *
-     * @param in input stream that contains the network definition in binary
-     * format. The stream is closed by this method.
-     *
-     * @return the allocated network.
-     * @exception IOException raised when IO error occurs
-     * @exception ClassNotFoundException raised if class is not found in the
-     *                                   binary stream
-     */
-    public static NeuralNetwork deserialize (InputStream in)
-        throws IOException, ClassNotFoundException
-    {
-        ObjectInputStream s = new ObjectInputStream(in);
-        NeuralNetwork     nn = (NeuralNetwork) s.readObject();
-        s.close();
-        logger.fine("Network deserialized");
-
-        return nn;
-    }
-
     //-----------//
     // unmarshal //
     //-----------//
@@ -452,24 +423,6 @@ public class NeuralNetwork
         forward(hiddens, outputWeights, outputs);
 
         return outputs;
-    }
-
-    //-----------//
-    // serialize //
-    //-----------//
-    /**
-     * Serialize the NeuralNetwork to an output stream in binary format
-     * @param os The output stream where the serialized form must be stored. The
-     *           stream is closed by this method.
-     * @exception IOException raised when IO error occurs
-     */
-    public void serialize (OutputStream os)
-        throws IOException
-    {
-        ObjectOutput s = new ObjectOutputStream(os);
-        s.writeObject(this);
-        s.close();
-        logger.fine("Network serialized");
     }
 
     //------//

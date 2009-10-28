@@ -626,10 +626,6 @@ public class TextInfo
     {
         //~ Instance fields ----------------------------------------------------
 
-        Constant.Integer defaultResolution = new Constant.Integer(
-            "dpi",
-            300,
-            "Default resolution of sheet scan");
         Constant.Integer basicFontSize = new Constant.Integer(
             "points",
             10,

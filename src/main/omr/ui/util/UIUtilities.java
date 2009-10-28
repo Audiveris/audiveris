@@ -60,7 +60,7 @@ public class UIUtilities
     }
 
     //-------------------//
-    // SetAbsoluteStroke //
+    // setAbsoluteStroke //
     //-------------------//
     /**
      * Whatever the current scaling of a graphic context, set the stroke to the
@@ -69,7 +69,7 @@ public class UIUtilities
      * @param width the absolute stroke width desired
      * @return the previous stroke
      */
-    public static Stroke SetAbsoluteStroke (Graphics g,
+    public static Stroke setAbsoluteStroke (Graphics g,
                                             float    width)
     {
         Graphics2D      g2 = (Graphics2D) g;
@@ -100,7 +100,7 @@ public class UIUtilities
             "false");
         System.setProperty("apple.awt.fileDialogForDirectories", "true");
 
-        FileFilter directoryFilter = new FileFilter(
+        OmrFileFilter directoryFilter = new OmrFileFilter(
             "directory",
             new String[] {  }) {
             @Override
@@ -161,7 +161,7 @@ public class UIUtilities
     public static File fileChooser (boolean    save,
                                     Component  parent,
                                     File       startFile,
-                                    FileFilter filter)
+                                    OmrFileFilter filter)
     {
         File file = null;
 

@@ -358,9 +358,5 @@ public class Logger
         final Constant.Boolean printThreadName = new Constant.Boolean(
             false,
             "Should we print out the name of the originating thread?");
-        final Constant.Integer msgQueueSize = new Constant.Integer(
-            "Messages",
-            10000,
-            "Size of message queue");
     }
 }

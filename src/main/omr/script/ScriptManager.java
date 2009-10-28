@@ -35,7 +35,7 @@ public class ScriptManager
     public static final String SCRIPT_EXTENSION = ".script.xml";
 
     /** Un/marshalling context for use with JAXB */
-    private static JAXBContext jaxbContext;
+    private static volatile JAXBContext jaxbContext;
 
     //~ Constructors -----------------------------------------------------------
 

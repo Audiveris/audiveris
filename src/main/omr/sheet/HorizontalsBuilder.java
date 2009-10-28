@@ -100,8 +100,6 @@ public class HorizontalsBuilder
         "Hori-TooThin");
     private static final FailureResult   TOO_THICK = new FailureResult(
         "Hori-TooThick");
-    private static final FailureResult   TOO_FAT = new FailureResult(
-        "Hori-TooFat");
     private static final FailureResult   TOO_HOLLOW = new FailureResult(
         "Hori-TooHollow");
     private static final FailureResult   IN_STAFF = new FailureResult(

@@ -48,7 +48,7 @@ public class LyricsItem
     private static final Logger logger = Logger.getLogger(LyricsItem.class);
 
     /** Comparator based on line number */
-    public static Comparator<LyricsItem> numberComparator = new Comparator<LyricsItem>() {
+    public static final Comparator<LyricsItem> numberComparator = new Comparator<LyricsItem>() {
         public int compare (LyricsItem o1,
                             LyricsItem o2)
         {

@@ -37,6 +37,24 @@ public class SystemPart
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(SystemPart.class);
 
+    /** For comparing (TreeNode) SystemPart instances according to their id */
+    public static final Comparator<TreeNode> idComparator = new Comparator<TreeNode>() {
+        public int compare (TreeNode o1,
+                            TreeNode o2)
+        {
+            if (o1 instanceof SystemPart && o2 instanceof SystemPart) {
+                SystemPart p1 = (SystemPart) o1;
+                SystemPart p2 = (SystemPart) o2;
+
+                return Integer.signum(p1.getId() - p2.getId());
+            } else {
+                throw new RuntimeException(
+                    "Comparing illegal SystemPart instances");
+            }
+        }
+    };
+
+
     //~ Instance fields --------------------------------------------------------
 
     /** Id of this part within the system, starting at 1 */
@@ -557,9 +575,9 @@ public class SystemPart
         }
 
         // Find some concrete system part for the provided id
-        SystemPart nextPart = null;
+        SystemPart nextPart;
 
-        do {
+        while (true) {
             ScoreSystem nextSystem = (ScoreSystem) getSystem()
                                                        .getNextSibling();
 
@@ -576,7 +594,7 @@ public class SystemPart
 
                 return null;
             }
-        } while (nextPart == null);
+        }
 
         SystemPart dummyPart = new SystemPart(getSystem());
         dummyPart.setId(id);
@@ -603,7 +621,7 @@ public class SystemPart
                 Staff nextStaff = (Staff) sn;
                 staffIndex++;
 
-                Staff dummyStaff = null;
+                Staff dummyStaff;
                 int   spaceStart = measure.getLeftX();
 
                 if (isFirstMeasure) {
@@ -709,18 +727,7 @@ public class SystemPart
         }
 
         // Assign the lines id & related staff
-        Collections.sort(
-            getLyrics(),
-            new Comparator<TreeNode>() {
-                    public int compare (TreeNode tn1,
-                                        TreeNode tn2)
-                    {
-                        LyricsLine l1 = (LyricsLine) tn1;
-                        LyricsLine l2 = (LyricsLine) tn2;
-
-                        return Integer.signum(l1.getY() - l2.getY());
-                    }
-                });
+        Collections.sort(getLyrics(), LyricsLine.yComparator);
 
         for (TreeNode node : getLyrics()) {
             LyricsLine line = (LyricsLine) node;
@@ -767,7 +774,7 @@ public class SystemPart
             Collections.sort(precedingOrphans, Slur.verticalComparator);
 
             // Connect the orphans as much as possible
-            SlurLoop:
+            SlurLoop: 
             for (Slur slur : orphans) {
                 for (Slur prevSlur : precedingOrphans) {
                     if (slur.canExtend(prevSlur)) {

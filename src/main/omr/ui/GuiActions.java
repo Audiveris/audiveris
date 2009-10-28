@@ -25,6 +25,8 @@ import omr.glyph.ui.panel.GlyphTrainer;
 
 import omr.log.Logger;
 
+import omr.score.ui.ScoreDependent;
+
 import omr.sheet.ui.SheetsController;
 
 import omr.ui.treetable.JTreeTable;
@@ -51,7 +53,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.*;
-import omr.score.ui.ScoreDependent;
 
 /**
  * Class <code>GuiActions</code> gathers individual actions trigerred from the
@@ -75,16 +76,16 @@ public class GuiActions
     private static JFrame optionsFrame;
 
     // Resource injection
-    private static ResourceMap resource = Application.getInstance()
-                                                     .getContext()
-                                                     .getResourceMap(
+    private static ResourceMap          resource = Application.getInstance()
+                                                              .getContext()
+                                                              .getResourceMap(
         GuiActions.class);
 
     /** Singleton */
     private static GuiActions INSTANCE;
 
     /** Create this action just once */
-    private static AboutAction aboutAction;
+    private static volatile AboutAction aboutAction;
 
     /** Should the errors window be displayed */
     public static final String ERRORS_DISPLAYED = "errorsDisplayed";
@@ -437,6 +438,25 @@ public class GuiActions
     private static class OptionsTask
         extends Task<JFrame, Void>
     {
+        //~ Static fields/initializers -----------------------------------------
+
+        private static final AbstractAction dumping = new AbstractAction() {
+            public void actionPerformed (ActionEvent e)
+            {
+                UnitManager.getInstance()
+                           .dumpAllUnits();
+            }
+        };
+
+        private static final AbstractAction checking = new AbstractAction() {
+            public void actionPerformed (ActionEvent e)
+            {
+                UnitManager.getInstance()
+                           .checkAllUnits();
+            }
+        };
+
+
         //~ Constructors -------------------------------------------------------
 
         public OptionsTask ()
@@ -466,25 +486,11 @@ public class GuiActions
                 optionsFrame.getContentPane()
                             .add(toolBar, BorderLayout.NORTH);
 
-                JButton dumpButton = new JButton(
-                    new AbstractAction() {
-                            public void actionPerformed (ActionEvent e)
-                            {
-                                UnitManager.getInstance()
-                                           .dumpAllUnits();
-                            }
-                        });
+                JButton dumpButton = new JButton(dumping);
                 dumpButton.setName("optionsDumpButton");
                 toolBar.add(dumpButton);
 
-                JButton checkButton = new JButton(
-                    new AbstractAction() {
-                            public void actionPerformed (ActionEvent e)
-                            {
-                                UnitManager.getInstance()
-                                           .checkAllUnits();
-                            }
-                        });
+                JButton checkButton = new JButton(checking);
                 checkButton.setName("optionsCheckButton");
                 toolBar.add(checkButton);
 

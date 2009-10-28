@@ -20,6 +20,7 @@ import omr.sheet.SystemInfo;
 import omr.util.Implement;
 
 import java.awt.Point;
+import java.util.Comparator;
 
 /**
  * Class <code>GlyphSection</code> implements a specific class of section, meant
@@ -40,6 +41,25 @@ public class GlyphSection
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(GlyphSection.class);
+
+    /** For comparing GlyphSection instances on their decreasing weight */
+    public static final Comparator<GlyphSection> reverseWeightComparator = new Comparator<GlyphSection>() {
+        public int compare (GlyphSection s1,
+                            GlyphSection s2)
+        {
+            return Integer.signum(s2.getWeight() - s1.getWeight());
+        }
+    };
+
+    /** For comparing GlyphSection instances on their start value */
+    public static final Comparator<GlyphSection> startComparator = new Comparator<GlyphSection>() {
+        public int compare (GlyphSection s1,
+                            GlyphSection s2)
+        {
+            return s1.getStart() - s2.getStart();
+        }
+    };
+
 
     //~ Instance fields --------------------------------------------------------
 
@@ -163,6 +183,10 @@ public class GlyphSection
     @Implement(Comparable.class)
     public int compareTo (GlyphSection other)
     {
+        if (this == other) {
+            return 0;
+        }
+
         final Point ref = this.getContourBox()
                               .getLocation();
         final Point otherRef = other.getContourBox()

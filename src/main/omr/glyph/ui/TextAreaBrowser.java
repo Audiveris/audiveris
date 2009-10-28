@@ -66,7 +66,7 @@ public class TextAreaBrowser
         TextAreaBrowser.class);
 
     /** Singleton */
-    private static TextAreaBrowser INSTANCE;
+    private static volatile TextAreaBrowser INSTANCE;
 
     //~ Methods ----------------------------------------------------------------
 

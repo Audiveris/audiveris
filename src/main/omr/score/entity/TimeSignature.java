@@ -85,7 +85,7 @@ public class TimeSignature
      * sorted on glyph abscissa. This can be just one : e.g. TIME_SIX_EIGHT for
      * 6/8, or several : e.g. TIME_SIX + TIME_TWELVE for 6/12
      */
-    private SortedSet<Glyph> glyphs = Glyphs.set();
+    private SortedSet<Glyph> glyphs = Glyphs.sortedSet();
 
     /** Flag a time sig not created out of its glyphs */
     private final boolean isDummy;
@@ -129,8 +129,8 @@ public class TimeSignature
         setStaff(staff);
 
         try {
-            numerator = new Integer(other.getNumerator());
-            denominator = new Integer(other.getDenominator());
+            numerator = other.getNumerator();
+            denominator = other.getDenominator();
             shape = other.getShape();
             setCenter(
                 new SystemPoint(
@@ -658,9 +658,11 @@ public class TimeSignature
     private static Rational rationalOf (Shape shape)
     {
         switch (shape) {
+        case COMMON_TIME :
         case TIME_FOUR_FOUR :
             return new Rational(4, 4);
 
+        case CUT_TIME :
         case TIME_TWO_TWO :
             return new Rational(2, 2);
 
@@ -672,12 +674,6 @@ public class TimeSignature
 
         case TIME_SIX_EIGHT :
             return new Rational(6, 8);
-
-        case COMMON_TIME :
-            return new Rational(4, 4);
-
-        case CUT_TIME :
-            return new Rational(2, 2);
 
         default :
             return null;

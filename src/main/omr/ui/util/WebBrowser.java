@@ -77,6 +77,7 @@ public class WebBrowser
     //-------------//
     /**
      * Checks if web browsing is supported by this implementation.
+     * @return false
      */
     public boolean isSupported ()
     {
@@ -137,21 +138,6 @@ public class WebBrowser
                     public void launch (String urlString)
                     {
                         super.launch(urlString);
-
-                        // try {
-                        //     URI    uri = URI.create(urlString);
-                        //     Method getDesktop = desktopClass.getMethod(
-                        //         "getDesktop");
-                        //     Object desktop = getDesktop.invoke(null);
-                        //     desktopClass.getMethod("browse", URI.class)
-                        //                 .invoke(desktop, uri);
-                        // } catch (Exception ex) {
-                        //     logger.warning(
-                        //         "Could not launch the browser on " + urlString,
-                        //         (ex instanceof InvocationTargetException)
-                        //                                         ? ex.getCause()
-                        //                                         : ex);
-                        // }
                     }
 
                     @Override
@@ -181,20 +167,6 @@ public class WebBrowser
                         public void launch (String urlString)
                         {
                             super.launch(urlString);
-
-                            // try {
-                            //     Method openURL = fileMgr.getDeclaredMethod(
-                            //         "openURL",
-                            //         String.class);
-                            //     openURL.invoke(null, urlString);
-                            // } catch (Exception ex) {
-                            //     logger.warning(
-                            //         "Could not launch the browser on " +
-                            //         urlString,
-                            //         (ex instanceof InvocationTargetException)
-                            //                                             ? ex.getCause()
-                            //                                             : ex);
-                            // }
                         }
 
                         @Override

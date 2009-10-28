@@ -31,6 +31,7 @@ import omr.util.Predicate;
 import omr.util.TreeNode;
 
 import java.awt.geom.*;
+import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -808,7 +809,7 @@ public class Slur
      * its'a Note or a chord tail location, from top to bottom.
      */
     private static final class NodeComparator
-        implements Comparator<MeasureNode>
+        implements Comparator<MeasureNode>, Serializable
     {
         //~ Instance fields ----------------------------------------------------
 

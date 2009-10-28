@@ -291,15 +291,19 @@ public class Note
     public static int getTypeDuration (Shape shape)
     {
         switch (baseShapeOf(shape)) {
-        // Rests
-        //
+        case BREVE :
+            return 8 * QUARTER_DURATION;
+
         case WHOLE_REST :
+        case WHOLE_NOTE :
             return 4 * QUARTER_DURATION;
 
         case HALF_REST :
+        case VOID_NOTEHEAD :
             return 2 * QUARTER_DURATION;
 
         case QUARTER_REST :
+        case NOTEHEAD_BLACK :
             return QUARTER_DURATION;
 
         case EIGHTH_REST :
@@ -316,22 +320,6 @@ public class Note
 
         case ONE_HUNDRED_TWENTY_EIGHTH_REST :
             return QUARTER_DURATION / 32;
-
-        // Notehead
-        //
-        case VOID_NOTEHEAD :
-            return 2 * QUARTER_DURATION;
-
-        case NOTEHEAD_BLACK :
-            return QUARTER_DURATION;
-
-        // Notes
-        //
-        case BREVE :
-            return 8 * QUARTER_DURATION;
-
-        case WHOLE_NOTE :
-            return 4 * QUARTER_DURATION;
 
         default :
             // Error
@@ -451,11 +439,12 @@ public class Note
             }
 
             // Look for a previous accidental with the same note step in the measure
-            Slot[]  slots = getMeasure()
-                                .getSlots()
-                                .toArray(new Slot[0]);
+            Collection<Slot> collection = getMeasure()
+                                              .getSlots();
+            Slot[]           slots = collection.toArray(
+                new Slot[collection.size()]);
 
-            boolean started = false;
+            boolean          started = false;
 
             for (int is = slots.length - 1; is >= 0; is--) {
                 Slot slot = slots[is];
@@ -950,32 +939,32 @@ public class Note
             box.height / card);
     }
 
-    //---------//
-    // alterOf //
-    //---------//
-    private int alterOf (Shape accid)
-    {
-        switch (accid) {
-        case FLAT :
-            return -1;
-
-        case NATURAL :
-            return 0;
-
-        case SHARP :
-            return +1;
-
-        case DOUBLE_SHARP :
-            return +2; // To be verified
-
-        case DOUBLE_FLAT :
-            return -2; // To be verified
-        }
-
-        logger.severe("Illegal accidental shape: " + accid);
-
-        return 0;
-    }
+//    //---------//
+//    // alterOf //
+//    //---------//
+//    private int alterOf (Shape accid)
+//    {
+//        switch (accid) {
+//        case FLAT :
+//            return -1;
+//
+//        case NATURAL :
+//            return 0;
+//
+//        case SHARP :
+//            return +1;
+//
+//        case DOUBLE_SHARP :
+//            return +2; // To be verified
+//
+//        case DOUBLE_FLAT :
+//            return -2; // To be verified
+//        }
+//
+//        logger.severe("Illegal accidental shape: " + accid);
+//
+//        return 0;
+//    }
 
     //-------------//
     // baseShapeOf //
@@ -983,21 +972,9 @@ public class Note
     private static Shape baseShapeOf (Shape shape)
     {
         switch (shape) {
-        case VOID_NOTEHEAD :
-        case VOID_NOTEHEAD_2 :
-        case VOID_NOTEHEAD_3 :
-            return Shape.VOID_NOTEHEAD;
-
         case NOTEHEAD_BLACK :
         case NOTEHEAD_BLACK_2 :
         case NOTEHEAD_BLACK_3 :
-            return Shape.NOTEHEAD_BLACK;
-
-        case WHOLE_NOTE :
-        case WHOLE_NOTE_2 :
-        case WHOLE_NOTE_3 :
-            return Shape.WHOLE_NOTE;
-
         case HEAD_AND_FLAG_1 :
         case HEAD_AND_FLAG_1_UP :
         case HEAD_AND_FLAG_2 :
@@ -1009,6 +986,16 @@ public class Note
         case HEAD_AND_FLAG_5 :
         case HEAD_AND_FLAG_5_UP :
             return Shape.NOTEHEAD_BLACK;
+
+        case VOID_NOTEHEAD :
+        case VOID_NOTEHEAD_2 :
+        case VOID_NOTEHEAD_3 :
+            return Shape.VOID_NOTEHEAD;
+
+        case WHOLE_NOTE :
+        case WHOLE_NOTE_2 :
+        case WHOLE_NOTE_3 :
+            return Shape.WHOLE_NOTE;
 
         default :
             return shape;

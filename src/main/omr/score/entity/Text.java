@@ -382,35 +382,6 @@ public abstract class Text
         return sb.toString();
     }
 
-    //    //-------------------//
-    //    // determineFontSize //
-    //    //-------------------//
-    //    /**
-    //     * Determine the proper font size. <ol>
-    //     * <li>The definition of Font-Size is the vertical distance between the
-    //     * baseline of one line to the baseline of the following line in a single
-    //     * spaced text.</li>
-    //     * <li>Here we don't have several lines and thus can't measure the
-    //     * interline. However we can measure the xHeight (typical height of an 'x'
-    //     * character and use the fact that interline is about 2.3 times xHeight.
-    //     * (This ratio varies a bit with the font unfortunately).</li>
-    //     * <li>A font size is measured in 'point' units, worth 1/72 of an inch</li>
-    //     * <li>Finally, we don't know the scan resolution value, so we rely on the
-    //     * modifiable application constant defaultResolution.</li>
-    //     * </ol>
-    //     */
-    //    protected void determineFontSize ()
-    //    {
-    //        float size = (2.3f * 72 * sentence.getTextHeight()) / constants.defaultResolution.getValue();
-    //
-    //        // Round to next integer???
-    //        ///size = (float) Math.rint(size);
-    //
-    //        //float size = (float) Math.rint(1.9f * sentence.getTextHeight());
-    //        ///float size = (float) Math.rint(1.0f * sentence.getTextHeight());
-    //        font = TextInfo.basicFont.deriveFont(size);
-    //    }
-
     //-----------------//
     // internalsString //
     //-----------------//

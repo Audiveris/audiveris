@@ -187,10 +187,6 @@ public class DotTranslator
                                          Measure     measure,
                                          SystemPoint dotCenter)
     {
-        if (glyph.getId() == 313) {
-            logger.info("BINGO");
-        }
-
         // Check vertical pitch position within the staff : close to +1 or -1
         double pitchDif = Math.abs(Math.abs(glyph.getPitchPosition()) - 1);
 
@@ -307,13 +303,7 @@ public class DotTranslator
 
         public int compareTo (Info other)
         {
-            if (this.dist < other.dist) {
-                return -1;
-            } else if (this.dist > other.dist) {
-                return +1;
-            } else {
-                return 0;
-            }
+            return Double.compare(this.dist, other.dist);
         }
     }
 

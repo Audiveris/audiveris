@@ -396,8 +396,10 @@ public class ConstantManager
 
         private void loadFromFile ()
         {
+            InputStream in = null;
+
             try {
-                InputStream in = new FileInputStream(file);
+                in = new FileInputStream(file);
                 properties.load(in);
                 in.close();
             } catch (FileNotFoundException ex) {
@@ -410,6 +412,13 @@ public class ConstantManager
             } catch (IOException ex) {
                 logger.severe(
                     "Error loading constants file " + file.getAbsolutePath());
+            } finally {
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (Exception ignored) {
+                    }
+                }
             }
         }
 
@@ -531,6 +540,8 @@ public class ConstantManager
             cleanup();
 
             // Then, save the remaining values
+            FileOutputStream out = null;
+
             try {
                 if (logger.isFineEnabled()) {
                     logger.fine("Store constants into " + file);
@@ -543,7 +554,7 @@ public class ConstantManager
                 }
 
                 // Then write down the properties
-                FileOutputStream out = new FileOutputStream(file);
+                out = new FileOutputStream(file);
                 properties.store(
                     out,
                     " Audiveris user properties file. Do not edit");
@@ -556,6 +567,13 @@ public class ConstantManager
                 logger.warning(
                     "Error while storing the property file " +
                     file.getAbsolutePath());
+            } finally {
+                if (out != null) {
+                    try {
+                        out.close();
+                    } catch (Exception ignored) {
+                    }
+                }
             }
         }
     }

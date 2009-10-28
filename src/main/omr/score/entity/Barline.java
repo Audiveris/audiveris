@@ -26,6 +26,7 @@ import omr.stick.Stick;
 
 import java.awt.*;
 import java.util.*;
+import omr.glyph.Glyphs;
 
 /**
  * Class <code>Barline</code> encapsulates a logical bar line, that may be
@@ -51,7 +52,7 @@ public class Barline
      * Related physical sticks (bar sticks and dots), which is kept sorted on
      * stick abscissa
      */
-    private SortedSet<Stick> sticks = new TreeSet<Stick>();
+    private SortedSet<Stick> sticks = new TreeSet<Stick>(Glyphs.globalComparator);
 
     /** Signature of this bar line, as abstracted from its constituents */
     private String signature;

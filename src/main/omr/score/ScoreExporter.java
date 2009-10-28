@@ -916,7 +916,7 @@ public class ScoreExporter
 
             // Duration
             try {
-                Integer dur = null;
+                Integer dur;
 
                 if (chord.isWholeDuration()) {
                     dur = chord.getMeasure()
@@ -1479,11 +1479,6 @@ public class ScoreExporter
     public boolean visit (Text text)
     {
         ///logger.info("Visiting " + text);
-
-        // Safer
-        if (text.getContent() == null) {
-            return false;
-        }
 
         switch (text.getSentence()
                     .getTextRole()) {

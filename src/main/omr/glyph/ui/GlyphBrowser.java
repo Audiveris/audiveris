@@ -287,11 +287,11 @@ class GlyphBrowser
     //--------------//
     private void resetBrowser ()
     {
-        if (tLag != null) {
-            // Placeholder for some cleanup
-            //            localPixelSelection.deleteObserver(tLag);
-            //            localSectionSelection.deleteObserver(tLag);
-        }
+        // Placeholder for some cleanup
+        //        if (tLag != null) {
+        //            localPixelSelection.deleteObserver(tLag);
+        //            localSectionSelection.deleteObserver(tLag);
+        //        }
 
         // Reset model
         tLag = new GlyphLag(
@@ -433,11 +433,10 @@ class GlyphBrowser
         public Display ()
         {
             // Some house keeping about previous view
-            if (view != null) {
-                //                localPixelSelection.deleteObserver(view);
-                //                localGlyphSelection.deleteObserver(view);
-            }
-
+            //            if (view != null) {
+            //                localPixelSelection.deleteObserver(view);
+            //                localGlyphSelection.deleteObserver(view);
+            //            }
             view = new MyView(controller);
             modelRectangle = new Rectangle();
             modelSize = new Dimension(0, 0);

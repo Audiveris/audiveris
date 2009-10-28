@@ -329,7 +329,7 @@ public class ScoreChecker
      */
     private TimeSignature findBestTimeSig (Measure measure)
     {
-        TimeSignature manualSig = null;
+        TimeSignature manualSig;
 
         try {
             manualSig = findManualTimeSig(measure); // Perhaps null
@@ -467,7 +467,7 @@ public class ScoreChecker
     private void replaceTimeSig (TimeSignature oldSig,
                                  TimeSignature newSig)
     {
-        Shape shape = null;
+        Shape shape;
 
         try {
             shape = newSig.getShape();

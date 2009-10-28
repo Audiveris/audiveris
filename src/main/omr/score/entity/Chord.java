@@ -1079,9 +1079,8 @@ public class Chord
      */
     public void checkTies ()
     {
-        SplitOrder order = null;
         // Incoming ties
-        order = checkTies(
+        SplitOrder order = checkTies(
             new TieRelation() {
                     public Note getDistantNote (Slur slur)
                     {

@@ -236,7 +236,7 @@ public abstract class GlyphEvaluator
             }
         }
 
-        return kept.toArray(new Evaluation[0]);
+        return kept.toArray(new Evaluation[kept.size()]);
     }
 
     //------//
@@ -272,12 +272,12 @@ public abstract class GlyphEvaluator
      */
     public void marshal ()
     {
-        final File file = getCustomFile();
+        final File   file = getCustomFile();
+        OutputStream os = null;
 
         try {
-            OutputStream os = new FileOutputStream(file);
+            os = new FileOutputStream(file);
             marshal(os);
-            os.close();
             logger.info("Engine marshalled to " + file);
         } catch (FileNotFoundException ex) {
             logger.warning("Could not find file " + file);
@@ -285,6 +285,13 @@ public abstract class GlyphEvaluator
             logger.warning("IO error on file " + file);
         } catch (JAXBException ex) {
             logger.warning("Error marshalling engine to " + file);
+        } finally {
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (Exception ignored) {
+                }
+            }
         }
     }
 

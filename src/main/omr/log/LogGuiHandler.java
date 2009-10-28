@@ -91,7 +91,7 @@ public class LogGuiHandler
 
             if (Main.getGui() != null) {
                 Main.getGui()
-                    .notifylog();
+                    .notifyLog();
             }
         }
     }

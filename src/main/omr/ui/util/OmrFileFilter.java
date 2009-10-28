@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                            F i l e F i l t e r                             //
+//                         O m r F i l e F i l t e r                          //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -17,13 +17,13 @@ import java.io.File;
 import java.io.FilenameFilter;
 
 /**
- * Class <code>FileFilter</code> is a special file filter, based on file
+ * Class <code>OmrFileFilter</code> is a special file filter, based on file
  * extensions
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-public class FileFilter
+public class OmrFileFilter
     extends javax.swing.filechooser.FileFilter
     implements java.io.FilenameFilter
 {
@@ -38,20 +38,20 @@ public class FileFilter
     //~ Constructors -----------------------------------------------------------
 
     //------------//
-    // FileFilter //
+    // OmrFileFilter //
     //------------//
     /**
      * Create a file filter, with only one file extension to consider
      *
      * @param extension the only file extension
      */
-    public FileFilter (String extension)
+    public OmrFileFilter (String extension)
     {
         this(null, extension);
     }
 
     //------------//
-    // FileFilter //
+    // OmrFileFilter //
     //------------//
     /**
      * Create a file filter, with only one file extension to consider, and
@@ -60,14 +60,14 @@ public class FileFilter
      * @param description the description to be displayed
      * @param extension   the only file name extension to consider
      */
-    public FileFilter (String description,
+    public OmrFileFilter (String description,
                        String extension)
     {
         this(description, new String[] { extension });
     }
 
     //------------//
-    // FileFilter //
+    // OmrFileFilter //
     //------------//
     /**
      * Create a file filter with a whole array of file name extensions, and
@@ -76,7 +76,7 @@ public class FileFilter
      * @param description the user readable description
      * @param extensions  the array of allowed file extensions
      */
-    public FileFilter (String   description,
+    public OmrFileFilter (String   description,
                        String[] extensions)
     {
         if (description == null) {

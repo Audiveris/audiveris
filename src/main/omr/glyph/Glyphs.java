@@ -15,6 +15,7 @@ import omr.log.Logger;
 
 import omr.score.common.PixelRectangle;
 
+import java.awt.Point;
 import java.util.*;
 
 /**
@@ -30,6 +31,66 @@ public class Glyphs
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Glyphs.class);
+
+    /** For comparing glyphs according to their decreasing weight */
+    public static final Comparator<Glyph> reverseWeightComparator = new Comparator<Glyph>() {
+        public int compare (Glyph o1,
+                            Glyph o2)
+        {
+            return o2.getWeight() - o1.getWeight();
+        }
+    };
+
+    /** For comparing glyphs according to their id */
+    public static final Comparator<Glyph> idComparator = new Comparator<Glyph>() {
+        public int compare (Glyph o1,
+                            Glyph o2)
+        {
+            return o1.getId() - o2.getId();
+        }
+    };
+
+    /** For comparing glyphs according to their abscissa, then ordinate, then id */
+    public static final Comparator<Glyph> globalComparator = new Comparator<Glyph>() {
+        public int compare (Glyph o1,
+                            Glyph o2)
+        {
+            if (o1 == o2) {
+                return 0;
+            }
+
+            if (o1.getContourBox() == null) {
+                omr.util.Dumper.dump(o1);
+
+                logger.warning(
+                    "Glyph w/ no contourbox " + o1,
+                    new Throwable("Bingo"));
+            }
+
+            Point ref = o1.getContourBox()
+                          .getLocation();
+            Point otherRef = o2.getContourBox()
+                               .getLocation();
+
+            // Are x values different?
+            int dx = ref.x - otherRef.x;
+
+            if (dx != 0) {
+                return dx;
+            }
+
+            // Vertically aligned, so use ordinates
+            int dy = ref.y - otherRef.y;
+
+            if (dy != 0) {
+                return dy;
+            }
+
+            // Finally, use id ...
+            return o1.getId() - o2.getId();
+        }
+    };
+
 
     //~ Methods ----------------------------------------------------------------
 
@@ -139,38 +200,6 @@ public class Glyphs
         return sections;
     }
 
-    //-----//
-    // set //
-    //-----//
-    /**
-     * Build a mutable set with the provided glyphs
-     * @param glyphs the provided glyphs
-     * @return a mutable sorted set composed of these glyphs
-     */
-    public static SortedSet<Glyph> set (Glyph... glyphs)
-    {
-        SortedSet<Glyph> set = new TreeSet<Glyph>();
-
-        for (Glyph glyph : glyphs) {
-            set.add(glyph);
-        }
-
-        return set;
-    }
-
-    //-----//
-    // set //
-    //-----//
-    /**
-     * Build a mutable set with the provided glyphs
-     * @param glyphs the provided glyphs
-     * @return a mutable sorted set composed of these glyphs
-     */
-    public static SortedSet<Glyph> set (Collection<Glyph> glyphs)
-    {
-        return new TreeSet<Glyph>(glyphs);
-    }
-
     //----------//
     // shapesOf //
     //----------//
@@ -193,6 +222,41 @@ public class Glyphs
         }
 
         return shapes;
+    }
+
+    //-----------//
+    // sortedSet //
+    //-----------//
+    /**
+     * Build a mutable set with the provided glyphs
+     * @param glyphs the provided glyphs
+     * @return a mutable sorted set composed of these glyphs
+     */
+    public static SortedSet<Glyph> sortedSet (Glyph... glyphs)
+    {
+        SortedSet<Glyph> set = new TreeSet<Glyph>(Glyphs.globalComparator);
+
+        for (Glyph glyph : glyphs) {
+            set.add(glyph);
+        }
+
+        return set;
+    }
+
+    //-----------//
+    // sortedSet //
+    //-----------//
+    /**
+     * Build a mutable set with the provided glyphs
+     * @param glyphs the provided glyphs
+     * @return a mutable sorted set composed of these glyphs
+     */
+    public static SortedSet<Glyph> sortedSet (Collection<Glyph> glyphs)
+    {
+        SortedSet<Glyph> set = new TreeSet<Glyph>(Glyphs.globalComparator);
+        set.addAll(glyphs);
+
+        return set;
     }
 
     //----------//

@@ -315,22 +315,17 @@ public class ShapeColorChooser
             {
                 JMenuItem source = (JMenuItem) e.getSource();
                 current = Shape.valueOf(source.getText());
+                banner.setText(current.toString());
 
-                if (current != null) {
-                    banner.setText(current.toString());
+                // Check if a specific color is assigned
+                Color color = current.getConstantColor();
 
-                    // Check if a specific color is assigned
-                    Color color = current.getConstantColor();
-
-                    if (color != null) {
-                        prepareDefaultOption();
-                        refreshBanner();
-                    } else {
-                        prepareSpecificOption();
-                        banner.setForeground(ranges.current.getColor());
-                    }
+                if (color != null) {
+                    prepareDefaultOption();
+                    refreshBanner();
                 } else {
-                    banner.setText("");
+                    prepareSpecificOption();
+                    banner.setForeground(ranges.current.getColor());
                 }
             }
         };

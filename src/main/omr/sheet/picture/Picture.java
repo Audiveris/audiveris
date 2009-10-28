@@ -499,8 +499,7 @@ public class Picture
     public final int getPixel (int x,
                                int y)
     {
-        int[] pixel = null;
-        pixel = raster.getPixel(x, y, pixel); // This allocates pixel!
+        int[] pixel = raster.getPixel(x, y, (int[]) null); // Allocates pixel!
 
         return grayFactor * pixel[0];
     }
@@ -806,54 +805,6 @@ public class Picture
         checkImage();
     }
 
-    //--------------//
-    // BinaryToGray //
-    //--------------//
-    private static PlanarImage BinaryToGray (PlanarImage image)
-    {
-        logger.info("Converting binary image to gray ...");
-
-        // hint with border extender
-        RenderingHints hint = new RenderingHints(
-            JAI.KEY_BORDER_EXTENDER,
-            BorderExtender.createInstance(BorderExtender.BORDER_REFLECT));
-        float          subsample = (float) constants.binaryToGrayscaleSubsampling.getValue();
-
-        if ((subsample <= 0) || (subsample > 1)) {
-            throw new IllegalStateException(
-                "blackWhiteSubsampling must be > 0 and <= 1");
-        }
-
-        PlanarImage result = null;
-
-        if (subsample < 1) {
-            logger.info("Subsampling binary image");
-            result = JAI.create(
-                "subsamplebinarytogray",
-                new ParameterBlock().addSource(image).add(subsample).add(
-                    subsample),
-                hint);
-        } else {
-            logger.info("Buffering and converting binary image");
-
-            ColorConvertOp grayOp = new ColorConvertOp(
-                ColorSpace.getInstance(ColorSpace.CS_GRAY),
-                null);
-            BufferedImage  gray = grayOp.filter(
-                image.getAsBufferedImage(),
-                null);
-            result = new RenderedImageAdapter(gray);
-
-            //If the result has an alpha component, remove it
-            if (result.getColorModel()
-                      .hasAlpha()) {
-                result = JAI.create("bandselect", result, new int[] { 0 });
-            }
-        }
-
-        return result;
-    }
-
     //------------//
     // RGBAToGray //
     //------------//
@@ -881,6 +832,54 @@ public class Picture
             "bandcombine",
             new ParameterBlock().addSource(image).add(matrix),
             null);
+
+        return result;
+    }
+
+    //--------------//
+    // binaryToGray //
+    //--------------//
+    private static PlanarImage binaryToGray (PlanarImage image)
+    {
+        logger.info("Converting binary image to gray ...");
+
+        // hint with border extender
+        RenderingHints hint = new RenderingHints(
+            JAI.KEY_BORDER_EXTENDER,
+            BorderExtender.createInstance(BorderExtender.BORDER_REFLECT));
+        float          subsample = (float) constants.binaryToGrayscaleSubsampling.getValue();
+
+        if ((subsample <= 0) || (subsample > 1)) {
+            throw new IllegalStateException(
+                "blackWhiteSubsampling must be > 0 and <= 1");
+        }
+
+        PlanarImage result;
+
+        if (subsample < 1) {
+            logger.info("Subsampling binary image");
+            result = JAI.create(
+                "subsamplebinarytogray",
+                new ParameterBlock().addSource(image).add(subsample).add(
+                    subsample),
+                hint);
+        } else {
+            logger.info("Buffering and converting binary image");
+
+            ColorConvertOp grayOp = new ColorConvertOp(
+                ColorSpace.getInstance(ColorSpace.CS_GRAY),
+                null);
+            BufferedImage  gray = grayOp.filter(
+                image.getAsBufferedImage(),
+                null);
+            result = new RenderedImageAdapter(gray);
+
+            //If the result has an alpha component, remove it
+            if (result.getColorModel()
+                      .hasAlpha()) {
+                result = JAI.create("bandselect", result, new int[] { 0 });
+            }
+        }
 
         return result;
     }
@@ -919,7 +918,7 @@ public class Picture
                              .getPixelSize();
 
         if (pixelSize == 1) {
-            image = BinaryToGray(image);
+            image = binaryToGray(image);
         }
 
         // Check nb of bands

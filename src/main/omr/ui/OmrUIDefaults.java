@@ -115,9 +115,19 @@ public class OmrUIDefaults
         }
 
         Properties  p = new Properties();
-        InputStream in = new FileInputStream(file);
-        p.load(in);
-        in.close();
-        loadFrom(p);
+        InputStream in = null;
+
+        try {
+            in = new FileInputStream(file);
+            p.load(in);
+            loadFrom(p);
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (Exception ignored) {
+                }
+            }
+        }
     }
 }

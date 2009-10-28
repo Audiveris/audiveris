@@ -16,6 +16,9 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
+import omr.score.Score;
+import omr.score.ui.PaintingParameters;
+
 import omr.script.ScriptActions;
 
 import omr.selection.SelectionService;
@@ -25,12 +28,16 @@ import omr.sheet.Sheet;
 import omr.sheet.SheetsManager;
 
 import omr.util.Implement;
+import omr.util.OmrExecutors;
 
 import org.bushe.swing.event.EventSubscriber;
 
 import org.jdesktop.application.Action;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.concurrent.Callable;
 
 import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
@@ -55,8 +62,7 @@ import javax.swing.event.ChangeListener;
  * @version $Id$
  */
 public class SheetsController
-    implements ChangeListener // To be notified of user tab selection
-
+    implements ChangeListener, PropertyChangeListener
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -68,7 +74,7 @@ public class SheetsController
         SheetsController.class);
 
     /** The single instance of this class */
-    private static SheetsController INSTANCE;
+    private static volatile SheetsController INSTANCE;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -102,6 +108,12 @@ public class SheetsController
 
         // We need a cache of at least one sheet for the sheet set service
         sheetSetService = new SelectionService();
+
+        // Listen to system layout property
+        PaintingParameters.getInstance()
+                          .addPropertyChangeListener(
+            PaintingParameters.VERTICAL_LAYOUT,
+            this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -197,6 +209,33 @@ public class SheetsController
         for (SheetAssembly assembly : assemblies) {
             logger.info("Assembly of " + assembly.getSheet() + " " + assembly);
         }
+    }
+
+    //----------------//
+    // propertyChange //
+    //----------------//
+    @Implement(PropertyChangeListener.class)
+    public void propertyChange (PropertyChangeEvent evt)
+    {
+        OmrExecutors.getCachedLowExecutor()
+                    .submit(
+            new Callable<Void>() {
+                    public Void call ()
+                        throws Exception
+                    {
+                        for (SheetAssembly assembly : assemblies) {
+                            Sheet sheet = assembly.getSheet();
+                            Score score = sheet.getScore();
+
+                            if (score != null) {
+                                score.setOrientation(
+                                    PaintingParameters.getInstance().getScoreOrientation());
+                            }
+                        }
+
+                        return null;
+                    }
+                });
     }
 
     //---------------//

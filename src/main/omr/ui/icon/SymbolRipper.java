@@ -187,14 +187,9 @@ public class SymbolRipper
         {
             JMenuItem source = (JMenuItem) e.getSource();
             Shape     current = Shape.valueOf(source.getText());
-
-            if (current != null) {
-                shapeButton.setText(current.toString());
-                output.setText(current.toString());
-                storeAction.setEnabled(true);
-            } else {
-                disableStore();
-            }
+            shapeButton.setText(current.toString());
+            output.setText(current.toString());
+            storeAction.setEnabled(true);
         }
     };
 

@@ -32,6 +32,7 @@ import omr.stick.*;
 import omr.util.Implement;
 
 import java.awt.*;
+import java.io.Serializable;
 import java.util.*;
 import java.util.List;
 
@@ -44,14 +45,15 @@ import java.util.List;
  *
  * <li> At line creation, the whole area is scanned to retrieve core sections
  * then peripheral and internal sections. This is done by the inherited
- * SticksBuilder class. </li>
+ * SticksBuilder class. This phase is done by {@link #buildInfo()}.</li>
  *
  * <li> Then, after all lines of the containing staff have been processed, we
  * have a better knowledge of what left and right extrema should be. We use this
  * information to scan "holes" in the current line, considering that every
  * suitable section found in such holes is actually part of the line. All these
  * hole sections are gathered in a specific stick, called the holeStick, since
- * we don't actually need to separate the connected sections. </li>
+ * we don't actually need to separate the connected sections. This second phase
+ * is done by {@link #scanHoles(int, int)}.</li>
  *
  * </ol>
  *
@@ -91,9 +93,6 @@ public class LineBuilder
 
     /** Just a sequential id for debug */
     private int id;
-
-    /** Max Thickness for the various staff line chunks */
-    private int maxThickness;
 
     /** Abscissa of left side */
     private int left = Integer.MAX_VALUE;
@@ -366,7 +365,7 @@ public class LineBuilder
                     Math.min(yLeft, yRight) - yMargin);
                 final int yMax = (int) Math.rint(
                     Math.max(yLeft, yRight) + yMargin);
-                Run       run = null;
+                Run       run;
 
                 do {
                     run = lag.getFirstRectRun(gapStart, gapStop, yMin, yMax); // HB : check order TODO
@@ -472,58 +471,81 @@ public class LineBuilder
     //----------//
     // scanHole //
     //----------//
-    private void scanHole (int   left,
+    /**
+     * Scan a hole between an abscissa and a line stick
+     * @param holeLeft the abscissa on the left
+     * @param rightStick the line stick on the right
+     */
+    private void scanHole (int   holeLeft,
                            Stick rightStick)
     {
-        int right = rightStick.getStart();
+        int holeRight = rightStick.getStart();
 
-        if ((right - left) > 1) {
+        if ((holeRight - holeLeft) > 1) {
             scanRect(
-                left,
-                right,
-                line.yAt((double) left), // Line equation
-                rightStick.getLine().yAt((double) right));
+                holeLeft,
+                holeRight,
+                line.yAt((double) holeLeft),
+                rightStick.getLine().yAt((double) holeRight));
         }
     }
 
     //----------//
     // scanHole //
     //----------//
+    /**
+     * Scan a hole between a line stick and an abscissa
+     * @param leftStick the line stick on the left
+     * @param right the abscissa on the right
+     */
     private void scanHole (Stick leftStick,
-                           int   right)
+                           int   holeRight)
     {
-        int left = leftStick.getStop();
+        int holeLeft = leftStick.getStop();
 
-        if ((right - left) > 1) {
+        if ((holeRight - holeLeft) > 1) {
             scanRect(
-                left,
-                right,
-                leftStick.getLine().yAt((double) left),
-                line.yAt((double) right)); // Line equation
+                holeLeft,
+                holeRight,
+                leftStick.getLine().yAt((double) holeLeft),
+                line.yAt((double) holeRight));
         }
     }
 
     //----------//
     // scanHole //
     //----------//
+    /**
+     * Scan a hole between two line sticks
+     * @param leftStick stick on the left
+     * @param rightStick stick on the right
+     */
     private void scanHole (Stick leftStick,
                            Stick rightStick)
     {
-        int left = leftStick.getStop();
-        int right = rightStick.getStart();
+        int holeLeft = leftStick.getStop();
+        int holeRight = rightStick.getStart();
 
-        if ((right - left) > 1) {
+        if ((holeRight - holeLeft) > 1) {
             scanRect(
-                left,
-                right,
-                leftStick.getLine().yAt((double) left),
-                rightStick.getLine().yAt((double) right));
+                holeLeft,
+                holeRight,
+                leftStick.getLine().yAt((double) holeLeft),
+                rightStick.getLine().yAt((double) holeRight));
         }
     }
 
     //----------//
     // scanRect //
     //----------//
+    /**
+     * Scan a line rectangle defined from the left and right abscissae and the
+     * ordinates at left and right sides
+     * @param xMin hole left side
+     * @param xMax hole right side
+     * @param yLeft line ordinate on left
+     * @param yRight line ordinate on right
+     */
     private void scanRect (int    xMin,
                            int    xMax,
                            double yLeft,
@@ -534,7 +556,7 @@ public class LineBuilder
         }
 
         // List of hole candidates
-        List<GlyphSection> holeCandidates = null;
+        List<GlyphSection> holeCandidates = new ArrayList<GlyphSection>();
 
         // Determine the abscissa limits
         final int xMargin = staffScale.toPixels(constants.xHoleMargin);
@@ -552,7 +574,6 @@ public class LineBuilder
             xMin,
             yMax - yMin,
             xMax - xMin);
-        int       sectionNb = 0;
 
         // Browse through our sections
         while (source.hasNext()) {
@@ -565,25 +586,18 @@ public class LineBuilder
                 break;
             }
 
-            // Available ?
-            if (!section.isGlyphMember() // Not too thick ?
-                 &&
+            // Available? Not too thick? Within the limits?
+            if (!section.isGlyphMember() &&
                 (section.getRunNb() <= maxThickness)) {
-                // Within the limits ?
                 if (holeRect.contains(section.getBounds())) {
                     section.setParams(SectionRole.HOLE, 0, 0);
-
-                    if (holeCandidates == null) {
-                        holeCandidates = new ArrayList<GlyphSection>();
-                    }
-
                     holeCandidates.add(section);
                 }
             }
         }
 
         // Have we found anything ?
-        if (holeCandidates != null) {
+        if (!holeCandidates.isEmpty()) {
             SticksBuilder holeArea = new SticksBuilder(
                 sheet,
                 lag,
@@ -667,11 +681,11 @@ public class LineBuilder
             // Build my private list upfront
             while (it.hasNext()) {
                 // Update cached data
-                GlyphSection section = it.next();
+                GlyphSection sct = it.next();
 
-                if (isInArea(section)) {
-                    sections.add(section);
-                } else if (section.getFirstPos() > yMax) {
+                if (isInArea(sct)) {
+                    sections.add(sct);
+                } else if (sct.getFirstPos() > yMax) {
                     it.previous();
 
                     break;
@@ -683,15 +697,7 @@ public class LineBuilder
             }
 
             // Sort my list on starting abscissa
-            Collections.sort(
-                sections,
-                new Comparator<GlyphSection>() {
-                        public int compare (GlyphSection s1,
-                                            GlyphSection s2)
-                        {
-                            return s1.getStart() - s2.getStart();
-                        }
-                    });
+            Collections.sort(sections, GlyphSection.startComparator);
 
             // Define an iterator
             reset();
@@ -750,7 +756,7 @@ public class LineBuilder
     // StickStartComparator //
     //----------------------//
     private static class StickStartComparator
-        implements Comparator<Stick>
+        implements Comparator<Stick>, Serializable
     {
         //~ Methods ------------------------------------------------------------
 
@@ -766,7 +772,7 @@ public class LineBuilder
     // StickWeightComparator //
     //-----------------------//
     private static class StickWeightComparator
-        implements Comparator<Stick>
+        implements Comparator<Stick>, Serializable
     {
         //~ Methods ------------------------------------------------------------
 

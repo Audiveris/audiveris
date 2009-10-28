@@ -65,7 +65,7 @@ public class GlyphRepository
         GlyphRepository.class);
 
     /** The single instance of this class */
-    private static GlyphRepository INSTANCE;
+    private static volatile GlyphRepository INSTANCE;
 
     /** Extension for training files */
     private static final String FILE_EXTENSION = ".xml";
@@ -97,7 +97,20 @@ public class GlyphRepository
     };
 
     /** Un/marshalling context for use with JAXB */
-    private static JAXBContext jaxbContext;
+    private static volatile JAXBContext jaxbContext;
+
+    /** For comparing shape names */
+    public static final Comparator<String> shapeComparator = new Comparator<String>() {
+        public int compare (String s1,
+                            String s2)
+        {
+            String n1 = GlyphRepository.shapeNameOf(s1);
+            String n2 = GlyphRepository.shapeNameOf(s2);
+
+            return n1.compareTo(n2);
+        }
+    };
+
 
     //~ Instance fields --------------------------------------------------------
 
@@ -140,6 +153,19 @@ public class GlyphRepository
         }
 
         return INSTANCE;
+    }
+
+    //-------------//
+    // setCoreBase //
+    //-------------//
+    /**
+     * Define the provided collection as the core training material
+     *
+     * @param base the provided collection
+     */
+    public synchronized void setCoreBase (List<String> base)
+    {
+        coreBase = base;
     }
 
     //----------//
@@ -453,35 +479,6 @@ public class GlyphRepository
     }
 
     //-------------//
-    // setCoreBase //
-    //-------------//
-    /**
-     * Define the provided collection as the core training material
-     *
-     * @param base the provided collection
-     */
-    public synchronized void setCoreBase (List<String> base)
-    {
-        coreBase = base;
-    }
-
-    //---------------//
-    // isIconsFolder //
-    //---------------//
-    boolean isIconsFolder (String folder)
-    {
-        return folder.equals(Main.getIconsFolder().getName());
-    }
-
-    //----------//
-    // isLoaded //
-    //----------//
-    boolean isLoaded (String gName)
-    {
-        return glyphsMap.get(gName) != null;
-    }
-
-    //-------------//
     // shapeNameOf //
     //-------------//
     /**
@@ -502,22 +499,6 @@ public class GlyphRepository
         } else {
             return nameWithExt;
         }
-    }
-
-    //-------------//
-    // removeGlyph //
-    //-------------//
-    /**
-     * Remove a glyph from the repository memory (this does not delete the
-     * actual glyph file on disk). We also remove it from the various bases
-     * which is safer
-     *
-     * @param gName the full glyph name
-     */
-    synchronized void removeGlyph (String gName)
-    {
-        glyphsMap.remove(gName);
-        refreshBases();
     }
 
     //---------//
@@ -589,6 +570,38 @@ public class GlyphRepository
         logger.info(copyNb + " glyphs copied as core training material");
     }
 
+    //---------------//
+    // isIconsFolder //
+    //---------------//
+    boolean isIconsFolder (String folder)
+    {
+        return folder.equals(Main.getIconsFolder().getName());
+    }
+
+    //----------//
+    // isLoaded //
+    //----------//
+    boolean isLoaded (String gName)
+    {
+        return glyphsMap.get(gName) != null;
+    }
+
+    //-------------//
+    // removeGlyph //
+    //-------------//
+    /**
+     * Remove a glyph from the repository memory (this does not delete the
+     * actual glyph file on disk). We also remove it from the various bases
+     * which is safer
+     *
+     * @param gName the full glyph name
+     */
+    synchronized void removeGlyph (String gName)
+    {
+        glyphsMap.remove(gName);
+        refreshBases();
+    }
+
     //-------------//
     // unloadGlyph //
     //-------------//
@@ -655,15 +668,22 @@ public class GlyphRepository
             logger.fine("Loading glyph " + file);
         }
 
-        Glyph glyph = null;
+        Glyph       glyph = null;
+        InputStream is = null;
 
         try {
-            InputStream is = new FileInputStream(file);
+            is = new FileInputStream(file);
             glyph = (Glyph) jaxbUnmarshal(is);
-            is.close();
         } catch (Exception ex) {
             logger.warning("Could not unmarshal file " + file);
             ex.printStackTrace();
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (Exception ignored) {
+                }
+            }
         }
 
         return glyph;

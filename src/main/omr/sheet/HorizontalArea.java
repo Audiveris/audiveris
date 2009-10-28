@@ -15,12 +15,12 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
+import omr.glyph.Glyphs;
 
 import omr.log.Logger;
 
 import omr.step.StepException;
 
-import omr.stick.Stick;
 import omr.stick.SticksBuilder;
 import omr.stick.SticksSource;
 
@@ -94,15 +94,7 @@ public class HorizontalArea
             constants.maxDeltaSlope.getValue());
 
         // Sort sticks found
-        Collections.sort(
-            sticks,
-            new Comparator<Stick>() {
-                    public int compare (Stick s1,
-                                        Stick s2)
-                    {
-                        return s1.getId() - s2.getId();
-                    }
-                });
+        Collections.sort(sticks, Glyphs.idComparator);
 
         if (logger.isFineEnabled()) {
             logger.fine(

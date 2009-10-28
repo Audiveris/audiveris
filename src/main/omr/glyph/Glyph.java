@@ -63,7 +63,7 @@ import javax.xml.bind.annotation.*;
     "stemNumber", "withLedger", "pitchPosition", "members"}
 )
 public class Glyph
-    implements Comparable<Glyph>, Checkable
+    implements Checkable
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -190,18 +190,6 @@ public class Glyph
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //-------------//
-    // isTransient //
-    //-------------//
-    /**
-     * Test whether the glyph is transient (not yet inserted into lag)
-     * @return true if transient
-     */
-    public boolean isTransient ()
-    {
-        return id == 0;
-    }
 
     //----------//
     // isActive //
@@ -1055,6 +1043,18 @@ public class Glyph
         }
     }
 
+    //-------------//
+    // isTransient //
+    //-------------//
+    /**
+     * Test whether the glyph is transient (not yet inserted into lag)
+     * @return true if transient
+     */
+    public boolean isTransient ()
+    {
+        return id == 0;
+    }
+
     //--------------//
     // isTranslated //
     //--------------//
@@ -1187,11 +1187,19 @@ public class Glyph
     public void addSection (GlyphSection section,
                             boolean      link)
     {
+        // Nota: We must include the section in the glyph members before
+        // linking back the section to the containing glyph.
+        // Otherwise, there is a risk of using the glyph box (which depends on
+        // its member sections) before the section is in the glyph members.
+        // This phenomenum was sometimes observed when using parallelism.
+
+        /** First, update glyph data */
+        members.add(section);
+
+        /** Second, update section data, if so desired */
         if (link) {
             section.setGlyph(this);
         }
-
-        members.add(section);
 
         invalidateCache();
     }
@@ -1251,52 +1259,6 @@ public class Glyph
         }
     }
 
-    //-----------//
-    // compareTo //
-    //-----------//
-    /**
-     * Needed to implement Comparable, sorting glyphs first by abscissa, then by
-     * ordinate.
-     *
-     * @param other the other glyph to compare to
-     * @return the result of ordering
-     */
-    @Implement(Comparable.class)
-    public int compareTo (Glyph other)
-    {
-        if (equals(other)) {
-            return 0;
-        }
-
-        if (this.getContourBox() == null) {
-            omr.util.Dumper.dump(this);
-            logger.warning("BINGO: Glyph w/ no contourbox " + this);
-        }
-
-        Point ref = this.getContourBox()
-                        .getLocation();
-        Point otherRef = other.getContourBox()
-                              .getLocation();
-
-        // Are x values different?
-        int dx = ref.x - otherRef.x;
-
-        if (dx != 0) {
-            return dx;
-        }
-
-        // Vertically aligned, so use ordinates
-        int dy = ref.y - otherRef.y;
-
-        if (dy != 0) {
-            return dy;
-        }
-
-        // Finally, use id ...
-        return this.getId() - other.getId();
-    }
-
-    //public boolean
 
     //----------------//
     // computeMoments //

@@ -240,7 +240,7 @@ public class GlyphsController
             logger.fine("syncAssign " + context + " compound:" + compound);
         }
 
-        SortedSet<Glyph> glyphs = context.getInitialGlyphs();
+        Set<Glyph> glyphs = context.getInitialGlyphs();
 
         if (shape != null) { // Assignment
             model.assignGlyphs(
@@ -251,9 +251,11 @@ public class GlyphsController
 
             // Publish modifications
             if (compound) {
-                publish(glyphs.first().getMembers().first().getGlyph());
+                publish(
+                    glyphs.iterator().next().getMembers().first().getGlyph());
             } else {
-                Glyph glyph = glyphs.first();
+                Glyph glyph = glyphs.iterator()
+                                    .next();
 
                 if (glyph != null) {
                     publish(glyph);

@@ -828,7 +828,7 @@ public abstract class Constant
         public Ratio (double           defaultValue,
                       java.lang.String description)
         {
-            super(null, new java.lang.Double(defaultValue), description);
+            super(null, defaultValue, description);
         }
     }
 

@@ -97,6 +97,15 @@ public class GlyphBoard
         eventClasses.add(GlyphSetEvent.class);
     }
 
+    /** Predicate for known glyphs */
+    protected static final Predicate<Glyph> knownPredicate = new Predicate<Glyph>() {
+        public boolean check (Glyph glyph)
+        {
+            return (glyph != null) && glyph.isKnown();
+        }
+    };
+
+
     //~ Instance fields --------------------------------------------------------
 
     /** The related glyph model */
@@ -122,14 +131,6 @@ public class GlyphBoard
 
     /** Input / Output : spinner of known glyphs */
     protected JSpinner knownSpinner;
-
-    /** Predicate for known glyphs */
-    protected final Predicate<Glyph> knownPredicate = new Predicate<Glyph>() {
-        public boolean check (Glyph glyph)
-        {
-            return (glyph != null) && glyph.isKnown();
-        }
-    };
 
     /** Output : shape of the glyph */
     protected final JTextField shapeField = new SField(

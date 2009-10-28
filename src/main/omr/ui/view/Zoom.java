@@ -208,7 +208,7 @@ public class Zoom
 
                                 // Stop condition to avoid endless loop between
                                 // slider and zoom
-                                if (newRatio != ratio) {
+                                if (Math.abs(newRatio - ratio) > .001) {
                                     forceRatio(newRatio);
                                 }
                             }

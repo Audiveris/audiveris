@@ -11,9 +11,6 @@
 // </editor-fold>
 package omr.glyph;
 
-import omr.constant.Constant;
-import omr.constant.ConstantSet;
-
 import omr.glyph.ui.GlyphRepository;
 
 import omr.log.Logger;
@@ -45,9 +42,6 @@ public class GlyphRegression
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Specific application parameters */
-    private static final Constants constants = new Constants();
-
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
         GlyphRegression.class);
@@ -56,7 +50,7 @@ public class GlyphRegression
     private static final String BACKUP_FILE_NAME = "linear-evaluator.xml";
 
     /** The singleton */
-    private static GlyphRegression INSTANCE;
+    private static volatile GlyphRegression INSTANCE;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -330,18 +324,5 @@ public class GlyphRegression
         throws JAXBException
     {
         return LinearEvaluator.unmarshal(is);
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        Constant.Ratio weightMax = new Constant.Ratio(2500, "Maximum weight");
     }
 }

@@ -250,16 +250,7 @@ public class UnitManager
 
         // Use alphabetical order for easier reading
         List<Node> nodes = new ArrayList<Node>(mapOfNodes.values());
-        Collections.sort(
-            nodes,
-            new Comparator<Node>() {
-                    public int compare (Node n1,
-                                        Node n2)
-                    {
-                        return n1.getName()
-                                 .compareTo(n2.getName());
-                    }
-                });
+        Collections.sort(nodes, Node.nameComparator);
 
         for (Node node : nodes) {
             if (node instanceof UnitNode) {
@@ -373,17 +364,17 @@ public class UnitManager
         }
     }
 
-    //-----//
-    // log //
-    //-----//
-    /**
-     * Poor-man implementation of a log feature, since the normal Logger stuff
-     * is not yet available
-     */
-    private static void log (String msg)
-    {
-        System.out.println("UnitManager:: " + msg);
-    }
+//    //-----//
+//    // log //
+//    //-----//
+//    /**
+//     * Poor-man implementation of a log feature, since the normal Logger stuff
+//     * is not yet available
+//     */
+//    private static void log (String msg)
+//    {
+//        System.out.println("UnitManager:: " + msg);
+//    }
 
     //--------------//
     // retrieveUnit //

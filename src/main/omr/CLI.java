@@ -20,6 +20,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -34,6 +35,15 @@ public class CLI
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(CLI.class);
+
+    //~ Enumerations -----------------------------------------------------------
+
+    /** For parameters analysis */
+    private static enum Status {
+        //~ Enumeration constant initializers ----------------------------------
+
+        STEP,SHEET, SCRIPT;
+    }
 
     //~ Instance fields --------------------------------------------------------
 
@@ -57,11 +67,11 @@ public class CLI
      * @param toolName the program name
      * @param args the CLI arguments
      */
-    public CLI (String    toolName,
-                String... args)
+    public CLI (final String    toolName,
+                final String... args)
     {
         this.toolName = toolName;
-        this.args = args;
+        this.args = Arrays.copyOf(args, args.length);
 
         parameters = parse();
     }
@@ -114,11 +124,14 @@ public class CLI
         // ref(s). This is signalled by a starting '@' character in ref
         if (ref.startsWith("@")) {
             // File with other refs inside
-            String pack = ref.substring(1);
+            String         pack = ref.substring(1);
+
+            BufferedReader br = null;
 
             try {
-                BufferedReader br = new BufferedReader(new FileReader(pack));
-                String         newRef;
+                br = new BufferedReader(new FileReader(pack));
+
+                String newRef;
 
                 try {
                     while ((newRef = br.readLine()) != null) {
@@ -132,6 +145,13 @@ public class CLI
                 }
             } catch (FileNotFoundException ex) {
                 logger.warning("Cannot find file '" + pack + "'");
+            } finally {
+                if (br != null) {
+                    try {
+                        br.close();
+                    } catch (Exception ignored) {
+                    }
+                }
             }
         } else if (ref.length() > 0) {
             // Plain file name
@@ -145,16 +165,13 @@ public class CLI
     /**
      * Parse the CLI arguments and populate the parameters structure
      *
-     * @return the populated parameters, or null if failed
+     * @return the populated parameters structure, or null if failed
      */
     private Parameters parse ()
     {
         // Status of the finite state machine
-        final int  STEP = 0;
-        final int  SHEET = 1;
-        final int  SCRIPT = 2;
         boolean    paramNeeded = false; // Are we expecting a param?
-        int        status = SHEET; // By default
+        Status     status = Status.SHEET; // By default
         String     currentCommand = null;
         Parameters params = new Parameters();
 
@@ -182,13 +199,13 @@ public class CLI
                     params.batchMode = true;
                     paramNeeded = false;
                 } else if (token.equalsIgnoreCase("-step")) {
-                    status = STEP;
+                    status = Status.STEP;
                     paramNeeded = true;
                 } else if (token.equalsIgnoreCase("-sheet")) {
-                    status = SHEET;
+                    status = Status.SHEET;
                     paramNeeded = true;
                 } else if (token.equalsIgnoreCase("-script")) {
-                    status = SCRIPT;
+                    status = Status.SCRIPT;
                     paramNeeded = true;
                 } else {
                     printCommandLine();
@@ -203,10 +220,15 @@ public class CLI
                 // This is a parameter
                 switch (status) {
                 case STEP :
-                    // Read a step name
-                    params.targetStep = Step.valueOf(token.toUpperCase());
 
-                    if (params.targetStep == null) {
+                    try {
+                        // Read a step name
+                        params.targetStep = Step.valueOf(token.toUpperCase());
+
+                        // By default, sheets are now expected
+                        status = Status.SHEET;
+                        paramNeeded = false;
+                    } catch (Exception ex) {
                         printCommandLine();
                         stopUsage(
                             "Step name expected, found '" + token +
@@ -214,10 +236,6 @@ public class CLI
 
                         return null;
                     }
-
-                    // By default, sheets are now expected
-                    status = SHEET;
-                    paramNeeded = false;
 
                     break;
 
@@ -283,8 +301,7 @@ public class CLI
         StringBuilder buf = new StringBuilder();
 
         // Print standard command line syntax
-        buf.append("usage: java ")
-           .append(toolName)
+        buf.append(toolName + " options syntax:")
            .append(" [-help]")
            .append(" [-batch]")
            .append(" [-step STEPNAME]")

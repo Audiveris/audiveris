@@ -16,7 +16,6 @@ import omr.sheet.Sheet;
 import omr.step.Step;
 import omr.step.StepException;
 
-import javax.swing.SwingUtilities;
 import javax.xml.bind.annotation.*;
 
 /**
@@ -90,7 +89,6 @@ public class StepTask
     /**
      * This is an implementation trick, because of a "chicken and egg problem"
      * to allow to run the LOAD step while the sheet does not exist yet!
-     * @see omr.step.Step#performUntil(omr.sheet.Sheet, java.lang.Object)
      * @return false!
      */
     @Override

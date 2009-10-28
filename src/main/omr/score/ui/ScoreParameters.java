@@ -496,7 +496,6 @@ public class ScoreParameters
      */
     private class HistoPane
         extends SliderPane
-        implements ChangeListener
     {
         //~ Constructors -------------------------------------------------------
 
@@ -621,7 +620,8 @@ public class ScoreParameters
                 items.add(itemOf(code));
             }
 
-            JComboBox combo = new JComboBox(items.toArray(new String[0]));
+            JComboBox combo = new JComboBox(
+                items.toArray(new String[items.size()]));
             combo.setToolTipText("Dominant language for textual items");
 
             final String code = ((score != null) && score.hasLanguage())
@@ -1146,8 +1146,7 @@ public class ScoreParameters
             double val = dblValue();
 
             if (defaultBox.isSelected() &&
-                (Score.getDefaultSlotMargin()
-                      .doubleValue() != val)) {
+                (Math.abs(Score.getDefaultSlotMargin().doubleValue() - val) > .001)) {
                 logger.info("Default slot margin is now " + val);
                 Score.setDefaultSlotMargin(val);
             }

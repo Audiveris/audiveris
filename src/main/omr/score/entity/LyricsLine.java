@@ -44,6 +44,19 @@ public class LyricsLine
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(LyricsLine.class);
 
+    /** For comparing (TreeNode) LyricsLine instances on their ordinate */
+    public static final Comparator<TreeNode> yComparator = new Comparator<TreeNode>() {
+        public int compare (TreeNode tn1,
+                            TreeNode tn2)
+        {
+            LyricsLine l1 = (LyricsLine) tn1;
+            LyricsLine l2 = (LyricsLine) tn2;
+
+            return Integer.signum(l1.getY() - l2.getY());
+        }
+    };
+
+
     //~ Instance fields --------------------------------------------------------
 
     /** The line number */

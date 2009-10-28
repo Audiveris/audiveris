@@ -34,7 +34,7 @@ public class Impact
     private final Shape assignedShape;
 
     /** The impacted glyphs */
-    private SortedSet<Glyph> glyphs;
+    private Set<Glyph> glyphs;
 
     /** The impacted vertical section sets */
     private final SectionSets sectionSets;
@@ -127,7 +127,7 @@ public class Impact
             shape,
             SectionSets.createFromGlyphs(glyphs));
 
-        impact.glyphs = Glyphs.set(glyphs);
+        impact.glyphs = Glyphs.sortedSet(glyphs);
 
         return impact;
     }
@@ -139,7 +139,7 @@ public class Impact
      * Report the collection of initial glyphs
      * @return the impactedGlyphs
      */
-    public SortedSet<Glyph> getInitialGlyphs ()
+    public Set<Glyph> getInitialGlyphs ()
     {
         return glyphs;
     }

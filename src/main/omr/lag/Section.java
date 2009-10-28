@@ -71,6 +71,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
         }
     };
 
+
     //~ Instance fields --------------------------------------------------------
 
     /** Position of first run */

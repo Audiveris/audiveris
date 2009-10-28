@@ -14,8 +14,8 @@ package omr.glyph.ui.panel;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.GlyphEvaluator;
 import omr.glyph.Glyph;
+import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphRegression;
 import omr.glyph.ui.*;
 import static omr.glyph.ui.panel.GlyphTrainer.Task.Activity.*;
@@ -240,10 +240,6 @@ class SelectionPanel
             break;
 
         case SELECTING :
-            selectAction.setEnabled(false);
-
-            break;
-
         case TRAINING :
             selectAction.setEnabled(false);
 
@@ -264,12 +260,6 @@ class SelectionPanel
     //------------//
     private void defineCore ()
     {
-        class NotedGlyph
-        {
-            String gName;
-            Glyph  glyph;
-            double grade;
-        }
         // What for ? TODO
         inputParams();
 
@@ -294,33 +284,24 @@ class SelectionPanel
         List<NotedGlyph> palmares = new ArrayList<NotedGlyph>(gNames.size());
 
         for (String gName : gNames) {
-            NotedGlyph ng = new NotedGlyph();
-            ng.gName = gName;
-            ng.glyph = repository.getGlyph(gName, this);
+            /////NotedGlyph ng = new NotedGlyph();
+            Glyph glyph = repository.getGlyph(gName, this);
 
-            if (ng.glyph != null) {
+            if (glyph != null) {
                 try {
-                    ng.grade = regression.measureDistance(
-                        ng.glyph,
-                        ng.glyph.getShape());
-                    palmares.add(ng);
+                    double grade = regression.measureDistance(
+                        glyph,
+                        glyph.getShape());
+                    palmares.add(new NotedGlyph(gName, glyph, grade));
                 } catch (Exception ex) {
-                    logger.warning("Cannot evaluate " + ng.glyph);
+                    logger.warning("Cannot evaluate " + glyph);
                 }
             }
         }
 
         // Sort the palmares, shape by shape, by decreasing doubt, so that
         // the worst glyphs are found first
-        Collections.sort(
-            palmares,
-            new Comparator<NotedGlyph>() {
-                    public int compare (NotedGlyph ng1,
-                                        NotedGlyph ng2)
-                    {
-                        return Double.compare(ng2.grade, ng1.grade);
-                    }
-                });
+        Collections.sort(palmares, NotedGlyph.reverseGradeComparator);
 
         // Set of chosen shapes
         Set<NotedGlyph> set = new HashSet<NotedGlyph>();
@@ -449,6 +430,44 @@ class SelectionPanel
     }
 
     //------------//
+    // NotedGlyph //
+    //------------//
+    /**
+     * Handle a glyph together with its name and grade
+     */
+    private static class NotedGlyph
+    {
+        //~ Static fields/initializers -----------------------------------------
+
+        /** For comparing NotedGlyph instance in reverse grade order */
+        static final Comparator<NotedGlyph> reverseGradeComparator = new Comparator<NotedGlyph>() {
+            public int compare (NotedGlyph ng1,
+                                NotedGlyph ng2)
+            {
+                return Double.compare(ng2.grade, ng1.grade);
+            }
+        };
+
+
+        //~ Instance fields ----------------------------------------------------
+
+        final String gName;
+        final Glyph  glyph;
+        final double grade;
+
+        //~ Constructors -------------------------------------------------------
+
+        public NotedGlyph (String gName,
+                           Glyph  glyph,
+                           double grade)
+        {
+            this.gName = gName;
+            this.glyph = glyph;
+            this.grade = grade;
+        }
+    }
+
+    //------------//
     // DumpAction //
     //------------//
     private class DumpAction
@@ -474,18 +493,7 @@ class SelectionPanel
                 "\nContent of " +
                 (trainingPanel.useWhole() ? "whole" : "core") +
                 " population (" + gNames.size() + "):");
-            Collections.sort(
-                gNames,
-                new Comparator<String>() {
-                        public int compare (String s1,
-                                            String s2)
-                        {
-                            String n1 = GlyphRepository.shapeNameOf(s1);
-                            String n2 = GlyphRepository.shapeNameOf(s2);
-
-                            return n1.compareTo(n2);
-                        }
-                    });
+            Collections.sort(gNames, GlyphRepository.shapeComparator);
 
             int    glyphNb = 0;
             String prevName = null;

@@ -67,6 +67,39 @@ public class SticksBuilder
     private static final SuccessResult ASSIGNED = new SuccessResult(
         "SticksBuilder-Assigned");
 
+    /** For comparing sections, according to the thickening relevance */
+    private static final Comparator<GlyphSection> thickeningComparator = new Comparator<GlyphSection>() {
+        public int compare (GlyphSection gs1,
+                            GlyphSection gs2)
+        {
+            StickSection  s1 = (StickSection) gs1;
+            StickSection  s2 = (StickSection) gs2;
+
+            // Criteria #1 is layer number (small layer numbers
+            // first) Plus section thickness for non layer zero
+            // sections
+            int           layerDiff;
+            StickRelation r1 = s1.getRelation();
+            StickRelation r2 = s2.getRelation();
+
+            if ((r1.layer == 0) || (r2.layer == 0)) {
+                layerDiff = r1.layer - r2.layer;
+            } else {
+                layerDiff = (r1.layer + s1.getRunNb()) -
+                            (r2.layer + s2.getRunNb());
+            }
+
+            if (layerDiff != 0) {
+                return layerDiff;
+            } else {
+                // Criteria #2 is section length (large lengths
+                // first)
+                return s2.getMaxRunLength() - s1.getMaxRunLength();
+            }
+        }
+    };
+
+
     //~ Instance fields --------------------------------------------------------
 
     /** The related sheet */
@@ -85,7 +118,7 @@ public class SticksBuilder
     private final double maxAdjacency;
 
     /** Maximum thickness value for sticks to be recognized as such */
-    private final int maxThickness;
+    protected final int maxThickness;
 
     /** Maximum value for slope*/
     private final double maxSlope;
@@ -336,15 +369,7 @@ public class SticksBuilder
         final long startTime = System.currentTimeMillis();
 
         // Sort on stick mid position first
-        Collections.sort(
-            sticks,
-            new Comparator<Stick>() {
-                    public int compare (Stick s1,
-                                        Stick s2)
-                    {
-                        return s1.getMidPos() - s2.getMidPos();
-                    }
-                });
+        Collections.sort(sticks, Stick.midPosComparator);
 
         // Then use position to narrow the tests
         List<Stick> removals = new ArrayList<Stick>();
@@ -699,30 +724,30 @@ public class SticksBuilder
         }
     }
 
-    //----------------//
-    // purgeInternals //
-    //----------------//
-    private void purgeInternals (List<GlyphSection> list)
-    {
-        int minLevel = constants.minSectionGrayLevel.getValue();
-
-        for (Iterator<GlyphSection> it = list.iterator(); it.hasNext();) {
-            StickSection  section = (StickSection) it.next();
-
-            // We purge internal sections which don't exhibit sufficient
-            // foreground density (they are too dark)
-            StickRelation relation = section.getRelation();
-
-            if (relation.role == INTERNAL) {
-                if ((section.getLevel() < minLevel) ||
-                    (section.getRunNb() > 2)) {
-                    // We purge this internal section
-                    it.remove();
-                    relation.role = PURGED;
-                }
-            }
-        }
-    }
+//    //----------------//
+//    // purgeInternals //
+//    //----------------//
+//    private void purgeInternals (List<GlyphSection> list)
+//    {
+//        int minLevel = constants.minSectionGrayLevel.getValue();
+//
+//        for (Iterator<GlyphSection> it = list.iterator(); it.hasNext();) {
+//            StickSection  section = (StickSection) it.next();
+//
+//            // We purge internal sections which don't exhibit sufficient
+//            // foreground density (they are too dark)
+//            StickRelation relation = section.getRelation();
+//
+//            if (relation.role == INTERNAL) {
+//                if ((section.getLevel() < minLevel) ||
+//                    (section.getRunNb() > 2)) {
+//                    // We purge this internal section
+//                    it.remove();
+//                    relation.role = PURGED;
+//                }
+//            }
+//        }
+//    }
 
     //----------------------//
     // thickenAlignmentCore //
@@ -740,38 +765,7 @@ public class SticksBuilder
                                        List<GlyphSection> outs)
     {
         // Sort ins according to their relevance
-        Collections.sort(
-            ins,
-            new Comparator<GlyphSection>() {
-                    public int compare (GlyphSection gs1,
-                                        GlyphSection gs2)
-                    {
-                        StickSection  s1 = (StickSection) gs1;
-                        StickSection  s2 = (StickSection) gs2;
-
-                        // Criteria #1 is layer number (small layer numbers
-                        // first) Plus section thickness for non layer zero
-                        // sections
-                        int           layerDiff;
-                        StickRelation r1 = s1.getRelation();
-                        StickRelation r2 = s2.getRelation();
-
-                        if ((r1.layer == 0) || (r2.layer == 0)) {
-                            layerDiff = r1.layer - r2.layer;
-                        } else {
-                            layerDiff = (r1.layer + s1.getRunNb()) -
-                                        (r2.layer + s2.getRunNb());
-                        }
-
-                        if (layerDiff != 0) {
-                            return layerDiff;
-                        } else {
-                            // Criteria #2 is section length (large lengths
-                            // first)
-                            return s2.getMaxRunLength() - s1.getMaxRunLength();
-                        }
-                    }
-                });
+        Collections.sort(ins, thickeningComparator);
 
         // Using the priority order, let's thicken the stick core
         for (GlyphSection s : ins) {

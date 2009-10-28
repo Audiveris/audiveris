@@ -83,7 +83,7 @@ public class GlyphLag
      * Collection of active glyphs. This is derived from the activeMap, to give
      * direct access to all the active glyphs. It is kept in sync with activeMap.
      */
-    private volatile SortedSet<Glyph> activeGlyphs;
+    private Set<Glyph> activeGlyphs;
 
     /** Global id to uniquely identify a glyph */
     private final AtomicInteger globalGlyphId = new AtomicInteger(0);
@@ -120,11 +120,7 @@ public class GlyphLag
     public synchronized Collection<Glyph> getActiveGlyphs ()
     {
         if (activeGlyphs == null) {
-            synchronized (this) {
-                if (activeGlyphs == null) {
-                    activeGlyphs = Glyphs.set(activeMap.values());
-                }
-            }
+            activeGlyphs = Glyphs.sortedSet(activeMap.values());
         }
 
         return Collections.unmodifiableCollection(activeGlyphs);
@@ -304,7 +300,7 @@ public class GlyphLag
 
         for (Glyph glyph : collection) {
             boolean inRect = true;
-            sectionTest:
+            sectionTest: 
             for (GlyphSection section : glyph.getMembers()) {
                 if (!rect.contains(section.getContourBox())) {
                     inRect = false;

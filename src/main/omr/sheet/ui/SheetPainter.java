@@ -81,7 +81,7 @@ public class SheetPainter
         this.g = (Graphics2D) g;
         this.editableBoundaries = editableBoundaries;
 
-        oldStroke = UIUtilities.SetAbsoluteStroke(g, 1f);
+        oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
     }
 
     //~ Methods ----------------------------------------------------------------

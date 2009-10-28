@@ -51,6 +51,12 @@ public class UnitTreeTable
     {
         super(model);
 
+        ///setDefaultEditor(TreeTableModel.class, new TreeTableCellEditor());
+
+        // Show grid.
+        setShowGrid(true);
+
+
         // Specify column widths
         adjustColumns();
 
@@ -90,11 +96,14 @@ public class UnitTreeTable
 
         case VALUE :
 
-            //             Object obj = getModel().getValueAt (row, col);
-            //             if (obj instanceof Boolean)
-            //                 return getDefaultRenderer(Boolean.class);
-            //             else
-            return valueRenderer;
+            Object obj = getModel()
+                             .getValueAt(row, col);
+
+            if (obj instanceof Boolean) {
+                return getDefaultRenderer(Boolean.class);
+            } else {
+                return valueRenderer;
+            }
 
         case MODIF :
 
@@ -102,7 +111,7 @@ public class UnitTreeTable
             Node     node = UnitManager.getInstance()
                                        .getNode(buildKey(tp));
 
-            if (node instanceof Node) {
+            if (node != null) {
                 return getDefaultRenderer(Object.class);
             } else {
                 return getDefaultRenderer(Boolean.class);
@@ -175,13 +184,13 @@ public class UnitTreeTable
     {
         for (int row = 0; row < tree.getRowCount(); row++) {
             if (tree.isCollapsed(row)) {
-                TreePath tp = tree.getPathForRow(row);
-                Object   obj = UnitManager.getInstance()
-                                          .getNode(buildKey(tp));
-
-                if (obj instanceof PackageNode) {
+//                TreePath tp = tree.getPathForRow(row);
+//                Object   obj = UnitManager.getInstance()
+//                                          .getNode(buildKey(tp));
+//
+//                if (obj instanceof PackageNode) {
                     tree.expandRow(row);
-                }
+//                }
             }
         }
     }

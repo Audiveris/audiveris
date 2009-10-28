@@ -57,10 +57,10 @@ public class LinearEvaluator
         LinearEvaluator.class);
 
     /** Un/marshalling context for use with JAXB */
-    private static JAXBContext jaxbContext;
+    private static volatile JAXBContext jaxbContext;
 
     /** To avoid infinity */
-    public static double INFINITE_DISTANCE = 50e50;
+    public static final double INFINITE_DISTANCE = 50e50;
 
     /** To detect a near-zero value in a double */
     private static final double EPSILON = 1E-10;
@@ -145,7 +145,8 @@ public class LinearEvaluator
         Category category = categories.get(categoryId);
 
         if (category == null) {
-            throw new IllegalArgumentException("Unknown category: " + category);
+            throw new IllegalArgumentException(
+                "Unknown category: " + categoryId);
         }
 
         return category.distance(pattern, parameters);
@@ -212,6 +213,22 @@ public class LinearEvaluator
         logger.fine("LinearEvaluator marshalled");
     }
 
+    //---------------//
+    // patternDeltas //
+    //---------------//
+    public double[] patternDeltas (double[] one,
+                                   double[] two)
+    {
+        double[] table = new double[getInputSize()];
+
+        for (int p = 0; p < table.length; p++) {
+            double dif = one[p] - two[p];
+            table[p] = dif * dif;
+        }
+
+        return table;
+    }
+
     //-----------------//
     // patternDistance //
     //-----------------//
@@ -244,22 +261,6 @@ public class LinearEvaluator
         }
 
         return dist / inputSize;
-    }
-
-    //---------------//
-    // patternDeltas //
-    //---------------//
-    public double[] patternDeltas (double[] one,
-                                   double[] two)
-    {
-        double[] table = new double[getInputSize()];
-
-        for (int p = 0; p < table.length; p++) {
-            double dif = one[p] - two[p];
-            table[p] = dif * dif;
-        }
-
-        return table;
     }
 
     //-------//
@@ -383,6 +384,17 @@ public class LinearEvaluator
         return evaluator;
     }
 
+    //---------------//
+    // getParameters //
+    //---------------//
+    /**
+     * @return the parameters
+     */
+    public Parameter[] getParameters ()
+    {
+        return parameters;
+    }
+
     //----------------//
     // getJaxbContext //
     //----------------//
@@ -395,17 +407,6 @@ public class LinearEvaluator
         }
 
         return jaxbContext;
-    }
-
-    //---------------//
-    // getParameters //
-    //---------------//
-    /**
-     * @return the parameters
-     */
-    public Parameter[] getParameters ()
-    {
-        return parameters;
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -522,34 +523,23 @@ public class LinearEvaluator
 
         //~ Methods ------------------------------------------------------------
 
-        public String getDefaults ()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            for (Parameter param : parameters) {
-                sb.append(String.format(df, param.defaultWeight));
-            }
-
-            return sb.toString();
-        }
-
-        public String getNames ()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            for (Parameter param : parameters) {
-                sb.append(String.format(sf, param.name));
-            }
-
-            return sb.toString();
-        }
-
         public String getDashes ()
         {
             StringBuilder sb = new StringBuilder();
 
             for (int p = 0; p < parameters.length; p++) {
                 sb.append(String.format(sf, "----------"));
+            }
+
+            return sb.toString();
+        }
+
+        public String getDefaults ()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            for (Parameter param : parameters) {
+                sb.append(String.format(df, param.defaultWeight));
             }
 
             return sb.toString();
@@ -563,6 +553,17 @@ public class LinearEvaluator
             for (int p = 0; p < parameters.length; p++) {
                 double dif = one[p] - two[p];
                 sb.append(String.format(df, dif * dif));
+            }
+
+            return sb.toString();
+        }
+
+        public String getNames ()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            for (Parameter param : parameters) {
+                sb.append(String.format(sf, param.name));
             }
 
             return sb.toString();
@@ -773,7 +774,7 @@ public class LinearEvaluator
             SortedMap<String, Category> map = new TreeMap<String, Category>();
 
             for (Category category : categories) {
-                map.put(category.getId().toString(), category);
+                map.put(category.getId(), category);
             }
 
             return map;
@@ -810,12 +811,12 @@ public class LinearEvaluator
              * Just one data element
              * => a mean value, but artificial (average) weight
              */
-            SINGLE_DATA,
+            SINGLE_DATA, 
             /**
              * Several data elements, but with identical values
              * => a mean value, but infinite weight
              */
-            IDENTICAL_VALUES,
+            IDENTICAL_VALUES, 
             /**
              * Several data elements, with some variation in the values
              * => a mean value and weight computed as 1/variance

@@ -125,7 +125,7 @@ public class FileDropHandler
             return false;
         }
 
-        /* fetch the Transferable */
+        /* Fetch the Transferable */
         Transferable trsf = support.getTransferable();
 
         try {
@@ -135,23 +135,7 @@ public class FileDropHandler
 
             /* Loop through the files */
             for (Object obj : fileList) {
-                final File file = (File) obj;
-                logger.info("Dropping file " + file);
-
-                // Targer step
-                final Step target = getDefaultStep();
-                new BasicTask() {
-                        Sheet sheet = null;
-
-                        @Override
-                        protected Void doInBackground ()
-                            throws Exception
-                        {
-                            target.performUntil(new Sheet(file));
-
-                            return null;
-                        }
-                    }.execute();
+                new DropTask((File) obj, getDefaultStep()).execute();
             }
         } catch (UnsupportedFlavorException ex) {
             logger.warning("Unsupported flavor in drag & drop", ex);
@@ -179,5 +163,38 @@ public class FileDropHandler
         private final Step.Constant defaultStep = new Step.Constant(
             Step.SCORE,
             "Default step executed when a file is dropped");
+    }
+
+    //----------//
+    // DropTask //
+    //----------//
+    private static class DropTask
+        extends BasicTask
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        private final File file;
+        private final Step target;
+
+        //~ Constructors -------------------------------------------------------
+
+        public DropTask (File file,
+                         Step target)
+        {
+            this.file = file;
+            this.target = target;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        protected Void doInBackground ()
+            throws Exception
+        {
+            logger.info("Dropping file " + file);
+            target.performUntil(new Sheet(file));
+
+            return null;
+        }
     }
 }

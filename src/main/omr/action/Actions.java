@@ -35,7 +35,7 @@ public class Actions
     private static final Logger logger = Logger.getLogger(Actions.class);
 
     /** Context for JAXB unmarshalling */
-    private static JAXBContext jaxbContext;
+    private static volatile JAXBContext jaxbContext;
 
     /** The collection of all actions loaded so far */
     private static final Set<ActionDescriptor> allDescriptors = new LinkedHashSet<ActionDescriptor>();

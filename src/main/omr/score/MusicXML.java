@@ -236,16 +236,12 @@ public class MusicXML
             return BarStyle.LIGHT_LIGHT;
 
         case FINAL_BARLINE :
+        case RIGHT_REPEAT_SIGN :
             return BarStyle.LIGHT_HEAVY;
 
         case REVERSE_FINAL_BARLINE :
-            return BarStyle.HEAVY_LIGHT;
-
         case LEFT_REPEAT_SIGN :
             return BarStyle.HEAVY_LIGHT;
-
-        case RIGHT_REPEAT_SIGN :
-            return BarStyle.LIGHT_HEAVY;
 
         case BACK_TO_BACK_REPEAT_SIGN :
             return BarStyle.HEAVY_HEAVY; //"heavy-heavy"; ???
@@ -260,6 +256,19 @@ public class MusicXML
     public static BigDecimal createDecimal (double val)
     {
         return new BigDecimal("" + val);
+    }
+
+    //--------//
+    // stepOf //
+    //--------//
+    /**
+     * Convert from Audiveris Step type to Proxymusic Step type
+     * @param step Audiveris enum step
+     * @return Proxymusic enum step
+     */
+    public static Step stepOf (omr.score.entity.Note.Step step)
+    {
+        return Step.fromValue(step.toString());
     }
 
     //----------//
@@ -312,18 +321,5 @@ public class MusicXML
         return toTenths(
             staff.getPageTopLeft().y - staff.getSystem().getTopLeft().y -
             point.y);
-    }
-
-    //--------//
-    // stepOf //
-    //--------//
-    /**
-     * Convert from Audiveris Step type to Proxymusic Step type
-     * @param step Audiveris enum step
-     * @return Proxymusic enum step
-     */
-    public static Step stepOf (omr.score.entity.Note.Step step)
-    {
-        return Step.fromValue(step.toString());
     }
 }

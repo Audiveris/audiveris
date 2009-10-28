@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.constant;
 
-import java.util.Comparator;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
@@ -33,14 +32,7 @@ public class PackageNode
      * <code>ConstantSet</code>.
      */
     private final ConcurrentSkipListSet<Node> children = new ConcurrentSkipListSet<Node>(
-        new Comparator<Node>() {
-                public int compare (Node n1,
-                                    Node n2)
-                {
-                    return n1.getName()
-                             .compareTo(n2.getName());
-                }
-            });
+        Node.nameComparator);
 
     //~ Constructors -----------------------------------------------------------
 

@@ -170,7 +170,7 @@ public class Dash
     public void render (Graphics g)
     {
         if (box.intersects(g.getClipBounds())) {
-            Stroke oldStroke = UIUtilities.SetAbsoluteStroke(g, 1f);
+            Stroke oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
 
             Line   line = getLine();
             Point  start = new Point(
@@ -197,7 +197,7 @@ public class Dash
     {
         // Check the clipping
         if (box.intersects(g.getClipBounds())) {
-            Stroke oldStroke = UIUtilities.SetAbsoluteStroke(g, 1f);
+            Stroke oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
             g.drawRect(box.x, box.y, box.width, box.height);
             ((Graphics2D) g).setStroke(oldStroke);
 

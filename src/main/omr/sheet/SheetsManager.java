@@ -16,22 +16,15 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
-import omr.score.Score;
-import omr.score.ui.PaintingParameters;
-
 import omr.sheet.ui.SheetsController;
 
 import omr.util.Dumper;
-import omr.util.Implement;
 import omr.util.Memory;
 import omr.util.NameSet;
-import omr.util.OmrExecutors;
 
 import org.jdesktop.application.Action;
 
-import java.beans.*;
 import java.util.*;
-import java.util.concurrent.Callable;
 
 /**
  * Class <code>SheetsManager</code> handles the set of sheet instances in
@@ -41,7 +34,6 @@ import java.util.concurrent.Callable;
  * @version $Id$
  */
 public class SheetsManager
-    implements PropertyChangeListener
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -52,7 +44,7 @@ public class SheetsManager
     private static final Logger logger = Logger.getLogger(SheetsManager.class);
 
     /** The single instance of this class */
-    private static SheetsManager INSTANCE;
+    private static volatile SheetsManager INSTANCE;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -75,11 +67,6 @@ public class SheetsManager
      */
     private SheetsManager ()
     {
-        // Listen to system layout property
-        PaintingParameters.getInstance()
-                          .addPropertyChangeListener(
-            PaintingParameters.VERTICAL_LAYOUT,
-            this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -242,32 +229,6 @@ public class SheetsManager
 
         // Insert new sheet instances
         instances.add(sheet);
-    }
-
-    //----------------//
-    // propertyChange //
-    //----------------//
-    @Implement(PropertyChangeListener.class)
-    public void propertyChange (PropertyChangeEvent evt)
-    {
-//        OmrExecutors.getCachedLowExecutor()
-//                    .submit(
-//            new Callable<Void>() {
-//                    public Void call ()
-//                        throws Exception
-//                    {
-//                        for (Sheet sheet : instances) {
-//                            Score score = sheet.getScore();
-//
-//                            if (score != null) {
-//                                score.setOrientation(
-//                                    PaintingParameters.getInstance().getScoreOrientation());
-//                            }
-//                        }
-//
-//                        return null;
-//                    }
-//                });
     }
 
     //~ Inner Classes ----------------------------------------------------------

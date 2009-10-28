@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.constant;
 
+import java.util.Comparator;
 
 /**
  * Abstract class <code>Node</code> represents a node in the hierarchy of
@@ -21,6 +22,19 @@ package omr.constant;
  */
 public abstract class Node
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** For comparing Node instances according to their name */
+    public static final Comparator<Node> nameComparator = new Comparator<Node>() {
+        public int compare (Node n1,
+                            Node n2)
+        {
+            return n1.getName()
+                     .compareTo(n2.getName());
+        }
+    };
+
+
     //~ Instance fields --------------------------------------------------------
 
     /** (Fully qualified) name of the node */

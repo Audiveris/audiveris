@@ -1217,7 +1217,7 @@ public class Sheet
         BrokenLine north = new BrokenLine(
             new Point(0, top),
             new Point(getWidth(), top));
-        BrokenLine south = null;
+        BrokenLine south;
 
         for (SystemInfo system : getSystems()) {
             // Not the very first system?

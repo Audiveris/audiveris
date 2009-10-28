@@ -560,9 +560,9 @@ public class GlyphMenu
     private class PasteAction
         extends DynAction
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Static fields/initializers -----------------------------------------
 
-        private final String PREFIX = "Paste ";
+        private static final String PREFIX = "Paste ";
 
         //~ Methods ------------------------------------------------------------
 

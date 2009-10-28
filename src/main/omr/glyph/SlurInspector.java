@@ -167,15 +167,7 @@ public class SlurInspector
             oldSlur.getMembers());
 
         // Sort by decreasing weight
-        Collections.sort(
-            members,
-            new Comparator<GlyphSection>() {
-                    public int compare (GlyphSection s1,
-                                        GlyphSection s2)
-                    {
-                        return Integer.signum(s2.getWeight() - s1.getWeight());
-                    }
-                });
+        Collections.sort(members, GlyphSection.reverseWeightComparator);
 
         // Find the suitable seed, which is chosen as the section with best
         // circle distance among the sections whose weight is significant
@@ -437,15 +429,7 @@ public class SlurInspector
         }
 
         // Sort suitable glyphs by decreasing weight
-        Collections.sort(
-            suitables,
-            new Comparator<Glyph>() {
-                    public int compare (Glyph o1,
-                                        Glyph o2)
-                    {
-                        return o2.getWeight() - o1.getWeight();
-                    }
-                });
+        Collections.sort(suitables, Glyphs.reverseWeightComparator);
 
         // Process that slur, looking at neighbors
         Glyph compound = system.tryCompound(oldSlur, suitables, adapter);

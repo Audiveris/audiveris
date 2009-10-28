@@ -163,11 +163,13 @@ public class TesseractOCR
                 public List<OcrLine> call ()
                     throws Exception
                 {
-                    EANYCodeChar[] chars = charsRetriever.retrieveChars(
-                        buf,
-                        languageCode);
+                    synchronized (this) {
+                        EANYCodeChar[] chars = charsRetriever.retrieveChars(
+                            buf,
+                            languageCode);
 
-                    return getLines(chars, label);
+                        return getLines(chars, label);
+                    }
                 }
             };
 
@@ -277,7 +279,7 @@ public class TesseractOCR
             ch.bottom - ch.top);
 
         // Get correct string value
-        String str = null;
+        String str;
 
         // Check for extension character badly recognized, using aspect
         double aspect = (double) box.width / (double) box.height;

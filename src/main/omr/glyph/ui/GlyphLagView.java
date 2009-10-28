@@ -443,7 +443,7 @@ public class GlyphLagView
         }
 
         // Decorations first
-        Stroke oldStroke = UIUtilities.SetAbsoluteStroke(g, 1f);
+        Stroke oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
         g.setColor(Color.blue);
 
         for (Glyph glyph : glyphs) {
@@ -695,9 +695,9 @@ public class GlyphLagView
                 // Overwriting the set of glyphs
                 if (glyph != null) {
                     // Make a one-glyph set
-                    glyphs = Glyphs.set(glyph);
+                    glyphs = Glyphs.sortedSet(glyph);
                 } else {
-                    glyphs = Glyphs.set();
+                    glyphs = Glyphs.sortedSet();
                 }
 
                 publish(new GlyphSetEvent(this, hint, movement, glyphs));

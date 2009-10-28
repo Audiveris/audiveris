@@ -16,8 +16,6 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
-import omr.score.Score;
-
 import omr.util.TreeNode;
 
 import java.util.*;
@@ -41,9 +39,6 @@ public class ScorePart
 
     //~ Instance fields --------------------------------------------------------
 
-    /** The related score */
-    private final Score score;
-
     /**
      * Distinguished id for this part (the same id is used by the corresponding
      * SystemPart in each System)
@@ -57,7 +52,7 @@ public class ScorePart
     private final int displayOrdinate;
 
     /** Instrument MIDI program, if any */
-    private Integer midiProgram; // = 71;
+    private Integer midiProgram;
 
     /** List of staff ids */
     private List<Integer> ids = new ArrayList<Integer>();
@@ -71,16 +66,13 @@ public class ScorePart
      * Creates a new instance of ScorePart, built from a SystemPart
      *
      * @param systemPart the concrete SystemPart
-     * @param score the related score entity
      * @param id the id for this part
      * @param displayOrdinate the ordinate offset of this part wrt system
      */
     public ScorePart (SystemPart systemPart,
-                      Score      score,
                       int        id,
                       int        displayOrdinate)
     {
-        this.score = score;
         this.id = id;
         this.displayOrdinate = displayOrdinate;
 
@@ -93,7 +85,6 @@ public class ScorePart
     /** Meant for XML binder only */
     private ScorePart ()
     {
-        score = null;
         id = 0;
         displayOrdinate = 0;
     }
@@ -138,6 +129,14 @@ public class ScorePart
         default :
             return constants.defaultPartProgram.getValue();
         }
+    }
+
+    //--------------------//
+    // getDisplayOrdinate //
+    //--------------------//
+    public int getDisplayOrdinate ()
+    {
+        return displayOrdinate;
     }
 
     //-------//
@@ -233,52 +232,52 @@ public class ScorePart
     {
         return ids;
     }
-
-    //--------//
-    // equals //
-    //--------//
-    /**
-     * Check whether the list of ids are identical
-     *
-     * @param obj the object to compare to
-     * @return true if equal
-     */
-    @Override
-    public boolean equals (Object obj)
-    {
-        if (obj instanceof ScorePart) {
-            ScorePart sp = (ScorePart) obj;
-
-            if (sp.ids.size() != ids.size()) {
-                return false;
-            }
-
-            for (int i = 0; i < ids.size(); i++) {
-                if (!(sp.ids.get(i).equals(ids.get(i)))) {
-                    return false;
-                }
-            }
-
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    //----------//
-    // hashCode //
-    //----------//
-    /**
-     * To please FindBugs, because of overriding of equals method
-     * @return nothing
-     */
-    @Override
-    public int hashCode ()
-    {
-        assert false : "hashCode not designed";
-
-        return 42; // any arbitrary constant will do
-    }
+//
+//    //--------//
+//    // equals //
+//    //--------//
+//    /**
+//     * Check whether the list of ids are identical
+//     *
+//     * @param obj the object to compare to
+//     * @return true if equal
+//     */
+//    @Override
+//    public boolean equals (Object obj)
+//    {
+//        if (obj instanceof ScorePart) {
+//            ScorePart sp = (ScorePart) obj;
+//
+//            if (sp.ids.size() != ids.size()) {
+//                return false;
+//            }
+//
+//            for (int i = 0; i < ids.size(); i++) {
+//                if (!(sp.ids.get(i).equals(ids.get(i)))) {
+//                    return false;
+//                }
+//            }
+//
+//            return true;
+//        } else {
+//            return false;
+//        }
+//    }
+//
+//    //----------//
+//    // hashCode //
+//    //----------//
+//    /**
+//     * To please FindBugs, because of overriding of equals method
+//     * @return nothing
+//     */
+//    @Override
+//    public int hashCode ()
+//    {
+//        assert false : "hashCode not designed";
+//
+//        return 42; // any arbitrary constant will do
+//    }
 
     //----------//
     // toString //
@@ -306,14 +305,6 @@ public class ScorePart
         sb.append("]}");
 
         return sb.toString();
-    }
-
-    //--------------------//
-    // getDisplayOrdinate //
-    //--------------------//
-    public int getDisplayOrdinate ()
-    {
-        return displayOrdinate;
     }
 
     //~ Inner Classes ----------------------------------------------------------

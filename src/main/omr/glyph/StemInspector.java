@@ -33,13 +33,8 @@ public class StemInspector
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(StemInspector.class);
 
-    //~ Instance fields --------------------------------------------------------
-
-    /** Dedicated system */
-    private final SystemInfo system;
-
     /** Predicate to filter only reliable symbols attached to a stem */
-    private final Predicate<Glyph> reliableStemSymbols = new Predicate<Glyph>() {
+    private static final Predicate<Glyph> reliableStemSymbols = new Predicate<Glyph>() {
         public boolean check (Glyph glyph)
         {
             Shape   shape = glyph.getShape();
@@ -52,6 +47,11 @@ public class StemInspector
         }
     };
 
+
+    //~ Instance fields --------------------------------------------------------
+
+    /** Dedicated system */
+    private final SystemInfo system;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -119,9 +119,9 @@ public class StemInspector
         system.extractNewGlyphs();
 
         // Try to recognize each glyph in turn
-        List<Glyph>     symbols = new ArrayList<Glyph>();
+        List<Glyph>          symbols = new ArrayList<Glyph>();
         final GlyphEvaluator evaluator = GlyphNetwork.getInstance();
-        final double    maxDoubt = GlyphInspector.getPatternsMaxDoubt();
+        final double         maxDoubt = GlyphInspector.getPatternsMaxDoubt();
 
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.getShape() == null) {

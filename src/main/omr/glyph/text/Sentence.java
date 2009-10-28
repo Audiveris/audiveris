@@ -81,7 +81,7 @@ public class Sentence
     private final String id;
 
     /** Abscissa-ordered collection of text items */
-    private final SortedSet<Glyph> items = Glyphs.set();
+    private final SortedSet<Glyph> items = Glyphs.sortedSet();
 
     // Scaled parameters
     //--------------------------------------------------------------------------
@@ -589,7 +589,7 @@ public class Sentence
         getTextHeight();
 
         // The (only) glyph for the sentence
-        Glyph glyph = null;
+        Glyph glyph;
 
         if (items.size() > 1) {
             Glyph compound = systemInfo.buildTransientCompound(items);

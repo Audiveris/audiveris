@@ -27,6 +27,7 @@ import omr.score.common.PixelPoint;
 
 import java.awt.*;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.xml.bind.annotation.*;
@@ -54,6 +55,25 @@ public class Stick
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Stick.class);
+
+    /** For comparing Stick instances according to their mid position */
+    public static final Comparator<Stick> midPosComparator = new Comparator<Stick>() {
+        public int compare (Stick s1,
+                            Stick s2)
+        {
+            return s1.getMidPos() - s2.getMidPos();
+        }
+    };
+
+    /** For comparing Stick instances on decreasing length */
+    public static final Comparator<Stick> reverseLengthComparator = new Comparator<Stick>() {
+        public int compare (Stick s1,
+                            Stick s2)
+        {
+            return s2.getLength() - s1.getLength();
+        }
+    };
+
 
     //~ Instance fields --------------------------------------------------------
 

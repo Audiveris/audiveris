@@ -163,15 +163,7 @@ public class BarsChecker
         }
 
         // Sort bar candidates according to their abscissa
-        Collections.sort(
-            barsArea.getSticks(),
-            new Comparator<Stick>() {
-                    public int compare (Stick o1,
-                                        Stick o2)
-                    {
-                        return Integer.signum(o1.getMidPos() - o2.getMidPos());
-                    }
-                });
+        Collections.sort(barsArea.getSticks(), Stick.midPosComparator);
 
         double minResult = constants.minCheckResult.getValue();
 

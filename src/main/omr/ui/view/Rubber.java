@@ -60,7 +60,7 @@ import javax.swing.event.*;
  * <li> <b>Low-level events</b> originate from a JComponent, where the
  * Rubber is registered as a MouseListener and a MouseMotionListener. The
  * component can be linked by the Rubber constructor, or later by using the
- * {@link #setComponent} method. Rubber is then called on its
+ * {@link #connectComponent} method. Rubber is then called on its
  * <i>mouseDragged, mousePressed, mouseReleased</i> methods.
  *
  * <li> <b>High-level events</b>, as computed by Rubber from low-level mouse
@@ -123,7 +123,6 @@ public class Rubber
      * which are meant to be provided later.
      *
      * @see #setZoom
-     * @see #setComponent
      */
     public Rubber ()
     {
@@ -138,7 +137,6 @@ public class Rubber
      * linked later
      *
      * @param zoom the related zoom
-     * @see #setComponent
      */
     public Rubber (Zoom zoom)
     {
@@ -342,10 +340,6 @@ public class Rubber
             mouseMonitor.pointAdded(getCenter(), PRESSING);
         } else if (isContextWanted(e)) {
             mouseMonitor.contextSelected(getCenter(), PRESSING);
-        } else if (isRubberWanted(e)) {
-            mouseMonitor.pointSelected(getCenter(), PRESSING);
-        } else if (isRezoomWanted(e)) {
-            mouseMonitor.pointSelected(getCenter(), PRESSING);
         } else {
             mouseMonitor.pointSelected(getCenter(), PRESSING);
         }

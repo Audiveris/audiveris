@@ -400,7 +400,8 @@ public class SheetSteps
             throws StepException
         {
             sheet.setLinesBuilder(new LinesBuilder(sheet));
-            sheet.getLinesBuilder().buildInfo();
+            sheet.getLinesBuilder()
+                 .buildInfo();
             sheet.setStaves(sheet.getLinesBuilder().getStaves());
         }
     }
@@ -486,7 +487,7 @@ public class SheetSteps
     /**
      * Step to retrieve measures
      */
-    private class MeasuresTask
+    private static class MeasuresTask
         extends SystemTask
     {
         //~ Constructors -------------------------------------------------------
@@ -843,7 +844,7 @@ public class SheetSteps
      * Step to process all glyphs, built with connected sections from the
      * current collection of non-recognized sections.
      */
-    private class SymbolsTask
+    private static class SymbolsTask
         extends SystemTask
     {
         //~ Constructors -------------------------------------------------------
@@ -898,7 +899,7 @@ public class SheetSteps
      * recognize newly segmented leaves, since sections belonging to stems are
      * properly assigned.
      */
-    private class VerticalsTask
+    private static class VerticalsTask
         extends SystemTask
     {
         //~ Constructors -------------------------------------------------------

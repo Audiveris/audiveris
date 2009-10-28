@@ -585,7 +585,7 @@ public class ScorePainter
                 paintSymbol(Shape.DOT, dotCenter, staff, pitch);
             }
         } else if (chord.getDotsNumber() == 2) {
-            // TO BE IMPLEMENTED
+            // TODO: TO BE IMPLEMENTED
         }
 
         // Accidental ?
@@ -839,28 +839,7 @@ public class ScorePainter
         Sentence sentence = text.getSentence();
         int      y = sentence.getLocation().y;
 
-        if (text.getContent() != null) {
-            g.drawString(text.getContent(), text.getLocation().x, y);
-        } else {
-            // Use the (pseudo)content of contained glyphs
-            for (Glyph item : sentence.getGlyphs()) {
-                String str = item.getTextInfo()
-                                 .getContent();
-
-                if (str == null) {
-                    str = item.getTextInfo()
-                              .getPseudoContent();
-                }
-
-                if (str != null) {
-                    g.drawString(
-                        str,
-                        text.getSystem()
-                            .toSystemPoint(item.getLocation()).x,
-                        y);
-                }
-            }
-        }
+        g.drawString(text.getContent(), text.getLocation().x, y);
 
         g.setFont(oldFont);
         g.setColor(oldColor);
@@ -891,7 +870,7 @@ public class ScorePainter
                 for (Glyph glyph : timeSignature.getGlyphs()) {
                     final Shape s = glyph.getShape();
 
-                    if (s != null && s != Shape.GLYPH_PART) {
+                    if ((s != null) && (s != Shape.GLYPH_PART)) {
                         final SystemPoint center = timeSignature.computeGlyphCenter(
                             glyph);
                         final Staff       staff = part.getStaffAt(center);

@@ -417,7 +417,7 @@ public class SymbolsEditor
                         this,
                         SelectionHint.GLYPH_TRANSIENT,
                         movement,
-                        Glyphs.set(compound)));
+                        Glyphs.sortedSet(compound)));
             } catch (IllegalArgumentException ex) {
                 // All sections do not belong to the same system
                 // No compound is allowed and displayed

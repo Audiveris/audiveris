@@ -401,10 +401,7 @@ public class ScoreTree
         private LinkedHashSet<Object> getRelevantChildren (Object node)
         {
             // First check the cache
-            LinkedHashSet<Object> relevants = null;
-
-            // First, check the cache
-            relevants = nodeMap.get(node);
+            LinkedHashSet<Object> relevants = nodeMap.get(node);
 
             if (relevants != null) {
                 return relevants;

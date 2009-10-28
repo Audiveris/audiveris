@@ -12,6 +12,7 @@
 package omr.score.entity;
 
 import omr.glyph.Glyph;
+import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 
 import omr.log.Logger;
@@ -292,7 +293,7 @@ public class BeamItem
     public int compareTo (BeamItem other)
     {
         // Delegate to underlying glyph
-        return glyph.compareTo(other.glyph);
+        return Glyphs.globalComparator.compare(glyph, other.glyph);
     }
 
     //----------//

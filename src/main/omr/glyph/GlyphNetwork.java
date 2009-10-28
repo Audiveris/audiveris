@@ -59,7 +59,7 @@ public class GlyphNetwork
     private static final Logger logger = Logger.getLogger(GlyphNetwork.class);
 
     /** The singleton */
-    private static GlyphNetwork INSTANCE;
+    private static volatile GlyphNetwork INSTANCE;
 
     /** Neural network backup file name */
     private static final String BACKUP_FILE_NAME = "neural-network.xml";

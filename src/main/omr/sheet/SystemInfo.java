@@ -125,7 +125,8 @@ public class SystemInfo
         vSections);
 
     /** Collection of (active?) glyphs in this system */
-    private final SortedSet<Glyph> glyphs = new ConcurrentSkipListSet<Glyph>();
+    private final SortedSet<Glyph> glyphs = new ConcurrentSkipListSet<Glyph>(
+        Glyphs.globalComparator);
 
     /** Unmodifiable view of the glyphs collection */
     private final SortedSet<Glyph> glyphsView = Collections.unmodifiableSortedSet(
@@ -655,6 +656,17 @@ public class SystemInfo
         return glyphsBuilder.buildGlyph(sections);
     }
 
+    //---------------//
+    // buildMeasures //
+    //---------------//
+    /**
+     * Based on barlines found, build, check and cleanup score measures
+     */
+    public void buildMeasures ()
+    {
+        measuresBuilder.buildMeasures();
+    }
+
     //---------------------//
     // buildTransientGlyph //
     //---------------------//
@@ -670,17 +682,6 @@ public class SystemInfo
     public Glyph buildTransientGlyph (Collection<GlyphSection> sections)
     {
         return glyphsBuilder.buildTransientGlyph(sections);
-    }
-
-    //---------------//
-    // buildMeasures //
-    //---------------//
-    /**
-     * Based on barlines found, build, check and cleanup score measures
-     */
-    public void buildMeasures ()
-    {
-        measuresBuilder.buildMeasures();
     }
 
     //-------------//
@@ -1141,8 +1142,6 @@ public class SystemInfo
     public int runAlterPattern ()
     {
         return glyphInspector.runAlterPattern();
-
-
     }
 
     //----------------//

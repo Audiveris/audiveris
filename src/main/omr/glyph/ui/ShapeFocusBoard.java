@@ -86,11 +86,11 @@ public class ShapeFocusBoard
         /** Display all symbols */
         ALL,
         /** Display only known symbols */
-        KNOWN,
+        KNOWN, 
         /** Display only unknown symbols */
-        UNKNOWN,
+        UNKNOWN, 
         /** Display only translated symbols */
-        TRANSLATED,
+        TRANSLATED, 
         /** Display only untranslated symbols */
         UNTRANSLATED;
     }
@@ -227,9 +227,6 @@ public class ShapeFocusBoard
     public boolean isDisplayed (Glyph glyph)
     {
         switch ((Filter) filterButton.getSelectedItem()) {
-        case ALL :
-            return true;
-
         case KNOWN :
             return glyph.isKnown();
 
@@ -241,10 +238,11 @@ public class ShapeFocusBoard
 
         case UNTRANSLATED :
             return glyph.isKnown() && !glyph.isTranslated();
-        }
 
-        // To please the compiler
-        return true;
+        default :
+        case ALL :
+            return true;
+        }
     }
 
     //-----------------//
@@ -270,7 +268,7 @@ public class ShapeFocusBoard
                 pairs.add(new DistIdPair(dist, glyph.getId()));
             }
 
-            Collections.sort(pairs);
+            Collections.sort(pairs, DistIdPair.distComparator);
 
             for (DistIdPair pair : pairs) {
                 browser.addId(pair.id);
@@ -384,9 +382,22 @@ public class ShapeFocusBoard
     //------------//
     // DistIdPair //
     //------------//
+    /**
+     * Needed to sort glyphs id according to their distance
+     */
     private static class DistIdPair
-        implements Comparable<DistIdPair>
     {
+        //~ Static fields/initializers -----------------------------------------
+
+        private static final Comparator<DistIdPair> distComparator = new Comparator<DistIdPair>() {
+            public int compare (DistIdPair o1,
+                                DistIdPair o2)
+            {
+                return Double.compare(o1.dist, o2.dist);
+            }
+        };
+
+
         //~ Instance fields ----------------------------------------------------
 
         final double dist;
@@ -402,11 +413,6 @@ public class ShapeFocusBoard
         }
 
         //~ Methods ------------------------------------------------------------
-
-        public int compareTo (DistIdPair o)
-        {
-            return Double.compare(dist, o.dist);
-        }
 
         @Override
         public String toString ()

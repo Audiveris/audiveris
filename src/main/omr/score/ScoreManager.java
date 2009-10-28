@@ -22,7 +22,7 @@ import omr.score.midi.MidiAbstractions;
 import omr.score.midi.MidiAgent;
 import omr.score.ui.ScoreActions;
 
-import omr.ui.util.FileFilter;
+import omr.ui.util.OmrFileFilter;
 import omr.ui.util.UIUtilities;
 
 import java.io.*;
@@ -47,7 +47,7 @@ public class ScoreManager
     public static final String SCORE_EXTENSION = ".xml";
 
     /** The single instance of this class */
-    private static ScoreManager INSTANCE;
+    private static volatile ScoreManager INSTANCE;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -116,7 +116,7 @@ public class ScoreManager
             // Ask user confirmation, if Gui available
             if (Main.getGui() != null) {
                 // Let the user select a score output file
-                FileFilter filter = new FileFilter(
+                OmrFileFilter filter = new OmrFileFilter(
                     "XML files",
                     new String[] { SCORE_EXTENSION });
                 xmlFile = UIUtilities.fileChooser(true, null, xmlFile, filter);
@@ -194,7 +194,7 @@ public class ScoreManager
             // Ask user confirmation, if Gui available
             if (Main.getGui() != null) {
                 // Let the user select a score output file
-                FileFilter filter = new FileFilter(
+                OmrFileFilter filter = new OmrFileFilter(
                     "Midi files",
                     new String[] { MidiAbstractions.MIDI_EXTENSION });
                 midiFile = UIUtilities.fileChooser(

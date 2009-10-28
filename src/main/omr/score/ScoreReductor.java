@@ -63,7 +63,7 @@ public class ScoreReductor
     @Override
     public boolean visit (Chord chord)
     {
-        Integer duration = null;
+        Integer duration;
 
         try {
             // Special case for whole chords

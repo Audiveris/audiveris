@@ -27,7 +27,7 @@ import omr.sheet.SheetsManager;
 
 import omr.step.Step;
 
-import omr.ui.util.FileFilter;
+import omr.ui.util.OmrFileFilter;
 import omr.ui.util.UIUtilities;
 
 import omr.util.BasicTask;
@@ -132,7 +132,7 @@ public class SheetActions
             false,
             Main.getGui().getFrame(),
             new File(SheetsManager.getInstance().getDefaultSheetDirectory()),
-            new FileFilter(
+            new OmrFileFilter(
                 "Major image files" + " (" + suffixes + ")",
                 allSuffixes.split("\\s")));
 

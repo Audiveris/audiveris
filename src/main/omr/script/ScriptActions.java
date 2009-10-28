@@ -22,7 +22,7 @@ import omr.sheet.Sheet;
 import omr.sheet.ui.SheetActions;
 import omr.sheet.ui.SheetsController;
 
-import omr.ui.util.FileFilter;
+import omr.ui.util.OmrFileFilter;
 import omr.ui.util.UIUtilities;
 
 import omr.util.BasicTask;
@@ -160,7 +160,7 @@ public class ScriptActions
             false,
             Main.getGui().getFrame(),
             new File(constants.defaultScriptDirectory.getValue()),
-            new FileFilter(
+            new OmrFileFilter(
                 "Score script files",
                 new String[] { ScriptManager.SCRIPT_EXTENSION }));
 
@@ -185,10 +185,6 @@ public class ScriptActions
 
         final Script script = sheet.getScript();
 
-        if (script == null) {
-            return null;
-        }
-
         // Where do we write the script file?
         File xmlFile = new File(
             constants.defaultScriptDirectory.getValue(),
@@ -199,7 +195,7 @@ public class ScriptActions
             true,
             Main.getGui().getFrame(),
             xmlFile,
-            new FileFilter(
+            new OmrFileFilter(
                 "Script files",
                 new String[] { ScriptManager.SCRIPT_EXTENSION }));
 
@@ -323,9 +319,11 @@ public class ScriptActions
             } catch (JAXBException ex) {
                 logger.warning("Cannot marshal script", ex);
             } finally {
-                try {
-                    fos.close();
-                } catch (IOException ignored) {
+                if (fos != null) {
+                    try {
+                        fos.close();
+                    } catch (IOException ignored) {
+                    }
                 }
             }
 

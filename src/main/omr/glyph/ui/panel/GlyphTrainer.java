@@ -56,13 +56,28 @@ public class GlyphTrainer
     private static final Logger logger = Logger.getLogger(GlyphTrainer.class);
 
     /** The single instance of this class */
-    private static GlyphTrainer INSTANCE;
+    private static volatile GlyphTrainer INSTANCE;
 
     /** To differentiate the exit action, according to the launch context */
     private static boolean standAlone = false;
 
     /** Standard width for fields/buttons in DLUs */
     private static final String standardWidth = "50dlu";
+
+    /** An adapter trigerred on window closing */
+    private static final WindowAdapter windowCloser = new WindowAdapter() {
+        @Override
+        public void windowClosing (WindowEvent e)
+        {
+            // Store latest constant values
+            ConstantManager.getInstance()
+                           .storeResource();
+
+            // That's all folks !
+            System.exit(0);
+        }
+    };
+
 
     //~ Instance fields --------------------------------------------------------
 
@@ -143,19 +158,7 @@ public class GlyphTrainer
 
         // Specific ending if stand alone
         if (standAlone) {
-            frame.addWindowListener(
-                new WindowAdapter() {
-                        @Override
-                        public void windowClosing (WindowEvent e)
-                        {
-                            // Store latest constant values
-                            ConstantManager.getInstance()
-                                           .storeResource();
-
-                            // That's all folks !
-                            System.exit(0);
-                        }
-                    });
+            frame.addWindowListener(windowCloser);
         }
 
         // Resource injection
@@ -261,7 +264,7 @@ public class GlyphTrainer
             /** No ongoing activity */
             INACTIVE,
             /** Selecting glyph to build a population for training */
-            SELECTING,
+            SELECTING, 
             /** Using the population to train the evaluator */
             TRAINING;
         }

@@ -178,7 +178,7 @@ public class OmrExecutors
         public abstract String getName ();
 
         /** Is the pool active? */
-        public boolean isActive ()
+        public synchronized boolean isActive ()
         {
             return (pool != null) && !pool.isShutdown();
         }

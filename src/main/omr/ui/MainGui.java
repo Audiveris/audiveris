@@ -54,9 +54,7 @@ import org.jdesktop.application.SingleFrameApplication;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.EventObject;
-import java.util.List;
 import java.util.concurrent.Callable;
 
 import javax.swing.*;
@@ -252,7 +250,7 @@ public class MainGui
     /**
      * Tell that one or several new log records are waiting for display
      */
-    public void notifylog ()
+    public void notifyLog ()
     {
         logPane.notifyLog();
     }
@@ -385,7 +383,7 @@ public class MainGui
         Main.setGui(this);
 
         // Just in case we already have messages pending
-        notifylog();
+        notifyLog();
 
         for (Callable<Void> task : Main.getSheetsTasks()) {
             OmrExecutors.getCachedLowExecutor()
@@ -605,7 +603,7 @@ public class MainGui
      * and potentially an errors pane on the right. We try to remember the last
      * divider location
      */
-    private class BottomPane
+    private static class BottomPane
         extends JSplitPane
     {
         //~ Instance fields ----------------------------------------------------
@@ -692,7 +690,7 @@ public class MainGui
     //-----------//
     // MaybeExit //
     //-----------//
-    private class MaybeExit
+    private static class MaybeExit
         implements Application.ExitListener
     {
         //~ Methods ------------------------------------------------------------

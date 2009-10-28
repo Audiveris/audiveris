@@ -33,7 +33,7 @@ public class Clock
     private static long startTime = System.currentTimeMillis();
 
     /** General date formatting */
-    private static DateFormat dateFormatter = DateFormat.getDateTimeInstance(
+    private static final DateFormat dateFormatter = DateFormat.getDateTimeInstance(
         DateFormat.FULL,
         DateFormat.FULL,
         Locale.US);

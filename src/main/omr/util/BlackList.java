@@ -15,6 +15,7 @@ import omr.log.Logger;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
 
 /**
  * Class <code>BlackList</code> handles the mechanism of excluding certain files
@@ -194,10 +195,12 @@ public class BlackList
     private void load ()
     {
         if (blackFile.exists()) {
+            BufferedReader in = null;
+
             try {
-                BufferedReader in = new BufferedReader(
-                    new FileReader(blackFile));
-                String         fileName;
+                in = new BufferedReader(new FileReader(blackFile));
+
+                String fileName;
 
                 try {
                     // Expect one file name per line
@@ -212,6 +215,13 @@ public class BlackList
                 }
             } catch (FileNotFoundException ex) {
                 logger.warning("Cannot find file '" + blackFile + "'");
+            } finally {
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (IOException ignored) {
+                    }
+                }
             }
         }
 
@@ -225,17 +235,21 @@ public class BlackList
     //-------//
     private void store ()
     {
+        PrintWriter out = null;
+
         try {
-            PrintWriter out = new PrintWriter(
+            out = new PrintWriter(
                 new BufferedWriter(new FileWriter(blackFile)));
 
             for (String name : bl) {
                 out.println(name);
             }
-
-            out.close();
         } catch (IOException ex) {
             logger.warning("IO error while writing file '" + blackFile + "'");
+        } finally {
+            if (out != null) {
+                out.close();
+            }
         }
 
         if (logger.isFineEnabled()) {

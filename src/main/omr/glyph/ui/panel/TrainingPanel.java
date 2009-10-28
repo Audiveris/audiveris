@@ -11,8 +11,8 @@
 // </editor-fold>
 package omr.glyph.ui.panel;
 
-import omr.glyph.GlyphEvaluator;
 import omr.glyph.Glyph;
+import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
@@ -121,7 +121,7 @@ class TrainingPanel
      */
     public TrainingPanel (GlyphTrainer.Task task,
                           String            standardWidth,
-                          GlyphEvaluator         evaluator,
+                          GlyphEvaluator    evaluator,
                           SelectionPanel    selectionPanel,
                           int               totalRows)
     {
@@ -198,10 +198,6 @@ class TrainingPanel
             break;
 
         case SELECTING :
-            trainAction.setEnabled(false);
-
-            break;
-
         case TRAINING :
             trainAction.setEnabled(false);
 
@@ -335,7 +331,7 @@ class TrainingPanel
 
         // Specific training starting mode
         protected GlyphEvaluator.StartingMode mode = GlyphEvaluator.StartingMode.SCRATCH;
-        protected boolean                confirmationRequired = true;
+        protected boolean                     confirmationRequired = true;
 
         //~ Constructors -------------------------------------------------------
 

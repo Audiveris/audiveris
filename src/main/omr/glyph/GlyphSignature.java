@@ -55,19 +55,6 @@ public class GlyphSignature
         contourBox = glyph.getContourBox();
     }
 
-    //    /**
-    //     * Just for debugging, to be able to forge a signature
-    //     *
-    //     * @param weight
-    //     * @param contourBox
-    //     */
-    //    public GlyphSignature (int       weight,
-    //                           Rectangle contourBox)
-    //    {
-    //        this.weight = weight;
-    //        this.contourBox = contourBox;
-    //    }
-
     //----------------//
     // GlyphSignature //
     //----------------//

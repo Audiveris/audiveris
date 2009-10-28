@@ -240,6 +240,7 @@ public class Main
     //-----------------//
     /**
      * Prepare the processing of scripts listed on command line
+     * @return the collection of proper script callables
      */
     public static List<Callable<Void>> getScriptsTasks ()
     {
@@ -286,6 +287,7 @@ public class Main
     //----------------//
     /**
      * Prepare the processing of sheets listed on command line
+     * @return the collection of proper sheet callables
      */
     public static List<Callable<Void>> getSheetsTasks ()
     {
@@ -557,7 +559,7 @@ public class Main
         parameters = new CLI(toolName, args).getParameters();
 
         if (parameters == null) {
-            logger.warning("Invalid CLI parameters, exiting ...");
+            logger.warning("Exiting ...");
 
             // Stop the JVM ????
             Runtime.getRuntime()

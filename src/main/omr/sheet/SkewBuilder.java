@@ -293,15 +293,7 @@ public class SkewBuilder
         // Now process these sticks
         if (!sticks.isEmpty()) {
             // Sort the sticks on their length, longest first (so the swap)
-            Collections.sort(
-                sticks,
-                new Comparator<Stick>() {
-                        public int compare (Stick s1,
-                                            Stick s2)
-                        {
-                            return s2.getLength() - s1.getLength();
-                        }
-                    });
+            Collections.sort(sticks, Stick.reverseLengthComparator);
 
             // Length of longest stick
             Iterator<Stick> it = sticks.iterator();

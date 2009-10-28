@@ -234,7 +234,7 @@ public class GlyphInspector
     {
         // First retrieve the collection of all stems in the system
         // Ordered naturally by their abscissa
-        final SortedSet<Glyph> stems = Glyphs.set();
+        final SortedSet<Glyph> stems = Glyphs.sortedSet();
 
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.isStem() && glyph.isActive()) {
@@ -266,7 +266,8 @@ public class GlyphInspector
 
                 // Check horizontal distance
                 final PixelRectangle rBox = other.getContourBox();
-                final int            dx = lX - lX;
+                final int            rX = rBox.x + (rBox.width / 2);
+                final int            dx = rX - lX;
 
                 if (dx > maxCloseStemDx) {
                     break; // Since the set is ordered, no candidate is left
@@ -284,7 +285,8 @@ public class GlyphInspector
                 }
 
                 if (logger.isFineEnabled()) {
-                    logger.fine("close stems: " + Glyphs.toString(glyph, other));
+                    logger.fine(
+                        "close stems: " + Glyphs.toString(glyph, other));
                 }
 
                 // "hide" the stems to not perturb evaluation
@@ -425,7 +427,8 @@ public class GlyphInspector
         if (neighbors.size() > 1) {
             if (logger.isFineEnabled()) {
                 logger.finest(
-                    "neighbors=" + Glyphs.toString(neighbors) + " seed=" + seed);
+                    "neighbors=" + Glyphs.toString(neighbors) + " seed=" +
+                    seed);
             }
 
             Glyph compound = system.buildTransientCompound(neighbors);
@@ -614,15 +617,7 @@ public class GlyphInspector
         }
 
         // Sort suitable glyphs by decreasing weight
-        Collections.sort(
-            suitables,
-            new Comparator<Glyph>() {
-                    public int compare (Glyph o1,
-                                        Glyph o2)
-                    {
-                        return o2.getWeight() - o1.getWeight();
-                    }
-                });
+        Collections.sort(suitables, Glyphs.reverseWeightComparator);
 
         // Now process each seed in turn, by looking at smaller ones
         for (int index = 0; index < suitables.size(); index++) {

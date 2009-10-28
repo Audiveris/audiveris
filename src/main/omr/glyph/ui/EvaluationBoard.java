@@ -397,7 +397,7 @@ class EvaluationBoard
 
                 // Actually assign the shape
                 glyphController.asyncAssignGlyphs(
-                    Glyphs.set(glyph),
+                    Glyphs.sortedSet(glyph),
                     shape,
                     false);
             }

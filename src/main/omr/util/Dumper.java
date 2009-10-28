@@ -67,6 +67,11 @@ import java.util.Map;
  */
 public abstract class Dumper
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Maximum number of collection items printed */
+    private static final int MAX_COLLECTION_INDEX = 9;
+
     //~ Instance fields --------------------------------------------------------
 
     /**
@@ -83,9 +88,6 @@ public abstract class Dumper
      * Can we use HTML directives?
      */
     protected final boolean useHtml;
-
-    /** Maximum number of collection items printed */
-    private final int MAX_COLLECTION_INDEX = 9;
 
     /**
      * Class (beware, this variable is updated as we walk up the inheritance

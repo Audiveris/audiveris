@@ -73,7 +73,7 @@ public abstract class GlyphTask
      */
     public GlyphTask (Collection<Glyph> glyphs)
     {
-        this.glyphs = new TreeSet<Glyph>();
+        this.glyphs = new TreeSet<Glyph>(Glyphs.globalComparator);
         this.glyphs.addAll(glyphs);
 
         sectionSets = SectionSets.createFromGlyphs(glyphs);

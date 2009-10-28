@@ -62,7 +62,7 @@ public class ActionManager
     private static final ClassLoader classLoader = ActionManager.class.getClassLoader();
 
     /** Singleton */
-    private static ActionManager INSTANCE;
+    private static volatile ActionManager INSTANCE;
 
     //~ Instance fields --------------------------------------------------------
 

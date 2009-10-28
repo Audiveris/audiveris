@@ -88,10 +88,10 @@ public class IconManager
                                                       };
 
     /** The single class instance */
-    private static IconManager INSTANCE;
+    private static volatile IconManager INSTANCE;
 
     /** Un/marshalling context for use with JAXB */
-    private static JAXBContext jaxbContext;
+    private static volatile JAXBContext jaxbContext;
 
     //~ Instance fields --------------------------------------------------------
 

@@ -425,8 +425,7 @@ public class UnitModel
 
                 if (constant instanceof Constant.Boolean) {
                     Constant.Boolean cb = (Constant.Boolean) constant;
-
-                    return Boolean.valueOf(cb.getValue());
+                    return cb.getCachedValue();
                 } else {
                     return constant.getCurrentString();
                 }

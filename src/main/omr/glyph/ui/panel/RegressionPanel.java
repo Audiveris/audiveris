@@ -11,15 +11,10 @@
 // </editor-fold>
 package omr.glyph.ui.panel;
 
-import omr.glyph.GlyphNetwork;
 import omr.glyph.GlyphRegression;
 import omr.glyph.ui.panel.TrainingPanel.DumpAction;
 
 import omr.log.Logger;
-
-import omr.util.Implement;
-
-import java.util.*;
 
 import javax.swing.*;
 
@@ -39,11 +34,6 @@ class RegressionPanel
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
         RegressionPanel.class);
-
-    //~ Instance fields --------------------------------------------------------
-
-    /** Training start time */
-    private long startTime;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -75,36 +65,6 @@ class RegressionPanel
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //--------//
-    // update //
-    //--------//
-    /**
-     * Specific behavior when a new task activity is notified. In addition to
-     * {@link TrainingPanel#update}, actions specific to training a neural
-     * network are handled here.
-     *
-     * @param obs the task object
-     * @param unused not used
-     */
-    @Implement(Observer.class)
-    @Override
-    public void update (Observable obs,
-                        Object     unused)
-    {
-        super.update(obs, unused);
-
-        switch (task.getActivity()) {
-        case INACTIVE :
-            break;
-
-        case SELECTING :
-            break;
-
-        case TRAINING :
-            break;
-        }
-    }
 
     //----------------------//
     // defineSpecificLayout //

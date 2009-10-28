@@ -389,7 +389,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
 
         // Determine my view index in the sequence of lag views
         final int    vIndex = lag.viewIndexOf(this);
-        final Stroke oldStroke = UIUtilities.SetAbsoluteStroke(g, 1f);
+        final Stroke oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
 
         // Render all sections, using the colors they have been assigned
         renderCollection(g, lag.getVertices(), vIndex, drawBorders);

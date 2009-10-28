@@ -164,7 +164,7 @@ public class ScoreActions
                             Object obj = optionPane.getValue();
                             int    value = ((Integer) obj).intValue();
 
-                            apply.value = new Boolean(
+                            apply.value = Boolean.valueOf(
                                 value == JOptionPane.OK_OPTION);
 
                             Sheet sheet = (score != null) ? score.getSheet()

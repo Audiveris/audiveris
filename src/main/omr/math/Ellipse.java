@@ -51,9 +51,6 @@ public class Ellipse
             { 0.5, 0, 0 }
         });
 
-    /** Formatting numbers */
-    private static final NumberFormat nf = NumberFormat.getInstance();
-
     /** Epsilon value for vertical or horizontal ellipses */
     private static final double EPSILON = 1.0e-15;
 
@@ -257,12 +254,12 @@ public class Ellipse
         if (abs(B) < EPSILON) {
             if (A <= C) {
                 // Ellipse is horizontal
-                angle = new Double(0);
+                angle = 0d;
                 major = sqrt(1 / A);
                 minor = sqrt(1 / C);
             } else {
                 // Ellipse is vertical
-                angle = new Double(PI / 2);
+                angle = PI / 2;
                 major = sqrt(1 / C);
                 minor = sqrt(1 / A);
             }
@@ -522,7 +519,7 @@ public class Ellipse
          * Evaluate A1'.C1.A1 for each eigenvector,
          * and keep the one with positive result
          */
-        Matrix A1 = null;
+        Matrix A1;
         double   lambda = 0;
         int      index = 0;
 

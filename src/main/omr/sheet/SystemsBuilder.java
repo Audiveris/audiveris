@@ -15,13 +15,13 @@ import omr.Main;
 
 import omr.check.CheckBoard;
 import omr.check.CheckSuite;
-import omr.check.FailureResult;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
+import omr.glyph.Glyphs;
 import omr.glyph.GlyphsModel;
 import omr.glyph.ui.BarMenu;
 import omr.glyph.ui.GlyphBoard;
@@ -111,10 +111,6 @@ public class SystemsBuilder
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(SystemsBuilder.class);
-
-    /** Failure */
-    private static final FailureResult CANCELLED = new FailureResult(
-        "Bar-Cancelled");
 
     /** Events this entity is interested in */
     private static final Collection<Class<?extends UserEvent>> eventClasses;
@@ -307,7 +303,7 @@ public class SystemsBuilder
         // We need an abscissa-ordered collection of glyphs, so that system
         // defining bars are seen first
         List<Glyph> glyphs = new ArrayList<Glyph>(lag.getAllGlyphs());
-        Collections.sort(glyphs);
+        Collections.sort(glyphs, Glyphs.globalComparator);
 
         for (Glyph glyph : glyphs) {
             Stick stick = (Stick) glyph;
