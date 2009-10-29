@@ -118,19 +118,6 @@ public class SelectionService
         }
     }
 
-    //-----------//
-    // subscribe //
-    //-----------//
-    /**
-     * Subscribe to an event service
-     * @param subscriber The subscriber to accept the events when published.
-     */
-    public void subscribe (EventSubscriber subscriber)
-    {
-        // We force a strong subscription
-        subscribeStrongly(SheetEvent.class, subscriber);
-    }
-
     //------------------//
     // subscribersCount //
     //------------------//
@@ -138,6 +125,7 @@ public class SelectionService
      * Convenient method to retrieve the number of subscribers on the selection
      * service for a specific class
      * @param classe the specific class
+     * @return the number of subscribers found
      */
     public int subscribersCount (Class<?extends UserEvent> classe)
     {
