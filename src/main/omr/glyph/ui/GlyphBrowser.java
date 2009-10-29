@@ -299,6 +299,7 @@ class GlyphBrowser
             GlyphSection.class,
             new VerticalOrientation());
 
+        locationService = new SelectionService();
         controller = new BasicController(tLag, locationService);
 
         //        tLag.setSectionSelection(localSectionSelection);
@@ -468,6 +469,7 @@ class GlyphBrowser
             super(tLag, null, null, controller, null);
             setName("GlyphBrowser-View");
 
+            subscribe();
             //            setLocationSelection(localPixelSelection);
             //            localPixelSelection.addObserver(this);
             //            localGlyphSelection.addObserver(this);
