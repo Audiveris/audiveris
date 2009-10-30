@@ -247,7 +247,7 @@ public class TreeTableModelAdapter
      *
      * @return DOCUMENT ME!
      */
-    protected Object nodeForRow (int row)
+    public Object nodeForRow (int row)
     {
         TreePath treePath = tree.getPathForRow(row);
 
