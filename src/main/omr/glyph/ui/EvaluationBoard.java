@@ -393,13 +393,15 @@ class EvaluationBoard
                 Glyph glyph = (Glyph) glyphController.getLag()
                                                      .getSelectedGlyph();
 
-                Shape shape = Shape.valueOf(button.getText());
+                if (glyph != null) {
+                    Shape shape = Shape.valueOf(button.getText());
 
-                // Actually assign the shape
-                glyphController.asyncAssignGlyphs(
-                    Glyphs.sortedSet(glyph),
-                    shape,
-                    false);
+                    // Actually assign the shape
+                    glyphController.asyncAssignGlyphs(
+                        Glyphs.sortedSet(glyph),
+                        shape,
+                        false);
+                }
             }
         }
     }
