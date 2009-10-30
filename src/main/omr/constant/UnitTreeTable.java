@@ -11,9 +11,13 @@
 // </editor-fold>
 package omr.constant;
 
+import omr.log.Logger;
+
 import omr.ui.treetable.JTreeTable;
+import omr.ui.treetable.TreeTableModelAdapter;
 
 import java.awt.*;
+import java.util.logging.Level;
 
 import javax.swing.*;
 import javax.swing.table.*;
@@ -31,10 +35,21 @@ import javax.swing.tree.TreePath;
 public class UnitTreeTable
     extends JTreeTable
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(UnitTreeTable.class);
+
+    /** Alternate color for zebra appearance */
+    private static final Color zebraColor = new Color(248, 248, 255);
+
     //~ Instance fields --------------------------------------------------------
 
     private TableCellRenderer loggerRenderer = new LoggerRenderer();
     private TableCellRenderer valueRenderer = new ValueRenderer();
+    private TableCellRenderer pixelRenderer = new PixelRenderer();
+    private JComboBox         loggerCombo = new JComboBox();
+    private TableCellEditor   loggerEditor = new DefaultCellEditor(loggerCombo);
 
     //~ Constructors -----------------------------------------------------------
 
@@ -51,11 +66,17 @@ public class UnitTreeTable
     {
         super(model);
 
-        ///setDefaultEditor(TreeTableModel.class, new TreeTableCellEditor());
+        loggerCombo.addItem("INFO");
+        loggerCombo.addItem("FINEST");
 
-        // Show grid.
-        setShowGrid(true);
+        setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
+        // Zebra
+        UIManager.put("Table.alternateRowColor", zebraColor);
+        setFillsViewportHeight(true);
+
+        // Show grid?
+        //setShowGrid(true);
 
         // Specify column widths
         adjustColumns();
@@ -69,6 +90,56 @@ public class UnitTreeTable
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //---------------//
+    // getCellEditor //
+    //---------------//
+    @Override
+    public TableCellEditor getCellEditor (int row,
+                                          int col)
+    {
+        UnitModel.Column column = UnitModel.Column.values()[col];
+
+        switch (column) {
+        case LOGMOD : {
+            Object node = nodeForRow(row);
+
+            if (node instanceof UnitNode) { // LOGGER
+
+                UnitNode unit = (UnitNode) node;
+                Logger   logger = unit.getLogger();
+
+                if (logger != null) {
+                    Level level = logger.getEffectiveLevel();
+                    loggerCombo.setSelectedItem(level.toString());
+
+                    return loggerEditor;
+                }
+            } else if (node instanceof Constant) { // MODIF
+
+                return getDefaultEditor(Boolean.class);
+            }
+        }
+
+        break;
+
+        case VALUE : {
+            Object obj = getModel()
+                             .getValueAt(row, col);
+
+            if (obj instanceof Boolean) {
+                return getDefaultEditor(Boolean.class);
+            }
+        }
+
+        break;
+
+        default :
+        }
+
+        // Default cell editor (determined by column class)
+        return super.getCellEditor(row, col);
+    }
 
     //-----------------//
     // getCellRenderer //
@@ -91,11 +162,23 @@ public class UnitTreeTable
         UnitModel.Column column = UnitModel.Column.values()[col];
 
         switch (column) {
-        case LOGGER :
-            return loggerRenderer;
+        case LOGMOD : {
+            Object obj = getModel()
+                             .getValueAt(row, col);
 
-        case VALUE :
+            if (obj instanceof Boolean) {
+                // A constant => Modif flag
+                return getDefaultRenderer(Boolean.class);
+            } else if (obj instanceof Level) {
+                // A logger level
+                return loggerRenderer;
+            } else {
+                // A node (unit or package)
+                return getDefaultRenderer(Object.class);
+            }
+        }
 
+        case VALUE : {
             Object obj = getModel()
                              .getValueAt(row, col);
 
@@ -104,18 +187,10 @@ public class UnitTreeTable
             } else {
                 return valueRenderer;
             }
+        }
 
-        case MODIF :
-
-            TreePath tp = tree.getPathForRow(row);
-            Node     node = UnitManager.getInstance()
-                                       .getNode(buildKey(tp));
-
-            if (node != null) {
-                return getDefaultRenderer(Object.class);
-            } else {
-                return getDefaultRenderer(Boolean.class);
-            }
+        case PIXEL :
+            return pixelRenderer;
 
         default :
             return getDefaultRenderer(getColumnClass(col));
@@ -141,36 +216,17 @@ public class UnitTreeTable
         }
     }
 
-    //----------//
-    // buildKey //
-    //----------//
+    //------------//
+    // nodeForRow //
+    //------------//
     /**
-     * Given a TreePath, concatenate the various elements to form a key
-     * string.
-     *
-     * @param tp the provided TreePath
-     *
-     * @return the key string ready to use
+     * Return the tree node facing the provided table row
+     * @param row the provided row
+     * @return the corresponding tree node
      */
-    private static String buildKey (TreePath tp)
+    private Object nodeForRow (int row)
     {
-        if (tp == null) {
-            return "";
-        }
-
-        StringBuffer sb = new StringBuffer(128);
-        int          count = tp.getPathCount();
-
-        for (int i = 1; i < count; i++) { // Start from 1, since 0 = <root>
-
-            if (i > 1) {
-                sb.append(".");
-            }
-
-            sb.append(tp.getPathComponent(i).toString());
-        }
-
-        return sb.toString();
+        return ((TreeTableModelAdapter) getModel()).nodeForRow(row);
     }
 
     //-------------------//
@@ -184,13 +240,7 @@ public class UnitTreeTable
     {
         for (int row = 0; row < tree.getRowCount(); row++) {
             if (tree.isCollapsed(row)) {
-//                TreePath tp = tree.getPathForRow(row);
-//                Object   obj = UnitManager.getInstance()
-//                                          .getNode(buildKey(tp));
-//
-//                if (obj instanceof PackageNode) {
-                    tree.expandRow(row);
-//                }
+                tree.expandRow(row);
             }
         }
     }
@@ -200,14 +250,11 @@ public class UnitTreeTable
     //----------------//
     // LoggerRenderer //
     //----------------//
-    private static class LoggerRenderer
+    private class LoggerRenderer
         extends DefaultTableCellRenderer
     {
         //~ Methods ------------------------------------------------------------
 
-        //-------------------------------//
-        // getTableCellRendererComponent //
-        //-------------------------------//
         @Override
         public Component getTableCellRendererComponent (JTable  table,
                                                         Object  value,
@@ -224,19 +271,58 @@ public class UnitTreeTable
                 row,
                 column);
 
-            // Display the proper tip text
-            //            TreePath tp = tree.getPathForRow(row);
-            //            Node node = UnitManager.getInstance().getNode(buildKey(tp));
-            //            if (node instanceof UnitNode) {
-            //                UnitNode unit = (UnitNode) node;
-            //                Logger logger = unit.getLogger();
-            //                if (logger != null) {
-            //                     Logger.Level level = (Logger.Level) logger.getLevel();
-            //                     if (level != null) {
-            //                         setFont(table.getFont().deriveFont(Font.BOLD).deriveFont(12.0f));
-            //                     }
-            //                }
-            //            }
+            Object node = nodeForRow(row);
+
+            if (node instanceof UnitNode) {
+                UnitNode unit = (UnitNode) nodeForRow(row);
+                Logger   logger = unit.getLogger();
+
+                if (logger != null) {
+                    Level level = logger.getEffectiveLevel();
+
+                    if (level != Level.INFO) {
+                        setBackground(Color.LIGHT_GRAY);
+                        setForeground(Color.WHITE);
+
+                        return this;
+                    }
+                }
+            }
+
+            setBackground(Color.WHITE);
+            setForeground(Color.BLACK);
+
+            return this;
+        }
+    }
+
+    //---------------//
+    // PixelRenderer //
+    //---------------//
+    private class PixelRenderer
+        extends DefaultTableCellRenderer
+    {
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public Component getTableCellRendererComponent (JTable  table,
+                                                        Object  value,
+                                                        boolean isSelected,
+                                                        boolean hasFocus,
+                                                        int     row,
+                                                        int     column)
+        {
+            super.getTableCellRendererComponent(
+                table,
+                value,
+                isSelected,
+                hasFocus,
+                row,
+                column);
+
+            // Use right alignment
+            setHorizontalAlignment(SwingConstants.RIGHT);
+
             return this;
         }
     }
@@ -249,9 +335,6 @@ public class UnitTreeTable
     {
         //~ Methods ------------------------------------------------------------
 
-        //-------------------------------//
-        // getTableCellRendererComponent //
-        //-------------------------------//
         @Override
         public Component getTableCellRendererComponent (JTable  table,
                                                         Object  value,
@@ -268,28 +351,11 @@ public class UnitTreeTable
                 row,
                 column);
 
-            // Display the proper tip text
-            TreePath tp = tree.getPathForRow(row);
-            Node     node = UnitManager.getInstance()
-                                       .getNode(buildKey(tp));
-
-            if (node == null) { // A Constant row
-
-                Node        parent = UnitManager.getInstance()
-                                                .getNode(
-                    buildKey(tp.getParentPath()));
-                UnitNode    unit = (UnitNode) parent;
-                ConstantSet set = unit.getConstantSet();
-                Constant    constant = set.getConstant(
-                    tp.getLastPathComponent().toString());
-                setToolTipText(constant.getDescription());
-
-                // Use a bold font
-                setFont(
-                    table.getFont().deriveFont(Font.BOLD).deriveFont(12.0f));
-            } else {
-                setToolTipText(null);
-            }
+            // Use a bold font
+            setFont(table.getFont().deriveFont(Font.BOLD).deriveFont(12.0f));
+            
+            // Use center alignment
+            setHorizontalAlignment(SwingConstants.CENTER);
 
             return this;
         }

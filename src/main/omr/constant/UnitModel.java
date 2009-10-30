@@ -62,45 +62,45 @@ public class UnitModel
          * The left column, assigned to tree structure, allows expansion and
          * collapsing of sub-tree portions
          */
-        TREE("Unit", true, 250, TreeTableModel.class),
+        TREE("Unit", true, 280, TreeTableModel.class),
 
         /**
-         * Editable column dedicated to {@link omr.log.Logger} entity if any
+         * Editable column shared by {@link omr.log.Logger} entity if node
+         * is a unit, and by modification flag if node is a constant. Empty
+         * if node is a package.
          */
-        LOGGER("Logger", true, 30, String.class),
-
-        /**
-         * Editable column for constant current value, with related tool tip
-         * retrieved from the constant declaration
-         */
-        VALUE("Value", true, 100, String.class),
+        LOGMOD("Log/Mod", true, 50, String.class), 
 
         /**
          * Column that recalls the constant type, and thus the possible range of
          * values
          */
-        TYPE("Type", false, 40, String.class),
+        TYPE("Type", false, 70, String.class), 
 
         /**
          * Column for the units, if any, used for the value
          */
-        UNIT("Unit", false, 40, String.class),
+        UNIT("Unit", false, 70, String.class), 
 
         /**
          * Column relevant only for constants which are fractions of interline,
-         * as defined by {@link omr.sheet.Scale.Fraction} : the equivalent
+         * as defined by {@link omr.sheet.Scale.Fraction}: the equivalent
          * number of pixels is displayed, according to the scale of the
          * currently selected Sheet. If there is no current Sheet, then just a
          * question mark (?)  is displayed
          */
-        PIXEL("Pixels", false, 20, String.class),
+        PIXEL("Pixels", false, 30, String.class), 
 
         /**
-         * Column containing a flag to indicate whether the constant value has
-         * been modified or not. If modified, a click in this column resets the
-         * constant to its original value
+         * Editable column for constant current value, with related tool tip
+         * retrieved from the constant declaration
          */
-        MODIF("Modif", false, 20, Boolean.class);
+        VALUE("Value", true, 100, String.class), 
+
+        /**
+         * Column dedicated to constant descrption
+         */
+        DESC("Description", false, 350, String.class);
         //~ Instance fields ----------------------------------------------------
 
         /**
@@ -172,7 +172,19 @@ public class UnitModel
     {
         Column col = Column.values()[column];
 
-        return col.editable;
+        if (col == Column.LOGMOD) {
+            if (node instanceof Constant) {
+                Constant constant = (Constant) node;
+
+                return Boolean.valueOf(constant.isModified());
+            } else if (node instanceof UnitNode) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return col.editable;
+        }
     }
 
     //----------//
@@ -341,9 +353,7 @@ public class UnitModel
             if (logger != null) {
                 logger.setLevel((String) value);
             }
-        }
-
-        if (node instanceof Constant) {
+        } else if (node instanceof Constant) {
             Constant constant = (Constant) node;
             Column   column = Column.values()[col];
 
@@ -368,7 +378,7 @@ public class UnitModel
 
                 break;
 
-            case MODIF :
+            case LOGMOD :
 
                 if (!((Boolean) value).booleanValue()) {
                     constant.reset();
@@ -401,7 +411,7 @@ public class UnitModel
         Column column = Column.values()[col];
 
         switch (column) {
-        case LOGGER :
+        case LOGMOD :
 
             if (node instanceof UnitNode) {
                 UnitNode unit = (UnitNode) node;
@@ -413,9 +423,11 @@ public class UnitModel
                     return "";
                 }
             } else if (node instanceof PackageNode) {
-                return "--";
-            } else {
-                return "";
+                return null;
+            } else if (node instanceof Constant) {
+                Constant constant = (Constant) node;
+
+                return Boolean.valueOf(constant.isModified());
             }
 
         case VALUE :
@@ -425,6 +437,7 @@ public class UnitModel
 
                 if (constant instanceof Constant.Boolean) {
                     Constant.Boolean cb = (Constant.Boolean) constant;
+
                     return cb.getCachedValue();
                 } else {
                     return constant.getCurrentString();
@@ -473,9 +486,7 @@ public class UnitModel
                             if (constant instanceof Scale.Fraction) {
                                 return Integer.valueOf(
                                     scale.toPixels((Scale.Fraction) constant));
-                            }
-
-                            if (constant instanceof Scale.AreaFraction) {
+                            } else if (constant instanceof Scale.AreaFraction) {
                                 return Integer.valueOf(
                                     scale.toPixels(
                                         (Scale.AreaFraction) constant));
@@ -489,12 +500,12 @@ public class UnitModel
 
             return "";
 
-        case MODIF :
+        case DESC :
 
             if (node instanceof Constant) {
                 Constant constant = (Constant) node;
 
-                return Boolean.valueOf(constant.isModified());
+                return constant.getDescription();
             } else {
                 return null;
             }
