@@ -121,16 +121,16 @@ public class Slur
     /** Underlying curve, where points are SystemPoint instances (in Double) */
     private final CubicCurve2D curve;
 
-    /** Note on left side */
+    /** Note on left side, if any */
     private final Note leftNote;
 
-    /** Note on right side */
+    /** Note on right side, if any */
     private final Note rightNote;
 
-    /** Extension on left side */
+    /** Extension on left side, if any */
     private Slur leftExtension;
 
-    /** Extension on right side */
+    /** Extension on right side, if any */
     private Slur rightExtension;
 
     /** Placement / orientation */
@@ -199,6 +199,10 @@ public class Slur
     //-------//
     // getId //
     //-------//
+    /**
+     * Report the slur id (as the id of the underlying glyph)
+     * @return the id of the underlying glyph
+     */
     public int getId ()
     {
         return glyph.getId();
@@ -222,7 +226,7 @@ public class Slur
     // getLeftNote //
     //-------------//
     /**
-     * Report the note embraced by the left side of this slur
+     * Report the note (if any) embraced by the left side of this slur
      * @return the embraced note
      */
     public Note getLeftNote ()
@@ -248,7 +252,7 @@ public class Slur
     // getRightNote //
     //--------------//
     /**
-     * Report the note embraced by the right side of this slur
+     * Report the note (if any) embraced by the right side of this slur
      * @return the embraced note
      */
     public Note getRightNote ()
@@ -290,11 +294,16 @@ public class Slur
     //-----------//
     // canExtend //
     //-----------//
+    /**
+     * Check whether this slur can extend the prevSlur of the preceding system
+     * @param prevSlur the slur candidate in the preceding system
+     * @return true if connection is possible
+     */
     public boolean canExtend (Slur prevSlur)
     {
         return (this.leftExtension == null) &&
                (prevSlur.rightExtension == null) &&
-               this.isPositionCompatibleWith(prevSlur);
+               this.isCompatibleWith(prevSlur);
     }
 
     //----------//
@@ -558,31 +567,42 @@ public class Slur
         return power < 0;
     }
 
-    //--------------------------//
-    // isPositionCompatibleWith //
-    //--------------------------//
+    //------------------//
+    // isCompatibleWith //
+    //------------------//
     /**
      * Check whether two slurs to-be-connected are roughly compatible with each
-     * other
+     * other (same staff id, and pitch positions not too different)
      *
      * @param prevSlur the previous slur
      * @return true if found compatible
      */
-    private boolean isPositionCompatibleWith (Slur prevSlur)
+    private boolean isCompatibleWith (Slur prevSlur)
     {
         // Retrieve prev staff, using the left point of the prev slur
-        Staff       prevStaff = prevSlur.getPart()
-                                        .getStaffAt(
+        Staff prevStaff = prevSlur.getPart()
+                                  .getStaffAt(
             new SystemPoint(prevSlur.curve.getX1(), prevSlur.curve.getY1()));
+
+        // Retrieve staff, using the right point of the slur
+        Staff staff = getPart()
+                          .getStaffAt(
+            new SystemPoint(curve.getX2(), curve.getY2()));
+
+        if (prevStaff.getId() != staff.getId()) {
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "prevSlur#" + prevSlur.getId() + " prevStaff:" +
+                    prevStaff.getId() + " slur#" + this.getId() + " staff:" +
+                    staff.getId() + " different staff id");
+            }
+
+            return false;
+        }
 
         // Retrieve prev position, using the right point of the prev slur
         double      prevPp = prevStaff.pitchPositionOf(
             new SystemPoint(prevSlur.curve.getX2(), prevSlur.curve.getY2()));
-
-        // Retrieve staff, using the right point of the slur
-        Staff       staff = getPart()
-                                .getStaffAt(
-            new SystemPoint(curve.getX2(), curve.getY2()));
 
         // Retrieve position, using the left point of the slur
         SystemPoint pt = new SystemPoint(curve.getX1(), curve.getY1());
@@ -590,14 +610,12 @@ public class Slur
 
         // Compare staves and pitch positions (very roughly)
         double  deltaPitch = pp - prevPp;
-        boolean res = (prevStaff.getId() == staff.getId()) &&
-                      (Math.abs(deltaPitch) <= (constants.maxDeltaY.getValue() * 2));
+        boolean res = Math.abs(deltaPitch) <= (constants.maxDeltaY.getValue() * 2);
 
         if (logger.isFineEnabled()) {
             logger.fine(
-                "prevSlur#" + prevSlur.getId() + " prevStaff:" +
-                prevStaff.getId() + " slur#" + this.getId() + " staff:" +
-                staff.getId() + " dpp:" + deltaPitch + " res:" + res);
+                "prevSlur#" + prevSlur.getId() + " slur#" + this.getId() +
+                " deltaPitch:" + deltaPitch + " res:" + res);
         }
 
         return res;
