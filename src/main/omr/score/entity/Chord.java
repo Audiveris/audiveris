@@ -1397,12 +1397,14 @@ public class Chord
                      .isWholeRest()) {
                 rawDuration = Note.getTypeDuration(note.getShape());
 
-                // Apply fraction
-                int fbn = getFlagsNumber() + getBeams()
-                                                 .size();
+                // Apply fraction (for non rests only)
+                if (!note.isRest()) {
+                    int fbn = getFlagsNumber() + getBeams()
+                                                     .size();
 
-                for (int i = 0; i < fbn; i++) {
-                    rawDuration /= 2;
+                    for (int i = 0; i < fbn; i++) {
+                        rawDuration /= 2;
+                    }
                 }
 
                 // Apply augmentation
