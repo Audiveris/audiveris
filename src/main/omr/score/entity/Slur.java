@@ -537,43 +537,70 @@ public class Slur
         return sb.toString();
     }
 
+    //---------//
+    // isBelow //
+    //---------//
+    /**
+     * Report whether the provided curve is below the notes (turned upwards)
+     * or above the notes (turned downwards)
+     * @param curve the provided curve to check
+     * @return true if below, false if above
+     */
+    private static boolean isBelow (CubicCurve2D curve)
+    {
+        // Determine arc orientation (above or below)
+        final double DX = curve.getX2() - curve.getX1();
+        final double DY = curve.getY2() - curve.getY1();
+        final double power = (curve.getCtrlX1() * DY) -
+                             (curve.getCtrlY1() * DX) - (curve.getX1() * DY) +
+                             (curve.getY1() * DX);
+
+        return power < 0;
+    }
+
     //--------------------------//
     // isPositionCompatibleWith //
     //--------------------------//
     /**
-     * Check whether two slurs to-be-connected are roughly compatible with each other
+     * Check whether two slurs to-be-connected are roughly compatible with each
+     * other
      *
-     * @param prevPart the part containing the previous slur
      * @param prevSlur the previous slur
-     * @param part the part containing the following slur
-     * @param slur the following slur
      * @return true if found compatible
      */
     private boolean isPositionCompatibleWith (Slur prevSlur)
     {
-        // Retrieve prev position
-        SystemPoint prevPt = new SystemPoint(
-            prevSlur.curve.getX2(),
-            prevSlur.curve.getY2());
+        // Retrieve prev staff, using the left point of the prev slur
         Staff       prevStaff = prevSlur.getPart()
-                                        .getStaffAt(prevPt);
-        double      prevPp = prevStaff.pitchPositionOf(prevPt);
+                                        .getStaffAt(
+            new SystemPoint(prevSlur.curve.getX1(), prevSlur.curve.getY1()));
 
-        // Retrieve position
-        SystemPoint pt = new SystemPoint(curve.getX1(), curve.getY1());
+        // Retrieve prev position, using the right point of the prev slur
+        double      prevPp = prevStaff.pitchPositionOf(
+            new SystemPoint(prevSlur.curve.getX2(), prevSlur.curve.getY2()));
+
+        // Retrieve staff, using the right point of the slur
         Staff       staff = getPart()
-                                .getStaffAt(pt);
+                                .getStaffAt(
+            new SystemPoint(curve.getX2(), curve.getY2()));
+
+        // Retrieve position, using the left point of the slur
+        SystemPoint pt = new SystemPoint(curve.getX1(), curve.getY1());
         double      pp = staff.pitchPositionOf(pt);
 
-        // Compare pitch positions (very roughly)
-        double deltaPitch = pp - prevPp;
+        // Compare staves and pitch positions (very roughly)
+        double  deltaPitch = pp - prevPp;
+        boolean res = (prevStaff.getId() == staff.getId()) &&
+                      (Math.abs(deltaPitch) <= (constants.maxDeltaY.getValue() * 2));
 
         if (logger.isFineEnabled()) {
-            logger.finest("deltaPitch=" + deltaPitch);
+            logger.fine(
+                "prevSlur#" + prevSlur.getId() + " prevStaff:" +
+                prevStaff.getId() + " slur#" + this.getId() + " staff:" +
+                staff.getId() + " dpp:" + deltaPitch + " res:" + res);
         }
 
-        return (prevStaff.getId() == staff.getId()) &&
-               (Math.abs(deltaPitch) <= (constants.maxDeltaY.getValue() * 2));
+        return res;
     }
 
     //--------------//
@@ -699,14 +726,7 @@ public class Slur
                                                   List<MeasureNode> leftNodes,
                                                   List<MeasureNode> rightNodes)
     {
-        // Determine arc orientation (above or below)
-        final double          DX = curve.getX2() - curve.getX1();
-        final double          DY = curve.getY2() - curve.getY1();
-        final double          power = (curve.getCtrlX1() * DY) -
-                                      (curve.getCtrlY1() * DX) -
-                                      (curve.getX1() * DY) +
-                                      (curve.getY1() * DX);
-        final boolean         below = power < 0;
+        boolean               below = isBelow(curve);
 
         // Determine left and right search areas
         final Scale           scale = system.getScale();
