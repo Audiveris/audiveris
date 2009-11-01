@@ -33,12 +33,6 @@ public class ScoreConstants
     /** Height in pixels of a staff display */
     public static final int STAFF_AREA_HEIGHT = constants.staffAreaheight.getValue();
 
-    /** Height in pixels above/under a staff display */
-    public static final int STAFF_MARGIN_HEIGHT = constants.staffMarginHeight.getValue();
-
-    /** Width in pixels before/after a staff display */
-    public static final int STAFF_MARGIN_WIDTH = constants.staffMarginWidth.getValue();
-
     /** Horizontal offset in pixels of the score origin */
     public static final int SCORE_INIT_X = constants.scoreInitX.getValue();
 
@@ -109,11 +103,5 @@ public class ScoreConstants
         PixelCount       staffAreaheight = new PixelCount(
             100,
             "Height of a staff display");
-        PixelCount       staffMarginHeight = new PixelCount(
-            100,
-            "Margin above/under a staff display");
-        PixelCount       staffMarginWidth = new PixelCount(
-            100,
-            "Margin before/after a staff display");
     }
 }

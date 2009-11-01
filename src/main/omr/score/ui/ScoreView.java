@@ -446,7 +446,7 @@ public class ScoreView
             if (orientation == ScoreOrientation.HORIZONTAL) {
                 if (prevSystemView == null) {
                     // Very first system in the score
-                    origin.x = STAFF_MARGIN_WIDTH - contour.x;
+                    origin.x = -contour.x;
                 } else {
                     // Not the first system
                     origin.x = (prevSystemView.getDisplayOrigin().x +
@@ -456,14 +456,13 @@ public class ScoreView
 
                 ScorePart scorePart = system.getFirstPart()
                                             .getScorePart();
-                origin.y = STAFF_MARGIN_HEIGHT - highestTop +
-                           system.getDummyOffset() +
+                origin.y = -highestTop + system.getDummyOffset() +
                            ((scorePart != null)
                             ? scorePart.getDisplayOrdinate() : 0);
             } else {
                 if (prevSystemView == null) {
                     // Very first system in the score
-                    origin.y = STAFF_MARGIN_HEIGHT - contour.y;
+                    origin.y = -contour.y;
                 } else {
                     // Not the first system
                     origin.y = (prevSystemView.getDisplayOrigin().y +
@@ -472,7 +471,7 @@ public class ScoreView
                                STAFF_HEIGHT) + INTER_SYSTEM_HEIGHT;
                 }
 
-                origin.x = STAFF_MARGIN_WIDTH - contour.x;
+                origin.x = -contour.x;
             }
 
             // Create an immutable view for this system

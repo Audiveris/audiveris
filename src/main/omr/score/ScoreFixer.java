@@ -137,8 +137,7 @@ public class ScoreFixer
         system.acceptChildren(this);
 
         // Now add margins
-        systemContour.width += (2 * STAFF_MARGIN_WIDTH);
-        systemContour.height += (2 * STAFF_MARGIN_HEIGHT);
+        systemContour.grow(INTER_SYSTEM_WIDTH / 2, INTER_SYSTEM_HEIGHT / 2);
 
         // Write down the system contour
         if (logger.isFineEnabled()) {
