@@ -732,14 +732,17 @@ public class ScorePainter
         // Restore saved transform
         g.setTransform(savedTransform);
 
-        // Check whether our system is impacted
         final UnitDimension dim = system.getDimension();
         final Point         origin = systemView.getDisplayOrigin();
-        final Rectangle     systemRect = new Rectangle(origin, dim);
-        systemRect.grow(INTER_SYSTEM_WIDTH, INTER_SYSTEM_HEIGHT);
 
-        if (!systemRect.intersects(g.getClipBounds())) {
-            return false;
+        // Check whether our system is impacted
+        if (system.getId() > 1) { // Always draw first system (workaround)
+            final Rectangle systemRect = new Rectangle(origin, dim);
+            systemRect.grow(INTER_SYSTEM_WIDTH, INTER_SYSTEM_HEIGHT);
+
+            if (!systemRect.intersects(g.getClipBounds())) {
+                return false;
+            }
         }
 
         final Color oldColor = g.getColor();
