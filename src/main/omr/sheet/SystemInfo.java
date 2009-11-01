@@ -894,12 +894,10 @@ public class SystemInfo
     /**
      * In a given system area, browse through all sections not assigned to known
      * glyphs, and build new glyphs out of connected sections
-     *
-     * @return the number of glyphs built in this system
      */
-    public int retrieveGlyphs ()
+    public void retrieveGlyphs ()
     {
-        return glyphsBuilder.retrieveGlyphs();
+        glyphsBuilder.retrieveGlyphs();
     }
 
     //-------------------//

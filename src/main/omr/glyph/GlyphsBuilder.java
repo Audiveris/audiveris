@@ -303,13 +303,11 @@ public class GlyphsBuilder
     /**
      * In a given system area, browse through all sections not assigned to known
      * glyphs, and build new glyphs out of connected sections
-     *
-     * @return the number of glyphs built in this system
      */
-    public int retrieveGlyphs ()
+    public void retrieveGlyphs ()
     {
-        int               nb = 0;
-        Set<GlyphSection> visitedSections = new LinkedHashSet<GlyphSection>();
+        // Make sure we process each section once only
+        Set<GlyphSection> visitedSections = new HashSet<GlyphSection>();
 
         // Browse the various unrecognized sections
         for (GlyphSection section : system.getVerticalSections()) {
@@ -321,7 +319,6 @@ public class GlyphsBuilder
 
                 // And insert this newly built glyph at proper location
                 glyph = addGlyph(glyph);
-                nb++;
             }
         }
 
@@ -331,8 +328,6 @@ public class GlyphsBuilder
         for (Glyph glyph : system.getGlyphs()) {
             computeGlyphFeatures(glyph);
         }
-
-        return nb;
     }
 
     //--------------------//
@@ -423,6 +418,13 @@ public class GlyphsBuilder
     //--------------------//
     // considerConnection //
     //--------------------//
+    /**
+     * Consider all sections transitively connected to the provided section
+     * in order to populate the provided glyph.
+     * @param glyph the provided glyph
+     * @param section the section to consider
+     * @param visitedSections the set of sections visited so far
+     */
     private void considerConnection (Glyph             glyph,
                                      GlyphSection      section,
                                      Set<GlyphSection> visitedSections)
