@@ -156,7 +156,7 @@ public abstract class GlyphTask
 
         // Make sure the concrete sections and glyphs are available
         if (glyphs == null) {
-            glyphs = new TreeSet<Glyph>();
+            glyphs = new TreeSet<Glyph>(Glyphs.globalComparator);
 
             for (Collection<GlyphSection> set : sectionSets.getSets(sheet)) {
                 SystemInfo system = set.iterator()
