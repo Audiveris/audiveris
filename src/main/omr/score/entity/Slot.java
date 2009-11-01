@@ -18,7 +18,6 @@ import omr.log.Logger;
 import omr.math.InjectionSolver;
 import omr.math.Population;
 
-import omr.score.Score;
 import omr.score.common.SystemPoint;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
 import omr.score.ui.ScoreConstants;
