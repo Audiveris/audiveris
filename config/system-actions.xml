@@ -45,17 +45,18 @@
     <action domain="MIDI" section="30"  class="omr.score.midi.MidiActions" method="writeMidi" />
 
     <action domain="VIEW" section="10"  class="omr.score.ui.PaintingParameters"               method="toggleLayout"   item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="10"  class="omr.score.ui.PaintingParameters"               method="toggleSlots"    item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="10"  class="omr.score.ui.PaintingParameters"               method="toggleVoices"   item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="10"  class="omr.score.ui.PaintingParameters"               method="toggleMarks"    item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="20"  class="omr.glyph.ui.ViewParameters"                   method="toggleLines"    item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="20"  class="omr.glyph.ui.ViewParameters"                   method="toggleCircles"  item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="20"  class="omr.glyph.ui.ViewParameters"                   method="toggleLetters"  item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="20"  class="omr.glyph.ui.ViewParameters"                   method="toggleSections" item="javax.swing.JCheckBoxMenuItem" button="javax.swing.JToggleButton" />
-    <action domain="VIEW" section="30"  class="omr.sheet.LinesBuilder$LinesParameters"        method="toggleLines"    item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="30"  class="omr.sheet.HorizontalsBuilder$LedgerParameters" method="toggleLines"    item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="40"  class="omr.ui.GuiActions"                             method="toggleErrors"   item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="40"  class="omr.ui.GuiActions"                             method="clearLog" button="javax.swing.JButton"/>
+    <action domain="VIEW" section="10"  class="omr.score.ui.PaintingParameters"               method="toggleDummies"  item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="20"  class="omr.score.ui.PaintingParameters"               method="toggleSlots"    item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="20"  class="omr.score.ui.PaintingParameters"               method="toggleVoices"   item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="20"  class="omr.score.ui.PaintingParameters"               method="toggleMarks"    item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="30"  class="omr.glyph.ui.ViewParameters"                   method="toggleLines"    item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="30"  class="omr.glyph.ui.ViewParameters"                   method="toggleCircles"  item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="30"  class="omr.glyph.ui.ViewParameters"                   method="toggleLetters"  item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="30"  class="omr.glyph.ui.ViewParameters"                   method="toggleSections" item="javax.swing.JCheckBoxMenuItem" button="javax.swing.JToggleButton" />
+    <action domain="VIEW" section="40"  class="omr.sheet.LinesBuilder$LinesParameters"        method="toggleLines"    item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="40"  class="omr.sheet.HorizontalsBuilder$LedgerParameters" method="toggleLines"    item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="50"  class="omr.ui.GuiActions"                             method="toggleErrors"   item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="50"  class="omr.ui.GuiActions"                             method="clearLog" button="javax.swing.JButton"/>
 
     <action domain="TOOL" section="10"  class="omr.ui.GuiActions" method="verifyTrainingMaterial" />
     <action domain="TOOL" section="10"  class="omr.ui.GuiActions" method="launchTrainer" />

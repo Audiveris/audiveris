@@ -46,6 +46,9 @@ public class PaintingParameters
     /** Should the voices be painted */
     public static final String VOICE_PAINTING = "voicePainting";
 
+    /** Should the dummy parts be painted */
+    public static final String DUMMY_PAINTING = "dummyPainting";
+
     //~ Methods ----------------------------------------------------------------
 
     //-------------//
@@ -54,6 +57,27 @@ public class PaintingParameters
     public static PaintingParameters getInstance ()
     {
         return Holder.INSTANCE;
+    }
+
+    //------------------//
+    // setDummyPainting //
+    //------------------//
+    public void setDummyPainting (boolean value)
+    {
+        boolean oldValue = constants.dummyPainting.getValue();
+        constants.dummyPainting.setValue(value);
+        firePropertyChange(
+            DUMMY_PAINTING,
+            oldValue,
+            constants.dummyPainting.getValue());
+    }
+
+    //-----------------//
+    // isDummyPainting //
+    //-----------------//
+    public boolean isDummyPainting ()
+    {
+        return constants.dummyPainting.getValue();
     }
 
     //-----------------//
@@ -149,6 +173,18 @@ public class PaintingParameters
         return constants.voicePainting.getValue();
     }
 
+    //---------------//
+    // toggleDummies //
+    //---------------//
+    /**
+     * Action that toggles the display of dummy system parts
+     * @param e the event that triggered this action
+     */
+    @Action(selectedProperty = DUMMY_PAINTING)
+    public void toggleDummies (ActionEvent e)
+    {
+    }
+
     //--------------//
     // toggleLayout //
     //--------------//
@@ -226,6 +262,11 @@ public class PaintingParameters
         final Constant.Boolean markPainting = new Constant.Boolean(
             true,
             "Should the marks be painted");
+
+        /** Should the dummy parts be painted */
+        final Constant.Boolean dummyPainting = new Constant.Boolean(
+            true,
+            "Should the dummy parts be painted");
     }
 
     //--------//

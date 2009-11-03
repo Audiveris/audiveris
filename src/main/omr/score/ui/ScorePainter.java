@@ -738,7 +738,7 @@ public class ScorePainter
         // Check whether our system is impacted
         final Rectangle systemRect = system.getContour(); // (We get a copy)
         systemRect.translate(origin.x, origin.y);
-        
+
         if (!systemRect.intersects(g.getClipBounds())) {
             return false;
         }
@@ -773,6 +773,13 @@ public class ScorePainter
     @Override
     public boolean visit (SystemPart part)
     {
+        // Should we draw dummy parts?
+        if (part.isDummy() &&
+            !PaintingParameters.getInstance()
+                               .isDummyPainting()) {
+            return false;
+        }
+
         // Draw a brace if there is more than one stave in the part
         if (part.getStaves()
                 .size() > 1) {
