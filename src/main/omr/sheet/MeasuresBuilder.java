@@ -239,7 +239,7 @@ public class MeasuresBuilder
                 staves.add((Staff) node);
             }
 
-            MeasureLoop:
+            MeasureLoop: 
             for (Iterator mit = part.getMeasures()
                                     .iterator(); mit.hasNext();) {
                 Measure measure = (Measure) mit.next();
@@ -330,7 +330,7 @@ public class MeasuresBuilder
     private void checkEndingBar ()
     {
         try {
-            SystemPart part = scoreSystem.getFirstPart();
+            SystemPart part = scoreSystem.getFirstRealPart();
             Measure    measure = part.getLastMeasure();
             Barline    barline = measure.getBarline();
             int        lastX = barline.getRightX();
@@ -477,7 +477,7 @@ public class MeasuresBuilder
     private void removeStartingMeasure ()
     {
         int     minWidth = scale.toPixels(constants.minMeasureWidth);
-        Barline firstBarline = scoreSystem.getFirstPart()
+        Barline firstBarline = scoreSystem.getFirstRealPart()
                                           .getFirstMeasure()
                                           .getBarline();
         int     firstX = firstBarline.getLeftX();
@@ -500,25 +500,27 @@ public class MeasuresBuilder
             for (TreeNode node : scoreSystem.getParts()) {
                 SystemPart part = (SystemPart) node;
 
-                // Set the bar as starting bar for the staff
-                Measure measure = part.getFirstMeasure();
-                part.setStartingBarline(measure.getBarline());
+                if (!part.isDummy()) {
+                    // Set the bar as starting bar for the staff
+                    Measure measure = part.getFirstMeasure();
+                    part.setStartingBarline(measure.getBarline());
 
-                // Remove this first measure
-                part.getMeasures()
-                    .remove(0);
+                    // Remove this first measure
+                    part.getMeasures()
+                        .remove(0);
 
-                // Update abscissa of top-left corner of every staff
-                for (TreeNode sNode : part.getStaves()) {
-                    Staff staff = (Staff) sNode;
-                    staff.getPageTopLeft()
-                         .translate(firstX, 0);
-                }
+                    // Update abscissa of top-left corner of every staff
+                    for (TreeNode sNode : part.getStaves()) {
+                        Staff staff = (Staff) sNode;
+                        staff.getPageTopLeft()
+                             .translate(firstX, 0);
+                    }
 
-                // Update other bar lines abscissae accordingly
-                for (TreeNode mNode : part.getMeasures()) {
-                    Measure meas = (Measure) mNode;
-                    meas.resetAbscissae();
+                    // Update other bar lines abscissae accordingly
+                    for (TreeNode mNode : part.getMeasures()) {
+                        Measure meas = (Measure) mNode;
+                        meas.resetAbscissae();
+                    }
                 }
             }
         }

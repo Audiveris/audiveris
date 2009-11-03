@@ -748,7 +748,7 @@ public class SheetSteps
         }
 
         @Override
-        public void doSystem (SystemInfo system)
+        public void doSystem (final SystemInfo system)
             throws StepException
         {
             final int              iterNb = constants.MaxScoreIterations.getValue();
@@ -773,6 +773,17 @@ public class SheetSteps
                     system.getSheet()
                           .getErrorsEditor()
                           .clearSystem(system.getId());
+                    
+                    // Re-insert errors from previous steps if any
+                    // TODO: We should use something more elegant
+                    // (Having the previous steps register at the ErrorsEditor)
+                    SwingUtilities.invokeLater(
+                        new Runnable() {
+                                public void run ()
+                                {
+                                    system.checkBoundaries();
+                                }
+                            });
                 }
 
                 // Cleanup the system, staves, measures, barlines, ...

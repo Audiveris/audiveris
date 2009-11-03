@@ -11,14 +11,17 @@
 // </editor-fold>
 package omr.script;
 
-import java.awt.Point;
-import java.util.ArrayList;
-import java.util.List;
 import omr.sheet.Sheet;
 import omr.sheet.SystemBoundary;
 import omr.sheet.SystemInfo;
 
+import omr.step.Step;
+
 import omr.util.BrokenLine;
+
+import java.awt.Point;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.bind.annotation.*;
 
@@ -65,9 +68,11 @@ public class BoundaryTask
 
         // Make a deep copy of the line points
         List<Point> points = new ArrayList<Point>();
+
         for (Point p : line.getPoints()) {
             points.add(new Point(p));
         }
+
         this.line = new BrokenLine(points);
     }
 
@@ -88,20 +93,33 @@ public class BoundaryTask
     public void core (Sheet sheet)
         throws Exception
     {
-        SystemInfo system = sheet.getSystems()
-                                 .get(systemId - 1);
-        BrokenLine brokenLine = system.getBoundary()
-                                      .getLimit(side);
+        SystemInfo  system = sheet.getSystems()
+                                  .get(systemId - 1);
+        BrokenLine  brokenLine = system.getBoundary()
+                                       .getLimit(side);
+
         // Modify the points and update listeners
         List<Point> copy = new ArrayList<Point>();
+
         for (Point p : line.getPoints()) {
             copy.add(new Point(p));
         }
+
         brokenLine.resetPoints(copy);
 
         // Update the following steps if any
         sheet.getSystemsBuilder()
              .useBoundaries();
+    }
+
+    //--------//
+    // epilog //
+    //--------//
+    @Override
+    public void epilog (Sheet sheet)
+    {
+        sheet.getSheetSteps()
+             .rebuildFrom(Step.SYMBOLS, sheet.getSystems(), false);
     }
 
     //-----------------//

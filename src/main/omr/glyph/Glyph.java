@@ -27,6 +27,8 @@ import omr.math.Moments;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
+import omr.sheet.SystemInfo;
+
 import omr.ui.icon.SymbolIcon;
 
 import omr.util.Implement;
@@ -196,8 +198,51 @@ public class Glyph
      */
     public boolean isActive ()
     {
+        // DEBUG
+        if (members.first()
+                   .getGlyph() == this) {
+            for (GlyphSection section : members) {
+                if (section.getGlyph() != this) {
+                    logger.warning("False active " + this);
+                    this.dump();
+
+                    break;
+                }
+            }
+        }
+
         return members.first()
                       .getGlyph() == this;
+    }
+
+    //----------------//
+    // getAlienSystem //
+    //----------------//
+    /**
+     * Check whether all the glyph sections belong to the same system
+     * @param system the supposed containing system
+     * @return the alien system found, or null if OK
+     */
+    public SystemInfo getAlienSystem (SystemInfo system)
+    {
+        // Direct members
+        for (GlyphSection section : members) {
+            if (section.getSystem() != system) {
+                return section.getSystem();
+            }
+        }
+
+        // Parts if any, recursively
+        for (Glyph part : getParts()) {
+            SystemInfo alien = part.getAlienSystem(system);
+
+            if (alien != null) {
+                return alien;
+            }
+        }
+
+        // No other system found
+        return null;
     }
 
     //---------------//
@@ -1176,7 +1221,7 @@ public class Glyph
      *
      * @param section The section to be included
      * @param link While adding a section to this glyph members, should we also
-     *             set the link from section back to the glyph ?
+     *             set the link from section back to the glyph?
      */
     public void addSection (GlyphSection section,
                             boolean      link)
@@ -1357,6 +1402,26 @@ public class Glyph
         System.out.println("   translations=" + translations);
     }
 
+    //-----------------//
+    // linkAllSections //
+    //-----------------//
+    /**
+     * Make all the glyph's sections point back to this glyph, and
+     * transitively / recursively for all sections of the glyph parts if any
+     */
+    public void linkAllSections ()
+    {
+        // First the direct members of this glyph
+        for (GlyphSection section : getMembers()) {
+            section.setGlyph(this);
+        }
+
+        // Then, same thing for the parts if any
+        for (Glyph part : getParts()) {
+            part.linkAllSections(this);
+        }
+    }
+
     //------------//
     // recolorize //
     //------------//
@@ -1459,6 +1524,27 @@ public class Glyph
     protected String getPrefix ()
     {
         return "Glyph";
+    }
+
+    //-----------------//
+    // linkAllSections //
+    //-----------------//
+    /**
+     * Make all the glyph's sections point back to the provided owner glyph, and
+     * transitively / recursively for all sections of the glyph parts if any
+     * @param owner the glyph that is to be pointed back by the sections
+     */
+    protected void linkAllSections (Glyph owner)
+    {
+        // First the direct members of this glyph
+        for (GlyphSection section : getMembers()) {
+            section.setGlyph(owner);
+        }
+
+        // Then, same thing for the parts if any
+        for (Glyph part : getParts()) {
+            part.linkAllSections(owner);
+        }
     }
 
     //---------------------//

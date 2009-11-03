@@ -965,6 +965,7 @@ public class Sentence
                         Glyph glyph = merge.compound;
                         systemInfo.computeGlyphFeatures(glyph);
                         glyph.setShape(merge.vote.shape, merge.vote.doubt);
+                        systemInfo.addGlyph(glyph);
 
                         if (logger.isFineEnabled()) {
                             logger.fine(

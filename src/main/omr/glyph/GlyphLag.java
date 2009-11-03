@@ -241,10 +241,8 @@ public class GlyphLag
             }
         }
 
-        // Make all its sections point to it
-        for (GlyphSection section : glyph.getMembers()) {
-            section.setGlyph(glyph);
-        }
+        // Make absolutely all its sections point back to it
+        glyph.linkAllSections();
 
         return glyph;
     }

@@ -522,9 +522,10 @@ public class SystemInfo
      * Add a brand new glyph as an active glyph in proper system and lag.
      * If the glyph is a compound, its parts are made pointing back to it and
      * are made no longer active glyphs.
-     * <p><b>Note</b>:
-     * Use the returned glyph which may be different from the provided glyph
-     * (when an original glyph with same signature existed before this one)
+     *
+     * <p><b>Note</b>: The caller must use the returned glyph since it may be
+     * different from the provided glyph (this happens when an original glyph
+     * with same signature existed before this one)
      *
      * @param glyph the brand new glyph
      * @return the original glyph as inserted in the glyph lag. Use this entity
@@ -897,7 +898,7 @@ public class SystemInfo
      */
     public void retrieveGlyphs ()
     {
-        glyphsBuilder.retrieveGlyphs();
+        glyphsBuilder.retrieveGlyphs(true);
     }
 
     //-------------------//
@@ -1047,6 +1048,17 @@ public class SystemInfo
     public Glyph buildTransientCompound (Collection<Glyph> parts)
     {
         return glyphsBuilder.buildTransientCompound(parts);
+    }
+
+    //-----------------//
+    // checkBoundaries //
+    //-----------------//
+    /**
+     * Check this system for glyphs that cross the system boundaries
+     */
+    public void checkBoundaries ()
+    {
+        glyphsBuilder.retrieveGlyphs(false);
     }
 
     //----------------------//

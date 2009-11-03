@@ -215,14 +215,17 @@ public class GlyphInspector
      */
     public void inspectGlyphs (double maxDoubt)
     {
-        system.removeInactiveGlyphs();
+        // For Symbols & Leaves
         system.retrieveGlyphs();
         system.removeInactiveGlyphs();
         evaluateGlyphs(maxDoubt);
         system.removeInactiveGlyphs();
+
+        // For Compounds
         retrieveCompounds(maxDoubt);
         system.removeInactiveGlyphs();
         evaluateGlyphs(maxDoubt);
+        system.removeInactiveGlyphs();
     }
 
     //-----------------//

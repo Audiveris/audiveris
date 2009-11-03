@@ -287,11 +287,7 @@ public class GlyphsBuilder
      */
     public void removeGlyph (Glyph glyph)
     {
-        if (!system.removeFromGlyphsCollection(glyph)) {
-            //            logger.warning(
-            //                "Glyph #" + glyph.getId() + " not found in system #" +
-            //                system.getId());
-        }
+        system.removeFromGlyphsCollection(glyph);
 
         // Cut link from its member sections, if pointing to this glyph
         glyph.cutSections();
@@ -303,8 +299,9 @@ public class GlyphsBuilder
     /**
      * In a given system area, browse through all sections not assigned to known
      * glyphs, and build new glyphs out of connected sections
+     * @param compute if true, compute the characteristics of the created glyphs
      */
-    public void retrieveGlyphs ()
+    public void retrieveGlyphs (boolean compute)
     {
         // Make sure we process each section once only
         Set<GlyphSection> visitedSections = new HashSet<GlyphSection>();
@@ -317,16 +314,33 @@ public class GlyphsBuilder
                 Glyph glyph = new Stick(scale.interline());
                 considerConnection(glyph, section, visitedSections);
 
-                // And insert this newly built glyph at proper location
+                // Insert this newly built glyph in system collection
                 glyph = addGlyph(glyph);
+
+                // Make sure all aggregated sections belong to the same system
+                SystemInfo alienSystem = glyph.getAlienSystem(system);
+
+                if (alienSystem != null) {
+                    removeGlyph(glyph);
+
+                    // Publish the error on north side only of the boundary
+                    SystemInfo north = (system.getId() < alienSystem.getId())
+                                       ? system : alienSystem;
+                    north.getScoreSystem()
+                         .addError(
+                        glyph,
+                        "Glyph crosses system south boundary");
+                }
             }
         }
 
-        // Force update for features of ALL system glyphs, since the mere
-        // existence of new glyphs may impact the characteristics of others
-        // (example of stems nearby)
-        for (Glyph glyph : system.getGlyphs()) {
-            computeGlyphFeatures(glyph);
+        if (compute) {
+            // Force update for features of ALL system glyphs, since the mere
+            // existence of new glyphs may impact the characteristics of others
+            // (example of stems nearby)
+            for (Glyph glyph : system.getGlyphs()) {
+                computeGlyphFeatures(glyph);
+            }
         }
     }
 
