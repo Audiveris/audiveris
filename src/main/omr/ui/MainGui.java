@@ -87,7 +87,7 @@ public class MainGui
     public ScoreController scoreController;
 
     /** Sheet tabbed pane, which may contain several views */
-    public SheetsController sheetSetController;
+    public SheetsController sheetsController;
 
     /** The related concrete frame */
     private JFrame frame;
@@ -103,6 +103,10 @@ public class MainGui
 
     /** Boards pane, which displays a specific set of boards per sheet */
     private BoardsPane boardsPane;
+
+    /** Needed to rectify their dividers */
+    private JSplitPane vertSplitPane;
+    private JSplitPane horiSplitPane;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -380,6 +384,14 @@ public class MainGui
             logger.fine("MainGui. ready");
         }
 
+        // Kludge! Workaround to persist correctly when maximized
+        if ((frame.getExtendedState() & Frame.MAXIMIZED_BOTH) == Frame.MAXIMIZED_BOTH) {
+            vertSplitPane.setDividerLocation(
+                vertSplitPane.getDividerLocation() - 10);
+            horiSplitPane.setDividerLocation(
+                horiSplitPane.getDividerLocation() - 10);
+        }
+
         Main.setGui(this);
 
         // Just in case we already have messages pending
@@ -409,17 +421,15 @@ public class MainGui
 
         frame = getMainFrame();
 
-        sheetSetController = SheetsController.getInstance();
+        sheetsController = SheetsController.getInstance();
         SheetsManager.getInstance()
-                     .setController(sheetSetController);
-        sheetSetController.subscribe(this);
+                     .setController(sheetsController);
+        sheetsController.subscribe(this);
 
         scoreController = new ScoreController();
 
         defineMenus();
         defineLayout();
-
-        // Stay informed on sheet selection
 
         // Allow dropping files
         frame.setTransferHandler(new FileDropHandler());
@@ -443,7 +453,7 @@ public class MainGui
            || toolBar        | progressBar                 |   Memory  ||
            |+================+=============================+===========+|
            +============================================================+
-           |bigSplitPane                                                |
+           |vertSplitPane                                               |
            |+===========================================+==============+|
            || sheetController                           | boardsPane   ||
            ||                                           |              ||
@@ -465,33 +475,26 @@ public class MainGui
            +================================================+===========+
          */
 
-        // Use a layout with toolbar on top and a double split pane below
-        frame.getContentPane()
-             .setLayout(new BorderLayout());
-
+        // Individual panes
         logPane = new LogPane();
-
-        // Boards
         boardsPane = new BoardsPane();
-        boardsPane.setName("boardsPane");
 
         // Bottom = Log & Errors
         bottomPane = new BottomPane(logPane.getComponent());
-        bottomPane.setName("bottomPane");
 
-        /** The splitted panes */
-        final JSplitPane splitPane = new JSplitPane(
+        // vertSplitPane =  sheetsController / bottomPane
+        vertSplitPane = new JSplitPane(
             JSplitPane.VERTICAL_SPLIT,
-            sheetSetController.getComponent(),
+            sheetsController.getComponent(),
             bottomPane);
-        splitPane.setName("splitPane");
-        splitPane.setBorder(null);
-        splitPane.setDividerSize(2);
-        splitPane.setResizeWeight(1d); // Give extra space to left part
+        vertSplitPane.setName("vertSplitPane");
+        vertSplitPane.setBorder(null);
+        vertSplitPane.setDividerSize(2);
+        vertSplitPane.setResizeWeight(1d); // Give extra space to upper part
 
+        // toolKeyPanel = progress & memory
         JPanel toolKeyPanel = new JPanel();
         toolKeyPanel.setLayout(new BorderLayout());
-        //        toolKeyPanel.add(toolBar, BorderLayout.WEST);
         toolKeyPanel.add(
             Step.createMonitor().getComponent(),
             BorderLayout.CENTER);
@@ -499,22 +502,25 @@ public class MainGui
             new MemoryMeter(
                 IconManager.getInstance().loadImageIcon("general/Delete")).getComponent(),
             BorderLayout.EAST);
+
+        // horiSplitPane = splitPane | boards
+        horiSplitPane = new JSplitPane(
+            JSplitPane.HORIZONTAL_SPLIT,
+            vertSplitPane,
+            boardsPane);
+        horiSplitPane.setName("horiSplitPane");
+        horiSplitPane.setBorder(null);
+        horiSplitPane.setDividerSize(2);
+        horiSplitPane.setResizeWeight(1d); // Give extra space to left part
+
+        // Global layout: Use a toolbar on top and a double split pane below
         toolBar.add(toolKeyPanel);
         frame.getContentPane()
-             .add(toolBar, BorderLayout.NORTH);
-
-        final JSplitPane bigSplitPane = new JSplitPane(
-            JSplitPane.HORIZONTAL_SPLIT,
-            splitPane,
-            boardsPane);
-        bigSplitPane.setName("bigSplitPane");
-        bigSplitPane.setBorder(null);
-        bigSplitPane.setDividerSize(2);
-        bigSplitPane.setResizeWeight(1d); // Give extra space to left part
-
-        // Global layout
+             .setLayout(new BorderLayout());
         frame.getContentPane()
-             .add(bigSplitPane, BorderLayout.CENTER);
+             .add(toolBar, BorderLayout.NORTH);
+        frame.getContentPane()
+             .add(horiSplitPane, BorderLayout.CENTER);
     }
 
     //-------------//
@@ -677,13 +683,7 @@ public class MainGui
         public void actionPerformed (ActionEvent e)
         {
             File file = new File(e.getActionCommand());
-
-            //            if (file.exists()) {
             new OpenTask(file).execute();
-
-            //            } else {
-            //                logger.warning("File not found " + file);
-            //            }
         }
     }
 
