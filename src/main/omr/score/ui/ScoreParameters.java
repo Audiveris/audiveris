@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.score.ui;
 
+import omr.constant.ConstantSet;
+
 import omr.glyph.text.Language;
 
 import omr.log.Logger;
@@ -23,6 +25,7 @@ import omr.score.midi.MidiAbstractions;
 import omr.script.ParametersTask;
 import omr.script.ScriptActions;
 
+import omr.sheet.Scale;
 import omr.sheet.Sheet;
 
 import omr.step.Step;
@@ -64,6 +67,9 @@ import javax.swing.event.*;
 public class ScoreParameters
 {
     //~ Static fields/initializers ---------------------------------------------
+
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
@@ -380,6 +386,20 @@ public class ScoreParameters
         {
             return true; // By default
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Maximum value for slot margin */
+        final Scale.Fraction maxSlotMargin = new Scale.Fraction(
+            2.5,
+            "Maximum value for slot margin");
     }
 
     //---------//
@@ -1124,7 +1144,7 @@ public class ScoreParameters
                     "Horizontal margin around Slots, in interline fractions",
                     "%.2f"),
                 0,
-                200,
+                (int) (constants.maxSlotMargin.getValue() * 100),
                 ((score != null) && score.hasSlotMargin())
                                 ? score.getSlotMargin().doubleValue()
                                 : Score.getDefaultSlotMargin().doubleValue());
