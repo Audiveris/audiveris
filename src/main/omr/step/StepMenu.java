@@ -125,13 +125,20 @@ public class StepMenu
         @Implement(AbstractAction.class)
         public void actionPerformed (ActionEvent e)
         {
-            final Sheet sheet = SheetsController.selectedSheet();
+            final Sheet      sheet = SheetsController.selectedSheet();
+            final SheetSteps steps = sheet.getSheetSteps();
             new BasicTask() {
                     @Override
                     protected Void doInBackground ()
                         throws Exception
                     {
-                        step.performUntil(sheet);
+                        Step sofar = steps.getLatestMandatoryStep();
+
+                        if ((sofar == null) || (sofar.compareTo(step) < 0)) {
+                            step.performUntil(sheet);
+                        } else {
+                            steps.rebuildFrom(step, null, true);
+                        }
 
                         return null;
                     }
@@ -142,7 +149,7 @@ public class StepMenu
                         // Select the assembly tab related to the target step
                         if (sheet != null) {
                             sheet.getAssembly()
-                                 .selectTab(step);
+                                 .selectTab(steps.getLatestMandatoryStep());
                         }
                     }
                 }.execute();
@@ -181,9 +188,15 @@ public class StepMenu
                                               .isDone(action.step);
 
                     setState(done);
-                    action.setEnabled(!done);
+
+                    if (action.step.isRedoable) {
+                        action.setEnabled(true);
+                    } else {
+                        action.setEnabled(!done);
+                    }
                 } else {
                     setState(false);
+
                     action.setEnabled(true);
                 }
             }

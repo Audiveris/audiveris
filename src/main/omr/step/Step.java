@@ -37,76 +37,80 @@ public enum Step {
     /**
      * Load the image for the sheet, from a provided image file
      */
-    LOAD(true, "Picture", "Load the sheet picture"),
+    LOAD(true, true, "Picture", "Load the sheet picture"),
 
     /**
      * Determine the general scale of the sheet, based on the mean distance
      * between staff lines
      */
-    SCALE(true, LOAD.label, "Compute the global Skew, and rotate if needed"), 
+    SCALE(
+        true,
+        true,
+        LOAD.label,
+        "Compute the global Skew, and rotate if needed"), 
 
     /**
      * Determine the average skew of the picture, and deskews it if needed
      */
-    SKEW(true, "Skew", "Detect & remove all Staff Lines"), 
+    SKEW(true, true, "Skew", "Detect & remove all Staff Lines"), 
 
     /**
      * Retrieve the staff lines, erases their pixels and creates crossing
      * objects when needed
      */
-    LINES(true, "Lines", "Retrieve horizontal Dashes"), 
+    LINES(true, false, "Lines", "Retrieve horizontal Dashes"), 
 
     /**
      * Retrieve the horizontal dashes (ledgers, endings)
      */
-    HORIZONTALS(true, "Horizontals", "Detect horizontal dashes"), 
+    HORIZONTALS(true, false, "Horizontals", "Detect horizontal dashes"),
 
     /**
      * Retrieve the vertical bar lines, and so the systems
      */
-    SYSTEMS(true, "Systems", "Detect vertical Bar sticks and thus systems"), 
+    SYSTEMS(true, true, "Systems", "Retrieve Systems from Bar sticks"),
 
     /**
      * Retrieve the measures from the bar line glyphs
      */
-    MEASURES(true, SYSTEMS.label, "Translate Bar glyphs to Measures"), 
+    MEASURES(true, true, SYSTEMS.label, "Retrieve Measures from Bar sticks"),
 
     /**
      * Recognize isolated symbols glyphs and aggregates unknown symbols into
      * compound glyphs
      */
-    SYMBOLS(true, "Glyphs", "Recognize Symbols & Compounds"), 
+    SYMBOLS(true, true, "Glyphs", "Recognize Symbols & Compounds"), 
 
     /**
      * Retrieve the vertical items such as stems
      */
-    VERTICALS(true, "Verticals", "Extract verticals"), 
+    VERTICALS(true, true, "Verticals", "Extract verticals"), 
 
     /**
      * Process specific patterns at sheet glyph level
      * (true,clefs, sharps, naturals, stems, slurs, ...)
      */
-    PATTERNS(true, SYMBOLS.label, "Specific sheet glyph patterns"), 
+    PATTERNS(true, true, SYMBOLS.label, "Specific sheet glyph patterns"), 
 
     /**
      * Translate glyphs into score entities
      */
-    SCORE(true, SYMBOLS.label, "Translate glyphs to score items"), 
+    SCORE(true, true, SYMBOLS.label, "Translate glyphs to score items"), 
 
     /**
      * Play the whole score
      */
-    PLAY(false, SYMBOLS.label, "Play the whole score"), 
+    PLAY(false, true, SYMBOLS.label, "Play the whole score"), 
 
     /**
      * Write the output MIDI file
      */
-    MIDI(false, SYMBOLS.label, "Write the output MIDI file"), 
+    MIDI(false, true, SYMBOLS.label, "Write the output MIDI file"), 
 
     /**
      * Export the score into the MusicXML file
      */
-    EXPORT(false, SYMBOLS.label, "Export the score into the MusicXML file");
+    EXPORT(false, true, SYMBOLS.label, "Export the score to MusicXML file");
     //
     //--------------------------------------------------------------------------
     //
@@ -118,6 +122,9 @@ public enum Step {
 
     /** Is the step mandatory? */
     public final boolean isMandatory;
+
+    /** Is the step repeatable at will? */
+    public final boolean isRedoable;
 
     /** Related short label */
     public final String label;
@@ -138,14 +145,18 @@ public enum Step {
     //------//
     /**
      * This enumeration is not meant to be instantiated outside of this class
+     * @param isMandatory true if step must be done
+     * @param isRedoable true if step can be redone at will
      * @param label The title of the related (or most relevant) view tab
      * @param description A step description for the end user
      */
     private Step (boolean isMandatory,
+                  boolean isRedoable,
                   String  label,
                   String  description)
     {
         this.isMandatory = isMandatory;
+        this.isRedoable = isRedoable;
         this.label = label;
         this.description = description;
     }
