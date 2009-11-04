@@ -43,16 +43,12 @@ public enum Step {
      * Determine the general scale of the sheet, based on the mean distance
      * between staff lines
      */
-    SCALE(
-        true,
-        true,
-        LOAD.label,
-        "Compute the global Skew, and rotate if needed"), 
+    SCALE(true, false, LOAD.label, "Compute global Skew and rotate if needed"), 
 
     /**
      * Determine the average skew of the picture, and deskews it if needed
      */
-    SKEW(true, true, "Skew", "Detect & remove all Staff Lines"), 
+    SKEW(true, false, "Skew", "Detect & remove all Staff Lines"), 
 
     /**
      * Retrieve the staff lines, erases their pixels and creates crossing
@@ -63,17 +59,17 @@ public enum Step {
     /**
      * Retrieve the horizontal dashes (ledgers, endings)
      */
-    HORIZONTALS(true, false, "Horizontals", "Detect horizontal dashes"),
+    HORIZONTALS(true, false, "Horizontals", "Detect horizontal dashes"), 
 
     /**
      * Retrieve the vertical bar lines, and so the systems
      */
-    SYSTEMS(true, true, "Systems", "Retrieve Systems from Bar sticks"),
+    SYSTEMS(true, true, "Systems", "Retrieve Systems from Bar sticks"), 
 
     /**
      * Retrieve the measures from the bar line glyphs
      */
-    MEASURES(true, true, SYSTEMS.label, "Retrieve Measures from Bar sticks"),
+    MEASURES(true, true, SYSTEMS.label, "Retrieve Measures from Bar sticks"), 
 
     /**
      * Recognize isolated symbols glyphs and aggregates unknown symbols into
