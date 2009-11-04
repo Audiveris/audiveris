@@ -375,8 +375,10 @@ public abstract class Text
           .append(location.y)
           .append("]");
 
-        sb.append(" S#")
-          .append(this.getSystem().getId());
+        sb.append(" S")
+          .append(getSystem().getId())
+          .append("P")
+          .append(getPart().getId());
         sb.append("}");
 
         return sb.toString();
