@@ -210,7 +210,7 @@ public class Sheet
             // Update UI information if so needed
             if (Main.getGui() != null) {
                 errorsEditor = new ErrorsEditor(this);
-                Main.getGui().sheetSetController.showSheet(this);
+                Main.getGui().sheetsController.showSheet(this);
             }
         } catch (IOException ex) {
             logger.warning(ex.toString(), ex);
