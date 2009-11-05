@@ -287,8 +287,9 @@ public class SystemPart
         for (TreeNode node : getMeasures()) {
             measure = (Measure) node;
 
-            if (systemPoint.x <= measure.getBarline()
-                                        .getRightX()) {
+            Barline barline = measure.getBarline();
+
+            if ((barline == null) || (systemPoint.x <= barline.getRightX())) {
                 return measure;
             }
         }

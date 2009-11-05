@@ -151,7 +151,7 @@ public class Dynamics
     // populate //
     //----------//
     /**
-     * Used by ScoreBuilder to allocate the dynamics marks
+     * Used by SystemTranslator to allocate the dynamics marks
      *
      * @param glyph underlying glyph
      * @param measure measure where the mark is located

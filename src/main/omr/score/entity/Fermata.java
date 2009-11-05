@@ -69,7 +69,7 @@ public class Fermata
     // populate //
     //----------//
     /**
-     * Used by ScoreBuilder to allocate the fermata marks
+     * Used by SystemTranslator to allocate the fermata marks
      *
      * @param glyph underlying glyph
      * @param measure measure where the mark is located

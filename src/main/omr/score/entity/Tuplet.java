@@ -93,7 +93,7 @@ public class Tuplet
     // populate //
     //----------//
     /**
-     * Used by ScoreBuilder to allocate the tuplet marks
+     * Used by SystemTranslator to allocate the tuplet marks
      *
      * @param glyph underlying glyph
      * @param measure measure where the mark is located

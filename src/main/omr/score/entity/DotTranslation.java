@@ -88,7 +88,7 @@ public class DotTranslation
         // Results
         if (!infos.isEmpty()) {
             infos.first()
-                 .commit(glyph);
+                 .commit(glyph, measure, dotCenter);
         } else {
             measure.addError(glyph, "Dot unassigned");
         }
@@ -114,12 +114,12 @@ public class DotTranslation
             constants.maxAugmentationDotDx);
         final int          maxDy = scale.toUnits(
             constants.maxAugmentationDotDy);
-        Map<Chord, Double> candidates = new HashMap<Chord, Double>();
+        Map<Chord, Double> distances = new HashMap<Chord, Double>();
 
         // Check for a note/rest nearby:
         // - on the left w/ same even pitch (note w/ even pitch)
         // - slighly above or below (note with odd pitch = on a staff line)
-        ChordLoop:
+        ChordLoop: 
         for (TreeNode node : measure.getChords()) {
             Chord chord = (Chord) node;
 
@@ -140,7 +140,7 @@ public class DotTranslation
                     if ((toDot.x > 0) &&
                         (toDot.x <= maxDx) &&
                         (Math.abs(toDot.y) <= maxDy)) {
-                        candidates.put(chord, toDot.distanceSq(0, 0));
+                        distances.put(chord, toDot.distanceSq(0, 0));
                     }
                 }
             }
@@ -149,13 +149,13 @@ public class DotTranslation
         // Assign the dot to the candidate with longest rawDuration, which boils
         // down to smallest number of flags/beams, as the note head is the same
         if (logger.isFineEnabled()) {
-            logger.info(candidates.size() + " Candidates=" + candidates);
+            logger.info(distances.size() + " Candidates=" + distances);
         }
 
         int   bestFb = Integer.MAX_VALUE;
         Chord bestChord = null;
 
-        for (Chord chord : candidates.keySet()) {
+        for (Chord chord : distances.keySet()) {
             int fb = chord.getFlagsNumber() + chord.getBeams()
                                                    .size();
 
@@ -167,7 +167,7 @@ public class DotTranslation
 
         if (bestChord != null) {
             // TODO: we should also handle case of double dots !
-            return new AugmentationInfo(bestChord, candidates.get(bestChord));
+            return new AugmentationInfo(bestChord, distances.get(bestChord));
         } else {
             return null;
         }
@@ -235,8 +235,46 @@ public class DotTranslation
                                              Measure     measure,
                                              SystemPoint dotCenter)
     {
-        // TODO: not yet implemented
-        return null;
+        // Make sure dy is not too high and use dx*dx as distance
+        Scale                    scale = measure.getScale();
+        final int                maxDx = scale.toUnits(
+            constants.maxStaccatoDotDx);
+        final int                maxDy = scale.toUnits(
+            constants.maxStaccatoDotDy);
+        SortedMap<Double, Chord> distances = new TreeMap<Double, Chord>();
+
+        ChordLoop: 
+        for (TreeNode node : measure.getChords()) {
+            Chord chord = (Chord) node;
+
+            for (TreeNode n : chord.getNotes()) {
+                Note note = (Note) n;
+
+                if (!note.isRest()) {
+                    SystemPoint noteRef = note.getCenter();
+                    SystemPoint toDot = new SystemPoint(
+                        dotCenter.x - noteRef.x,
+                        dotCenter.y - noteRef.y);
+
+                    if (logger.isFineEnabled()) {
+                        logger.info(measure.getContextString() + " " + toDot);
+                    }
+
+                    if ((Math.abs(toDot.x) <= maxDx) &&
+                        (Math.abs(toDot.y) <= maxDy)) {
+                        distances.put((double) toDot.x * toDot.x, chord);
+                    }
+                }
+            }
+        }
+
+        if (!distances.isEmpty()) {
+            Double firstKey = distances.firstKey();
+
+            return new StaccatoInfo(distances.get(firstKey), firstKey);
+        } else {
+            return null;
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -263,7 +301,9 @@ public class DotTranslation
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public void commit (Glyph glyph)
+        public void commit (Glyph       glyph,
+                            Measure     measure,
+                            SystemPoint dotCenter)
         {
             chord.setDotsNumber(1);
             glyph.setTranslation(chord);
@@ -300,7 +340,9 @@ public class DotTranslation
 
         //~ Methods ------------------------------------------------------------
 
-        public abstract void commit (Glyph glyph);
+        public abstract void commit (Glyph       glyp,
+                                     Measure     measure,
+                                     SystemPoint dotCenter);
 
         public int compareTo (Info other)
         {
@@ -343,6 +385,20 @@ public class DotTranslation
         Scale.Fraction maxRepeatDotDx = new Scale.Fraction(
             1.5d,
             "Maximum dx between dot and edge of repeat barline");
+
+        /**
+         * Maximum absolute dy between note and staccato dot
+         */
+        Scale.Fraction maxStaccatoDotDy = new Scale.Fraction(
+            3d,
+            "Maximum absolute dy between note and staccato dot");
+
+        /**
+         * Maximum dx between note and staccato dot
+         */
+        Scale.Fraction maxStaccatoDotDx = new Scale.Fraction(
+            0.5d,
+            "Maximum dx between note and staccato dot");
     }
 
     //------------//
@@ -367,7 +423,9 @@ public class DotTranslation
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public void commit (Glyph glyph)
+        public void commit (Glyph       glyph,
+                            Measure     measure,
+                            SystemPoint dotCenter)
         {
             barline.addStick((Stick) glyph);
             glyph.setTranslation(barline);
@@ -402,9 +460,18 @@ public class DotTranslation
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public void commit (Glyph glyph)
+        public void commit (Glyph       glyph,
+                            Measure     measure,
+                            SystemPoint dotCenter)
         {
-            throw new UnsupportedOperationException("Not supported yet.");
+            glyph.setTranslation(
+                new Articulation(measure, dotCenter, chord, glyph));
+
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    chord.getContextString() + " dot#" + glyph.getId() +
+                    " Staccato " + chord);
+            }
         }
     }
 }

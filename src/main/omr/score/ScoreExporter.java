@@ -22,6 +22,7 @@ import omr.score.common.PagePoint;
 import omr.score.common.SystemPoint;
 import omr.score.common.SystemRectangle;
 import omr.score.entity.Arpeggiate;
+import omr.score.entity.Articulation;
 import omr.score.entity.Barline;
 import omr.score.entity.Beam;
 import omr.score.entity.Chord;
@@ -248,6 +249,48 @@ public class ScoreExporter
     }
 
     //- All Visiting Methods ---------------------------------------------------
+
+    //--------------------//
+    // visit Articulation //
+    //--------------------//
+    @Override
+    public boolean visit (Articulation articulation)
+    {
+        JAXBElement<?> element = getArticulationObject(articulation.getShape());
+
+        // Include in Articulations
+        getArticulations()
+            .getAccentOrStrongAccentOrStaccato()
+            .add(element);
+
+        // Staff ?
+        Staff    staff = current.note.getStaff();
+
+        // Placement
+        Class<?> classe = element.getDeclaredType();
+
+        try {
+            Method method = classe.getMethod("setPlacement", AboveBelow.class);
+            method.invoke(
+                element.getValue(),
+                (articulation.getPoint().y < current.note.getCenter().y)
+                                ? AboveBelow.ABOVE : AboveBelow.BELOW);
+        } catch (Exception ex) {
+            logger.severe("Could not setPlacement for element " + classe);
+        }
+
+        // Default-Y
+        try {
+            Method method = classe.getMethod("setDefaultY", BigDecimal.class);
+            method.invoke(
+                element.getValue(),
+                yOf(articulation.getPoint(), staff));
+        } catch (Exception ex) {
+            logger.severe("Could not setDefaultY for element " + classe);
+        }
+
+        return false;
+    }
 
     //------------------//
     // visit Arpeggiate //
@@ -1057,9 +1100,7 @@ public class ScoreExporter
         Class<?> classe = element.getDeclaredType();
 
         try {
-            Method method = classe.getMethod(
-                "setPlacement",
-                java.lang.String.class);
+            Method method = classe.getMethod("setPlacement", AboveBelow.class);
             method.invoke(
                 element.getValue(),
                 (ornament.getPoint().y < current.note.getCenter().y)
@@ -1479,7 +1520,6 @@ public class ScoreExporter
     public boolean visit (Text text)
     {
         ///logger.info("Visiting " + text);
-
         switch (text.getSentence()
                     .getTextRole()) {
         case Title :
@@ -1815,6 +1855,33 @@ public class ScoreExporter
     {
         return left.getFifths()
                    .equals(right.getFifths());
+    }
+
+    //------------------//
+    // getArticulations //
+    //------------------//
+    /**
+     * Report (after creating it if necessary) the articulations elements in the
+     * notations element of the current note
+     *
+     * @return the note notations articulations element
+     */
+    private Articulations getArticulations ()
+    {
+        for (Object obj : getNotations()
+                              .getTiedOrSlurOrTuplet()) {
+            if (obj instanceof Articulations) {
+                return (Articulations) obj;
+            }
+        }
+
+        // Need to allocate articulations
+        Articulations articulations = factory.createArticulations();
+        getNotations()
+            .getTiedOrSlurOrTuplet()
+            .add(articulations);
+
+        return articulations;
     }
 
     //----------------------//

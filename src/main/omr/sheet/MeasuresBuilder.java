@@ -212,6 +212,20 @@ public class MeasuresBuilder
                 }
             }
         }
+
+        // Degraded case w/ no bar stisk
+        for (TreeNode node : scoreSystem.getParts()) {
+            SystemPart part = (SystemPart) node;
+
+            if (part.getMeasures()
+                    .isEmpty()) {
+                if (logger.isFineEnabled()) {
+                    logger.fine(part + " - Creating articifial measure");
+                }
+
+                Measure measure = new Measure(part);
+            }
+        }
     }
 
     //--------------------//
@@ -333,8 +347,13 @@ public class MeasuresBuilder
             SystemPart part = scoreSystem.getFirstRealPart();
             Measure    measure = part.getLastMeasure();
             Barline    barline = measure.getBarline();
-            int        lastX = barline.getRightX();
-            int        minWidth = scale.toPixels(constants.minMeasureWidth);
+
+            if (barline == null) {
+                return;
+            }
+
+            int lastX = barline.getRightX();
+            int minWidth = scale.toPixels(constants.minMeasureWidth);
 
             if ((part.getFirstStaff()
                      .getWidth() - lastX) < minWidth) {
@@ -480,7 +499,12 @@ public class MeasuresBuilder
         Barline firstBarline = scoreSystem.getFirstRealPart()
                                           .getFirstMeasure()
                                           .getBarline();
-        int     firstX = firstBarline.getLeftX();
+
+        if (firstBarline == null) {
+            return;
+        }
+
+        int firstX = firstBarline.getLeftX();
 
         // Check is based on the width of this first measure
         if (firstX < minWidth) {

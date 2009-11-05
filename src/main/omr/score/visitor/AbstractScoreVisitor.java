@@ -13,6 +13,7 @@ package omr.score.visitor;
 
 import omr.score.Score;
 import omr.score.entity.Arpeggiate;
+import omr.score.entity.Articulation;
 import omr.score.entity.Barline;
 import omr.score.entity.Beam;
 import omr.score.entity.Chord;
@@ -65,6 +66,14 @@ public class AbstractScoreVisitor
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //--------------------//
+    // visit Articulation //
+    //--------------------//
+    public boolean visit (Articulation articulation)
+    {
+        return true;
+    }
 
     //------------------//
     // visit Arpeggiate //

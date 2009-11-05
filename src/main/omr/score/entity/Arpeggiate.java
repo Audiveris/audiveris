@@ -80,7 +80,7 @@ public class Arpeggiate
     // populate //
     //----------//
     /**
-     * Used by ScoreBuilder to allocate the arpeggiate marks
+     * Used by SystemTranslator to allocate the arpeggiate marks
      *
      * @param glyph underlying glyph
      * @param measure measure where the mark is located

@@ -367,6 +367,17 @@ public class SystemsBuilder
             part.addStaff(sheet.getStaves().get(i));
         }
 
+        // Specific degraded case, just one staff, no bar stick
+        if (systems.isEmpty() && (staffNb == 1)) {
+            system = new SystemInfo(++id, sheet);
+            systems.add(system);
+            system.addStaff(0);
+            part = new PartInfo();
+            system.addPart(part);
+            part.addStaff(sheet.getStaves().get(0));
+            logger.warning("Created one system, one part, one staff");
+        }
+
         if (logger.isFineEnabled()) {
             for (SystemInfo systemInfo : systems) {
                 Dumper.dump(systemInfo);

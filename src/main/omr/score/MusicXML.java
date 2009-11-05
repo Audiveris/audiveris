@@ -63,6 +63,38 @@ public class MusicXML
 
     //~ Methods ----------------------------------------------------------------
 
+    //-----------------------//
+    // getArticulationObject //
+    //-----------------------//
+    public static JAXBElement<?> getArticulationObject (Shape shape)
+    {
+        //<!ELEMENT articulations
+        //	((accent | strong-accent | staccato | tenuto |
+        //	  detached-legato | staccatissimo | spiccato |
+        //	  scoop | plop | doit | falloff | breath-mark | 
+        //	  caesura | stress | unstress | other-articulation)*)>
+        ObjectFactory factory = new ObjectFactory();
+
+        switch (shape) {
+        case DOT :
+            return factory.createArticulationsStaccato(
+                factory.createEmptyPlacement());
+
+            /** TODO: implement related shapes
+               case ACCENT :
+               case STRONG_ACCENT :
+               case TENUTO :
+               case STACCATISSIMO :
+               case BREATH_MARK :
+               case CAESURA :
+             */
+        }
+
+        logger.severe("Unsupported ornament shape:" + shape);
+
+        return null;
+    }
+
     //-------------------//
     // getDynamicsObject //
     //-------------------//

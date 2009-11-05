@@ -28,6 +28,7 @@ import omr.score.common.SystemPoint;
 import omr.score.common.SystemRectangle;
 import omr.score.common.UnitDimension;
 import omr.score.entity.Arpeggiate;
+import omr.score.entity.Articulation;
 import omr.score.entity.Barline;
 import omr.score.entity.Beam;
 import omr.score.entity.Chord;
@@ -209,6 +210,15 @@ public class ScorePainter
         g.translate(origin.x, origin.y);
 
         drawSlot(wholeSystem, measure, slot, color);
+    }
+
+    //--------------------//
+    // visit Articulation //
+    //--------------------//
+    @Override
+    public boolean visit (Articulation articulation)
+    {
+        return visit((MeasureElement) articulation);
     }
 
     //------------------//

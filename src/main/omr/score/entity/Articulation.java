@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                              O r n a m e n t                               //
+//                          A r t i c u l a t i o n                           //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -19,48 +19,52 @@ import omr.score.common.SystemPoint;
 import omr.score.visitor.ScoreVisitor;
 
 /**
- * Class <code>Ornament</code> represents an ornament event, a special notation.
+ * Class <code>Articulation</code> represents an articulation event, a special notation.
  * This should apply to:
  * <pre>
- * trill-mark           standard
- * turn                 standard
- * inverted-turn        standard
- * delayed-turn         nyi
- * shake                nyi
- * wavy-line            nyi
- * mordent              standard
- * inverted-mordent     standard
- * schleifer            nyi
- * tremolo              nyi
- * other-ornament       nyi
- * accidental-mark      nyi
+ * accent		nyi
+ * strong-accent	nyi
+ * staccato		standard
+ * tenuto		nyi
+ * detached-legato	nyi
+ * staccatissimo	nyi
+ * spiccato		nyi
+ * scoop		nyi
+ * plop			nyi
+ * doit			nyi
+ * falloff		nyi
+ * breath-mark		nyi
+ * caesura		nyi
+ * stress		nyi
+ * unstress		nyi
+ * other-articulation	nyi
  * </pre>
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
-public class Ornament
+public class Articulation
     extends AbstractNotation
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Ornament.class);
+    private static final Logger logger = Logger.getLogger(Articulation.class);
 
     //~ Constructors -----------------------------------------------------------
 
-    //----------//
-    // Ornament //
-    //----------//
+    //--------------//
+    // Articulation //
+    //--------------//
     /**
-     * Creates a new instance of Ornament event
+     * Creates a new instance of Articulation event
      *
      * @param measure measure that contains this mark
      * @param point location of mark
      * @param chord the chord related to the mark
      * @param glyph the underlying glyph
      */
-    public Ornament (Measure     measure,
+    public Articulation (Measure     measure,
                      SystemPoint point,
                      Chord       chord,
                      Glyph       glyph)
@@ -79,30 +83,30 @@ public class Ornament
         return visitor.visit(this);
     }
 
-    //----------//
-    // populate //
-    //----------//
-    /**
-     * Used by SystemTranslator to allocate the trill marks
-     *
-     * @param glyph underlying glyph
-     * @param measure measure where the mark is located
-     * @param point location for the mark
-     */
-    public static void populate (Glyph       glyph,
-                                 Measure     measure,
-                                 SystemPoint point)
-    {
-        // An Ornament relates to the note below on the same time slot
-        Slot slot = measure.getClosestSlot(point);
-
-        if (slot != null) {
-            Chord chord = slot.getChordBelow(point);
-
-            if (chord != null) {
-                glyph.setTranslation(
-                    new Ornament(measure, point, chord, glyph));
-            }
-        }
-    }
+//    //----------//
+//    // populate //
+//    //----------//
+//    /**
+//     * Used by SystemTranslator
+//     *
+//     * @param glyph underlying glyph
+//     * @param measure measure where the mark is located
+//     * @param point location for the mark
+//     */
+//    public static void populate (Glyph       glyph,
+//                                 Measure     measure,
+//                                 SystemPoint point)
+//    {
+//        // An Articulation relates to the note below on the same time slot ?????????????????
+//        Slot slot = measure.getClosestSlot(point);
+//
+//        if (slot != null) {
+//            Chord chord = slot.getChordBelow(point);
+//
+//            if (chord != null) {
+//                glyph.setTranslation(
+//                    new Articulation(measure, point, chord, glyph));
+//            }
+//        }
+//    }
 }

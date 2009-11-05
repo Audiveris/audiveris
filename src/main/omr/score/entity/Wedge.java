@@ -102,7 +102,7 @@ public class Wedge
     // populate //
     //----------//
     /**
-     * Used by ScoreBuilder to allocate the wedges
+     * Used by SystemTranslator to allocate the wedges
      *
      * @param glyph underlying glyph
      * @param startingMeasure measure where left side is located

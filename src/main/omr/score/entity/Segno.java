@@ -61,7 +61,7 @@ public class Segno
     // populate //
     //----------//
     /**
-     * Used by ScoreBuilder to allocate the segno marks
+     * Used by SystemTranslator to allocate the segno marks
      *
      * @param glyph underlying glyph
      * @param measure measure where the mark is located

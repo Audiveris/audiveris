@@ -57,7 +57,7 @@ public class Measure
     /** Flag for partial (short) measure */
     private boolean partial;
 
-    /** Child: Ending bar line */
+    /** Child: Ending bar line, if any */
     private Barline barline;
 
     /** Child: Potential one time signature per staff */
@@ -1005,6 +1005,26 @@ public class Measure
         }
     }
 
+    //-----------//
+    // getRightX //
+    //-----------//
+    /**
+     * Report the abscissa of the end of the measure, relative to system/part
+     * left edge
+     *
+     * @return part-based abscissa of right side of the measure
+     */
+    public Integer getRightX ()
+    {
+        if (barline != null) {
+            return barline.getCenter().x;
+        } else {
+            // Last measure of a part/system with no ending barline
+            return getSystem()
+                       .getDimension().width;
+        }
+    }
+
     //----------//
     // getSlots //
     //----------//
@@ -1164,8 +1184,7 @@ public class Measure
         if (isDummy()) {
             return null;
         } else {
-            return getBarline()
-                       .getCenter().x - getLeftX();
+            return getRightX() - getLeftX();
         }
     }
 

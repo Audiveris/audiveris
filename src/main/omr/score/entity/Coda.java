@@ -61,7 +61,7 @@ public class Coda
     // populate //
     //----------//
     /**
-     * Used by ScoreBuilder to allocate the coda marks
+     * Used by SystemTranslator to allocate the coda marks
      *
      * @param glyph underlying glyph
      * @param measure measure where the mark is located
