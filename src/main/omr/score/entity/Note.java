@@ -353,29 +353,28 @@ public class Note
     public static void createPack (Chord chord,
                                    Glyph glyph)
     {
-        final int   card = packCardOf(glyph.getShape());
+        final int      card = packCardOf(glyph.getShape());
 
         // Test on ordinates between stem (if any) and note
         // Be strict when glyph has 2 stems and more relaxed with just one stem
-        final Glyph stem = chord.getStem();
-        final int   dy = chord.getScale()
-                              .toUnits(
-            (glyph.getStemNumber() >= 2) ? constants.maxMultiStemDy
-                        : constants.maxSingleStemDy);
-        int         top = 0;
-        int         bottom = 0;
+        final Glyph    stem = chord.getStem();
+        PixelRectangle stemBox = null;
 
         if (stem != null) {
-            PixelRectangle box = stem.getContourBox();
-            top = box.y - dy;
-            bottom = box.y + box.height + dy;
+            Scale scale = chord.getScale();
+            stemBox = stem.getContourBox();
+            stemBox.grow(
+                scale.toUnits(constants.maxStemDx),
+                scale.toUnits(
+                    (glyph.getStemNumber() >= 2) ? constants.maxMultiStemDy
+                                        : constants.maxSingleStemDy));
         }
 
         for (int i = 0; i < card; i++) {
             if (stem != null) {
-                PixelRectangle box = getItemBox(glyph, i);
+                PixelRectangle itemBox = getItemBox(glyph, i);
 
-                if (((box.y + box.height) < top) || (box.y > bottom)) {
+                if (!itemBox.intersects(stemBox)) {
                     continue;
                 }
             }
@@ -941,33 +940,6 @@ public class Note
             box.height / card);
     }
 
-    //    //---------//
-    //    // alterOf //
-    //    //---------//
-    //    private int alterOf (Shape accid)
-    //    {
-    //        switch (accid) {
-    //        case FLAT :
-    //            return -1;
-    //
-    //        case NATURAL :
-    //            return 0;
-    //
-    //        case SHARP :
-    //            return +1;
-    //
-    //        case DOUBLE_SHARP :
-    //            return +2; // To be verified
-    //
-    //        case DOUBLE_FLAT :
-    //            return -2; // To be verified
-    //        }
-    //
-    //        logger.severe("Illegal accidental shape: " + accid);
-    //
-    //        return 0;
-    //    }
-
     //-------------//
     // baseShapeOf //
     //-------------//
@@ -1057,10 +1029,17 @@ public class Note
             "Maximum absolute dy between note and accidental");
 
         /**
+         * Maximum absolute dx between note and stem
+         */
+        Scale.Fraction maxStemDx = new Scale.Fraction(
+            0.25d,
+            "Maximum absolute dx between note and stem");
+
+        /**
          * Maximum absolute dy between note and single stem end
          */
         Scale.Fraction maxSingleStemDy = new Scale.Fraction(
-            1d,
+            3d,
             "Maximum absolute dy between note and single stem end");
 
         /**
