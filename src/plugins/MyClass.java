@@ -9,8 +9,8 @@
 //  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-import omr.score.Score;
-import omr.score.ui.ScoreController;
+import omr.log.Logger;
+
 import omr.score.ui.ScoreDependent;
 
 import omr.script.Script;
@@ -29,20 +29,12 @@ import org.jdesktop.application.Action;
 public class MyClass
     extends ScoreDependent
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(MyClass.class);
+
     //~ Methods ----------------------------------------------------------------
-
-    /**
-     * Dump the score currently selected
-     */
-    @Action(enabledProperty = "scoreAvailable")
-    public void dumpCurrentScore ()
-    {
-        Score score = ScoreController.getCurrentScore();
-
-        if (score != null) {
-            score.dump();
-        }
-    }
 
     /**
      * Dump the script of the sheet currently selected
