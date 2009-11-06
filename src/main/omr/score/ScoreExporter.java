@@ -500,6 +500,51 @@ public class ScoreExporter
         return true;
     }
 
+    //--------------------------//
+    // visit DirectionStatement //
+    //--------------------------//
+    @Override
+    public boolean visit (DirectionStatement words)
+    {
+        if (words.getText()
+                 .getContent() != null) {
+            Direction direction = factory.createDirection();
+            current.pmMeasure.getNoteOrBackupOrForward()
+                             .add(direction);
+
+            DirectionType directionType = factory.createDirectionType();
+            direction.getDirectionType()
+                     .add(directionType);
+
+            FormattedText pmWords = factory.createFormattedText();
+            directionType.getWords()
+                         .add(pmWords);
+
+            pmWords.setValue(words.getText().getContent());
+
+            // Staff
+            Staff staff = current.note.getStaff();
+            insertStaffId(direction, staff);
+
+            // Placement
+            direction.setPlacement(
+                (words.getPoint().y < current.note.getCenter().y)
+                                ? AboveBelow.ABOVE : AboveBelow.BELOW);
+
+            // default-y
+            pmWords.setDefaultY(yOf(words.getPoint(), staff));
+
+            // font-size
+            pmWords.setFontSize("" + words.getText().getFontSize());
+
+            // relative-x
+            pmWords.setRelativeX(
+                toTenths(words.getPoint().x - current.note.getCenterLeft().x));
+        }
+
+        return true;
+    }
+
     //----------------//
     // visit Dynamics //
     //----------------//
@@ -1708,16 +1753,16 @@ public class ScoreExporter
         // Spread
         pmWedge.setSpread(toTenths(wedge.getSpread()));
 
+        // Staff ?
+        Staff staff = current.note.getStaff();
+        insertStaffId(direction, staff);
+
         // Start or stop ?
         if (wedge.isStart()) {
             // Type
             pmWedge.setType(
                 (wedge.getShape() == Shape.CRESCENDO) ? WedgeType.CRESCENDO
                                 : WedgeType.DIMINUENDO);
-
-            // Staff ?
-            Staff staff = current.note.getStaff();
-            insertStaffId(direction, staff);
 
             // Placement
             direction.setPlacement(
@@ -1737,48 +1782,6 @@ public class ScoreExporter
         //        // default-x
         //        pmWedge.setDefaultX(
         //            toTenths(wedge.getPoint().x - current.measure.getLeftX()));
-        return true;
-    }
-
-    //--------------------------//
-    // visit DirectionStatement //
-    //--------------------------//
-    @Override
-    public boolean visit (DirectionStatement words)
-    {
-        if (words.getText()
-                 .getContent() != null) {
-            Direction direction = factory.createDirection();
-            current.pmMeasure.getNoteOrBackupOrForward()
-                             .add(direction);
-
-            DirectionType directionType = factory.createDirectionType();
-            direction.getDirectionType()
-                     .add(directionType);
-
-            FormattedText pmWords = factory.createFormattedText();
-            directionType.getWords()
-                         .add(pmWords);
-
-            pmWords.setValue(words.getText().getContent());
-
-            // Placement
-            direction.setPlacement(
-                (words.getPoint().y < current.note.getCenter().y)
-                                ? AboveBelow.ABOVE : AboveBelow.BELOW);
-
-            // default-y
-            Staff staff = current.note.getStaff();
-            pmWords.setDefaultY(yOf(words.getPoint(), staff));
-
-            // font-size
-            pmWords.setFontSize("" + words.getText().getFontSize());
-
-            // relative-x
-            pmWords.setRelativeX(
-                toTenths(words.getPoint().x - current.note.getCenterLeft().x));
-        }
-
         return true;
     }
 
