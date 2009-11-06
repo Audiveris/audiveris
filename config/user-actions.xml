@@ -20,8 +20,16 @@
 <actions>
     
     <!-- Just as an example -->
-    <action domain="DEBUG" section="20" class="omr.ui.GuiActions" method="dumpEventServices"/>
-    <action domain="DEBUG" section="20" class="MyClass"           method="dumpCurrentScript" />
-    <action domain="DEBUG" section="40" class="MyClass"           method="dumpCurrentScore" />
+    <action domain="DEBUG" section="20" class="omr.ui.GuiActions"         method="dumpEventServices"/>
+    <action domain="DEBUG" section="20" class="MyClass"                   method="dumpCurrentScript" />
+    
+    <action domain="DEBUG" section="30" class="omr.score.ui.ScoreActions" method="browseScore"/>
+    <action domain="DEBUG" section="30" class="omr.score.ui.ScoreActions" method="dumpScore"/>
+
+    <!--<action domain="DEBUG" section="50" class="MyClass"           method="rebuildFromStep" button="javax.swing.JButton"/>-->
+    <action domain="DEBUG" section="50" class="omr.sheet.SheetsManager"  method="dumpAllSheets"/>
+    <!--<action domain="DEBUG" section="50" class="omr.sheet.ui.SheetsController"  method="dumpAllAssemblies"/>-->
+
+
 
 </actions>
