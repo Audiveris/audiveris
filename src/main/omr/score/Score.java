@@ -1025,6 +1025,18 @@ public class Score
                     .export(this);
     }
 
+    //----------//
+    // exportAs //
+    //----------//
+    /**
+     * Marshall the score to its MusicXML file
+     */
+    public void exportAs ()
+    {
+        ScoreManager.getInstance()
+                    .exportAs(this);
+    }
+
     //-------------//
     // hasLanguage //
     //-------------//

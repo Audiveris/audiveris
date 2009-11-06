@@ -293,6 +293,21 @@ public class ScoreActions
         return new StoreTask();
     }
 
+    //--------------//
+    // storeScoreAs //
+    //--------------//
+    /**
+     * Export the currently selected score, using MusicXML format,
+     * to a user-provided file
+     * @param e the event that triggered this action
+     * @return the task to launch in background
+     */
+    @Action(enabledProperty = SCORE_AVAILABLE)
+    public Task storeScoreAs (ActionEvent e)
+    {
+        return new StoreAsTask();
+    }
+
     //---------------//
     // toggleRebuild //
     //---------------//
@@ -373,6 +388,32 @@ public class ScoreActions
                                 .rebuildFrom(Step.VERTICALS, null, true);
             } catch (Exception ex) {
                 logger.warning("Could not refresh score", ex);
+            }
+
+            return null;
+        }
+    }
+
+    //-------------//
+    // StoreAsTask //
+    //-------------//
+    private static class StoreAsTask
+        extends BasicTask
+    {
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        protected Void doInBackground ()
+            throws InterruptedException
+        {
+            Score score = ScoreController.getCurrentScore();
+
+            if (checkParameters(score)) {
+                try {
+                    score.exportAs();
+                } catch (Exception ex) {
+                    logger.warning("Could not store " + score, ex);
+                }
             }
 
             return null;

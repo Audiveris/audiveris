@@ -55,6 +55,8 @@ import omr.score.entity.Wedge;
 import omr.score.midi.MidiAbstractions;
 import omr.score.visitor.AbstractScoreVisitor;
 
+import omr.sheet.Scale;
+
 import omr.util.OmrExecutors;
 import omr.util.TreeNode;
 
@@ -1248,20 +1250,24 @@ public class ScoreExporter
         scorePartwise.setDefaults(defaults);
 
         // [Defaults]/Scaling
-        Scaling scaling = factory.createScaling();
-        defaults.setScaling(scaling);
-        scaling.setMillimeters(
-            createDecimal(
-                (score.getSheet()
-                      .getScale()
-                      .interline() * 25.4 * 4) / 300)); // Assuming 300 DPI
-        scaling.setTenths(new BigDecimal("40"));
+        Scale scale = score.getSheet()
+                           .getScale();
+
+        if (scale != null) {
+            Scaling scaling = factory.createScaling();
+            defaults.setScaling(scaling);
+            scaling.setMillimeters(
+                createDecimal((scale.interline() * 25.4 * 4) / 300)); // Assuming 300 DPI
+            scaling.setTenths(new BigDecimal("40"));
+        }
 
         // [Defaults]/PageLayout
-        PageLayout pageLayout = factory.createPageLayout();
-        defaults.setPageLayout(pageLayout);
-        pageLayout.setPageHeight(toTenths(score.getDimension().height));
-        pageLayout.setPageWidth(toTenths(score.getDimension().width));
+        if (score.getDimension() != null) {
+            PageLayout pageLayout = factory.createPageLayout();
+            defaults.setPageLayout(pageLayout);
+            pageLayout.setPageHeight(toTenths(score.getDimension().height));
+            pageLayout.setPageWidth(toTenths(score.getDimension().width));
+        }
 
         // [Defaults]/LyricFont
         Font      lyricFont = omr.score.entity.Text.getLyricsFont();
