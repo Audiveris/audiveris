@@ -301,7 +301,7 @@ public class GlyphBoard
                 // Shape text and icon
                 Shape shape = (glyph != null) ? glyph.getShape() : null;
 
-                if (shape != null) {
+                if (shape != null && shape != Shape.GLYPH_PART) {
                     shapeField.setText(shape.toString());
                     shapeIcon.setIcon(shape.getIcon());
                 } else {
