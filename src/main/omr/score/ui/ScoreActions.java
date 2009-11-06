@@ -19,6 +19,7 @@ import omr.constant.ConstantSet;
 import omr.log.Logger;
 
 import omr.score.Score;
+import omr.score.ScoreManager;
 import omr.score.entity.ScorePart;
 import omr.score.midi.MidiAgent;
 
@@ -28,6 +29,8 @@ import omr.sheet.ui.SheetsController;
 import omr.step.Step;
 
 import omr.ui.MainGui;
+import omr.ui.util.OmrFileFilter;
+import omr.ui.util.UIUtilities;
 
 import omr.util.BasicTask;
 import omr.util.Wrapper;
@@ -37,6 +40,7 @@ import org.jdesktop.application.Task;
 
 import java.awt.event.*;
 import java.beans.*;
+import java.io.File;
 
 import javax.swing.*;
 
@@ -290,7 +294,19 @@ public class ScoreActions
     @Action(enabledProperty = SCORE_AVAILABLE)
     public Task storeScore (ActionEvent e)
     {
-        return new StoreTask();
+        final Score score = ScoreController.getCurrentScore();
+
+        if (score == null) {
+            return null;
+        }
+
+        final File exportFile = score.getExportFile();
+
+        if (exportFile != null) {
+            return new StoreScoreTask(score, exportFile);
+        } else {
+            return storeScoreAs(e);
+        }
     }
 
     //--------------//
@@ -305,7 +321,26 @@ public class ScoreActions
     @Action(enabledProperty = SCORE_AVAILABLE)
     public Task storeScoreAs (ActionEvent e)
     {
-        return new StoreAsTask();
+        final Score score = ScoreController.getCurrentScore();
+
+        if (score == null) {
+            return null;
+        }
+
+        // Let the user select a score output file
+        File exportFile = UIUtilities.fileChooser(
+            true,
+            null,
+            ScoreManager.getInstance().getDefaultExportFile(score),
+            new OmrFileFilter(
+                "XML files",
+                new String[] { ScoreManager.SCORE_EXTENSION }));
+
+        if (exportFile != null) {
+            return new StoreScoreTask(score, exportFile);
+        } else {
+            return null;
+        }
     }
 
     //---------------//
@@ -394,52 +429,35 @@ public class ScoreActions
         }
     }
 
-    //-------------//
-    // StoreAsTask //
-    //-------------//
-    private static class StoreAsTask
+    //----------------//
+    // StoreScoreTask //
+    //----------------//
+    private static class StoreScoreTask
         extends BasicTask
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Instance fields ----------------------------------------------------
 
-        @Override
-        protected Void doInBackground ()
-            throws InterruptedException
+        final Score score;
+        final File  exportFile;
+
+        //~ Constructors -------------------------------------------------------
+
+        public StoreScoreTask (Score score,
+                               File  exportFile)
         {
-            Score score = ScoreController.getCurrentScore();
-
-            if (checkParameters(score)) {
-                try {
-                    score.exportAs();
-                } catch (Exception ex) {
-                    logger.warning("Could not store " + score, ex);
-                }
-            }
-
-            return null;
+            this.score = score;
+            this.exportFile = exportFile;
         }
-    }
 
-    //-----------//
-    // StoreTask //
-    //-----------//
-    private static class StoreTask
-        extends BasicTask
-    {
         //~ Methods ------------------------------------------------------------
 
         @Override
         protected Void doInBackground ()
             throws InterruptedException
         {
-            Score score = ScoreController.getCurrentScore();
-
             if (checkParameters(score)) {
-                try {
-                    score.export();
-                } catch (Exception ex) {
-                    logger.warning("Could not store " + score, ex);
-                }
+                ScoreManager.getInstance()
+                            .export(score, exportFile);
             }
 
             return null;

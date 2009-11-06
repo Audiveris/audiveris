@@ -26,6 +26,11 @@ import omr.selection.SheetEvent;
 import omr.sheet.Sheet;
 import omr.sheet.ui.SheetsController;
 
+import omr.step.Step;
+
+import omr.ui.util.OmrFileFilter;
+import omr.ui.util.UIUtilities;
+
 import omr.util.BasicTask;
 import omr.util.Implement;
 
@@ -35,6 +40,7 @@ import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
 
 import java.awt.event.*;
+import java.io.File;
 
 /**
  * Class <code>MidiActions</code> is merely a collection of UI actions that
@@ -240,14 +246,18 @@ public class MidiActions
      */
     public void updateActions ()
     {
+        final Sheet      sheet = SheetsController.selectedSheet();
+        final boolean    scoreDone = (sheet != null) &&
+                                     sheet.getSheetSteps()
+                                          .isDone(Step.SCORE);
         MidiAgent.Status status = getAgent()
                                       .getStatus();
         ///logger.info("updateActions, status=" + status);
-        setMidiPlayable(isScoreAvailable() && (status != PLAYING));
-        setMidiPausable(isScoreAvailable() && (status == PLAYING));
-        setMidiStoppable(isScoreAvailable() && (status != STOPPED));
+        setMidiPlayable(scoreDone && (status != PLAYING));
+        setMidiPausable(scoreDone && (status == PLAYING));
+        setMidiStoppable(scoreDone && (status != STOPPED));
         setMidiWritable(
-            isScoreAvailable() &&
+            scoreDone &&
             ((status == STOPPED) ||
                         (getAgent()
                              .getScore() == getCurrentScore())));
@@ -276,7 +286,52 @@ public class MidiActions
             return null;
         }
 
-        return new WriteTask(score);
+        final File midiFile = score.getMidiFile();
+
+        if (midiFile != null) {
+            return new WriteTask(score, midiFile);
+        } else {
+            return writeMidiAs(e);
+        }
+    }
+
+    //-------------//
+    // writeMidiAs //
+    //-------------//
+    /**
+     * Export the MIDI data to a user-provided file
+     * @param e the event that triggered this action
+     * @return the task to launch in background
+     */
+    @Action(enabledProperty = "midiWritable")
+    public Task writeMidiAs (ActionEvent e)
+    {
+        Score score = getInstance()
+                          .getCurrentScore();
+
+        if (score == null) {
+            return null;
+        }
+
+        // Check whether global score parameters have been set
+        if (!ScoreActions.checkParameters(score)) {
+            return null;
+        }
+
+        // Let the user select a MIDI output file
+        File midiFile = UIUtilities.fileChooser(
+            true,
+            null,
+            ScoreManager.getInstance().getDefaultMidiFile(score),
+            new OmrFileFilter(
+                "MIDI files",
+                new String[] { MidiAbstractions.MIDI_EXTENSION }));
+
+        if (midiFile != null) {
+            return new WriteTask(score, midiFile);
+        } else {
+            return null;
+        }
     }
 
     //----------//
@@ -374,12 +429,15 @@ public class MidiActions
         //~ Instance fields ----------------------------------------------------
 
         private final Score score;
+        private final File  midiFile;
 
         //~ Constructors -------------------------------------------------------
 
-        WriteTask (Score score)
+        public WriteTask (Score score,
+                          File  midiFile)
         {
             this.score = score;
+            this.midiFile = midiFile;
         }
 
         //~ Methods ------------------------------------------------------------
@@ -390,7 +448,7 @@ public class MidiActions
         {
             try {
                 ScoreManager.getInstance()
-                            .midiWrite(score, null);
+                            .midiWrite(score, midiFile);
             } catch (Exception ignored) {
                 // User already informed
             }

@@ -80,6 +80,38 @@ public class ScoreManager
         return INSTANCE;
     }
 
+    //----------------------//
+    // getDefaultExportFile //
+    //----------------------//
+    /**
+     * Report the file to which the score would be written by default
+     * @param score the score to export
+     * @return the default file
+     */
+    public File getDefaultExportFile (Score score)
+    {
+        return (score.getExportFile() != null) ? score.getExportFile()
+               : new File(
+            constants.defaultScoreDirectory.getValue(),
+            score.getRadix() + SCORE_EXTENSION);
+    }
+
+    //--------------------//
+    // getDefaultMidiFile //
+    //--------------------//
+    /**
+     * Report the file to which the MIDI data would be written by default
+     * @param score the score to export
+     * @return the default file
+     */
+    public File getDefaultMidiFile (Score score)
+    {
+        return (score.getMidiFile() != null) ? score.getMidiFile()
+               : new File(
+            constants.defaultMidiDirectory.getValue(),
+            score.getRadix() + MidiAbstractions.MIDI_EXTENSION);
+    }
+
     //--------//
     // export //
     //--------//
@@ -107,56 +139,26 @@ public class ScoreManager
     public void export (Score score,
                         File  exportFile)
     {
-        // Where do we write the score xml file?
-        if ((exportFile == null) && (Main.getGui() != null)) {
-            exportAs(score);
-        } else if (exportFile != null) {
+        // Make sure the folder exists
+        File folder = new File(exportFile.getParent());
+
+        if (folder.mkdirs()) {
+            logger.info("Creating folder " + folder);
+        }
+
+        // Actually export the score material
+        try {
+            ScoreExporter exporter = new ScoreExporter(score);
+            exporter.export(exportFile);
+            logger.info("Score exported to " + exportFile);
+
             // Remember (even across runs) the selected directory
             constants.defaultScoreDirectory.setValue(exportFile.getParent());
 
-            // Make sure the folder exists
-            File folder = new File(exportFile.getParent());
-
-            if (folder.mkdirs()) {
-                logger.info("Creating folder " + folder);
-            }
-
             // Remember the file in the score itself
             score.setExportFile(exportFile);
-
-            // Actually export the score material
-            try {
-                ScoreExporter exporter = new ScoreExporter(score);
-                exporter.export(exportFile);
-                logger.info("Score exported to " + exportFile);
-            } catch (Exception ex) {
-                logger.warning("Error storing score to " + exportFile, ex);
-            }
-        } else {
-            logger.warning("No file to export " + score);
-        }
-    }
-
-    //----------//
-    // exportAs //
-    //----------//
-    /**
-     * Export a score using the partwise structure of MusicXML to a
-     * user-selected file
-     *
-     * @param score the score to export
-     */
-    public void exportAs (Score score)
-    {
-        // Let the user select a score output file
-        File exportFile = UIUtilities.fileChooser(
-            true,
-            null,
-            getDefaultExport(score),
-            new OmrFileFilter("XML files", new String[] { SCORE_EXTENSION }));
-
-        if (exportFile != null) {
-            export(score, exportFile);
+        } catch (Exception ex) {
+            logger.warning("Error storing score to " + exportFile, ex);
         }
     }
 
@@ -251,22 +253,6 @@ public class ScoreManager
                 throw ex;
             }
         }
-    }
-
-    //------------------//
-    // getDefaultExport //
-    //------------------//
-    /**
-     * Report the file to which the score would be writtent so by default
-     * @param score the score to export
-     * @return the default file
-     */
-    private File getDefaultExport (Score score)
-    {
-        return (score.getExportFile() != null) ? score.getExportFile()
-               : new File(
-            constants.defaultScoreDirectory.getValue(),
-            score.getRadix() + SCORE_EXTENSION);
     }
 
     //~ Inner Classes ----------------------------------------------------------

@@ -18,6 +18,8 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
+import omr.score.Score;
+
 import omr.sheet.Sheet;
 import omr.sheet.ui.SheetActions;
 import omr.sheet.ui.SheetsController;
@@ -183,29 +185,58 @@ public class ScriptActions
             return null;
         }
 
-        final Script script = sheet.getScript();
+        final File scriptFile = sheet.getScore()
+                                     .getScriptFile();
 
-        // Where do we write the script file?
-        File xmlFile = new File(
-            constants.defaultScriptDirectory.getValue(),
-            script.getSheet().getRadix() + ScriptManager.SCRIPT_EXTENSION);
+        if (scriptFile != null) {
+            return new StoreScriptTask(sheet.getScript(), scriptFile);
+        } else {
+            return storeScriptAs(e);
+        }
+    }
 
-        // Ask user confirmation: let the user select a script output file
-        xmlFile = UIUtilities.fileChooser(
+    //---------------//
+    // storeScriptAs //
+    //---------------//
+    @Action(enabledProperty = "sheetAvailable")
+    public Task storeScriptAs (ActionEvent e)
+    {
+        final Sheet sheet = SheetsController.selectedSheet();
+
+        if (sheet == null) {
+            return null;
+        }
+
+        // Let the user select a script output file
+        File scriptFile = UIUtilities.fileChooser(
             true,
             Main.getGui().getFrame(),
-            xmlFile,
+            getDefaultScriptFile(sheet.getScore()),
             new OmrFileFilter(
                 "Script files",
                 new String[] { ScriptManager.SCRIPT_EXTENSION }));
 
-        if (xmlFile == null) {
+        if (scriptFile != null) {
+            return new StoreScriptTask(sheet.getScript(), scriptFile);
+        } else {
             return null;
         }
+    }
 
-        constants.defaultScriptDirectory.setValue(xmlFile.getParent());
-
-        return new StoreScriptTask(script, xmlFile);
+    //----------------------//
+    // getDefaultScriptFile //
+    //----------------------//
+    /**
+     * Report the default file where the script should be written to
+     * @param score the owning score
+     * @return the default file for saving the script
+     */
+    private File getDefaultScriptFile (Score score)
+    {
+        return (score.getScriptFile() != null) ? score.getScriptFile()
+               : new File(
+            constants.defaultScriptDirectory.getValue(),
+            score.getSheet().getRadix() + ScriptManager.SCRIPT_EXTENSION);
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -314,6 +345,10 @@ public class ScriptActions
                 omr.script.ScriptManager.getInstance()
                                         .store(script, fos);
                 logger.info("Script stored as " + file);
+                constants.defaultScriptDirectory.setValue(file.getParent());
+                script.getSheet()
+                      .getScore()
+                      .setScriptFile(file);
             } catch (FileNotFoundException ex) {
                 logger.warning("Cannot find script file " + file, ex);
             } catch (JAXBException ex) {

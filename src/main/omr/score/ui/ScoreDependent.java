@@ -83,9 +83,9 @@ public abstract class ScoreDependent
         return scoreAvailable;
     }
 
-    //--------//
-    // update //
-    //--------//
+    //---------//
+    // onEvent //
+    //---------//
     /**
      * Notification of sheet selection (and thus related score if any)
      *

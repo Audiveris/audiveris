@@ -130,6 +130,12 @@ public class Score
     /** Where the MusicXML output is to be stored */
     private File exportFile;
 
+    /** Where the script is to be stored */
+    private File scriptFile;
+
+    /** Where the MIDI data is to be stored */
+    private File midiFile;
+
     //~ Constructors -----------------------------------------------------------
 
     //-------//
@@ -579,6 +585,30 @@ public class Score
         return measureRange;
     }
 
+    //-------------//
+    // setMidiFile //
+    //-------------//
+    /**
+     * Remember to which file the MIDI data is to be exported
+     * @param midiFile the Midi file
+     */
+    public void setMidiFile (File midiFile)
+    {
+        this.midiFile = midiFile;
+    }
+
+    //-------------//
+    // getMidiFile //
+    //-------------//
+    /**
+     * Report to which file, if any, the MIDI data is to be exported
+     * @return the Midi file, or null
+     */
+    public File getMidiFile ()
+    {
+        return midiFile;
+    }
+
     //----------------//
     // setOrientation //
     //----------------//
@@ -693,6 +723,30 @@ public class Score
     public Scale getScale ()
     {
         return scale;
+    }
+
+    //---------------//
+    // setScriptFile //
+    //---------------//
+    /**
+     * Remember the file where the script is written
+     * @param scriptFile the related script file
+     */
+    public void setScriptFile (File scriptFile)
+    {
+        this.scriptFile = scriptFile;
+    }
+
+    //---------------//
+    // getScriptFile //
+    //---------------//
+    /**
+     * Report the file, if any, where the script should be written
+     * @return the related script file or null
+     */
+    public File getScriptFile ()
+    {
+        return scriptFile;
     }
 
     //----------//
@@ -1011,30 +1065,6 @@ public class Score
         }
 
         logger.info(sb.toString());
-    }
-
-    //--------//
-    // export //
-    //--------//
-    /**
-     * Marshall the score to its MusicXML file
-     */
-    public void export ()
-    {
-        ScoreManager.getInstance()
-                    .export(this);
-    }
-
-    //----------//
-    // exportAs //
-    //----------//
-    /**
-     * Marshall the score to its MusicXML file
-     */
-    public void exportAs ()
-    {
-        ScoreManager.getInstance()
-                    .exportAs(this);
     }
 
     //-------------//
