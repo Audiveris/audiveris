@@ -49,6 +49,7 @@ import omr.score.entity.Tuplet;
 import omr.score.entity.Wedge;
 import omr.score.midi.MidiAgent;
 
+import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
@@ -491,6 +492,32 @@ public class SystemTranslator
             for (Slot slot : measure.getSlots()) {
                 slot.setId(++id);
                 slot.allocateChordsAndNotes();
+            }
+
+            // Check that slots are not too close to each other
+            Scale scale = system.getScale();
+            int   minSlotSpacing = scale.toUnits(Score.getMinSlotSpacing());
+            Slot  prevSlot = null;
+            int   minSpacing = Integer.MAX_VALUE;
+            Slot  minSlot = null;
+
+            for (Slot slot : measure.getSlots()) {
+                if (prevSlot != null) {
+                    int spacing = slot.getX() - prevSlot.getX();
+
+                    if (minSpacing > spacing) {
+                        minSpacing = spacing;
+                        minSlot = slot;
+                    }
+                }
+
+                prevSlot = slot;
+            }
+
+            if (minSpacing < minSlotSpacing) {
+                measure.addError(
+                    minSlot.getLocationGlyph(),
+                    "Suspicious narrow spacing of slots");
             }
         }
 

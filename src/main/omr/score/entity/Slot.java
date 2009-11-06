@@ -146,6 +146,23 @@ public class Slot
         this.id = id;
     }
 
+    //------------------//
+    // getLocationGlyph //
+    //------------------//
+    /**
+     * Report a glyph that can be used to show the location of the slot
+     * @return a glyph from the slot
+     */
+    public Glyph getLocationGlyph ()
+    {
+        if (!glyphs.isEmpty()) {
+            return glyphs.iterator()
+                         .next();
+        } else {
+            return null;
+        }
+    }
+
     //---------------------//
     // getShortestDuration //
     //---------------------//

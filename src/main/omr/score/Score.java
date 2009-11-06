@@ -275,6 +275,18 @@ public class Score
         return constants.defaultVolume.getValue();
     }
 
+    //-------------------//
+    // getMinSlotSpacing //
+    //-------------------//
+    /**
+     * Report the minimum acceptable spacing between slots
+     * @return the minimum spacing (in interline fraction)
+     */
+    public static InterlineFraction getMinSlotSpacing ()
+    {
+        return constants.minSlotSpacing.getWrappedValue();
+    }
+
     //--------------//
     // setDimension //
     //--------------//
@@ -1185,13 +1197,13 @@ public class Score
         //~ Instance fields ----------------------------------------------------
 
         // Default Tempo
-        Constant.Integer defaultTempo = new Constant.Integer(
+        Constant.Integer             defaultTempo = new Constant.Integer(
             "QuartersPerMn",
             60,
             "Default tempo, stated in number of quarters per minute");
 
         // Default Velocity
-        Constant.Integer defaultVolume = new Constant.Integer(
+        Constant.Integer             defaultVolume = new Constant.Integer(
             "Volume",
             100,
             "Default Volume in 0..127 range");
@@ -1202,5 +1214,10 @@ public class Score
         Scale.Fraction defaultSlotMargin = new Scale.Fraction(
             0.3,
             "Default horizontal margin between a slot and a glyph candidate");
+
+        /** Minimum spacing between slots before alerting user */
+        private final Scale.Fraction minSlotSpacing = new Scale.Fraction(
+            1.5d,
+            "Minimum spacing between slots before alerting user");
     }
 }
