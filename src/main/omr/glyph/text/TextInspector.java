@@ -194,32 +194,41 @@ public class TextInspector
         while (!finished) {
             finished = true;
 
-            oneLoop:
+            oneLoop: 
             for (Sentence one : list) {
                 for (Sentence two : list.subList(
                     list.indexOf(one) + 1,
                     list.size())) {
                     if (one.isCloseTo(two)) {
-                        finished = false;
-                        list.remove(one);
-                        list.remove(two);
+                        // Check the resulting text is not black-listed
+                        Glyph compound = one.mergeOf(two);
+                        Glyph original = system.getSheet()
+                                               .getVerticalLag()
+                                               .getOriginal(compound);
 
-                        Glyph compound = system.addGlyph(one.mergeOf(two));
-                        compound.setShape(Shape.TEXT, Evaluation.ALGORITHM);
+                        if ((original == null) ||
+                            !original.isShapeForbidden(Shape.TEXT)) {
+                            compound = system.addGlyph(compound);
+                            compound.setShape(Shape.TEXT, Evaluation.ALGORITHM);
 
-                        Sentence s = new Sentence(
-                            system,
-                            compound,
-                            ++sentenceCount);
-                        list.add(s);
+                            Sentence s = new Sentence(
+                                system,
+                                compound,
+                                ++sentenceCount);
+                            list.add(s);
 
-                        if (logger.isFineEnabled()) {
-                            logger.fine(
-                                " Sentence #" + s.getId() + " merging " + one +
-                                " & " + two);
+                            if (logger.isFineEnabled()) {
+                                logger.fine(
+                                    " Sentence #" + s.getId() + " merging " +
+                                    one + " & " + two);
+                            }
+
+                            finished = false;
+                            list.remove(one);
+                            list.remove(two);
+
+                            break oneLoop;
                         }
-
-                        break oneLoop;
                     }
                 }
             }

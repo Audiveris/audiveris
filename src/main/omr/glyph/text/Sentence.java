@@ -92,6 +92,9 @@ public class Sentence
     /** Max horizontal pixel distance between a glyph item and a sentence */
     private final int maxItemDx;
 
+    /** Maximum vertical pixel distance between two sentence chunks */
+    private final int maxSentenceDy;
+
     // Cached data, invalidated whenever items are modified
     //--------------------------------------------------------------------------
 
@@ -140,6 +143,7 @@ public class Sentence
                                 .getScale();
         maxItemDy = scale.toPixels(constants.maxItemDy);
         maxItemDx = scale.toPixels(constants.maxItemDx);
+        maxSentenceDy = scale.toPixels(constants.maxSentenceDy);
 
         if (logger.isFineEnabled()) {
             logger.fine("Created " + this);
@@ -418,6 +422,7 @@ public class Sentence
         fatBox.grow(maxItemDx, 0);
 
         return fatBox.intersects(other.getContourBox()) &&
+               (Math.abs(other.getY() - this.getY()) <= maxSentenceDy) &&
                !acrossEntryBarline(other);
     }
 
@@ -512,7 +517,7 @@ public class Sentence
         while (!done) {
             done = true;
 
-            innerLoop:
+            innerLoop: 
             for (Glyph inner : items) {
                 PixelRectangle innerBox = inner.getContourBox();
 
@@ -620,7 +625,8 @@ public class Sentence
             // If we have no content or if a new language is being used for OCR
             if ((info.getOcrContent() == null) ||
                 !language.equals(info.getOcrLanguage())) {
-                List<OcrLine> lines = Language.getOcr().recognize(
+                List<OcrLine> lines = Language.getOcr()
+                                              .recognize(
                     glyph.getImage(),
                     language,
                     "g" + glyph.getId() + ".");
@@ -999,12 +1005,15 @@ public class Sentence
     {
         //~ Instance fields ----------------------------------------------------
 
-        Scale.Fraction  maxItemDy = new Scale.Fraction(
+        Scale.Fraction maxItemDy = new Scale.Fraction(
             0,
             "Maximum vertical distance between a text line and a text item");
-        Scale.Fraction  maxItemDx = new Scale.Fraction(
+        Scale.Fraction maxItemDx = new Scale.Fraction(
             20,
             "Maximum horizontal distance between an alien and a text item");
+        Scale.Fraction maxSentenceDy = new Scale.Fraction(
+            0.6,
+            "Maximum vertical distance between two sentence chunks");
     }
 
     //-------//
