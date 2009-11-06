@@ -1734,10 +1734,9 @@ public class ScoreExporter
         //        pmWedge.setRelativeX(
         //            toTenths(wedge.getPoint().x - current.note.getCenterLeft().x));
 
-        // default-x
-        pmWedge.setDefaultX(
-            toTenths(wedge.getPoint().x - current.measure.getLeftX()));
-
+        //        // default-x
+        //        pmWedge.setDefaultX(
+        //            toTenths(wedge.getPoint().x - current.measure.getLeftX()));
         return true;
     }
 
