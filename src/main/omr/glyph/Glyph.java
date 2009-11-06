@@ -191,28 +191,19 @@ public class Glyph
     // isActive //
     //----------//
     /**
-     * Tests whether this glyph is active (its member sections point to it) or
-     * not
+     * Tests whether this glyph is active (all its member sections point to it)
      *
      * @return true if glyph is active, false otherwise
      */
     public boolean isActive ()
     {
-        // DEBUG
-        if (members.first()
-                   .getGlyph() == this) {
-            for (GlyphSection section : members) {
-                if (section.getGlyph() != this) {
-                    logger.warning("False active " + this);
-                    this.dump();
-
-                    break;
-                }
+        for (GlyphSection section : members) {
+            if (section.getGlyph() != this) {
+                return false;
             }
         }
 
-        return members.first()
-                      .getGlyph() == this;
+        return true;
     }
 
     //----------------//
