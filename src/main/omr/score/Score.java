@@ -127,6 +127,9 @@ public class Score
     /** The score slot horizontal margin, expressed in interline fraction */
     private InterlineFraction slotMargin;
 
+    /** Where the MusicXML output is to be stored */
+    private File exportFile;
+
     //~ Constructors -----------------------------------------------------------
 
     //-------//
@@ -342,6 +345,30 @@ public class Score
         }
 
         return durationDivisor;
+    }
+
+    //---------------//
+    // setExportFile //
+    //---------------//
+    /**
+     * Remember to which file the score is to be exported
+     * @param exportFile the exported xml file
+     */
+    public void setExportFile (File exportFile)
+    {
+        this.exportFile = exportFile;
+    }
+
+    //---------------//
+    // getExportFile //
+    //---------------//
+    /**
+     * Report to which file, if any, the score is to be exported
+     * @return the exported xml file, or null
+     */
+    public File getExportFile ()
+    {
+        return exportFile;
     }
 
     //----------------//

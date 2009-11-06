@@ -109,17 +109,25 @@ public class ScoreManager
     {
         // Where do we write the score xml file?
         if (xmlFile == null) {
-            xmlFile = new File(
-                constants.defaultScoreDirectory.getValue(),
-                score.getRadix() + SCORE_EXTENSION);
+            if (score.getExportFile() != null) {
+                xmlFile = score.getExportFile();
+            } else {
+                xmlFile = new File(
+                    constants.defaultScoreDirectory.getValue(),
+                    score.getRadix() + SCORE_EXTENSION);
 
-            // Ask user confirmation, if Gui available
-            if (Main.getGui() != null) {
-                // Let the user select a score output file
-                OmrFileFilter filter = new OmrFileFilter(
-                    "XML files",
-                    new String[] { SCORE_EXTENSION });
-                xmlFile = UIUtilities.fileChooser(true, null, xmlFile, filter);
+                // Ask user confirmation, if Gui available
+                if (Main.getGui() != null) {
+                    // Let the user select a score output file
+                    OmrFileFilter filter = new OmrFileFilter(
+                        "XML files",
+                        new String[] { SCORE_EXTENSION });
+                    xmlFile = UIUtilities.fileChooser(
+                        true,
+                        null,
+                        xmlFile,
+                        filter);
+                }
             }
         }
 
@@ -133,6 +141,9 @@ public class ScoreManager
             if (folder.mkdirs()) {
                 logger.info("Creating folder " + folder);
             }
+
+            // Remember the file in the score itself
+            score.setExportFile(xmlFile);
 
             // Actually export the score material
             try {
