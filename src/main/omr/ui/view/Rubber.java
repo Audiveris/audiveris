@@ -336,12 +336,14 @@ public class Rubber
 
         setCursor(e);
 
-        if (isAdditionWanted(e)) {
-            mouseMonitor.pointAdded(getCenter(), PRESSING);
-        } else if (isContextWanted(e)) {
-            mouseMonitor.contextSelected(getCenter(), PRESSING);
-        } else {
-            mouseMonitor.pointSelected(getCenter(), PRESSING);
+        if (!isDragWanted(e)) {
+            if (isAdditionWanted(e)) {
+                mouseMonitor.pointAdded(getCenter(), PRESSING);
+            } else if (isContextWanted(e)) {
+                mouseMonitor.contextSelected(getCenter(), PRESSING);
+            } else {
+                mouseMonitor.pointSelected(getCenter(), PRESSING);
+            }
         }
     }
 
