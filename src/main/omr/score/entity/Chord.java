@@ -1397,7 +1397,7 @@ public class Chord
                      .isWholeRest()) {
                 rawDuration = Note.getTypeDuration(note.getShape());
 
-                // Apply fraction (for non rests only)
+                // Apply fraction (for non-rests only)
                 if (!note.isRest()) {
                     int fbn = getFlagsNumber() + getBeams()
                                                      .size();
@@ -1407,7 +1407,7 @@ public class Chord
                     }
                 }
 
-                // Apply augmentation
+                // Apply augmentation (applies to rests as well)
                 if (dotsNumber == 1) {
                     rawDuration += (rawDuration / 2);
                 } else if (dotsNumber == 2) {

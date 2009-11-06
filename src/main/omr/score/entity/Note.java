@@ -550,13 +550,15 @@ public class Note
         int dur = getTypeDuration(shape);
 
         // Apply fraction if any (not for rests) due to beams or flags
-        int fbn = getChord()
-                      .getFlagsNumber() + getChord()
-                                              .getBeams()
-                                              .size();
+        if (!isRest()) {
+            int fbn = getChord()
+                          .getFlagsNumber() + getChord()
+                                                  .getBeams()
+                                                  .size();
 
-        for (int i = 0; i < fbn; i++) {
-            dur /= 2;
+            for (int i = 0; i < fbn; i++) {
+                dur /= 2;
+            }
         }
 
         return dur;
@@ -939,32 +941,32 @@ public class Note
             box.height / card);
     }
 
-//    //---------//
-//    // alterOf //
-//    //---------//
-//    private int alterOf (Shape accid)
-//    {
-//        switch (accid) {
-//        case FLAT :
-//            return -1;
-//
-//        case NATURAL :
-//            return 0;
-//
-//        case SHARP :
-//            return +1;
-//
-//        case DOUBLE_SHARP :
-//            return +2; // To be verified
-//
-//        case DOUBLE_FLAT :
-//            return -2; // To be verified
-//        }
-//
-//        logger.severe("Illegal accidental shape: " + accid);
-//
-//        return 0;
-//    }
+    //    //---------//
+    //    // alterOf //
+    //    //---------//
+    //    private int alterOf (Shape accid)
+    //    {
+    //        switch (accid) {
+    //        case FLAT :
+    //            return -1;
+    //
+    //        case NATURAL :
+    //            return 0;
+    //
+    //        case SHARP :
+    //            return +1;
+    //
+    //        case DOUBLE_SHARP :
+    //            return +2; // To be verified
+    //
+    //        case DOUBLE_FLAT :
+    //            return -2; // To be verified
+    //        }
+    //
+    //        logger.severe("Illegal accidental shape: " + accid);
+    //
+    //        return 0;
+    //    }
 
     //-------------//
     // baseShapeOf //
