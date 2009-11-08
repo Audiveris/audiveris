@@ -38,11 +38,12 @@ import javax.swing.event.*;
  * training and testing of a glyph evaluator. This class can be launched as a
  * stand-alone program.
  *
- * <p>The frame is divided vertically in 3 parts:
+ * <p>The frame is divided vertically in 4 parts:
  * <ol>
  * <li>The selection in repository of known glyphs ({@link SelectionPanel})
  * <li>The training of the neural network evaluator ({@link TrainingPanel})
  * <li>The validation of the neural network evaluator ({@link ValidationPanel})
+ * <li>The training of the linear evaluator ({@link RegressionPanel})
  * </ol>
  *
  * @author Herv&eacute; Bitteur

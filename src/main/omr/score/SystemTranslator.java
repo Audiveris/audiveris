@@ -24,6 +24,7 @@ import omr.score.common.PixelRectangle;
 import omr.score.common.SystemPoint;
 import omr.score.common.SystemRectangle;
 import omr.score.entity.Arpeggiate;
+import omr.score.entity.Articulation;
 import omr.score.entity.BeamGroup;
 import omr.score.entity.BeamItem;
 import omr.score.entity.Chord;
@@ -157,6 +158,9 @@ public class SystemTranslator
     //-----------------//
     // translateSystem //
     //-----------------//
+    /**
+     * This is where glyph information is translated to score entity information
+     */
     public void translateSystem ()
     {
         // Translations in proper order
@@ -195,6 +199,8 @@ public class SystemTranslator
         translate(new FermataTranslator());
         // Arpeggiate
         translate(new ArpeggiateTranslator());
+        // Articulation
+        translate(new ArticulationTranslator());
         // Crescendo / decrescendo
         translate(new WedgeTranslator());
         // Pedal on / off
@@ -405,6 +411,38 @@ public class SystemTranslator
         public void translate (Glyph glyph)
         {
             Arpeggiate.populate(glyph, currentMeasure, currentCenter);
+        }
+    }
+
+    //------------------------//
+    // ArticulationTranslator //
+    //------------------------//
+    private class ArticulationTranslator
+        extends Translator
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public ArticulationTranslator ()
+        {
+            super("Articulation");
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        public boolean isRelevant (Glyph glyph)
+        {
+            Shape shape = glyph.getShape();
+
+            // ARPEGGIATO is processed by ArpeggiateTranslator.
+            // DOT-shape staccato is processed by DotTranslation,
+            // while STACCATO-shape staccato is processed here
+            return Articulations.contains(shape) &&
+                   (shape != Shape.ARPEGGIATO);
+        }
+
+        public void translate (Glyph glyph)
+        {
+            Articulation.populate(glyph, currentMeasure, currentCenter);
         }
     }
 

@@ -73,18 +73,36 @@ public class MusicXML
         //	  detached-legato | staccatissimo | spiccato |
         //	  scoop | plop | doit | falloff | breath-mark | 
         //	  caesura | stress | unstress | other-articulation)*)>
-        ObjectFactory factory = new ObjectFactory();
+        ObjectFactory  factory = new ObjectFactory();
+        EmptyPlacement ep = factory.createEmptyPlacement();
 
         switch (shape) {
         case DOT :
-            return factory.createArticulationsStaccato(
-                factory.createEmptyPlacement());
+        case STACCATO :
+            return factory.createArticulationsStaccato(ep);
+
+        case ACCENT :
+            return factory.createArticulationsAccent(ep);
+
+        case STRONG_ACCENT :
+
+            // Type for strong accent: either up (^) or down (v)
+            // For the time being we recognize only up ones
+            StrongAccent strongAccent = factory.createStrongAccent();
+
+            if (shape == Shape.STRONG_ACCENT) {
+                strongAccent.setType(UpDown.UP);
+            }
+
+            return factory.createArticulationsStrongAccent(strongAccent);
+
+        case TENUTO :
+            return factory.createArticulationsTenuto(ep);
+
+        case STACCATISSIMO :
+            return factory.createArticulationsStaccatissimo(ep);
 
             /** TODO: implement related shapes
-               case ACCENT :
-               case STRONG_ACCENT :
-               case TENUTO :
-               case STACCATISSIMO :
                case BREATH_MARK :
                case CAESURA :
              */

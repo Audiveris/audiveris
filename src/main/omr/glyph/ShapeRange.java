@@ -22,25 +22,24 @@ import java.util.*;
 import javax.swing.*;
 
 /**
- * Class <code>ShapeRange</code> defines a range of related shapes, for example
+ * Class <code>ShapeRange</code> defines a set of related shapes, for example
  * the "Rests" range gathers all rest shapes from MULTI_REST down to
  * ONE_HUNDRED_TWENTY_EIGHTH_REST.
  *
  * <p>It handles additional properties over a simple EnumSet, especially
  * assigned colors and its automatic insertion in shape menu hierarchy.
+ * So don't remove any of these sets, unless you know what you are doing.
  */
 public class ShapeRange
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    // Predefined shape ranges
+    // Predefined instances of ShapeRange. Double-check before removing any one.
     //
     public static final ShapeRange Garbage = new ShapeRange(
-        EnumSet.range(NOISE, STRUCTURE));
+        EnumSet.of(STRUCTURE, NOISE)); // Not a range
     public static final ShapeRange Physicals = new ShapeRange(
         EnumSet.range(CLUTTER, TEXT));
-
-    //
     public static final ShapeRange Bars = new ShapeRange(
         EnumSet.range(DAL_SEGNO, BRACKET));
     public static final ShapeRange Clefs = new ShapeRange(
@@ -75,7 +74,9 @@ public class ShapeRange
     public static final ShapeRange Beams = new ShapeRange(
         EnumSet.range(BEAM, SLUR));
     public static final ShapeRange Articulations = new ShapeRange(
-        EnumSet.range(ARPEGGIATO, ARPEGGIATO));
+        EnumSet.range(ACCENT, STRONG_ACCENT),
+        STACCATO,
+        ARPEGGIATO);
     public static final ShapeRange Dynamics = new ShapeRange(
         EnumSet.range(DYNAMICS_CHAR_M, DECRESCENDO));
     public static final ShapeRange Ornaments = new ShapeRange(
@@ -111,6 +112,10 @@ public class ShapeRange
         WHOLE_OR_HALF_REST.createShapeColor(Rests.getColor());
     }
 
+    //
+    // Below are EnumSet instances, used programmatically.
+    // They do not lead to shape submenus as the ShapeRange instances do.
+    //
     /** Symbols that can be attached to a stem */
     public static final EnumSet<Shape> StemSymbols = EnumSet.noneOf(
         Shape.class);
@@ -138,15 +143,16 @@ public class ShapeRange
 
     //~ Instance fields --------------------------------------------------------
 
-    private String               name;
+    /** Name of the range */
+    private String name;
 
-    // Name of the range
+    /** Underlying shapes */
     private final EnumSet<Shape> shapes;
 
-    // Contained shapes
-    private Color          color;
+    /** Current color */
+    private Color color;
 
-    // For current color
+    /** Related permanent color */
     private Constant.Color constantColor;
 
     //~ Constructors -----------------------------------------------------------
@@ -155,10 +161,16 @@ public class ShapeRange
      * Creates a new ShapeRange object.
      *
      * @param shapes the set of shapes defining the range
+     * @param addedShapes shapes added to the initial range
      */
-    public ShapeRange (EnumSet<Shape> shapes)
+    public ShapeRange (EnumSet<Shape> shapes,
+                       Shape... addedShapes)
     {
         this.shapes = shapes;
+
+        for (Shape shape : addedShapes) {
+            shapes.add(shape);
+        }
     }
 
     //~ Methods ----------------------------------------------------------------

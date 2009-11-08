@@ -17,6 +17,7 @@ import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphRegression;
+import omr.glyph.Shape;
 import omr.glyph.ui.*;
 import static omr.glyph.ui.panel.GlyphTrainer.Task.Activity.*;
 
@@ -284,7 +285,6 @@ class SelectionPanel
         List<NotedGlyph> palmares = new ArrayList<NotedGlyph>(gNames.size());
 
         for (String gName : gNames) {
-            /////NotedGlyph ng = new NotedGlyph();
             Glyph glyph = repository.getGlyph(gName, this);
 
             if (glyph != null) {
@@ -317,12 +317,22 @@ class SelectionPanel
             int index = ng.glyph.getShape()
                                 .ordinal();
 
-            if (++counters[index] <= maxSimilar) {
-                set.add(ng);
-            } else {
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        String.format("%.5f worst Core %s", ng.grade, ng.gName));
+            if (logger.isFineEnabled()) {
+                logger.fine("index:" + index + " ng:" + ng);
+            }
+
+            if (ng.glyph.getShape()
+                        .isTrainable()) {
+                if (++counters[index] <= maxSimilar) {
+                    set.add(ng);
+                } else {
+                    if (logger.isFineEnabled()) {
+                        logger.fine(
+                            String.format(
+                                "%.5f worst Core %s",
+                                ng.grade,
+                                ng.gName));
+                    }
                 }
             }
         }
@@ -337,12 +347,18 @@ class SelectionPanel
             int        index = ng.glyph.getShape()
                                        .ordinal();
 
-            if (++counters[index] <= maxSimilar) {
-                set.add(ng);
-            } else {
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        String.format("%.5f best Core %s", ng.grade, ng.gName));
+            if (ng.glyph.getShape()
+                        .isTrainable()) {
+                if (++counters[index] <= maxSimilar) {
+                    set.add(ng);
+                } else {
+                    if (logger.isFineEnabled()) {
+                        logger.fine(
+                            String.format(
+                                "%.5f best Core %s",
+                                ng.grade,
+                                ng.gName));
+                    }
                 }
             }
         }
@@ -464,6 +480,14 @@ class SelectionPanel
             this.gName = gName;
             this.glyph = glyph;
             this.grade = grade;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public String toString ()
+        {
+            return "{NotedGlyph " + gName + " " + grade + "}";
         }
     }
 

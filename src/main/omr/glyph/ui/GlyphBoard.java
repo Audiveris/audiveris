@@ -121,7 +121,7 @@ public class GlyphBoard
     protected final JLabel count = new JLabel("");
 
     /** Input : Deassign action */
-    protected final Action deassignAction = new DeassignAction();
+    protected Action deassignAction;
 
     /** Output : glyph shape icon */
     protected final JLabel shapeIcon = new JLabel();
@@ -214,7 +214,8 @@ public class GlyphBoard
 
         // Until a glyph selection is made
         dumpAction.setEnabled(false);
-        deassignAction.setEnabled(false);
+        getDeassignAction()
+            .setEnabled(false);
 
         // Force a constant height for the shapeIcon field, despite the
         // variation in size of the icon
@@ -250,6 +251,10 @@ public class GlyphBoard
      */
     public Action getDeassignAction ()
     {
+        if (deassignAction == null) {
+            deassignAction = new DeassignAction();
+        }
+
         return deassignAction;
     }
 
@@ -296,12 +301,13 @@ public class GlyphBoard
 
                 // Dump button and deassign button
                 dumpAction.setEnabled(glyph != null);
-                deassignAction.setEnabled((glyph != null) && glyph.isKnown());
+                getDeassignAction()
+                    .setEnabled((glyph != null) && glyph.isKnown());
 
                 // Shape text and icon
                 Shape shape = (glyph != null) ? glyph.getShape() : null;
 
-                if (shape != null && shape != Shape.GLYPH_PART) {
+                if ((shape != null) && (shape != Shape.GLYPH_PART)) {
                     shapeField.setText(shape.toString());
                     shapeIcon.setIcon(shape.getIcon());
                 } else {
@@ -397,7 +403,7 @@ public class GlyphBoard
         r += 2; // --------------------------------
                 // Deassign
 
-        JButton deassignButton = new JButton(deassignAction);
+        JButton deassignButton = new JButton(getDeassignAction());
         deassignButton.setHorizontalTextPosition(SwingConstants.LEFT);
         deassignButton.setHorizontalAlignment(SwingConstants.RIGHT);
         builder.add(deassignButton, cst.xy(3, r));

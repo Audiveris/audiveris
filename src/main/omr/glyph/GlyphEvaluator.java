@@ -57,7 +57,7 @@ public abstract class GlyphEvaluator
     public static final int paramCount = inMoments + 2;
 
     /** Number of shapes to differentiate */
-    public static final int shapeCount = Shape.LastPhysicalShape.ordinal() + 1;
+    public static final int shapeCount = Shape.LAST_PHYSICAL_SHAPE.ordinal() + 1;
 
     /** A special evaluation array, used to report NOISE */
     static final Evaluation[] noiseEvaluations = {

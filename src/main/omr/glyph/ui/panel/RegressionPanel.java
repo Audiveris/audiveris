@@ -20,8 +20,8 @@ import javax.swing.*;
 
 /**
  * Class <code>RegressionPanel</code> is the user interface that handles the
- * training of the neural network evaluator. It is a dedicated companion of
- * class {@link GlyphTrainer}.
+ * training of the linear evaluator. It is a dedicated companion of class
+ * {@link GlyphTrainer}.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$

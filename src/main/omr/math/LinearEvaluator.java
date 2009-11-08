@@ -315,24 +315,6 @@ public class LinearEvaluator
             category.compute();
         }
 
-        //        // Compute default weights (average of shape-dependent weights)
-        //        for (int p = 0; p < parameters.length; p++) {
-        //            int    weightCount = 0;
-        //            double globalWeight = 0;
-        //
-        //            for (Category category : categories.values()) {
-        //                CategoryParam param = category.params[p];
-        //
-        //                if (param.training == CategoryParam.TrainingStatus.NOMINAL) {
-        //                    weightCount++;
-        //                    globalWeight += param.weight;
-        //                }
-        //            }
-        //
-        //            // TODO: Hoping that weightCount is not null ...
-        //            parameters[p].defaultWeight = globalWeight / weightCount;
-        //        }
-
         // Compute default weights (using all sample populations)
         for (int p = 0; p < parameters.length; p++) {
             Population sample = new Population();
@@ -653,12 +635,12 @@ public class LinearEvaluator
                         param.compute();
                     } catch (Exception ex) {
                         logger.warning(
-                            "Category#" + id +
+                            "Category " + id +
                             " cannot compute parameters ex:" + ex);
                     }
                 }
             } else {
-                logger.warning("Category#" + id + " has no sample");
+                logger.warning("Category " + id + " has no sample");
             }
         }
 

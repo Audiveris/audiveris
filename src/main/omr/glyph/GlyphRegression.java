@@ -286,7 +286,8 @@ public class GlyphRegression
             } catch (Exception ex) {
                 logger.warning(
                     "Weird glyph shape: " + glyph.getShape() + " file=" +
-                    GlyphRepository.getInstance().getGlyphName(glyph));
+                    GlyphRepository.getInstance().getGlyphName(glyph),
+                    ex);
             }
         }
 

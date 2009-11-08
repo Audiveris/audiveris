@@ -201,7 +201,7 @@ class SymbolGlyphBoard
     // SymbolGlyphBoard //
     //------------------//
     /**
-     * Create a simplified symbol glyph board
+     * Create a simplified symbol glyph board (used by {@link GlyphBrowser})
      * @param unitName name of the owning unit
      * @param glyphsController the companion which handles glyph (de)assignments
      */

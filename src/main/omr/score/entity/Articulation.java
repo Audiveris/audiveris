@@ -19,25 +19,26 @@ import omr.score.common.SystemPoint;
 import omr.score.visitor.ScoreVisitor;
 
 /**
- * Class <code>Articulation</code> represents an articulation event, a special notation.
+ * Class <code>Articulation</code> represents an articulation event, a special
+ * notation.
  * This should apply to:
  * <pre>
- * accent		nyi
- * strong-accent	nyi
- * staccato		standard
- * tenuto		nyi
- * detached-legato	nyi
- * staccatissimo	nyi
- * spiccato		nyi
- * scoop		nyi
- * plop			nyi
- * doit			nyi
- * falloff		nyi
- * breath-mark		nyi
- * caesura		nyi
- * stress		nyi
- * unstress		nyi
- * other-articulation	nyi
+ * accent                standard
+ * strong-accent        standard
+ * staccato                standard
+ * tenuto                standard
+ * detached-legato        nyi
+ * staccatissimo        standard
+ * spiccato                nyi
+ * scoop                nyi
+ * plop                        nyi
+ * doit                        nyi
+ * falloff                nyi
+ * breath-mark                nyi ???
+ * caesura                nyi ???
+ * stress                nyi
+ * unstress                nyi
+ * other-articulation        nyi
  * </pre>
  *
  * @author Herv&eacute Bitteur
@@ -65,9 +66,9 @@ public class Articulation
      * @param glyph the underlying glyph
      */
     public Articulation (Measure     measure,
-                     SystemPoint point,
-                     Chord       chord,
-                     Glyph       glyph)
+                         SystemPoint point,
+                         Chord       chord,
+                         Glyph       glyph)
     {
         super(measure, point, chord, glyph);
     }
@@ -83,30 +84,26 @@ public class Articulation
         return visitor.visit(this);
     }
 
-//    //----------//
-//    // populate //
-//    //----------//
-//    /**
-//     * Used by SystemTranslator
-//     *
-//     * @param glyph underlying glyph
-//     * @param measure measure where the mark is located
-//     * @param point location for the mark
-//     */
-//    public static void populate (Glyph       glyph,
-//                                 Measure     measure,
-//                                 SystemPoint point)
-//    {
-//        // An Articulation relates to the note below on the same time slot ?????????????????
-//        Slot slot = measure.getClosestSlot(point);
-//
-//        if (slot != null) {
-//            Chord chord = slot.getChordBelow(point);
-//
-//            if (chord != null) {
-//                glyph.setTranslation(
-//                    new Articulation(measure, point, chord, glyph));
-//            }
-//        }
-//    }
+    //----------//
+    // populate //
+    //----------//
+    /**
+     * Used by SystemTranslator
+     *
+     * @param glyph underlying glyph
+     * @param measure measure where the mark is located
+     * @param point location for the mark
+     */
+    public static void populate (Glyph       glyph,
+                                 Measure     measure,
+                                 SystemPoint point)
+    {
+        // An Articulation relates to the note below or above on the same time slot
+        Chord chord = measure.getEventChord(point);
+
+        if (chord != null) {
+            glyph.setTranslation(
+                new Articulation(measure, point, chord, glyph));
+        }
+    }
 }

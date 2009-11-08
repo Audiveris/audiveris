@@ -291,6 +291,7 @@ public class ScoreExporter
             logger.severe("Could not setDefaultY for element " + classe);
         }
 
+
         return false;
     }
 
@@ -964,6 +965,7 @@ public class ScoreExporter
                     if (node instanceof Arpeggiate) {
                         node.accept(this);
                     }
+
                 }
             }
 

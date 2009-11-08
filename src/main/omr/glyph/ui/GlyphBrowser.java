@@ -196,15 +196,9 @@ class GlyphBrowser
         navigator = new Navigator();
 
         // Specific glyph board
-        glyphBoard = new SymbolGlyphBoard(
-            "Browser-SymbolGlyphBoard",
-            controller);
+        glyphBoard = new MyGlyphBoard(controller);
 
         glyphBoard.connect();
-        glyphBoard.getDeassignAction()
-                  .putValue(
-            Action.SHORT_DESCRIPTION,
-            "Remove that glyph from training material");
         glyphBoard.getDeassignAction()
                   .setEnabled(false);
 
@@ -401,16 +395,35 @@ class GlyphBrowser
 
         //~ Methods ------------------------------------------------------------
 
-        //---------------//
-        // deassignGlyph //
-        //---------------//
-        /**
-         * Deassign the shape of a glyph
-         *
-         * @param glyph the glyph to deassign
-         */
+        // Certainly not called ...
         @Override
         public void deassignGlyph (Glyph glyph)
+        {
+            deleteGlyph();
+        }
+    }
+
+    //----------------//
+    // DeassignAction //
+    //----------------//
+    private class DeassignAction
+        extends AbstractAction
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public DeassignAction ()
+        {
+            super("Delete");
+            putValue(
+                Action.SHORT_DESCRIPTION,
+                "Remove that glyph from training material");
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @SuppressWarnings("unchecked")
+        @Implement(ChangeListener.class)
+        public void actionPerformed (ActionEvent e)
         {
             deleteGlyph();
         }
@@ -456,6 +469,32 @@ class GlyphBrowser
         }
     }
 
+    //--------------//
+    // MyGlyphBoard //
+    //--------------//
+    private class MyGlyphBoard
+        extends SymbolGlyphBoard
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public MyGlyphBoard (GlyphsController controller)
+        {
+            super("Browser-SymbolGlyphBoard", controller);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public Action getDeassignAction ()
+        {
+            if (deassignAction == null) {
+                deassignAction = new DeassignAction();
+            }
+
+            return deassignAction;
+        }
+    }
+
     //--------//
     // MyView //
     //--------//
@@ -470,9 +509,6 @@ class GlyphBrowser
             setName("GlyphBrowser-View");
 
             subscribe();
-            //            setLocationSelection(localPixelSelection);
-            //            localPixelSelection.addObserver(this);
-            //            localGlyphSelection.addObserver(this);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -540,10 +576,7 @@ class GlyphBrowser
 
                         // Display glyph contour
                         if (glyph != null) {
-                            // Use tLag event service for this location info ...
-                            // BIZARRE : SheetLocation publié sur le lag !!!!?
-                            tLag.getSelectionService()
-                                .publish(
+                            locationService.publish(
                                 new SheetLocationEvent(
                                     this,
                                     glyphEvent.hint,

@@ -16,7 +16,7 @@ import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
-import omr.glyph.ui.*;
+import omr.glyph.ui.GlyphRepository;
 import static omr.glyph.ui.panel.GlyphTrainer.Task.Activity.*;
 
 import omr.log.Logger;
@@ -27,27 +27,23 @@ import omr.ui.util.Panel;
 
 import omr.util.Implement;
 
-import com.jgoodies.forms.builder.*;
-import com.jgoodies.forms.layout.*;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import org.jdesktop.swingworker.SwingWorker;
 
 import java.awt.event.*;
 import java.util.*;
 
-import javax.swing.AbstractAction;
-import javax.swing.ButtonGroup;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JProgressBar;
-import javax.swing.JRadioButton;
+import javax.swing.*;
 
 /**
  * Class <code>TrainingPanel</code> is a panel dedicated to the training of an
- * evaluator. This class was common to several evaluators, it is now used only
- * through its subclass {@link NetworkPanel} to train just the neural network
- * evaluator. It is a dedicated companion of class {@link GlyphTrainer}.
+ * evaluator. It is used through its subclasses {@link NetworkPanel} and
+ * {@link RegressionPanel} to train the neural network evaluator and the linear
+ * evaluator respectively. It is a dedicated companion of class
+ * {@link GlyphTrainer}.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -270,7 +266,7 @@ class TrainingPanel
         // population and that only legal shapes are present. If illegal
         // (non trainable) shapes are found, they are removed from the
         // population.
-        boolean[] present = new boolean[LastPhysicalShape.ordinal() + 1];
+        boolean[] present = new boolean[LAST_PHYSICAL_SHAPE.ordinal() + 1];
         Arrays.fill(present, false);
 
         for (Iterator<Glyph> it = glyphs.iterator(); it.hasNext();) {
@@ -349,7 +345,10 @@ class TrainingPanel
             if (confirmationRequired) {
                 int answer = JOptionPane.showConfirmDialog(
                     component,
-                    "Do you really want to retrain from scratch ?");
+                    "Do you really want to retrain from scratch?" +
+                    "\nMake sure you have a backup of files:" +
+                    "\n- config/neural-network.xml" +
+                    "\n- config/linear-evaluator.xml");
 
                 if (answer != JOptionPane.YES_OPTION) {
                     return;
