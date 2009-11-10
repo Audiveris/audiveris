@@ -302,7 +302,7 @@ public abstract class Text
                 new DirectionStatement(
                     measure,
                     location,
-                    measure.getEventChord(location),
+                    measure.getDirectionChord(location),
                     sentence,
                     new DirectionText(sentence)));
 

@@ -431,6 +431,60 @@ public class Measure
         return bestChord;
     }
 
+    //----------------------//
+    // getClosestChordAbove //
+    //----------------------//
+    /**
+     * Report the chord above the provided point which has the closest abscissa
+     * to the provided point
+     *
+     * @param point the reference point
+     * @return the abscissa-wise closest chord among the chords above, if any.
+     */
+    public Chord getClosestChordAbove (SystemPoint point)
+    {
+        Chord bestChord = null;
+        int   bestDx = Integer.MAX_VALUE;
+
+        for (Chord chord : getChordsAbove(point)) {
+            int dx = Math.abs(chord.getHeadLocation().x - point.x);
+
+            if (dx < bestDx) {
+                bestDx = dx;
+                bestChord = chord;
+            }
+        }
+
+        return bestChord;
+    }
+
+    //----------------------//
+    // getClosestChordBelow //
+    //----------------------//
+    /**
+     * Report the chord below the provided point which has the closest abscissa
+     * to the provided point
+     *
+     * @param point the reference point
+     * @return the abscissa-wise closest chord among the chords below, if any.
+     */
+    public Chord getClosestChordBelow (SystemPoint point)
+    {
+        Chord bestChord = null;
+        int   bestDx = Integer.MAX_VALUE;
+
+        for (Chord chord : getChordsBelow(point)) {
+            int dx = Math.abs(chord.getHeadLocation().x - point.x);
+
+            if (dx < bestDx) {
+                bestDx = dx;
+                bestChord = chord;
+            }
+        }
+
+        return bestChord;
+    }
+
     //----------------//
     // getClosestSlot //
     //----------------//
@@ -488,6 +542,27 @@ public class Measure
         }
 
         return null; // Not found !!!
+    }
+
+    //-------------------//
+    // getDirectionChord //
+    //-------------------//
+    /**
+     * Retrieve the most suitable chord for a direction, looking at staff above
+     * if any, otherwise the staff below.
+     * @param point the system-based location
+     * @return the most suitable chord, or null
+     */
+    public Chord getDirectionChord (SystemPoint point)
+    {
+        // First choose the staff, then the slot/chord
+        Chord chord = getClosestChordAbove(point);
+
+        if (chord == null) {
+            chord = getClosestChordBelow(point);
+        }
+
+        return chord;
     }
 
     //----------//

@@ -1286,7 +1286,7 @@ public class Score
 
         /** Minimum spacing between slots before alerting user */
         private final Scale.Fraction minSlotSpacing = new Scale.Fraction(
-            1.5d,
+            1.1d,
             "Minimum spacing between slots before alerting user");
     }
 }

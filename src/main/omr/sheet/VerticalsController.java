@@ -191,8 +191,8 @@ public class VerticalsController
                             // Get a fresh suite
                             setSuite(system.createStemCheckSuite(true));
                             tellObject(stick);
-                        } catch (StepException ex) {
-                            logger.warning("Glyph cannot be processed");
+                        } catch (Exception ex) {
+                            logger.warning("Glyph cannot be processed", ex);
                         }
                     } else {
                         tellObject(null);

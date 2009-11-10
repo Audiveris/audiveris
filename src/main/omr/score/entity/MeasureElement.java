@@ -17,6 +17,8 @@ import omr.glyph.Glyph;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 
+import omr.log.Logger;
+
 import omr.score.common.PixelRectangle;
 import omr.score.common.SystemPoint;
 import omr.score.common.SystemRectangle;
@@ -41,6 +43,9 @@ public abstract class MeasureElement
     extends MeasureNode
 {
     //~ Static fields/initializers ---------------------------------------------
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(MeasureElement.class);
 
     /** Specific application parameters */
     private static final Constants constants = new Constants();

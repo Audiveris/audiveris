@@ -13,6 +13,8 @@ package omr.score.entity;
 
 import omr.glyph.text.Sentence;
 
+import omr.log.Logger;
+
 import omr.score.common.SystemPoint;
 import omr.score.visitor.ScoreVisitor;
 
@@ -25,6 +27,12 @@ import omr.score.visitor.ScoreVisitor;
 public class DirectionStatement
     extends AbstractDirection
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(
+        DirectionStatement.class);
+
     //~ Instance fields --------------------------------------------------------
 
     /** The underlying text */
@@ -55,6 +63,7 @@ public class DirectionStatement
 
         // Force the point as being, not a computed center, but the reference
         // location
+        computeGeometry();
         setPoint(location);
     }
 

@@ -747,6 +747,12 @@ public class ScorePainter
 
         // Check whether our system is impacted
         final Rectangle systemRect = system.getContour(); // (We get a copy)
+
+        if ((origin == null) || (systemRect == null)) { // Safer
+
+            return false;
+        }
+
         systemRect.translate(origin.x, origin.y);
 
         if (!systemRect.intersects(g.getClipBounds())) {
