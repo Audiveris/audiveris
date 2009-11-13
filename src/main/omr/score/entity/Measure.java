@@ -16,6 +16,7 @@ import omr.glyph.Glyph;
 import omr.log.Logger;
 
 import omr.score.common.SystemPoint;
+import omr.score.common.SystemRectangle;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
 import omr.score.visitor.ScoreVisitor;
 
@@ -74,9 +75,6 @@ public class Measure
 
     /** Children: possibly several Beam's per staff */
     private Container beams;
-
-    /** Left abscissa (in units, wrt system left side) of this measure */
-    private Integer leftX;
 
     /** Measure Id */
     private int id;
@@ -940,7 +938,9 @@ public class Measure
     //----------//
     public void setLeftX (int val)
     {
-        leftX = val;
+        SystemRectangle newBox = getBox();
+        newBox.width = val;
+        setBox(newBox);
     }
 
     //----------//
@@ -954,19 +954,7 @@ public class Measure
      */
     public Integer getLeftX ()
     {
-        if (leftX == null) {
-            // Start of the measure
-            Measure prevMeasure = (Measure) getPreviousSibling();
-
-            if (prevMeasure == null) { // Very first measure in the staff
-                leftX = 0;
-            } else {
-                leftX = prevMeasure.getBarline()
-                                   .getCenter().x;
-            }
-        }
-
-        return leftX;
+        return getBox().x;
     }
 
     //------------//
@@ -1091,13 +1079,7 @@ public class Measure
      */
     public Integer getRightX ()
     {
-        if (barline != null) {
-            return barline.getCenter().x;
-        } else {
-            // Last measure of a part/system with no ending barline
-            return getSystem()
-                       .getDimension().width;
-        }
+        return getBox().x + getBox().width;
     }
 
     //----------//
@@ -1679,7 +1661,7 @@ public class Measure
      */
     public void resetAbscissae ()
     {
-        leftX = null;
+        reset();
 
         if (barline != null) {
             barline.reset();
@@ -1701,6 +1683,43 @@ public class Measure
     public String toString ()
     {
         return "{Measure#" + id + "}";
+    }
+
+    //------------//
+    // computeBox //
+    //------------//
+    @Override
+    protected void computeBox ()
+    {
+        // Start of the measure
+        int     leftX;
+        Measure prevMeasure = (Measure) getPreviousSibling();
+
+        if (prevMeasure == null) { // Very first measure in the staff
+            leftX = 0;
+        } else {
+            leftX = prevMeasure.getBarline()
+                               .getCenter().x;
+        }
+
+        // End of the measure
+        int rightX;
+
+        if (barline != null) {
+            rightX = barline.getCenter().x;
+        } else {
+            // Last measure of a part/system with no ending barline
+            rightX = getSystem()
+                         .getDimension().width;
+        }
+
+        SystemPart part = this.getPart();
+        setBox(
+            new SystemRectangle(
+                leftX,
+                part.getBox().y,
+                rightX - leftX,
+                part.getBox().height));
     }
 
     //---------------//

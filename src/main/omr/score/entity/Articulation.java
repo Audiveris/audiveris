@@ -23,22 +23,22 @@ import omr.score.visitor.ScoreVisitor;
  * notation.
  * This should apply to:
  * <pre>
- * accent                standard
+ * accent               standard
  * strong-accent        standard
- * staccato                standard
- * tenuto                standard
- * detached-legato        nyi
+ * staccato             standard
+ * tenuto               standard
+ * detached-legato      nyi
  * staccatissimo        standard
- * spiccato                nyi
+ * spiccato             nyi
  * scoop                nyi
- * plop                        nyi
- * doit                        nyi
- * falloff                nyi
- * breath-mark                nyi ???
- * caesura                nyi ???
- * stress                nyi
- * unstress                nyi
- * other-articulation        nyi
+ * plop                 nyi
+ * doit                 nyi
+ * falloff              nyi
+ * breath-mark          nyi ???
+ * caesura              nyi ???
+ * stress               nyi
+ * unstress             nyi
+ * other-articulation   nyi
  * </pre>
  *
  * @author Herv&eacute Bitteur

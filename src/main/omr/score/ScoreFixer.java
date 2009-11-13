@@ -144,9 +144,9 @@ public class ScoreFixer
             logger.fine(system + " contour:" + systemContour);
         }
 
-        system.setContour(systemContour);
+        system.setDisplayContour(systemContour);
 
-        int top = system.getContour().y + system.getDummyOffset();
+        int top = system.getDisplayContour().y + system.getDummyOffset();
 
         if (top < highestTop) {
             highestTop = top;

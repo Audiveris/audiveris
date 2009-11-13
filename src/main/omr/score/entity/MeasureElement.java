@@ -19,13 +19,9 @@ import omr.glyph.Shape;
 
 import omr.log.Logger;
 
-import omr.score.common.PixelRectangle;
 import omr.score.common.SystemPoint;
-import omr.score.common.SystemRectangle;
 
 import omr.sheet.Scale;
-
-import java.util.*;
 
 /**
  * Class <code>MeasureElement</code> is the basis for measure elements
@@ -55,60 +51,40 @@ public abstract class MeasureElement
     /** The precise shape */
     private Shape shape;
 
-    /** The glyph(s) that compose this element, sorted by abscissa */
-    private final SortedSet<Glyph> glyphs = Glyphs.sortedSet();
-
     /** Is this a start (rather than a stop) */
     private final boolean start;
-
-    /** Bounding box */
-    private SystemRectangle box;
-
-    /** Center point */
-    private SystemPoint point;
 
     /** Related chord if any (in containing measure) */
     private final Chord chord;
 
     //~ Constructors -----------------------------------------------------------
 
-    /** Creates a new instance
+    /**
+     * Creates a new instance
      * @param measure the containing measure
      * @param start is this a starting element (of a two-piece entity)
-     * @param point the location within the system
+     * @param referencePoint the reference location within the system
      * @param chord the related chord, if any
      * @param glyph the underlying glyph
      */
     public MeasureElement (Measure     measure,
                            boolean     start,
-                           SystemPoint point,
+                           SystemPoint referencePoint,
                            Chord       chord,
                            Glyph       glyph)
     {
         super(measure);
 
-        this.start = start;
-        this.point = point;
-        this.chord = chord;
-
         if (glyph != null) {
             addGlyph(glyph);
         }
+
+        this.start = start;
+        this.referencePoint = referencePoint;
+        this.chord = chord;
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //--------//
-    // getBox //
-    //--------//
-    public SystemRectangle getBox ()
-    {
-        if (box == null) {
-            computeGeometry();
-        }
-
-        return box;
-    }
 
     //----------//
     // getChord //
@@ -124,34 +100,6 @@ public abstract class MeasureElement
     public Glyph getGlyph ()
     {
         return glyphs.first();
-    }
-
-    //-----------//
-    // getGlyphs //
-    //-----------//
-    public SortedSet<Glyph> getGlyphs ()
-    {
-        return glyphs;
-    }
-
-    //----------//
-    // setPoint //
-    //----------//
-    public void setPoint (SystemPoint point)
-    {
-        this.point = point;
-    }
-
-    //----------//
-    // getPoint //
-    //----------//
-    public SystemPoint getPoint ()
-    {
-        if (point == null) {
-            computeGeometry();
-        }
-
-        return point;
     }
 
     //----------//
@@ -172,19 +120,6 @@ public abstract class MeasureElement
     public boolean isStart ()
     {
         return start;
-    }
-
-    //----------//
-    // addGlyph //
-    //----------//
-    public void addGlyph (Glyph glyph)
-    {
-        // Reset
-        shape = null;
-        setPoint(null);
-        box = null;
-
-        glyphs.add(glyph);
     }
 
     //----------//
@@ -216,10 +151,10 @@ public abstract class MeasureElement
             sb.append(" ")
               .append(chord.getContextString());
             // Point
-            sb.append(" point[x=")
-              .append(getPoint().x)
+            sb.append(" ref[x=")
+              .append(getReferencePoint().x)
               .append(",y=")
-              .append(getPoint().y)
+              .append(getReferencePoint().y)
               .append("]");
             // Box
             sb.append(" box[x=")
@@ -267,31 +202,6 @@ public abstract class MeasureElement
     }
 
     //-----------------//
-    // computeGeometry //
-    //-----------------//
-    protected void computeGeometry ()
-    {
-        PixelRectangle pbox = null;
-
-        for (Glyph glyph : glyphs) {
-            if (pbox == null) {
-                pbox = glyph.getContourBox();
-            } else {
-                pbox.union(glyph.getContourBox());
-            }
-        }
-
-        if (pbox != null) {
-            box = getSystem()
-                      .toSystemRectangle(pbox);
-            setPoint(
-                new SystemPoint(
-                    box.x + (box.width / 2),
-                    box.y + (box.height / 2)));
-        }
-    }
-
-    //-----------------//
     // internalsString //
     //-----------------//
     /**
@@ -303,6 +213,18 @@ public abstract class MeasureElement
     protected String internalsString ()
     {
         return "";
+    }
+
+    //-------//
+    // reset //
+    //-------//
+    @Override
+    protected void reset ()
+    {
+        super.reset();
+
+        shape = null;
+        setReferencePoint(null);
     }
 
     //~ Inner Classes ----------------------------------------------------------

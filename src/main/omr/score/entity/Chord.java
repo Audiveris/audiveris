@@ -1291,7 +1291,7 @@ public class Chord
     // computeCenter //
     //---------------//
     /**
-     * Compute the center of Chord
+     * Compute the center of Chord, which is meant at the head location.
      */
     @Override
     protected void computeCenter ()
@@ -1547,8 +1547,10 @@ public class Chord
      * Reset all internal data that depends on the chord composition in
      * terms of notes
      */
-    private void reset ()
+    protected void reset ()
     {
+        super.reset();
+        
         headLocation = null;
         tailLocation = null;
         startTime = null;

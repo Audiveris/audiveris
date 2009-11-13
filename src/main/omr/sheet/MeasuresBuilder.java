@@ -208,7 +208,7 @@ public class MeasuresBuilder
 
                     Measure measure = new Measure(part);
                     Barline barline = new Barline(measure);
-                    barline.addStick(bar);
+                    barline.addGlyph(bar);
                 }
             }
         }
@@ -260,10 +260,10 @@ public class MeasuresBuilder
 
                 // If at least one of the barline sticks has been *manually*
                 // assigned, accept the bar with no further check
-                for (Stick stick : measure.getBarline()
-                                          .getSticks()) {
-                    if (stick.isBar() &&
-                        (stick.getDoubt() == Evaluation.MANUAL)) {
+                for (Glyph glyph : measure.getBarline()
+                                          .getGlyphs()) {
+                    if (glyph.isBar() &&
+                        (glyph.getDoubt() == Evaluation.MANUAL)) {
                         if (logger.isFineEnabled()) {
                             logger.fine(
                                 scoreSystem.getContextString() +
@@ -280,10 +280,10 @@ public class MeasuresBuilder
                 if (!measure.getBarline()
                             .joinsAllStaves(staves)) {
                     // Remove the false bar info
-                    for (Stick stick : measure.getBarline()
-                                              .getSticks()) {
-                        stick.setResult(NOT_STAFF_ALIGNED);
-                        stick.setShape(null);
+                    for (Glyph glyph : measure.getBarline()
+                                              .getGlyphs()) {
+                        glyph.setResult(NOT_STAFF_ALIGNED);
+                        glyph.setShape(null);
                     }
 
                     // Remove this false measure
@@ -318,10 +318,10 @@ public class MeasuresBuilder
                         }
 
                         // Remove the false bar info
-                        for (Stick stick : measure.getBarline()
-                                                  .getSticks()) {
-                            stick.setResult(NOT_SYSTEM_ALIGNED);
-                            stick.setShape(null);
+                        for (Glyph glyph : measure.getBarline()
+                                                  .getGlyphs()) {
+                            glyph.setResult(NOT_SYSTEM_ALIGNED);
+                            glyph.setShape(null);
                         }
 
                         // Remove the false measure
@@ -362,13 +362,7 @@ public class MeasuresBuilder
                 }
 
                 // Adjust end of system & staff(s) to this one
-                UnitDimension dim = scoreSystem.getDimension();
-
-                if (dim == null) {
-                    scoreSystem.setDimension(new UnitDimension(lastX, 0));
-                } else {
-                    dim.width = lastX;
-                }
+                scoreSystem.setWidth(lastX);
 
                 for (TreeNode pnode : scoreSystem.getParts()) {
                     SystemPart prt = (SystemPart) pnode;
@@ -376,7 +370,7 @@ public class MeasuresBuilder
                     for (Iterator sit = prt.getStaves()
                                            .iterator(); sit.hasNext();) {
                         Staff stv = (Staff) sit.next();
-                        stv.setWidth(scoreSystem.getDimension().width);
+                        stv.setWidth(lastX);
                     }
                 }
             }
@@ -445,13 +439,13 @@ public class MeasuresBuilder
                     if (measureWidth <= maxDoubleDx) {
                         // Lines are side by side or one above the other?
                         Stick stick = (Stick) measure.getBarline()
-                                                     .getSticks()
+                                                     .getGlyphs()
                                                      .toArray()[0];
                         Stick prevStick = (Stick) prevMeasure.getBarline()
-                                                             .getSticks()
+                                                             .getGlyphs()
                                                              .toArray()[0];
 
-                        if (stick.overlapWith(prevStick)) {
+                        if (stick.overlapsWith(prevStick)) {
                             // Overlap => side by side
                             // Merge the two bar lines into the first one
                             prevMeasure.getBarline()
@@ -464,9 +458,6 @@ public class MeasuresBuilder
                             }
                         } else {
                             // No overlap => one above the other
-                            //                            prevStick.addGlyphSections(stick, true);
-                            //                            stick.cutSections(false);
-                            //                            bars.remove(stick);
                             if (logger.isFineEnabled()) {
                                 logger.fine(
                                     "Two barlines segments one above the other in  " +

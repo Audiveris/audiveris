@@ -275,7 +275,7 @@ public class ScoreExporter
             Method method = classe.getMethod("setPlacement", AboveBelow.class);
             method.invoke(
                 element.getValue(),
-                (articulation.getPoint().y < current.note.getCenter().y)
+                (articulation.getReferencePoint().y < current.note.getCenter().y)
                                 ? AboveBelow.ABOVE : AboveBelow.BELOW);
         } catch (Exception ex) {
             logger.severe("Could not setPlacement for element " + classe);
@@ -286,11 +286,10 @@ public class ScoreExporter
             Method method = classe.getMethod("setDefaultY", BigDecimal.class);
             method.invoke(
                 element.getValue(),
-                yOf(articulation.getPoint(), staff));
+                yOf(articulation.getReferencePoint(), staff));
         } catch (Exception ex) {
             logger.severe("Could not setDefaultY for element " + classe);
         }
-
 
         return false;
     }
@@ -308,7 +307,9 @@ public class ScoreExporter
 
         // relative-x
         pmArpeggiate.setRelativeX(
-            toTenths(arpeggiate.getPoint().x - current.note.getCenterLeft().x));
+            toTenths(
+                arpeggiate.getReferencePoint().x -
+                current.note.getCenterLeft().x));
 
         // number ???
         // TODO
@@ -487,10 +488,10 @@ public class ScoreExporter
 
         // default-x
         pmCoda.setDefaultX(
-            toTenths(coda.getPoint().x - current.measure.getLeftX()));
+            toTenths(coda.getReferencePoint().x - current.measure.getLeftX()));
 
         // default-y
-        pmCoda.setDefaultY(yOf(coda.getPoint(), staff));
+        pmCoda.setDefaultY(yOf(coda.getReferencePoint(), staff));
 
         // Need also a Sound element
         Sound sound = factory.createSound();
@@ -531,18 +532,20 @@ public class ScoreExporter
 
             // Placement
             direction.setPlacement(
-                (words.getPoint().y < current.note.getCenter().y)
+                (words.getReferencePoint().y < current.note.getCenter().y)
                                 ? AboveBelow.ABOVE : AboveBelow.BELOW);
 
             // default-y
-            pmWords.setDefaultY(yOf(words.getPoint(), staff));
+            pmWords.setDefaultY(yOf(words.getReferencePoint(), staff));
 
             // font-size
             pmWords.setFontSize("" + words.getText().getFontSize());
 
             // relative-x
             pmWords.setRelativeX(
-                toTenths(words.getPoint().x - current.note.getCenterLeft().x));
+                toTenths(
+                    words.getReferencePoint().x -
+                    current.note.getCenterLeft().x));
         }
 
         return true;
@@ -576,19 +579,20 @@ public class ScoreExporter
             insertStaffId(direction, staff);
 
             // Placement
-            if (dynamics.getPoint().y < current.note.getCenter().y) {
+            if (dynamics.getReferencePoint().y < current.note.getCenter().y) {
                 direction.setPlacement(AboveBelow.ABOVE);
             } else {
                 direction.setPlacement(AboveBelow.BELOW);
             }
 
             // default-y
-            pmDynamics.setDefaultY(yOf(dynamics.getPoint(), staff));
+            pmDynamics.setDefaultY(yOf(dynamics.getReferencePoint(), staff));
 
             // Relative-x (No offset for the time being) using note left side
             pmDynamics.setRelativeX(
                 toTenths(
-                    dynamics.getPoint().x - current.note.getCenterLeft().x));
+                    dynamics.getReferencePoint().x -
+                    current.note.getCenterLeft().x));
         } catch (Exception ex) {
             logger.warning("Error exporting " + dynamics, ex);
         }
@@ -965,7 +969,6 @@ public class ScoreExporter
                     if (node instanceof Arpeggiate) {
                         node.accept(this);
                     }
-
                 }
             }
 
@@ -1104,7 +1107,7 @@ public class ScoreExporter
                 for (LyricsItem syllable : note.getSyllables()) {
                     if (syllable.getContent() != null) {
                         Lyric pmLyric = factory.createLyric();
-                        pmLyric.setDefaultY(yOf(syllable.getLocation(), staff));
+                        pmLyric.setDefaultY(yOf(syllable.getReferencePoint(), staff));
                         pmLyric.setNumber(
                             "" + syllable.getLyricsLine().getId());
 
@@ -1152,7 +1155,7 @@ public class ScoreExporter
             Method method = classe.getMethod("setPlacement", AboveBelow.class);
             method.invoke(
                 element.getValue(),
-                (ornament.getPoint().y < current.note.getCenter().y)
+                (ornament.getReferencePoint().y < current.note.getCenter().y)
                                 ? AboveBelow.ABOVE : AboveBelow.BELOW);
         } catch (Exception ex) {
             ///ex.printStackTrace();
@@ -1192,14 +1195,14 @@ public class ScoreExporter
 
         // default-x
         pmPedal.setDefaultX(
-            toTenths(pedal.getPoint().x - current.measure.getLeftX()));
+            toTenths(pedal.getReferencePoint().x - current.measure.getLeftX()));
 
         // default-y
-        pmPedal.setDefaultY(yOf(pedal.getPoint(), staff));
+        pmPedal.setDefaultY(yOf(pedal.getReferencePoint(), staff));
 
         // Placement
         direction.setPlacement(
-            (pedal.getPoint().y < current.note.getCenter().y)
+            (pedal.getReferencePoint().y < current.note.getCenter().y)
                         ? AboveBelow.ABOVE : AboveBelow.BELOW);
 
         return true;
@@ -1366,10 +1369,10 @@ public class ScoreExporter
 
         // default-x
         empty.setDefaultX(
-            toTenths(segno.getPoint().x - current.measure.getLeftX()));
+            toTenths(segno.getReferencePoint().x - current.measure.getLeftX()));
 
         // default-y
-        empty.setDefaultY(yOf(segno.getPoint(), staff));
+        empty.setDefaultY(yOf(segno.getReferencePoint(), staff));
 
         // Need also a Sound element
         Sound sound = factory.createSound();
@@ -1630,7 +1633,7 @@ public class ScoreExporter
 
         // Position is wrt to page
         PagePoint pt = text.getSystem()
-                           .toPagePoint(text.getLocation());
+                           .toPagePoint(text.getReferencePoint());
         creditWords.setDefaultX(toTenths(pt.x));
         creditWords.setDefaultY(toTenths(score.getDimension().height - pt.y));
 
@@ -1774,22 +1777,22 @@ public class ScoreExporter
 
             // Placement
             direction.setPlacement(
-                (wedge.getPoint().y < current.note.getCenter().y)
+                (wedge.getReferencePoint().y < current.note.getCenter().y)
                                 ? AboveBelow.ABOVE : AboveBelow.BELOW);
 
             // default-y
-            pmWedge.setDefaultY(yOf(wedge.getPoint(), staff));
+            pmWedge.setDefaultY(yOf(wedge.getReferencePoint(), staff));
         } else { // It's a stop
             pmWedge.setType(WedgeType.STOP);
         }
 
         //        // Relative-x (No offset for the time being) using note left side
         //        pmWedge.setRelativeX(
-        //            toTenths(wedge.getPoint().x - current.note.getCenterLeft().x));
+        //            toTenths(wedge.getReferencePoint().x - current.note.getCenterLeft().x));
 
         //        // default-x
         //        pmWedge.setDefaultX(
-        //            toTenths(wedge.getPoint().x - current.measure.getLeftX()));
+        //            toTenths(wedge.getReferencePoint().x - current.measure.getLeftX()));
         return true;
     }
 

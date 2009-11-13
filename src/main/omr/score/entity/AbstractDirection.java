@@ -44,40 +44,40 @@ public abstract class AbstractDirection
     /** Creates a new instance of Direction
      *
      * @param measure the containing measure
-     * @param point the reference point for this direction
+     * @param referencePoint the reference point for this direction
      * @param chord the related chord if any
      * @param glyph the underlying glyph
      */
     public AbstractDirection (Measure     measure,
-                              SystemPoint point,
+                              SystemPoint referencePoint,
                               Chord       chord,
                               Glyph       glyph)
     {
-        this(measure, true, point, chord, glyph);
+        this(measure, true, referencePoint, chord, glyph);
     }
 
     /** Creates a new instance of Direction
      *
      * @param measure  the containing measure
      * @param isStart true or false, to flag a start or a stop
-     * @param point the reference point for this direction
+     * @param referencePoint the reference point for this direction
      * @param chord the related chord if any
      * @param glyph the underlying glyph
      */
     public AbstractDirection (Measure     measure,
                               boolean     isStart,
-                              SystemPoint point,
+                              SystemPoint referencePoint,
                               Chord       chord,
                               Glyph       glyph)
     {
-        super(measure, isStart, point, chord, glyph);
+        super(measure, isStart, referencePoint, chord, glyph);
 
         // Register at its related chord
         if (chord != null) {
             chord.addDirection(this);
         } else {
             // We have a direction item without any related chord/note
-            // This is legal, however where do we store this item?
+            // This is legal, however where do we store this item? TODO
             addError(glyph, "Direction with no related note");
         }
     }

@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.score.entity;
 
-import static omr.score.ui.ScoreConstants.*;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.util.TreeNode;

@@ -12,23 +12,26 @@
 package omr.score.entity;
 
 import omr.glyph.Glyph;
+import omr.glyph.Glyphs;
 
+import omr.score.common.SystemPoint;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.util.TreeNode;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * Class <code>PartNode</code> is an abstract class that is subclassed for any
- * ScoreNode that is contained in a system part. So this class encapsulates a
+ * SystemNode that is contained in a system part. So this class encapsulates a
  * direct link to the enclosing part.
  *
  * <p>A link to a related staff is provided as a potential tag only, since all
  * PartNode instances (Slur for example) are not related to a specific staff,
  * whereas a Wedge is.
+ *
+ * <p>Similarly, we handle a sorted set of underlying glyphs which is useful for
+ * most of the subclasses.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -39,10 +42,16 @@ public abstract class PartNode
     //~ Instance fields --------------------------------------------------------
 
     /** Containing part */
-    private SystemPart part;
+    private final SystemPart part;
+
+    /** The glyph(s) that compose this element, sorted by abscissa */
+    protected final SortedSet<Glyph> glyphs = Glyphs.sortedSet();
 
     /** Related staff, if relevant */
     private Staff staff;
+
+    /** Reference point */
+    protected SystemPoint referencePoint;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -63,9 +72,12 @@ public abstract class PartNode
             if (c instanceof SystemPart) {
                 part = (SystemPart) c;
 
-                break;
+                return;
             }
         }
+
+        ///throw new RuntimeException("Creating a PartNode with no SystemPart");
+        part = null;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -83,6 +95,19 @@ public abstract class PartNode
         return sb.toString();
     }
 
+    //-----------//
+    // getGlyphs //
+    //-----------//
+    /**
+     * Report the collection of physical glyphs that compose this entity
+     *
+     * @return the collection of glyphs, which may be empty
+     */
+    public Collection<Glyph> getGlyphs ()
+    {
+        return Collections.unmodifiableSortedSet(glyphs);
+    }
+
     //---------//
     // getPart //
     //---------//
@@ -94,6 +119,42 @@ public abstract class PartNode
     public SystemPart getPart ()
     {
         return part;
+    }
+
+    //-------------------//
+    // setReferencePoint //
+    //-------------------//
+    public void setReferencePoint (SystemPoint referencePoint)
+    {
+        this.referencePoint = referencePoint;
+    }
+
+    //-------------------//
+    // getReferencePoint //
+    //-------------------//
+    /**
+     * Report the point of reference for this element, which is generally the
+     * element box center, but may be different. For example, the reference
+     * point of a DirectionStatement is located on the left side on the base
+     * line.
+     * @return the point of reference for this element
+     */
+    public SystemPoint getReferencePoint ()
+    {
+        return getCenter();
+    }
+
+    //----------//
+    // setStaff //
+    //----------//
+    /**
+     * Assign the related staff
+     *
+     * @param staff the related staff
+     */
+    public void setStaff (Staff staff)
+    {
+        this.staff = staff;
     }
 
     //----------//
@@ -118,77 +179,31 @@ public abstract class PartNode
         return visitor.visit(this);
     }
 
-    //------------------//
-    // retrieveSequence //
-    //------------------//
-    /**
-     * Starting from a glyph, build a sequence of glyphs Ok with a provided
-     * criteria, up to a sequence final criteria or when it's over.
-     *
-     * @param seed the first glyph of the sequence
-     * @return the sequence of glyphs captured
-     */
-    public static List<Glyph> retrieveSequence (Glyph             seed,
-                                                Collection<Glyph> glyphs,
-                                                SequenceAdapter   adapter)
-    {
-        List<Glyph> sequence = new ArrayList<Glyph>();
-        boolean     started = false;
-
-        // Browse the provided glyphs, & start from the seed
-        for (Glyph glyph : glyphs) {
-            if (glyph == seed) {
-                started = true;
-                sequence.add(glyph);
-            } else if (started) {
-                if (adapter.isFinal(glyph)) {
-                    sequence.add(glyph);
-
-                    break;
-                } else if (adapter.isOver(glyph)) {
-                    break;
-                } else if (adapter.isOk(glyph)) {
-                    sequence.add(glyph);
-                }
-            }
-        }
-
-        return sequence;
-    }
-
     //----------//
-    // setStaff //
+    // addGlyph //
     //----------//
     /**
-     * Assign the related staff
-     *
-     * @param staff the related staff
+     * Insert a glyph into the collection of underlying glyphs
+     * @param glyph the glyph to insert
      */
-    public void setStaff (Staff staff)
+    public void addGlyph (Glyph glyph)
     {
-        this.staff = staff;
+        glyphs.add(glyph);
+
+        // Invalidate
+        reset();
     }
 
-    //~ Inner Interfaces -------------------------------------------------------
-
-    //-----------------//
-    // SequenceAdapter //
-    //-----------------//
+    //------------//
+    // computeBox //
+    //------------//
     /**
-     * Interface <code>SequenceAdapter</code> defines the checks that drive
-     * the retrieval of a glyph sequence.
+     * Compute the bounding box  of this entity, wrt to the system top-left corner.
+     * Unless overridden, this method works on the glyphs collection
      */
-    public static interface SequenceAdapter
+    @Override
+    protected void computeBox ()
     {
-        //~ Methods ------------------------------------------------------------
-
-        /** Check whether this glyph completes the sequence */
-        boolean isFinal (Glyph glyph);
-
-        /** Check whether this glyph should be part of the sequence */
-        boolean isOk (Glyph glyph);
-
-        /** Check whether this glyph leads to give up the sequence */
-        boolean isOver (Glyph glyph);
+        setBox(computeGlyphsBox(getGlyphs()));
     }
 }

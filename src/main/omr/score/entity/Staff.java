@@ -16,6 +16,7 @@ import omr.log.Logger;
 import omr.score.common.PagePoint;
 import omr.score.common.PixelPoint;
 import omr.score.common.SystemPoint;
+import omr.score.common.SystemRectangle;
 import static omr.score.ui.ScoreConstants.*;
 import omr.score.visitor.ScoreVisitor;
 
@@ -50,20 +51,11 @@ public class Staff
     /** Top left corner of the staff (relative to the page top left corner) */
     private final PagePoint pageTopLeft;
 
-    /** Top left corner of the staff (relative to the system top left corner) */
-    private final SystemPoint systemTopLeft;
-
     /** Related info from sheet analysis */
     private StaffInfo info;
 
     /** Id of staff in containing system part */
     private int id;
-
-    /** Staff height (units) */
-    private int height;
-
-    /** Staff width (units) */
-    private int width;
 
     /** Flag an artificial staff */
     private boolean dummy;
@@ -93,12 +85,14 @@ public class Staff
 
         this.info = info;
         this.pageTopLeft = pageTopLeft;
-        this.width = width;
-        this.height = height;
 
-        systemTopLeft = new SystemPoint(
-            0,
-            pageTopLeft.y - getSystem().getTopLeft().y);
+        setBox(
+            new SystemRectangle(
+                0,
+                pageTopLeft.y - getSystem().getTopLeft().y,
+                width,
+                height));
+        getCenter();
 
         // Assign id
         id = getParent()
@@ -106,35 +100,7 @@ public class Staff
                  .indexOf(this) + 1;
     }
 
-    //-------//
-    // Staff //
-    //-------//
-    /**
-     * Default constructor (needed by XML binder)
-     */
-    private Staff ()
-    {
-        super(null);
-        pageTopLeft = null;
-        systemTopLeft = null;
-    }
-
     //~ Methods ----------------------------------------------------------------
-
-    //
-    //    //------------------//
-    //    // getDisplayOrigin //
-    //    //------------------//
-    //    /**
-    //     * Report the staff display origin in the score display of this staff
-    //     *
-    //     * @return the (staff-specific) displayOrigin
-    //     */
-    //    @Override
-    //    public ScorePoint getDisplayOrigin ()
-    //    {
-    //        return displayOrigin;
-    //    }
 
     //-----------//
     // getHeight //
@@ -146,7 +112,7 @@ public class Staff
      */
     public int getHeight ()
     {
-        return height;
+        return getBox().height;
     }
 
     //-------//
@@ -199,7 +165,8 @@ public class Staff
      */
     public SystemPoint getTopLeft ()
     {
-        return systemTopLeft;
+        return getBox()
+                   .getLocation();
     }
 
     //----------//
@@ -212,7 +179,7 @@ public class Staff
      */
     public int getWidth ()
     {
-        return width;
+        return getBox().width;
     }
 
     //--------//
@@ -247,11 +214,16 @@ public class Staff
     /**
      * Set the staff width
      *
-     * @param width width in units f the staff
+     * @param unitWidth width in units of the staff
      */
-    public void setWidth (int width)
+    public void setWidth (int unitWidth)
     {
-        this.width = width;
+        SystemRectangle newBox = getBox();
+        reset();
+
+        newBox.width = unitWidth;
+        setBox(newBox);
+        getCenter();
     }
 
     //----------//
@@ -271,9 +243,9 @@ public class Staff
             sb.append(" pageTopLeft=")
               .append(pageTopLeft);
             sb.append(" width=")
-              .append(width);
+              .append(getWidth());
             sb.append(" size=")
-              .append(height);
+              .append(getHeight());
             sb.append("}");
 
             return sb.toString();
@@ -336,18 +308,6 @@ public class Staff
     public double pitchPositionOf (SystemPoint pt)
     {
         return info.pitchPositionOf(getSystem().toPixelPoint(pt));
-    }
-
-    //---------------//
-    // computeCenter //
-    //---------------//
-    @Override
-    protected void computeCenter ()
-    {
-        setCenter(
-            new SystemPoint(
-                width / 2,
-                pageTopLeft.y - getSystem().getTopLeft().y + (height / 2)));
     }
 
     //~ Inner Classes ----------------------------------------------------------

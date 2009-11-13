@@ -16,6 +16,7 @@ import omr.glyph.Glyph;
 import omr.log.Logger;
 
 import omr.score.Score;
+import omr.score.common.PixelRectangle;
 import omr.score.entity.Measure;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Staff;
@@ -218,9 +219,14 @@ public class SheetPainter
     //------------------//
     public boolean visit (SystemInfo systemInfo)
     {
+        PixelRectangle bounds = systemInfo.getBounds();
+
+        if (bounds == null) {
+            return false;
+        }
+
         // Check that this system is visible
-        if (systemInfo.getBounds()
-                      .intersects(g.getClipBounds())) {
+        if (bounds.intersects(g.getClipBounds())) {
             g.setColor(Color.lightGray);
 
             // System boundary

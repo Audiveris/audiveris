@@ -63,11 +63,8 @@ public class TimeSignature
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Rational component : numerator */
-    private Integer numerator;
-
-    /** Rational component : denominator */
-    private Integer denominator;
+    /** Flag a time sig not created out of its glyphs */
+    private final boolean isDummy;
 
     /**
      * Precise time signature shape (if any, since we may have no predefined
@@ -80,15 +77,11 @@ public class TimeSignature
      */
     private Shape shape;
 
-    /**
-     * The glyph(s) that compose the time signature, a set which is kept
-     * sorted on glyph abscissa. This can be just one : e.g. TIME_SIX_EIGHT for
-     * 6/8, or several : e.g. TIME_SIX + TIME_TWELVE for 6/12
-     */
-    private SortedSet<Glyph> glyphs = Glyphs.sortedSet();
+    /** Rational component : numerator */
+    private Integer numerator;
 
-    /** Flag a time sig not created out of its glyphs */
-    private final boolean isDummy;
+    /** Rational component : denominator */
+    private Integer denominator;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -238,20 +231,6 @@ public class TimeSignature
         return visitor.visit(this);
     }
 
-    //----------//
-    // addGlyph //
-    //----------//
-    /**
-     * Add a new glyph as part of this time signature
-     *
-     * @param glyph the new component glyph
-     */
-    public void addGlyph (Glyph glyph)
-    {
-        glyphs.add(glyph);
-        reset();
-    }
-
     //-----------------//
     // createDummyCopy //
     //-----------------//
@@ -341,7 +320,8 @@ public class TimeSignature
      */
     public void reset ()
     {
-        setCenter(null);
+        super.reset();
+
         shape = null;
         numerator = null;
         denominator = null;

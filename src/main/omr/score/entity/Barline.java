@@ -11,22 +11,20 @@
 // </editor-fold>
 package omr.score.entity;
 
+import omr.glyph.Glyph;
+import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 
 import omr.log.Logger;
 
 import omr.score.common.PagePoint;
-import omr.score.common.PageRectangle;
 import omr.score.common.SystemRectangle;
 import omr.score.visitor.ScoreVisitor;
-
-import omr.sheet.Scale;
 
 import omr.stick.Stick;
 
 import java.awt.*;
 import java.util.*;
-import omr.glyph.Glyphs;
 
 /**
  * Class <code>Barline</code> encapsulates a logical bar line, that may be
@@ -48,13 +46,7 @@ public class Barline
     /** Precise bar line shape */
     private Shape shape;
 
-    /**
-     * Related physical sticks (bar sticks and dots), which is kept sorted on
-     * stick abscissa
-     */
-    private SortedSet<Stick> sticks = new TreeSet<Stick>(Glyphs.globalComparator);
-
-    /** Signature of this bar line, as abstracted from its constituents */
+    /** Signature of this bar line, as inferred from its components */
     private String signature;
 
     //~ Constructors -----------------------------------------------------------
@@ -72,17 +64,6 @@ public class Barline
         super(measure);
     }
 
-    //---------//
-    // Barline //
-    //---------//
-    /**
-     * Needed for XML binding
-     */
-    private Barline ()
-    {
-        super(null);
-    }
-
     //~ Methods ----------------------------------------------------------------
 
     //----------//
@@ -98,13 +79,14 @@ public class Barline
         PagePoint topLeft = getSystem()
                                 .getTopLeft();
 
-        for (Stick stick : getSticks()) {
-            if ((stick.getShape() == Shape.THICK_BARLINE) ||
-                (stick.getShape() == Shape.THIN_BARLINE)) {
+        for (Glyph glyph : getGlyphs()) {
+            if ((glyph.getShape() == Shape.THICK_BARLINE) ||
+                (glyph.getShape() == Shape.THIN_BARLINE)) {
                 // Beware : Vertical sticks using Horizontal line equation
-                int x = stick.getLine()
-                             .yAt(getScale()
-                                      .toPixelPoint(topLeft).y);
+                Stick stick = (Stick) glyph;
+                int   x = stick.getLine()
+                               .yAt(getScale()
+                                        .toPixelPoint(topLeft).y);
 
                 return getScale()
                            .pixelsToUnits(x) - topLeft.x;
@@ -131,12 +113,13 @@ public class Barline
         PagePoint topLeft = getSystem()
                                 .getTopLeft();
 
-        for (Stick stick : getSticks()) {
-            if (stick.isBar()) {
+        for (Glyph glyph : getGlyphs()) {
+            if (glyph.isBar()) {
                 // Beware : Vertical sticks using Horizontal line equation
-                int x = stick.getLine()
-                             .yAt(getScale()
-                                      .toPixelPoint(topLeft).y);
+                Stick stick = (Stick) glyph;
+                int   x = stick.getLine()
+                               .yAt(getScale()
+                                        .toPixelPoint(topLeft).y);
 
                 if (x > right) {
                     right = x;
@@ -166,19 +149,6 @@ public class Barline
         return shape;
     }
 
-    //-----------//
-    // getSticks //
-    //-----------//
-    /**
-     * Report the collection of physical sticks that compose this bar line
-     *
-     * @return the collection of sticks, or an empty set if sticks is null
-     */
-    public Collection<Stick> getSticks ()
-    {
-        return sticks;
-    }
-
     //--------//
     // accept //
     //--------//
@@ -186,24 +156,6 @@ public class Barline
     public boolean accept (ScoreVisitor visitor)
     {
         return visitor.visit(this);
-    }
-
-    //----------//
-    // addStick //
-    //----------//
-    /**
-     * Include a new individual bar stick in the (complex) bar line. This
-     * automatically invalidates the other bar line parameters, which will be
-     * lazily re-computed when needed.
-     *
-     * @param stick the bar stick to include
-     */
-    public void addStick (Stick stick)
-    {
-        sticks.add(stick);
-
-        // Invalidate parameters
-        reset();
     }
 
     //------------//
@@ -233,35 +185,46 @@ public class Barline
      */
     public boolean joinsAllStaves (Collection<Staff> staves)
     {
-        Scale scale = getSystem()
-                          .getScale();
+        // We check that the barline box intersects each staff box
+        SystemRectangle barBox = getBox();
 
         for (Staff staff : staves) {
-            boolean overlap = false;
-
-            for (Stick stick : getSticks()) {
-                // Extrema of glyph
-                PageRectangle box = scale.toUnits(stick.getContourBox());
-                int           top = box.y;
-                int           bot = box.y + box.height;
-
-                // Check that staff and stick overlap vertically
-                final int topStaff = staff.getPageTopLeft().y;
-                final int botStaff = topStaff + staff.getHeight();
-
-                if (Math.max(topStaff, top) < Math.min(botStaff, bot)) {
-                    overlap = true;
-
-                    break;
-                }
-            }
-
-            if (!overlap) {
+            if (!barBox.intersects(staff.getBox())) {
                 return false;
             }
         }
 
         return true;
+
+        //        Scale scale = getSystem()
+        //                          .getScale();
+        //
+        //        for (Staff staff : staves) {
+        //            boolean overlap = false;
+        //
+        //            for (Glyph glyph : getGlyphs()) {
+        //                // Extrema of glyph
+        //                PageRectangle box = scale.toUnits(glyph.getContourBox());
+        //                int           top = box.y;
+        //                int           bot = box.y + box.height;
+        //
+        //                // Check that staff and stick overlap vertically
+        //                final int topStaff = staff.getPageTopLeft().y;
+        //                final int botStaff = topStaff + staff.getHeight();
+        //
+        //                if (Math.max(topStaff, top) < Math.min(botStaff, bot)) {
+        //                    overlap = true;
+        //
+        //                    break;
+        //                }
+        //            }
+        //
+        //            if (!overlap) {
+        //                return false;
+        //            }
+        //        }
+        //
+        //        return true;
     }
 
     //-----------//
@@ -274,8 +237,8 @@ public class Barline
      */
     public void mergeWith (Barline other)
     {
-        for (Stick stick : other.getSticks()) {
-            addStick(stick);
+        for (Glyph glyph : other.getGlyphs()) {
+            addGlyph(glyph);
         }
     }
 
@@ -289,9 +252,9 @@ public class Barline
      */
     public void render (Graphics g)
     {
-        for (Stick stick : getSticks()) {
-            if (stick.isBar()) {
-                stick.renderLine(g);
+        for (Glyph glyph : getGlyphs()) {
+            if (glyph.isBar()) {
+                ((Stick) glyph).renderLine(g);
             }
         }
     }
@@ -302,10 +265,12 @@ public class Barline
     /**
      * Invalidate cached data, so that it gets lazily recomputed when needed
      */
+    @Override
     public void reset ()
     {
+        super.reset();
+
         signature = null;
-        setCenter(null);
         shape = null;
     }
 
@@ -330,14 +295,7 @@ public class Barline
               .append(getCenter())
               .append(" sig=")
               .append(getSignature())
-              .append(" sticks[");
-
-            for (Stick stick : getSticks()) {
-                sb.append("#")
-                  .append(stick.getId());
-            }
-
-            sb.append("]");
+              .append(Glyphs.toString(" glyphs", glyphs));
         } catch (NullPointerException e) {
             sb.append(" INVALID");
         }
@@ -347,22 +305,18 @@ public class Barline
         return sb.toString();
     }
 
-    //---------------//
-    // computeCenter //
-    //---------------//
-    @Override
-    protected void computeCenter ()
-    {
-        setCenter(computeGlyphsCenter(getSticks()));
-    }
-
-    //-----------//
-    // getLetter //
-    //-----------//
-    private String getLetter (Shape shape)
+    //----------//
+    // getChars //
+    //----------//
+    /**
+     * Report the sequence of chars that describes the provided shape
+     * @param shape the provided shape
+     * @return a sequence of chars
+     */
+    private String getChars (Shape shape)
     {
         if (shape == null) {
-            logger.warning("Barline. getLetter for null shape");
+            logger.warning("Barline. getChars() for null shape");
 
             return null;
         }
@@ -424,14 +378,14 @@ public class Barline
             final int           botStaff = topStaff + staffRef.getHeight();
             String              last = null; // Last stick
 
-            for (Stick stick : getSticks()) {
-                String letter = getLetter(stick.getShape());
+            for (Glyph glyph : getGlyphs()) {
+                String chars = getChars(glyph.getShape());
 
-                if (letter != null) {
-                    if (letter.equals("O")) {
+                if (chars != null) {
+                    if (chars.equals("O")) {
                         // DOT
                         Staff staff = system.getStaffAt(
-                            system.toSystemPoint(stick.getLocation()));
+                            system.toSystemPoint(glyph.getLocation()));
 
                         if (staff != staffRef) {
                             continue;
@@ -439,7 +393,7 @@ public class Barline
                     } else {
                         // BAR : Check overlap with staff reference
                         SystemRectangle box = system.toSystemRectangle(
-                            stick.getContourBox());
+                            glyph.getContourBox());
 
                         if (Math.max(box.y, topStaff) > Math.min(
                             box.y + box.height,
@@ -449,18 +403,18 @@ public class Barline
                     }
 
                     if (last == null) {
-                        sb.append(letter);
+                        sb.append(chars);
                     } else {
-                        if (last.equals(letter)) {
-                            if (letter.equals("N")) {
-                                sb.append(letter);
+                        if (last.equals(chars)) {
+                            if (chars.equals("N")) {
+                                sb.append(chars);
                             }
                         } else {
-                            sb.append(letter);
+                            sb.append(chars);
                         }
                     }
 
-                    last = letter;
+                    last = chars;
                 }
             }
 

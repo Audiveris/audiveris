@@ -668,45 +668,6 @@ public class Stick
             .includeLine(section.getLine());
     }
 
-    //----------//
-    // colorize //
-    //----------//
-    /**
-     * Set the display color of all sections that compose this stick.
-     *
-     * @param lag the containing lag
-     * @param viewIndex index in the view list
-     * @param color     color for the whole stick
-     */
-    public void colorize (Lag   lag,
-                          int   viewIndex,
-                          Color color)
-    {
-        if (lag == this.lag) {
-            colorize(viewIndex, getMembers(), color);
-        }
-    }
-
-    //----------//
-    // colorize //
-    //----------//
-    /**
-     * Set the display color of all sections gathered by the provided list
-     *
-     * @param viewIndex the proper view index
-     * @param sections  the collection of sections
-     * @param color     the display color
-     */
-    public void colorize (int                      viewIndex,
-                          Collection<GlyphSection> sections,
-                          Color                    color)
-    {
-        for (GlyphSection section : sections) {
-            SectionView view = (SectionView) section.getView(viewIndex);
-            view.setColor(color);
-        }
-    }
-
     //    //------------------//
     //    // computeDensities //
     //    //------------------//
@@ -867,9 +828,9 @@ public class Stick
         }
     }
 
-    //-------------//
-    // overlapWith //
-    //-------------//
+    //--------------//
+    // overlapsWith //
+    //--------------//
     /**
      * Check whether this stick overlaps with the other stick along their
      * orientation (that is abscissae for horizontal ones, and ordinates for
@@ -877,7 +838,7 @@ public class Stick
      * @param other the other stick to check with
      * @return true if overlap, false otherwise
      */
-    public boolean overlapWith (Stick other)
+    public boolean overlapsWith (Stick other)
     {
         return Math.max(getStart(), other.getStart()) < Math.min(
             getStop(),

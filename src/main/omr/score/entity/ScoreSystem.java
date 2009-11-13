@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * Class <code>ScoreSystem</code> encapsulates a system in a score.
  *
- * <p>A system contains only one kind direct children : SystemPart instances
+ * <p>A system contains only one kind of direct children : SystemPart instances
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -71,13 +71,10 @@ public class ScoreSystem
      * Top left corner of the system in the containing page. This points to the
      * first real staff, and does not count the preceding dummy staves if any.
      */
-    private PagePoint topLeft;
+    private final PagePoint topLeft;
 
     /** Related info from sheet analysis */
-    private SystemInfo info;
-
-    /** System dimensions, expressed in units */
-    private UnitDimension dimension;
+    private final SystemInfo info;
 
     /** Start time of this system since beginning of the score */
     private Integer startTime;
@@ -86,7 +83,7 @@ public class ScoreSystem
     private Integer actualDuration;
 
     /** Contour of all system entities to be displayed, origin being topLeft */
-    private volatile SystemRectangle systemContour;
+    private volatile SystemRectangle displayContour;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -111,24 +108,15 @@ public class ScoreSystem
 
         this.info = info;
         this.topLeft = topLeft;
-        this.dimension = dimension;
+
+        setBox(new SystemRectangle(0, 0, dimension.width, dimension.height));
+        getCenter();
 
         id = getParent()
                  .getChildren()
                  .indexOf(this) + 1;
 
         cleanupNode();
-    }
-
-    //-------------//
-    // ScoreSystem //
-    //-------------//
-    /**
-     * Default constructor (needed by XML binder) Still needed? TODO...
-     */
-    private ScoreSystem ()
-    {
-        this(null, null, null, null);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -151,61 +139,51 @@ public class ScoreSystem
         return actualDuration;
     }
 
-    //------------//
-    // setContour //
-    //------------//
-    public void setContour (SystemRectangle systemContour)
-    {
-        this.systemContour = systemContour;
-    }
-
-    //------------//
-    // getContour //
-    //------------//
-    /**
-     * Return a copy of the system contour box
-     * @return a COPY of the system contour
-     */
-    public SystemRectangle getContour ()
-    {
-        if (systemContour == null) {
-            return null;
-        } else {
-            return (SystemRectangle) systemContour.clone();
-        }
-    }
-
-    //--------------//
-    // setDimension //
-    //--------------//
-    /**
-     * Set the system dimension.
-     *
-     * <p>Width is the distance, in units, between left edge and right edge.
-     *
-     * <p>Height is the distance, in units, from top of first staff, down to
-     * top (and not bottom) of last staff.
-     * Nota: It does not count the height of the last staff
-     *
-     * @param dimension system dimension, in units
-     */
-    public void setDimension (UnitDimension dimension)
-    {
-        this.dimension = dimension;
-    }
-
     //--------------//
     // getDimension //
     //--------------//
     /**
      * Report the system dimension.
+     * <p>Width is the distance, in units, between left edge and right edge.
+     * <p>Height is the distance, in units, from top of first staff, down to
+     * top (and not bottom) of last staff.
+     * Nota: It does not count the height of the last staff
      *
      * @return the system dimension, in units
      * @see #setDimension
      */
     public UnitDimension getDimension ()
     {
-        return dimension;
+        return new UnitDimension(getBox().width, getBox().height);
+    }
+
+    //------------//
+    // setContour //
+    //------------//
+    /**
+     * Define the new display contour for the system
+     * @param systemContour the new display contour
+     */
+    public void setDisplayContour (SystemRectangle systemContour)
+    {
+        this.displayContour = systemContour;
+    }
+
+    //-------------------//
+    // getDisplayContour //
+    //-------------------//
+    /**
+     * Return a copy of the system display contour, which includes the system
+     * staves plus the satellite text entities
+     * @return a COPY of the system display contour
+     */
+    public SystemRectangle getDisplayContour ()
+    {
+        if (displayContour == null) {
+            return null;
+        } else {
+            return (SystemRectangle) displayContour.clone();
+        }
     }
 
     //----------------//
@@ -527,6 +505,23 @@ public class ScoreSystem
         return topLeft;
     }
 
+    //----------//
+    // setWidth //
+    //----------//
+    /**
+     * Set the system width.
+     * @param unitWidth the system width, in units
+     */
+    public void setWidth (int unitWidth)
+    {
+        SystemRectangle newBox = getBox();
+        reset();
+
+        newBox.width = unitWidth;
+        setBox(newBox);
+        getCenter();
+    }
+
     //--------//
     // accept //
     //--------//
@@ -581,7 +576,7 @@ public class ScoreSystem
             return -1;
         }
 
-        if (pagPt.y > (topLeft.y + dimension.height + STAFF_HEIGHT)) {
+        if (pagPt.y > (topLeft.y + getBox().height + STAFF_HEIGHT)) {
             return +1;
         }
 
@@ -711,12 +706,10 @@ public class ScoreSystem
               .append("]");
         }
 
-        if (dimension != null) {
-            sb.append(" dimension=")
-              .append(dimension.width)
-              .append("x")
-              .append(dimension.height);
-        }
+        sb.append(" dimension=")
+          .append(getBox().width)
+          .append("x")
+          .append(getBox().height);
 
         sb.append("}");
 
@@ -795,5 +788,16 @@ public class ScoreSystem
             pagRect.y - topLeft.y,
             pagRect.width,
             pagRect.height);
+    }
+
+    //-------//
+    // reset //
+    //-------//
+    @Override
+    protected void reset ()
+    {
+        super.reset();
+
+        cleanupNode();
     }
 }

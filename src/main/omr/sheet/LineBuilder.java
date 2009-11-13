@@ -189,7 +189,7 @@ public class LineBuilder
 
                 if (s == stick) {
                     break;
-                } else if (s.overlapWith(stick)) {
+                } else if (s.overlapsWith(stick)) {
                     if (logger.isFineEnabled()) {
                         logger.fine(
                             "Removed stick #" + stick.getId() +

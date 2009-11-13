@@ -47,27 +47,31 @@ public class DirectionStatement
      * Creates a new instance of DirectionStatement event
      *
      * @param measure measure that contains this mark
-     * @param location location of mark
+     * @param referencePoint the reference location of the mark
      * @param chord the chord related to the mark, if any
      * @param sentence the underlying sentence
      * @param text the sentence text
      */
     public DirectionStatement (Measure            measure,
-                               SystemPoint        location,
+                               SystemPoint        referencePoint,
                                Chord              chord,
                                Sentence           sentence,
                                Text.DirectionText text)
     {
-        super(measure, location, chord, sentence.getGlyphs().first());
+        super(measure, referencePoint, chord, sentence.getGlyphs().first());
         this.text = text;
-
-        // Force the point as being, not a computed center, but the reference
-        // location
-        computeGeometry();
-        setPoint(location);
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-------------------//
+    // getReferencePoint //
+    //-------------------//
+    @Override
+    public SystemPoint getReferencePoint ()
+    {
+        return referencePoint;
+    }
 
     //---------//
     // getText //

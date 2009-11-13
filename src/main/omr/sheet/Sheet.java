@@ -1144,6 +1144,12 @@ public class Sheet
     //----------//
     // addError //
     //----------//
+    /**
+     * Register an error in the sheet ErrorsWindow
+     * @param container the immediate container for the error location
+     * @param glyph the related glyph if any
+     * @param text the error message
+     */
     public void addError (SystemNode container,
                           Glyph      glyph,
                           String     text)

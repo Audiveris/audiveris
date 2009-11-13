@@ -568,6 +568,22 @@ public class Beam
             new SystemPoint((left.x + right.x) / 2, (left.y + right.y) / 2));
     }
 
+    //-------//
+    // reset //
+    //-------//
+    /**
+     * Invalidate cached data, to force its recomputation when needed
+     */
+    @Override
+    protected void reset ()
+    {
+        super.reset();
+
+        line = null;
+        left = null;
+        right = null;
+    }
+
     //------------------//
     // isCompatibleWith //
     //------------------//
@@ -652,19 +668,6 @@ public class Beam
                 addError("Beam with no chord on " + side + " stem");
             }
         }
-    }
-
-    //-------//
-    // reset //
-    //-------//
-    /**
-     * Invalidate cached data, to force its recomputation when needed
-     */
-    private void reset ()
-    {
-        line = null;
-        left = null;
-        right = null;
     }
 
     //~ Inner Classes ----------------------------------------------------------

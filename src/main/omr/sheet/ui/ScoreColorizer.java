@@ -20,9 +20,9 @@ import omr.score.entity.Barline;
 import omr.score.entity.SystemPart;
 import omr.score.visitor.AbstractScoreVisitor;
 
-import omr.stick.Stick;
 
 import java.awt.Color;
+import omr.glyph.Glyph;
 
 /**
  * Class <code>ScoreColorizer</code> can visit the score hierarchy for
@@ -80,8 +80,8 @@ public class ScoreColorizer
             logger.fine("Colorizing " + barline);
         }
 
-        for (Stick stick : barline.getSticks()) {
-            stick.colorize(lag, viewIndex, color);
+        for (Glyph glyph : barline.getGlyphs()) {
+            glyph.colorize(lag, viewIndex, color);
         }
 
         return true;

@@ -427,7 +427,7 @@ public class DotTranslation
                             Measure     measure,
                             SystemPoint dotCenter)
         {
-            barline.addStick((Stick) glyph);
+            barline.addGlyph(glyph);
             glyph.setTranslation(barline);
 
             if (logger.isFineEnabled()) {

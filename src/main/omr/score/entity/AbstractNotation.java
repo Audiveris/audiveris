@@ -36,23 +36,20 @@ public abstract class AbstractNotation
 
     //~ Constructors -----------------------------------------------------------
 
-    /** Creates a new instance of Notation */
+    /**
+     * Creates a new instance of a simple Notation (assumed to be both the
+     * start and the stop)
+     * @param measure the containing measure
+     * @param point
+     * @param chord the related chord
+     * @param glyph the underlying glyph
+     */
     public AbstractNotation (Measure     measure,
                              SystemPoint point,
                              Chord       chord,
                              Glyph       glyph)
     {
-        this(measure, true, point, chord, glyph);
-    }
-
-    /** Creates a new instance of Notation */
-    public AbstractNotation (Measure     measure,
-                             boolean     start,
-                             SystemPoint point,
-                             Chord       chord,
-                             Glyph       glyph)
-    {
-        super(measure, start, point, chord, glyph);
+        super(measure, true, point, chord, glyph);
 
         // Register at its related chord
         if (chord != null) {

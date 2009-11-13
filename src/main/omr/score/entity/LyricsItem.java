@@ -67,9 +67,9 @@ public class LyricsItem
         /** Just an elision */
         Elision,
         /** Just an extension */
-        Extension,
+        Extension, 
         /** A hyphen between syllables */
-        Hyphen,
+        Hyphen, 
         /** A real syllable */
         Syllable;
     }
@@ -82,9 +82,9 @@ public class LyricsItem
         /** Single-syllable word */
         SINGLE,
         /** Syllable that begins a word */
-        BEGIN,
+        BEGIN, 
         /** Syllable at the middle of a word */
-        MIDDLE,
+        MIDDLE, 
         /** Syllable that ends a word */
         END;
     }
@@ -222,7 +222,8 @@ public class LyricsItem
         }
 
         // Comparison is based on abscissa only
-        return Integer.signum(location.x - other.location.x);
+        return Integer.signum(
+            getReferencePoint().x - other.getReferencePoint().x);
     }
 
     //--------------------//
@@ -256,7 +257,7 @@ public class LyricsItem
             return;
         }
 
-        int        centerX = location.x + (width / 2);
+        int        centerX = getReferencePoint().x + (width / 2);
         SystemPart part = lyricsLine.getPart();
         int        maxDx = part.getScale()
                                .toUnits(constants.maxItemDx);
@@ -278,7 +279,7 @@ public class LyricsItem
             int   bestDx = Integer.MAX_VALUE;
             Chord bestChord = null;
 
-            for (Chord chord : measure.getChordsAbove(location)) {
+            for (Chord chord : measure.getChordsAbove(getReferencePoint())) {
                 if (chord.getStaff() == lyricsLine.getStaff()) {
                     int dx = Math.abs(chord.getHeadLocation().x - centerX);
 

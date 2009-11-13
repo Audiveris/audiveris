@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.score.common;
 
+import java.awt.Rectangle;
 
 /**
  * Class <code>SystemRectangle</code> is a simple Rectangle that is meant to
@@ -72,5 +73,47 @@ public class SystemRectangle
     public SystemRectangle (SystemPoint sysPt)
     {
         super(sysPt.x, sysPt.y, 0, 0);
+    }
+
+    //~ Methods ----------------------------------------------------------------
+
+    //-----------//
+    // getCenter //
+    //-----------//
+    /**
+     * Report the center of the system rectangle
+     * @return the rectangle center
+     */
+    public SystemPoint getCenter ()
+    {
+        return new SystemPoint(x + (width / 2), y + (height / 2));
+    }
+
+    //-------------//
+    // getLocation //
+    //-------------//
+    /**
+     * Report the upper left corner of the system rectangle
+     * @return the upper left corner
+     */
+    @Override
+    public SystemPoint getLocation ()
+    {
+        return new SystemPoint(x, y);
+    }
+
+    //-------//
+    // union //
+    //-------//
+    /**
+     * Report the result of the union of this SystemRectangle with another one
+     * @param rect the other SystemRectangle
+     * @return the union
+     */
+    public SystemRectangle union (SystemRectangle rect)
+    {
+        Rectangle r = super.union(rect);
+
+        return new SystemRectangle(r.x, r.y, r.width, r.height);
     }
 }

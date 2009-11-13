@@ -15,6 +15,7 @@ import omr.log.Logger;
 
 import omr.score.common.PagePoint;
 import omr.score.common.SystemPoint;
+import omr.score.common.SystemRectangle;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.util.Predicate;
@@ -512,6 +513,7 @@ public class SystemPart
         // Specific children lists
         if (node instanceof Staff) {
             staves.addChild(node);
+            reset();
         } else if (node instanceof Measure) {
             measures.addChild(node);
         } else if (node instanceof Slur) {
@@ -827,5 +829,26 @@ public class SystemPart
         sb.append("]}");
 
         return sb.toString();
+    }
+
+    //------------//
+    // computeBox //
+    //------------//
+    @Override
+    protected void computeBox ()
+    {
+        // Use the union of staves boxes
+        SystemRectangle newBox = null;
+
+        for (TreeNode node : getStaves()) {
+            Staff staff = (Staff) node;
+
+            if (newBox == null) {
+                newBox = staff.getBox();
+            } else {
+                newBox = newBox.union(staff.getBox());
+            }
+        }
+        setBox(newBox);
     }
 }

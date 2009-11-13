@@ -162,7 +162,7 @@ public class LyricsLine
             Population population = new Population();
 
             for (LyricsItem item : items) {
-                population.includeValue(item.getLocation().y);
+                population.includeValue(item.getReferencePoint().y);
             }
 
             if (population.getCardinality() > 0) {
@@ -193,7 +193,7 @@ public class LyricsLine
         for (TreeNode node : part.getLyrics()) {
             LyricsLine line = (LyricsLine) node;
 
-            if (line.isAlignedWith(item.getLocation())) {
+            if (line.isAlignedWith(item.getReferencePoint())) {
                 line.addItem(item);
 
                 if (logger.isFineEnabled()) {

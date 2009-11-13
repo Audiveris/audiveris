@@ -13,15 +13,14 @@ package omr.score.entity;
 
 import omr.glyph.Glyph;
 
-import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 import omr.score.common.SystemPoint;
-import static omr.score.ui.ScoreConstants.*;
+import omr.score.common.SystemRectangle;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.util.TreeNode;
 
-import java.awt.*;
-import java.util.Collection;
+import java.util.*;
 
 /**
  * Class <code>SystemNode</code> is an abstract class that is subclassed
@@ -38,10 +37,13 @@ public abstract class SystemNode
     //~ Instance fields --------------------------------------------------------
 
     /** Containing system */
-    private ScoreSystem system;
+    private final ScoreSystem system;
 
-    /** Location of the center of this entity WRT system top-left corner */
-    private SystemPoint center;
+    /** Bounding box of this entity, WRT system top-left corner */
+    private SystemRectangle box;
+
+    /** Location of the center of this entity, WRT system top-left corner */
+    protected SystemPoint center;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -50,7 +52,6 @@ public abstract class SystemNode
     //------------//
     /**
      * Create a SystemNode
-     *
      * @param container the (direct) container of the node
      */
     public SystemNode (ScoreNode container)
@@ -62,32 +63,42 @@ public abstract class SystemNode
             if (c instanceof ScoreSystem) {
                 system = (ScoreSystem) c;
 
-                break;
+                return;
             }
         }
+
+        ///throw new RuntimeException("Creating a SystemNode with no ScoreSystem");
+        system = null;
     }
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------//
-    // setCenter //
-    //-----------//
+    //--------//
+    // getBox //
+    //--------//
     /**
-     * Remember the center of this system node
-     *
-     * @param center the system-based center of the system node
+     * Report a copy of the bounding box of the entity, WRT system top-left
+     * corner
+     * @return the box
      */
-    public void setCenter (SystemPoint center)
+    public SystemRectangle getBox ()
     {
-        this.center = center;
+        if (box == null) {
+            computeBox();
+        }
+
+        if (box != null) {
+            return (SystemRectangle) box.clone();
+        } else {
+            return null;
+        }
     }
 
     //-------------//
     // getLocation //
     //-------------//
     /**
-     * Report the center of this entity, wrt to the system top-left corner.
-     *
+     * Report a copy of the center of this entity, WRT system top-left corner.
      * @return the center, in units, wrt system top-left
      */
     public SystemPoint getCenter ()
@@ -96,7 +107,11 @@ public abstract class SystemNode
             computeCenter();
         }
 
-        return center;
+        if (center != null) {
+            return (SystemPoint) center.clone();
+        } else {
+            return null;
+        }
     }
 
     //------------------//
@@ -112,28 +127,11 @@ public abstract class SystemNode
         return sb.toString();
     }
 
-    //
-    //    //------------------//
-    //    // getDisplayOrigin //
-    //    //------------------//
-    //    /**
-    //     * Report the origin for the containing system, in the horizontal score
-    //     * display, since coordinates use SystemPoint.
-    //     *
-    //     * @return the (system) display origin
-    //     */
-    //    public ScorePoint getDisplayOrigin ()
-    //    {
-    //        return getSystem()
-    //                   .getDisplayOrigin();
-    //    }
-
     //-----------//
     // getSystem //
     //-----------//
     /**
      * Report the containing system
-     *
      * @return the containing system
      */
     public ScoreSystem getSystem ()
@@ -153,6 +151,10 @@ public abstract class SystemNode
     //----------//
     // addError //
     //----------//
+    /**
+     * Register a system-based error in the ErrorsWindow
+     * @param text the error message
+     */
     public void addError (String text)
     {
         addError(null, text);
@@ -161,6 +163,11 @@ public abstract class SystemNode
     //----------//
     // addError //
     //----------//
+    /**
+     * Register a system-based error in the ErrorsWindow, with the related glyph
+     * @param glyph the related glyph
+     * @param text the error message
+     */
     public void addError (Glyph  glyph,
                           String text)
     {
@@ -177,44 +184,49 @@ public abstract class SystemNode
     //--------------------//
     /**
      * Compute the bounding center of a glyph
-     *
      * @param glyph the glyph
-     *
      * @return the glyph center
      */
     public SystemPoint computeGlyphCenter (Glyph glyph)
     {
-        return computeRectangleCenter(glyph.getContourBox());
+        return computeGlyphsCenter(Collections.singleton(glyph));
     }
 
-    //---------------------//
-    // computeGlyphsCenter //
-    //---------------------//
+    //--------//
+    // setBox //
+    //--------//
     /**
-     * Compute the bounding center of a collection of glyphs
-     *
-     * @param glyphs the collection of glyph components
-     *
-     * @return the area center
+     * Assign the bounding box
+     * @param box the bounding box
      */
-    public SystemPoint computeGlyphsCenter (Collection<?extends Glyph> glyphs)
+    protected void setBox (SystemRectangle box)
     {
-        // We compute the bounding center of all glyphs
-        Rectangle rect = null;
+        this.box = box;
+    }
 
-        if (glyphs == null) {
-            return null;
-        }
+    //-----------//
+    // setCenter //
+    //-----------//
+    /**
+     * Remember the center of this system node
+     * @param center the system-based center of the system node
+     */
+    protected void setCenter (SystemPoint center)
+    {
+        this.center = center;
+    }
 
-        for (Glyph glyph : glyphs) {
-            if (rect == null) {
-                rect = new Rectangle(glyph.getContourBox());
-            } else {
-                rect = rect.union(glyph.getContourBox());
-            }
-        }
-
-        return computeRectangleCenter(rect);
+    //------------//
+    // computeBox //
+    //------------//
+    /**
+     * Compute the bounding box of this entity, wrt to the system top-left corner.
+     * Unless overridden, this method raises an exception.
+     */
+    protected void computeBox ()
+    {
+        throw new RuntimeException(
+            "computeBox() not implemented in " + getClass().getName());
     }
 
     //---------------//
@@ -226,25 +238,68 @@ public abstract class SystemNode
      */
     protected void computeCenter ()
     {
-        throw new RuntimeException(
-            "computeCenter() not implemented in " + getClass().getName());
+        SystemRectangle theBox = getBox();
+        if (theBox != null) {
+            setCenter(theBox.getCenter());
+        } else {
+            setCenter(null);
+        }
     }
 
-    //------------------------//
-    // computeRectangleCenter //
-    //------------------------//
-    private SystemPoint computeRectangleCenter (Rectangle rect)
+    //------------------//
+    // computeGlyphsBox //
+    //------------------//
+    /**
+     * Compute the bounding box of a collection of glyphs
+     * @param glyphs the collection of glyph components
+     * @return the bounding box
+     */
+    protected SystemRectangle computeGlyphsBox (Collection<?extends Glyph> glyphs)
     {
-        if (rect == null) {
+        if ((glyphs == null) || (getSystem() == null)) {
             return null;
         }
 
-        PixelPoint  pixPt = new PixelPoint(
-            rect.x + (rect.width / 2),
-            rect.y + (rect.height / 2));
+        PixelRectangle pixRect = null;
 
-        ScoreSystem s = getSystem();
+        for (Glyph glyph : glyphs) {
+            if (pixRect == null) {
+                pixRect = glyph.getContourBox();
+            } else {
+                pixRect = pixRect.union(glyph.getContourBox());
+            }
+        }
 
-        return (s == null) ? null : s.toSystemPoint(pixPt);
+        return (pixRect == null) ? null : getSystem()
+                                              .toSystemRectangle(pixRect);
+    }
+
+    //---------------------//
+    // computeGlyphsCenter //
+    //---------------------//
+    /**
+     * Compute the bounding center of a collection of glyphs
+     * @param glyphs the collection of glyph components
+     * @return the area center
+     */
+    protected SystemPoint computeGlyphsCenter (Collection<?extends Glyph> glyphs)
+    {
+        SystemRectangle glyphsBox = computeGlyphsBox(glyphs);
+
+        return new SystemPoint(
+            glyphsBox.x + (glyphsBox.width / 2),
+            glyphsBox.y + (glyphsBox.height / 2));
+    }
+
+    //-------//
+    // reset //
+    //-------//
+    /**
+     * Invalidate cached data
+     */
+    protected void reset ()
+    {
+        box = null;
+        center = null;
     }
 }

@@ -59,12 +59,6 @@ public abstract class Text
     /** The containing sentence */
     private final Sentence sentence;
 
-    /** The item location (x is left side, y is baseline) */
-    protected final SystemPoint location;
-
-    /** The bounding box of the content in the score */
-    protected final SystemRectangle box;
-
     /** The font to render this text entity */
     protected Font font;
 
@@ -98,9 +92,9 @@ public abstract class Text
     {
         super(sentence.getSystemPart());
         this.sentence = sentence;
-        this.location = location;
+        setReferencePoint(location);
 
-        box = sentence.getSystemContour();
+        setBox(sentence.getSystemContour());
 
         // Proper font ?
         if (sentence.getFontSize() != null) {
@@ -162,17 +156,17 @@ public abstract class Text
         return font.getSize();
     }
 
-    //-------------//
-    // getLocation //
-    //-------------//
+    //-------------------//
+    // getReferencePoint //
+    //-------------------//
     /**
      * Report the starting point of this text, with abscissa as the left side of
      * the text and ordinate as the text baseline
      * @return the (left,baseline) starting point in the containing system
      */
-    public SystemPoint getLocation ()
-    {
-        return location;
+    @Override
+    public SystemPoint getReferencePoint() {
+        return referencePoint;
     }
 
     //---------------//
@@ -209,7 +203,7 @@ public abstract class Text
      */
     public int getWidth ()
     {
-        return box.width;
+        return getBox().width;
     }
 
     //--------//
@@ -369,11 +363,7 @@ public abstract class Text
               .append("\"");
         }
 
-        sb.append(" loc[")
-          .append(location.x)
-          .append(",")
-          .append(location.y)
-          .append("]");
+        sb.append(" loc:").append(getReferencePoint());
 
         sb.append(" S")
           .append(getSystem().getId())

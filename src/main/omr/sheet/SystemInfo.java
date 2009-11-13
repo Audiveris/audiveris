@@ -246,7 +246,11 @@ public class SystemInfo
      */
     public PixelRectangle getBounds ()
     {
-        return new PixelRectangle(boundary.getBounds());
+        if (boundary != null) {
+            return new PixelRectangle(boundary.getBounds());
+        } else {
+            return null;
+        }
     }
 
     //-----------//

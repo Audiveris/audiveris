@@ -17,6 +17,7 @@ import omr.check.SuccessResult;
 
 import omr.glyph.text.TextInfo;
 
+import omr.lag.Lag;
 import omr.lag.Section;
 import omr.lag.ui.SectionView;
 
@@ -347,10 +348,10 @@ public class Glyph
     // getContourBox //
     //---------------//
     /**
-     * Return the display bounding box of the display contour. Useful to quickly
-     * check if the glyph needs to be repainted.
+     * Return a copy of the display bounding box of the display contour.
+     * Useful to quickly check if the glyph needs to be repainted.
      *
-     * @return the bounding contour rectangle box
+     * @return a COPY of the bounding contour rectangle box
      */
     public PixelRectangle getContourBox ()
     {
@@ -1284,6 +1285,45 @@ public class Glyph
                           Color color)
     {
         for (GlyphSection section : members) {
+            SectionView view = (SectionView) section.getView(viewIndex);
+            view.setColor(color);
+        }
+    }
+
+    //----------//
+    // colorize //
+    //----------//
+    /**
+     * Set the display color of all sections that compose this stick.
+     *
+     * @param lag the containing lag
+     * @param viewIndex index in the view list
+     * @param color     color for the whole stick
+     */
+    public void colorize (Lag   lag,
+                          int   viewIndex,
+                          Color color)
+    {
+        if (lag == this.lag) {
+            colorize(viewIndex, getMembers(), color);
+        }
+    }
+
+    //----------//
+    // colorize //
+    //----------//
+    /**
+     * Set the display color of all sections gathered by the provided list
+     *
+     * @param viewIndex the proper view index
+     * @param sections  the collection of sections
+     * @param color     the display color
+     */
+    public void colorize (int                      viewIndex,
+                          Collection<GlyphSection> sections,
+                          Color                    color)
+    {
+        for (GlyphSection section : sections) {
             SectionView view = (SectionView) section.getView(viewIndex);
             view.setColor(color);
         }

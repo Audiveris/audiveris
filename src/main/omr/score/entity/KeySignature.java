@@ -34,6 +34,7 @@ import omr.util.TreeNode;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import omr.score.common.SystemRectangle;
 
 /**
  * Class <code>KeySignature</code> encapsulates a key signature, which may be
@@ -102,20 +103,11 @@ public class KeySignature
     /** Related shape for drawing */
     private Shape shape;
 
-    /** Global contour box */
-    private PixelRectangle contour;
-
     /** Center of mass of the key sig */
     private PixelPoint centroid;
 
     /** Related Clef kind (G, F or C) */
     private Shape clefKind;
-
-    /**
-     * The glyph(s) that compose the key signature, a collection which is kept
-     * sorted on glyph abscissa.
-     */
-    private SortedSet<Glyph> glyphs = Glyphs.sortedSet();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -309,17 +301,12 @@ public class KeySignature
 
         // Make sure we have no note nearby
         // Use a enlarged rectangular box around the glyph, and check what's in
-        PixelRectangle box = glyph.getContourBox();
-        final int      dx = measure.getScale()
-                                   .toPixels(constants.xMargin);
-        final int      dy = measure.getScale()
-                                   .toPixels(constants.yMargin);
-        PixelRectangle glyphFatBox = new PixelRectangle(
-            box.x - dx,
-            box.y - dy,
-            box.width + (2 * dx),
-            box.height + (2 * dy));
-        List<Glyph>    neighbors = systemInfo.lookupIntersectedGlyphs(
+        PixelRectangle glyphFatBox = glyph.getContourBox();
+        glyphFatBox.grow(
+            measure.getScale().toPixels(constants.xMargin),
+            measure.getScale().toPixels(constants.yMargin));
+
+        List<Glyph> neighbors = systemInfo.lookupIntersectedGlyphs(
             glyphFatBox,
             glyph);
 
@@ -340,6 +327,7 @@ public class KeySignature
         }
 
         // Do we have a key signature just before in the same measure & staff?
+        SystemRectangle fatBox = system.toSystemRectangle(glyphFatBox);
         KeySignature keysig = null;
         boolean      found = false;
 
@@ -351,7 +339,7 @@ public class KeySignature
             }
 
             // Check distance
-            if (!glyphFatBox.intersects(keysig.getContour())) {
+            if (!fatBox.intersects(keysig.getBox())) {
                 if (logger.isFineEnabled()) {
                     logger.fine(
                         "Glyph " + glyph.getId() +
@@ -421,8 +409,8 @@ public class KeySignature
               .append(key);
             sb.append(" center=")
               .append(getCenter());
-            sb.append(" contour=")
-              .append(getContour());
+            sb.append(" box=")
+              .append(getBox());
             sb.append(" pitch=")
               .append(getPitchPosition());
             sb.append(Glyphs.toString(glyphs));
@@ -602,13 +590,22 @@ public class KeySignature
         }
     }
 
-    //---------------//
-    // computeCenter //
-    //---------------//
+    //-------//
+    // reset //
+    //-------//
+    /**
+     * Invalidate cached data, so that it gets lazily recomputed when needed
+     */
     @Override
-    protected void computeCenter ()
+    protected void reset ()
     {
-        setCenter(computeGlyphsCenter(glyphs));
+        super.reset();
+
+        setCenter(null);
+        key = null;
+        shape = null;
+        centroid = null;
+        clefKind = null;
     }
 
     //-------------//
@@ -678,6 +675,53 @@ public class KeySignature
         logger.severe("Illegal systemStaffIndex: " + staffIndex);
 
         return null;
+    }
+
+    //---------------//
+    // checkPosition //
+    //---------------//
+    /**
+     * Check the pitch position of the glyph, knowing the theoretical positions
+     * based on glyph shape
+     *
+     * @param glyph the glyph to check
+     * @param center the (flat-corrected) glyph center
+     * @param the containing staff
+     * @param positions the array of positions (for G clef kind)
+     * @param index index of glyph within signature
+     * @param clef current clef, if known
+     * @return true if OK, false otherwise
+     */
+    private static boolean checkPosition (Glyph       glyph,
+                                          SystemPoint center,
+                                          Staff       staff,
+                                          double[]    positions,
+                                          int         index,
+                                          Clef        clef)
+    {
+        int[] deltas = (clef != null)
+                       ? new int[] { clefToDelta(clef.getShape()) }
+                       : new int[] { 0, 2, 1 };
+
+        for (int delta : deltas) {
+            double dif = staff.pitchPositionOf(center) - positions[index] -
+                         delta;
+
+            if (Math.abs(dif) <= (constants.keyYMargin.getValue() * 2)) {
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "Correct pitch position for glyph " + glyph.getId());
+                }
+
+                return true;
+            }
+        }
+
+        if (logger.isFineEnabled()) {
+            logger.fine("No valid pitch position for glyph " + glyph.getId());
+        }
+
+        return false;
     }
 
     //-------------//
@@ -769,30 +813,6 @@ public class KeySignature
         return centroid;
     }
 
-    //------------//
-    // getContour //
-    //------------//
-    /**
-     * Report the actual contour of the global key signature, which is the union
-     * of all member glyphs
-     *
-     * @return the global contour box, as a PixelRectangle
-     */
-    private PixelRectangle getContour ()
-    {
-        if (contour == null) {
-            for (Glyph glyph : glyphs) {
-                if (contour == null) {
-                    contour = new PixelRectangle(glyph.getContourBox());
-                } else {
-                    contour = contour.union(glyph.getContourBox());
-                }
-            }
-        }
-
-        return contour;
-    }
-
     //------------------------//
     // getTheoreticalPosition //
     //------------------------//
@@ -821,24 +841,6 @@ public class KeySignature
         }
 
         return sum / key;
-    }
-
-    //----------//
-    // addToGlyphsCollection //
-    //----------//
-    /**
-     * Add a new glyph as part of this key signature
-     *
-     * @param glyph the new component glyph
-     */
-    private void addGlyph (Glyph glyph)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine(this + " addGlyph " + glyph);
-        }
-
-        glyphs.add(glyph);
-        reset();
     }
 
     //--------------------//
@@ -879,53 +881,6 @@ public class KeySignature
                 index,
                 clef);
         }
-    }
-
-    //---------------//
-    // checkPosition //
-    //---------------//
-    /**
-     * Check the pitch position of the glyph, knowing the theoretical positions
-     * based on glyph shape
-     *
-     * @param glyph the glyph to check
-     * @param center the (flat-corrected) glyph center
-     * @param the containing staff
-     * @param positions the array of positions (for G clef kind)
-     * @param index index of glyph within signature
-     * @param clef current clef, if known
-     * @return true if OK, false otherwise
-     */
-    private static boolean checkPosition (Glyph       glyph,
-                                          SystemPoint center,
-                                          Staff       staff,
-                                          double[]    positions,
-                                          int         index,
-                                          Clef        clef)
-    {
-        int[] deltas = (clef != null)
-                       ? new int[] { clefToDelta(clef.getShape()) }
-                       : new int[] { 0, 2, 1 };
-
-        for (int delta : deltas) {
-            double dif = staff.pitchPositionOf(center) - positions[index] -
-                         delta;
-
-            if (Math.abs(dif) <= (constants.keyYMargin.getValue() * 2)) {
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "Correct pitch position for glyph " + glyph.getId());
-                }
-
-                return true;
-            }
-        }
-
-        if (logger.isFineEnabled()) {
-            logger.fine("No valid pitch position for glyph " + glyph.getId());
-        }
-
-        return false;
     }
 
     //---------//
@@ -1037,22 +992,6 @@ public class KeySignature
         }
 
         return clefKind;
-    }
-
-    //-------//
-    // reset //
-    //-------//
-    /**
-     * Invalidate cached data, so that it gets lazily recomputed when needed
-     */
-    private void reset ()
-    {
-        setCenter(null);
-        key = null;
-        shape = null;
-        contour = null;
-        centroid = null;
-        clefKind = null;
     }
 
     //-------------//

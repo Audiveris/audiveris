@@ -44,7 +44,7 @@ public class Dynamics
     private static final Logger logger = Logger.getLogger(Dynamics.class);
 
     /** Specific application parameters */
-    protected static final Constants constants = new Constants();
+    private static final Constants constants = new Constants();
 
     /** Map Shape -> Signature */
     private static final Map<Shape, String> sigs = new HashMap<Shape, String>();
@@ -227,7 +227,7 @@ public class Dynamics
             Math.abs((getBox().x + getBox().width) - point.x));
 
         // Vertical distance
-        int yDist = Math.abs(getPoint().y - point.y);
+        int yDist = Math.abs(getReferencePoint().y - point.y);
 
         return (xDist <= dx) && (yDist <= dy);
     }

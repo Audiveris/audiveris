@@ -14,6 +14,7 @@ package omr.score.entity;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
+import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.ShapeRange;
 
@@ -24,7 +25,6 @@ import omr.math.GCD;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.common.SystemPoint;
-import omr.score.common.SystemRectangle;
 import omr.score.ui.ScoreConstants;
 import omr.score.visitor.ScoreVisitor;
 
@@ -78,8 +78,8 @@ public class Note
 
     //~ Instance fields --------------------------------------------------------
 
-    /** The underlying glyph */
-    private final Glyph glyph;
+    /** The note shape */
+    private final Shape shape;
 
     /** Pitch position */
     private final double pitchPosition;
@@ -92,12 +92,6 @@ public class Note
 
     /* Index within the note pack. Index = 0 for an isolated note */
     private final int packIndex;
-
-    /** Contour box for the note instance */
-    private final SystemRectangle box;
-
-    /** The note shape */
-    private final Shape shape;
 
     /** Indicate a rest */
     private final boolean isRest;
@@ -153,7 +147,11 @@ public class Note
                  Note  other)
     {
         super(chord);
-        glyph = other.glyph;
+
+        for (Glyph glyph : other.getGlyphs()) {
+            addGlyph(glyph);
+        }
+
         packCard = other.packCard;
         packIndex = other.packIndex;
         isRest = other.isRest;
@@ -161,8 +159,11 @@ public class Note
         setStaff(other.getStaff());
         pitchPosition = other.pitchPosition;
         shape = other.getShape();
-        box = other.box;
-        glyph.addTranslation(this);
+        setBox(other.getBox());
+
+        for (Glyph glyph : getGlyphs()) {
+            glyph.addTranslation(this);
+        }
 
         // We specifically don't carry over:
         // slurs
@@ -186,7 +187,6 @@ public class Note
                   SystemPoint center)
     {
         super(chord);
-        this.glyph = null;
 
         this.packCard = 1;
         this.packIndex = 0;
@@ -208,7 +208,7 @@ public class Note
                 ((ScoreConstants.INTER_LINE * (4d + pitchPosition)) / 2)));
 
         // Note box
-        box = null;
+        setBox(null);
 
         // Shape of this note
         this.shape = baseShapeOf(shape);
@@ -233,7 +233,7 @@ public class Note
     {
         super(chord);
 
-        this.glyph = glyph;
+        addGlyph(glyph);
         this.packCard = packCard;
         this.packIndex = packIndex;
 
@@ -251,8 +251,7 @@ public class Note
                             .pitchPositionOf(getCenter());
 
         // Note box
-        box = getSystem()
-                  .toSystemRectangle(getItemBox(glyph, packIndex));
+        setBox(getSystem().toSystemRectangle(getItemBox(glyph, packIndex)));
 
         // Shape of this note
         shape = baseShapeOf(glyph.getShape());
@@ -504,7 +503,9 @@ public class Note
      */
     public SystemPoint getCenterLeft ()
     {
-        return new SystemPoint(getCenter().x - (box.width / 2), getCenter().y);
+        return new SystemPoint(
+            getCenter().x - (getBox().width / 2),
+            getCenter().y);
     }
 
     //----------------//
@@ -517,7 +518,9 @@ public class Note
      */
     public SystemPoint getCenterRight ()
     {
-        return new SystemPoint(getCenter().x + (box.width / 2), getCenter().y);
+        return new SystemPoint(
+            getCenter().x + (getBox().width / 2),
+            getCenter().y);
     }
 
     //----------//
@@ -681,7 +684,10 @@ public class Note
             .getChildren()
             .remove(this);
         chord.addChild(this);
-        glyph.setTranslation(this);
+
+        for (Glyph glyph : getGlyphs()) {
+            glyph.setTranslation(this);
+        }
     }
 
     //--------------------//
@@ -815,19 +821,6 @@ public class Note
         return sb.toString();
     }
 
-    //--------//
-    // getBox //
-    //--------//
-    /**
-     * Report the bounding box of the note
-     *
-     * @return the system-based bounding box
-     */
-    public SystemRectangle getBox ()
-    {
-        return box;
-    }
-
     //----------//
     // toString //
     //----------//
@@ -869,10 +862,8 @@ public class Note
         sb.append(" pp=")
           .append((int) Math.rint(pitchPosition));
 
-        if (glyph != null) {
-            sb.append(" glyph#")
-              .append(glyph.getId());
-        }
+        sb.append(" ")
+          .append(Glyphs.toString(getGlyphs()));
 
         sb.append("}");
 

@@ -29,11 +29,7 @@ import org.jdesktop.application.ResourceMap;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
+import java.util.*;
 import java.util.List;
 
 import javax.swing.*;
@@ -69,10 +65,7 @@ public class ScoreTree
     private final Score score;
 
     /** Cache to avoid recomputing sets of children */
-    private final HashMap<Object, LinkedHashSet<Object>> nodeMap = new HashMap<Object, LinkedHashSet<Object>>();
-
-    /** The tree entity */
-    private final JTree tree;
+    private final HashMap<Object, List<Object>> nodeMap = new HashMap<Object, List<Object>>();
 
     /** The tree model */
     private final Model model;
@@ -98,8 +91,11 @@ public class ScoreTree
 
         // Set up the tree
         model = new Model(score);
+
         ///model.addTreeModelListener(new ModelListener()); // Debug
-        tree = new JTree(model);
+
+        /** The tree entity */
+        JTree tree = new JTree(model);
 
         // Build left-side view
         JScrollPane treeView = new JScrollPane(tree);
@@ -123,7 +119,7 @@ public class ScoreTree
         tree.addTreeSelectionListener(new SelectionListener());
 
         // To be notified of expansion / collapse actions (debug ...)
-        tree.addTreeExpansionListener(new ExpansionListener());
+        ///tree.addTreeExpansionListener(new ExpansionListener());
 
         // Build split-pane view
         JSplitPane splitPane = new JSplitPane(
@@ -299,7 +295,11 @@ public class ScoreTree
         {
             // Determines whether the icon shows up to the left.
             // Return true for any node with no children
-            ///logger.info("isLeaf. node=" + node);
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "isLeaf. node=" + node + " " + (getChildCount(node) == 0));
+            }
+
             return getChildCount(node) == 0;
         }
 
@@ -379,6 +379,8 @@ public class ScoreTree
         //------------//
         private boolean isRelevant (Object node)
         {
+            //            return !isLeaf(node);
+
             // We display dummy containers only when they are not empty
             if (constants.hideEmptyDummies.getValue() &&
                 (node instanceof NamedCollection ||
@@ -394,14 +396,14 @@ public class ScoreTree
         //---------------------//
         /**
          * Report the set of children of the provided node that are
-         * relevant for display in the tree hierarchy
+         * relevant for display in the tree hierarchy (left pane)
          * @param node the node to investigate
          * @return the collection of relevant children
          */
-        private LinkedHashSet<Object> getRelevantChildren (Object node)
+        private List<Object> getRelevantChildren (Object node)
         {
             // First check the cache
-            LinkedHashSet<Object> relevants = nodeMap.get(node);
+            List<Object> relevants = nodeMap.get(node);
 
             if (relevants != null) {
                 return relevants;
@@ -409,93 +411,124 @@ public class ScoreTree
 
             // Not found, so let's build it
             if (logger.isFineEnabled()) {
-                logger.fine("Retrieving relevants of " + node);
+                logger.fine(
+                    "Retrieving relevants of " + node + " " + node.getClass());
             }
 
-            relevants = new LinkedHashSet<Object>();
-
-            Class cl = node.getClass();
-
+            // Case of Named Collection
             if (node instanceof NamedCollection) {
-                ///System.out.println("named collection");
+                ///logger.info("named collection: " + node);
                 NamedCollection nc = (NamedCollection) node;
+                relevants = new ArrayList<Object>();
+                nodeMap.put(node, relevants);
 
                 for (Object n : nc.collection) {
                     if (isRelevant(n)) {
                         relevants.add(n);
                     }
                 }
-            } else {
-                do {
-                    ///System.out.println("cl=" + cl);
 
-                    // Process the class at hand
-                    for (Field field : cl.getDeclaredFields()) {
-                        ///System.out.print("fieldName:" + field.getName());
-                        try {
-                            // No static or inner class
-                            if (!Dumper.isFieldRelevant(field)) {
-                                ///System.out.println(" [field not relevant]");
-                                continue;
-                            }
+                if (logger.isFineEnabled()) {
+                    logger.fine(node + " nb=" + relevants.size());
+                }
 
-                            field.setAccessible(true);
-
-                            Object object = field.get(node);
-
-                            // No null field
-                            if (object == null) {
-                                ///System.out.println(" [null]");
-                                continue;
-                            }
-
-                            Class objClass = object.getClass();
-
-                            ///System.out.print(" objClass=" + objClass.getName());
-
-                            // Skip primitive members
-                            if (objClass.isPrimitive()) {
-                                ///System.out.println(" [primitive]");
-                                continue;
-                            }
-
-                            if (object instanceof Collection) {
-                                Collection coll = (Collection) object;
-
-                                if (!coll.isEmpty()) {
-                                    relevants.add(
-                                        new NamedCollection(
-                                            field.getName(),
-                                            coll));
-
-                                    ///System.out.println(" ...collection OK");
-                                } else {
-                                    ///System.out.println(" [empty collection]");
-                                }
-                            } else {
-                                if (!Dumper.isClassRelevant(objClass)) {
-                                    ///System.out.println(" [CLASS not relevant]");
-                                    continue;
-                                }
-
-                                relevants.add(object);
-
-                                ///System.out.println(" ...OK");
-                            }
-                        } catch (Exception ex) {
-                            logger.warning("Error in accessing field", ex);
-                        }
-                    }
-
-                    // Walk up the inheritance tree
-                    cl = cl.getSuperclass();
-                } while (Dumper.isClassRelevant(cl));
+                return relevants;
             }
 
-            // Cache the result
+            // Case of Named Data
+            if (node instanceof NamedData) {
+                ///logger.info("named data: " + node);
+                relevants = getRelevantChildren(((NamedData) node).data);
+                nodeMap.put(node, relevants);
+
+                if (logger.isFineEnabled()) {
+                    logger.fine(node + " nb=" + relevants.size());
+                }
+
+                return relevants;
+            }
+
+            Class cl = node.getClass();
+            relevants = new ArrayList<Object>();
             nodeMap.put(node, relevants);
 
-            ///System.out.println("nb=" + relevants.size());
+            // Walk up the inheritance tree
+            do {
+                // Browse the declared fields of the class at hand
+                for (Field field : cl.getDeclaredFields()) {
+                    if (cl.equals(omr.util.TreeNode.class) &&
+                        field.getName()
+                             .equals("parent")) {
+                        ///logger.warning("Skipping TreeNode.parent");
+                        continue;
+                    }
+
+                    ///logger.info("fieldName:" + field.getName());
+
+                    try {
+                        // No static or inner class
+                        if (!Dumper.isFieldRelevant(field)) {
+                            ///System.out.println(" [field not relevant]");
+                            continue;
+                        }
+
+                        field.setAccessible(true);
+
+                        Object object = field.get(node);
+
+                        // No null field
+                        if (object == null) {
+                            ///System.out.println(" [null]");
+                            continue;
+                        }
+
+                        Class objClass = object.getClass();
+
+                        ///System.out.print(" objClass=" + objClass.getName());
+
+                        // Skip primitive members
+                        if (objClass.isPrimitive()) {
+                            ///System.out.println(" [primitive]");
+                            continue;
+                        }
+
+                        // Special handling of collections
+                        if (object instanceof Collection) {
+                            Collection coll = (Collection) object;
+
+                            if (!coll.isEmpty()) {
+                                relevants.add(
+                                    new NamedCollection(field.getName(), coll));
+                            }
+
+                            continue;
+                        }
+
+                        if (!Dumper.isClassRelevant(objClass)) {
+                            ///System.out.println(" [CLASS not relevant]");
+                            continue;
+                        }
+
+                        // No leaf on left pane
+                        if (getChildCount(object) == 0) {
+                            continue;
+                        }
+
+                        ///System.out.println(" ...OK");
+                        relevants.add(new NamedData(field.getName(), object));
+                    } catch (Exception ex) {
+                        logger.warning("Error in accessing field", ex);
+                    }
+                }
+
+                // Walk up the inheritance tree
+                cl = cl.getSuperclass();
+            } while (Dumper.isClassRelevant(cl));
+
+            if (logger.isFineEnabled()) {
+                logger.fine(node + " nb=" + relevants.size());
+            }
+
             return relevants;
         }
     }
@@ -507,8 +540,8 @@ public class ScoreTree
     {
         //~ Instance fields ----------------------------------------------------
 
-        private String     name;
-        private Collection collection;
+        private final String     name;
+        private final Collection collection;
 
         //~ Constructors -------------------------------------------------------
 
@@ -528,89 +561,78 @@ public class ScoreTree
         }
     }
 
-    //-------------------//
-    // ExpansionListener //
-    //-------------------//
-    private class ExpansionListener
-        implements TreeExpansionListener
+    //-----------//
+    // NamedData //
+    //-----------//
+    private static class NamedData
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Instance fields ----------------------------------------------------
 
-        public void treeCollapsed (TreeExpansionEvent e)
+        private final String name;
+        private final Object data;
+
+        //~ Constructors -------------------------------------------------------
+
+        public NamedData (String name,
+                          Object data)
         {
-            ///logger.warning("treeCollapsed " + e.getPath());
+            this.name = name;
+            this.data = data;
         }
 
-        public void treeExpanded (TreeExpansionEvent e)
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public String toString ()
         {
-            ///logger.warning("treeExpanded " + e.getPath());
-
-            // Check that we don't duplicate nodes higher in the path
-            Object                node = e.getPath()
-                                          .getLastPathComponent();
-            LinkedHashSet<Object> set = model.getRelevantChildren(node);
-
-            boolean               modified = false;
-
-            for (TreePath path = e.getPath(); path != null;
-                 path = path.getParentPath()) {
-                if (path != e.getPath()) {
-                    Object                n = path.getLastPathComponent();
-                    LinkedHashSet<Object> s = model.getRelevantChildren(n);
-
-                    if (set.removeAll(s)) {
-                        modified = true;
-                    }
-                }
-
-                if (set.remove(path.getLastPathComponent())) {
-                    modified = true;
-                }
-            }
-
-            //            // Remove also nodes that cannot be expanded (leaves)
-            //            for (Iterator<Object> it = set.iterator(); it.hasNext();) {
-            //                Object n = it.next();
-            //
-            //                if (model.isLeaf(n)) {
-            //                    ///logger.warning("removing leaf " + n);
-            //                    it.remove();
-            //                    modified = true;
-            //                }
-            //            }
-            if (modified) {
-                nodeMap.put(node, set);
-                model.refreshPath(e.getPath());
-            }
+            return name + ":" + data;
         }
     }
 
-    //    //---------------//
-    //    // ModelListener //
-    //    //---------------//
-    //    private class ModelListener
-    //        implements TreeModelListener
+    //    //-------------------//
+    //    // ExpansionListener //
+    //    //-------------------//
+    //    private class ExpansionListener
+    //        implements TreeExpansionListener
     //    {
     //        //~ Methods ------------------------------------------------------------
     //
-    //        public void treeNodesChanged (TreeModelEvent e)
+    //        public void treeCollapsed (TreeExpansionEvent e)
     //        {
-    //            logger.warning("treeNodesChanged " + e);
+    //            if (logger.isFineEnabled()) {
+    //                logger.fine("treeCollapsed " + e.getPath());
+    //            }
     //        }
     //
-    //        public void treeNodesInserted (TreeModelEvent e)
+    //        public void treeExpanded (TreeExpansionEvent e)
     //        {
-    //            logger.warning("treeNodesInserted" + e);
-    //        }
+    //            if (logger.isFineEnabled()) {
+    //                logger.fine("treeExpanded " + e.getPath());
+    //            }
     //
-    //        public void treeNodesRemoved (TreeModelEvent e)
-    //        {
-    //            logger.warning("treeNodesRemoved " + e);
-    //        }
+    //            Object       node = e.getPath()
+    //                                 .getLastPathComponent();
+    //            List<Object> list = model.getRelevantChildren(node);
+    //            boolean      modified = false;
     //
-    //        public void treeStructureChanged (TreeModelEvent e)
-    //        {
-    //            logger.warning("treeStructureChanged " + e);
+    //            // Remove nodes that cannot be expanded (leaves)
+    //            for (Iterator<Object> it = list.iterator(); it.hasNext();) {
+    //                Object n = it.next();
+    //
+    //                if (model.isLeaf(n)) {
+    //                    if (logger.isFineEnabled()) {
+    //                        logger.fine("removing leaf " + n);
+    //                    }
+    //
+    //                    it.remove();
+    //                    modified = true;
+    //                }
+    //            }
+    //
+    //            if (modified) {
+    //                nodeMap.put(node, list);
+    //                model.refreshPath(e.getPath());
+    //            }
     //        }
     //    }
 
@@ -627,7 +649,15 @@ public class ScoreTree
             TreePath p = e.getNewLeadSelectionPath();
 
             if (p != null) {
-                htmlPane.setText(Dumper.htmlDumpOf(p.getLastPathComponent()));
+                Object obj = p.getLastPathComponent();
+
+                if (obj instanceof NamedData) {
+                    NamedData nd = (NamedData) obj;
+
+                    htmlPane.setText(Dumper.htmlDumpOf(nd.data));
+                } else {
+                    htmlPane.setText(Dumper.htmlDumpOf(obj));
+                }
             }
         }
     }

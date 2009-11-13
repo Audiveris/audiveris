@@ -411,7 +411,7 @@ public class ScoreView
             ScoreSystem    system = (ScoreSystem) node;
             SystemView     systemView = getSystemView(system);
             ScoreRectangle absSystemContour = systemView.toScoreRectangle(
-                system.getContour());
+                system.getDisplayContour());
 
             if (scoreContour == null) {
                 scoreContour = absSystemContour;
@@ -440,7 +440,7 @@ public class ScoreView
 
         for (TreeNode node : score.getSystems()) {
             ScoreSystem     system = (ScoreSystem) node;
-            SystemRectangle contour = system.getContour();
+            SystemRectangle contour = system.getDisplayContour();
             ScorePoint      origin = new ScorePoint();
 
             if (orientation == ScoreOrientation.HORIZONTAL) {
@@ -684,11 +684,8 @@ public class ScoreView
             }
 
             // Make the measure rectangle visible
-            SystemRectangle rect = new SystemRectangle(
-                (measure.getLeftX()) - margin,
-                -margin,
-                measure.getWidth() + (2 * margin),
-                dimension.height + STAFF_HEIGHT + (2 * margin));
+            SystemRectangle rect = measure.getBox();
+            rect.grow(margin, margin);
             showFocusLocation(systemView.toScoreRectangle(rect));
         }
 

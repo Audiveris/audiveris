@@ -38,14 +38,6 @@ public class Tuplet
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Tuplet.class);
 
-    //~ Instance fields --------------------------------------------------------
-
-    /** Related num/den modification factor */
-    private final DurationFactor factor;
-
-    /** Chord on last side */
-    private final Chord lastChord;
-
     //~ Constructors -----------------------------------------------------------
 
     //--------//
@@ -59,18 +51,14 @@ public class Tuplet
      * @param firstChord the first embraced chord
      * @param lastChord the last embraced chord
      * @param glyph the underlying glyph
-     * @param factor the related num/den modification factor
      */
-    public Tuplet (Measure        measure,
-                   SystemPoint    point,
-                   Chord          firstChord,
-                   Chord          lastChord,
-                   Glyph          glyph,
-                   DurationFactor factor)
+    public Tuplet (Measure     measure,
+                   SystemPoint point,
+                   Chord       firstChord,
+                   Chord       lastChord,
+                   Glyph       glyph)
     {
         super(measure, point, firstChord, glyph);
-        this.factor = factor;
-        this.lastChord = lastChord;
 
         // Link last embraced chords to this tuplet instance
         if (lastChord != null) {
@@ -162,8 +150,7 @@ public class Tuplet
                     point,
                     chords.first(),
                     chords.last(),
-                    glyph,
-                    factor));
+                    glyph));
 
             // Apply the tuplet to each chord of the beam found
             for (Chord chord : chords) {
@@ -174,14 +161,5 @@ public class Tuplet
                 }
             }
         }
-    }
-
-    //---------------//
-    // computeCenter //
-    //---------------//
-    @Override
-    protected void computeCenter ()
-    {
-        setCenter(computeGlyphCenter(getGlyph()));
     }
 }

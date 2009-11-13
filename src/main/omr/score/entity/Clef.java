@@ -12,6 +12,7 @@
 package omr.score.entity;
 
 import omr.glyph.Glyph;
+import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 
 import omr.log.Logger;
@@ -52,9 +53,6 @@ public class Clef
 
     //~ Instance fields --------------------------------------------------------
 
-    /** The underlying glyph */
-    private final Glyph glyph;
-
     /** Precise clef shape, from Clefs range in Shape class */
     private Shape shape;
 
@@ -88,11 +86,16 @@ public class Clef
     {
         super(measure);
 
+        if (glyph != null) {
+            addGlyph(glyph);
+        }
+
         setStaff(staff);
         this.shape = shape;
         setCenter(center);
         this.pitchPosition = pitchPosition;
-        this.glyph = glyph;
+
+        getBox(); // Not really needed
     }
 
     //------//
@@ -263,10 +266,8 @@ public class Clef
         sb.append(" pp=")
           .append((int) Math.rint(pitchPosition));
 
-        if (glyph != null) {
-            sb.append(" glyph#")
-              .append(glyph.getId());
-        }
+        sb.append(" ")
+          .append(Glyphs.toString(getGlyphs()));
 
         sb.append("}");
 

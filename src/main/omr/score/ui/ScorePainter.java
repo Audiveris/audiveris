@@ -245,7 +245,7 @@ public class ScorePainter
                 0,
                 0,
                 ratio,
-                zoom.scaled(arpeggiate.getPoint().x),
+                zoom.scaled(arpeggiate.getReferencePoint().x),
                 zoom.scaled(top));
             g.drawRenderedImage(icon.getImage(), transform);
         }
@@ -538,7 +538,9 @@ public class ScorePainter
     public boolean visit (MeasureElement measureElement)
     {
         if (measureElement.getShape() != null) {
-            paintSymbol(measureElement.getShape(), measureElement.getPoint());
+            paintSymbol(
+                measureElement.getShape(),
+                measureElement.getReferencePoint());
         }
 
         return true;
@@ -746,7 +748,7 @@ public class ScorePainter
         final Point         origin = systemView.getDisplayOrigin();
 
         // Check whether our system is impacted
-        final Rectangle systemRect = system.getContour(); // (We get a copy)
+        final Rectangle systemRect = system.getDisplayContour(); // (We get a copy)
 
         if ((origin == null) || (systemRect == null)) { // Safer
 
@@ -863,7 +865,7 @@ public class ScorePainter
         Sentence sentence = text.getSentence();
         int      y = sentence.getLocation().y;
 
-        g.drawString(text.getContent(), text.getLocation().x, y);
+        g.drawString(text.getContent(), text.getReferencePoint().x, y);
 
         g.setFont(oldFont);
         g.setColor(oldColor);
