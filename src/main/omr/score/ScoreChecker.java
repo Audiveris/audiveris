@@ -504,7 +504,7 @@ public class ScoreChecker
     {
         // Up(+1) or down(-1) stem?
         final int          stemDir = chord.getStemDir();
-        final int          yMiddle = chord.getCenter().y;
+        final SystemPoint  chordCenter = chord.getCenter();
         final ScoreSystem  system = chord.getSystem();
         final double       hookMaxDoubt = GlyphInspector.getHookMaxDoubt();
         final GlyphNetwork network = GlyphNetwork.getInstance();
@@ -519,9 +519,11 @@ public class ScoreChecker
             }
 
             // Check we are on the tail (beam) end of the stem
-            SystemPoint center = system.toSystemPoint(glyph.getAreaCenter());
+            // Beware, stemDir is >0 upwards, while y is >0 downwards
+            SystemPoint glyphCenter = system.toSystemPoint(
+                glyph.getAreaCenter());
 
-            if (((center.y - yMiddle) * stemDir) > 0) {
+            if ((chordCenter.to(glyphCenter).y * stemDir) > 0) {
                 if (logger.isFineEnabled()) {
                     logger.fine("Glyph#" + glyph.getId() + " not on beam side");
                 }

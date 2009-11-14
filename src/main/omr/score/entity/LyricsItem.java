@@ -20,6 +20,7 @@ import omr.glyph.text.TextInfo;
 import omr.log.Logger;
 
 import omr.score.common.SystemPoint;
+import omr.score.common.SystemRectangle;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
@@ -304,6 +305,19 @@ public class LyricsItem
         }
 
         addError(seed, "Could not find note for " + this);
+    }
+
+    //-----------------------//
+    // computeReferencePoint //
+    //-----------------------//
+    @Override
+    protected void computeReferencePoint ()
+    {
+        SystemRectangle itemBox = getSystem()
+                                      .toSystemRectangle(seed.getContourBox());
+        setReferencePoint(
+            new SystemPoint(itemBox.x, getSentence()
+                                           .getLocation().y));
     }
 
     //-----------------//

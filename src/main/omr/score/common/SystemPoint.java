@@ -95,4 +95,17 @@ public class SystemPoint
     {
         return Math.hypot(pt.x - x, pt.y - y);
     }
+
+    //----//
+    // to //
+    //----//
+    /**
+     * Report the vector that goed from this point to the other point
+     * @param other the other point
+     * @return the oriented vector towards the other point
+     */
+    public SystemPoint to (SystemPoint other)
+    {
+        return new SystemPoint(other.x - x, other.y - y);
+    }
 }

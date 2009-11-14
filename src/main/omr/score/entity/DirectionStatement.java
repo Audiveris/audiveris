@@ -64,15 +64,6 @@ public class DirectionStatement
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------------------//
-    // getReferencePoint //
-    //-------------------//
-    @Override
-    public SystemPoint getReferencePoint ()
-    {
-        return referencePoint;
-    }
-
     //---------//
     // getText //
     //---------//
@@ -88,6 +79,15 @@ public class DirectionStatement
     public boolean accept (ScoreVisitor visitor)
     {
         return visitor.visit(this);
+    }
+
+    //-----------------------//
+    // computeReferencePoint //
+    //-----------------------//
+    @Override
+    protected void computeReferencePoint ()
+    {
+        setReferencePoint(text.getReferencePoint());
     }
 
     //-----------------//

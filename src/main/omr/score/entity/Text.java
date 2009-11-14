@@ -156,19 +156,6 @@ public abstract class Text
         return font.getSize();
     }
 
-    //-------------------//
-    // getReferencePoint //
-    //-------------------//
-    /**
-     * Report the starting point of this text, with abscissa as the left side of
-     * the text and ordinate as the text baseline
-     * @return the (left,baseline) starting point in the containing system
-     */
-    @Override
-    public SystemPoint getReferencePoint() {
-        return referencePoint;
-    }
-
     //---------------//
     // getLyricsFont //
     //---------------//
@@ -363,7 +350,8 @@ public abstract class Text
               .append("\"");
         }
 
-        sb.append(" loc:").append(getReferencePoint());
+        sb.append(" loc:")
+          .append(getReferencePoint());
 
         sb.append(" S")
           .append(getSystem().getId())
@@ -372,6 +360,15 @@ public abstract class Text
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //-----------------------//
+    // computeReferencePoint //
+    //-----------------------//
+    @Override
+    protected void computeReferencePoint ()
+    {
+        setReferencePoint(sentence.getLocation());
     }
 
     //-----------------//

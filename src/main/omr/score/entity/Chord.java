@@ -501,6 +501,19 @@ public class Chord
         }
     }
 
+    //--------------//
+    // getStartTime //
+    //--------------//
+    /**
+     * Report the starting time for this chord
+     *
+     * @return startTime chord starting time (counted within the measure)
+     */
+    public Integer getStartTime ()
+    {
+        return startTime;
+    }
+
     //---------//
     // setStem //
     //---------//
@@ -556,6 +569,23 @@ public class Chord
         }
 
         return chords;
+    }
+
+    //------------//
+    // getStemDir //
+    //------------//
+    /**
+     * Report the stem direction of this chord
+     *
+     * @return -1 if stem is down, 0 if no stem, +1 if stem is up
+     */
+    public int getStemDir ()
+    {
+        if (stem == null) {
+            return 0;
+        } else {
+            return Integer.signum(getHeadLocation().y - getTailLocation().y);
+        }
     }
 
     //-----------------//
@@ -796,6 +826,54 @@ public class Chord
     }
 
     //-----------//
+    // checkTies //
+    //-----------//
+    /**
+     * Check that all incoming ties come from the same chord, and similarly that
+     * all outgoing ties go to the same chord.
+     */
+    public void checkTies ()
+    {
+        // Incoming ties
+        SplitOrder order = checkTies(
+            new TieRelation() {
+                    public Note getDistantNote (Slur slur)
+                    {
+                        return slur.getLeftNote();
+                    }
+
+                    public Note getLocalNote (Slur slur)
+                    {
+                        return slur.getRightNote();
+                    }
+                });
+
+        if (order != null) {
+            split(order);
+
+            return;
+        }
+
+        // Outgoing ties
+        order = checkTies(
+            new TieRelation() {
+                    public Note getDistantNote (Slur slur)
+                    {
+                        return slur.getRightNote();
+                    }
+
+                    public Note getLocalNote (Slur slur)
+                    {
+                        return slur.getLeftNote();
+                    }
+                });
+
+        if (order != null) {
+            split(order);
+        }
+    }
+
+    //-----------//
     // compareTo //
     //-----------//
     /**
@@ -916,30 +994,6 @@ public class Chord
         return found;
     }
 
-    //--------//
-    // getBox //
-    //--------//
-    /**
-     * Report the bounding box of this chord, including its stem (if any) as
-     * well as all the notes of the chord.
-     * @return the chord bounding box
-     */
-    public SystemRectangle getBox ()
-    {
-        // Stem or similar info
-        SystemRectangle box = new SystemRectangle(getTailLocation());
-        box.add(getHeadLocation());
-
-        // Each and every note
-        for (TreeNode n : getNotes()) {
-            Note note = (Note) n;
-
-            box.add(note.getBox());
-        }
-
-        return box;
-    }
-
     //------------//
     // lookupRest //
     //------------//
@@ -1027,6 +1081,12 @@ public class Chord
         }
     }
 
+    @Override
+    public SystemPoint getCenter ()
+    {
+        return super.getCenter();
+    }
+
     //---------//
     // getSlot //
     //---------//
@@ -1038,84 +1098,6 @@ public class Chord
     public Slot getSlot ()
     {
         return slot;
-    }
-
-    //--------------//
-    // getStartTime //
-    //--------------//
-    /**
-     * Report the starting time for this chord
-     *
-     * @return startTime chord starting time (counted within the measure)
-     */
-    public Integer getStartTime ()
-    {
-        return startTime;
-    }
-
-    //------------//
-    // getStemDir //
-    //------------//
-    /**
-     * Report the stem direction of this chord
-     *
-     * @return -1 if stem is down, 0 if no stem, +1 if stem is up
-     */
-    public int getStemDir ()
-    {
-        if (stem == null) {
-            return 0;
-        } else {
-            return Integer.signum(getHeadLocation().y - getTailLocation().y);
-        }
-    }
-
-    //-----------//
-    // checkTies //
-    //-----------//
-    /**
-     * Check that all incoming ties come from the same chord, and similarly that
-     * all outgoing ties go to the same chord.
-     */
-    public void checkTies ()
-    {
-        // Incoming ties
-        SplitOrder order = checkTies(
-            new TieRelation() {
-                    public Note getDistantNote (Slur slur)
-                    {
-                        return slur.getLeftNote();
-                    }
-
-                    public Note getLocalNote (Slur slur)
-                    {
-                        return slur.getRightNote();
-                    }
-                });
-
-        if (order != null) {
-            split(order);
-
-            return;
-        }
-
-        // Outgoing ties
-        order = checkTies(
-            new TieRelation() {
-                    public Note getDistantNote (Slur slur)
-                    {
-                        return slur.getRightNote();
-                    }
-
-                    public Note getLocalNote (Slur slur)
-                    {
-                        return slur.getLeftNote();
-                    }
-                });
-
-        if (order != null) {
-            split(order);
-        }
     }
 
     //--------------//
@@ -1287,16 +1269,57 @@ public class Chord
         return sb.toString();
     }
 
-    //---------------//
-    // computeCenter //
-    //---------------//
+    //------------//
+    // computeBox //
+    //------------//
     /**
-     * Compute the center of Chord, which is meant at the head location.
+     * Compute the bounding box of this chord, including its stem (if any) as
+     * well as all the notes of the chord.
      */
     @Override
-    protected void computeCenter ()
+    protected void computeBox ()
     {
-        setCenter(getHeadLocation());
+        // Stem or similar info
+        SystemRectangle newBox = new SystemRectangle(getTailLocation());
+        newBox.add(getHeadLocation());
+
+        // Each and every note
+        for (TreeNode n : getNotes()) {
+            Note note = (Note) n;
+
+            newBox.add(note.getBox());
+        }
+
+        setBox(newBox);
+    }
+
+    //-----------------------//
+    // computeReferencePoint //
+    //-----------------------//
+    /**
+     * Define the reference point as the head location.
+     */
+    @Override
+    protected void computeReferencePoint ()
+    {
+        setReferencePoint(getHeadLocation());
+    }
+
+    //-------//
+    // reset //
+    //-------//
+    /**
+     * Reset all internal data that depends on the chord composition in
+     * terms of notes
+     */
+    @Override
+    protected void reset ()
+    {
+        super.reset();
+
+        headLocation = null;
+        tailLocation = null;
+        startTime = null;
     }
 
     //--------------//
@@ -1538,22 +1561,6 @@ public class Chord
         } else {
             logger.warning("No notes in chord " + this);
         }
-    }
-
-    //-------//
-    // reset //
-    //-------//
-    /**
-     * Reset all internal data that depends on the chord composition in
-     * terms of notes
-     */
-    protected void reset ()
-    {
-        super.reset();
-        
-        headLocation = null;
-        tailLocation = null;
-        startTime = null;
     }
 
     //-------//

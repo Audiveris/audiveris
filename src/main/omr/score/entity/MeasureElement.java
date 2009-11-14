@@ -80,7 +80,7 @@ public abstract class MeasureElement
         }
 
         this.start = start;
-        this.referencePoint = referencePoint;
+        setReferencePoint(referencePoint);
         this.chord = chord;
     }
 

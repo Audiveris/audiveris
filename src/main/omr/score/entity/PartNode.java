@@ -51,7 +51,7 @@ public abstract class PartNode
     private Staff staff;
 
     /** Reference point */
-    protected SystemPoint referencePoint;
+    private SystemPoint referencePoint;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -141,7 +141,11 @@ public abstract class PartNode
      */
     public SystemPoint getReferencePoint ()
     {
-        return getCenter();
+        if (referencePoint == null) {
+            computeReferencePoint();
+        }
+
+        return referencePoint;
     }
 
     //----------//
@@ -205,5 +209,27 @@ public abstract class PartNode
     protected void computeBox ()
     {
         setBox(computeGlyphsBox(getGlyphs()));
+    }
+
+    //------------------//
+    // computeReference //
+    //------------------//
+    /**
+     * By default, define the reference point as the center.
+     */
+    protected void computeReferencePoint ()
+    {
+        setReferencePoint(getCenter());
+    }
+
+    //-------//
+    // reset //
+    //-------//
+    @Override
+    protected void reset ()
+    {
+        super.reset();
+
+        referencePoint = null;
     }
 }
