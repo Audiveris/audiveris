@@ -24,6 +24,7 @@ import omr.score.ui.ScoreConstants;
 
 import omr.sheet.Scale.InterlineFraction;
 
+import omr.util.Navigable;
 import omr.util.TreeNode;
 
 import java.util.*;
@@ -91,6 +92,7 @@ public class Slot
     private Integer x;
 
     /** The containing measure */
+    @Navigable(false)
     private Measure measure;
 
     /** Collection of glyphs in the slot */

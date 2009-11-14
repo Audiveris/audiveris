@@ -27,6 +27,7 @@ import omr.score.common.SystemPoint;
 import omr.stick.Stick;
 
 import omr.util.Implement;
+import omr.util.Navigable;
 
 import java.util.Collection;
 
@@ -48,6 +49,7 @@ public class BeamItem
     //~ Instance fields --------------------------------------------------------
 
     /** The containing measure */
+    @Navigable(false)
     private final Measure measure;
 
     /** The underlying glyph */

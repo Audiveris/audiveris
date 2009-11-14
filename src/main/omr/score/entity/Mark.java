@@ -14,7 +14,8 @@ package omr.score.entity;
 import omr.glyph.Shape;
 
 import omr.score.common.SystemPoint;
-import omr.score.entity.ScoreSystem;
+
+import omr.util.Navigable;
 
 /**
  * Class <code>Mark</code> encapsulates information to be made visible to the
@@ -41,6 +42,7 @@ public class Mark
     //~ Instance fields --------------------------------------------------------
 
     /** Containing system */
+    @Navigable(false)
     private final ScoreSystem system;
 
     /** Precise location within system */

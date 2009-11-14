@@ -17,6 +17,7 @@ import omr.glyph.Glyphs;
 import omr.score.common.SystemPoint;
 import omr.score.visitor.ScoreVisitor;
 
+import omr.util.Navigable;
 import omr.util.TreeNode;
 
 import java.util.*;
@@ -42,6 +43,7 @@ public abstract class PartNode
     //~ Instance fields --------------------------------------------------------
 
     /** Containing part */
+    @Navigable(false)
     private final SystemPart part;
 
     /** The glyph(s) that compose this element, sorted by abscissa */

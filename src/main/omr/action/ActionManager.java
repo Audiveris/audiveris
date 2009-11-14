@@ -40,7 +40,6 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 
 import javax.swing.*;
-import javax.xml.bind.JAXBException;
 
 /**
  * Class <code>ActionManager</code> handles the instantiation and dressing of

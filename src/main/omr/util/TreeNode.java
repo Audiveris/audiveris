@@ -51,6 +51,7 @@ public class TreeNode
     /**
      * Container : the node just above in the tree
      */
+    @Navigable(false)
     protected TreeNode parent;
 
     //~ Constructors -----------------------------------------------------------

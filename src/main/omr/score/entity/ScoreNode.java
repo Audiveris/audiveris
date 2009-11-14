@@ -17,6 +17,7 @@ import omr.score.Score;
 
 import omr.sheet.Scale;
 
+import omr.util.Navigable;
 import omr.util.TreeNode;
 
 /**
@@ -37,6 +38,7 @@ public class ScoreNode
     //~ Instance fields --------------------------------------------------------
 
     /** The containing score */
+    @Navigable(false)
     private Score score;
 
     //~ Constructors -----------------------------------------------------------

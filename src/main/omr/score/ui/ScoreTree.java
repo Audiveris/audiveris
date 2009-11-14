@@ -27,6 +27,7 @@ import omr.util.Dumper;
 import omr.util.Dumping.PackageRelevance;
 import omr.util.Dumping.Relevance;
 import omr.util.Implement;
+import omr.util.Navigable;
 
 import org.jdesktop.application.ResourceMap;
 
@@ -456,18 +457,22 @@ public class ScoreTree
                 return relevants;
             }
 
-            Class cl = node.getClass();
+            Class classe = node.getClass();
             relevants = new ArrayList<Object>();
             nodeMap.put(node, relevants);
 
             // Walk up the inheritance tree
             do {
                 // Browse the declared fields of the class at hand
-                for (Field field : cl.getDeclaredFields()) {
-                    if (cl.equals(omr.util.TreeNode.class) &&
-                        field.getName()
-                             .equals("parent")) {
-                        ///logger.warning("Skipping TreeNode.parent");
+                for (Field field : classe.getDeclaredFields()) {
+                    // Skip field if annotated as non navigable
+                    Navigable navigable = field.getAnnotation(Navigable.class);
+
+                    if ((navigable != null) && (navigable.value() == false)) {
+                        if (logger.isFineEnabled()) {
+                            logger.fine("skipping " + field);
+                        }
+
                         continue;
                     }
 
@@ -529,8 +534,8 @@ public class ScoreTree
                 }
 
                 // Walk up the inheritance tree
-                cl = cl.getSuperclass();
-            } while (filter.isClassRelevant(cl));
+                classe = classe.getSuperclass();
+            } while (filter.isClassRelevant(classe));
 
             if (logger.isFineEnabled()) {
                 logger.fine(node + " nb=" + relevants.size());

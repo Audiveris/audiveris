@@ -18,6 +18,7 @@ import omr.score.common.SystemPoint;
 import omr.score.common.SystemRectangle;
 import omr.score.visitor.ScoreVisitor;
 
+import omr.util.Navigable;
 import omr.util.TreeNode;
 
 import java.util.*;
@@ -37,6 +38,7 @@ public abstract class SystemNode
     //~ Instance fields --------------------------------------------------------
 
     /** Containing system */
+    @Navigable(false)
     private final ScoreSystem system;
 
     /** Bounding box of this entity, WRT system top-left corner */
@@ -239,6 +241,7 @@ public abstract class SystemNode
     protected void computeCenter ()
     {
         SystemRectangle theBox = getBox();
+
         if (theBox != null) {
             setCenter(theBox.getCenter());
         } else {

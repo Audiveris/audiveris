@@ -17,6 +17,8 @@ import omr.log.Logger;
 
 import omr.score.common.SystemPoint;
 
+import omr.util.Navigable;
+
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -55,6 +57,7 @@ public class Voice
     //~ Instance fields --------------------------------------------------------
 
     /** Containing measure */
+    @Navigable(false)
     private final Measure measure;
 
     /** The voice id */

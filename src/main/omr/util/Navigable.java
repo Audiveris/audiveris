@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                             I m p l e m e n t                              //
+//                             N a v i g a b l e                              //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -11,20 +11,18 @@
 // </editor-fold>
 package omr.util;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
- * Annotation <code>Implement</code> is used to flag a method which is (part of)
- * the implementation of an interface. It is foreseen to be used by a tool such
- * 'apt' in the future.
+ * Annotation <code>Navigable</code> is used to drive the browsing done by
+ * ScoreTree.
  */
 @Documented
-@Target(ElementType.METHOD)
-public @interface Implement {
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
+public @interface Navigable {
     /**
-     * @return the interface whose method is implemented
+     * @return whether the annotated field can be navigated
      */
-    Class value();
+    boolean value() default true;
 }
