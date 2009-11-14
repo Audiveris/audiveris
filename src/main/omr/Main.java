@@ -24,6 +24,7 @@ import omr.sheet.Sheet;
 import omr.ui.MainGui;
 
 import omr.util.Clock;
+import omr.util.Dumping;
 import omr.util.OmrExecutors;
 
 import org.jdesktop.application.Application;
@@ -126,6 +127,9 @@ public class Main
 
     /** Parameters read from CLI */
     private static CLI.Parameters parameters;
+
+    /** The application dumping service */
+    public static final Dumping dumping = new Dumping(Main.class.getPackage());
 
     //~ Constructors -----------------------------------------------------------
 
@@ -415,6 +419,7 @@ public class Main
                              File     configFolder,
                              String[] args)
     {
+        new Main(); // DEBUG
         Main.classContainer = classContainer;
         Main.homeFolder = homeFolder;
         Main.configFolder = configFolder;

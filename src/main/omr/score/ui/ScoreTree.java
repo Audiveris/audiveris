@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.score.ui;
 
+import omr.Main;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -22,6 +24,8 @@ import omr.score.entity.Container;
 import omr.ui.MainGui;
 
 import omr.util.Dumper;
+import omr.util.Dumping.PackageRelevance;
+import omr.util.Dumping.Relevance;
 import omr.util.Implement;
 
 import org.jdesktop.application.ResourceMap;
@@ -52,6 +56,10 @@ public class ScoreTree
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScoreTree.class);
+
+    /** The filter for relevant classes and fields */
+    private static final Relevance filter = new PackageRelevance(
+        Main.class.getPackage());
 
     //~ Instance fields --------------------------------------------------------
 
@@ -464,10 +472,9 @@ public class ScoreTree
                     }
 
                     ///logger.info("fieldName:" + field.getName());
-
                     try {
                         // No static or inner class
-                        if (!Dumper.isFieldRelevant(field)) {
+                        if (!filter.isFieldRelevant(field)) {
                             ///System.out.println(" [field not relevant]");
                             continue;
                         }
@@ -504,7 +511,7 @@ public class ScoreTree
                             continue;
                         }
 
-                        if (!Dumper.isClassRelevant(objClass)) {
+                        if (!filter.isClassRelevant(objClass)) {
                             ///System.out.println(" [CLASS not relevant]");
                             continue;
                         }
@@ -523,7 +530,7 @@ public class ScoreTree
 
                 // Walk up the inheritance tree
                 cl = cl.getSuperclass();
-            } while (Dumper.isClassRelevant(cl));
+            } while (filter.isClassRelevant(cl));
 
             if (logger.isFineEnabled()) {
                 logger.fine(node + " nb=" + relevants.size());
@@ -589,53 +596,6 @@ public class ScoreTree
         }
     }
 
-    //    //-------------------//
-    //    // ExpansionListener //
-    //    //-------------------//
-    //    private class ExpansionListener
-    //        implements TreeExpansionListener
-    //    {
-    //        //~ Methods ------------------------------------------------------------
-    //
-    //        public void treeCollapsed (TreeExpansionEvent e)
-    //        {
-    //            if (logger.isFineEnabled()) {
-    //                logger.fine("treeCollapsed " + e.getPath());
-    //            }
-    //        }
-    //
-    //        public void treeExpanded (TreeExpansionEvent e)
-    //        {
-    //            if (logger.isFineEnabled()) {
-    //                logger.fine("treeExpanded " + e.getPath());
-    //            }
-    //
-    //            Object       node = e.getPath()
-    //                                 .getLastPathComponent();
-    //            List<Object> list = model.getRelevantChildren(node);
-    //            boolean      modified = false;
-    //
-    //            // Remove nodes that cannot be expanded (leaves)
-    //            for (Iterator<Object> it = list.iterator(); it.hasNext();) {
-    //                Object n = it.next();
-    //
-    //                if (model.isLeaf(n)) {
-    //                    if (logger.isFineEnabled()) {
-    //                        logger.fine("removing leaf " + n);
-    //                    }
-    //
-    //                    it.remove();
-    //                    modified = true;
-    //                }
-    //            }
-    //
-    //            if (modified) {
-    //                nodeMap.put(node, list);
-    //                model.refreshPath(e.getPath());
-    //            }
-    //        }
-    //    }
-
     //-------------------//
     // SelectionListener //
     //-------------------//
@@ -653,11 +613,10 @@ public class ScoreTree
 
                 if (obj instanceof NamedData) {
                     NamedData nd = (NamedData) obj;
-
-                    htmlPane.setText(Dumper.htmlDumpOf(nd.data));
-                } else {
-                    htmlPane.setText(Dumper.htmlDumpOf(obj));
+                    obj = nd.data;
                 }
+
+                htmlPane.setText(new Dumper.Html(filter, obj).toString());
             }
         }
     }

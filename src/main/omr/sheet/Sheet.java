@@ -57,7 +57,6 @@ import omr.ui.BoardsPane;
 import omr.ui.ErrorsEditor;
 
 import omr.util.BrokenLine;
-import omr.util.Dumper;
 import omr.util.FileUtil;
 
 import java.awt.*;
@@ -1293,7 +1292,7 @@ public class Sheet
         int i = 0;
 
         for (SystemInfo system : getSystems()) {
-            Dumper.dump(system, "#" + i++);
+            Main.dumping.dump(system, "#" + i++);
         }
 
         System.out.println("--- SystemInfos end ---");

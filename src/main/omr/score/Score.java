@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.score;
 
+import omr.Main;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -35,7 +37,6 @@ import omr.sheet.Scale;
 import omr.sheet.Scale.InterlineFraction;
 import omr.sheet.Sheet;
 
-import omr.util.Dumper;
 import omr.util.TreeNode;
 
 import java.io.File;
@@ -169,7 +170,7 @@ public class Score
         setImagePath(imagePath);
 
         if (logger.isFineEnabled()) {
-            Dumper.dump(this, "Constructed");
+            Main.dumping.dump(this, "Constructed");
         }
     }
 

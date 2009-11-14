@@ -63,7 +63,6 @@ import omr.stick.StickSection;
 import omr.ui.BoardsPane;
 
 import omr.util.BrokenLine;
-import omr.util.Dumper;
 import omr.util.TreeNode;
 
 import org.jdesktop.application.Task;
@@ -380,12 +379,12 @@ public class SystemsBuilder
 
         if (logger.isFineEnabled()) {
             for (SystemInfo systemInfo : systems) {
-                Dumper.dump(systemInfo);
+                Main.dumping.dump(systemInfo);
 
                 int i = 0;
 
                 for (PartInfo partInfo : systemInfo.getParts()) {
-                    Dumper.dump(partInfo, "Part #" + ++i, 1);
+                    Main.dumping.dump(partInfo, "Part #" + ++i, 1);
                 }
             }
         }

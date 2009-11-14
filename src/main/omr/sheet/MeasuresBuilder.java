@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.sheet;
 
+import omr.Main;
+
 import omr.check.FailureResult;
 
 import omr.constant.ConstantSet;
@@ -21,7 +23,6 @@ import omr.glyph.Glyph;
 import omr.log.Logger;
 
 import omr.score.common.PageRectangle;
-import omr.score.common.UnitDimension;
 import omr.score.entity.Barline;
 import omr.score.entity.Measure;
 import omr.score.entity.ScoreSystem;
@@ -30,7 +31,6 @@ import omr.score.entity.SystemPart;
 
 import omr.stick.Stick;
 
-import omr.util.Dumper;
 import omr.util.TreeNode;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -314,7 +314,7 @@ public class MeasuresBuilder
                         if (logger.isFineEnabled()) {
                             logger.fine(
                                 "Singular measure removed: " +
-                                Dumper.dumpOf(measure));
+                                Main.dumping.dumpOf(measure));
                         }
 
                         // Remove the false bar info

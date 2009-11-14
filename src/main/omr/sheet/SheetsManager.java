@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.sheet;
 
+import omr.Main;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -18,7 +20,6 @@ import omr.log.Logger;
 
 import omr.sheet.ui.SheetsController;
 
-import omr.util.Dumper;
 import omr.util.Memory;
 import omr.util.NameSet;
 
@@ -188,7 +189,7 @@ public class SheetsManager
             java.lang.System.out.println(
                 "-----------------------------------------------------------------------");
             java.lang.System.out.println(sheet.toString());
-            Dumper.dump(sheet);
+            Main.dumping.dump(sheet);
         }
 
         java.lang.System.out.println(

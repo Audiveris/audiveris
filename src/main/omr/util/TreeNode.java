@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.util;
 
+import omr.Main;
+
 import omr.log.Logger;
 
 import java.util.ArrayList;
@@ -277,7 +279,7 @@ public class TreeNode
      */
     public boolean dumpNode (int level)
     {
-        Dumper.dump(this, level);
+        Main.dumping.dump(this, level);
 
         return true; // Let computation continue down the tree
     }

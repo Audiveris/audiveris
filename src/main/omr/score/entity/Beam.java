@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.score.entity;
 
+import omr.Main;
+
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
@@ -320,8 +322,8 @@ public class Beam
                     logger.warning(
                         "Beam comparison data " + "x=" + x + " y=" + y +
                         " yOther=" + yOther + " yHead=" + yHead);
-                    Dumper.dump(this, "this");
-                    Dumper.dump(other, "other");
+                    Main.dumping.dump(this, "this");
+                    Main.dumping.dump(other, "other");
                 }
 
                 return result;
@@ -383,7 +385,7 @@ public class Beam
     public void dump ()
     {
         getLine();
-        Dumper.dump(this);
+        Main.dumping.dump(this);
     }
 
     //------------//

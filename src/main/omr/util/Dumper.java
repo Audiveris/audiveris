@@ -11,8 +11,9 @@
 // </editor-fold>
 package omr.util;
 
+import omr.util.Dumping.Relevance;
+
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Map;
 
@@ -65,7 +66,7 @@ import java.util.Map;
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-public abstract class Dumper
+public class Dumper
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -74,10 +75,13 @@ public abstract class Dumper
 
     //~ Instance fields --------------------------------------------------------
 
+    /** To filter classes and fields */
+    protected final Relevance relevance;
+
     /**
      * The object to be dumped
      */
-    protected final Object obj;
+    protected final Object object;
 
     /**
      * The string buffer used as output
@@ -93,174 +97,33 @@ public abstract class Dumper
      * Class (beware, this variable is updated as we walk up the inheritance
      * tree)
      */
-    protected Class cl;
+    protected Class classe;
 
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new Dumper.
      *
-     * @param obj the object instance to be dumped.
+     * @param relevance the relevance filter
+     * @param object the object instance to be dumped.
+     * @param useHtml ????
      */
-    private Dumper (Object  obj,
-                    boolean useHtml)
+    public Dumper (Relevance relevance,
+                   Object    object,
+                   boolean   useHtml)
     {
+        this.relevance = relevance;
+
         // (re)Allocate the string buffer
         sb = new StringBuffer(1024);
 
         // Cache the object & the related class
-        this.obj = obj;
+        this.object = object;
         this.useHtml = useHtml;
-        cl = obj.getClass();
+        classe = object.getClass();
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //-----------------//
-    // isClassRelevant //
-    //-----------------//
-    /**
-     * Predicate to determine if a given class is worth being printed. This
-     * method could be overridden to reflect customized policy. Note that when
-     * walking up the inheritance tree, the browsing is stopped as soon as a
-     * non-relevant class is encountered.
-     *
-     * @param cl the class at stake
-     *
-     * @return true if found relevant
-     */
-    public static boolean isClassRelevant (Class cl)
-    {
-        //        return (cl != null) && !cl.getName()
-        //                                  .startsWith("java.") &&
-        //               !cl.getName()
-        //                  .startsWith("javax.");
-        return (cl != null) && cl.getName()
-                                 .startsWith("omr.");
-    }
-
-    //-----------------//
-    // isFieldRelevant //
-    //-----------------//
-    /**
-     * Predicate to determine if a given field is worth being printed. This
-     * method could be overridden to reflect customized policy.
-     *
-     * @param field the field at stake
-     *
-     * @return true if found relevant
-     */
-    public static boolean isFieldRelevant (Field field)
-    {
-        // We don't print static field since the Dumper is meant for instances
-        if (Modifier.isStatic(field.getModifiers())) {
-            return false;
-        }
-
-        // We don't print non-user visible entities
-        if (field.getName()
-                 .indexOf('$') != -1) {
-            return false;
-        }
-
-        return true;
-    }
-
-    //------//
-    // dump //
-    //------//
-    /**
-     * Helper function that prints the internal data of an object onto the
-     * standard output.
-     *
-     * @param obj the instance to dump
-     */
-    public static void dump (Object obj)
-    {
-        dump(obj, null, 0);
-    }
-
-    //------//
-    // dump //
-    //------//
-    /**
-     * Helper function that prints the internal data of an object onto the
-     * standard output, with a specified left indentation level.
-     *
-     * @param obj   the instance to dump
-     * @param level the indentation level (0 means no indentation)
-     */
-    public static void dump (Object obj,
-                             int    level)
-    {
-        dump(obj, null, level);
-    }
-
-    //------//
-    // dump //
-    //------//
-    /**
-     * Helper function that prints the internal data of an object onto the
-     * standard output, with the ability to print a related title
-     *
-     * @param obj   the object to dump
-     * @param title the title to print beforehand
-     */
-    public static void dump (Object obj,
-                             String title)
-    {
-        dump(obj, title, 0);
-    }
-
-    //------//
-    // dump //
-    //------//
-    /**
-     * Helper function that prints the internal data of an object onto the
-     * standard output, with room for a title and left indentation.
-     *
-     * @param obj   the object to dump
-     * @param title the title to print beforehand
-     * @param level the indentation level (0 for no indent)
-     */
-    public static void dump (Object obj,
-                             String title,
-                             int    level)
-    {
-        new Column(obj, title, level).print();
-    }
-
-    //--------//
-    // dumpOf //
-    //--------//
-    /**
-     * Helper function that returns a line which contains the whole set of
-     * internal data
-     *
-     * @param obj the object whose data is to be printed
-     *
-     * @return the string of data values
-     */
-    public static String dumpOf (Object obj)
-    {
-        return new Row(obj).toString();
-    }
-
-    //------------//
-    // htmlDumpOf //
-    //------------//
-    /**
-     * Helper function that prints a special kind of information string, using
-     * HTML tags so that an html editor can easily render this.
-     *
-     * @param obj the object to dump
-     *
-     * @return the HTML string
-     */
-    public static String htmlDumpOf (Object obj)
-    {
-        return new Html(obj).toString();
-    }
 
     //-------//
     // print //
@@ -270,7 +133,7 @@ public abstract class Dumper
      */
     public void print ()
     {
-        System.out.println(toString());
+        System.out.println(this);
     }
 
     //----------//
@@ -314,20 +177,20 @@ public abstract class Dumper
     //----------------------//
     // printCollectionValue //
     //----------------------//
-    protected void printCollectionValue (Collection col)
+    protected void printCollectionValue (Collection collection)
     {
         sb.append("[");
 
         int i = 0;
 
-        for (Object obj : col) {
+        for (Object obj : collection) {
             if (i++ > 0) {
                 sb.append(useHtml ? ",<br/>" : ",");
             }
 
             // Safeguard action when the object is a big collection
             if (i > MAX_COLLECTION_INDEX) {
-                sb.append(" ... " + col.size() + " items");
+                sb.append(" ... " + collection.size() + " items");
 
                 break;
             } else {
@@ -373,7 +236,7 @@ public abstract class Dumper
         printClassProlog();
 
         // Process the class Fields
-        for (Field field : cl.getDeclaredFields()) {
+        for (Field field : classe.getDeclaredFields()) {
             processField(field);
         }
 
@@ -387,13 +250,13 @@ public abstract class Dumper
     private void processField (Field field)
     {
         // Check that we are really interested in printing this field out
-        if (isFieldRelevant(field)) {
+        if (relevance.isFieldRelevant(field)) {
             // Override any access limitation
             field.setAccessible(true);
 
             try {
                 // Retrieve field value in the object instance
-                Object value = field.get(obj);
+                Object value = field.get(object);
 
                 // Print the field value as requested
                 printField(field.getName(), value);
@@ -413,8 +276,8 @@ public abstract class Dumper
             processClass();
 
             // Walk up the inheritance tree
-            cl = cl.getSuperclass();
-        } while (isClassRelevant(cl));
+            classe = classe.getSuperclass();
+        } while (relevance.isClassRelevant(classe));
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -442,11 +305,12 @@ public abstract class Dumper
 
         //~ Constructors -------------------------------------------------------
 
-        public Column (Object obj,
-                       String title,
-                       int    level)
+        public Column (Relevance relevance,
+                       Object    object,
+                       String    title,
+                       int       level)
         {
-            super(obj, false);
+            super(relevance, object, false);
 
             // Cache the title
             if (title != null) {
@@ -470,10 +334,10 @@ public abstract class Dumper
         {
             // We print the class name only for the lowest class in
             // heritance hierarchy
-            if (obj.getClass() == cl) {
+            if (object.getClass() == classe) {
                 sb.append("\n");
                 sb.append(prefix)
-                  .append(cl.getName());
+                  .append(classe.getName());
                 sb.append(" ")
                   .append(title)
                   .append(":");
@@ -505,9 +369,10 @@ public abstract class Dumper
     {
         //~ Constructors -------------------------------------------------------
 
-        protected Html (Object obj)
+        public Html (Relevance relevance,
+                     Object    object)
         {
-            super(obj, true);
+            super(relevance, object, true);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -540,7 +405,7 @@ public abstract class Dumper
         {
             // Class name
             sb.append("<tr><td colspan=2><font color='BLUE'>")
-              .append(cl.getName())
+              .append(classe.getName())
               .append("</font></td></tr>");
         }
 
@@ -569,17 +434,18 @@ public abstract class Dumper
     // Row //
     //-----//
     /**
-     * Class <code>Row</code> implements a Dumper where all fields are presented
-     * on the same line.
+     * Class <code>Row</code> implements a Dumper where all fields are
+     * presented on the same line.
      */
     public static class Row
         extends Dumper
     {
         //~ Constructors -------------------------------------------------------
 
-        protected Row (Object obj)
+        public Row (Relevance relevance,
+                    Object    object)
         {
-            super(obj, false);
+            super(relevance, object, false);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -597,11 +463,11 @@ public abstract class Dumper
             sb.append("{");
 
             // Special annotation for superclass
-            if (obj.getClass() != cl) {
+            if (object.getClass() != classe) {
                 sb.append("from ");
             }
 
-            sb.append(cl.getName())
+            sb.append(classe.getName())
               .append(":");
         }
 

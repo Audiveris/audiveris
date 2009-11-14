@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.glyph;
 
+import omr.Main;
+
 import omr.log.Logger;
 
 import omr.score.common.PixelRectangle;
@@ -60,7 +62,7 @@ public class Glyphs
             }
 
             if (o1.getContourBox() == null) {
-                omr.util.Dumper.dump(o1);
+                Main.dumping.dump(o1);
 
                 logger.warning(
                     "Glyph w/ no contourbox " + o1,
