@@ -447,14 +447,15 @@ public class SheetSteps
                 logger.warning("Input error on file " + imageFile);
                 throw new StepException(ex);
             } catch (ImageFormatException ex) {
-                logger.warning("Unsupported image format in file " + imageFile);
-                logger.warning(ex.getMessage());
+                String msg = "Unsupported image format in file " + imageFile +
+                             "\n" + ex.getMessage() +
+                             "\nPlease use grey scale with 256 values";
 
                 if (Main.getGui() != null) {
                     Main.getGui()
-                        .displayWarning(
-                        "<B>" + ex.getMessage() + "</B><BR>" +
-                        "Please use grey scale with 256 values");
+                        .displayWarning(msg);
+                } else {
+                    logger.warning(msg);
                 }
 
                 throw new StepException(ex);
@@ -773,7 +774,7 @@ public class SheetSteps
                     system.getSheet()
                           .getErrorsEditor()
                           .clearSystem(system.getId());
-                    
+
                     // Re-insert errors from previous steps if any
                     // TODO: We should use something more elegant
                     // (Having the previous steps register at the ErrorsEditor)

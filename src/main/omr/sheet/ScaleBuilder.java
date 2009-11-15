@@ -187,13 +187,16 @@ public class ScaleBuilder
         // Check picture resolution
         if ((mainFore + mainBack) < constants.minInterline.getValue()) {
             String msg = "Picture resolution is too low: " +
-                         (mainFore + mainBack) + ". Check constant " +
-                         constants.minInterline.toDetailedString();
-            logger.warning(msg);
+                         (mainFore + mainBack) + "\nThreshold parameter is " +
+                         constants.minInterline.toDetailedString() +
+                         "\n- Either lower this threshold (not recommended) via Tools|Options menu" +
+                         "\n- Or rescan at higher resolution (300dpi should be OK)";
 
             if (Main.getGui() != null) {
                 Main.getGui()
                     .displayWarning(msg);
+            } else {
+                logger.warning(msg);
             }
 
             throw new StepException(msg);

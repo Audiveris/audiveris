@@ -220,18 +220,15 @@ public class MainGui
     // displayWarning //
     //----------------//
     /**
-     * Allow to display a modal dialog with an html content
+     * Allow to display a modal dialog with a message
      *
-     * @param htmlStr the HTML string
+     * @param message the warning message
      */
-    public void displayWarning (String htmlStr)
+    public void displayWarning (String message)
     {
-        JEditorPane htmlPane = new JEditorPane("text/html", htmlStr);
-        htmlPane.setEditable(false);
-
         JOptionPane.showMessageDialog(
             frame,
-            htmlPane,
+            message,
             "Warning - " +
             app.getContext().getResourceMap().getString("Application.name"),
             JOptionPane.WARNING_MESSAGE);
