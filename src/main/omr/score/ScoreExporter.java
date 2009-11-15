@@ -1107,17 +1107,17 @@ public class ScoreExporter
                 for (LyricsItem syllable : note.getSyllables()) {
                     if (syllable.getContent() != null) {
                         Lyric pmLyric = factory.createLyric();
-                        pmLyric.setDefaultY(yOf(syllable.getReferencePoint(), staff));
+                        pmLyric.setDefaultY(
+                            yOf(syllable.getReferencePoint(), staff));
                         pmLyric.setNumber(
                             "" + syllable.getLyricsLine().getId());
 
                         TextElementData pmText = factory.createTextElementData();
                         pmText.setValue(syllable.getContent());
                         pmLyric.getElisionAndSyllabicAndText()
-                               .add(pmText);
-
-                        pmLyric.getElisionAndSyllabicAndText()
                                .add(getSyllabic(syllable.getSyllabicType()));
+                        pmLyric.getElisionAndSyllabicAndText()
+                               .add(pmText);
 
                         current.pmNote.getLyric()
                                       .add(pmLyric);
