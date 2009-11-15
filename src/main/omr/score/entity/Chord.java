@@ -969,11 +969,13 @@ public class Chord
 
         // Define the area limited by the left and right chords with their stems
         // and check for intersection with a rest note
+        // More precisely, we use the area half on the tail side.
+        // And we check that the interleaved chords have the same stem dir
         Polygon polygon = new Polygon();
-        polygon.addPoint(left.getHeadLocation().x, left.getHeadLocation().y);
+        polygon.addPoint(left.getHeadLocation().x, left.getCenter().y);
         polygon.addPoint(left.getTailLocation().x, left.getTailLocation().y);
         polygon.addPoint(right.getTailLocation().x, right.getTailLocation().y);
-        polygon.addPoint(right.getHeadLocation().x, right.getHeadLocation().y);
+        polygon.addPoint(right.getHeadLocation().x, right.getCenter().y);
 
         for (TreeNode node : left.getMeasure()
                                  .getChords()) {
@@ -982,6 +984,13 @@ public class Chord
             // Not interested in the bounding chords (TBC)
             if ((chord == left) || (chord == right)) {
                 continue;
+            }
+
+            // Additional check on stem dir, if left & right agree
+            if (left.getStemDir() == right.getStemDir()) {
+                if (chord.getStemDir() != left.getStemDir()) {
+                    continue;
+                }
             }
 
             SystemRectangle box = chord.getBox();
