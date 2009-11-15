@@ -137,7 +137,7 @@ public class RunsBuilder
         // Current length of the run in progress
         int length = 0;
 
-        // Current cumulated grey level for the run in progress
+        // Current cumulated gray level for the run in progress
         int cumul = 0;
 
         // Browse other dimension
@@ -199,10 +199,10 @@ public class RunsBuilder
         // isFore //
         //--------//
         /**
-         * This method is used to check if the grey level corresponds to a
+         * This method is used to check if the gray level corresponds to a
          * foreground pixel.
          *
-         * @param level pixel level of grey
+         * @param level pixel level of gray
          *
          * @return true if pixel is foreground, false otherwise
          */
@@ -212,13 +212,13 @@ public class RunsBuilder
         // getLevel //
         //----------//
         /**
-         * This method is used to report the grey level of the pixel read at
+         * This method is used to report the gray level of the pixel read at
          * location (coord, pos).
          *
          * @param coord x for horizontal runs, y for vertical runs
          * @param pos   y for horizontal runs, x for vertical runs
          *
-         * @return the pixel grey value (from 0 for black up to 255 for white)
+         * @return the pixel gray value (from 0 for black up to 255 for white)
          */
         int getLevel (int coord,
                       int pos);
@@ -242,12 +242,12 @@ public class RunsBuilder
         //---------//
         /**
          * Same as background, but for a foreground run. We also provide the
-         * measure of accumulated grey level in that case.
+         * measure of accumulated gray level in that case.
          *
          * @param coord  location of the point past the end of the run
          * @param pos    constant position of the run
          * @param length length of the run just found
-         * @param cumul  cumulated grey levels along the run
+         * @param cumul  cumulated gray levels along the run
          */
         void foreRun (int coord,
                       int pos,

@@ -44,7 +44,7 @@ public class LagReader
     /** The source to read runs of pixels from*/
     private final PixelSource source;
 
-    /** The maximum pixel grey level to be foreground */
+    /** The maximum pixel gray level to be foreground */
     private final int maxLevel;
 
     /** The minimum value for a run length to be considered */
@@ -88,7 +88,7 @@ public class LagReader
     /**
      * Check whether the provide pixel value is foreground or background
      *
-     * @param level pixel grey level
+     * @param level pixel gray level
      *
      * @return true if foreground, false if background
      */
@@ -102,12 +102,12 @@ public class LagReader
     // getLevel //
     //----------//
     /**
-     * Retrieve the pixel grey level of a point in the underlying source
+     * Retrieve the pixel gray level of a point in the underlying source
      *
      * @param coord coordinate value, relative to lag orientation
      * @param pos position value, relative to lag orientation
      *
-     * @return pixel grey level
+     * @return pixel gray level
      */
     @Implement(RunsBuilder.Reader.class)
     public final int getLevel (int coord,
@@ -146,7 +146,7 @@ public class LagReader
      * @param coord coordinate of run start
      * @param pos position of run start
      * @param length run length
-     * @param cumul cumulated pixel grey levels on all run points
+     * @param cumul cumulated pixel gray levels on all run points
      */
     @Implement(RunsBuilder.Reader.class)
     public final void foreRun (int coord,

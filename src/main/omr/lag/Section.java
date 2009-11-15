@@ -100,7 +100,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
     /** Length of longest run */
     private int maxRunLength;
 
-    /** Number of pixels, whatever the grey level */
+    /** Number of pixels, whatever the gray level */
     private int weight;
 
     //~ Constructors -----------------------------------------------------------
@@ -445,7 +445,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
     // getLevel //
     //----------//
     /**
-     * Return the mean grey level of the section
+     * Return the mean gray level of the section
      *
      * @return the section foreground level (0 -> 255)
      */

@@ -49,7 +49,7 @@ public class Run
      *
      * @param start  the coordinate of start for a run (y for vertical run)
      * @param length the length of the run in pixels
-     * @param level the average level of grey in the run (0 for totally black,
+     * @param level the average level of gray in the run (0 for totally black,
      *               255 for totally white)
      */
     public Run (int start,
@@ -105,9 +105,9 @@ public class Run
     // getLevel //
     //----------//
     /**
-     * Return the mean grey level of the run
+     * Return the mean gray level of the run
      *
-     * @return the average value of grey level along this run
+     * @return the average value of gray level along this run
      */
     public int getLevel ()
     {

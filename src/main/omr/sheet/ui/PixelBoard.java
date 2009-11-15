@@ -88,7 +88,7 @@ public class PixelBoard
         "Height",
         "Height of rectangle");
 
-    /** Pixel grey level */
+    /** Pixel gray level */
     private final LIntegerField level = new LIntegerField(
         false,
         "Level",
@@ -166,7 +166,7 @@ public class PixelBoard
                 width.setText("");
                 height.setText("");
             } else if (event instanceof PixelLevelEvent) {
-                // Display pixel grey level
+                // Display pixel gray level
                 PixelLevelEvent pixelLevelEvent = (PixelLevelEvent) event;
                 final Integer   pixelLevel = pixelLevelEvent.pixelLevel;
 

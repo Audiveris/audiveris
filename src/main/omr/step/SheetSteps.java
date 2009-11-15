@@ -449,7 +449,7 @@ public class SheetSteps
             } catch (ImageFormatException ex) {
                 String msg = "Unsupported image format in file " + imageFile +
                              "\n" + ex.getMessage() +
-                             "\nPlease use grey scale with 256 values";
+                             "\nPlease use gray scale with 256 values";
 
                 if (Main.getGui() != null) {
                     Main.getGui()

@@ -538,7 +538,7 @@ public class Sheet
         this.picture = picture;
 
         // Attach proper Selection objects
-        // (reading from pixel location & writing to grey level)
+        // (reading from pixel location & writing to gray level)
         picture.setLevelService(selectionService);
         selectionService.subscribe(SheetLocationEvent.class, picture);
 
