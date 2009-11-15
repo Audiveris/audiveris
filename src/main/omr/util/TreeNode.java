@@ -34,7 +34,7 @@ import java.util.List;
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-public class TreeNode
+public abstract class TreeNode
 {
     //~ Static fields/initializers ---------------------------------------------
 

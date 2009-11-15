@@ -150,7 +150,6 @@ public class ScoreSystem
      * Nota: It does not count the height of the last staff
      *
      * @return the system dimension, in units
-     * @see #setDimension
      */
     public UnitDimension getDimension ()
     {

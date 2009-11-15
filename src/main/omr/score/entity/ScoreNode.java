@@ -27,7 +27,7 @@ import omr.util.TreeNode;
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-public class ScoreNode
+public abstract class ScoreNode
     extends VisitableNode
 {
     //~ Static fields/initializers ---------------------------------------------
