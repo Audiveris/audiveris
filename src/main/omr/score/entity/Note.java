@@ -243,18 +243,42 @@ public class Note
         // Location center
         setCenter(getSystem().toSystemPoint(center));
 
-        // Staff
-        setStaff(getSystem().getStaffAt(getCenter()));
-
-        // Pitch Position
-        pitchPosition = getStaff()
-                            .pitchPositionOf(getCenter());
-
         // Note box
         setBox(getSystem().toSystemRectangle(getItemBox(glyph, packIndex)));
 
         // Shape of this note
         shape = baseShapeOf(glyph.getShape());
+
+        // Staff
+        Staff  noteStaff = getSystem()
+                               .getStaffAt(getCenter());
+
+        // Pitch Position wrt staff
+        double pp = noteStaff.pitchPositionOf(getCenter());
+
+        // Beware, when note is far from staff, use staff of related stem
+        if (Math.abs(pp) >= 8) {
+            Glyph stem = chord.getStem();
+
+            if (stem != null) {
+                SystemPoint stemCenter = getSystem()
+                                             .toSystemPoint(
+                    stem.getAreaCenter());
+                Staff       stemStaff = getSystem()
+                                            .getStaffAt(stemCenter);
+
+                if (logger.isFineEnabled() && (stemStaff != noteStaff)) {
+                    logger.fine("Changed staff for glyph#" + glyph.getId());
+                }
+
+                noteStaff = stemStaff;
+                pp = noteStaff.pitchPositionOf(getCenter());
+            }
+        }
+
+        // OK, register proper staff and pitchPosition
+        setStaff(noteStaff);
+        pitchPosition = pp;
     }
 
     //~ Methods ----------------------------------------------------------------

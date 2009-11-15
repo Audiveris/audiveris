@@ -417,10 +417,7 @@ public class ScoreSystem
             if (!part.isDummy()) {
                 for (TreeNode n : part.getStaves()) {
                     Staff staff = (Staff) n;
-                    int   midY = (staff.getPageTopLeft().y +
-                                 (staff.getHeight() / 2)) -
-                                 this.getTopLeft().y;
-                    int   dy = Math.abs(sysPt.y - midY);
+                    int   dy = Math.abs(sysPt.y - staff.getCenter().y);
 
                     if (dy < minDy) {
                         minDy = dy;
