@@ -614,7 +614,6 @@ public class SystemPart
             Measure dummyMeasure = new Measure(dummyPart);
             dummyMeasure.setDummy(true);
             dummyMeasure.setId(measure.getId());
-            dummyMeasure.setLeftX(measure.getLeftX());
             dummyMeasure.setPartial(measure.isPartial());
 
             // Loop on staves
@@ -686,6 +685,14 @@ public class SystemPart
                         getScorePart().getDisplayOrdinate()));
                 dummyMeasure.buildVoices();
             }
+
+            ////dummyMeasure.setLeftX(measure.getLeftX());
+            dummyMeasure.setBox(
+                new SystemRectangle(
+                    measure.getBox().x,
+                    nextPart.getBox().y,
+                    measure.getBox().width,
+                    nextPart.getBox().height));
         }
 
         if (logger.isFineEnabled()) {
@@ -849,6 +856,7 @@ public class SystemPart
                 newBox = newBox.union(staff.getBox());
             }
         }
+
         setBox(newBox);
     }
 }
