@@ -95,7 +95,7 @@ public class ScriptManager
      *
      * @param script the script to store
      * @param output the output stream to be written
-     * @throws JAXBException 
+     * @throws JAXBException
      */
     public void store (Script       script,
                        OutputStream output)

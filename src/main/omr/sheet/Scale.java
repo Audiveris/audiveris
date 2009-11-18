@@ -29,7 +29,6 @@ import omr.util.DoubleValue;
 
 import java.awt.Rectangle;
 
-
 /**
  * Class <code>Scale</code> encapsulates what drives the scale of a given sheet,
  * namely the main lengths of foreground and background vertical lags (which are

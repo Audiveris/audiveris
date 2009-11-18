@@ -353,7 +353,7 @@ public class UnitTreeTable
 
             // Use a bold font
             setFont(table.getFont().deriveFont(Font.BOLD).deriveFont(12.0f));
-            
+
             // Use center alignment
             setHorizontalAlignment(SwingConstants.CENTER);
 

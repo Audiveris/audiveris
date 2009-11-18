@@ -367,7 +367,7 @@ public class MidiReceiver
                     mid - part.getFirstMeasure().getId());
 
                 ///logger.fine("Slots nb=" + measure.getSlots().size());
-                slotLoop:
+                slotLoop: 
                 for (Slot slot : measure.getSlots()) {
                     int slotTick = getTickTime(measure, slot);
 

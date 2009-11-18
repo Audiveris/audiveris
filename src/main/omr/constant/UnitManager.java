@@ -364,17 +364,17 @@ public class UnitManager
         }
     }
 
-//    //-----//
-//    // log //
-//    //-----//
-//    /**
-//     * Poor-man implementation of a log feature, since the normal Logger stuff
-//     * is not yet available
-//     */
-//    private static void log (String msg)
-//    {
-//        System.out.println("UnitManager:: " + msg);
-//    }
+    //    //-----//
+    //    // log //
+    //    //-----//
+    //    /**
+    //     * Poor-man implementation of a log feature, since the normal Logger stuff
+    //     * is not yet available
+    //     */
+    //    private static void log (String msg)
+    //    {
+    //        System.out.println("UnitManager:: " + msg);
+    //    }
 
     //--------------//
     // retrieveUnit //

@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.math;
 
+import omr.Main;
+
 import omr.util.BaseTestCase;
 import static junit.framework.Assert.*;
 
@@ -147,6 +149,7 @@ public class NeuralNetworkTest
 
         File dir = new File("temp");
         dir.mkdirs();
+
         File file = new File(dir, "nn.xml");
 
         // Marshalling
@@ -158,7 +161,7 @@ public class NeuralNetworkTest
         System.out.println("Unmarshalling from " + file);
         nn = NeuralNetwork.unmarshal(new FileInputStream(file));
         System.out.println("Unmarshalled");
-        omr.util.Dumper.dump(nn);
+        Main.dumping.dump(nn);
         nn.dump();
     }
 
@@ -303,6 +306,8 @@ public class NeuralNetworkTest
     private static class MyMonitor
         implements NeuralNetwork.Monitor
     {
+        //~ Methods ------------------------------------------------------------
+
         public void epochEnded (int    epochIndex,
                                 double mse)
         {

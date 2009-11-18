@@ -30,7 +30,7 @@ public enum MouseMovement {
     /**
      * User moves the mouse while keeping the button down
      */
-    DRAGGING,
+    DRAGGING, 
     /**
      * User releases the mouse button
      */

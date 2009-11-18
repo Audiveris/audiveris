@@ -14,8 +14,8 @@ package omr.glyph.ui.panel;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
-import omr.glyph.GlyphEvaluator;
 import omr.glyph.Glyph;
+import omr.glyph.GlyphEvaluator;
 import omr.glyph.ui.*;
 
 import omr.log.Logger;
@@ -133,7 +133,7 @@ class ValidationPanel
      */
     public ValidationPanel (GlyphTrainer.Task task,
                             String            standardWidth,
-                            GlyphEvaluator         evaluator,
+                            GlyphEvaluator    evaluator,
                             SelectionPanel    selectionPanel,
                             TrainingPanel     trainingPanel)
     {

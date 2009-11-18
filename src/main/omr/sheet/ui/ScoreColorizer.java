@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.sheet.ui;
 
+import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 
 import omr.log.Logger;
@@ -20,9 +21,7 @@ import omr.score.entity.Barline;
 import omr.score.entity.SystemPart;
 import omr.score.visitor.AbstractScoreVisitor;
 
-
 import java.awt.Color;
-import omr.glyph.Glyph;
 
 /**
  * Class <code>ScoreColorizer</code> can visit the score hierarchy for

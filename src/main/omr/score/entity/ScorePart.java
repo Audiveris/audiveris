@@ -232,52 +232,53 @@ public class ScorePart
     {
         return ids;
     }
-//
-//    //--------//
-//    // equals //
-//    //--------//
-//    /**
-//     * Check whether the list of ids are identical
-//     *
-//     * @param obj the object to compare to
-//     * @return true if equal
-//     */
-//    @Override
-//    public boolean equals (Object obj)
-//    {
-//        if (obj instanceof ScorePart) {
-//            ScorePart sp = (ScorePart) obj;
-//
-//            if (sp.ids.size() != ids.size()) {
-//                return false;
-//            }
-//
-//            for (int i = 0; i < ids.size(); i++) {
-//                if (!(sp.ids.get(i).equals(ids.get(i)))) {
-//                    return false;
-//                }
-//            }
-//
-//            return true;
-//        } else {
-//            return false;
-//        }
-//    }
-//
-//    //----------//
-//    // hashCode //
-//    //----------//
-//    /**
-//     * To please FindBugs, because of overriding of equals method
-//     * @return nothing
-//     */
-//    @Override
-//    public int hashCode ()
-//    {
-//        assert false : "hashCode not designed";
-//
-//        return 42; // any arbitrary constant will do
-//    }
+
+    //
+    //    //--------//
+    //    // equals //
+    //    //--------//
+    //    /**
+    //     * Check whether the list of ids are identical
+    //     *
+    //     * @param obj the object to compare to
+    //     * @return true if equal
+    //     */
+    //    @Override
+    //    public boolean equals (Object obj)
+    //    {
+    //        if (obj instanceof ScorePart) {
+    //            ScorePart sp = (ScorePart) obj;
+    //
+    //            if (sp.ids.size() != ids.size()) {
+    //                return false;
+    //            }
+    //
+    //            for (int i = 0; i < ids.size(); i++) {
+    //                if (!(sp.ids.get(i).equals(ids.get(i)))) {
+    //                    return false;
+    //                }
+    //            }
+    //
+    //            return true;
+    //        } else {
+    //            return false;
+    //        }
+    //    }
+    //
+    //    //----------//
+    //    // hashCode //
+    //    //----------//
+    //    /**
+    //     * To please FindBugs, because of overriding of equals method
+    //     * @return nothing
+    //     */
+    //    @Override
+    //    public int hashCode ()
+    //    {
+    //        assert false : "hashCode not designed";
+    //
+    //        return 42; // any arbitrary constant will do
+    //    }
 
     //----------//
     // toString //

@@ -525,9 +525,9 @@ class NetworkPanel
     {
         //~ Constructors -------------------------------------------------------
 
-        public NetworkTrainAction (String                 title,
+        public NetworkTrainAction (String                      title,
                                    GlyphEvaluator.StartingMode mode,
-                                   boolean                confirmationRequired)
+                                   boolean                     confirmationRequired)
         {
             super(title);
             this.mode = mode;

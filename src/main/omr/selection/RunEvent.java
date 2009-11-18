@@ -46,10 +46,10 @@ public class RunEvent
      * @param movement the mouse movement
      * @param run the selected run (or null)
      */
-    public RunEvent (Object source,
+    public RunEvent (Object        source,
                      SelectionHint hint,
                      MouseMovement movement,
-                     Run    run)
+                     Run           run)
     {
         super(source, hint, movement);
         this.run = run;

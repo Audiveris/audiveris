@@ -58,7 +58,7 @@ public abstract class SheetDependent
         // Stay informed on sheet status, in order to enable sheet-dependent
         // actions accordingly
         SheetsController.getInstance()
-                          .subscribe(this);
+                        .subscribe(this);
     }
 
     //~ Methods ----------------------------------------------------------------

@@ -62,7 +62,7 @@ public class BoardsPane
      * @param view the related view
      * @param boards a varying number of boards
      */
-    public BoardsPane (Sheet             sheet,
+    public BoardsPane (Sheet       sheet,
                        RubberPanel view,
                        Board... boards)
     {

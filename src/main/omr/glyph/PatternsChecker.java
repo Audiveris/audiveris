@@ -32,7 +32,7 @@ public class PatternsChecker
 
     /** Sequence of patterns to run */
     private static Pattern[] patterns = new Pattern[] {
-
+                                            
     //
     new Pattern("Clef") {
             public int run (SystemInfo system)
@@ -41,7 +41,7 @@ public class PatternsChecker
             }
         }
     ,
-
+                                            
     new Pattern("Alter") {
             public int run (SystemInfo system)
             {
@@ -49,7 +49,7 @@ public class PatternsChecker
             }
         }
     ,
-
+                                            
     new Pattern("Stem") {
             public int run (SystemInfo system)
             {
@@ -57,7 +57,7 @@ public class PatternsChecker
             }
         }
     ,
-
+                                            
     new Pattern("Slur") {
             public int run (SystemInfo system)
             {
@@ -65,7 +65,7 @@ public class PatternsChecker
             }
         }
     ,
-
+                                            
     new Pattern("Text") {
             public int run (SystemInfo system)
             {
@@ -125,7 +125,8 @@ public class PatternsChecker
             } catch (Throwable ex) {
                 logger.warning(
                     "System #" + system.getId() + " error running pattern " +
-                    pattern.name, ex);
+                    pattern.name,
+                    ex);
             }
         }
 

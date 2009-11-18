@@ -11,12 +11,11 @@
 // </editor-fold>
 package omr.script;
 
-import java.io.File;
 import omr.log.Logger;
 
 import omr.sheet.Sheet;
 
-
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -75,8 +75,8 @@ public class SymbolsModel
      */
     @Override
     protected Glyph assignGlyph (Glyph  glyph,
-                                Shape  shape,
-                                double doubt)
+                                 Shape  shape,
+                                 double doubt)
     {
         if (glyph == null) {
             return null;
@@ -92,6 +92,7 @@ public class SymbolsModel
 
             if (system != null) {
                 system.computeGlyphFeatures(glyph);
+
                 return super.assignGlyph(glyph, shape, doubt);
             }
         }

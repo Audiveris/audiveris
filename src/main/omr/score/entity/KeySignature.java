@@ -24,6 +24,7 @@ import omr.log.Logger;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.common.SystemPoint;
+import omr.score.common.SystemRectangle;
 import static omr.score.entity.Note.Step.*;
 import omr.score.visitor.ScoreVisitor;
 
@@ -34,7 +35,6 @@ import omr.util.TreeNode;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import omr.score.common.SystemRectangle;
 
 /**
  * Class <code>KeySignature</code> encapsulates a key signature, which may be
@@ -328,8 +328,8 @@ public class KeySignature
 
         // Do we have a key signature just before in the same measure & staff?
         SystemRectangle fatBox = system.toSystemRectangle(glyphFatBox);
-        KeySignature keysig = null;
-        boolean      found = false;
+        KeySignature    keysig = null;
+        boolean         found = false;
 
         for (TreeNode node : measure.getKeySignatures()) {
             keysig = (KeySignature) node;

@@ -31,24 +31,24 @@ public enum SelectionHint {
      * to the existing selection(s), so we keep the original location
      * information, and try to lookup for designated Run, Section & Glyph
      */
-    LOCATION_ADD,
+    LOCATION_ADD, 
     /**
      * Designation is at Section level, so we display the pixel contour of the
      * Section, Run information is not available, and related Glyph information
      * is displayed
      */
-    SECTION_INIT,
+    SECTION_INIT, 
     /**
      * Designation is at Glyph level, so we display the pixel contour of the
      * Glyph, as well as Glyph information, but Run & Section informations are
      * not available
      */
-    GLYPH_INIT,
+    GLYPH_INIT, 
     /**
      * Designation is at Glyph level, for which a characteristic (typically the
      * shape) has just been modified
      */
-    GLYPH_MODIFIED,
+    GLYPH_MODIFIED, 
     /**
      * Glyph information is for temporary display / evaluation only, with no
      * impact on other structures such as glyph set.

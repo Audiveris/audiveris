@@ -11,12 +11,12 @@
 // </editor-fold>
 package omr.jaxb.icon;
 
+import omr.Main;
+
 import omr.ui.icon.IconManager;
 import omr.ui.icon.SymbolIcon;
 
 import omr.util.BaseTestCase;
-import omr.util.Dumper;
-import static junit.framework.Assert.*;
 
 import java.io.*;
 
@@ -49,7 +49,7 @@ public class IconTest
                                          .loadFromXmlStream(
                 new FileInputStream(new File(fileName)));
 
-            Dumper.dump(icon);
+            Main.dumping.dump(icon);
 
             if (icon.bitmap != null) {
                 for (String s : icon.bitmap) {
@@ -90,6 +90,6 @@ public class IconTest
     //--------------//
     public void testMarshall ()
     {
-        play("src/test/omr/jaxb/icon/icon-data.xml");
+        play("test/omr/jaxb/icon/icon-data.xml");
     }
 }

@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @version $Id$
  */
 @ThreadSafe
-public class Digraph<D extends Digraph<D,V>, V extends Vertex>
+public class Digraph<D extends Digraph<D, V>, V extends Vertex>
 {
     //~ Static fields/initializers ---------------------------------------------
 

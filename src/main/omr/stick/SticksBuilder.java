@@ -724,30 +724,30 @@ public class SticksBuilder
         }
     }
 
-//    //----------------//
-//    // purgeInternals //
-//    //----------------//
-//    private void purgeInternals (List<GlyphSection> list)
-//    {
-//        int minLevel = constants.minSectionGrayLevel.getValue();
-//
-//        for (Iterator<GlyphSection> it = list.iterator(); it.hasNext();) {
-//            StickSection  section = (StickSection) it.next();
-//
-//            // We purge internal sections which don't exhibit sufficient
-//            // foreground density (they are too dark)
-//            StickRelation relation = section.getRelation();
-//
-//            if (relation.role == INTERNAL) {
-//                if ((section.getLevel() < minLevel) ||
-//                    (section.getRunNb() > 2)) {
-//                    // We purge this internal section
-//                    it.remove();
-//                    relation.role = PURGED;
-//                }
-//            }
-//        }
-//    }
+    //    //----------------//
+    //    // purgeInternals //
+    //    //----------------//
+    //    private void purgeInternals (List<GlyphSection> list)
+    //    {
+    //        int minLevel = constants.minSectionGrayLevel.getValue();
+    //
+    //        for (Iterator<GlyphSection> it = list.iterator(); it.hasNext();) {
+    //            StickSection  section = (StickSection) it.next();
+    //
+    //            // We purge internal sections which don't exhibit sufficient
+    //            // foreground density (they are too dark)
+    //            StickRelation relation = section.getRelation();
+    //
+    //            if (relation.role == INTERNAL) {
+    //                if ((section.getLevel() < minLevel) ||
+    //                    (section.getRunNb() > 2)) {
+    //                    // We purge this internal section
+    //                    it.remove();
+    //                    relation.role = PURGED;
+    //                }
+    //            }
+    //        }
+    //    }
 
     //----------------------//
     // thickenAlignmentCore //

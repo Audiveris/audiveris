@@ -478,7 +478,7 @@ public enum Shape {
     //
     PEDAL_MARK,
     // LAST_PHYSICAL_SHAPE is on the following line
-    PEDAL_UP_MARK,
+    PEDAL_UP_MARK, 
     //
     //
     // =========================================================================

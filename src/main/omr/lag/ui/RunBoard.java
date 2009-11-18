@@ -12,6 +12,7 @@
 package omr.lag.ui;
 
 import omr.lag.*;
+
 import omr.log.Logger;
 
 import omr.selection.MouseMovement;

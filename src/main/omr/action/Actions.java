@@ -54,15 +54,15 @@ public class Actions
         /** Domain of sheet actions */
         SHEET,
         /** Domain of individual steps */
-        STEP,
+        STEP, 
         /** Domain of score actions */
-        SCORE,
+        SCORE, 
         /** Domain of MIDI features */
-        MIDI,
+        MIDI, 
         /** Domain of various view features */
-        VIEW,
+        VIEW, 
         /** Domain of utilities */
-        TOOL,
+        TOOL, 
         /** Domain of help information */
         HELP;
     }

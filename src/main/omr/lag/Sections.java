@@ -68,7 +68,7 @@ public class Sections
      * @param sections the collection of sections
      * @return the string built
      */
-    public static String toString (String                     label,
+    public static String toString (String                       label,
                                    Collection<?extends Section> sections)
     {
         if (sections == null) {
@@ -100,7 +100,7 @@ public class Sections
      * @param sections the array of sections
      * @return the string built
      */
-    public static String toString (String   label,
+    public static String toString (String     label,
                                    Section... sections)
     {
         return toString(label, Arrays.asList(sections));

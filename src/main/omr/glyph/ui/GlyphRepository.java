@@ -543,7 +543,9 @@ public class GlyphRepository
             File source;
 
             if (isIcon(gName)) {
-                source = new File(WellKnowns.ICONS_FOLDER.getParentFile(), gName);
+                source = new File(
+                    WellKnowns.ICONS_FOLDER.getParentFile(),
+                    gName);
             } else {
                 source = new File(getSheetsFolder(), gName);
             }
