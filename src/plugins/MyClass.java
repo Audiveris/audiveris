@@ -18,6 +18,8 @@ import omr.script.Script;
 import omr.sheet.Sheet;
 import omr.sheet.ui.SheetsController;
 
+import omr.ui.icon.SymbolRipper;
+
 import org.jdesktop.application.Action;
 
 /**
@@ -51,5 +53,25 @@ public class MyClass
                 script.dump();
             }
         }
+    }
+
+    /**
+     * Launch the computation of score dimensions
+     */
+    @Action(enabledProperty = "sheetAvailable")
+    public void launchScoreComputations ()
+    {
+        Sheet sheet = SheetsController.selectedSheet();
+        sheet.getScore()
+             .accept(new ScoreDimensions());
+    }
+
+    /**
+     * Launch the utility to rip a symbol
+     */
+    @Action
+    public void launchSymbolRipper ()
+    {
+        SymbolRipper.main();
     }
 }
