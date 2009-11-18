@@ -12,6 +12,7 @@
 package omr.ui;
 
 import omr.Main;
+import omr.WellKnowns;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -257,7 +258,7 @@ public class GuiActions
     {
         try {
             File   file = new File(
-                Main.getDocumentationFolder(),
+                WellKnowns.DOC_FOLDER,
                 constants.manualUrl.getValue());
             URI    uri = file.toURI();
             URL    url = uri.toURL();
@@ -405,7 +406,7 @@ public class GuiActions
             fields.get("build")
                   .setText(Main.getToolBuild());
             fields.get("classes")
-                  .setText(Main.getClassesContainer().toString());
+                  .setText(WellKnowns.CLASS_CONTAINER.toString());
 
             return dialog;
         }

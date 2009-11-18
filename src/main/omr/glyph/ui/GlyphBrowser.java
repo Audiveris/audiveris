@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.glyph.ui;
 
-import omr.Main;
+import omr.WellKnowns;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -257,7 +257,7 @@ class GlyphBrowser
 
             // Perform file deletion
             if (repository.isIcon(gName)) {
-                new BlackList(Main.getIconsFolder()).add(new File(gName));
+                new BlackList(WellKnowns.ICONS_FOLDER).add(new File(gName));
             } else {
                 File file = new File(repository.getSheetsFolder(), gName);
                 new BlackList(file.getParentFile()).add(new File(gName));

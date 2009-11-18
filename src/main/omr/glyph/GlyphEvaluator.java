@@ -12,6 +12,7 @@
 package omr.glyph;
 
 import omr.Main;
+import omr.WellKnowns;
 
 import omr.constant.ConstantSet;
 
@@ -57,7 +58,8 @@ public abstract class GlyphEvaluator
     public static final int paramCount = inMoments + 2;
 
     /** Number of shapes to differentiate */
-    public static final int shapeCount = Shape.LAST_PHYSICAL_SHAPE.ordinal() + 1;
+    public static final int shapeCount = Shape.LAST_PHYSICAL_SHAPE.ordinal() +
+                                         1;
 
     /** A special evaluation array, used to report NOISE */
     static final Evaluation[] noiseEvaluations = {
@@ -351,7 +353,7 @@ public abstract class GlyphEvaluator
     protected File getCustomFile ()
     {
         // The custom file, if any, is located in the configuration folder
-        return new File(Main.getConfigFolder(), getFileName());
+        return new File(WellKnowns.CONFIG_FOLDER, getFileName());
     }
 
     //---------------//
@@ -388,7 +390,7 @@ public abstract class GlyphEvaluator
     protected Object unmarshal ()
     {
         InputStream input = ClassUtil.getProperStream(
-            Main.getConfigFolder(),
+            WellKnowns.CONFIG_FOLDER,
             getFileName());
 
         return unmarshal(input, getFileName());

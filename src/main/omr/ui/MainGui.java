@@ -12,6 +12,7 @@
 package omr.ui;
 
 import omr.Main;
+import omr.WellKnowns;
 
 import omr.action.ActionManager;
 import omr.action.Actions;
@@ -558,7 +559,7 @@ public class MainGui
         frame.setJMenuBar(mgr.getMenuBar());
 
         // Mac Application menu
-        if (omr.Main.MAC_OS_X) {
+        if (WellKnowns.MAC_OS_X) {
             MacApplication.setupMacMenus();
         }
     }

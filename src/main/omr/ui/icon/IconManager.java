@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.ui.icon;
 
-import omr.Main;
+import omr.WellKnowns;
 
 import omr.constant.ConstantSet;
 
@@ -198,7 +198,7 @@ public class IconManager
 
         if (icon == null) {
             InputStream is = ClassUtil.getProperStream(
-                Main.getIconsFolder(),
+                WellKnowns.ICONS_FOLDER,
                 name + FILE_EXTENSION);
 
             if (is != null) {
@@ -420,7 +420,7 @@ public class IconManager
     private OutputStream getIconOutputStream (String name)
         throws FileNotFoundException
     {
-        File folder = Main.getIconsFolder();
+        File folder = WellKnowns.ICONS_FOLDER;
 
         if (folder.mkdirs()) {
             logger.info("Creating directory " + folder);

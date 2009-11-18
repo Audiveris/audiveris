@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.glyph.ui;
 
-import omr.Main;
+import omr.WellKnowns;
 
 import omr.glyph.Glyph;
 import omr.glyph.GlyphSection;
@@ -75,16 +75,16 @@ public class GlyphRepository
 
     /** Specific subdirectory for sheet glyphs */
     private static final File sheetsFolder = new File(
-        Main.getTrainFolder(),
+        WellKnowns.TRAIN_FOLDER,
         "sheets");
 
     /** Specific subdirectory for core glyphs */
     private static final File coreFolder = new File(
-        Main.getTrainFolder(),
+        WellKnowns.TRAIN_FOLDER,
         "core");
 
     /** Specific subdirectory for icons */
-    private static final File iconsFolder = Main.getIconsFolder();
+    private static final File iconsFolder = WellKnowns.ICONS_FOLDER;
 
     /** Specific filter for glyph files */
     private static final FileFilter glyphFilter = new FileFilter() {
@@ -543,7 +543,7 @@ public class GlyphRepository
             File source;
 
             if (isIcon(gName)) {
-                source = new File(Main.getIconsFolder().getParentFile(), gName);
+                source = new File(WellKnowns.ICONS_FOLDER.getParentFile(), gName);
             } else {
                 source = new File(getSheetsFolder(), gName);
             }
@@ -575,7 +575,7 @@ public class GlyphRepository
     //---------------//
     boolean isIconsFolder (String folder)
     {
-        return folder.equals(Main.getIconsFolder().getName());
+        return folder.equals(WellKnowns.ICONS_FOLDER.getName());
     }
 
     //----------//

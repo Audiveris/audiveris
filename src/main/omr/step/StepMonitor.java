@@ -11,22 +11,19 @@
 // </editor-fold>
 package omr.step;
 
+import omr.WellKnowns;
+
 import omr.constant.Constant;
 import omr.constant.Constant.Ratio;
 import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
-import omr.sheet.Sheet;
-import omr.sheet.SheetsManager;
-
 import omr.ui.util.UIUtilities;
 
 import omr.util.Implement;
 
 import java.awt.Graphics;
-import java.util.EnumSet;
-import java.util.concurrent.*;
 
 import javax.swing.*;
 
@@ -65,7 +62,7 @@ public class StepMonitor
     public StepMonitor ()
     {
         // Progress Bar
-        if (!omr.Main.MAC_OS_X) {
+        if (!WellKnowns.MAC_OS_X) {
             bar.setBorder(UIUtilities.getToolBorder());
         }
 
@@ -142,6 +139,20 @@ public class StepMonitor
     // animate //
     //---------//
     /**
+     *
+     * @param animating If false, deactivates all animation of the progress
+     *                  bar.  If true, activates an indeterminate or
+     *                  pseudo-indeterminate animation.
+     */
+    void animate (final boolean animating)
+    {
+        animate(animating ? constants.ratio.getValue() : 0);
+    }
+
+    //---------//
+    // animate //
+    //---------//
+    /**
      * Sets the progress bar to show a percentage.
      * @param amount percentage, in decimal form, from 0.0 to 1.0
      */
@@ -160,20 +171,6 @@ public class StepMonitor
                         bar.setValue((int) Math.round(divisions * amount));
                     }
                 });
-    }
-
-    //---------//
-    // animate //
-    //---------//
-    /**
-     *
-     * @param animating If false, deactivates all animation of the progress
-     *                  bar.  If true, activates an indeterminate or
-     *                  pseudo-indeterminate animation.
-     */
-    void animate (final boolean animating)
-    {
-        animate(animating ? constants.ratio.getValue() : 0);
     }
 
     //~ Inner Classes ----------------------------------------------------------

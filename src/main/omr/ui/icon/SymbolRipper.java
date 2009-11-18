@@ -281,9 +281,6 @@ public class SymbolRipper
      */
     public static void main (String... args)
     {
-        // Make sure the environment variable is set
-        Main.getIconsFolder();
-
         new SymbolRipper();
     }
 

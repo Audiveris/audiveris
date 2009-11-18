@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.ui.util;
 
+import omr.WellKnowns;
+
 import omr.log.Logger;
 
 import java.awt.*;
@@ -42,23 +44,6 @@ public class UIUtilities
 
     //~ Methods ----------------------------------------------------------------
 
-    //---------------//
-    // getToolBorder //
-    //---------------//
-    /**
-     * Report a standard tool border entity, which is a raised bevel border
-     *
-     * @return the standard tool border
-     */
-    public static Border getToolBorder ()
-    {
-        if (toolBorder == null) {
-            toolBorder = BorderFactory.createRaisedBevelBorder();
-        }
-
-        return toolBorder;
-    }
-
     //-------------------//
     // setAbsoluteStroke //
     //-------------------//
@@ -80,6 +65,23 @@ public class UIUtilities
         g2.setStroke(stroke);
 
         return oldStroke;
+    }
+
+    //---------------//
+    // getToolBorder //
+    //---------------//
+    /**
+     * Report a standard tool border entity, which is a raised bevel border
+     *
+     * @return the standard tool border
+     */
+    public static Border getToolBorder ()
+    {
+        if (toolBorder == null) {
+            toolBorder = BorderFactory.createRaisedBevelBorder();
+        }
+
+        return toolBorder;
     }
 
     //------------------//
@@ -158,14 +160,14 @@ public class UIUtilities
      * @param filter a filter to by applied on files
      * @return the selected file, or null
      */
-    public static File fileChooser (boolean    save,
-                                    Component  parent,
-                                    File       startFile,
+    public static File fileChooser (boolean       save,
+                                    Component     parent,
+                                    File          startFile,
                                     OmrFileFilter filter)
     {
         File file = null;
 
-        if (omr.Main.MAC_OS_X) {
+        if (WellKnowns.MAC_OS_X) {
             if ((parent == null) && (omr.Main.getGui() != null)) {
                 parent = omr.Main.getGui()
                                  .getFrame();

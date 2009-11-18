@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.glyph.text;
 
-import omr.Main;
+import omr.WellKnowns;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -58,7 +58,7 @@ public class Language
 
             // Choose the proper input stream
             InputStream input = ClassUtil.getProperStream(
-                Main.getConfigFolder(),
+                WellKnowns.CONFIG_FOLDER,
                 LANG_FILE_NAME);
             langNames.loadFromXML(input);
             input.close();

@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.action;
 
-import omr.Main;
+import omr.WellKnowns;
 
 import omr.log.Logger;
 
@@ -216,7 +216,7 @@ public class ActionManager
         for (String name : new String[] { "system-actions.xml", "user-actions.xml" }) {
             // Choose the proper input stream
             InputStream input = ClassUtil.getProperStream(
-                Main.getConfigFolder(),
+                WellKnowns.CONFIG_FOLDER,
                 name);
 
             if (input != null) {

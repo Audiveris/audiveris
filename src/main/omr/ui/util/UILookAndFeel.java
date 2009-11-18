@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.ui.util;
 
+import omr.WellKnowns;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -39,7 +41,7 @@ public class UILookAndFeel
     private static final Logger logger = Logger.getLogger(UILookAndFeel.class);
 
     static {
-        if (omr.Main.MAC_OS_X) {
+        if (WellKnowns.MAC_OS_X) {
             System.setProperty("apple.laf.useScreenMenuBar", "true");
             //                  System.setProperty("apple.awt.brushMetalLook", "true");
             //                  System.setProperty("apple.awt.brushMetalRounded", "true");

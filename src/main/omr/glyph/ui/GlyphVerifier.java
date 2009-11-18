@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.glyph.ui;
 
-import omr.Main;
+import omr.WellKnowns;
 
 import omr.log.Logger;
 import static omr.selection.SelectionHint.*;
@@ -213,7 +213,7 @@ public class GlyphVerifier
     private File getActualDir (String folder)
     {
         if (repository.isIconsFolder(folder)) {
-            return Main.getIconsFolder();
+            return WellKnowns.ICONS_FOLDER;
         } else {
             return new File(repository.getSheetsFolder(), folder);
         }
@@ -469,7 +469,7 @@ public class GlyphVerifier
             list.removeAll();
 
             // First insert the dedicated icons folder
-            list.add(Main.getIconsFolder().getName());
+            list.add(WellKnowns.ICONS_FOLDER.getName());
 
             // Then populate with all sorted existing sheets folders
             ArrayList<String> folders = new ArrayList<String>();

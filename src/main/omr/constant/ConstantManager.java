@@ -12,6 +12,7 @@
 package omr.constant;
 
 import omr.Main;
+import omr.WellKnowns;
 
 import omr.log.Logger;
 
@@ -129,7 +130,7 @@ public class ConstantManager
     /** User properties file folder */
     private static final File USER_FILE_FOLDER = new File(
         System.getProperty("user.home") +
-        (Main.MAC_OS_X ? "/Library/Preferences/Audiveris" : "/.audiveris"));
+        (WellKnowns.MAC_OS_X ? "/Library/Preferences/Audiveris" : "/.audiveris"));
 
     /** The singleton */
     private static final ConstantManager INSTANCE = new ConstantManager();
@@ -144,8 +145,8 @@ public class ConstantManager
 
     /** Default properties */
     private final DefaultHolder defaultHolder = new DefaultHolder(
-        "/" + Main.getConfigFolder().getName() + "/" + DEFAULT_FILE_NAME,
-        new File(Main.getConfigFolder(), DEFAULT_FILE_NAME));
+        "/" + WellKnowns.CONFIG_FOLDER.getName() + "/" + DEFAULT_FILE_NAME,
+        new File(WellKnowns.CONFIG_FOLDER, DEFAULT_FILE_NAME));
 
     /** User properties */
     private final UserHolder userHolder = new UserHolder(

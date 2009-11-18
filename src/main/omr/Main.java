@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr;
 
+import static omr.WellKnowns.*;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -77,27 +79,6 @@ public class Main
         Clock.resetTime();
     }
 
-    /** Classes container (either classes directory or jar archive */
-    private static File classContainer;
-
-    /** Installation folder */
-    private static File homeFolder;
-
-    /** Config folder */
-    private static File configFolder;
-
-    /** Specific folder name for icons */
-    private static final String ICONS_FOLDER_NAME = "icons";
-
-    /** Specific folder name for OCR utility */
-    private static final String OCR_FOLDER_NAME = "ocr";
-
-    /** Specific folder name for documentation */
-    private static final String DOC_FOLDER_NAME = "www";
-
-    /** Specific folder name for training data */
-    private static final String TRAIN_FOLDER_NAME = "train";
-
     /** Build reference of the application as displayed to the user */
     private static String toolBuild;
 
@@ -116,15 +97,6 @@ public class Main
     /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Tells if using Linux */
-    public static final boolean LINUX = isLinux();
-
-    /** Tells if using Mac OS X */
-    public static final boolean MAC_OS_X = isMac();
-
-    /** Tells if using Windows */
-    public static final boolean WINDOWS = isWindows();
-
     /** Parameters read from CLI */
     private static CLI.Parameters parameters;
 
@@ -141,44 +113,6 @@ public class Main
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //---------------------//
-    // getClassesContainer //
-    //---------------------//
-    /**
-     * Report the container from which the application classes were loaded
-     * @return either the jar file, or the directory of .class files
-     */
-    public static File getClassesContainer ()
-    {
-        return classContainer;
-    }
-
-    //-----------------//
-    // getConfigFolder //
-    //-----------------//
-    /**
-     * Report the folder where config parameters are stored
-     *
-     * @return the directory for configuration files
-     */
-    public static File getConfigFolder ()
-    {
-        return configFolder;
-    }
-
-    //------------------------//
-    // getDocumentationFolder //
-    //------------------------//
-    /**
-     * Report the folder where documentations files are stored
-     *
-     * @return the directory for documentation files
-     */
-    public static File getDocumentationFolder ()
-    {
-        return new File(homeFolder, DOC_FOLDER_NAME);
-    }
 
     //--------//
     // setGui //
@@ -199,44 +133,6 @@ public class Main
     public static MainGui getGui ()
     {
         return gui;
-    }
-
-    //---------------//
-    // getHomeFolder //
-    //---------------//
-    /**
-     * Report the location where Audiveris tool is installed
-     * @return Audiveris home folder
-     */
-    public static File getHomeFolder ()
-    {
-        return homeFolder;
-    }
-
-    //----------------//
-    // getIconsFolder //
-    //----------------//
-    /**
-     * Report the folder where custom-defined icons are stored
-     *
-     * @return the directory for icon files
-     */
-    public static File getIconsFolder ()
-    {
-        return new File(homeFolder, ICONS_FOLDER_NAME);
-    }
-
-    //--------------//
-    // getOcrFolder //
-    //--------------//
-    /**
-     * Report the folder where Tesseract OCR material is stored
-     *
-     * @return the directory for tesseract / tesjeract files
-     */
-    public static File getOcrFolder ()
-    {
-        return new File(homeFolder, OCR_FOLDER_NAME);
     }
 
     //-----------------//
@@ -388,42 +284,16 @@ public class Main
         return toolVersion;
     }
 
-    //----------------//
-    // getTrainFolder //
-    //----------------//
-    /**
-     * Report the folder defined for training files
-     *
-     * @return the directory for training material
-     */
-    public static File getTrainFolder ()
-    {
-        return new File(homeFolder, TRAIN_FOLDER_NAME);
-    }
-
     //------//
     // main //
     //------//
     /**
      * Specific starting method for the application.
-     *
-     * @param classContainer the class container (a directory or a jar file)
-     * @param homeFolder the folder where Audiveris is installed
-     * @param configFolder the subfolder for configuration data
-     * @param args the command line parameters
-     *
+     * @param args command line parameters
      * @see omr.Main the possible command line parameters
      */
-    public static void main (File     classContainer,
-                             File     homeFolder,
-                             File     configFolder,
-                             String[] args)
+    public static void main (String[] args)
     {
-        new Main(); // DEBUG
-        Main.classContainer = classContainer;
-        Main.homeFolder = homeFolder;
-        Main.configFolder = configFolder;
-
         // Locale to be used in the whole application ?
         checkLocale();
 
@@ -465,52 +335,6 @@ public class Main
         }
     }
 
-    //---------//
-    // isLinux //
-    //---------//
-    /**
-     * Are we using a Linux OS
-     * @return true if so
-     */
-    private static boolean isLinux ()
-    {
-        return System.getProperty("os.name")
-                     .toLowerCase()
-                     .startsWith("Linux");
-    }
-
-    //-------//
-    // isMac //
-    //-------//
-    /**
-     * Are we using a Mac OS
-     * @return true if so
-     */
-    private static boolean isMac ()
-    {
-        return System.getProperty("os.name")
-                     .toLowerCase()
-                     .startsWith("mac os x");
-    }
-
-    //-----------//
-    // isWindows //
-    //-----------//
-    /**
-     * Are we using a Windows OS
-     * @return true if so
-     */
-    private static boolean isWindows ()
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("OS is '" + System.getProperty("os.name") + "'");
-        }
-
-        return System.getProperty("os.name")
-                     .toLowerCase()
-                     .startsWith("windows");
-    }
-
     //-------------//
     // checkLocale //
     //-------------//
@@ -538,10 +362,10 @@ public class Main
     private static void initialize ()
     {
         if (logger.isFineEnabled()) {
-            logger.fine("homeFolder=" + homeFolder);
-            logger.fine("classContainer=" + classContainer);
+            logger.fine("homeFolder=" + HOME_FOLDER);
+            logger.fine("classContainer=" + CLASS_CONTAINER);
             logger.fine(
-                "classContainer.isDirectory=" + classContainer.isDirectory());
+                "classContainer.isDirectory=" + CLASS_CONTAINER.isDirectory());
         }
 
         // Tool name

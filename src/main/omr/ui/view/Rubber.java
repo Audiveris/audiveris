@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.ui.view;
 
+import omr.WellKnowns;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -521,7 +523,7 @@ public class Rubber
      */
     protected boolean isAdditionWanted (MouseEvent e)
     {
-        if (omr.Main.MAC_OS_X) {
+        if (WellKnowns.MAC_OS_X) {
             boolean command = e.isMetaDown();
             boolean left = SwingUtilities.isLeftMouseButton(e);
 
@@ -545,7 +547,7 @@ public class Rubber
      */
     protected boolean isContextWanted (MouseEvent e)
     {
-        if (omr.Main.MAC_OS_X) {
+        if (WellKnowns.MAC_OS_X) {
             return e.isPopupTrigger();
         } else {
             return SwingUtilities.isRightMouseButton(e) &&
@@ -569,7 +571,7 @@ public class Rubber
      */
     protected boolean isDragWanted (MouseEvent e)
     {
-        if (omr.Main.MAC_OS_X) {
+        if (WellKnowns.MAC_OS_X) {
             return e.isAltDown();
         } else {
             int onmask = BUTTON1_DOWN_MASK | BUTTON3_DOWN_MASK;
@@ -593,7 +595,7 @@ public class Rubber
      */
     protected boolean isRezoomWanted (MouseEvent e)
     {
-        if (omr.Main.MAC_OS_X) {
+        if (WellKnowns.MAC_OS_X) {
             return e.isMetaDown() && e.isShiftDown();
         } else {
             return e.isControlDown() && e.isShiftDown();

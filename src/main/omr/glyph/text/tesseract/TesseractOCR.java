@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.glyph.text.tesseract;
 
-import omr.Main;
+import omr.WellKnowns;
 
 import omr.glyph.text.*;
 
@@ -57,7 +57,7 @@ public class TesseractOCR
     private static final OCR INSTANCE = new TesseractOCR();
 
     /** Folder where all OCR material is available */
-    public static final File ocrHome = Main.getOcrFolder();
+    public static final File ocrHome = WellKnowns.OCR_FOLDER;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -354,11 +354,11 @@ public class TesseractOCR
             }
 
             try {
-                if (Main.WINDOWS) {
+                if (WellKnowns.WINDOWS) {
                     charsRetriever = new WindowsCharsRetriever();
-                } else if (Main.MAC_OS_X) {
+                } else if (WellKnowns.MAC_OS_X) {
                     // TODO
-                } else if (Main.LINUX) {
+                } else if (WellKnowns.LINUX) {
                     // TODO
                 }
             } catch (Throwable ex) {

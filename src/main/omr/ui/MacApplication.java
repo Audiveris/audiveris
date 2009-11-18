@@ -11,10 +11,14 @@
 // </editor-fold>
 package omr.ui;
 
+import omr.WellKnowns;
+
 import omr.log.Logger;
 
 import omr.script.Script;
 import omr.script.ScriptManager;
+
+import omr.sheet.Sheet;
 
 import omr.step.Step;
 
@@ -25,7 +29,6 @@ import org.jdesktop.swingworker.SwingWorker;
 import java.io.File;
 import java.io.FileInputStream;
 import java.lang.reflect.*;
-import omr.sheet.Sheet;
 
 /**
  * Class <code>MacApplication</code> provides dynamic hooks into the
@@ -140,7 +143,7 @@ public class MacApplication
     @SuppressWarnings("unchecked")
     public static boolean setupMacMenus ()
     {
-        if (!omr.Main.MAC_OS_X) {
+        if (!WellKnowns.MAC_OS_X) {
             return false;
         }
 

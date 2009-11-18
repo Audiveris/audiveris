@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.ui.util;
 
-import omr.Main;
+import omr.WellKnowns;
 
 import omr.log.Logger;
 
@@ -151,7 +151,7 @@ public class WebBrowser
         }
 
         //If it's not supported, see if we have the Mac FileManager
-        if (Main.MAC_OS_X) {
+        if (WellKnowns.MAC_OS_X) {
             try {
                 final Class fileMgr = Class.forName(
                     "com.apple.eio.FileManager");
