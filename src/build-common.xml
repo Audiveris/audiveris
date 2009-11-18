@@ -22,14 +22,6 @@
 	</classpath>
     </taskdef>
     
-    <!-- Jalopy task definition -->
-    <taskdef name="jalopy"
-	     classname="de.hunsicker.jalopy.plugin.ant.AntPlugin">
-	<classpath>
-	    <fileset dir="${jalopy.dir}" includes="*.jar" />
-	</classpath>
-    </taskdef>
-    
     <!-- ===================== -->
     <!--  - F U L L - D I S T  -->
     <!-- ===================== -->
@@ -115,22 +107,6 @@
 			/>
 
 	</zip>
-    </target>
-
-    <!-- =========== -->
-    <!--  - I N I T  -->
-    <!-- =========== -->
-    <target name="-init">
-<!--         description="Initialize the environment." -->
-
-        <!-- Create the time stamp -->
-        <tstamp/>
-
-        <available
-            property="junit.jar.present"
-            file="${junit.jar}"
-	    />
-
     </target>
     
     <!-- ============================= -->

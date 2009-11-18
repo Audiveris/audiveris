@@ -27,6 +27,30 @@
     <!-- Load the environment variables -->
     <property environment="env"/>
 
+    <!-- Jalopy task definition -->
+    <taskdef name="jalopy"
+	     classname="de.hunsicker.jalopy.plugin.ant.AntPlugin">
+	<classpath>
+	    <fileset dir="${jalopy.dir}" includes="*.jar" />
+	</classpath>
+    </taskdef>
+
+
+    <!-- =========== -->
+    <!--  - I N I T  -->
+    <!-- =========== -->
+    <target name="-init">
+<!--         description="Initialize the environment." -->
+
+        <!-- Create the time stamp -->
+        <tstamp/>
+
+        <available
+            property="junit.jar.present"
+            file="${junit.jar}"
+	    />
+
+    </target>
 
     <!-- ================= -->
     <!--  C H E C K O U T  -->
@@ -86,8 +110,7 @@
 	    history="file"
 	    historymethod="adler32"
 	    loglevel="info"
-	    threads="1"
-	    classpathref="build.classpath" >
+	    threads="1" >
 	    <fileset dir="${src.dir}">
 		<include name="**/*.java" />
 		<exclude name="**/package-info.java"/>
