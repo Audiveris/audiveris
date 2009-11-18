@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="CLUTTER" interline="18" id="683">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-8.507042253521126</pitch-position>
+    <section first-pos="145" id="101">
+        <run start="978" level="161" length="2"/>
+        <run start="978" level="43" length="3"/>
+        <run start="978" level="24" length="3"/>
+        <run start="979" level="66" length="3"/>
+        <run start="979" level="97" length="3"/>
+        <run start="979" level="78" length="2"/>
+        <run start="979" level="90" length="2"/>
+        <run start="979" level="96" length="2"/>
+        <run start="978" level="110" length="2"/>
+        <run start="977" level="126" length="3"/>
+    </section>
+    <section first-pos="146" id="103">
+        <run start="967" level="127" length="1"/>
+        <run start="965" level="45" length="3"/>
+        <run start="963" level="26" length="5"/>
+        <run start="961" level="76" length="8"/>
+    </section>
+    <section first-pos="150" id="109">
+        <run start="960" level="49" length="3"/>
+        <run start="959" level="88" length="4"/>
+        <run start="959" level="88" length="4"/>
+        <run start="959" level="88" length="4"/>
+        <run start="959" level="88" length="4"/>
+        <run start="959" level="88" length="4"/>
+        <run start="959" level="95" length="4"/>
+        <run start="959" level="156" length="2"/>
+    </section>
+    <section first-pos="150" id="110">
+        <run start="965" level="56" length="4"/>
+        <run start="966" level="4" length="3"/>
+        <run start="966" level="43" length="4"/>
+        <run start="966" level="68" length="5"/>
+        <run start="967" level="34" length="5"/>
+    </section>
+    <section first-pos="155" id="118">
+        <run start="968" level="57" length="11"/>
+        <run start="969" level="45" length="9"/>
+    </section>
+    <section first-pos="157" id="120">
+        <run start="971" level="143" length="4"/>
+    </section>
+</stick>

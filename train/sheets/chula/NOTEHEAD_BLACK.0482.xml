@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="NOTEHEAD_BLACK" interline="21" id="482">
+    <stem-number>1</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-1.0232558139534884</pitch-position>
+    <section first-pos="1025" id="1926">
+        <run start="378" level="45" length="15"/>
+        <run start="377" level="42" length="16"/>
+        <run start="375" level="38" length="18"/>
+        <run start="374" level="36" length="19"/>
+        <run start="373" level="34" length="20"/>
+        <run start="371" level="37" length="22"/>
+        <run start="370" level="44" length="23"/>
+        <run start="370" level="44" length="23"/>
+        <run start="370" level="44" length="23"/>
+        <run start="370" level="44" length="23"/>
+        <run start="370" level="37" length="22"/>
+        <run start="370" level="29" length="21"/>
+        <run start="370" level="21" length="20"/>
+        <run start="370" level="21" length="20"/>
+        <run start="370" level="22" length="20"/>
+        <run start="370" level="24" length="18"/>
+        <run start="370" level="24" length="17"/>
+        <run start="370" level="25" length="17"/>
+        <run start="370" level="27" length="16"/>
+        <run start="370" level="30" length="15"/>
+        <run start="370" level="36" length="13"/>
+    </section>
+    <section first-pos="1046" id="1970">
+        <run start="370" level="200" length="2"/>
+    </section>
+    <section first-pos="1046" id="1971">
+        <run start="373" level="15" length="9"/>
+        <run start="374" level="41" length="6"/>
+    </section>
+</stick>

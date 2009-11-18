@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="TENUTO" interline="15" id="14">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-6.098360655737705</pitch-position>
+    <section first-pos="431" id="29">
+        <run start="19" level="164" length="2"/>
+        <run start="19" level="66" length="3"/>
+        <run start="19" level="45" length="3"/>
+        <run start="19" level="44" length="3"/>
+        <run start="19" level="44" length="3"/>
+        <run start="19" level="44" length="3"/>
+        <run start="19" level="44" length="3"/>
+        <run start="19" level="44" length="3"/>
+        <run start="19" level="44" length="3"/>
+        <run start="19" level="44" length="3"/>
+        <run start="19" level="44" length="3"/>
+        <run start="19" level="44" length="3"/>
+        <run start="19" level="44" length="3"/>
+        <run start="19" level="44" length="3"/>
+        <run start="19" level="44" length="3"/>
+        <run start="19" level="44" length="3"/>
+        <run start="19" level="44" length="3"/>
+        <run start="19" level="61" length="3"/>
+        <run start="19" level="139" length="2"/>
+    </section>
+</stick>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="BEAM" interline="18" id="1217">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-1.8888888888888888</pitch-position>
+    <section first-pos="1483" id="2860">
+        <run start="1921" level="61" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+        <run start="1921" level="62" length="10"/>
+    </section>
+</stick>

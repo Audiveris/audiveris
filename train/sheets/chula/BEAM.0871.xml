@@ -3,51 +3,56 @@
     <stem-number>2</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>4.376470588235295</pitch-position>
-    <section first-pos="1551" id="2734">
-        <run start="1266" level="70" length="11"/>
-        <run start="1266" level="70" length="11"/>
-        <run start="1266" level="70" length="11"/>
-        <run start="1266" level="70" length="11"/>
-        <run start="1266" level="70" length="11"/>
-        <run start="1266" level="71" length="11"/>
-        <run start="1266" level="71" length="11"/>
-        <run start="1266" level="71" length="11"/>
-        <run start="1266" level="71" length="11"/>
-        <run start="1266" level="71" length="11"/>
-        <run start="1266" level="71" length="11"/>
-        <run start="1266" level="72" length="11"/>
-        <run start="1266" level="72" length="11"/>
-        <run start="1266" level="72" length="11"/>
-        <run start="1266" level="72" length="11"/>
-        <run start="1266" level="72" length="11"/>
-        <run start="1266" level="72" length="11"/>
-        <run start="1266" level="73" length="11"/>
-        <run start="1266" level="73" length="11"/>
-        <run start="1266" level="73" length="11"/>
-        <run start="1266" level="73" length="11"/>
-        <run start="1266" level="73" length="11"/>
-        <run start="1266" level="61" length="10"/>
-        <run start="1266" level="61" length="10"/>
-        <run start="1266" level="61" length="10"/>
-        <run start="1266" level="61" length="10"/>
-        <run start="1266" level="61" length="10"/>
-        <run start="1266" level="61" length="10"/>
-        <run start="1266" level="61" length="10"/>
-        <run start="1266" level="61" length="10"/>
-        <run start="1266" level="61" length="10"/>
-        <run start="1266" level="61" length="10"/>
-        <run start="1266" level="68" length="11"/>
-        <run start="1266" level="55" length="11"/>
+    <section first-pos="1498" id="2650">
+        <run start="1266" level="60" length="11"/>
+        <run start="1266" level="61" length="11"/>
+        <run start="1266" level="61" length="11"/>
+        <run start="1266" level="61" length="11"/>
+        <run start="1266" level="61" length="11"/>
+        <run start="1266" level="61" length="11"/>
+        <run start="1266" level="61" length="11"/>
+        <run start="1266" level="62" length="11"/>
+        <run start="1266" level="62" length="11"/>
+        <run start="1266" level="62" length="11"/>
+        <run start="1266" level="62" length="11"/>
+        <run start="1266" level="62" length="11"/>
         <run start="1266" level="63" length="11"/>
-        <run start="1266" level="61" length="10"/>
-        <run start="1266" level="61" length="10"/>
-        <run start="1266" level="61" length="10"/>
-        <run start="1266" level="61" length="10"/>
-        <run start="1266" level="61" length="10"/>
-        <run start="1266" level="61" length="10"/>
-        <run start="1266" level="61" length="10"/>
-        <run start="1266" level="61" length="10"/>
-        <run start="1266" level="61" length="10"/>
+        <run start="1266" level="63" length="11"/>
+        <run start="1266" level="63" length="11"/>
+        <run start="1266" level="63" length="11"/>
+        <run start="1266" level="63" length="11"/>
+        <run start="1266" level="63" length="11"/>
+        <run start="1266" level="64" length="11"/>
+        <run start="1266" level="64" length="11"/>
+        <run start="1266" level="64" length="11"/>
+        <run start="1266" level="64" length="11"/>
+        <run start="1266" level="64" length="11"/>
+        <run start="1266" level="64" length="11"/>
+        <run start="1266" level="65" length="11"/>
+        <run start="1266" level="65" length="11"/>
+        <run start="1266" level="65" length="11"/>
+        <run start="1266" level="65" length="11"/>
+        <run start="1266" level="65" length="11"/>
+        <run start="1266" level="65" length="11"/>
+        <run start="1266" level="66" length="11"/>
+        <run start="1266" level="66" length="11"/>
+        <run start="1266" level="66" length="11"/>
+        <run start="1266" level="66" length="11"/>
+        <run start="1266" level="66" length="11"/>
+        <run start="1266" level="67" length="11"/>
+        <run start="1266" level="67" length="11"/>
+        <run start="1266" level="67" length="11"/>
+        <run start="1266" level="67" length="11"/>
+        <run start="1266" level="67" length="11"/>
+        <run start="1266" level="67" length="11"/>
+        <run start="1266" level="68" length="11"/>
+        <run start="1266" level="68" length="11"/>
+        <run start="1266" level="68" length="11"/>
+        <run start="1266" level="68" length="11"/>
+        <run start="1266" level="68" length="11"/>
+        <run start="1266" level="68" length="11"/>
+        <run start="1266" level="69" length="11"/>
+        <run start="1266" level="69" length="11"/>
         <run start="1266" level="69" length="11"/>
     </section>
 </stick>

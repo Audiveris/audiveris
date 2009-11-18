@@ -3,30 +3,32 @@
     <stem-number>1</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>1.9294117647058824</pitch-position>
-    <section first-pos="1202" id="2207">
-        <run start="998" level="167" length="5"/>
-        <run start="997" level="113" length="8"/>
-        <run start="996" level="95" length="11"/>
-        <run start="994" level="74" length="14"/>
-        <run start="993" level="50" length="15"/>
-        <run start="992" level="53" length="17"/>
-        <run start="992" level="37" length="17"/>
-        <run start="991" level="41" length="18"/>
-        <run start="990" level="39" length="19"/>
-        <run start="990" level="33" length="19"/>
-        <run start="990" level="34" length="19"/>
-        <run start="989" level="37" length="20"/>
-        <run start="989" level="32" length="20"/>
-        <run start="989" level="32" length="20"/>
-        <run start="989" level="37" length="20"/>
-        <run start="988" level="38" length="20"/>
-        <run start="988" level="37" length="20"/>
-        <run start="988" level="34" length="19"/>
-        <run start="988" level="46" length="19"/>
-        <run start="989" level="38" length="17"/>
-        <run start="989" level="51" length="17"/>
-        <run start="989" level="58" length="15"/>
-        <run start="990" level="59" length="13"/>
-        <run start="990" level="73" length="12"/>
+    <section first-pos="1395" id="2523">
+        <run start="998" level="198" length="3"/>
+        <run start="998" level="173" length="3"/>
+        <run start="998" level="162" length="5"/>
+        <run start="996" level="128" length="8"/>
+        <run start="995" level="107" length="10"/>
+        <run start="993" level="98" length="13"/>
+        <run start="992" level="76" length="15"/>
+        <run start="991" level="70" length="17"/>
+        <run start="991" level="60" length="17"/>
+        <run start="990" level="63" length="19"/>
+        <run start="989" level="60" length="20"/>
+        <run start="989" level="54" length="20"/>
+        <run start="988" level="57" length="21"/>
+        <run start="988" level="51" length="21"/>
+        <run start="988" level="51" length="21"/>
+        <run start="988" level="56" length="21"/>
+        <run start="988" level="54" length="20"/>
+        <run start="987" level="57" length="21"/>
+        <run start="987" level="56" length="21"/>
+        <run start="987" level="60" length="20"/>
+        <run start="988" level="62" length="19"/>
+        <run start="988" level="65" length="18"/>
+        <run start="988" level="63" length="17"/>
+        <run start="988" level="69" length="17"/>
+        <run start="988" level="74" length="15"/>
+        <run start="989" level="83" length="13"/>
     </section>
 </stick>

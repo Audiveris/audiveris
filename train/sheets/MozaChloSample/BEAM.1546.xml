@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="BEAM" interline="18" id="1546">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-3.452054794520548</pitch-position>
+    <section first-pos="2217" id="3976">
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+        <run start="2592" level="22" length="9"/>
+    </section>
+</stick>

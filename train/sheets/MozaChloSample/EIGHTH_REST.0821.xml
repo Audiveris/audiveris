@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="EIGHTH_REST" interline="18" id="821">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-0.5070422535211268</pitch-position>
+    <section first-pos="708" id="1365">
+        <run start="1446" level="84" length="6"/>
+        <run start="1444" level="42" length="10"/>
+        <run start="1444" level="2" length="10"/>
+        <run start="1443" level="11" length="12"/>
+        <run start="1443" level="0" length="12"/>
+        <run start="1442" level="24" length="14"/>
+        <run start="1442" level="23" length="14"/>
+        <run start="1442" level="12" length="13"/>
+        <run start="1443" level="4" length="12"/>
+        <run start="1443" level="28" length="12"/>
+        <run start="1445" level="12" length="9"/>
+        <run start="1448" level="94" length="6"/>
+        <run start="1450" level="15" length="3"/>
+        <run start="1449" level="88" length="4"/>
+        <run start="1449" level="36" length="3"/>
+    </section>
+    <section first-pos="716" id="1387">
+        <run start="1474" level="179" length="3"/>
+        <run start="1471" level="107" length="6"/>
+        <run start="1468" level="71" length="9"/>
+        <run start="1465" level="52" length="10"/>
+        <run start="1462" level="74" length="10"/>
+        <run start="1459" level="73" length="9"/>
+        <run start="1458" level="90" length="6"/>
+    </section>
+    <section first-pos="722" id="1395">
+        <run start="1456" level="136" length="1"/>
+    </section>
+    <section first-pos="723" id="1398">
+        <run start="1448" level="90" length="12"/>
+        <run start="1447" level="47" length="10"/>
+        <run start="1445" level="70" length="8"/>
+        <run start="1445" level="121" length="4"/>
+    </section>
+</stick>

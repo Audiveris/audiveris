@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="SLUR" interline="18" id="1132">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>7.888888888888889</pitch-position>
+    <section first-pos="896" id="1660">
+        <run start="1998" level="101" length="1"/>
+        <run start="1998" level="134" length="2"/>
+        <run start="1999" level="134" length="2"/>
+        <run start="2000" level="129" length="2"/>
+        <run start="2001" level="122" length="2"/>
+        <run start="2002" level="122" length="2"/>
+        <run start="2002" level="110" length="2"/>
+        <run start="2003" level="83" length="2"/>
+        <run start="2004" level="62" length="2"/>
+        <run start="2004" level="106" length="3"/>
+        <run start="2005" level="90" length="3"/>
+        <run start="2006" level="31" length="2"/>
+        <run start="2006" level="71" length="3"/>
+        <run start="2007" level="62" length="3"/>
+        <run start="2007" level="54" length="3"/>
+        <run start="2008" level="52" length="3"/>
+        <run start="2008" level="98" length="4"/>
+        <run start="2009" level="50" length="3"/>
+        <run start="2009" level="86" length="4"/>
+        <run start="2010" level="43" length="3"/>
+        <run start="2010" level="79" length="4"/>
+        <run start="2011" level="27" length="3"/>
+        <run start="2011" level="61" length="4"/>
+        <run start="2012" level="14" length="3"/>
+        <run start="2012" level="52" length="4"/>
+        <run start="2012" level="48" length="4"/>
+        <run start="2013" level="47" length="4"/>
+        <run start="2013" level="43" length="4"/>
+        <run start="2013" level="48" length="4"/>
+        <run start="2014" level="47" length="4"/>
+        <run start="2014" level="49" length="4"/>
+        <run start="2014" level="53" length="4"/>
+        <run start="2015" level="7" length="3"/>
+        <run start="2015" level="46" length="4"/>
+        <run start="2015" level="42" length="4"/>
+        <run start="2015" level="40" length="4"/>
+        <run start="2016" level="36" length="4"/>
+        <run start="2016" level="31" length="4"/>
+        <run start="2016" level="28" length="4"/>
+        <run start="2016" level="64" length="5"/>
+        <run start="2016" level="63" length="5"/>
+        <run start="2017" level="36" length="4"/>
+        <run start="2017" level="35" length="4"/>
+        <run start="2017" level="34" length="4"/>
+        <run start="2017" level="28" length="4"/>
+        <run start="2017" level="30" length="4"/>
+        <run start="2017" level="63" length="5"/>
+        <run start="2017" level="61" length="5"/>
+        <run start="2017" level="62" length="5"/>
+        <run start="2018" level="31" length="4"/>
+        <run start="2018" level="32" length="4"/>
+        <run start="2018" level="31" length="4"/>
+        <run start="2018" level="29" length="4"/>
+        <run start="2018" level="30" length="4"/>
+        <run start="2018" level="30" length="4"/>
+        <run start="2018" level="30" length="4"/>
+        <run start="2018" level="35" length="4"/>
+        <run start="2018" level="38" length="4"/>
+        <run start="2018" level="42" length="4"/>
+        <run start="2018" level="41" length="4"/>
+        <run start="2018" level="42" length="4"/>
+        <run start="2018" level="43" length="4"/>
+        <run start="2018" level="42" length="4"/>
+        <run start="2018" level="41" length="4"/>
+        <run start="2018" level="42" length="4"/>
+        <run start="2017" level="47" length="4"/>
+        <run start="2017" level="49" length="4"/>
+        <run start="2017" level="53" length="4"/>
+        <run start="2017" level="56" length="4"/>
+        <run start="2017" level="59" length="4"/>
+        <run start="2017" level="62" length="4"/>
+        <run start="2017" level="27" length="3"/>
+        <run start="2017" level="32" length="3"/>
+        <run start="2017" level="38" length="3"/>
+        <run start="2016" level="84" length="4"/>
+        <run start="2016" level="48" length="3"/>
+        <run start="2016" level="52" length="3"/>
+        <run start="2016" level="57" length="3"/>
+        <run start="2015" level="63" length="3"/>
+        <run start="2015" level="57" length="3"/>
+        <run start="2015" level="53" length="3"/>
+        <run start="2014" level="66" length="3"/>
+        <run start="2014" level="67" length="3"/>
+        <run start="2014" level="80" length="3"/>
+        <run start="2014" level="38" length="2"/>
+        <run start="2013" level="83" length="3"/>
+        <run start="2013" level="34" length="2"/>
+        <run start="2012" level="94" length="3"/>
+        <run start="2012" level="47" length="2"/>
+        <run start="2012" level="55" length="2"/>
+        <run start="2011" level="80" length="2"/>
+        <run start="2011" level="83" length="2"/>
+        <run start="2010" level="107" length="2"/>
+        <run start="2010" level="124" length="2"/>
+        <run start="2010" level="66" length="1"/>
+        <run start="2009" level="141" length="2"/>
+        <run start="2009" level="102" length="1"/>
+    </section>
+    <section first-pos="993" id="1838">
+        <run start="2008" level="73" length="1"/>
+        <run start="2007" level="134" length="2"/>
+        <run start="2006" level="136" length="2"/>
+    </section>
+</stick>

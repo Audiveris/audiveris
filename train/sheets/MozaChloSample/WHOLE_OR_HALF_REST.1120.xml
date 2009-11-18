@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="WHOLE_OR_HALF_REST" interline="18" id="1120">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-0.4931506849315068</pitch-position>
+    <section first-pos="2071" id="3725">
+        <run start="2140" level="195" length="1"/>
+        <run start="2140" level="195" length="1"/>
+    </section>
+    <section first-pos="2073" id="3730">
+        <run start="2132" level="77" length="11"/>
+        <run start="2132" level="54" length="11"/>
+        <run start="2132" level="54" length="11"/>
+        <run start="2132" level="54" length="11"/>
+        <run start="2132" level="54" length="11"/>
+        <run start="2132" level="54" length="11"/>
+        <run start="2132" level="54" length="11"/>
+        <run start="2132" level="54" length="11"/>
+        <run start="2132" level="54" length="11"/>
+        <run start="2132" level="54" length="11"/>
+        <run start="2132" level="54" length="11"/>
+        <run start="2132" level="54" length="11"/>
+        <run start="2132" level="54" length="11"/>
+        <run start="2132" level="54" length="11"/>
+        <run start="2132" level="54" length="11"/>
+        <run start="2132" level="54" length="11"/>
+        <run start="2132" level="54" length="11"/>
+        <run start="2132" level="54" length="11"/>
+        <run start="2132" level="54" length="11"/>
+        <run start="2132" level="54" length="11"/>
+        <run start="2132" level="54" length="11"/>
+        <run start="2132" level="54" length="11"/>
+        <run start="2132" level="54" length="11"/>
+    </section>
+    <section first-pos="2096" id="3797">
+        <run start="2140" level="195" length="1"/>
+        <run start="2140" level="195" length="1"/>
+    </section>
+</stick>

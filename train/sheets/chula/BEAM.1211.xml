@@ -3,7 +3,43 @@
     <stem-number>2</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>2.046511627906977</pitch-position>
-    <section first-pos="523" id="1200">
+    <section first-pos="475" id="1112">
+        <run start="1827" level="94" length="10"/>
+        <run start="1827" level="94" length="10"/>
+        <run start="1827" level="94" length="10"/>
+        <run start="1827" level="94" length="10"/>
+        <run start="1827" level="95" length="10"/>
+        <run start="1827" level="95" length="10"/>
+        <run start="1827" level="95" length="10"/>
+        <run start="1827" level="95" length="10"/>
+        <run start="1827" level="95" length="10"/>
+        <run start="1827" level="95" length="10"/>
+        <run start="1827" level="96" length="10"/>
+        <run start="1827" level="96" length="10"/>
+        <run start="1827" level="96" length="10"/>
+        <run start="1827" level="96" length="10"/>
+        <run start="1827" level="96" length="10"/>
+        <run start="1827" level="97" length="10"/>
+        <run start="1827" level="97" length="10"/>
+        <run start="1827" level="97" length="10"/>
+        <run start="1827" level="97" length="10"/>
+        <run start="1827" level="97" length="10"/>
+        <run start="1827" level="98" length="10"/>
+        <run start="1827" level="98" length="10"/>
+        <run start="1827" level="98" length="10"/>
+        <run start="1827" level="98" length="10"/>
+        <run start="1827" level="98" length="10"/>
+        <run start="1827" level="99" length="10"/>
+        <run start="1827" level="99" length="10"/>
+        <run start="1827" level="99" length="10"/>
+        <run start="1827" level="99" length="10"/>
+        <run start="1827" level="99" length="10"/>
+        <run start="1827" level="100" length="10"/>
+        <run start="1827" level="100" length="10"/>
+        <run start="1827" level="100" length="10"/>
+        <run start="1827" level="100" length="10"/>
+        <run start="1827" level="100" length="10"/>
+        <run start="1827" level="100" length="10"/>
         <run start="1827" level="89" length="9"/>
         <run start="1827" level="89" length="9"/>
         <run start="1827" level="89" length="9"/>
@@ -13,34 +49,5 @@
         <run start="1827" level="89" length="9"/>
         <run start="1827" level="89" length="9"/>
         <run start="1827" level="89" length="9"/>
-        <run start="1827" level="89" length="9"/>
-        <run start="1827" level="89" length="9"/>
-        <run start="1827" level="89" length="9"/>
-        <run start="1827" level="89" length="9"/>
-        <run start="1827" level="89" length="9"/>
-        <run start="1827" level="89" length="9"/>
-        <run start="1827" level="89" length="9"/>
-        <run start="1827" level="89" length="9"/>
-        <run start="1827" level="90" length="9"/>
-        <run start="1827" level="90" length="9"/>
-        <run start="1827" level="90" length="9"/>
-        <run start="1827" level="90" length="9"/>
-        <run start="1827" level="91" length="9"/>
-        <run start="1827" level="91" length="9"/>
-        <run start="1827" level="91" length="9"/>
-        <run start="1827" level="91" length="9"/>
-        <run start="1827" level="91" length="9"/>
-        <run start="1827" level="92" length="9"/>
-        <run start="1827" level="92" length="9"/>
-        <run start="1827" level="92" length="9"/>
-        <run start="1827" level="92" length="9"/>
-        <run start="1827" level="92" length="9"/>
-        <run start="1827" level="93" length="9"/>
-        <run start="1827" level="93" length="9"/>
-        <run start="1827" level="93" length="9"/>
-        <run start="1827" level="93" length="9"/>
-        <run start="1827" level="94" length="9"/>
-        <run start="1827" level="94" length="9"/>
-        <run start="1827" level="94" length="9"/>
     </section>
 </stick>

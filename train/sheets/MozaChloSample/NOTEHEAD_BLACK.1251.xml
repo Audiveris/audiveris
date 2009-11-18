@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="NOTEHEAD_BLACK" interline="18" id="1251">
+    <stem-number>1</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>8.931506849315069</pitch-position>
+    <section first-pos="1846" id="3271">
+        <run start="2024" level="54" length="7"/>
+        <run start="2022" level="24" length="10"/>
+        <run start="2021" level="14" length="12"/>
+        <run start="2020" level="19" length="14"/>
+        <run start="2019" level="12" length="15"/>
+        <run start="2018" level="12" length="16"/>
+        <run start="2017" level="23" length="18"/>
+        <run start="2016" level="29" length="19"/>
+        <run start="2016" level="29" length="19"/>
+        <run start="2016" level="30" length="19"/>
+        <run start="2016" level="22" length="18"/>
+        <run start="2016" level="23" length="18"/>
+        <run start="2016" level="26" length="18"/>
+        <run start="2016" level="32" length="18"/>
+        <run start="2016" level="25" length="17"/>
+        <run start="2016" level="31" length="17"/>
+        <run start="2016" level="27" length="16"/>
+        <run start="2016" level="38" length="16"/>
+        <run start="2016" level="37" length="15"/>
+        <run start="2016" level="38" length="14"/>
+        <run start="2016" level="44" length="13"/>
+    </section>
+</stick>

@@ -2,37 +2,42 @@
 <stick shape="NOTEHEAD_BLACK" interline="21" id="468">
     <stem-number>1</stem-number>
     <with-ledger>false</with-ledger>
-    <pitch-position>-2.13953488372093</pitch-position>
-    <section first-pos="783" id="1568">
-        <run start="368" level="25" length="1"/>
+    <pitch-position>-2.211764705882353</pitch-position>
+    <section first-pos="607" id="1322">
+        <run start="366" level="68" length="12"/>
+        <run start="365" level="60" length="14"/>
+        <run start="364" level="55" length="15"/>
+        <run start="363" level="49" length="17"/>
+        <run start="362" level="48" length="18"/>
+        <run start="362" level="47" length="18"/>
+        <run start="361" level="44" length="19"/>
+        <run start="360" level="44" length="20"/>
+        <run start="360" level="44" length="20"/>
+        <run start="360" level="42" length="20"/>
+        <run start="359" level="42" length="21"/>
+        <run start="359" level="43" length="21"/>
+        <run start="359" level="44" length="20"/>
+        <run start="359" level="44" length="20"/>
+        <run start="359" level="45" length="20"/>
+        <run start="359" level="46" length="19"/>
+        <run start="359" level="48" length="19"/>
+        <run start="359" level="51" length="18"/>
+        <run start="359" level="51" length="17"/>
+        <run start="359" level="60" length="17"/>
+        <run start="360" level="65" length="14"/>
+        <run start="360" level="72" length="13"/>
+        <run start="361" level="83" length="12"/>
     </section>
-    <section first-pos="784" id="1572">
-        <run start="366" level="79" length="13"/>
-        <run start="365" level="45" length="14"/>
-        <run start="363" level="52" length="16"/>
-        <run start="363" level="40" length="16"/>
-        <run start="362" level="46" length="18"/>
-        <run start="362" level="35" length="18"/>
-        <run start="361" level="43" length="19"/>
-        <run start="360" level="41" length="20"/>
-        <run start="360" level="32" length="20"/>
-        <run start="360" level="31" length="20"/>
-        <run start="360" level="33" length="20"/>
-        <run start="360" level="33" length="19"/>
-        <run start="360" level="33" length="19"/>
-        <run start="359" level="42" length="20"/>
-        <run start="359" level="33" length="19"/>
-        <run start="359" level="38" length="19"/>
-        <run start="360" level="36" length="17"/>
-        <run start="360" level="38" length="17"/>
-        <run start="360" level="45" length="16"/>
-        <run start="361" level="47" length="14"/>
-        <run start="361" level="59" length="13"/>
-        <run start="362" level="73" length="10"/>
-        <run start="364" level="83" length="8"/>
-        <run start="365" level="104" length="6"/>
+    <section first-pos="630" id="1378">
+        <run start="363" level="62" length="6"/>
     </section>
-    <section first-pos="808" id="1595">
-        <run start="369" level="200" length="1"/>
+    <section first-pos="630" id="1379">
+        <run start="370" level="200" length="1"/>
+    </section>
+    <section first-pos="630" id="1380">
+        <run start="372" level="199" length="1"/>
+    </section>
+    <section first-pos="631" id="1382">
+        <run start="368" level="108" length="1"/>
     </section>
 </stick>

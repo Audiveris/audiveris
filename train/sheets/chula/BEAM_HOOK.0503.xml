@@ -2,33 +2,30 @@
 <stick shape="BEAM_HOOK" interline="21" id="503">
     <stem-number>1</stem-number>
     <with-ledger>false</with-ledger>
-    <pitch-position>3.3488372093023258</pitch-position>
-    <section first-pos="757" id="1548">
-        <run start="424" level="98" length="5"/>
-    </section>
-    <section first-pos="758" id="1549">
-        <run start="421" level="61" length="12"/>
-        <run start="421" level="40" length="14"/>
-        <run start="421" level="35" length="14"/>
-        <run start="421" level="35" length="14"/>
-        <run start="421" level="35" length="14"/>
-        <run start="421" level="34" length="14"/>
-        <run start="421" level="34" length="14"/>
-        <run start="421" level="34" length="14"/>
-        <run start="421" level="34" length="14"/>
-        <run start="421" level="34" length="14"/>
-        <run start="421" level="34" length="14"/>
-        <run start="421" level="34" length="14"/>
-        <run start="422" level="35" length="13"/>
-        <run start="422" level="36" length="13"/>
-        <run start="422" level="36" length="13"/>
-        <run start="422" level="36" length="13"/>
-        <run start="422" level="35" length="13"/>
-        <run start="422" level="35" length="13"/>
-        <run start="422" level="35" length="13"/>
-        <run start="422" level="35" length="13"/>
-        <run start="422" level="35" length="13"/>
-        <run start="422" level="35" length="13"/>
-        <run start="421" level="36" length="14"/>
+    <pitch-position>3.255813953488372</pitch-position>
+    <section first-pos="655" id="1433">
+        <run start="420" level="29" length="15"/>
+        <run start="420" level="29" length="15"/>
+        <run start="420" level="29" length="15"/>
+        <run start="420" level="29" length="15"/>
+        <run start="420" level="28" length="15"/>
+        <run start="420" level="28" length="15"/>
+        <run start="420" level="28" length="15"/>
+        <run start="421" level="30" length="14"/>
+        <run start="420" level="31" length="15"/>
+        <run start="421" level="30" length="14"/>
+        <run start="421" level="30" length="14"/>
+        <run start="421" level="29" length="14"/>
+        <run start="421" level="29" length="14"/>
+        <run start="421" level="29" length="14"/>
+        <run start="421" level="29" length="14"/>
+        <run start="421" level="29" length="14"/>
+        <run start="421" level="29" length="14"/>
+        <run start="421" level="29" length="14"/>
+        <run start="421" level="29" length="14"/>
+        <run start="421" level="29" length="14"/>
+        <run start="421" level="29" length="14"/>
+        <run start="422" level="46" length="13"/>
+        <run start="425" level="173" length="10"/>
     </section>
 </stick>

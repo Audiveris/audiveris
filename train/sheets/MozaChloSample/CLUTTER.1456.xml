@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="CLUTTER" interline="18" id="1456">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>22.366197183098592</pitch-position>
+    <section first-pos="1381" id="2666">
+        <run start="3005" level="173" length="4"/>
+    </section>
+    <section first-pos="1382" id="2669">
+        <run start="3002" level="36" length="10"/>
+        <run start="3001" level="6" length="12"/>
+    </section>
+    <section first-pos="1384" id="2671">
+        <run start="3000" level="89" length="5"/>
+    </section>
+    <section first-pos="1384" id="2672">
+        <run start="3006" level="54" length="8"/>
+        <run start="3009" level="59" length="6"/>
+        <run start="3011" level="14" length="4"/>
+        <run start="3012" level="47" length="4"/>
+        <run start="3012" level="58" length="4"/>
+        <run start="3012" level="73" length="4"/>
+        <run start="3012" level="42" length="3"/>
+        <run start="3012" level="47" length="3"/>
+        <run start="3011" level="76" length="3"/>
+        <run start="3010" level="89" length="3"/>
+        <run start="3009" level="90" length="3"/>
+    </section>
+    <section first-pos="1385" id="2674">
+        <run start="2999" level="70" length="2"/>
+        <run start="2998" level="110" length="2"/>
+        <run start="2998" level="102" length="2"/>
+        <run start="2998" level="96" length="2"/>
+        <run start="2998" level="56" length="2"/>
+        <run start="2998" level="67" length="3"/>
+    </section>
+    <section first-pos="1385" id="2675">
+        <run start="3004" level="32" length="1"/>
+        <run start="3004" level="32" length="1"/>
+        <run start="3004" level="32" length="1"/>
+        <run start="3004" level="32" length="1"/>
+        <run start="3004" level="32" length="1"/>
+        <run start="3004" level="32" length="1"/>
+    </section>
+    <section first-pos="1391" id="2679">
+        <run start="2998" level="74" length="7"/>
+        <run start="2999" level="15" length="6"/>
+        <run start="3000" level="18" length="5"/>
+        <run start="3001" level="43" length="4"/>
+        <run start="3004" level="199" length="1"/>
+    </section>
+</stick>

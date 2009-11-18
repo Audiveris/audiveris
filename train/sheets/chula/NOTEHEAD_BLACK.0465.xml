@@ -3,29 +3,30 @@
     <stem-number>1</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>-2.13953488372093</pitch-position>
-    <section first-pos="2001" id="3530">
-        <run start="364" level="58" length="14"/>
-        <run start="363" level="54" length="15"/>
-        <run start="362" level="51" length="16"/>
-        <run start="361" level="45" length="18"/>
-        <run start="361" level="35" length="18"/>
-        <run start="360" level="43" length="19"/>
-        <run start="360" level="33" length="19"/>
-        <run start="359" level="42" length="20"/>
-        <run start="359" level="34" length="19"/>
-        <run start="359" level="34" length="19"/>
+    <section first-pos="1580" id="2790">
+        <run start="365" level="70" length="12"/>
+        <run start="364" level="64" length="13"/>
+        <run start="363" level="69" length="15"/>
+        <run start="362" level="52" length="16"/>
+        <run start="360" level="57" length="18"/>
+        <run start="360" level="47" length="18"/>
+        <run start="359" level="54" length="19"/>
+        <run start="359" level="44" length="19"/>
+        <run start="358" level="50" length="21"/>
+        <run start="358" level="42" length="20"/>
+        <run start="358" level="42" length="20"/>
         <run start="358" level="41" length="20"/>
-        <run start="358" level="32" length="20"/>
-        <run start="358" level="34" length="20"/>
-        <run start="358" level="34" length="19"/>
-        <run start="358" level="36" length="19"/>
-        <run start="358" level="38" length="18"/>
-        <run start="358" level="43" length="17"/>
-        <run start="359" level="43" length="15"/>
-        <run start="359" level="52" length="15"/>
-        <run start="360" level="64" length="12"/>
-        <run start="361" level="73" length="9"/>
-        <run start="362" level="72" length="7"/>
-        <run start="364" level="85" length="4"/>
+        <run start="358" level="43" length="20"/>
+        <run start="358" level="43" length="19"/>
+        <run start="358" level="45" length="19"/>
+        <run start="358" level="45" length="18"/>
+        <run start="358" level="47" length="18"/>
+        <run start="358" level="50" length="17"/>
+        <run start="358" level="57" length="16"/>
+        <run start="359" level="65" length="14"/>
+        <run start="360" level="71" length="12"/>
+        <run start="360" level="84" length="11"/>
+        <run start="362" level="66" length="7"/>
+        <run start="363" level="54" length="4"/>
     </section>
 </stick>

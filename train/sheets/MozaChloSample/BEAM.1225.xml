@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stick shape="BEAM" interline="18" id="1225">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>0.1111111111111111</pitch-position>
+    <section first-pos="476" id="984">
+        <run start="1936" level="59" length="9"/>
+        <run start="1936" level="62" length="9"/>
+        <run start="1936" level="65" length="9"/>
+        <run start="1937" level="50" length="8"/>
+        <run start="1937" level="50" length="8"/>
+        <run start="1937" level="82" length="10"/>
+        <run start="1937" level="82" length="10"/>
+        <run start="1937" level="82" length="10"/>
+        <run start="1937" level="81" length="10"/>
+        <run start="1937" level="81" length="10"/>
+        <run start="1937" level="81" length="10"/>
+        <run start="1937" level="81" length="10"/>
+        <run start="1938" level="67" length="9"/>
+        <run start="1938" level="67" length="9"/>
+        <run start="1938" level="82" length="10"/>
+        <run start="1938" level="82" length="10"/>
+        <run start="1938" level="82" length="10"/>
+        <run start="1938" level="79" length="10"/>
+        <run start="1938" level="79" length="10"/>
+        <run start="1938" level="79" length="10"/>
+        <run start="1938" level="80" length="10"/>
+        <run start="1939" level="67" length="9"/>
+        <run start="1939" level="67" length="9"/>
+        <run start="1939" level="82" length="10"/>
+        <run start="1939" level="82" length="10"/>
+        <run start="1939" level="80" length="10"/>
+        <run start="1939" level="79" length="10"/>
+        <run start="1939" level="79" length="10"/>
+        <run start="1939" level="79" length="10"/>
+        <run start="1939" level="80" length="10"/>
+        <run start="1940" level="67" length="9"/>
+        <run start="1940" level="68" length="9"/>
+        <run start="1940" level="82" length="10"/>
+        <run start="1940" level="82" length="10"/>
+        <run start="1940" level="81" length="10"/>
+        <run start="1940" level="81" length="10"/>
+        <run start="1940" level="80" length="10"/>
+        <run start="1940" level="79" length="10"/>
+        <run start="1941" level="67" length="9"/>
+        <run start="1941" level="67" length="9"/>
+        <run start="1941" level="82" length="10"/>
+        <run start="1941" level="82" length="10"/>
+        <run start="1941" level="82" length="10"/>
+        <run start="1941" level="81" length="10"/>
+        <run start="1941" level="80" length="10"/>
+        <run start="1941" level="81" length="10"/>
+        <run start="1941" level="81" length="10"/>
+        <run start="1942" level="67" length="9"/>
+        <run start="1942" level="67" length="9"/>
+        <run start="1942" level="82" length="10"/>
+        <run start="1942" level="81" length="10"/>
+        <run start="1942" level="81" length="10"/>
+        <run start="1942" level="80" length="10"/>
+        <run start="1942" level="79" length="10"/>
+        <run start="1942" level="79" length="10"/>
+        <run start="1942" level="80" length="10"/>
+        <run start="1943" level="67" length="9"/>
+        <run start="1943" level="80" length="10"/>
+        <run start="1943" level="77" length="10"/>
+        <run start="1943" level="74" length="10"/>
+        <run start="1943" level="71" length="10"/>
+        <run start="1943" level="68" length="10"/>
+        <run start="1943" level="62" length="10"/>
+    </section>
+</stick>
