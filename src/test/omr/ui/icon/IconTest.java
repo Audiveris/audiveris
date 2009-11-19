@@ -13,17 +13,12 @@
 //
 package omr.ui.icon;
 
-import omr.glyph.Shape;
 
 import omr.util.BaseTestCase;
-import omr.util.Dumper;
-import static junit.framework.Assert.*;
 
-import java.awt.Dimension;
-import java.awt.Image;
 import java.io.*;
 
-import javax.swing.ImageIcon;
+import omr.Main;
 
 /**
  * DOCUMENT ME!
@@ -73,7 +68,7 @@ public class IconTest
                                          .loadFromXmlStream(
                 new FileInputStream(new File(fileName)));
 
-            Dumper.dump(icon);
+            Main.dumping.dump(icon);
 
             IconManager.getInstance()
                        .storeToXmlStream(
