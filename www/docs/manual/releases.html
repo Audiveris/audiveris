@@ -66,11 +66,6 @@
                                 translated into score entities.
                             </li>
                             <li>
-                                <b>Notations</b>: There are still some notations
-                                such as legato, staccato, accent, etc which
-                                should also be recognized and translated.
-                            </li>
-                            <li>
                                 <b>Score</b>: Ability to inject score entities
                                 directly into the score view, providing a very
                                 basic score editor, but allowing to alleviate
@@ -96,7 +91,7 @@
             </table>
             <!-- =========================================================== -->
             <h3>
-                <a id="R3.2" name="R3.2">3.2 Release</a>
+                <a id="R3.2" name="R3.2">3.2c Release</a>
             </h3>
 
             <table width="100%" border="1">
@@ -168,11 +163,14 @@
                                 now split into SYSTEMS and MEASURES steps.
                             </li>
                             <li>
-
                                 <b>Drag'n Drop</b>: Audiveris now supports
                                 drag'n drop features, dragging a image file to
                                 the Audiveris main window loads the sheet and
                                 perform a (customizable) default step.
+                            </li>
+                            <li>
+                                <b>Files</b>: Files for Script, Score export,
+                                Midi can be specified via "Save / Save As".
                             </li>
                             <li>
                                 <b>Image</b>: PDF format has been added to the
@@ -185,13 +183,22 @@
                                 measures, besides the whole score.
                             </li>
                             <li>
-
+                                <b>Notations</b>: All raticulations such as
+                                legato, staccato, accent, etc are recognized
+                                and translated.
+                            </li>
+                            <li>
                                 <b>Patterns</b>: After automatic glyph
                                 recognition, a series of tests are gathered in
                                 various glyph patterns to handle specific cases
                                 (slurs, beams hooks, sharps, naturals, broken
                                 clefs, imposed time signatures, etc). Thus the
                                 PATTERNS step replaces the former CLEANUP step.
+                            </li>
+                            <li>
+                                <b>Parameters</b>: All major score parameters
+                                are gather in a single dialog box for quick
+                                update.
                             </li>
                             <li>
                                 <b>Parts</b>: Systems can now have different
@@ -205,7 +212,6 @@
                                 like a timeline).
                             </li>
                             <li>
-
                                 <b>Score Rebuild</b>: The user has the ability
                                 to rebuild the score entities at any time. When
                                 dealing with very large systems, one can also
@@ -221,6 +227,11 @@
                                 section borders.
                             </li>
                             <li>
+                                <b>Copy/Paste</b> metaphor: The user can copy a
+                                shape from an existing glyph and paste it to
+                                another glyph.
+                            </li>
+                            <li>
                                 <b>Similar Glyphs</b>: The user can now browse
                                 through a sequence of glyphs "similar" to a
                                 selected glyph. This is helpful when dealing
@@ -230,10 +241,15 @@
                                 linear at all.
                             </li>
                             <li>
-
+                                <b>Slots</b>: Slots with insufficient margins
+                                are looked for, because they may indicate a
+                                too small slot margin value.
+                            </li>
+                            <li>
                                 <b>Steps</b>: Some steps, the ones that follow
                                 the SCORE step, are flagged as not mandatory
-                                and can be re-performed at will.
+                                and can be re-performed at will. The user has
+                                bow the ability to reperform (almost) any step.
                             </li>
                             <li>
                                 <b>System Boundaries</b>: The boundaries of any
@@ -260,8 +276,15 @@
                     </th>
                     <td>
                         <ul>
+			    <li>
+				<b>Active Glyphs</b>: Use of a reliable test for
+				detecting which glyphs are active in a system.
+			    </li>
+			    <li>
+				<b>Beams</b>: They do not divide the duration of
+				embraced notes when these ones are rests.
+			    </li>
                             <li>
-
                                 <b>Message Log</b>: The Log window now displays
                                 all messages, including the ones that were
                                 logged before the GUI was launched.
@@ -271,6 +294,13 @@
                                 navigate to the Audiveris documentation stored
                                 locally in the installation folder.
                             </li>
+			    <li>
+				<b>MusicXML Export</b>: Fixed wrong order in
+				elements for lyrics item, which triggered error
+				messages in Finale. Also removed an xmlns:ns2
+				namespace which was legal but not accepted by
+				Finale.
+			    </li>
                             <li>
                                 <b>Vertex removal</b>: The removal of a vertex
                                 sometimes led to a double removal attempt.
@@ -315,9 +345,12 @@
                                 user selections.
                             </li>
                             <li>
-
                                 <b>MusicXML</b>: Upgraded the export step to
                                 comply with the new JAXB binding of ProxyMusic.
+                            </li>
+                            <li>
+                                <b>Options</b>: This huge tree / Table has been
+                                revamped for better usability.
                             </li>
                             <li>
                                 <b>Script</b>: All user actions that may impact
