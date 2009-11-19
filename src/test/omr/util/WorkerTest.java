@@ -40,6 +40,7 @@ public class WorkerTest
      */
     @Test
     public void testInterrupt ()
+        throws InterruptedException
     {
         long start = System.currentTimeMillis();
         System.out.println(
@@ -49,10 +50,7 @@ public class WorkerTest
         MyWorker instance = new MyWorker();
         instance.start();
 
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException ie) {
-        }
+        Thread.sleep(500);
 
         instance.interrupt();
 

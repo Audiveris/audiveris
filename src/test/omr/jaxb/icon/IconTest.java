@@ -12,6 +12,7 @@
 package omr.jaxb.icon;
 
 import omr.Main;
+import omr.WellKnowns;
 
 import omr.ui.icon.IconManager;
 import omr.ui.icon.SymbolIcon;
@@ -35,6 +36,7 @@ public class IconTest
     // main //
     //------//
     public static void main (String... args)
+        throws FileNotFoundException
     {
         new IconTest().play(args[0]);
     }
@@ -43,53 +45,36 @@ public class IconTest
     // play //
     //------//
     public void play (String fileName)
+        throws FileNotFoundException
     {
-        try {
-            SymbolIcon icon = IconManager.getInstance()
-                                         .loadFromXmlStream(
-                new FileInputStream(new File(fileName)));
+        SymbolIcon icon = IconManager.getInstance()
+                                     .loadFromXmlStream(
+            new FileInputStream(new File(fileName)));
 
-            Main.dumping.dump(icon);
+        Main.dumping.dump(icon);
 
-            if (icon.bitmap != null) {
-                for (String s : icon.bitmap) {
-                    System.out.println(s);
-                }
+        if (icon.bitmap != null) {
+            for (String s : icon.bitmap) {
+                System.out.println(s);
             }
-
-            IconManager.getInstance()
-                       .storeToXmlStream(
-                icon,
-                new FileOutputStream(new File(fileName + ".out.xml")));
-            System.out.println("Store done.");
-        } catch (Exception ex) {
-            ex.printStackTrace();
         }
-    }
 
-    //    //-----------//
-    //    // playBasic //
-    //    //-----------//
-    //    public void playBasic (String fileName)
-    //    {
-    //        try {
-    //            XmlMapper  mapper = new XmlMapper(SymbolIcon.class);
-    //            SymbolIcon icon = (SymbolIcon) mapper.load(new File(fileName));
-    //
-    //            Dumper.dump(icon);
-    //
-    //            mapper.store(icon, new File(fileName + ".out.xml"));
-    //            System.out.println("Store done.");
-    //        } catch (Exception ex) {
-    //            ex.printStackTrace();
-    //        }
-    //    }
+        IconManager.getInstance()
+                   .storeToXmlStream(
+            icon,
+            new FileOutputStream(new File(fileName + ".out.xml")));
+        System.out.println("Store done.");
+    }
 
     //--------------//
     // testMarshall //
     //--------------//
     public void testMarshall ()
+        throws FileNotFoundException
     {
-        play("test/omr/jaxb/icon/icon-data.xml");
+        play(
+            new File(
+                WellKnowns.HOME_FOLDER,
+                "src/test/omr/jaxb/icon/icon-data.xml").getPath());
     }
 }
