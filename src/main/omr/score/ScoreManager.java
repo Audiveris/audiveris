@@ -139,6 +139,10 @@ public class ScoreManager
     public void export (Score score,
                         File  exportFile)
     {
+        if (exportFile == null) {
+            exportFile = this.getDefaultExportFile(score);
+        }
+
         // Make sure the folder exists
         File folder = new File(exportFile.getParent());
 
