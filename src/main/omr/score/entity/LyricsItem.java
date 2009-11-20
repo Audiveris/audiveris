@@ -68,9 +68,9 @@ public class LyricsItem
         /** Just an elision */
         Elision,
         /** Just an extension */
-        Extension, 
+        Extension,
         /** A hyphen between syllables */
-        Hyphen, 
+        Hyphen,
         /** A real syllable */
         Syllable;
     }
@@ -83,9 +83,9 @@ public class LyricsItem
         /** Single-syllable word */
         SINGLE,
         /** Syllable that begins a word */
-        BEGIN, 
+        BEGIN,
         /** Syllable at the middle of a word */
-        MIDDLE, 
+        MIDDLE,
         /** Syllable that ends a word */
         END;
     }
@@ -360,7 +360,7 @@ public class LyricsItem
         //~ Instance fields ----------------------------------------------------
 
         Scale.Fraction maxItemDx = new Scale.Fraction(
-            3,
+            4,
             "Maximum horizontal distance between a note and its lyrics item");
     }
 }

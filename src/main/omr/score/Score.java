@@ -1269,13 +1269,13 @@ public class Score
         // Default Tempo
         Constant.Integer             defaultTempo = new Constant.Integer(
             "QuartersPerMn",
-            60,
+            100,
             "Default tempo, stated in number of quarters per minute");
 
         // Default Velocity
         Constant.Integer             defaultVolume = new Constant.Integer(
             "Volume",
-            100,
+            25,
             "Default Volume in 0..127 range");
 
         /**

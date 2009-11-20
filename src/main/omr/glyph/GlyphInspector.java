@@ -783,19 +783,19 @@ public class GlyphInspector
             6,
             "Maximum doubt for alteration sign verification");
         Evaluation.Doubt patternsMaxDoubt = new Evaluation.Doubt(
-            1.2,
+            1.5,
             "Maximum doubt for cleanup phase");
         Evaluation.Doubt leafMaxDoubt = new Evaluation.Doubt(
-            1.04,
+            1.3,
             "Maximum acceptance doubt for a leaf");
         Evaluation.Doubt symbolMaxDoubt = new Evaluation.Doubt(
-            1.1,
+            1.2,
             "Maximum doubt for a symbol");
         Evaluation.Doubt textMaxDoubt = new Evaluation.Doubt(
             3.0,
             "Maximum doubt for a text symbol");
         Evaluation.Doubt minCompoundPartDoubt = new Evaluation.Doubt(
-            1.020,
+            1.5,
             "Minimum doubt for a suitable compound part");
         Scale.Fraction   maxCloseStemDx = new Scale.Fraction(
             0.7d,
