@@ -278,8 +278,6 @@ endlocal
     <!-- ================= -->
     <target name="-pre-jar">
 
-<!--         <echo>DEBUG build-common -pre-jar</echo> -->
-
         <!-- Prepare a (half) manifest -->
         <tstamp/>
 	<property name="manifest.file" value="manifest.mf" />
@@ -350,6 +348,12 @@ Implementation-Version: ${impl.version} ${DSTAMP}
 	</for>
 	
     </target>
+
+    <!-- =========================== -->
+    <!--  - P O S T - C O M P I L E  -->
+    <!-- =========================== -->
+    <target name="-post-compile"
+	    depends="jar"/>
 
 
     <import file="${dev.dir}/build-utils.xml"/>
