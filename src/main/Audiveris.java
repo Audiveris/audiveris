@@ -1,3 +1,15 @@
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                             A u d i v e r i s                              //
+//                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
+//  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
+//  This software is released under the GNU General Public License.           //
+//  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
+//----------------------------------------------------------------------------//
+// </editor-fold>
+
 /**
  * Class <code>Audiveris</code> is simply the entry point to OMR, which
  * delegates the call to {@link omr.Main#main}.
