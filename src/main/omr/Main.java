@@ -117,7 +117,11 @@ public class Main
     //--------//
     // setGui //
     //--------//
-    public static void setGui (MainGui gui)
+    /**
+     * Register the GUI (done by the GUI itself when it is ready)
+     * @param gui the MainGui instance
+     */
+    public static void setGui(MainGui gui)
     {
         Main.gui = gui;
     }
