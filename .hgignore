@@ -4,3 +4,7 @@
 \.rej$
 \.conflict\~$
 project
+build
+dist
+nbproject
+manifest.mf
