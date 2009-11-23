@@ -32,15 +32,15 @@
 	Build, test, and run the Audiveris project via NetBeans
         $Id$
 	
-	This 'build.xml' file is located in top project directory to be
-	automatically picked up by NetBeans
+	This 'build.xml' file should be located in NetBeans project directory,
+        replacing the build.xml provided by NetBeans
     </description>
 
     <!-- Give users first chance to override properties -->
     <property file="${user.home}/.audiveris/build.properties" />
     
-    <property name="dev.dir"          location="${basedir}/src"/>
-    <property name="config.dir"       location="${basedir}/config"/>
+    <property name="dev.dir"          location="${basedir}/../src"/>
+    <property name="config.dir"       location="${basedir}/../config"/>
     <property name="nb.javadoc.dir"   location="${basedir}/dist/javadoc"/>
     
     <!-- Give users second chance to override properties -->
@@ -110,7 +110,7 @@
 
     <!-- Next line will be inserted the first time you use the profiler -->
     
-    <import file="nbproject/profiler-build-impl.xml"/>
+    <!--<import file="nbproject/profiler-build-impl.xml"/>-->
     
     
     <!-- Load internal targets common to Emacs/Ant and NetBeans -->
