@@ -6,7 +6,7 @@
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
 //  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
-//  Please contact users@audiveris.dev.java.net to report bugs & suggestions. //
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui;
@@ -421,7 +421,7 @@ public class GuiActions
         //~ Instance fields ----------------------------------------------------
 
         Constant.String        webSiteUrl = new Constant.String(
-            "https://audiveris.dev.java.net",
+            "http://kenai.com/projects/audiveris",
             "URL of Audiveris home page");
         Constant.String        manualUrl = new Constant.String(
             "/docs/manual/index.html",

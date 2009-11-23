@@ -117,13 +117,27 @@
 	    </fileset>
 	</jalopy>
     </target>
-    
+
     <!-- ===================== -->
     <!--  P R O P E R T I E S  -->
     <!-- ===================== -->
     <target name="properties"
         description="Print out all properties for the build file.">
         <echoproperties/>
+    </target>
+
+    <!-- ============================= -->
+    <!--  G L O B A L - R E P L A C E  -->
+    <!-- ============================= -->
+    <target name="global-replace"
+        description="Modify token of every source file">
+	
+	<replace dir="${config.dir}/../www"
+		 token="//  Please contact users@audiveris.dev.java.net to report bugs &amp; suggestions. //"
+		 value="//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //">
+	    <include name="**/*.js"/>
+	</replace>
+
     </target>
     
 </project>
