@@ -166,11 +166,8 @@ public class ScaleBuilder
     //---------------//
     /**
      * Create a scale entity, by processing the provided sheet picture.
-     *
-     * @throws StepException
      */
     private void retrieveScale ()
-        throws StepException
     {
         Picture picture = sheet.getPicture();
         adapter = new Adapter(sheet, picture.getHeight() - 1);
@@ -186,20 +183,17 @@ public class ScaleBuilder
 
         // Check picture resolution
         if ((mainFore + mainBack) < constants.minInterline.getValue()) {
-            String msg = "Picture resolution is too low: " +
-                         (mainFore + mainBack) + "\nThreshold parameter is " +
-                         constants.minInterline.toDetailedString() +
-                         "\n- Either lower this threshold (not recommended) via Tools|Options menu" +
-                         "\n- Or rescan at higher resolution (300dpi should be OK)";
+            String msg = "With only " + (mainFore + mainBack) +
+                         " pixels between two staff lines," +
+                         " your picture resolution is too low!" +
+                         "\nPlease rescan at higher resolution (300dpi should be OK)";
+
+            logger.warning(msg);
 
             if (Main.getGui() != null) {
                 Main.getGui()
                     .displayWarning(msg);
-            } else {
-                logger.warning(msg);
             }
-
-            throw new StepException(msg);
         }
     }
 

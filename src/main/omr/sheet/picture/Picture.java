@@ -478,7 +478,7 @@ public class Picture
         if (grayFactor == 1) {
             pixel[0] = val;
         } else {
-            pixel[0] = (val + (grayFactor - maxForeground - 1)) / grayFactor;
+            pixel[0] = (val - (grayFactor / 2)) / grayFactor;
         }
 
         raster.setPixel(pt.x, pt.y, pixel);
@@ -501,7 +501,12 @@ public class Picture
     {
         int[] pixel = raster.getPixel(x, y, (int[]) null); // Allocates pixel!
 
-        return grayFactor * pixel[0];
+        if (grayFactor == 1) {
+            // Speed up the normal case
+            return pixel[0];
+        } else {
+            return (grayFactor / 2) + (grayFactor * pixel[0]);
+        }
     }
 
     //-----------------//
@@ -983,16 +988,16 @@ public class Picture
             logger.fine("colorModel=" + colorModel + " pixelSize=" + pixelSize);
         }
 
-        if (pixelSize == 8) {
-            grayFactor = 1;
-        } else if (pixelSize == 1) {
-            logger.warning(
-                "Images with pixels coded on 1 bit are expensive to process");
-            logger.warning(
-                "Consider converting to a format which codes pixels on 1 byte");
-            grayFactor = 255;
+        if (pixelSize <= 8) {
+            grayFactor = (int) Math.rint(128 / Math.pow(2, pixelSize - 1));
         } else {
             throw new RuntimeException("Unsupported pixel size:" + pixelSize);
+        }
+
+        if (pixelSize != 8) {
+            logger.warning(
+                "The input image has a pixel size of " + pixelSize + " bits." +
+                "\nConsider converting to a format with pixel color on 8 bits (1 byte)");
         }
 
         if (logger.isFineEnabled()) {
