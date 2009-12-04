@@ -1,6 +1,14 @@
+\.chg\..*$
+\.conflict\~$
 \.orig$
 \.orig\..*$
-\.chg\..*$
 \.rej$
-\.conflict\~$
+build
+dist
+manifest.mf
+nbproject
 project
+scores
+scores-ref
+scripts
+tesseract.log
