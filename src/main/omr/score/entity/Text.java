@@ -415,6 +415,7 @@ public abstract class Text
         public CreatorText (Sentence sentence)
         {
             super(sentence);
+            setCreatorType(sentence.getTextType());
         }
 
         //~ Methods ------------------------------------------------------------

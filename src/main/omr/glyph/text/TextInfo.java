@@ -23,6 +23,7 @@ import omr.lag.HorizontalOrientation;
 import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
+import omr.score.entity.Text.CreatorText.CreatorType;
 
 import omr.sheet.SystemInfo;
 
@@ -116,6 +117,9 @@ public class TextInfo
     /** Role of this text item */
     private TextRole role;
 
+    /** Creator type, if relevant */
+    private CreatorType creatorType;
+
     /** Font size */
     private Integer fontSize;
 
@@ -131,6 +135,28 @@ public class TextInfo
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //----------------//
+    // setCreatorType //
+    //----------------//
+    /**
+     * @param creatorType the creatorType to set
+     */
+    public void setCreatorType (CreatorType creatorType)
+    {
+        this.creatorType = creatorType;
+    }
+
+    //----------------//
+    // getCreatorType //
+    //----------------//
+    /**
+     * @return the creatorType
+     */
+    public CreatorType getCreatorType ()
+    {
+        return creatorType;
+    }
 
     //-----------//
     // isElision //

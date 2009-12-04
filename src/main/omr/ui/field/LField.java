@@ -11,30 +11,29 @@
 // </editor-fold>
 package omr.ui.field;
 
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
 /**
- * Class <code>LField</code> is a logical combination of a JLabel and an
- * {@link SField}, a "Labelled Field", where the label describes the
- * dynamic content of the field.
+ * Class <code>LField</code> is a kind of "Labelled Field", a logical
+ * composition of a label and a component, which are handled as a whole.
  *
- * @author Herv&eacute; Bitteur
+ * @param <C> the precise subtype of the JComponent field
+ * <img src="doc-files/Fields.jpg" />
+ *
+ * @author Herv&eacute Bitteur
  * @version $Id$
  */
-public class LField
+public class LField<C extends JComponent>
 {
     //~ Instance fields --------------------------------------------------------
 
-    /**
-     * The related label
-     */
-    protected JLabel label;
+    /** The label */
+    private final JLabel label;
 
-    /**
-     * The underlying field
-     */
-    protected SField field;
+    /** The field */
+    private final C field;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -42,32 +41,15 @@ public class LField
     // LField //
     //--------//
     /**
-     * Create an editable labelled field with provided
-     * characteristics. Note that the field can later be explicitly set as
-     * non editable
+     * Creates a new LField object.
      *
      * @param label the string to be used as label text
      * @param tip the related tool tip text
+     * @param field the field instance
      */
     public LField (String label,
-                   String tip)
-    {
-        this(true, label, tip);
-    }
-
-    //--------//
-    // LField //
-    //--------//
-    /**
-     * Create a labelled field with initial characteristics
-     *
-     * @param editable tells whether the field is editable
-     * @param label the string to be used as label text
-     * @param tip the related tool tip text
-     */
-    public LField (boolean editable,
-                   String  label,
-                   String  tip)
+                   String tip,
+                   C      field)
     {
         this.label = new JLabel(label, SwingConstants.RIGHT);
 
@@ -75,7 +57,7 @@ public class LField
             this.label.setToolTipText(tip);
         }
 
-        field = new SField(editable, tip);
+        this.field = field;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -85,7 +67,7 @@ public class LField
     //------------//
     /**
      * Enable or disable the whole label + field structure
-     * @param bool
+     * @param bool true for enable, false for disable
      */
     public void setEnabled (boolean bool)
     {
@@ -97,11 +79,10 @@ public class LField
     // getField //
     //----------//
     /**
-     * Report the field part
-     *
+     * Getter for the field
      * @return the field
      */
-    public SField getField ()
+    public C getField ()
     {
         return field;
     }
@@ -110,8 +91,7 @@ public class LField
     // getLabel //
     //----------//
     /**
-     * Report the label part
-     *
+     * Getter for the label
      * @return the label
      */
     public JLabel getLabel ()
@@ -119,38 +99,16 @@ public class LField
         return label;
     }
 
-    //---------//
-    // setText //
-    //---------//
-    /**
-     * Modify the content of the field
-     *
-     * @param text
-     */
-    public void setText (String text)
-    {
-        field.setText(text);
-    }
-
-    //---------//
-    // getText //
-    //---------//
-    /**
-     * Report the current content of the field
-     *
-     * @return the field content
-     */
-    public String getText ()
-    {
-        return field.getText();
-    }
-
     //------------//
     // setVisible //
     //------------//
+    /**
+     * Make the whole label + field structure visible or not
+     * @param bool true for visible, false for non visible
+     */
     public void setVisible (boolean bool)
     {
-        field.setVisible(bool);
         label.setVisible(bool);
+        field.setVisible(bool);
     }
 }

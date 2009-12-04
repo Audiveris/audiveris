@@ -34,6 +34,7 @@ import omr.score.common.SystemRectangle;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.ScoreSystem.StaffPosition;
 import omr.score.entity.SystemPart;
+import omr.score.entity.Text.CreatorText.CreatorType;
 
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
@@ -319,7 +320,7 @@ public class Sentence
     // getTextRole //
     //-------------//
     /**
-     * Report the text type (role) of the sentence within the score
+     * Report the text role of the sentence within the score
      * @return the role of this sentence
      */
     public TextRole getTextRole ()
@@ -327,6 +328,20 @@ public class Sentence
         return items.first()
                     .getTextInfo()
                     .getTextRole();
+    }
+
+    //-------------//
+    // getTextType//
+    //-------------//
+    /**
+     * Report the text type of the sentence within the score
+     * @return the type of this sentence
+     */
+    public CreatorType getTextType ()
+    {
+        return items.first()
+                    .getTextInfo()
+                    .getCreatorType();
     }
 
     //----------//

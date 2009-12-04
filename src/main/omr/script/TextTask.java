@@ -15,6 +15,8 @@ import omr.glyph.Evaluation;
 import omr.glyph.Glyph;
 import omr.glyph.text.TextRole;
 
+import omr.score.entity.Text.CreatorText.CreatorType;
+
 import omr.sheet.Sheet;
 
 import java.util.Collection;
@@ -35,7 +37,11 @@ public class TextTask
 
     /** Type of the textual glyph */
     @XmlAttribute
-    private final TextRole type;
+    private final CreatorType type;
+
+    /** Role of the textual glyph */
+    @XmlAttribute
+    private final TextRole role;
 
     /** String content of the textual glyph */
     @XmlAttribute
@@ -49,16 +55,19 @@ public class TextTask
     /**
      * Creates a new TextTask object.
      *
-     * @param type the type of this text item
+     * @param type the type of creator (if relevant, otherwise null)
+     * @param role the role of this text item
      * @param content The content as a string
      * @param glyphs the impacted glyph(s)
      */
-    public TextTask (TextRole          type,
+    public TextTask (CreatorType       type,
+                     TextRole          role,
                      String            content,
                      Collection<Glyph> glyphs)
     {
         super(glyphs);
         this.type = type;
+        this.role = role;
         this.content = content;
     }
 
@@ -69,6 +78,7 @@ public class TextTask
     private TextTask ()
     {
         type = null;
+        role = null;
         content = null;
     }
 
@@ -83,7 +93,12 @@ public class TextTask
     {
         sheet.getSymbolsController()
              .getModel()
-             .assignText(getInitialGlyphs(), type, content, Evaluation.MANUAL);
+             .assignText(
+            getInitialGlyphs(),
+            type,
+            role,
+            content,
+            Evaluation.MANUAL);
     }
 
     //-----------------//
@@ -96,7 +111,12 @@ public class TextTask
         sb.append(" text");
 
         sb.append(" ")
-          .append(type);
+          .append(role);
+
+        if (type != null) {
+            sb.append(" ")
+              .append(type);
+        }
 
         sb.append(" \"")
           .append(content)

@@ -17,6 +17,7 @@ import omr.glyph.text.TextRole;
 import omr.log.Logger;
 
 import omr.score.entity.Note;
+import omr.score.entity.Text.CreatorText.CreatorType;
 
 import omr.script.SegmentTask;
 import omr.script.SlurTask;
@@ -85,15 +86,18 @@ public class SymbolsController
      * glyphs
      *
      * @param glyphs the impacted glyphs
-     * @param textRole the type (role) of this textual element
+     * @param textType the type of the creator, if relevant
+     * @param textRole the role of this textual element
      * @param textContent the content as a string (if not empty)
      * @return the task that carries out the processing
      */
     public Task asyncAssignTexts (Collection<Glyph> glyphs,
+                                  final CreatorType textType,
                                   final TextRole    textRole,
                                   final String      textContent)
     {
-        return new TextTask(textRole, textContent, glyphs).launch(sheet);
+        return new TextTask(textType, textRole, textContent, glyphs).launch(
+            sheet);
     }
 
     //--------------------//

@@ -20,6 +20,8 @@ import omr.log.Logger;
 
 import omr.math.Moments;
 
+import omr.score.entity.Text.CreatorText.CreatorType;
+
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphSetEvent;
 import omr.selection.MouseMovement;
@@ -27,10 +29,10 @@ import omr.selection.UserEvent;
 
 import omr.sheet.ui.SheetsController;
 
+import omr.ui.field.LComboBox;
 import omr.ui.field.LDoubleField;
-import omr.ui.field.LField;
 import omr.ui.field.LIntegerField;
-import omr.ui.field.SField;
+import omr.ui.field.LTextField;
 import static omr.ui.field.SpinnerUtilities.*;
 
 import omr.util.Implement;
@@ -77,11 +79,15 @@ class SymbolGlyphBoard
     private JSpinner symbolSpinner;
 
     /** ComboBox for text role */
-    private JComboBox roleCombo;
+    private LComboBox roleCombo;
+
+    /** ComboBox for text role type */
+    private LComboBox typeCombo;
 
     /** Input/Output : textual content */
-    protected final JTextField textField = new SField(
+    protected final LTextField textField = new LTextField(
         true,
+        "Text",
         "Content of a textual glyph");
 
     /** Glyph characteristics : position wrt staff */
@@ -92,7 +98,7 @@ class SymbolGlyphBoard
         "%.3f");
 
     /** Glyph characteristics : is there a ledger */
-    private LField ledger = new LField(
+    private LTextField ledger = new LTextField(
         false,
         "Ledger",
         "Does this glyph intersect a ledger?");
@@ -177,14 +183,24 @@ class SymbolGlyphBoard
             symbolSpinner.setToolTipText("Specific spinner for symbol glyphs");
         }
 
-        // Additional combo for text type
+        // Additional combo for text role
         paramAction = new ParamAction();
-        roleCombo = new JComboBox(TextRole.values());
+        roleCombo = new LComboBox(
+            "Role",
+            "Role of the Text",
+            TextRole.values());
         roleCombo.addActionListener(paramAction);
-        roleCombo.setToolTipText("Role of the Text");
+
+        // Additional combo for text type
+        typeCombo = new LComboBox(
+            "Type",
+            "Type of the Text",
+            CreatorType.values());
+        typeCombo.addActionListener(paramAction);
 
         // Text field
-        textField.setHorizontalAlignment(JTextField.LEFT);
+        textField.getField()
+                 .setHorizontalAlignment(JTextField.LEFT);
 
         defineSpecificLayout(true); // use of spinners
 
@@ -251,11 +267,14 @@ class SymbolGlyphBoard
                 // Text Information
                 if (roleCombo != null) {
                     selfUpdatingText = true;
-                    roleCombo.setSelectedItem(TextRole.Unknown);
 
                     if ((glyph != null) &&
                         (glyph.getShape() != null) &&
                         (glyph.getShape().isText())) {
+                        textField.setVisible(true);
+                        roleCombo.setVisible(true);
+                        typeCombo.setVisible(false);
+
                         roleCombo.setEnabled(true);
                         textField.setEnabled(true);
 
@@ -269,11 +288,19 @@ class SymbolGlyphBoard
 
                         if (textInfo.getTextRole() != null) {
                             roleCombo.setSelectedItem(textInfo.getTextRole());
+
+                            if (textInfo.getTextRole() == TextRole.Creator) {
+                                typeCombo.setVisible(true);
+                                typeCombo.setSelectedItem(
+                                    textInfo.getCreatorType());
+                            }
+                        } else {
+                            roleCombo.setSelectedItem(TextRole.Unknown);
                         }
                     } else {
-                        roleCombo.setEnabled(false);
-                        textField.setEnabled(false);
-                        textField.setText("");
+                        textField.setVisible(false);
+                        roleCombo.setVisible(false);
+                        typeCombo.setVisible(false);
                     }
 
                     selfUpdatingText = false;
@@ -337,14 +364,6 @@ class SymbolGlyphBoard
                 // Deassign, shape
 
         r += 2; // --------------------------------
-                // For text information
-
-        if (roleCombo != null) {
-            builder.add(roleCombo, cst.xyw(3, r, 1));
-            builder.add(textField, cst.xyw(5, r, 7));
-        }
-
-        r += 2; // --------------------------------
                 // Glyph characteristics, first line
 
         builder.add(pitchPosition.getLabel(), cst.xy(1, r));
@@ -367,6 +386,23 @@ class SymbolGlyphBoard
 
         builder.add(height.getLabel(), cst.xy(9, r));
         builder.add(height.getField(), cst.xy(11, r));
+
+        r += 2; // --------------------------------
+                // Text information, first line
+
+        builder.add(textField.getLabel(), cst.xyw(1, r, 1));
+        builder.add(textField.getField(), cst.xyw(3, r, 9));
+
+        r += 2; // --------------------------------
+                // Text information, second line
+
+        if (roleCombo != null) {
+            builder.add(roleCombo.getLabel(), cst.xyw(1, r, 1));
+            builder.add(roleCombo.getField(), cst.xyw(3, r, 3));
+
+            builder.add(typeCombo.getLabel(), cst.xyw(7, r, 1));
+            builder.add(typeCombo.getField(), cst.xyw(9, r, 3));
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -403,11 +439,14 @@ class SymbolGlyphBoard
                         roleCombo.getSelectedItem());
                 }
 
+                TextRole role = (TextRole) roleCombo.getSelectedItem();
                 SheetsController.selectedSheet()
                                 .getSymbolsController()
                                 .asyncAssignTexts(
                     glyphs,
-                    (TextRole) roleCombo.getSelectedItem(),
+                    ((role == TextRole.Creator)
+                     ? (CreatorType) typeCombo.getSelectedItem() : null),
+                    role,
                     textField.getText());
             }
         }

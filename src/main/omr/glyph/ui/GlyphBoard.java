@@ -28,7 +28,7 @@ import omr.selection.UserEvent;
 
 import omr.ui.Board;
 import omr.ui.PixelCount;
-import omr.ui.field.SField;
+import omr.ui.field.LTextField;
 import omr.ui.field.SpinnerUtilities;
 import static omr.ui.field.SpinnerUtilities.*;
 import omr.ui.util.Panel;
@@ -133,15 +133,15 @@ public class GlyphBoard
     protected JSpinner knownSpinner;
 
     /** Output : shape of the glyph */
-    protected final JTextField shapeField = new SField(
-        false,
+    protected final LTextField shapeField = new LTextField(
+        "",
         "Assigned shape for this glyph");
 
     /** The JGoodies/Form constraints to be used by all subclasses  */
     protected final CellConstraints cst = new CellConstraints();
 
     /** The JGoodies/Form layout to be used by all subclasses  */
-    protected final FormLayout layout = Panel.makeFormLayout(6, 3);
+    protected final FormLayout layout = Panel.makeFormLayout(7, 3);
 
     /** The JGoodies/Form builder to be used by all subclasses  */
     protected final PanelBuilder builder;
@@ -407,7 +407,7 @@ public class GlyphBoard
         deassignButton.setHorizontalTextPosition(SwingConstants.LEFT);
         deassignButton.setHorizontalAlignment(SwingConstants.RIGHT);
         builder.add(deassignButton, cst.xy(3, r));
-        builder.add(shapeField, cst.xyw(5, r, 7));
+        builder.add(shapeField.getField(), cst.xyw(5, r, 7));
     }
 
     //------------------//

@@ -14,14 +14,14 @@ package omr.ui.field;
 import java.util.Scanner;
 
 /**
- * Class <code>LDoubleField</code> is an {@link LField}, whose field is
+ * Class <code>LDoubleField</code> is an {@link LTextField}, whose field is
  * meant to handle a double value.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class LDoubleField
-    extends LField
+    extends LTextField
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -118,7 +118,7 @@ public class LDoubleField
      */
     public void setValue (double val)
     {
-        field.setText(
+        getField().setText(
             String.format((format != null) ? format : DEFAULT_FORMAT, val));
     }
 
@@ -134,7 +134,7 @@ public class LDoubleField
     public void setValue (double val,
                           String format)
     {
-        field.setText(String.format(format, val));
+        getField().setText(String.format(format, val));
     }
 
     //----------//

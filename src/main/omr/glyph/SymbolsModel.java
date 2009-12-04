@@ -16,6 +16,8 @@ import omr.glyph.text.TextRole;
 
 import omr.log.Logger;
 
+import omr.score.entity.Text.CreatorText.CreatorType;
+
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
@@ -62,55 +64,19 @@ public class SymbolsModel
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------------//
-    // assignGlyph //
-    //-------------//
-    /**
-     * Assign a Shape to a glyph, inserting the glyph to its containing system
-     * and lag if it is still transient
-     *
-     * @param glyph the glyph to be assigned
-     * @param shape the assigned shape, which may be null
-     * @param doubt the doubt about shape
-     */
-    @Override
-    protected Glyph assignGlyph (Glyph  glyph,
-                                 Shape  shape,
-                                 double doubt)
-    {
-        if (glyph == null) {
-            return null;
-        }
-
-        // Test on glyph weight (noise-like)
-        // To prevent to assign a non-noise shape to a noise glyph
-        if ((shape == Shape.NOISE) || GlyphEvaluator.isBigEnough(glyph)) {
-            // Force a recomputation of glyph parameters
-            // (since environment may have changed since the time they
-            // have been computed)
-            SystemInfo system = sheet.getSystemOf(glyph);
-
-            if (system != null) {
-                system.computeGlyphFeatures(glyph);
-
-                return super.assignGlyph(glyph, shape, doubt);
-            }
-        }
-
-        return glyph;
-    }
-
     //------------//
     // assignText //
     //------------//
     /**
      * Assign a collection of glyphs as textual element
      * @param glyphs the collection of glyphs
+     * @param textType Creator type if relevant
      * @param textRole the text role
      * @param textContent the ascii content
      * @param doubt the doubt wrt this assignment
      */
     public void assignText (Collection<Glyph> glyphs,
+                            CreatorType       textType,
                             TextRole          textRole,
                             String            textContent,
                             double            doubt)
@@ -118,6 +84,11 @@ public class SymbolsModel
         // Do the job
         for (Glyph glyph : glyphs) {
             TextInfo info = glyph.getTextInfo();
+
+            // Assign creator type?
+            if (textRole == TextRole.Creator) {
+                info.setCreatorType(textType);
+            }
 
             // Assign text role
             info.setTextRole(textRole);
@@ -242,5 +213,43 @@ public class SymbolsModel
             SystemInfo system = sheet.getSystemOf(glyph);
             system.segmentGlyphOnStems(glyph, isShort);
         }
+    }
+
+    //-------------//
+    // assignGlyph //
+    //-------------//
+    /**
+     * Assign a Shape to a glyph, inserting the glyph to its containing system
+     * and lag if it is still transient
+     *
+     * @param glyph the glyph to be assigned
+     * @param shape the assigned shape, which may be null
+     * @param doubt the doubt about shape
+     */
+    @Override
+    protected Glyph assignGlyph (Glyph  glyph,
+                                 Shape  shape,
+                                 double doubt)
+    {
+        if (glyph == null) {
+            return null;
+        }
+
+        // Test on glyph weight (noise-like)
+        // To prevent to assign a non-noise shape to a noise glyph
+        if ((shape == Shape.NOISE) || GlyphEvaluator.isBigEnough(glyph)) {
+            // Force a recomputation of glyph parameters
+            // (since environment may have changed since the time they
+            // have been computed)
+            SystemInfo system = sheet.getSystemOf(glyph);
+
+            if (system != null) {
+                system.computeGlyphFeatures(glyph);
+
+                return super.assignGlyph(glyph, shape, doubt);
+            }
+        }
+
+        return glyph;
     }
 }

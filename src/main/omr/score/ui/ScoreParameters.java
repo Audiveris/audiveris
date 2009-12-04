@@ -32,7 +32,7 @@ import omr.step.Step;
 
 import omr.ui.FileDropHandler;
 import omr.ui.field.LDoubleField;
-import omr.ui.field.LField;
+import omr.ui.field.LTextField;
 import omr.ui.field.LIntegerField;
 import omr.ui.util.Panel;
 
@@ -828,13 +828,13 @@ public class ScoreParameters
         private final ScorePart scorePart;
 
         /** Id of the part */
-        private final LField id = new LField(
+        private final LTextField id = new LTextField(
             false,
             "Id",
             "Id of the score part");
 
         /** Name of the part */
-        private LField name = new LField("Name", "Name for the score part");
+        private LTextField name = new LTextField("Name", "Name for the score part");
 
         /** Midi Instrument */
         private JComboBox midiBox = new JComboBox(
@@ -1024,7 +1024,7 @@ public class ScoreParameters
         protected final JSlider slider;
 
         /** Numeric value kept in sync */
-        protected final LField numValue;
+        protected final LTextField numValue;
 
         //~ Constructors -------------------------------------------------------
 

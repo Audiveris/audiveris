@@ -20,7 +20,7 @@ import omr.log.Logger;
 import omr.math.NeuralNetwork;
 
 import omr.ui.field.LDoubleField;
-import omr.ui.field.LField;
+import omr.ui.field.LTextField;
 import omr.ui.field.LIntegerField;
 
 import omr.util.Implement;
@@ -74,7 +74,7 @@ class NetworkPanel
         "%.2f");
 
     /** Output of Estimated time for end of training */
-    private LField eta = new LField(
+    private LTextField eta = new LTextField(
         "ETA",
         "Estimated time for end of training");
 

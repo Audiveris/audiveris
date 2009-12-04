@@ -19,7 +19,7 @@ import omr.glyph.ShapeRange;
 import omr.log.Logger;
 
 import omr.ui.field.IntegerListSpinner;
-import omr.ui.field.LField;
+import omr.ui.field.LTextField;
 import omr.ui.field.LIntegerSpinner;
 import omr.ui.field.LSpinner;
 import omr.ui.field.SpinnerUtilities;
@@ -120,13 +120,13 @@ public class SymbolRipper
     private JPopupMenu         menu = new JPopupMenu();
 
     // Hexa representation
-    private LField          hexaCode = new LField(
+    private LTextField          hexaCode = new LTextField(
         false,
         "Hexa",
         "Hexa value of the point code");
 
     // File name for output
-    private LField          output = new LField(
+    private LTextField          output = new LTextField(
         "File",
         "Name of the output file");
 

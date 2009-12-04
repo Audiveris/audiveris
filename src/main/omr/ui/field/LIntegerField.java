@@ -13,14 +13,14 @@ package omr.ui.field;
 
 
 /**
- * Class <code>LIntegerField</code> is an {@link LField}, whose field is
+ * Class <code>LIntegerField</code> is an {@link LTextField}, whose field is
  * meant to handle an integer value.
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 public class LIntegerField
-    extends LField
+    extends LTextField
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -68,7 +68,8 @@ public class LIntegerField
      */
     public void setValue (int val)
     {
-        field.setText(Integer.toString(val));
+        getField()
+            .setText(Integer.toString(val));
     }
 
     //----------//
@@ -85,7 +86,7 @@ public class LIntegerField
         int val = 0;
 
         try {
-            val = Integer.parseInt(field.getText());
+            val = Integer.parseInt(getField().getText());
         } catch (NumberFormatException ex) {
         }
 
