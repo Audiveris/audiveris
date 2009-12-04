@@ -28,6 +28,10 @@ public class WellKnowns
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    static {
+        System.out.println("Elaborating WellKnowns...");
+    }
+
     /** Are we using a Linux OS? */
     public static final boolean LINUX = System.getProperty("os.name")
                                               .toLowerCase()
@@ -57,11 +61,10 @@ public class WellKnowns
         }
     }
 
-    /** Installation folder is 3 folders higher than the container */
-    // .../project/build/classes when running from classes files
-    // .../project/dist/audiveris.jar when running from the jar archive
+    /** Installation folder is 2 folders higher than the container */
+    // .../build/classes when running from classes files
+    // .../dist/audiveris.jar when running from the jar archive
     public static final File HOME_FOLDER = CLASS_CONTAINER.getParentFile()
-                                                          .getParentFile()
                                                           .getParentFile();
 
     /** Specific folder name for configuration data */
@@ -122,5 +125,19 @@ public class WellKnowns
                 LOGGING_KEY,
                 new File(CONFIG_FOLDER, LOGGING_CONFIG_NAME).toString());
         }
+
+        System.out.println("End of WellKnowns elaboration");
+    }
+
+    //~ Methods ----------------------------------------------------------------
+
+    //--------------//
+    // ensureLoaded //
+    //--------------//
+    /**
+     * Make sure this class is loaded
+     */
+    public static void ensureLoaded ()
+    {
     }
 }

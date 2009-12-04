@@ -1,3 +1,6 @@
+
+import omr.WellKnowns;
+
 //----------------------------------------------------------------------------//
 //                                                                            //
 //                             A u d i v e r i s                              //
@@ -41,6 +44,10 @@ public final class Audiveris
      */
     public static void main (final String[] args)
     {
+        // We need class WellKnowns to be elaborated before class Main
+        WellKnowns.ensureLoaded();
+
+        // Then we call Main...
         omr.Main.main(args);
     }
 }
