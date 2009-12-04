@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<!-- +=====================================================================+ -->
-<!-- |                                                                     | -->
-<!-- |                 s y s t e m - a c t i o n s . x m l                 | -->
-<!-- |                                                                     | -->
-<!-- |  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.        | -->
-<!-- |  This software is released under the GNU General Public License.    | -->
-<!-- |  Contact dev@audiveris.dev.java.net to report bugs & suggestions.   | -->
-<!-- +=====================================================================+ -->
+<!-- ======================================================================= -->
+<!--                                                                         -->
+<!--                 s y s t e m - a c t i o n s . x m l                     -->
+<!--                                                                         -->
+<!-- Copyright (C) Herve Bitteur 2000-2009. All rights reserved.             -->
+<!-- This software is released under the GNU General Public License.         -->
+<!-- Goto http://kenai.com/projects/audiveris to report bugs or suggestions. -->
+<!-- ======================================================================= -->
 
 <!--
      This file gathers the classes to be loaded as UI actions.

@@ -66,6 +66,7 @@
 	     updating for the desired tag. Correct direct command
 	     should be : line="export -r ${tag.version} audiveris"
 	     -->
+	<!--
 	<cvs
  	    cvsRoot=":pserver:${cvs.login}:${cvs.password}@audiveris.dev.java.net:/cvs"
  	    dest="${export.dir}">
@@ -77,7 +78,7 @@
 		<argument line="update -r ${tag.version} audiveris"/>
 	    </commandline>
 	</cvs>
-
+	     -->
     </target>
 
     <!-- ============================= -->
@@ -132,12 +133,12 @@
     <target name="global-replace"
         description="Modify token of every source file">
 	
-	<replace dir="${config.dir}/../www"
-		 token="//  Please contact users@audiveris.dev.java.net to report bugs &amp; suggestions. //"
-		 value="//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //">
-	    <include name="**/*.js"/>
+	<replace dir="${basedir}"
+		 token="#   Contact dev@audiveris.dev.java.net to report bugs &amp; suggestions.           #"
+		 value="#   Goto http://kenai.com/projects/audiveris to report bugs or suggestions.    #">
+	    <include name="**/*.properties"/>
 	</replace>
 
     </target>
-    
+
 </project>

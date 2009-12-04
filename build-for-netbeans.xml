@@ -39,8 +39,8 @@
     <!-- Give users first chance to override properties -->
     <property file="${user.home}/.audiveris/build.properties" />
     
-    <property name="dev.dir"          location="${basedir}/../src"/>
-    <property name="config.dir"       location="${basedir}/../config"/>
+    <property name="dev.dir"          location="${basedir}/src"/>
+    <property name="config.dir"       location="${basedir}/config"/>
     <property name="nb.javadoc.dir"   location="${basedir}/dist/javadoc"/>
     
     <!-- Give users second chance to override properties -->
