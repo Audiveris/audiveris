@@ -75,7 +75,6 @@ public class Main
     //~ Static fields/initializers ---------------------------------------------
 
     static {
-        System.out.println("Elaborating Main...");
         /** Time stamp */
         Clock.resetTime();
     }
@@ -103,10 +102,6 @@ public class Main
 
     /** The application dumping service */
     public static final Dumping dumping = new Dumping(Main.class.getPackage());
-
-    static {
-        System.out.println("End of Main elaboration");
-    }
 
     //~ Constructors -----------------------------------------------------------
 

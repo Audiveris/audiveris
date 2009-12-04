@@ -28,10 +28,6 @@ public class WellKnowns
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    static {
-        System.out.println("Elaborating WellKnowns...");
-    }
-
     /** Are we using a Linux OS? */
     public static final boolean LINUX = System.getProperty("os.name")
                                               .toLowerCase()
@@ -125,8 +121,6 @@ public class WellKnowns
                 LOGGING_KEY,
                 new File(CONFIG_FOLDER, LOGGING_CONFIG_NAME).toString());
         }
-
-        System.out.println("End of WellKnowns elaboration");
     }
 
     //~ Methods ----------------------------------------------------------------
