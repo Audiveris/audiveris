@@ -232,7 +232,7 @@ public class ScorePainter
         final SystemRectangle box = arpeggiate.getBox();
         final int             top = box.y;
         final int             bot = box.y + box.height;
-        final double          height = zoom.scaled(bot - top + 1);
+        final double          height = bot - top + 1;
         final SymbolIcon      icon = (SymbolIcon) Shape.ARPEGGIATO.getIcon();
 
         if (icon != null) {
@@ -241,12 +241,13 @@ public class ScorePainter
 
             g.setColor(Color.black);
             transform.setTransform(
-                2,
+                1 / zoom.getRatio(),
                 0,
                 0,
                 ratio,
-                zoom.scaled(arpeggiate.getReferencePoint().x),
-                zoom.scaled(top));
+                arpeggiate.getReferencePoint().x,
+                top);
+
             g.drawRenderedImage(icon.getImage(), transform);
         }
 
