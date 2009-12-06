@@ -112,7 +112,7 @@ public class GlyphBoard
     protected final GlyphsController controller;
 
     /** An active label */
-    protected final JLabel active = new JLabel("");
+    protected final JLabel active = new JLabel("", SwingConstants.CENTER);
 
     /** Input: Dump action */
     protected final Action dumpAction = new DumpAction();
@@ -388,7 +388,7 @@ public class GlyphBoard
     protected void defineLayout ()
     {
         int r = 1; // --------------------------------
-                   // Glyph ---
+                   // Glyph --- Active Count Dump
 
         builder.addSeparator("Glyph", cst.xyw(1, r, 6));
         builder.add(active, cst.xy(7, r));
@@ -396,18 +396,19 @@ public class GlyphBoard
         builder.add(new JButton(dumpAction), cst.xy(11, r));
 
         r += 2; // --------------------------------
-                // Shape Icon (start, spans several rows)
+                // Shape Icon (start, spans several rows) + Deassign button
 
         builder.add(shapeIcon, cst.xywh(1, r, 1, 5));
-
-        r += 2; // --------------------------------
-                // Deassign
 
         JButton deassignButton = new JButton(getDeassignAction());
         deassignButton.setHorizontalTextPosition(SwingConstants.LEFT);
         deassignButton.setHorizontalAlignment(SwingConstants.RIGHT);
-        builder.add(deassignButton, cst.xy(3, r));
-        builder.add(shapeField.getField(), cst.xyw(5, r, 7));
+        builder.add(deassignButton, cst.xyw(9, r, 3));
+
+        r += 2; // --------------------------------
+                // Shape name
+
+        builder.add(shapeField.getField(), cst.xyw(3, r, 9));
     }
 
     //------------------//

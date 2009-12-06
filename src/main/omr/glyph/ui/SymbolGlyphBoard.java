@@ -33,7 +33,6 @@ import omr.ui.field.LComboBox;
 import omr.ui.field.LDoubleField;
 import omr.ui.field.LIntegerField;
 import omr.ui.field.LTextField;
-import static omr.ui.field.SpinnerUtilities.*;
 
 import omr.util.Implement;
 import omr.util.Predicate;
@@ -74,9 +73,6 @@ class SymbolGlyphBoard
         SymbolGlyphBoard.class);
 
     //~ Instance fields --------------------------------------------------------
-
-    /** Spinner just for symbol glyphs */
-    private JSpinner symbolSpinner;
 
     /** ComboBox for text role */
     private LComboBox roleCombo;
@@ -173,16 +169,6 @@ class SymbolGlyphBoard
         // Cache info
         this.firstSymbolId = firstSymbolId;
 
-        // Additional spinner for symbols
-        if (glyphsController != null) {
-            symbolSpinner = makeGlyphSpinner(
-                glyphsController.getLag(),
-                null, // Specific glyphs
-                symbolPredicate);
-            symbolSpinner.setName("symbolSpinner");
-            symbolSpinner.setToolTipText("Specific spinner for symbol glyphs");
-        }
-
         // Additional combo for text role
         paramAction = new ParamAction();
         roleCombo = new LComboBox(
@@ -257,12 +243,6 @@ class SymbolGlyphBoard
 
                 GlyphEvent glyphEvent = (GlyphEvent) event;
                 Glyph      glyph = glyphEvent.getData();
-
-                // Set symbolSpinner accordingly
-                if (symbolSpinner != null) {
-                    symbolSpinner.setValue(
-                        symbolPredicate.check(glyph) ? glyph.getId() : NO_VALUE);
-                }
 
                 // Text Information
                 if (roleCombo != null) {
@@ -355,13 +335,10 @@ class SymbolGlyphBoard
 
             builder.addLabel("Known", cst.xy(5, r));
             builder.add(knownSpinner, cst.xy(7, r));
-
-            builder.addLabel("Symb", cst.xy(9, r));
-            builder.add(symbolSpinner, cst.xy(11, r));
         }
 
         r += 2; // --------------------------------
-                // Deassign, shape
+                // shape
 
         r += 2; // --------------------------------
                 // Glyph characteristics, first line
