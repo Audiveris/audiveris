@@ -666,25 +666,27 @@ public class ScoreView
                 return;
             }
 
-            ScoreSystem   system = measure.getSystem();
-            UnitDimension dimension = system.getDimension();
-            SystemView    systemView = getSystemView(system);
+            ScoreSystem     system = measure.getSystem();
+            UnitDimension   dimension = system.getDimension();
+            SystemView      systemView = getSystemView(system);
+            SystemRectangle systemBox = new SystemRectangle(
+                0,
+                0,
+                dimension.width,
+                dimension.height + STAFF_HEIGHT);
 
             // If the current measure is at the beginning of a system,
             // make the most of this (new) system as visible as possible
             // We need absolute rectangle (non system-based)
             if (measure.getPreviousSibling() == null) {
-                SystemRectangle rect = new SystemRectangle(
-                    0,
-                    0,
-                    dimension.width,
-                    dimension.height + STAFF_HEIGHT);
-
-                showFocusLocation(systemView.toScoreRectangle(rect));
+                showFocusLocation(systemView.toScoreRectangle(systemBox));
             }
 
             // Make the measure rectangle visible
             SystemRectangle rect = measure.getBox();
+            // Actually, use the whole system height
+            rect.y = systemBox.y;
+            rect.height = systemBox.height;
             rect.grow(margin, margin);
             showFocusLocation(systemView.toScoreRectangle(rect));
         }
