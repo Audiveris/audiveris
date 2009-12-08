@@ -14,14 +14,14 @@ package omr.score.entity;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
+import omr.glyph.Shape;
+import static omr.glyph.Shape.*;
 
 import omr.log.Logger;
 
 import omr.score.common.SystemPoint;
 
 import omr.sheet.Scale;
-
-import omr.stick.Stick;
 
 import omr.util.TreeNode;
 
@@ -51,7 +51,7 @@ public class DotTranslation
     // populateDot //
     //-------------//
     /**
-     * Try to find the best assignment for a dot glyph.
+     * Try to find the best assignment for a dot (variant) glyph.
      *
      * @param glyph the glyph of dot
      * @param measure the containing measure
@@ -65,27 +65,47 @@ public class DotTranslation
             logger.fine("Chord Populating dot " + glyph);
         }
 
+        Shape           shape = glyph.getShape();
+
         /** To remember results of trials */
         SortedSet<Info> infos = new TreeSet<Info>();
-        Info            aug = tryAugmentation(glyph, measure, dotCenter);
 
-        if (aug != null) {
-            infos.add(aug);
+        // Try augmentation
+        if ((shape == DOT) || (shape == COMBINING_AUGMENTATION_DOT)) {
+            Info aug = tryAugmentation(glyph, measure, dotCenter);
+
+            if (aug != null) {
+                infos.add(aug);
+            }
         }
 
-        Info rep = tryRepeat(glyph, measure, dotCenter);
+        // Try repeat
+        if ((shape == DOT) || (shape == REPEAT_DOTS)) {
+            Info rep = tryRepeat(glyph, measure, dotCenter);
 
-        if (rep != null) {
-            infos.add(rep);
+            if (rep != null) {
+                infos.add(rep);
+            }
         }
 
-        Info sta = tryStaccato(glyph, measure, dotCenter);
+        // Try staccato
+        if ((shape == DOT) || (shape == STACCATO)) {
+            Info sta = tryStaccato(glyph, measure, dotCenter);
 
-        if (sta != null) {
-            infos.add(sta);
+            if (sta != null) {
+                infos.add(sta);
+            }
         }
 
         // Results
+        if (logger.isFineEnabled()) {
+            logger.fine(glyph.toString());
+
+            for (Info info : infos) {
+                logger.fine(info.toString());
+            }
+        }
+
         if (!infos.isEmpty()) {
             infos.first()
                  .commit(glyph, measure, dotCenter);
@@ -109,12 +129,12 @@ public class DotTranslation
                                                      Measure     measure,
                                                      SystemPoint dotCenter)
     {
-        Scale              scale = measure.getScale();
-        final int          maxDx = scale.toUnits(
+        Scale                    scale = measure.getScale();
+        final int                maxDx = scale.toUnits(
             constants.maxAugmentationDotDx);
-        final int          maxDy = scale.toUnits(
+        final int                maxDy = scale.toUnits(
             constants.maxAugmentationDotDy);
-        Map<Chord, Double> distances = new HashMap<Chord, Double>();
+        SortedMap<Double, Chord> distances = new TreeMap<Double, Chord>();
 
         // Check for a note/rest nearby:
         // - on the left w/ same even pitch (note w/ even pitch)
@@ -137,10 +157,10 @@ public class DotTranslation
                         logger.info(measure.getContextString() + " " + toDot);
                     }
 
-                    if ((toDot.x > 0) &&
-                        (toDot.x <= maxDx) &&
-                        (Math.abs(toDot.y) <= maxDy)) {
-                        distances.put(chord, toDot.distanceSq(0, 0));
+                    if ((glyph.getShape() == COMBINING_AUGMENTATION_DOT) ||
+                        ((toDot.x > 0) && (toDot.x <= maxDx) &&
+                        (Math.abs(toDot.y) <= maxDy))) {
+                        distances.put(toDot.distanceSq(0, 0), chord);
                     }
                 }
             }
@@ -152,22 +172,11 @@ public class DotTranslation
             logger.info(distances.size() + " Candidates=" + distances);
         }
 
-        int   bestFb = Integer.MAX_VALUE;
-        Chord bestChord = null;
+        if (!distances.isEmpty()) {
+            Double firstKey = distances.firstKey();
 
-        for (Chord chord : distances.keySet()) {
-            int fb = chord.getFlagsNumber() + chord.getBeams()
-                                                   .size();
-
-            if (fb < bestFb) {
-                bestFb = fb;
-                bestChord = chord;
-            }
-        }
-
-        if (bestChord != null) {
             // TODO: we should also handle case of double dots !
-            return new AugmentationInfo(bestChord, distances.get(bestChord));
+            return new AugmentationInfo(distances.get(firstKey), firstKey);
         } else {
             return null;
         }
@@ -201,7 +210,7 @@ public class DotTranslation
         final Scale scale = measure.getScale();
         final int   maxDx = scale.toUnits(constants.maxRepeatDotDx);
 
-        if ((dx > 0) && (dx <= maxDx)) {
+        if ((glyph.getShape() == REPEAT_DOTS) || ((dx > 0) && (dx <= maxDx))) {
             return new RepeatInfo(barline, dx * dx);
         }
 
@@ -260,9 +269,10 @@ public class DotTranslation
                         logger.info(measure.getContextString() + " " + toDot);
                     }
 
-                    if ((Math.abs(toDot.x) <= maxDx) &&
-                        (Math.abs(toDot.y) <= maxDy)) {
-                        distances.put((double) toDot.x * toDot.x, chord);
+                    if ((glyph.getShape() == STACCATO) ||
+                        ((Math.abs(toDot.x) <= maxDx) &&
+                        (Math.abs(toDot.y) <= maxDy))) {
+                        distances.put(toDot.distanceSq(0, 0), chord);
                     }
                 }
             }
@@ -314,6 +324,12 @@ public class DotTranslation
                     " Augmented " + chord);
             }
         }
+
+        @Override
+        protected String internals ()
+        {
+            return "chord:" + chord;
+        }
     }
 
     //------//
@@ -347,6 +363,19 @@ public class DotTranslation
         public int compareTo (Info other)
         {
             return Double.compare(this.dist, other.dist);
+        }
+
+        @Override
+        public String toString ()
+        {
+            return "{" + getClass()
+                             .getSimpleName() + " dist:" + (float) dist + " " +
+                   internals() + "}";
+        }
+
+        protected String internals ()
+        {
+            return "";
         }
     }
 
@@ -436,6 +465,12 @@ public class DotTranslation
                     " Repeat dot for " + barline);
             }
         }
+
+        @Override
+        protected String internals ()
+        {
+            return "barline:" + barline;
+        }
     }
 
     //--------------//
@@ -472,6 +507,12 @@ public class DotTranslation
                     chord.getContextString() + " dot#" + glyph.getId() +
                     " Staccato " + chord);
             }
+        }
+
+        @Override
+        protected String internals ()
+        {
+            return "chord:" + chord;
         }
     }
 }

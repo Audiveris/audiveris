@@ -121,10 +121,10 @@ public class ShapeRange
         Shape.class);
 
     static {
-        StemSymbols.add(Shape.BEAM);
-        StemSymbols.add(Shape.BEAM_2);
-        StemSymbols.add(Shape.BEAM_3);
-        StemSymbols.add(Shape.BEAM_HOOK);
+        StemSymbols.add(BEAM);
+        StemSymbols.add(BEAM_2);
+        StemSymbols.add(BEAM_3);
+        StemSymbols.add(BEAM_HOOK);
 
         StemSymbols.addAll(NoteHeads.getShapes());
         StemSymbols.addAll(Flags.getShapes());
@@ -140,6 +140,13 @@ public class ShapeRange
     public static final EnumSet<Shape> MultiTimes = EnumSet.range(
         TIME_FOUR_FOUR,
         CUT_TIME);
+
+    /** All variants of dot */
+    public static final EnumSet<Shape> Dots = EnumSet.of(
+        DOT,
+        COMBINING_AUGMENTATION_DOT,
+        STACCATO,
+        REPEAT_DOTS);
 
     //~ Instance fields --------------------------------------------------------
 
