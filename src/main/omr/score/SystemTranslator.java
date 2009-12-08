@@ -1032,17 +1032,9 @@ public class SystemTranslator
             currentCenter = new SystemPoint(
                 systemBox.x + (systemBox.width / 2),
                 systemBox.y + systemBox.height);
-
-            if (glyph.getTextInfo()
-                     .getTextRole() == TextRole.Lyrics) {
-                // Take the staff just above, if any
-                currentStaff = system.getStaffAbove(currentCenter);
-            }
-
-            if (currentStaff == null) {
-                currentStaff = system.getStaffAt(currentCenter);
-            }
-
+            currentStaff = system.getTextStaff(
+                glyph.getTextInfo().getTextRole(),
+                currentCenter);
             currentPart = currentStaff.getPart();
         }
 

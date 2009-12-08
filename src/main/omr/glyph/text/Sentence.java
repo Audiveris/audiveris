@@ -33,6 +33,7 @@ import omr.score.common.SystemPoint;
 import omr.score.common.SystemRectangle;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.ScoreSystem.StaffPosition;
+import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
 import omr.score.entity.Text.CreatorText.CreatorType;
 
@@ -136,8 +137,13 @@ public class Sentence
         addItem(glyph);
 
         ScoreSystem system = systemInfo.getScoreSystem();
-        systemPart = system.getPartAt(
-            system.toSystemPoint(items.first().getCentroid()));
+        SystemPoint center = system.toSystemPoint(items.first().getCentroid());
+
+        // Choose carefully Staff (& then Part )
+        Staff staff = system.getTextStaff(
+            glyph.getTextInfo().getTextRole(),
+            center);
+        systemPart = staff.getPart();
 
         // Compute parameters one for all
         Scale scale = systemInfo.getScoreSystem()

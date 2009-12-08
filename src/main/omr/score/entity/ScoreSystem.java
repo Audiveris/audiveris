@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.score.entity;
 
+import omr.glyph.text.TextRole;
+
 import omr.log.Logger;
 
 import omr.score.Score;
@@ -386,9 +388,8 @@ public class ScoreSystem
 
             for (TreeNode n : part.getStaves()) {
                 Staff staff = (Staff) n;
-                int   dy = sysPt.y - staff.getPageTopLeft().y + getTopLeft().y;
 
-                if (dy >= 0) {
+                if (staff.getCenter().y < sysPt.y) {
                     best = staff;
                 }
             }
@@ -482,6 +483,33 @@ public class ScoreSystem
         }
 
         return startTime;
+    }
+
+    //--------------//
+    // getTextStaff //
+    //--------------//
+    /**
+     * Report the related staff for a text at the provided point, since some
+     * texts (direction, lyrics) are preferably assigned to the staff above if
+     * any
+     * @param role the precise role of text glyph
+     * @param sysPt the provided point
+     * @return the preferred staff
+     */
+    public Staff getTextStaff (TextRole    role,
+                               SystemPoint sysPt)
+    {
+        Staff staff = null;
+
+        if ((role == TextRole.Direction) || (role == TextRole.Lyrics)) {
+            staff = getStaffAbove(sysPt);
+        }
+
+        if (staff == null) {
+            staff = getStaffAt(sysPt);
+        }
+
+        return staff;
     }
 
     //------------//
