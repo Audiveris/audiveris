@@ -1172,6 +1172,18 @@ public class SystemInfo
         return glyphInspector.runClefPattern();
     }
 
+    //-----------------//
+    // runShapePattern //
+    //-----------------//
+    /**
+     * A general pattern to check some glyph shapes within their environment
+     * @return the number of glyphs deassigned
+     */
+    public int runShapePattern ()
+    {
+        return glyphInspector.runShapePattern();
+    }
+
     //----------------//
     // runSlurPattern //
     //----------------//

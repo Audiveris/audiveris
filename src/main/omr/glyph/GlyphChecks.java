@@ -139,6 +139,11 @@ public class GlyphChecks
             if (Math.abs(glyph.getPitchPosition()) >= 15) {
                 return null;
             }
+
+            // Limit width
+            if (glyph.getNormalizedWidth() >= 12) {
+                return null;
+            }
         } else if (Notes.contains(shape) ||
                    NoteHeads.contains(shape) ||
                    Rests.contains(shape) ||

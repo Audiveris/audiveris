@@ -129,8 +129,6 @@ public abstract class GlyphTask
     {
         sheet.getSheetSteps()
              .rebuildFrom(Step.PATTERNS, getImpactedSystems(), false);
-
-        super.epilog(sheet);
     }
 
     //------------------//

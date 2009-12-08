@@ -16,6 +16,8 @@ import omr.glyph.Shape;
 
 import omr.sheet.Sheet;
 
+import omr.step.Step;
+
 import java.util.Collection;
 
 import javax.xml.bind.annotation.XmlAttribute;
@@ -125,6 +127,21 @@ public class AssignTask
     {
         sheet.getSymbolsController()
              .syncAssign(this);
+    }
+
+    //--------//
+    // epilog //
+    //--------//
+    @Override
+    public void epilog (Sheet sheet)
+    {
+        // We rebuild from VERTICALS is case of deassignment
+        // And just from PATTERNS in case of assignment
+        sheet.getSheetSteps()
+             .rebuildFrom(
+            (shape == null) ? Step.VERTICALS : Step.PATTERNS,
+            getImpactedSystems(),
+            false);
     }
 
     //-----------------//

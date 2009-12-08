@@ -386,6 +386,55 @@ public class GlyphInspector
         return successNb;
     }
 
+    //-----------------//
+    // runShapePattern //
+    //-----------------//
+    /**
+     * A general pattern to check some glyph shapes within their environment
+     * @return the number of glyphs deassigned
+     */
+    public int runShapePattern ()
+    {
+        int modifNb = 0;
+
+        for (Glyph glyph : system.getGlyphs()) {
+            Shape shape = glyph.getShape();
+
+            if (glyph.isManualShape()) {
+                continue;
+            }
+
+            if ((Shape.BRACKET == shape) || (Shape.BRACE == shape)) {
+                // Make sure at least a staff is embraced
+                PixelRectangle box = glyph.getContourBox();
+                boolean        embraced = false;
+
+                for (StaffInfo staff : system.getStaves()) {
+                    if ((staff.getFirstLine()
+                              .yAt(box.x) >= box.y) &&
+                        (staff.getLastLine()
+                              .yAt(box.x) <= (box.y + box.height))) {
+                        embraced = true; // Ok for this one
+
+                        break;
+                    }
+                }
+
+                if (!embraced) {
+                    if (logger.isFineEnabled()) {
+                        logger.fine(
+                            "Deassigned " + shape + " glyph #" + glyph.getId());
+                    }
+
+                    glyph.setShape(null, Evaluation.ALGORITHM);
+                    modifNb++;
+                }
+            }
+        }
+
+        return modifNb;
+    }
+
     //-------------//
     // tryCompound //
     //-------------//
