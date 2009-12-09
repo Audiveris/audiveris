@@ -107,8 +107,16 @@ public class DotTranslation
         }
 
         if (!infos.isEmpty()) {
-            infos.first()
-                 .commit(glyph, measure, dotCenter);
+            Info  info = infos.first();
+            Shape targetShape = info.getTargetShape();
+
+            // Assign proper glyph shape (and thus color)
+            if (glyph.getShape() != targetShape) {
+                glyph.setShape(targetShape);
+            }
+
+            // Assign proper translation
+            info.commit(glyph, measure, dotCenter);
         } else {
             measure.addError(glyph, "Dot unassigned");
         }
@@ -326,6 +334,12 @@ public class DotTranslation
         }
 
         @Override
+        protected Shape getTargetShape ()
+        {
+            return COMBINING_AUGMENTATION_DOT;
+        }
+
+        @Override
         protected String internals ()
         {
             return "chord:" + chord;
@@ -356,7 +370,7 @@ public class DotTranslation
 
         //~ Methods ------------------------------------------------------------
 
-        public abstract void commit (Glyph       glyp,
+        public abstract void commit (Glyph       glyph,
                                      Measure     measure,
                                      SystemPoint dotCenter);
 
@@ -372,6 +386,8 @@ public class DotTranslation
                              .getSimpleName() + " dist:" + (float) dist + " " +
                    internals() + "}";
         }
+
+        protected abstract Shape getTargetShape ();
 
         protected String internals ()
         {
@@ -467,6 +483,12 @@ public class DotTranslation
         }
 
         @Override
+        protected Shape getTargetShape ()
+        {
+            return REPEAT_DOTS;
+        }
+
+        @Override
         protected String internals ()
         {
             return "barline:" + barline;
@@ -507,6 +529,12 @@ public class DotTranslation
                     chord.getContextString() + " dot#" + glyph.getId() +
                     " Staccato " + chord);
             }
+        }
+
+        @Override
+        protected Shape getTargetShape ()
+        {
+            return STACCATO;
         }
 
         @Override

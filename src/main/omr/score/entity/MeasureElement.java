@@ -149,13 +149,17 @@ public abstract class MeasureElement
 
             // Chord
             sb.append(" ")
-              .append(chord.getContextString());
+              .append(chord.getContextString())
+              .append("Ch#")
+              .append(chord.getId());
+
             // Point
             sb.append(" ref[x=")
               .append(getReferencePoint().x)
               .append(",y=")
               .append(getReferencePoint().y)
               .append("]");
+
             // Box
             sb.append(" box[x=")
               .append(getBox().x)
@@ -166,6 +170,7 @@ public abstract class MeasureElement
               .append(",h=")
               .append(getBox().height)
               .append("]");
+
             // Glyphs
             sb.append(Glyphs.toString(glyphs));
         } catch (NullPointerException e) {
