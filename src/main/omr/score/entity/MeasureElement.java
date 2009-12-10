@@ -147,12 +147,6 @@ public abstract class MeasureElement
                 sb.append("/stop");
             }
 
-            // Chord
-            sb.append(" ")
-              .append(chord.getContextString())
-              .append("Ch#")
-              .append(chord.getId());
-
             // Point
             sb.append(" ref[x=")
               .append(getReferencePoint().x)
@@ -173,6 +167,12 @@ public abstract class MeasureElement
 
             // Glyphs
             sb.append(Glyphs.toString(glyphs));
+
+            // Chord
+            sb.append(" ")
+              .append(chord.getContextString())
+              .append(" ")
+              .append(chord);
         } catch (NullPointerException e) {
             sb.append(" INVALID");
         }
