@@ -1,6 +1,4 @@
 
-import omr.WellKnowns;
-
 //----------------------------------------------------------------------------//
 //                                                                            //
 //                             A u d i v e r i s                              //
@@ -12,6 +10,7 @@ import omr.WellKnowns;
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
+import omr.WellKnowns;
 
 /**
  * Class <code>Audiveris</code> is simply the entry point to OMR, which
