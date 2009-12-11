@@ -368,6 +368,18 @@ public class SystemInfo
         return vSections;
     }
 
+    //------------------//
+    // getNewSentenceId //
+    //------------------//
+    /**
+     * Report the id for a new sentence
+     * @return the next id
+     */
+    public int getNewSentenceId ()
+    {
+        return textInspector.getNewSentenceId();
+    }
+
     //----------//
     // getParts //
     //----------//

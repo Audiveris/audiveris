@@ -546,7 +546,7 @@ public class TextInfo
             ///logger.info("Word: '" + word.text + "'");
 
             // Isolate proper word glyph from its enclosed sections
-            SortedSet<GlyphSection> sections = retrieveWordSections(word.chars);
+            SortedSet<GlyphSection> sections = retrieveSectionsFrom(word.chars);
 
             if (!sections.isEmpty()) {
                 Glyph wordGlyph = system.buildGlyph(sections);
@@ -639,23 +639,23 @@ public class TextInfo
     }
 
     //----------------------//
-    // retrieveWordSections //
+    // retrieveSectionsFrom //
     //----------------------//
     /**
-     * Retrieve the glyph sections that compose a given word
-     * @param wordChars the char descriptors for each word character
+     * Retrieve the glyph sections that correspond to the collection of OCR
+     * char descriptors
+     * @param chars the char descriptors for each word character
      * @return the set of word-enclosed sections
      */
-    private SortedSet<GlyphSection> retrieveWordSections (List<OcrChar> wordChars)
+    SortedSet<GlyphSection> retrieveSectionsFrom (List<OcrChar> chars)
     {
-        // Isolate proper word glyph using its enclosed sections
         SortedSet<GlyphSection> sections = new TreeSet<GlyphSection>();
 
-        for (OcrChar charDesc : wordChars) {
+        for (OcrChar charDesc : chars) {
             Rectangle charBox = charDesc.getBox();
 
             for (GlyphSection section : glyph.getMembers()) {
-                // Do we intersect a section not (yet) assigned to a word?
+                // Do we intersect a section not (yet) assigned?
                 if (charBox.intersects(section.getContourBox()) &&
                     (section.getGlyph() == this.glyph)) {
                     sections.add(section);

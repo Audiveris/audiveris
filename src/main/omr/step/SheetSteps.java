@@ -782,6 +782,9 @@ public class SheetSteps
             final int              iterNb = constants.MaxScoreIterations.getValue();
             final ScoreSystem      scoreSystem = system.getScoreSystem();
             final Wrapper<Boolean> modified = new Wrapper<Boolean>();
+
+            system.removeInactiveGlyphs();
+
             modified.value = true;
 
             for (int iter = 1; modified.value && (iter <= iterNb); iter++) {

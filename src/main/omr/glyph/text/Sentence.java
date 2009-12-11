@@ -18,6 +18,7 @@ import omr.glyph.Glyph;
 import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphNetwork;
+import omr.glyph.GlyphSection;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 
@@ -604,8 +605,11 @@ public class Sentence
     //-----------//
     /**
      * Use OCR utility to assign a content to this sentence
+     * @param toRemove collection of sentences to remove
+     * @param toAdd collection of sentences to add
      */
-    void recognize ()
+    void recognize (Collection<Sentence> toRemove,
+                    Collection<Sentence> toAdd)
     {
         if (logger.isFineEnabled()) {
             logger.fine(this + " recognize");
@@ -653,21 +657,44 @@ public class Sentence
                     "g" + glyph.getId() + ".");
 
                 if ((lines != null) && !lines.isEmpty()) {
-                    OcrLine ocrLine = lines.get(0);
+                    for (OcrLine ocrLine : lines) {
+                        // Convert from glyph-based to absolute coordinates
+                        ocrLine.translate(
+                            glyph.getContourBox().x,
+                            glyph.getContourBox().y);
 
-                    // Convert from glyph-based to absolute coordinates
-                    ocrLine.translate(
-                        glyph.getContourBox().x,
-                        glyph.getContourBox().y);
-                    info.setOcrInfo(language, ocrLine);
-                    logger.info(
-                        "Glyph#" + glyph.getId() + " (" + language + ")->\"" +
-                        ocrLine.value + "\"");
+                        // Isolate proper line glyph from its enclosed sections
+                        SortedSet<GlyphSection> sections = info.retrieveSectionsFrom(
+                            ocrLine.getChars());
 
-                    if (lines.size() > 1) {
-                        logger.warning(
-                            "Sentence with more than one line at glyph #" +
-                            glyph.getId());
+                        if (!sections.isEmpty()) {
+                            Glyph lineGlyph = systemInfo.buildGlyph(sections);
+                            lineGlyph = systemInfo.addGlyph(lineGlyph);
+                            lineGlyph.setShape(Shape.TEXT);
+
+                            // Build the TextInfo for this glyph
+                            TextInfo ti = lineGlyph.getTextInfo();
+                            ti.setOcrInfo(language, ocrLine);
+                            ti.setTextRole(getTextRole());
+
+                            // Alocate a sentence for this glyph
+                            Sentence sentence = new Sentence(
+                                systemInfo,
+                                lineGlyph,
+                                systemInfo.getNewSentenceId());
+                            ti.setSentence(sentence);
+                            logger.info(
+                                "Glyph#" + lineGlyph.getId() + " (" + language +
+                                ")->\"" + ocrLine.value + "\"");
+
+                            toRemove.add(this);
+                            toAdd.add(sentence);
+
+                            if (logger.isFineEnabled()) {
+                                logger.fine("toRemove: " + this);
+                                logger.fine("toAdd   : " + sentence);
+                            }
+                        }
                     }
                 } else {
                     logger.fine("No OCR line for glyph #" + glyph.getId());

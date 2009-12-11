@@ -59,6 +59,18 @@ public class TextInspector
 
     //~ Methods ----------------------------------------------------------------
 
+    //------------------//
+    // getNewSentenceId //
+    //------------------//
+    /**
+     * Report the id for a new sentence
+     * @return the next id
+     */
+    public int getNewSentenceId ()
+    {
+        return ++sentenceCount;
+    }
+
     //-------------------//
     // retrieveSentences //
     //-------------------//
@@ -68,12 +80,13 @@ public class TextInspector
      */
     public int retrieveSentences ()
     {
-        int modifs = 0;
+        int           modifs = 0;
 
         // Keep the previous work! No sentences.clear();
-        system.getSentences().clear();
+        Set<Sentence> sentences = system.getSentences();
+        sentences.clear();
         sentenceCount = 0;
-        //
+
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.isText()) {
                 if (feedSentence(glyph)) {
@@ -83,7 +96,7 @@ public class TextInspector
         }
 
         // Extend the sentence skeletons
-        for (Sentence sentence : system.getSentences()) {
+        for (Sentence sentence : sentences) {
             // Make sure the various text items do not overlap
             sentence.mergeEnclosedTexts();
 
@@ -95,12 +108,19 @@ public class TextInspector
         mergeSentences();
 
         // Recognize content of each sentence
-        for (Sentence sentence : system.getSentences()) {
-            sentence.recognize();
+        // This may lead to sentence removal and addition
+        Collection<Sentence> toRemove = new ArrayList<Sentence>();
+        Collection<Sentence> toAdd = new ArrayList<Sentence>();
+
+        for (Sentence sentence : sentences) {
+            sentence.recognize(toRemove, toAdd);
         }
 
+        sentences.removeAll(toRemove);
+        sentences.addAll(toAdd);
+
         // Special handling of lyrics items
-        for (Sentence sentence : system.getSentences()) {
+        for (Sentence sentence : sentences) {
             if (sentence.getTextRole() == TextRole.Lyrics) {
                 sentence.splitIntoWords();
             }
@@ -171,7 +191,7 @@ public class TextInspector
         }
 
         // No compatible sentence found, so create a brand new one
-        Sentence sentence = new Sentence(system, glyph, ++sentenceCount);
+        Sentence sentence = new Sentence(system, glyph, getNewSentenceId());
 
         system.getSentences()
               .add(sentence);
@@ -217,7 +237,7 @@ public class TextInspector
                             Sentence s = new Sentence(
                                 system,
                                 compound,
-                                ++sentenceCount);
+                                getNewSentenceId());
                             list.add(s);
 
                             if (logger.isFineEnabled()) {
