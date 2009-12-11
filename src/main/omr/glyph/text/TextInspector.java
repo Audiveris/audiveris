@@ -71,6 +71,9 @@ public class TextInspector
         int modifs = 0;
 
         // Keep the previous work! No sentences.clear();
+        system.getSentences().clear();
+        sentenceCount = 0;
+        //
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.isText()) {
                 if (feedSentence(glyph)) {
@@ -149,26 +152,26 @@ public class TextInspector
      * Populate a Sentence with this text glyph, either by aggregating the glyph
      * to an existing sentence or by creating a new sentence
      *
-     * @param item the text item to host in a sentence
+     * @param glyph the text item to host in a sentence
      * @return true if a sentence has been modified or created
      */
-    private boolean feedSentence (Glyph item)
+    private boolean feedSentence (Glyph glyph)
     {
         // First look for an existing sentence that could host the item
         for (Sentence sentence : system.getSentences()) {
-            if (sentence.isCloseTo(item)) {
+            if (sentence.isCloseTo(glyph)) {
                 if (logger.isFineEnabled()) {
                     logger.fine(
-                        "Inserting glyph #" + item.getId() + " into " +
+                        "Inserting glyph #" + glyph.getId() + " into " +
                         sentence);
                 }
 
-                return sentence.addItem(item);
+                return sentence.addItem(glyph);
             }
         }
 
         // No compatible sentence found, so create a brand new one
-        Sentence sentence = new Sentence(system, item, ++sentenceCount);
+        Sentence sentence = new Sentence(system, glyph, ++sentenceCount);
 
         system.getSentences()
               .add(sentence);

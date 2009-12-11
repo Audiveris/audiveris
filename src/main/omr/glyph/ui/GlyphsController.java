@@ -258,7 +258,7 @@ public class GlyphsController
                                     .next();
 
                 if (glyph != null) {
-                    publish(glyph);
+                    publish(glyph.getMembers().first().getGlyph());
                 }
             }
         } else { // Deassignment

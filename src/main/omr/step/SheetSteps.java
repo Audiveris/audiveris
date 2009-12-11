@@ -793,9 +793,6 @@ public class SheetSteps
                         iter);
                 }
 
-                // Relaunch the glyph patterns (perhaps a bit brutal ...)
-                system.runPatterns();
-
                 // Clear errors for this system only
                 if (Main.getGui() != null) {
                     system.getSheet()

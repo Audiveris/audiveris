@@ -537,23 +537,26 @@ public class Glyph
     // getLocation //
     //-------------//
     /**
-     * Report the glyph (reference) location, which is the equivalent of the icon
-     * reference point if one such point exist, or the glyph area center
+     * Report the glyph (reference) location, which is the equivalent of the
+     * icon reference point if one such point exists, or the glyph area center
      * otherwise. The point is lazily evaluated.
      *
      * @return the reference center point
      */
     public PixelPoint getLocation ()
     {
+        // No shape: use area center
         if (shape == null) {
             return getAreaCenter();
         }
 
+        // Text shape: use specific reference
         if (shape.isText()) {
             return getTextInfo()
                        .getTextStart();
         }
 
+        // Other shape: check with the related icon if any
         SymbolIcon icon = (SymbolIcon) shape.getIcon();
 
         if (icon != null) {
@@ -569,7 +572,7 @@ public class Glyph
             }
         }
 
-        // Default
+        // Default: use area center
         return getAreaCenter();
     }
 
@@ -1406,7 +1409,9 @@ public class Glyph
     public void dump ()
     {
         System.out.println(getClass().getName());
+        System.out.println("   @" + Integer.toHexString(hashCode()));
         System.out.println("   id=" + getId());
+        System.out.println("   isActive=" + isActive());
         System.out.println("   lag=" + getLag());
         System.out.println("   members=" + getMembers());
         System.out.println("   parts=" + parts);
@@ -1437,19 +1442,12 @@ public class Glyph
     // linkAllSections //
     //-----------------//
     /**
-     * Make all the glyph's sections point back to this glyph, and
-     * transitively / recursively for all sections of the glyph parts if any
+     * Make all the glyph's sections point back to this glyph
      */
     public void linkAllSections ()
     {
-        // First the direct members of this glyph
         for (GlyphSection section : getMembers()) {
             section.setGlyph(this);
-        }
-
-        // Then, same thing for the parts if any
-        for (Glyph part : getParts()) {
-            part.linkAllSections(this);
         }
     }
 

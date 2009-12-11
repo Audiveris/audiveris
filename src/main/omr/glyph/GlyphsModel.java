@@ -113,13 +113,15 @@ public class GlyphsModel
     // setLatestShape //
     //----------------//
     /**
-     * Assign the latest shape
+     * Assign the latest useful shape
      *
      * @param shape the current / latest shape
      */
     public void setLatestShape (Shape shape)
     {
-        latestShape = shape;
+        if (shape != Shape.GLYPH_PART) {
+            latestShape = shape;
+        }
     }
 
     //----------------//
