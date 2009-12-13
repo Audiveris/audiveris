@@ -822,7 +822,7 @@ public class Glyph
         // Blacklist the old shape if any
         Shape oldShape = getShape();
 
-        if (oldShape != null) {
+        if (oldShape != null && shape != Shape.GLYPH_PART) {
             forbidShape(oldShape);
         }
 
