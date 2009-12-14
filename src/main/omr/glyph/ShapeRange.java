@@ -47,7 +47,8 @@ public class ShapeRange
     public static final ShapeRange Accidentals = new ShapeRange(
         EnumSet.range(FLAT, DOUBLE_FLAT));
     public static final ShapeRange Times = new ShapeRange(
-        EnumSet.range(TIME_ZERO, CUT_TIME));
+        EnumSet.range(TIME_ZERO, CUT_TIME),
+        CUSTOM_TIME_SIGNATURE);
     public static final ShapeRange Octaves = new ShapeRange(
         EnumSet.range(OTTAVA_ALTA, OTTAVA_BASSA));
     public static final ShapeRange Rests = new ShapeRange(
@@ -132,14 +133,18 @@ public class ShapeRange
     }
 
     /** Specific single symbol for part of time signature (such as 4) */
-    public static final EnumSet<Shape> SingleTimes = EnumSet.range(
+    public static final EnumSet<Shape> PartialTimes = EnumSet.range(
         TIME_ZERO,
         TIME_SIXTEEN);
 
-    /** Specific multi-symbol for entire time signature (such as 4/4 */
-    public static final EnumSet<Shape> MultiTimes = EnumSet.range(
+    /** Specific multi-symbol for full time signature (such as 4/4 */
+    public static final EnumSet<Shape> FullTimes = EnumSet.range(
         TIME_FOUR_FOUR,
         CUT_TIME);
+
+    static {
+        FullTimes.add(CUSTOM_TIME_SIGNATURE);
+    }
 
     /** All variants of dot */
     public static final EnumSet<Shape> Dots = EnumSet.of(

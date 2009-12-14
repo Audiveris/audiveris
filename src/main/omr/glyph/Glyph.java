@@ -24,6 +24,7 @@ import omr.lag.ui.SectionView;
 import omr.log.Logger;
 
 import omr.math.Moments;
+import omr.math.Rational;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -154,6 +155,9 @@ public class Glyph
 
     /** Related textual information, if any */
     private TextInfo textInfo;
+
+    /** Related time sig rational information, if any */
+    private Rational rational;
 
     /** Set of forbidden shapes, if any */
     private Set<Shape> forbiddenShapes;
@@ -741,6 +745,30 @@ public class Glyph
         return pitchPosition;
     }
 
+    //-------------//
+    // setRational //
+    //-------------//
+    /**
+     * Set the glyph timesig rational value
+     * @param rational the rational to set
+     */
+    public void setRational (Rational rational)
+    {
+        this.rational = rational;
+    }
+
+    //-------------//
+    // getRational //
+    //-------------//
+    /**
+     * Report the related timesig rational if any
+     * @return the rational
+     */
+    public Rational getRational ()
+    {
+        return rational;
+    }
+
     //-----------//
     // setResult //
     //-----------//
@@ -822,7 +850,7 @@ public class Glyph
         // Blacklist the old shape if any
         Shape oldShape = getShape();
 
-        if (oldShape != null && shape != Shape.GLYPH_PART) {
+        if ((oldShape != null) && (shape != Shape.GLYPH_PART)) {
             forbidShape(oldShape);
         }
 
@@ -1040,8 +1068,8 @@ public class Glyph
      */
     public boolean isTime ()
     {
-        return ShapeRange.SingleTimes.contains(getShape()) ||
-               ShapeRange.MultiTimes.contains(getShape());
+        return ShapeRange.PartialTimes.contains(getShape()) ||
+               ShapeRange.FullTimes.contains(getShape());
     }
 
     //------------------//
@@ -1435,6 +1463,7 @@ public class Glyph
         System.out.println("   bounds=" + getBounds());
         System.out.println("   forbiddenShapes=" + forbiddenShapes);
         System.out.println("   textInfo=" + textInfo);
+        System.out.println("   rational=" + rational);
         System.out.println("   translations=" + translations);
     }
 

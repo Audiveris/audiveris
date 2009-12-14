@@ -15,7 +15,6 @@ import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import static omr.glyph.ShapeRange.*;
 import omr.glyph.text.Sentence;
-import omr.glyph.text.TextRole;
 
 import omr.log.Logger;
 

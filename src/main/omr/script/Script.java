@@ -56,6 +56,7 @@ public class Script
         , @XmlElement(name = "midi", type = MidiWriteTask.class)
         , @XmlElement(name = "parameters", type = ParametersTask.class)
         , @XmlElement(name = "play", type = PlayTask.class)
+        , @XmlElement(name = "rational", type = RationalTask.class)
         , @XmlElement(name = "segment", type = SegmentTask.class)
         , @XmlElement(name = "slur", type = SlurTask.class)
         , @XmlElement(name = "step", type = StepTask.class)

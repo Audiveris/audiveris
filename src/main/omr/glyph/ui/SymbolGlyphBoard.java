@@ -13,14 +13,17 @@ package omr.glyph.ui;
 
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
+import omr.glyph.ShapeRange;
 import omr.glyph.text.TextInfo;
 import omr.glyph.text.TextRole;
 
 import omr.log.Logger;
 
 import omr.math.Moments;
+import omr.math.Rational;
 
 import omr.score.entity.Text.CreatorText.CreatorType;
+import omr.score.entity.TimeSignature;
 
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphSetEvent;
@@ -73,6 +76,12 @@ class SymbolGlyphBoard
         SymbolGlyphBoard.class);
 
     //~ Instance fields --------------------------------------------------------
+
+    /** Numerator of time signature */
+    private LIntegerField timeNum;
+
+    /** Denominator of time signature */
+    private LIntegerField timeDen;
 
     /** ComboBox for text role */
     private LComboBox roleCombo;
@@ -188,6 +197,10 @@ class SymbolGlyphBoard
         textField.getField()
                  .setHorizontalAlignment(JTextField.LEFT);
 
+        // Time signature
+        timeNum = new LIntegerField("Num", "");
+        timeDen = new LIntegerField("Den", "");
+
         defineSpecificLayout(true); // use of spinners
 
         // Needed to process user input when RETURN/ENTER is pressed
@@ -243,14 +256,32 @@ class SymbolGlyphBoard
 
                 GlyphEvent glyphEvent = (GlyphEvent) event;
                 Glyph      glyph = glyphEvent.getData();
+                Shape      shape = (glyph != null) ? glyph.getShape() : null;
 
-                // Text Information
+                // Fill symbol characteristics
+                if (glyph != null) {
+                    pitchPosition.setValue(glyph.getPitchPosition());
+                    ledger.setText(Boolean.toString(glyph.isWithLedger()));
+                    stems.setValue(glyph.getStemNumber());
+
+                    Moments moments = glyph.getMoments();
+                    weight.setValue(moments.getWeight()); // Normalized
+                    width.setValue(moments.getWidth());
+                    height.setValue(moments.getHeight());
+                } else {
+                    ledger.setText("");
+                    pitchPosition.setText("");
+                    stems.setText("");
+
+                    weight.setText("");
+                    width.setText("");
+                    height.setText("");
+                }
+
+                // Text info
                 if (roleCombo != null) {
-                    selfUpdatingText = true;
-
-                    if ((glyph != null) &&
-                        (glyph.getShape() != null) &&
-                        (glyph.getShape().isText())) {
+                    if ((shape != null) && shape.isText()) {
+                        selfUpdatingText = true;
                         textField.setVisible(true);
                         roleCombo.setVisible(true);
                         typeCombo.setVisible(false);
@@ -277,33 +308,41 @@ class SymbolGlyphBoard
                         } else {
                             roleCombo.setSelectedItem(TextRole.Unknown);
                         }
+
+                        selfUpdatingText = false;
                     } else {
                         textField.setVisible(false);
                         roleCombo.setVisible(false);
                         typeCombo.setVisible(false);
                     }
-
-                    selfUpdatingText = false;
                 }
 
-                // Fill symbol characteristics
-                if (glyph != null) {
-                    pitchPosition.setValue(glyph.getPitchPosition());
-                    ledger.setText(Boolean.toString(glyph.isWithLedger()));
-                    stems.setValue(glyph.getStemNumber());
+                // Time Signature info
+                if (timeNum != null) {
+                    if (ShapeRange.Times.contains(shape)) {
+                        timeNum.setVisible(true);
+                        timeDen.setVisible(true);
 
-                    Moments moments = glyph.getMoments();
-                    weight.setValue(moments.getWeight()); // Normalized
-                    width.setValue(moments.getWidth());
-                    height.setValue(moments.getHeight());
-                } else {
-                    ledger.setText("");
-                    pitchPosition.setText("");
-                    stems.setText("");
+                        timeNum.setEnabled(
+                            shape == Shape.CUSTOM_TIME_SIGNATURE);
+                        timeDen.setEnabled(
+                            shape == Shape.CUSTOM_TIME_SIGNATURE);
 
-                    weight.setText("");
-                    width.setText("");
-                    height.setText("");
+                        Rational rational = (shape == Shape.CUSTOM_TIME_SIGNATURE)
+                                            ? glyph.getRational()
+                                            : TimeSignature.rationalOf(shape);
+
+                        if (rational != null) {
+                            timeNum.setValue(rational.num);
+                            timeDen.setValue(rational.den);
+                        } else {
+                            timeNum.setText("");
+                            timeDen.setText("");
+                        }
+                    } else {
+                        timeNum.setVisible(false);
+                        timeDen.setVisible(false);
+                    }
                 }
 
                 selfUpdating = false;
@@ -370,6 +409,13 @@ class SymbolGlyphBoard
         builder.add(textField.getLabel(), cst.xyw(1, r, 1));
         builder.add(textField.getField(), cst.xyw(3, r, 9));
 
+        // or time signature parameters
+        builder.add(timeNum.getLabel(), cst.xy(5, r));
+        builder.add(timeNum.getField(), cst.xy(7, r));
+
+        builder.add(timeDen.getLabel(), cst.xy(9, r));
+        builder.add(timeDen.getField(), cst.xy(11, r));
+
         r += 2; // --------------------------------
                 // Text information, second line
 
@@ -409,22 +455,48 @@ class SymbolGlyphBoard
                                    ? glyphsEvent.getData() : null;
 
             if ((glyphs != null) && !glyphs.isEmpty()) {
-                // Read text information
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "Text='" + textField.getText().trim() + "' Role=" +
-                        roleCombo.getSelectedItem());
+                // Read shape information
+                String shapeName = shapeField.getText();
+
+                if (shapeName.equals("")) {
+                    return;
                 }
 
-                TextRole role = (TextRole) roleCombo.getSelectedItem();
-                SheetsController.selectedSheet()
-                                .getSymbolsController()
-                                .asyncAssignTexts(
-                    glyphs,
-                    ((role == TextRole.Creator)
-                     ? (CreatorType) typeCombo.getSelectedItem() : null),
-                    role,
-                    textField.getText());
+                Shape shape = Shape.valueOf(shapeName);
+
+                // Text?
+                if (shape.isText()) {
+                    if (logger.isFineEnabled()) {
+                        logger.fine(
+                            "Text='" + textField.getText().trim() + "' Role=" +
+                            roleCombo.getSelectedItem());
+                    }
+
+                    TextRole role = (TextRole) roleCombo.getSelectedItem();
+                    SheetsController.selectedSheet()
+                                    .getSymbolsController()
+                                    .asyncAssignTexts(
+                        glyphs,
+                        ((role == TextRole.Creator)
+                         ? (CreatorType) typeCombo.getSelectedItem() : null),
+                        role,
+                        textField.getText());
+                } else
+                // Custom time sig?
+                if (shape == Shape.CUSTOM_TIME_SIGNATURE) {
+                    int num = timeNum.getValue();
+                    int den = timeDen.getValue();
+
+                    if ((num != 0) && (den != 0)) {
+                        SheetsController.selectedSheet()
+                                        .getSymbolsController()
+                                        .asyncAssignRationals(
+                            glyphs,
+                            new Rational(num, den));
+                    } else {
+                        logger.warning("Invalid time signature parameters");
+                    }
+                }
             }
         }
     }

@@ -16,6 +16,8 @@ import omr.glyph.text.TextRole;
 
 import omr.log.Logger;
 
+import omr.math.Rational;
+
 import omr.score.entity.Text.CreatorText.CreatorType;
 
 import omr.sheet.Sheet;
@@ -63,6 +65,25 @@ public class SymbolsModel
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //----------------//
+    // assignRational //
+    //----------------//
+    /**
+     * Assign a rational value to collection of glyphs
+     * @param glyphs the collection of glyphs
+     * @param rational the rational value
+     * @param doubt the doubt wrt this assignment
+     */
+    public void assignRational (Collection<Glyph> glyphs,
+                                Rational          rational,
+                                double            doubt)
+    {
+        // Do the job
+        for (Glyph glyph : glyphs) {
+            glyph.setRational(rational);
+        }
+    }
 
     //------------//
     // assignText //

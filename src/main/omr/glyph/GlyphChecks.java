@@ -118,7 +118,7 @@ public class GlyphChecks
             final double absPos = Math.abs(glyph.getPitchPosition());
             final double maxDy = constants.maxTimePitchPositionMargin.getValue();
 
-            if (MultiTimes.contains(shape)) {
+            if (FullTimes.contains(shape)) {
                 // A full time shape must be on 0 position
                 if (absPos > maxDy) {
                     return null;
