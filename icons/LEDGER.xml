@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<icon name="LEDGER">
+    <stem-number>1</stem-number>
+    <bitmap>
+        <row>-------......-----</row>
+        <row>------........----</row>
+        <row>-----.........----</row>
+        <row>----..........----</row>
+        <row>##################</row>
+        <row>----..........----</row>
+        <row>----.........-----</row>
+        <row>-----......-------</row>
+    </bitmap>
+</icon>

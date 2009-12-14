@@ -192,7 +192,8 @@ public class ScoreActions
                 });
 
         dialog.pack();
-        dialog.setVisible(true);
+        MainGui.getInstance()
+               .show(dialog);
 
         return apply.value;
     }

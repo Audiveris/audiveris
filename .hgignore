@@ -1,3 +1,4 @@
+\.hgignore$
 \.chg\..*$
 \.conflict\~$
 \.orig$
@@ -9,6 +10,7 @@ manifest.mf
 nbproject
 project
 scores
+scores-ref
 scripts
 tesseract.log
 www/docs/api

@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                              T e x t T a s k                               //
+//                          R a t i o n a l T a s k                           //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -13,73 +13,56 @@ package omr.script;
 
 import omr.glyph.Evaluation;
 import omr.glyph.Glyph;
-import omr.glyph.text.TextRole;
 
-import omr.score.entity.Text.CreatorText.CreatorType;
+import omr.math.Rational;
 
 import omr.sheet.Sheet;
 
 import java.util.Collection;
 
-import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 
 /**
- * Class <code>TextTask</code> records the assignment of textual characteristics
+ * Class <code>RationalTask</code> records the assignment of a rational value
  * to a collection of glyphs
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
  */
-public class TextTask
+public class RationalTask
     extends GlyphTask
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** Type of the textual glyph */
-    @XmlAttribute
-    private final CreatorType type;
-
-    /** Role of the textual glyph */
-    @XmlAttribute
-    private final TextRole role;
-
-    /** String content of the textual glyph */
-    @XmlAttribute
-    private final String content;
+    /** Type of the rationalual glyph */
+    @XmlElement
+    private final Rational rational;
 
     //~ Constructors -----------------------------------------------------------
 
-    //----------//
-    // TextTask //
-    //----------//
+    //--------------//
+    // RationalTask //
+    //--------------//
     /**
-     * Creates a new TextTask object.
+     * Creates a new RationalTask object.
      *
-     * @param type the type of creator (if relevant, otherwise null)
-     * @param role the role of this text item
-     * @param content The content as a string
+     * @param rational the custom time sig rational value
      * @param glyphs the impacted glyph(s)
      */
-    public TextTask (CreatorType       type,
-                     TextRole          role,
-                     String            content,
-                     Collection<Glyph> glyphs)
+    public RationalTask (Rational          rational,
+                         Collection<Glyph> glyphs)
     {
         super(glyphs);
-        this.type = type;
-        this.role = role;
-        this.content = content;
+        this.rational = rational;
     }
 
-    //----------//
-    // TextTask //
-    //----------//
+    //--------------//
+    // RationalTask //
+    //--------------//
     /** No-arg constructor needed by JAXB */
-    private TextTask ()
+    private RationalTask ()
     {
-        type = null;
-        role = null;
-        content = null;
+        rational = null;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -93,12 +76,7 @@ public class TextTask
     {
         sheet.getSymbolsController()
              .getModel()
-             .assignText(
-            getInitialGlyphs(),
-            type,
-            role,
-            content,
-            Evaluation.MANUAL);
+             .assignRational(getInitialGlyphs(), rational, Evaluation.MANUAL);
     }
 
     //-----------------//
@@ -108,19 +86,12 @@ public class TextTask
     protected String internalsString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append(" text");
+        sb.append(" rational");
 
-        sb.append(" ")
-          .append(role);
-
-        if (type != null) {
+        if (rational != null) {
             sb.append(" ")
-              .append(type);
+              .append(rational);
         }
-
-        sb.append(" \"")
-          .append(content)
-          .append("\"");
 
         return sb + super.internalsString();
     }

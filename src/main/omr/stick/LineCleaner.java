@@ -95,7 +95,9 @@ public class LineCleaner
         this.sheet = sheet;
         this.lag = lag;
         this.picture = picture;
-        this.minPointNb = minPointNb;
+
+        // Safer: We need to be able to compute tangents
+        this.minPointNb = Math.max(2, minPointNb); 
 
         if (logger.isFineEnabled()) {
             logger.fine(

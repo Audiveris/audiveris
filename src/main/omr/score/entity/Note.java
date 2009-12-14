@@ -517,6 +517,21 @@ public class Note
         return alter;
     }
 
+    //-----------------//
+    // getCenterBottom //
+    //-----------------//
+    /**
+     * Report the system point at the center bottom of the note
+     *
+     * @return center point at bottom of note
+     */
+    public SystemPoint getCenterBottom ()
+    {
+        return new SystemPoint(
+            getCenter().x,
+            getCenter().y + (getBox().height / 2));
+    }
+
     //---------------//
     // getCenterLeft //
     //---------------//
@@ -545,6 +560,21 @@ public class Note
         return new SystemPoint(
             getCenter().x + (getBox().width / 2),
             getCenter().y);
+    }
+
+    //--------------//
+    // getCenterTop //
+    //--------------//
+    /**
+     * Report the system point at the center top of the note
+     *
+     * @return center point at top of note
+     */
+    public SystemPoint getCenterTop ()
+    {
+        return new SystemPoint(
+            getCenter().x,
+            getCenter().y - (getBox().height / 2));
     }
 
     //----------//

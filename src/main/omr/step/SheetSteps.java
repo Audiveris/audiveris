@@ -666,6 +666,10 @@ public class SheetSteps
     private class PatternsTask
         extends SystemTask
     {
+        //~ Instance fields ----------------------------------------------------
+
+        private boolean firstTime = true;
+
         //~ Constructors -------------------------------------------------------
 
         PatternsTask (Sheet sheet,
@@ -692,10 +696,37 @@ public class SheetSteps
             system.getSentences()
                   .clear();
 
-            for (int iter = 0;
-                 iter < constants.MaxPatternsIterations.getValue(); iter++) {
+            for (int iter = 1;
+                 iter <= constants.MaxPatternsIterations.getValue(); iter++) {
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "System#" + system.getId() + " patterns iter #" + iter);
+                }
+
                 if (!system.runPatterns()) {
                     return; // No more progress made
+                }
+            }
+        }
+
+        @Override
+        protected void doEpilog (Collection<SystemInfo> systems)
+            throws StepException
+        {
+            // For the very first time, we reperform the VERTICALS step
+            // The other times will be triggered by glyph deassignments which
+            // reperform from VERTICALS.
+            if (firstTime) {
+                firstTime = false;
+
+                // Reperform verticals once
+                // The range of steps to re-perform
+                EnumSet<Step> stepRange = EnumSet.range(Step.VERTICALS, step);
+
+                try {
+                    Step.doStepRange(stepRange, sheet, systems);
+                } catch (Exception ex) {
+                    logger.warning("Error in re-processing from " + this, ex);
                 }
             }
         }
@@ -732,10 +763,6 @@ public class SheetSteps
         public void doEpilog (Collection<SystemInfo> systems)
             throws StepException
         {
-            if (logger.isFineEnabled()) {
-                logger.fine(step + " doEpilog " + systems);
-            }
-
             // Final cross-system translation tasks
             if (systems == null) {
                 systems = sheet.getSystems();
@@ -755,6 +782,9 @@ public class SheetSteps
             final int              iterNb = constants.MaxScoreIterations.getValue();
             final ScoreSystem      scoreSystem = system.getScoreSystem();
             final Wrapper<Boolean> modified = new Wrapper<Boolean>();
+
+            system.removeInactiveGlyphs();
+
             modified.value = true;
 
             for (int iter = 1; modified.value && (iter <= iterNb); iter++) {
@@ -765,9 +795,6 @@ public class SheetSteps
                         "System#" + system.getId() + " translation iter #" +
                         iter);
                 }
-
-                // Relaunch the glyph patterns (perhaps a bit brutal ...)
-                system.runPatterns();
 
                 // Clear errors for this system only
                 if (Main.getGui() != null) {

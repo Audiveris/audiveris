@@ -95,7 +95,7 @@ public class SectionBoard
     // Output for plain Section
     //
     /** Label for lag name */
-    private final JLabel lagName = new JLabel();
+    private final JLabel lagName = new JLabel("", SwingConstants.CENTER);
 
     /** Field for left abscissa */
     private final LIntegerField x = new LIntegerField(
@@ -278,8 +278,11 @@ public class SectionBoard
 
         int             r = 1; // --------------------------------
         builder.addSeparator("Section", cst.xyw(1, r, 6));
+
         builder.add(lagName, cst.xy(7, r));
+
         builder.add(count, cst.xy(9, r));
+
         builder.add(dump, cst.xy(11, r));
 
         r += 2; // --------------------------------

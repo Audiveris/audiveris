@@ -122,4 +122,16 @@ public class WellKnowns
                 new File(CONFIG_FOLDER, LOGGING_CONFIG_NAME).toString());
         }
     }
+
+    //~ Methods ----------------------------------------------------------------
+
+    //--------------//
+    // ensureLoaded //
+    //--------------//
+    /**
+     * Make sure this class is loaded
+     */
+    public static void ensureLoaded ()
+    {
+    }
 }

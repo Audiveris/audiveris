@@ -66,6 +66,7 @@ import omr.util.TreeNode;
 
 import java.awt.*;
 import java.awt.geom.*;
+import java.util.List;
 
 /**
  * Class <code>ScorePainter</code> defines for every node in Score hierarchy
@@ -232,7 +233,7 @@ public class ScorePainter
         final SystemRectangle box = arpeggiate.getBox();
         final int             top = box.y;
         final int             bot = box.y + box.height;
-        final double          height = zoom.scaled(bot - top + 1);
+        final double          height = bot - top + 1;
         final SymbolIcon      icon = (SymbolIcon) Shape.ARPEGGIATO.getIcon();
 
         if (icon != null) {
@@ -241,12 +242,13 @@ public class ScorePainter
 
             g.setColor(Color.black);
             transform.setTransform(
-                2,
+                1 / zoom.getRatio(),
                 0,
                 0,
                 ratio,
-                zoom.scaled(arpeggiate.getReferencePoint().x),
-                zoom.scaled(top));
+                arpeggiate.getReferencePoint().x,
+                top);
+
             g.drawRenderedImage(icon.getImage(), transform);
         }
 
@@ -887,7 +889,25 @@ public class ScorePainter
                 if (shape == NO_LEGAL_TIME) {
                     // If this is an illegal shape, do not draw anything.
                     // TODO: we could draw a special sign for this
-                } else if (ShapeRange.MultiTimes.contains(shape)) {
+                } else if (shape == CUSTOM_TIME_SIGNATURE) {
+                    // A custom shape, use every digit shape
+                    final SystemPoint center = timeSignature.getCenter();
+                    final Staff       staff = part.getStaffAt(center);
+
+                    // Numerator
+                    paintShapeSequence(
+                        timeSignature.getNumeratorShapes(),
+                        center,
+                        staff,
+                        -2);
+
+                    // Denominator
+                    paintShapeSequence(
+                        timeSignature.getDenominatorShapes(),
+                        center,
+                        staff,
+                        +2);
+                } else if (ShapeRange.FullTimes.contains(shape)) {
                     // It is a complete (one-symbol) time signature
                     paintSymbol(shape, timeSignature.getCenter());
                 }
@@ -897,8 +917,7 @@ public class ScorePainter
                     final Shape s = glyph.getShape();
 
                     if ((s != null) && (s != Shape.GLYPH_PART)) {
-                        final SystemPoint center = timeSignature.computeGlyphCenter(
-                            glyph);
+                        final SystemPoint center = timeSignature.getCenter();
                         final Staff       staff = part.getStaffAt(center);
                         final int         pitch = (int) Math.rint(
                             staff.pitchPositionOf(center));
@@ -907,6 +926,7 @@ public class ScorePainter
                 }
             }
         } catch (InvalidTimeSignature ex) {
+            logger.warning("Invalid time signature", ex);
         }
 
         return true;
@@ -1014,6 +1034,56 @@ public class ScorePainter
             g.drawLine(from.x, from.y, to.x, to.y);
         } else {
             logger.warning("line not painted due to null reference");
+        }
+    }
+
+    //--------------------//
+    // paintShapeSequence //
+    //--------------------//
+    /**
+     * Paint a line of shapes, the sequence being horizontally centered using
+     * the provided center and pitch position.
+     * This is meant for complex time signatures.
+     *
+     * @param shapes the sequence of shapes to paint
+     * @param center system-based coordinates of bounding center in units (only
+     *               abscissa is actually used)
+     * @param staff the related staff
+     * @param pitchPosition staff-based ordinate in step lines
+     */
+    private void paintShapeSequence (List<Shape> shapes,
+                                     SystemPoint center,
+                                     Staff       staff,
+                                     double      pitchPosition)
+    {
+        int n = shapes.size();
+        int mid = n / 2;
+        int dx = 0;
+
+        for (int i = 0; i < mid; i++) {
+            Shape      s = shapes.get(i);
+            SymbolIcon icon = (SymbolIcon) s.getIcon();
+            dx += icon.getActualWidth();
+        }
+
+        if ((n % 2) == 1) {
+            Shape      s = shapes.get(mid);
+            SymbolIcon icon = (SymbolIcon) s.getIcon();
+            dx += (icon.getActualWidth() / 2);
+        }
+
+        // Left side of first shape
+        SystemPoint start = new SystemPoint(center);
+        start.x -= zoom.unscaled(dx);
+
+        // Draw each shape
+        for (int i = 0; i < n; i++) {
+            Shape            s = shapes.get(i);
+            final SymbolIcon icon = (SymbolIcon) s.getIcon();
+            int              shift = zoom.unscaled(icon.getActualWidth());
+            start.x += (shift / 2);
+            paintSymbol(s, start, staff, pitchPosition);
+            start.x += (shift / 2);
         }
     }
 

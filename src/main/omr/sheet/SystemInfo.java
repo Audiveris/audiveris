@@ -368,6 +368,18 @@ public class SystemInfo
         return vSections;
     }
 
+    //------------------//
+    // getNewSentenceId //
+    //------------------//
+    /**
+     * Report the id for a new sentence
+     * @return the next id
+     */
+    public int getNewSentenceId ()
+    {
+        return textInspector.getNewSentenceId();
+    }
+
     //----------//
     // getParts //
     //----------//
@@ -1170,6 +1182,18 @@ public class SystemInfo
     public int runClefPattern ()
     {
         return glyphInspector.runClefPattern();
+    }
+
+    //-----------------//
+    // runShapePattern //
+    //-----------------//
+    /**
+     * A general pattern to check some glyph shapes within their environment
+     * @return the number of glyphs deassigned
+     */
+    public int runShapePattern ()
+    {
+        return glyphInspector.runShapePattern();
     }
 
     //----------------//

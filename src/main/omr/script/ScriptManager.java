@@ -133,6 +133,7 @@ public class ScriptManager
                         MidiWriteTask.class,
                         ParametersTask.class,
                         PlayTask.class,
+                        RationalTask.class,
                         Script.class,
                         ScriptTask.class,
                         SegmentTask.class,

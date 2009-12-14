@@ -16,8 +16,12 @@ import omr.glyph.text.TextRole;
 
 import omr.log.Logger;
 
-import omr.score.entity.Note;
+import omr.math.Rational;
 
+import omr.score.entity.Note;
+import omr.score.entity.Text.CreatorText.CreatorType;
+
+import omr.script.RationalTask;
 import omr.script.SegmentTask;
 import omr.script.SlurTask;
 import omr.script.TextTask;
@@ -77,6 +81,23 @@ public class SymbolsController
         return (SymbolsModel) model;
     }
 
+    //----------------------//
+    // asyncAssignRationals //
+    //----------------------//
+    /**
+     * Asynchronously assign a rational value to a collection of glyphs with
+     * CUSTOM_TIME_SIGNATURE shape
+     *
+     * @param glyphs the impacted glyphs
+     * @param rational the time sig rational value
+     * @return the task that carries out the processing
+     */
+    public Task asyncAssignRationals (Collection<Glyph> glyphs,
+                                      final Rational    rational)
+    {
+        return new RationalTask(rational, glyphs).launch(sheet);
+    }
+
     //------------------//
     // asyncAssignTexts //
     //------------------//
@@ -85,15 +106,18 @@ public class SymbolsController
      * glyphs
      *
      * @param glyphs the impacted glyphs
-     * @param textRole the type (role) of this textual element
+     * @param textType the type of the creator, if relevant
+     * @param textRole the role of this textual element
      * @param textContent the content as a string (if not empty)
      * @return the task that carries out the processing
      */
     public Task asyncAssignTexts (Collection<Glyph> glyphs,
+                                  final CreatorType textType,
                                   final TextRole    textRole,
                                   final String      textContent)
     {
-        return new TextTask(textRole, textContent, glyphs).launch(sheet);
+        return new TextTask(textType, textRole, textContent, glyphs).launch(
+            sheet);
     }
 
     //--------------------//
@@ -152,50 +176,4 @@ public class SymbolsController
         return getClass()
                    .getSimpleName();
     }
-
-    // TODO:
-    // I'm not sure if the code below is needed
-    // For the time being there is just syncAssign in GlyphsController
-    //
-
-    //    //--------------//
-    //    // syncDeassign //
-    //    //--------------//
-    //    /**
-    //     * {@inheritDoc}
-    //     */
-    //    @Override
-    //    protected void syncDeassign (Impact impact)
-    //    {
-    //        if (logger.isFineEnabled()) {
-    //            logger.fine("syncDeassign " + impact);
-    //        }
-    //
-    //        // Use a copy of the glyph list
-    //        List<Glyph> nonStemGlyphs = new ArrayList<Glyph>(
-    //            impact.getInitialGlyphs());
-    //
-    //        // Put the stems apart
-    //        List<Glyph> stems = new ArrayList<Glyph>();
-    //
-    //        for (Glyph glyph : nonStemGlyphs) {
-    //            if (glyph.getShape() == Shape.COMBINING_STEM) {
-    //                stems.add(glyph);
-    //            }
-    //        }
-    //
-    //        nonStemGlyphs.removeAll(stems);
-    //
-    //        // First phase, process the (non-stem) glyphs
-    //        model.deassignGlyphs(nonStemGlyphs);
-    //
-    //        // Second phase dedicated to stems, if any
-    //        if (!stems.isEmpty()) {
-    //            getModel()
-    //                .cancelStems(stems);
-    //        }
-    //
-    //        // Publish modifications
-    //        publish(impact.getInitialGlyphs());
-    //    }
 }

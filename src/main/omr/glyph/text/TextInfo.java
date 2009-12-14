@@ -23,6 +23,7 @@ import omr.lag.HorizontalOrientation;
 import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
+import omr.score.entity.Text.CreatorText.CreatorType;
 
 import omr.sheet.SystemInfo;
 
@@ -116,6 +117,9 @@ public class TextInfo
     /** Role of this text item */
     private TextRole role;
 
+    /** Creator type, if relevant */
+    private CreatorType creatorType;
+
     /** Font size */
     private Integer fontSize;
 
@@ -131,6 +135,28 @@ public class TextInfo
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //----------------//
+    // setCreatorType //
+    //----------------//
+    /**
+     * @param creatorType the creatorType to set
+     */
+    public void setCreatorType (CreatorType creatorType)
+    {
+        this.creatorType = creatorType;
+    }
+
+    //----------------//
+    // getCreatorType //
+    //----------------//
+    /**
+     * @return the creatorType
+     */
+    public CreatorType getCreatorType ()
+    {
+        return creatorType;
+    }
 
     //-----------//
     // isElision //
@@ -497,45 +523,78 @@ public class TextInfo
             return null;
         }
 
-        // Parse the content string
-        Collection<Glyph> words = new ArrayList<Glyph>();
-        List<OcrChar>     glyphChars = ocrLine.getChars();
-        MyScanner         scanner = new MyScanner(glyphChars);
-        SystemInfo        system = sentence.getSystem();
+        // Parse the content string, to extract words
+        SystemInfo    system = sentence.getSystem();
+        List<OcrChar> glyphChars = ocrLine.getChars();
+        MyScanner     scanner = new MyScanner(glyphChars);
+        List<Word>    words = new ArrayList<Word>();
 
         while (scanner.hasNext()) {
-            int                     start = scanner.getWordStart();
-            int                     stop = scanner.getWordStop();
-            String                  word = scanner.next();
-            List<OcrChar>           wordChars = glyphChars.subList(
-                start,
-                stop + 1);
+            int           start = scanner.getWordStart();
+            int           stop = scanner.getWordStop();
+            String        wordText = scanner.next();
+            List<OcrChar> wordChars = glyphChars.subList(start, stop + 1);
+            words.add(new Word(wordText, wordChars));
+        }
+
+        // Sort words, so that shorter words come first
+        Collections.sort(words);
+
+        Collection<Glyph> wordGlyphs = new ArrayList<Glyph>();
+
+        for (Word word : words) {
+            ///logger.info("Word: '" + word.text + "'");
 
             // Isolate proper word glyph from its enclosed sections
-            SortedSet<GlyphSection> sections = retrieveWordSections(wordChars);
+            SortedSet<GlyphSection> sections = retrieveSectionsFrom(word.chars);
 
             if (!sections.isEmpty()) {
                 Glyph wordGlyph = system.buildGlyph(sections);
                 wordGlyph = system.addGlyph(wordGlyph);
+
+                // Perhaps, we have a user-provided content which
+                // might contain a word separator
+                TextInfo ti = wordGlyph.getTextInfo();
+
+                // TODO: Disabled for the time being
+                if (false) {
+                    String man = ti.getManualContent();
+
+                    if ((man != null) && man.contains(" ")) {
+                        logger.warning(
+                            "We should split '" + man + "' in glyph#" +
+                            wordGlyph.getId());
+
+                        for (OcrChar ch : word.chars) {
+                            logger.info(ch.toString());
+                        }
+                    }
+                }
+
                 wordGlyph.setShape(Shape.TEXT);
 
                 // Build the TextInfo for this glyph
-                TextInfo ti = wordGlyph.getTextInfo();
                 ti.setOcrInfo(
                     this.ocrLanguage,
-                    new OcrLine(getFontSize(), wordChars, word));
+                    new OcrLine(getFontSize(), word.chars, word.text));
                 ti.setSentence(this.sentence);
                 ti.role = this.role;
 
                 if (logger.isFineEnabled()) {
-                    logger.fine("LyricsItem \"" + word + "\" " + wordGlyph);
+                    logger.fine(
+                        "LyricsItem \"" + word.text + "\" " + wordGlyph);
                 }
 
-                words.add(wordGlyph);
+                wordGlyphs.add(wordGlyph);
+            } else {
+                logger.warning(
+                    "Text Glyph#" + glyph.getId() +
+                    " has no section for word '" + word.text +
+                    "' beginning at " + word.chars.get(0).getBox());
             }
         }
 
-        return words;
+        return wordGlyphs;
     }
 
     //----------//
@@ -580,37 +639,28 @@ public class TextInfo
     }
 
     //----------------------//
-    // retrieveWordSections //
+    // retrieveSectionsFrom //
     //----------------------//
     /**
-     * Retrieve the glyph sections that compose a given word
-     * @param wordChars the char descriptors for each word character
+     * Retrieve the glyph sections that correspond to the collection of OCR
+     * char descriptors
+     * @param chars the char descriptors for each word character
      * @return the set of word-enclosed sections
      */
-    private SortedSet<GlyphSection> retrieveWordSections (List<OcrChar> wordChars)
+    SortedSet<GlyphSection> retrieveSectionsFrom (List<OcrChar> chars)
     {
-        // Isolate proper word glyph from its enclosed sections
         SortedSet<GlyphSection> sections = new TreeSet<GlyphSection>();
 
-        for (OcrChar charDesc : wordChars) {
+        for (OcrChar charDesc : chars) {
             Rectangle charBox = charDesc.getBox();
 
-            // Slight fix (on Tesseract output)
-            charBox.x -= 1;
-            charBox.width += 1;
-
             for (GlyphSection section : glyph.getMembers()) {
-                if (charBox.contains(section.getContourBox())) {
+                // Do we intersect a section not (yet) assigned?
+                if (charBox.intersects(section.getContourBox()) &&
+                    (section.getGlyph() == this.glyph)) {
                     sections.add(section);
                 }
             }
-        }
-
-        if (sections.isEmpty()) {
-            logger.warning(
-                "Text Glyph#" + glyph.getId() +
-                " has no section for word beginning at " +
-                wordChars.get(0).getBox());
         }
 
         return sections;
@@ -749,6 +799,43 @@ public class TextInfo
             } else {
                 return null;
             }
+        }
+    }
+
+    //------//
+    // Word //
+    //------//
+    private static class Word
+        implements Comparable<Word>
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        String        text; // String content
+        List<OcrChar> chars; // OCR chars descriptors
+
+        //~ Constructors -------------------------------------------------------
+
+        public Word (String        text,
+                     List<OcrChar> chars)
+        {
+            this.text = text;
+            this.chars = chars;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        // Order by ascending text length
+        public int compareTo (Word other)
+        {
+            if (this == other) {
+                return 0;
+            }
+
+            if (this.text.length() <= other.text.length()) {
+                return -1;
+            }
+
+            return +1;
         }
     }
 }

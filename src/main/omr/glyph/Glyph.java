@@ -24,6 +24,7 @@ import omr.lag.ui.SectionView;
 import omr.log.Logger;
 
 import omr.math.Moments;
+import omr.math.Rational;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -154,6 +155,9 @@ public class Glyph
 
     /** Related textual information, if any */
     private TextInfo textInfo;
+
+    /** Related time sig rational information, if any */
+    private Rational rational;
 
     /** Set of forbidden shapes, if any */
     private Set<Shape> forbiddenShapes;
@@ -537,23 +541,26 @@ public class Glyph
     // getLocation //
     //-------------//
     /**
-     * Report the glyph (reference) location, which is the equivalent of the icon
-     * reference point if one such point exist, or the glyph area center
+     * Report the glyph (reference) location, which is the equivalent of the
+     * icon reference point if one such point exists, or the glyph area center
      * otherwise. The point is lazily evaluated.
      *
      * @return the reference center point
      */
     public PixelPoint getLocation ()
     {
+        // No shape: use area center
         if (shape == null) {
             return getAreaCenter();
         }
 
+        // Text shape: use specific reference
         if (shape.isText()) {
             return getTextInfo()
                        .getTextStart();
         }
 
+        // Other shape: check with the related icon if any
         SymbolIcon icon = (SymbolIcon) shape.getIcon();
 
         if (icon != null) {
@@ -569,7 +576,7 @@ public class Glyph
             }
         }
 
-        // Default
+        // Default: use area center
         return getAreaCenter();
     }
 
@@ -738,6 +745,30 @@ public class Glyph
         return pitchPosition;
     }
 
+    //-------------//
+    // setRational //
+    //-------------//
+    /**
+     * Set the glyph timesig rational value
+     * @param rational the rational to set
+     */
+    public void setRational (Rational rational)
+    {
+        this.rational = rational;
+    }
+
+    //-------------//
+    // getRational //
+    //-------------//
+    /**
+     * Report the related timesig rational if any
+     * @return the rational
+     */
+    public Rational getRational ()
+    {
+        return rational;
+    }
+
     //-----------//
     // setResult //
     //-----------//
@@ -819,7 +850,7 @@ public class Glyph
         // Blacklist the old shape if any
         Shape oldShape = getShape();
 
-        if (oldShape != null) {
+        if ((oldShape != null) && (shape != Shape.GLYPH_PART)) {
             forbidShape(oldShape);
         }
 
@@ -1037,8 +1068,8 @@ public class Glyph
      */
     public boolean isTime ()
     {
-        return ShapeRange.SingleTimes.contains(getShape()) ||
-               ShapeRange.MultiTimes.contains(getShape());
+        return ShapeRange.PartialTimes.contains(getShape()) ||
+               ShapeRange.FullTimes.contains(getShape());
     }
 
     //------------------//
@@ -1406,7 +1437,9 @@ public class Glyph
     public void dump ()
     {
         System.out.println(getClass().getName());
+        System.out.println("   @" + Integer.toHexString(hashCode()));
         System.out.println("   id=" + getId());
+        System.out.println("   isActive=" + isActive());
         System.out.println("   lag=" + getLag());
         System.out.println("   members=" + getMembers());
         System.out.println("   parts=" + parts);
@@ -1430,6 +1463,7 @@ public class Glyph
         System.out.println("   bounds=" + getBounds());
         System.out.println("   forbiddenShapes=" + forbiddenShapes);
         System.out.println("   textInfo=" + textInfo);
+        System.out.println("   rational=" + rational);
         System.out.println("   translations=" + translations);
     }
 
@@ -1437,19 +1471,12 @@ public class Glyph
     // linkAllSections //
     //-----------------//
     /**
-     * Make all the glyph's sections point back to this glyph, and
-     * transitively / recursively for all sections of the glyph parts if any
+     * Make all the glyph's sections point back to this glyph
      */
     public void linkAllSections ()
     {
-        // First the direct members of this glyph
         for (GlyphSection section : getMembers()) {
             section.setGlyph(this);
-        }
-
-        // Then, same thing for the parts if any
-        for (Glyph part : getParts()) {
-            part.linkAllSections(this);
         }
     }
 

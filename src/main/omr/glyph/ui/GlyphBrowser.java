@@ -35,7 +35,7 @@ import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
 
 import omr.ui.Board;
-import omr.ui.field.SField;
+import omr.ui.field.LTextField;
 import omr.ui.util.Panel;
 import omr.ui.view.LogSlider;
 import omr.ui.view.Rubber;
@@ -666,9 +666,7 @@ class GlyphBrowser
         JButton    all = new JButton("All");
         JButton    next = new JButton("Next");
         JButton    prev = new JButton("Prev");
-        JTextField nameField = new SField(
-            false, // editable
-            "File where glyph is stored");
+        LTextField nameField = new LTextField("", "File where glyph is stored");
 
         //~ Constructors -------------------------------------------------------
 
@@ -854,8 +852,9 @@ class GlyphBrowser
             JLabel file = new JLabel("File", SwingConstants.RIGHT);
             builder.add(file, cst.xy(1, r));
 
-            nameField.setHorizontalAlignment(JTextField.LEFT);
-            builder.add(nameField, cst.xyw(3, r, 9));
+            nameField.getField()
+                     .setHorizontalAlignment(JTextField.LEFT);
+            builder.add(nameField.getField(), cst.xyw(3, r, 9));
         }
     }
 

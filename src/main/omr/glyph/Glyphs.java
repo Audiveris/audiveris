@@ -61,14 +61,6 @@ public class Glyphs
                 return 0;
             }
 
-            if (o1.getContourBox() == null) {
-                Main.dumping.dump(o1);
-
-                logger.warning(
-                    "Glyph w/ no contourbox " + o1,
-                    new Throwable("Bingo"));
-            }
-
             Point ref = o1.getContourBox()
                           .getLocation();
             Point otherRef = o2.getContourBox()

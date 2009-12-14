@@ -223,9 +223,9 @@ public abstract class Text
     {
         final SystemPart  systemPart = sentence.getSystemPart();
         final ScoreSystem system = systemPart.getSystem();
+        final TextRole    role = sentence.getTextRole();
 
-        if ((sentence.getTextRole() == null) ||
-            (sentence.getTextRole() == TextRole.Unknown)) {
+        if ((role == null) || (role == TextRole.Unknown)) {
             systemPart.addError(
                 sentence.getGlyphs().first(),
                 "Sentence with no role defined");
@@ -233,17 +233,15 @@ public abstract class Text
 
         if (logger.isFineEnabled()) {
             logger.fine(
-                "Populating " + sentence + " " + sentence.getTextRole() +
-                " \"" + sentence.getTextContent() + "\"");
+                "Populating " + sentence + " " + role + " \"" +
+                sentence.getTextContent() + "\"");
         }
 
-        if (sentence.getTextRole() == null) {
-            logger.warning("No role for sentence " + sentence);
-
+        if (role == null) {
             return;
         }
 
-        switch (sentence.getTextRole()) {
+        switch (role) {
         case Lyrics :
 
             // Create as many lyrics items as needed
@@ -256,8 +254,7 @@ public abstract class Text
                 if (itemStr == null) {
                     int nbChar = (int) Math.rint(
                         (double) itemBox.width / sentence.getTextHeight());
-                    itemStr = sentence.getTextRole()
-                                      .getStringHolder(nbChar);
+                    itemStr = role.getStringHolder(nbChar);
                 }
 
                 item.setTranslation(
@@ -415,6 +412,7 @@ public abstract class Text
         public CreatorText (Sentence sentence)
         {
             super(sentence);
+            setCreatorType(sentence.getTextType());
         }
 
         //~ Methods ------------------------------------------------------------

@@ -1,3 +1,4 @@
+
 //----------------------------------------------------------------------------//
 //                                                                            //
 //                             A u d i v e r i s                              //
@@ -9,6 +10,7 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
+import omr.WellKnowns;
 
 /**
  * Class <code>Audiveris</code> is simply the entry point to OMR, which
@@ -41,6 +43,10 @@ public final class Audiveris
      */
     public static void main (final String[] args)
     {
+        // We need class WellKnowns to be elaborated before class Main
+        WellKnowns.ensureLoaded();
+
+        // Then we call Main...
         omr.Main.main(args);
     }
 }

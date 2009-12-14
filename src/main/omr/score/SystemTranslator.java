@@ -15,7 +15,6 @@ import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import static omr.glyph.ShapeRange.*;
 import omr.glyph.text.Sentence;
-import omr.glyph.text.TextRole;
 
 import omr.log.Logger;
 
@@ -184,7 +183,7 @@ public class SystemTranslator
         translate(new BeamTranslator());
         // Flag (-> chord)
         translate(new FlagTranslator());
-        // Augmentation dots (-> chord)
+        // Dots (-> chord) as staccato / augmentation / repeat
         translate(new DotTranslator());
         // Tuplets
         translate(new TupletTranslator());
@@ -653,7 +652,7 @@ public class SystemTranslator
 
         public boolean isRelevant (Glyph glyph)
         {
-            return glyph.getShape() == Shape.DOT;
+            return Dots.contains(glyph.getShape());
         }
 
         public void translate (Glyph glyph)
@@ -1032,17 +1031,9 @@ public class SystemTranslator
             currentCenter = new SystemPoint(
                 systemBox.x + (systemBox.width / 2),
                 systemBox.y + systemBox.height);
-
-            if (glyph.getTextInfo()
-                     .getTextRole() == TextRole.Lyrics) {
-                // Take the staff just above, if any
-                currentStaff = system.getStaffAbove(currentCenter);
-            }
-
-            if (currentStaff == null) {
-                currentStaff = system.getStaffAt(currentCenter);
-            }
-
+            currentStaff = system.getTextStaff(
+                glyph.getTextInfo().getTextRole(),
+                currentCenter);
             currentPart = currentStaff.getPart();
         }
 

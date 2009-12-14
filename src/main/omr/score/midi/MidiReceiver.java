@@ -146,8 +146,6 @@ public class MidiReceiver
                 currentMeasureId = 1;
             }
         }
-
-        ;
     }
 
     //-------//

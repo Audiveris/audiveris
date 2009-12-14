@@ -23,6 +23,8 @@ import omr.glyph.ShapeRange;
 
 import omr.log.Logger;
 
+import omr.math.Rational;
+
 import omr.score.common.PixelRectangle;
 import omr.score.common.SystemPoint;
 import omr.score.entity.Beam;
@@ -251,7 +253,7 @@ public class ScoreChecker
                 }
             } else if (shape == Shape.NO_LEGAL_TIME) {
                 timeSignature.addError("Illegal " + timeSignature);
-            } else if (ShapeRange.SingleTimes.contains(shape)) {
+            } else if (ShapeRange.PartialTimes.contains(shape)) {
                 // This time sig has the same of a single digit
                 // So some other part is still missing
                 timeSignature.addError(
@@ -394,7 +396,7 @@ public class ScoreChecker
 
                     return null;
                 }
-            } catch (InvalidTimeSignature ex) {
+            } catch (Exception ex) {
                 // Skip invalid signatures
             }
         }
@@ -445,7 +447,7 @@ public class ScoreChecker
 
                         throw new InconsistentTimeSignatures();
                     }
-                } catch (InvalidTimeSignature ex) {
+                } catch (Exception ex) {
                     // Unusable signature, forget about this one
                 }
             }
@@ -488,6 +490,18 @@ public class ScoreChecker
         systemInfo.computeGlyphFeatures(compound);
         compound = systemInfo.addGlyph(compound);
         compound.setShape(shape, Evaluation.ALGORITHM);
+
+        if (shape == Shape.CUSTOM_TIME_SIGNATURE) {
+            try {
+                compound.setRational(
+                    new Rational(
+                        newSig.getNumerator(),
+                        newSig.getDenominator()));
+            } catch (InvalidTimeSignature ex) {
+                logger.warning("Invalid time signature", ex);
+            }
+        }
+
         logger.info(shape + " assigned to glyph#" + compound.getId());
     }
 

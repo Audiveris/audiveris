@@ -118,7 +118,7 @@ public class GlyphChecks
             final double absPos = Math.abs(glyph.getPitchPosition());
             final double maxDy = constants.maxTimePitchPositionMargin.getValue();
 
-            if (MultiTimes.contains(shape)) {
+            if (FullTimes.contains(shape)) {
                 // A full time shape must be on 0 position
                 if (absPos > maxDy) {
                     return null;
@@ -137,6 +137,11 @@ public class GlyphChecks
         } else if (Dynamics.contains(shape)) {
             // Check distance from closest staff
             if (Math.abs(glyph.getPitchPosition()) >= 15) {
+                return null;
+            }
+
+            // Limit width
+            if (glyph.getNormalizedWidth() >= 12) {
                 return null;
             }
         } else if (Notes.contains(shape) ||

@@ -34,6 +34,14 @@ public class PatternsChecker
     private static Pattern[] patterns = new Pattern[] {
                                             
     //
+    new Pattern("Shape") {
+            public int run (SystemInfo system)
+            {
+                return system.runShapePattern();
+            }
+        }
+    ,
+                                            
     new Pattern("Clef") {
             public int run (SystemInfo system)
             {
