@@ -60,7 +60,7 @@ import javax.swing.*;
  * itself a subset of the globalSpinner). </ul>
  *
  * <h4>Layout of an instance of SymbolGlyphBoard:<br/>
- *    <img src="doc-files/SymbolGlyphBoard.jpg"/>
+ *    <img src="doc-files/SymbolGlyphBoard.png"/>
  * </h4>
  *
  * @author Herv&eacute; Bitteur

@@ -1,3 +1,5 @@
+syntax: regexp
+
 \.hgignore$
 \.chg\..*$
 \.conflict\~$
@@ -6,10 +8,18 @@
 \.rej$
 build
 dist
-manifest.mf
+manifest\.mf
 nbproject
 project
 scores
 scores-ref
 scripts
-tesseract.log
+tesseract\.log
+www/docs/api
+
+syntax: glob
+
+# Ignore .jpg and .pdf under the src directory since they are produced via umlet
+# Images handled by conf management should use other suffix (.png for example)
+src/**/*.jpg
+src/**/*.pdf
