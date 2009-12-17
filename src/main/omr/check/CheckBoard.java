@@ -85,7 +85,7 @@ public class CheckBoard<C extends Checkable>
      *
      * @param suite the (new) check suite to be used
      */
-    public void setSuite (CheckSuite<C> suite)
+    public synchronized void setSuite (CheckSuite<C> suite)
     {
         final boolean toBuild = checkPanel.getComponent() == null;
         checkPanel.setSuite(suite);
