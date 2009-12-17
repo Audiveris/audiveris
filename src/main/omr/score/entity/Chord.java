@@ -249,7 +249,7 @@ public class Chord
     // getDuration //
     //-------------//
     /**
-     * Report the real rawDuration computed for this chord, including the tuplet
+     * Report the real duration computed for this chord, including the tuplet
      * impact if any, with null value for whole/multi rest.
      *
      * @return The real chord/note rawDuration, or null for a whole rest chord
@@ -1096,6 +1096,59 @@ public class Chord
         return super.getCenter();
     }
 
+    //----------------//
+    // getRawDuration //
+    //---------------//
+    /**
+     * Report the intrinsic duration of this chord, taking flag/beams and dots
+     * into account, but not the tuplet impact if any
+     * Duration (assumed to be the same for all notes of this chord, otherwise
+     * the chord must be split.
+     * This includes the local information (flags, dots) but not the tuplet
+     * impact if any.
+     * A specific value (WHOLE_DURATION) indicates the whole/multi rest chord.
+     *
+     * Nota: this value is not cached, but computed at every time
+     *
+     * @return the intrinsic chord duration
+     * @see #getDuration
+     */
+    public Integer getRawDuration ()
+    {
+        Integer rawDuration = null;
+
+        if (!getNotes()
+                 .isEmpty()) {
+            // All note heads are assumed to be the same within one chord
+            Note note = (Note) getNotes()
+                                   .get(0);
+
+            if (!note.getShape()
+                     .isWholeRest()) {
+                rawDuration = Note.getTypeDuration(note.getShape());
+
+                // Apply fraction (for non-rests only)
+                if (!note.isRest()) {
+                    int fbn = getFlagsNumber() + getBeams()
+                                                     .size();
+
+                    for (int i = 0; i < fbn; i++) {
+                        rawDuration /= 2;
+                    }
+                }
+
+                // Apply augmentation (applies to rests as well)
+                if (dotsNumber == 1) {
+                    rawDuration += (rawDuration / 2);
+                } else if (dotsNumber == 2) {
+                    rawDuration += ((rawDuration * 3) / 4);
+                }
+            }
+        }
+
+        return rawDuration;
+    }
+
     //---------//
     // getSlot //
     //---------//
@@ -1250,6 +1303,10 @@ public class Chord
                 }
             }
 
+            if (isAllRests()) {
+                sb.append(" rest");
+            }
+
             if (stem != null) {
                 sb.append(" stem#")
                   .append(stem.getId());
@@ -1396,59 +1453,6 @@ public class Chord
             tailLocation.x,
             staff.getPageTopLeft().y - note.getSystem().getTopLeft().y +
             Staff.pitchToUnit(Math.rint(note.getPitchPosition())));
-    }
-
-    //----------------//
-    // getRawDuration //
-    //---------------//
-    /**
-     * Report the intrinsic duration of this chord, taking flag/beams and dots
-     * into account, but not the tuplet impact if any
-     * Duration (assumed to be the same for all notes of this chord, otherwise
-     * the chord must be split.
-     * This includes the local information (flags, dots) but not the tuplet
-     * impact if any.
-     * A specific value (WHOLE_DURATION) indicates the whole/multi rest chord.
-     *
-     * Nota: this value is not cached, but computed at every time
-     *
-     * @return the intrinsic chord rawDuration
-     * @see #getDuration
-     */
-    private Integer getRawDuration ()
-    {
-        Integer rawDuration = null;
-
-        if (!getNotes()
-                 .isEmpty()) {
-            // All note heads are assumed to be the same within one chord
-            Note note = (Note) getNotes()
-                                   .get(0);
-
-            if (!note.getShape()
-                     .isWholeRest()) {
-                rawDuration = Note.getTypeDuration(note.getShape());
-
-                // Apply fraction (for non-rests only)
-                if (!note.isRest()) {
-                    int fbn = getFlagsNumber() + getBeams()
-                                                     .size();
-
-                    for (int i = 0; i < fbn; i++) {
-                        rawDuration /= 2;
-                    }
-                }
-
-                // Apply augmentation (applies to rests as well)
-                if (dotsNumber == 1) {
-                    rawDuration += (rawDuration / 2);
-                } else if (dotsNumber == 2) {
-                    rawDuration += ((rawDuration * 3) / 4);
-                }
-            }
-        }
-
-        return rawDuration;
     }
 
     //-----------//

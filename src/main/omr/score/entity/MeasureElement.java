@@ -166,7 +166,8 @@ public abstract class MeasureElement
               .append("]");
 
             // Glyphs
-            sb.append(Glyphs.toString(glyphs));
+            sb.append(" ")
+              .append(Glyphs.toString(glyphs));
 
             // Chord
             sb.append(" ")

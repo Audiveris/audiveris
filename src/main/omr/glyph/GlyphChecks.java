@@ -163,6 +163,11 @@ public class GlyphChecks
             if (glyph.getPitchPosition() <= 4) {
                 return null;
             }
+        } else if (Tuplets.contains(shape)) {
+            // Tuplets cannot be too far from a staff
+            if (Math.abs(glyph.getPitchPosition()) > constants.maxTupletPitchPosition.getValue()) {
+                return null;
+            }
         }
 
         // Pass-through by default
@@ -267,6 +272,10 @@ public class GlyphChecks
             "PitchPosition",
             15d,
             "Minimum absolute pitch position for a title");
+        Constant.Double    maxTupletPitchPosition = new Constant.Double(
+            "PitchPosition",
+            15d,
+            "Minimum absolute pitch position for a tuplet");
         Constant.Double    maxTimePitchPositionMargin = new Constant.Double(
             "PitchPosition",
             1d,
