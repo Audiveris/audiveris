@@ -468,14 +468,14 @@ public class DotTranslation
                 return null;
             }
 
-            // Check abscissa wrt the (ending) repeat barline on right
             final Scale scale = measure.getScale();
             final int   maxDx = scale.toUnits(constants.maxRepeatDotDx);
-            Barline     barline = measure.getBarline();
-            int         dx = barline.getLeftX() - dotCenter.x;
 
-            if ((glyph.getShape() == getTargetShape()) ||
-                ((dx > 0) && (dx <= maxDx))) {
+            // Check abscissa wrt the (ending) repeat barline on right
+            Barline barline = measure.getBarline();
+            int     dx = barline.getLeftX() - dotCenter.x;
+
+            if ((dx > 0) && (dx <= maxDx)) {
                 return new RepeatResult(barline, dx * dx);
             }
 
