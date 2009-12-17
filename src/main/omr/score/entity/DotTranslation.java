@@ -307,7 +307,8 @@ public class DotTranslation
                             logger.fine("Augmentation " + toDot);
                         }
 
-                        if ((glyph.getShape() == getTargetShape()) ||
+                        if (((glyph.getShape() == getTargetShape()) &&
+                            glyph.isManualShape()) ||
                             ((toDot.x > 0) && (toDot.x <= maxDx) &&
                             (Math.abs(toDot.y) <= maxDy))) {
                             distances.put(toDot.distanceSq(0, 0), chord);
@@ -461,6 +462,8 @@ public class DotTranslation
                               Measure     measure,
                               SystemPoint dotCenter)
         {
+            SortedMap<Double, Barline> distances = new TreeMap<Double, Barline>();
+
             // Check vertical pitch position within the staff: close to +1 or -1
             double pitchDif = Math.abs(Math.abs(glyph.getPitchPosition()) - 1);
 
@@ -471,27 +474,35 @@ public class DotTranslation
             final Scale scale = measure.getScale();
             final int   maxDx = scale.toUnits(constants.maxRepeatDotDx);
 
-            // Check abscissa wrt the (ending) repeat barline on right
-            Barline barline = measure.getBarline();
-            int     dx = barline.getLeftX() - dotCenter.x;
-
-            if ((dx > 0) && (dx <= maxDx)) {
-                return new RepeatResult(barline, dx * dx);
-            }
-
-            // Check abscissa wrt ending barline of previous measure on left
+            // Check  wrt starting barline on left and ending barline on right
             Measure prevMeasure = (Measure) measure.getPreviousSibling();
+            Barline leftBar = (prevMeasure != null) ? prevMeasure.getBarline()
+                              : measure.getPart()
+                                       .getStartingBarline();
+            Barline rightBar = measure.getBarline();
 
-            if (prevMeasure != null) {
-                barline = prevMeasure.getBarline();
-                dx = dotCenter.x - barline.getRightX();
+            for (Barline bar : Arrays.asList(leftBar, rightBar)) {
+                if (bar != null) {
+                    final int dx = (bar == leftBar)
+                                   ? (dotCenter.x - bar.getRightX())
+                                   : (bar.getLeftX() - dotCenter.x);
 
-                if ((dx > 0) && (dx <= maxDx)) {
-                    return new RepeatResult(barline, dx * dx);
+                    if (((glyph.getShape() == getTargetShape()) &&
+                        glyph.isManualShape()) ||
+                        ((dx > 0) && (dx <= maxDx))) {
+                        distances.put(new Double(dx * dx), bar);
+                    }
                 }
             }
 
-            return null;
+            // Take the best, if any
+            if (!distances.isEmpty()) {
+                Double firstKey = distances.firstKey();
+
+                return new RepeatResult(distances.get(firstKey), firstKey);
+            } else {
+                return null;
+            }
         }
 
         //~ Inner Classes ------------------------------------------------------
@@ -587,7 +598,8 @@ public class DotTranslation
                                 logger.fine("Staccato " + toDot);
                             }
 
-                            if ((glyph.getShape() == getTargetShape()) ||
+                            if (((glyph.getShape() == getTargetShape()) &&
+                                glyph.isManualShape()) ||
                                 ((Math.abs(toDot.x) <= maxDx) &&
                                 (Math.abs(toDot.y) <= maxDy))) {
                                 distances.put(toDot.distanceSq(0, 0), chord);
