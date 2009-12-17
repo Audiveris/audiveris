@@ -68,7 +68,12 @@ public class DotTranslation
                                     SystemPoint dotCenter)
     {
         if (logger.isFineEnabled()) {
-            logger.fine(measure.getContextString() + " dot " + glyph);
+            logger.fine(measure.getContextString() + " populateDot " + glyph);
+        }
+
+        // Keep specific shape only if manually assigned
+        if (!glyph.isManualShape()) {
+            glyph.setShape(DOT);
         }
 
         Shape                   shape = glyph.getShape();
@@ -304,7 +309,7 @@ public class DotTranslation
                             dotCenter.y - noteRef.y);
 
                         if (logger.isFineEnabled()) {
-                            logger.fine("Augmentation " + toDot);
+                            logger.fine("Augmentation " + toDot + " " + note);
                         }
 
                         if (((glyph.getShape() == getTargetShape()) &&
@@ -312,7 +317,7 @@ public class DotTranslation
                             ((toDot.x > 0) && (toDot.x <= maxDx) &&
                             (Math.abs(toDot.y) <= maxDy))) {
                             distances.put(toDot.distanceSq(0, 0), chord);
-                        } else if (toDot.x < 0) {
+                        } else if (toDot.x < (-2 * maxDx)) {
                             break ChordLoop; // Speed up
                         }
                     }
@@ -487,6 +492,10 @@ public class DotTranslation
                                    ? (dotCenter.x - bar.getRightX())
                                    : (bar.getLeftX() - dotCenter.x);
 
+                    if (logger.isFineEnabled()) {
+                        logger.fine("Repeat dx:" + dx + " " + bar);
+                    }
+
                     if (((glyph.getShape() == getTargetShape()) &&
                         glyph.isManualShape()) ||
                         ((dx > 0) && (dx <= maxDx))) {
@@ -595,7 +604,7 @@ public class DotTranslation
                                 dotCenter.y - noteRef.y);
 
                             if (logger.isFineEnabled()) {
-                                logger.fine("Staccato " + toDot);
+                                logger.fine("Staccato " + toDot + " " + note);
                             }
 
                             if (((glyph.getShape() == getTargetShape()) &&
@@ -603,7 +612,7 @@ public class DotTranslation
                                 ((Math.abs(toDot.x) <= maxDx) &&
                                 (Math.abs(toDot.y) <= maxDy))) {
                                 distances.put(toDot.distanceSq(0, 0), chord);
-                            } else if (toDot.x < -maxDx) {
+                            } else if (toDot.x < (-2 * maxDx)) {
                                 break ChordLoop; // Speed up
                             }
                         }
