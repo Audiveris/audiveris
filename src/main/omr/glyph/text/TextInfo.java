@@ -739,10 +739,10 @@ public class TextInfo
         final String     man = glyph.getTextInfo()
                                     .getManualContent();
 
-        logger.info(
-            "Forced word split of '" + man + "' in glyph#" + glyph.getId());
-
         if (logger.isFineEnabled()) {
+            logger.fine(
+                "Forced word split of '" + man + "' in glyph#" + glyph.getId());
+
             for (OcrChar ch : chars) {
                 logger.fine(ch.toString());
             }
