@@ -526,71 +526,30 @@ public class TextInfo
         // Parse the content string, to extract words
         SystemInfo    system = sentence.getSystem();
         List<OcrChar> glyphChars = ocrLine.getChars();
-        MyScanner     scanner = new MyScanner(glyphChars);
+        WordScanner   scanner = new OcrScanner(glyphChars);
         List<Word>    words = new ArrayList<Word>();
 
         while (scanner.hasNext()) {
-            int           start = scanner.getWordStart();
-            int           stop = scanner.getWordStop();
             String        wordText = scanner.next();
-            List<OcrChar> wordChars = glyphChars.subList(start, stop + 1);
+            List<OcrChar> wordChars = glyphChars.subList(
+                scanner.getWordStart(),
+                scanner.getWordStop() + 1);
             words.add(new Word(wordText, wordChars));
         }
 
-        // Sort words, so that shorter words come first
-        Collections.sort(words);
+        // Further split words if needed, and assign a glyph to each word
+        assignWordGlyphs(words);
 
+        // Return the collection of glyphs
         Collection<Glyph> wordGlyphs = new ArrayList<Glyph>();
 
         for (Word word : words) {
-            ///logger.info("Word: '" + word.text + "'");
+            if (word.glyph != null) {
+                wordGlyphs.add(word.glyph);
+            }
 
-            // Isolate proper word glyph from its enclosed sections
-            SortedSet<GlyphSection> sections = retrieveSectionsFrom(word.chars);
-
-            if (!sections.isEmpty()) {
-                Glyph wordGlyph = system.buildGlyph(sections);
-                wordGlyph = system.addGlyph(wordGlyph);
-
-                // Perhaps, we have a user-provided content which
-                // might contain a word separator
-                TextInfo ti = wordGlyph.getTextInfo();
-
-                // TODO: Disabled for the time being
-                if (false) {
-                    String man = ti.getManualContent();
-
-                    if ((man != null) && man.contains(" ")) {
-                        logger.warning(
-                            "We should split '" + man + "' in glyph#" +
-                            wordGlyph.getId());
-
-                        for (OcrChar ch : word.chars) {
-                            logger.info(ch.toString());
-                        }
-                    }
-                }
-
-                wordGlyph.setShape(Shape.TEXT);
-
-                // Build the TextInfo for this glyph
-                ti.setOcrInfo(
-                    this.ocrLanguage,
-                    new OcrLine(getFontSize(), word.chars, word.text));
-                ti.setSentence(this.sentence);
-                ti.role = this.role;
-
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "LyricsItem \"" + word.text + "\" " + wordGlyph);
-                }
-
-                wordGlyphs.add(wordGlyph);
-            } else {
-                logger.warning(
-                    "Text Glyph#" + glyph.getId() +
-                    " has no section for word '" + word.text +
-                    "' beginning at " + word.chars.get(0).getBox());
+            if (logger.isFineEnabled()) {
+                logger.fine(word.toString());
             }
         }
 
@@ -666,6 +625,150 @@ public class TextInfo
         return sections;
     }
 
+    //-------------//
+    // isSeparator //
+    //-------------//
+    private static boolean isSeparator (String str)
+    {
+        return str.equals(EXTENSION_STRING) || str.equals(ELISION_STRING) ||
+               str.equals(HYPHEN_STRING);
+    }
+
+    //------------------//
+    // assignWordGlyphs //
+    //------------------//
+    /**
+     * Assign a glyph to each word, while further splitting words if they
+     * contain a space or other separator.
+     * @param words the initial collection of words. The collection may get
+     * modified, because of addition of new (sub)words and removal of words
+     * getting split. At the end, each word of the collection should have a
+     * glyph assigned.
+     */
+    private void assignWordGlyphs (List<Word> words)
+    {
+        SystemInfo system = sentence.getSystem();
+
+        while (true) {
+            // Sort words, so that shorter words come first
+            Collections.sort(words);
+
+            Collection<Word> toAdd = new ArrayList<Word>();
+            Collection<Word> toRemove = new ArrayList<Word>();
+
+            WordLoop: 
+            for (Word word : words) {
+                ///logger.info("Word: '" + word.text + "'");
+                if (word.glyph == null) {
+                    // Isolate proper word glyph from its enclosed sections
+                    SortedSet<GlyphSection> sections = retrieveSectionsFrom(
+                        word.chars);
+
+                    if (!sections.isEmpty()) {
+                        word.glyph = system.addGlyph(
+                            system.buildGlyph(sections));
+
+                        // Perhaps, we have a user-provided content which
+                        // might contain a word separator
+                        TextInfo ti = word.glyph.getTextInfo();
+                        String   man = ti.getManualContent();
+
+                        if (((man != null) && (man.length() > 1)) &&
+                            (man.contains(" ") || man.contains(ELISION_STRING) ||
+                            man.contains(EXTENSION_STRING) ||
+                            man.contains(HYPHEN_STRING))) {
+                            toRemove.add(word);
+                            toAdd.addAll(manualSplit(word.glyph, word.chars));
+
+                            // Reset sections->glyph link
+                            for (GlyphSection section : sections) {
+                                section.setGlyph(this.glyph);
+                            }
+
+                            break WordLoop; // Immediately
+                        } else {
+                            word.glyph.setShape(Shape.TEXT);
+
+                            // Build the TextInfo for this glyph
+                            ti.setOcrInfo(
+                                this.ocrLanguage,
+                                new OcrLine(
+                                    getFontSize(),
+                                    word.chars,
+                                    word.text));
+                            ti.setSentence(this.sentence);
+                            ti.role = this.role;
+
+                            if (logger.isFineEnabled()) {
+                                logger.fine(
+                                    "LyricsItem \"" + word.text + "\" " +
+                                    word.glyph);
+                            }
+                        }
+                    } else {
+                        logger.warning(
+                            "Text Glyph#" + glyph.getId() +
+                            " has no section for word '" + word.text +
+                            "' beginning at " + word.chars.get(0).getBox());
+                    }
+                }
+            }
+
+            if (!toRemove.isEmpty()) {
+                words.removeAll(toRemove);
+                words.addAll(toAdd);
+            } else {
+                return; // Normal exit
+            }
+        }
+    }
+
+    //-------------//
+    // manualSplit //
+    //-------------//
+    /**
+     * Further split the provided text glyph, based on its manual content
+     * @param glyph the provided glyph
+     * @param chars the underlying OCR chars
+     * @return the sequence of (sub)words
+     */
+    private List<Word> manualSplit (Glyph         glyph,
+                                    List<OcrChar> chars)
+    {
+        final List<Word> words = new ArrayList<Word>();
+        final String     man = glyph.getTextInfo()
+                                    .getManualContent();
+
+        logger.info(
+            "Forced word split of '" + man + "' in glyph#" + glyph.getId());
+
+        if (logger.isFineEnabled()) {
+            for (OcrChar ch : chars) {
+                logger.fine(ch.toString());
+            }
+        }
+
+        final WordScanner scanner = new ManScanner(chars, man);
+
+        while (scanner.hasNext()) {
+            // The difficulty is to determine a precise cut for ocr chars
+            String        wordText = scanner.next();
+            List<OcrChar> wordChars = chars.subList(
+                scanner.getWordStart(),
+                scanner.getWordStop() + 1);
+
+            Word          word = new Word(wordText, wordChars);
+
+            if (logger.isFineEnabled()) {
+                logger.fine(word.toString());
+            }
+
+            words.add(word);
+        }
+
+        return words;
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
     //-----------//
@@ -688,69 +791,184 @@ public class TextInfo
             "Minimum width/height ratio for an extension character");
     }
 
-    //-----------//
-    // MyScanner //
-    //-----------//
+    //-------------//
+    // WordScanner //
+    //-------------//
     /**
-     * A specific scanner to scan content, since we need to know the current
-     * position within the lineDesc, to infer proper word location.
+     * An abstract scanner to retrieve words.
      */
-    private static class MyScanner
+    private abstract static class WordScanner
     {
         //~ Instance fields ----------------------------------------------------
 
         /** Precise description of each (non blank) character */
-        private List<OcrChar> chars;
+        protected List<OcrChar> chars;
 
-        /** Current position in the sequence of chars */
-        private int pos = -1;
+        /** Position in the sequence of chars */
+        protected int pos = -1;
 
-        /** Position of first char of current word */
-        private int wordStart = 0;
+        /** Current word and its parameters*/
+        private String currentWord = null;
+        private int    currentWordStart = 0;
+        private int    currentWordStop = 0;
 
-        /** Position of last char of current word */
-        private int wordStop = 0;
-
-        /** Current word */
-        private String currentWord;
+        /** Next word and its parameters */
+        private String nextWord = null;
+        protected int  nextWordStart = -1;
+        protected int  nextWordStop = -1;
 
         //~ Constructors -------------------------------------------------------
 
-        public MyScanner (List<OcrChar> chars)
+        public WordScanner (List<OcrChar> chars)
         {
             this.chars = chars;
         }
 
         //~ Methods ------------------------------------------------------------
 
+        /** Return the start position of the current word (as returned by next) */
         public int getWordStart ()
         {
-            return wordStart;
+            return currentWordStart;
         }
 
+        /** Return the stop position of the current word (as returned by next) */
         public int getWordStop ()
         {
-            return wordStop;
+            return currentWordStop;
         }
 
+        /** Tell whether there is a next word */
         public boolean hasNext ()
         {
-            if (currentWord == null) {
-                currentWord = getNextWord();
-            }
-
-            return currentWord != null;
+            return nextWord != null;
         }
 
+        /** Make the next word current, and return it */
         public String next ()
         {
-            String tempWord = currentWord;
-            currentWord = null;
+            currentWord = nextWord;
+            currentWordStart = nextWordStart;
+            currentWordStop = nextWordStop;
 
-            return tempWord;
+            /** Look ahead */
+            nextWord = getNextWord();
+
+            return currentWord;
         }
 
-        private String getNextWord ()
+        protected abstract String getNextWord ();
+
+        protected void lookAhead ()
+        {
+            nextWord = getNextWord();
+        }
+    }
+
+    //------------//
+    // ManScanner //
+    //------------//
+    /**
+     * A specific scanner using manual text content
+     */
+    private static class ManScanner
+        extends WordScanner
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** The string content ant related parameters */
+        private final String content;
+        private final int    length;
+        private final int    charNb;
+        private final double ratio;
+
+        /** The current index in the content string */
+        private int index = -1;
+
+        //~ Constructors -------------------------------------------------------
+
+        public ManScanner (List<OcrChar> chars,
+                           String        content)
+        {
+            super(chars);
+            this.content = content;
+            length = content.length();
+            charNb = chars.size();
+            ratio = charNb / (double) length;
+
+            lookAhead();
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        protected String getNextWord ()
+        {
+            StringBuilder word = new StringBuilder();
+
+            for (index = index + 1; index < content.length(); index++) {
+                pos = (int) Math.rint(index * ratio);
+
+                String str = content.substring(index, index + 1);
+
+                // White space?
+                if (str.equals(" ")) {
+                    if (word.length() > 0) {
+                        return word.toString();
+                    }
+                }
+
+                // Special characters? (to be returned as stand-alone words)
+                if (isSeparator(str)) {
+                    if (word.length() > 0) {
+                    } else {
+                        nextWordStart = nextWordStop + 1; // First unused pos
+                        nextWordStop = pos;
+                        word.append(str);
+                    }
+
+                    return word.toString();
+                } else {
+                    // Standard word content
+                    if (word.length() == 0) { // Start of a word?
+                        nextWordStart = nextWordStop + 1; // First unused pos
+                    }
+
+                    nextWordStop = pos;
+                    word.append(str);
+                }
+            }
+
+            // We have reached the end
+            if (word.length() > 0) {
+                return word.toString();
+            } else {
+                return null;
+            }
+        }
+    }
+
+    //------------//
+    // OcrScanner //
+    //------------//
+    /**
+     * A specific scanner to scan content, since we need to know the current
+     * position within the lineDesc, to infer proper word location.
+     */
+    private static class OcrScanner
+        extends WordScanner
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public OcrScanner (List<OcrChar> chars)
+        {
+            super(chars);
+
+            lookAhead();
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        protected String getNextWord ()
         {
             StringBuilder word = new StringBuilder();
 
@@ -769,14 +987,12 @@ public class TextInfo
                 String str = charDesc.content;
 
                 // Special characters (returned as stand-alone words)
-                if (str.equals(EXTENSION_STRING) ||
-                    str.equals(ELISION_STRING) ||
-                    str.equals(HYPHEN_STRING)) {
+                if (isSeparator(str)) {
                     if (word.length() > 0) {
                         pos--;
                     } else {
-                        wordStart = pos;
-                        wordStop = pos;
+                        nextWordStart = pos;
+                        nextWordStop = pos;
                         word.append(str);
                     }
 
@@ -784,11 +1000,10 @@ public class TextInfo
                 } else {
                     // Standard word content
                     if (word.length() == 0) {
-                        wordStart = pos;
+                        nextWordStart = pos;
                     }
 
-                    wordStop = pos;
-
+                    nextWordStop = pos;
                     word.append(str);
                 }
             }
@@ -810,8 +1025,9 @@ public class TextInfo
     {
         //~ Instance fields ----------------------------------------------------
 
-        String        text; // String content
-        List<OcrChar> chars; // OCR chars descriptors
+        final String        text; // String content
+        final List<OcrChar> chars; // OCR chars descriptors
+        Glyph               glyph; // Underlying glyph
 
         //~ Constructors -------------------------------------------------------
 
@@ -836,6 +1052,29 @@ public class TextInfo
             }
 
             return +1;
+        }
+
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append("{Word");
+            sb.append(" text:")
+              .append(text);
+
+            if (glyph != null) {
+                sb.append(" glyph#")
+                  .append(glyph.getId());
+            }
+
+            for (OcrChar ch : chars) {
+                sb.append("\n")
+                  .append(ch);
+            }
+
+            sb.append("\n}");
+
+            return sb.toString();
         }
     }
 }
