@@ -68,9 +68,9 @@ public class LyricsItem
         /** Just an elision */
         Elision,
         /** Just an extension */
-        Extension,
+        Extension, 
         /** A hyphen between syllables */
-        Hyphen,
+        Hyphen, 
         /** A real syllable */
         Syllable;
     }
@@ -83,9 +83,9 @@ public class LyricsItem
         /** Single-syllable word */
         SINGLE,
         /** Syllable that begins a word */
-        BEGIN,
+        BEGIN, 
         /** Syllable at the middle of a word */
-        MIDDLE,
+        MIDDLE, 
         /** Syllable that ends a word */
         END;
     }
@@ -112,6 +112,9 @@ public class LyricsItem
 
     /** The glyph which contributed to the creation of this lyrics item */
     private final Glyph seed;
+
+    /** Mapped note/chord, if any */
+    private Chord mappedChord;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -258,7 +261,9 @@ public class LyricsItem
             return;
         }
 
-        int        centerX = getReferencePoint().x + (width / 2);
+        // Left is too far on left, middle is too far on right, we use width/4
+        int        centerX = getReferencePoint().x + (width / 4);
+
         SystemPart part = lyricsLine.getPart();
         int        maxDx = part.getScale()
                                .toUnits(constants.maxItemDx);
@@ -297,6 +302,7 @@ public class LyricsItem
 
                     if (!note.isRest()) {
                         note.addSyllable(this);
+                        mappedChord = bestChord;
                     }
 
                     return;
@@ -336,6 +342,10 @@ public class LyricsItem
         if (getSyllabicType() != null) {
             sb.append(" ")
               .append(getSyllabicType());
+        }
+
+        if (mappedChord != null) {
+            sb.append(" mappedTo:Ch#" + mappedChord.getId());
         }
 
         return sb.toString();
