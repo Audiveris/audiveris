@@ -39,6 +39,9 @@ public class MemoryMeter
     /** Specific application parameters */
     private static final Constants constants = new Constants();
 
+    /** A megabyte as a double */
+    private static final double mega = 1024d * 1024d;
+
     //~ Instance fields --------------------------------------------------------
 
     /** Default foreground color, when under alarm threshold */
@@ -182,21 +185,21 @@ public class MemoryMeter
         displayer = new Runnable() {
                 public void run ()
                 {
-                    int total = ((int) Memory.total() * 10) / (1024 * 1024);
-                    int used = ((int) (Memory.occupied()) * 10) / (1024 * 1024);
+                    int totalKB = (int) (Memory.total() / 1024);
+                    int usedKB = (int) (Memory.occupied() / 2014);
 
-                    if ((total != lastTotal) || (used != lastUsed)) {
-                        progressBar.setMaximum(total);
-                        progressBar.setValue(used);
+                    if ((totalKB != lastTotal) || (usedKB != lastUsed)) {
+                        progressBar.setMaximum(totalKB);
+                        progressBar.setValue(usedKB);
                         progressBar.setString(
                             String.format(
-                                "%,.1f/%,.1f MB",
-                                used / 10f,
-                                total / 10f));
-                        lastTotal = total;
-                        lastUsed = used;
+                                "%,.1f/%,.0f MB",
+                                usedKB / 1024f,
+                                totalKB / 1024f));
+                        lastTotal = totalKB;
+                        lastUsed = usedKB;
 
-                        if (used > (10 * constants.alarmThreshold.getValue())) {
+                        if ((usedKB / 1024) > (constants.alarmThreshold.getValue())) {
                             progressBar.setForeground(Color.red);
                         } else {
                             progressBar.setForeground(defaultForeground);
@@ -207,6 +210,7 @@ public class MemoryMeter
 
         // Monitoring thread
         Thread monitorThread = new Thread() {
+            @Override
             public void run ()
             {
                 monitoring = true;
