@@ -39,8 +39,8 @@ public class MemoryMeter
     /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** A megabyte as a double */
-    private static final double mega = 1024d * 1024d;
+    /** A kilo as 2**10 */
+    private static final int KILO = 1024;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -60,10 +60,10 @@ public class MemoryMeter
     private volatile boolean monitoring;
 
     /** Last value for global memory */
-    private int lastTotal;
+    private int lastTotal = 0;
 
     /** Last value for used memory, in order to save on display */
-    private int lastUsed;
+    private int lastUsed = 0;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -185,8 +185,8 @@ public class MemoryMeter
         displayer = new Runnable() {
                 public void run ()
                 {
-                    int totalKB = (int) (Memory.total() / 1024);
-                    int usedKB = (int) (Memory.occupied() / 2014);
+                    int totalKB = (int) (Memory.total() / KILO);
+                    int usedKB = (int) (Memory.occupied() / KILO);
 
                     if ((totalKB != lastTotal) || (usedKB != lastUsed)) {
                         progressBar.setMaximum(totalKB);
@@ -194,12 +194,12 @@ public class MemoryMeter
                         progressBar.setString(
                             String.format(
                                 "%,.1f/%,.0f MB",
-                                usedKB / 1024f,
-                                totalKB / 1024f));
+                                (float) usedKB / KILO,
+                                (float) totalKB / KILO));
                         lastTotal = totalKB;
                         lastUsed = usedKB;
 
-                        if ((usedKB / 1024) > (constants.alarmThreshold.getValue())) {
+                        if (((float) usedKB / KILO) > constants.alarmThreshold.getValue()) {
                             progressBar.setForeground(Color.red);
                         } else {
                             progressBar.setForeground(defaultForeground);
@@ -246,12 +246,12 @@ public class MemoryMeter
         Constant.Integer displayPeriod = new Constant.Integer(
             "MilliSeconds",
             2000,
-            "Display period");
+            "Memory display period");
 
         /** Alarm threshold */
         Constant.Integer alarmThreshold = new Constant.Integer(
             "MegaBytes",
-            70,
-            "Alarm threshold");
+            100,
+            "Memory alarm threshold");
     }
 }
