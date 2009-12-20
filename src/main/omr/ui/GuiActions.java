@@ -54,6 +54,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import javax.swing.text.JTextComponent;
 
 /**
  * Class <code>GuiActions</code> gathers individual actions trigerred from the
@@ -342,11 +345,44 @@ public class GuiActions
      */
     public static class AboutAction
     {
+        //~ Enumerations -------------------------------------------------------
+
+        private static enum Topic {
+            //~ Enumeration constant initializers ------------------------------
+
+
+            /** Application name */
+            application(new JTextField()),
+            /** Longer application description */
+            description(new JTextField()), 
+            /** Current version */
+            version(new JTextField()), 
+            /** Current build */
+            build(new JTextField()), 
+            /** Precise classes */
+            classes(new JTextField()), 
+            /** Link to web site */
+            home(new JEditorPane("text/html", "")), 
+
+            /** Link to project site */
+            project(new JEditorPane("text/html", ""));
+            //~ Instance fields ------------------------------------------------
+
+            public final JTextComponent comp;
+
+            //~ Constructors ---------------------------------------------------
+
+            Topic (JTextComponent comp)
+            {
+                this.comp = comp;
+            }
+        }
+
         //~ Instance fields ----------------------------------------------------
 
         // Dialog
-        private JDialog                 aboutBox = null;
-        private Map<String, JTextField> fields = new HashMap<String, JTextField>();
+        private JDialog           aboutBox = null;
+        private HyperlinkListener linkListener = new LinkListener();
 
         //~ Methods ------------------------------------------------------------
 
@@ -362,10 +398,16 @@ public class GuiActions
 
         private JDialog createAboutBox ()
         {
+            StringBuilder rows = new StringBuilder("pref,5dlu");
+
+            for (int i = 0; i < Topic.values().length; i++) {
+                rows.append(",pref,3dlu");
+            }
+
             // Layout
             final FormLayout      layout = new FormLayout(
                 "right:pref, 5dlu, pref",
-                "pref,5dlu,pref,2dlu,pref,2dlu,pref,2dlu,pref,2dlu,pref,2dlu, pref");
+                rows.toString());
             final PanelBuilder    builder = new PanelBuilder(layout);
             final CellConstraints cst = new CellConstraints();
 
@@ -376,22 +418,23 @@ public class GuiActions
             titleLabel.setName("aboutTitleLabel");
             builder.add(titleLabel, cst.xyw(1, iRow, 3));
 
-            for (String name : new String[] {
-                     "application", "description", "home", "version", "build",
-                     "classes"
-                 }) {
+            for (Topic topic : Topic.values()) {
                 iRow += 2;
 
                 JLabel label = new JLabel();
-                label.setName(name + "Label");
+                label.setName(topic + "Label");
                 builder.add(label, cst.xy(1, iRow));
 
-                JTextField textField = new JTextField();
-                textField.setName(name + "TextField");
-                textField.setEditable(false);
-                textField.setBorder(null);
-                builder.add(textField, cst.xy(3, iRow));
-                fields.put(name, textField);
+                topic.comp.setName(topic + "TextField");
+                topic.comp.setEditable(false);
+                topic.comp.setBorder(null);
+
+                if (topic.comp instanceof JEditorPane) {
+                    ((JEditorPane) topic.comp).addHyperlinkListener(
+                        linkListener);
+                }
+
+                builder.add(topic.comp, cst.xy(3, iRow));
             }
 
             JPanel panel = builder.getPanel();
@@ -403,12 +446,33 @@ public class GuiActions
 
             // Manual injection
             resource.injectComponents(dialog);
-            fields.get("build")
-                  .setText(Main.getToolBuild());
-            fields.get("classes")
-                  .setText(WellKnowns.CLASS_CONTAINER.toString());
+            Topic.build.comp.setText(Main.getToolBuild());
+            Topic.classes.comp.setText(WellKnowns.CLASS_CONTAINER.toString());
 
             return dialog;
+        }
+
+        //~ Inner Classes ------------------------------------------------------
+
+        //            sb.append("<A HREF=\"http://kenai.com/projects/audiveris\">http://kenai.com/projects/audiveris</A>");
+        //        htmlPane.addHyperlinkListener(new ActivatedHyperlinkListener());
+        //
+        private static class LinkListener
+            implements HyperlinkListener
+        {
+            //~ Methods --------------------------------------------------------
+
+            public void hyperlinkUpdate (HyperlinkEvent event)
+            {
+                HyperlinkEvent.EventType type = event.getEventType();
+                final URL                url = event.getURL();
+
+                if (type == HyperlinkEvent.EventType.ACTIVATED) {
+                    //System.out.println("Activated URL " + url);
+                    WebBrowser.getBrowser()
+                              .launch(url.toString());
+                }
+            }
         }
     }
 
