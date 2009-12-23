@@ -1484,7 +1484,7 @@ public class Sheet
 
         Constant.Integer maxForegroundGrayLevel = new Constant.Integer(
             "ByteLevel",
-            180,
+            192,
             "Maximum gray level for a pixel to be considered as foreground (black)");
 
         /** Ratio of horizontal histogram to detect staves */

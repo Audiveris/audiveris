@@ -677,7 +677,7 @@ public class LinesBuilder
 
         /** Maximum deviation in the series of interline values in a staff */
         Scale.Fraction maxInterlineDeviation = new Scale.Fraction(
-            0.15d,
+            0.5d,
             "Maximum deviation in the series of interline values in a staff");
 
         /** Maximum difference between a new interline and the current staff value */

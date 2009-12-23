@@ -172,14 +172,14 @@ public class DotTranslation
          * Maximum absolute dy between note and staccato dot
          */
         Scale.Fraction maxStaccatoDotDy = new Scale.Fraction(
-            3d,
+            6d,
             "Maximum absolute dy between note and staccato dot");
 
         /**
          * Maximum dx between note and staccato dot
          */
         Scale.Fraction maxStaccatoDotDx = new Scale.Fraction(
-            0.5d,
+            0.75d,
             "Maximum dx between note and staccato dot");
     }
 

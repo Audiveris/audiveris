@@ -311,11 +311,11 @@ public class SheetSteps
 
         private final Constant.Integer MaxPatternsIterations = new Constant.Integer(
             "count",
-            10,
+            1,
             "Maximum number of iterations for PATTERNS task");
         private final Constant.Integer MaxScoreIterations = new Constant.Integer(
             "count",
-            10,
+            1,
             "Maximum number of iterations for SCORE task");
     }
 
