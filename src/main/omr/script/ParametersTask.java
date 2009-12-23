@@ -16,7 +16,6 @@ import omr.score.entity.ScorePart;
 
 import omr.sheet.Scale.InterlineFraction;
 import omr.sheet.Sheet;
-import omr.sheet.picture.Picture;
 
 import omr.step.Step;
 
@@ -272,6 +271,8 @@ public class ParametersTask
     public void epilog (Sheet sheet)
     {
         Score score = sheet.getScore();
+        Step  latestStep = sheet.getSheetSteps()
+                                .getLatestStep();
 
         Step  from = null;
 
@@ -287,11 +288,19 @@ public class ParametersTask
             // Nota: we should rebuild from LINES, but this step modifies
             // the image (pixels removed, pixels added). So the have to restart
             // from LOAD step instead.
-            from = Step.LOAD;
+            if (latestStep.compareTo(Step.LINES) >= 0) {
+                from = Step.LOAD;
+            } else {
+                from = null;
+            }
         }
 
         if (foregroundChanged) {
-            from = Step.LOAD;
+            if (latestStep.compareTo(Step.LOAD) > 0) {
+                from = Step.LOAD;
+            } else {
+                from = null;
+            }
         }
 
         if ((from != null) && sheet.getSheetSteps()

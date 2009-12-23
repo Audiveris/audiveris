@@ -316,8 +316,8 @@ public class Staff
     // PartIterator //
     //--------------//
     /**
-     * Class <code>PartIterator</code> implements of the sequence of parallel
-     * measures within a SystemPart
+     * Class <code>PartIterator</code> implements an iterator on the sequence
+     * of staves within all parallel measures of a SystemPart
      */
     public static class PartIterator
         implements Iterator<Staff>
@@ -358,8 +358,8 @@ public class Staff
     // SystemIterator //
     //----------------//
     /**
-     * Class <code>SystemIterator</code> implements of the sequence of
-     * staves within all parallel measures within a system
+     * Class <code>SystemIterator</code> implements an iterator on the
+     * sequence of staves within all parallel measures of a system
      */
     public static class SystemIterator
         implements Iterator<Staff>

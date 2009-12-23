@@ -106,7 +106,11 @@ public class Tuplet
 
         for (TreeNode node : measure.getChords()) {
             Chord chord = (Chord) node;
-            candidates.add(chord);
+
+            // No tuplet on a whole
+            if (!chord.isWholeDuration()) {
+                candidates.add(chord);
+            }
         }
 
         // Now, get the properly embraced chords

@@ -17,6 +17,8 @@ import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
+import omr.score.common.SystemPoint;
+import omr.score.entity.ScoreSystem;
 
 import omr.sheet.Scale;
 import omr.sheet.StaffInfo;
@@ -426,6 +428,17 @@ public class GlyphInspector
                             "Deassigned " + shape + " glyph #" + glyph.getId());
                     }
 
+                    glyph.setShape(null, Evaluation.ALGORITHM);
+                    modifNb++;
+                }
+            }
+
+            // Glyph which must be between left and right sides of system
+            if (ShapeRange.Tuplets.contains(shape)) {
+                PixelRectangle glyphBox = glyph.getContourBox();
+
+                if (((glyphBox.x + glyphBox.width) < system.getLeft()) ||
+                    (glyphBox.x > system.getRight())) {
                     glyph.setShape(null, Evaluation.ALGORITHM);
                     modifNb++;
                 }
