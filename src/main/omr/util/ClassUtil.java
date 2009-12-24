@@ -151,6 +151,23 @@ public class ClassUtil
         }
     }
 
+    //-------------//
+    // loadLibrary //
+    //-------------//
+    /**
+     * Try to load a library
+     * @param library the library to load
+     */
+    public static void loadLibrary (String library)
+    {
+        try {
+            System.loadLibrary(library);
+        } catch (Throwable ex) {
+            logger.warning("Error while loading " + library, ex);
+            throw new RuntimeException(ex);
+        }
+    }
+
     //--------//
     // nameOf //
     //--------//

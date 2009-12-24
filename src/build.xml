@@ -197,6 +197,7 @@
         
         <!-- baseline classes -->
         <javac
+	    encoding     = "${build.encoding}"
 	    target       = "${javac.target}"
             classpathref = "build.classpath"
             debug        = "${build.compile.debug}"
@@ -213,6 +214,7 @@
         
         <!-- plugin classes -->
         <javac
+	    encoding     = "${build.encoding}"
 	    target       = "${javac.target}"
             classpathref = "build.classpath"
             debug        = "${build.compile.debug}"
@@ -238,6 +240,7 @@
         <mkdir dir="${build.test.classes.dir}"/>
         
         <javac
+	    encoding     = "${build.encoding}"
 	    target       = "${javac.target}"
             classpathref = "build.test.classpath"
             debug        = "${build.compile.debug}"

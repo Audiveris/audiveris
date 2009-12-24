@@ -31,7 +31,7 @@ public class WellKnowns
     /** Are we using a Linux OS? */
     public static final boolean LINUX = System.getProperty("os.name")
                                               .toLowerCase()
-                                              .startsWith("Linux");
+                                              .startsWith("linux");
 
     /** Are we using a Mac OS? */
     public static final boolean MAC_OS_X = System.getProperty("os.name")

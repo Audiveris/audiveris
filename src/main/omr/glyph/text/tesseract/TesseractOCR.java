@@ -359,7 +359,7 @@ public class TesseractOCR
                 } else if (WellKnowns.MAC_OS_X) {
                     // TODO
                 } else if (WellKnowns.LINUX) {
-                    // TODO
+                    charsRetriever = new LinuxCharsRetriever();
                 }
             } catch (Throwable ex) {
                 logger.severe("Error in OCR installation", ex);
