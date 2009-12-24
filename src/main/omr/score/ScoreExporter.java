@@ -146,6 +146,8 @@ public class ScoreExporter
      * Create a new ScoreExporter object, on a related score instance
      *
      * @param score the score to export (cannot be null)
+     * @throws InterruptedException
+     * @throws ExecutionException
      */
     public ScoreExporter (Score score)
         throws InterruptedException, ExecutionException
@@ -1242,10 +1244,18 @@ public class ScoreExporter
         identification.setEncoding(encoding);
 
         // [Encoding]/Software
+        java.lang.String soft = Main.getToolName();
+
+        if (!Main.getToolBuild()
+                 .equals("")) {
+            soft += (" " + Main.getToolBuild());
+        } else if (!Main.getToolVersion()
+                        .equals("")) {
+            soft += (" " + Main.getToolVersion());
+        }
+
         encoding.getEncodingDateOrEncoderOrSoftware()
-                .add(
-            factory.createEncodingSoftware(
-                Main.getToolName() + " " + Main.getToolBuild()));
+                .add(factory.createEncodingSoftware(soft));
 
         // [Encoding]/EncodingDate
         // Let the Marshalling class handle it

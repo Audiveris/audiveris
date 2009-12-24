@@ -848,6 +848,10 @@ public class Sheet
      */
     public SymbolsController getSymbolsController ()
     {
+        if (symbolsController == null) {
+            createSymbolsControllerAndEditor();
+        }
+
         return symbolsController;
     }
 

@@ -335,8 +335,8 @@ public class ScoreChecker
 
         try {
             manualSig = findManualTimeSig(measure); // Perhaps null
-        } catch (InconsistentTimeSignatures ex) {
-            logger.warning("InconsistentTimeSignatures");
+        } catch (Exception ex) {
+            measure.addError("Inconsistent Measures or TimeSignatures");
 
             return null;
         }
