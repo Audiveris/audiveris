@@ -33,6 +33,8 @@ import omr.score.ui.ScoreTree;
 import omr.score.ui.ScoreView;
 import omr.score.visitor.ScoreVisitor;
 
+import omr.selection.ScoreLocationEvent;
+
 import omr.sheet.Scale;
 import omr.sheet.Scale.InterlineFraction;
 import omr.sheet.Sheet;
@@ -143,29 +145,13 @@ public class Score
     // Score //
     //-------//
     /**
-     * Creates a blank score, to be fed with informations from sheet analysis or
-     * from an XML binder.
-     */
-    public Score ()
-    {
-        super(null); // No container
-
-        if (logger.isFineEnabled()) {
-            logger.fine("Construction of an empty score");
-        }
-    }
-
-    //-------//
-    // Score //
-    //-------//
-    /**
      * Create a Score, with the specified parameters
      *
      * @param imagePath full name of the original sheet file
      */
     public Score (String imagePath)
     {
-        this();
+        super(null); // No container
 
         setImagePath(imagePath);
 
@@ -1168,7 +1154,7 @@ public class Score
         }
 
         if (logger.isFineEnabled()) {
-            logger.fine("yLocateSystem. Not within recent system");
+            logger.fine("pageLocateSystem. Not within recent system");
         }
 
         // Recent system is not OK, Browse though all the score systems
@@ -1196,17 +1182,27 @@ public class Score
         return system;
     }
 
-    //-------//
-    // reset //
-    //-------//
+    //--------------//
+    // resetSystems //
+    //--------------//
     /**
-     * Reset a score entity to its basic structure
+     * Reset the systems collection of a score entity
      */
-    public void reset ()
+    public void resetSystems ()
     {
         // Discard systems
         getSystems()
             .clear();
+
+        // Discard cached recent system
+        recentSystemRef = null;
+
+        // Discard current score location event (which contains a system id)
+        if (Main.getGui() != null) {
+            getSheet()
+                .getSelectionService()
+                .publish(new ScoreLocationEvent(this, null, null, null));
+        }
     }
 
     //------------------//

@@ -162,25 +162,28 @@ public class ScoreSheetBridge
                     // Forward location information from Score to Sheet side
                     ScoreLocationEvent scoreLocationEvent = (ScoreLocationEvent) event;
                     ScoreLocation      scoreLocation = scoreLocationEvent.location;
-                    PixelRectangle     pixRect = null;
 
-                    if (scoreLocation.rectangle != null) {
-                        ScoreSystem   system = score.getSystemById(
-                            scoreLocation.systemId);
-                        PageRectangle pagRect = system.toPageRectangle(
-                            scoreLocation.rectangle);
-                        pixRect = (PixelRectangle) system.getScale()
-                                                         .toPixels(
-                            pagRect,
-                            new PixelRectangle());
+                    if (scoreLocation != null) {
+                        PixelRectangle pixRect = null;
+
+                        if (scoreLocation.rectangle != null) {
+                            ScoreSystem   system = score.getSystemById(
+                                scoreLocation.systemId);
+                            PageRectangle pagRect = system.toPageRectangle(
+                                scoreLocation.rectangle);
+                            pixRect = (PixelRectangle) system.getScale()
+                                                             .toPixels(
+                                pagRect,
+                                new PixelRectangle());
+                        }
+
+                        eventService.publish(
+                            new SheetLocationEvent(
+                                this,
+                                event.hint,
+                                scoreLocationEvent.movement,
+                                pixRect));
                     }
-
-                    eventService.publish(
-                        new SheetLocationEvent(
-                            this,
-                            event.hint,
-                            scoreLocationEvent.movement,
-                            pixRect));
                 }
 
                 bridging = false;

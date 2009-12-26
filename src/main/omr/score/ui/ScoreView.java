@@ -614,10 +614,15 @@ public class ScoreView
                     SystemRectangle rect = scoreLocation.rectangle;
 
                     if (rect != null) {
-                        int        id = scoreLocation.systemId;
-                        SystemView systemView = getSystemView(id);
+                        // Beware, the id may no longer be valid
+                        try {
+                            int        id = scoreLocation.systemId;
+                            SystemView systemView = getSystemView(id);
 
-                        return systemView.toScoreRectangle(rect);
+                            return systemView.toScoreRectangle(rect);
+                        } catch (Exception ignored) {
+                            return null;
+                        }
                     }
                 }
             }

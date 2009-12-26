@@ -578,11 +578,11 @@ public class SystemPart
         }
 
         // Find some concrete system part for the provided id
-        SystemPart nextPart;
+        SystemPart  nextPart;
+        ScoreSystem nextSystem = (ScoreSystem) getSystem();
 
         while (true) {
-            ScoreSystem nextSystem = (ScoreSystem) getSystem()
-                                                       .getNextSibling();
+            nextSystem = (ScoreSystem) nextSystem.getNextSibling();
 
             if (nextSystem != null) {
                 SystemPart part = nextSystem.getPart(id);
@@ -593,7 +593,9 @@ public class SystemPart
                     break;
                 }
             } else {
-                logger.warning("Cannot find real system part with id " + id);
+                logger.warning(
+                    getContextString() +
+                    " Cannot find real system part with id " + id);
 
                 return null;
             }

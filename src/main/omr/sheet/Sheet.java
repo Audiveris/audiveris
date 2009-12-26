@@ -1272,6 +1272,7 @@ public class Sheet
     //----------------------//
     public void createSystemsBuilder ()
     {
+        score.resetSystems();
         systemsBuilder = new SystemsBuilder(this);
     }
 
