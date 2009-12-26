@@ -56,7 +56,8 @@ class LinuxCharsRetriever
     /**
      * {@inheritDoc}
      *
-     * This Linux version accesses Tesseract DLL through Tesjeract.
+     * This Linux version accesses the Tesseract shared libraries
+     * through Tesjeract.
      */
     @Implement(CharsRetriever.class)
     public EANYCodeChar[] retrieveChars (ByteBuffer tifImageBuffer,
