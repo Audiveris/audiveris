@@ -97,7 +97,7 @@ public class LineCleaner
         this.picture = picture;
 
         // Safer: We need to be able to compute tangents
-        this.minPointNb = Math.max(2, minPointNb); 
+        this.minPointNb = Math.max(2, minPointNb);
 
         if (logger.isFineEnabled()) {
             logger.fine(
@@ -194,10 +194,9 @@ public class LineCleaner
                 // Delete the section itself
                 try {
                     section.delete();
-                } catch (Exception ex) {
+                } catch (Exception ignored) {
                     // In some cases we try to remove a section several times
                     // So simply ignore this
-                    ///logger.warning("Error removing " + section);
                 }
             }
 
@@ -233,10 +232,9 @@ public class LineCleaner
                 // Delete the section itself
                 try {
                     section.delete();
-                } catch (Exception ex) {
+                } catch (Exception ignored) {
                     // In some cases we try to remove a section several times
                     // So simply ignore this
-                    ///logger.warning("Error removing " + section);
                 }
             }
 
@@ -483,6 +481,7 @@ public class LineCleaner
 
                             if (patchSection == null) {
                                 patchSection = lag.createSection(y, newRun);
+                                patchSection.setPatch(true);
 
                                 // Make the proper junction
                                 if (direction > 0) {

@@ -182,7 +182,6 @@ public class HorizontalsBuilder
     {
         // Purge small sections
         Scale scale = sheet.getScale();
-        ///lag.purgeTinySections(scale.fracToSquarePixels(constants.minForeWeight));
 
         // Retrieve (horizontal) sticks
         horizontalsArea = new HorizontalArea(

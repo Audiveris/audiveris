@@ -111,7 +111,7 @@ public class Stick
     //------------------//
     /**
      * Report the number of pixels found in the specified rectangle that do not
-     * belong to the stick.
+     * belong to the stick, and are not artificial patch sections.
      *
      * @param area the rectangular area to investigate, in (coord, pos) form
      *
@@ -125,8 +125,8 @@ public class Stick
         final List<GlyphSection> neighbors = lag.getSectionsIn(area);
 
         for (GlyphSection section : neighbors) {
-            // Keep only sections that are not part of the stick
-            if (section.getGlyph() != this) {
+            // Keep only non-patch sections that are not part of the stick
+            if (!section.isPatch() && (section.getGlyph() != this)) {
                 int pos = section.getFirstPos() - 1; // Ordinate for horizontal,
                                                      // Abscissa for vertical
 
