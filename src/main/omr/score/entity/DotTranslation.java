@@ -540,7 +540,6 @@ public class DotTranslation
                                 SystemPoint dotCenter)
             {
                 barline.addGlyph(glyph);
-                glyph.setTranslation(barline);
 
                 if (logger.isFineEnabled()) {
                     logger.fine(

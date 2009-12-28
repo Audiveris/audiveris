@@ -280,6 +280,7 @@ public class MusicXML
         //      light-heavy, heavy-light, heavy-heavy, and none.
         switch (shape) {
         case THIN_BARLINE :
+        case PART_DEFINING_BARLINE :
             return BarStyle.REGULAR; //"light" ???
 
         case DOUBLE_BARLINE :

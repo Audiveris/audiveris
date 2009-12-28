@@ -117,6 +117,7 @@ public class BarsChecker
      * Prepare a bar checker on the provided sheet
      *
      * @param sheet the sheet to process
+     * @param lag the sheet vertical lag
      */
     public BarsChecker (Sheet    sheet,
                         GlyphLag lag)
@@ -227,11 +228,13 @@ public class BarsChecker
     {
         GlyphContext context = contexts.get(stick);
 
-        if (context != null) {
-            return new StaffAnchors(context.topIdx, context.botIdx);
-        } else {
-            return null;
+        if (context == null) {
+            context = new GlyphContext(stick);
+            suite.pass(context);
+            contexts.put(stick, context);
         }
+
+        return new StaffAnchors(context.topIdx, context.botIdx);
     }
 
     //----------//

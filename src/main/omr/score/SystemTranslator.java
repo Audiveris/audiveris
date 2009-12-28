@@ -24,6 +24,7 @@ import omr.score.common.SystemPoint;
 import omr.score.common.SystemRectangle;
 import omr.score.entity.Arpeggiate;
 import omr.score.entity.Articulation;
+import omr.score.entity.Barline;
 import omr.score.entity.BeamGroup;
 import omr.score.entity.BeamItem;
 import omr.score.entity.Chord;
@@ -187,7 +188,7 @@ public class SystemTranslator
         translate(new DotTranslator());
         // Tuplets
         translate(new TupletTranslator());
-        // Finalize measure ties, voices & durations
+        // Finalize measure ties, voices & durations, barlines
         translate(new MeasureTranslator());
 
         // Local impact
@@ -230,30 +231,7 @@ public class SystemTranslator
         system = systemInfo.getScoreSystem();
 
         // Browse the system collection of glyphs
-        for (Glyph glyph : system.getInfo()
-                                 .getGlyphs()) {
-            Shape shape = glyph.getShape();
-
-            if (glyph.isWellKnown() &&
-                (shape != Shape.CLUTTER) &&
-                (!glyph.isTranslated() || HeadAndFlags.contains(shape))) {
-                // Check for glyph relevance
-                if (translator.isRelevant(glyph)) {
-                    // Determine part/staff/measure containment
-                    translator.computeLocation(glyph);
-
-                    try {
-                        // Perform the translation on this glyph
-                        translator.translate(glyph);
-                    } catch (Exception ex) {
-                        logger.warning(
-                            "Error translating glyph #" + glyph.getId() +
-                            " by " + translator,
-                            ex);
-                    }
-                }
-            }
-        }
+        translator.translateGlyphs();
 
         // Processing at end of system if any
         translator.completeSystem();
@@ -355,6 +333,37 @@ public class SystemTranslator
                             measure.getContextString() +
                             " Exception in measure browsing",
                             ex);
+                    }
+                }
+            }
+        }
+
+        /**
+         * Browsing on every glyph within the system
+         */
+        protected void translateGlyphs ()
+        {
+            for (Glyph glyph : system.getInfo()
+                                     .getGlyphs()) {
+                Shape shape = glyph.getShape();
+
+                if (glyph.isWellKnown() &&
+                    (shape != Shape.CLUTTER) &&
+                    (!glyph.isTranslated() || HeadAndFlags.contains(shape))) {
+                    // Check for glyph relevance
+                    if (isRelevant(glyph)) {
+                        // Determine part/staff/measure containment
+                        computeLocation(glyph);
+
+                        try {
+                            // Perform the translation on this glyph
+                            translate(glyph);
+                        } catch (Exception ex) {
+                            logger.warning(
+                                "Error translating glyph #" + glyph.getId() +
+                                " by " + this,
+                                ex);
+                        }
                     }
                 }
             }
@@ -864,9 +873,37 @@ public class SystemTranslator
             measure.buildVoices();
             // Check duration sanity in this measure
             measure.checkDuration();
+
+            // Make sure all barline glyphs point to it
+            Barline barline = measure.getBarline();
+
+            if (barline != null) {
+                barline.translateGlyphs();
+            }
+        }
+
+        @Override
+        public void completeSystem ()
+        {
+            super.completeSystem();
+
+            // Make sure all starting barline glyphs point to it
+            for (TreeNode pn : system.getParts()) {
+                SystemPart part = (SystemPart) pn;
+                Barline    barline = part.getStartingBarline();
+
+                if (barline != null) {
+                    barline.translateGlyphs();
+                }
+            }
         }
 
         public void translate (Glyph glyph)
+        {
+        }
+
+        @Override
+        protected void translateGlyphs ()
         {
         }
     }

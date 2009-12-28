@@ -492,9 +492,13 @@ public enum Shape {
     //
     /** Too small stuff */
     NOISE("Too small stuff"), 
+
     //
     // Bars --------------------------------------------------------------------
     //
+
+    /** Part defining bar line */
+    PART_DEFINING_BARLINE("Bar line that defines a part"), 
 
     /** Thin bar line */
     THIN_BARLINE("Thin bar line"), 
@@ -598,9 +602,9 @@ public enum Shape {
     /** Meant to indicate a forward in score view */
     FORWARD, 
     /** A glyph which is nothing but part of a larger glyph */
-    GLYPH_PART("Part of a larger glyph"),
+    GLYPH_PART("Part of a larger glyph"), 
     /** A time signature whose values are defined by the user */
-    CUSTOM_TIME_SIGNATURE,
+    CUSTOM_TIME_SIGNATURE, 
     /**
      * Specific value, meaning that we have not been able to determine a
      * time signature shape

@@ -23,6 +23,7 @@ import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.Glyphs;
 import omr.glyph.GlyphsModel;
+import omr.glyph.Shape;
 import omr.glyph.ui.BarMenu;
 import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphLagView;
@@ -261,8 +262,7 @@ public class SystemsBuilder
     {
         // Clear Score -> Systems
         sheet.getScore()
-             .getSystems()
-             .clear();
+             .resetSystems();
 
         for (SystemInfo system : systems) {
             system.allocateScoreStructure(); // ScoreSystem, Parts & Staves
@@ -308,7 +308,8 @@ public class SystemsBuilder
             Stick stick = (Stick) glyph;
 
             if (stick.isBar() &&
-                (stick.getResult() == BarsChecker.BAR_PART_DEFINING)) {
+                ((stick.getResult() == BarsChecker.BAR_PART_DEFINING) ||
+                (stick.getShape() == Shape.PART_DEFINING_BARLINE))) {
                 BarsChecker.StaffAnchors pair = barsChecker.getStaffAnchors(
                     stick);
 
@@ -575,7 +576,7 @@ public class SystemsBuilder
     // BarsController //
     //----------------//
     /**
-     * A glyphs controller meant for barlines
+     * A glyphs controller specifically meant for barlines
      */
     public class BarsController
         extends GlyphsController

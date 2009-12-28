@@ -80,8 +80,9 @@ public class Barline
                                 .getTopLeft();
 
         for (Glyph glyph : getGlyphs()) {
-            if ((glyph.getShape() == Shape.THICK_BARLINE) ||
-                (glyph.getShape() == Shape.THIN_BARLINE)) {
+            if ((glyph.getShape() == Shape.PART_DEFINING_BARLINE) ||
+                (glyph.getShape() == Shape.THIN_BARLINE) ||
+                (glyph.getShape() == Shape.THICK_BARLINE)) {
                 // Beware : Vertical sticks using Horizontal line equation
                 Stick stick = (Stick) glyph;
                 int   x = stick.getLine()
@@ -195,36 +196,6 @@ public class Barline
         }
 
         return true;
-
-        //        Scale scale = getSystem()
-        //                          .getScale();
-        //
-        //        for (Staff staff : staves) {
-        //            boolean overlap = false;
-        //
-        //            for (Glyph glyph : getGlyphs()) {
-        //                // Extrema of glyph
-        //                PageRectangle box = scale.toUnits(glyph.getContourBox());
-        //                int           top = box.y;
-        //                int           bot = box.y + box.height;
-        //
-        //                // Check that staff and stick overlap vertically
-        //                final int topStaff = staff.getPageTopLeft().y;
-        //                final int botStaff = topStaff + staff.getHeight();
-        //
-        //                if (Math.max(topStaff, top) < Math.min(botStaff, bot)) {
-        //                    overlap = true;
-        //
-        //                    break;
-        //                }
-        //            }
-        //
-        //            if (!overlap) {
-        //                return false;
-        //            }
-        //        }
-        //
-        //        return true;
     }
 
     //-----------//
@@ -305,6 +276,19 @@ public class Barline
         return sb.toString();
     }
 
+    //-----------------//
+    // translateGlyphs //
+    //-----------------//
+    /**
+     * Make all barline glyphs point to it as the translated entity
+     */
+    public void translateGlyphs ()
+    {
+        for (Glyph glyph : getGlyphs()) {
+            glyph.setTranslation(this);
+        }
+    }
+
     //----------//
     // getChars //
     //----------//
@@ -326,6 +310,7 @@ public class Barline
             return "K";
 
         case THIN_BARLINE :
+        case PART_DEFINING_BARLINE :
             return "N";
 
         case DOUBLE_BARLINE :

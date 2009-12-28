@@ -331,7 +331,8 @@ public class ScoreExporter
 
         Shape shape = barline.getShape();
 
-        if (shape != omr.glyph.Shape.THIN_BARLINE) {
+        if ((shape != omr.glyph.Shape.THIN_BARLINE) &&
+            (shape != omr.glyph.Shape.PART_DEFINING_BARLINE)) {
             try {
                 proxymusic.Barline       pmBarline = factory.createBarline();
                 proxymusic.BarStyleColor barStyleColor = factory.createBarStyleColor();

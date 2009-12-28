@@ -24,7 +24,7 @@ import java.util.Collection;
  * Class <code>BarlineTask</code> is a script task which assigns (or deassign)
  * a barline shape to a collection of glyphs.
  *
- * <p>Il the compound flag is set, a compound glyph may is composed from the
+ * <p>If the compound flag is set, a compound glyph is composed from the
  * provided glyphs and assigned the shape. Otherwise, each provided glyph is
  * assigned the shape.</p>
  *

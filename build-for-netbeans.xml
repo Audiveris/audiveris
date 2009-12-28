@@ -107,12 +107,10 @@
 
     <!-- Load NetBeans implementation targets -->
     <import file="nbproject/build-impl.xml"/>
-
-    <!-- Next line will be inserted the first time you use the profiler -->
     
-    <!--<import file="nbproject/profiler-build-impl.xml"/>-->
-    
-    
+    <!-- Next line will be inserted the first time you use the profiler -->    
+    <import file="nbproject/profiler-build-impl.xml"/>    
+   
     <!-- Load internal targets common to Emacs/Ant and NetBeans -->
     <import file="${dev.dir}/build-common.xml"/>
     

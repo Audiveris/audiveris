@@ -89,7 +89,7 @@ public class ShapeRange
 
     //
     public static final ShapeRange Barlines = new ShapeRange(
-        EnumSet.range(THIN_BARLINE, BACK_TO_BACK_REPEAT_SIGN));
+        EnumSet.range(PART_DEFINING_BARLINE, BACK_TO_BACK_REPEAT_SIGN));
     public static final ShapeRange Logicals = new ShapeRange(
         EnumSet.range(REPEAT_DOTS, ENDING));
 
@@ -336,12 +336,12 @@ public class ShapeRange
      * Convenient method to check if encapsulated shapes set does contain
      * the provided object
      *
-     * @param obj the (Shape) object to check for inclusion
+     * @param shape the Shape object to check for inclusion
      * @return true if contained, false otherwise
      */
-    public boolean contains (Object obj)
+    public boolean contains (Shape shape)
     {
-        return shapes.contains(obj);
+        return shapes.contains(shape);
     }
 
     //---------//

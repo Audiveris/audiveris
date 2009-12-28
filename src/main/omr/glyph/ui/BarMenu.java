@@ -29,7 +29,7 @@ import java.util.*;
 import javax.swing.*;
 
 /**
- * Class <code>BarMenu</code> defines the popup menu to interact with bar lines
+ * Class <code>BarMenu</code> defines the popup menu to interact with barlines
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -77,11 +77,6 @@ public class BarMenu
         this.glyphLag = glyphLag;
 
         popup = new JPopupMenu(); //------------------------------------------
-
-        // Direct link to latest shape assigned
-        popup.add(new JMenuItem(new IdemAction()));
-
-        popup.addSeparator(); //----------------------------------------------
 
         // Deassign selected glyph(s)
         popup.add(new JMenuItem(new DeassignAction()));
@@ -194,7 +189,7 @@ public class BarMenu
             // Record the instance
             dynActions.add(this);
 
-            // Initially updateMenu the action items
+            // Initially update the action items
             update();
         }
 
@@ -384,48 +379,6 @@ public class BarMenu
                 setEnabled(false);
                 putValue(NAME, "Dump");
                 putValue(SHORT_DESCRIPTION, "No glyph to dump");
-            }
-        }
-    }
-
-    //------------//
-    // IdemAction //
-    //------------//
-    /**
-     * Assign the same latest shape to the glyph(s) at end
-     */
-    private class IdemAction
-        extends DynAction
-    {
-        //~ Methods ------------------------------------------------------------
-
-        public void actionPerformed (ActionEvent e)
-        {
-            JMenuItem source = (JMenuItem) e.getSource();
-            Shape     shape = Shape.valueOf(source.getText());
-            Glyph     glyph = glyphLag.getSelectedGlyph();
-
-            if (glyph != null) {
-                glyphsController.asyncAssignGlyphs(
-                    Collections.singleton(glyph),
-                    shape,
-                    false);
-            }
-        }
-
-        @Override
-        public void update ()
-        {
-            Shape latest = glyphsController.getLatestShapeAssigned();
-
-            if ((glyphNb > 0) && (latest != null)) {
-                setEnabled(true);
-                putValue(NAME, latest.toString());
-                putValue(SHORT_DESCRIPTION, "Assign latest shape");
-            } else {
-                setEnabled(false);
-                putValue(NAME, "Idem");
-                putValue(SHORT_DESCRIPTION, "No shape to assign again");
             }
         }
     }
