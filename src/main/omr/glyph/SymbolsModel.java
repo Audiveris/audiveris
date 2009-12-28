@@ -222,11 +222,11 @@ public class SymbolsModel
         }
     }
 
-    //-----------------//
-    // segmentGlyphSet //
-    //-----------------//
-    public void segmentGlyphSet (Collection<Glyph> glyphs,
-                                 boolean           isShort)
+    //---------------//
+    // segmentGlyphs //
+    //---------------//
+    public void segmentGlyphs (Collection<Glyph> glyphs,
+                               boolean           isShort)
     {
         deassignGlyphs(glyphs);
 

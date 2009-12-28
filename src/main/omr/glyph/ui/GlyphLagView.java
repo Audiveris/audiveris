@@ -192,21 +192,6 @@ public class GlyphLagView
         return specificGlyphs;
     }
 
-    //-----------------------//
-    // asyncDeassignGlyphs //
-    //-----------------------//
-    /**
-     * Deassign the shape of a glyph
-     *
-     * @param glyphs the set of glyph to be deassigned
-     */
-    public void asyncDeassignGlyphSet (Set<Glyph> glyphs)
-    {
-        if (controller != null) {
-            controller.asyncDeassignGlyphs(glyphs);
-        }
-    }
-
     //-------------------//
     // colorizeAllGlyphs //
     //-------------------//

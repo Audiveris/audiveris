@@ -514,15 +514,6 @@ class GlyphBrowser
         //~ Methods ------------------------------------------------------------
 
         //---------------//
-        // deassignGlyph //
-        //---------------//
-        @Override
-        public void asyncDeassignGlyphSet (Set<Glyph> glyphs)
-        {
-            deleteGlyph(); // Current glyph
-        }
-
-        //---------------//
         // colorizeGlyph //
         //---------------//
         @Override

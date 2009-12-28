@@ -310,11 +310,17 @@ public class Rubber
             reset(e);
 
             if (isAdditionWanted(e)) {
-                mouseMonitor.pointAdded(getCenter(), DRAGGING);
-            } else if (isContextWanted(e)) {
-                mouseMonitor.contextSelected(getCenter(), DRAGGING);
+                if (isContextWanted(e)) {
+                    mouseMonitor.contextAdded(getCenter(), DRAGGING);
+                } else {
+                    mouseMonitor.pointAdded(getCenter(), DRAGGING);
+                }
             } else {
-                mouseMonitor.pointSelected(getCenter(), DRAGGING);
+                if (isContextWanted(e)) {
+                    mouseMonitor.contextSelected(getCenter(), DRAGGING);
+                } else {
+                    mouseMonitor.pointSelected(getCenter(), DRAGGING);
+                }
             }
         }
     }
@@ -340,11 +346,17 @@ public class Rubber
 
         if (!isDragWanted(e)) {
             if (isAdditionWanted(e)) {
-                mouseMonitor.pointAdded(getCenter(), PRESSING);
-            } else if (isContextWanted(e)) {
-                mouseMonitor.contextSelected(getCenter(), PRESSING);
+                if (isContextWanted(e)) {
+                    mouseMonitor.contextAdded(getCenter(), PRESSING);
+                } else {
+                    mouseMonitor.pointAdded(getCenter(), PRESSING);
+                }
             } else {
-                mouseMonitor.pointSelected(getCenter(), PRESSING);
+                if (isContextWanted(e)) {
+                    mouseMonitor.contextSelected(getCenter(), PRESSING);
+                } else {
+                    mouseMonitor.pointSelected(getCenter(), PRESSING);
+                }
             }
         }
     }
@@ -376,13 +388,21 @@ public class Rubber
                 0);
             normalize();
         } else if (isAdditionWanted(e)) {
-            mouseMonitor.pointAdded(getCenter(), RELEASING);
-        } else if (rect != null) {
-            if ((rect.width != 0) && (rect.height != 0)) {
-                updateSize(e);
-                mouseMonitor.rectangleSelected(rect, RELEASING);
+            if (isContextWanted(e)) {
+                mouseMonitor.contextAdded(getCenter(), RELEASING);
             } else {
-                mouseMonitor.pointSelected(getCenter(), RELEASING);
+                mouseMonitor.pointAdded(getCenter(), RELEASING);
+            }
+        } else if (rect != null) {
+            if (isContextWanted(e)) {
+                mouseMonitor.contextSelected(getCenter(), RELEASING);
+            } else {
+                if ((rect.width != 0) && (rect.height != 0)) {
+                    updateSize(e);
+                    mouseMonitor.rectangleSelected(rect, RELEASING);
+                } else {
+                    mouseMonitor.pointSelected(getCenter(), RELEASING);
+                }
             }
         }
 
@@ -529,8 +549,10 @@ public class Rubber
 
             return left && command && !e.isPopupTrigger();
         } else {
-            return !SwingUtilities.isRightMouseButton(e) &&
-                   SwingUtilities.isLeftMouseButton(e) && e.isControlDown();
+            //            return !SwingUtilities.isRightMouseButton(e) &&
+            //                   SwingUtilities.isLeftMouseButton(e) && e.isControlDown();
+            return (SwingUtilities.isRightMouseButton(e) != SwingUtilities.isLeftMouseButton(
+                e)) && e.isControlDown();
         }
     }
 
@@ -554,8 +576,6 @@ public class Rubber
                    !SwingUtilities.isLeftMouseButton(e);
         }
     }
-
-    //-- protected access -------------------------------------------------
 
     //--------------//
     // isDragWanted //

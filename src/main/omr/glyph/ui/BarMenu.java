@@ -20,6 +20,7 @@ import omr.selection.GlyphEvent;
 import omr.selection.SelectionHint;
 
 import omr.sheet.Sheet;
+import omr.sheet.SystemsBuilder.BarsController;
 
 import omr.util.Implement;
 
@@ -39,8 +40,8 @@ public class BarMenu
     //~ Instance fields --------------------------------------------------------
 
     // Links to partnering entities
-    private final Sheet            sheet;
-    private final GlyphsController glyphsController;
+    private final Sheet          sheet;
+    private final BarsController barsController;
 
     /** Set of actions to update menu according to selected glyphs */
     private final Set<DynAction> dynActions = new HashSet<DynAction>();
@@ -65,15 +66,15 @@ public class BarMenu
      * Create the popup menu
      *
      * @param sheet the related sheet
-     * @param glyphsController the top companion
+     * @param barsController the top companion
      * @param glyphLag the related glyph lag
      */
-    public BarMenu (final Sheet            sheet,
-                    final GlyphsController glyphsController,
-                    final GlyphLag         glyphLag)
+    public BarMenu (final Sheet          sheet,
+                    final BarsController barsController,
+                    final GlyphLag       glyphLag)
     {
         this.sheet = sheet;
-        this.glyphsController = glyphsController;
+        this.barsController = barsController;
         this.glyphLag = glyphLag;
 
         popup = new JPopupMenu(); //------------------------------------------
@@ -91,7 +92,7 @@ public class BarMenu
                     public void actionPerformed (final ActionEvent e)
                     {
                         JMenuItem source = (JMenuItem) e.getSource();
-                        glyphsController.asyncAssignGlyphs(
+                        barsController.asyncAssignGlyphs(
                             glyphLag.getSelectedGlyphSet(),
                             Shape.valueOf(source.getText()),
                             false);
@@ -111,7 +112,7 @@ public class BarMenu
                     public void actionPerformed (ActionEvent e)
                     {
                         JMenuItem source = (JMenuItem) e.getSource();
-                        glyphsController.asyncAssignGlyphs(
+                        barsController.asyncAssignGlyphs(
                             glyphLag.getSelectedGlyphSet(),
                             Shape.valueOf(source.getText()),
                             true);
@@ -286,7 +287,7 @@ public class BarMenu
 
             // Actually deassign the whole set
             Set<Glyph> glyphs = glyphLag.getSelectedGlyphSet();
-            glyphsController.asyncDeassignGlyphs(glyphs);
+            barsController.asyncDeassignGlyphs(glyphs);
 
             // Update focus on current glyph, if reused in a compound
             if (glyph != null) {
