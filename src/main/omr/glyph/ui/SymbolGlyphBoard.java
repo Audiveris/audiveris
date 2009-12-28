@@ -90,10 +90,7 @@ class SymbolGlyphBoard
     private LComboBox typeCombo;
 
     /** Input/Output : textual content */
-    protected final LTextField textField = new LTextField(
-        true,
-        "Text",
-        "Content of a textual glyph");
+    protected LTextField textField;
 
     /** Glyph characteristics : position wrt staff */
     private LDoubleField pitchPosition = new LDoubleField(
@@ -194,6 +191,7 @@ class SymbolGlyphBoard
         typeCombo.addActionListener(paramAction);
 
         // Text field
+        textField = new LTextField(true, "Text", "Content of a textual glyph");
         textField.getField()
                  .setHorizontalAlignment(JTextField.LEFT);
 
@@ -406,15 +404,19 @@ class SymbolGlyphBoard
         r += 2; // --------------------------------
                 // Text information, first line
 
-        builder.add(textField.getLabel(), cst.xyw(1, r, 1));
-        builder.add(textField.getField(), cst.xyw(3, r, 9));
+        if (textField != null) {
+            builder.add(textField.getLabel(), cst.xyw(1, r, 1));
+            builder.add(textField.getField(), cst.xyw(3, r, 9));
+        }
 
         // or time signature parameters
-        builder.add(timeNum.getLabel(), cst.xy(5, r));
-        builder.add(timeNum.getField(), cst.xy(7, r));
+        if (timeNum != null) {
+            builder.add(timeNum.getLabel(), cst.xy(5, r));
+            builder.add(timeNum.getField(), cst.xy(7, r));
 
-        builder.add(timeDen.getLabel(), cst.xy(9, r));
-        builder.add(timeDen.getField(), cst.xy(11, r));
+            builder.add(timeDen.getLabel(), cst.xy(9, r));
+            builder.add(timeDen.getField(), cst.xy(11, r));
+        }
 
         r += 2; // --------------------------------
                 // Text information, second line
