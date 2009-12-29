@@ -187,15 +187,6 @@ public class SymbolsEditor
 
         //~ Methods ------------------------------------------------------------
 
-        //-----------------------//
-        // asyncDeassignGlyphs //
-        //-----------------------//
-        @Override
-        public void asyncDeassignGlyphSet (Set<Glyph> glyphs)
-        {
-            super.asyncDeassignGlyphSet(glyphs);
-        }
-
         //-------------------//
         // colorizeAllGlyphs //
         //-------------------//
@@ -227,6 +218,30 @@ public class SymbolsEditor
                 focus.isDisplayed(glyph) ? glyph.getColor() : hiddenColor);
         }
 
+        //--------------//
+        // contextAdded //
+        //--------------//
+        @Override
+        public void contextAdded (Point         pt,
+                                  MouseMovement movement)
+        {
+            super.contextAdded(pt, movement);
+
+            if (ViewParameters.getInstance()
+                              .isSectionSelectionEnabled()) {
+            } else {
+                // Retrieve the selected glyphs
+                Set<Glyph> glyphs = sheet.getVerticalLag()
+                                         .getSelectedGlyphSet();
+
+                if (movement == MouseMovement.RELEASING) {
+                    if ((glyphs != null) && !glyphs.isEmpty()) {
+                        showPopup(pt);
+                    }
+                }
+            }
+        }
+
         //-----------------//
         // contextSelected //
         //-----------------//
@@ -234,46 +249,29 @@ public class SymbolsEditor
         public void contextSelected (Point         pt,
                                      MouseMovement movement)
         {
-            if (!ViewParameters.getInstance()
-                               .isSectionSelectionEnabled()) {
+            // Section selection?
+            if (ViewParameters.getInstance()
+                              .isSectionSelectionEnabled()) {
+                // Retrieve the selected sections
+                Set<GlyphSection> sections = sheet.getVerticalLag()
+                                                  .getSelectedSectionSet();
+
+                if ((sections != null) && !sections.isEmpty()) {
+                    showPopup(pt);
+                }
+            } else {
                 // Retrieve the selected glyphs
                 Set<Glyph> glyphs = sheet.getVerticalLag()
                                          .getSelectedGlyphSet();
 
-                // To display point information
-                if ((glyphs == null) || glyphs.isEmpty()) {
-                    pointSelected(pt, movement); // This may change glyph selection
-                    glyphs = sheet.getVerticalLag()
-                                  .getSelectedGlyphSet();
-                }
-
-                if ((glyphs != null) && !glyphs.isEmpty()) {
-                    // Update the popup menu according to selected glyphs
-                    glyphMenu.updateMenu();
-
-                    // Show the popup menu
-                    glyphMenu.getPopup()
-                             .show(
-                        this,
-                        getZoom().scaled(pt.x),
-                        getZoom().scaled(pt.y));
+                if (movement == MouseMovement.RELEASING) {
+                    if ((glyphs != null) && !glyphs.isEmpty()) {
+                        showPopup(pt);
+                    }
                 } else {
-                    // Popup with no glyph selected ?
-                }
-            } else {
-                // Retrieve the selected sections
-                Set<GlyphSection> sections = sheet.getVerticalLag()
-                                                  .getSelectedSectionSet();
-                // Update the popup menu according to selected sections
-                glyphMenu.updateMenu();
-
-                if ((sections != null) && !sections.isEmpty()) {
-                    // Show the popup menu
-                    glyphMenu.getPopup()
-                             .show(
-                        this,
-                        getZoom().scaled(pt.x),
-                        getZoom().scaled(pt.y));
+                    if ((glyphs == null) || (glyphs.size() <= 1)) {
+                        pointSelected(pt, movement);
+                    }
                 }
             }
         }
@@ -425,6 +423,22 @@ public class SymbolsEditor
                     "Sections from different systems " +
                     Sections.toString(sections));
             }
+        }
+
+        //-----------//
+        // showPopup //
+        //-----------//
+        private void showPopup (Point pt)
+        {
+            // Update the popup menu according to selected glyphs
+            glyphMenu.updateMenu();
+
+            // Show the popup menu
+            glyphMenu.getPopup()
+                     .show(
+                this,
+                getZoom().scaled(pt.x) + 20,
+                getZoom().scaled(pt.y) + 30);
         }
     }
 }

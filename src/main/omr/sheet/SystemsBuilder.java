@@ -716,7 +716,7 @@ public class SystemsBuilder
         {
             super(lag, null, null, barsController, specificGlyphs);
             setName("SystemsBuilder-View");
-            barMenu = new BarMenu(sheet, getController(), lag);
+            barMenu = new BarMenu(sheet, (BarsController) getController(), lag);
         }
 
         //~ Methods ------------------------------------------------------------

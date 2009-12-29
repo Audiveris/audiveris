@@ -222,9 +222,9 @@ class GlyphBrowser
     }
 
     //-------------//
-    // deleteGlyph //
+    // removeGlyph //
     //-------------//
-    private void deleteGlyph ()
+    private void removeGlyph ()
     {
         int index = navigator.getIndex();
 
@@ -237,7 +237,7 @@ class GlyphBrowser
             if (constants.confirmDeletions.getValue()) {
                 if (JOptionPane.showConfirmDialog(
                     component,
-                    "Delete glyph '" + gName + "' ?") != JOptionPane.YES_OPTION) {
+                    "Remove glyph '" + gName + "' ?") != JOptionPane.YES_OPTION) {
                     return;
                 }
             }
@@ -272,7 +272,7 @@ class GlyphBrowser
                 navigator.setIndex(index - 1, GLYPH_INIT); // Prev/None
             }
         } else {
-            logger.warning("No selected glyph to delete!");
+            logger.warning("No selected glyph to remove!");
         }
     }
 
@@ -281,12 +281,6 @@ class GlyphBrowser
     //--------------//
     private void resetBrowser ()
     {
-        // Placeholder for some cleanup
-        //        if (tLag != null) {
-        //            localPixelSelection.deleteObserver(tLag);
-        //            localSectionSelection.deleteObserver(tLag);
-        //        }
-
         // Reset model
         tLag = new GlyphLag(
             "tLag",
@@ -295,17 +289,6 @@ class GlyphBrowser
 
         locationService = new SelectionService();
         controller = new BasicController(tLag, locationService);
-
-        //        tLag.setSectionSelection(localSectionSelection);
-        //        localSectionSelection.addObserver(tLag);
-        //        tLag.setRunSelection(localRunSelection);
-        //
-        //        // Input
-        //        localPixelSelection.addObserver(tLag);
-        //
-        //        // Output
-        //        tLag.setLocationService(localPixelSelection);
-        //        tLag.setGlyphSelection(localGlyphSelection);
 
         // Reset left panel
         if (leftPanel != null) {
@@ -399,7 +382,7 @@ class GlyphBrowser
         @Override
         public void deassignGlyph (Glyph glyph)
         {
-            deleteGlyph();
+            removeGlyph();
         }
     }
 
@@ -413,7 +396,7 @@ class GlyphBrowser
 
         public DeassignAction ()
         {
-            super("Delete");
+            super("Remove");
             putValue(
                 Action.SHORT_DESCRIPTION,
                 "Remove that glyph from training material");
@@ -425,7 +408,7 @@ class GlyphBrowser
         @Implement(ChangeListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            deleteGlyph();
+            removeGlyph();
         }
     }
 
@@ -446,11 +429,6 @@ class GlyphBrowser
 
         public Display ()
         {
-            // Some house keeping about previous view
-            //            if (view != null) {
-            //                localPixelSelection.deleteObserver(view);
-            //                localGlyphSelection.deleteObserver(view);
-            //            }
             view = new MyView(controller);
             modelRectangle = new Rectangle();
             modelSize = new Dimension(0, 0);
@@ -512,15 +490,6 @@ class GlyphBrowser
         }
 
         //~ Methods ------------------------------------------------------------
-
-        //---------------//
-        // deassignGlyph //
-        //---------------//
-        @Override
-        public void asyncDeassignGlyphSet (Set<Glyph> glyphs)
-        {
-            deleteGlyph(); // Current glyph
-        }
 
         //---------------//
         // colorizeGlyph //

@@ -28,6 +28,14 @@ public interface MouseMonitor
     //~ Methods ----------------------------------------------------------------
 
     /**
+     * Contextual action (by right button click + control) of an additional point
+     * @param pt the current point in model pixel coordinates
+     * @param movement the mouse movement
+     */
+    void contextAdded (Point         pt,
+                          MouseMovement movement);
+
+    /**
      * Contextual action (by right button click)
      * @param pt the current point in model pixel coordinates
      * @param movement the mouse movement

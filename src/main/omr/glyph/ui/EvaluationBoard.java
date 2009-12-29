@@ -91,10 +91,10 @@ class EvaluationBoard
     /** The evaluator this display is related to */
     private final GlyphEvaluator evaluator = GlyphNetwork.getInstance();
 
-    /** Related glyph model */
-    private final GlyphsController glyphController;
+    /** Related glyphs controller */
+    private final GlyphsController glyphsController;
 
-    /** Related sheet & GlyphsController */
+    /** Related sheet */
     private final Sheet sheet;
 
     /** Lag view (if any) */
@@ -151,7 +151,7 @@ class EvaluationBoard
             glyphController.getLag().getSelectionService(),
             eventClasses);
 
-        this.glyphController = glyphController;
+        this.glyphsController = glyphController;
         this.sheet = sheet;
         this.view = view;
 
@@ -389,15 +389,15 @@ class EvaluationBoard
         public void actionPerformed (ActionEvent e)
         {
             // Assign current glyph with selected shape
-            if (glyphController != null) {
-                Glyph glyph = (Glyph) glyphController.getLag()
-                                                     .getSelectedGlyph();
+            if (glyphsController != null) {
+                Glyph glyph = (Glyph) glyphsController.getLag()
+                                                      .getSelectedGlyph();
 
                 if (glyph != null) {
                     Shape shape = Shape.valueOf(button.getText());
 
                     // Actually assign the shape
-                    glyphController.asyncAssignGlyphs(
+                    glyphsController.asyncAssignGlyphs(
                         Glyphs.sortedSet(glyph),
                         shape,
                         false);
@@ -505,8 +505,8 @@ class EvaluationBoard
             int          ok = 0;
             int          total = 0;
             final double maxDoubt = GlyphInspector.getSymbolMaxDoubt();
-            final int    viewIndex = glyphController.getLag()
-                                                    .viewIndexOf(view);
+            final int    viewIndex = glyphsController.getLag()
+                                                     .viewIndexOf(view);
 
             for (Glyph glyph : sheet.getActiveGlyphs()) {
                 if (glyph.isKnown() &&

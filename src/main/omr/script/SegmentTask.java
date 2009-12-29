@@ -67,7 +67,7 @@ public class SegmentTask
     {
         sheet.getSymbolsController()
              .getModel()
-             .segmentGlyphSet(getInitialGlyphs(), isShort);
+             .segmentGlyphs(getInitialGlyphs(), isShort);
     }
 
     //-----------------//

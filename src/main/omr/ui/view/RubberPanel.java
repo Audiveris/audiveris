@@ -288,6 +288,16 @@ public class RubberPanel
         return zoom;
     }
 
+    //--------------//
+    // contextAdded //
+    //--------------//
+    @Implement(MouseMonitor.class)
+    public void contextAdded (Point         pt,
+                              MouseMovement movement)
+    {
+        setFocusLocation(new Rectangle(pt), movement, LOCATION_ADD);
+    }
+
     //-----------------//
     // contextSelected //
     //-----------------//

@@ -73,6 +73,9 @@ public class GlyphSection
     /** The containing system, if any */
     private SystemInfo system;
 
+    /** Is this section a patch? */
+    private boolean patch = false;
+
     //~ Constructors -----------------------------------------------------------
 
     //--------------//
@@ -144,6 +147,30 @@ public class GlyphSection
     {
         return (glyph != null) &&
                (glyph.isSuccessful() || glyph.isWellKnown());
+    }
+
+    //----------//
+    // setPatch //
+    //----------//
+    /**
+     * Set this section as a patch
+     * @param patch the patch to set
+     */
+    public void setPatch (boolean patch)
+    {
+        this.patch = patch;
+    }
+
+    //---------//
+    // isPatch //
+    //---------//
+    /**
+     * Report whether this section is a patch
+     * @return the patch
+     */
+    public boolean isPatch ()
+    {
+        return patch;
     }
 
     //-----------//
@@ -225,6 +252,10 @@ public class GlyphSection
         StringBuffer sb = new StringBuffer(256);
 
         sb.append(super.toString());
+
+        if (isPatch()) {
+            sb.append(" patch");
+        }
 
         if (glyph != null) {
             sb.append(" glyph#")
