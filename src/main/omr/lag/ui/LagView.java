@@ -192,14 +192,6 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         return lag.getVertexById(id);
     }
 
-    //
-    //    //-----------------------//
-    //    // getSelectedSectionSet //
-    //    //-----------------------//
-    //    public Set<S> getSelectedSectionSet ()
-    //    {
-    //    }
-
     //---------------------//
     // getSpecificSections //
     //---------------------//
@@ -207,24 +199,6 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     {
         return specificSections;
     }
-
-    //    //--------------//
-    //    // getModelSize //
-    //    //--------------//
-    //    /**
-    //     * Return the overall dimension of the lag graph (zooming put apart).
-    //     *
-    //     * @return the global bounding box of the lag
-    //     */
-    //    @Override
-    //    public Dimension getModelSize ()
-    //    {
-    //        if (super.getModelSize() != null) {
-    //            return super.getModelSize();
-    //        } else {
-    //            return lagContour.getSize();
-    //        }
-    //    }
 
     //----------------//
     // addSectionView //

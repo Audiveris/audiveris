@@ -14,8 +14,11 @@ package omr.script;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphSection;
 import omr.glyph.Glyphs;
+import omr.glyph.GlyphsBuilder;
 import omr.glyph.SectionSets;
 import omr.glyph.Shape;
+
+import omr.lag.LagOrientation;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
@@ -52,6 +55,10 @@ public abstract class GlyphTask
     @XmlElement(name = "glyphs")
     protected final SectionSets sectionSets;
 
+    /** Lag orientation */
+    @XmlAttribute
+    protected final LagOrientation orientation;
+
     /** The collection of glyphs which are concerned by this task */
     protected SortedSet<Glyph> glyphs;
 
@@ -69,10 +76,13 @@ public abstract class GlyphTask
     /**
      * Creates a new GlyphTask object.
      *
+     * @param orientation orientation of the containing lag
      * @param glyphs the collection of glyphs concerned by this task
      */
-    public GlyphTask (Collection<Glyph> glyphs)
+    public GlyphTask (LagOrientation    orientation,
+                      Collection<Glyph> glyphs)
     {
+        this.orientation = orientation;
         this.glyphs = new TreeSet<Glyph>(Glyphs.globalComparator);
         this.glyphs.addAll(glyphs);
 
@@ -83,10 +93,24 @@ public abstract class GlyphTask
     // GlyphTask //
     //-----------//
     /**
+     * Creates a new GlyphTask object, for vertical glyphs by default
+     *
+     * @param glyphs the collection of glyphs concerned by this task
+     */
+    public GlyphTask (Collection<Glyph> glyphs)
+    {
+        this(LagOrientation.VERTICAL, glyphs);
+    }
+
+    //-----------//
+    // GlyphTask //
+    //-----------//
+    /**
      * Constructor needed by no-arg constructors of subclasses (for JAXB)
      */
     protected GlyphTask ()
     {
+        orientation = LagOrientation.VERTICAL;
         glyphs = null; // Dummy value
         sectionSets = null; // Dummy value
     }
@@ -156,11 +180,23 @@ public abstract class GlyphTask
         if (glyphs == null) {
             glyphs = new TreeSet<Glyph>(Glyphs.globalComparator);
 
-            for (Collection<GlyphSection> set : sectionSets.getSets(sheet)) {
-                SystemInfo system = set.iterator()
-                                       .next()
-                                       .getSystem();
-                Glyph      glyph = system.addGlyph(system.buildGlyph(set));
+            for (Collection<GlyphSection> set : sectionSets.getSets(
+                sheet,
+                orientation)) {
+                Glyph glyph = null;
+
+                if (orientation == LagOrientation.VERTICAL) {
+                    SystemInfo system = set.iterator()
+                                           .next()
+                                           .getSystem();
+                    glyph = system.addGlyph(system.buildGlyph(set));
+                } else {
+                    glyph = GlyphsBuilder.buildGlyph(sheet.getScale(), set);
+                    glyph = sheet.getHorizontalLag()
+                                 .addGlyph(glyph);
+                    logger.info("Recreated " + glyph);
+                }
+
                 glyphs.add(glyph);
             }
         }
@@ -196,7 +232,9 @@ public abstract class GlyphTask
     {
         SortedSet<SystemInfo> impactedSystems = new TreeSet<SystemInfo>();
 
-        for (Collection<GlyphSection> set : sectionSets.getSets(sheet)) {
+        for (Collection<GlyphSection> set : sectionSets.getSets(
+            sheet,
+            orientation)) {
             for (GlyphSection section : set) {
                 SystemInfo system = section.getSystem();
                 Glyph      glyph = section.getGlyph();

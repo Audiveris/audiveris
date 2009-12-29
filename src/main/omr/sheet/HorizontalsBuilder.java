@@ -22,6 +22,7 @@ import omr.check.SuccessResult;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 import omr.glyph.GlyphsModel;
@@ -58,7 +59,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Class <code>HorizontalsBuilder</code> is in charge of retrieving horizontal
@@ -143,6 +146,12 @@ public class HorizontalsBuilder
     /** Patcher for the ledger sticks */
     private final LineCleaner lineCleaner;
 
+    /** Glyphs controller, if any */
+    private GlyphsController controller;
+
+    // Sections that, as members of horizontals, will be treated as specific
+    private Set<GlyphSection> dashSections = new HashSet<GlyphSection>();
+
     //~ Constructors -----------------------------------------------------------
 
     //--------------------//
@@ -166,6 +175,17 @@ public class HorizontalsBuilder
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //---------------//
+    // getController //
+    //---------------//
+    /**
+     * @return the controller
+     */
+    public GlyphsController getController ()
+    {
+        return controller;
+    }
 
     //-----------//
     // buildInfo //
@@ -207,13 +227,59 @@ public class HorizontalsBuilder
         return info;
     }
 
+    //----------------//
+    // deassignGlyphs //
+    //----------------//
+    /**
+     * De-Assign a collection of glyphs.
+     *
+     * @param glyphs the collection of glyphs to be de-assigned
+     */
+    @Override
+    public void deassignGlyphs (Collection<Glyph> glyphs)
+    {
+        for (Glyph glyph : glyphs) {
+            if (logger.isFineEnabled()) {
+                logger.fine("Deassign horizontal glyph#" + glyph.getId());
+            }
+
+            Dash dash = null;
+
+            switch (glyph.getShape()) {
+            case LEDGER :
+                dash = info.getLedgerOf(glyph);
+                info.getLedgers()
+                    .remove((Ledger) dash);
+
+                break;
+
+            case ENDING :
+                dash = info.getEndingOf(glyph);
+                info.getEndings()
+                    .remove((Ending) dash);
+
+                break;
+            }
+
+            // Remove the patches and restore the glyph
+            lineCleaner.restoreStick((Stick) glyph, dash.getPatches());
+            allDashes.remove(dash);
+
+            dashSections.removeAll(glyph.getMembers());
+        }
+
+        lagView.colorizeAllSections();
+
+        super.deassignGlyphs(glyphs);
+    }
+
     //---------//
     // cleanup //
     //---------//
     private void cleanup (List<?extends Dash> dashes)
     {
         for (Dash dash : dashes) {
-            lineCleaner.cleanupStick(dash.getStick());
+            dash.setPatches(lineCleaner.cleanupStick(dash.getStick()));
         }
     }
 
@@ -278,17 +344,14 @@ public class HorizontalsBuilder
     //--------------//
     private void displayFrame ()
     {
-        GlyphsController   controller = new GlyphsController(this);
-
-        // Sections that, as members of horizontals, will be treated as specific
-        List<GlyphSection> members = new ArrayList<GlyphSection>();
+        controller = new GlyphsController(this);
 
         for (Dash dash : allDashes) {
-            members.addAll(dash.getStick().getMembers());
+            dashSections.addAll(dash.getStick().getMembers());
         }
 
         // Specific rubber display
-        lagView = new MyView(lag, members, controller);
+        lagView = new MyView(lag, dashSections, getController());
 
         final String  unit = sheet.getRadix() + ":HorizontalsBuilder";
         BoardsPane    boardsPane = new BoardsPane(
@@ -297,7 +360,7 @@ public class HorizontalsBuilder
             new PixelBoard(unit, sheet),
             new RunBoard(unit, lag),
             new SectionBoard(unit, lag.getLastVertexId(), lag),
-            new GlyphBoard(unit, controller, null),
+            new GlyphBoard(unit, getController(), null),
             new CheckBoard<Stick>(
                 unit + "-Common",
                 commonSuite,
@@ -925,9 +988,9 @@ public class HorizontalsBuilder
     {
         //~ Constructors -------------------------------------------------------
 
-        public MyView (GlyphLag           lag,
-                       List<GlyphSection> members,
-                       GlyphsController   controller)
+        public MyView (GlyphLag          lag,
+                       Set<GlyphSection> members,
+                       GlyphsController  controller)
         {
             super(lag, members, constants.displayLedgerLines, controller, null);
             setName("HorizontalsBuilder-View");
@@ -947,8 +1010,8 @@ public class HorizontalsBuilder
 
             // All checked sticks.
             for (Stick stick : horizontalsArea.getSticks()) {
-                if ((stick.getResult() != LEDGER) &&
-                    (stick.getResult() != ENDING)) {
+                if ((stick.getShape() != Shape.LEDGER) &&
+                    (stick.getShape() != Shape.ENDING)) {
                     stick.colorize(lag, viewIndex, Color.red);
                 }
             }

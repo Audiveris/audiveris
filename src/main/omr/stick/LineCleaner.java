@@ -115,10 +115,26 @@ public class LineCleaner
      * extended through the former line stick until the middle of the staff line
      *
      * @param lineStick the line stick about to be removed and perhaps patched
+     * @return the set of patching sections
      */
-    public void cleanupStick (Stick lineStick)
+    public Set<GlyphSection> cleanupStick (Stick lineStick)
     {
-        new StickCleaner(lineStick).cleanup();
+        return new StickCleaner(lineStick).cleanup();
+    }
+
+    //--------------//
+    // restoreStick //
+    //--------------//
+    /**
+     * Do the opposite of cleanupStick
+     *
+     * @param lineStick the line stick to restore
+     * @param patches the set of patching sections
+     */
+    public void restoreStick (Stick             lineStick,
+                              Set<GlyphSection> patches)
+    {
+        new StickCleaner(lineStick, patches).restore();
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -151,13 +167,21 @@ public class LineCleaner
         private final Set<GlyphSection> borders = new LinkedHashSet<GlyphSection>();
 
         /** Patch sections created to extend crossing objects through the line */
-        private final List<GlyphSection> patches = new ArrayList<GlyphSection>();
+        private final Set<GlyphSection> patches;
 
         //~ Constructors -------------------------------------------------------
+
+        public StickCleaner (Stick             lineStick,
+                             Set<GlyphSection> patches)
+        {
+            this.lineStick = lineStick;
+            this.patches = patches;
+        }
 
         private StickCleaner (Stick lineStick)
         {
             this.lineStick = lineStick;
+            patches = new HashSet<GlyphSection>();
         }
 
         //~ Methods ------------------------------------------------------------
@@ -170,7 +194,7 @@ public class LineCleaner
          * extended through the former line stick until the middle of the staff
          * line
          */
-        public void cleanup ()
+        public Set<GlyphSection> cleanup ()
         {
             if (logger.isFineEnabled()) {
                 logger.fine("cleanup stick=" + lineStick);
@@ -243,6 +267,29 @@ public class LineCleaner
 
             // But write patches to the picture
             write(patches, sheet.getMaxForeground());
+
+            return patches;
+        }
+
+        //---------//
+        // restore //
+        //---------//
+        /**
+         * Restore the stick which had been cleaned up
+         */
+        public void restore ()
+        {
+            // Erase patches
+            for (GlyphSection patch : patches) {
+                patch.write(picture, Picture.BACKGROUND);
+                patch.delete();
+            }
+
+            // Reinsert stick sections
+            for (GlyphSection section : lineStick.getMembers()) {
+                lag.restoreVertex(section);
+                section.write(picture, sheet.getMaxForeground());
+            }
         }
 
         //----------------//

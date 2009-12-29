@@ -37,8 +37,8 @@ import java.util.Set;
  * On top of this, we may use a temporary color, for example to highlight the
  * section.
  *
- * @param L the precise lag type
- * @param S the precise section type
+ * @param <L> the precise lag type
+ * @param <S> the precise section type
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
@@ -101,8 +101,6 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
     public SectionView (S section)
     {
         this.section = section;
-
-        ///defaultColor = determineDefaultColor();
     }
 
     //~ Methods ----------------------------------------------------------------

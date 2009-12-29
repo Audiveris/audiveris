@@ -11,17 +11,17 @@
 // </editor-fold>
 package omr.sheet;
 
+import omr.glyph.Glyph;
+import omr.glyph.GlyphSection;
+
 import omr.math.Line;
 
 import omr.stick.Stick;
 
 import omr.ui.util.UIUtilities;
 
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Stroke;
+import java.awt.*;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -49,6 +49,9 @@ public class Dash
 
     /** The underlying stick if any */
     private Stick stick;
+
+    /** The patching sections */
+    private Set<GlyphSection> patches = new HashSet<GlyphSection>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -127,6 +130,19 @@ public class Dash
         return low;
     }
 
+    //-----------//
+    // getDashOf //
+    //-----------//
+    /**
+     * Report whether this dash is based on the provided glyph
+     * @param glyph the provided glyph
+     * @return true if they are related
+     */
+    public boolean isDashOf (Glyph glyph)
+    {
+        return this.stick == glyph;
+    }
+
     //---------//
     // getLine //
     //---------//
@@ -144,6 +160,35 @@ public class Dash
         }
 
         return line;
+    }
+
+    //------------//
+    // setPatches //
+    //------------//
+    /**
+     * Remember the set of patches
+     * @param patches the patches to remember
+     */
+    public void setPatches (Collection<GlyphSection> patches)
+    {
+        if (this.getPatches() != patches) {
+            this.getPatches()
+                .clear();
+            this.getPatches()
+                .addAll(patches);
+        }
+    }
+
+    //------------//
+    // getPatches //
+    //------------//
+    /**
+     * Report the set of patches
+     * @return the patches
+     */
+    public Set<GlyphSection> getPatches ()
+    {
+        return patches;
     }
 
     //----------//
@@ -172,11 +217,12 @@ public class Dash
         if (box.intersects(g.getClipBounds())) {
             Stroke oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
 
-            Line   line = getLine();
-            Point  start = new Point(
+            line = getLine();
+
+            Point start = new Point(
                 box.x,
                 (int) Math.rint(line.yAt((double) box.x)));
-            Point  stop = new Point(
+            Point stop = new Point(
                 box.x + box.width,
                 (int) Math.rint(line.yAt((double) box.x + box.width + 1)));
 
@@ -192,6 +238,7 @@ public class Dash
      * Render the contour box of the dash, using the current foreground color
      *
      * @param g the graphic context
+     * @return true if something has been rendered
      */
     public boolean renderContour (Graphics g)
     {

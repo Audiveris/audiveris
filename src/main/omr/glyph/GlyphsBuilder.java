@@ -144,11 +144,27 @@ public class GlyphsBuilder
     //------------//
     /**
      * Build a glyph from a collection of sections, with a link back from the
-     * sections to the glyph
+     * sections to the glyph, using the system scale.
      * @param sections the provided members of the future glyph
      * @return the newly built glyph
      */
     public Glyph buildGlyph (Collection<GlyphSection> sections)
+    {
+        return buildGlyph(scale, sections);
+    }
+
+    //------------//
+    // buildGlyph //
+    //------------//
+    /**
+     * Build a glyph from a collection of sections, with a link back from the
+     * sections to the glyph
+     * @param scale the context scale
+     * @param sections the provided members of the future glyph
+     * @return the newly built glyph
+     */
+    public static Glyph buildGlyph (Scale                    scale,
+                                    Collection<GlyphSection> sections)
     {
         Glyph glyph = new Stick(scale.interline());
 

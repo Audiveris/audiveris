@@ -158,6 +158,15 @@ public class Lag<L extends Lag<L, S>, S extends Section>
         return getVertices();
     }
 
+    //----------------//
+    // getOrientation //
+    //----------------//
+    @Implement(Oriented.class)
+    public LagOrientation getOrientation ()
+    {
+        return orientation.getOrientation();
+    }
+
     //---------------//
     // getSectionsIn //
     //---------------//
@@ -400,6 +409,7 @@ public class Lag<L extends Lag<L, S>, S extends Section>
      * Purge the lag from section with a too small foreground weight, provided
      * they do not cut larger glyphs
      *
+     * @param minForeWeight
      * @return the purged sections
      */
     public List<S> purgeTinySections (final int minForeWeight)

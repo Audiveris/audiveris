@@ -14,6 +14,8 @@ package omr.script;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
+import omr.lag.LagOrientation;
+
 import omr.sheet.Sheet;
 
 import omr.step.Step;
@@ -59,14 +61,35 @@ public class AssignTask
      * which is assigned to the given shape, false if each and every glyph is to
      * be assigned to the given shape
      * @param glyphs the collection of concerned glyphs
+     * @param orientation orientation of the containing lag
+     */
+    public AssignTask (Shape             shape,
+                       boolean           compound,
+                       Collection<Glyph> glyphs,
+                       LagOrientation    orientation)
+    {
+        super(orientation, glyphs);
+        this.shape = shape;
+        this.compound = compound;
+    }
+
+    //------------//
+    // AssignTask //
+    //------------//
+    /**
+     * Create an assignment task, for VERTICAL glyphs by default
+     *
+     * @param shape the assigned shape (or null for a de-assignment)
+     * @param compound true if all glyphs are to be merged into one compound
+     * which is assigned to the given shape, false if each and every glyph is to
+     * be assigned to the given shape
+     * @param glyphs the collection of concerned glyphs
      */
     public AssignTask (Shape             shape,
                        boolean           compound,
                        Collection<Glyph> glyphs)
     {
-        super(glyphs);
-        this.shape = shape;
-        this.compound = compound;
+        this(shape, compound, glyphs, LagOrientation.VERTICAL);
     }
 
     //------------//
@@ -76,10 +99,25 @@ public class AssignTask
      * Convenient way to create an deassignment task
      *
      * @param glyphs the collection of glyphs to deassign
+     * @param orientation orientation of the containing lag
+     */
+    public AssignTask (Collection<Glyph> glyphs,
+                       LagOrientation    orientation)
+    {
+        this(null, false, glyphs, orientation);
+    }
+
+    //------------//
+    // AssignTask //
+    //------------//
+    /**
+     * Convenient way to create an deassignment task for VERTICAL glyphs
+     *
+     * @param glyphs the collection of glyphs to deassign
      */
     public AssignTask (Collection<Glyph> glyphs)
     {
-        this(null, false, glyphs);
+        this(null, false, glyphs, LagOrientation.VERTICAL);
     }
 
     //------------//
@@ -121,27 +159,52 @@ public class AssignTask
     //------//
     // core //
     //------//
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void core (Sheet sheet)
         throws Exception
     {
-        sheet.getSymbolsController()
-             .syncAssign(this);
+        switch (orientation) {
+        case HORIZONTAL :
+            sheet.getHorizontalsBuilder()
+                 .getController()
+                 .syncAssign(this);
+
+            break;
+
+        case VERTICAL :
+            sheet.getSymbolsController()
+                 .syncAssign(this);
+        }
     }
 
     //--------//
     // epilog //
     //--------//
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void epilog (Sheet sheet)
     {
-        // We rebuild from VERTICALS is case of deassignment
-        // And just from PATTERNS in case of assignment
-        sheet.getSheetSteps()
-             .rebuildFrom(
-            (shape == null) ? Step.VERTICALS : Step.PATTERNS,
-            getImpactedSystems(),
-            false);
+        switch (orientation) {
+        case HORIZONTAL :
+            sheet.getSheetSteps()
+                 .rebuildFrom(Step.SYSTEMS, null, false);
+
+            break;
+
+        case VERTICAL :
+            // We rebuild from VERTICALS is case of deassignment
+            // And just from PATTERNS in case of assignment
+            sheet.getSheetSteps()
+                 .rebuildFrom(
+                (shape == null) ? Step.VERTICALS : Step.PATTERNS,
+                getImpactedSystems(),
+                false);
+        }
     }
 
     //-----------------//
@@ -158,7 +221,14 @@ public class AssignTask
         }
 
         sb.append(" ")
-          .append(shape);
+          .append(orientation);
+
+        if (shape != null) {
+            sb.append(" ")
+              .append(shape);
+        } else {
+            sb.append(" no-shape");
+        }
 
         return sb + super.internalsString();
     }

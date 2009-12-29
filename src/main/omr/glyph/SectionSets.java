@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.glyph;
 
+import omr.lag.LagOrientation;
 import omr.lag.Sections;
 
 import omr.log.Logger;
@@ -116,19 +117,23 @@ public class SectionSets
     /**
      * Report the collection of section sets
      * @param sheet the containing sheet (needed to get sections from their id)
+     * @param orientation orientation of the containing lag
      * @return the collection of section sets
      */
-    public Collection<Collection<GlyphSection>> getSets (Sheet sheet)
+    public Collection<Collection<GlyphSection>> getSets (Sheet          sheet,
+                                                         LagOrientation orientation)
     {
         if (sets == null) {
             sets = new ArrayList<Collection<GlyphSection>>();
+
+            GlyphLag lag = (orientation == LagOrientation.VERTICAL)
+                           ? sheet.getVerticalLag() : sheet.getHorizontalLag();
 
             for (SectionIdSet idSet : idSets) {
                 List<GlyphSection> sectionSet = new ArrayList<GlyphSection>();
 
                 for (int id : idSet.ids) {
-                    GlyphSection section = sheet.getVerticalLag()
-                                                .getVertexById(id);
+                    GlyphSection section = lag.getVertexById(id);
 
                     if (section == null) {
                         logger.warning(

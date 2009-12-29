@@ -27,6 +27,15 @@ public interface Oriented
 {
     //~ Methods ----------------------------------------------------------------
 
+    //----------------//
+    // getOrientation //
+    //----------------//
+    /**
+     * Report the orientation constant
+     * @return HORIZONTAL or VERTICAL
+     */
+    LagOrientation getOrientation ();
+
     //------------//
     // isVertical //
     //------------//

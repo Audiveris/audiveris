@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.sheet;
 
+import omr.glyph.Glyph;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +45,25 @@ public class Horizontals
 
     //~ Methods ----------------------------------------------------------------
 
+    //-------------//
+    // getEndingOf //
+    //-------------//
+    /**
+     * Report the ending which is based on the provided glyph
+     * @param glyph the provided glyph
+     * @return the encapsulating ending, or null if not found
+     */
+    public Ending getEndingOf (Glyph glyph)
+    {
+        for (Ending ending : endings) {
+            if (ending.isDashOf(glyph)) {
+                return ending;
+            }
+        }
+
+        return null;
+    }
+
     //------------//
     // getEndings //
     //------------//
@@ -54,6 +75,25 @@ public class Horizontals
     public List<Ending> getEndings ()
     {
         return endings;
+    }
+
+    //-------------//
+    // getLedgerOf //
+    //-------------//
+    /**
+     * Report the ledger which is based on the provided glyph
+     * @param glyph the provided glyph
+     * @return the encapsulating ledger, or null if not found
+     */
+    public Ledger getLedgerOf (Glyph glyph)
+    {
+        for (Ledger ledger : ledgers) {
+            if (ledger.isDashOf(glyph)) {
+                return ledger;
+            }
+        }
+
+        return null;
     }
 
     //------------//

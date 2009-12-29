@@ -29,7 +29,21 @@ import java.awt.Rectangle;
 public class HorizontalOrientation
     implements Oriented
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Constant orientation */
+    public static final LagOrientation orientation = LagOrientation.HORIZONTAL;
+
     //~ Methods ----------------------------------------------------------------
+
+    //----------------//
+    // getOrientation //
+    //----------------//
+    @Implement(Oriented.class)
+    public LagOrientation getOrientation ()
+    {
+        return orientation;
+    }
 
     //------------//
     // isVertical //

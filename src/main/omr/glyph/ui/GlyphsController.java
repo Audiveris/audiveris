@@ -197,7 +197,11 @@ public class GlyphsController
             return new BarlineTask(shape, compound, glyphs).launch(sheet);
         } else {
             // Normal symbol processing
-            return new AssignTask(shape, compound, glyphs).launch(sheet);
+            return new AssignTask(
+                shape,
+                compound,
+                glyphs,
+                getLag().getOrientation()).launch(sheet);
         }
     }
 
@@ -330,45 +334,5 @@ public class GlyphsController
             view.colorizeAllGlyphs();
             view.repaint();
         }
-    }
-
-    //~ Inner Interfaces -------------------------------------------------------
-
-    //    //--------------//
-    //    // syncDeassign //
-    //    //--------------//
-    //    /**
-    //     * Perform the synchronous shape de-assignment of a collection of glyphs
-    //     * for a user
-    //     * @param impact the deassignment context
-    //     */
-    //    protected void syncDeassign (Impact impact)
-    //    {
-    //        if (logger.isFineEnabled()) {
-    //            logger.fine("syncDeassign " + impact);
-    //        }
-    //
-    //        Collection<Glyph> glyphs = impact.getInitialGlyphs();
-    //        model.deassignGlyphs(glyphs);
-    //
-    //        // Publish modifications
-    //        publish(glyphs.iterator().next());
-    //    }
-
-    //----------------//
-    // ImpactRunnable //
-    //----------------//
-    /**
-     * Describes the processing of an impact
-     */
-    protected static interface ImpactRunnable
-    {
-        //~ Methods ------------------------------------------------------------
-
-        /**
-         * Do the processing
-         * @param impact the context and impact of the processing.
-         */
-        void run (Impact impact);
     }
 }
