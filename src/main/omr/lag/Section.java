@@ -55,7 +55,7 @@ import javax.xml.bind.annotation.*;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class Section<L extends Lag, S extends Section<L, S>>
-    extends Vertex<L, S>
+    extends Vertex<L, S, SectionSignature>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -1171,6 +1171,15 @@ public class Section<L extends Lag, S extends Section<L, S>>
         } else {
             computeContour(p.xpoints, p.ypoints);
         }
+    }
+
+    //------------------//
+    // computeSignature //
+    //------------------//
+    @Override
+    protected SectionSignature computeSignature ()
+    {
+        return new SectionSignature(getWeight(), getBounds());
     }
 
     //--------//

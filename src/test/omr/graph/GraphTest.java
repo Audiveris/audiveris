@@ -28,10 +28,13 @@ public class GraphTest
 {
     //~ Instance fields --------------------------------------------------------
 
-    private MyDigraph graph;
-    private MyVertex  v1;
-    private MyVertex  v2;
-    private MyVertex  v3;
+    private MyDigraph   graph;
+    private MyVertex    v1;
+    private MyVertex    v2;
+    private MyVertex    v3;
+    private MySignature s1;
+    private MySignature s2;
+    private MySignature s3;
 
     //~ Methods ----------------------------------------------------------------
 
@@ -306,6 +309,27 @@ public class GraphTest
             graph.getVertexCount());
     }
 
+    //---------------------//
+    // testVertexSignature //
+    //---------------------//
+    //@Test
+    public void testVertexSignature ()
+    {
+        // Allocate some vertices
+        createVertices();
+
+        s1 = v1.getSignature();
+        System.out.println("v1 " + v1 + " @" + Integer.toHexString(v1.hashCode()));
+        System.out.println("s1 " + s1);
+
+        MyVertex v = graph.getVertexBySignature(s1);
+        System.out.println("v " + v + " @" + Integer.toHexString(v.hashCode()));
+
+        assertEquals("Should retrieve v1 via s1", v1, v);
+        assertEquals("Should retrieve v2 via s2", v2, graph.getVertexBySignature(v2.getSignature()));
+        assertEquals("Should retrieve v3 via s3", v3, graph.getVertexBySignature(v3.getSignature()));
+    }
+
     //-------//
     // setUp //
     //-------//
@@ -334,7 +358,7 @@ public class GraphTest
     //~ Inner Classes ----------------------------------------------------------
 
     static class MyDigraph
-        extends Digraph<MyDigraph, MyVertex>
+        extends Digraph<MyDigraph, MyVertex, MySignature>
     {
         //~ Constructors -------------------------------------------------------
 
@@ -352,8 +376,30 @@ public class GraphTest
         }
     }
 
+    static class MySignature
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final MyVertex vertex;
+
+        //~ Constructors -------------------------------------------------------
+
+        public MySignature (MyVertex vertex)
+        {
+            this.vertex = vertex;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public String toString ()
+        {
+            return "{Sig " + Integer.toHexString(vertex.hashCode()) + "}";
+        }
+    }
+
     static class MyVertex
-        extends Vertex<MyDigraph, MyVertex>
+        extends Vertex<MyDigraph, MyVertex, MySignature>
     {
         //~ Methods ------------------------------------------------------------
 
@@ -361,6 +407,12 @@ public class GraphTest
         public String toString ()
         {
             return super.toString() + "}";
+        }
+
+        @Override
+        protected MySignature computeSignature ()
+        {
+            return new MySignature(this);
         }
     }
 }

@@ -26,8 +26,7 @@ import net.gencsoy.tesjeract.EANYCodeChar;
 
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel.MapMode;
+import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.Callable;
 
@@ -143,20 +142,7 @@ public class TesseractOCR
         }
 
         try {
-            // Store the input image on disk, to be later cleaned up
-            File imageFile = storeOnDisk(image, label);
-            imageFile.deleteOnExit();
-
-            if (logger.isFineEnabled()) {
-                logger.fine("OCR on " + imageFile);
-            }
-
-            FileInputStream         fis = new FileInputStream(imageFile);
-            final MappedByteBuffer  buf = fis.getChannel()
-                                             .map(
-                MapMode.READ_ONLY,
-                0,
-                imageFile.length());
+            final ByteBuffer buf = imageToTiffBuffer(image);
 
             // Delegate the processing to the specific OCR thread
             Callable<List<OcrLine>> task = new Callable<List<OcrLine>>() {
@@ -378,25 +364,20 @@ public class TesseractOCR
         return true;
     }
 
-    //-------------//
-    // storeOnDisk //
-    //-------------//
+    //-------------------//
+    // imageToTiffBuffer //
+    //-------------------//
     /**
-     * Store the input image on disk, using a temporary file, with TIFF format.
-     * TODO: One day, we should try to avoid the use of an intermediate file,
-     * and directly pass a memory buffer to tesseract.
+     * Convert the given image into TIFF format and return as a
+     * ByteBuffer for passing directly to Tesseract
      * @param image the input image
-     * @param optional label
-     * @return the written file
+     * @return the image in TIFF format
      */
-    private File storeOnDisk (BufferedImage image,
-                              String        label)
+    private ByteBuffer imageToTiffBuffer (BufferedImage image)
         throws IOException
     {
-        File              outputFile = File.createTempFile(
-            (label != null) ? label : "ocr",
-            ".tif");
-        ImageOutputStream ios = ImageIO.createImageOutputStream(outputFile);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageOutputStream ios = ImageIO.createImageOutputStream(baos);
 
         // Take the first suitable TIFF writer
         ImageWriter writer = ImageIO.getImageWritersByFormatName("tiff")
@@ -405,7 +386,11 @@ public class TesseractOCR
         writer.write(image);
         ios.close();
 
-        return outputFile;
+        // allocate() doesn't work
+        ByteBuffer buf = ByteBuffer.allocateDirect(baos.size());
+        buf.put(baos.toByteArray());
+
+        return buf;
     }
 
     //---------------//

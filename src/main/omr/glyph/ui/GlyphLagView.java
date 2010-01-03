@@ -45,7 +45,7 @@ import omr.selection.UserEvent;
 import omr.stick.Stick;
 
 import omr.ui.util.UIUtilities;
-import static omr.util.Synchronicity.*;
+
 import omr.util.WeakPropertyChangeListener;
 
 import java.awt.*;

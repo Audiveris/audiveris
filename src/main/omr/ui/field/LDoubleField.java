@@ -118,7 +118,8 @@ public class LDoubleField
      */
     public void setValue (double val)
     {
-        getField().setText(
+        getField()
+            .setText(
             String.format((format != null) ? format : DEFAULT_FORMAT, val));
     }
 
@@ -134,7 +135,8 @@ public class LDoubleField
     public void setValue (double val,
                           String format)
     {
-        getField().setText(String.format(format, val));
+        getField()
+            .setText(String.format(format, val));
     }
 
     //----------//

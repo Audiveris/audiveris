@@ -50,7 +50,7 @@ import java.util.List;
  * @param <S> precise section (sub)type
  */
 public class Lag<L extends Lag<L, S>, S extends Section>
-    extends Digraph<L, S>
+    extends Digraph<L, S, SectionSignature>
     implements Oriented
 {
     //~ Static fields/initializers ---------------------------------------------

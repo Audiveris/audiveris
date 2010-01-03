@@ -20,8 +20,8 @@ import omr.log.Logger;
 import omr.math.NeuralNetwork;
 
 import omr.ui.field.LDoubleField;
-import omr.ui.field.LTextField;
 import omr.ui.field.LIntegerField;
+import omr.ui.field.LTextField;
 
 import omr.util.Implement;
 

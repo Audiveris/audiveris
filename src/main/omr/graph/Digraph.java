@@ -35,12 +35,13 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @param <D> precise type for digraph (which is pointed back by vertex)
  * @param <V> precise type for vertices handled by this digraph
+ * @param <SIG> precise type for vertex signature
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 @ThreadSafe
-public class Digraph<D extends Digraph<D, V>, V extends Vertex>
+public class Digraph<D extends Digraph<D, V, SIG>, V extends Vertex, SIG>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -60,6 +61,9 @@ public class Digraph<D extends Digraph<D, V>, V extends Vertex>
 
     /** Removed vertices */
     private final ConcurrentHashMap<Integer, V> oldVertices = new ConcurrentHashMap<Integer, V>();
+
+    /** All vertices, accessed via their signature */
+    private final ConcurrentHashMap<SIG, V> sigMap = new ConcurrentHashMap<SIG, V>();
 
     /** Global id to uniquely identify a vertex */
     private final AtomicInteger globalVertexId = new AtomicInteger(0);
@@ -140,6 +144,19 @@ public class Digraph<D extends Digraph<D, V>, V extends Vertex>
         }
     }
 
+    //----------------------//
+    // getVertexBySignature //
+    //----------------------//
+    /**
+     * Retrieve a vertex, knowing its signature
+     * @param signature the vertex signature
+     * @return the vertex found, or null
+     */
+    public V getVertexBySignature (SIG signature)
+    {
+        return sigMap.get(signature);
+    }
+
     //----------------//
     // getVertexCount //
     //----------------//
@@ -200,6 +217,7 @@ public class Digraph<D extends Digraph<D, V>, V extends Vertex>
         vertex.setGraph(this); // Unchecked
         vertex.setId(globalVertexId.incrementAndGet()); // Atomic increment
         vertices.put(vertex.getId(), vertex); // Atomic insertion
+        sigMap.put((SIG) vertex.getSignature(), vertex); // Atomic insertion
     }
 
     //---------//

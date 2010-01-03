@@ -33,7 +33,7 @@ public interface MouseMonitor
      * @param movement the mouse movement
      */
     void contextAdded (Point         pt,
-                          MouseMovement movement);
+                       MouseMovement movement);
 
     /**
      * Contextual action (by right button click)

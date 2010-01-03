@@ -38,13 +38,14 @@ import javax.xml.bind.annotation.*;
  *
  * @param <D> type for enclosing digraph precise subtype
  * @param <V> type for Vertex precise subtype
+ * @param <SIG> type for vertex precise signature
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
 @NotThreadSafe
 @XmlAccessorType(XmlAccessType.NONE)
-public class Vertex<D extends Digraph, V extends Vertex<D, V>>
+public abstract class Vertex<D extends Digraph, V extends Vertex<D, V, SIG>, SIG>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -83,6 +84,11 @@ public class Vertex<D extends Digraph, V extends Vertex<D, V>>
      */
     protected List<VertexView> views;
 
+    /**
+     * Computed vertex signature if any
+     */
+    protected SIG signature;
+
     //~ Constructors -----------------------------------------------------------
 
     //--------//
@@ -117,6 +123,44 @@ public class Vertex<D extends Digraph, V extends Vertex<D, V>>
 
     //~ Methods ----------------------------------------------------------------
 
+    //-------------//
+    // getInDegree //
+    //-------------//
+    /**
+     * Return how many incoming edges we have
+     *
+     * @return the number of incomings
+     */
+    public int getInDegree ()
+    {
+        return sources.size();
+    }
+
+    //--------------//
+    // getOutDegree //
+    //--------------//
+    /**
+     * Return the number of edges outgoing from this vertex
+     *
+     * @return the number of outgoings
+     */
+    public int getOutDegree ()
+    {
+        return targets.size();
+    }
+
+    //--------------//
+    // getSignature //
+    //--------------//
+    public SIG getSignature ()
+    {
+        if (signature == null) {
+            signature = computeSignature();
+        }
+
+        return signature;
+    }
+
     //---------//
     // addEdge //
     //---------//
@@ -125,11 +169,12 @@ public class Vertex<D extends Digraph, V extends Vertex<D, V>>
      *
      * @param <D> precise digraph type
      * @param <V> precise vertex type
+     * @param <SIG> precise signature type
      * @param source departure vertex
      * @param target arrival vertex
      */
-    public static <D extends Digraph, V extends Vertex<D, V>> void addEdge (V source,
-                                                                            V target)
+    public static <D extends Digraph, V extends Vertex<D, V, SIG>, SIG> void addEdge (V source,
+                                                                                      V target)
     {
         if (logger.isFineEnabled()) {
             logger.fine("adding edge from " + source + " to " + target);
@@ -180,32 +225,6 @@ public class Vertex<D extends Digraph, V extends Vertex<D, V>>
     public int getId ()
     {
         return id;
-    }
-
-    //-------------//
-    // getInDegree //
-    //-------------//
-    /**
-     * Return how many incoming edges we have
-     *
-     * @return the number of incomings
-     */
-    public int getInDegree ()
-    {
-        return sources.size();
-    }
-
-    //--------------//
-    // getOutDegree //
-    //--------------//
-    /**
-     * Return the number of edges outgoing from this vertex
-     *
-     * @return the number of outgoings
-     */
-    public int getOutDegree ()
-    {
-        return targets.size();
     }
 
     //------------//
@@ -424,6 +443,11 @@ public class Vertex<D extends Digraph, V extends Vertex<D, V>>
     {
         return "Vertex";
     }
+
+    //------------------//
+    // computeSignature //
+    //------------------//
+    protected abstract SIG computeSignature ();
 
     //----------//
     // getViews //

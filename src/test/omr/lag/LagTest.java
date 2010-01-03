@@ -381,5 +381,14 @@ public class LagTest
         public MySection ()
         {
         }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        protected SectionSignature computeSignature ()
+        {
+            return new SectionSignature(getWeight(), getBounds());
+        }
     }
+
 }

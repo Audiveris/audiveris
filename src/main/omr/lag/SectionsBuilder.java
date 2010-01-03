@@ -13,8 +13,6 @@ package omr.lag;
 
 import omr.log.Logger;
 
-import omr.sheet.picture.Picture;
-
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +26,7 @@ import java.util.List;
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
+ * @param <L> precise lag type
  * @param <S> the precise subtype of Section to be created
  */
 public class SectionsBuilder<L extends Lag<L, S>, S extends Section<L, S>>
@@ -127,6 +126,14 @@ public class SectionsBuilder<L extends Lag<L, S>, S extends Section<L, S>>
         lag.setRuns(runs);
     }
 
+    //------------//
+    // isFinished //
+    //------------//
+    private boolean isFinished (S section)
+    {
+        return section.getId() < 0;
+    }
+
     //---------------//
     // buildSections //
     //---------------//
@@ -210,14 +217,6 @@ public class SectionsBuilder<L extends Lag<L, S>, S extends Section<L, S>>
     private void finish (S section)
     {
         section.setId(-section.getId());
-    }
-
-    //------------//
-    // isFinished //
-    //------------//
-    private boolean isFinished (S section)
-    {
-        return section.getId() < 0;
     }
 
     //-----------------//

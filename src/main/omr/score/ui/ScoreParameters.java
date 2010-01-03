@@ -32,8 +32,8 @@ import omr.step.Step;
 
 import omr.ui.FileDropHandler;
 import omr.ui.field.LDoubleField;
-import omr.ui.field.LTextField;
 import omr.ui.field.LIntegerField;
+import omr.ui.field.LTextField;
 import omr.ui.util.Panel;
 
 import com.jgoodies.forms.builder.*;
@@ -820,7 +820,7 @@ public class ScoreParameters
     {
         //~ Static fields/initializers -----------------------------------------
 
-        public static final int logicalRowCount = 3;
+        public static final int  logicalRowCount = 3;
 
         //~ Instance fields ----------------------------------------------------
 
@@ -834,7 +834,9 @@ public class ScoreParameters
             "Id of the score part");
 
         /** Name of the part */
-        private LTextField name = new LTextField("Name", "Name for the score part");
+        private LTextField name = new LTextField(
+            "Name",
+            "Name for the score part");
 
         /** Midi Instrument */
         private JComboBox midiBox = new JComboBox(

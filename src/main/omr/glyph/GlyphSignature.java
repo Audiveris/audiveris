@@ -149,7 +149,7 @@ public class GlyphSignature
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{Sig");
+        StringBuilder sb = new StringBuilder("{GSig");
         sb.append(" weight=")
           .append(weight);
 
