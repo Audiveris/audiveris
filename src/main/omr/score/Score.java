@@ -1190,6 +1190,11 @@ public class Score
      */
     public void resetSystems ()
     {
+        // Nullify views on systems
+        for (ScoreView view : views) {
+            view.resetSystemViews();
+        }
+
         // Discard systems
         getSystems()
             .clear();

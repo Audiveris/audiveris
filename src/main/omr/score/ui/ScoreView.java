@@ -119,7 +119,7 @@ public class ScoreView
     private WeakReference<ScoreSystem> recentSystemRef = null;
 
     /** Sequence of system views, ordered by system id */
-    private List<SystemView> systemViews;
+    private volatile List<SystemView> systemViews;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -259,6 +259,17 @@ public class ScoreView
                 });
     }
 
+    //------------------//
+    // resetSystemViews //
+    //------------------//
+    /**
+     * Discard the views on systems, to disable concurrent system painting
+     */
+    public void resetSystemViews ()
+    {
+        systemViews = null;
+    }
+
     //-------------------//
     // scoreLocateSystem //
     //-------------------//
@@ -389,7 +400,11 @@ public class ScoreView
     //---------------//
     private SystemView getSystemView (int id)
     {
-        return systemViews.get(id - 1);
+        if (systemViews == null) {
+            return null;
+        } else {
+            return systemViews.get(id - 1);
+        }
     }
 
     //------------------//
@@ -487,6 +502,7 @@ public class ScoreView
         }
 
         // Write the new collection of SystemView instances
+        // This will allow the painting of systems from now on
         systemViews = views;
     }
 
