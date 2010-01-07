@@ -16,6 +16,7 @@ import omr.log.Logger;
 import net.jcip.annotations.ThreadSafe;
 
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -154,6 +155,11 @@ public class Digraph<D extends Digraph<D, V, SIG>, V extends Vertex, SIG>
      */
     public V getVertexBySignature (SIG signature)
     {
+        if (signature == null) {
+            throw new RuntimeException(
+                "Cannot retrieve a vertex via a null signature");
+        }
+
         return sigMap.get(signature);
     }
 
@@ -217,7 +223,6 @@ public class Digraph<D extends Digraph<D, V, SIG>, V extends Vertex, SIG>
         vertex.setGraph(this); // Unchecked
         vertex.setId(globalVertexId.incrementAndGet()); // Atomic increment
         vertices.put(vertex.getId(), vertex); // Atomic insertion
-        sigMap.put((SIG) vertex.getSignature(), vertex); // Atomic insertion
     }
 
     //---------//
@@ -280,6 +285,23 @@ public class Digraph<D extends Digraph<D, V, SIG>, V extends Vertex, SIG>
 
         for (V vertex : getVertices()) {
             vertex.dump();
+        }
+    }
+
+    //-------------------//
+    // registerSignature //
+    //-------------------//
+    /**
+     * Register the signature of the provided vertex, thus allowing the
+     * future retrieval of the vertex via its signature
+     * @param vertex the provided signature
+     */
+    public void registerSignature (V vertex)
+    {
+        SIG sig = (SIG) vertex.getSignature();
+
+        if (sig != null) {
+            sigMap.put(sig, vertex); // Atomic insertion
         }
     }
 

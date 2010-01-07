@@ -1092,10 +1092,14 @@ public class Sheet
      * Assign the current vertical lag for the sheet
      *
      * @param vLag the current vertical lag
+     * @return the previous vLag, or null
      */
-    public void setVerticalLag (GlyphLag vLag)
+    public GlyphLag setVerticalLag (GlyphLag vLag)
     {
+        GlyphLag old = this.vLag;
         this.vLag = vLag;
+
+        return old;
     }
 
     //----------------//

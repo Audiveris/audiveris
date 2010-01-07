@@ -80,7 +80,7 @@ public class SymbolsEditor
     private final GlyphLagView view;
 
     /** Popup menu related to glyph selection */
-    private GlyphMenu glyphMenu;
+    private SymbolMenu glyphMenu;
 
     /** The entity used for display focus */
     private ShapeFocusBoard focus;
@@ -121,7 +121,7 @@ public class SymbolsEditor
                     }
                 });
 
-        glyphMenu = new GlyphMenu(symbolsController, evaluator, focus, lag);
+        glyphMenu = new SymbolMenu(symbolsController, evaluator, focus, lag);
 
         final String  unit = sheet.getRadix() + ":SymbolsEditor";
 

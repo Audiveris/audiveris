@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                             G l y p h M e n u                              //
+//                            S y m b o l M e n u                             //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -30,13 +30,13 @@ import java.util.*;
 import javax.swing.*;
 
 /**
- * Class <code>GlyphMenu</code> defines the popup menu which is linked to the
+ * Class <code>SymbolMenu</code> defines the popup menu which is linked to the
  * current selection of either one or several glyphs
  *
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-public class GlyphMenu
+public class SymbolMenu
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -65,9 +65,9 @@ public class GlyphMenu
 
     //~ Constructors -----------------------------------------------------------
 
-    //-----------//
-    // GlyphMenu //
-    //-----------//
+    //------------//
+    // SymbolMenu //
+    //------------//
     /**
      * Create the popup menu
      *
@@ -76,7 +76,7 @@ public class GlyphMenu
      * @param shapeFocus the current shape focus
      * @param glyphLag the related glyph lag
      */
-    public GlyphMenu (final SymbolsController symbolsController,
+    public SymbolMenu (final SymbolsController symbolsController,
                       GlyphEvaluator          evaluator,
                       ShapeFocusBoard         shapeFocus,
                       final GlyphLag          glyphLag)

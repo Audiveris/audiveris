@@ -286,6 +286,45 @@ public class GraphTest
             graph.getVertexCount());
     }
 
+    //---------------------------//
+    // testVertexDoubleSignature //
+    //---------------------------//
+    //@Test
+    public void testVertexDoubleSignature ()
+    {
+        // Allocate some vertices
+        createVertices();
+        v1.setSignature();
+
+        try {
+            v1.setSignature();
+            fail(
+                "Exception should be raised" +
+                " when changing vertex signature");
+        } catch (Exception expected) {
+            checkException(expected);
+        }
+    }
+
+    //-------------------------//
+    // testVertexNullSignature //
+    //-------------------------//
+    //@Test
+    public void testVertexNullSignature ()
+    {
+        // Allocate some vertices
+        createVertices();
+
+        try {
+            s1 = v1.getSignature();
+            fail(
+                "Exception should be raised" +
+                " when getting a null vertex signature");
+        } catch (Exception expected) {
+            checkException(expected);
+        }
+    }
+
     //-------------------//
     // testVertexRemoval //
     //-------------------//
@@ -317,17 +356,27 @@ public class GraphTest
     {
         // Allocate some vertices
         createVertices();
+        v1.setSignature();
+        v2.setSignature();
+        v3.setSignature();
 
         s1 = v1.getSignature();
-        System.out.println("v1 " + v1 + " @" + Integer.toHexString(v1.hashCode()));
+        System.out.println(
+            "v1 " + v1 + " @" + Integer.toHexString(v1.hashCode()));
         System.out.println("s1 " + s1);
 
         MyVertex v = graph.getVertexBySignature(s1);
         System.out.println("v " + v + " @" + Integer.toHexString(v.hashCode()));
 
         assertEquals("Should retrieve v1 via s1", v1, v);
-        assertEquals("Should retrieve v2 via s2", v2, graph.getVertexBySignature(v2.getSignature()));
-        assertEquals("Should retrieve v3 via s3", v3, graph.getVertexBySignature(v3.getSignature()));
+        assertEquals(
+            "Should retrieve v2 via s2",
+            v2,
+            graph.getVertexBySignature(v2.getSignature()));
+        assertEquals(
+            "Should retrieve v3 via s3",
+            v3,
+            graph.getVertexBySignature(v3.getSignature()));
     }
 
     //-------//

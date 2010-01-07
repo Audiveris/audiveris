@@ -38,6 +38,7 @@ import omr.lag.ui.SectionBoard;
 import omr.log.Logger;
 
 import omr.selection.GlyphEvent;
+import omr.selection.MouseMovement;
 import omr.selection.UserEvent;
 
 import omr.sheet.ui.PixelBoard;
@@ -1019,6 +1020,39 @@ public class HorizontalsBuilder
             // Use light gray color for past successful entities
             // If relevant to the current lag...
             sheet.colorize(lag, viewIndex, Color.lightGray);
+        }
+
+        //-----------------//
+        // contextSelected //
+        //-----------------//
+        @Override
+        public void contextSelected (Point         pt,
+                                     MouseMovement movement)
+        {
+            // Retrieve the selected glyphs
+            Set<Glyph> glyphs = sheet.getVerticalLag()
+                                     .getSelectedGlyphSet();
+
+            // To display point information
+            if ((glyphs == null) || glyphs.isEmpty()) {
+                pointSelected(pt, movement); // This may change glyph selection
+                glyphs = sheet.getVerticalLag()
+                              .getSelectedGlyphSet();
+            }
+
+            if ((glyphs != null) && !glyphs.isEmpty()) {
+                // Update the popup menu according to selected glyphs
+//                barMenu.updateMenu();
+//
+//                // Show the popup menu
+//                barMenu.getPopup()
+//                       .show(
+//                    this,
+//                    getZoom().scaled(pt.x),
+//                    getZoom().scaled(pt.y));
+            } else {
+                // Popup with no glyph selected ?
+            }
         }
 
         //-------------//

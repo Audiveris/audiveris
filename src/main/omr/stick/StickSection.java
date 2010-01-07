@@ -17,7 +17,6 @@ import omr.lag.Run;
 
 import omr.math.BasicLine;
 import omr.math.Line;
-import static omr.stick.SectionRole.*;
 
 import java.awt.*;
 

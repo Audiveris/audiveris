@@ -20,6 +20,8 @@ import omr.log.Logger;
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphSetEvent;
 
+import omr.stick.Stick;
+
 import java.awt.Rectangle;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -359,6 +361,41 @@ public class GlyphLag
         return sb.toString();
     }
 
+    //----------------------//
+    // transferManualGlyphs //
+    //----------------------//
+    /**
+     * Transfer all manually assigned shapes from the old lag, and store them in
+     * this lag
+     * @param oldLag the lag to "copy" manual glyphs from
+     */
+    public void transferManualGlyphs (GlyphLag oldLag)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                "Transfering manual glyphs from " + oldLag + " to " + this);
+        }
+
+        Set<Glyph> transfered = new HashSet<Glyph>();
+
+        for (Glyph alien : oldLag.getActiveGlyphs()) {
+            if (alien.isManualShape()) {
+                Glyph glyph = transferAlienGlyph(alien);
+
+                // Transfer shape info (what else?)
+                glyph.setShape(alien.getShape(), alien.getDoubt());
+
+                transfered.add(glyph);
+            }
+        }
+
+        if (!transfered.isEmpty()) {
+            logger.info(
+                "Transfered " + transfered.size() + " glyph" +
+                ((transfered.size() == 1) ? "" : "s") + " from previous lag");
+        }
+    }
+
     //-----------//
     // getPrefix //
     //-----------//
@@ -382,7 +419,7 @@ public class GlyphLag
      * Map a section to a glyph, making the glyph active
      *
      * @param section the section to map
-     * @param glyph the assigned glyph
+     * @param alien the assigned glyph
      */
     synchronized void mapSection (GlyphSection section,
                                   Glyph        glyph)
@@ -403,5 +440,53 @@ public class GlyphLag
     private int generateId ()
     {
         return globalGlyphId.incrementAndGet();
+    }
+
+    //--------------------//
+    // transferAlienGlyph //
+    //--------------------//
+    /**
+     * Transfer a glyph (from another lag) to this one
+     * @param alien the glyph to be copied from the other lag
+     * @return the (reified) glyph in this lag
+     */
+    private Glyph transferAlienGlyph (Glyph alien)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("Transfering " + alien);
+        }
+
+        Set<GlyphSection> newSections = new HashSet<GlyphSection>();
+
+        for (GlyphSection section : alien.getMembers()) {
+            GlyphSection newSection = getVertexBySignature(
+                section.getSignature());
+
+            if (newSection == null) {
+                logger.warning("Could not retrieve section " + section);
+
+                return null;
+            }
+
+            newSections.add(newSection);
+        }
+
+        // Create Glyph from sections
+        Glyph glyph = null;
+
+        if (alien instanceof Stick) {
+            glyph = new Stick(alien.getInterline());
+        } else {
+            glyph = new Glyph();
+        }
+
+        for (GlyphSection section : newSections) {
+            glyph.addSection(section, true);
+        }
+
+        // Add/get original glyph
+        Glyph orgGlyph = addGlyph(glyph);
+
+        return orgGlyph;
     }
 }

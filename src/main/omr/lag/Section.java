@@ -1176,7 +1176,10 @@ public class Section<L extends Lag, S extends Section<L, S>>
     //------------------//
     // computeSignature //
     //------------------//
-    @Override
+    /**
+     * Compute the signature of this section
+     * @return the section signature, based on weight and bounds
+     */
     protected SectionSignature computeSignature ()
     {
         return new SectionSignature(getWeight(), getBounds());

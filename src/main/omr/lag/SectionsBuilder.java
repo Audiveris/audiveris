@@ -194,6 +194,9 @@ public class SectionsBuilder<L extends Lag<L, S>, S extends Section<L, S>>
             if (id < 0) {
                 section.setId(-id);
             }
+
+            // Register the section with its signature
+            section.setSignature();
         }
     }
 

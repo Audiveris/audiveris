@@ -57,9 +57,11 @@ public class LagTest
     {
         MySection s2 = vLag.createSection(180, new Run(100, 10, 127));
         s2.append(new Run(101, 20, 127));
+        s2.setSignature();
 
         MySection s3 = vLag.createSection(180, new Run(100, 10, 127));
         s3.append(new Run(101, 20, 127));
+        s3.setSignature();
 
         List<MySection> sections = new ArrayList<MySection>();
         sections.add(s2);
@@ -79,10 +81,12 @@ public class LagTest
     {
         MySection s2 = vLag.createSection(180, new Run(100, 10, 127));
         s2.append(new Run(101, 20, 127));
+        s2.setSignature();
 
         MySection s3 = vLag.createSection(200, new Run(150, 10, 127));
         s3.append(new Run(161, 20, 127));
         s3.append(new Run(170, 15, 127));
+        s3.setSignature();
 
         List<MySection> founds = null;
 
@@ -157,13 +161,48 @@ public class LagTest
         assertEquals("One section left.", 1, vLag.getVertexCount());
     }
 
-    //     public void testGetFirstRectRun()
-    //     {
-    //         Run r1 = new Run(100, 10, 127);
-    //         MySection s1 = hLag.createSection(180, r1);
-    //         assertSame("First run in rectangle.",
-    //                    r1, hLag.getFirstRectRun(100, 200, 180, 280));
-    //     }
+    //---------------//
+    // testSignature //
+    //---------------//
+    public void testSignature ()
+    {
+        MySection s2 = vLag.createSection(180, new Run(100, 10, 127));
+        s2.append(new Run(101, 20, 127));
+
+        try {
+            SectionSignature sig = s2.getSignature();
+            fail(
+                "Exception should be raised" +
+                " when getting a null vertex signature");
+        } catch (Exception expected) {
+            checkException(expected);
+        }
+
+        s2.setSignature();
+
+        try {
+            s2.setSignature();
+        } catch (Exception ex) {
+            fail(
+                "Exception raised" +
+                " when setting signature with equal value");
+        }
+
+        MySection s3 = vLag.createSection(200, new Run(150, 10, 127));
+        s3.append(new Run(161, 20, 127));
+        s3.append(new Run(170, 15, 127));
+        s3.setSignature();
+
+        assertSame(
+            "Vertex retrieved via signature",
+            s2,
+            vLag.getVertexBySignature(s2.getSignature()));
+
+        assertNotSame(
+            "Vertex retrieved via wrong signature",
+            s2,
+            vLag.getVertexBySignature(s3.getSignature()));
+    }
 
     //----------//
     // testVLag //
@@ -376,19 +415,5 @@ public class LagTest
     public static class MySection
         extends Section<MyLag, MySection>
     {
-        //~ Constructors -------------------------------------------------------
-
-        public MySection ()
-        {
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        protected SectionSignature computeSignature ()
-        {
-            return new SectionSignature(getWeight(), getBounds());
-        }
     }
-
 }

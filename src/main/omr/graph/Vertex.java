@@ -150,12 +150,42 @@ public abstract class Vertex<D extends Digraph, V extends Vertex<D, V, SIG>, SIG
     }
 
     //--------------//
+    // setSignature //
+    //--------------//
+    /**
+     * Ask the vertex to compute its signature and to register it in the
+     * containing graph.
+     * <b>Note</b>: If later you modify properties of this vertex in a way that
+     * would modify the signature, note that the signature will not be
+     * automatically recomputed.
+     */
+    public void setSignature ()
+    {
+        SIG sig = computeSignature();
+
+        if (sig == null) {
+            throw new RuntimeException("Vertex computed signature is null");
+        }
+
+        if ((signature != null) && !signature.equals(sig)) {
+            throw new RuntimeException("Attempt to modify a vertex signature");
+        }
+
+        this.signature = sig;
+        graph.registerSignature(this);
+    }
+
+    //--------------//
     // getSignature //
     //--------------//
+    /**
+     * Report the vertex signature
+     * @return the vertex signature
+     */
     public SIG getSignature ()
     {
         if (signature == null) {
-            signature = computeSignature();
+            throw new RuntimeException("Vertex with null signature");
         }
 
         return signature;
@@ -430,6 +460,15 @@ public abstract class Vertex<D extends Digraph, V extends Vertex<D, V, SIG>, SIG
         return sb.toString();
     }
 
+    //------------------//
+    // computeSignature //
+    //------------------//
+    /**
+     * The method which computes the vertex signature
+     * @return the vertex signature
+     */
+    protected abstract SIG computeSignature ();
+
     //-----------//
     // getPrefix //
     //-----------//
@@ -443,11 +482,6 @@ public abstract class Vertex<D extends Digraph, V extends Vertex<D, V, SIG>, SIG
     {
         return "Vertex";
     }
-
-    //------------------//
-    // computeSignature //
-    //------------------//
-    protected abstract SIG computeSignature ();
 
     //----------//
     // getViews //

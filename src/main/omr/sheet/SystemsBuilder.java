@@ -181,11 +181,17 @@ public class SystemsBuilder
         throws StepException
     {
         try {
-            sheet.setVerticalLag(lag);
+            // Remember old vLag if any, while setting the new one
+            GlyphLag oldLag = sheet.setVerticalLag(lag);
 
             // Retrieve the initial collection of good barline candidates
             // Results are updated shapes in vLag glyphs
             barsChecker.retrieveCandidates();
+
+            // Transfer manual glyphs from old lag if at all possible
+            if (oldLag != null) {
+                lag.transferManualGlyphs(oldLag);
+            }
 
             // Processing
             doBuildSystems();
