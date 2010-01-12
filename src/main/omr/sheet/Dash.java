@@ -37,7 +37,7 @@ import java.util.List;
  * @author Herv&eacute; Bitteur
  * @version $Id$
  */
-public class Dash
+public abstract class Dash
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -48,7 +48,7 @@ public class Dash
     private Rectangle box;
 
     /** The underlying stick if any */
-    private Stick stick;
+    private final Stick stick;
 
     /** The patching sections */
     private Set<GlyphSection> patches = new HashSet<GlyphSection>();
@@ -252,5 +252,21 @@ public class Dash
         } else {
             return false;
         }
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder("{");
+
+        sb.append(getClass().getSimpleName());
+        sb.append(" stick#")
+          .append(stick.getId());
+        sb.append("}");
+
+        return sb.toString();
     }
 }

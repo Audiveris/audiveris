@@ -722,7 +722,7 @@ public class SystemsBuilder
         {
             super(lag, null, null, barsController, specificGlyphs);
             setName("SystemsBuilder-View");
-            barMenu = new BarMenu(sheet, (BarsController) getController(), lag);
+            barMenu = new BarMenu(getController());
         }
 
         //~ Methods ------------------------------------------------------------
@@ -762,14 +762,14 @@ public class SystemsBuilder
                                      MouseMovement movement)
         {
             // Retrieve the selected glyphs
-            Set<Glyph> glyphs = sheet.getVerticalLag()
-                                     .getSelectedGlyphSet();
+            Set<Glyph> glyphs = getLag()
+                                    .getSelectedGlyphSet();
 
             // To display point information
             if ((glyphs == null) || glyphs.isEmpty()) {
                 pointSelected(pt, movement); // This may change glyph selection
-                glyphs = sheet.getVerticalLag()
-                              .getSelectedGlyphSet();
+                glyphs = getLag()
+                             .getSelectedGlyphSet();
             }
 
             if ((glyphs != null) && !glyphs.isEmpty()) {

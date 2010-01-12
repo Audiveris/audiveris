@@ -155,9 +155,9 @@ public class GlyphsController
                     .getSelectionService();
     }
 
-    //-------------//
-    // GlyphsModel //
-    //-------------//
+    //----------//
+    // getModel //
+    //----------//
     /**
      * Report the underlying model
      * @return the underlying glpyhs model
@@ -192,7 +192,7 @@ public class GlyphsController
                                    final Shape             shape,
                                    final boolean           compound)
     {
-        if (ShapeRange.Barlines.contains(shape) || hasBars(glyphs)) {
+        if (ShapeRange.Barlines.contains(shape) || Glyphs.hasBars(glyphs)) {
             // Special case for barlines
             return new BarlineTask(shape, compound, glyphs).launch(sheet);
         } else {
@@ -271,26 +271,6 @@ public class GlyphsController
             // Publish modifications
             publish(glyphs.iterator().next());
         }
-    }
-
-    //---------//
-    // hasBars //
-    //---------//
-    /**
-     * Check whether the collection of glyphs contains at least one barline
-     * @param glyphs the collection to check
-     * @return true if one or several glyphs are barlines components
-     */
-    protected boolean hasBars (Collection<Glyph> glyphs)
-    {
-        // Do we have at least one bar?
-        for (Glyph glyph : glyphs) {
-            if (glyph.isBar()) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     //---------//

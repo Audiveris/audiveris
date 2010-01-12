@@ -240,18 +240,19 @@ public class ShapeRange
         return shapes;
     }
 
-    //---------------//
-    // addRangeItems //
-    //---------------//
+    //------------------//
+    // addAllRangeItems //
+    //------------------//
     /**
-     * Populate the given menu with a hierarchy of all ranges
+     * Populate the given menu with a hierarchy of all ranges defined in
+     * ShapeRange classs
      *
      * @param top the JComponent to populate (typically a JMenu or a
      * JPopupMenu)
      * @param listener the listener for notification of user selection
      */
-    public static void addRangeItems (JComponent     top,
-                                      ActionListener listener)
+    public static void addAllRangeItems (JComponent     top,
+                                         ActionListener listener)
     {
         // All ranges of glyph shapes
         for (Field field : ShapeRange.class.getDeclaredFields()) {
@@ -277,9 +278,9 @@ public class ShapeRange
         return name;
     }
 
-    //--------------------//
-    // addRangeShapeItems //
-    //--------------------//
+    //---------------//
+    // addRangeItems //
+    //---------------//
     /**
      * Populate the given menu with a list of all shapes that belong to the
      * given range
@@ -288,9 +289,9 @@ public class ShapeRange
      * @param top the JComponent to populate (typically a JMenu or a JPopupMenu)
      * @param listener the listener for notification of user selection
      */
-    public static void addRangeShapeItems (ShapeRange     range,
-                                           JComponent     top,
-                                           ActionListener listener)
+    public static void addRangeItems (ShapeRange     range,
+                                      JComponent     top,
+                                      ActionListener listener)
     {
         // All shapes in the given range
         for (Shape shape : range.shapes) {
@@ -308,7 +309,8 @@ public class ShapeRange
     // addShapeItems //
     //---------------//
     /**
-     * Populate the given menu with a hierarchy of all shapes
+     * Populate the given menu with a hierarchy of all shapes, organized by
+     * defined ranges.
      *
      * @param top the JComponent to populate (typically a JMenu or a JPopupMenu)
      * @param listener the listener for notification of user selection
@@ -324,7 +326,7 @@ public class ShapeRange
                 addColoredItem(top, menu, Color.black);
 
                 // Add menu items for this range
-                addRangeShapeItems(range, menu, listener);
+                addRangeItems(range, menu, listener);
             }
         }
     }

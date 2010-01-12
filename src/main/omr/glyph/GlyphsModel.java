@@ -18,6 +18,8 @@ import omr.sheet.SystemInfo;
 
 import omr.step.Step;
 
+import omr.stick.Stick;
+
 import java.util.*;
 
 /**
@@ -182,8 +184,27 @@ public class GlyphsModel
     {
         if (compound) {
             // Build & insert one compound
-            SystemInfo system = sheet.getSystemOf(glyphs);
-            Glyph      glyph = system.buildTransientCompound(glyphs);
+            Glyph glyph = null;
+
+            if (getLag()
+                    .isVertical()) {
+                SystemInfo system = sheet.getSystemOf(glyphs);
+                glyph = system.buildTransientCompound(glyphs);
+            } else {
+                glyph = new Stick(sheet.getScale().interline());
+
+                for (Glyph g : glyphs) {
+                    glyph.addGlyphSections(g, false); // no linkSections
+
+                    if (glyph.getLag() == null) {
+                        glyph.setLag(g.getLag());
+                    }
+                }
+
+                // Register (a copy of) the parts in the compound itself
+                glyph.setParts(glyphs);
+            }
+
             assignGlyph(glyph, shape, doubt);
         } else {
             // Assign each glyph individually
@@ -255,8 +276,13 @@ public class GlyphsModel
         }
 
         if (shape != null) {
-            SystemInfo system = sheet.getSystemOf(glyph);
-            glyph = system.addGlyph(glyph);
+            if (lag.isVertical()) {
+                SystemInfo system = sheet.getSystemOf(glyph);
+                glyph = system.addGlyph(glyph);
+            } else {
+                // Insert in lag, which assigns an id to the glyph
+                glyph = lag.addGlyph(glyph);
+            }
 
             boolean isTransient = glyph.isTransient();
 

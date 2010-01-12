@@ -27,6 +27,7 @@ import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 import omr.glyph.GlyphsModel;
 import omr.glyph.Shape;
+import omr.glyph.ui.DashMenu;
 import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphLagView;
 import omr.glyph.ui.GlyphsController;
@@ -60,6 +61,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -188,6 +190,28 @@ public class HorizontalsBuilder
         return controller;
     }
 
+    //--------------//
+    // assignGlyphs //
+    //--------------//
+    /**
+     * Assign a collection of glyphs to a Ledger or Ending shape
+     * @param glyphs the collection of glyphs to be assigned
+     * @param shape the shape to be assigned
+     * @param compound flag to build one compound, rather than assign each
+     *                 individual glyph
+     * @param doubt the doubt we have wrt the assigned shape
+     */
+    @Override
+    public void assignGlyphs (Collection<Glyph> glyphs,
+                              Shape             shape,
+                              boolean           compound,
+                              double            doubt)
+    {
+        super.assignGlyphs(glyphs, shape, compound, doubt);
+
+        lagView.colorizeAllSections();
+    }
+
     //-----------//
     // buildInfo //
     //-----------//
@@ -239,7 +263,53 @@ public class HorizontalsBuilder
     @Override
     public void deassignGlyphs (Collection<Glyph> glyphs)
     {
-        for (Glyph glyph : glyphs) {
+        super.deassignGlyphs(glyphs);
+
+        lagView.colorizeAllSections();
+    }
+
+    //-------------//
+    // assignGlyph //
+    //-------------//
+    @Override
+    protected Glyph assignGlyph (Glyph  glyph,
+                                 Shape  shape,
+                                 double doubt)
+    {
+        if (shape != null) {
+            // Assign
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "Assign horizontal glyph#" + glyph.getId() + " to " +
+                    shape);
+            }
+
+            Dash dash = null;
+
+            switch (shape) {
+            case LEDGER :
+                dash = new Ledger((Stick) glyph);
+                info.getLedgers()
+                    .add((Ledger) dash);
+
+                break;
+
+            case ENDING_HORIZONTAL :
+                dash = new Ending((Stick) glyph);
+                info.getEndings()
+                    .add((Ending) dash);
+
+                break;
+
+            default :
+                assert false;
+            }
+
+            cleanup(Collections.singletonList(dash));
+            allDashes.add(dash);
+            dashSections.addAll(glyph.getMembers());
+        } else {
+            // Deassign
             if (logger.isFineEnabled()) {
                 logger.fine("Deassign horizontal glyph#" + glyph.getId());
             }
@@ -254,24 +324,24 @@ public class HorizontalsBuilder
 
                 break;
 
-            case ENDING :
+            case ENDING_HORIZONTAL :
                 dash = info.getEndingOf(glyph);
                 info.getEndings()
                     .remove((Ending) dash);
 
                 break;
+
+            default :
+                assert false;
             }
 
             // Remove the patches and restore the glyph
             lineCleaner.restoreStick((Stick) glyph, dash.getPatches());
             allDashes.remove(dash);
-
             dashSections.removeAll(glyph.getMembers());
         }
 
-        lagView.colorizeAllSections();
-
-        super.deassignGlyphs(glyphs);
+        return super.assignGlyph(glyph, shape, doubt);
     }
 
     //---------//
@@ -987,6 +1057,11 @@ public class HorizontalsBuilder
     private class MyView
         extends GlyphLagView
     {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Popup menu related to glyph selection */
+        private DashMenu dashMenu;
+
         //~ Constructors -------------------------------------------------------
 
         public MyView (GlyphLag          lag,
@@ -995,6 +1070,7 @@ public class HorizontalsBuilder
         {
             super(lag, members, constants.displayLedgerLines, controller, null);
             setName("HorizontalsBuilder-View");
+            dashMenu = new DashMenu(getController());
         }
 
         //~ Methods ------------------------------------------------------------
@@ -1012,7 +1088,7 @@ public class HorizontalsBuilder
             // All checked sticks.
             for (Stick stick : horizontalsArea.getSticks()) {
                 if ((stick.getShape() != Shape.LEDGER) &&
-                    (stick.getShape() != Shape.ENDING)) {
+                    (stick.getShape() != Shape.ENDING_HORIZONTAL)) {
                     stick.colorize(lag, viewIndex, Color.red);
                 }
             }
@@ -1030,26 +1106,26 @@ public class HorizontalsBuilder
                                      MouseMovement movement)
         {
             // Retrieve the selected glyphs
-            Set<Glyph> glyphs = sheet.getVerticalLag()
-                                     .getSelectedGlyphSet();
+            Set<Glyph> glyphs = getLag()
+                                    .getSelectedGlyphSet();
 
             // To display point information
             if ((glyphs == null) || glyphs.isEmpty()) {
                 pointSelected(pt, movement); // This may change glyph selection
-                glyphs = sheet.getVerticalLag()
-                              .getSelectedGlyphSet();
+                glyphs = getLag()
+                             .getSelectedGlyphSet();
             }
 
             if ((glyphs != null) && !glyphs.isEmpty()) {
                 // Update the popup menu according to selected glyphs
-//                barMenu.updateMenu();
-//
-//                // Show the popup menu
-//                barMenu.getPopup()
-//                       .show(
-//                    this,
-//                    getZoom().scaled(pt.x),
-//                    getZoom().scaled(pt.y));
+                dashMenu.updateMenu();
+
+                // Show the popup menu
+                dashMenu.getPopup()
+                        .show(
+                    this,
+                    getZoom().scaled(pt.x),
+                    getZoom().scaled(pt.y));
             } else {
                 // Popup with no glyph selected ?
             }

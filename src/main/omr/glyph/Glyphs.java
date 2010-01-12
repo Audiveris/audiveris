@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.glyph;
 
-import omr.Main;
-
 import omr.log.Logger;
 
 import omr.score.common.PixelRectangle;
@@ -154,6 +152,26 @@ public class Glyphs
         }
 
         return glyphs;
+    }
+
+    //---------//
+    // hasBars //
+    //---------//
+    /**
+     * Check whether the collection of glyphs contains at least one barline
+     * @param glyphs the collection to check
+     * @return true if one or several glyphs are barlines components
+     */
+    public static boolean hasBars (Collection<Glyph> glyphs)
+    {
+        // Do we have at least one bar?
+        for (Glyph glyph : glyphs) {
+            if (glyph.isBar()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     //-------------------//

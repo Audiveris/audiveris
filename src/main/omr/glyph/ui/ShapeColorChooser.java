@@ -251,7 +251,7 @@ public class ShapeColorChooser
         private void buildRangesMenu ()
         {
             menu.removeAll();
-            ShapeRange.addRangeItems(menu, selectionListener);
+            ShapeRange.addAllRangeItems(menu, selectionListener);
         }
 
         //~ Inner Classes ------------------------------------------------------
@@ -400,7 +400,7 @@ public class ShapeColorChooser
             menu.removeAll();
 
             // Add all shapes within current range
-            ShapeRange.addRangeShapeItems(
+            ShapeRange.addRangeItems(
                 ranges.current,
                 menu,
                 selectionListener);

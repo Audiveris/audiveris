@@ -121,7 +121,7 @@ public class SymbolsEditor
                     }
                 });
 
-        glyphMenu = new SymbolMenu(symbolsController, evaluator, focus, lag);
+        glyphMenu = new SymbolMenu(symbolsController, evaluator, focus);
 
         final String  unit = sheet.getRadix() + ":SymbolsEditor";
 
