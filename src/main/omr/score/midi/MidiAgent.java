@@ -20,16 +20,20 @@ import omr.score.ui.ScoreActions;
 
 import omr.util.OmrExecutors;
 
-import com.xenoage.player.Player;
-import com.xenoage.player.musicxml.MusicXMLDocument;
+import com.xenoage.util.io.IO;
+import com.xenoage.util.logging.Log;
+import com.xenoage.zong.Zong;
+import com.xenoage.zong.io.midi.out.SynthManager;
+import com.xenoage.zong.player.gui.Controller;
 
-import org.w3c.dom.Document;
+import proxymusic.ScorePartwise;
 
 import java.io.*;
 import java.util.concurrent.*;
 
-import javax.swing.JOptionPane;
-import javax.xml.parsers.*;
+import javax.sound.midi.MidiSystem;
+import javax.sound.midi.MidiUnavailableException;
+import javax.sound.midi.Sequence;
 
 /**
  * Class <code>MidiAgent</code> is in charge of representing a score when
@@ -93,8 +97,11 @@ public class MidiAgent
 
     //~ Instance fields --------------------------------------------------------
 
-    /** The underlying XenoPlay player */
-    private final Player player;
+    /** The underlying Zong player */
+    private final Controller controller;
+
+    /** In charge of receiving Midi events to update score display */
+    private final MidiReceiver receiver;
 
     /** (Current) related score. Beware of memory leak! */
     private Score score;
@@ -103,13 +110,10 @@ public class MidiAgent
     private Status status = Status.STOPPED;
 
     /** The MusicXML document */
-    private Document document;
+    private ScorePartwise document;
 
-    /** Specific measure range if any */
+    /** The range of measures to play (perhaps null, meaning whole score) */
     private MeasureRange measureRange;
-
-    /** In charge of receiving Midi events to update score display */
-    private MidiReceiver receiver;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -117,15 +121,30 @@ public class MidiAgent
     // MidiAgent //
     //-----------//
     /**
-     * Create a Midi Agent
-     *
-     * @param score the related score
+     * Create the Midi Agent singleton
      */
     private MidiAgent ()
     {
-        player = new OmrPlayer();
+        // Stolen from Zong Player init sequence
+        Log.initApplicationLog(
+            "zong.log",
+            Zong.getNameAndVersion("AudiverisZongPlayer"));
+
+        IO.initApplication();
+
+        try {
+            SynthManager.init(true);
+        } catch (MidiUnavailableException ex) {
+            logger.warning("Could not initialize MIDI");
+            receiver = null;
+            controller = null;
+
+            return;
+        }
+
         receiver = new MidiReceiver(this);
-        player.connectReceiver(receiver);
+        controller = new Controller();
+        controller.addPlaybackListener(receiver);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -151,9 +170,25 @@ public class MidiAgent
         return Holder.INSTANCE;
     }
 
+    //-----------------//
+    // getMeasureRange //
+    //-----------------//
+    /**
+     * Report the current measure range
+     * @return the measureRange
+     */
+    public MeasureRange getMeasureRange ()
+    {
+        return measureRange;
+    }
+
     //---------//
     // preload //
     //---------//
+    /**
+     * Purpose if to make this class be loaded, and thus the 'loading' task be
+     * launched
+     */
     public static void preload ()
     {
     }
@@ -168,6 +203,10 @@ public class MidiAgent
      */
     public void setScore (Score score)
     {
+        if (logger.isFineEnabled()) {
+            logger.fine("MidiAgent setScore");
+        }
+
         if (this.score != score) {
             reset();
             this.score = score;
@@ -221,9 +260,13 @@ public class MidiAgent
      */
     public void pause ()
     {
+        if (logger.isFineEnabled()) {
+            logger.fine("MidiAgent pause");
+        }
+
         if (status == Status.PLAYING) {
             status = Status.PAUSED;
-            player.pause();
+            controller.pause();
             MidiActions.getInstance()
                        .updateActions();
         }
@@ -235,9 +278,8 @@ public class MidiAgent
     /**
      * Start the playback from start (or continue if just paused)
      *
-     * @param measureRange if a non null measure range is provided as a
-     * parameter it is taken into account, otherwise the measure range defined
-     * at score level, if any, is being considered
+     * @param measureRange a specific range of measures if non null, otherwise
+     * the whole score is played
      */
     public void play (MeasureRange measureRange)
     {
@@ -248,38 +290,19 @@ public class MidiAgent
                 " tempo:" + score.getTempo() + " volume:" + score.getVolume() +
                 " ...");
 
-            // Make sure the document (and the Midi sequence) is available
-            retrieveDocument(measureRange);
-
-            // We could adjust the tempo here
-            ///sequencer.setTempoFactor(2.0f);
-
-            // Infos
-            if (logger.isFineEnabled()) {
-                try {
-                    long ms = player.getSequencer()
-                                    .getSequence()
-                                    .getMicrosecondLength() / 1000;
-                    long ticks = player.getSequencer()
-                                       .getSequence()
-                                       .getTickLength();
-                    logger.fine("Midi sequence length is " + ms + " ms");
-                    logger.fine("Midi tick length is " + ticks);
-
-                    int lastTime = score.getLastSoundTime(
-                        (measureRange != null) ? measureRange.getLastId() : null);
-                    lastTime /= score.getDurationDivisor();
-                    logger.fine(
-                        "Score tick " +
-                        ((measureRange != null) ? "selection" : "length") +
-                        " is " + lastTime);
-                } catch (Exception e) {
-                }
+            if (measureRange == null) {
+                measureRange = score.getMeasureRange();
             }
 
-            // Hand it over to the player and the receiver
-            receiver.setScore(score, measureRange);
-            player.play();
+            if ((document == null) || (this.measureRange != measureRange)) {
+                this.measureRange = measureRange;
+
+                // Make sure the document (and the Midi sequence) is available
+                retrieveMusic(measureRange);
+            }
+
+            controller.play();
+
             status = Status.PLAYING;
             MidiActions.getInstance()
                        .updateActions();
@@ -295,6 +318,10 @@ public class MidiAgent
      */
     public void reset ()
     {
+        if (logger.isFineEnabled()) {
+            logger.fine("MidiAgent reset");
+        }
+
         document = null;
         measureRange = null;
 
@@ -311,10 +338,14 @@ public class MidiAgent
      */
     public void stop ()
     {
+        if (logger.isFineEnabled()) {
+            logger.fine("MidiAgent stop");
+        }
+
         if ((status == Status.PLAYING) || (status == Status.PAUSED)) {
             status = Status.STOPPED;
-            player.stop();
-            receiver.reset();
+            controller.stop();
+            document = null; // Workaround for Zong Player
             MidiActions.getInstance()
                        .updateActions();
         }
@@ -330,9 +361,22 @@ public class MidiAgent
     public void write (OutputStream os)
     {
         // Make sure the document (and the Midi sequence) is available
-        retrieveDocument(null);
+        retrieveMusic(null);
 
-        player.saveSequence(os);
+        Sequence seq = controller.getPlayer()
+                                 .getSequence();
+
+        if (seq == null) {
+            logger.warning("No MIDI sequence");
+
+            return;
+        }
+
+        try {
+            MidiSystem.write(seq, 1, os);
+        } catch (Exception ex) {
+            logger.warning("Error saving MIDI sequence", ex);
+        }
     }
 
     //-------//
@@ -353,94 +397,27 @@ public class MidiAgent
         os.close();
     }
 
-    //------------------//
-    // getLengthInTicks //
-    //------------------//
+    //---------------//
+    // retrieveMusic //
+    //---------------//
     /**
-     * Report the length of the current sequence
-     *
-     * @return the sequence length in Midi ticks
+     * Make sure the score partwise document is available and the corresponding
+     * MIDI sequence is ready
+     * @param measureRange the required rande of measures, if any
      */
-    long getLengthInTicks ()
+    private void retrieveMusic (MeasureRange measureRange)
     {
         try {
-            return player.getSequencer()
-                         .getSequence()
-                         .getTickLength();
+            ScoreExporter exporter = new ScoreExporter(score);
+            exporter.setMeasureRange(measureRange);
+            document = exporter.buildScorePartwise();
+
+            // Hand it over directly to the MusicXML reader
+            controller.loadScore(document);
         } catch (Exception ex) {
-            return 0;
-        }
-    }
-
-    //--------------------//
-    // getPositionInTicks //
-    //--------------------//
-    /**
-     * Report the current position within the current sequence
-     *
-     * @return the current position in Midi ticks
-     */
-    long getPositionInTicks ()
-    {
-        try {
-            return player.getSequencer()
-                         .getTickPosition();
-        } catch (Exception ex) {
-            return 0;
-        }
-    }
-
-    //--------//
-    // ending //
-    //--------//
-    /**
-     * Notification of the end of playback
-     */
-    void ending ()
-    {
-        logger.info("Ended.");
-        status = Status.STOPPED;
-        MidiActions.getInstance()
-                   .updateActions();
-    }
-
-    //------------------//
-    // retrieveDocument //
-    //------------------//
-    /**
-     * Make sure the MusicXML document (and its Midi counterpart) is available
-     *
-     * @param measureRange a potential range of measure. If null, the range
-     * defined at score level, if any, will be taken into account. If no range
-     * is specified (either as a method parameter or as a score parameter) then
-     * the whole score is played.
-     */
-    private void retrieveDocument (MeasureRange measureRange)
-    {
-        if ((document == null) || (this.measureRange != measureRange)) {
-            try {
-                this.measureRange = measureRange;
-
-                // Populate the document
-                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-                DocumentBuilder        builder = factory.newDocumentBuilder();
-                document = builder.newDocument();
-
-                ScoreExporter exporter = new ScoreExporter(score);
-
-                if (measureRange == null) {
-                    measureRange = score.getMeasureRange();
-                }
-
-                exporter.setMeasureRange(measureRange);
-                exporter.export(document);
-
-                // Hand it over directly to MusicXML reader
-                player.loadDocument(new MusicXMLDocument(document));
-            } catch (Exception ex) {
-                logger.warning("Midi Agent error", ex);
-                document = null; // Safer
-            }
+            logger.warning("Midi Agent error", ex);
+            document = null; // Safer
+            throw new RuntimeException(ex);
         }
     }
 
@@ -454,40 +431,5 @@ public class MidiAgent
         //~ Static fields/initializers -----------------------------------------
 
         public static final MidiAgent INSTANCE = new MidiAgent();
-    }
-
-    //-----------//
-    // OmrPlayer //
-    //-----------//
-    /**
-     * Subclass of Player to redirect logging messages
-     */
-    private static class OmrPlayer
-        extends Player
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public OmrPlayer ()
-        {
-            super(null, false);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public void MsgBox (String Msg,
-                            int    MsgType)
-        {
-            switch (MsgType) {
-            case JOptionPane.WARNING_MESSAGE :
-            case JOptionPane.ERROR_MESSAGE :
-                logger.warning(Msg);
-
-                break;
-
-            default :
-                logger.info(Msg);
-            }
-        }
     }
 }

@@ -244,6 +244,7 @@ public class ScoreManager
 
                 if (agent.getScore() == score) {
                     agent.write(midiFile);
+                    score.setMidiFile(midiFile);
                     logger.info("Midi written to " + midiFile);
 
                     // Remember (even across runs) the selected directory

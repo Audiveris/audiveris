@@ -17,6 +17,7 @@ scores-ref
 scripts
 tesseract\.log
 www/docs/api
+zong.log
 
 syntax: glob
 

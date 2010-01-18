@@ -386,6 +386,12 @@ public class MidiActions
 
         //~ Constructors -------------------------------------------------------
 
+        /**
+         * Play (part of) the score
+         * @param score the score to play
+         * @param measureRange a specific range of measures, or (if null) the
+         * default measure range as stored in the score
+         */
         public PlayTask (Score        score,
                          MeasureRange measureRange)
         {

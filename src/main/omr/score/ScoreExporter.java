@@ -186,6 +186,21 @@ public class ScoreExporter
         this.measureRange = measureRange;
     }
 
+    //--------------------//
+    // buildScorePartwise //
+    //--------------------//
+    /**
+     * Fill a ScorePartwise with the Score information
+     * @return the filled document
+     */
+    public ScorePartwise buildScorePartwise ()
+    {
+        // Let visited nodes fill the scorePartwise proxy
+        score.accept(this);
+
+        return scorePartwise;
+    }
+
     //--------//
     // export //
     //--------//
@@ -244,8 +259,8 @@ public class ScoreExporter
                 "Trying to export a score to a null DOM Node");
         }
 
-        // Let visited nodes fill the scorePartWise proxy
-        score.accept(this);
+        // Let visited nodes fill the scorePartwise proxy
+        buildScorePartwise();
 
         //  Finally, marshal the proxy
         Marshalling.marshal(scorePartwise, node, /* Signature => */
@@ -683,12 +698,6 @@ public class ScoreExporter
 
         ///logger.info("Visiting " + measure);
 
-        // Do we need to create & export a dummy initial measure?
-        if (((measureRange != null) && !measure.isTemporary() &&
-            (measure.getId() > 1)) &&
-            (measure.getId() == measureRange.getFirstId())) {
-            visit(measure.createTemporaryBefore());
-        }
 
         if (logger.isFineEnabled()) {
             logger.fine(measure + " : " + isFirst);
@@ -721,6 +730,12 @@ public class ScoreExporter
 
         if ((prevMeasure != null) && !prevMeasure.isDummy()) {
             visit(prevMeasure.getBarline());
+        }
+        // Do we need to create & export a dummy initial measure?
+        if (((measureRange != null) && !measure.isTemporary() &&
+            (measure.getId() > 1)) &&
+            (measure.getId() == measureRange.getFirstId())) {
+            insertCurrentContext(measure);
         }
 
         if (isFirst.measure) {
@@ -783,10 +798,17 @@ public class ScoreExporter
 
                     // Tempo?
                     if (score.hasTempo()) {
-                        Sound sound = factory.createSound();
+                        Direction direction = factory.createDirection();
                         current.pmMeasure.getNoteOrBackupOrForward()
-                                         .add(sound);
+                                         .add(direction);
+
+                        DirectionType directionType = factory.createDirectionType();
+                        direction.getDirectionType()
+                                 .add(directionType);
+
+                        Sound sound = factory.createSound();
                         sound.setTempo(createDecimal(score.getTempo()));
+                        direction.setSound(sound);
                     }
 
                     // Volume?
@@ -2057,6 +2079,46 @@ public class ScoreExporter
         } catch (Exception ex) {
             if (score.getDurationDivisor() != null) {
                 logger.warning("Not able to insert backup", ex);
+            }
+        }
+    }
+
+    //----------------------//
+    // insertCurrentContext //
+    //----------------------//
+    private void insertCurrentContext (Measure measure)
+    {
+        // Browse measure, staff per staff
+        SystemPart part = measure.getPart();
+
+        for (TreeNode sn : part.getStaves()) {
+            Staff       staff = (Staff) sn;
+            int         right = measure.getLeftX(); // Right of dummy = Left of current
+            int         midY = (staff.getPageTopLeft().y +
+                               (staff.getHeight() / 2)) -
+                               measure.getSystem()
+                                      .getTopLeft().y;
+            SystemPoint staffPoint = new SystemPoint(right, midY);
+
+            // Clef?
+            Clef clef = measure.getClefBefore(staffPoint);
+
+            if (clef != null) {
+                visit(clef);
+            }
+
+            // Key?
+            KeySignature key = measure.getKeyBefore(staffPoint);
+
+            if (key != null) {
+                visit(key);
+            }
+
+            // Time?
+            TimeSignature time = measure.getCurrentTimeSignature();
+
+            if (time != null) {
+                visit(time);
             }
         }
     }
