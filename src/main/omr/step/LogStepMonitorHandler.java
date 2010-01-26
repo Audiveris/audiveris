@@ -30,7 +30,6 @@ import java.util.logging.*;
  * logger instance, either programmatically or in a properties file.</p>
  *
  * @author Brenton Partridge
- * @version $Id$
  */
 public class LogStepMonitorHandler
     extends Handler

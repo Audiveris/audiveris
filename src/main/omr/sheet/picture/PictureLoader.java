@@ -51,7 +51,6 @@ import javax.media.jai.JAI;
  * to show loading progress.
  *
  * @author Brenton Partridge
- * @version $Id$
  */
 public class PictureLoader
 {

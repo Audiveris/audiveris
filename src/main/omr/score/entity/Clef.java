@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
+//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -32,7 +32,6 @@ import omr.score.visitor.ScoreVisitor;
  * <img src="http://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Middle_C_in_four_clefs.svg/600px-Middle_C_in_four_clefs.svg.png" />
  *
  * @author Herv&eacute Bitteur
- * @version $Id$
  */
 public class Clef
     extends MeasureNode

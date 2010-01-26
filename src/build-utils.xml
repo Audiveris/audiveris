@@ -133,9 +133,18 @@
     <target name="global-replace"
         description="Modify token of every source file">
 	
-	<replace dir="${basedir}"
-		 token="#   Contact dev@audiveris.dev.java.net to report bugs &amp; suggestions.           #"
-		 value="#   Goto http://kenai.com/projects/audiveris to report bugs or suggestions.    #">
+	<replace dir="${basedir}">
+	    <replacetoken><![CDATA[ * @version $Id$
+]]></replacetoken>
+	    <replacevalue><![CDATA[]]></replacevalue>	    
+	    <include name="**/*.java"/>
+	</replace>
+
+	<replace dir="${basedir}">
+	    <replacetoken><![CDATA[#
+# Version $Id$
+]]></replacetoken>
+	    <replacevalue><![CDATA[]]></replacevalue>	    
 	    <include name="**/*.properties"/>
 	</replace>
 

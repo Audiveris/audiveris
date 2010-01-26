@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur and Brenton Partridge 2000-2009.              //
+//  Copyright (C) Herve Bitteur and Brenton Partridge 2000-2010.              //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -27,7 +27,6 @@ import javax.swing.border.*;
  * Class <code>UIUtilities</code> gathers utilities related to User Interface
  *
  * @author Herv&eacute Bitteur and Brenton Partridge
- * @version $Id$
  */
 public class UIUtilities
 {

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
+//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -28,7 +28,6 @@ import java.awt.Color;
  * colorization (assigning colors) of related sections in the Sheet display.
  *
  * @author Herv&eacute Bitteur
- * @version $Id$
  */
 public class ScoreColorizer
     extends AbstractScoreVisitor

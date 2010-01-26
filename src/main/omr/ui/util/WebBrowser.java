@@ -32,7 +32,6 @@ import java.lang.reflect.*;
  * @author Brenton Partridge
  * @author Herv&eacute Bitteur (for delegation to BareBonesBrowserLaunch)
  *
- * @version $Id$
  */
 public class WebBrowser
 {

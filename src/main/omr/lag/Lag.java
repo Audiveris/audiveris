@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
+//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -44,7 +44,6 @@ import java.util.List;
  * sectionSet from the lag selection service.</p>
  *
  * @author Herv&eacute; Bitteur
- * @version $Id$
  *
  * @param <L> precise lag (sub)type
  * @param <S> precise section (sub)type

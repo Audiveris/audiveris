@@ -36,7 +36,6 @@ import java.lang.reflect.*;
  * Preferences, About, and Quit menu items.
  *
  * @author Brenton Partridge
- * @version $Id$
  */
 public class MacApplication
     implements InvocationHandler

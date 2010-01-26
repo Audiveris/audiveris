@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
+//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -17,7 +17,6 @@ package omr.check;
  * composed of a value (double) and a flag which can be RED, YELLOW or GREEN.
  *
  * @author Herv&eacute; Bitteur
- * @version $Id$
  */
 public class CheckResult
 {

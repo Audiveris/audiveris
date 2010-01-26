@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2009. All rights reserved.               //
+//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -41,7 +41,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * composed of one or several glyphs (all sharps or all flats).
  *
  * @author Herv&eacute Bitteur
- * @version $Id$
  */
 public class KeySignature
     extends MeasureNode

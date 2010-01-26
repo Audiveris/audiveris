@@ -18,7 +18,6 @@ import javax.swing.*;
  * separators
  *
  * @author Brenton Partridge
- * @version $Id$
  */
 public class SeparableMenu
     extends JMenu

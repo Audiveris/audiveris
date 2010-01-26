@@ -27,7 +27,6 @@ import java.util.concurrent.*;
  *
  * @author Brenton Partridge (original version)
  * @author Herv&eacute; Bitteur (Callable/Future version)
- * @version $Id$
  */
 public class JaiLoader
 {
