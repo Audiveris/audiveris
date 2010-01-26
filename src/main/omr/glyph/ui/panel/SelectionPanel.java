@@ -17,7 +17,6 @@ import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphRegression;
-import omr.glyph.Shape;
 import omr.glyph.ui.*;
 import static omr.glyph.ui.panel.GlyphTrainer.Task.Activity.*;
 

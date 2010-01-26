@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vocabulary package="Menu">
+	<voc key="About" value="About..."/>
+	<voc key="Audio" value="Audio..."/>
+	<voc key="Convert" value="Convert"/>
+	<voc key="DirToMidi" value="Directory to Midi..."/>
+	<voc key="Exit" value="Exit"/>
+	<voc key="File" value="File"/>
+	<voc key="FileToMidi" value="File to Midi..."/>
+	<voc key="Info" value="Show information..."/>
+	<voc key="Help" value="Help"/>
+	<voc key="Open" value="Open..."/>
+	<voc key="ReadMe" value="Read me..."/>
+	<voc key="SaveAs" value="Save as..."/>
+	<voc key="Settings" value="Settings"/>
+</vocabulary>

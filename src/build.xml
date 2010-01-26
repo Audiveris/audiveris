@@ -72,7 +72,8 @@
 
 	<pathelement path="${tesjeract.jar}"/>
 
-	<pathelement path="${xenoplay.jar}"/>
+	<pathelement path="${zong.jar}"/>
+	<pathelement path="${gervill.jar}"/>
     </path>
     
     <!-- Build classpath -->
@@ -163,7 +164,8 @@
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${swingappfwk.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${swingworker.jar}"/>
 	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${tesjeract.jar}"/>
-	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${xenoplay.jar}"/>
+	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${zong.jar}"/>
+	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${gervill.jar}"/>
         <copy todir="${dist.dir}/lib" verbose="$verbose" file="${jai.dir}/jai_imageio.jar"/>
         <copy todir="${dist.dir}/lib" verbose="$verbose" file="${jai.dir}/clibwrapper_jiio.jar"/>
         <copy todir="${dist.dir}/lib" verbose="$verbose" file="${jai.dir}/jai_codec.jar"/>

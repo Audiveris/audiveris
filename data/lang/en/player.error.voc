@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vocabulary package="Error">
+	<voc key="Files" value="Could not find the list of files."/>
+	<voc key="Midi" value="The MIDI device is not available. The program can not be started."/>
+	<voc key="NoValidMusicXMLFile" value="This is no valid MusicXML file:\n{1}"/>
+	<voc key="SavingFile" value="Error while saving the file."/>
+	<voc key="Skin" value="Could not load skin. Is the skin archive in the classpath?"/>
+</vocabulary>

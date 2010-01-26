@@ -3,6 +3,8 @@ syntax: regexp
 \.hgignore$
 \.chg\..*$
 \.conflict\~$
+\.log$
+\.mid$
 \.orig$
 \.orig\..*$
 \.rej$

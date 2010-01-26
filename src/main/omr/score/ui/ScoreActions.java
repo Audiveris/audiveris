@@ -64,9 +64,6 @@ public class ScoreActions
     /** Should we rebuild the score on each user action */
     private static final String REBUILD_ALLOWED = "rebuildAllowed";
 
-    /** Is a Score available */
-    private static final String SCORE_AVAILABLE = "scoreAvailable";
-
     /** Singleton */
     private static ScoreActions INSTANCE;
 

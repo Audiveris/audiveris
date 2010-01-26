@@ -89,8 +89,6 @@ public class MidiReceiver
         if (logger.isFineEnabled()) {
             logger.fine("playbackAtEnd");
         }
-
-        agent.stop();
     }
 
     //-------------------------//
@@ -247,11 +245,6 @@ public class MidiReceiver
         if (score == null) {
             logger.warning("Score is null");
 
-            return;
-        }
-
-        // Make sure we are still playing ...
-        if (agent.getStatus() != MidiAgent.Status.PLAYING) {
             return;
         }
 

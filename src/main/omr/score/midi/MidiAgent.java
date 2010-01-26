@@ -20,30 +20,31 @@ import omr.score.ui.ScoreActions;
 
 import omr.util.OmrExecutors;
 
-import com.xenoage.util.io.IO;
-import com.xenoage.util.logging.Log;
-import com.xenoage.zong.Zong;
+import com.xenoage.util.language.Lang;
+import com.xenoage.util.language.LanguageInfo;
 import com.xenoage.zong.io.midi.out.SynthManager;
-import com.xenoage.zong.player.gui.Controller;
 
 import proxymusic.ScorePartwise;
 
 import java.io.*;
+import java.util.List;
 import java.util.concurrent.*;
 
-import javax.sound.midi.MidiSystem;
-import javax.sound.midi.MidiUnavailableException;
-import javax.sound.midi.Sequence;
+import javax.sound.midi.*;
 
 /**
  * Class <code>MidiAgent</code> is in charge of representing a score when
  * dealing with the Midi System. There are two main usages: playing a score
  * and writing the Midi file for a score.
  *
- * There is only one instance of this class for the whole application, to allow
- * the preloading of the default Midi sequencer. Also, it would not really make
- * sense to have two score playbacks at the same time, since there is no means
- * to accurately synchronize the moment when a playback really starts.
+ * <p>There is only one instance of this class for the whole application, to
+ * allow the preloading of the default Midi sequencer. Also, it would not really
+ * make sense to have two score playbacks at the same time, since there is no
+ * means to accurately synchronize the moment when a playback really starts.
+ *
+ * <p>This class now delegates to the Zong! player the actual play / pause /
+ * stop actions with a few other Midi-related actions. The purpose of the
+ * {@link #play} method is just to lauch the player on the current score.
  *
  * @author Herv&eacute Bitteur
  * @version $Id$
@@ -77,37 +78,16 @@ public class MidiAgent
             });
 
 
-    //~ Enumerations -----------------------------------------------------------
-
-    /**
-     * The various possibilities for the status of this entity regarding Midi
-     * playback
-     */
-    public enum Status {
-        //~ Enumeration constant initializers ----------------------------------
-
-
-        /** Playback is not started or paused, sequence position is irrelevant */
-        STOPPED,
-        /** Playback has started */
-        PLAYING, 
-        /** Playback is paused, current sequence position is kept */
-        PAUSED;
-    }
-
     //~ Instance fields --------------------------------------------------------
 
     /** The underlying Zong player */
-    private final Controller controller;
+    private OmrFrameController controller;
 
     /** In charge of receiving Midi events to update score display */
     private final MidiReceiver receiver;
 
     /** (Current) related score. Beware of memory leak! */
     private Score score;
-
-    /** Current status of this player */
-    private Status status = Status.STOPPED;
 
     /** The MusicXML document */
     private ScorePartwise document;
@@ -125,12 +105,19 @@ public class MidiAgent
      */
     private MidiAgent ()
     {
-        // Stolen from Zong Player init sequence
-        Log.initApplicationLog(
-            "zong.log",
-            Zong.getNameAndVersion("AudiverisZongPlayer"));
+        //== Stolen from Zong Player init sequence
+        try {
+            //get available languages
+            List<LanguageInfo> languages = LanguageInfo.getAvailableLanguages(
+                Lang.defaultLangPath);
 
-        IO.initApplication();
+            //use system's default (TODO: config)
+            String langID = LanguageInfo.getDefaultID(languages);
+            Lang.loadLanguage(langID);
+        } catch (Exception ex) {
+            logger.warning("Could not load language", ex);
+            Lang.loadLanguage("en");
+        }
 
         try {
             SynthManager.init(true);
@@ -142,9 +129,17 @@ public class MidiAgent
             return;
         }
 
+        //== End of init sequence
+
+        // Our playback listener
         receiver = new MidiReceiver(this);
-        controller = new Controller();
-        controller.addPlaybackListener(receiver);
+
+        try {
+            controller = new OmrFrameController(new OmrFrameView());
+            controller.addPlaybackListener(receiver);
+        } catch (Exception ex) {
+            logger.warning("Error creating OmrFrameController", ex);
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -163,8 +158,7 @@ public class MidiAgent
             loading.get();
         } catch (Throwable ex) {
             logger.severe("Cannot load Midi", ex);
-
-            return null;
+            throw new RuntimeException(ex);
         }
 
         return Holder.INSTANCE;
@@ -211,18 +205,8 @@ public class MidiAgent
             reset();
             this.score = score;
 
-            switch (status) {
-            case PLAYING :
-                stop();
-
-                break;
-
-            case PAUSED :
-                status = Status.STOPPED;
-                MidiActions.getInstance()
-                           .updateActions();
-                logger.info("Stopped.");
-            }
+            MidiActions.getInstance()
+                       .updateActions();
         }
     }
 
@@ -237,39 +221,6 @@ public class MidiAgent
     public Score getScore ()
     {
         return score;
-    }
-
-    //-----------//
-    // getStatus //
-    //-----------//
-    /**
-     * Report the current status of the agent
-     *
-     * @return the current status (STOPPED, PLAYING, PAUSED)
-     */
-    public Status getStatus ()
-    {
-        return status;
-    }
-
-    //-------//
-    // pause //
-    //-------//
-    /**
-     * Pause the playback, keeping the current position in the Midi sequence
-     */
-    public void pause ()
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("MidiAgent pause");
-        }
-
-        if (status == Status.PLAYING) {
-            status = Status.PAUSED;
-            controller.pause();
-            MidiActions.getInstance()
-                       .updateActions();
-        }
     }
 
     //------//
@@ -287,14 +238,15 @@ public class MidiAgent
             logger.info(
                 "Playing " + score.getRadix() +
                 ((measureRange != null) ? (" " + measureRange) : "") +
-                " tempo:" + score.getTempo() + " volume:" + score.getVolume() +
-                " ...");
+                " tempo:" + score.getTempo() + " ...");
 
             if (measureRange == null) {
                 measureRange = score.getMeasureRange();
             }
 
-            if ((document == null) || (this.measureRange != measureRange)) {
+            if (!controller.isPlaying() ||
+                (document == null) ||
+                (this.measureRange != measureRange)) {
                 this.measureRange = measureRange;
 
                 // Make sure the document (and the Midi sequence) is available
@@ -302,10 +254,6 @@ public class MidiAgent
             }
 
             controller.play();
-
-            status = Status.PLAYING;
-            MidiActions.getInstance()
-                       .updateActions();
         }
     }
 
@@ -330,27 +278,6 @@ public class MidiAgent
         }
     }
 
-    //------//
-    // stop //
-    //------//
-    /**
-     * Stop the playback, discarding current position in the sequence
-     */
-    public void stop ()
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("MidiAgent stop");
-        }
-
-        if ((status == Status.PLAYING) || (status == Status.PAUSED)) {
-            status = Status.STOPPED;
-            controller.stop();
-            document = null; // Workaround for Zong Player
-            MidiActions.getInstance()
-                       .updateActions();
-        }
-    }
-
     //-------//
     // write //
     //-------//
@@ -361,10 +288,11 @@ public class MidiAgent
     public void write (OutputStream os)
     {
         // Make sure the document (and the Midi sequence) is available
-        retrieveMusic(null);
+        if ((document == null) || (measureRange != null)) {
+            retrieveMusic(null);
+        }
 
-        Sequence seq = controller.getPlayer()
-                                 .getSequence();
+        Sequence seq = controller.getSequence();
 
         if (seq == null) {
             logger.warning("No MIDI sequence");
@@ -413,7 +341,7 @@ public class MidiAgent
             document = exporter.buildScorePartwise();
 
             // Hand it over directly to the MusicXML reader
-            controller.loadScore(document);
+            controller.loadDocument(document);
         } catch (Exception ex) {
             logger.warning("Midi Agent error", ex);
             document = null; // Safer

@@ -38,6 +38,9 @@ public abstract class ScoreDependent
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScoreDependent.class);
 
+    /** Is a Score available */
+    protected static final String SCORE_AVAILABLE = "scoreAvailable";
+
     //~ Instance fields --------------------------------------------------------
 
     /** Indicates whether there is a current score */

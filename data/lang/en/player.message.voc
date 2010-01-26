@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vocabulary package="Message">
+	<voc key="DirectoryConversionResult" value="Conversion complete.\nConverted files: {1}\nErrors: {2}"/>
+	<voc key="NoDocumentsAvailable" value="There are no documents available."/>
+	<voc key="NoFileLoaded" value="Please load a file first."/>
+</vocabulary>

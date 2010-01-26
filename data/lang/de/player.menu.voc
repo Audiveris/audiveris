@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vocabulary package="Menu">
+	<voc key="About" value="Über..."/>
+	<voc key="Audio" value="Audio..."/>
+	<voc key="Convert" value="Konvertieren"/>
+	<voc key="DirToMidi" value="Verzeichnis zu Midi..."/>
+	<voc key="Exit" value="Beenden"/>
+	<voc key="File" value="Datei"/>
+	<voc key="FileToMidi" value="Datei zu Midi..."/>
+	<voc key="Info" value="Informationen anzeigen..."/>
+	<voc key="Help" value="Hilfe"/>
+	<voc key="Open" value="Öffnen..."/>
+	<voc key="ReadMe" value="Read me..."/>
+	<voc key="SaveAs" value="Speichern unter..."/>
+	<voc key="Settings" value="Einstellungen"/>
+</vocabulary>

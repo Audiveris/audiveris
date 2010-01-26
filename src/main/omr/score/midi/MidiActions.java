@@ -16,7 +16,6 @@ import omr.log.Logger;
 import omr.score.MeasureRange;
 import omr.score.Score;
 import omr.score.ScoreManager;
-import static omr.score.midi.MidiAgent.Status.*;
 import omr.score.ui.ScoreActions;
 import omr.score.ui.ScoreDependent;
 
@@ -58,6 +57,9 @@ public class MidiActions
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(MidiActions.class);
 
+    /** Is Midi available */
+    protected static final String MIDI_AVAILABLE = "midiAvailable";
+
     //~ Instance fields --------------------------------------------------------
 
     // Companion Midi Agent
@@ -65,9 +67,6 @@ public class MidiActions
 
     // Status variables
     private boolean midiPlayable = false;
-    private boolean midiPausable = false;
-    private boolean midiStoppable = false;
-    private boolean midiWritable = false;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -88,76 +87,22 @@ public class MidiActions
         return Holder.INSTANCE;
     }
 
-    //-----------------//
-    // setMidiPausable //
-    //-----------------//
-    public void setMidiPausable (boolean midiPausable)
-    {
-        boolean oldValue = this.midiPausable;
-        this.midiPausable = midiPausable;
-        firePropertyChange("midiPausable", oldValue, this.midiPausable);
-    }
-
-    //----------------//
-    // isMidiPausable//
-    //----------------//
-    public boolean isMidiPausable ()
-    {
-        return midiPausable;
-    }
-
-    //-----------------//
-    // setMidiPlayable //
-    //-----------------//
-    public void setMidiPlayable (boolean midiPlayable)
+    //------------------//
+    // setMidiAvailable //
+    //------------------//
+    public void setMidiAvailable (boolean midiPlayable)
     {
         boolean oldValue = this.midiPlayable;
         this.midiPlayable = midiPlayable;
-        firePropertyChange("midiPlayable", oldValue, this.midiPlayable);
+        firePropertyChange(MIDI_AVAILABLE, oldValue, this.midiPlayable);
     }
 
-    //----------------//
-    // isMidiPlayable //
-    //----------------//
-    public boolean isMidiPlayable ()
+    //-----------------//
+    // isMidiAvailable //
+    //-----------------//
+    public boolean isMidiAvailable ()
     {
         return midiPlayable;
-    }
-
-    //------------------//
-    // setMidiStoppable //
-    //------------------//
-    public void setMidiStoppable (boolean midiStoppable)
-    {
-        boolean oldValue = this.midiStoppable;
-        this.midiStoppable = midiStoppable;
-        firePropertyChange("midiStoppable", oldValue, this.midiStoppable);
-    }
-
-    //-----------------//
-    // isMidiStoppable //
-    //-----------------//
-    public boolean isMidiStoppable ()
-    {
-        return midiStoppable;
-    }
-
-    //-----------------//
-    // setMidiWritable //
-    //-----------------//
-    public void setMidiWritable (boolean midiWritable)
-    {
-        boolean oldValue = this.midiWritable;
-        this.midiWritable = midiWritable;
-        firePropertyChange("midiWritable", oldValue, this.midiWritable);
-    }
-
-    //----------------//
-    // isMidiWritable //
-    //----------------//
-    public boolean isMidiWritable ()
-    {
-        return midiWritable;
     }
 
     //--------//
@@ -186,29 +131,15 @@ public class MidiActions
         }
     }
 
-    //-----------//
-    // pauseMidi //
-    //-----------//
-    /**
-     * Action that allows to pause a Midi playback.
-     * @param e the event which triggered this action
-     */
-    @Action(enabledProperty = "midiPausable")
-    public void pauseMidi (ActionEvent e)
-    {
-        getAgent()
-            .pause();
-    }
-
     //----------//
     // playMidi //
     //----------//
     /**
-     * Action that allows to start or resume a Midi playback.
+     * Action that launches the Zong! player on the score
      * @param e the event which triggered this action
      * @return the asynchronous task, or null
      */
-    @Action(enabledProperty = "midiPlayable")
+    @Action(enabledProperty = MIDI_AVAILABLE)
     public Task playMidi (ActionEvent e)
     {
         Sheet sheet = SheetsController.selectedSheet();
@@ -224,20 +155,6 @@ public class MidiActions
         return null;
     }
 
-    //----------//
-    // stopMidi //
-    //----------//
-    /**
-     * Action that allows to stop a Midi playback.
-     * @param e the event which triggered this action
-     */
-    @Action(enabledProperty = "midiStoppable")
-    public void stopMidi (ActionEvent e)
-    {
-        getAgent()
-            .stop();
-    }
-
     //---------------//
     // updateActions //
     //---------------//
@@ -246,21 +163,9 @@ public class MidiActions
      */
     public void updateActions ()
     {
-        final Sheet      sheet = SheetsController.selectedSheet();
-        final boolean    scoreDone = (sheet != null) &&
-                                     sheet.getSheetSteps()
-                                          .isDone(Step.SCORE);
-        MidiAgent.Status status = getAgent()
-                                      .getStatus();
-        ///logger.info("updateActions, status=" + status);
-        setMidiPlayable(scoreDone && (status != PLAYING));
-        setMidiPausable(scoreDone && (status == PLAYING));
-        setMidiStoppable(scoreDone && (status != STOPPED));
-        setMidiWritable(
-            scoreDone &&
-            ((status == STOPPED) ||
-                        (getAgent()
-                             .getScore() == getCurrentScore())));
+        final Sheet sheet = SheetsController.selectedSheet();
+        setMidiAvailable(
+            (sheet != null) && sheet.getSheetSteps().isDone(Step.SCORE));
     }
 
     //-----------//
@@ -271,7 +176,7 @@ public class MidiActions
      * @param e the event that triggered this action
      * @return the asynchronous task, or null
      */
-    @Action(enabledProperty = "midiWritable")
+    @Action(enabledProperty = MIDI_AVAILABLE)
     public Task writeMidi (ActionEvent e)
     {
         Score score = getInstance()
@@ -303,7 +208,7 @@ public class MidiActions
      * @param e the event that triggered this action
      * @return the task to launch in background
      */
-    @Action(enabledProperty = "midiWritable")
+    @Action(enabledProperty = MIDI_AVAILABLE)
     public Task writeMidiAs (ActionEvent e)
     {
         Score score = getInstance()

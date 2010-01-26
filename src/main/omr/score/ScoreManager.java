@@ -238,21 +238,16 @@ public class ScoreManager
             try {
                 MidiAgent agent = MidiAgent.getInstance();
 
-                if (agent.getStatus() == MidiAgent.Status.STOPPED) {
+                if (agent.getScore() != score) {
                     agent.setScore(score);
                 }
 
-                if (agent.getScore() == score) {
-                    agent.write(midiFile);
-                    score.setMidiFile(midiFile);
-                    logger.info("Midi written to " + midiFile);
+                agent.write(midiFile);
+                score.setMidiFile(midiFile);
+                logger.info("Midi written to " + midiFile);
 
-                    // Remember (even across runs) the selected directory
-                    constants.defaultMidiDirectory.setValue(
-                        midiFile.getParent());
-                } else {
-                    logger.warning("Midi Agent is busy with another score");
-                }
+                // Remember (even across runs) the selected directory
+                constants.defaultMidiDirectory.setValue(midiFile.getParent());
             } catch (Exception ex) {
                 logger.warning("Cannot write Midi to " + midiFile, ex);
                 throw ex;

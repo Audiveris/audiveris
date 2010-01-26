@@ -40,8 +40,6 @@
     <action domain="SCORE" section="40" class="omr.score.ui.ScoreActions" method="storeScoreAs"/>
     
     <action domain="MIDI" section="20"  class="omr.score.midi.MidiActions" method="playMidi"  button="javax.swing.JButton"/>
-    <action domain="MIDI" section="20"  class="omr.score.midi.MidiActions" method="pauseMidi" button="javax.swing.JButton"/>
-    <action domain="MIDI" section="20"  class="omr.score.midi.MidiActions" method="stopMidi"  button="javax.swing.JButton"/>
     <action domain="MIDI" section="30"  class="omr.score.midi.MidiActions" method="writeMidi" />
     <action domain="MIDI" section="30"  class="omr.score.midi.MidiActions" method="writeMidiAs" />
 

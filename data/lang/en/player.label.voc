@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vocabulary package="Label">
+	<voc key="CancelAtFirstError" value="Cancel at first error"/>
+	<voc key="Close" value="Close"/>
+	<voc key="Copyright" value="Copyright:"/>
+	<voc key="CopyrightContent" value="(c) 2004-2009 by Xenoage Software\nhttp://www.xenoage.com"/>
+	<voc key="Creators" value="Creators:"/>
+	<voc key="Description" value="Description:"/>
+	<voc key="DescriptionContent" value="This program plays MusicXML files\nand converts them into MIDI format."/>
+	<voc key="IncludeSubdirectories" value="Include subdirectories"/>
+	<voc key="Info" value="Info"/>
+	<voc key="License" value="License:"/>
+	<voc key="MoreInfoContent" value="For more information, questions or suggestions\nvisit our homepage:\nhttp://www.xenoage.com/zongplayer/"/>
+	<voc key="MovementNumber" value="Movement-number:"/>
+	<voc key="MovementTitle" value="Movement-title:"/>
+	<voc key="NoFileLoaded" value="No file loaded."/>
+	<voc key="Parts" value="Parts:"/>
+	<voc key="ProgramInfo" value="Program Info"/>
+	<voc key="Rights" value="Rights:"/>
+	<voc key="ScoreInfo" value="Score Info"/>
+	<voc key="SelectDocument" value="Please select a document:"/>
+	<voc key="UnnamedScore" value="Unnamed score"/>
+	<voc key="Version" value="Version:"/>
+	<voc key="WorkNumber" value="Work-number:"/>
+	<voc key="WorkTitle" value="Work-title:"/>
+	
+	<voc key="AudioSettings" value="Audio Settings"/>
+	<voc key="Default" value="Default"/>
+	<voc key="DeviceDefault" value="(Default)"/>
+	<voc key="InterpolationCubic" value="Cubic"/>
+	<voc key="InterpolationLinear" value="Linear"/>
+	<voc key="InterpolationPoint" value="Point"/>
+	<voc key="InterpolationSinc" value="Sinc"/>
+	<voc key="Select_" value="Select..."/>
+	<voc key="UseDefault" value="Use default"/>
+	
+	<voc key="DeviceName" value="Device name:"/>
+	<voc key="SampleRateHz" value="Sample rate (Hz):"/>
+	<voc key="Channels" value="Channels:"/>
+	<voc key="Bits" value="Bits:"/>
+	<voc key="LatencyMs" value="Latency (msec):"/>
+	<voc key="MaxPolyphony" value="Max polyphony:"/>
+	<voc key="InterpolationMode" value="Interpolation mode:"/>
+	<voc key="Soundbank" value="Soundbank:"/>
+	<voc key="OK" value="OK"/>
+	<voc key="Cancel" value="Cancel"/>
+</vocabulary>
