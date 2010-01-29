@@ -696,8 +696,6 @@ public class ScoreExporter
         }
 
         ///logger.info("Visiting " + measure);
-
-
         if (logger.isFineEnabled()) {
             logger.fine(measure + " : " + isFirst);
         }
@@ -730,6 +728,7 @@ public class ScoreExporter
         if ((prevMeasure != null) && !prevMeasure.isDummy()) {
             visit(prevMeasure.getBarline());
         }
+
         // Do we need to create & export a dummy initial measure?
         if (((measureRange != null) && !measure.isTemporary() &&
             (measure.getId() > 1)) &&
@@ -795,8 +794,8 @@ public class ScoreExporter
                     systemLayout.setTopSystemDistance(
                         toTenths(current.system.getTopLeft().y));
 
-                    // Tempo?
-                    if (score.hasTempo()) {
+                    // Tempo? Volume?
+                    if (score.hasTempo() || score.hasVolume()) {
                         Direction direction = factory.createDirection();
                         current.pmMeasure.getNoteOrBackupOrForward()
                                          .add(direction);
@@ -805,17 +804,22 @@ public class ScoreExporter
                         direction.getDirectionType()
                                  .add(directionType);
 
-                        Sound sound = factory.createSound();
-                        sound.setTempo(createDecimal(score.getTempo()));
-                        direction.setSound(sound);
-                    }
+                        proxymusic.Dynamics dynamics = factory.createDynamics();
+                        directionType.setDynamics(dynamics);
 
-                    // Volume?
-                    if (score.hasVolume()) {
                         Sound sound = factory.createSound();
-                        current.pmMeasure.getNoteOrBackupOrForward()
-                                         .add(sound);
-                        sound.setDynamics(createDecimal(score.getVolume()));
+
+                        // Tempo?
+                        if (score.hasTempo()) {
+                            sound.setTempo(createDecimal(score.getTempo()));
+                        }
+
+                        // Volume?
+                        if (score.hasVolume()) {
+                            sound.setDynamics(createDecimal(score.getVolume()));
+                        }
+
+                        direction.setSound(sound);
                     }
                 } else {
                     // SystemDistance

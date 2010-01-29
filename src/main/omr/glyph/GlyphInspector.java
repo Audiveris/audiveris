@@ -17,9 +17,8 @@ import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
-import omr.score.common.SystemPoint;
-import omr.score.entity.ScoreSystem;
 
+import omr.sheet.LineInfo;
 import omr.sheet.Scale;
 import omr.sheet.StaffInfo;
 import omr.sheet.SystemInfo;
@@ -406,19 +405,26 @@ public class GlyphInspector
             }
 
             if ((Shape.BRACKET == shape) || (Shape.BRACE == shape)) {
-                // Make sure at least a staff is embraced
+                // Make sure at least a staff interval is embraced
                 PixelRectangle box = glyph.getContourBox();
                 boolean        embraced = false;
+                int            intervalTop = Integer.MIN_VALUE;
 
                 for (StaffInfo staff : system.getStaves()) {
-                    if ((staff.getFirstLine()
-                              .yAt(box.x) >= box.y) &&
-                        (staff.getLastLine()
-                              .yAt(box.x) <= (box.y + box.height))) {
-                        embraced = true; // Ok for this one
+                    if (intervalTop != Integer.MIN_VALUE) {
+                        int intervalBottom = staff.getFirstLine()
+                                                  .yAt(box.x);
 
-                        break;
+                        if ((intervalTop >= box.y) &&
+                            (intervalBottom <= (box.y + box.height))) {
+                            embraced = true; // Ok for this one
+
+                            break;
+                        }
                     }
+
+                    intervalTop = staff.getLastLine()
+                                       .yAt(box.x);
                 }
 
                 if (!embraced) {

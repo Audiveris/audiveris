@@ -585,20 +585,22 @@ public class ScorePainter
         }
 
         // Augmentation dots ?
-        if (chord.getDotsNumber() == 1) {
+        if (chord.getDotsNumber() > 0) {
             final SystemPoint dotCenter = new SystemPoint(
                 note.getCenterRight());
-            dotCenter.x += note.getScale()
-                               .toUnits(constants.dotDx);
+            final int         dotDx = note.getScale()
+                                          .toUnits(constants.dotDx);
 
-            // Avoid dot on line (staff or ledger)
-            if ((pitch % 2) == 0) {
-                paintSymbol(Shape.DOT, dotCenter, staff, pitch - 1);
-            } else {
-                paintSymbol(Shape.DOT, dotCenter, staff, pitch);
+            for (int i = 0; i < chord.getDotsNumber(); i++) {
+                dotCenter.x += dotDx;
+
+                // Avoid dot on line (staff or ledger)
+                if ((pitch % 2) == 0) {
+                    paintSymbol(Shape.DOT, dotCenter, staff, pitch - 1);
+                } else {
+                    paintSymbol(Shape.DOT, dotCenter, staff, pitch);
+                }
             }
-        } else if (chord.getDotsNumber() == 2) {
-            // TODO: TO BE IMPLEMENTED
         }
 
         // Accidental ?

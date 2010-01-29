@@ -29,6 +29,8 @@ import omr.selection.SelectionHint;
 
 import omr.sheet.Sheet;
 
+import omr.step.Step;
+
 import java.util.*;
 
 import javax.swing.*;
@@ -131,12 +133,13 @@ public class ErrorsEditor
                           final Glyph      glyph,
                           final String     text)
     {
+        final Step step = getCurrentStep(node);
         SwingUtilities.invokeLater(
             new Runnable() {
                     // This part is run on swing thread
                     public void run ()
                     {
-                        if (recordSet.add(new Record(node, glyph, text))) {
+                        if (recordSet.add(new Record(step, node, glyph, text))) {
                             // Update the model
                             model.removeAllElements();
 
@@ -152,7 +155,7 @@ public class ErrorsEditor
     // clear //
     //-------//
     /**
-     * Remove all errors from the editor
+     * Remove all errors from the editor (Not used?)
      */
     public void clear ()
     {
@@ -173,9 +176,11 @@ public class ErrorsEditor
     /**
      * Clear all messages related to the provided system id (we use system id
      * rather than system, since a system may be reallocated by SystemsBuilder)
+     * @param step the step we are interested in
      * @param systemId the id of system to clear
      */
-    public void clearSystem (final int systemId)
+    public void clearSystem (final Step step,
+                             final int  systemId)
     {
         SwingUtilities.invokeLater(
             new Runnable() {
@@ -186,8 +191,9 @@ public class ErrorsEditor
                              it.hasNext();) {
                             Record record = it.next();
 
-                            if (record.node.getSystem()
-                                           .getId() == systemId) {
+                            if ((record.step == step) &&
+                                (record.node.getSystem()
+                                            .getId() == systemId)) {
                                 it.remove();
                             }
                         }
@@ -200,6 +206,24 @@ public class ErrorsEditor
                         }
                     }
                 });
+    }
+
+    //----------------//
+    // getCurrentStep //
+    //----------------//
+    /**
+     * Retrieve the step being performed on the system the provided node belongs
+     * to
+     * @param node the SystemNode the error relates to
+     * @return the step being done
+     */
+    private Step getCurrentStep (SystemNode node)
+    {
+        return node.getSystem()
+                   .getInfo()
+                   .getSheet()
+                   .getSheetSteps()
+                   .getCurrentStep();
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -215,16 +239,19 @@ public class ErrorsEditor
     {
         //~ Instance fields ----------------------------------------------------
 
-        SystemNode node;
-        Glyph      glyph;
-        String     text;
+        final Step       step;
+        final SystemNode node;
+        final Glyph      glyph;
+        final String     text;
 
         //~ Constructors -------------------------------------------------------
 
-        public Record (SystemNode node,
+        public Record (Step       step,
+                       SystemNode node,
                        Glyph      glyph,
                        String     text)
         {
+            this.step = step;
             this.node = node;
             this.glyph = glyph;
             this.text = text;
@@ -244,13 +271,19 @@ public class ErrorsEditor
         {
             StringBuilder sb = new StringBuilder();
             sb.append(node.getContextString());
+
             sb.append(" [");
 
             if (glyph != null) {
                 sb.append("Glyph #" + glyph.getId());
             }
 
-            sb.append("] ")
+            sb.append("]");
+
+            sb.append(" ")
+              .append(step);
+
+            sb.append(" ")
               .append(text);
 
             return sb.toString();

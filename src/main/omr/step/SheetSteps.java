@@ -74,6 +74,9 @@ public class SheetSteps
     /** The tasks that relate to each step */
     private final Map<Step, SheetTask> tasks = new LinkedHashMap<Step, SheetTask>();
 
+    /** Step currently being processed */
+    private Step currentStep;
+
     //~ Constructors -----------------------------------------------------------
 
     //------------//
@@ -105,6 +108,18 @@ public class SheetSteps
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //----------------//
+    // getCurrentStep //
+    //----------------//
+    /**
+     * Retrieve the step being processed "as we speak"
+     * @return the current step
+     */
+    public Step getCurrentStep ()
+    {
+        return currentStep;
+    }
 
     //--------//
     // isDone //
@@ -204,6 +219,8 @@ public class SheetSteps
                         Collection<SystemInfo> systems)
         throws StepException
     {
+        currentStep = step;
+
         getTask(step)
             .doStep(systems);
     }
@@ -510,6 +527,12 @@ public class SheetSteps
         public void doSystem (SystemInfo system)
             throws StepException
         {
+            if (Main.getGui() != null) {
+                system.getSheet()
+                      .getErrorsEditor()
+                      .clearSystem(step, system.getId());
+            }
+
             system.buildMeasures(); // For Measures
         }
 
@@ -702,6 +725,12 @@ public class SheetSteps
                         "System#" + system.getId() + " patterns iter #" + iter);
                 }
 
+                if (Main.getGui() != null) {
+                    system.getSheet()
+                          .getErrorsEditor()
+                          .clearSystem(step, system.getId());
+                }
+
                 if (!system.runPatterns()) {
                     return; // No more progress made
                 }
@@ -795,11 +824,11 @@ public class SheetSteps
                         iter);
                 }
 
-                // Clear errors for this system only
+                // Clear errors for this system only (and this step)
                 if (Main.getGui() != null) {
                     system.getSheet()
                           .getErrorsEditor()
-                          .clearSystem(system.getId());
+                          .clearSystem(step, system.getId());
 
                     // Re-insert errors from previous steps if any
                     // TODO: We should use something more elegant
@@ -916,6 +945,12 @@ public class SheetSteps
         public void doSystem (SystemInfo system)
             throws StepException
         {
+            if (Main.getGui() != null) {
+                system.getSheet()
+                      .getErrorsEditor()
+                      .clearSystem(step, system.getId());
+            }
+
             system.inspectGlyphs(GlyphInspector.getSymbolMaxDoubt());
         }
 
@@ -962,6 +997,12 @@ public class SheetSteps
         public void doSystem (SystemInfo system)
             throws StepException
         {
+            if (Main.getGui() != null) {
+                system.getSheet()
+                      .getErrorsEditor()
+                      .clearSystem(step, system.getId());
+            }
+
             system.retrieveVerticals();
         }
 

@@ -725,8 +725,10 @@ public class Sentence
                                            .splitIntoWords();
 
             // Replace the single long item by this collection of word items
-            items.clear();
-            items.addAll(words);
+            if ((words != null) && !words.isEmpty()) {
+                items.clear();
+                items.addAll(words);
+            }
         }
     }
 

@@ -517,7 +517,10 @@ public class TextInfo
     public Collection<Glyph> splitIntoWords ()
     {
         if (ocrLine == null) {
-            logger.severe("Trying to split a glyph with no OCR value");
+            String msg = "Trying to split glyph#" + glyph.getId() +
+                         " with no OCR value";
+            sentence.getSystemPart()
+                    .addError(glyph, msg);
 
             return null;
         }

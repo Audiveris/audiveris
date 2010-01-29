@@ -117,6 +117,12 @@ public class ShapeRange
     // Below are EnumSet instances, used programmatically.
     // They do not lead to shape submenus as the ShapeRange instances do.
     //
+
+    /** All physical shapes */
+    public static final EnumSet<Shape> allSymbols = EnumSet.range(
+        Shape.values()[0],
+        LAST_PHYSICAL_SHAPE);
+
     /** Symbols that can be attached to a stem */
     public static final EnumSet<Shape> StemSymbols = EnumSet.noneOf(
         Shape.class);
