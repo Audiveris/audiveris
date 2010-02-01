@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
-<comment>Changed Fri Jan 22 23:17:41 CET 2010</comment>
+<comment>Changed Fri Dec 18 16:43:27 CET 2009</comment>
 <entry key="channels">2</entry>
 <entry key="soundbank"/>
 <entry key="interpolation">Linear</entry>
-<entry key="samplerate">44100</entry>
 <entry key="polyphony">64</entry>
-<entry key="devicename"/>
-<entry key="bits">16</entry>
+<entry key="samplerate">44100</entry>
 <entry key="latency">100</entry>
+<entry key="bits">16</entry>
+<entry key="devicename"/>
 </properties>
