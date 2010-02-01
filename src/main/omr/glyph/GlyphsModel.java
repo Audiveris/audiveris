@@ -29,7 +29,7 @@ import java.util.*;
  * <p>Nota: User gesture should trigger actions in GlyphsController which will
  * asynchronously delegate to this model.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class GlyphsModel
 {

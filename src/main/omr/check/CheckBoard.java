@@ -30,7 +30,7 @@ import java.util.Collection;
  *
  * @param <C> The {@link Checkable} entity type to be checked
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class CheckBoard<C extends Checkable>
     extends Board

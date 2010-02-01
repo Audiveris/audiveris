@@ -17,7 +17,7 @@ import omr.stick.Stick;
  * Class <code>Ending</code> is a physical {@link Dash} that is the horizontal
  * part of an alternate ending.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class Ending
     extends Dash

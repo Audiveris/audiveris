@@ -27,7 +27,7 @@ import java.util.TreeSet;
  * Class <code>ScoreReductor</code> can visit the score hierarchy to simplify
  * all duration values.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class ScoreReductor
     extends AbstractScoreVisitor

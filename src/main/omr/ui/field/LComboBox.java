@@ -20,7 +20,7 @@ import javax.swing.*;
  * JComboBox, a "Labelled Combo", where the label describes
  * the dynamic content of the combo.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class LComboBox
     extends LField<JComboBox>

@@ -33,7 +33,7 @@ import java.util.*;
  * list of Clef(s), list of KeySignature(s), list of Chord(s) and list of
  * Beam(s).
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class Measure
     extends MeasureNode

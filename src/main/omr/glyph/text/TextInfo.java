@@ -47,7 +47,7 @@ import java.util.List;
  * <p>The font size is taken from OCR if available, otherwise it is computed
  * from physical characteristics.</p>
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class TextInfo
 {

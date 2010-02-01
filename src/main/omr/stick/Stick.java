@@ -43,7 +43,7 @@ import javax.xml.bind.annotation.*;
  *
  * <li> Bar lines, stems are examples of vertical sticks </li> </ul>
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "stick")

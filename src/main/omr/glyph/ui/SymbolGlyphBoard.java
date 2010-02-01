@@ -63,7 +63,7 @@ import javax.swing.*;
  *    <img src="doc-files/SymbolGlyphBoard.png"/>
  * </h4>
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 class SymbolGlyphBoard
     extends GlyphBoard

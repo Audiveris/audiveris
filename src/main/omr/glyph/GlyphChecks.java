@@ -30,7 +30,7 @@ import java.util.*;
  * Class <code>GlyphChecks</code> gathers additional specific glyph checks,
  * meant to complement the work done by the neural network evaluator
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class GlyphChecks
 {

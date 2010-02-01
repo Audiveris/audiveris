@@ -26,7 +26,7 @@ import java.util.*;
  * <p>We recommend to define only one such static ConstantSet per class/unit as
  * a subclass of this (abstract) ConstantSet. </p>
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 @ThreadSafe
 public abstract class ConstantSet

@@ -17,7 +17,7 @@ import javax.swing.JTextField;
  * Class <code>LTextField</code> is a {@link LField}, where the field
  * is a text field.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class LTextField
     extends LField<JTextField>

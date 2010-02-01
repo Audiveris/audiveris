@@ -33,7 +33,7 @@ import javax.swing.*;
  * restrict the population of glyphs in the spinner. This class is used by
  * {@link GlyphBoard} only, but is not coupled with it.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class SpinnerGlyphModel
     extends AbstractSpinnerModel

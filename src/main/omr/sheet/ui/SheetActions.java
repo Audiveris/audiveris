@@ -44,7 +44,7 @@ import javax.swing.JOptionPane;
  * Class <code>SheetActions</code> simply gathers UI actions related to sheet
  * handling. These methods are ready to be picked up by the plugins mechanism.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class SheetActions
     extends SheetDependent

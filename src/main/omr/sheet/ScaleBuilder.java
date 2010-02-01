@@ -45,7 +45,7 @@ import javax.swing.WindowConstants;
  *
  * @see omr.sheet.Scale
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class ScaleBuilder
 {

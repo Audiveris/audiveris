@@ -16,7 +16,7 @@ package omr.math;
  * Class <code>Population</code> is used to cumulate measurements, and compute
  * mean value, standard deviation and variance on them.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class Population
 {

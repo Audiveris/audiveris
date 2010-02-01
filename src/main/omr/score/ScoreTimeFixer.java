@@ -27,7 +27,7 @@ import java.util.TreeMap;
  * Class <code>ScoreTimeFixer</code> can visit the score hierarchy to compute
  * all measure and system start times and durations.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class ScoreTimeFixer
     extends AbstractScoreVisitor

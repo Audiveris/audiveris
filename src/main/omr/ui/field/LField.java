@@ -22,7 +22,7 @@ import javax.swing.SwingConstants;
  * @param <C> the precise subtype of the JComponent field
  * <img src="doc-files/Fields.jpg" />
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class LField<C extends JComponent>
 {

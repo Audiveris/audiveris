@@ -19,7 +19,7 @@ import java.util.Collection;
 /**
  * Interface <code>LineInfo</code> describes the handling of one staff line.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public interface LineInfo
 {

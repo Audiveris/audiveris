@@ -30,7 +30,7 @@ import javax.swing.text.*;
  * @see omr.log.Logger
  * @see omr.log.LogGuiHandler
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class LogPane
 {

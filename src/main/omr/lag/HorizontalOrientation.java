@@ -23,7 +23,7 @@ import java.awt.Rectangle;
  * Class <code>HorizontalOrientation</code> defines an orientation where
  * sections are horizontal (coord is x, pos is y)
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class HorizontalOrientation
     implements Oriented

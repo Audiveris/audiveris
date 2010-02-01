@@ -25,7 +25,7 @@ import java.util.List;
  * Class <code>SystemBoundary</code> handles the closed boundary of a system
  * as a 2D area, defined by two broken lines, on north and south sides.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 @NotThreadSafe
 public class SystemBoundary

@@ -26,7 +26,7 @@ import omr.score.common.SystemPoint;
  * creation of a Direction instance, the difference being made by the "start"
  * boolean.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public abstract class AbstractDirection
     extends MeasureElement

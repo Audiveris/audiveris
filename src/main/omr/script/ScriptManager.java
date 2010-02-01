@@ -21,7 +21,7 @@ import javax.xml.bind.*;
  * Class <code>ScriptManager</code> is in charge of handling the storing and
  * loading of scripts
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class ScriptManager
 {

@@ -34,7 +34,7 @@ import omr.score.visitor.Visitable;
  *  other-notation      nyi
  *  </pre>
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public interface Notation
     extends Visitable

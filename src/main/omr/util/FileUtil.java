@@ -23,7 +23,7 @@ import java.nio.channels.FileChannel;
 /**
  * Class <code>FileUtil</code> gathers convenient utility methods for files
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class FileUtil
 {

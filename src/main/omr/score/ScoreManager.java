@@ -30,7 +30,7 @@ import java.io.*;
 /**
  * Class <code>ScoreManager</code> handles a collection of score instances.
  *
- * @author Herv&eacute; Bitteur and Brenton Partridge
+ * @author Hervé Bitteur and Brenton Partridge
  */
 public class ScoreManager
 {

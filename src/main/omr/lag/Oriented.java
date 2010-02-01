@@ -20,7 +20,7 @@ import java.awt.*;
  * Interface <code>Oriented</code> defines the various methods linked to
  * orientation (vertical and horizontal).
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public interface Oriented
 {

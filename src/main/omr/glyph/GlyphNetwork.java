@@ -44,7 +44,7 @@ import javax.xml.bind.JAXBException;
  * the custom definition in the local file 'config/neural-network.xml', which
  * will be picked first when the application is run again.</p>
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class GlyphNetwork
     extends GlyphEvaluator

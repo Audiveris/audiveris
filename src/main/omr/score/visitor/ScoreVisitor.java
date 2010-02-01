@@ -52,7 +52,7 @@ import omr.score.entity.Wedge;
  * for the specific visitor, it is then up to the caller to potentially handle
  * the children by another way if any.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public interface ScoreVisitor
 {

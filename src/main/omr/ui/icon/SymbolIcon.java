@@ -43,7 +43,7 @@ import javax.xml.bind.annotation.*;
  * somewhat different from the area center. This is the difference between the
  * {@link #getAreaCenter} and the {@link #getCenter} methods.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlType(name = "", propOrder =  {

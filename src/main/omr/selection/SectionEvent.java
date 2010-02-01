@@ -23,7 +23,7 @@ import omr.lag.Section;
  * </dl>
  *
  * @param <S> The precise section subtype used in the event
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class SectionEvent<S extends Section>
     extends LagEvent

@@ -60,7 +60,7 @@ import javax.swing.JFrame;
  *
  * <p>All distances and coordinates are assumed to be expressed in Units
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class Score
     extends ScoreNode

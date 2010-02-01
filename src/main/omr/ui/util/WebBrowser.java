@@ -30,7 +30,7 @@ import java.lang.reflect.*;
  * See its web site on http://www.centerkey.com/java/browser/
  *
  * @author Brenton Partridge
- * @author Herv&eacute Bitteur (for delegation to BareBonesBrowserLaunch)
+ * @author Hervé Bitteur (for delegation to BareBonesBrowserLaunch)
  *
  */
 public class WebBrowser

@@ -42,7 +42,7 @@ import javax.swing.event.*;
  * to interactively browse the errors and go to the related locations in
  * the sheet and score views.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class ErrorsEditor
 {

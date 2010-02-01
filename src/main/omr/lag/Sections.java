@@ -21,7 +21,7 @@ import java.util.*;
  * Class <code>Sections</code> handles features related to a collection of
  * sections
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class Sections
 {

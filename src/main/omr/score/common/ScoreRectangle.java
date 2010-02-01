@@ -21,7 +21,7 @@ import java.awt.Rectangle;
  * <p> This specialization is used to take benefit of compiler checks, to
  * prevent the use of rectangles with incorrect meaning or units. </p>
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class ScoreRectangle
     extends SimpleRectangle

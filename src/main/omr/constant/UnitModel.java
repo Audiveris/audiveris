@@ -38,7 +38,7 @@ import javax.swing.*;
  * <li><b>Constant</b> to represent a constant within a ConstantSet. In that
  * case, its parent node is a UnitNode. It has no children rows. </ul>
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class UnitModel
     extends AbstractTreeTableModel

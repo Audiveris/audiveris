@@ -26,7 +26,7 @@ import javax.xml.bind.annotation.XmlElement;
  * Class <code>RationalTask</code> records the assignment of a rational value
  * to a collection of glyphs
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class RationalTask
     extends GlyphTask

@@ -20,7 +20,7 @@ import java.awt.Rectangle;
  * focus the user display on the given point or rectangle, and to notify
  * this information to registered observers.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public interface PixelFocus
 {

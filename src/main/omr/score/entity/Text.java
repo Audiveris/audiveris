@@ -43,7 +43,7 @@ import java.awt.Font;
  *    <img src="doc-files/TextTranslation.jpg"/>
  * </h4>
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public abstract class Text
     extends PartNode

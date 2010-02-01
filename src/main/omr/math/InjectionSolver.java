@@ -23,7 +23,7 @@ import java.util.Arrays;
  * implementation uses brute force, and thus should be used with small
  * sizes only.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class InjectionSolver
 {

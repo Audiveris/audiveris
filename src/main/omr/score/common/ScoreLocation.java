@@ -17,7 +17,7 @@ package omr.score.common;
  * space, in a way which is independent of the orientation of any related score
  * view (whether horizontal or vertical).
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class ScoreLocation
 {

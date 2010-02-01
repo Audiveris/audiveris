@@ -18,7 +18,7 @@ import javax.swing.event.EventListenerList;
 /**
  * DOCUMENT ME!
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class AbstractCellEditor
     implements CellEditor

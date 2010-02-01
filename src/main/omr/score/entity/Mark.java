@@ -21,7 +21,7 @@ import omr.util.Navigable;
  * Class <code>Mark</code> encapsulates information to be made visible to the
  * end user on the score display in a very general way.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class Mark
 {

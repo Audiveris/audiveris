@@ -34,7 +34,7 @@ import javax.xml.bind.JAXBException;
  * Class <code>GlyphRegression</code> is a glyph evaluator that encapsulates a
  * {@link LinearEvaluator} working on glyph parameters.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class GlyphRegression
     extends GlyphEvaluator

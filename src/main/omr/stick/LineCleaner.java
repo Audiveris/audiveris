@@ -42,7 +42,7 @@ import java.util.*;
  * line sticks and creating patches to extend crossing sections through the
  * former line.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 @ThreadSafe
 public class LineCleaner

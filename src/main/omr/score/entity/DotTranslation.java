@@ -32,7 +32,7 @@ import java.util.*;
  * glyph, since a dot can be an augmentation dot, part of a repeat sign, a
  * staccato sign.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class DotTranslation
 {

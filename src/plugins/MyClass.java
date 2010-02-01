@@ -25,7 +25,7 @@ import org.jdesktop.application.Action;
 /**
  * Class <code>MyClass</code> is meant as just an example of user plugin
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  * @version $Id$
  */
 public class MyClass

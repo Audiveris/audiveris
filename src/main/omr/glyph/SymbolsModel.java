@@ -36,7 +36,7 @@ import java.util.Set;
  * Class <code>SymbolsModel</code> is a GlyphsModel specifically meant for
  * symbol glyphs
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class SymbolsModel
     extends GlyphsModel

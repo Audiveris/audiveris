@@ -45,7 +45,7 @@ import java.util.*;
  * {@link SystemsBuilder}, dedicated to physical checks of vertical sticks that
  * are candidates for barlines.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 @NotThreadSafe
 public class BarsChecker

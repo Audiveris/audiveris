@@ -22,7 +22,7 @@ import java.util.List;
  * Class <code>StaffInfo</code> handles the physical details of a staff with its
  * lines.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class StaffInfo
 {

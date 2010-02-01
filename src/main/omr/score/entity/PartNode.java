@@ -34,7 +34,7 @@ import java.util.*;
  * <p>Similarly, we handle a sorted set of underlying glyphs which is useful for
  * most of the subclasses.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public abstract class PartNode
     extends SystemNode

@@ -47,7 +47,7 @@ import javax.swing.*;
  * user to directly specify pixel coordinate values by entering numerical values
  * in the fields (input side).
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class PixelBoard
     extends Board

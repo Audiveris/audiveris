@@ -21,7 +21,7 @@ import junit.framework.*;
  * Class <code>PopulationTest</code> performs unit tests on Population
  * class.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  * @version $Id$
  */
 public class PopulationTest

@@ -21,7 +21,7 @@ import omr.score.visitor.ScoreVisitor;
 /**
  * Class <code>DirectionStatement</code> represents a direction in the score
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class DirectionStatement
     extends AbstractDirection

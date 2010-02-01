@@ -31,7 +31,7 @@ import javax.xml.bind.JAXBElement;
 /**
  * Class <code>MusicXML</code> gathers symbols related to the MusicXML data
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class MusicXML
 {

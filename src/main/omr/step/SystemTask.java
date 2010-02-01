@@ -25,7 +25,7 @@ import java.util.concurrent.*;
  * Class <code>SystemTask</code> defines the task for a step at system level for
  * a given sheet
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public abstract class SystemTask
     extends SheetTask

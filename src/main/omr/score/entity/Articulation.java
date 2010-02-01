@@ -41,7 +41,7 @@ import omr.score.visitor.ScoreVisitor;
  * other-articulation   nyi
  * </pre>
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class Articulation
     extends AbstractNotation

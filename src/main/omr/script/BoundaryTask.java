@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.*;
  * Class <code>BoundaryTask</code> is a script task which modifies a system
  * boundary.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class BoundaryTask

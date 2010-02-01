@@ -35,7 +35,7 @@ import javax.xml.bind.JAXBException;
  * processing common to any evaluator working on glyph characteristics to infer
  * glyph shape.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public abstract class GlyphEvaluator
 {

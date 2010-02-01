@@ -20,7 +20,7 @@ import java.io.FilenameFilter;
  * Class <code>OmrFileFilter</code> is a special file filter, based on file
  * extensions
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class OmrFileFilter
     extends javax.swing.filechooser.FileFilter

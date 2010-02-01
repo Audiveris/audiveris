@@ -24,7 +24,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
  * Class <code>SlurTask</code> is a script task which attempts to fix a slur
  * glyph (by extracting a new glyph out of some sections of the old glyph)
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class SlurTask

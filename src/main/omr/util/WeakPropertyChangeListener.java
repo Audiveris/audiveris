@@ -19,7 +19,7 @@ import java.lang.ref.WeakReference;
  * Class <code>WeakPropertyChangeListener</code> is a wrapper meant to weakly
  * reference a concrete PropertyChangeListener, and thus avoid memory leaks.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class WeakPropertyChangeListener
     implements PropertyChangeListener

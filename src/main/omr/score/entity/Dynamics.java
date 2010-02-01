@@ -31,7 +31,7 @@ import java.util.Map;
 /**
  * Class <code>Dynamics</code> represents a dynamics event
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class Dynamics
     extends MeasureElement

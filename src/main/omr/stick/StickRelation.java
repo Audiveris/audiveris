@@ -19,7 +19,7 @@ import java.awt.*;
  * Class <code>StickRelation</code> implements a specific class of {@link
  * GlyphSection}, meant for easy stick elaboration.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class StickRelation
 {

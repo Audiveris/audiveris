@@ -50,7 +50,7 @@ import javax.xml.bind.annotation.*;
  * @param <L> precise lag (sub)type
  * @param <S> precise section (sub)type
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class Section<L extends Lag, S extends Section<L, S>>

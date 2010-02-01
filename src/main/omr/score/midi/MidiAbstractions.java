@@ -18,7 +18,7 @@ import java.util.Arrays;
 /**
  * Class <code>MidiAbstractions</code> handles various MIDI abstractions
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class MidiAbstractions
 {

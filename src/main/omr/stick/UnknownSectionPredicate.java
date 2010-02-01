@@ -21,7 +21,7 @@ import omr.util.Predicate;
  * sections used to build sticks, for which we just check if not section
  * isKnown().
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class UnknownSectionPredicate
     implements Predicate<GlyphSection>

@@ -35,7 +35,7 @@ import java.util.Collection;
  * Class <code>BeamItem</code> represents a single beam hook or beam or a beam
  * item part of a larger beam pack.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class BeamItem
     implements Comparable<BeamItem>

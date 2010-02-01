@@ -19,7 +19,7 @@ import java.nio.ByteBuffer;
  * Interface <code>CharsRetriever</code> is meant to isolate OS-dependent parts
  * when interfacing Tesseract OCR.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 interface CharsRetriever
 {

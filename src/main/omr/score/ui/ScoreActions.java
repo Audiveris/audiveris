@@ -47,7 +47,7 @@ import javax.swing.*;
 /**
  * Class <code>ScoreActions</code> gathers actions related to scores
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class ScoreActions
     extends ScoreDependent

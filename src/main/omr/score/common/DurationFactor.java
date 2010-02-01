@@ -16,7 +16,7 @@ package omr.score.common;
  * Class <code>DurationFactor</code> handles a rational representation of
  * duration modification
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class DurationFactor
 {

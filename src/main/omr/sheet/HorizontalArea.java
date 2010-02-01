@@ -35,7 +35,7 @@ import java.util.*;
  *
  * <p/>Output is a list of horizontal sticks that represent good candidates.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class HorizontalArea
     extends SticksBuilder

@@ -58,7 +58,7 @@ import javax.xml.bind.annotation.*;
  * <p>A Glyph can be stored on disk and reloaded in order to train a glyph
  * evaluator, so this class uses JAXB annotations.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "glyph")

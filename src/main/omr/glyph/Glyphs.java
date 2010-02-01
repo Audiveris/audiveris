@@ -22,7 +22,7 @@ import java.util.*;
  * Class <code>Glyphs</code> is just a collection of static convenient methods,
  * providing features related to a collection of glyphs.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class Glyphs
 {

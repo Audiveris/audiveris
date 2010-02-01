@@ -31,7 +31,7 @@ import java.util.List;
  * Class <code>LinearEvaluatorTest</code> gathers unitary tests on
  * LinearEvaluator class
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  * @version $Id$
  */
 public class LinearEvaluatorTest

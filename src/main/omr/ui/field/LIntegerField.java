@@ -16,7 +16,7 @@ package omr.ui.field;
  * Class <code>LIntegerField</code> is an {@link LTextField}, whose field is
  * meant to handle an integer value.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class LIntegerField
     extends LTextField

@@ -25,7 +25,7 @@ import omr.glyph.Glyph;
  * <dt><b>Readers:</b><dd>EvaluationBoard, GlyphBoard, GlyphMenu, TextAreaBrowser
  * </dl>
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class GlyphEvent
     extends GlyphLagEvent

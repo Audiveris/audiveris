@@ -16,7 +16,7 @@ package omr.check;
  * Class <code>Result</code> is the root of all result information stored while
  * processing processing checks.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public abstract class Result
 {

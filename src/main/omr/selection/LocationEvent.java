@@ -24,7 +24,7 @@ import java.awt.Rectangle;
  * <dt><b>Subscribers:</b><dd>ZoomedPanel
  * <dt><b>Readers:</b><dd>
  * </dl>
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public abstract class LocationEvent
     extends UserEvent

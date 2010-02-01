@@ -17,7 +17,7 @@ package omr.sheet;
  *
  * @see SkewBuilder
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class Skew
 {

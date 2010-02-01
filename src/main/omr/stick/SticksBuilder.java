@@ -43,7 +43,7 @@ import java.util.*;
  * <li> <b>Vertical sticks</b> can be bar lines, or stems. </li> </ul> </p>
  *
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class SticksBuilder
 {

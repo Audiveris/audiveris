@@ -61,7 +61,7 @@ import javax.swing.event.*;
  * <li>Measure range selection</li>
  * </ul>
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class ScoreParameters
 {

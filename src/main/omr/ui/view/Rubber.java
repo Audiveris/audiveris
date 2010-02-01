@@ -76,7 +76,7 @@ import javax.swing.event.*;
  * factor of the related component, but this is not mandatory: If no zoom
  * is connected, a display factor of 1.0 is assumed.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class Rubber
     extends MouseInputAdapter

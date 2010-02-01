@@ -22,7 +22,7 @@ import junit.framework.*;
  * Class <code>LineCheck</code> gathers test bodies for various unit tests
  * on Line class.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  * @version $Id$
  */
 public class LineCheck

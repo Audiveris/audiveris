@@ -50,7 +50,7 @@ import javax.swing.event.*;
  * the user wants to discard the glyph, it can be removed from the repository of
  * training material.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class GlyphVerifier
 {

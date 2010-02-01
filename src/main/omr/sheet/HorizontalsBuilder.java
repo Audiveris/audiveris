@@ -70,7 +70,7 @@ import java.util.Set;
  * Class <code>HorizontalsBuilder</code> is in charge of retrieving horizontal
  * dashes (ledgers, legato signs and endings) in the given sheet.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class HorizontalsBuilder
     extends GlyphsModel

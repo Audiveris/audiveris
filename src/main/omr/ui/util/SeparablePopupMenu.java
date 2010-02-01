@@ -17,7 +17,7 @@ import javax.swing.*;
  * Class <code>SeparablePopupMenu</code> is a popup menu which is able to
  * collapse unneeded separators. This is derived from {link SeparableMenu}.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class SeparablePopupMenu
     extends JPopupMenu

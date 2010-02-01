@@ -25,7 +25,7 @@ import java.util.List;
  * @param <C> the subtype of Checkable-compatible objects used in the
  * homogeneous collection of checks in this suite
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class CheckSuite<C extends Checkable>
 {

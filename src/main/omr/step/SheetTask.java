@@ -23,7 +23,7 @@ import java.util.Collection;
  * sheet level. This is meant for steps where the systems have not yet been
  * retrieved.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public abstract class SheetTask
 {

@@ -30,7 +30,7 @@ import java.util.List;
  * Class <code>Arpeggiate</code> represents a arpeggiate event.
  * For the time being we don't handle up & down variations
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class Arpeggiate
     extends AbstractNotation

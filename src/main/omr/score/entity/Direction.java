@@ -44,7 +44,7 @@ import omr.score.visitor.Visitable;
  * creation of a Direction instance, the difference being made by the "start"
  * boolean.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public interface Direction
     extends Visitable

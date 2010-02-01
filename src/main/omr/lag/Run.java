@@ -19,7 +19,7 @@ import javax.xml.bind.annotation.*;
  * Class <code>Run</code> implements a contiguous run of pixels of the same
  * color. Note that the direction (vertical or horizontal) is not relevant.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class Run

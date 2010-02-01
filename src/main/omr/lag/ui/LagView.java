@@ -54,7 +54,7 @@ import java.util.*;
  * <p><b>Nota</b>: For the time being, we've chosen to not draw the
  * edges/junctions but just the vertices/sections.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  *
  * @param <L> the type of lag this view displays
  * @param <S> the type of section the related lag handles

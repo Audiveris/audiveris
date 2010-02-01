@@ -28,7 +28,7 @@ import javax.swing.*;
  * inserts a button in the toolbar if provided.
  *
  * @author Brenton Partridge
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class EntityAction
     extends AbstractAction

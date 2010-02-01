@@ -53,7 +53,7 @@ import javax.xml.bind.*;
  * (just the glyphs of the core) which are accessible respectively by {@link
  * #getWholeBase} and {@link #getCoreBase} methods.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class GlyphRepository
 {

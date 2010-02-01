@@ -67,7 +67,7 @@ import javax.swing.*;
  *
  * </dd> </dl>
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class Main
 {

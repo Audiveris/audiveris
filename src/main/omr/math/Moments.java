@@ -19,7 +19,7 @@ import omr.score.common.PixelPoint;
  * Class <code>Moments</code> encapsulates the set of all moments that
  * characterize a figure made of points.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class Moments
 {

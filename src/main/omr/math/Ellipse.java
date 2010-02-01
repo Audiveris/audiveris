@@ -28,7 +28,7 @@ import java.text.NumberFormat;
  * <p>It can also compute the ellipse characteristics (center, theta, major,
  * minor) from its algebraic equation.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class Ellipse
 {

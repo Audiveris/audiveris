@@ -29,7 +29,7 @@ import javax.swing.tree.TreePath;
  * and a table to display and edit the various Constants in each ConstantSet as
  * well as the logger level of units.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class UnitTreeTable
     extends JTreeTable

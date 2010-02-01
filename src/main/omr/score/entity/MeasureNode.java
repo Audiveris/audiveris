@@ -23,7 +23,7 @@ import java.util.Comparator;
  * any PartNode with a containing measure. So this class encapsulates a direct
  * link to the enclosing measure.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public abstract class MeasureNode
     extends PartNode

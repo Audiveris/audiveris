@@ -57,7 +57,7 @@ import javax.swing.*;
  * <p>By pressing one of the result buttons, the user can force the assignment
  * of the evaluated glyph.
  *
- * @author Herv&eacute; Bitteur and Brenton Partridge
+ * @author Hervé Bitteur and Brenton Partridge
  */
 class EvaluationBoard
     extends Board

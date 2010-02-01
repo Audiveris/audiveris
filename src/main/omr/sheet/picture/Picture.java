@@ -67,7 +67,7 @@ import javax.media.jai.operator.MosaicDescriptor;
  *
  * </ul> </p>
  *
- * @author Herv&eacute; Bitteur and Brenton Partridge
+ * @author Hervé Bitteur and Brenton Partridge
  */
 public class Picture
     implements PixelSource, EventSubscriber<SheetLocationEvent>

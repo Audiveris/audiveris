@@ -58,7 +58,7 @@ import java.util.*;
  * Class <code>GlyphLagView</code> is a specific {@link omr.lag.ui.LagView}
  * dedicated to the display and processing of glyphs.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class GlyphLagView
     extends LagView<GlyphLag, GlyphSection>

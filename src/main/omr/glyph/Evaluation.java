@@ -18,7 +18,7 @@ import omr.constant.Constant;
  * its doubt.
  *
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class Evaluation
 {

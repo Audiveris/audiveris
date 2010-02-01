@@ -17,7 +17,7 @@ import javax.xml.bind.annotation.*;
  * Class <code>DoubleValue</code> is a "poor man" version of java.lang.Double,
  * when we need a non-final class (whereas Double is declared as final)
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class DoubleValue
 {

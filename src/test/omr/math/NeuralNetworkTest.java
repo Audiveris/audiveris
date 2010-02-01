@@ -29,7 +29,7 @@ import javax.xml.bind.*;
  * Class <code>NeuralNetworkTest</code> performs unit tests on
  * NeuralNetwork class.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  * @version $Id$
  */
 public class NeuralNetworkTest

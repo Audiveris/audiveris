@@ -18,7 +18,7 @@ import static java.awt.Color.*;
  * Class <code>SectionRole</code> handles the role of a section in the building
  * of a stick.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public enum SectionRole {
     /**

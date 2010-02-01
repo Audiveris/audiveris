@@ -26,7 +26,7 @@ import java.util.*;
  * Class <code>StraightLineInfo</code> implements the LineInfo interface with
  * a simple straight line, that should be sufficient for printed music.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class StraightLineInfo
     implements LineInfo

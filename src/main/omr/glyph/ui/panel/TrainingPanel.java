@@ -45,7 +45,7 @@ import javax.swing.*;
  * evaluator respectively. It is a dedicated companion of class
  * {@link GlyphTrainer}.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 class TrainingPanel
     implements GlyphEvaluator.Monitor, Observer

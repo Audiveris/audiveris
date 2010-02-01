@@ -16,7 +16,7 @@ package omr.score.ui;
  * Class <code>ScoreOrientation</code> defines the orientation used for systems
  * layout in the score view
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public enum ScoreOrientation {
     /** Systems displayed side by side */

@@ -26,7 +26,7 @@ import java.awt.*;
  * Class <code>PictureView</code> defines the view dedicated to the display of
  * the picture bitmap of a music sheet.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class PictureView
     extends ScrollView

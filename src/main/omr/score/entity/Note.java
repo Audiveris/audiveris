@@ -39,7 +39,7 @@ import java.util.*;
  * regular note (standard note, or rest), it can also be a cue note or a grace
  * note (these last two variants are not handled yet, TODO).
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class Note
     extends MeasureNode

@@ -26,7 +26,7 @@ import java.util.ArrayList;
  * circle (center, radius), and of a circle arc (start and stop angles) it also
  * defines the approximating bezier curve.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class Circle
 {

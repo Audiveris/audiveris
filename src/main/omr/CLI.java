@@ -26,7 +26,7 @@ import java.util.List;
 /**
  * Class <code>CLI</code> handles the parameters of the command line interface
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class CLI
 {

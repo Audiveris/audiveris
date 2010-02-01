@@ -32,7 +32,7 @@ import javax.xml.bind.annotation.XmlAttribute;
  * provided glyphs and assigned the shape. Otherwise, each provided glyph is
  * assigned the shape.</p>
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class AssignTask
     extends GlyphTask

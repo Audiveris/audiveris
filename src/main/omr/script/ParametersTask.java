@@ -30,7 +30,7 @@ import javax.xml.bind.annotation.*;
  *
  * @see omr.score.ui.ScoreParameters
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class ParametersTask

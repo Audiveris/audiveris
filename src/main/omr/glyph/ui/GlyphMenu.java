@@ -38,7 +38,7 @@ import javax.swing.*;
  * It also provides implementation for basic actions: copy, paste, assign,
  * compound, deassign and dump.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public abstract class GlyphMenu
 {

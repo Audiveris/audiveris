@@ -32,7 +32,7 @@ import java.util.TreeMap;
  * either by the beginning of a chord, or by a chord whose sound is still active
  * during the specified slot.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class Voice
 {

@@ -22,7 +22,7 @@ import omr.score.visitor.ScoreVisitor;
 /**
  * Class <code>Fermata</code> represents a fermata event (upright or inverted)
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class Fermata
     extends AbstractNotation

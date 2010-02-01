@@ -23,7 +23,7 @@ import java.util.logging.LogRecord;
  * <p>As a <code>Handler</code>, it should be added to the highest-level
  * logger instance, either programmatically or in a properties file.</p>
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  * @author Brenton Partridge
  */
 public class LogGuiHandler

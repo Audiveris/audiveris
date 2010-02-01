@@ -58,7 +58,7 @@ import java.util.List;
  * </ol>
  *
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class LineBuilder
     extends SticksBuilder

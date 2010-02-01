@@ -17,7 +17,7 @@ import javax.xml.bind.annotation.*;
  * Class <code>ActionDescriptor</code> gathers parameters related to an action
  * from the User Interface point of view
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "action")

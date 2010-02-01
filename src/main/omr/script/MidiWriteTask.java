@@ -23,7 +23,7 @@ import javax.xml.bind.annotation.*;
  * Class <code>MidiWriteTask</code> is a script task which writes the Midi file
  * of a score
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class MidiWriteTask

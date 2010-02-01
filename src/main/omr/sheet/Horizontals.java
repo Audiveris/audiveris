@@ -21,7 +21,7 @@ import java.util.List;
  * sheet. We use it for all horizontal glyphs (ledgers of course, but also
  * legato signs or alternate endings)
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class Horizontals
 {

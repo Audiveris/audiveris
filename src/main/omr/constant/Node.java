@@ -17,7 +17,7 @@ import java.util.Comparator;
  * Abstract class <code>Node</code> represents a node in the hierarchy of
  * packages and units (aka classes).
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public abstract class Node
 {

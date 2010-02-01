@@ -42,7 +42,7 @@ import javax.xml.bind.annotation.*;
  *    <img src="doc-files/script.jpg"/>
  * </h4>
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public abstract class GlyphTask

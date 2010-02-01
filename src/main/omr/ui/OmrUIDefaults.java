@@ -20,7 +20,7 @@ import javax.swing.*;
  * Class <code>OmrUIDefaults</code> handles all the user interface defaults for
  * the OMR application
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  * @author Brenton Partridge
  */
 public class OmrUIDefaults

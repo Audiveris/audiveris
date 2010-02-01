@@ -98,7 +98,7 @@ import java.util.List;
  * <p>TODO: Implement a way for the user to tell whether a bar glyph is or not
  * a BAR_PART_DEFINING (i.e. if it is anchored on top and bottom).</p>
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class SystemsBuilder
     extends GlyphsModel

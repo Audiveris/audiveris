@@ -17,7 +17,7 @@ package omr.lag;
  * rectangular pixel source, limited by its width and height, in order to
  * populate a lag for example.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public interface PixelSource
 {

@@ -26,7 +26,7 @@ import static omr.score.ui.ScoreConstants.*;
  * display of a score system, and especially the display origin in the ScoreView
  * of the topLeft corner of the related system.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class SystemView
 {

@@ -16,7 +16,7 @@ package omr.lag;
  * Class <code>JunctionAllPolicy</code> defines a junction policy which imposes
  * no condition on run consistency, thus taking all runs considered.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class JunctionAllPolicy
     extends JunctionPolicy

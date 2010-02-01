@@ -26,7 +26,7 @@ import javax.swing.*;
  *
  * <p>As far as possible, an Icon should be generated for every shape.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public enum Shape {
     // =========================================================================

@@ -51,7 +51,7 @@ import java.util.*;
  * Class <code>VerticalsController</code> is in charge of handling assignment
  * and deassignment of vertical entities (stems) at sheet level
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class VerticalsController
     extends GlyphsController

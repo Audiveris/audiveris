@@ -32,7 +32,7 @@ import com.xenoage.zong.io.midi.out.PlaybackListener;
  * Class <code>MidiReceiver</code> receives events from the Zong player
  * and uses them to update the current Audiveris score display accordingly.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class MidiReceiver
     implements PlaybackListener

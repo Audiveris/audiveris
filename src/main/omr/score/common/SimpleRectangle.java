@@ -17,7 +17,7 @@ import java.awt.Rectangle;
  * Class <code>SimpleRectangle</code> is meant to be subclassed to
  * represent a rectangle in a given context.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public abstract class SimpleRectangle
     extends Rectangle

@@ -20,7 +20,7 @@ import javax.swing.event.MenuListener;
  * whose content needs to be updated on-the-fly when the menu is being
  * selected.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public abstract class DynamicMenu
 {

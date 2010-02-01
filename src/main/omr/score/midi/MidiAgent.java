@@ -46,7 +46,7 @@ import javax.sound.midi.*;
  * stop actions with a few other Midi-related actions. The purpose of the
  * {@link #play} method is just to lauch the player on the current score.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class MidiAgent
 {

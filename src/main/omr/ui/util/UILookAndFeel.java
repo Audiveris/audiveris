@@ -27,7 +27,7 @@ import javax.swing.UIManager;
  * Class <code>UILookAndFeel</code> enables to select the UI Look & Feel to
  * be used in this application.
  *
- * @author Herv&eacute; Bitteur and Brenton Partridge
+ * @author Hervé Bitteur and Brenton Partridge
  */
 public class UILookAndFeel
 {

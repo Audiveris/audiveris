@@ -25,7 +25,7 @@ import javax.xml.bind.*;
 /**
  * DOCUMENT ME!
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  * @version $Id$
  */
 public class BasicTest

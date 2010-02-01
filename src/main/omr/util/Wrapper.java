@@ -17,7 +17,7 @@ package omr.util;
  *
  * @param <T> The specific type for carried value
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class Wrapper<T>
 {

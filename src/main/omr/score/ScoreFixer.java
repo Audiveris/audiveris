@@ -34,7 +34,7 @@ import omr.score.visitor.AbstractScoreVisitor;
  * <li>Compute System display origins</li>
  * </ul>
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class ScoreFixer
     extends AbstractScoreVisitor

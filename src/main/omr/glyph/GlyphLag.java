@@ -47,7 +47,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <p>Selecting a (foreground) pixel, thus selects its containing section, and
  * its active glyph if any.</p>
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class GlyphLag
     extends Lag<GlyphLag, GlyphSection>

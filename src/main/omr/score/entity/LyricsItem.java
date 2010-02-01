@@ -33,7 +33,7 @@ import java.util.Comparator;
  * Class <code>LyricsItem</code> is specific subclass of Text, meant for one
  * item of a lyrics line (Syllable, Hyphen, Extension, Elision)
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class LyricsItem
     extends Text

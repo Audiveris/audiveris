@@ -27,7 +27,7 @@ import javax.xml.bind.annotation.*;
  * Class <code>SectionSets</code> handles a  collection of section sets,
  * with the ability to (un)marshall its content using the sections ids.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class SectionSets

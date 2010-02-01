@@ -16,7 +16,7 @@ import omr.score.common.PixelRectangle;
 /**
  * Class <code>OcrChar</code> manages information about a OCR-decoded character
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class OcrChar
 {

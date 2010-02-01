@@ -25,7 +25,7 @@ import java.awt.Rectangle;
  * <dt><b>Subscribers:</b><dd>ScoreSheetBridge, ScoreView
  * <dt><b>Readers:</b><dd>
  * </dl>
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class ScoreLocationEvent
     extends LocationEvent

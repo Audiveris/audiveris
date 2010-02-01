@@ -62,7 +62,7 @@ import javax.swing.text.JTextComponent;
  * Class <code>GuiActions</code> gathers individual actions trigerred from the
  * main Gui interface.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class GuiActions
     extends ScoreDependent

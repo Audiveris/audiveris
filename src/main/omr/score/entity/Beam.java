@@ -37,7 +37,7 @@ import java.util.*;
  * composed of several beam items, aligned one after the other, along the same
  * line.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class Beam
     extends MeasureNode

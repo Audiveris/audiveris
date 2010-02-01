@@ -26,7 +26,7 @@ import java.nio.ByteBuffer;
  * Class <code>WindowsCharsRetriever</code> is the Windows implementation of
  * the interaction with Tesseract OCR engine.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 class WindowsCharsRetriever
     implements CharsRetriever

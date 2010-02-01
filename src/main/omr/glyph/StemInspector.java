@@ -23,7 +23,7 @@ import java.util.*;
  * Class <code>StemInspector</code> is a GlyphInspector dedicated to the
  * inspection of Stems at System level
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class StemInspector
 {

@@ -27,7 +27,7 @@ import omr.util.TreeNode;
  *
  * @see ScoreVisitor
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public abstract class VisitableNode
     extends TreeNode

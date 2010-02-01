@@ -23,7 +23,7 @@ import omr.sheet.ui.SheetsController;
  * on top of ScoreManager, related to score handling actions, typically
  * triggered through menus and buttons.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class ScoreController
 {

@@ -52,7 +52,7 @@ import java.util.Set;
  * Class <code>SymbolsEditor</code> defines a UI pane from which all symbol
  * processing actions can be launched and their results checked.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class SymbolsEditor
 {

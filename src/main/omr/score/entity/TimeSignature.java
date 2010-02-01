@@ -34,7 +34,7 @@ import java.util.*;
  * Class <code>TimeSignature</code> encapsulates a time signature, which may be
  * composed of one or several glyphs.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class TimeSignature
     extends MeasureNode

@@ -39,7 +39,7 @@ import java.util.logging.LogRecord;
  * <li>FINEST (lowest value)</li>
  *</ol>
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class Logger
     extends java.util.logging.Logger

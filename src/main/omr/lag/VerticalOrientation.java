@@ -23,7 +23,7 @@ import java.awt.Rectangle;
  * Class <code>VerticalOrientation</code> defines an orientation where sections
  * are vertical (coord is y, pos is x)
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class VerticalOrientation
     implements Oriented

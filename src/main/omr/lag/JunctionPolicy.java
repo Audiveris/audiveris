@@ -17,7 +17,7 @@ package omr.lag;
  * run can extend a given section. If not, the run is part of a new section,
  * linked to the previous one by a junction.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public abstract class JunctionPolicy
 {

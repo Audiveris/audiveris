@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Class <code>KeySignature</code> encapsulates a key signature, which may be
  * composed of one or several glyphs (all sharps or all flats).
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class KeySignature
     extends MeasureNode

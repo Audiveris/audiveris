@@ -16,7 +16,7 @@ package omr.check;
  * Class <code>SuccessResult</code> is the root of all results that store a
  * success.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class SuccessResult
     extends Result

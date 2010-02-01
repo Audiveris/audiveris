@@ -22,7 +22,7 @@ import javax.swing.*;
 /**
  * A utility class, just used for small test action triggered from UI
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class UITest
 {

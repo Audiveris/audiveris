@@ -35,7 +35,7 @@ import java.util.Iterator;
  * like a parent.
  *
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class Staff
     extends PartNode

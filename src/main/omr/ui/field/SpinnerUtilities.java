@@ -20,7 +20,7 @@ import javax.swing.*;
  * Class <code>SpinnerUtilities</code> gathers a few utilities for JSpinner
  * entities
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class SpinnerUtilities
 {

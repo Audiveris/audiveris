@@ -32,7 +32,7 @@ import omr.sheet.Scale;
  * Both will trigger the creation of a MeasureElement instance, the difference
  * being made by the "start" boolean.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public abstract class MeasureElement
     extends MeasureNode

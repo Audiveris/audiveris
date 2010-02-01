@@ -32,7 +32,7 @@ import java.util.*;
  * Class <code>SlurInspector</code> encapsulates physical processing dedicated
  * to inspection of glyphs with SLUR shape at a dedicated system level.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class SlurInspector
 {

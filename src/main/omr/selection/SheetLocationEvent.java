@@ -27,7 +27,7 @@ import java.awt.Rectangle;
  * LagView, Picture, PixelBoard, ScoreSheetBridge, SystemsBuilder
  * <dt><b>Readers:</b><dd>ScoreView, SheetAssembly, TextAreaBrowser
  * </dl>
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class SheetLocationEvent
     extends LocationEvent

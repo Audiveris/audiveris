@@ -29,7 +29,7 @@ import java.awt.Rectangle;
  * used to generate glyphs for training, when no real glyph (glyph retrieved
  * from scanned sheet) is available.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class IconGlyph
     extends Glyph

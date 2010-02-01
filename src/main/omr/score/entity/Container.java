@@ -17,7 +17,7 @@ package omr.score.entity;
  * no values by themselves. Thus, there are shown in the score tree, only if
  * have children.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class Container
     extends VisitableNode

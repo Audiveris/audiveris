@@ -73,7 +73,7 @@ import javax.swing.event.*;
  * <p>Any spinner can also be used to select a glyph by directly entering the
  * glyph id value into the spinner field
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class GlyphBoard
     extends Board

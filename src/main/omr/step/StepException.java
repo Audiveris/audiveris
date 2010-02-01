@@ -16,7 +16,7 @@ package omr.step;
  * Class <code>StepException</code> describes an exception occurring while
  * doing OMR processing, and which should immediately stop the current Step.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class StepException
     extends Exception

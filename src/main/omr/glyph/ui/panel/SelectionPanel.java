@@ -41,7 +41,7 @@ import javax.swing.*;
  * from glyph repository, either the whole population or a core set of
  * glyphs. This class is a dedicated companion of {@link GlyphTrainer}.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 class SelectionPanel
     implements GlyphRepository.Monitor, Observer

@@ -55,7 +55,7 @@ import java.util.*;
  * <li>Making sure all dynamics can be assigned a shape</li>
  * </ul>
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class ScoreChecker
     extends AbstractScoreVisitor

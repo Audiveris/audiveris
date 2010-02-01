@@ -41,7 +41,7 @@ import java.util.Comparator;
  *
  * <p>Output is a list of vertical sticks that represent good candidates.</p>
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class VerticalArea
     extends SticksBuilder

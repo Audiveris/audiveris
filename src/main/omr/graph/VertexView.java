@@ -17,7 +17,7 @@ import java.awt.*;
  * Interface <code>VertexView</code> defines the interface needed to handle the
  * rendering of a vertex.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public interface VertexView
 {

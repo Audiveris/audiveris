@@ -40,7 +40,7 @@ import javax.swing.*;
  * <p>This is still an abstract class, since the onEvent() method must be
  * provided by every subclass.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public abstract class Board
     implements EventSubscriber<UserEvent>

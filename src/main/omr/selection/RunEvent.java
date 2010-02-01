@@ -22,7 +22,7 @@ import omr.lag.Run;
  * <dt><b>Subscribers:</b><dd>RunBoard
  * <dt><b>Readers:</b><dd>
  * </dl>
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class RunEvent
     extends LagEvent

@@ -22,7 +22,7 @@ import java.awt.Rectangle;
  * prevent the use of rectangles with incorrect meaning or units. </p>
  *
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class SystemRectangle
     extends SimpleRectangle

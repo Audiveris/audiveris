@@ -26,7 +26,7 @@ import java.util.Set;
  * <dt><b>Readers:</b><dd>GlyphBoard, GlyphLag, GlyphLagView, GlyphMenu,
  * SymbolsEditor
  * </dl>
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class GlyphSetEvent
     extends GlyphLagEvent

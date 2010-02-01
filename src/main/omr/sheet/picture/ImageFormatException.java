@@ -16,7 +16,7 @@ package omr.sheet.picture;
  * Class <code>ImageFormatException</code> describes an exception raised when a
  * non-handled format is detected in an image file.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class ImageFormatException
     extends Exception

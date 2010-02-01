@@ -64,7 +64,7 @@ import javax.swing.*;
  * a score (which may encompass several pages & systems). It has an orientation
  * (horizontal or vertical) as well as a display zoom ratio.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class ScoreView
 {

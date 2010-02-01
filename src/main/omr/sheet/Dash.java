@@ -34,7 +34,7 @@ import java.util.List;
  * underlying stick has been discarded. Doing so saves us the need to serialize
  * the whole horizontal GlyphLag.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public abstract class Dash
 {

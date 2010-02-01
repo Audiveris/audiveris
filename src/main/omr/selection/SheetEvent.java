@@ -22,7 +22,7 @@ import omr.sheet.Sheet;
  * <dt><b>Readers:</b><dd>SheetManager
  * </dl>
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class SheetEvent
     extends UserEvent

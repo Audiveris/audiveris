@@ -30,7 +30,7 @@ import java.util.*;
  * A lyrics line is composed of instances of LyricsItem, which can be Syllables,
  * Hyphens, Extensions or Elisions
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class LyricsLine
     extends PartNode

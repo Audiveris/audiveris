@@ -30,7 +30,7 @@ import javax.xml.bind.annotation.*;
  * operation, mainly used to save the most performant weight values during the
  * network training.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "neural-network")

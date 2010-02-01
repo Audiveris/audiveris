@@ -34,7 +34,7 @@ import java.util.List;
  * inspection of retrieved glyphs, their recognition being usually based on
  * features used by a neural network evaluator.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class GlyphInspector
 {

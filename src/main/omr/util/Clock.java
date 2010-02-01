@@ -22,7 +22,7 @@ import java.util.Locale;
  * date and time, as well as the elapsed time since the beginning of the
  * application.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class Clock
 {

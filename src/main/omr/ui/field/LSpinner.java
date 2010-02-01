@@ -19,7 +19,7 @@ import javax.swing.event.*;
  * JSpinner, a "Labelled Spinner", where the label describes
  * the dynamic content of the spinner.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class LSpinner
 {

@@ -17,7 +17,7 @@ package omr.lag;
  * ratio between the length of the candidate run and the mean length of the
  * section runs so far.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class JunctionRatioPolicy
     extends JunctionPolicy

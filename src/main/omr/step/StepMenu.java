@@ -30,7 +30,7 @@ import javax.swing.event.*;
  * a check box, to indicate the current status regarding the execution of the
  * step (done or not done).
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class StepMenu
 {

@@ -16,7 +16,7 @@ import java.awt.Rectangle;
 /**
  * Class <code>SectionSignature</code> defines a signature for a section
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class SectionSignature
 {

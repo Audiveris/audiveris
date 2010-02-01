@@ -33,7 +33,7 @@ import javax.swing.*;
  * @param <C> the subtype of Checkable-compatible objects used in the
  * homogeneous collection of checks of the suite
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class CheckPanel<C extends Checkable>
 {

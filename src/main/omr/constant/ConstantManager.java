@@ -109,7 +109,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * USER property file. Doing so, the USER property file really contains only the
  * additions of this particular user.</p>
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 @ThreadSafe
 public class ConstantManager

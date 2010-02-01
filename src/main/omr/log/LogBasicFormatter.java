@@ -21,7 +21,7 @@ import java.util.logging.*;
 /**
  * Class <code>LogBasicFormatter</code> formats a log record.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class LogBasicFormatter
     extends Formatter

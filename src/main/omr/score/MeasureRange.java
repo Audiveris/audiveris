@@ -23,7 +23,7 @@ import java.util.ListIterator;
  * Class <code>MeasureRange</code> encapsulates a range of measures, to ease the
  * playing or the exporting of just a range of measures
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class MeasureRange
 {

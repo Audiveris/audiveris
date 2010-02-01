@@ -43,7 +43,7 @@ import javax.swing.event.*;
  * to the color of the containing range, unless a color is specifically assigned
  * to this individual shape.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class ShapeColorChooser
     implements ChangeListener

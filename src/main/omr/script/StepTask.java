@@ -21,7 +21,7 @@ import javax.xml.bind.annotation.*;
 /**
  * Class <code>StepTask</code> is a script task which performs a step on a sheet
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class StepTask

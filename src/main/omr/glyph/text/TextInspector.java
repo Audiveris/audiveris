@@ -27,7 +27,7 @@ import java.util.*;
  * Class <code>TextInspector</code> handles the inspection of textual items in
  * a system
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class TextInspector
 {

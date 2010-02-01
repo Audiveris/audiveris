@@ -20,7 +20,7 @@ import omr.step.StepException;
 /**
  * Class <code>Task</code> is meant for all possible tasks within a score script
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public abstract class Task
 {

@@ -25,7 +25,7 @@ import java.util.List;
  *
  * <p>These runs can then be used to populate a lag via {@link SectionsBuilder}.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class LagReader
     implements RunsBuilder.Reader

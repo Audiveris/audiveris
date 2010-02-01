@@ -31,7 +31,7 @@ import java.util.*;
  * Class <code>SheetsManager</code> handles the set of sheet instances in
  * memory as well as the related history.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class SheetsManager
 {

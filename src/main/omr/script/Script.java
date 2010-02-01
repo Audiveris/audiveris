@@ -27,7 +27,7 @@ import javax.xml.bind.annotation.*;
  * as the user interacts with the sheet data.
  * A script can be stored and reloaded/replayed.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "script")

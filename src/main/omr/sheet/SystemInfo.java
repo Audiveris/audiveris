@@ -55,7 +55,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
  *
  * <p>Nota: All measurements are assumed in pixels.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class SystemInfo
     implements Comparable<SystemInfo>

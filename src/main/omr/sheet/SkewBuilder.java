@@ -61,7 +61,7 @@ import javax.swing.WindowConstants;
  *
  * @see Skew
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class SkewBuilder
 {

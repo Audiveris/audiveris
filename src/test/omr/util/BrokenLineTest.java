@@ -26,7 +26,7 @@ import java.util.List;
  * Class <code>BrokenLineTest</code> is a set of unitary tests for the
  * <code>BrokenLine</code> class.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  * @version $Id$
  */
 public class BrokenLineTest

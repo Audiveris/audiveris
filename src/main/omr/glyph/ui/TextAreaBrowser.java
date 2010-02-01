@@ -53,7 +53,7 @@ import javax.swing.WindowConstants;
  * Class <code>TextAreaBrowser</code> is a user interface to interact with
  * potential text areas
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class TextAreaBrowser
     extends ScoreDependent

@@ -51,7 +51,7 @@ import java.awt.Rectangle;
  *
  * @see omr.score.ui.ScoreConstants#BASE
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class Scale
 {

@@ -25,7 +25,7 @@ import java.util.List;
  * Class <code>SelectionService</code> is an OMR customized version of an
  * EventService as provided by the EventBus framework.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class SelectionService
     extends ThreadSafeEventService

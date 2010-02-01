@@ -24,7 +24,7 @@ import java.util.*;
  * Class <code>ScorePart</code> defines a part at score level. It is
  * instantiated in each System by a SystemPart.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class ScorePart
 {

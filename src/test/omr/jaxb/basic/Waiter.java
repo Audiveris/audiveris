@@ -19,7 +19,7 @@ import javax.xml.bind.annotation.*;
 /**
  * DOCUMENT ME!
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  * @version $Id$
  */
 @XmlAccessorType(XmlAccessType.NONE)

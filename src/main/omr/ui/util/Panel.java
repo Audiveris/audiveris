@@ -36,7 +36,7 @@ import javax.swing.JPanel;
  * method.
  *
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class Panel
     extends JPanel

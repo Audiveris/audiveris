@@ -37,7 +37,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * {@link Constant.Integer} </li> <li> {@link Constant.Ratio} </li>
  * <li> {@link Constant.String} </li> </ul> </p>
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 @ThreadSafe
 public abstract class Constant

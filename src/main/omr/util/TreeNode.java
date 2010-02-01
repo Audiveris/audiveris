@@ -31,7 +31,7 @@ import java.util.List;
  *
  * </ul>
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public abstract class TreeNode
 {

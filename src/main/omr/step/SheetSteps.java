@@ -54,7 +54,7 @@ import javax.swing.*;
  * Class <code>SheetSteps</code> handles the actual progress of steps for a
  * given sheet instance.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class SheetSteps
 {

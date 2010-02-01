@@ -27,7 +27,7 @@ import java.util.*;
  * Class <code>SystemPart</code> handles the various parts found in one system,
  * since the layout of parts may vary from system to system
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class SystemPart
     extends PartNode

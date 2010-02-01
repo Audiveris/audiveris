@@ -30,7 +30,7 @@ import java.util.Comparator;
  * (abscissa for vertical sections), then on their coordinate (ordinate for
  * vertical sections).
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class GlyphSection
     extends Section<GlyphLag, GlyphSection>

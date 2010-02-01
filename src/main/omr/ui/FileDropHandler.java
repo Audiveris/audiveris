@@ -34,7 +34,7 @@ import javax.swing.TransferHandler.TransferSupport;
  * Class <code>FileDropHandler</code> handles the dropping of files onto the
  * Audiveris GUI
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class FileDropHandler
     extends TransferHandler

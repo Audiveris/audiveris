@@ -34,7 +34,7 @@ import omr.log.Logger;
  *
  * @param <T> the type used to convey the result of the work
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 @Deprecated
 public abstract class Worker<T>

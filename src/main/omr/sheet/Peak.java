@@ -18,7 +18,7 @@ package omr.sheet;
  * created when the threshold is passed, and the peak ordinate is extended until
  * we get under the threshold again.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class Peak
 {

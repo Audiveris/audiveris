@@ -72,7 +72,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
  * processings take place in an instance of the companion class
  * {@link SheetSteps}.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class Sheet
     implements Visitable

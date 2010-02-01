@@ -17,7 +17,7 @@ package omr.math;
  * orientation, using the form : a*x + b*y + c = 0. The equation is normalized,
  * in other words, we always have a**2 + b**2 = 1.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public interface Line
 {

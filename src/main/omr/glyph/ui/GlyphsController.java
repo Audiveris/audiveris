@@ -45,7 +45,7 @@ import java.util.*;
  * meant to be used from within a user action, otherwise you must use a direct
  * access to similar synchronous actions in the underlying {@link GlyphsModel}.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class GlyphsController
 {

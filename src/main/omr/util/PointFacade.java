@@ -20,7 +20,7 @@ import javax.xml.bind.annotation.*;
  * binding of standard class Point that we cannot annotate
  *
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "point")

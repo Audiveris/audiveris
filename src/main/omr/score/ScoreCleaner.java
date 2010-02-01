@@ -24,7 +24,7 @@ import omr.score.visitor.AbstractScoreVisitor;
  * Class <code>ScoreCleaner</code> can visit the score hierarchy to get rid of
  * all measure items except barlines, ready for a new score translation.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class ScoreCleaner
     extends AbstractScoreVisitor

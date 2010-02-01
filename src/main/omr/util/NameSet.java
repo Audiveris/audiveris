@@ -36,7 +36,7 @@ import javax.swing.*;
  * <p> The NameSet can additionally be used to dynamically generate and handle a
  * menu. </p>
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 @ThreadSafe
 public class NameSet

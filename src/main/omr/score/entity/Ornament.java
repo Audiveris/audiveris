@@ -36,7 +36,7 @@ import omr.score.visitor.ScoreVisitor;
  * accidental-mark      nyi
  * </pre>
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class Ornament
     extends AbstractNotation

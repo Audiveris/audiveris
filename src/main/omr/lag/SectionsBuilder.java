@@ -24,7 +24,7 @@ import java.util.List;
  * junctions.
  *
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  * @param <L> precise lag type
  * @param <S> the precise subtype of Section to be created
  */

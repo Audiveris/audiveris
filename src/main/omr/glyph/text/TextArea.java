@@ -35,7 +35,7 @@ import java.util.*;
  * Class <code>TextArea</code> handles a rectangular area likely to contain
  * some text
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class TextArea
 {

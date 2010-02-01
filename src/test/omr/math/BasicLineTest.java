@@ -19,7 +19,7 @@ import junit.framework.*;
 /**
  * Class <code>BasicLineTest</code> performs unit tests on BasicLine class.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  * @version $Id$
  */
 public class BasicLineTest

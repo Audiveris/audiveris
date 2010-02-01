@@ -47,7 +47,7 @@ import omr.log.Logger;
  * <dt><b>Readers:</b><dd>All classes that simply read this event (using the
  * {@link org.bushe.swing.event.EventService#getLastEvent} method) </dl>
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public abstract class UserEvent
 {

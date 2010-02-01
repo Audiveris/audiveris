@@ -46,7 +46,7 @@ import javax.swing.event.*;
  * <li>The training of the linear evaluator ({@link RegressionPanel})
  * </ol>
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class GlyphTrainer
 {

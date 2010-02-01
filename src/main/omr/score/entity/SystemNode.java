@@ -29,7 +29,7 @@ import java.util.*;
  * itself. So this class encapsulates a direct link to the enclosing
  * system.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public abstract class SystemNode
     extends ScoreNode

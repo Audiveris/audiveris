@@ -16,7 +16,7 @@ package omr.script;
  * Class <code>ScriptRecording</code> specifies whether an action must be
  * recorded in the current sheet script
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public enum ScriptRecording {
     /** Action must be recorded */

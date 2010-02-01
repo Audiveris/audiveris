@@ -21,7 +21,7 @@ import static java.lang.Math.*;
  * between horizontal and vertical equations when computing the points
  * regression
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class BasicLine
     implements Line

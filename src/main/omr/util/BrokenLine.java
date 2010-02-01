@@ -32,7 +32,7 @@ import javax.xml.bind.annotation.*;
  * of points which can be modified at any time. Several features use a
  * "stickyDistance" constant which defines proximity margins.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  * @version $Id $
  */
 @NotThreadSafe

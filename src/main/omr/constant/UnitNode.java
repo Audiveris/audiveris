@@ -18,7 +18,7 @@ import omr.log.Logger;
  * nodes. It represents a class and can have either a Logger, a ConstantSet, or
  * both.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class UnitNode
     extends Node

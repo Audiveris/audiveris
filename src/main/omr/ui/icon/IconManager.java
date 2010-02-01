@@ -55,7 +55,7 @@ import javax.xml.bind.*;
  * is provided via {@link #loadSymbolIcon} and {@link #storeSymbolIcon}. This
  * symbol population is cached in a dedicated map, to speed up subsequent access
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class IconManager
 {

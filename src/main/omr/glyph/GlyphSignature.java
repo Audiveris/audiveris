@@ -22,7 +22,7 @@ import javax.xml.bind.annotation.*;
  * Class <code>GlyphSignature</code> is used to implement a map of glyphs,
  * based only on their physical properties.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "glyph-signature")

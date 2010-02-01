@@ -36,7 +36,7 @@ import java.util.Collection;
 /**
  * Class <code>RunBoard</code> is dedicated to display of Run information.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class RunBoard
     extends Board

@@ -63,7 +63,7 @@ import java.util.Map;
  * display(new Dumper.Html(myinstance).toString());
  * </pre>
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class Dumper
 {

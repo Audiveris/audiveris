@@ -21,7 +21,7 @@ import java.util.*;
  * Class <code>Source</code> allows to formalize the way relevant sections are
  * made available to the area to be scanned.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class SticksSource
 {

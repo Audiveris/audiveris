@@ -30,7 +30,7 @@ import javax.swing.WindowConstants;
 /**
  * Class <code>OmrFrameView</code> is the specific Midi view for Audiveris
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class OmrFrameView
     extends BasicFrameView

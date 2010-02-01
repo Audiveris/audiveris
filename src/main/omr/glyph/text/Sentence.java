@@ -59,7 +59,7 @@ import java.util.*;
  *    <img src="doc-files/TextProcessing.jpg"/>
  * </h4>
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class Sentence
 {

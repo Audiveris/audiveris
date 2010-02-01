@@ -38,7 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @param <V> precise type for vertices handled by this digraph
  * @param <SIG> precise type for vertex signature
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 @ThreadSafe
 public class Digraph<D extends Digraph<D, V, SIG>, V extends Vertex, SIG>

@@ -62,7 +62,7 @@ import javax.swing.event.*;
  * glyphs, a glyph board for glyph details, and a display for graphical glyph
  * lag view. This is a (package private) companion of {@link GlyphVerifier}.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 class GlyphBrowser
     implements ChangeListener

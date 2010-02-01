@@ -40,7 +40,7 @@ import java.util.Set;
  * @param <L> the precise lag type
  * @param <S> the precise section type
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
     implements VertexView

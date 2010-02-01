@@ -36,7 +36,7 @@ import java.util.*;
  * meant for symbol glyphs, adding handling for assigning Texts, for fixing
  * Slurs and for segmenting on Stems.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class SymbolsController
     extends GlyphsController

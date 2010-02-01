@@ -19,7 +19,7 @@ import javax.swing.JMenu;
 /**
  * Class <code>BarMenu</code> defines the popup menu to interact with barlines
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class BarMenu
     extends GlyphMenu

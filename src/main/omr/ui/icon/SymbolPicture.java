@@ -23,7 +23,7 @@ import java.awt.image.DataBuffer;
  * Class <code>SymbolPicture</code> is an adapter which wraps a SymbolIcon in
  * order to use it as a source of pixels.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class SymbolPicture
     implements PixelSource

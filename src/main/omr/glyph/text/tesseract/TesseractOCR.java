@@ -41,7 +41,7 @@ import javax.imageio.stream.ImageOutputStream;
  * <p>It relies on the <b>tessdll.dll</b> library, accessed through the
  * <b>tesjeract</b> Java interface.</p>
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class TesseractOCR
     implements OCR

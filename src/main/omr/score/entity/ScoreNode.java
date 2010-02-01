@@ -24,7 +24,7 @@ import omr.util.TreeNode;
  * Class <code>ScoreNode</code> handles a node in the tree hierarchy of a score
  * entity.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public abstract class ScoreNode
     extends VisitableNode

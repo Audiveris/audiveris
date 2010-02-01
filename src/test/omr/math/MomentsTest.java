@@ -20,7 +20,7 @@ import junit.framework.*;
 /**
  * Class <code>MomentsTest</code> performs unit tests on Moments class.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  * @version $Id$
  */
 public class MomentsTest

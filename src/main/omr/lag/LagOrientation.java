@@ -16,7 +16,7 @@ package omr.lag;
  * Class <code>LagOrientation</code> defines lag orientation as horizontal or
  * vertical
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public enum LagOrientation {
     HORIZONTAL,

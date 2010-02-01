@@ -81,7 +81,7 @@ import javax.xml.bind.JAXBException;
  * Class <code>ScoreExporter</code> can visit the score hierarchy to export
  * the score to a MusicXML file, stream or DOM.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class ScoreExporter
     extends AbstractScoreVisitor

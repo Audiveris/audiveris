@@ -39,7 +39,7 @@ import java.util.*;
  * A slur is used for a tie (2 notes with he same octave & step) or for
  * just a phrase embracing several notes.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class Slur
     extends PartNode

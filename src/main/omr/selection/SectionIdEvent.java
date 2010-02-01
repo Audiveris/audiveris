@@ -21,7 +21,7 @@ package omr.selection;
  * <dt><b>Subscribers:</b><dd>GlyphLagView, Lag, LagView
  * <dt><b>Readers:</b><dd>
  * </dl>
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class SectionIdEvent
     extends LagEvent

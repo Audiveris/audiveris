@@ -28,7 +28,7 @@ import javax.swing.*;
  *slider value, by first registering to this LogSlider via the {@link
  *#addChangeListener} method.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class LogSlider
     extends JSlider

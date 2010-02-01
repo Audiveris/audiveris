@@ -20,7 +20,7 @@ import java.util.List;
  * Class <code>OcrLine</code> defines an non-mutable structure to report useful
  * info on one OCR-decoded line
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class OcrLine
 {

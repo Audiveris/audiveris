@@ -40,7 +40,7 @@ import javax.xml.bind.annotation.*;
  * @param <V> type for Vertex precise subtype
  * @param <SIG> type for vertex precise signature
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 @NotThreadSafe
 @XmlAccessorType(XmlAccessType.NONE)

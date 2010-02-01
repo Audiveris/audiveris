@@ -20,7 +20,7 @@ import omr.score.visitor.ScoreVisitor;
 /**
  * Class <code>Pedal</code> represents a pedal (start) or pedal up (stop) event
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class Pedal
     extends AbstractDirection

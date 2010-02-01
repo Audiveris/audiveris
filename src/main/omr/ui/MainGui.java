@@ -64,7 +64,7 @@ import javax.swing.*;
  * Class <code>MainGui</code> is the Java User Interface, the main class for
  * displaying a score, the related sheet, the message log and the various tools.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class MainGui
     extends SingleFrameApplication

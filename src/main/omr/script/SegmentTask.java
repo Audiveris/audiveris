@@ -21,7 +21,7 @@ import java.util.Collection;
  * Class <code>SegmentTask</code> is a script task which attempts to segment a
  * collection of glyphs (along verticals for the time being)
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class SegmentTask
     extends GlyphTask

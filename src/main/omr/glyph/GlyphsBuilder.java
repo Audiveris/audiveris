@@ -58,7 +58,7 @@ import java.util.*;
  *
  * </ul>
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class GlyphsBuilder
 {

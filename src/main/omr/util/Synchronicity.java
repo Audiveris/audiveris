@@ -16,7 +16,7 @@ package omr.util;
  * Used to indicate whether a processing must be done synchronously or
  * asynchronously with respect to its caller.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public enum Synchronicity {
     /** Asynchronous execution */

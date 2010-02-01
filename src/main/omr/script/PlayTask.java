@@ -21,7 +21,7 @@ import javax.xml.bind.annotation.*;
  * Class <code>PlayTask</code> is a script task which plays the Midi sequence
  * of a score
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class PlayTask

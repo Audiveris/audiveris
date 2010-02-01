@@ -19,7 +19,7 @@ import omr.score.visitor.ScoreVisitor;
 /**
  * Class <code>Segno</code> represents a segno event
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class Segno
     extends AbstractDirection

@@ -37,7 +37,7 @@ import javax.swing.event.*;
  * training of the neural network evaluator. It is a dedicated companion of
  * class {@link GlyphTrainer}.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 class NetworkPanel
     extends TrainingPanel

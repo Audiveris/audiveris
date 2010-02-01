@@ -23,7 +23,7 @@ import java.awt.event.ActionEvent;
  * Class <code>PaintingParameters</code> handles the dynamic parameters related
  * to the painting of any score (slots, voices and marks)
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class PaintingParameters
     extends AbstractBean

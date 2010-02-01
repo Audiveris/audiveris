@@ -19,7 +19,7 @@ import junit.framework.*;
  * Class <code>BaseTestCase</code> is a customized version of TestCase, in
  * order to factor additional test features.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  * @version $Id$
  */
 public class BaseTestCase

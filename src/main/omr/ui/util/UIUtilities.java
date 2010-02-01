@@ -26,7 +26,7 @@ import javax.swing.border.*;
 /**
  * Class <code>UIUtilities</code> gathers utilities related to User Interface
  *
- * @author Herv&eacute Bitteur and Brenton Partridge
+ * @author Hervé Bitteur and Brenton Partridge
  */
 public class UIUtilities
 {

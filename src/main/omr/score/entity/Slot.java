@@ -40,7 +40,7 @@ import java.util.*;
  * <p>On the following picture, slots are indicated by vertical blue lines <br/>
  * <img src="doc-files/Slot.png" alt="diagram">
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class Slot
     implements Comparable<Slot>

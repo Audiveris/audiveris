@@ -19,7 +19,7 @@ import omr.sheet.SystemInfo;
  * Class <code>PatternsChecker</code> gathers a series of specific patterns
  * to process (verify, recognize, fix, ...) glyphs in their sheet environment.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class PatternsChecker
 {

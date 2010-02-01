@@ -27,7 +27,7 @@ import java.awt.Color;
  * Class <code>ScoreColorizer</code> can visit the score hierarchy for
  * colorization (assigning colors) of related sections in the Sheet display.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class ScoreColorizer
     extends AbstractScoreVisitor

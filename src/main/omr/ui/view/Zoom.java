@@ -46,7 +46,7 @@ import javax.swing.event.*;
  * <p>A {@link LogSlider} can be connected to this zoom entity, to provide
  * UI for both output and input.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class Zoom
 {

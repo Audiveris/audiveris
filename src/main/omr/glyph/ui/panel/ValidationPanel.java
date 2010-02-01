@@ -42,7 +42,7 @@ import javax.swing.*;
  * against the selected population of glyphs (either the whole base or the core
  * base). It is a dedicated companion of class {@link GlyphTrainer}.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 class ValidationPanel
     implements Observer

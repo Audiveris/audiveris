@@ -30,7 +30,7 @@ import java.util.*;
  * Class <code>Barline</code> encapsulates a logical bar line, that may be
  * composed of several physical components : repeat dots, thin and thick bars.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class Barline
     extends PartNode

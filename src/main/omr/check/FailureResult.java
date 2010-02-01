@@ -16,7 +16,7 @@ package omr.check;
  * Class <code>FailureResult</code> is the root of all results that store a
  * failure.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class FailureResult
     extends Result

@@ -24,7 +24,7 @@ import java.util.logging.Level;
  * blacklist is just the directory that contains the black-list file, not its
  * subdirectories if any.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class BlackList
 {

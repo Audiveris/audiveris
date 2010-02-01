@@ -42,7 +42,7 @@ import javax.swing.event.*;
  * textual description of a symbol. Symbol appearance is "ripped" from a musical
  * font.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class SymbolRipper
 {

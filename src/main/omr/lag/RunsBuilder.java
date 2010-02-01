@@ -24,7 +24,7 @@ import java.util.concurrent.Callable;
  * Class <code>RunsBuilder</code> is in charge of building a collection of runs,
  * that can be used by a lag for example.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class RunsBuilder
 {

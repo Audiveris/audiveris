@@ -133,19 +133,10 @@
     <target name="global-replace"
         description="Modify token of every source file">
 	
-	<replace dir="${basedir}">
-	    <replacetoken><![CDATA[ * @version $Id$
-]]></replacetoken>
-	    <replacevalue><![CDATA[]]></replacevalue>	    
-	    <include name="**/*.java"/>
-	</replace>
-
-	<replace dir="${basedir}">
-	    <replacetoken><![CDATA[#
-# Version $Id$
-]]></replacetoken>
-	    <replacevalue><![CDATA[]]></replacevalue>	    
-	    <include name="**/*.properties"/>
+	<replace encoding="utf8" dir="${basedir}">
+	    <replacetoken><![CDATA[&eacute;]]></replacetoken>
+	    <replacevalue><![CDATA[é]]></replacevalue>
+	    <include name="**/*.html"/>
 	</replace>
 
     </target>

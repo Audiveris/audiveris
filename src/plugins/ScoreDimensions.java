@@ -46,7 +46,7 @@ import omr.score.visitor.AbstractScoreVisitor;
  * the ScoreVisitor interface, where by default all visit() methods are void and
  * return true (to allow automatic visit of the children of each node).
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  * @version $Id$
  */
 public class ScoreDimensions

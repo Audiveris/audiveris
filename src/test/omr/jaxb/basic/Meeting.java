@@ -16,7 +16,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 /**
  * DOCUMENT ME!
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  * @version $Id$
  */
 public class Meeting

@@ -18,7 +18,7 @@ package omr.selection;
  * user is moving the mouse, and launch expensive processing only when the user
  * is releasing the mouse
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public enum MouseMovement {
     /**

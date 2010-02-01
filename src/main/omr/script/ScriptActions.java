@@ -47,7 +47,7 @@ import javax.xml.bind.JAXBException;
  * handling. These static member classes are ready to be picked by the plugins
  * mechanism.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class ScriptActions
     extends SheetActions

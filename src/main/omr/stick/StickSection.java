@@ -24,7 +24,7 @@ import java.awt.*;
  * Class <code>StickSection</code> implements a specific class of {@link
  * GlyphSection}, meant for easy stick elaboration.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class StickSection
     extends GlyphSection

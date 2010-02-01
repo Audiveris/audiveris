@@ -21,7 +21,7 @@ package omr.selection;
  * <dt><b>Subscribers:</b><dd>PixelBoard
  * <dt><b>Readers:</b><dd>
  * </dl>
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class PixelLevelEvent
     extends UserEvent

@@ -24,7 +24,7 @@ import java.io.*;
 /**
  * DOCUMENT ME!
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  * @version $Id$
  */
 public class IconTest

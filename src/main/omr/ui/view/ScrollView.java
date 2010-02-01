@@ -28,7 +28,7 @@ import javax.swing.*;
  * <dt> <b>zoom:</b> </dt> <dd>the {@link Zoom} whose ratio is to be used
  * when the component is rendered </dd>
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  * @author Brenton Partridge
  */
 public class ScrollView

@@ -28,7 +28,7 @@ import org.jdesktop.application.AbstractBean;
  * Class <code>SheetDependent</code> handles the dependency on sheet
  * availability
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public abstract class SheetDependent
     extends AbstractBean

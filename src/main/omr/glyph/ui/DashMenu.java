@@ -23,7 +23,7 @@ import javax.swing.JMenuItem;
  * Class <code>DashMenu</code> is a GlyphMenu popup, dedicated to horizontal
  * dashes (ledgers and endings glyphs)
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  * @version $Id$
  */
 public class DashMenu

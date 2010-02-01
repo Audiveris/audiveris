@@ -21,7 +21,7 @@ package omr.selection;
  * <dt><b>Readers:</b><dd>
  * </dl>
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class GlyphIdEvent
     extends GlyphLagEvent

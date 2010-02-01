@@ -26,7 +26,7 @@ import omr.log.Logger;
  *
  * @param <C> precise type of the objects to be checked
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public abstract class Check<C extends Checkable>
 {

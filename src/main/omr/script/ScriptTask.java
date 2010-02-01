@@ -36,7 +36,7 @@ import org.jdesktop.application.Task;
  * sheet script, unless the task is defined as not recordable. This is the case
  * of the {@link PlayTask}.</p>
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public abstract class ScriptTask
 {

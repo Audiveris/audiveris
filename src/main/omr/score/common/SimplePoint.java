@@ -17,7 +17,7 @@ import java.awt.Point;
  * Class <code>SimplePoint</code> is meant to be subclassed by more specific
  * definitions according to the context
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public abstract class SimplePoint
     extends Point

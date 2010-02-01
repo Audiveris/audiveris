@@ -22,7 +22,7 @@ package omr.selection;
  * <dt><b>Subscribers:</b><dd>
  * <dt><b>Readers:</b><dd>
  * </dl>
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public abstract class LagEvent
     extends UserEvent

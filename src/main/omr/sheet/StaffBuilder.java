@@ -29,7 +29,7 @@ import java.util.ListIterator;
  * Class <code>StaffBuilder</code> processes the (five) line areas, according to
  * the peaks found previously.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class StaffBuilder
 {

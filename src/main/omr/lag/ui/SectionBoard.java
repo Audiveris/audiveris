@@ -56,7 +56,7 @@ import javax.swing.event.*;
  * {@link omr.lag.Section} information, it can also be used as an input means
  * by directly entering the section id in the proper Id spinner.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class SectionBoard
     extends Board

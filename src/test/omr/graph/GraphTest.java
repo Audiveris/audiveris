@@ -20,7 +20,7 @@ import java.util.*;
  * Class <code>GraphTest</code> performs very basic tests on a graph and
  * vertices in combination.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  * @version $Id$
  */
 public class GraphTest

@@ -31,7 +31,7 @@ import omr.score.visitor.ScoreVisitor;
  * <p>
  * <img src="http://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Middle_C_in_four_clefs.svg/600px-Middle_C_in_four_clefs.svg.png" />
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class Clef
     extends MeasureNode

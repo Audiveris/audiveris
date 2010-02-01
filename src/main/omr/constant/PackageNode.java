@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
  * example, the unit/class <b>omr.score.Page</b> will need PackageNode
  * <b>omr</b> and PackageNode <b>omr.score</b>.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class PackageNode
     extends Node

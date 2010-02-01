@@ -39,7 +39,7 @@ import org.bushe.swing.event.EventSubscriber;
  * (sheet) Pixel Selection and the Score Selection. There should be exactly one
  * instance of this class per score (and thus per sheet).
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class ScoreSheetBridge
     implements EventSubscriber<LocationEvent>

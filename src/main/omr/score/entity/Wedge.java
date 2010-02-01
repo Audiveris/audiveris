@@ -24,7 +24,7 @@ import omr.score.visitor.ScoreVisitor;
 /**
  * Class <code>Wedge</code> represents a crescendo or decrescendo (diminuendo)
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class Wedge
     extends AbstractDirection

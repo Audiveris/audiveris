@@ -45,7 +45,7 @@ import javax.swing.tree.*;
  * Class <code>ScoreTree</code> provides a user interface (a frame) where the
  * whole score hierarchy can be browsed as a tree.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class ScoreTree
 {

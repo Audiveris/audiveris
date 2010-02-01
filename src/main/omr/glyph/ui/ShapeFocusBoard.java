@@ -53,7 +53,7 @@ import javax.swing.event.*;
  * collection of glyphs. The collection may be built from glyphs of a given
  * shape, or from glyphs similar to a given glyph, etc.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class ShapeFocusBoard
     extends Board

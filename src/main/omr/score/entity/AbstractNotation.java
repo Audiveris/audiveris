@@ -21,7 +21,7 @@ import omr.score.common.SystemPoint;
  * Class <code>Notation</code> is the basis for all variants of notations:
  * tied, slur, ...
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public abstract class AbstractNotation
     extends MeasureElement

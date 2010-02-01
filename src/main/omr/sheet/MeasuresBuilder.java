@@ -46,7 +46,7 @@ import java.util.*;
  * dedicated to the processing of one system. So this class does not need to be
  * thread-safe.</p>
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 @NotThreadSafe
 public class MeasuresBuilder

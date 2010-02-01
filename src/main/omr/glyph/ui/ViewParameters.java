@@ -25,7 +25,7 @@ import java.awt.event.ActionEvent;
  * Class <code>ViewParameters</code> handles parameters for GlyphLagView,
  * using properties referenced through their programmatic name to avoid typos.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class ViewParameters
     extends AbstractBean

@@ -72,7 +72,7 @@ import java.util.List;
  * Class <code>ScorePainter</code> defines for every node in Score hierarchy
  * the painting of node in the <b>Score</b> display.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class ScorePainter
     extends AbstractScoreVisitor

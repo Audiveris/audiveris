@@ -21,7 +21,7 @@ import java.net.URISyntaxException;
  * <p>Note that a few initial operations are performed here, because they need
  * to be done before any other class is loaded.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class WellKnowns
 {

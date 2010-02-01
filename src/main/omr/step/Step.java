@@ -30,7 +30,7 @@ import javax.swing.SwingUtilities;
  * Enum <code>Step</code> lists the various sheet processing steps in
  * chronological order.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public enum Step {
     /**

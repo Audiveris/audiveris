@@ -32,7 +32,7 @@ import java.util.*;
  * <p>Note: This is implemented as a (sorted) map, since a compiled enum would
  * not provide the ability to add new items dynamically.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class Language
 {

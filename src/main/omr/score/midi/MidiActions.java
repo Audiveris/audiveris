@@ -46,7 +46,7 @@ import java.io.File;
  * drive the MidiAgent activity for Midi playback (Play, Pause, Stop) and for
  * writing Midi files.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class MidiActions
     extends ScoreDependent

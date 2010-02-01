@@ -17,7 +17,7 @@ import java.util.Scanner;
  * Class <code>LDoubleField</code> is an {@link LTextField}, whose field is
  * meant to handle a double value.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class LDoubleField
     extends LTextField

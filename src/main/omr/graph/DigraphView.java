@@ -16,7 +16,7 @@ import java.awt.*;
 /**
  * Interface <code>DigraphView</code> defines what is needed to view a graph.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public interface DigraphView
 {

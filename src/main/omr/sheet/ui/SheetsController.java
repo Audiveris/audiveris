@@ -58,7 +58,7 @@ import javax.swing.event.ChangeListener;
  *
  * <p>This class is meant to be a Singleton
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class SheetsController
     implements ChangeListener, PropertyChangeListener

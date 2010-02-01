@@ -30,7 +30,7 @@ import java.util.TreeSet;
  * the level of each beam within the group. The contained beams are ordered in
  * increasing order from stem/chord tail to stem/chord head
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class BeamGroup
 {

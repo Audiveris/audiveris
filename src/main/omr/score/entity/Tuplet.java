@@ -28,7 +28,7 @@ import java.util.*;
  * Class <code>Tuplet</code> represents a tuplet notation and encapsulates the
  * translation from tuplet glyph to the impacted chords.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class Tuplet
     extends AbstractNotation

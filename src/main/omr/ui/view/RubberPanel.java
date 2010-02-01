@@ -59,7 +59,7 @@ import javax.swing.event.ChangeListener;
  * #setZoom} method. The class then registers itself as an observer of the
  * Zoom instance, to be notified when the zoom ratio is modified.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class RubberPanel
     extends JPanel

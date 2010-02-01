@@ -23,7 +23,7 @@ import java.io.InputStream;
 /**
  * Class <code>ClassUtil</code> provides utilities related to Class handling.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class ClassUtil
 {

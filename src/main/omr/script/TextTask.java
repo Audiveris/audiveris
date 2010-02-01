@@ -27,7 +27,7 @@ import javax.xml.bind.annotation.XmlAttribute;
  * Class <code>TextTask</code> records the assignment of textual characteristics
  * to a collection of glyphs
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class TextTask
     extends GlyphTask

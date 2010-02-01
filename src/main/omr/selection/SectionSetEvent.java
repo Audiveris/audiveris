@@ -25,7 +25,7 @@ import java.util.Set;
  * <dt><b>Readers:</b><dd>TODO
  * </dl>
  * @param <S> precise section type
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class SectionSetEvent<S extends Section>
     extends LagEvent

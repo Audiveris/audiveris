@@ -16,7 +16,7 @@ package omr.score.visitor;
  * Interface <code>Visitable</code> must be implemented by any node to be
  * visited in the Score hierarchy
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public interface Visitable
 {

@@ -19,7 +19,7 @@ import omr.score.visitor.ScoreVisitor;
 /**
  * Class <code>Coda</code> represents a coda event
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class Coda
     extends AbstractDirection

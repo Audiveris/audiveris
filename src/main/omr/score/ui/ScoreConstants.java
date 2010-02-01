@@ -20,7 +20,7 @@ import omr.ui.PixelCount;
  * Class <code>ScoreConstants</code> gathers all constants related to the
  * display of a score.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class ScoreConstants
 {

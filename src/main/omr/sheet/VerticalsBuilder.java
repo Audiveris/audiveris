@@ -49,7 +49,7 @@ import java.util.Collection;
  * been already recognized, so this accounts for stems, vertical edges of
  * endings, and potentially parts of alterations (sharp, natural, flat).
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class VerticalsBuilder
 {

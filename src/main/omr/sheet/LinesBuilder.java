@@ -72,7 +72,7 @@ import javax.swing.*;
  * not yet gathered into Systems, this will be done in the BarsBuilder
  * processing.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class LinesBuilder
     extends GlyphsModel

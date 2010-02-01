@@ -38,7 +38,7 @@ import java.util.List;
  *
  * <p>A system contains only one kind of direct children : SystemPart instances
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class ScoreSystem
     extends SystemNode

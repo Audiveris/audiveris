@@ -43,7 +43,7 @@ import java.util.List;
  * methods are just convenient ways to retrieve the last selected section or
  * sectionSet from the lag selection service.</p>
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  *
  * @param <L> precise lag (sub)type
  * @param <S> precise section (sub)type

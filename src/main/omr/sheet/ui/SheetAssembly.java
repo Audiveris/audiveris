@@ -65,7 +65,7 @@ import javax.swing.event.*;
  * refers to a collection of {@link BoardsPane}'s which is parallel to the
  * collection of ScrollView's.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class SheetAssembly
     implements ChangeListener, PropertyChangeListener

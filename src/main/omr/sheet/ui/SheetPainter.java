@@ -43,7 +43,7 @@ import java.awt.*;
  * <p>Nota: It has been extended to deal with rendering of initial sheet
  * elements.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class SheetPainter
     extends AbstractScoreVisitor

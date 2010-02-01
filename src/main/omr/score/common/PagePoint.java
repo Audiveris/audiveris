@@ -20,7 +20,7 @@ package omr.score.common;
  * <p>This specialization is used to take benefit of compiler checks, to prevent
  * the use of points with incorrect meaning or units.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class PagePoint
     extends SimplePoint

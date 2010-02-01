@@ -24,7 +24,7 @@ import java.util.*;
  * Class <code>SymbolMenu</code> defines the popup menu which is linked to the
  * current selection of either one or several glyphs
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class SymbolMenu
     extends GlyphMenu

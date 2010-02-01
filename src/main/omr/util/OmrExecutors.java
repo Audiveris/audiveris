@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <li>ocrExecutor: one thread with high priority and large stack size</li>
  * </ul>
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class OmrExecutors
 {

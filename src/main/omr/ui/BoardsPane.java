@@ -32,7 +32,7 @@ import javax.swing.*;
  * <p>There is one single BoardsPane for all views of the same sheet, while
  * the visibility of some of its boards may vary with the view at hand.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class BoardsPane
 {

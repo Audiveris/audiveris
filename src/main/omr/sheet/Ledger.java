@@ -17,7 +17,7 @@ import omr.stick.Stick;
  * Class <code>Ledger</code> is a physical {@link Dash} which is logically a
  * Ledger (to represents portions of virtual staff lines)
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class Ledger
     extends Dash

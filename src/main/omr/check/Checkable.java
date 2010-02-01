@@ -16,7 +16,7 @@ package omr.check;
  * Interface <code>Checkable</code> describes a class that may be checked and
  * then assigned a result for that check.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public interface Checkable
 {

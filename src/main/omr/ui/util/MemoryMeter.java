@@ -29,7 +29,7 @@ import javax.swing.*;
  * <P>There is a alarm threshold that triggers a color switch to red whenever
  * the used memory exceeds the threshold.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class MemoryMeter
 {

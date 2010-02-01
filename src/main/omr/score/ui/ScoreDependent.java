@@ -27,7 +27,7 @@ import org.bushe.swing.event.EventSubscriber;
  * Class <code>ScoreDependent</code> handles the dependency on score
  * availability
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public abstract class ScoreDependent
     extends SheetDependent

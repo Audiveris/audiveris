@@ -39,7 +39,7 @@ import static javax.swing.Action.*;
  * Class <code>ScoreMenu</code> defines the popup menu which is linked to the
  * current selection in score view
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class ScoreMenu
 {

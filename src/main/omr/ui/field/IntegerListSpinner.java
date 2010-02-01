@@ -19,7 +19,7 @@ import javax.swing.*;
  * Class <code>IntegerListSpinner</code> is a spinner whose model is a list of
  * integers
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class IntegerListSpinner
     extends JSpinner

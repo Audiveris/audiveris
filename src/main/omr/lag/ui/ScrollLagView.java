@@ -20,7 +20,7 @@ import omr.ui.view.ScrollView;
  * to the display of a {@link omr.lag.ui.LagView}, with monitoring of run and
  * section informations
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class ScrollLagView
     extends ScrollView

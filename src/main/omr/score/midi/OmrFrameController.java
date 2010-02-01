@@ -22,7 +22,7 @@ import com.xenoage.zong.player.gui.BasicFrameController;
  * Class <code>OmrFrameController</code> is the Midi controller specific for
  * Audiveris
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class OmrFrameController
     extends BasicFrameController

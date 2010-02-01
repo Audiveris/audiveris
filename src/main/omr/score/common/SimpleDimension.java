@@ -17,7 +17,7 @@ import java.awt.Dimension;
  * Class <code>SimpleDimension</code> is meant to be subclassed to represent a
  * dimension in a specific context.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public abstract class SimpleDimension
     extends Dimension

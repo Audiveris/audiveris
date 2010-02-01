@@ -32,7 +32,7 @@ import omr.sheet.SystemInfo;
  * Class <code>TextRole</code> describes the role of a piece of text (typically
  * a sentence)
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public enum TextRole {
     /** No role known */

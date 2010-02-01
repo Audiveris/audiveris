@@ -23,7 +23,7 @@ import javax.swing.*;
  * training of the linear evaluator. It is a dedicated companion of class
  * {@link GlyphTrainer}.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 class RegressionPanel
     extends TrainingPanel

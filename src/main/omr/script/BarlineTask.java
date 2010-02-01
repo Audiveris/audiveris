@@ -28,7 +28,7 @@ import java.util.Collection;
  * provided glyphs and assigned the shape. Otherwise, each provided glyph is
  * assigned the shape.</p>
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class BarlineTask
     extends AssignTask

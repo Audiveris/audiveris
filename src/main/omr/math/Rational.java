@@ -17,7 +17,7 @@ import javax.xml.bind.annotation.*;
  * Class <code>Rational</code> hosts a pair composed of a numerator and a
  * denominator
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "rational")

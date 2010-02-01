@@ -17,7 +17,7 @@ package omr.lag;
  * delta between the length of the candidate run and the length of the last run
  * of the section.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public class JunctionDeltaPolicy
     extends JunctionPolicy

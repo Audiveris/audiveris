@@ -20,7 +20,7 @@ import java.awt.*;
  * be notified of mouse actions. This is ordinarily used in conjunction
  * with a {@link omr.ui.view.Rubber}.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 public interface MouseMonitor
 {

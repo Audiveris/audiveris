@@ -29,7 +29,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
  *
  * <p>This class is meant to be thread-safe.
  *
- * @author Herv&eacute; Bitteur
+ * @author Hervé Bitteur
  */
 @ThreadSafe
 public class UnitManager

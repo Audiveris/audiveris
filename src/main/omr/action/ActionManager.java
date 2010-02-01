@@ -46,7 +46,7 @@ import javax.swing.*;
  * actions, their organization in the menus and the tool bar, and their
  * enabling.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 public class ActionManager
     implements EventSubscriber<SheetEvent>

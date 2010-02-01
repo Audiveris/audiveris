@@ -22,7 +22,7 @@ import javax.xml.bind.annotation.*;
 /**
  * Class <code>Actions</code> handles all actions descriptors.
  *
- * @author Herv&eacute Bitteur
+ * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "actions")
