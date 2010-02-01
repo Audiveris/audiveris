@@ -16,6 +16,7 @@ import omr.log.Logger;
 import omr.ui.MainGui;
 
 import com.xenoage.zong.player.gui.BasicFrameView;
+import com.xenoage.zong.player.gui.ComponentID;
 
 import org.jdesktop.application.ResourceMap;
 
@@ -67,19 +68,19 @@ public class OmrFrameView
     //-------------------//
     /**
      * This is the proper sequence of buttons for Audiveris use
-     * @return the sequence of button names
+     * @return the sequence of component IDs
      */
     @Override
-    protected List<String> getButtonSequence ()
+    protected List<ComponentID> getButtonSequence ()
     {
         return Arrays.asList(
-            PLAY,
-            PAUSE,
-            STOP,
-            VOLUME,
-            VOLUME_SLIDER,
-            AUDIO,
-            INFO);
+            (ComponentID) Components.Play,
+            Components.Pause,
+            Components.Stop,
+            Components.VolumeImage,
+            Components.VolumeSlider,
+            Components.AudioSettings,
+            Components.InfoDialog);
     }
 
     //----------//
