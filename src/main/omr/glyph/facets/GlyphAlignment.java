@@ -140,11 +140,11 @@ interface GlyphAlignment
     /**
      * Count alien pixels in the following rectangle...
      * <pre>
-     * +-------+
-     * |       |
+     *                                    +-------+
+     *                                    |       |
      * +==================================+=======+
-     * |       |
-     * +-------+
+     *                                    |       |
+     *                                    +-------+
      * </pre>
      *
      * @param dCoord rectangle size along stick length
@@ -161,8 +161,8 @@ interface GlyphAlignment
     /**
      * Count alien pixels in the following rectangle...
      * <pre>
-     * +-------+
-     * |       |
+     *                                    +-------+
+     *                                    |       |
      * +==================================+=======+
      * </pre>
      *
@@ -181,8 +181,8 @@ interface GlyphAlignment
      * Count alien pixels in the following rectangle...
      * <pre>
      * +==================================+=======+
-     * |       |
-     * +-------+
+     *                                    |       |
+     *                                    +-------+
      * </pre>
      *
      * @param dCoord rectangle size along stick length
