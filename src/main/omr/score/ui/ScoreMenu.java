@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.score.ui;
 
-import omr.glyph.Glyph;
+import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 

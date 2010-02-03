@@ -12,10 +12,9 @@
 package omr.sheet;
 
 import omr.glyph.GlyphSection;
+import omr.glyph.facets.Stick;
 
 import omr.math.Line;
-
-import omr.stick.Stick;
 
 import omr.util.Implement;
 

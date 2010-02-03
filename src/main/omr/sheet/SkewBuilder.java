@@ -18,6 +18,8 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
+import omr.glyph.facets.BasicStick;
+import omr.glyph.facets.Stick;
 
 import omr.lag.HorizontalOrientation;
 import omr.lag.JunctionRatioPolicy;
@@ -37,7 +39,6 @@ import omr.sheet.ui.PixelBoard;
 import omr.step.Step;
 import omr.step.StepException;
 
-import omr.stick.Stick;
 import omr.stick.StickSection;
 
 import omr.ui.BoardsPane;
@@ -247,7 +248,7 @@ public class SkewBuilder
                     stick = (Stick) section.getGlyph();
                 } else {
                     // Otherwise, start a brand new stick
-                    stick = new Stick(sheet.getInterline());
+                    stick = new BasicStick(sheet.getInterline());
 
                     // Include this section in the stick list
                     stick.addSection(section, /* link => */
@@ -284,7 +285,7 @@ public class SkewBuilder
                 }
 
                 if (logger.isFineEnabled()) {
-                    stick.dump(false);
+                    stick.dump();
                 }
             }
         }
@@ -367,7 +368,7 @@ public class SkewBuilder
         for (Stick stick : sticks) {
             if (stick.getLength() >= lengthThreshold) {
                 if (logger.isFineEnabled()) {
-                    stick.dump(false);
+                    stick.dump();
                 }
 
                 double slope = stick.getLine()

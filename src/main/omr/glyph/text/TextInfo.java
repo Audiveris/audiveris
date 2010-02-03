@@ -14,9 +14,9 @@ package omr.glyph.text;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.Glyph;
 import omr.glyph.GlyphSection;
 import omr.glyph.Shape;
+import omr.glyph.facets.Glyph;
 
 import omr.lag.HorizontalOrientation;
 

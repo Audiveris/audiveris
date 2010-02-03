@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.stick.Stick;
+import omr.glyph.facets.Stick;
 
 /**
  * Class <code>Ending</code> is a physical {@link Dash} that is the horizontal

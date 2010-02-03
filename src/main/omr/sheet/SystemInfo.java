@@ -13,7 +13,6 @@ package omr.sheet;
 
 import omr.check.CheckSuite;
 
-import omr.glyph.Glyph;
 import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphInspector.CompoundAdapter;
 import omr.glyph.GlyphSection;
@@ -22,6 +21,8 @@ import omr.glyph.GlyphsBuilder;
 import omr.glyph.PatternsChecker;
 import omr.glyph.SlurInspector;
 import omr.glyph.StemInspector;
+import omr.glyph.facets.Glyph;
+import omr.glyph.facets.Stick;
 import omr.glyph.text.Sentence;
 import omr.glyph.text.TextInspector;
 
@@ -36,8 +37,6 @@ import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
 
 import omr.step.StepException;
-
-import omr.stick.Stick;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;

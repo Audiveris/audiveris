@@ -13,7 +13,7 @@ package omr.score.entity;
 
 import omr.constant.ConstantSet;
 
-import omr.glyph.Glyph;
+import omr.glyph.facets.Glyph;
 import omr.glyph.text.Sentence;
 import omr.glyph.text.TextInfo;
 

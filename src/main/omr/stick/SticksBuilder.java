@@ -17,9 +17,11 @@ import omr.check.SuccessResult;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
+import omr.glyph.facets.BasicStick;
+import omr.glyph.facets.Glyph;
+import omr.glyph.facets.Stick;
 
 import omr.log.Logger;
 
@@ -328,7 +330,8 @@ public class SticksBuilder
         System.out.println("StickArea#" + id + " size=" + sticks.size());
 
         for (Stick stick : sticks) {
-            stick.dump(withContent);
+            //stick.dump(withContent);
+            stick.dump();
         }
     }
 
@@ -564,7 +567,7 @@ public class SticksBuilder
             StickSection section = (StickSection) s;
 
             if (section.isAggregable()) {
-                Stick stick = new Stick(interline);
+                Stick stick = new BasicStick(interline);
                 stick.setResult(ASSIGNED); // Needed to flag the stick
                 aggregate(section, stick);
                 stick = (Stick) lag.addGlyph(stick);

@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.score.entity;
 
-import omr.glyph.Glyph;
+import omr.glyph.facets.Glyph;
 
 import omr.score.common.PixelRectangle;
 import omr.score.common.SystemPoint;

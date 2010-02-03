@@ -16,10 +16,10 @@ import omr.WellKnowns;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 import omr.glyph.GlyphsModel;
+import omr.glyph.facets.Glyph;
 
 import omr.lag.VerticalOrientation;
 import omr.lag.ui.ScrollLagView;

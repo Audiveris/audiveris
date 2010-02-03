@@ -11,8 +11,8 @@
 // </editor-fold>
 package omr.selection;
 
-import omr.glyph.Glyph;
 import omr.glyph.Glyphs;
+import omr.glyph.facets.Glyph;
 
 import java.util.Set;
 

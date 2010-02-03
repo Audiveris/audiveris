@@ -13,16 +13,17 @@ package omr.glyph.ui;
 
 import omr.WellKnowns;
 
-import omr.glyph.Glyph;
 import omr.glyph.GlyphSection;
 import omr.glyph.IconGlyph;
 import omr.glyph.Shape;
+import omr.glyph.facets.BasicGlyph;
+import omr.glyph.facets.Glyph;
+import omr.glyph.facets.GlyphValue;
+import omr.glyph.facets.StickValue;
 
 import omr.log.Logger;
 
 import omr.sheet.Sheet;
-
-import omr.stick.Stick;
 
 import omr.ui.icon.IconManager;
 import omr.ui.icon.SymbolIcon;
@@ -443,7 +444,7 @@ public class GlyphRepository
                             glyphNb++;
                         } catch (FileNotFoundException ex) {
                             logger.warning(null, ex);
-                        } catch (JAXBException ex) {
+                        } catch (Exception ex) {
                             logger.warning(null, ex);
                         } finally {
                             try {
@@ -653,7 +654,9 @@ public class GlyphRepository
     {
         // Lazy creation
         if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(Glyph.class, Stick.class);
+            jaxbContext = JAXBContext.newInstance(
+                GlyphValue.class,
+                StickValue.class);
         }
 
         return jaxbContext;
@@ -748,12 +751,13 @@ public class GlyphRepository
     //-------------//
     private void jaxbMarshal (Glyph        glyph,
                               OutputStream os)
-        throws JAXBException
+        throws JAXBException, Exception
     {
         Marshaller m = getJaxbContext()
                            .createMarshaller();
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-        m.marshal(glyph, os);
+        ///m.marshal(glyph, os);
+        m.marshal(new GlyphValue(glyph), os);
     }
 
     //---------------//
@@ -765,7 +769,8 @@ public class GlyphRepository
         Unmarshaller um = getJaxbContext()
                               .createUnmarshaller();
 
-        return (Glyph) um.unmarshal(is);
+        ///return (Glyph) um.unmarshal(is);
+        return new BasicGlyph((GlyphValue) um.unmarshal(is));
     }
 
     //----------------//

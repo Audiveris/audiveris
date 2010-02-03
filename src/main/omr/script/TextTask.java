@@ -12,7 +12,7 @@
 package omr.script;
 
 import omr.glyph.Evaluation;
-import omr.glyph.Glyph;
+import omr.glyph.facets.Glyph;
 import omr.glyph.text.TextRole;
 
 import omr.score.entity.Text.CreatorText.CreatorType;

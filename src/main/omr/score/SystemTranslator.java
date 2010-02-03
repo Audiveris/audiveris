@@ -11,9 +11,9 @@
 // </editor-fold>
 package omr.score;
 
-import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import static omr.glyph.ShapeRange.*;
+import omr.glyph.facets.Glyph;
 import omr.glyph.text.Sentence;
 
 import omr.log.Logger;

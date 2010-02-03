@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.glyph;
 
+import omr.glyph.facets.Glyph;
+
 import omr.lag.LagOrientation;
 import omr.lag.Sections;
 

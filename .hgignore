@@ -18,6 +18,7 @@ project
 scores
 scores-ref
 scripts
+temp
 tesseract\.log
 www/docs/api
 zong.log

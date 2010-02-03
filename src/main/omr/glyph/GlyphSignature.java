@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.glyph;
 
+import omr.glyph.facets.Glyph;
+
 import omr.util.Implement;
 import omr.util.RectangleFacade;
 

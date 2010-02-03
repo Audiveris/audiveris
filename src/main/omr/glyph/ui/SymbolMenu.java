@@ -12,10 +12,10 @@
 package omr.glyph.ui;
 
 import omr.glyph.Evaluation;
-import omr.glyph.Glyph;
 import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphInspector;
 import omr.glyph.Shape;
+import omr.glyph.facets.Glyph;
 
 import java.awt.event.*;
 import java.util.*;

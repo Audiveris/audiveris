@@ -17,12 +17,12 @@ import omr.constant.ConstantSet;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 import omr.glyph.Glyphs;
+import omr.glyph.facets.Stick;
 
 import omr.log.Logger;
 
 import omr.step.StepException;
 
-import omr.stick.Stick;
 import omr.stick.SticksBuilder;
 import omr.stick.SticksSource;
 import omr.stick.UnknownSectionPredicate;

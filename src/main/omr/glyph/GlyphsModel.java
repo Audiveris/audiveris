@@ -11,14 +11,15 @@
 // </editor-fold>
 package omr.glyph;
 
+import omr.glyph.facets.BasicStick;
+import omr.glyph.facets.Glyph;
+
 import omr.log.Logger;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.step.Step;
-
-import omr.stick.Stick;
 
 import java.util.*;
 
@@ -190,7 +191,7 @@ public class GlyphsModel
                 SystemInfo system = sheet.getSystemOf(glyphs);
                 glyph = system.buildTransientCompound(glyphs);
             } else {
-                glyph = new Stick(sheet.getScale().interline());
+                glyph = new BasicStick(sheet.getScale().interline());
 
                 for (Glyph g : glyphs) {
                     glyph.addGlyphSections(g, false); // no linkSections

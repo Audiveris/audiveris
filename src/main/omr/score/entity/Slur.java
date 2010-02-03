@@ -13,8 +13,8 @@ package omr.score.entity;
 
 import omr.constant.ConstantSet;
 
-import omr.glyph.Glyph;
 import omr.glyph.SlurInspector;
+import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 

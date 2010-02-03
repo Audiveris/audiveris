@@ -12,6 +12,7 @@
 package omr.glyph.ui;
 
 import omr.glyph.*;
+import omr.glyph.facets.Glyph;
 import omr.glyph.text.TextRole;
 
 import omr.log.Logger;

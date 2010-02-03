@@ -16,6 +16,8 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.*;
 import omr.glyph.Shape;
+import omr.glyph.facets.Glyph;
+import omr.glyph.facets.Stick;
 import omr.glyph.text.OcrChar;
 import omr.glyph.text.OcrLine;
 import omr.glyph.text.TextInfo;
@@ -41,8 +43,6 @@ import omr.selection.SelectionHint;
 import static omr.selection.SelectionHint.*;
 import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
-
-import omr.stick.Stick;
 
 import omr.ui.util.UIUtilities;
 

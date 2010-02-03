@@ -18,6 +18,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
+import omr.glyph.facets.Stick;
 import omr.glyph.ui.GlyphLagView;
 
 import omr.graph.DigraphView;

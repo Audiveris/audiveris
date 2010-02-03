@@ -11,17 +11,16 @@
 // </editor-fold>
 package omr.score.entity;
 
-import omr.glyph.Glyph;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
+import omr.glyph.facets.Glyph;
+import omr.glyph.facets.Stick;
 
 import omr.log.Logger;
 
 import omr.score.common.PagePoint;
 import omr.score.common.SystemRectangle;
 import omr.score.visitor.ScoreVisitor;
-
-import omr.stick.Stick;
 
 import java.awt.*;
 import java.util.*;

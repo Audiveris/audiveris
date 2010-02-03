@@ -19,11 +19,12 @@ import omr.check.SuccessResult;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
+import omr.glyph.facets.Glyph;
+import omr.glyph.facets.Stick;
 
 import omr.lag.Section;
 
@@ -33,8 +34,6 @@ import omr.selection.GlyphEvent;
 import omr.selection.UserEvent;
 
 import omr.step.StepException;
-
-import omr.stick.Stick;
 
 import omr.util.Implement;
 import omr.util.Predicate;

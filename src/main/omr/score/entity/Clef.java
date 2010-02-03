@@ -11,9 +11,9 @@
 // </editor-fold>
 package omr.score.entity;
 
-import omr.glyph.Glyph;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
+import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 

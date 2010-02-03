@@ -14,10 +14,10 @@ package omr.score.ui;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 import omr.glyph.ShapeRange;
+import omr.glyph.facets.Glyph;
 import omr.glyph.text.Sentence;
 import omr.glyph.text.TextInfo;
 

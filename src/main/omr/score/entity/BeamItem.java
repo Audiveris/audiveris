@@ -11,9 +11,10 @@
 // </editor-fold>
 package omr.score.entity;
 
-import omr.glyph.Glyph;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
+import omr.glyph.facets.Glyph;
+import omr.glyph.facets.Stick;
 
 import omr.log.Logger;
 
@@ -23,8 +24,6 @@ import omr.math.Line;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.common.SystemPoint;
-
-import omr.stick.Stick;
 
 import omr.util.Implement;
 import omr.util.Navigable;

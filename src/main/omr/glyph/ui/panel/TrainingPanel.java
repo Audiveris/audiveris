@@ -11,11 +11,11 @@
 // </editor-fold>
 package omr.glyph.ui.panel;
 
-import omr.glyph.Glyph;
 import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
+import omr.glyph.facets.Glyph;
 import omr.glyph.ui.GlyphRepository;
 import static omr.glyph.ui.panel.GlyphTrainer.Task.Activity.*;
 

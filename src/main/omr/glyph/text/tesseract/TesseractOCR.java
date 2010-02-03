@@ -141,7 +141,7 @@ public class TesseractOCR
         }
 
         try {
-            final ByteBuffer buf = imageToTiffBuffer(image);
+            final ByteBuffer        buf = imageToTiffBuffer(image);
 
             // Delegate the processing to the specific OCR thread
             Callable<List<OcrLine>> task = new Callable<List<OcrLine>>() {
@@ -376,7 +376,7 @@ public class TesseractOCR
         throws IOException
     {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageOutputStream ios = ImageIO.createImageOutputStream(baos);
+        ImageOutputStream     ios = ImageIO.createImageOutputStream(baos);
 
         // Take the first suitable TIFF writer
         ImageWriter writer = ImageIO.getImageWritersByFormatName("tiff")

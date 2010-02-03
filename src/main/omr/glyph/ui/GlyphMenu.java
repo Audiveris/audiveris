@@ -11,10 +11,10 @@
 // </editor-fold>
 package omr.glyph.ui;
 
-import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.Shape;
 import omr.glyph.ShapeRange;
+import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 

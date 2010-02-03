@@ -14,9 +14,9 @@ package omr.glyph.ui.panel;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.Glyph;
 import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphRegression;
+import omr.glyph.facets.Glyph;
 import omr.glyph.ui.*;
 import static omr.glyph.ui.panel.GlyphTrainer.Task.Activity.*;
 

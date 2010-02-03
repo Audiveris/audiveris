@@ -13,6 +13,9 @@ package omr.glyph;
 
 import omr.constant.ConstantSet;
 
+import omr.glyph.facets.BasicStick;
+import omr.glyph.facets.Glyph;
+
 import omr.log.Logger;
 
 import omr.score.common.SystemPoint;
@@ -22,8 +25,6 @@ import omr.sheet.Dash;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
-
-import omr.stick.Stick;
 
 import java.awt.Rectangle;
 import java.util.*;
@@ -165,7 +166,7 @@ public class GlyphsBuilder
     public static Glyph buildGlyph (Scale                    scale,
                                     Collection<GlyphSection> sections)
     {
-        Glyph glyph = new Stick(scale.interline());
+        Glyph glyph = new BasicStick(scale.interline());
 
         for (GlyphSection section : sections) {
             glyph.addSection(section, true);
@@ -190,7 +191,7 @@ public class GlyphsBuilder
     public Glyph buildTransientCompound (Collection<Glyph> parts)
     {
         // Build a glyph from all sections
-        Glyph compound = new Stick(scale.interline());
+        Glyph compound = new BasicStick(scale.interline());
 
         for (Glyph glyph : parts) {
             compound.addGlyphSections(glyph, /* linkSections => */
@@ -225,7 +226,7 @@ public class GlyphsBuilder
     public Glyph buildTransientGlyph (Collection<GlyphSection> sections)
     {
         // Build a glyph from all sections
-        Glyph compound = new Stick(scale.interline());
+        Glyph compound = new BasicStick(scale.interline());
 
         for (GlyphSection section : sections) {
             compound.addSection(section, /* linkSections => */
@@ -326,7 +327,7 @@ public class GlyphsBuilder
             // Not already visited ?
             if (!section.isKnown() && !visitedSections.contains(section)) {
                 // Let's build a new glyph around this starting section
-                Glyph glyph = new Stick(scale.interline());
+                Glyph glyph = new BasicStick(scale.interline());
                 considerConnection(glyph, section, visitedSections);
 
                 // Insert this newly built glyph in system collection

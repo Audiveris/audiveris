@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.glyph;
 
+import omr.glyph.facets.BasicGlyph;
+import omr.glyph.facets.Glyph;
+
 import omr.lag.JunctionAllPolicy;
 import omr.lag.SectionsBuilder;
 import omr.lag.VerticalOrientation;
@@ -32,7 +35,8 @@ import java.awt.Rectangle;
  * @author Hervé Bitteur
  */
 public class IconGlyph
-    extends Glyph
+    extends BasicGlyph
+    implements Glyph
 {
     //~ Static fields/initializers ---------------------------------------------
 

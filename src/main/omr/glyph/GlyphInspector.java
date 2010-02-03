@@ -13,6 +13,8 @@ package omr.glyph;
 
 import omr.constant.ConstantSet;
 
+import omr.glyph.facets.Glyph;
+
 import omr.log.Logger;
 
 import omr.score.common.PixelPoint;

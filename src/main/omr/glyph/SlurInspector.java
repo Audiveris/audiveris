@@ -13,6 +13,9 @@ package omr.glyph;
 
 import omr.constant.ConstantSet;
 
+import omr.glyph.facets.BasicStick;
+import omr.glyph.facets.Glyph;
+
 import omr.lag.Section;
 
 import omr.log.Logger;
@@ -21,8 +24,6 @@ import omr.math.Circle;
 
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
-
-import omr.stick.Stick;
 
 import omr.util.Implement;
 
@@ -266,7 +267,7 @@ public class SlurInspector
 
                 if (distance <= distThreshold) {
                     // Build new slur glyph with sections kept
-                    Glyph newGlyph = new Stick(interline);
+                    Glyph newGlyph = new BasicStick(interline);
 
                     for (GlyphSection section : kept) {
                         newGlyph.addSection(section, /* link => */

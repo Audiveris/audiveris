@@ -14,10 +14,10 @@ package omr.glyph.ui;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.Glyph;
 import omr.glyph.GlyphRegression;
 import omr.glyph.Shape;
 import omr.glyph.ShapeRange;
+import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 

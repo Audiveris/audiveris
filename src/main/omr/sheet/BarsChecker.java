@@ -24,6 +24,7 @@ import omr.constant.ConstantSet;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 import omr.glyph.Shape;
+import omr.glyph.facets.Stick;
 
 import omr.lag.JunctionDeltaPolicy;
 import omr.lag.SectionsBuilder;
@@ -31,8 +32,6 @@ import omr.lag.SectionsBuilder;
 import omr.log.Logger;
 
 import omr.step.StepException;
-
-import omr.stick.Stick;
 
 import omr.util.Implement;
 

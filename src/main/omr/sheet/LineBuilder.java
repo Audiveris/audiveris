@@ -17,6 +17,7 @@ import omr.constant.ConstantSet;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 import omr.glyph.Shape;
+import omr.glyph.facets.Stick;
 
 import omr.lag.Run;
 
@@ -339,7 +340,7 @@ public class LineBuilder
             while (si.hasNext()) {
                 Stick stick = si.next();
                 System.out.print(i++ + " ");
-                stick.dump(false);
+                stick.dump();
             }
         }
 

@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.glyph;
 
+import omr.glyph.facets.Glyph;
 import omr.glyph.text.TextInfo;
 import omr.glyph.text.TextRole;
 

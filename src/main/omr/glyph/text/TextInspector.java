@@ -12,8 +12,8 @@
 package omr.glyph.text;
 
 import omr.glyph.Evaluation;
-import omr.glyph.Glyph;
 import omr.glyph.Shape;
+import omr.glyph.facets.Glyph;
 
 import omr.lag.HorizontalOrientation;
 

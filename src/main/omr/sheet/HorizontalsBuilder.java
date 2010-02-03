@@ -22,11 +22,12 @@ import omr.check.SuccessResult;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 import omr.glyph.GlyphsModel;
 import omr.glyph.Shape;
+import omr.glyph.facets.Glyph;
+import omr.glyph.facets.Stick;
 import omr.glyph.ui.DashMenu;
 import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphLagView;
@@ -50,7 +51,6 @@ import omr.step.Step;
 import omr.step.StepException;
 
 import omr.stick.LineCleaner;
-import omr.stick.Stick;
 
 import omr.ui.BoardsPane;
 

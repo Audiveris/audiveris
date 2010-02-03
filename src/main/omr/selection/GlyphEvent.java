@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.selection;
 
-import omr.glyph.Glyph;
+import omr.glyph.facets.Glyph;
 
 /**
  * Class <code>GlyphEvent</code> represents a Glyph selection

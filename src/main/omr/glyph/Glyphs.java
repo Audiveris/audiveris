@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.glyph;
 
+import omr.glyph.facets.Glyph;
+
 import omr.log.Logger;
 
 import omr.score.common.PixelRectangle;

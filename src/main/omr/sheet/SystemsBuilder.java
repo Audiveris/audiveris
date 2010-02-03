@@ -19,11 +19,12 @@ import omr.check.CheckSuite;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.Glyphs;
 import omr.glyph.GlyphsModel;
 import omr.glyph.Shape;
+import omr.glyph.facets.Glyph;
+import omr.glyph.facets.Stick;
 import omr.glyph.ui.BarMenu;
 import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphLagView;
@@ -58,7 +59,6 @@ import omr.sheet.ui.SheetPainter;
 import omr.step.Step;
 import omr.step.StepException;
 
-import omr.stick.Stick;
 import omr.stick.StickSection;
 
 import omr.ui.BoardsPane;

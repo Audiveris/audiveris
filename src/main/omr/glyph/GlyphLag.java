@@ -11,6 +11,11 @@
 // </editor-fold>
 package omr.glyph;
 
+import omr.glyph.facets.BasicGlyph;
+import omr.glyph.facets.BasicStick;
+import omr.glyph.facets.Glyph;
+import omr.glyph.facets.Stick;
+
 import omr.lag.Lag;
 import omr.lag.Oriented;
 import omr.lag.Section;
@@ -19,8 +24,6 @@ import omr.log.Logger;
 
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphSetEvent;
-
-import omr.stick.Stick;
 
 import java.awt.Rectangle;
 import java.util.*;
@@ -474,9 +477,9 @@ public class GlyphLag
         Glyph glyph = null;
 
         if (alien instanceof Stick) {
-            glyph = new Stick(alien.getInterline());
+            glyph = new BasicStick(alien.getInterline());
         } else {
-            glyph = new Glyph();
+            glyph = new BasicGlyph(alien.getInterline());
         }
 
         for (GlyphSection section : newSections) {

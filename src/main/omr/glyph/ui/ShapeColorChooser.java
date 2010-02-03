@@ -399,10 +399,7 @@ public class ShapeColorChooser
             menu.removeAll();
 
             // Add all shapes within current range
-            ShapeRange.addRangeItems(
-                ranges.current,
-                menu,
-                selectionListener);
+            ShapeRange.addRangeItems(ranges.current, menu, selectionListener);
         }
 
         private void prepareDefaultOption ()

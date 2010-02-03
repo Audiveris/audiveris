@@ -18,7 +18,8 @@ import omr.check.FailureResult;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
-import omr.glyph.Glyph;
+import omr.glyph.facets.Glyph;
+import omr.glyph.facets.Stick;
 
 import omr.log.Logger;
 
@@ -28,8 +29,6 @@ import omr.score.entity.Measure;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
-
-import omr.stick.Stick;
 
 import omr.util.TreeNode;
 

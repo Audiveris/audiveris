@@ -15,14 +15,14 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 import static omr.glyph.Shape.*;
 import static omr.glyph.ShapeRange.*;
+import omr.glyph.facets.Glyph;
+import omr.glyph.facets.Stick;
 
 import omr.log.Logger;
 
 import omr.score.common.PixelRectangle;
 
 import omr.sheet.Scale;
-
-import omr.stick.Stick;
 
 import java.util.*;
 

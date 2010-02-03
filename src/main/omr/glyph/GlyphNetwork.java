@@ -15,6 +15,7 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphEvaluator.StartingMode;
+import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 

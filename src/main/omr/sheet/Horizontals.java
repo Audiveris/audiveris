@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.glyph.Glyph;
+import omr.glyph.facets.Glyph;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -14,12 +14,12 @@ package omr.score;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
-import omr.glyph.Glyph;
 import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.ShapeRange;
+import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 

@@ -15,6 +15,7 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.*;
+import omr.glyph.facets.Glyph;
 
 import omr.lag.HorizontalOrientation;
 import omr.lag.Oriented;

@@ -15,12 +15,12 @@ import omr.Main;
 
 import omr.constant.ConstantSet;
 
-import omr.glyph.Glyph;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.SymbolsModel;
+import omr.glyph.facets.Glyph;
 import omr.glyph.ui.SymbolsController;
 import omr.glyph.ui.SymbolsEditor;
 

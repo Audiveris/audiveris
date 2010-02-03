@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.stick.Stick;
+import omr.glyph.facets.Stick;
 
 /**
  * Class <code>Ledger</code> is a physical {@link Dash} which is logically a
