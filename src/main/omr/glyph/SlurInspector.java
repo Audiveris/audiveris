@@ -429,7 +429,7 @@ public class SlurInspector
         }
 
         // Sort suitable glyphs by decreasing weight
-        Collections.sort(suitables, Glyphs.reverseWeightComparator);
+        Collections.sort(suitables, Glyph.reverseWeightComparator);
 
         // Process that slur, looking at neighbors
         Glyph compound = system.tryCompound(oldSlur, suitables, adapter);

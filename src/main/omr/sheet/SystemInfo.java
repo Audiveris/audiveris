@@ -124,7 +124,7 @@ public class SystemInfo
 
     /** Collection of (active?) glyphs in this system */
     private final SortedSet<Glyph> glyphs = new ConcurrentSkipListSet<Glyph>(
-        Glyphs.globalComparator);
+        Glyph.globalComparator);
 
     /** Unmodifiable view of the glyphs collection */
     private final SortedSet<Glyph> glyphsView = Collections.unmodifiableSortedSet(

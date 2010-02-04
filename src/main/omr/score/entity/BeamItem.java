@@ -293,7 +293,7 @@ public class BeamItem
     public int compareTo (BeamItem other)
     {
         // Delegate to underlying glyph
-        return Glyphs.globalComparator.compare(glyph, other.glyph);
+        return Glyph.globalComparator.compare(glyph, other.glyph);
     }
 
     //----------//

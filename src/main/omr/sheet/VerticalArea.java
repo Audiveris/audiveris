@@ -17,7 +17,7 @@ import omr.constant.ConstantSet;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 import omr.glyph.Glyphs;
-import omr.glyph.facets.Stick;
+import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
@@ -31,7 +31,6 @@ import omr.util.Predicate;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 
 /**
  * Class <code>VerticalArea</code> processes a vertical lag to extract vertical
@@ -147,7 +146,7 @@ public class VerticalArea
             constants.maxDeltaSlope.getValue());
 
         // Sort sticks found (TODO: is this useful?)
-        Collections.sort(sticks, Glyphs.idComparator);
+        Collections.sort(sticks, Glyph.idComparator);
 
         if (logger.isFineEnabled()) {
             logger.fine(

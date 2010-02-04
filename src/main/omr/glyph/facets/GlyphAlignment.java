@@ -17,7 +17,6 @@ import omr.score.common.PixelPoint;
 
 import java.awt.Graphics;
 import java.awt.Rectangle;
-import java.util.Comparator;
 
 /**
  * Interface {@code GlyphAlignment} describes glyph alignment, either
@@ -34,31 +33,6 @@ import java.util.Comparator;
 interface GlyphAlignment
     extends GlyphFacet
 {
-    //~ Instance fields --------------------------------------------------------
-
-    /**
-     * For comparing Stick instances according to their mid position
-     */
-    Comparator<Stick> midPosComparator = new Comparator<Stick>() {
-        public int compare (Stick s1,
-                            Stick s2)
-        {
-            return s1.getMidPos() - s2.getMidPos();
-        }
-    };
-
-    /**
-     * For comparing Stick instances on decreasing length
-     */
-    Comparator<Stick> reverseLengthComparator = new Comparator<Stick>() {
-        public int compare (Stick s1,
-                            Stick s2)
-        {
-            return s2.getLength() - s1.getLength();
-        }
-    };
-
-
     //~ Methods ----------------------------------------------------------------
 
     //------------------//

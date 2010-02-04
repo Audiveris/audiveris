@@ -692,7 +692,7 @@ public class GlyphInspector
         }
 
         // Sort suitable glyphs by decreasing weight
-        Collections.sort(suitables, Glyphs.reverseWeightComparator);
+        Collections.sort(suitables, Glyph.reverseWeightComparator);
 
         // Now process each seed in turn, by looking at smaller ones
         for (int index = 0; index < suitables.size(); index++) {

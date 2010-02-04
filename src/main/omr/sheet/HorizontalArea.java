@@ -15,7 +15,7 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
-import omr.glyph.Glyphs;
+import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
@@ -93,7 +93,7 @@ public class HorizontalArea
             constants.maxDeltaSlope.getValue());
 
         // Sort sticks found
-        Collections.sort(sticks, Glyphs.idComparator);
+        Collections.sort(sticks, Glyph.idComparator);
 
         if (logger.isFineEnabled()) {
             logger.fine(

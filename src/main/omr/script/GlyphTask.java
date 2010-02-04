@@ -82,7 +82,7 @@ public abstract class GlyphTask
                       Collection<Glyph> glyphs)
     {
         this.orientation = orientation;
-        this.glyphs = new TreeSet<Glyph>(Glyphs.globalComparator);
+        this.glyphs = new TreeSet<Glyph>(Glyph.globalComparator);
         this.glyphs.addAll(glyphs);
 
         sectionSets = SectionSets.createFromGlyphs(glyphs);
@@ -177,7 +177,7 @@ public abstract class GlyphTask
 
         // Make sure the concrete sections and glyphs are available
         if (glyphs == null) {
-            glyphs = new TreeSet<Glyph>(Glyphs.globalComparator);
+            glyphs = new TreeSet<Glyph>(Glyph.globalComparator);
 
             for (Collection<GlyphSection> set : sectionSets.getSets(
                 sheet,

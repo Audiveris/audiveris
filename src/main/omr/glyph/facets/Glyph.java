@@ -13,6 +13,9 @@ package omr.glyph.facets;
 
 import omr.check.Checkable;
 
+import java.awt.Point;
+import java.util.Comparator;
+
 /**
  * Interface {@code Glyph} represents any glyph found, such as stem, ledger,
  * accidental, note head, etc...
@@ -33,4 +36,56 @@ public interface Glyph
                 GlyphEnvironment, GlyphGeometry, GlyphRecognition,
                 GlyphTranslation
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** For comparing glyphs according to their decreasing weight */
+    public static final Comparator<Glyph> reverseWeightComparator = new Comparator<Glyph>() {
+        public int compare (Glyph o1,
+                            Glyph o2)
+        {
+            return o2.getWeight() - o1.getWeight();
+        }
+    };
+
+    /** For comparing glyphs according to their id */
+    public static final Comparator<Glyph> idComparator = new Comparator<Glyph>() {
+        public int compare (Glyph o1,
+                            Glyph o2)
+        {
+            return o1.getId() - o2.getId();
+        }
+    };
+
+    /** For comparing glyphs according to their abscissa, then ordinate, then id */
+    public static final Comparator<Glyph> globalComparator = new Comparator<Glyph>() {
+        public int compare (Glyph o1,
+                            Glyph o2)
+        {
+            if (o1 == o2) {
+                return 0;
+            }
+
+            Point ref = o1.getContourBox()
+                          .getLocation();
+            Point otherRef = o2.getContourBox()
+                               .getLocation();
+
+            // Are x values different?
+            int dx = ref.x - otherRef.x;
+
+            if (dx != 0) {
+                return dx;
+            }
+
+            // Vertically aligned, so use ordinates
+            int dy = ref.y - otherRef.y;
+
+            if (dy != 0) {
+                return dy;
+            }
+
+            // Finally, use id ...
+            return o1.getId() - o2.getId();
+        }
+    };
 }

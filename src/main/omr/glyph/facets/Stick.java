@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.glyph.facets;
 
+import java.util.Comparator;
 
 /**
  * Interface {@code } describes a stick, a special kind of glyph, either
@@ -28,4 +29,27 @@ package omr.glyph.facets;
 public interface Stick
     extends Glyph, GlyphAlignment
 {
+    //~ Instance fields --------------------------------------------------------
+
+    /**
+     * For comparing Stick instances according to their mid position
+     */
+    Comparator<Stick> midPosComparator = new Comparator<Stick>() {
+        public int compare (Stick s1,
+                            Stick s2)
+        {
+            return s1.getMidPos() - s2.getMidPos();
+        }
+    };
+
+    /**
+     * For comparing Stick instances on decreasing length
+     */
+    Comparator<Stick> reverseLengthComparator = new Comparator<Stick>() {
+        public int compare (Stick s1,
+                            Stick s2)
+        {
+            return s2.getLength() - s1.getLength();
+        }
+    };
 }

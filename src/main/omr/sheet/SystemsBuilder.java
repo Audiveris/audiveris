@@ -307,7 +307,7 @@ public class SystemsBuilder
         // We need an abscissa-ordered collection of glyphs, so that system
         // defining bars are seen first
         List<Glyph> glyphs = new ArrayList<Glyph>(lag.getAllGlyphs());
-        Collections.sort(glyphs, Glyphs.globalComparator);
+        Collections.sort(glyphs, Glyph.globalComparator);
 
         for (Glyph glyph : glyphs) {
             Stick stick = (Stick) glyph;
