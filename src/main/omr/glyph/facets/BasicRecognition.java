@@ -90,6 +90,22 @@ class BasicRecognition
         }
     }
 
+    //---------------//
+    // setEvaluation //
+    //---------------//
+    public void setEvaluation (Evaluation evaluation)
+    {
+        this.evaluation = evaluation;
+    }
+
+    //---------------//
+    // getEvaluation //
+    //---------------//
+    public Evaluation getEvaluation ()
+    {
+        return evaluation;
+    }
+
     //---------//
     // isKnown //
     //---------//
@@ -239,8 +255,7 @@ class BasicRecognition
     @Override
     public void dump ()
     {
-        System.out.println("   shape=" + getShape());
-        System.out.println("   doubt=" + getDoubt());
+        System.out.println("   evaluation=" + evaluation);
         System.out.println(
             "   training=" +
             ((getShape() != null) ? getShape().getTrainingShape() : null));

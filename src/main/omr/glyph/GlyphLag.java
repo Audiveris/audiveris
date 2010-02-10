@@ -22,6 +22,8 @@ import omr.lag.Section;
 
 import omr.log.Logger;
 
+import omr.score.common.PixelPoint;
+
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphSetEvent;
 
@@ -85,9 +87,16 @@ public class GlyphLag
 
     /**
      * Collection of active glyphs. This is derived from the activeMap, to give
-     * direct access to all the active glyphs. It is kept in sync with activeMap.
+     * direct access to all the active glyphs, and is kept in sync with
+     * activeMap. It also contains the virtual glyphs since these are always
+     * active.
      */
     private Set<Glyph> activeGlyphs;
+
+    /**
+     * Collection of virtual glyphs (with no underlying sections)
+     */
+    private Set<Glyph> virtualGlyphs = new HashSet<Glyph>();
 
     /** Global id to uniquely identify a glyph */
     private final AtomicInteger globalGlyphId = new AtomicInteger(0);
@@ -125,6 +134,7 @@ public class GlyphLag
     {
         if (activeGlyphs == null) {
             activeGlyphs = Glyphs.sortedSet(activeMap.values());
+            activeGlyphs.addAll(virtualGlyphs);
         }
 
         return Collections.unmodifiableCollection(activeGlyphs);
@@ -203,6 +213,19 @@ public class GlyphLag
                                 .getSelection(GlyphSetEvent.class);
     }
 
+//    //------------------//
+//    // getVirtualGlyphs //
+//    //------------------//
+//    /**
+//     * Export the unmodifiable collection of virtual glyphs of the lag.
+//     *
+//     * @return the collection of virtual glyphs
+//     */
+//    public synchronized Collection<Glyph> getVirtualGlyphs ()
+//    {
+//        return Collections.unmodifiableCollection(virtualGlyphs);
+//    }
+
     //----------//
     // addGlyph //
     //----------//
@@ -247,6 +270,11 @@ public class GlyphLag
 
         // Make absolutely all its sections point back to it
         glyph.linkAllSections();
+
+        // Special for virtual glyphs
+        if (glyph.isVirtual()) {
+            virtualGlyphs.add(glyph);
+        }
 
         return glyph;
     }
@@ -301,17 +329,7 @@ public class GlyphLag
         Set<Glyph> set = new LinkedHashSet<Glyph>();
 
         for (Glyph glyph : collection) {
-            boolean inRect = true;
-            sectionTest: 
-            for (GlyphSection section : glyph.getMembers()) {
-                if (!rect.contains(section.getContourBox())) {
-                    inRect = false;
-
-                    break sectionTest;
-                }
-            }
-
-            if (inRect) {
+            if (rect.contains(glyph.getContourBox())) {
                 set.add(glyph);
             }
         }
@@ -334,33 +352,24 @@ public class GlyphLag
         return lookupGlyphs(getActiveGlyphs(), rect);
     }
 
-    //----------//
-    // toString //
-    //----------//
+    //--------------------//
+    // lookupVirtualGlyph //
+    //--------------------//
     /**
-     * Return a readable description
-     *
-     * @return the descriptive string
+     * Look for a virtual glyph whose box contains the designated point
+     * @param point the designated point
+     * @return the virtual glyph found, or null
      */
-    @Override
-    public String toString ()
+    public Glyph lookupVirtualGlyph (PixelPoint point)
     {
-        StringBuffer sb = new StringBuffer(256);
-
-        sb.append(super.toString());
-
-        //        // Active/All glyphs
-        //        sb.append(" glyphs=")
-        //          .append(getActiveGlyphs().size())
-        //          .append("/")
-        //          .append(allGlyphs.size());
-        if (this.getClass()
-                .getName()
-                .equals(GlyphLag.class.getName())) {
-            sb.append("}");
+        for (Glyph virtual : virtualGlyphs) {
+            if (virtual.getContourBox()
+                       .contains(point)) {
+                return virtual;
+            }
         }
 
-        return sb.toString();
+        return null;
     }
 
     //----------------------//
@@ -398,19 +407,21 @@ public class GlyphLag
         }
     }
 
-    //-----------//
-    // getPrefix //
-    //-----------//
-    /**
-     * Return a distinctive string, to be used as a prefix in toString() for
-     * example.
-     *
-     * @return the prefix string
-     */
+    //-----------------//
+    // internalsString //
+    //-----------------//
     @Override
-    protected String getPrefix ()
+    protected String internalsString ()
     {
-        return "GlyphLag";
+        StringBuffer sb = new StringBuffer(super.internalsString());
+
+        // Active/All glyphs
+        sb.append(" glyphs=")
+          .append(getActiveGlyphs().size())
+          .append("/")
+          .append(allGlyphs.size());
+
+        return sb.toString();
     }
 
     //------------//
@@ -483,7 +494,7 @@ public class GlyphLag
         }
 
         for (GlyphSection section : newSections) {
-            glyph.addSection(section, true);
+            glyph.addSection(section, Glyph.Linking.LINK_BACK);
         }
 
         // Add/get original glyph

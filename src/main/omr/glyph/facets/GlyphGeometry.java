@@ -36,7 +36,7 @@ interface GlyphGeometry
     // getAreaCenter //
     //---------------//
     /**
-     * Report the glyph area center. The point is lazily evaluated.
+     * Report the glyph area center (The point is lazily evaluated)
      *
      * @return the area center point
      */
@@ -171,4 +171,15 @@ interface GlyphGeometry
      * Compute all the moments for this glyph
      */
     void computeMoments ();
+
+    //-------//
+    // shift //
+    //-------//
+    /**
+     * Shift the glyph from its current location, according to the provided
+     * vector
+     *
+     * @param vector the (dx, dy) translation
+     */
+    void shift (PixelPoint vector);
 }

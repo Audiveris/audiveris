@@ -164,7 +164,7 @@ public class SectionBoard
                          final Lag lag)
     {
         super(
-            unitName + "-SectionBoard",
+            unitName + "-SectionBoard", "Section", 
             lag.getSelectionService(),
             eventClasses);
 
@@ -270,13 +270,11 @@ public class SectionBoard
     private void defineLayout ()
     {
         FormLayout   layout = Panel.makeFormLayout(4, 3);
-        PanelBuilder builder = new PanelBuilder(layout, getComponent());
+        PanelBuilder builder = new PanelBuilder(layout, getBody());
         builder.setDefaultDialogBorder();
 
         CellConstraints cst = new CellConstraints();
-
         int             r = 1; // --------------------------------
-        builder.addSeparator("Section", cst.xyw(1, r, 6));
 
         builder.add(lagName, cst.xy(7, r));
 

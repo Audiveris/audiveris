@@ -80,20 +80,20 @@ class BasicAdministration
         return lag;
     }
 
-    //-----------//
-    // getPrefix //
-    //-----------//
-    public String getPrefix ()
-    {
-        return "Glyph";
-    }
-
     //-------------//
     // isTransient //
     //-------------//
     public boolean isTransient ()
     {
         return id == 0;
+    }
+
+    //-----------//
+    // isVirtual //
+    //-----------//
+    public boolean isVirtual ()
+    {
+        return false;
     }
 
     //------//

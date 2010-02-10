@@ -253,13 +253,15 @@ public class GlyphLagView
      */
     public Set<Glyph> lookupGlyphs (Rectangle rect)
     {
-        Set<Glyph> found;
+        Set<Glyph> found = null;
         GlyphLag   gLag = getLag();
 
         // Specific glyphs if any
         if (showingSpecifics()) {
             found = gLag.lookupGlyphs(specificGlyphs, rect);
-        } else {
+        }
+
+        if ((found == null) || found.isEmpty()) {
             found = gLag.lookupGlyphs(rect);
         }
 
@@ -558,9 +560,9 @@ public class GlyphLagView
             return;
         }
 
-        SelectionHint hint = sheetLocationEvent.hint;
-        MouseMovement movement = sheetLocationEvent.movement;
-        Rectangle     rect = sheetLocationEvent.rectangle;
+        SelectionHint  hint = sheetLocationEvent.hint;
+        MouseMovement  movement = sheetLocationEvent.movement;
+        PixelRectangle rect = sheetLocationEvent.rectangle;
 
         if ((hint != LOCATION_ADD) && (hint != LOCATION_INIT)) {
             return;
@@ -588,17 +590,22 @@ public class GlyphLagView
             }
         } else {
             // This is just a point
-            // If a section has just been found,
-            // forward its assigned glyph if any
+            // Give priority to virtual glyph rectangle
+            // If a section has just been found, forward its assigned glyph
             if ((subscribersCount(GlyphEvent.class) > 0) &&
                 (subscribersCount(SectionEvent.class) > 0)) { // TODO GlyphLag itself
 
-                Glyph        glyph = null;
-                GlyphSection section = getLag()
-                                           .getSelectedSection();
+                Glyph glyph = getLag()
+                                  .lookupVirtualGlyph(
+                    new PixelPoint(rect.getLocation()));
 
-                if (section != null) {
-                    glyph = section.getGlyph();
+                if (glyph == null) {
+                    GlyphSection section = getLag()
+                                               .getSelectedSection();
+
+                    if (section != null) {
+                        glyph = section.getGlyph();
+                    }
                 }
 
                 // Publish Glyph

@@ -13,6 +13,7 @@ package omr.glyph.facets;
 
 import omr.check.Result;
 
+import omr.glyph.Evaluation;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 import omr.glyph.GlyphSignature;
@@ -167,6 +168,16 @@ public class BasicGlyph
     public double getDoubt ()
     {
         return recognition.getDoubt();
+    }
+
+    public void setEvaluation (Evaluation evaluation)
+    {
+        recognition.setEvaluation(evaluation);
+    }
+
+    public Evaluation getEvaluation ()
+    {
+        return recognition.getEvaluation();
     }
 
     public GlyphSection getFirstSection ()
@@ -404,6 +415,11 @@ public class BasicGlyph
         return translation.getTranslations();
     }
 
+    public boolean isVirtual ()
+    {
+        return administration.isVirtual();
+    }
+
     public int getWeight ()
     {
         return geometry.getWeight();
@@ -425,13 +441,13 @@ public class BasicGlyph
     }
 
     public void addGlyphSections (Glyph   other,
-                                  boolean linkSections)
+                                  Linking linkSections)
     {
         composition.addGlyphSections(other, linkSections);
     }
 
     public void addSection (GlyphSection section,
-                            boolean      link)
+                            Linking      link)
     {
         composition.addSection(section, link);
     }
@@ -526,6 +542,11 @@ public class BasicGlyph
         display.recolorize(viewIndex);
     }
 
+    public void shift (PixelPoint vector)
+    {
+        geometry.shift(vector);
+    }
+
     //----------//
     // toString //
     //----------//
@@ -539,11 +560,8 @@ public class BasicGlyph
           .append(getId());
 
         if (getShape() != null) {
-            sb.append(" shape=")
-              .append(getShape())
-              .append("(")
-              .append(String.format("%.3f", getDoubt()))
-              .append(")");
+            sb.append(" ")
+              .append(recognition.getEvaluation());
 
             if (getShape()
                     .getTrainingShape() != getShape()) {

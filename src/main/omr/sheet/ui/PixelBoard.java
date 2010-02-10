@@ -109,6 +109,7 @@ public class PixelBoard
     {
         super(
             unitName + "-PixelBoard",
+            "Pixel",
             sheet.getSelectionService(),
             eventClasses);
 
@@ -194,15 +195,12 @@ public class PixelBoard
                 { 3, 7, 11 }
             });
 
-        PanelBuilder builder = new PanelBuilder(layout, getComponent());
+        PanelBuilder builder = new PanelBuilder(layout, getBody());
         builder.setDefaultDialogBorder();
 
         CellConstraints cst = new CellConstraints();
 
         int             r = 1; // --------------------------------
-        builder.addSeparator("Pixel", cst.xyw(1, r, 11));
-
-        r += 2; // --------------------------------
         builder.add(x.getLabel(), cst.xy(1, r));
         builder.add(x.getField(), cst.xy(3, r));
         x.getField()
@@ -223,6 +221,51 @@ public class PixelBoard
     }
 
     //~ Inner Classes ----------------------------------------------------------
+
+    //
+    //    private class Groom
+    //    {
+    //        //~ Instance fields ----------------------------------------------------
+    //
+    //        boolean     collapsed = false;
+    //        GroomAction action = new GroomAction();
+    //        JButton     button = new JButton("Essai");
+    //
+    //        //~ Methods ------------------------------------------------------------
+    //
+    //        JButton getButton ()
+    //        {
+    //            return button;
+    //        }
+    //    }
+    //
+    //    private class GroomAction
+    //        extends AbstractAction
+    //    {
+    //        //~ Constructors -------------------------------------------------------
+    //
+    //        public GroomAction ()
+    //        {
+    //            super("-");
+    //            putValue(Action.SHORT_DESCRIPTION, "Collapse");
+    //        }
+    //
+    //        //~ Methods ------------------------------------------------------------
+    //
+    //        public void actionPerformed (ActionEvent e)
+    //        {
+    //            logger.info("Groom action");
+    //            groom.collapsed = !groom.collapsed;
+    //
+    //            if (groom.collapsed) {
+    //                putValue(Action.NAME, "+");
+    //                putValue(Action.SHORT_DESCRIPTION, "Expand");
+    //            } else {
+    //                putValue(Action.NAME, "-");
+    //                putValue(Action.SHORT_DESCRIPTION, "Collapse");
+    //            }
+    //        }
+    //    }
 
     //-------------//
     // ParamAction //

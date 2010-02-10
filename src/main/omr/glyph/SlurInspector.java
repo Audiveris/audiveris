@@ -270,8 +270,7 @@ public class SlurInspector
                     Glyph newGlyph = new BasicStick(interline);
 
                     for (GlyphSection section : kept) {
-                        newGlyph.addSection(section, /* link => */
-                                            true);
+                        newGlyph.addSection(section, Glyph.Linking.LINK_BACK);
                     }
 
                     newGlyph.setShape(Shape.SLUR);

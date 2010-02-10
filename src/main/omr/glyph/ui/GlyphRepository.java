@@ -409,7 +409,7 @@ public class GlyphRepository
 
         ///final long startTime = System.currentTimeMillis();
         for (Glyph glyph : sheet.getActiveGlyphs()) {
-            if (glyph.getShape() != null) {
+            if (!glyph.isVirtual() && (glyph.getShape() != null)) {
                 Shape shape = glyph.getShape()
                                    .getTrainingShape();
 

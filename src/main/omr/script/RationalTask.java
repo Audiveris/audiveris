@@ -29,11 +29,11 @@ import javax.xml.bind.annotation.XmlElement;
  * @author Hervé Bitteur
  */
 public class RationalTask
-    extends GlyphTask
+    extends GlyphUpdateTask
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** Type of the rationalual glyph */
+    /** Type of the rational glyph */
     @XmlElement
     private final Rational rational;
 

@@ -24,7 +24,7 @@ import java.util.Collection;
  * @author Hervé Bitteur
  */
 public class SegmentTask
-    extends GlyphTask
+    extends GlyphUpdateTask
 {
     //~ Instance fields --------------------------------------------------------
 

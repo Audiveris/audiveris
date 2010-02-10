@@ -147,41 +147,19 @@ public class StickSection
         return relation;
     }
 
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * A readable description of this entity
-     *
-     * @return the string
-     */
+    //-----------------//
+    // internalsString //
+    //-----------------//
     @Override
-    public String toString ()
+    protected String internalsString ()
     {
-        StringBuffer sb = new StringBuffer(256);
-
-        sb.append(super.toString());
+        StringBuffer sb = new StringBuffer(super.internalsString());
 
         if (relation != null) {
             sb.append(" ")
               .append(relation);
         }
 
-        if (this.getClass()
-                .getName()
-                .equals(StickSection.class.getName())) {
-            sb.append("}");
-        }
-
         return sb.toString();
-    }
-
-    //-----------//
-    // getPrefix //
-    //-----------//
-    @Override
-    protected String getPrefix ()
-    {
-        return "SS";
     }
 }

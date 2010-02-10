@@ -73,4 +73,13 @@ interface GlyphAdministration
      * @return true if transient
      */
     boolean isTransient ();
+
+    //-----------//
+    // isVirtual //
+    //-----------//
+    /**
+     * Report whether this glyph is virtual (rather than real)
+     * @return true if virtual
+     */
+    boolean isVirtual ();
 }

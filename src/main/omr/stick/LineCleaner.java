@@ -18,6 +18,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
+import omr.glyph.facets.Glyph;
 import omr.glyph.facets.Stick;
 import omr.glyph.ui.GlyphLagView;
 
@@ -226,8 +227,7 @@ public class LineCleaner
 
             // Include the border sections as line members
             for (GlyphSection s : borders) {
-                lineStick.addSection(s, /* link=> */
-                                     true);
+                lineStick.addSection(s, Glyph.Linking.LINK_BACK);
             }
 
             // Extend crossing objects for borders

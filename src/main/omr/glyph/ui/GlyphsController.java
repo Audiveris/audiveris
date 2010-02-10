@@ -192,6 +192,15 @@ public class GlyphsController
                                    final Shape             shape,
                                    final boolean           compound)
     {
+        // Safety check: we cannot alter virtual glyphs
+        for (Glyph glyph : glyphs) {
+            if (glyph.isVirtual()) {
+                logger.warning("Cannot alter VirtualGlyph#" + glyph.getId());
+
+                return null;
+            }
+        }
+
         if (ShapeRange.Barlines.contains(shape) || Glyphs.hasBars(glyphs)) {
             // Special case for barlines
             return new BarlineTask(shape, compound, glyphs).launch(sheet);

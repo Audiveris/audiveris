@@ -431,30 +431,17 @@ public abstract class Vertex<D extends Digraph, V extends Vertex<D, V, SIG>, SIG
     //----------//
     // toString //
     //----------//
-    /**
-     * Return a readable description of the vertex
-     *
-     * @return the string
-     */
     @Override
     public String toString ()
     {
-        StringBuffer sb = new StringBuffer(25);
+        StringBuffer sb = new StringBuffer();
 
         sb.append("{")
-          .append(getPrefix())
+          .append(getClass().getSimpleName())
           .append("#")
           .append(id);
-        sb.append(" ")
-          .append(getInDegree());
-        sb.append("/")
-          .append(getOutDegree());
 
-        if (this.getClass()
-                .getName()
-                .equals(Vertex.class.getName())) {
-            sb.append("}");
-        }
+        sb.append(internalsString());
 
         return sb.toString();
     }
@@ -468,18 +455,26 @@ public abstract class Vertex<D extends Digraph, V extends Vertex<D, V, SIG>, SIG
      */
     protected abstract SIG computeSignature ();
 
-    //-----------//
-    // getPrefix //
-    //-----------//
+    //-----------------//
+    // internalsString //
+    //-----------------//
     /**
-     * Return a distinctive string, to be used as a prefix in toString() for
-     * example.
+     * Return the string of the internals of this class, typically for inclusion
+     * in a toString. The overriding methods, if any, should return a string
+     * that begins with a " " followed by some content.
      *
-     * @return the prefix string
+     * @return the string of internals
      */
-    protected String getPrefix ()
+    protected String internalsString ()
     {
-        return "Vertex";
+        StringBuffer sb = new StringBuffer(25);
+
+        sb.append(" ")
+          .append(getInDegree());
+        sb.append("/")
+          .append(getOutDegree());
+
+        return sb.toString();
     }
 
     //----------//

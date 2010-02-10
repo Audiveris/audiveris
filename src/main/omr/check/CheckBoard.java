@@ -63,7 +63,7 @@ public class CheckBoard<C extends Checkable>
                        SelectionService                      selectionService,
                        Collection<Class<?extends UserEvent>> eventList)
     {
-        super(name + "-CheckBoard", selectionService, eventList);
+        super(name + "-CheckBoard", "Check", selectionService, eventList);
         checkPanel = new CheckPanel<C>(suite);
 
         if (suite != null) {
@@ -144,7 +144,7 @@ public class CheckBoard<C extends Checkable>
     private void defineLayout (String name)
     {
         FormLayout   layout = new FormLayout("pref", "pref,pref,pref");
-        PanelBuilder builder = new PanelBuilder(layout, getComponent());
+        PanelBuilder builder = new PanelBuilder(layout, getBody());
         builder.setDefaultDialogBorder();
 
         CellConstraints cst = new CellConstraints();

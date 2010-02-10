@@ -28,7 +28,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class SlurTask
-    extends GlyphTask
+    extends GlyphUpdateTask
 {
     //~ Constructors -----------------------------------------------------------
 

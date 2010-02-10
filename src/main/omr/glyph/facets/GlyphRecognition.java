@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.glyph.facets;
 
+import omr.glyph.Evaluation;
 import omr.glyph.Shape;
 import omr.glyph.text.TextInfo;
 
@@ -56,6 +57,24 @@ interface GlyphRecognition
      * @return the doubt related to glyph shape
      */
     double getDoubt ();
+
+    //---------------//
+    // setEvaluation //
+    //---------------//
+    /**
+     * Assign an evaluation
+     * @param evaluation the evaluation pair, perhaps null
+     */
+    void setEvaluation (Evaluation evaluation);
+
+    //---------------//
+    // getEvaluation //
+    //---------------//
+    /**
+     * Report the evaluation, if any
+     * @return the evaluation pair (shape + doubt)
+     */
+    Evaluation getEvaluation ();
 
     //---------//
     // isKnown //

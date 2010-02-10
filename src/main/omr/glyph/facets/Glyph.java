@@ -32,9 +32,15 @@ import java.util.Comparator;
  * @author Hervé Bitteur
  */
 public interface Glyph
-    extends Checkable, GlyphAdministration, GlyphComposition, GlyphDisplay,
-                GlyphEnvironment, GlyphGeometry, GlyphRecognition,
-                GlyphTranslation
+    extends 
+/** For handling check results     */ Checkable, 
+/** For id and related lag         */ GlyphAdministration, 
+/** For member sections            */ GlyphComposition, 
+/** For display color              */ GlyphDisplay, 
+/** For items nearby               */ GlyphEnvironment, 
+/** For physical appearance        */ GlyphGeometry, 
+/** For shape assignment           */ GlyphRecognition, 
+/** For transtation to score items */ GlyphTranslation
 {
     //~ Static fields/initializers ---------------------------------------------
 

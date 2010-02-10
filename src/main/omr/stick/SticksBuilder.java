@@ -401,8 +401,7 @@ public class SticksBuilder
                             other.getId());
                     }
 
-                    other.addGlyphSections(stick, /* linkSections => */
-                                           true);
+                    other.addGlyphSections(stick, Glyph.Linking.LINK_BACK);
                     removals.add(stick);
 
                     break;
@@ -534,8 +533,7 @@ public class SticksBuilder
             if (section.isAggregable()) {
                 // Check that resulting stick thickness would still be OK
                 if (isClose(stick.getMembers(), section, maxThickness + 1)) {
-                    stick.addSection(section, /* link => */
-                                     true);
+                    stick.addSection(section, Glyph.Linking.LINK_BACK);
 
                     // Aggregate recursively other sections
                     for (GlyphSection source : section.getSources()) {

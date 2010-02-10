@@ -239,20 +239,13 @@ public class GlyphSection
         return this.getId() - other.getId();
     }
 
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * A readable description of this entity
-     *
-     * @return the string
-     */
+    //-----------------//
+    // internalsString //
+    //-----------------//
     @Override
-    public String toString ()
+    protected String internalsString ()
     {
-        StringBuffer sb = new StringBuffer(256);
-
-        sb.append(super.toString());
+        StringBuffer sb = new StringBuffer(super.internalsString());
 
         if (isPatch()) {
             sb.append(" patch");
@@ -273,26 +266,6 @@ public class GlyphSection
               .append(system.getId());
         }
 
-        if (this.getClass()
-                .getName()
-                .equals(GlyphSection.class.getName())) {
-            sb.append("}");
-        }
-
         return sb.toString();
-    }
-
-    //-----------//
-    // getPrefix //
-    //-----------//
-    /**
-     * Report a distinct prefix
-     *
-     * @return a prefix string
-     */
-    @Override
-    protected String getPrefix ()
-    {
-        return "GS";
     }
 }

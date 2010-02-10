@@ -129,6 +129,7 @@ public class ShapeFocusBoard
     {
         super(
             sheet.getRadix() + "-ShapeFocusBoard",
+            "Focus",
             controller.getLag().getSelectionService(),
             eventClasses);
 
@@ -205,6 +206,8 @@ public class ShapeFocusBoard
                     browser.addId(glyph.getId());
                 }
             }
+
+            expand(); // Expand this board if so needed
         } else {
             // Void the shape button
             selectButton.setText("- No Focus -");
@@ -299,6 +302,9 @@ public class ShapeFocusBoard
             // Update the shape button
             selectButton.setText("Glyphs similar to #" + example.getId());
             selectButton.setIcon(null);
+            
+            // Expand this board if so needed
+            expand();
         } else {
             // Void the shape button
             selectButton.setText("- No Focus -");
@@ -322,27 +328,7 @@ public class ShapeFocusBoard
     @Implement(EventSubscriber.class)
     public void onEvent (UserEvent event)
     {
-        //        try {
-        //            // Ignore RELEASING
-        //            if (event.movement == MouseMovement.RELEASING) {
-        //                return;
-        //            }
-        //
-        //            if (event instanceof GlyphEvent) {
-        //                GlyphEvent glyphEvent = (GlyphEvent) event;
-        //
-        //                if (glyphEvent.hint == SelectionHint.GLYPH_MODIFIED) {
-        //                    // Use glyph assigned shape as current shape, if not null
-        //                    Glyph glyph = glyphEvent.getData();
-        //
-        //                    if ((glyph != null) && (glyph.getShape() != null)) {
-        //                        setCurrentShape(glyph.getShape());
-        //                    }
-        //                }
-        //            }
-        //        } catch (Exception ex) {
-        //            logger.warning(getClass().getName() + " onEvent error", ex);
-        //        }
+        // Empty
     }
 
     //--------------//
@@ -360,13 +346,12 @@ public class ShapeFocusBoard
             buttonWidth,
             "pref," + fieldInterline + "," + "pref");
 
-        PanelBuilder builder = new PanelBuilder(layout, getComponent());
+        PanelBuilder builder = new PanelBuilder(layout, getBody());
         builder.setDefaultDialogBorder();
 
         CellConstraints cst = new CellConstraints();
 
         int             r = 1; // --------------------------------
-        builder.addSeparator("Focus", cst.xyw(1, r, 1));
         builder.add(selectButton, cst.xyw(3, r, 5));
 
         r += 2; // --------------------------------

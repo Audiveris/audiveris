@@ -98,6 +98,10 @@ public class Tuplet
                                  Measure     measure,
                                  SystemPoint point)
     {
+        if (logger.isFineEnabled()) {
+            logger.fine("Tuplet. populate " + glyph);
+        }
+
         // Let's gather the set of possible chords, ordered by their distance
         // (abscissa-based) to the position of the tuplet sign.
         SortedSet<Chord> candidates = new TreeSet<Chord>(

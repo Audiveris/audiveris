@@ -194,7 +194,7 @@ public class GlyphsModel
                 glyph = new BasicStick(sheet.getScale().interline());
 
                 for (Glyph g : glyphs) {
-                    glyph.addGlyphSections(g, false); // no linkSections
+                    glyph.addGlyphSections(g, Glyph.Linking.NO_LINK_BACK);
 
                     if (glyph.getLag() == null) {
                         glyph.setLag(g.getLag());

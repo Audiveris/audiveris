@@ -39,7 +39,6 @@ import omr.ui.field.LTextField;
 
 import omr.util.Implement;
 import omr.util.Predicate;
-import static omr.util.Synchronicity.*;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

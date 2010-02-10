@@ -952,7 +952,9 @@ public class Sheet
         Collection<Glyph> toRemove = new ArrayList<Glyph>();
 
         for (Glyph glyph : glyphs) {
-            SystemInfo glyphSystem = getSystemOf(glyph);
+            SystemInfo glyphSystem = glyph.isVirtual()
+                                     ? getSystemOf(glyph.getAreaCenter())
+                                     : getSystemOf(glyph);
 
             if (glyphSystem == null) {
                 toRemove.add(glyph);

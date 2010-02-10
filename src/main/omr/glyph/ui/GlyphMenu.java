@@ -73,6 +73,9 @@ public abstract class GlyphMenu
     /** Current number of stems */
     protected int stemNb;
 
+    /** Sure we have no virtual glyphs? */
+    protected boolean noVirtuals;
+
     //~ Constructors -----------------------------------------------------------
 
     //-----------//
@@ -121,6 +124,7 @@ public abstract class GlyphMenu
         glyphNb = glyphs.size();
         knownNb = 0;
         stemNb = 0;
+        noVirtuals = true;
 
         for (Glyph glyph : glyphs) {
             if (glyph.isKnown()) {
@@ -129,6 +133,10 @@ public abstract class GlyphMenu
                 if (glyph.getShape() == Shape.COMBINING_STEM) {
                     stemNb++;
                 }
+            }
+
+            if (glyph.isVirtual()) {
+                noVirtuals = false;
             }
         }
 
@@ -249,7 +257,7 @@ public abstract class GlyphMenu
         @Override
         public void update ()
         {
-            if (glyphNb > 1) {
+            if ((glyphNb > 1) && noVirtuals) {
                 setEnabled(true);
                 putValue(NAME, "Build compound as ...");
                 putValue(SHORT_DESCRIPTION, "Manually build a compound");
@@ -383,7 +391,7 @@ public abstract class GlyphMenu
         @Override
         public void update ()
         {
-            if (glyphNb > 0) {
+            if ((glyphNb > 0) && noVirtuals) {
                 setEnabled(true);
 
                 if (glyphNb == 1) {
@@ -448,7 +456,7 @@ public abstract class GlyphMenu
         @Override
         public void update ()
         {
-            if (knownNb > 0) {
+            if ((knownNb > 0) && noVirtuals) {
                 setEnabled(true);
 
                 StringBuilder sb = new StringBuilder();
@@ -572,7 +580,7 @@ public abstract class GlyphMenu
         {
             Shape latest = controller.getLatestShapeAssigned();
 
-            if ((glyphNb > 0) && (latest != null)) {
+            if ((glyphNb > 0) && (latest != null) && noVirtuals) {
                 setEnabled(true);
                 putValue(NAME, PREFIX + latest.toString());
                 putValue(SHORT_DESCRIPTION, "Assign latest shape");

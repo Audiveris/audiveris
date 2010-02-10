@@ -643,7 +643,7 @@ class GlyphBrowser
         //-----------//
         Navigator ()
         {
-            super("Glyph-Navigator", null, null);
+            super("Glyph-Navigator", "Navigator", null, null);
 
             defineLayout();
 
@@ -803,11 +803,10 @@ class GlyphBrowser
             FormLayout      layout = Panel.makeFormLayout(4, 3);
             PanelBuilder    builder = new PanelBuilder(
                 layout,
-                super.getComponent());
+                super.getBody());
             builder.setDefaultDialogBorder();
 
             int r = 1; // --------------------------------
-            builder.addSeparator("Navigator", cst.xyw(1, r, 9));
             builder.add(load, cst.xy(11, r));
 
             r += 2; // --------------------------------

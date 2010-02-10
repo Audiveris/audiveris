@@ -186,7 +186,7 @@ class BasicComposition
     // addGlyphSections //
     //------------------//
     public void addGlyphSections (Glyph   other,
-                                  boolean linkSections)
+                                  Linking linkSections)
     {
         // Update glyph info in other sections
         for (GlyphSection section : other.getMembers()) {
@@ -200,7 +200,7 @@ class BasicComposition
     // addSection //
     //------------//
     public void addSection (GlyphSection section,
-                            boolean      link)
+                            Linking      link)
     {
         // Nota: We must include the section in the glyph members before
         // linking back the section to the containing glyph.
@@ -212,7 +212,7 @@ class BasicComposition
         members.add(section);
 
         /** Second, update section data, if so desired */
-        if (link) {
+        if (link == Linking.LINK_BACK) {
             section.setGlyph(glyph);
         }
 

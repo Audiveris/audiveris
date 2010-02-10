@@ -52,6 +52,7 @@ public class Script
         , @XmlElement(name = "barline", type = BarlineTask.class)
         , @XmlElement(name = "boundary", type = BoundaryTask.class)
         , @XmlElement(name = "export", type = ExportTask.class)
+        , @XmlElement(name = "insert", type = GlyphInsertTask.class)
         , @XmlElement(name = "midi", type = MidiWriteTask.class)
         , @XmlElement(name = "parameters", type = ParametersTask.class)
         , @XmlElement(name = "play", type = PlayTask.class)

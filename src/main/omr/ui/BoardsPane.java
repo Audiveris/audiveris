@@ -24,7 +24,7 @@ import com.jgoodies.forms.layout.*;
 import javax.swing.*;
 
 /**
- * Class <code>BoardsPane</code> defines a comprehensive user board, where data
+ * Class {@code BoardsPane} defines a comprehensive user board, where data
  * related to current point, run, section and glyph can be displayed in
  * dedicated boards, as well as a general-purpose Filter board and a custom
  * board.

@@ -19,6 +19,7 @@ import omr.constant.ConstantSet;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 import omr.glyph.facets.BasicStick;
+import omr.glyph.facets.Glyph;
 import omr.glyph.facets.Stick;
 
 import omr.lag.HorizontalOrientation;
@@ -251,8 +252,7 @@ public class SkewBuilder
                     stick = new BasicStick(sheet.getInterline());
 
                     // Include this section in the stick list
-                    stick.addSection(section, /* link => */
-                                     true);
+                    stick.addSection(section, Glyph.Linking.LINK_BACK);
 
                     // Register the stick in containing lag
                     // Store this new stick into the stick table
@@ -273,13 +273,14 @@ public class SkewBuilder
                             if (lnkSection.getGlyph() != stick) {
                                 stick.addGlyphSections(
                                     lnkSection.getGlyph(),
-                                    /* linkSections => */ true);
+                                    Glyph.Linking.LINK_BACK);
                                 sticks.remove(lnkSection.getGlyph());
                             }
                         } else {
                             // Let's add this section to the stick
-                            stick.addSection(lnkSection, /* link => */
-                                             true);
+                            stick.addSection(
+                                lnkSection,
+                                Glyph.Linking.LINK_BACK);
                         }
                     }
                 }

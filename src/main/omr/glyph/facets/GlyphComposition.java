@@ -32,6 +32,19 @@ import java.util.SortedSet;
 interface GlyphComposition
     extends GlyphFacet
 {
+    //~ Enumerations -----------------------------------------------------------
+
+    /** Specifies whether a section must point back to a containing glyph */
+    enum Linking {
+        //~ Enumeration constant initializers ----------------------------------
+
+
+        /** Make the section point back to the containing glyph */
+        LINK_BACK,
+        /** Do not make the section point back to the containing glyph */
+        NO_LINK_BACK;
+    }
+
     //~ Methods ----------------------------------------------------------------
 
     //-----------//
@@ -151,7 +164,7 @@ interface GlyphComposition
      * @param linkSections Should we set the link from sections to glyph ?
      */
     void addGlyphSections (Glyph   other,
-                           boolean linkSections);
+                           Linking linkSections);
 
     //------------//
     // addSection //
@@ -164,7 +177,7 @@ interface GlyphComposition
      *             set the link from section back to the glyph?
      */
     void addSection (GlyphSection section,
-                     boolean      link);
+                     Linking      link);
 
     //-------------//
     // cutSections //

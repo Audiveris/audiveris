@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.score.common;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
@@ -87,6 +88,15 @@ public class PixelRectangle
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-------------//
+    // getLocation //
+    //-------------//
+    @Override
+    public PixelPoint getLocation ()
+    {
+        return new PixelPoint(x, y);
+    }
 
     //-------//
     // union //

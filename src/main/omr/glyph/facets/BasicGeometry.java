@@ -356,6 +356,30 @@ class BasicGeometry
         signature = null;
     }
 
+    //-------//
+    // shift //
+    //-------//
+    public void shift (PixelPoint vector)
+    {
+        // Compute current value for all the dependent items
+        getBounds();
+        getContourBox();
+        getAreaCenter();
+        getMoments();
+        getCentroid();
+
+        // Translate all the dependent items
+        bounds.translate(vector.x, vector.y);
+        contourBox.translate(vector.x, vector.y);
+        center.translate(vector);
+        centroid.translate(vector);
+
+        moments.getValues()[17] += vector.x; // Beurk
+        moments.getValues()[18] += vector.y; // Beurk
+
+        signature = new GlyphSignature(glyph);
+    }
+
     //----------------//
     // cumulatePoints //
     //----------------//

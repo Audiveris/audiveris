@@ -87,7 +87,11 @@ public class RunBoard
     public RunBoard (String unitName,
                      Lag    lag)
     {
-        super(unitName + "-RunBoard", lag.getSelectionService(), eventClasses);
+        super(
+            unitName + "-RunBoard",
+            "Run",
+            lag.getSelectionService(),
+            eventClasses);
         defineLayout();
     }
 
@@ -136,16 +140,13 @@ public class RunBoard
     //--------------//
     private void defineLayout ()
     {
-        FormLayout   layout = Panel.makeFormLayout(2, 3);
-        PanelBuilder builder = new PanelBuilder(layout, getComponent());
+        FormLayout   layout = Panel.makeFormLayout(1, 3);
+        PanelBuilder builder = new PanelBuilder(layout, getBody());
         builder.setDefaultDialogBorder();
 
         CellConstraints cst = new CellConstraints();
-
         int             r = 1; // --------------------------------
-        builder.addSeparator("Run", cst.xyw(1, r, 11));
-
-        r += 2; // --------------------------------
+      
         builder.add(rStart.getLabel(), cst.xy(1, r));
         builder.add(rStart.getField(), cst.xy(3, r));
 

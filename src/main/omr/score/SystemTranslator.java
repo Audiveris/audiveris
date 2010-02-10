@@ -57,7 +57,9 @@ import omr.sheet.SystemInfo;
 import omr.util.TreeNode;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Class <code>SystemTranslator</code> performs all translation tasks for one
@@ -542,8 +544,8 @@ public class SystemTranslator
 
             // Check that slots are not too close to each other
             Scale scale = system.getScale();
-            int   minSlotSpacing = scale.toUnits(Score.getMinSlotSpacing());
             Slot  prevSlot = null;
+            int   minSlotSpacing = scale.toUnits(Score.getMinSlotSpacing());
             int   minSpacing = Integer.MAX_VALUE;
             Slot  minSlot = null;
 
@@ -579,7 +581,7 @@ public class SystemTranslator
 
         public void translate (Glyph glyph)
         {
-            Slot.populate(glyph, currentMeasure, currentCenter);
+            Slot.populate(glyph, currentMeasure);
         }
     }
 

@@ -72,9 +72,17 @@ public class Evaluation
     {
         StringBuffer sb = new StringBuffer();
         sb.append(shape);
-        sb.append("(")
-          .append((float) doubt)
-          .append(")");
+        sb.append("(");
+
+        if (doubt == MANUAL) {
+            sb.append("MANUAL");
+        } else if (doubt == ALGORITHM) {
+            sb.append("ALGORITHM");
+        } else {
+            sb.append((float) doubt);
+        }
+
+        sb.append(")");
 
         return sb.toString();
     }

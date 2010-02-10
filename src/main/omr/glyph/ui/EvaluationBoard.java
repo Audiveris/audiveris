@@ -35,7 +35,6 @@ import omr.ui.Board;
 import omr.ui.util.Panel;
 
 import omr.util.Implement;
-import static omr.util.Synchronicity.*;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.factories.FormFactory;
@@ -147,6 +146,7 @@ class EvaluationBoard
     {
         super(
             name,
+            "Neural",
             glyphController.getLag().getSelectionService(),
             eventClasses);
 
@@ -155,12 +155,11 @@ class EvaluationBoard
         this.view = view;
 
         // Buttons
-        if (sheet != null) {
-            testButton = new JButton(new TestAction());
-            testPercent = new JLabel("0%", SwingConstants.CENTER);
-            testResult = new JLabel("", SwingConstants.CENTER);
-        }
-
+        //        if (sheet != null) {
+        //            testButton = new JButton(new TestAction());
+        //            testPercent = new JLabel("0%", SwingConstants.CENTER);
+        //            testResult = new JLabel("", SwingConstants.CENTER);
+        //        }
         selector = new Selector();
         defineLayout();
     }
@@ -205,10 +204,6 @@ class EvaluationBoard
                 return;
             }
 
-            //        logger.info(
-            //            "EvaluationBoard/" + getClass().getSimpleName() + " " + getName() +
-            //            " " + event);
-
             // Don't evaluate Added glyph, since this would hide Compound evaluation
             if (event.hint == SelectionHint.LOCATION_ADD) {
                 return;
@@ -236,8 +231,7 @@ class EvaluationBoard
         FormLayout   layout = new FormLayout(
             buttonWidth + "," + fieldInterval + "," + buttonWidth + "," +
             fieldInterval + "," + buttonWidth + "," + fieldInterval + "," +
-            buttonWidth,
-            "pref," + fieldInterline);
+            buttonWidth,"");
 
         int          visibleButtons = Math.min(
             constants.visibleButtons.getValue(),
@@ -250,24 +244,18 @@ class EvaluationBoard
         // Uncomment following line to have fixed sized rows, whether
         // they are filled or not
         ///layout.setRowGroups(new int[][]{{1, 3, 4, 5 }});
-        PanelBuilder builder = new PanelBuilder(layout, getComponent());
+        PanelBuilder builder = new PanelBuilder(layout, getBody());
         builder.setDefaultDialogBorder();
 
         CellConstraints cst = new CellConstraints();
 
-        int             r = 1; // --------------------------------
-
-        if (sheet != null) {
-            builder.addSeparator(evaluator.getName(), cst.xyw(1, r, 1));
-            builder.add(testButton, cst.xy(3, r));
-            builder.add(testPercent, cst.xy(5, r));
-            builder.add(testResult, cst.xy(7, r));
-        } else {
-            builder.addSeparator(evaluator.getName(), cst.xyw(1, r, 7));
-        }
-
+        //        if (sheet != null) {
+        //            builder.add(testButton, cst.xy(3, r));
+        //            builder.add(testPercent, cst.xy(5, r));
+        //            builder.add(testResult, cst.xy(7, r));
+        //        }
         for (int i = 0; i < visibleButtons; i++) {
-            r = i + 3; // --------------------------------
+            int r = i + 1; // --------------------------------
             builder.add(selector.buttons.get(i).grade, cst.xy(1, r));
 
             if (sheet != null) {
@@ -336,7 +324,8 @@ class EvaluationBoard
         //~ Methods ------------------------------------------------------------
 
         public void setEval (Evaluation eval,
-                             boolean    barred)
+                             boolean    barred,
+                             boolean    enabled)
         {
             JComponent comp;
 
@@ -348,6 +337,8 @@ class EvaluationBoard
 
             if (eval != null) {
                 if (sheet != null) {
+                    button.setEnabled(enabled);
+
                     if (barred) {
                         button.setBackground(Color.PINK);
                     } else {
@@ -447,15 +438,16 @@ class EvaluationBoard
             // Special case to empty the selector
             if (evals == null) {
                 for (EvalButton evalButton : buttons) {
-                    evalButton.setEval(null, false);
+                    evalButton.setEval(null, false, false);
                 }
 
                 return;
             }
 
-            double maxDist = constants.maxDoubt.getValue();
-            int    iBound = Math.min(buttons.size(), evals.length);
-            int    i;
+            boolean enabled = !glyph.isVirtual();
+            double  maxDist = constants.maxDoubt.getValue();
+            int     iBound = Math.min(buttons.size(), evals.length);
+            int     i;
 
             for (i = 0; i < iBound; i++) {
                 Evaluation eval = evals[i];
@@ -467,13 +459,16 @@ class EvaluationBoard
 
                 // Barred on non-barred button
                 buttons.get(i)
-                       .setEval(eval, glyph.isShapeForbidden(eval.shape));
+                       .setEval(
+                    eval,
+                    glyph.isShapeForbidden(eval.shape),
+                    enabled);
             }
 
             // Zero the remaining buttons
             for (; i < buttons.size(); i++) {
                 buttons.get(i)
-                       .setEval(null, false);
+                       .setEval(null, false, false);
             }
         }
     }

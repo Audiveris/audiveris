@@ -18,6 +18,7 @@ import omr.log.Logger;
 import omr.math.InjectionSolver;
 import omr.math.Population;
 
+import omr.score.common.PixelPoint;
 import omr.score.common.SystemPoint;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
 import omr.score.ui.ScoreConstants;
@@ -87,8 +88,8 @@ public class Slot
     /** Id unique within the containing  measure */
     private int id;
 
-    /** Abscissa of the slot, in units since system start */
-    private Integer x;
+    /** Reference point of the slot */
+    private final SystemPoint refPoint;
 
     /** The containing measure */
     @Navigable(false)
@@ -103,6 +104,9 @@ public class Slot
     /** Time offset since measure start */
     private Integer startTime;
 
+    /** Cached margin for abscissa alignment */
+    private final int xUnitsMargin;
+
     //~ Constructors -----------------------------------------------------------
 
     //------//
@@ -112,10 +116,18 @@ public class Slot
      * Creates a new Slot object.
      *
      * @param measure the containing measure
+     * @param refPoint the slot reference point
      */
-    public Slot (Measure measure)
+    public Slot (Measure     measure,
+                 SystemPoint refPoint)
     {
         this.measure = measure;
+        this.refPoint = new SystemPoint(refPoint);
+
+        InterlineFraction slotMargin = measure.getScore()
+                                              .getSlotMargin();
+        xUnitsMargin = measure.getScale()
+                              .toUnits(slotMargin);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -131,12 +143,7 @@ public class Slot
      */
     public boolean isAlignedWith (SystemPoint sysPt)
     {
-        InterlineFraction slotMargin = measure.getScore()
-                                              .getSlotMargin();
-        int               unitsMargin = measure.getScale()
-                                               .toUnits(slotMargin);
-
-        return Math.abs(sysPt.x - getX()) <= unitsMargin;
+        return Math.abs(sysPt.x - getX()) <= xUnitsMargin;
     }
 
     //-------//
@@ -271,21 +278,7 @@ public class Slot
      */
     public int getX ()
     {
-        if (x == null) {
-            Population population = new Population();
-
-            for (Glyph glyph : glyphs) {
-                population.includeValue(
-                    measure.getSystem()
-                           .toSystemPoint(glyph.getLocation()).x);
-            }
-
-            if (population.getCardinality() > 0) {
-                x = (int) Math.rint(population.getMeanValue());
-            }
-        }
-
-        return x;
+        return refPoint.x;
     }
 
     //----------//
@@ -300,7 +293,6 @@ public class Slot
     public void addGlyph (Glyph glyph)
     {
         glyphs.add(glyph);
-        x = null;
     }
 
     //------------------------//
@@ -479,11 +471,9 @@ public class Slot
      *
      * @param glyph a chord-relevant glyph (rest, note or notehead)
      * @param measure the containing measure
-     * @param sysPt the system-based coordinates of the provided note
      */
-    public static void populate (Glyph       glyph,
-                                 Measure     measure,
-                                 SystemPoint sysPt)
+    public static void populate (Glyph   glyph,
+                                 Measure measure)
     {
         //        if (logger.isFineEnabled()) {
         //            logger.fine("Populating slot with " + glyph);
@@ -495,6 +485,28 @@ public class Slot
                  .isWholeRest()) {
             measure.addWholeChord(glyph);
         } else {
+            // Use the stem abscissa (if any) rather than the note abscissa
+            ScoreSystem system = measure.getSystem();
+            PixelPoint  pt = null;
+
+            if (glyph.getStemNumber() == 1) {
+                Glyph stem = glyph.getLeftStem();
+
+                if (stem == null) {
+                    stem = glyph.getRightStem();
+                }
+
+                if (stem != null) {
+                    pt = stem.getAreaCenter();
+                }
+            }
+
+            if (pt == null) {
+                pt = glyph.getAreaCenter();
+            }
+
+            SystemPoint sysPt = system.toSystemPoint(pt);
+
             // First look for a suitable slot
             for (Slot slot : measure.getSlots()) {
                 if (slot.isAlignedWith(sysPt)) {
@@ -504,8 +516,8 @@ public class Slot
                 }
             }
 
-            // No compatible slot, create a brand new one
-            Slot slot = new Slot(measure);
+            // No compatible slot, so let's create a brand new one
+            Slot slot = new Slot(measure, sysPt);
             slot.addGlyph(glyph);
             measure.getSlots()
                    .add(slot);

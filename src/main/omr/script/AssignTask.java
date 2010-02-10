@@ -35,7 +35,7 @@ import javax.xml.bind.annotation.XmlAttribute;
  * @author Hervé Bitteur
  */
 public class AssignTask
-    extends GlyphTask
+    extends GlyphUpdateTask
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -201,7 +201,7 @@ public class AssignTask
             sheet.getSheetSteps()
                  .rebuildFrom(
                 (shape == null) ? Step.VERTICALS : Step.PATTERNS,
-                getImpactedSystems(),
+                getImpactedSystems(sheet),
                 false);
         }
     }

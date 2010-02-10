@@ -20,7 +20,6 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
-import omr.glyph.Glyphs;
 import omr.glyph.GlyphsModel;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;

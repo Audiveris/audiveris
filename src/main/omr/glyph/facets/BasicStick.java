@@ -193,7 +193,7 @@ public class BasicStick
      */
     @Override
     public void addGlyphSections (Glyph   other,
-                                  boolean linkSections)
+                                  Linking linkSections)
     {
         super.addGlyphSections(other, linkSections);
         line = null;
@@ -209,10 +209,9 @@ public class BasicStick
      * @param link should the section point back to this stick?
      */
     public void addSection (StickSection section,
-                            boolean      link)
+                            Linking      link)
     {
-        super.addSection(section, /* link => */
-                         true);
+        super.addSection(section, link);
 
         // Include the section points
         getLine()

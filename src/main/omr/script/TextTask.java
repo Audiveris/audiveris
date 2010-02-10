@@ -30,7 +30,7 @@ import javax.xml.bind.annotation.XmlAttribute;
  * @author Hervé Bitteur
  */
 public class TextTask
-    extends GlyphTask
+    extends GlyphUpdateTask
 {
     //~ Instance fields --------------------------------------------------------
 

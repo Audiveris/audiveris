@@ -319,30 +319,14 @@ public class Digraph<D extends Digraph<D, V, SIG>, V extends Vertex, SIG>
     //----------//
     // toString //
     //----------//
-    /**
-     * A readable description of the graph
-     *
-     * @return the string
-     */
     @Override
     public String toString ()
     {
-        StringBuffer sb = new StringBuffer(25);
-
+        StringBuilder sb = new StringBuilder();
         sb.append("{")
-          .append(getPrefix());
-
-        sb.append("#")
-          .append(name);
-
-        sb.append(" vertices=")
-          .append(getVertexCount());
-
-        if (this.getClass()
-                .getName()
-                .equals(Digraph.class.getName())) {
-            sb.append("}");
-        }
+          .append(getClass().getSimpleName());
+        sb.append(internalsString());
+        sb.append("}");
 
         return sb.toString();
     }
@@ -361,18 +345,34 @@ public class Digraph<D extends Digraph<D, V, SIG>, V extends Vertex, SIG>
         return views.indexOf(view);
     }
 
-    //-----------//
-    // getPrefix //
-    //-----------//
+    //-----------------//
+    // internalsString //
+    //-----------------//
     /**
-     * Return a distinctive string, to be used as a prefix in toString() for
-     * example.
+     * Return the string of the internals of this class, typically for inclusion
+     * in a toString. The overriding methods should comply with the following
+     * rule: return either a totally empty string, or a string that begins with
+     * a " " followed by some content.
      *
-     * @return the prefix string
+     * @return the string of internals
      */
-    protected String getPrefix ()
+    protected String internalsString ()
     {
-        return "Digraph";
+        StringBuffer sb = new StringBuffer(25);
+
+        sb.append("#")
+          .append(name);
+
+        sb.append(" vertices=")
+          .append(getVertexCount());
+
+        if (this.getClass()
+                .getName()
+                .equals(Digraph.class.getName())) {
+            sb.append("}");
+        }
+
+        return sb.toString();
     }
 
     //--------------//

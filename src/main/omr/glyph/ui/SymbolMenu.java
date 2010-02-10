@@ -193,7 +193,7 @@ public class SymbolMenu
         {
             putValue(NAME, "Cleanup large Slur");
 
-            if (glyphNb > 0) {
+            if (glyphNb > 0 && noVirtuals) {
                 setEnabled(true);
                 putValue(SHORT_DESCRIPTION, "Extract slur from large glyph");
             } else {
@@ -341,7 +341,7 @@ public class SymbolMenu
         {
             putValue(NAME, "Look for short verticals");
 
-            if (glyphNb > 0) {
+            if (glyphNb > 0 && noVirtuals) {
                 setEnabled(true);
                 putValue(SHORT_DESCRIPTION, "Extract short stems and leaves");
             } else {
@@ -430,7 +430,7 @@ public class SymbolMenu
         {
             putValue(NAME, "Look for verticals");
 
-            if (glyphNb > 0) {
+            if (glyphNb > 0 && noVirtuals) {
                 setEnabled(true);
                 putValue(SHORT_DESCRIPTION, "Extract stems and leaves");
             } else {

@@ -169,7 +169,7 @@ public class GlyphsBuilder
         Glyph glyph = new BasicStick(scale.interline());
 
         for (GlyphSection section : sections) {
-            glyph.addSection(section, true);
+            glyph.addSection(section, Glyph.Linking.LINK_BACK);
         }
 
         return glyph;
@@ -194,8 +194,7 @@ public class GlyphsBuilder
         Glyph compound = new BasicStick(scale.interline());
 
         for (Glyph glyph : parts) {
-            compound.addGlyphSections(glyph, /* linkSections => */
-                                      false);
+            compound.addGlyphSections(glyph, Glyph.Linking.NO_LINK_BACK);
 
             if (compound.getLag() == null) {
                 compound.setLag(glyph.getLag());
@@ -229,8 +228,7 @@ public class GlyphsBuilder
         Glyph compound = new BasicStick(scale.interline());
 
         for (GlyphSection section : sections) {
-            compound.addSection(section, /* linkSections => */
-                                false);
+            compound.addSection(section, Glyph.Linking.NO_LINK_BACK);
 
             if (compound.getLag() == null) {
                 compound.setLag(section.getGraph());
@@ -463,8 +461,7 @@ public class GlyphsBuilder
         if (!section.isKnown() && !visitedSections.contains(section)) {
             visitedSections.add(section);
 
-            glyph.addSection(section, /* link => */
-                             true);
+            glyph.addSection(section, Glyph.Linking.LINK_BACK);
 
             // Add recursively all linked sections in the lag
             //

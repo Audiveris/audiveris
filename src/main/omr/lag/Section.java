@@ -1051,49 +1051,6 @@ public class Section<L extends Lag, S extends Section<L, S>>
         }
     }
 
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * Return a readable description
-     *
-     * @return the descriptive string
-     */
-    @Override
-    public String toString ()
-    {
-        StringBuffer sb = new StringBuffer(256);
-
-        sb.append(super.toString());
-
-        sb.append(" fPos=")
-          .append(firstPos)
-          .append(" ");
-        sb.append(getFirstRun());
-
-        if (getRunNb() > 1) {
-            sb.append("-")
-              .append(getRunNb())
-              .append("-")
-              .append(getLastRun());
-        }
-
-        sb.append(" Wt=")
-          .append(weight);
-        sb.append(" lv=")
-          .append(getLevel());
-        sb.append(" fW=")
-          .append(foreWeight);
-
-        if (this.getClass()
-                .getName()
-                .equals(Section.class.getName())) {
-            sb.append("}");
-        }
-
-        return sb.toString();
-    }
-
     //-------//
     // write //
     //-------//
@@ -1136,21 +1093,6 @@ public class Section<L extends Lag, S extends Section<L, S>>
         picture.setPixel(graph.switchRef(cp, null), val);
     }
 
-    //-----------//
-    // getPrefix //
-    //-----------//
-    /**
-     * Return a distinctive string, to be used as a prefix in toString() for
-     * example.
-     *
-     * @return the prefix string
-     */
-    @Override
-    protected String getPrefix ()
-    {
-        return "Section";
-    }
-
     //----------------//
     // computeContour //
     //----------------//
@@ -1182,6 +1124,36 @@ public class Section<L extends Lag, S extends Section<L, S>>
     protected SectionSignature computeSignature ()
     {
         return new SectionSignature(getWeight(), getBounds());
+    }
+
+    //-----------------//
+    // internalsString //
+    //-----------------//
+    @Override
+    protected String internalsString ()
+    {
+        StringBuffer sb = new StringBuffer(super.internalsString());
+
+        sb.append(" fPos=")
+          .append(firstPos)
+          .append(" ");
+        sb.append(getFirstRun());
+
+        if (getRunNb() > 1) {
+            sb.append("-")
+              .append(getRunNb())
+              .append("-")
+              .append(getLastRun());
+        }
+
+        sb.append(" Wt=")
+          .append(weight);
+        sb.append(" lv=")
+          .append(getLevel());
+        sb.append(" fW=")
+          .append(foreWeight);
+
+        return sb.toString();
     }
 
     //--------//

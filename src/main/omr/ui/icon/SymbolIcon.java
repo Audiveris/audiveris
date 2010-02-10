@@ -353,21 +353,6 @@ public class SymbolIcon
         SymbolIcon.standardWidth = standardWidth;
     }
 
-    //
-    //    //-----------//
-    //    // setBitmap //
-    //    //-----------//
-    //    /**
-    //     * Allows to define the bitmap, from an array of strings (meant for JAXB)
-    //     *
-    //     * @param rows the array of strings which describe the bitmap
-    //     */
-    //    public void setBitmap (String[] rows)
-    //    {
-    //        // Elaborate the image from the string array
-    //        setImage(IconManager.getInstance().decodeImage(rows));
-    //    }
-
     //---------//
     // setName //
     //---------//

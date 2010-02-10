@@ -36,7 +36,6 @@ import omr.ui.util.Panel;
 import omr.util.BasicTask;
 import omr.util.Implement;
 import omr.util.Predicate;
-import static omr.util.Synchronicity.*;
 
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
@@ -207,7 +206,11 @@ public class GlyphBoard
     protected GlyphBoard (String           name,
                           GlyphsController controller)
     {
-        super(name, controller.getLag().getSelectionService(), eventClasses);
+        super(
+            name,
+            "Glyph",
+            controller.getLag().getSelectionService(),
+            eventClasses);
 
         this.controller = controller;
 
@@ -232,7 +235,7 @@ public class GlyphBoard
                 { 3, 7, 11 }
             });
 
-        builder = new PanelBuilder(layout, getComponent());
+        builder = new PanelBuilder(layout, getBody());
         builder.setDefaultDialogBorder();
 
         defineLayout();
@@ -290,7 +293,11 @@ public class GlyphBoard
                 // Active ?
                 if (glyph != null) {
                     if (glyph.isActive()) {
-                        active.setText("Active");
+                        if (glyph.isVirtual()) {
+                            active.setText("Virtual");
+                        } else {
+                            active.setText("Active");
+                        }
                     } else {
                         active.setText("Non Active");
                     }
@@ -387,9 +394,8 @@ public class GlyphBoard
     protected void defineLayout ()
     {
         int r = 1; // --------------------------------
-                   // Glyph --- Active Count Dump
+                   // Active Count Dump
 
-        builder.addSeparator("Glyph", cst.xyw(1, r, 6));
         builder.add(active, cst.xy(7, r));
         builder.add(count, cst.xy(9, r));
         builder.add(new JButton(dumpAction), cst.xy(11, r));
@@ -493,18 +499,21 @@ public class GlyphBoard
                                     // Following actions must be done in sequence
                                     Task task = controller.asyncDeassignGlyphs(
                                         glyphs);
-                                    task.get();
 
-                                    // Update focus on current glyph,
-                                    // even if reused in a compound
-                                    Glyph newGlyph = glyph.getFirstSection()
-                                                          .getGlyph();
-                                    selectionService.publish(
-                                        new GlyphEvent(
-                                            this,
-                                            SelectionHint.GLYPH_INIT,
-                                            null,
-                                            newGlyph));
+                                    if (task != null) {
+                                        task.get();
+
+                                        // Update focus on current glyph,
+                                        // even if reused in a compound
+                                        Glyph newGlyph = glyph.getFirstSection()
+                                                              .getGlyph();
+                                        selectionService.publish(
+                                            new GlyphEvent(
+                                                this,
+                                                SelectionHint.GLYPH_INIT,
+                                                null,
+                                                newGlyph));
+                                    }
 
                                     return null;
                                 }

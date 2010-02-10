@@ -41,6 +41,19 @@ public class PixelPoint
     // PixelPoint //
     //------------//
     /**
+     * Creates a new PixelPoint object, by cloning a PixelPoint
+     *
+     * @param point the PixelPoint to clone
+     */
+    public PixelPoint (PixelPoint point)
+    {
+        super(point.x, point.y);
+    }
+
+    //------------//
+    // PixelPoint //
+    //------------//
+    /**
      * Creates a new PixelPoint object, by cloning an untyped point
      *
      * @param x abscissa
@@ -50,5 +63,19 @@ public class PixelPoint
                        int y)
     {
         super(x, y);
+    }
+
+    //~ Methods ----------------------------------------------------------------
+
+    //-----------//
+    // translate //
+    //-----------//
+    /**
+     * Shift the current location by geometrically adding the provided vetor
+     * @param vector the shift vector
+     */
+    public void translate (PixelPoint vector)
+    {
+        translate(vector.x, vector.y);
     }
 }

@@ -463,20 +463,13 @@ public class Lag<L extends Lag<L, S>, S extends Section>
         return orientation.switchRef(cplt, xywh);
     }
 
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * Return a readable description
-     *
-     * @return the descriptive string
-     */
+    //-----------------//
+    // internalsString //
+    //-----------------//
     @Override
-    public String toString ()
+    protected String internalsString ()
     {
-        StringBuffer sb = new StringBuffer(256);
-
-        sb.append(super.toString());
+        StringBuffer sb = new StringBuffer(super.internalsString());
 
         // Orientation
         if (orientation.isVertical()) {
@@ -485,28 +478,7 @@ public class Lag<L extends Lag<L, S>, S extends Section>
             sb.append(" HORIZONTAL");
         }
 
-        if (this.getClass()
-                .getName()
-                .equals(Lag.class.getName())) {
-            sb.append("}");
-        }
-
         return sb.toString();
-    }
-
-    //-----------//
-    // getPrefix //
-    //-----------//
-    /**
-     * Return a distinctive string, to be used as a prefix in toString() for
-     * example.
-     *
-     * @return the prefix string
-     */
-    @Override
-    protected String getPrefix ()
-    {
-        return "Lag";
     }
 
     //---------//

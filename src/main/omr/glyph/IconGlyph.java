@@ -25,8 +25,6 @@ import omr.score.ui.ScoreConstants;
 import omr.ui.icon.SymbolIcon;
 import omr.ui.icon.SymbolPicture;
 
-import java.awt.Rectangle;
-
 /**
  * Class <code>IconGlyph</code> is an articial glyph, built from an icon. It is
  * used to generate glyphs for training, when no real glyph (glyph retrieved
@@ -92,19 +90,17 @@ public class IconGlyph
             setLag(vLag);
 
             for (GlyphSection section : vLag.getSections()) {
-                addSection(section, /* link => */
-                           true);
+                addSection(section, Glyph.Linking.LINK_BACK);
             }
 
             //vLag.dump("Icon Lag");
             //glyph.drawAscii();
 
             // Glyph features
-            setShape(shape);
+            setShape(shape, Evaluation.MANUAL);
 
             // Ordinate (approximate value)
-            Rectangle box = getContourBox();
-            int       y = box.y;
+            getContourBox();
 
             // Mass center
             getCentroid();
@@ -130,6 +126,20 @@ public class IconGlyph
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+
+    //-----------//
+    // IconGlyph //
+    //-----------//
+    /**
+     * Create a new IconGlyph object, using the icon related to the provided
+     * shape
+     *
+     * @param shape The related shape
+     */
+    public IconGlyph (Shape shape)
+    {
+        this((SymbolIcon) shape.getIcon(), shape);
     }
 
     //~ Methods ----------------------------------------------------------------
