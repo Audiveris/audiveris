@@ -128,7 +128,7 @@ public class ScriptManager
                         BarlineTask.class,
                         BoundaryTask.class,
                         ExportTask.class,
-                        GlyphInsertTask.class,
+                        InsertTask.class,
                         GlyphUpdateTask.class,
                         MidiWriteTask.class,
                         ParametersTask.class,

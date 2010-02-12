@@ -22,7 +22,7 @@ import java.util.*;
 import javax.swing.*;
 
 /**
- * Class <code>ShapeRange</code> defines a set of related shapes, for example
+ * Class {@code ShapeRange} defines a set of related shapes, for example
  * the "Rests" range gathers all rest shapes from MULTI_REST down to
  * ONE_HUNDRED_TWENTY_EIGHTH_REST.
  *
@@ -36,22 +36,52 @@ public class ShapeRange
 
     // Predefined instances of ShapeRange. Double-check before removing any one.
     //
-    public static final ShapeRange Garbage = new ShapeRange(
-        EnumSet.of(STRUCTURE, NOISE)); // Not a range
-    public static final ShapeRange Physicals = new ShapeRange(
-        EnumSet.range(CLUTTER, TEXT));
-    public static final ShapeRange Bars = new ShapeRange(
-        EnumSet.range(DAL_SEGNO, BRACKET));
-    public static final ShapeRange Clefs = new ShapeRange(
-        EnumSet.range(G_CLEF, F_CLEF_OTTAVA_BASSA));
     public static final ShapeRange Accidentals = new ShapeRange(
+        SHARP,
         EnumSet.range(FLAT, DOUBLE_FLAT));
-    public static final ShapeRange Times = new ShapeRange(
-        EnumSet.range(TIME_ZERO, CUT_TIME),
-        CUSTOM_TIME_SIGNATURE);
+    public static final ShapeRange Articulations = new ShapeRange(
+        ARPEGGIATO,
+        EnumSet.range(ACCENT, STRONG_ACCENT),
+        STACCATO,
+        ARPEGGIATO);
+    public static final ShapeRange Barlines = new ShapeRange(
+        LEFT_REPEAT_SIGN,
+        EnumSet.range(PART_DEFINING_BARLINE, BACK_TO_BACK_REPEAT_SIGN));
+    public static final ShapeRange Beams = new ShapeRange(
+        BEAM,
+        EnumSet.range(BEAM, SLUR));
+    public static final ShapeRange Clefs = new ShapeRange(
+        G_CLEF,
+        EnumSet.range(G_CLEF, F_CLEF_OTTAVA_BASSA));
+    public static final ShapeRange Dynamics = new ShapeRange(
+        DYNAMICS_F,
+        EnumSet.range(DYNAMICS_CHAR_M, DECRESCENDO));
+    public static final ShapeRange Flags = new ShapeRange(
+        COMBINING_FLAG_1,
+        EnumSet.range(COMBINING_FLAG_1, COMBINING_FLAG_5_UP));
+    public static final ShapeRange HeadAndFlags = new ShapeRange(
+        HEAD_AND_FLAG_1,
+        EnumSet.range(HEAD_AND_FLAG_1, HEAD_AND_FLAG_5_UP));
+    public static final ShapeRange NoteHeads = new ShapeRange(
+        NOTEHEAD_BLACK,
+        EnumSet.range(VOID_NOTEHEAD, NOTEHEAD_BLACK_3));
+    public static final ShapeRange Markers = new ShapeRange(
+        CODA,
+        EnumSet.range(DAL_SEGNO, BRACKET));
+    public static final ShapeRange Notes = new ShapeRange(
+        BREVE,
+        EnumSet.range(BREVE, WHOLE_NOTE_3));
     public static final ShapeRange Octaves = new ShapeRange(
+        OTTAVA_ALTA,
         EnumSet.range(OTTAVA_ALTA, OTTAVA_BASSA));
+    public static final ShapeRange Ornaments = new ShapeRange(
+        MORDENT,
+        EnumSet.range(GRACE_NOTE_SLASH, INVERTED_MORDENT));
+    public static final ShapeRange Pedals = new ShapeRange(
+        PEDAL_MARK,
+        EnumSet.range(PEDAL_MARK, PEDAL_UP_MARK));
     public static final ShapeRange Rests = new ShapeRange(
+        QUARTER_REST,
         EnumSet.of(
             MULTI_REST,
             WHOLE_REST,
@@ -62,34 +92,20 @@ public class ShapeRange
             THIRTY_SECOND_REST,
             SIXTY_FOURTH_REST,
             ONE_HUNDRED_TWENTY_EIGHTH_REST));
-    public static final ShapeRange NoteHeads = new ShapeRange(
-        EnumSet.range(VOID_NOTEHEAD, NOTEHEAD_BLACK_3));
-    public static final ShapeRange Notes = new ShapeRange(
-        EnumSet.range(BREVE, WHOLE_NOTE_3));
     public static final ShapeRange Stems = new ShapeRange(
+        COMBINING_STEM,
         EnumSet.range(COMBINING_STEM, COMBINING_STEM));
-    public static final ShapeRange Flags = new ShapeRange(
-        EnumSet.range(COMBINING_FLAG_1, COMBINING_FLAG_5_UP));
-    public static final ShapeRange HeadAndFlags = new ShapeRange(
-        EnumSet.range(HEAD_AND_FLAG_1, HEAD_AND_FLAG_5_UP));
-    public static final ShapeRange Beams = new ShapeRange(
-        EnumSet.range(BEAM, SLUR));
-    public static final ShapeRange Articulations = new ShapeRange(
-        EnumSet.range(ACCENT, STRONG_ACCENT),
-        STACCATO,
-        ARPEGGIATO);
-    public static final ShapeRange Dynamics = new ShapeRange(
-        EnumSet.range(DYNAMICS_CHAR_M, DECRESCENDO));
-    public static final ShapeRange Ornaments = new ShapeRange(
-        EnumSet.range(GRACE_NOTE_SLASH, INVERTED_MORDENT));
+    public static final ShapeRange Times = new ShapeRange(
+        TIME_FOUR_FOUR,
+        EnumSet.range(TIME_ZERO, CUT_TIME),
+        CUSTOM_TIME_SIGNATURE);
     public static final ShapeRange Tuplets = new ShapeRange(
+        TUPLET_THREE,
         EnumSet.range(TUPLET_THREE, TUPLET_SIX));
-    public static final ShapeRange Pedals = new ShapeRange(
-        EnumSet.range(PEDAL_MARK, PEDAL_UP_MARK));
 
     //
-    public static final ShapeRange Barlines = new ShapeRange(
-        EnumSet.range(PART_DEFINING_BARLINE, BACK_TO_BACK_REPEAT_SIGN));
+    public static final ShapeRange Physicals = new ShapeRange(
+        EnumSet.range(CLUTTER, TEXT));
     public static final ShapeRange Logicals = new ShapeRange(
         EnumSet.range(REPEAT_DOTS, ENDING));
 
@@ -113,10 +129,10 @@ public class ShapeRange
         WHOLE_OR_HALF_REST.createShapeColor(Rests.getColor());
     }
 
-    //
+    // =========================================================================
     // Below are EnumSet instances, used programmatically.
     // They do not lead to shape submenus as the ShapeRange instances do.
-    //
+    // =========================================================================
 
     /** All physical shapes */
     public static final EnumSet<Shape> allSymbols = EnumSet.range(
@@ -167,6 +183,9 @@ public class ShapeRange
     /** Underlying shapes */
     private final EnumSet<Shape> shapes;
 
+    /** The representative shape for this range */
+    private final Shape rep;
+
     /** Current color */
     private Color color;
 
@@ -178,17 +197,32 @@ public class ShapeRange
     /**
      * Creates a new ShapeRange object.
      *
+     * @param rep the representative shape
+     * @param shapes the set of shapes defining the range
+     * @param addedShapes shapes added to the initial range
+     */
+    public ShapeRange (Shape          rep,
+                       EnumSet<Shape> shapes,
+                       Shape... addedShapes)
+    {
+        this.rep = rep;
+        this.shapes = shapes;
+
+        for (Shape shape : addedShapes) {
+            shapes.add(shape);
+        }
+    }
+
+    /**
+     * Creates a new ShapeRange object.
+     *
      * @param shapes the set of shapes defining the range
      * @param addedShapes shapes added to the initial range
      */
     public ShapeRange (EnumSet<Shape> shapes,
                        Shape... addedShapes)
     {
-        this.shapes = shapes;
-
-        for (Shape shape : addedShapes) {
-            shapes.add(shape);
-        }
+        this(null, shapes, addedShapes);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -327,8 +361,13 @@ public class ShapeRange
         // All ranges of glyph shapes
         for (Field field : ShapeRange.class.getDeclaredFields()) {
             if (field.getType() == ShapeRange.class) {
-                JMenu      menu = new JMenu(field.getName());
                 ShapeRange range = ShapeRange.valueOf(field.getName());
+                JMenu      menu = new JMenu(field.getName());
+
+                if (range.rep != null) {
+                    menu.setIcon(range.rep.getIcon());
+                }
+
                 addColoredItem(top, menu, Color.black);
 
                 // Add menu items for this range

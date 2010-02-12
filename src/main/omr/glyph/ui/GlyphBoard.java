@@ -15,6 +15,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
 import omr.glyph.Shape;
+import omr.glyph.VirtualGlyph;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -44,10 +45,7 @@ import org.jdesktop.application.Task;
 
 import java.awt.Dimension;
 import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
+import java.util.*;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -491,37 +489,79 @@ public class GlyphBoard
                         final Set<Glyph> glyphs = (Set<Glyph>) selectionService.getSelection(
                             GlyphSetEvent.class);
 
-                        new BasicTask() {
-                                @Override
-                                protected Void doInBackground ()
-                                    throws Exception
-                                {
-                                    // Following actions must be done in sequence
-                                    Task task = controller.asyncDeassignGlyphs(
-                                        glyphs);
+                        boolean          noVirtuals = true;
 
-                                    if (task != null) {
-                                        task.get();
+                        for (Glyph g : glyphs) {
+                            if (g.isVirtual()) {
+                                noVirtuals = false;
 
-                                        // Update focus on current glyph,
-                                        // even if reused in a compound
-                                        Glyph newGlyph = glyph.getFirstSection()
-                                                              .getGlyph();
-                                        selectionService.publish(
-                                            new GlyphEvent(
-                                                this,
-                                                SelectionHint.GLYPH_INIT,
-                                                null,
-                                                newGlyph));
+                                break;
+                            }
+                        }
+
+                        if (noVirtuals) {
+                            new BasicTask() {
+                                    @Override
+                                    protected Void doInBackground ()
+                                        throws Exception
+                                    {
+                                        // Following actions must be done in sequence
+                                        Task task = controller.asyncDeassignGlyphs(
+                                            glyphs);
+
+                                        if (task != null) {
+                                            task.get();
+
+                                            // Update focus on current glyph,
+                                            // even if reused in a compound
+                                            Glyph newGlyph = glyph.getFirstSection()
+                                                                  .getGlyph();
+                                            selectionService.publish(
+                                                new GlyphEvent(
+                                                    this,
+                                                    SelectionHint.GLYPH_INIT,
+                                                    null,
+                                                    newGlyph));
+                                        }
+
+                                        return null;
                                     }
+                                }.execute();
+                        } else {
+                            new BasicTask() {
+                                    @Override
+                                    protected Void doInBackground ()
+                                        throws Exception
+                                    {
+                                        // Following actions must be done in sequence
+                                        Task task = controller.asyncDeleteVirtualGlyphs(
+                                            glyphs);
 
-                                    return null;
-                                }
-                            }.execute();
+                                        if (task != null) {
+                                            task.get();
+
+                                            // Null publication
+                                            selectionService.publish(
+                                                new GlyphEvent(
+                                                    this,
+                                                    SelectionHint.GLYPH_INIT,
+                                                    null,
+                                                    null));
+                                        }
+
+                                        return null;
+                                    }
+                                }.execute();
+                        }
                     } else {
                         // We have selection for glyph only
-                        controller.asyncDeassignGlyphs(
-                            Collections.singleton(glyph));
+                        if (glyph.isVirtual()) {
+                            controller.asyncDeleteVirtualGlyphs(
+                                Collections.singleton(glyph));
+                        } else {
+                            controller.asyncDeassignGlyphs(
+                                Collections.singleton(glyph));
+                        }
                     }
                 }
             }

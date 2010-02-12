@@ -73,6 +73,9 @@ public abstract class GlyphMenu
     /** Current number of stems */
     protected int stemNb;
 
+    /** Current number of virtual glyphs */
+    protected int virtualNb;
+
     /** Sure we have no virtual glyphs? */
     protected boolean noVirtuals;
 
@@ -124,6 +127,7 @@ public abstract class GlyphMenu
         glyphNb = glyphs.size();
         knownNb = 0;
         stemNb = 0;
+        virtualNb = 0;
         noVirtuals = true;
 
         for (Glyph glyph : glyphs) {
@@ -136,9 +140,11 @@ public abstract class GlyphMenu
             }
 
             if (glyph.isVirtual()) {
-                noVirtuals = false;
+                virtualNb++;
             }
         }
+
+        noVirtuals = virtualNb == 0;
 
         // Update all dynamic actions accordingly
         for (DynAction action : dynActions.keySet()) {
@@ -434,48 +440,67 @@ public abstract class GlyphMenu
 
             // Actually deassign the whole set
             Set<Glyph> glyphs = glyphLag.getSelectedGlyphSet();
-            controller.asyncDeassignGlyphs(glyphs);
 
-            // Update focus on current glyph, if reused in a compound
-            if (glyph != null) {
-                Glyph newGlyph = glyph.getFirstSection()
-                                      .getGlyph();
+            if (noVirtuals) {
+                controller.asyncDeassignGlyphs(glyphs);
 
-                if (glyph != newGlyph) {
-                    glyphLag.getSelectionService()
-                            .publish(
-                        new GlyphEvent(
-                            this,
-                            SelectionHint.GLYPH_INIT,
-                            null,
-                            newGlyph));
+                // Update focus on current glyph, if reused in a compound
+                if (glyph != null) {
+                    Glyph newGlyph = glyph.getFirstSection()
+                                          .getGlyph();
+
+                    if (glyph != newGlyph) {
+                        glyphLag.getSelectionService()
+                                .publish(
+                            new GlyphEvent(
+                                this,
+                                SelectionHint.GLYPH_INIT,
+                                null,
+                                newGlyph));
+                    }
                 }
+            } else {
+                controller.asyncDeleteVirtualGlyphs(glyphs);
             }
         }
 
         @Override
         public void update ()
         {
-            if ((knownNb > 0) && noVirtuals) {
+            if ((knownNb > 0) && (noVirtuals || (virtualNb == knownNb))) {
                 setEnabled(true);
 
                 StringBuilder sb = new StringBuilder();
-                sb.append("Deassign ")
-                  .append(knownNb)
-                  .append(" glyph");
 
-                if (knownNb > 1) {
-                    sb.append("s");
+                if (noVirtuals) {
+                    sb.append("Deassign ");
+                    sb.append(knownNb)
+                      .append(" glyph");
+
+                    if (knownNb > 1) {
+                        sb.append("s");
+                    }
+                } else {
+                    sb.append("Delete ");
+
+                    if (virtualNb > 0) {
+                        sb.append(virtualNb)
+                          .append(" virtual glyph");
+
+                        if (virtualNb > 1) {
+                            sb.append("s");
+                        }
+                    }
                 }
 
                 if (stemNb > 0) {
                     sb.append(" w/ ")
                       .append(stemNb)
                       .append(" stem");
-                }
 
-                if (stemNb > 1) {
-                    sb.append("s");
+                    if (stemNb > 1) {
+                        sb.append("s");
+                    }
                 }
 
                 putValue(NAME, sb.toString());

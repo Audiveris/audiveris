@@ -70,6 +70,17 @@ public abstract class GlyphTask
     protected GlyphTask (LagOrientation    orientation,
                          Collection<Glyph> glyphs)
     {
+        // Check parameters
+        if (orientation == null) {
+            throw new IllegalArgumentException(
+                getClass().getSimpleName() + " needs a non-null orientation");
+        }
+
+        if ((glyphs == null) || glyphs.isEmpty()) {
+            throw new IllegalArgumentException(
+                getClass().getSimpleName() + " needs at least one glyph");
+        }
+
         this.orientation = orientation;
 
         this.glyphs = new TreeSet<Glyph>(Glyph.globalComparator);
@@ -98,6 +109,11 @@ public abstract class GlyphTask
      */
     protected GlyphTask (LagOrientation orientation)
     {
+        if (orientation == null) {
+            throw new IllegalArgumentException(
+                getClass().getSimpleName() + " needs a non-null orientation");
+        }
+
         this.orientation = orientation;
     }
 
@@ -149,8 +165,17 @@ public abstract class GlyphTask
     @Override
     public void epilog (Sheet sheet)
     {
-        sheet.getSheetSteps()
-             .rebuildFrom(Step.PATTERNS, getImpactedSystems(sheet), false);
+        switch (orientation) {
+        case HORIZONTAL :
+            sheet.getSheetSteps()
+                 .rebuildFrom(Step.SYSTEMS, null, false);
+
+            break;
+
+        case VERTICAL :
+            sheet.getSheetSteps()
+                 .rebuildFrom(Step.PATTERNS, getImpactedSystems(sheet), false);
+        }
     }
 
     //------------------//
@@ -172,13 +197,13 @@ public abstract class GlyphTask
     {
         super.prolog(sheet);
         this.sheet = sheet;
-        retrieveGlyphs();
-        initialSystems = retrieveCurrentImpact(sheet);
 
         // Make sure the concrete sections and glyphs are available
         if (glyphs == null) {
             retrieveGlyphs();
         }
+
+        initialSystems = retrieveCurrentImpact(sheet);
     }
 
     //----------------//

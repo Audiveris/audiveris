@@ -255,6 +255,16 @@ public class GlyphsModel
         }
     }
 
+    //--------------//
+    // deleteGlyphs //
+    //--------------//
+    public void deleteGlyphs (Collection<Glyph> glyphs)
+    {
+        for (Glyph glyph : new ArrayList<Glyph>(glyphs)) {
+            deleteGlyph(glyph);
+        }
+    }
+
     //-------------//
     // assignGlyph //
     //-------------//
@@ -312,5 +322,30 @@ public class GlyphsModel
     {
         // Assign the null shape to the glyph
         assignGlyph(glyph, null, Evaluation.ALGORITHM);
+    }
+
+    //-------------//
+    // deleteGlyph //
+    //-------------//
+    protected void deleteGlyph (Glyph glyph)
+    {
+        if (glyph == null) {
+            return;
+        }
+
+        if (!glyph.isVirtual()) {
+            logger.warning(
+                "Attempt to delete non-virtual glyph#" + glyph.getId());
+
+            return;
+        }
+
+        if (lag.isVertical()) {
+            SystemInfo system = sheet.getSystemOf(glyph.getAreaCenter());
+            system.removeGlyph(glyph);
+        } else {
+        }
+
+        lag.removeVirtualGlyph((VirtualGlyph) glyph);
     }
 }

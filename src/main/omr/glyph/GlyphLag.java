@@ -73,7 +73,7 @@ public class GlyphLag
 
     /**
      * Collection of all glyphs ever inserted in this GlyphLag, indexed by
-     * glyph id. No glyph is ever removed from this map.
+     * glyph id. No non-virtual glyph is ever removed from this map.
      */
     private final ConcurrentHashMap<Integer, Glyph> allGlyphs = new ConcurrentHashMap<Integer, Glyph>();
 
@@ -213,18 +213,18 @@ public class GlyphLag
                                 .getSelection(GlyphSetEvent.class);
     }
 
-//    //------------------//
-//    // getVirtualGlyphs //
-//    //------------------//
-//    /**
-//     * Export the unmodifiable collection of virtual glyphs of the lag.
-//     *
-//     * @return the collection of virtual glyphs
-//     */
-//    public synchronized Collection<Glyph> getVirtualGlyphs ()
-//    {
-//        return Collections.unmodifiableCollection(virtualGlyphs);
-//    }
+    //    //------------------//
+    //    // getVirtualGlyphs //
+    //    //------------------//
+    //    /**
+    //     * Export the unmodifiable collection of virtual glyphs of the lag.
+    //     *
+    //     * @return the collection of virtual glyphs
+    //     */
+    //    public synchronized Collection<Glyph> getVirtualGlyphs ()
+    //    {
+    //        return Collections.unmodifiableCollection(virtualGlyphs);
+    //    }
 
     //----------//
     // addGlyph //
@@ -370,6 +370,21 @@ public class GlyphLag
         }
 
         return null;
+    }
+
+    //--------------------//
+    // removeVirtualGlyph //
+    //--------------------//
+    /**
+     * Remove the provided virtual glyph
+     * @param glyph the virtual glyph to remove
+     */
+    public synchronized void removeVirtualGlyph (VirtualGlyph glyph)
+    {
+        originals.remove(glyph.getSignature(), glyph);
+        allGlyphs.remove(glyph.getId(), glyph);
+        virtualGlyphs.remove(glyph);
+        activeGlyphs = null;
     }
 
     //----------------------//

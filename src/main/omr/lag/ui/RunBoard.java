@@ -127,7 +127,7 @@ public class RunBoard
                     rLength.setValue(run.getLength());
                     rLevel.setValue(run.getLevel());
                 } else {
-                    emptyFields(getComponent());
+                    emptyFields(getBody());
                 }
             }
         } catch (Exception ex) {

@@ -700,16 +700,14 @@ public enum Shape {
     // isWellKnown //
     //-------------//
     /**
-     * Report whether this shape is well known, that is a symbol not part of the
-     * Garbage range
+     * Report whether this shape is well known, that is a non-garbage symbol
      *
-     * @return true if not part of garbage range, false otherwise
+     * @return true if non-garbage, false otherwise
      */
     public boolean isWellKnown ()
     {
         return (this != NO_LEGAL_TIME) && (this != GLYPH_PART) &&
-               !ShapeRange.Garbage.getShapes()
-                                  .contains(this);
+               ((this != STRUCTURE) && (this != NOISE));
     }
 
     //-------------//

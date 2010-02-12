@@ -339,7 +339,7 @@ public class SectionBoard
                 sectionId = (Integer) id.getValue();
             }
 
-            emptyFields(getComponent());
+            emptyFields(getBody());
 
             if (section == null) {
                 lagName.setText("");

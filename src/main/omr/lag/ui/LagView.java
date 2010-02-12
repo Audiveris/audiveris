@@ -755,6 +755,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
             // Publish Run information
             Point apt = lag.switchRef(pt, null);
             Run   run = (section != null) ? section.getRunAt(apt.y) : null;
+
             publish(new RunEvent(this, hint, movement, run));
 
             // Publish Section information

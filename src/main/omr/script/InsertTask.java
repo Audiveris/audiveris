@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                       G l y p h I n s e r t T a s k                        //
+//                            I n s e r t T a s k                             //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.script;
 
-import omr.glyph.GlyphLag;
+import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.VirtualGlyph;
 import omr.glyph.facets.Glyph;
@@ -23,8 +23,6 @@ import omr.score.common.PixelPoint;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
-import omr.step.Step;
-
 import omr.util.PointFacade;
 
 import java.util.*;
@@ -33,12 +31,12 @@ import javax.xml.bind.*;
 import javax.xml.bind.annotation.*;
 
 /**
- * Class {@code GlyphInsertTask} is a script task which inserts a set of
- * (virtual) glyphs into the sheet/score environment
+ * Class {@code InsertTask} is a script task which inserts a set of (virtual)
+ * glyphs into the sheet/score environment
  *
  * @author Hervé Bitteur
  */
-public class GlyphInsertTask
+public class InsertTask
     extends GlyphTask
 {
     //~ Instance fields --------------------------------------------------------
@@ -48,7 +46,7 @@ public class GlyphInsertTask
     private final Shape shape;
 
     /** Locations */
-    private Collection<PixelPoint> locations;
+    private List<PixelPoint> locations;
 
     /** Wrapping of the collections of points */
     @XmlElementWrapper(name = "locations")
@@ -57,9 +55,9 @@ public class GlyphInsertTask
 
     //~ Constructors -----------------------------------------------------------
 
-    //-----------------//
-    // GlyphInsertTask //
-    //-----------------//
+    //------------//
+    // InsertTask //
+    //------------//
     /**
      * Create an glyph insertion task
      *
@@ -68,37 +66,32 @@ public class GlyphInsertTask
      * @param orientation the orientation of the containing lag
      * @throws IllegalArgumentException if any of the arguments is not valid
      */
-    public GlyphInsertTask (Shape                  shape,
-                            Collection<PixelPoint> locations,
-                            LagOrientation         orientation)
+    public InsertTask (Shape                  shape,
+                       Collection<PixelPoint> locations,
+                       LagOrientation         orientation)
     {
         super(orientation);
-
-        this.shape = shape;
-        this.locations = new LinkedHashSet<PixelPoint>(locations);
 
         // Check parameters
         if (shape == null) {
             throw new IllegalArgumentException(
-                "GlypInsertTask needs a non-null shape");
+                getClass().getSimpleName() + " needs a non-null shape");
         }
 
         if ((locations == null) || locations.isEmpty()) {
             throw new IllegalArgumentException(
-                "GlypInsertTask needs at least one location");
+                getClass().getSimpleName() + " needs at least one location");
         }
 
-        if (orientation == null) {
-            throw new IllegalArgumentException(
-                "GlypInsertTask needs a non-null orientation");
-        }
+        this.shape = shape;
+        this.locations = new ArrayList<PixelPoint>(locations);
     }
 
-    //-----------------//
-    // GlyphInsertTask //
-    //-----------------//
+    //------------//
+    // InsertTask //
+    //------------//
     /** No-arg constructor needed for JAXB */
-    private GlyphInsertTask ()
+    private InsertTask ()
     {
         shape = null; // Dummy value
     }
@@ -124,18 +117,7 @@ public class GlyphInsertTask
     public void core (Sheet sheet)
         throws Exception
     {
-        //        switch (orientation) {
-        //        case HORIZONTAL :
-        //            sheet.getHorizontalsBuilder()
-        //                 .getController()
-        //                 .syncInsert(this);
-        //
-        //            break;
-        //
-        //        case VERTICAL :
-        //            sheet.getSymbolsController()
-        //                 .syncInsert(this);
-        //        }
+        // Nothing to do
     }
 
     //--------//
@@ -144,19 +126,9 @@ public class GlyphInsertTask
     @Override
     public void epilog (Sheet sheet)
     {
-        switch (orientation) {
-        case HORIZONTAL :
-            sheet.getSheetSteps()
-                 .rebuildFrom(Step.SYSTEMS, null, false);
-
-            break;
-
-        case VERTICAL :
-            sheet.getSheetSteps()
-                 .rebuildFrom(Step.PATTERNS, getImpactedSystems(sheet), false);
-        }
-
-        logger.info("End of glyph insertion");
+        super.epilog(sheet);
+        logger.info(
+            "Insertion of virtual " + shape + " " + Glyphs.toString(glyphs));
     }
 
     //-----------------//
@@ -232,7 +204,6 @@ public class GlyphInsertTask
             PixelPoint center = glyph.getAreaCenter();
             glyph.shift(
                 new PixelPoint(location.x - center.x, location.y - center.y));
-            logger.info("Created " + glyph);
 
             if (orientation == LagOrientation.VERTICAL) {
                 SystemInfo system = sheet.getSystemOf(center);
@@ -242,7 +213,6 @@ public class GlyphInsertTask
                      .addGlyph(glyph);
             }
 
-            glyph.dump();
             glyphs.add(glyph);
         }
     }
@@ -259,7 +229,7 @@ public class GlyphInsertTask
     {
         // Convert array of point facades -> locations
         if (locations == null) {
-            locations = new HashSet<PixelPoint>();
+            locations = new ArrayList<PixelPoint>();
 
             for (PointFacade facade : points) {
                 locations.add(new PixelPoint(facade.getX(), facade.getY()));

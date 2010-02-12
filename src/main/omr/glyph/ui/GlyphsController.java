@@ -18,6 +18,7 @@ import omr.log.Logger;
 
 import omr.script.AssignTask;
 import omr.script.BarlineTask;
+import omr.script.DeleteTask;
 
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphSetEvent;
@@ -188,9 +189,9 @@ public class GlyphsController
      *                 individual glyph
      * @return the task that carries out the processing
      */
-    public Task asyncAssignGlyphs (final Collection<Glyph> glyphs,
-                                   final Shape             shape,
-                                   final boolean           compound)
+    public Task asyncAssignGlyphs (Collection<Glyph> glyphs,
+                                   Shape             shape,
+                                   boolean           compound)
     {
         // Safety check: we cannot alter virtual glyphs
         for (Glyph glyph : glyphs) {
@@ -224,9 +225,17 @@ public class GlyphsController
      * @param glyphs the collection of glyphs to be de-assigned
      * @return the task that carries out the processing
      */
-    public Task asyncDeassignGlyphs (final Collection<Glyph> glyphs)
+    public Task asyncDeassignGlyphs (Collection<Glyph> glyphs)
     {
         return asyncAssignGlyphs(glyphs, null, false);
+    }
+
+    //--------------------------//
+    // asyncDeleteVirtualGlyphs //
+    //--------------------------//
+    public Task asyncDeleteVirtualGlyphs (Collection<Glyph> glyphs)
+    {
+        return new DeleteTask(getLag().getOrientation(), glyphs).launch(sheet);
     }
 
     //------------//
@@ -280,6 +289,24 @@ public class GlyphsController
             // Publish modifications
             publish(glyphs.iterator().next());
         }
+    }
+
+    //------------//
+    // syncDelete //
+    //------------//
+    /**
+     * Process synchronously the deletion defined in the provided context
+     * @param context the context of the deletion
+     */
+    public void syncDelete (DeleteTask context)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("syncDelete" + context);
+        }
+
+        model.deleteGlyphs(context.getInitialGlyphs());
+
+        publish((Glyph) null);
     }
 
     //---------//
