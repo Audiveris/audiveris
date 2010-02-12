@@ -22,10 +22,12 @@ import java.util.List;
 import javax.xml.bind.annotation.*;
 
 /**
- * Class <code>Script</code> handles a complete script applied to a sheet. A
- * script is a sequence of {@link ScriptTask} instances tasks that are recorded
- * as the user interacts with the sheet data.
- * A script can be stored and reloaded/replayed.
+ * Class {@code Script} handles a complete script applied to a sheet.
+ *
+ * <p>A script is a sequence of {@link ScriptTask} instances tasks that are
+ * recorded as the user interacts with the sheet data.
+ *
+ * <p>A script can be stored and reloaded/replayed.
  *
  * @author Hervé Bitteur
  */

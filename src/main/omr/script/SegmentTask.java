@@ -18,8 +18,8 @@ import omr.sheet.Sheet;
 import java.util.Collection;
 
 /**
- * Class <code>SegmentTask</code> is a script task which attempts to segment a
- * collection of glyphs (along verticals for the time being)
+ * Class {@code SegmentTask} attempts to segment a collection of glyphs (along
+ * verticals for the time being)
  *
  * @author Hervé Bitteur
  */

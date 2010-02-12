@@ -20,8 +20,7 @@ import java.io.File;
 import javax.xml.bind.annotation.*;
 
 /**
- * Class <code>ExportTask</code> is a script task which exports score entities
- * to a MusicXML file
+ * Class {@code ExportTask} exports score entities to a MusicXML file
  *
  * @author Hervé Bitteur
  */

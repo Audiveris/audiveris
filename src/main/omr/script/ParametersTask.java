@@ -25,8 +25,8 @@ import java.util.List;
 import javax.xml.bind.annotation.*;
 
 /**
- * Class <code>ParametersTask</code> is a script task which handles the global
- * parameters of a score, together with {@link omr.score.ui.ScoreParameters}
+ * Class {@code ParametersTask} handles the global parameters of a score,
+ * together with {@link omr.score.ui.ScoreParameters}
  *
  * @see omr.score.ui.ScoreParameters
  *

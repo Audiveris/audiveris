@@ -21,8 +21,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 
 /**
- * Class <code>SlurTask</code> is a script task which attempts to fix a slur
- * glyph (by extracting a new glyph out of some sections of the old glyph)
+ * Class {@code SlurTask} attempts to fix a slur glyph (by extracting a new
+ * glyph out of some sections of the old glyph)
  *
  * @author Hervé Bitteur
  */

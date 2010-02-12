@@ -25,8 +25,11 @@ import java.util.*;
 import javax.xml.bind.annotation.*;
 
 /**
- * Class <code>GlyphUpdateTask</code> is a script task which is applied to a
- * collection of existing glyphs.
+ * Class {@code GlyphUpdateTask} is applied to a collection of existing glyphs.
+ *
+ * <p>The glyphs are designated either by their member sections, or (for the
+ * special case of virtual glyphs) simply by their location.
+ *
  * <p>Since sections are stable (they are assigned once and for all, the
  * relationship between a section and its containing system can be modified only
  * when system boundaries change in SystemsBuilder) they are used for the

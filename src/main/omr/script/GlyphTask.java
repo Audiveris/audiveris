@@ -27,9 +27,9 @@ import java.util.*;
 import javax.xml.bind.annotation.*;
 
 /**
- * Class {@code GlyphTask} is a script task which handles a collection of
- * glyphs. These glyphs may already exist (as in plain {@link GlyphUpdateTask}
- * or remain to be created (as in {@link GlyphInsertTask}</p>
+ * Class {@code  GlyphTask} handles a collection of glyphs.
+ * These glyphs may already exist (as in a plain {@link GlyphUpdateTask})
+ * or remain to be created (as in {@link InsertTask})</p>
  *
  * <h4>Glyphs and sections in a script:<br/>
  *    <img src="doc-files/script.jpg"/>
@@ -261,27 +261,6 @@ public abstract class GlyphTask
     {
         SortedSet<SystemInfo> impactedSystems = new TreeSet<SystemInfo>();
 
-        //        for (Collection<GlyphSection> set : sectionSets.getSets(
-        //            sheet,
-        //            orientation)) {
-        //            for (GlyphSection section : set) {
-        //                SystemInfo system = section.getSystem();
-        //                Glyph      glyph = section.getGlyph();
-        //
-        //                if (system != null) {
-        //                    impactedSystems.add(system);
-        //                }
-        //
-        //                if (glyph != null) {
-        //                    Shape shape = glyph.getShape();
-        //
-        //                    if ((shape != null) && shape.isPersistent()) {
-        //                        // Include all following systems
-        //                        impactedSystems.addAll(remaining(system));
-        //                    }
-        //                }
-        //            }
-        //        }
         for (Glyph glyph : glyphs) {
             SystemInfo system = sheet.getSystemOf(glyph);
 

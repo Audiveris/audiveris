@@ -23,8 +23,8 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlElement;
 
 /**
- * Class <code>RationalTask</code> records the assignment of a rational value
- * to a collection of glyphs
+ * Class {@code RationalTask} records the assignment of a rational value to a
+ * collection of glyphs
  *
  * @author Hervé Bitteur
  */

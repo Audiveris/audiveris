@@ -18,8 +18,8 @@ import java.io.*;
 import javax.xml.bind.*;
 
 /**
- * Class <code>ScriptManager</code> is in charge of handling the storing and
- * loading of scripts
+ * Class {@code ScriptManager} is in charge of handling the storing and loading
+ * of scripts
  *
  * @author Hervé Bitteur
  */
@@ -123,23 +123,7 @@ public class ScriptManager
         if (jaxbContext == null) {
             synchronized (this) {
                 if (jaxbContext == null) {
-                    jaxbContext = JAXBContext.newInstance(
-                        AssignTask.class,
-                        BarlineTask.class,
-                        BoundaryTask.class,
-                        ExportTask.class,
-                        InsertTask.class,
-                        GlyphUpdateTask.class,
-                        MidiWriteTask.class,
-                        ParametersTask.class,
-                        PlayTask.class,
-                        RationalTask.class,
-                        Script.class,
-                        ScriptTask.class,
-                        SegmentTask.class,
-                        SlurTask.class,
-                        StepTask.class,
-                        TextTask.class);
+                    jaxbContext = JAXBContext.newInstance(Script.class);
                 }
             }
         }

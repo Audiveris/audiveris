@@ -18,8 +18,7 @@ import omr.sheet.Sheet;
 import javax.xml.bind.annotation.*;
 
 /**
- * Class <code>PlayTask</code> is a script task which plays the Midi sequence
- * of a score
+ * Class {@code PlayTask} plays the Midi sequence of a score
  *
  * @author Hervé Bitteur
  */

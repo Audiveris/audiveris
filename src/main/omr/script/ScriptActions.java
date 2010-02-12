@@ -43,7 +43,7 @@ import javax.swing.JOptionPane;
 import javax.xml.bind.JAXBException;
 
 /**
- * Class <code>ScriptActions</code> gathers UI actions related to script
+ * Class {@code ScriptActions} gathers UI actions related to script
  * handling. These static member classes are ready to be picked by the plugins
  * mechanism.
  *

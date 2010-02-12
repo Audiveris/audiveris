@@ -26,8 +26,7 @@ import java.util.List;
 import javax.xml.bind.annotation.*;
 
 /**
- * Class <code>BoundaryTask</code> is a script task which modifies a system
- * boundary.
+ * Class {@code BoundaryTask} modifies a system boundary.
  *
  * @author Hervé Bitteur
  */

@@ -20,8 +20,8 @@ import omr.util.BasicTask;
 import org.jdesktop.application.Task;
 
 /**
- * Class <code>Task</code> is the root class of all possible tasks within a
- * score script.
+ * Class {@code Task} is the root class of all possible tasks within a score
+ * script.
  *
  * <p>The processing of any task is defined by its {@link #core} method. In
  * order to factorize pre and post processing, a subclass may also redefine the

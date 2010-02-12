@@ -21,8 +21,6 @@ import omr.score.common.PixelPoint;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
-import omr.step.Step;
-
 import omr.util.PointFacade;
 
 import java.util.*;
@@ -31,13 +29,13 @@ import javax.xml.bind.*;
 import javax.xml.bind.annotation.*;
 
 /**
- * Class {@code DeleteTask} is a script task which deletes a set of
- * (virtual) glyphs from the sheet/score environment
+ * Class {@code DeleteTask} deletes a set of (virtual) glyphs from the sheet
+ * environment
  *
  * @author Hervé Bitteur
  */
 public class DeleteTask
-    extends GlyphUpdateTask
+    extends GlyphTask
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -193,9 +191,11 @@ public class DeleteTask
                              .lookupVirtualGlyph(location);
             }
 
-            glyph.dump();
             glyphs.add(glyph);
-            logger.info("Tobe deleted: " + glyph);
+
+            if (logger.isFineEnabled()) {
+                logger.fine("To be deleted: " + glyph);
+            }
         }
     }
 

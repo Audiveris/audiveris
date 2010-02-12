@@ -31,8 +31,8 @@ import javax.xml.bind.*;
 import javax.xml.bind.annotation.*;
 
 /**
- * Class {@code InsertTask} is a script task which inserts a set of (virtual)
- * glyphs into the sheet/score environment
+ * Class {@code InsertTask} inserts a set of (virtual) glyphs into the sheet
+ * environment
  *
  * @author Hervé Bitteur
  */

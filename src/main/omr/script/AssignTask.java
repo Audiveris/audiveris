@@ -25,8 +25,8 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlAttribute;
 
 /**
- * Class <code>AssignTask</code> is a script task which assigns (or deassign)
- * a shape to a collection of glyphs.
+ * Class {@code AssignTask} assigns (or deassign) a shape to a collection of
+ * glyphs.
  *
  * <p>Il the compound flag is set, a compound glyph may is composed from the
  * provided glyphs and assigned the shape. Otherwise, each provided glyph is
