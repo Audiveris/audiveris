@@ -13,11 +13,10 @@ package omr.glyph;
 
 import omr.constant.Constant;
 
-import omr.ui.icon.IconManager;
+import omr.ui.symbol.ShapeSymbol;
+import omr.ui.symbol.SymbolManager;
 
 import java.awt.Color;
-
-import javax.swing.*;
 
 /**
  * Class <code>Shape</code> defines the comprehensive list of glyph shapes. It
@@ -633,14 +632,14 @@ public enum Shape {
     /** Related permanent display color */
     private Constant.Color constantColor;
 
-    /** Potential related icon */
-    private Icon icon;
+    /** Potential related symbol */
+    private ShapeSymbol symbol;
 
     /** Potential related shape to be used for training */
     private Shape trainingShape;
 
-    /** Remember the fact that this shape has no related icon */
-    private boolean hasNoIcon;
+    /** Remember the fact that this shape has no related symbol */
+    private boolean hasNoSymbol;
 
     //-------//
     // Shape //
@@ -845,42 +844,42 @@ public enum Shape {
         createShapeColor(color); // Use range color !!!
     }
 
-    //---------//
-    // getIcon //
-    //---------//
+    //-----------//
+    // getSymbol //
+    //-----------//
     /**
-     * Report the icon related to the shape, if any
+     * Report the symbol related to the shape, if any
      *
-     * @return the related icon, or null
+     * @return the related symbol, or null
      */
-    public Icon getIcon ()
+    public ShapeSymbol getSymbol ()
     {
-        if (hasNoIcon) {
+        if (hasNoSymbol) {
             return null;
         }
 
-        if (icon == null) {
-            setIcon(IconManager.getInstance().loadSymbolIcon(toString()));
+        if (symbol == null) {
+            setSymbol(SymbolManager.getInstance().loadSymbol(toString()));
 
-            if (icon == null) {
-                hasNoIcon = true;
+            if (symbol == null) {
+                hasNoSymbol = true;
             }
         }
 
-        return icon;
+        return symbol;
     }
 
-    //---------//
-    // setIcon //
-    //---------//
+    //-----------//
+    // setSymbol //
+    //-----------//
     /**
-     * Assign a font to this shape
+     * Assign a symbol to this shape
      *
-     * @param icon the assigned icon, which may be null
+     * @param symbol the assigned symbol, which may be null
      */
-    public void setIcon (Icon icon)
+    public void setSymbol (ShapeSymbol symbol)
     {
-        this.icon = icon;
+        this.symbol = symbol;
     }
 
     //------------------//

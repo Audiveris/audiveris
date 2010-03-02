@@ -67,12 +67,26 @@ public class PixelPoint
 
     //~ Methods ----------------------------------------------------------------
 
+    //----//
+    // to //
+    //----//
+    /**
+     * Report the translation vector from this point to the other
+     * @param other the target point
+     * @return the vector from this point to the other
+     */
+    public PixelPoint to (PixelPoint other)
+    {
+        return new PixelPoint(other.x - x, other.y - y);
+    }
+
     //-----------//
     // translate //
     //-----------//
     /**
-     * Shift the current location by geometrically adding the provided vetor
-     * @param vector the shift vector
+     * Translate the current location by geometrically adding the provided
+     * vector
+     * @param vector the translation vector
      */
     public void translate (PixelPoint vector)
     {

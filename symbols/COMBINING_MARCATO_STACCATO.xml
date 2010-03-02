@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<symbol name="COMBINING_MARCATO_STACCATO" interline="8">
+    <bitmap>
+        <row>*.-0#0-0.</row>
+        <row>o0-###-$-</row>
+        <row>.#-0#0.*-</row>
+        <row>-$.---oo-</row>
+        <row>-o0---*--</row>
+        <row>-.#---$--</row>
+        <row>--$.-+0--</row>
+        <row>--o0-0+--</row>
+        <row>--.#-#---</row>
+        <row>---$o*---</row>
+        <row>---o#o---</row>
+        <row>---.#.---</row>
+        <row>----$----</row>
+        <row>----.----</row>
+    </bitmap>
+</symbol>

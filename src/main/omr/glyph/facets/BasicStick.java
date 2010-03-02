@@ -182,23 +182,6 @@ public class BasicStick
         return alignment.getThickness();
     }
 
-    //------------------//
-    // addGlyphSections //
-    //------------------//
-    /**
-     * Add another glyph (with its sections of points) to this one
-     *
-     * @param other The merged glyph
-     * @param linkSections Should we set the link from sections to glyph ?
-     */
-    @Override
-    public void addGlyphSections (Glyph   other,
-                                  Linking linkSections)
-    {
-        super.addGlyphSections(other, linkSections);
-        line = null;
-    }
-
     //------------//
     // addSection //
     //------------//
@@ -221,6 +204,16 @@ public class BasicStick
     public void computeLine ()
     {
         alignment.computeLine();
+    }
+
+    //-----------------//
+    // invalidateCache //
+    //-----------------//
+    @Override
+    public void invalidateCache ()
+    {
+        super.invalidateCache();
+        line = null;
     }
 
     public boolean overlapsWith (Stick other)

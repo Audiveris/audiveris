@@ -27,9 +27,8 @@ import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
 
-import omr.util.Dumper;
 import omr.util.TreeNode;
-import static java.lang.Math.*;
+
 import java.util.*;
 
 /**
@@ -612,7 +611,7 @@ public class Beam
             logger.fine("maxDistance=" + maxDistance + " dist=" + dist);
         }
 
-        if (abs(dist) > maxDistance) {
+        if (Math.abs(dist) > maxDistance) {
             return false;
         }
 

@@ -24,7 +24,7 @@ import java.util.Collection;
  * @author Hervé Bitteur
  */
 public class VirtualGlyph
-    extends IconGlyph
+    extends SymbolGlyph
 {
     //~ Constructors -----------------------------------------------------------
 

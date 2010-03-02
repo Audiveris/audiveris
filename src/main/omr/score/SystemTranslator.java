@@ -56,10 +56,7 @@ import omr.sheet.SystemInfo;
 
 import omr.util.TreeNode;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Class <code>SystemTranslator</code> performs all translation tasks for one

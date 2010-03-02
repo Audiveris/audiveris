@@ -438,7 +438,7 @@
             update="yes"
             destfile="${backup.dir}/${ant.project.name}/${DSTAMP}-${machine.name}-src.zip" >
             <fileset dir="${basedir}"  
-                     includes="build.xml, src/**, config/**, icons/**, www/**, train/*.def, nb/jp/**"
+                     includes="build.xml, src/**, config/**, symbols/**, www/**, train/*.def, nb/jp/**"
                      excludes="${dist.excludes},www/docs/api/**,www/branding/**,nb/jp/dist/**"/>
         </zip>
 

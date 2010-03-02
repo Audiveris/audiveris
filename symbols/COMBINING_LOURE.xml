@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<symbol name="COMBINING_LOURE" interline="8">
+    <bitmap>
+        <row>---0#0---</row>
+        <row>---###---</row>
+        <row>---$#$---</row>
+        <row>----+----</row>
+        <row>---------</row>
+        <row>---------</row>
+        <row>#########</row>
+    </bitmap>
+</symbol>

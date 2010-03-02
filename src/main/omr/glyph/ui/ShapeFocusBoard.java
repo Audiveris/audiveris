@@ -198,7 +198,7 @@ public class ShapeFocusBoard
         if (currentShape != null) {
             // Update the shape button
             selectButton.setText(currentShape.toString());
-            selectButton.setIcon(currentShape.getIcon());
+            selectButton.setIcon(currentShape.getSymbol());
 
             // Count the number of glyphs assigned to current shape
             for (Glyph glyph : sheet.getActiveGlyphs()) {

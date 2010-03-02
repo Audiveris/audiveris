@@ -133,10 +133,10 @@
     <target name="global-replace"
         description="Modify token of every source file">
 	
-	<replace encoding="utf8" dir="${basedir}">
-	    <replacetoken><![CDATA[&eacute;]]></replacetoken>
-	    <replacevalue><![CDATA[é]]></replacevalue>
-	    <include name="**/*.html"/>
+	<replace encoding="utf8" dir="${basedir}/symbols">
+	    <replacetoken><![CDATA[symbol ]]></replacetoken>
+	    <replacevalue><![CDATA[symbol interline="8" ]]></replacevalue>
+	    <include name="**/*.xml"/>
 	</replace>
 
     </target>

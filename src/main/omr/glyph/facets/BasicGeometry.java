@@ -24,7 +24,7 @@ import omr.math.Moments;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
-import omr.ui.icon.SymbolIcon;
+import omr.ui.symbol.ShapeSymbol;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -207,13 +207,13 @@ class BasicGeometry
         }
 
         // Other shape: check with the related icon if any
-        SymbolIcon icon = (SymbolIcon) shape.getIcon();
+        ShapeSymbol symbol = shape.getSymbol();
 
-        if (icon != null) {
-            Point iconRefPoint = icon.getRefPoint();
+        if (symbol != null) {
+            Point refPoint = symbol.getRefPoint();
 
-            if (iconRefPoint != null) {
-                double         refRatio = (double) iconRefPoint.y / icon.getIconHeight();
+            if (refPoint != null) {
+                double         refRatio = (double) refPoint.y / symbol.getHeight();
                 PixelRectangle box = getContourBox();
 
                 return new PixelPoint(
@@ -332,14 +332,14 @@ class BasicGeometry
     @Override
     public void dump ()
     {
-        System.out.println("   contourBox=" + getContourBox());
-        System.out.println("   weight=" + getWeight());
-        System.out.println("   signature=" + getSignature());
-        System.out.println("   interline=" + getInterline());
-        System.out.println("   moments=" + getMoments());
-        System.out.println("   location=" + getLocation());
-        System.out.println("   centroid=" + getCentroid());
         System.out.println("   bounds=" + getBounds());
+        System.out.println("   centroid=" + getCentroid());
+        System.out.println("   contourBox=" + getContourBox());
+        System.out.println("   interline=" + getInterline());
+        System.out.println("   location=" + getLocation());
+        System.out.println("   moments=" + getMoments());
+        System.out.println("   signature=" + getSignature());
+        System.out.println("   weight=" + getWeight());
     }
 
     //-----------------//
@@ -348,36 +348,25 @@ class BasicGeometry
     @Override
     public void invalidateCache ()
     {
-        centroid = null;
-        moments = null;
         bounds = null;
+        center = null;
+        centroid = null;
         contourBox = null;
-        weight = null;
+        moments = null;
         signature = null;
+        weight = null;
     }
 
-    //-------//
-    // shift //
-    //-------//
-    public void shift (PixelPoint vector)
+    //-----------//
+    // translate //
+    //-----------//
+    public void translate (PixelPoint vector)
     {
-        // Compute current value for all the dependent items
-        getBounds();
-        getContourBox();
-        getAreaCenter();
-        getMoments();
-        getCentroid();
+        for (Section section : glyph.getMembers()) {
+            section.translate(vector);
+        }
 
-        // Translate all the dependent items
-        bounds.translate(vector.x, vector.y);
-        contourBox.translate(vector.x, vector.y);
-        center.translate(vector);
-        centroid.translate(vector);
-
-        moments.getValues()[17] += vector.x; // Beurk
-        moments.getValues()[18] += vector.y; // Beurk
-
-        signature = new GlyphSignature(glyph);
+        glyph.invalidateCache();
     }
 
     //----------------//

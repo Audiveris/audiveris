@@ -70,13 +70,13 @@ public class WellKnowns
         HOME_FOLDER,
         CONFIG_FOLDER_NAME);
 
-    /** Specific folder name for icons */
-    public static final String ICONS_FOLDER_NAME = "icons";
+    /** Specific folder name for symbols */
+    public static final String SYMBOLS_FOLDER_NAME = "symbols";
 
-    /** The folder where custom-defined icons are stored */
-    public static final File ICONS_FOLDER = new File(
+    /** The folder where custom-defined symbols are stored */
+    public static final File SYMBOLS_FOLDER = new File(
         HOME_FOLDER,
-        ICONS_FOLDER_NAME);
+        SYMBOLS_FOLDER_NAME);
 
     /** Specific folder name for OCR utility */
     public static final String OCR_FOLDER_NAME = "ocr";

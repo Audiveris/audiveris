@@ -212,7 +212,7 @@ public class GlyphVerifier
     private File getActualDir (String folder)
     {
         if (repository.isIconsFolder(folder)) {
-            return WellKnowns.ICONS_FOLDER;
+            return WellKnowns.SYMBOLS_FOLDER;
         } else {
             return new File(repository.getSheetsFolder(), folder);
         }
@@ -468,7 +468,7 @@ public class GlyphVerifier
             list.removeAll();
 
             // First insert the dedicated icons folder
-            list.add(WellKnowns.ICONS_FOLDER.getName());
+            list.add(WellKnowns.SYMBOLS_FOLDER.getName());
 
             // Then populate with all sorted existing sheets folders
             ArrayList<String> folders = new ArrayList<String>();

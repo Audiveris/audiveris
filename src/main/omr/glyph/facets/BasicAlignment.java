@@ -448,19 +448,19 @@ class BasicAlignment
         }
     }
 
-    //    //------//
-    //    // dump //
-    //    //------//
-    //    /**
-    //     * Print out glyph internal data
-    //     */
-    //    @Override
-    //    public void dump ()
-    //    {
-    //        super.dump();
-    //        System.out.println("   line=" + getLine());
-    //    }
-    //
+        //------//
+        // dump //
+        //------//
+        /**
+         * Print out glyph internal data
+         */
+        @Override
+        public void dump ()
+        {
+            super.dump();
+            System.out.println("   line=" + getLine());
+        }
+    
     //    //------//
     //    // dump //
     //    //------//

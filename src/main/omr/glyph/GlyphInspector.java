@@ -20,7 +20,6 @@ import omr.log.Logger;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
-import omr.sheet.LineInfo;
 import omr.sheet.Scale;
 import omr.sheet.StaffInfo;
 import omr.sheet.SystemInfo;

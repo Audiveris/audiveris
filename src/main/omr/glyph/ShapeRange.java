@@ -49,7 +49,7 @@ public class ShapeRange
         EnumSet.range(PART_DEFINING_BARLINE, BACK_TO_BACK_REPEAT_SIGN));
     public static final ShapeRange Beams = new ShapeRange(
         BEAM,
-        EnumSet.range(BEAM, SLUR));
+        EnumSet.range(BEAM, BEAM_HOOK));
     public static final ShapeRange Clefs = new ShapeRange(
         G_CLEF,
         EnumSet.range(G_CLEF, F_CLEF_OTTAVA_BASSA));
@@ -71,15 +71,10 @@ public class ShapeRange
     public static final ShapeRange Notes = new ShapeRange(
         BREVE,
         EnumSet.range(BREVE, WHOLE_NOTE_3));
-    public static final ShapeRange Octaves = new ShapeRange(
-        OTTAVA_ALTA,
-        EnumSet.range(OTTAVA_ALTA, OTTAVA_BASSA));
+
     public static final ShapeRange Ornaments = new ShapeRange(
         MORDENT,
         EnumSet.range(GRACE_NOTE_SLASH, INVERTED_MORDENT));
-    public static final ShapeRange Pedals = new ShapeRange(
-        PEDAL_MARK,
-        EnumSet.range(PEDAL_MARK, PEDAL_UP_MARK));
     public static final ShapeRange Rests = new ShapeRange(
         QUARTER_REST,
         EnumSet.of(
@@ -92,16 +87,24 @@ public class ShapeRange
             THIRTY_SECOND_REST,
             SIXTY_FOURTH_REST,
             ONE_HUNDRED_TWENTY_EIGHTH_REST));
-    public static final ShapeRange Stems = new ShapeRange(
-        COMBINING_STEM,
-        EnumSet.range(COMBINING_STEM, COMBINING_STEM));
+
     public static final ShapeRange Times = new ShapeRange(
         TIME_FOUR_FOUR,
         EnumSet.range(TIME_ZERO, CUT_TIME),
         CUSTOM_TIME_SIGNATURE);
-    public static final ShapeRange Tuplets = new ShapeRange(
-        TUPLET_THREE,
-        EnumSet.range(TUPLET_THREE, TUPLET_SIX));
+
+    /** A bag of miscellaneous shapes */
+    public static final ShapeRange Others = new ShapeRange(
+        COMBINING_STEM,
+        EnumSet.of(
+            COMBINING_STEM,
+            SLUR,
+            OTTAVA_ALTA,
+            OTTAVA_BASSA,
+            PEDAL_MARK,
+            PEDAL_UP_MARK,
+            TUPLET_THREE,
+            TUPLET_SIX));
 
     //
     public static final ShapeRange Physicals = new ShapeRange(
@@ -153,6 +156,16 @@ public class ShapeRange
         StemSymbols.addAll(Flags.getShapes());
         StemSymbols.addAll(HeadAndFlags.getShapes());
     }
+
+    /** Pedals */
+    public static final EnumSet<Shape> Pedals = EnumSet.range(
+        PEDAL_MARK,
+        PEDAL_UP_MARK);
+
+    /** Tuplets */
+    public static final EnumSet<Shape> Tuplets = EnumSet.range(
+        TUPLET_THREE,
+        TUPLET_SIX);
 
     /** Specific single symbol for part of time signature (such as 4) */
     public static final EnumSet<Shape> PartialTimes = EnumSet.range(
@@ -267,6 +280,34 @@ public class ShapeRange
         setColor(color);
     }
 
+    //----------//
+    // getRange //
+    //----------//
+    public static ShapeRange getRange (String name)
+    {
+        return Ranges.map.get(name);
+    }
+
+    //-----------//
+    // getRanges //
+    //-----------//
+    public static List<ShapeRange> getRanges ()
+    {
+        return Ranges.rangeList;
+    }
+
+    //--------//
+    // getRep //
+    //--------//
+    /**
+     * Report the representative shape of the range, if any
+     * @return the rep shape, or null
+     */
+    public Shape getRep ()
+    {
+        return rep;
+    }
+
     //-----------//
     // getShapes //
     //-----------//
@@ -337,7 +378,7 @@ public class ShapeRange
         for (Shape shape : range.shapes) {
             JMenuItem menuItem = new JMenuItem(
                 shape.toString(),
-                shape.getIcon());
+                shape.getSymbol());
             addColoredItem(top, menuItem, shape.getColor());
 
             menuItem.setToolTipText(shape.getDescription());
@@ -365,7 +406,7 @@ public class ShapeRange
                 JMenu      menu = new JMenu(field.getName());
 
                 if (range.rep != null) {
-                    menu.setIcon(range.rep.getIcon());
+                    menu.setIcon(range.rep.getSymbol());
                 }
 
                 addColoredItem(top, menu, Color.black);
@@ -452,7 +493,8 @@ public class ShapeRange
     {
         //~ Static fields/initializers -----------------------------------------
 
-        public static Map<String, ShapeRange> map = new HashMap<String, ShapeRange>();
+        static Map<String, ShapeRange> map = new HashMap<String, ShapeRange>();
+        static List<ShapeRange>        rangeList = new ArrayList<ShapeRange>();
 
         static {
             for (Field field : ShapeRange.class.getDeclaredFields()) {
@@ -460,6 +502,7 @@ public class ShapeRange
                     try {
                         ShapeRange range = (ShapeRange) field.get(null);
                         map.put(field.getName(), range);
+                        rangeList.add(range);
                     } catch (IllegalAccessException ex) {
                         ex.printStackTrace();
                     }

@@ -162,4 +162,14 @@ public class StickSection
 
         return sb.toString();
     }
+
+    //-----------------//
+    // invalidateCache //
+    //-----------------//
+    @Override
+    protected void invalidateCache ()
+    {
+        super.invalidateCache();
+        line = null;
+    }
 }

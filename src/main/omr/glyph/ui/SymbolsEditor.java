@@ -142,7 +142,8 @@ public class SymbolsEditor
                 unit + "-Evaluation-ActiveBoard",
                 symbolsController,
                 sheet,
-                view));
+                view),
+            new ShapeBoard(sheet));
 
         // Create a hosting pane for the view
         ScrollLagView slv = new ScrollLagView(view);

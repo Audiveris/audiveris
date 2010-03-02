@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.script;
 
+import omr.glyph.GlyphLag;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.VirtualGlyph;
@@ -19,6 +20,10 @@ import omr.glyph.facets.Glyph;
 import omr.lag.LagOrientation;
 
 import omr.score.common.PixelPoint;
+
+import omr.selection.GlyphSetEvent;
+import omr.selection.MouseMovement;
+import omr.selection.SelectionHint;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
@@ -127,8 +132,24 @@ public class InsertTask
     public void epilog (Sheet sheet)
     {
         super.epilog(sheet);
+
+        if (logger.isFineEnabled()) {
+            logger.fine(toString());
+        }
+
         logger.info(
             "Insertion of virtual " + shape + " " + Glyphs.toString(glyphs));
+
+        // Take inserted glyph(s) as selected glyph(s)
+        GlyphLag lag = (orientation == LagOrientation.VERTICAL)
+                       ? sheet.getVerticalLag() : sheet.getHorizontalLag();
+        lag.getSelectionService()
+           .publish(
+            new GlyphSetEvent(
+                this,
+                SelectionHint.GLYPH_INIT,
+                MouseMovement.PRESSING,
+                glyphs));
     }
 
     //-----------------//
@@ -202,12 +223,12 @@ public class InsertTask
         for (PixelPoint location : locations) {
             Glyph      glyph = new VirtualGlyph(shape);
             PixelPoint center = glyph.getAreaCenter();
-            glyph.shift(
-                new PixelPoint(location.x - center.x, location.y - center.y));
+            glyph.translate(new PixelPoint(center.to(location)));
 
             if (orientation == LagOrientation.VERTICAL) {
                 SystemInfo system = sheet.getSystemOf(center);
                 glyph = system.addGlyph(glyph);
+                system.computeGlyphFeatures(glyph);
             } else {
                 sheet.getHorizontalLag()
                      .addGlyph(glyph);

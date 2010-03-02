@@ -1051,6 +1051,31 @@ public class Section<L extends Lag, S extends Section<L, S>>
         }
     }
 
+    //-----------//
+    // translate //
+    //-----------//
+    /**
+     * Apply a translation vector to this section
+     * @param vector the translation vector
+     */
+    public void translate (PixelPoint vector)
+    {
+        // Get the coord/pos equivalent of dx/dy vector
+        Point cp = graph.switchRef(vector, null);
+        int   dc = cp.x;
+        int   dp = cp.y;
+
+        // Apply the needed modifications
+        firstPos += dp;
+
+        for (Run run : runs) {
+            run.translate(dc);
+        }
+
+        // Force update
+        invalidateCache();
+    }
+
     //-------//
     // write //
     //-------//
@@ -1156,6 +1181,17 @@ public class Section<L extends Lag, S extends Section<L, S>>
         return sb.toString();
     }
 
+    //-----------------//
+    // invalidateCache //
+    //-----------------//
+    protected void invalidateCache ()
+    {
+        bounds = null;
+        centroid = null;
+        contour = null;
+        contourBox = null;
+    }
+
     //--------//
     // addRun //
     //--------//
@@ -1217,16 +1253,5 @@ public class Section<L extends Lag, S extends Section<L, S>>
         weight += length;
         foreWeight += (length * run.getLevel());
         maxRunLength = Math.max(maxRunLength, length);
-    }
-
-    //-----------------//
-    // invalidateCache //
-    //-----------------//
-    private void invalidateCache ()
-    {
-        bounds = null;
-        centroid = null;
-        contour = null;
-        contourBox = null;
     }
 }

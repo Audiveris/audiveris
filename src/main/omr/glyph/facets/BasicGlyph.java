@@ -542,9 +542,12 @@ public class BasicGlyph
         display.recolorize(viewIndex);
     }
 
-    public void shift (PixelPoint vector)
+    //-----------//
+    // translate //
+    //-----------//
+    public void translate (PixelPoint vector)
     {
-        geometry.shift(vector);
+        geometry.translate(vector);
     }
 
     //----------//

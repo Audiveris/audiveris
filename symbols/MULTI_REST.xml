@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<symbol name="MULTI_REST" interline="8">
+    <bitmap>
+        <row>+++++++++++++++++++</row>
+        <row>-------#####-------</row>
+        <row>-------#####-------</row>
+        <row>-------#####-------</row>
+        <row>-------#####-------</row>
+        <row>-------#####-------</row>
+        <row>-------#####-------</row>
+        <row>-------#####-------</row>
+        <row>+++++++++++++++++++</row>
+    </bitmap>
+</symbol>

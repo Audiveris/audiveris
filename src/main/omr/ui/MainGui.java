@@ -36,8 +36,8 @@ import omr.sheet.ui.SheetsController;
 import omr.step.Step;
 import omr.step.StepMenu;
 
-import omr.ui.icon.IconManager;
-import omr.ui.util.MemoryMeter;
+import omr.ui.dnd.GhostGlassPane;
+import omr.ui.symbol.SymbolManager;
 import omr.ui.util.Panel;
 import omr.ui.util.SeparableMenu;
 import omr.ui.util.UIUtilities;
@@ -104,6 +104,9 @@ public class MainGui
     /** Boards pane, which displays a specific set of boards per sheet */
     private BoardsPane boardsPane;
 
+    /** GlassPane needed to handle drag and drop from shape palette */
+    private GhostGlassPane glassPane = new GhostGlassPane();
+
     /** Needed to rectify their dividers */
     private JSplitPane vertSplitPane;
     private JSplitPane horiSplitPane;
@@ -122,6 +125,18 @@ public class MainGui
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //--------------//
+    // getGlassPane //
+    //--------------//
+    /**
+     * Report the main window glassPane, needed for shape drag 'n drop
+     * @return the ghost glass pane
+     */
+    public GhostGlassPane getGlassPane ()
+    {
+        return glassPane;
+    }
 
     //-------------//
     // getInstance //
@@ -431,6 +446,9 @@ public class MainGui
         // Allow dropping files
         frame.setTransferHandler(new FileDropHandler());
 
+        // Handle ghost drop from shape palette
+        frame.setGlassPane(glassPane);
+
         // Define an exit listener
         app = Application.getInstance();
         app.addExitListener(new MaybeExit());
@@ -495,10 +513,7 @@ public class MainGui
         toolKeyPanel.add(
             Step.createMonitor().getComponent(),
             BorderLayout.CENTER);
-        toolKeyPanel.add(
-            new MemoryMeter(
-                IconManager.getInstance().loadImageIcon("general/Delete")).getComponent(),
-            BorderLayout.EAST);
+        toolKeyPanel.add(new MemoryMeter().getComponent(), BorderLayout.EAST);
 
         // horiSplitPane = splitPane | boards
         horiSplitPane = new JSplitPane(

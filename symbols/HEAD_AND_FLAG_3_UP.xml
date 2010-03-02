@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<symbol name="HEAD_AND_FLAG_3_UP" interline="8">
+    <ref-point x="0" y="4"/>
+    <stem-number>1</stem-number>
+    <bitmap>
+        <row>---+*###0-</row>
+        <row>--*######$</row>
+        <row>-$########</row>
+        <row>0#########</row>
+        <row>#########*</row>
+        <row>#########.</row>
+        <row>0######$.-</row>
+        <row>-o$##*+---</row>
+        <row>--------+-</row>
+        <row>--------o-</row>
+        <row>--------.+</row>
+        <row>--------.+</row>
+        <row>--------+o</row>
+        <row>--------0o</row>
+        <row>--------#.</row>
+        <row>-------*o+</row>
+        <row>------0$-o</row>
+        <row>-----*#..+</row>
+        <row>--.o##+-++</row>
+        <row>#####+--*-</row>
+        <row>####+---$-</row>
+        <row>###+---+0-</row>
+        <row>##+----$+-</row>
+        <row>#o----o*o-</row>
+        <row>$----o#-o-</row>
+        <row>o---*#+-+.</row>
+        <row>--0##0--++</row>
+        <row>*###*---0+</row>
+        <row>###$----#.</row>
+        <row>##$----o#-</row>
+        <row>##----+#0-</row>
+        <row>#.---+##--</row>
+        <row>*--.*##o--</row>
+        <row>$0*###o---</row>
+        <row>#####+----</row>
+        <row>####+-----</row>
+        <row>###.------</row>
+        <row>##.-------</row>
+        <row>#o--------</row>
+        <row>$---------</row>
+        <row>*---------</row>
+    </bitmap>
+</symbol>

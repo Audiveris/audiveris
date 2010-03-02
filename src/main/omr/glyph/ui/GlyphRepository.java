@@ -14,7 +14,7 @@ package omr.glyph.ui;
 import omr.WellKnowns;
 
 import omr.glyph.GlyphSection;
-import omr.glyph.IconGlyph;
+import omr.glyph.SymbolGlyph;
 import omr.glyph.Shape;
 import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
@@ -25,8 +25,8 @@ import omr.log.Logger;
 
 import omr.sheet.Sheet;
 
-import omr.ui.icon.IconManager;
-import omr.ui.icon.SymbolIcon;
+import omr.ui.symbol.SymbolManager;
+import omr.ui.symbol.ShapeSymbol;
 
 import omr.util.BlackList;
 import omr.util.FileUtil;
@@ -84,7 +84,7 @@ public class GlyphRepository
         "core");
 
     /** Specific subdirectory for icons */
-    private static final File iconsFolder = WellKnowns.ICONS_FOLDER;
+    private static final File iconsFolder = WellKnowns.SYMBOLS_FOLDER;
 
     /** Specific filter for glyph files */
     private static final FileFilter glyphFilter = new FileFilter() {
@@ -544,7 +544,7 @@ public class GlyphRepository
 
             if (isIcon(gName)) {
                 source = new File(
-                    WellKnowns.ICONS_FOLDER.getParentFile(),
+                    WellKnowns.SYMBOLS_FOLDER.getParentFile(),
                     gName);
             } else {
                 source = new File(getSheetsFolder(), gName);
@@ -577,7 +577,7 @@ public class GlyphRepository
     //---------------//
     boolean isIconsFolder (String folder)
     {
-        return folder.equals(WellKnowns.ICONS_FOLDER.getName());
+        return folder.equals(WellKnowns.SYMBOLS_FOLDER.getName());
     }
 
     //----------//
@@ -703,11 +703,11 @@ public class GlyphRepository
         }
 
         Glyph      glyph = null;
-        SymbolIcon icon = IconManager.getInstance()
-                                     .loadSymbolIcon(fileNameOf(gName));
+        ShapeSymbol icon = SymbolManager.getInstance()
+                                     .loadSymbol(fileNameOf(gName));
 
         if (icon != null) {
-            glyph = new IconGlyph(icon, shapeOf(gName));
+            glyph = new SymbolGlyph(icon, shapeOf(gName));
         }
 
         return glyph;

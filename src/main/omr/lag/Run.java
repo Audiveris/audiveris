@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.lag;
 
-import java.awt.*;
-
 import javax.xml.bind.annotation.*;
 
 /**
@@ -77,6 +75,7 @@ public class Run
      * Report the length of the common part with another run (assumed to be
      * adjacent)
      *
+     * @param other the other run
      * @return the length of the common part
      */
     public int getCommonLength (Run other)
@@ -163,5 +162,17 @@ public class Run
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //-----------//
+    // translate //
+    //-----------//
+    /**
+     * Apply a delta-coordinate translation to this run
+     * @param dc the (coordinate) translation
+     */
+    public void translate (int dc)
+    {
+        start += dc;
     }
 }

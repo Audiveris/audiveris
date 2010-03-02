@@ -14,8 +14,8 @@ package omr.jaxb.icon;
 import omr.Main;
 import omr.WellKnowns;
 
-import omr.ui.icon.IconManager;
-import omr.ui.icon.SymbolIcon;
+import omr.ui.symbol.SymbolManager;
+import omr.ui.symbol.ShapeSymbol;
 
 import omr.util.BaseTestCase;
 
@@ -47,7 +47,7 @@ public class IconTest
     public void play (String fileName)
         throws FileNotFoundException
     {
-        SymbolIcon icon = IconManager.getInstance()
+        ShapeSymbol icon = SymbolManager.getInstance()
                                      .loadFromXmlStream(
             new FileInputStream(new File(fileName)));
 
@@ -59,7 +59,7 @@ public class IconTest
             }
         }
 
-        IconManager.getInstance()
+        SymbolManager.getInstance()
                    .storeToXmlStream(
             icon,
             new FileOutputStream(new File(fileName + ".out.xml")));

@@ -413,6 +413,19 @@ public class Zoom
         return (int) (val / ratio);
     }
 
+    //---------//
+    // unscale //
+    //---------//
+    /**
+     * Unscale a point
+     * @param pt the point to unscale
+     */
+    public void unscale (Point pt)
+    {
+        pt.x = unscaled(pt.x);
+        pt.y = unscaled(pt.y);
+    }
+
     //----------//
     // unscaled //
     //----------//

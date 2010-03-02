@@ -549,7 +549,7 @@ public class MeasuresBuilder
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** Maximum horizontal shift in bars between staves in a system */
+        /** Maximum horizontal translate in bars between staves in a system */
         Scale.Fraction maxAlignShiftDx = new Scale.Fraction(
             0.5,
             "Maximum horizontal shift in bars between staves in a system");

@@ -16,6 +16,8 @@ import omr.check.SuccessResult;
 
 import omr.glyph.GlyphSection;
 
+import omr.score.common.PixelPoint;
+
 import omr.sheet.SystemInfo;
 
 import java.util.Collection;
@@ -192,8 +194,6 @@ class BasicComposition
         for (GlyphSection section : other.getMembers()) {
             addSection(section, linkSections);
         }
-
-        glyph.invalidateCache();
     }
 
     //------------//
@@ -250,6 +250,20 @@ class BasicComposition
     {
         for (GlyphSection section : getMembers()) {
             section.setGlyph(glyph);
+        }
+    }
+
+    //-----------//
+    // translate //
+    //-----------//
+    /**
+     * Apply the provided translation vector to all composing sections
+     * @param vector the provided translation vector
+     */
+    public void translate (PixelPoint vector)
+    {
+        for (GlyphSection section : getMembers()) {
+            section.translate(vector);
         }
     }
 }

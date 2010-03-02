@@ -18,6 +18,7 @@ import omr.log.Logger;
 import omr.score.Score;
 import omr.score.ScoreSheetBridge;
 import omr.score.common.PagePoint;
+import omr.score.common.PixelPoint;
 import omr.score.common.ScoreLocation;
 import omr.score.common.ScorePoint;
 import omr.score.common.ScoreRectangle;
@@ -41,6 +42,7 @@ import omr.sheet.ui.SheetAssembly;
 
 import omr.ui.PixelCount;
 import omr.ui.util.Panel;
+import omr.ui.view.LogSlider;
 import omr.ui.view.Rubber;
 import omr.ui.view.RubberPanel;
 import omr.ui.view.ScrollView;
@@ -88,13 +90,11 @@ public class ScoreView
     private ScoreOrientation orientation = PaintingParameters.getInstance()
                                                              .getScoreOrientation();
 
-    /**
-     * Display zoom. NOTA: To use a value different from 0.5, the definition
-     * of symbols bitmaps must be redone at scale 1, and the painting of these
-     * symbols must be simplified to use the graphics context directly (see the
-     * ScorePainter class for modifications)
-     */
-    private final Zoom zoom = new Zoom(0.5d);
+    /** Zoom log slider */
+    LogSlider slider = new LogSlider(2, 5, LogSlider.VERTICAL, -2, 1, 0);
+
+    /** Display zoom */
+    private final Zoom zoom = new Zoom(slider, 0.5); // Default ratio set to 1/2
 
     /** Mouse rubber */
     private final Rubber rubber = new Rubber(zoom);
@@ -143,6 +143,7 @@ public class ScoreView
         // Layout
         info.setHorizontalAlignment(SwingConstants.LEFT);
         compoundPanel.setLayout(new BorderLayout());
+        compoundPanel.add(slider, BorderLayout.WEST);
         compoundPanel.add(scrollPane.getComponent(), BorderLayout.CENTER);
         compoundPanel.add(info, BorderLayout.SOUTH);
 
@@ -212,6 +213,15 @@ public class ScoreView
     public SystemView getSystemView (ScoreSystem system)
     {
         return getSystemView(system.getId());
+    }
+
+    //-------------//
+    // getViewport //
+    //-------------//
+    public JViewport getViewport ()
+    {
+        return scrollPane.getComponent()
+                         .getViewport();
     }
 
     //-------//
@@ -348,6 +358,28 @@ public class ScoreView
 
         // Return the last system in the score
         return setRecentSystem(system);
+    }
+
+    //--------------//
+    // toPixelPoint //
+    //--------------//
+    /**
+     * Report the PixelPoint that corresponds to a given ScorePoint,
+     * according to the current layout of the score view
+     * @param scorePoint the given score point
+     * @return the corresponding pixel point
+     */
+    public PixelPoint toPixelPoint (ScorePoint scorePoint)
+    {
+        if (scorePoint == null) {
+            return null;
+        }
+
+        ScoreSystem system = scoreLocateSystem(scorePoint);
+        SystemView  systemView = getSystemView(system);
+        SystemPoint sysPt = systemView.toSystemPoint(scorePoint);
+
+        return system.toPixelPoint(sysPt);
     }
 
     //----------//

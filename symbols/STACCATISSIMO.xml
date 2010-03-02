@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<symbol name="STACCATISSIMO" interline="16">
+    <bitmap>
+        <row>------------</row>
+        <row>------------</row>
+        <row>--$$****$0--</row>
+        <row>--0######+--</row>
+        <row>--+######---</row>
+        <row>---#####*---</row>
+        <row>---$####0---</row>
+        <row>---0####+---</row>
+        <row>---+####----</row>
+        <row>----###*----</row>
+        <row>----*##0----</row>
+        <row>----o##+----</row>
+        <row>----+##-----</row>
+        <row>-----#*-----</row>
+        <row>-----*0-----</row>
+        <row>-----o+-----</row>
+        <row>-----.------</row>
+        <row>------------</row>
+        <row>------------</row>
+    </bitmap>
+</symbol>

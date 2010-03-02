@@ -59,7 +59,7 @@ import omr.score.visitor.AbstractScoreVisitor;
 
 import omr.sheet.Scale;
 
-import omr.ui.icon.SymbolIcon;
+import omr.ui.symbol.ShapeSymbol;
 import omr.ui.view.Zoom;
 
 import omr.util.TreeNode;
@@ -93,6 +93,24 @@ public class ScorePainter
                                              Color.YELLOW
                                          };
 
+    /** Stroke to draw beams */
+    private static final int beamHalfThickness = 5;
+    private static final Stroke beamStroke = new BasicStroke(
+        2 * beamHalfThickness);
+
+    /** Stroke to draw stems */
+    private static final int stemThickness = 2;
+    private static final Stroke stemStroke = new BasicStroke(stemThickness);
+
+    /** Stroke to draw voices */
+    private static final Stroke voiceStroke = new BasicStroke(
+        6f,
+        BasicStroke.CAP_BUTT,
+        BasicStroke.JOIN_BEVEL,
+        0f,
+        new float[] { 20f, 10f },
+        0);
+
     //~ Enumerations -----------------------------------------------------------
 
     /** How a symbol should be horizontally aligned wrt a given point */
@@ -119,21 +137,6 @@ public class ScorePainter
 
     /** Display zoom */
     private final Zoom zoom;
-
-    /** Stroke to draw beams */
-    private final Stroke beamStroke = new BasicStroke(8f);
-
-    /** Stroke to draw stems */
-    private final Stroke stemStroke = new BasicStroke(2f);
-
-    /** Stroke to draw voices */
-    private final Stroke voiceStroke = new BasicStroke(
-        6f,
-        BasicStroke.CAP_BUTT,
-        BasicStroke.JOIN_BEVEL,
-        0f,
-        new float[] { 20f, 10f },
-        0);
 
     /** Used for icon image transformation */
     private final AffineTransform transform = new AffineTransform();
@@ -233,11 +236,11 @@ public class ScorePainter
         final int             top = box.y;
         final int             bot = box.y + box.height;
         final double          height = bot - top + 1;
-        final SymbolIcon      icon = (SymbolIcon) Shape.ARPEGGIATO.getIcon();
+        final ShapeSymbol     symbol = Shape.ARPEGGIATO.getSymbol();
 
-        if (icon != null) {
+        if (symbol != null) {
             // Vertical ratio to extend the icon */
-            final double ratio = height / icon.getIconHeight();
+            final double ratio = height / symbol.getIconHeight();
 
             g.setColor(Color.black);
             transform.setTransform(
@@ -248,7 +251,7 @@ public class ScorePainter
                 arpeggiate.getReferencePoint().x,
                 top);
 
-            g.drawRenderedImage(icon.getImage(), transform);
+            g.drawRenderedImage(symbol.getImage(), transform);
         }
 
         return true;
@@ -288,13 +291,61 @@ public class ScorePainter
     @Override
     public boolean visit (Beam beam)
     {
-        final Stroke oldStroke = g.getStroke();
-        final Color  oldColor = g.getColor();
+        // Corrections for beam points
+        final int dx = beamHalfThickness - stemThickness;
+        final int dy = 1;///beamHalfThickness;
+
+        // Fix ordinates
+        int leftDy = 0;
+        int rightDy = 0;
+
+        if (!beam.getChords()
+                 .isEmpty()) {
+            Chord leftChord = beam.getChords()
+                                  .first();
+
+            if (leftChord.getCenter().x < beam.getCenter().x) {
+                if (leftChord.getTailLocation().y < beam.getCenter().y) {
+                    leftDy = -dy;
+                } else {
+                    leftDy = dy;
+                }
+            }
+
+            Chord rightChord = beam.getChords()
+                                   .last();
+
+            if (rightChord.getCenter().x > beam.getCenter().x) {
+                if (rightChord.getTailLocation().y < beam.getCenter().y) {
+                    rightDy = -dy;
+                } else {
+                    rightDy = dy;
+                }
+            }
+
+            if (leftDy == 0) {
+                leftDy = rightDy;
+            }
+
+            if (rightDy == 0) {
+                rightDy = leftDy;
+            }
+        }
 
         // Draw the beam line, with a specific stroke
+        final Stroke oldStroke = g.getStroke();
+        final Color  oldColor = g.getColor();
         g.setStroke(beamStroke);
         g.setColor(Color.black);
-        paintLine(beam.getLeftPoint(), beam.getRightPoint());
+
+        paintLine(
+            new SystemPoint(
+                beam.getLeftPoint().x + dx,
+                beam.getLeftPoint().y + leftDy),
+            new SystemPoint(
+                beam.getRightPoint().x - dx,
+                beam.getRightPoint().y + rightDy));
+
         g.setColor(oldColor);
         g.setStroke(oldStroke);
 
@@ -805,17 +856,17 @@ public class ScorePainter
         if (part.getStaves()
                 .size() > 1) {
             // Top & bottom of brace to draw
-            final int        top = part.getFirstStaff()
-                                       .getTopLeft().y;
-            final int        bot = part.getLastStaff()
-                                       .getTopLeft().y + STAFF_HEIGHT;
-            final double     height = bot - top + 1;
+            final int         top = part.getFirstStaff()
+                                        .getTopLeft().y;
+            final int         bot = part.getLastStaff()
+                                        .getTopLeft().y + STAFF_HEIGHT;
+            final double      height = bot - top + 1;
 
             // Vertical ratio to extend the icon */
-            final SymbolIcon braceIcon = (SymbolIcon) Shape.BRACE.getIcon();
+            final ShapeSymbol braceSymbol = Shape.BRACE.getSymbol();
 
-            if (braceIcon != null) {
-                final double ratio = height / braceIcon.getIconHeight();
+            if (braceSymbol != null) {
+                final double ratio = height / braceSymbol.getIconHeight();
 
                 // Offset on left of system
                 final int dx = 10;
@@ -827,7 +878,7 @@ public class ScorePainter
                     ratio,
                     -dx,
                     top);
-                g.drawRenderedImage(braceIcon.getImage(), transform);
+                g.drawRenderedImage(braceSymbol.getImage(), transform);
             }
         }
 
@@ -883,8 +934,10 @@ public class ScorePainter
     public boolean visit (TimeSignature timeSignature)
     {
         try {
-            final Shape      shape = timeSignature.getShape();
-            final SystemPart part = timeSignature.getPart();
+            final Shape       shape = timeSignature.getShape();
+            final SystemPart  part = timeSignature.getPart();
+            final SystemPoint center = timeSignature.getCenter();
+            final Staff       staff = part.getStaffAt(center);
 
             if (shape != null) {
                 if (shape == NO_LEGAL_TIME) {
@@ -892,8 +945,6 @@ public class ScorePainter
                     // TODO: we could draw a special sign for this
                 } else if (shape == CUSTOM_TIME_SIGNATURE) {
                     // A custom shape, use every digit shape
-                    final SystemPoint center = timeSignature.getCenter();
-                    final Staff       staff = part.getStaffAt(center);
 
                     // Numerator
                     paintShapeSequence(
@@ -910,19 +961,21 @@ public class ScorePainter
                         +2);
                 } else if (ShapeRange.FullTimes.contains(shape)) {
                     // It is a complete (one-symbol) time signature
-                    paintSymbol(shape, timeSignature.getCenter());
+                    paintSymbol(shape, timeSignature.getCenter(), staff, 0);
                 }
             } else {
+                ScoreSystem system = timeSignature.getSystem();
+
                 // Assume a (legal) multi-symbol signature
                 for (Glyph glyph : timeSignature.getGlyphs()) {
                     final Shape s = glyph.getShape();
 
                     if ((s != null) && (s != Shape.GLYPH_PART)) {
-                        final SystemPoint center = timeSignature.getCenter();
-                        final Staff       staff = part.getStaffAt(center);
+                        final SystemPoint glyphCenter = system.toSystemPoint(
+                            glyph.getLocation());
                         final int         pitch = (int) Math.rint(
-                            staff.pitchPositionOf(center));
-                        paintSymbol(s, center, staff, pitch);
+                            staff.pitchPositionOf(glyphCenter));
+                        paintSymbol(s, glyphCenter, staff, pitch);
                     }
                 }
             }
@@ -974,6 +1027,46 @@ public class ScorePainter
         }
 
         return true;
+    }
+
+    //---------//
+    // alignDx //
+    //---------//
+    private int alignDx (HorizontalAlignment hAlign,
+                         int                 width)
+    {
+        switch (hAlign) {
+        case LEFT :
+            return 0;
+
+        case CENTER :
+            return -width / 2;
+
+        case RIGHT :
+            return -width;
+        }
+
+        return 0; // For the compiler ...
+    }
+
+    //---------//
+    // alignDy //
+    //---------//
+    private int alignDy (VerticalAlignment vAlign,
+                         int               height)
+    {
+        switch (vAlign) {
+        case TOP :
+            return 0;
+
+        case CENTER :
+            return -height / 2;
+
+        case BOTTOM :
+            return -height;
+        }
+
+        return 0; // For the compiler ...
     }
 
     //----------//
@@ -1062,26 +1155,26 @@ public class ScorePainter
         int dx = 0;
 
         for (int i = 0; i < mid; i++) {
-            Shape      s = shapes.get(i);
-            SymbolIcon icon = (SymbolIcon) s.getIcon();
-            dx += icon.getActualWidth();
+            Shape       s = shapes.get(i);
+            ShapeSymbol symbol = s.getSymbol();
+            dx += symbol.getWidth();
         }
 
         if ((n % 2) == 1) {
-            Shape      s = shapes.get(mid);
-            SymbolIcon icon = (SymbolIcon) s.getIcon();
-            dx += (icon.getActualWidth() / 2);
+            Shape       s = shapes.get(mid);
+            ShapeSymbol symbol = s.getSymbol();
+            dx += (symbol.getWidth() / 2);
         }
 
         // Left side of first shape
         SystemPoint start = new SystemPoint(center);
-        start.x -= zoom.unscaled(dx);
+        start.x -= dx;
 
         // Draw each shape
         for (int i = 0; i < n; i++) {
-            Shape            s = shapes.get(i);
-            final SymbolIcon icon = (SymbolIcon) s.getIcon();
-            int              shift = zoom.unscaled(icon.getActualWidth());
+            Shape             s = shapes.get(i);
+            final ShapeSymbol symbol = s.getSymbol();
+            int               shift = symbol.getWidth();
             start.x += (shift / 2);
             paintSymbol(s, start, staff, pitchPosition);
             start.x += (shift / 2);
@@ -1113,7 +1206,7 @@ public class ScorePainter
     // paintSymbol //
     //-------------//
     /**
-     * Paint a symbol icon using the coordinates in units of its bounding point
+     * Paint a symbol using the coordinates in units of its bounding point
      * within the containing system part
      *
      * @param shape the shape whose icon must be painted
@@ -1126,24 +1219,13 @@ public class ScorePainter
                               HorizontalAlignment hAlign,
                               VerticalAlignment   vAlign)
     {
-        final SymbolIcon icon = (SymbolIcon) shape.getIcon();
+        final ShapeSymbol symbol = shape.getSymbol();
 
-        if (icon != null) {
-            try {
-                SystemPoint scaledPoint = new SystemPoint(point);
-                zoom.scale(scaledPoint);
-
-                final Point topLeft = topLeftOf(
-                    scaledPoint,
-                    hAlign,
-                    icon.getActualWidth(),
-                    vAlign,
-                    icon.getIconHeight());
-                g.scale(1 / zoom.getRatio(), 1 / zoom.getRatio());
-                g.drawImage(icon.getImage(), topLeft.x, topLeft.y, null);
-            } finally {
-                g.scale(zoom.getRatio(), zoom.getRatio());
-            }
+        if (symbol != null) {
+            SystemPoint topLeft = new SystemPoint(point);
+            topLeft.x += alignDx(hAlign, symbol.getWidth());
+            topLeft.y += alignDy(vAlign, symbol.getHeight());
+            symbol.draw(g, topLeft);
         }
     }
 
@@ -1151,9 +1233,8 @@ public class ScorePainter
     // paintSymbol //
     //-------------//
     /**
-     * Paint a symbol icon using the coordinates in units of its bounding center
-     * within the containing system part, forcing adjacency with provided chord
-     * stem.
+     * Paint a symbol using the bounding center for ordinate, and forcing
+     * adjacency with provided chord stem for abscissa.
      *
      * @param shape the shape whose icon must be painted
      * @param center system-based bounding center in units
@@ -1165,32 +1246,26 @@ public class ScorePainter
                               Chord             chord,
                               VerticalAlignment vAlign)
     {
-        final SymbolIcon icon = (SymbolIcon) shape.getIcon();
+        final ShapeSymbol symbol = shape.getSymbol();
 
-        if (icon != null) {
-            try {
-                final Point topLeft = new Point(
-                    zoom.scaled(chord.getTailLocation().x),
-                    zoom.scaled(center.y));
+        if (symbol != null) {
+            SystemPoint topLeft = new SystemPoint(
+                chord.getTailLocation().x,
+                center.y);
 
-                // Horizontal alignment
-                if (center.x < chord.getTailLocation().x) {
-                    // Symbol is on left side of stem (-1 is for stem width)
-                    topLeft.x -= (icon.getActualWidth() - 1);
-                }
-
-                // Vertical alignment
-                if (vAlign == VerticalAlignment.CENTER) {
-                    topLeft.y -= (icon.getIconHeight() / 2);
-                } else if (vAlign == VerticalAlignment.BOTTOM) {
-                    topLeft.y -= icon.getIconHeight();
-                }
-
-                g.scale(1 / zoom.getRatio(), 1 / zoom.getRatio());
-                g.drawImage(icon.getImage(), topLeft.x, topLeft.y, null);
-            } finally {
-                g.scale(zoom.getRatio(), zoom.getRatio());
+            // Horizontal alignment
+            if (center.x < chord.getTailLocation().x) {
+                // Symbol is on left side of stem 
+                topLeft.x -= (symbol.getWidth() - 2);
+            } else {
+                // Symbol is on right side of stem
+                topLeft.x -= 1;
             }
+
+            // Vertical alignment
+            topLeft.y += alignDy(vAlign, symbol.getHeight());
+
+            symbol.draw(g, topLeft);
         }
     }
 
@@ -1198,9 +1273,8 @@ public class ScorePainter
     // paintSymbol //
     //-------------//
     /**
-     * Paint a symbol icon using the coordinates in units of its bounding center
-     * within the containing system part, forcing adjacency with provided chord
-     * stem.
+     * Paint a symbol using staff + pitch position for ordinate, and forcing
+     * adjacency with provided chord stem for abscissa.
      *
      * @param shape the shape whose icon must be painted
      * @param center part-based bounding center in units
@@ -1212,31 +1286,26 @@ public class ScorePainter
                               double      pitchPosition,
                               Chord       chord)
     {
-        final SymbolIcon icon = (SymbolIcon) shape.getIcon();
+        final ShapeSymbol symbol = shape.getSymbol();
 
-        if (icon != null) {
-            try {
-                final int dy = Staff.pitchToUnit(pitchPosition);
+        if (symbol != null) {
+            final int dy = Staff.pitchToUnit(pitchPosition);
 
-                // Position of symbol wrt stem
-                final int stemX = chord.getTailLocation().x;
-                int       iconX = zoom.scaled(stemX);
+            // Position of symbol wrt stem
+            int symbolX = chord.getTailLocation().x;
 
-                if (center.x < stemX) {
-                    // Symbol is on left side of stem (-1 is for stem width)
-                    iconX -= (icon.getActualWidth() - 1);
-                }
-
-                g.scale(1 / zoom.getRatio(), 1 / zoom.getRatio());
-                g.drawImage(
-                    icon.getImage(),
-                    iconX,
-                    zoom.scaled(staff.getTopLeft().y + dy) -
-                    icon.getCenter().y,
-                    null);
-            } finally {
-                g.scale(zoom.getRatio(), zoom.getRatio());
+            if (center.x < symbolX) {
+                // Symbol is on left side of stem 
+                symbolX -= (symbol.getWidth() - 2);
+            } else {
+                // Symbol is on right side of stem
+                symbolX -= 1;
             }
+
+            final SystemPoint topLeft = new SystemPoint(
+                symbolX,
+                (staff.getTopLeft().y + dy) - symbol.getCenter().y);
+            symbol.draw(g, topLeft);
         }
     }
 
@@ -1271,7 +1340,7 @@ public class ScorePainter
     //-------------//
     /**
      * Paint a symbol using its pitch position for ordinate in the containing
-     * staff
+     * staff, and its center for abscissa.
      *
      * @param shape the shape whose icon must be painted
      * @param center system-based coordinates of bounding center in units (only
@@ -1286,62 +1355,30 @@ public class ScorePainter
                               double              pitchPosition,
                               HorizontalAlignment hAlign)
     {
-        final SymbolIcon icon = (SymbolIcon) shape.getIcon();
+        final ShapeSymbol symbol = shape.getSymbol();
 
-        if (icon != null) {
-            try {
-                final Point topLeft = new Point(
-                    zoom.scaled(center.x),
-                    zoom.scaled(
-                        staff.getTopLeft().y +
-                        Staff.pitchToUnit(pitchPosition)));
+        if (symbol != null) {
+            final SystemPoint topLeft = new SystemPoint(
+                center.x + alignDx(hAlign, symbol.getWidth()),
+                (staff.getTopLeft().y + Staff.pitchToUnit(pitchPosition)) -
+                symbol.getCenter().y);
 
-                // Horizontal alignment
-                if (hAlign == HorizontalAlignment.CENTER) {
-                    topLeft.x -= (icon.getActualWidth() / 2);
-                } else if (hAlign == HorizontalAlignment.RIGHT) {
-                    topLeft.x -= icon.getActualWidth();
-                }
-
-                // Specific vertical alignment
-                topLeft.y -= icon.getCenter().y;
-
-                g.scale(1 / zoom.getRatio(), 1 / zoom.getRatio());
-                g.drawImage(icon.getImage(), topLeft.x, topLeft.y, null);
-            } catch (Exception ex) {
-                logger.warning(
-                    "Cannot paint symbol " + shape + " at center " + center,
-                    ex);
-            } finally {
-                g.scale(zoom.getRatio(), zoom.getRatio());
-            }
+            symbol.draw(g, topLeft);
         }
     }
 
     //-----------//
     // topLeftOf //
     //-----------//
-    private Point topLeftOf (SystemPoint         sysPt,
+    private Point topLeftOf (Point               sysPt,
                              HorizontalAlignment hAlign,
                              int                 width,
                              VerticalAlignment   vAlign,
                              int                 height)
     {
-        final Point point = new Point(sysPt);
-
-        if (hAlign == HorizontalAlignment.CENTER) {
-            point.x -= (width / 2);
-        } else if (hAlign == HorizontalAlignment.RIGHT) {
-            point.x -= width;
-        }
-
-        if (vAlign == VerticalAlignment.CENTER) {
-            point.y -= (height / 2);
-        } else if (vAlign == VerticalAlignment.BOTTOM) {
-            point.y -= height;
-        }
-
-        return point;
+        return new Point(
+            sysPt.x + alignDx(hAlign, width),
+            sysPt.y + alignDy(vAlign, height));
     }
 
     //~ Inner Classes ----------------------------------------------------------

@@ -259,6 +259,26 @@ public class LagTest
         MySection.addEdge(s2, s3);
     }
 
+    //---------------//
+    // testTranslate //
+    //---------------//
+    public void testTranslate()
+    {
+        List<List<Run>> runs = new ArrayList<List<Run>>();
+        vLag.setRuns(runs);
+
+        MySection s1 = vLag.createSection(1, createRun(runs, 1, 2, 5));
+        s1.append(createRun(runs, 2, 0, 3));
+        s1.append(createRun(runs, 3, 1, 2));
+        s1.append(createRun(runs, 4, 1, 1));
+        s1.append(createRun(runs, 5, 1, 6));
+        dump("Before translation", s1);
+
+        PixelPoint vector = new PixelPoint(10, 2);
+        s1.translate(vector);
+        dump("After translation", s1);
+    }
+
     //----------------//
     // testVSwitchRef //
     //----------------//

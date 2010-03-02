@@ -172,14 +172,14 @@ interface GlyphGeometry
      */
     void computeMoments ();
 
-    //-------//
-    // shift //
-    //-------//
+    //-----------//
+    // translate //
+    //-----------//
     /**
-     * Shift the glyph from its current location, according to the provided
-     * vector
+     * Apply a translation to the glyph from its current location, according to
+     * the provided vector
      *
      * @param vector the (dx, dy) translation
      */
-    void shift (PixelPoint vector);
+    void translate (PixelPoint vector);
 }

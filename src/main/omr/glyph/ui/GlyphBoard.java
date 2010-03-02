@@ -15,7 +15,6 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
 import omr.glyph.Shape;
-import omr.glyph.VirtualGlyph;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -313,7 +312,7 @@ public class GlyphBoard
 
                 if (shape != null) {
                     shapeField.setText(shape.toString());
-                    shapeIcon.setIcon(shape.getIcon());
+                    shapeIcon.setIcon(shape.getSymbol());
                 } else {
                     shapeField.setText("");
                     shapeIcon.setIcon(null);

@@ -82,8 +82,8 @@
                      excludes="${dist.excludes}"
                      />
             
-            <!-- Icons -->
-            <zipfileset dir="${basedir}/icons" prefix="icons"
+            <!-- Symbols -->
+            <zipfileset dir="${basedir}/symbols" prefix="symbols"
                      includes="**"
                      excludes="${dist.excludes}"
                      />
@@ -296,12 +296,12 @@ Implementation-Version: ${impl.version} ${DSTAMP}
                      includes="*"/>
         </copy>
 
-	<!-- Copy icons files into an icons folder in the classes dir -->
-	<mkdir dir="${build.classes.dir}/icons" />
+	<!-- Copy symbols files into an symbols folder in the classes dir -->
+	<mkdir dir="${build.classes.dir}/symbols" />
         <copy
             verbose="${verbose}"
-            todir="${build.classes.dir}/icons">
-            <fileset dir="${icons.dir}"
+            todir="${build.classes.dir}/symbols">
+            <fileset dir="${symbols.dir}"
                      includes="*.xml"/>
         </copy>
 

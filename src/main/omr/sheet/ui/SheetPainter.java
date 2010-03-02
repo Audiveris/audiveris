@@ -11,16 +11,13 @@
 // </editor-fold>
 package omr.sheet.ui;
 
-import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 import omr.glyph.facets.Stick;
 
 import omr.log.Logger;
 
 import omr.score.Score;
-import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
-import omr.score.common.SystemPoint;
 import omr.score.entity.Measure;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Staff;
@@ -33,7 +30,7 @@ import omr.sheet.Sheet;
 import omr.sheet.StaffInfo;
 import omr.sheet.SystemInfo;
 
-import omr.ui.icon.SymbolIcon;
+import omr.ui.symbol.ShapeSymbol;
 import omr.ui.util.UIUtilities;
 
 import java.awt.Color;
@@ -41,7 +38,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Stroke;
-import java.awt.geom.AffineTransform;
 
 /**
  * Class <code>SheetPainter</code> defines for every node in Score hierarchy
@@ -277,26 +273,27 @@ public class SheetPainter
     //--------------------//
     // paintVirtualGlyphs //
     //--------------------//
+    /**
+     * Paint the virtual glyphs on the sheet view
+     * @param systemInfo the containing system
+     */
     private void paintVirtualGlyphs (SystemInfo systemInfo)
     {
         for (Glyph glyph : systemInfo.getGlyphs()) {
             if (glyph.isVirtual()) {
-                SymbolIcon icon = (SymbolIcon) glyph.getShape()
-                                                    .getIcon();
+                ShapeSymbol symbol = glyph.getShape()
+                                          .getSymbol();
 
-                if (icon != null) {
-                    try {
-                        PixelPoint point = glyph.getAreaCenter();
-                        // We need to cope with half-sized icons
-                        // TODO: remove this when shape icons get fixed
-                        g.scale(2, 2);
-                        g.drawImage(
-                            icon.getImage(),
-                            (point.x - icon.getActualWidth()) / 2,
-                            (point.y - icon.getIconHeight()) / 2,
-                            null);
-                    } finally {
-                        g.scale(0.5, 0.5);
+                if (symbol != null) {
+                    ScoreSystem scoreSystem = systemInfo.getScoreSystem();
+
+                    if (scoreSystem != null) {
+                        Point center = glyph.getAreaCenter();
+                        Point topLeft = new Point(
+                            center.x - (symbol.getWidth() / 2),
+                            center.y - (symbol.getHeight() / 2));
+
+                        symbol.draw(g, topLeft);
                     }
                 }
             }
