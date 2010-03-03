@@ -177,6 +177,18 @@ public class MainGui
         return frame;
     }
 
+    //------------------------//
+    // getMaxDoubleClickDelay //
+    //------------------------//
+    /**
+     * Report the maximum delay between two clicks for a double-click
+     * @return the maximum delay in ms.
+     */
+    public long getMaxDoubleClickDelay ()
+    {
+        return constants.maxDoubleClickDelay.getValue();
+    }
+
     //---------//
     // getName //
     //---------//
@@ -677,6 +689,12 @@ public class MainGui
         private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
             true,
             "Should we preload costly packages in the background?");
+
+        /** Use to detect a double-click */
+        private final Constant.Integer maxDoubleClickDelay = new Constant.Integer(
+            "Milli-seconds",
+            250,
+            "Maximum delay for a double-click");
     }
 
     //-----------------//

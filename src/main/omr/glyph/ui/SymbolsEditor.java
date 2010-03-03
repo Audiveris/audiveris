@@ -143,7 +143,7 @@ public class SymbolsEditor
                 symbolsController,
                 sheet,
                 view),
-            new ShapeBoard(sheet));
+            new ShapeBoard(symbolsController, sheet));
 
         // Create a hosting pane for the view
         ScrollLagView slv = new ScrollLagView(view);

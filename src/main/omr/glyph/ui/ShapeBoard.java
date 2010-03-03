@@ -13,8 +13,10 @@ package omr.glyph.ui;
 
 import omr.Main;
 
+import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.ShapeRange;
+import omr.glyph.facets.Glyph;
 
 import omr.lag.LagOrientation;
 
@@ -49,6 +51,7 @@ import java.awt.event.*;
 import java.util.*;
 
 import javax.swing.*;
+import javax.swing.event.MouseInputAdapter;
 
 /**
  * Class {@code ShapeBoard} hosts a palette of shapes for direct insertion by
@@ -94,6 +97,9 @@ public class ShapeBoard
 
     /** Related sheet */
     private final Sheet sheet;
+
+    /** The controller in charge of symbol assignments */
+    private final SymbolsController symbolsController;
 
     /**
      * Method called when a range is selected: the panel of ranges is replaced
@@ -148,6 +154,35 @@ public class ShapeBoard
         }
     };
 
+    /**
+     * Method called when the button is clicked
+     */
+    private MouseListener mouseListener = new MouseInputAdapter() {
+        @Override
+        public void mouseClicked (MouseEvent e)
+        {
+            long newClick = System.currentTimeMillis();
+
+            if ((newClick - lastClick) <= maxClickDelay) {
+                Glyph glyph = sheet.getVerticalLag()
+                                   .getSelectedGlyph();
+
+                if (glyph != null) {
+                    JButton button = (JButton) e.getSource();
+                    Shape   shape = Shape.valueOf(button.getName());
+
+                    // Actually assign the shape
+                    symbolsController.asyncAssignGlyphs(
+                        Glyphs.sortedSet(glyph),
+                        shape,
+                        false);
+                }
+            }
+
+            lastClick = newClick;
+        }
+    };
+
     /** Panel of all ranges */
     private final Panel rangesPanel;
 
@@ -163,6 +198,13 @@ public class ShapeBoard
     /** The window on score */
     private final JViewport scoreViewport;
 
+    /** Time of last click */
+    private long lastClick;
+
+    /** Maximum delay for a double-click */
+    private long maxClickDelay = Main.getGui()
+                                     .getMaxDoubleClickDelay();
+
     //~ Constructors -----------------------------------------------------------
 
     //-------------//
@@ -170,11 +212,14 @@ public class ShapeBoard
     //-------------//
     /**
      * Create a new ShapeBoard object
+     * @param symbolsController the UI controller for symbols
      * @param sheet the related sheet
      */
-    public ShapeBoard (Sheet sheet)
+    public ShapeBoard (SymbolsController symbolsController,
+                       Sheet             sheet)
     {
         super("Palette", "Shapes", null, null);
+        this.symbolsController = symbolsController;
         this.sheet = sheet;
 
         scoreView = sheet.getScore()
@@ -270,6 +315,9 @@ public class ShapeBoard
             button.setBorderPainted(false);
             button.addMouseMotionListener(motionListener);
             button.addMouseMotionListener(locationListener);
+
+            // Ability to use the button for direct assignment via double-click
+            button.addMouseListener(mouseListener);
 
             // Directly use the shape icon image for DnD ghost
             ShapeSymbol             symbol = shape.getSymbol();
