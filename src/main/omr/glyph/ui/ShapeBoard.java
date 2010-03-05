@@ -51,11 +51,13 @@ import java.awt.event.*;
 import java.util.*;
 
 import javax.swing.*;
-import javax.swing.event.MouseInputAdapter;
 
 /**
- * Class {@code ShapeBoard} hosts a palette of shapes for direct insertion by
- * means of drag and drop to the target score/sheet view
+ * Class {@code ShapeBoard} hosts a palette of shapes for insertion and
+ * assignment of glyph.
+ * <ul><li>Direct insertion is performed by drag and drop to the target score
+ * view or sheet view</li>
+ * <li>Assignment of existing glyph is performed by a double-click</li></ul>
  *
  * @author Hervé Bitteur
  */
@@ -155,9 +157,10 @@ public class ShapeBoard
     };
 
     /**
-     * Method called when the button is clicked
+     * Method called when a shape button is clicked
      */
-    private MouseListener mouseListener = new MouseInputAdapter() {
+    private MouseListener mouseListener = new MouseAdapter() {
+        // Ability to use the button for direct assignment via double-click
         @Override
         public void mouseClicked (MouseEvent e)
         {
@@ -168,13 +171,12 @@ public class ShapeBoard
                                    .getSelectedGlyph();
 
                 if (glyph != null) {
-                    JButton button = (JButton) e.getSource();
-                    Shape   shape = Shape.valueOf(button.getName());
+                    ShapeButton button = (ShapeButton) e.getSource();
 
                     // Actually assign the shape
                     symbolsController.asyncAssignGlyphs(
                         Glyphs.sortedSet(glyph),
-                        shape,
+                        button.shape,
                         false);
                 }
             }
@@ -205,11 +207,20 @@ public class ShapeBoard
     private long maxClickDelay = Main.getGui()
                                      .getMaxDoubleClickDelay();
 
+    /** GlassPane */
+    private GhostGlassPane glassPane = Main.getGui()
+                                           .getGlassPane();
+
+    // Listeners for DnD
+    private MouseMotionListener motionAdapter = new MyGhostMotionAdapter(
+        glassPane);
+    private GhostDropListener   dropListener = new MyDropListener();
+
     //~ Constructors -----------------------------------------------------------
 
-    //-------------//
+    //------------//
     // ShapeBoard //
-    //-------------//
+    //------------//
     /**
      * Create a new ShapeBoard object
      * @param symbolsController the UI controller for symbols
@@ -225,6 +236,7 @@ public class ShapeBoard
         scoreView = sheet.getScore()
                          .getFirstView();
         scoreViewport = scoreView.getViewport();
+
         body.add(rangesPanel = defineRangesPanel());
     }
 
@@ -265,8 +277,6 @@ public class ShapeBoard
                 button.addActionListener(rangeListener);
                 button.setToolTipText(range.getName());
                 button.setBorderPainted(false);
-                //        button.setFocusPainted(true);
-                //        button.setContentAreaFilled(true);
                 panel.add(button);
             }
         }
@@ -299,34 +309,24 @@ public class ShapeBoard
         close.setBorderPainted(false);
         panel.add(close);
 
-        // Listeners for DnD
-        GhostGlassPane      glassPane = Main.getGui()
-                                            .getGlassPane();
-        GhostMotionAdapter  motionListener = new GhostMotionAdapter(glassPane);
-        MouseMotionListener locationListener = new LocationListener();
-        GhostDropListener   dropListener = new MyDropListener();
-
         // One button per shape
         for (Shape shape : range.getShapes()) {
-            JButton button = new JButton();
-            button.setIcon(shape.getSymbol());
-            button.setName(shape.toString());
-            button.setToolTipText(shape.toString());
-            button.setBorderPainted(false);
-            button.addMouseMotionListener(motionListener);
-            button.addMouseMotionListener(locationListener);
-
-            // Ability to use the button for direct assignment via double-click
-            button.addMouseListener(mouseListener);
+            JButton                 button = new ShapeButton(shape);
 
             // Directly use the shape icon image for DnD ghost
-            ShapeSymbol             symbol = shape.getSymbol();
             GhostDropAdapter<Shape> imageAdapter = new GhostImageAdapter<Shape>(
                 glassPane,
                 shape,
-                symbol.getIconImage());
+                shape.getSymbol().getIconImage());
             imageAdapter.addGhostDropListener(dropListener);
-            button.addMouseListener(imageAdapter);
+
+            // Handle the click (MouseListener's)
+            button.addMouseListener(imageAdapter); // For DnD transfer
+            button.addMouseListener(mouseListener); // For double-click
+
+            // Handle the motion (MouseMotionListener's)
+            // For locations and image rendering while being dragged
+            button.addMouseMotionListener(motionAdapter);
 
             panel.add(button);
         }
@@ -336,34 +336,26 @@ public class ShapeBoard
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //------------------//
-    // LocationListener //
-    //------------------//
-    /**
-     * A listener in charge of forwarding the current mouse location in terms
-     * of ScoreLocation (and transitively SheetLocation)
-     */
-    private class LocationListener
-        extends MouseMotionAdapter
+    //-------------//
+    // ShapeButton //
+    //-------------//
+    private static class ShapeButton
+        extends JButton
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Instance fields ----------------------------------------------------
 
-        @Override
-        public void mouseDragged (MouseEvent e)
+        final Shape shape;
+
+        //~ Constructors -------------------------------------------------------
+
+        public ShapeButton (Shape shape)
         {
-            // Publish the sheet position
-            ScreenPoint screenPoint = new ScreenPoint(
-                e.getComponent(),
-                e.getPoint());
+            this.shape = shape;
+            setIcon(shape.getSymbol());
+            setName(shape.toString());
+            setToolTipText(shape.toString());
 
-            // The (zoomed) score view
-            if (screenPoint.isInComponent(scoreViewport)) {
-                RubberPanel view = (RubberPanel) scoreViewport.getView();
-                Point       localPt = screenPoint.getLocalPoint(view);
-                view.getZoom()
-                    .unscale(localPt);
-                view.pointSelected(localPt, MouseMovement.DRAGGING);
-            }
+            ///setBorderPainted(false);
         }
     }
 
@@ -387,22 +379,102 @@ public class ShapeBoard
         public void ghostDropped (GhostDropEvent<Shape> e)
         {
             ScreenPoint screenPoint = e.getDropLocation();
+            Shape       shape = e.getAction();
 
             if (screenPoint.isInComponent(scoreViewport)) {
+                // The (zoomed) score view
                 RubberPanel view = (RubberPanel) scoreViewport.getView();
                 Point       localPt = screenPoint.getLocalPoint(view);
                 view.getZoom()
                     .unscale(localPt);
 
                 ScorePoint scrPt = new ScorePoint(localPt.x, localPt.y);
-                PixelPoint pixPt = scoreView.toPixelPoint(scrPt);
-
-                // Asynchronously insert the desired shape at proper location
-                new InsertTask(
-                    e.getAction(),
-                    Collections.singleton(pixPt),
-                    LagOrientation.VERTICAL).launch(sheet);
+                dropOnTarget(shape, scoreView.toPixelPoint(scrPt));
+            } else if (screenPoint.isInComponent(
+                // The (zoomed) sheet view
+                sheet.getAssembly().getSelectedView().getComponent().getViewport())) {
+                RubberPanel view = (RubberPanel) sheet.getAssembly()
+                                                      .getSelectedView()
+                                                      .getView();
+                Point       localPt = screenPoint.getLocalPoint(view);
+                view.getZoom()
+                    .unscale(localPt);
+                dropOnTarget(shape, new PixelPoint(localPt.x, localPt.y));
             }
+        }
+
+        // Asynchronously insert the desired shape at proper location
+        private void dropOnTarget (Shape      shape,
+                                   PixelPoint pixPt)
+        {
+            new InsertTask(
+                shape,
+                Collections.singleton(pixPt),
+                LagOrientation.VERTICAL).launch(sheet);
+        }
+    }
+
+    //----------------------//
+    // MyGhostMotionAdapter //
+    //----------------------//
+    /**
+     * The listener in charge of forwarding the current mouse location in terms
+     * of ScoreLocation or SheetLocation and or drawing the dragged image
+     * according to the target under the mouse.
+     */
+    private class MyGhostMotionAdapter
+        extends GhostMotionAdapter
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public MyGhostMotionAdapter (GhostGlassPane glassPane)
+        {
+            super(glassPane);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void mouseDragged (MouseEvent e)
+        {
+            ScreenPoint screenPoint = new ScreenPoint(
+                e.getComponent(),
+                e.getPoint());
+
+            if (screenPoint.isInComponent(scoreViewport)) {
+                // The (zoomed) score view
+                publishOnTarget(
+                    screenPoint,
+                    (RubberPanel) scoreViewport.getView());
+            } else if (screenPoint.isInComponent(
+                // The (zoomed) sheet view
+                sheet.getAssembly().getSelectedView().getComponent().getViewport())) {
+                publishOnTarget(
+                    screenPoint,
+                    (RubberPanel) sheet.getAssembly().getSelectedView().getView());
+            } else {
+                // Not on a droppable target, use icon size
+                glassPane.setOverTarget(false);
+                glassPane.setRatio(1);
+            }
+
+            // Draw the dragged image
+            super.mouseDragged(e);
+        }
+
+        private void publishOnTarget (ScreenPoint screenPoint,
+                                      RubberPanel view)
+        {
+            Point localPt = screenPoint.getLocalPoint(view);
+            view.getZoom()
+                .unscale(localPt);
+            // Publish the position
+            view.pointSelected(localPt, MouseMovement.DRAGGING);
+
+            // Use full image size, adapted to current zoom of the view
+            glassPane.setOverTarget(true);
+            glassPane.setRatio(
+                view.getZoom().getRatio() / ShapeSymbol.iconRatio);
         }
     }
 }

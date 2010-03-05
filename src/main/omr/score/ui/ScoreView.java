@@ -606,9 +606,9 @@ public class ScoreView
 
         //~ Constructors -------------------------------------------------------
 
-        //---------//
+        //--------//
         // MyView //
-        //---------//
+        //--------//
         MyView (Zoom   zoom,
                 Rubber rubber)
         {

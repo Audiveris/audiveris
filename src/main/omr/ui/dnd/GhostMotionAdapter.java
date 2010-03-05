@@ -26,7 +26,7 @@ public class GhostMotionAdapter
     //~ Instance fields --------------------------------------------------------
 
     /** The related glasspane */
-    private GhostGlassPane glassPane;
+    protected GhostGlassPane glassPane;
 
     //~ Constructors -----------------------------------------------------------
 

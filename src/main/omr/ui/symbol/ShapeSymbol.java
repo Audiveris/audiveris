@@ -13,15 +13,18 @@ package omr.ui.symbol;
 
 import omr.log.Logger;
 
-import omr.score.common.SystemPoint;
 import omr.score.ui.ScoreConstants;
 
 import omr.util.Implement;
 import omr.util.PointFacade;
 
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.geom.AffineTransform;
 import java.awt.image.*;
+import java.io.IOException;
 
 import javax.swing.*;
 import javax.xml.bind.*;
@@ -54,12 +57,20 @@ import javax.xml.bind.annotation.*;
 )
 @XmlRootElement(name = "symbol")
 public class ShapeSymbol
-    implements Icon
+    implements Icon, Transferable
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ShapeSymbol.class);
+
+    /** The symbol meta data  */
+    public static final DataFlavor DATA_FLAVOR = new DataFlavor(
+        ShapeSymbol.class,
+        "symbol");
+
+    /** Ratio applied to a full-size image to get the related icon */
+    public static double iconRatio = 0.5d;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -230,6 +241,15 @@ public class ShapeSymbol
         return centroid;
     }
 
+    //-----------------------//
+    // isDataFlavorSupported //
+    //-----------------------//
+    @Implement(Transferable.class)
+    public boolean isDataFlavorSupported (DataFlavor flavor)
+    {
+        return flavor == DATA_FLAVOR;
+    }
+
     //--------------//
     // getDimension //
     //--------------//
@@ -393,6 +413,29 @@ public class ShapeSymbol
     public Integer getStemNumber ()
     {
         return stemNumber;
+    }
+
+    //-----------------//
+    // getTransferData //
+    //-----------------//
+    @Implement(Transferable.class)
+    public Object getTransferData (DataFlavor flavor)
+        throws UnsupportedFlavorException, IOException
+    {
+        if (isDataFlavorSupported(flavor)) {
+            return this;
+        } else {
+            throw new UnsupportedFlavorException(flavor);
+        }
+    }
+
+    //------------------------//
+    // getTransferDataFlavors //
+    //------------------------//
+    @Implement(Transferable.class)
+    public DataFlavor[] getTransferDataFlavors ()
+    {
+        return new DataFlavor[] { DATA_FLAVOR };
     }
 
     //----------//
@@ -574,7 +617,7 @@ public class ShapeSymbol
     private void computeData ()
     {
         double ratio = (double) interline / ScoreConstants.INTER_LINE;
-        iconImage = getScaledImage(1 / (2 * ratio), 1 / (2 * ratio));
+        iconImage = getScaledImage(iconRatio / ratio, iconRatio / ratio);
         dimension = new Dimension(
             (int) Math.rint(image.getWidth() / ratio),
             (int) Math.rint(image.getHeight() / ratio));

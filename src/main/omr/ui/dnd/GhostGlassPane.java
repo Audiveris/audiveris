@@ -12,7 +12,10 @@
 package omr.ui.dnd;
 
 import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.image.BufferedImageOp;
 
 import javax.swing.JPanel;
 
@@ -25,19 +28,31 @@ import javax.swing.JPanel;
 public class GhostGlassPane
     extends JPanel
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
-    /**
-     * Determine how the dragged image is combined with the components
-     * underneath
-     */
-    private AlphaComposite composite;
+    /** Composite to be used over a droppable target */
+    private static AlphaComposite targetComposite = AlphaComposite.getInstance(
+        AlphaComposite.SRC_OVER,
+        0.5f);
+
+    /** Composite to be used over a non-droppable target */
+    private static AlphaComposite nonTargetComposite = AlphaComposite.getInstance(
+        AlphaComposite.SRC_OVER,
+        0.2f);
+
+    //~ Instance fields --------------------------------------------------------
 
     /** The image to be dragged */
     private BufferedImage draggedImage = null;
 
     /** The current location within this glasspane */
     private Point location = new Point(0, 0);
+
+    /** Display ratio */
+    private double ratio = 1f;
+
+    /** Are we over a droppable target? */
+    private boolean overTarget = false;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -50,7 +65,6 @@ public class GhostGlassPane
     public GhostGlassPane ()
     {
         setOpaque(false);
-        composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f);
         setName("GhostGlassPane");
     }
 
@@ -68,6 +82,18 @@ public class GhostGlassPane
         this.draggedImage = draggedImage;
     }
 
+    //---------------//
+    // setOverTarget //
+    //---------------//
+    /**
+     * Tell the glasspane whether we are currently over a droppable target
+     * @param overTarget true if over a target
+     */
+    public void setOverTarget (boolean overTarget)
+    {
+        this.overTarget = overTarget;
+    }
+
     //----------//
     // setPoint //
     //----------//
@@ -78,6 +104,14 @@ public class GhostGlassPane
     public void setPoint (Point location)
     {
         this.location = location;
+    }
+
+    //----------//
+    // setRatio //
+    //----------//
+    public void setRatio (double ratio)
+    {
+        this.ratio = ratio;
     }
 
     //----------------//
@@ -91,11 +125,18 @@ public class GhostGlassPane
         }
 
         Graphics2D g2 = (Graphics2D) g;
-        g2.setComposite(composite);
+        g2.setComposite(overTarget ? targetComposite : nonTargetComposite);
+
+        BufferedImageOp op = new AffineTransformOp(
+            AffineTransform.getScaleInstance(ratio, ratio),
+            AffineTransformOp.TYPE_BILINEAR);
+
         g2.drawImage(
             draggedImage,
-            location.x - (draggedImage.getWidth(this) / 2),
-            location.y - (draggedImage.getHeight(this) / 2),
-            null);
+            op,
+            (int) Math.rint(
+                location.x - ((draggedImage.getWidth(this) * ratio) / 2)),
+            (int) Math.rint(
+                location.y - ((draggedImage.getHeight(this) * ratio) / 2)));
     }
 }

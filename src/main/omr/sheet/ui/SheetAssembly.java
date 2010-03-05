@@ -623,8 +623,8 @@ public class SheetAssembly
         //~ Instance fields ----------------------------------------------------
 
         /** Where the separation between score and sheet views should be */
-        PixelCount scoreSheetDivider = new PixelCount(
-            200,
+        private final PixelCount scoreSheetDivider = new PixelCount(
+            250,
             "Where the separation between score and sheet views should be");
     }
 
