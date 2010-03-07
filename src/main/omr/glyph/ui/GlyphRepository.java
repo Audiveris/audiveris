@@ -14,8 +14,8 @@ package omr.glyph.ui;
 import omr.WellKnowns;
 
 import omr.glyph.GlyphSection;
-import omr.glyph.SymbolGlyph;
 import omr.glyph.Shape;
+import omr.glyph.SymbolGlyph;
 import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
 import omr.glyph.facets.GlyphValue;
@@ -25,8 +25,8 @@ import omr.log.Logger;
 
 import omr.sheet.Sheet;
 
-import omr.ui.symbol.SymbolManager;
 import omr.ui.symbol.ShapeSymbol;
+import omr.ui.symbol.SymbolManager;
 
 import omr.util.BlackList;
 import omr.util.FileUtil;
@@ -702,12 +702,15 @@ public class GlyphRepository
             logger.fine("Loading icon " + gName);
         }
 
-        Glyph      glyph = null;
-        ShapeSymbol icon = SymbolManager.getInstance()
-                                     .loadSymbol(fileNameOf(gName));
+        Glyph       glyph = null;
+        ShapeSymbol symbol = SymbolManager.getInstance()
+                                          .loadSymbol(fileNameOf(gName));
 
-        if (icon != null) {
-            glyph = new SymbolGlyph(icon, shapeOf(gName));
+        if (symbol != null) {
+            glyph = new SymbolGlyph(
+                symbol,
+                shapeOf(gName),
+                symbol.getInterline());
         }
 
         return glyph;

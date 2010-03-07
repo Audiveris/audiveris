@@ -38,6 +38,10 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Stroke;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
+import java.awt.image.BufferedImageOp;
 
 /**
  * Class <code>SheetPainter</code> defines for every node in Score hierarchy
@@ -279,6 +283,10 @@ public class SheetPainter
      */
     private void paintVirtualGlyphs (SystemInfo systemInfo)
     {
+        double ratio = systemInfo.getSheet()
+                                 .getScale()
+                                 .interline() / 16d;
+
         for (Glyph glyph : systemInfo.getGlyphs()) {
             if (glyph.isVirtual()) {
                 ShapeSymbol symbol = glyph.getShape()
@@ -288,12 +296,17 @@ public class SheetPainter
                     ScoreSystem scoreSystem = systemInfo.getScoreSystem();
 
                     if (scoreSystem != null) {
-                        Point center = glyph.getAreaCenter();
-                        Point topLeft = new Point(
-                            center.x - (symbol.getWidth() / 2),
-                            center.y - (symbol.getHeight() / 2));
-
-                        symbol.draw(g, topLeft);
+                        BufferedImageOp op = new AffineTransformOp(
+                            AffineTransform.getScaleInstance(ratio, ratio),
+                            AffineTransformOp.TYPE_BILINEAR);
+                        Point           center = glyph.getAreaCenter();
+                        g.drawImage(
+                            symbol.getImage(),
+                            op,
+                            (int) Math.rint(
+                                center.x - ((symbol.getWidth() * ratio) / 2)),
+                            (int) Math.rint(
+                                center.y - ((symbol.getHeight() * ratio) / 2)));
                     }
                 }
             }

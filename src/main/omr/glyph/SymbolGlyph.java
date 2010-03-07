@@ -42,12 +42,6 @@ public class SymbolGlyph
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(SymbolGlyph.class);
 
-
-    //~ Instance fields --------------------------------------------------------
-
-    /** The underlying icon */
-    private ShapeSymbol icon;
-
     //~ Constructors -----------------------------------------------------------
 
     //-------------//
@@ -60,15 +54,17 @@ public class SymbolGlyph
      *
      * @param symbol the appearance of the glyph
      * @param shape the corresponding shape
+     * @param interline The related interline scaling value
      */
     public SymbolGlyph (ShapeSymbol symbol,
-                        Shape       shape)
+                        Shape       shape,
+                        int         interline)
     {
-        super(ScoreConstants.INTER_LINE);
+        super(interline);
 
         try {
             /** Build a dedicated SymbolPicture */
-            SymbolPicture picture = new SymbolPicture(symbol);
+            SymbolPicture picture = new SymbolPicture(symbol, interline);
 
             /** Build related vertical lag */
             GlyphLag vLag = new GlyphLag(
@@ -128,9 +124,11 @@ public class SymbolGlyph
      * shape
      *
      * @param shape The related shape
+     * @param interline The related interline scaling value
      */
-    public SymbolGlyph (Shape shape)
+    public SymbolGlyph (Shape shape,
+                        int   interline)
     {
-        this(shape.getSymbol(), shape);
+        this(shape.getSymbol(), shape, interline);
     }
 }

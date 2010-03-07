@@ -18,6 +18,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
+import omr.score.common.PixelRectangle;
 import omr.score.common.SystemPoint;
 import omr.score.entity.Staff;
 
@@ -82,6 +83,10 @@ public class GlyphsBuilder
     /** Lag of vertical runs */
     private final GlyphLag vLag;
 
+    /** Margins for a stem */
+    final int stemWiden;
+    final int stemHeighten;
+
     //~ Constructors -----------------------------------------------------------
 
     //---------------//
@@ -101,6 +106,10 @@ public class GlyphsBuilder
 
         // Reuse vertical lag (from bars step).
         vLag = sheet.getVerticalLag();
+
+        // Cache parameters
+        stemWiden = scale.toPixels(constants.stemWiden);
+        stemHeighten = scale.toPixels(constants.stemHeighten);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -252,10 +261,6 @@ public class GlyphsBuilder
      */
     public void computeGlyphFeatures (Glyph glyph)
     {
-        // Ordinate (approximate value)
-        Rectangle   box = glyph.getContourBox();
-        int         y = box.y;
-
         // Mass center (which makes sure moments are available)
         SystemPoint centroid = system.getScoreSystem()
                                      .toSystemPoint(glyph.getCentroid());
@@ -285,7 +290,7 @@ public class GlyphsBuilder
             checkDashIntersect(
                 system.getLedgers(),
                 system.getMaxLedgerWidth(),
-                ledgerBox(box)));
+                ledgerBox(glyph.getContourBox())));
 
         // Vertical position wrt staff
         glyph.setPitchPosition(staff.pitchPositionOf(centroid));
@@ -363,7 +368,7 @@ public class GlyphsBuilder
     //--------------------//
     private boolean checkDashIntersect (List<?extends Dash> items,
                                         int                 maxItemWidth,
-                                        Rectangle           box)
+                                        PixelRectangle      box)
     {
         int startIdx = Dash.getDashIndexAtX(items, box.x - maxItemWidth);
 
@@ -389,7 +394,7 @@ public class GlyphsBuilder
                                         boolean           onLeft)
     {
         // Box for searching for a stem
-        Rectangle box;
+        PixelRectangle box;
 
         if (onLeft) {
             box = leftStemBox(glyph.getContourBox());
@@ -481,61 +486,61 @@ public class GlyphsBuilder
     //-----------//
     // ledgerBox //
     //-----------//
-    private Rectangle ledgerBox (Rectangle rect)
+    private PixelRectangle ledgerBox (PixelRectangle rect)
     {
-        int dy = scale.toPixels(constants.ledgerHeighten);
+        PixelRectangle box = new PixelRectangle(rect);
+        box.grow(0, stemHeighten);
 
-        return new Rectangle(
-            rect.x,
-            rect.y - dy,
-            rect.width,
-            rect.height + (2 * dy));
+        return box;
     }
 
     //-------------//
     // leftStemBox //
     //-------------//
-    private Rectangle leftStemBox (Rectangle rect)
+    /**
+     * Report the stem lookup box on the left side of a rectangle
+     * @param rect the given (glyph) rectangle
+     * @return the proper stem box
+     */
+    private PixelRectangle leftStemBox (PixelRectangle rect)
     {
-        int dx = scale.toPixels(constants.stemWiden);
-        int dy = scale.toPixels(constants.stemHeighten);
+        PixelRectangle box = new PixelRectangle(rect);
+        box.grow(stemWiden, stemHeighten);
+        box.width = 2 * stemWiden;
 
-        return new Rectangle(
-            rect.x - dx,
-            rect.y - dy,
-            2 * dx,
-            rect.height + (2 * dy));
+        return box;
     }
 
     //--------------//
     // rightStemBox //
     //--------------//
-    private Rectangle rightStemBox (Rectangle rect)
+    /**
+     * Report the stem lookup box on the right side of a rectangle
+     * @param rect the given (glyph) rectangle
+     * @return the proper stem box
+     */
+    private PixelRectangle rightStemBox (PixelRectangle rect)
     {
-        int dx = scale.toPixels(constants.stemWiden);
-        int dy = scale.toPixels(constants.stemHeighten);
+        PixelRectangle box = leftStemBox(rect);
+        box.x += rect.width;
 
-        return new Rectangle(
-            (rect.x + rect.width) - dx,
-            rect.y - dy,
-            2 * dx,
-            rect.height + (2 * dy));
+        return box;
     }
 
     //-----------//
     // stemBoxOf //
     //-----------//
-    private Rectangle stemBoxOf (Glyph s)
+    /**
+     * Report a enlarged box of a given (stem) glyph
+     * @param s the stem
+     * @return the enlarged stem box
+     */
+    private PixelRectangle stemBoxOf (Glyph s)
     {
-        int       dx = scale.toPixels(constants.stemWiden);
-        int       dy = scale.toPixels(constants.stemHeighten);
-        Rectangle rect = s.getContourBox();
+        PixelRectangle box = new PixelRectangle(s.getContourBox());
+        box.grow(stemWiden, stemHeighten);
 
-        return new Rectangle(
-            rect.x - dx,
-            rect.y - dy,
-            rect.width + (2 * dx),
-            rect.height + (2 * dy));
+        return box;
     }
 
     //~ Inner Classes ----------------------------------------------------------

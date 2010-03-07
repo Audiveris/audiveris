@@ -3,7 +3,7 @@
 <!--                                                                         -->
 <!--                     u s e r - a c t i o n s . x m l                     -->
 <!--                                                                         -->
-<!-- Copyright (C) Herve Bitteur 2000-2009. All rights reserved.             -->
+<!-- Copyright (C) Herve Bitteur 2000-2010. All rights reserved.             -->
 <!-- This software is released under the GNU General Public License.         -->
 <!-- Goto http://kenai.com/projects/audiveris to report bugs or suggestions. -->
 <!-- ======================================================================= -->
@@ -26,13 +26,11 @@
     <action domain="DEBUG" section="30" class="omr.score.ui.ScoreActions" method="browseScore"/>
     <action domain="DEBUG" section="30" class="omr.score.ui.ScoreActions" method="dumpScore"/>
 
-    <action domain="DEBUG" section="40" class="MyClass" method="insertGlyph" button="javax.swing.JButton"/>
-
     <!--<action domain="DEBUG" section="50" class="MyClass"           method="rebuildFromStep" button="javax.swing.JButton"/>-->
     <!--<action domain="DEBUG" section="50" class="omr.sheet.SheetsManager"  method="dumpAllSheets"/>-->
     <!--<action domain="DEBUG" section="50" class="omr.sheet.ui.SheetsController"  method="dumpAllAssemblies"/>-->
     
-    <action domain="DEBUG" section="60" class="MyClass"  method="launchSymbolRipper"/>
+    <!--<action domain="DEBUG" section="60" class="MyClass"  method="launchSymbolRipper"/>-->
     <!--<action domain="DEBUG" section="70" class="MyClass"  method="launchScoreComputations"/>-->
 
 </actions>

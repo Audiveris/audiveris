@@ -66,12 +66,13 @@ public class SymbolPicture
 
     /** Creates a new instance of SymbolPicture
      * @param symbol the underlying symbol
+     * @param interline the related interline scaling value
      */
-    public SymbolPicture (ShapeSymbol symbol)
+    public SymbolPicture (ShapeSymbol symbol, int interline)
     {
         this.symbol = symbol;
 
-        factor = (double) ScoreConstants.INTER_LINE / symbol.getInterline();
+        factor = (double) interline / symbol.getInterline();
         dataBuffer = symbol.getImage()
                            .getData()
                            .getDataBuffer();

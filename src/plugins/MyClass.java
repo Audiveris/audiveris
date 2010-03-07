@@ -9,17 +9,10 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-
-import omr.glyph.Shape;
-
-import omr.lag.LagOrientation;
-
 import omr.log.Logger;
 
-import omr.score.common.PixelPoint;
 import omr.score.ui.ScoreDependent;
 
-import omr.script.InsertTask;
 import omr.script.Script;
 
 import omr.sheet.Sheet;
@@ -28,9 +21,6 @@ import omr.sheet.ui.SheetsController;
 import omr.ui.symbol.SymbolRipper;
 
 import org.jdesktop.application.Action;
-
-import java.util.Arrays;
-import java.util.Collection;
 
 /**
  * Class <code>MyClass</code> is meant as just an example of user plugin
@@ -63,24 +53,6 @@ public class MyClass
                 script.dump();
             }
         }
-    }
-
-    /**
-     * Test glyph injection
-     */
-    @Action(enabledProperty = "sheetAvailable")
-    public void insertGlyph ()
-    {
-        Sheet sheet = SheetsController.selectedSheet();
-
-        Collection<PixelPoint> points = Arrays.asList(
-            new PixelPoint(1505, 725),
-            new PixelPoint(1755, 725),
-            new PixelPoint(1981, 735),
-            new PixelPoint(2200, 533));
-
-        new InsertTask(Shape.TUPLET_SIX, points, LagOrientation.VERTICAL).launch(
-            sheet);
     }
 
     /**

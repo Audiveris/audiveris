@@ -80,6 +80,7 @@ public class GhostGlassPane
     public void setImage (BufferedImage draggedImage)
     {
         this.draggedImage = draggedImage;
+        setRatio(1);
     }
 
     //---------------//

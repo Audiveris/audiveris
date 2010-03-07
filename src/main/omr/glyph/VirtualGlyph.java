@@ -35,10 +35,12 @@ public class VirtualGlyph
      * Create a new VirtualGlyph object
      *
      * @param shape the assigned shape
+     * @param interline the related interline scaling value
      */
-    public VirtualGlyph (Shape shape)
+    public VirtualGlyph (Shape shape,
+                         int   interline)
     {
-        super(shape);
+        super(shape, interline);
     }
 
     //~ Methods ----------------------------------------------------------------

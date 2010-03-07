@@ -445,13 +445,15 @@ public class ShapeBoard
                 // The (zoomed) score view
                 publishOnTarget(
                     screenPoint,
-                    (RubberPanel) scoreViewport.getView());
+                    (RubberPanel) scoreViewport.getView(),
+                    1);
             } else if (screenPoint.isInComponent(
                 // The (zoomed) sheet view
                 sheet.getAssembly().getSelectedView().getComponent().getViewport())) {
                 publishOnTarget(
                     screenPoint,
-                    (RubberPanel) sheet.getAssembly().getSelectedView().getView());
+                    (RubberPanel) sheet.getAssembly().getSelectedView().getView(),
+                    sheet.getScale().interline() / 16d);
             } else {
                 // Not on a droppable target, use icon size
                 glassPane.setOverTarget(false);
@@ -463,7 +465,8 @@ public class ShapeBoard
         }
 
         private void publishOnTarget (ScreenPoint screenPoint,
-                                      RubberPanel view)
+                                      RubberPanel view,
+                                      double      scale)
         {
             Point localPt = screenPoint.getLocalPoint(view);
             view.getZoom()
@@ -474,7 +477,8 @@ public class ShapeBoard
             // Use full image size, adapted to current zoom of the view
             glassPane.setOverTarget(true);
             glassPane.setRatio(
-                view.getZoom().getRatio() / ShapeSymbol.iconRatio);
+                (view.getZoom()
+                     .getRatio() * scale) / ShapeSymbol.iconRatio);
         }
     }
 }
