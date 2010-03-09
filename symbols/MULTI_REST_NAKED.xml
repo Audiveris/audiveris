@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<symbol name="MULTI_REST_DISPLAY" interline="16">
+<symbol name="MULTI_REST_NAKED" interline="16">
     <bitmap>
 	<row>-----------------------</row>
         <row>--###################--</row>
