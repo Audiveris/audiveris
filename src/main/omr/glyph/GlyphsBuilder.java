@@ -27,7 +27,6 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
-import java.awt.Rectangle;
 import java.util.*;
 
 /**
@@ -393,6 +392,10 @@ public class GlyphsBuilder
                                         Glyph             glyph,
                                         boolean           onLeft)
     {
+        if (glyph.isStem()) {
+            return false;
+        }
+
         // Box for searching for a stem
         PixelRectangle box;
 
@@ -428,11 +431,11 @@ public class GlyphsBuilder
                 }
 
                 // Check close distance
-                Rectangle b = stemBoxOf(s);
+                PixelRectangle b = stemBoxOf(s);
 
                 for (GlyphSection section : glyph.getMembers()) {
-                    if (section.getContour()
-                               .intersects(b.x, b.y, b.width, b.height)) {
+                    if (section.getContourBox()
+                               .intersects(b)) {
                         if (onLeft) {
                             glyph.setLeftStem(s);
                         } else {

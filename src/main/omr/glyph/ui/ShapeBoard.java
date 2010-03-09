@@ -92,7 +92,7 @@ public class ShapeBoard
         heights.put(ShapeRange.Ornaments, 80);
         heights.put(ShapeRange.Rests, 120);
         heights.put(ShapeRange.Times, 130);
-        heights.put(ShapeRange.Others, 80);
+        heights.put(ShapeRange.Others, 90);
     }
 
     //~ Instance fields --------------------------------------------------------

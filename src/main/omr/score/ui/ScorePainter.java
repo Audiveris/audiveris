@@ -623,15 +623,7 @@ public class ScorePainter
             paintSymbol(displayShape, center, staff, pitch, chord);
         } else {
             // Use special display icons for some shapes
-            if (shape == Shape.MULTI_REST) {
-                displayShape = Shape.MULTI_REST_DISPLAY;
-            } else if ((shape == Shape.WHOLE_REST) ||
-                       (shape == Shape.HALF_REST)) {
-                displayShape = Shape.WHOLE_OR_HALF_REST;
-            } else {
-                displayShape = shape;
-            }
-
+            displayShape = shape.getNakedShape();
             paintSymbol(displayShape, center);
         }
 

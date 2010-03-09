@@ -258,7 +258,7 @@ class BasicRecognition
         System.out.println("   evaluation=" + evaluation);
         System.out.println(
             "   training=" +
-            ((getShape() != null) ? getShape().getTrainingShape() : null));
+            ((getShape() != null) ? getShape().getNakedShape() : null));
         System.out.println("   forbiddenShapes=" + forbiddenShapes);
         System.out.println("   textInfo=" + textInfo);
         System.out.println("   rational=" + rational);

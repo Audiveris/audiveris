@@ -99,7 +99,7 @@ public class GlyphValue
     public GlyphValue (Glyph glyph)
     {
         this(
-            (glyph.getShape() != null) ? glyph.getShape().getTrainingShape()
+            (glyph.getShape() != null) ? glyph.getShape().getNakedShape()
                         : null,
             glyph.getInterline(),
             glyph.getId(),

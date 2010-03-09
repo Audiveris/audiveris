@@ -22,6 +22,7 @@ import omr.score.entity.Measure;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
+import omr.score.ui.ScoreConstants;
 import omr.score.visitor.AbstractScoreVisitor;
 
 import omr.sheet.Ending;
@@ -40,7 +41,6 @@ import java.awt.Point;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
-import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
 
 /**
@@ -285,11 +285,12 @@ public class SheetPainter
     {
         double ratio = systemInfo.getSheet()
                                  .getScale()
-                                 .interline() / 16d;
+                                 .interline() / (double) ScoreConstants.INTER_LINE;
 
         for (Glyph glyph : systemInfo.getGlyphs()) {
             if (glyph.isVirtual()) {
                 ShapeSymbol symbol = glyph.getShape()
+                                          .getNakedShape()
                                           .getSymbol();
 
                 if (symbol != null) {

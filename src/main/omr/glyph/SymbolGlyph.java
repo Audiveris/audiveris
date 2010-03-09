@@ -20,8 +20,6 @@ import omr.lag.VerticalOrientation;
 
 import omr.log.Logger;
 
-import omr.score.ui.ScoreConstants;
-
 import omr.stick.StickSection;
 
 import omr.ui.symbol.ShapeSymbol;
@@ -129,6 +127,6 @@ public class SymbolGlyph
     public SymbolGlyph (Shape shape,
                         int   interline)
     {
-        this(shape.getSymbol(), shape, interline);
+        this(shape.getNakedShape().getSymbol(), shape, interline);
     }
 }

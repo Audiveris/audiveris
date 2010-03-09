@@ -545,7 +545,7 @@ public enum Shape {
     ENDING_VERTICAL("Vertical part of ending"), 
     // Stems
     //
-    COMBINING_STEM, 
+    STEM_NAKED, COMBINING_STEM("Stem", STEM_NAKED), 
     //     COMBINING_SPRECHGESANG_STEM,
 
     //
@@ -553,7 +553,7 @@ public enum Shape {
     //
 
     /** Seven Flats */
-    KEY_FLAT_7("Seven Flats"), 
+    KEY_FLAT_7("Seven Flats"),
     /** Six Flats */
     KEY_FLAT_6("Six Flats"), 
     /** Five Flats */
@@ -590,8 +590,8 @@ public enum Shape {
 
     /** Rest for a 1/2 */
     HALF_REST("Rest for a 1/2", WHOLE_OR_HALF_REST), 
-    /** This shape is a kludge to get proper icon, to be improved */
-    MULTI_REST_DISPLAY, 
+    /** Multi Rest w/o decoration */
+    MULTI_REST_NAKED, 
     //
     // Other stuff -------------------------------------------------------------
     //
@@ -608,8 +608,11 @@ public enum Shape {
      * time signature shape
      */
     NO_LEGAL_TIME("No Legal Time Shape");
-    //
-    // =========================================================================
+    static {
+        // Static block to workaround forward references */
+        MULTI_REST.nakedShape = MULTI_REST_NAKED;
+    }
+
     /**
      * Last physical shape an evaluator should be able to recognize based on
      * their physical characteristics. For example a DOT is a DOT. Also, a DOT
@@ -635,8 +638,8 @@ public enum Shape {
     /** Potential related symbol */
     private ShapeSymbol symbol;
 
-    /** Potential related shape to be used for training */
-    private Shape trainingShape;
+    /** Potential related naked shape to be used for training or drawing */
+    private Shape nakedShape;
 
     /** Remember the fact that this shape has no related symbol */
     private boolean hasNoSymbol;
@@ -661,10 +664,10 @@ public enum Shape {
     // Shape //
     //-------//
     Shape (String description,
-           Shape  trainingShape)
+           Shape  nakedShape)
     {
         this.description = description;
-        this.trainingShape = trainingShape;
+        this.nakedShape = nakedShape;
     }
 
     /**
@@ -882,13 +885,17 @@ public enum Shape {
         this.symbol = symbol;
     }
 
-    //------------------//
-    // getTrainingShape //
-    //------------------//
-    public Shape getTrainingShape ()
+    //---------------//
+    // getNakedShape //
+    //---------------//
+    /**
+     * Report the shape to use for training or precise drawing in a view
+     * @return generally the same shape, without any decoration
+     */
+    public Shape getNakedShape ()
     {
-        if (trainingShape != null) {
-            return trainingShape;
+        if (nakedShape != null) {
+            return nakedShape;
         } else {
             return this;
         }
