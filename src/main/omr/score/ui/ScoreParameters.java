@@ -20,6 +20,7 @@ import omr.log.Logger;
 import omr.score.MeasureRange;
 import omr.score.Score;
 import omr.score.entity.ScorePart;
+import omr.score.entity.SlotPolicy;
 import omr.score.midi.MidiAbstractions;
 
 import omr.script.ParametersTask;
@@ -1133,6 +1134,14 @@ public class ScoreParameters
     private class SlotPane
         extends SliderPane
     {
+        //~ Instance fields ----------------------------------------------------
+
+        /** ComboBox for Slot policy */
+        final JComboBox policyCombo;
+
+        /** Set as default? */
+        final JCheckBox policyDefaultBox = new JCheckBox();
+
         //~ Constructors -------------------------------------------------------
 
         public SlotPane ()
@@ -1149,13 +1158,25 @@ public class ScoreParameters
                 ((score != null) && score.hasSlotMargin())
                                 ? score.getSlotMargin().doubleValue()
                                 : Score.getDefaultSlotMargin().doubleValue());
+            policyCombo = createPolicyCombo();
+            policyDefaultBox.setText("Set as default");
+            policyDefaultBox.setToolTipText(
+                "Check to set parameter as global default");
+            defaultBox.setSelected(score == null);
         }
 
         //~ Methods ------------------------------------------------------------
 
         @Override
+        public int getLogicalRowCount ()
+        {
+            return 4;
+        }
+
+        @Override
         public boolean isValid ()
         {
+            task.setSlotPolicy((SlotPolicy) policyCombo.getSelectedItem());
             task.setSlotMargin(dblValue());
 
             return true;
@@ -1164,6 +1185,13 @@ public class ScoreParameters
         @Override
         public void commit ()
         {
+            SlotPolicy policy = (SlotPolicy) policyCombo.getSelectedItem();
+
+            if (policyDefaultBox.isSelected()) {
+                logger.info("Default slot policy is now " + policy);
+                Score.setDefaultSlotPolicy(policy);
+            }
+
             double val = dblValue();
 
             if (defaultBox.isSelected() &&
@@ -1171,6 +1199,35 @@ public class ScoreParameters
                 logger.info("Default slot margin is now " + val);
                 Score.setDefaultSlotMargin(val);
             }
+        }
+
+        @Override
+        public int defineLayout (PanelBuilder    builder,
+                                 CellConstraints cst,
+                                 int             r)
+        {
+            builder.add(policyDefaultBox, cst.xyw(3, r, 3));
+
+            JLabel policyLabel = new JLabel("Policy", SwingConstants.RIGHT);
+            builder.add(policyLabel, cst.xyw(5, r, 3));
+            builder.add(policyCombo, cst.xyw(9, r, 3));
+            r += 2;
+
+            return super.defineLayout(builder, cst, r);
+        }
+
+        /** Create a combo box filled with Slot Policy items */
+        private JComboBox createPolicyCombo ()
+        {
+            JComboBox combo = new JComboBox(SlotPolicy.values());
+            combo.setToolTipText("Policy to determine time slots");
+
+            combo.setSelectedItem(
+                ((score != null) && score.hasSlotPolicy())
+                                ? score.getSlotPolicy()
+                                : Score.getDefaultSlotPolicy());
+
+            return combo;
         }
     }
 

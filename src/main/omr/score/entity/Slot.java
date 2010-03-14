@@ -16,7 +16,6 @@ import omr.glyph.facets.Glyph;
 import omr.log.Logger;
 
 import omr.math.InjectionSolver;
-import omr.math.Population;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.SystemPoint;
@@ -35,6 +34,10 @@ import java.util.*;
  * measure, to gather all chord entities (rests, notes, noteheads) that occur at
  * the same time because their abscissae are roughly the same.
  *
+ * <p>There are two policies to define slots: one based on heads implemented in
+ * {@link HeadBasedSlot} and one based on stems implemented in
+ * {@link StemBasedSlot}.
+ *
  * <p>The slot embraces all the staves of this part measure. Perhaps we should
  * consider merging slots between parts as well?
  *
@@ -43,7 +46,7 @@ import java.util.*;
  *
  * @author Hervé Bitteur
  */
-public class Slot
+public abstract class Slot
     implements Comparable<Slot>
 {
     //~ Static fields/initializers ---------------------------------------------
@@ -89,23 +92,23 @@ public class Slot
     private int id;
 
     /** Reference point of the slot */
-    private final SystemPoint refPoint;
+    protected SystemPoint refPoint;
 
     /** The containing measure */
     @Navigable(false)
-    private Measure measure;
+    protected Measure measure;
 
     /** Collection of glyphs in the slot */
-    private List<Glyph> glyphs = new ArrayList<Glyph>();
+    protected List<Glyph> glyphs = new ArrayList<Glyph>();
+
+    /** Cached margin for abscissa alignment */
+    protected final int xUnitsMargin;
 
     /** Collection of chords in this slot, order by staff, then by ordinate */
     private List<Chord> chords = new ArrayList<Chord>();
 
     /** Time offset since measure start */
     private Integer startTime;
-
-    /** Cached margin for abscissa alignment */
-    private final int xUnitsMargin;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -116,13 +119,10 @@ public class Slot
      * Creates a new Slot object.
      *
      * @param measure the containing measure
-     * @param refPoint the slot reference point
      */
-    public Slot (Measure     measure,
-                 SystemPoint refPoint)
+    public Slot (Measure measure)
     {
         this.measure = measure;
-        this.refPoint = new SystemPoint(refPoint);
 
         InterlineFraction slotMargin = measure.getScore()
                                               .getSlotMargin();
@@ -276,17 +276,13 @@ public class Slot
      *
      * @return the slot abscissa, wrt the containing system (and not measure)
      */
-    public int getX ()
-    {
-        return refPoint.x;
-    }
+    public abstract int getX ();
 
     //----------//
     // addGlyph //
     //----------//
     /**
-     * Insert a glyph (supposedly from a chord) into this slot, invalidating the
-     * internal computed data
+     * Insert a glyph (supposedly from a chord) into this slot
      *
      * @param glyph the glyph to insert
      */
@@ -471,9 +467,11 @@ public class Slot
      *
      * @param glyph a chord-relevant glyph (rest, note or notehead)
      * @param measure the containing measure
+     * @param policy the policy to use for slot positioning
      */
-    public static void populate (Glyph   glyph,
-                                 Measure measure)
+    public static void populate (Glyph      glyph,
+                                 Measure    measure,
+                                 SlotPolicy policy)
     {
         //        if (logger.isFineEnabled()) {
         //            logger.fine("Populating slot with " + glyph);
@@ -485,20 +483,31 @@ public class Slot
                  .isWholeRest()) {
             measure.addWholeChord(glyph);
         } else {
-            // Use the stem abscissa (if any) rather than the note abscissa
             ScoreSystem system = measure.getSystem();
             PixelPoint  pt = null;
 
-            if (glyph.getStemNumber() == 1) {
-                Glyph stem = glyph.getLeftStem();
+            // Use the stem abscissa or the note abscissa
+            switch (policy) {
+            case STEM_BASED :
 
-                if (stem == null) {
-                    stem = glyph.getRightStem();
+                if (glyph.getStemNumber() == 1) {
+                    Glyph stem = glyph.getLeftStem();
+
+                    if (stem == null) {
+                        stem = glyph.getRightStem();
+                    }
+
+                    if (stem != null) {
+                        pt = stem.getAreaCenter();
+                    }
                 }
 
-                if (stem != null) {
-                    pt = stem.getAreaCenter();
-                }
+                break;
+
+            case HEAD_BASED :
+                pt = glyph.getAreaCenter();
+
+                break;
             }
 
             if (pt == null) {
@@ -517,7 +526,20 @@ public class Slot
             }
 
             // No compatible slot, so let's create a brand new one
-            Slot slot = new Slot(measure, sysPt);
+            Slot slot = null;
+
+            switch (policy) {
+            case STEM_BASED :
+                slot = new StemBasedSlot(measure, sysPt);
+
+                break;
+
+            case HEAD_BASED :
+                slot = new HeadBasedSlot(measure);
+
+                break;
+            }
+
             slot.addGlyph(glyph);
             measure.getSlots()
                    .add(slot);
@@ -737,26 +759,6 @@ public class Slot
 
         return sb.toString();
     }
-
-    //    //-------------------//
-    //    // getAvailableVoice //
-    //    //-------------------//
-    //    /**
-    //     * Retrieve the first available voice for this slot
-    //     *
-    //     * @return the first available slot, which may be allocated for this
-    //     */
-    //    private Voice getAvailableVoice ()
-    //    {
-    //        for (Voice voice : measure.getVoices()) {
-    //            if (voice.isFree(this)) {
-    //                return voice;
-    //            }
-    //        }
-    //
-    //        // Nothing found, let's add one
-    //        return new Voice(measure, measure.getVoicesNumber() + 1);
-    //    }
 
     //--------------//
     // getStemChord //

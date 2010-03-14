@@ -13,6 +13,7 @@ package omr.script;
 
 import omr.score.Score;
 import omr.score.entity.ScorePart;
+import omr.score.entity.SlotPolicy;
 
 import omr.sheet.Scale.InterlineFraction;
 import omr.sheet.Sheet;
@@ -54,6 +55,10 @@ public class ParametersTask
     @XmlElement(name = "slot-margin")
     private InterlineFraction slotMargin;
 
+    /** Slot policy */
+    @XmlAttribute(name = "slot-policy")
+    private SlotPolicy slotPolicy;
+
     /** MIDI volume */
     @XmlAttribute(name = "volume")
     private Integer volume;
@@ -70,7 +75,7 @@ public class ParametersTask
     private boolean foregroundChanged;
     private boolean languageChanged;
     private boolean histoRatioChanged;
-    private boolean slotMarginChanged;
+    private boolean slotChanged;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -126,6 +131,17 @@ public class ParametersTask
     public void setSlotMargin (double slotMargin)
     {
         this.slotMargin = new InterlineFraction(slotMargin);
+    }
+
+    //---------------//
+    // setSlotPolicy //
+    //---------------//
+    /**
+     * @param slotPolicy the new Slot Policy
+     */
+    public void setSlotPolicy (SlotPolicy slotPolicy)
+    {
+        this.slotPolicy = slotPolicy;
     }
 
     //----------//
@@ -196,6 +212,17 @@ public class ParametersTask
             }
         }
 
+        // Slot policy
+        if (slotPolicy != null) {
+            if (!score.hasSlotPolicy() ||
+                !slotPolicy.equals(score.getSlotPolicy())) {
+                score.setSlotPolicy(slotPolicy);
+                sb.append(" slotPolicy:")
+                  .append(slotPolicy);
+                slotChanged = true;
+            }
+        }
+
         // Slot margin
         if (slotMargin != null) {
             if (!score.hasSlotMargin() ||
@@ -203,7 +230,7 @@ public class ParametersTask
                 score.setSlotMargin(slotMargin);
                 sb.append(" slotMargin:")
                   .append(slotMargin);
-                slotMarginChanged = true;
+                slotChanged = true;
             }
         }
 
@@ -275,7 +302,7 @@ public class ParametersTask
 
         Step  from = null;
 
-        if (slotMarginChanged) {
+        if (slotChanged) {
             from = Step.SCORE;
         }
 
@@ -329,6 +356,11 @@ public class ParametersTask
         if (histoRatio != null) {
             sb.append(" histoRatio:")
               .append(histoRatio);
+        }
+
+        if (slotPolicy != null) {
+            sb.append(" slotPolicy:")
+              .append(slotPolicy);
         }
 
         if (slotMargin != null) {

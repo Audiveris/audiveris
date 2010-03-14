@@ -692,7 +692,7 @@ public class MainGui
 
         /** Use to detect a double-click */
         private final Constant.Integer maxDoubleClickDelay = new Constant.Integer(
-            "Milli-seconds",
+            "MilliSeconds",
             250,
             "Maximum delay for a double-click");
     }

@@ -562,7 +562,8 @@ public class SystemTranslator
             if (minSpacing < minSlotSpacing) {
                 measure.addError(
                     minSlot.getLocationGlyph(),
-                    "Suspicious narrow spacing of slots");
+                    "Suspicious narrow spacing of slots: " +
+                    scale.unitsToFrac(minSpacing));
             }
         }
 
@@ -578,7 +579,12 @@ public class SystemTranslator
 
         public void translate (Glyph glyph)
         {
-            Slot.populate(glyph, currentMeasure);
+            Score score = system.getScore();
+            Slot.populate(
+                glyph,
+                currentMeasure,
+                score.hasSlotPolicy() ? score.getSlotPolicy()
+                                : Score.getDefaultSlotPolicy());
         }
     }
 

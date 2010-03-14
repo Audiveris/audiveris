@@ -25,6 +25,7 @@ import omr.score.common.UnitDimension;
 import omr.score.entity.ScoreNode;
 import omr.score.entity.ScorePart;
 import omr.score.entity.ScoreSystem;
+import omr.score.entity.SlotPolicy;
 import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
 import omr.score.ui.ScoreConstants;
@@ -126,6 +127,9 @@ public class Score
     /** Preferred orientation for system layout */
     private ScoreOrientation orientation;
 
+    /** The score slot policy */
+    private SlotPolicy slotPolicy;
+
     /** The score slot horizontal margin, expressed in interline fraction */
     private InterlineFraction slotMargin;
 
@@ -216,6 +220,30 @@ public class Score
     public static InterlineFraction getDefaultSlotMargin ()
     {
         return constants.defaultSlotMargin.getWrappedValue();
+    }
+
+    //----------------------//
+    // setDefaultSlotPolicy //
+    //----------------------//
+    /**
+     * Assign the default slot policy
+     * @param slotPolicy the slot policy
+     */
+    public static void setDefaultSlotPolicy (SlotPolicy slotPolicy)
+    {
+        constants.defaultSlotPolicy.setValue(slotPolicy);
+    }
+
+    //----------------------//
+    // getDefaultSlotPolicy //
+    //----------------------//
+    /**
+     * Report the default policy to be used for retrieval of time slots
+     * @return the default time slot policy
+     */
+    public static SlotPolicy getDefaultSlotPolicy ()
+    {
+        return constants.defaultSlotPolicy.getValue();
     }
 
     //-----------------//
@@ -830,6 +858,30 @@ public class Score
     }
 
     //---------------//
+    // setSlotPolicy //
+    //---------------//
+    /**
+     * Assign the slot policy for this score
+     * @param slotPolicy the policy for determining slots
+     */
+    public void setSlotPolicy (SlotPolicy slotPolicy)
+    {
+        this.slotPolicy = slotPolicy;
+    }
+
+    //---------------//
+    // getSlotPolicy //
+    //---------------//
+    /**
+     * Report the policy used for retrieval of time slots in this score
+     * @return the score time slot policy
+     */
+    public SlotPolicy getSlotPolicy ()
+    {
+        return slotPolicy;
+    }
+
+    //---------------//
     // getSystemById //
     //---------------//
     /**
@@ -1077,6 +1129,14 @@ public class Score
         return slotMargin != null;
     }
 
+    //---------------//
+    // hasSlotPolicy //
+    //---------------//
+    public boolean hasSlotPolicy ()
+    {
+        return slotPolicy != null;
+    }
+
     //----------//
     // hasTempo //
     //----------//
@@ -1277,6 +1337,11 @@ public class Score
             "Volume",
             25,
             "Default Volume in 0..127 range");
+
+        /** Default slot policy */
+        SlotPolicy.Constant defaultSlotPolicy = new SlotPolicy.Constant(
+            SlotPolicy.STEM_BASED,
+            "Default policy for determining time slots");
 
         /**
          * Default horizontal margin between a slot and a glyph candidate
