@@ -422,6 +422,7 @@ public class SymbolRipper
                                        .getValue();
         int    val = fontSize.getValue();
         musicFont = new Font(name, Font.PLAIN, val);
+        ///musicFont = new Font(name, Font.ITALIC, val);
     }
 
     //--------------//

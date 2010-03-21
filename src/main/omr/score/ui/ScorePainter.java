@@ -240,7 +240,7 @@ public class ScorePainter
 
         if (symbol != null) {
             // Vertical ratio to extend the icon */
-            final double ratio = height / symbol.getIconHeight();
+            final double ratio = height / symbol.getHeight();
 
             g.setColor(Color.black);
             transform.setTransform(
@@ -251,7 +251,7 @@ public class ScorePainter
                 arpeggiate.getReferencePoint().x,
                 top);
 
-            g.drawRenderedImage(symbol.getImage(), transform);
+            g.drawRenderedImage(symbol.getUnderlyingImage(), transform);
         }
 
         return true;
@@ -293,7 +293,7 @@ public class ScorePainter
     {
         // Corrections for beam points
         final int dx = beamHalfThickness - stemThickness;
-        final int dy = 1;///beamHalfThickness;
+        final int dy = 1; ///beamHalfThickness;
 
         // Fix ordinates
         int leftDy = 0;
@@ -870,7 +870,9 @@ public class ScorePainter
                     ratio,
                     -dx,
                     top);
-                g.drawRenderedImage(braceSymbol.getImage(), transform);
+                g.drawRenderedImage(
+                    braceSymbol.getUnderlyingImage(),
+                    transform);
             }
         }
 

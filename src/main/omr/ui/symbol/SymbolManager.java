@@ -316,7 +316,7 @@ public class SymbolManager
      */
     String[] encodeImage (ShapeSymbol symbol)
     {
-        return encodeImage(symbol.getImage());
+        return encodeImage(symbol.getUnderlyingImage());
     }
 
     //-------------//

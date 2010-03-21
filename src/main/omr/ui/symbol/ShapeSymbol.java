@@ -32,18 +32,27 @@ import javax.xml.bind.annotation.*;
 
 /**
  * Class {@code ShapeSymbol} handles the appearance of a monochrome music
- * symbol. A ShapeSymbol can provide 3 features:<ul>
+ * symbol. A ShapeSymbol can provide several features:<ul>
  *
- * <li>It can be used as an icon for buttons, menus, etc. For that main purpose,
- * the {@code ShapeSymbol} implements the {@link Icon} interface.</li>
+ * <li>It can be used as an <b>icon</b> for buttons, menus, etc. For that
+ * purpose, the {@code ShapeSymbol} implements the {@link Icon} interface.</li>
  *
- * <li>It may also be used to train the glyph evaluator when we don't have
- * enough "real" glyphs available.</li>
+ * <li>It can be used as an <b>image</b> for precise drawing on score and
+ * sheet views.
+ * The {@code ShapeSymbol} provides {@link #getDimension()}, as weel as
+ * {@link #getWidth()} and {@link #getHeight()} methods that report the
+ * <b>normalized</> size of the symbol for an interline value of {@link
+ * ScoreConstants#INTER_LINE}, even if the size of the underlying image is
+ * different. This allows better symbol definitions.</li>
+ *
+ * <li>It may also be used to <b>train</> the glyph evaluator when we don't
+ * have enough "real" glyphs available.</li>
  *
  * <li>It may also be used to convey information on the related shape and
- * especially the reference point of that shape. Most of shapes have no
- * reference point, and thus we use their area center, which is the center of
- * their bounding box. However, a few shapes (clefs to precisely position them
+ * especially the <b>reference point</b> of that shape.
+ * Most of shapes have no reference point, and thus we use their area center,
+ * which is the center of their bounding box.
+ * However, a few shapes (clefs to precisely position them
  * on the staff, head/flags combos to handle the precise position of the head
  * part) need a very precise reference center (actually the y ordinate) which is
  * somewhat different from the area center. This is the difference between the
@@ -69,12 +78,12 @@ public class ShapeSymbol
         ShapeSymbol.class,
         "symbol");
 
-    /** Ratio applied to a full-size image to get the related icon */
+    /** Ratio applied to a normalized image to get the related icon */
     public static double iconRatio = 0.5d;
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Related interline value */
+    /** Image related interline value */
     @XmlAttribute
     private Integer interline;
 
@@ -112,9 +121,9 @@ public class ShapeSymbol
     private Point centroid;
 
     /**
-     * Related image, full scale
-     * Generally interline = {link omr.score.ui.ScoreConstants#INTER_LINE}, but
-     * it can be larger for finer display.ddddddfff
+     * Related image, full scale. Generally interline = {link
+     * omr.score.ui.ScoreConstants#INTER_LINE}, but it can be larger for better
+     * display.
      */
     private BufferedImage image;
 
@@ -254,19 +263,11 @@ public class ShapeSymbol
     // getDimension //
     //--------------//
     /**
-     * Report the bounding dimension of the symbol
+     * Report the normalized bounding dimension of the symbol
      * @return the size of the symbol
      */
     public Dimension getDimension ()
     {
-        if (dimension == null) {
-            if ((image != null) &&
-                (image.getWidth() != 0) &&
-                (image.getHeight() != 0)) {
-                dimension = new Dimension(image.getWidth(), image.getHeight());
-            }
-        }
-
         return dimension;
     }
 
@@ -274,7 +275,7 @@ public class ShapeSymbol
     // getHeight //
     //-----------//
     /**
-     * Report the height of the symbol
+     * Report the normalized height of the symbol
      *
      * @return the real image height in pixels
      */
@@ -325,15 +326,15 @@ public class ShapeSymbol
         return iconImage.getWidth();
     }
 
-    //----------//
-    // getImage //
-    //----------//
+    //--------------------//
+    // getUnderlyingImage //
+    //--------------------//
     /**
      * Report the underlying image
      *
      * @return the underlying image
      */
-    public BufferedImage getImage ()
+    public BufferedImage getUnderlyingImage ()
     {
         return image;
     }
@@ -442,7 +443,7 @@ public class ShapeSymbol
     // getWidth //
     //----------//
     /**
-     * Report the width of the symbol
+     * Report the normalized width of the symbol
      *
      * @return the real image width in pixels
      */
@@ -470,7 +471,8 @@ public class ShapeSymbol
     /**
      * Draw this symbol image on the provided graphics environment (which may
      * be scaled) using the topLeft point. We of course use the most suitable
-     * image that we have.
+     * image that we have. The image is rendered with {@link
+     * ScoreConstants.INTER_LINE} normalized size.
      * @param g the graphics context
      * @param topLeft the upper left corner of the image, using the coordinate
      * references of the display (PixelPoint for sheet, SystemPoint for score)
@@ -478,14 +480,33 @@ public class ShapeSymbol
     public void draw (Graphics g,
                       Point    topLeft)
     {
+        draw(g, topLeft, ScoreConstants.INTER_LINE);
+    }
+
+    //------//
+    // draw //
+    //------//
+    /**
+     * Draw this symbol image on the provided graphics environment (which may
+     * be scaled) using the topLeft point. We of course use the most suitable
+     * image that we have.
+     * @param g the graphics context
+     * @param topLeft the upper left corner of the image, using the coordinate
+     * references of the display (PixelPoint for sheet, SystemPoint for score)
+     * @param contextInterline the scale of the target context
+     */
+    public void draw (Graphics g,
+                      Point    topLeft,
+                      int      contextInterline)
+    {
         Graphics2D      g2 = (Graphics2D) g;
         AffineTransform at = g2.getTransform();
 
         g2.scale(1 / at.getScaleX(), 1 / at.getScaleY());
         g2.drawImage(
             getScaledImage(
-                (at.getScaleX() * ScoreConstants.INTER_LINE) / interline,
-                (at.getScaleY() * ScoreConstants.INTER_LINE) / interline),
+                (at.getScaleX() * contextInterline) / interline,
+                (at.getScaleY() * contextInterline) / interline),
             (int) Math.rint(topLeft.x * at.getScaleX()),
             (int) Math.rint(topLeft.y * at.getScaleY()),
             null);

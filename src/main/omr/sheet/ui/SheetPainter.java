@@ -283,9 +283,10 @@ public class SheetPainter
      */
     private void paintVirtualGlyphs (SystemInfo systemInfo)
     {
-        double ratio = systemInfo.getSheet()
-                                 .getScale()
-                                 .interline() / (double) ScoreConstants.INTER_LINE;
+        int    interline = systemInfo.getSheet()
+                                     .getScale()
+                                     .interline();
+        double ratio = interline / (double) ScoreConstants.INTER_LINE;
 
         for (Glyph glyph : systemInfo.getGlyphs()) {
             if (glyph.isVirtual()) {
@@ -297,17 +298,13 @@ public class SheetPainter
                     ScoreSystem scoreSystem = systemInfo.getScoreSystem();
 
                     if (scoreSystem != null) {
-                        BufferedImageOp op = new AffineTransformOp(
-                            AffineTransform.getScaleInstance(ratio, ratio),
-                            AffineTransformOp.TYPE_BILINEAR);
-                        Point           center = glyph.getAreaCenter();
-                        g.drawImage(
-                            symbol.getImage(),
-                            op,
+                        Point center = glyph.getAreaCenter();
+                        Point topLeft = new Point(
                             (int) Math.rint(
                                 center.x - ((symbol.getWidth() * ratio) / 2)),
                             (int) Math.rint(
                                 center.y - ((symbol.getHeight() * ratio) / 2)));
+                        symbol.draw(g, topLeft, interline);
                     }
                 }
             }

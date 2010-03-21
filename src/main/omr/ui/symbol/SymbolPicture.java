@@ -68,18 +68,20 @@ public class SymbolPicture
      * @param symbol the underlying symbol
      * @param interline the related interline scaling value
      */
-    public SymbolPicture (ShapeSymbol symbol, int interline)
+    public SymbolPicture (ShapeSymbol symbol,
+                          int         interline)
     {
         this.symbol = symbol;
 
         factor = (double) interline / symbol.getInterline();
-        dataBuffer = symbol.getImage()
+        dataBuffer = symbol.getUnderlyingImage()
                            .getData()
                            .getDataBuffer();
-        actualWidth = symbol.getImage()
+        actualWidth = symbol.getUnderlyingImage()
                             .getWidth();
         width = (int) Math.rint(factor * actualWidth);
-        height = (int) Math.rint(factor * symbol.getImage().getHeight());
+        height = (int) Math.rint(
+            factor * symbol.getUnderlyingImage().getHeight());
     }
 
     //~ Methods ----------------------------------------------------------------
