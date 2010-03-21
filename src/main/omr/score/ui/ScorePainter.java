@@ -239,19 +239,14 @@ public class ScorePainter
         final ShapeSymbol     symbol = Shape.ARPEGGIATO.getSymbol();
 
         if (symbol != null) {
-            // Vertical ratio to extend the icon */
-            final double ratio = height / symbol.getHeight();
-
-            g.setColor(Color.black);
-            transform.setTransform(
-                1 / zoom.getRatio(),
-                0,
-                0,
-                ratio,
-                arpeggiate.getReferencePoint().x,
+            // Vertical ratio to extend the symbol image */
+            final double      yRatio = (double) height / symbol.getHeight();
+            final SystemPoint topLeft = new SystemPoint(
+                arpeggiate.getReferencePoint().x - (symbol.getWidth() / 2),
                 top);
 
-            g.drawRenderedImage(symbol.getUnderlyingImage(), transform);
+            g.setColor(Color.black);
+            symbol.draw(g, topLeft, 1, yRatio);
         }
 
         return true;
@@ -854,25 +849,16 @@ public class ScorePainter
                                         .getTopLeft().y + STAFF_HEIGHT;
             final double      height = bot - top + 1;
 
-            // Vertical ratio to extend the icon */
             final ShapeSymbol braceSymbol = Shape.BRACE.getSymbol();
 
             if (braceSymbol != null) {
-                final double ratio = height / braceSymbol.getIconHeight();
-
-                // Offset on left of system
-                final int dx = 10;
-                g.setColor(Color.black);
-                transform.setTransform(
-                    1 / zoom.getRatio(),
-                    0,
-                    0,
-                    ratio,
-                    -dx,
+                final double yRatio = height / braceSymbol.getHeight();
+                SystemPoint  topLeft = new SystemPoint(
+                    -braceSymbol.getWidth(),
                     top);
-                g.drawRenderedImage(
-                    braceSymbol.getUnderlyingImage(),
-                    transform);
+
+                g.setColor(Color.black);
+                braceSymbol.draw(g, topLeft, 1, yRatio);
             }
         }
 

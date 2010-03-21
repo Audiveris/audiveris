@@ -15,8 +15,6 @@ import omr.lag.PixelSource;
 
 import omr.log.Logger;
 
-import omr.score.ui.ScoreConstants;
-
 import omr.util.Implement;
 
 import java.awt.image.DataBuffer;
