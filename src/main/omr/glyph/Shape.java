@@ -36,6 +36,7 @@ public enum Shape {
     // Nota: Do not change the order of these physical shapes, otherwise the
     // evaluators won't detect this and you'll have to retrain them on your own.
     // =========================================================================
+    // Percussion ST47
 
     /** Structure of items */
     STRUCTURE("Structure of items"),
@@ -45,31 +46,29 @@ public enum Shape {
     /** Pure clutter */
     CLUTTER("Pure clutter"), 
     /** General dot shape */
-    DOT("General dot shape"), 
+    DOT("General dot shape", 46), 
     /** A letter */
     CHARACTER("A letter"), 
     /** Sequence of letters & spaces */
     TEXT("Sequence of letters & spaces"), 
+
     //
     // Bars --------------------------------------------------------------------
     //
     /** Repeat from the sign */
-    DAL_SEGNO("Repeat from the sign"), 
+    DAL_SEGNO("Repeat from the sign", 100), 
+
     /** Repeat from the beginning */
-    DA_CAPO("Repeat from the beginning"), 
+    DA_CAPO("Repeat from the beginning", 68), 
     /** Sign */
-    SEGNO("Sign"), 
+    SEGNO("Sign", 37), 
     /** Closing section */
-    CODA("Closing section"), 
-    //     REPEATED_FIGURE_1,
-    //     REPEATED_FIGURE_2,
-    //     REPEATED_FIGURE_3,
-    /** Fermata */
-    FERMATA("Fermata"), 
+    CODA("Closing section", 222), FERMATA("Fermata", 85), 
+
     /** Fermata Below */
-    FERMATA_BELOW("Fermata Below"), 
+    FERMATA_BELOW("Fermata Below", 117),
     /** Breath Mark */
-    BREATH_MARK("Breath Mark"), 
+    BREATH_MARK("Breath Mark", 44), 
     /** Caesura */
     CAESURA("Caesura"), 
     /** Brace */
@@ -94,70 +93,52 @@ public enum Shape {
     // Clefs -------------------------------------------------------------------
     //
     /** Treble Clef */
-    G_CLEF("Treble Clef"), 
+    G_CLEF("Treble Clef", 38), 
     /** Ottava Alta */
     G_CLEF_OTTAVA_ALTA("Ottava Alta"), 
     /** Ottava Bassa */
     G_CLEF_OTTAVA_BASSA("Ottava Bassa"), 
     /** Ut Clef */
-    C_CLEF("Ut Clef"), 
+    C_CLEF("Ut Clef", 66), 
     /** Bass Clef */
-    F_CLEF("Bass Clef"), 
+    F_CLEF("Bass Clef", 63), 
     /** Bass Clef Ottava Alta */
     F_CLEF_OTTAVA_ALTA("Bass Clef Ottava Alta"), 
 
     /** Bass Clef Ottava Bassa */
     F_CLEF_OTTAVA_BASSA("Bass Clef Ottava Bassa"), 
-    //     DRUM_CLEF_1,
-    //     DRUM_CLEF_2,
-    //
-    // Accidentals -------------------------------------------------------------
-    //
-    /** Minus one half step */
-    FLAT("Minus one half step"), 
+    FLAT("Minus one half step", 98), 
     /** Natural value */
-    NATURAL("Natural value"), 
+    NATURAL("Natural value", 110), 
     /** Plus one half step */
-    SHARP("Plus one half step"), 
+    SHARP("Plus one half step", 35), 
     /** Double Sharp */
-    DOUBLE_SHARP("Double Sharp"), 
+    DOUBLE_SHARP("Double Sharp", 220), 
     /** Double Flat */
-    DOUBLE_FLAT("Double Flat"), 
-    //     FLAT_UP,
-    //     FLAT_DOWN,
-    //     NATURAL_UP,
-    //     NATURAL_DOWN,
-    //     SHARP_UP,
-    //     SHARP_DOWN,
-    //     QUARTER_TONE_SHARP,
-    //     QUARTER_TONE_FLAT,
-    //
-    // Time signatures ---------------------------------------------------------
-    //
-    /** Digit 0 */
-    TIME_ZERO("Digit 0"), 
+    DOUBLE_FLAT("Double Flat", 186), TIME_ZERO("Digit 0", 48), 
+
     /** Digit 1 */
-    TIME_ONE("Digit 1"), 
+    TIME_ONE("Digit 1", 49),
     /** Digit 2 */
-    TIME_TWO("Digit 2"), 
+    TIME_TWO("Digit 2", 50), 
     /** Digit 3 */
-    TIME_THREE("Digit 3"), 
+    TIME_THREE("Digit 3", 51), 
     /** Digit 4 */
-    TIME_FOUR("Digit 4"), 
+    TIME_FOUR("Digit 4", 52), 
     /** Digit 5 */
-    TIME_FIVE("Digit 5"), 
+    TIME_FIVE("Digit 5", 53), 
     /** Digit 6 */
-    TIME_SIX("Digit 6"), 
+    TIME_SIX("Digit 6", 54), 
     /** Digit 7 */
-    TIME_SEVEN("Digit 7"), 
+    TIME_SEVEN("Digit 7", 55), 
     /** Digit 8 */
-    TIME_EIGHT("Digit 8"), 
+    TIME_EIGHT("Digit 8", 56), 
     /** Digit 9 */
-    TIME_NINE("Digit 9"), 
+    TIME_NINE("Digit 9", 57), 
     /** Number 12 */
-    TIME_TWELVE("Number 12"), 
+    TIME_TWELVE("Number 12", 49, 50), 
     /** Number 16 */
-    TIME_SIXTEEN("Number 16"), 
+    TIME_SIXTEEN("Number 16", 49, 54), 
     /** Rational 4/4 */
     TIME_FOUR_FOUR("Rational 4/4"), 
     /** Rational 2/2 */
@@ -169,41 +150,31 @@ public enum Shape {
     /** Rational 6/8 */
     TIME_SIX_EIGHT("Rational 6/8"), 
     /** Alpha = 4/4 */
-    COMMON_TIME("Alpha = 4/4"), 
+    COMMON_TIME("Alpha = 4/4", 99), 
     /** Semi-Alpha = 2/4 */
-    CUT_TIME("Semi-Alpha = 2/4"), 
-    //
-    // Octaves -----------------------------------------------------------------
-    //
+    CUT_TIME("Semi-Alpha = 2/4", 67), 
     /** 8 va */
-    OTTAVA_ALTA("8 va"), 
+    OTTAVA_ALTA("8 va", 195), 
     /** 8 vb */
-    OTTAVA_BASSA("8 vb"), 
-    //     QUINDICESIMA_ALTA,
-    //     QUINDICESIMA_BASSA,
-    //
-    // Rests -------------------------------------------------------------------
-    //
-    /** Rest for multiple measures */
-    MULTI_REST("Rest for multiple measures"), 
+    OTTAVA_BASSA("8 vb", 215), 
+    /** Multi Rest */
+    MULTI_REST("Rest for multiple measures", 208), 
 
     /** Same shape for whole or half Rest */
-    WHOLE_OR_HALF_REST("Same shape for whole or half Rest"), 
+    WHOLE_OR_HALF_REST("Same shape for whole or half Rest", 183), 
 
-    /** Rest for whole measure */
-    //        WHOLE_REST("Rest for whole measure"),
-    /** Rest for a 1/2 */
-    //        HALF_REST("Rest for a 1/2"),
     /** Rest for a 1/4 */
-    QUARTER_REST("Rest for a 1/4"), 
+    QUARTER_REST("Rest for a 1/4", 206), 
     /** Rest for a 1/8 */
-    EIGHTH_REST("Rest for a 1/8"), 
+    EIGHTH_REST("Rest for a 1/8", 228), 
     /** Rest for a 1/16 */
-    SIXTEENTH_REST("Rest for a 1/16"), 
+    SIXTEENTH_REST("Rest for a 1/16", 197), 
+
     /** Rest for a 1/32 */
-    THIRTY_SECOND_REST("Rest for a 1/32"), 
+    THIRTY_SECOND_REST("Rest for a 1/32", 168), 
+
     /** Rest for a 1/64 */
-    SIXTY_FOURTH_REST("Rest for a 1/64"), 
+    SIXTY_FOURTH_REST("Rest for a 1/64", 244), 
 
     /** Rest for a 1/128 */
     ONE_HUNDRED_TWENTY_EIGHTH_REST("Rest for a 1/128"), 
@@ -211,29 +182,9 @@ public enum Shape {
     //
     // Noteheads ---------------------------------------------------------------
     //
-    //     X_NOTEHEAD,
-    //     PLUS_NOTEHEAD,
-    //     CIRCLE_X_NOTEHEAD,
-    //     SQUARE_NOTEHEAD_WHITE,
-    //     SQUARE_NOTEHEAD_BLACK,
-    //     TRIANGLE_NOTEHEAD_UP_WHITE,
-    //     TRIANGLE_NOTEHEAD_UP_BLACK,
-    //     TRIANGLE_NOTEHEAD_LEFT_WHITE,
-    //     TRIANGLE_NOTEHEAD_LEFT_BLACK,
-    //     TRIANGLE_NOTEHEAD_RIGHT_WHITE,
-    //     TRIANGLE_NOTEHEAD_RIGHT_BLACK,
-    //     TRIANGLE_NOTEHEAD_DOWN_WHITE,
-    //     TRIANGLE_NOTEHEAD_DOWN_BLACK,
-    //     TRIANGLE_NOTEHEAD_UP_RIGHT_WHITE,
-    //     TRIANGLE_NOTEHEAD_UP_RIGHT_BLACK,
-    //     MOON_NOTEHEAD_WHITE,
-    //     MOON_NOTEHEAD_BLACK,
-    //     TRIANGLEROUND_NOTEHEAD_DOWN_WHITE,
-    //     TRIANGLEROUND_NOTEHEAD_DOWN_BLACK,
-    //     PARENTHESIS_NOTEHEAD,
 
     /** Hollow node head for halves */
-    VOID_NOTEHEAD("Hollow node head for halves"), 
+    VOID_NOTEHEAD("Hollow node head for halves", 250), 
 
     /** Pack of two hollow node heads for halves */
     VOID_NOTEHEAD_2("Pack of two hollow node heads for halves"), 
@@ -242,7 +193,7 @@ public enum Shape {
     VOID_NOTEHEAD_3("Pack of three hollow node heads for halves"), 
 
     /** Filled node head for quarters and less */
-    NOTEHEAD_BLACK("Filled node head for quarters and less"), 
+    NOTEHEAD_BLACK("Filled node head for quarters and less", 207), 
 
     /** Pack of two filled node heads for quarters and less */
     NOTEHEAD_BLACK_2("Pack of two filled node heads for quarters and less"), 
@@ -250,18 +201,14 @@ public enum Shape {
     /** Pack of three filled node heads for quarters and less */
     NOTEHEAD_BLACK_3("Pack of three filled node heads for quarters and less"), 
 
-    //     NULL_NOTEHEAD,
-    //     CLUSTER_NOTEHEAD_WHITE,
-    //     CLUSTER_NOTEHEAD_BLACK,
-
     //
     // Notes -------------------------------------------------------------------
     //
 
     /** Double Whole */
-    BREVE("Double Whole"), 
+    BREVE("Double Whole", 87), 
     /** Hollow node head for wholes */
-    WHOLE_NOTE("Hollow node head for wholes"), 
+    WHOLE_NOTE("Hollow node head for wholes", 119), 
 
     /** Pack of two hollow node heads for wholes */
     WHOLE_NOTE_2("Pack of two hollow node heads for wholes"), 
@@ -292,9 +239,11 @@ public enum Shape {
     //
 
     /** Single flag down */
-    COMBINING_FLAG_1("Single flag down"), 
+    COMBINING_FLAG_1("Single flag down", 106), 
+
     /** Double flag down */
-    COMBINING_FLAG_2("Double flag down"), 
+    COMBINING_FLAG_2("Double flag down", 107), 
+
     /** Triple flag down */
     COMBINING_FLAG_3("Triple flag down"), 
 
@@ -305,10 +254,10 @@ public enum Shape {
     COMBINING_FLAG_5("Quintuple flag down"), 
 
     /** Single flag up */
-    COMBINING_FLAG_1_UP("Single flag up"), 
+    COMBINING_FLAG_1_UP("Single flag up", 74), 
 
     /** Double flag up */
-    COMBINING_FLAG_2_UP("Double flag up"), 
+    COMBINING_FLAG_2_UP("Double flag up", 75), 
 
     /** Triple flag up */
     COMBINING_FLAG_3_UP("Triple flag up"), 
@@ -387,53 +336,39 @@ public enum Shape {
     //     COMBINING_MARCATO_STACCATO,
     //     COMBINING_ACCENT_STACCATO,
     //     COMBINING_LOURE,
-    ACCENT, 
-    // STACCATO, // Same physical shape  as the DOT
-    TENUTO, STACCATISSIMO, STRONG_ACCENT("Marcato"),
+    ACCENT(62), TENUTO(45), STACCATISSIMO(137),
+    STRONG_ACCENT("Marcato", 94),
 
     //
-    ARPEGGIATO,
-    //     ARPEGGIATO_UP,
-    //     ARPEGGIATO_DOWN,
-    //     COMBINING_DOIT,
-    //     COMBINING_RIP,
-    //     COMBINING_FLIP,
-    //     COMBINING_SMEAR,
-    //     COMBINING_BEND,
-    //     COMBINING_DOUBLE_TONGUE,
-    //     COMBINING_TRIPLE_TONGUE,
-    //     RINFORZANDO,
-    //     SUBITO,
-    //     Z,
-
+    ARPEGGIATO(103),
     //
     // Dynamics ----------------------------------------------------------------
     //
-    DYNAMICS_CHAR_M, DYNAMICS_CHAR_R, DYNAMICS_CHAR_S,
-    DYNAMICS_CHAR_Z,
+    DYNAMICS_CHAR_M(189), DYNAMICS_CHAR_R(243), DYNAMICS_CHAR_S(115),
+    DYNAMICS_CHAR_Z(122),
 
     //
-    DYNAMICS_F,DYNAMICS_FF, DYNAMICS_FFF,
-    DYNAMICS_FFFF,
-    DYNAMICS_FFFFF,
-    DYNAMICS_FFFFFF,
-    DYNAMICS_FP,
-    DYNAMICS_FZ,
-    DYNAMICS_MF,
-    DYNAMICS_MP,
-    DYNAMICS_P,
-    DYNAMICS_PP,
-    DYNAMICS_PPP,
-    DYNAMICS_PPPP,
-    DYNAMICS_PPPPP,
-    DYNAMICS_PPPPPP,
-    DYNAMICS_RF,
-    DYNAMICS_RFZ,
-    DYNAMICS_SF,
-    DYNAMICS_SFFZ,
-    DYNAMICS_SFP,
-    DYNAMICS_SFPP,
-    DYNAMICS_SFZ,
+    DYNAMICS_F(102),DYNAMICS_FF(196), DYNAMICS_FFF(236),
+    DYNAMICS_FFFF(236, 102),
+    DYNAMICS_FFFFF(236, 196),
+    DYNAMICS_FFFFFF(236, 236),
+    DYNAMICS_FP(102, 112),
+    DYNAMICS_FZ(90),
+    DYNAMICS_MF(70),
+    DYNAMICS_MP(80),
+    DYNAMICS_P(112),
+    DYNAMICS_PP(185),
+    DYNAMICS_PPP(184),
+    DYNAMICS_PPPP(184, 112),
+    DYNAMICS_PPPPP(184, 185),
+    DYNAMICS_PPPPPP(184, 184),
+    DYNAMICS_RF(243, 102),
+    DYNAMICS_RFZ(243, 102, 122),
+    DYNAMICS_SF(83),
+    DYNAMICS_SFFZ(83, 90),
+    DYNAMICS_SFP(83, 112),
+    DYNAMICS_SFPP(83, 185),
+    DYNAMICS_SFZ(83, 122),
 
     //
     CRESCENDO,DECRESCENDO, 
@@ -442,15 +377,15 @@ public enum Shape {
     //
 
     /** Grace Note with a Slash */
-    GRACE_NOTE_SLASH("Grace Note with a Slash"),
+    GRACE_NOTE_SLASH("Grace Note with a Slash", 201),
 
     /** Grace Note with no Slash */
-    GRACE_NOTE_NO_SLASH("Grace Note with no Slash"), TR, TURN,
-    INVERTED_TURN,
+    GRACE_NOTE_NO_SLASH("Grace Note with no Slash", 59), TR(96), TURN(84),
+    INVERTED_TURN(249),
     TURN_SLASH,
     TURN_UP,
-    MORDENT,
-    INVERTED_MORDENT,
+    MORDENT(109),
+    INVERTED_MORDENT(77),
 
     // Analytics ---------------------------------------------------------------
     //
@@ -470,13 +405,9 @@ public enum Shape {
     //
     // Tuplets -----------------------------------------------------------------
     //
-    TUPLET_THREE,TUPLET_SIX, 
-    //
-    // Pedals ------------------------------------------------------------------
-    //
-    PEDAL_MARK,
-    // LAST_PHYSICAL_SHAPE is on the following line
-    PEDAL_UP_MARK, 
+    TUPLET_THREE(163),TUPLET_SIX(164), PEDAL_MARK(161),
+    PEDAL_UP_MARK(42),
+
     //
     //
     // =========================================================================
@@ -487,9 +418,8 @@ public enum Shape {
     // =========================================================================
     // =========================================================================
     //
-    //
-    /** Too small stuff */
-    NOISE("Too small stuff"), 
+    /** Noise */
+    NOISE("Too small stuff"),
 
     //
     // Bars --------------------------------------------------------------------
@@ -644,30 +574,36 @@ public enum Shape {
     /** Remember the fact that this shape has no related symbol */
     private boolean hasNoSymbol;
 
-    //-------//
-    // Shape //
-    //-------//
-    Shape ()
-    {
-        this("", null); // No param
-    }
+    /** Sequence of corresponding point codes in Stoccata font */
+    private int[] pointCodes;
 
     //-------//
     // Shape //
     //-------//
-    Shape (String description)
+    Shape (int... codes)
     {
-        this(description, null);
+        this("", null, codes); // No param
     }
 
     //-------//
     // Shape //
     //-------//
     Shape (String description,
-           Shape  nakedShape)
+           int... codes)
+    {
+        this(description, null, codes);
+    }
+
+    //-------//
+    // Shape //
+    //-------//
+    Shape (String description,
+           Shape  nakedShape,
+           int... codes)
     {
         this.description = description;
         this.nakedShape = nakedShape;
+        this.pointCodes = codes;
     }
 
     /**

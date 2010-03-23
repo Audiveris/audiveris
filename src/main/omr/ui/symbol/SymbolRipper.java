@@ -30,6 +30,8 @@ import com.jgoodies.forms.layout.*;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
 import java.awt.geom.*;
 import java.awt.image.*;
 
@@ -60,9 +62,6 @@ public class SymbolRipper
     /** Related frame */
     private final JFrame frame;
 
-    /** Drawing transform */
-    private AffineTransform scaleXform;
-
     /** Image being built */
     private BufferedImage image;
 
@@ -87,12 +86,6 @@ public class SymbolRipper
                 } else if (s == pointCode.getSpinner()) {
                     // New point code
                     changeCode();
-                } else if (s == scale.getSpinner()) {
-                    // New drawing scale
-                    scaleXform = AffineTransform.getScaleInstance(
-                        (double) scale.getValue(),
-                        (double) scale.getValue());
-                    resizeDrawing();
                 } else if ((s == xOffset.getSpinner()) ||
                            (s == yOffset.getSpinner())) {
                     // New drawing offset
@@ -230,18 +223,16 @@ public class SymbolRipper
 
         // Initial values
         fontName.getSpinner()
-                .setValue("Maestro");
-        fontSize.setValue(62);
+                .setValue("SToccata");
+        fontBase.setValue(0xf000);
+        fontSize.setValue(500);
         pointCode.setModel(new SpinnerNumberModel(38, 0, 255, 1));
-        width.setValue(46);
-        height.setValue(100);
-        xOffset.setValue(0);
-        yOffset.setValue(60);
-        scale.setValue(5);
+        width.setValue(300);
+        height.setValue(500);
+        xOffset.setValue(30);
+        yOffset.setValue(300);
+        scale.setValue(1);
         interline.setValue(16);
-        scaleXform = AffineTransform.getScaleInstance(
-            (double) scale.getValue(),
-            (double) scale.getValue());
         changeCode();
         defineFont();
 
@@ -337,10 +328,9 @@ public class SymbolRipper
         r += 2; // --------------------------------
         builder.addSeparator("Drawing", cst.xyw(1, r, 7));
 
-        r += 2; // --------------------------------
-        builder.add(scale.getLabel(), cst.xy(5, r));
-        builder.add(scale.getSpinner(), cst.xy(7, r));
-
+        //        r += 2; // --------------------------------
+        //        builder.add(scale.getLabel(), cst.xy(5, r));
+        //        builder.add(scale.getSpinner(), cst.xy(7, r));
         r += 2; // --------------------------------
         builder.add(xOffset.getLabel(), cst.xy(1, r));
         builder.add(xOffset.getSpinner(), cst.xy(3, r));
@@ -422,6 +412,7 @@ public class SymbolRipper
                                        .getValue();
         int    val = fontSize.getValue();
         musicFont = new Font(name, Font.PLAIN, val);
+
         ///musicFont = new Font(name, Font.ITALIC, val);
     }
 
@@ -483,14 +474,37 @@ public class SymbolRipper
             if (image != null) {
                 Graphics2D g2 = (Graphics2D) g;
 
-                g2.drawImage(image, scaleXform, this);
-                //g2.drawImage (image, 1, 1, this);
-                g.setColor(Color.red);
+                //g2.drawImage(image, scaleXform, this);
+                g2.drawImage(image, 1, 1, this);
+                g.setColor(Color.BLUE);
+                g.drawLine(
+                    0,
+                    yOffset.getValue(),
+                    width.getValue(),
+                    yOffset.getValue());
+                g.drawLine(
+                    xOffset.getValue(),
+                    0,
+                    xOffset.getValue(),
+                    height.getValue());
+                g.setColor(Color.ORANGE);
                 g.drawRect(
                     0,
                     0,
                     width.getValue() * scale.getValue(),
                     height.getValue() * scale.getValue());
+
+                FontRenderContext frc = g2.getFontRenderContext();
+                GlyphVector       glyphVector = musicFont.createGlyphVector(
+                    frc,
+                    string);
+
+                Rectangle         rect = glyphVector.getPixelBounds(
+                    frc,
+                    xOffset.getValue(),
+                    yOffset.getValue());
+                g.setColor(Color.RED);
+                g2.draw(rect);
             }
         }
     }
