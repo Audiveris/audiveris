@@ -111,6 +111,9 @@ public class ScorePainter
         new float[] { 20f, 10f },
         0);
 
+    /** Specific font for music symbols */
+    //private static final Font musicFont = new Font("SToccata", Font.PLAIN, 180);
+
     //~ Enumerations -----------------------------------------------------------
 
     /** How a symbol should be horizontally aligned wrt a given point */
@@ -468,6 +471,22 @@ public class ScorePainter
             clef.getStaff(),
             clef.getPitchPosition());
 
+        //        Font oldFont = g.getFont();
+        //        g.setFont(musicFont);
+        //
+        //        int[]             codes = clef.getShape()
+        //                                      .getPointCodes();
+        //        String            str = new String(codes, 0, codes.length);
+        //        SystemRectangle   box = clef.getBox();
+        //        int               y = clef.getStaff()
+        //                                  .getTopLeft().y +
+        //                              ScoreConstants.STAFF_HEIGHT;
+        //
+        //        FontRenderContext frc = g.getFontRenderContext();
+        //        GlyphVector       glyphVector = musicFont.createGlyphVector(frc, str);
+        //
+        //        g.drawGlyphVector(glyphVector, box.x, y);
+        //        g.setFont(oldFont);
         return true;
     }
 

@@ -32,7 +32,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
-import java.awt.geom.*;
 import java.awt.image.*;
 
 import javax.swing.*;

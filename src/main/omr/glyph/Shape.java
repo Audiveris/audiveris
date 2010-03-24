@@ -556,6 +556,9 @@ public enum Shape {
     /** Color for glyphs tested as OK (color used temporarily) */
     public static final Color okColor = Color.green;
 
+    /** Empty array returned when no point codes are defined for this shape */
+    private static final int[] NO_CODES = new int[0];
+
     /** Explanation of the glyph shape */
     private final String description;
 
@@ -603,9 +606,36 @@ public enum Shape {
     {
         this.description = description;
         this.nakedShape = nakedShape;
-        this.pointCodes = codes;
+
+        if (codes != null) {
+            this.pointCodes = new int[codes.length];
+
+            for (int i = 0; i < codes.length; i++) {
+                this.pointCodes[i] = codes[i] + 0xf000;
+            }
+        }
     }
 
+    //---------------//
+    // getPointCodes //
+    //---------------//
+    /**
+     * Report the sequence of pointCodes to use to draw this shape using
+     * the Stoccata font
+     * @return the array of codes, which may be empty but not null
+     */
+    public int[] getPointCodes ()
+    {
+        if (pointCodes == null) {
+            return NO_CODES;
+        } else {
+            return pointCodes;
+        }
+    }
+
+    //--------------//
+    // isPersistent //
+    //--------------//
     /**
      * Report whether the impact of this shape persists across system (actually
      * measure) borders (clefs, time signatures, key signatures).
