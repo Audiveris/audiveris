@@ -17,6 +17,7 @@ import omr.constant.ConstantSet;
 import omr.glyph.GlyphSection;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
+import omr.glyph.text.TextRole.RoleInfo;
 
 import omr.lag.HorizontalOrientation;
 
@@ -457,7 +458,13 @@ public class TextInfo
     {
         if (role == null) {
             if (sentence != null) {
-                setTextRole(TextRole.guessRole(glyph, sentence.getSystem()));
+                RoleInfo info = TextRole.guessRole(glyph, sentence.getSystem());
+                setTextRole(info.role);
+
+                // Additional info for creator
+                if (role == TextRole.Creator) {
+                    setCreatorType(info.creatorType);
+                }
             }
         }
 
@@ -786,7 +793,7 @@ public class TextInfo
             10,
             "Standard font point size for texts");
         Constant.String  basicFontName = new Constant.String(
-            "Serif", //"Sans Serif",
+            "Sans Serif", //"Serif" or "Sans Serif",
             "Standard font name for texts");
         Constant.Ratio   minExtensionAspect = new Constant.Ratio(
             10d,

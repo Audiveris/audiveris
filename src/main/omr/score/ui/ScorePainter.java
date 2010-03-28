@@ -175,7 +175,7 @@ public class ScorePainter
         this.zoom = zoom;
 
         // Size of default font
-        Font  font = g.getFont();
+        Font font = g.getFont(); //new Font("Arial", Font.PLAIN, 40);
         float fontSize = font.getSize2D();
         g.setFont(font.deriveFont(fontSize / (float) zoom.getRatio()));
 

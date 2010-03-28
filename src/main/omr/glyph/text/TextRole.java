@@ -23,6 +23,8 @@ import omr.score.common.SystemRectangle;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.ScoreSystem.StaffPosition;
 import omr.score.entity.Staff;
+import omr.score.entity.Text;
+import omr.score.entity.Text.CreatorText.CreatorType;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
@@ -79,6 +81,27 @@ public enum TextRole {
         return sb.substring(0, Math.max(NbOfChars - 1, 0)) + "]";
     }
 
+    //----------//
+    // RoleInfo //
+    //----------//
+    public static class RoleInfo
+    {
+        final TextRole                     role;
+        final Text.CreatorText.CreatorType creatorType;
+
+        public RoleInfo (TextRole    role,
+                         CreatorType creatorType)
+        {
+            this.role = role;
+            this.creatorType = creatorType;
+        }
+
+        public RoleInfo (TextRole role)
+        {
+            this(role, null);
+        }
+    }
+
     //-----------//
     // guessRole //
     //-----------//
@@ -88,9 +111,9 @@ public enum TextRole {
      * but perhaps a neural network approach would better fit this task.
      * @param glyph the (only) sentence glyph
      * @param systemInfo the containing system
-     * @return the role inferred for the provided sentence glyph
+     * @return the role information inferred for the provided sentence glyph
      */
-    static TextRole guessRole (Glyph      glyph,
+    static RoleInfo guessRole (Glyph      glyph,
                                SystemInfo systemInfo)
     {
         Sheet           sheet = systemInfo.getSheet();
@@ -111,7 +134,7 @@ public enum TextRole {
                                         .size() == system.getId();
 
         // Vertical position wrt staves
-        StaffPosition position = system.getStaffPosition(left);
+        StaffPosition staffPosition = system.getStaffPosition(left);
 
         // Vertical distance from staff
         Staff   staff = system.getStaffAt(left);
@@ -141,27 +164,33 @@ public enum TextRole {
         if (logger.isFineEnabled()) {
             logger.fine(
                 glyph + " firstSystem=" + firstSystem + " lastSystem=" +
-                lastSystem + " position=" + position + " closeToStaff=" +
-                closeToStaff + " leftOfStaves=" + leftOfStaves +
-                " pageCentered=" + pageCentered + " rightAligned=" +
-                rightAligned + " shortSentence=" + shortSentence +
-                " highText=" + highText);
+                lastSystem + " staffPosition=" + staffPosition +
+                " closeToStaff=" + closeToStaff + " leftOfStaves=" +
+                leftOfStaves + " pageCentered=" + pageCentered +
+                " rightAligned=" + rightAligned + " shortSentence=" +
+                shortSentence + " highText=" + highText);
         }
 
         // Decisions ...
-        switch (position) {
+        switch (staffPosition) {
         case above : // Title, Number, Creator, Direction (Accord)
 
-            if (leftOfStaves || rightAligned) {
-                return TextRole.Creator;
+            if (leftOfStaves) {
+                return new RoleInfo(
+                    TextRole.Creator,
+                    Text.CreatorText.CreatorType.lyricist);
+            } else if (rightAligned) {
+                return new RoleInfo(
+                    TextRole.Creator,
+                    Text.CreatorText.CreatorType.composer);
             } else if (closeToStaff) {
-                return TextRole.Direction;
+                return new RoleInfo(TextRole.Direction);
             } else if (pageCentered) { // Title, Number
 
                 if (highText) {
-                    return TextRole.Title;
+                    return new RoleInfo(TextRole.Title);
                 } else {
-                    return TextRole.Number;
+                    return new RoleInfo(TextRole.Number);
                 }
             }
 
@@ -170,21 +199,21 @@ public enum TextRole {
         case within : // Name, Lyrics, Direction
 
             if (leftOfStaves) {
-                return TextRole.Name;
+                return new RoleInfo(TextRole.Name);
             } else if (shortSentence) {
-                return TextRole.Direction;
+                return new RoleInfo(TextRole.Direction);
             } else {
-                return TextRole.Lyrics;
+                return new RoleInfo(TextRole.Lyrics);
             }
 
-        case below :
+        case below : // Copyright
 
             if (pageCentered && shortSentence && lastSystem) {
-                return TextRole.Rights;
+                return new RoleInfo(TextRole.Rights);
             }
         }
 
-        return TextRole.Unknown;
+        return new RoleInfo(TextRole.Unknown);
     }
 
     //-----------//

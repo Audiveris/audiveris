@@ -83,7 +83,7 @@ public class ShapeBoard
         heights.put(ShapeRange.Barlines, 100);
         heights.put(ShapeRange.Beams, 60);
         heights.put(ShapeRange.Clefs, 140);
-        heights.put(ShapeRange.Dynamics, 200);
+        heights.put(ShapeRange.Dynamics, 220);
         heights.put(ShapeRange.Flags, 130);
         heights.put(ShapeRange.HeadAndFlags, 140);
         heights.put(ShapeRange.NoteHeads, 40);
