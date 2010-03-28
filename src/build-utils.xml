@@ -1,122 +1,48 @@
 <!-- +=====================================================================+ -->
 <!-- |                                                                     | -->
-<!-- |                           u t i l s . x m l                         | -->
+<!-- |                     b u i l d - u t i l s . x m l                   | -->
 <!-- |                                                                     | -->
 <!-- +=====================================================================+ -->
 
-<project name="utils" basedir="..">
+<project name="audiveris-utils" basedir="..">
     
     <description>
-	Just a collection of utility targets
-	(not part of main-stream Audiveris project)
+        Just a collection of utility targets
+        (not part of main-stream Audiveris project)
     </description>
 
-    <!-- Give users first chance to override properties -->
-    <property file="${user.home}/.audiveris/build.properties"/>
+    <import file="${basedir}/src/build-init.xml"/>
 
-    <property name="dev.dir"          location="${basedir}/src"/>
-    <property name="config.dir"       location="${basedir}/config"/>
-    <property name="nb.javadoc.dir"   location="${basedir}/dist/javadoc"/>
-
-    <!-- Give users second chance to override properties -->
-    <property file="${dev.dir}/build.properties"/>
-
-    <!-- Finally, get all default property values -->
-    <property file="${dev.dir}/build.default.properties"/>
-
-    <!-- Load the environment variables -->
-    <property environment="env"/>
-
-    <!-- Jalopy task definition -->
-    <taskdef name="jalopy"
-	     classname="de.hunsicker.jalopy.plugin.ant.AntPlugin">
-	<classpath>
-	    <fileset dir="${jalopy.dir}" includes="*.jar" />
-	</classpath>
-    </taskdef>
-
-
-    <!-- =========== -->
-    <!--  - I N I T  -->
-    <!-- =========== -->
-    <target name="-init">
-<!--         description="Initialize the environment." -->
-
-        <!-- Create the time stamp -->
-        <tstamp/>
-
-        <available
-            property="junit.jar.present"
-            file="${junit.jar}"
-	    />
-
-    </target>
-
-    <!-- ================= -->
-    <!--  C H E C K O U T  -->
-    <!-- ================= -->
-    <target name="checkout"
-            depends="-init"
-            description="Export module audiveris from CVS.">
-
-	<delete verbose="${verbose}" dir="${export.dir}"/>
-
-	<!-- Nota : Use of export triggers a bug in ant cvs, so this
-	     workaround for first checking out everything, then
-	     updating for the desired tag. Correct direct command
-	     should be : line="export -r ${tag.version} audiveris"
-	     -->
-	<!--
-	<cvs
- 	    cvsRoot=":pserver:${cvs.login}:${cvs.password}@audiveris.dev.java.net:/cvs"
- 	    dest="${export.dir}">
-	    <commandline>
-		<argument line="checkout audiveris"/>
-	    </commandline>
-	
-	    <commandline>
-		<argument line="update -r ${tag.version} audiveris"/>
-	    </commandline>
-	</cvs>
-	     -->
-    </target>
-
-    <!-- ============================= -->
-    <!--  B U I L D - C H E C K O U T  -->
-    <!-- ============================= -->
-    <target name="build-checkout"
-	    description="Build the checkout">
-	<ant
-	    dir="${export.dir}/audiveris/src"
-	    inheritAll="false">
-	    <target name="dist"/>
-	</ant>
-
-    </target>
-
-    <!-- ============================= -->
-    <!--  B U I L D - F R O M - C V S  -->
-    <!-- ============================= -->
-    <target name="build-from-CVS"
-	    depends="checkout, build-checkout"
-	    description="Build everything from CVS" />
+    <!-- Just in case these properties are not already set -->
+    <property name="backup.dir"    value="m:/backup" />
+    <property name="machine.name"  value="default" />
+    <property name="netbackup.dir" value="x:/backup" />
     
     <!-- ============= -->
     <!--  F O R M A T  -->
     <!-- ============= -->
     <target name="format"
-	    description="Format Java source with Jalopy.">
-	<jalopy
-	    convention="${dev.dir}/java-convention.xml"
-	    history="file"
-	    historymethod="adler32"
-	    loglevel="info"
-	    threads="1" >
-	    <fileset dir="${src.dir}">
-		<include name="**/*.java" />
-		<exclude name="**/package-info.java"/>
-	    </fileset>
-	</jalopy>
+            description="Format Java source with Jalopy.">
+
+        <!-- Jalopy task definition -->
+        <taskdef name="jalopy"
+                 classname="de.hunsicker.jalopy.plugin.ant.AntPlugin">
+            <classpath>
+                <fileset dir="${jalopy.dir}" includes="*.jar" />
+            </classpath>
+        </taskdef>
+        
+        <jalopy
+            convention="${dev.dir}/java-convention.xml"
+            history="file"
+            historymethod="adler32"
+            loglevel="info"
+            threads="1" >
+            <fileset dir="${src.dir}">
+                <include name="**/*.java" />
+                <exclude name="**/package-info.java"/>
+            </fileset>
+        </jalopy>
     </target>
 
     <!-- ===================== -->
@@ -132,13 +58,51 @@
     <!-- ============================= -->
     <target name="global-replace"
         description="Modify token of every source file">
-	
-	<replace encoding="utf8" dir="${basedir}/symbols">
-	    <replacetoken><![CDATA[symbol ]]></replacetoken>
-	    <replacevalue><![CDATA[symbol interline="8" ]]></replacevalue>
-	    <include name="**/*.xml"/>
-	</replace>
+        
+        <replace encoding="utf8" dir="${basedir}/symbols">
+            <replacetoken><![CDATA[symbol ]]></replacetoken>
+            <replacevalue><![CDATA[symbol interline="8" ]]></replacevalue>
+            <include name="**/*.xml"/>
+        </replace>
 
+    </target>
+    
+    <!-- ======== -->
+    <!--  S A V E -->
+    <!-- ======== -->
+    <target name="save"
+        depends="-init"
+        description="Backup all important files" >
+        
+        <mkdir dir="${backup.dir}/${name}"/>
+
+        <!-- Save relevant directories -->
+        <zip
+            update="yes"
+            destfile="${backup.dir}/${name}/${DSTAMP}-${machine.name}-src.zip" >
+            <fileset dir="${basedir}"  
+                     includes="build.xml, src/**, config/**, symbols/**, www/**, train/*.def, nb/jp/**"
+                     excludes="${dist.excludes},www/docs/api/**,www/branding/**,nb/jp/dist/**"/>
+        </zip>
+
+    </target>
+
+    
+    <!-- ============= -->
+    <!--  U P L O A D  -->
+    <!-- ============= -->
+    <target name="upload"
+            depends="save"
+            description="Upload backup to external server">
+
+        <echo message="Uploading backup file ..."/>
+        <copy
+            verbose="${verbose}"
+            todir="${netbackup.dir}/${name}">
+            <fileset dir="${backup.dir}/$name}">
+                <include name="**/${DSTAMP}-${machine.name}-*.zip"/>
+            </fileset>
+        </copy>
     </target>
 
 </project>

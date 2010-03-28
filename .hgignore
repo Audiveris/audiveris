@@ -11,6 +11,7 @@ syntax: regexp
 build
 bugs
 dist
+lib
 manifest\.mf
 \./midi
 nbproject

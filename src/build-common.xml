@@ -108,6 +108,22 @@
 
 	</zip>
     </target>
+
+    <!-- =========== -->
+    <!--  - I N I T  -->
+    <!-- =========== -->
+    <target name="-init">
+<!--         description="Initialize the environment." -->
+
+        <!-- Create the time stamp -->
+        <tstamp/>
+
+        <available
+            property="junit.jar.present"
+            file="${junit.jar}"
+	    />
+
+    </target>
     
     <!-- ============================= -->
     <!--  - J A V A D O C - B U I L D  -->
@@ -155,7 +171,7 @@
             packagenames    ="${javadoc.packages}"
             private         ="${javadoc.private}"
             source          ="${javac.source}"
-            sourcepath      ="${src.dir};${swingappfwk.src};${eventbus.src}"
+            sourcepath      ="${src.dir}"
             splitindex      ="${javadoc.splitindex}"
             use             ="${javadoc.use}"
             useexternalfile ="true"
@@ -355,9 +371,9 @@ Implementation-Version: ${impl.version} ${DSTAMP}
     <target name="-post-compile"
 	    depends="jar"/>
 
-
+    <!--
     <import file="${dev.dir}/build-utils.xml"/>
-
+    -->
 
     <!--
     <import file="${dev.dir}/build-onejar.xml"/>

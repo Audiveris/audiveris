@@ -21,18 +21,7 @@
 	Targets whose name begins with '-' are only internal targets.
     </description>
 
-    <!-- Give users first chance to override properties -->
-    <property file="${user.home}/.audiveris/build.properties"/>
-
-    <property name="dev.dir"          location="${basedir}/src"/>
-    <property name="config.dir"       location="${basedir}/config"/>
-    <property name="nb.javadoc.dir"   location="${basedir}/dist/javadoc"/>
-
-    <!-- Give users second chance to override properties -->
-    <property file="${dev.dir}/build.properties"/>
-
-    <!-- Finally, get all default property values -->
-    <property file="${dev.dir}/build.default.properties"/>
+    <import file="${basedir}/src/build-init.xml"/>
     
     <!-- ================================================================ -->
 
@@ -41,39 +30,9 @@
     
     <!-- Tools classpath -->
     <path id="tools.classpath">
-        <pathelement path="${barebones.jar}"/>
-
-        <pathelement path="${eventbus.jar}"/>
-
-        <pathelement path="${jama.jar}"/>
-
-        <pathelement path="${jai.dir}/jai_imageio.jar"/>
-        <pathelement path="${jai.dir}/clibwrapper_jiio.jar"/>
-
-	<pathelement path="${jai.dir}/jai_codec.jar"/>
-        <pathelement path="${jai.dir}/jai_core.jar"/>
-        <pathelement path="${jai.dir}/mlibwrapper_jai.jar"/>
-	
-        <pathelement path="${jcip.jar}"/>
-
-	<pathelement path="${jcommon.jar}"/>
-        <pathelement path="${jfreechart.jar}"/>
-
-	<pathelement path="${jgoodies.forms.jar}"/>
-        <pathelement path="${jgoodies.looks.jar}"/>
-
-	<pathelement path="${pdfrenderer.jar}"/>
-
-	<pathelement path="${proxymusic.jar}"/>
-
-	<pathelement path="${swingappfwk.jar}"/>
-
-	<pathelement path="${swingworker.jar}"/>
-
-	<pathelement path="${tesjeract.jar}"/>
-
-	<pathelement path="${zong.jar}"/>
-	<pathelement path="${gervill.jar}"/>
+      <fileset dir="${lib.dir}">
+        <include name="**/*.jar"/>
+      </fileset>
     </path>
     
     <!-- Build classpath -->
@@ -150,27 +109,10 @@
     <!-- ===================== -->
     <target name="-copy-libs">
         <mkdir dir="${dist.dir}/lib"/>
-
-	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${barebones.jar}"/>
-	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${eventbus.jar}"/>
-	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${icons.buttons.jar}"/>
-	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jama.jar}"/>
-	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jcommon.jar}"/>
-	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jfreechart.jar}"/>
-	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jgoodies.forms.jar}"/>
-	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${jgoodies.looks.jar}"/>
-	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${pdfrenderer.jar}"/>
-	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${proxymusic.jar}"/>
-	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${swingappfwk.jar}"/>
-	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${swingworker.jar}"/>
-	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${tesjeract.jar}"/>
-	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${zong.jar}"/>
-	<copy todir="${dist.dir}/lib" verbose="$verbose" file="${gervill.jar}"/>
-        <copy todir="${dist.dir}/lib" verbose="$verbose" file="${jai.dir}/jai_imageio.jar"/>
-        <copy todir="${dist.dir}/lib" verbose="$verbose" file="${jai.dir}/clibwrapper_jiio.jar"/>
-        <copy todir="${dist.dir}/lib" verbose="$verbose" file="${jai.dir}/jai_codec.jar"/>
-        <copy todir="${dist.dir}/lib" verbose="$verbose" file="${jai.dir}/jai_core.jar"/>
-        <copy todir="${dist.dir}/lib" verbose="$verbose" file="${jai.dir}/mlibwrapper_jai.jar"/>
+	
+	<copy todir="${dist.dir}/lib">
+	    <fileset dir="${lib.dir}"/>
+	</copy>
 
     </target>
 
@@ -422,44 +364,6 @@
 	    <report format="frames" todir="${build.test.results.dir}/html"/>
 	</junitreport>
 	
-    </target>
-    
-    <!-- ======== -->
-    <!--  S A V E -->
-    <!-- ======== -->
-    <target name="save"
-        depends="-init"
-        description="Backup all important files" >
-	
-        <mkdir dir="${backup.dir}/${ant.project.name}"/>
-
-        <!-- Save relevant directories -->
-        <zip
-            update="yes"
-            destfile="${backup.dir}/${ant.project.name}/${DSTAMP}-${machine.name}-src.zip" >
-            <fileset dir="${basedir}"  
-                     includes="build.xml, src/**, config/**, symbols/**, www/**, train/*.def, nb/jp/**"
-                     excludes="${dist.excludes},www/docs/api/**,www/branding/**,nb/jp/dist/**"/>
-        </zip>
-
-    </target>
-
-    
-    <!-- ============= -->
-    <!--  U P L O A D  -->
-    <!-- ============= -->
-    <target name="upload"
-            depends="save"
-            description="Upload backup to external server">
-
-	<echo message="Uploading backup file ..."/>
-	<copy
-	    verbose="${verbose}"
-	    todir="${netbackup.dir}/${ant.project.name}">
-	    <fileset dir="${backup.dir}/${ant.project.name}">
-		<include name="**/${DSTAMP}-${machine.name}-*.zip"/>
-	    </fileset>
-	</copy>
     </target>
 
 </project>

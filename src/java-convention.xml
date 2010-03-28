@@ -245,7 +245,8 @@
 <use>true</use>
 </header>
 <history>
-<policy>disabled</policy>
+<method>adler32</method>
+<policy>file</policy>
 </history>
 <imports>
 <grouping>
@@ -306,7 +307,7 @@
 <enable>true</enable>
 <enum>false</enum>
 <interface>true</interface>
-<method>true<bean>true</bean>
+<method>false<bean>true</bean>
 </method>
 <order>static|enum|field|initializer|constructor|method|interface|class|annotation</order>
 <variable>false</variable>
