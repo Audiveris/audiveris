@@ -16,6 +16,8 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
+import omr.score.common.SystemPoint;
+
 import omr.util.Navigable;
 import omr.util.TreeNode;
 
@@ -259,9 +261,9 @@ public class BeamGroup
         }
 
         // Harmonize the slopes of all beams within each beam group
-        //        for (BeamGroup group : measure.getBeamGroups()) {
-        //            group.align();
-        //        }
+        for (BeamGroup group : measure.getBeamGroups()) {
+            group.align();
+        }
     }
 
     //----------//
@@ -344,46 +346,6 @@ public class BeamGroup
 
         return sb.toString();
     }
-
-    //    //-------//
-    //    // align //
-    //    //-------//
-    //    /**
-    //     * Force all beams (and beam items) to use the same slope within that beam
-    //     * group
-    //     */
-    //    private void align ()
-    //    {
-    //        // Retrieve the longest beam and use its slope
-    //        double bestLength = 0;
-    //        Beam   bestBeam = null;
-    //
-    //        for (Beam beam : beams) {
-    //            // Extrema points of Beam hooks are not reliable, skip them
-    //            if (beam.isHook()) {
-    //                continue;
-    //            }
-    //
-    //            double length = beam.getLeftPoint()
-    //                                .distance(beam.getRightPoint());
-    //
-    //            if (length > bestLength) {
-    //                bestLength = length;
-    //                bestBeam = beam;
-    //            }
-    //        }
-    //
-    //        if (bestBeam != null) {
-    //            double slope = bestBeam.getLine()
-    //                                   .getSlope();
-    //
-    //            for (Beam beam : beams) {
-    //                SystemPoint left = beam.getLeftPoint();
-    //                SystemPoint right = beam.getRightPoint();
-    //                right.y = left.y + (int) Math.rint(slope * (right.x - left.x));
-    //            }
-    //        }
-    //    }
 
     //-----------------//
     // checkBeamGroups //
@@ -552,6 +514,49 @@ public class BeamGroup
                         }
                     }
                 }
+            }
+        }
+    }
+
+    //-------//
+    // align //
+    //-------//
+    /**
+     * Force all beams (and beam items) to use the same slope within that beam
+     * group
+     */
+    private void align ()
+    {
+        // Retrieve the longest beam and use its slope
+        double bestLength = 0;
+        Beam   bestBeam = null;
+
+        for (Beam beam : beams) {
+            // Extrema points of Beam hooks are not reliable, skip them
+            if (beam.isHook()) {
+                continue;
+            }
+
+            double length = beam.getLeftPoint()
+                                .distance(beam.getRightPoint());
+
+            if (length > bestLength) {
+                bestLength = length;
+                bestBeam = beam;
+            }
+        }
+
+        if (bestBeam != null) {
+            double slope = bestBeam.getLine()
+                                   .getSlope();
+
+            for (Beam beam : beams) {
+                SystemPoint left = beam.getLeftPoint();
+                SystemPoint right = beam.getRightPoint();
+                double      yMid = (left.y + right.y) / 2d;
+                double      dy = (right.x - left.x) * slope;
+                left.y = (int) Math.rint(yMid - (dy / 2));
+                right.y = (int) Math.rint(yMid + (dy / 2));
             }
         }
     }
