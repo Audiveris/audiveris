@@ -8,7 +8,7 @@
         <title>
             Audiveris Example
         </title>
-        <meta name="AUTHOR" content="Hervé Bitteur" />
+        <meta name="AUTHOR" content="Herv&Atilde;&copy; Bitteur" />
         <meta name="CLASSIFICATION" content=
         "Quick example for Audiveris operation" />
         <meta name="DESCRIPTION" content=
@@ -31,36 +31,46 @@
         /*]]>*/
         </style>
 
+        <style type="text/css">
+/*<![CDATA[*/
+        img.c8 {width: 380px; height: 118px;}
+        img.c7 {width: 152px; height: 150px;}
+        img.c6 {width: 133px; height: 147px;}
+        img.c5 {width: 192px; height: 147px;}
+        img.c4 {width: 422px; height: 190px;}
+        img.c3 {width: 296px; height: 103px;}
+        img.c2 {width: 296px; height: 152px;}
+        span.c1 {font-weight: bold;}
+        /*]]>*/
+        </style>
     </head>
     <body class="app c4">
         <h1 id="title">
             Audiveris Quick Example
         </h1>
-        <address>
-            Updated: <script type="text/javascript">
-//<![CDATA[
-            document.write(getCVSDate("$Id$"));
-            //]]>
-            </script>
-        </address>
-
         <p>
             The purpose of this document is to describe a very simple, yet
             realistic, use of Audiveris, so that you can get acquainted with
             some of its major features.
         </p>
+
         <p>
-            <b>Nota</b>: Your own experience on the same music sheet may vary
-            because some parameters may have evolved, for example you may be
-            using a different Neural Network definition file and therefore the
-            glyph recognition may produce different results.
+            <b>Nota</b>: Your own experience on the same music sheet may be
+            different from the one depicted here. Some parameters may have
+            evolved, for example you may be using a different Neural Network
+            definition file and therefore the glyph recognition may produce
+            different results. Also, not all snapshots have been updated in
+            this documentation, so you may notice slight inconsistencies, such
+            as the frame title with a different version number from one picture
+            to the other, but this should not impede your understanding of the
+            user actions.
         </p>
         <!-- ======================= Initial actions ======================= -->
         <h2>
             <a name="INITIAL" id="INITIAL">Initial actions</a>
-
         </h2>
         <h3>
+
             <a name="LAUNCHING" id="LAUNCHING">Launch Audiveris</a>
         </h3>
         <ul>
@@ -68,27 +78,28 @@
             Audiveris distribution archive.
             </li>
             <li>Then the easiest way is to double-click on the jar file named
-            <b>audiveris-3.2a.jar</b> or similar, located in the <b>dist</b>
+            <b>audiveris-3.3.jar</b> or similar, located in the <b>dist</b>
+
             subfolder.
             </li>
-
             <li>You can also use the following command:
                 <p>
-                    <code>$&gt; java -jar dist/audiveris-3.2a.jar</code>
+                    <code>$&gt; java -jar dist/audiveris-3.3.jar</code>
                 </p>
                 <p>
                     or, if for example you need more memory:
                 </p>
+
                 <p>
                     <code>$&gt; java -Xms128m -Xmx256m -jar
-                    dist/audiveris-3.2a.jar</code>
+                    dist/audiveris-3.3.jar</code>
                 </p>
             </li>
         </ul>
         <h3>
             <a name="LOAD" id="LOAD">Load an image</a>
-        </h3>
 
+        </h3>
         <p>
             From the <b><i>Sheet</i></b> menu, select the <b><i>Open</i></b>
             item and in the dialog box which appears, select the
@@ -122,12 +133,13 @@
         </p>
 
         <p>
-            This opens a small dialog box about relevant score parameters. In
-            the <b>Text</b> section, select the "<b>fra - French</b>"
-            alternative. Notice also that you have the ability to make this
-            selection as the default for any score from now on, simply by
-            putting a mark in the checkbox.<br />
-            You can skip the other parameters for the time being.
+            This opens a dialog box about relevant score parameters. In the
+            <b>Text</b> section, select the "<b>fra - French</b>" alternative.
+            Notice also that you have the ability to make this selection as the
+            default for any score from now on, simply by putting a mark in the
+            checkbox.<br />
+            You can ignore the other parameters for the time being, since their
+            default values should be OK.
         </p>
         <p>
             <img src="../images/chula-parameters-init.png" alt="" title=
@@ -202,14 +214,49 @@
             resulting score, on an ivory background, as translated from the
             extracted glyphs. If you can't see this view, make sure it is not
             collapsed, by dragging down the split line located just above the
-            tabs.
+            tabs. In this Score view, you can dynamically switch between a
+            vertical layout of the systems (one under the other, as in the
+            sheet view) of a horizontal layout (one system next to the other).
         </p>
         <p>
+            On the right side of the application display, there is a column of
+            "boards", all with a title and a collapse / expand mechanism. The
+            list of boards varies with the tab currently selected in the sheet
+            view.
+        </p>
+        <p>
+
             <img src="../images/chula-score.png" alt="Image after processing"
             title="The display when all steps have been run" />
         </p>
-        <!-- ====================== Manual Corrections ===================== -->
+        <p>
+            In the picture above, the column of boards for the "Glyphs" tab as
+            selected in the Sheet view presents from top to bottom:
+        </p>
+        <ol>
+            <li>Pixel board: coordinates of the selected rectangle, and the
+            pixel value read from the image.
+            </li>
+            <li>Run board: the selected run
+            </li>
 
+            <li>Section board: the selected section
+            </li>
+            <li>Glyph board: the selected glyph, with many details on key
+            parameters, assigned shape, etc.
+            </li>
+            <li>Focus board: (here collapsed) to navigate through glyphs
+            assigned to a given shape
+            </li>
+            <li>Neural board: the online evaluation of the selected glyph
+            (notice that here a 2 is evaluated as a 3)
+            </li>
+            <li>Shapes board: the palette of shapes for drag and drop or direct
+            shape assignment
+            </li>
+        </ol>
+
+        <!-- ====================== Manual Corrections ===================== -->
         <h2>
             <a name="MANUAL" id="MANUAL">Manual Corrections</a>
         </h2>
@@ -217,11 +264,14 @@
             <b>Nota</b>: Your actual results may vary according to the
             environment, notably the value of the various application
             parameters (which can be viewed and modified in the Tools|Options
-            window) or even the training of the neural network.
+            window) or the training of the neural network.<br />
+            And since the Audiveris program is constantly being improved, some
+            of the manual corrections listed below may no longer be needed.
+            Please consider them as examples only.
         </div>
+
         <h3>
             <a name="ERRORS" id="ERRORS">The errors window</a>
-
         </h3>
         <p>
             At the bottom of the application display, next to the log window,
@@ -231,17 +281,18 @@
             <img src="../images/chula-errors.png" alt="Chula errors window"
             title="The sorted display of errors" />
         </p>
+
         <p>
             Nota, if you can't see it, make sure in the <b>Views</b> menu, that
             the item "<b>Display errors window</b>" is selected.
         </p>
-
         <p>
             <img src="../images/chula-display-errors.png" alt=
             "Displaying the errors window" title=
             "Selecting the display of errors window" />
         </p>
         <ul>
+
             <li>This window contains a list of the errors that the program has
             detected in the score. The list is sorted, and every error message
             begins with a context indication.
@@ -249,12 +300,12 @@
             <li>For example, the first line says: <i>S1P1M7 [Glyph#318]
             Expected 3 chords for TUPLET_THREE</i>
                 <ol>
-
                     <li>The location of the first message is here coded as
                     "<i>S1P1M7</i>" (System 1, Part 1, Measure 7).
                     </li>
                     <li>There is also a glyph reference: [Glyph#318]
                     </li>
+
                     <li>Finally the message itself
                     </li>
                 </ol>
@@ -264,10 +315,10 @@
             error is located. And for this focus, the score display and the
             sheet display are kept in sync.
             </li>
-
         </ul>
         <h3>
             <a name="WRONG-SYMBOLS" id="WRONG-SYMBOLS">Wrong symbols</a>
+
         </h3>
         <p>
             The first error message (Expected 3 chords for TUPLET_THREE) points
@@ -278,7 +329,6 @@
         <p>
             <img src="../images/chula-tuplet-3.png" alt="Error on tuplet three"
             title="Source for tuplet error" />
-
         </p>
         <p>
             The correction is rather easy. We can simply deassign the symbol
@@ -286,11 +336,11 @@
             can be triggered by pressing the <b>Deassign</b> button in the
             glyph board on the right side of the application window.
         </p>
+
         <p>
             This error message disappears from the error pane.
         </p>
         <p>
-
             You can notice that the program was unable to find another suitable
             shape for this symbol, since it is now displayed in red color.
             Notice also that the shape TUPLET_THREE is still listed at the top
@@ -310,6 +360,7 @@
             shapes and finally "CLUTTER".
         </p>
         <p>
+
             <img src="../images/chula-assign-clutter.png" alt=
             "Assigning CLUTTER shape" title=
             "Assigning the clutter shape to this glyph" />
@@ -319,15 +370,14 @@
             "Assign" the final shape to this glyph. But this was a way to show
             an example of deassignment]
         </p>
-
         <h3>
             <a name="UNKNOWN-SYMBOLS" id="UNKNOWN-SYMBOLS">Unknown symbols</a>
         </h3>
         <p>
+
             The next message says <i>"S1P1M7 [] Voice #1 too long for Q/4"</i>
         </p>
         <p>
-
             This basically means that in the related measure, the total
             duration of the notes and rests that compose voice #1 is longer
             than the theoretical duration of the measure, and the delta
@@ -339,6 +389,7 @@
             part 1 in system 1).
         </p>
         <p>
+
             <img src="../images/chula-beam-hook.png" alt="Error on beam hook"
             title="Source for unrecognized beam hook" />
         </p>
@@ -346,7 +397,6 @@
             We can see that there is a beam hook left unrecognized (since
             colored in red) in this measure.
         </p>
-
         <p>
             When selecting this glyph, the beam hook does not appear in the top
             5 suggestions. We could manually assign the shape, using a
@@ -357,12 +407,12 @@
             But we have another way, since there are other beam hooks in sight:
             we can make a "copy/paste" of the shape name.
         </p>
+
         <p>
             Select another beam hook (left click), and in the popup menu (right
             click), select the "Copy BEAM_HOOK" item.
         </p>
         <p>
-
             <img src="../images/chula-copy.png" alt="Copy a shape" title=
             "Copy a known beam hook" />
         </p>
@@ -371,22 +421,44 @@
             and in the popup menu (right click), choose "Paste BEAM_HOOK"
         </p>
         <p>
+
             <img src="../images/chula-paste.png" alt="Paste a shape" title=
             "Paste the beam hook shape" />
         </p>
-        <h3>
+        <p>
+            <span class="c1">Remark</span>: Yet another way to manually assign
+            a shape to the selected glyph is to use the <span class="c1">Shape
+            palette</span>.
+        </p>
+        <p>
+            First open the range of Beam shapes:
+        </p>
 
+        <p>
+            <img class="c2" alt="Beam ranges" src=
+            "../images/beam-ranges.png" />
+        </p>
+        <p>
+            and make a <span class="c1">double-click</span> on the beam hook
+            shape:
+        </p>
+        <p>
+            <img class="c3" alt="Beam hook shape" src=
+            "../images/beam-hook-shape.png" />
+
+        </p>
+        <h3>
             <a name="UNKNOWN-SYMBOLS-CONT" id="UNKNOWN-SYMBOLS-CONT">Unknown
             symbols (2)</a>
         </h3>
         <p>
             The next message says <i>"S2P1M13] Voice #1 too long for 3Q/4"</i>
         </p>
+
         <p>
             The situation is similar to the previous error. Selecting this
             error moves us to the middle of measure 13 (of part 1 of system 2)
         </p>
-
         <p>
             <img src="../images/chula-sixteen.png" alt="Unrecognized shape"
             title="Unrecognized sixteen rest shape" />
@@ -398,6 +470,7 @@
             at hand.
         </p>
         <p>
+
             You may have noted that in this top 5, the sixteen_rest shape was
             listed with a red foreground color, to indicate that the confidence
             was too low. Actually the program uses the inverse of confidence,
@@ -407,7 +480,6 @@
             of a neural network.
         </p>
         <h3>
-
             <a name="MERGED-GLYPHS" id="MERGED-GLYPHS">Glyphs to be merged</a>
         </h3>
         <p>
@@ -415,11 +487,11 @@
             left, but rather than the program has not detected any other error!
         </p>
         <p>
+
             Look for red-colored glyphs in the sheet display, they indicate an
             unrecognized glyph.
         </p>
         <p>
-
             There is one red glyph at the beginning of the score, it's a 2/4
             time signature.
         </p>
@@ -432,6 +504,7 @@
             (glyph #302, as selected in the picture above) and the bulk of the
             2/4 signature (glyph #227).
         </p>
+
         <p>
             You can notice that, even though these glyphs have not been
             recognized, the score display contains the right 2/4 signature.
@@ -440,7 +513,6 @@
             other timesig locations. This is the reason why no error was
             signaled.
         </p>
-
         <p>
             For the sake of completeness (and also to show you a merge example
             ...), we'll however correct this glyph, by merging the two parts.
@@ -454,12 +526,12 @@
             "Glyphs with a lasso" title="Using a lasso to select glyphs" />
         </p>
         <p>
+
             In both cases, a TIME_TWO_FOUR button should appear in the top 5.
             Simply press the button, and the proper compound glyph will be
             assigned this 2/4 shape.
         </p>
         <h3>
-
             <a name="SECTION-SPLIT" id="SECTION-SPLIT">Glyph to be split</a>
         </h3>
         <p>
@@ -470,11 +542,11 @@
             glyph into two parts.
         </p>
         <p>
+
             <img src="../images/chula-split.png" alt="Glyph to split" title=
             "Glyph to split" />
         </p>
         <p>
-
             A new feature of Audiveris is the ability to manually compose a
             glyph by selecting its desired sections, in the containing LAG.
         </p>
@@ -484,11 +556,11 @@
         <ol>
             <li>A sequence of foreground pixels defines a "Run".
             </li>
+
             <li>Adjacent and compatible Runs define a "Section".
             </li>
             <li>And Sections are assembled into Glyphs.
             </li>
-
         </ol>
         <p>
             Normally, user selections are performed at <b>glyph</b> level. We
@@ -553,6 +625,79 @@
         </p>
         <h3>
 
+            <a name="VIRTUAL-GLYPH" id="VIRTUAL-GLYPH">Glyph to be inserted</a>
+        </h3>
+        <p>
+            In the section above, we have been lucky that the separation line
+            between the two glyphs could be found by aggregating sections. But
+            these splits on section borders are not always satisfactory. In
+            that case, the solution is to inject (create) the needed glyphs
+            directly into the structure.
+        </p>
+        <p>
+            For the sake of example, let's suppose that the split above had not
+            been performed. So, we still have this big glyph instead of clearly
+            separated flag glyph and eighth rest glyph. So we'll inject them.
+        </p>
+        <p>
+
+            In the shape palette, we first select the range dedicated to flags,
+            and then drag the suitable flag shape from the palette to either
+            the sheet view or the score view. In the picture below, you can see
+            the ghost image of the flag being dragged to the sheet view
+        </p>
+        <p>
+            <img class="c4" alt="dragged flag" src=
+            "../images/chula-dragged-flag.png" />
+        </p>
+        <p>
+            We pay attention to correctly position the flag along the stem ...
+        </p>
+        <p>
+            <img class="c5" alt="dropped flag" src=
+            "../images/chula-dropped-flag.png" />
+
+        </p>
+        <p>
+            ... we release the mouse button, and here we are:
+        </p>
+        <p>
+            <img class="c6" alt="Virtual flag" src=
+            "../images/chula-virtual-flag.png" />
+        </p>
+        <p>
+            We do the similar action for the eighth rest, and the final result
+            is the following:
+        </p>
+
+        <p>
+            <img class="c7" alt="Virtual glyphs" src=
+            "../images/chula-virtual-glyphs.png" />
+        </p>
+        <p>
+            Just a couple of remarks:
+        </p>
+        <ul>
+            <li>For certain shapes, like the flag, it is important to position
+            the glyph with a rather good precision, otherwise the distance
+            between the stem and this flag may be larger than the tolerated
+            margin, and the stem and the flag will not be recognized as
+            connected.
+            </li>
+            <li>For the time being, the DnD is rudimentary: once a glyph has
+            been dropped, it cannot be moved. The only workaround is to delete
+            this virtual glyph (by deassigning it) and reperform the DnD.
+            </li>
+
+            <li>Another current limitation is that there is yet no way to
+            resize a virtual glyph. So DnD does not really work for such shapes
+            as beams, slurs, crescendos, descrescendos, ... These moving /
+            resizing features are postponed until we integrate a more powerful
+            way to play with glyphs and shape display (certainly the NetBeans
+            Visual Lib)
+            </li>
+        </ul>
+        <h3>
             <a name="TEXTS" id="TEXTS">Texts not correctly OCR'ed</a>
         </h3>
         <p>
@@ -560,13 +705,13 @@
             the Tesseract OCR engine. No tool is 100% perfect and Google makes
             no exception here...
         </p>
+
         <p>
             The word "propose" (glyph #714) has been OCR'ed as something like
             "pI'Op0 SC", even though we had selected the right language for the
             score. We are left with manually forcing the text content:
         </p>
         <ol>
-
             <li>Select the glyph with a left-button click in the Sheet display.
             </li>
             <li>The column on the right side of the application window is
@@ -577,42 +722,50 @@
             </li>
         </ol>
         <p>
-            Remark: A text glyph, even with proper content, needs to be
-            assigned a "role (direction, title, creator, etc) to be atranslated
-            to a score entity. Otherwise, it will appear in the score display,
-            but with a gray color, and will mot be exported into the XML
-            output.
+
+            Remark: If you select the two lines of glyphs ("propose" and
+            "Fl&ucirc;te et guitare") and assign it as a whole to the TEXT
+            shape, the OCR engine will 1/ detect the two lines and 2/ correctly
+            recognize the text of each line.
+        </p>
+        <p>
+            A text glyph, even with proper content, needs to be assigned a
+            "role" (direction, title, creator, etc) to be translated to a score
+            entity. Otherwise, it will appear in the score display, but with a
+            gray color, and will not be exported into the XML output. For the
+            "creator" role, an additional type information is to be provided
+            (composer, lyricist, ...).
         </p>
         <p>
             <img src="../images/chula-text.png" alt="Correcting text content"
             title="The board for glyph parameters" />
-
         </p>
         <p>
+
             Also, on the upper right side of the sheet, the notation "Danse
-            brésilienne" (glyph #720) has been OCR'ed as "Dzmse
-            brésilienne". Once again, just correct the text content in
-            the glyph board, validate by pressing the Enter key, and the
-            modification is done.
+            br&Atilde;&copy;silienne" (glyph #720) has been OCR'ed as "Dzmse
+            br&Atilde;&copy;silienne". Once again, just correct the text
+            content in the glyph board, validate by pressing the Enter key, and
+            the modification is done.
         </p>
         <!-- ============================ Script =========================== -->
         <h2>
             <a name="SCRIPT" id="SCRIPT">Script</a>
         </h2>
-
         <h3>
             <a name="SCRIPT_WRITING" id="SCRIPT_WRITING">Script writing</a>
+
         </h3>
         <p>
             You can decide to store the script of your user actions related to
             'chula' sheet, by selecting the <b><i>Store script</i></b> item in
             the <b><i>Sheet</i></b> menu.
         </p>
-
         <p>
             Select the location, and your script is written by default as
             <b>chula.script.xml</b> file.
         </p>
+
         <p>
             Note that, unless you have set the application constant
             script.ScriptActions.closeConfirmation to false in the
@@ -623,7 +776,6 @@
         <p>
             <img src="../images/chula-script.png" alt="Script prompt" title=
             "Script prompt" />
-
         </p>
         <p>
             Here is the content of <b>chula.script.xml</b>:
@@ -632,15 +784,16 @@
         document.write("<iframe src='chula.script.xml.html' width='100%' height='200' frameborder='1'><\/iframe>");
         //]]>
         </script>
+
         <h3>
             <a name="SCRIPT_REPLAY" id="SCRIPT_REPLAY">Script replay</a>
         </h3>
-
         <p>
             You can replay any script, by simply selecting the <b><i>Open
             script</i></b> item in the <b><i>Sheet</i></b> menu, and choosing a
             script file.
         </p>
+
         <p>
             For example, just choose the script you've just stored, and watch
             'chula' image be reloaded, the various steps performed, and the
@@ -650,7 +803,6 @@
             convenient way to work again on a previous session for example.
         </p>
         <p>
-
             If you are curious, have a look at the 'chula.script.xml' file,
             which is a simple xml file where all your actions are easily
             recognized. Note that glyphs are defined only by the set of their
@@ -659,10 +811,10 @@
         <!-- ======================== Output Actions ======================= -->
         <h2>
             <a name="OUTPUT" id="OUTPUT">Output</a>
+
         </h2>
         <h3>
             <a name="PARAMETERS" id="PARAMETERS">Score Parameters</a>
-
         </h3>
         <p>
             In order to write down the score using MusicXML format, or to play
@@ -673,6 +825,7 @@
         <p>
             <img alt="" title="Score parameters" src=
             "../images/chula-parameters.png" />
+
         </p>
         <ul>
             <li>Text data, to specify the score language, as already seen at
@@ -682,7 +835,6 @@
             language will get re-OCR'ed, unless of course they had been
             manually assigned a content by the user.
             </li>
-
             <li>Midi data, to specify the tempo in quarters per minute, then
             the volume in the range 0..127
             </li>
@@ -695,34 +847,35 @@
             played by default.
             </li>
         </ul>
+
         <p>
             Note that there are generally acceptable values for all the fields.
         </p><!--
-        <p>
-            This dialog is shown only the first time the score is used for some
-            output, unless the constant "<i>promptParameters</i>" in unit
-            "<i>score/ui/ScoreActions</i>" is set to false. It can always be
-            explicitly opened from the <b><i>Score</i></b> menu by selecting
-            the <b><i>Set parameters</i></b> menu item.
-        </p>
-        -->
+<p>
+This dialog is shown only the first time the score is used for some
+output, unless the constant "<i>promptParameters</i>" in unit
+"<i>score/ui/ScoreActions</i>" is set to false. It can always be
+explicitly opened from the <b><i>Score</i></b> menu by selecting
+the <b><i>Set parameters</i></b> menu item.
+</p>
+-->
         <h3>
-
             <a name="WRITING" id="WRITING">Score writing</a>
         </h3>
         <p>
             If we are rather satisfied with the final translation, we can write
             the result into a MusicXML file.
         </p>
+
         <p>
             In the <b><i>Score</i></b> menu, we select the <b><i>Store in
             Xml</i></b> item which presents a dialog box to choose a target
             file.
         </p>
-
         <p>
             We finally click on the <b><i>Record</i></b> button, et voila!
         </p>
+
         <p>
             Here is the content of <b>chula.xml</b>:
         </p><script type="text/javascript">
@@ -731,10 +884,10 @@
         //]]>
         </script>
         <h3>
-
             <a name="PLAY" id="PLAY">Midi Playback</a>
         </h3>
         <p>
+
             There is now a simple MusicXML/Midi interface, a Java open source
             program named XenoPlay (see the <a href=
             "http://www.xenoage.com/player/">XenoPlay website</a>), embedded
@@ -742,24 +895,32 @@
             the platform Midi engine, as well as the writing of Midi files.
         </p>
         <p>
-            All Midi features are available in the <b>Midi</b> menu, and some
-            of them are directly callable from the tool bar:<br />
-
+            All Midi features are available in the <b>Midi</b> menu, only the
+            playback is directly callable from the tool bar:<br />
             <img title="Icons for Play/Pause &amp; Stop" alt="" src=
             "../images/chula-midi-play.png" />
         </p>
+
         <p>
-            There are three icons, the left one for starting/restarting the
-            playback, the middle one for pausing and the right one for
-            stopping.
+            The playback is driven from a separated console, as displayed in
+            the following picture:
         </p>
         <p>
+            <img class="c8" alt="Zong Console" src=
+            "../images/chula-Zong.png" />
+        </p>
+        <p>
+            Using the buttons at the bottom of this console, you can
+            start/restart the playback, pause, stop, modify the volume, access
+            audio settings and display score informations.
+        </p>
+        <p>
+
             During the playback, the Score display is kept in sync, using a
             moving (violet) vertical bar on the current time slot:<br />
             <img alt="" title="Time slot highlighted while playing" src=
             "../images/chula-midi-playing.png" />
         </p>
-
         <p>
             You can play the whole score or just a specific measure range of
             the score. The selected range can be defined through the score
@@ -773,16 +934,10 @@
             the measure, and possibly the selected chord(s) and voice(s) in the
             slot.
         </p>
+
         <p>
             <img src="../images/chula-measure-play.png" alt=
             "Playing a measure" />
-        </p>
-        <p>
-
-            <b>Nota</b>: Using the integrated Midi player has some limitations,
-            due to the embedded MusicXML/Midi software which is more like a
-            demo and does not yet handle repeat signs or similar coda
-            information.
         </p>
         <h3>
             <a name="WRITE_MIDI" id="WRITE_MIDI">Writing Midi</a>
