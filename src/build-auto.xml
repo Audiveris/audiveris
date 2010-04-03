@@ -16,13 +16,13 @@
     
     <!-- Just in case these properties are not already set -->
     <property name="export.dir" value="t:/export" />
-    <property name="findbugs.dir" value="p:/prog/findbugs-1.3.9/lib" />
+    <property name="findbugs.home" value="p:/prog/findbugs-1.3.9" />
 
 
     <taskdef name="findbugs"
 	     classname="edu.umd.cs.findbugs.anttask.FindBugsTask">
 	<classpath>
-	    <fileset dir="${findbugs.dir}" includes="*.jar" />
+	    <fileset dir="${findbugs.home}/lib" includes="findbugs-ant.jar" />
 	</classpath>
     </taskdef>
     
@@ -95,7 +95,7 @@
 		  outputFile="findbugs.xml" >
 <!-- 	    <auxClasspath path="${basedir}/lib/Regex.jar" /> -->
 	    <sourcePath path="${basedir}/src" />
-<!-- 	    <class location="${basedir}/bin/bcel.jar" /> -->
+	    <class location="${basedir}/dist/audiveris-3.3.jar" /> 
 	</findbugs>
 	
     </target>
