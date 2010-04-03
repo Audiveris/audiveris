@@ -12,7 +12,7 @@
     </description>
 
 
-    <import file="${basedir}/src/build-init.xml"/>
+    <import file="${basedir}/src/build.xml"/>
     
     <!-- Just in case these properties are not already set -->
     <property name="export.dir" value="t:/export" />
@@ -83,21 +83,18 @@
         <echoproperties/>
     </target>
 
-    <target name="ping"
-	    description="Dummy target">
-	<echo message="Hello from build-auto" />
-    </target>
-
-    <target name="findbugs">
+    <!-- ================= -->
+    <!--  F I N D B U G S  -->
+    <!-- ================= -->
+    <target name="findbugs"
+	    depends="jar">
 	
 	<findbugs home="${findbugs.home}"
 		  outputFile="findbugs.xml" >
-<!-- 	    <auxClasspath path="${basedir}/lib/Regex.jar" /> -->
 	    <sourcePath path="${basedir}/src" />
 	    <class location="${basedir}/dist/audiveris-3.3.jar" /> 
 	</findbugs>
 	
     </target>
     
-
 </project>
