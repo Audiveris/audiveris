@@ -90,8 +90,7 @@
 
     <target name="findbugs">
 	
-	<findbugs home="${findbugs.dir}"
-		  output="xml:withMessages"
+	<findbugs home="${findbugs.home}"
 		  outputFile="findbugs.xml" >
 <!-- 	    <auxClasspath path="${basedir}/lib/Regex.jar" /> -->
 	    <sourcePath path="${basedir}/src" />
