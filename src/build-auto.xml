@@ -91,7 +91,7 @@
 	
 	<findbugs home="${findbugs.home}"
 		  outputFile="findbugs.xml" >
-	    <sourcePath path="${basedir}/src" />
+	    <sourcePath path="${basedir}/src/main" />
 	    <class location="${basedir}/dist/audiveris-3.3.jar" /> 
 	</findbugs>
 	
