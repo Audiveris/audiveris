@@ -7,73 +7,11 @@
 <project name="audiveris-auto" basedir="..">
     
     <description>
-	targets for auto building (Hudson?)
-	(not part of main-stream Audiveris project)
+	Targets for auto building, meant for Hudson
     </description>
-
 
     <import file="${basedir}/src/build.xml"/>
     
-    <!-- Just in case these properties are not already set -->
-    <property name="export.dir" value="t:/export" />
-    <property name="findbugs.home" value="p:/prog/findbugs-1.3.9" />
-
-
-    <taskdef name="findbugs"
-	     classname="edu.umd.cs.findbugs.anttask.FindBugsTask">
-	<classpath>
-	    <fileset dir="${findbugs.home}/lib" includes="findbugs-ant.jar" />
-	</classpath>
-    </taskdef>
-    
-    <!-- ================= -->
-    <!--  C H E C K O U T  -->
-    <!-- ================= -->
-    <target name="checkout"
-            depends="-init"
-            description="Export module audiveris from CVS.">
-
-	<delete verbose="${verbose}" dir="${export.dir}"/>
-
-	<!-- Nota : Use of export triggers a bug in ant cvs, so this
-	     workaround for first checking out everything, then
-	     updating for the desired tag. Correct direct command
-	     should be : line="export -r ${tag.version} audiveris"
-	     -->
-	<!--
-	<cvs
- 	    cvsRoot=":pserver:${cvs.login}:${cvs.password}@audiveris.dev.java.net:/cvs"
- 	    dest="${export.dir}">
-	    <commandline>
-		<argument line="checkout audiveris"/>
-	    </commandline>
-	
-	    <commandline>
-		<argument line="update -r ${tag.version} audiveris"/>
-	    </commandline>
-	</cvs>
-	     -->
-    </target>
-
-    <!-- ============================= -->
-    <!--  B U I L D - C H E C K O U T  -->
-    <!-- ============================= -->
-    <target name="build-checkout"
-	    description="Build the checkout">
-	<ant
-	    dir="${export.dir}/audiveris/src"
-	    inheritAll="false">
-	    <target name="dist"/>
-	</ant>
-
-    </target>
-
-    <!-- ============================= -->
-    <!--  B U I L D - F R O M - C V S  -->
-    <!-- ============================= -->
-    <target name="build-from-CVS"
-	    depends="checkout, build-checkout"
-	    description="Build everything from CVS" />
 
     <!-- ===================== -->
     <!--  P R O P E R T I E S  -->
@@ -88,6 +26,16 @@
     <!-- ================= -->
     <target name="findbugs"
 	    depends="jar">
+	
+	<!-- Just in case these properties are not already set -->
+	<property name="findbugs.home" value="p:/prog/findbugs-1.3.9" />
+	
+	<taskdef name="findbugs"
+		 classname="edu.umd.cs.findbugs.anttask.FindBugsTask">
+	    <classpath>
+		<fileset dir="${findbugs.home}/lib" includes="findbugs-ant.jar" />
+	    </classpath>
+	</taskdef>
 	
 	<findbugs home="${findbugs.home}"
 		  outputFile="findbugs.xml" >
