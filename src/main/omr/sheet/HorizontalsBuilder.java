@@ -1069,7 +1069,7 @@ public class HorizontalsBuilder
         {
             super(lag, members, constants.displayLedgerLines, controller, null);
             setName("HorizontalsBuilder-View");
-            dashMenu = new DashMenu(getController());
+            dashMenu = new DashMenu(controller);
         }
 
         //~ Methods ------------------------------------------------------------
