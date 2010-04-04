@@ -12,7 +12,6 @@
 
     <description>
         Build, test, and run the Audiveris project via Emacs or Ant
-        $Id$
 
 	This 'build.xml' file is located in the 'src' subdirectory to be
 	automatically picked up by Emacs or Ant
