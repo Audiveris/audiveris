@@ -27,6 +27,8 @@ syntax: glob
 
 build/**/*
 build.xml
+index.html
+index.html.*
 # Ignore .jpg and .pdf under the src directory since they are produced via umlet
 # Images handled by conf management should use other suffix (.png for example)
 src/**/*.jpg
