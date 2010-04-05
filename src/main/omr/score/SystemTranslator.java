@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.score;
 
+import omr.Main;
+
 import omr.glyph.Shape;
 import static omr.glyph.ShapeRange.*;
 import omr.glyph.facets.Glyph;
@@ -140,18 +142,20 @@ public class SystemTranslator
         score.accept(new ScoreFixer());
 
         // Invalidate score data within MidiAgent, if needed
-        try {
-            if (MidiAgent.getInstance()
-                         .getScore() == score) {
-                MidiAgent.getInstance()
-                         .reset();
+        if (Main.getGui() != null) {
+            try {
+                if (MidiAgent.getInstance()
+                             .getScore() == score) {
+                    MidiAgent.getInstance()
+                             .reset();
+                }
+            } catch (Exception ex) {
+                logger.warning("Cannot access Midi agent", ex);
             }
-        } catch (Exception ex) {
-            logger.warning("Cannot access Midi agent", ex);
-        }
 
-        // Update score views if any
-        score.updateViews();
+            // Update score views if any
+            score.updateViews();
+        }
     }
 
     //-----------------//

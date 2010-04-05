@@ -37,7 +37,6 @@ import omr.step.Step;
 import omr.step.StepMenu;
 
 import omr.ui.dnd.GhostGlassPane;
-import omr.ui.symbol.SymbolManager;
 import omr.ui.util.Panel;
 import omr.ui.util.SeparableMenu;
 import omr.ui.util.UIUtilities;
