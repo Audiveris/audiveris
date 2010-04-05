@@ -8,10 +8,9 @@
     
     <description>
         Just a collection of utility targets
-        (not part of main-stream Audiveris project)
     </description>
 
-    <import file="${basedir}/src/build-init.xml"/>
+    <import file="${basedir}/src/build.xml"/>
 
     <!-- Just in case these properties are not already set -->
     <property name="backup.dir"    value="m:/backup" />
