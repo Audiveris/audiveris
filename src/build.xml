@@ -320,7 +320,6 @@
     <!--  T E S T  -->
     <!-- ========= -->
     <target name="test" depends="-compile-tests"
-	    if="junit.jar.present"
             description="Run all unit tests in batch." >
 
 	<echo message="Performing unit tests ..."/>
