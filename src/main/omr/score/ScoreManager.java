@@ -122,7 +122,7 @@ public class ScoreManager
      */
     public void export (Score score)
     {
-        export(score, score.getExportFile());
+        export(score, score.getExportFile(), null);
     }
 
     //--------//
@@ -134,9 +134,11 @@ public class ScoreManager
      *
      * @param score the score to export
      * @param exportFile the xml file to write, or null
+     * @param injectSignature should we inject our signature?
      */
-    public void export (Score score,
-                        File  exportFile)
+    public void export (Score   score,
+                        File    exportFile,
+                        Boolean injectSignature)
     {
         if (exportFile == null) {
             exportFile = this.getDefaultExportFile(score);
@@ -152,7 +154,15 @@ public class ScoreManager
         // Actually export the score material
         try {
             ScoreExporter exporter = new ScoreExporter(score);
-            exporter.export(exportFile);
+
+            if (injectSignature != null) {
+                exporter.export(exportFile, injectSignature);
+            } else {
+                exporter.export(
+                    exportFile,
+                    constants.defaultInjectSignature.getValue());
+            }
+
             logger.info("Score exported to " + exportFile);
 
             // Remember (even across runs) the selected directory
@@ -268,8 +278,15 @@ public class ScoreManager
         Constant.String defaultScoreDirectory = new Constant.String(
             "",
             "Default directory for saved scores");
+
+        /** Default directory for writing Midi files */
         Constant.String defaultMidiDirectory = new Constant.String(
             "",
             "Default directory for writing Midi files");
+
+        /** Should we export our signature? */
+        Constant.Boolean defaultInjectSignature = new Constant.Boolean(
+            true,
+            "Should we export our signature?");
     }
 }

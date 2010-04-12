@@ -454,7 +454,7 @@ public class ScoreActions
         {
             if (checkParameters(score)) {
                 ScoreManager.getInstance()
-                            .export(score, exportFile);
+                            .export(score, exportFile, null);
             }
 
             return null;

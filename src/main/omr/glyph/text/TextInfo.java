@@ -372,12 +372,24 @@ public class TextInfo
     {
         if (pseudoContent == null) {
             if (sentence != null) {
-                final int nbChar = (int) Math.rint(
-                    ((double) glyph.getContourBox().width) / sentence.getTextHeight());
-
                 if (getTextRole() != null) {
-                    pseudoContent = getTextRole()
-                                        .getStringHolder(nbChar);
+                    final int textHeight = sentence.getTextHeight();
+
+                    if (textHeight > 0) {
+                        double width = glyph.getContourBox().width;
+                        int    nbChar = (int) Math.rint(width / textHeight);
+
+                        pseudoContent = getTextRole()
+                                            .getStringHolder(nbChar);
+                    } else {
+                        if (logger.isFineEnabled()) {
+                            logger.fine(
+                                "glyph#" + glyph.getId() +
+                                " text with no height");
+                        }
+
+                        return null;
+                    }
                 }
             }
         }

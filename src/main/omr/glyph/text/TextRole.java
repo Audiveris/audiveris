@@ -71,14 +71,19 @@ public enum TextRole {
      */
     public String getStringHolder (int NbOfChars)
     {
-        StringBuilder sb = new StringBuilder("[");
+        if (NbOfChars > 1000) {
+            logger.warning("Abnormal text length:" + NbOfChars);
+            return "<<" + Integer.toString(NbOfChars) + ">>";
+        } else {
+            StringBuilder sb = new StringBuilder("[");
 
-        while (sb.length() < (NbOfChars - 1)) {
-            sb.append(toString())
-              .append("-");
+            while (sb.length() < (NbOfChars - 1)) {
+                sb.append(toString())
+                  .append("-");
+            }
+
+            return sb.substring(0, Math.max(NbOfChars - 1, 0)) + "]";
         }
-
-        return sb.substring(0, Math.max(NbOfChars - 1, 0)) + "]";
     }
 
     //----------//

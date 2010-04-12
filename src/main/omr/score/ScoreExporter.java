@@ -207,12 +207,14 @@ public class ScoreExporter
      * Export the score to a file
      *
      * @param xmlFile the xml file to write (cannot be null)
+     * @param injectSignature should we inject out signature?
      * @throws java.lang.Exception
      */
-    public void export (File xmlFile)
+    public void export (File    xmlFile,
+                        boolean injectSignature)
         throws Exception
     {
-        export(new FileOutputStream(xmlFile));
+        export(new FileOutputStream(xmlFile), injectSignature);
     }
 
     //--------//
@@ -222,10 +224,12 @@ public class ScoreExporter
      * Export the score to an output stream
      *
      * @param os the output stream where XML data is written (cannot be null)
+     * @param injectSignature should we inject our signature?
      * @throws java.io.IOException
      * @throws java.lang.Exception
      */
-    public void export (OutputStream os)
+    public void export (OutputStream os,
+                        boolean      injectSignature)
         throws IOException, Exception
     {
         if (os == null) {
@@ -237,7 +241,7 @@ public class ScoreExporter
         score.accept(this);
 
         //  Finally, marshal the proxy
-        Marshalling.marshal(scorePartwise, os);
+        Marshalling.marshal(scorePartwise, os, injectSignature);
     }
 
     //--------//
@@ -247,10 +251,12 @@ public class ScoreExporter
      * Export the score to DOM node
      *
      * @param node the DOM node to export to (cannot be null)
+     * @param injectSignature should we inject our signature?
      * @throws java.io.IOException
      * @throws java.lang.Exception
      */
-    public void export (Node node)
+    public void export (Node    node,
+                        boolean injectSignature)
         throws IOException, Exception
     {
         if (node == null) {
@@ -262,8 +268,7 @@ public class ScoreExporter
         buildScorePartwise();
 
         //  Finally, marshal the proxy
-        Marshalling.marshal(scorePartwise, node, /* Signature => */
-                            true);
+        Marshalling.marshal(scorePartwise, node, injectSignature);
     }
 
     //- All Visiting Methods ---------------------------------------------------
@@ -274,6 +279,10 @@ public class ScoreExporter
     @Override
     public boolean visit (Articulation articulation)
     {
+        if (logger.isFineEnabled()) {
+            logger.fine("Visiting " + articulation);
+        }
+
         JAXBElement<?> element = getArticulationObject(articulation.getShape());
 
         // Include in Articulations
@@ -316,6 +325,10 @@ public class ScoreExporter
     @Override
     public boolean visit (Arpeggiate arpeggiate)
     {
+        if (logger.isFineEnabled()) {
+            logger.fine("Visiting " + arpeggiate);
+        }
+
         proxymusic.Arpeggiate pmArpeggiate = factory.createArpeggiate();
         getNotations()
             .getTiedOrSlurOrTuplet()
@@ -338,7 +351,10 @@ public class ScoreExporter
     @Override
     public boolean visit (Barline barline)
     {
-        ///logger.info("Visiting " + barline);
+        if (logger.isFineEnabled()) {
+            logger.fine("Visiting " + barline);
+        }
+
         if (barline == null) {
             return false;
         }
@@ -412,7 +428,10 @@ public class ScoreExporter
     @Override
     public boolean visit (Clef clef)
     {
-        ///logger.info("Visiting " + clef);
+        if (logger.isFineEnabled()) {
+            logger.fine("Visiting " + clef);
+        }
+
         if (isNewClef(clef)) {
             proxymusic.Clef pmClef = factory.createClef();
             getMeasureAttributes()
@@ -487,6 +506,10 @@ public class ScoreExporter
     @Override
     public boolean visit (Coda coda)
     {
+        if (logger.isFineEnabled()) {
+            logger.fine("Visiting " + coda);
+        }
+
         Direction direction = factory.createDirection();
         current.pmMeasure.getNoteOrBackupOrForward()
                          .add(direction);
@@ -527,6 +550,10 @@ public class ScoreExporter
     @Override
     public boolean visit (DirectionStatement words)
     {
+        if (logger.isFineEnabled()) {
+            logger.fine("Visiting " + words);
+        }
+
         if (words.getText()
                  .getContent() != null) {
             Direction direction = factory.createDirection();
@@ -574,7 +601,10 @@ public class ScoreExporter
     @Override
     public boolean visit (Dynamics dynamics)
     {
-        ///logger.info("Visiting " + dynamics);
+        if (logger.isFineEnabled()) {
+            logger.fine("Visiting " + dynamics);
+        }
+
         try {
             Direction direction = factory.createDirection();
             current.pmMeasure.getNoteOrBackupOrForward()
@@ -623,6 +653,10 @@ public class ScoreExporter
     @Override
     public boolean visit (Fermata fermata)
     {
+        if (logger.isFineEnabled()) {
+            logger.fine("Visiting " + fermata);
+        }
+
         proxymusic.Fermata pmFermata = factory.createFermata();
         getNotations()
             .getTiedOrSlurOrTuplet()
@@ -655,7 +689,10 @@ public class ScoreExporter
     @Override
     public boolean visit (KeySignature keySignature)
     {
-        ///logger.info("Visiting " + keySignature);
+        if (logger.isFineEnabled()) {
+            logger.fine("Visiting " + keySignature);
+        }
+
         try {
             if (isNewKeySignature(keySignature)) {
                 Key key = factory.createKey();
@@ -686,6 +723,10 @@ public class ScoreExporter
     @Override
     public boolean visit (Measure measure)
     {
+        if (logger.isFineEnabled()) {
+            logger.fine("Visiting " + measure);
+        }
+
         // Make sure this measure is to be exported
         if (!isDesired(measure)) {
             if (logger.isFineEnabled()) {
@@ -945,7 +986,7 @@ public class ScoreExporter
                     }
                 }
             }
-        } catch (InvalidTimeSignature ex) {
+        } catch (Exception ex) {
         }
 
         // Safer...
@@ -962,7 +1003,10 @@ public class ScoreExporter
     @Override
     public boolean visit (omr.score.entity.Note note)
     {
-        ///logger.info("Visiting " + note);
+        if (logger.isFineEnabled()) {
+            logger.fine("Visiting " + note);
+        }
+
         try {
             current.note = note;
 
@@ -1169,6 +1213,10 @@ public class ScoreExporter
     @SuppressWarnings("unchecked")
     public boolean visit (Ornament ornament)
     {
+        if (logger.isFineEnabled()) {
+            logger.fine("Visiting " + ornament);
+        }
+
         JAXBElement<?> element = getOrnamentObject(ornament.getShape());
 
         // Include in ornaments
@@ -1199,6 +1247,10 @@ public class ScoreExporter
     @Override
     public boolean visit (Pedal pedal)
     {
+        if (logger.isFineEnabled()) {
+            logger.fine("Visiting " + pedal);
+        }
+
         Direction direction = new Direction();
         current.pmMeasure.getNoteOrBackupOrForward()
                          .add(direction);
@@ -1250,7 +1302,9 @@ public class ScoreExporter
     @Override
     public boolean visit (Score score)
     {
-        ///logger.info("Visiting " + score);
+        if (logger.isFineEnabled()) {
+            logger.fine("Visiting " + score);
+        }
 
         // Reset durations for the score
         score.setDurationDivisor(null);
@@ -1272,10 +1326,11 @@ public class ScoreExporter
         // [Encoding]/Software
         java.lang.String soft = Main.getToolName();
 
-        if (!Main.getToolBuild()
-                 .equals("")) {
+        if ((Main.getToolBuild() != null) && !Main.getToolBuild()
+                                                  .equals("")) {
             soft += (" " + Main.getToolBuild());
-        } else if (!Main.getToolVersion()
+        } else if ((Main.getToolVersion() != null) &&
+                   !Main.getToolVersion()
                         .equals("")) {
             soft += (" " + Main.getToolVersion());
         }
@@ -1387,6 +1442,10 @@ public class ScoreExporter
     @Override
     public boolean visit (Segno segno)
     {
+        if (logger.isFineEnabled()) {
+            logger.fine("Visiting " + segno);
+        }
+
         Direction direction = new Direction();
         current.pmMeasure.getNoteOrBackupOrForward()
                          .add(direction);
@@ -1426,7 +1485,9 @@ public class ScoreExporter
     @Override
     public boolean visit (Slur slur)
     {
-        ///logger.info("Visiting " + slur);
+        if (logger.isFineEnabled()) {
+            logger.fine("Visiting " + slur);
+        }
 
         // Note contextual data
         boolean isStart = slur.getLeftNote() == current.note;
@@ -1559,7 +1620,10 @@ public class ScoreExporter
     @Override
     public boolean visit (ScoreSystem system)
     {
-        ///logger.info("Visiting " + system);
+        if (logger.isFineEnabled()) {
+            logger.fine("Visiting " + system);
+        }
+
         current.system = system;
         isFirst.measure = true;
 
@@ -1590,7 +1654,9 @@ public class ScoreExporter
     @Override
     public boolean visit (SystemPart systemPart)
     {
-        ///logger.info("Visiting " + systemPart);
+        if (logger.isFineEnabled()) {
+            logger.fine("Visiting " + systemPart);
+        }
 
         // Delegate to texts
         for (TreeNode node : systemPart.getTexts()) {
@@ -1611,7 +1677,10 @@ public class ScoreExporter
     @Override
     public boolean visit (Text text)
     {
-        ///logger.info("Visiting " + text);
+        if (logger.isFineEnabled()) {
+            logger.fine("Visiting " + text);
+        }
+
         switch (text.getSentence()
                     .getTextRole()) {
         case Title :
@@ -1687,7 +1756,10 @@ public class ScoreExporter
     @Override
     public boolean visit (TimeSignature timeSignature)
     {
-        ///logger.info("Visiting " + timeSignature);
+        if (logger.isFineEnabled()) {
+            logger.fine("Visiting " + timeSignature);
+        }
+
         try {
             Time time = factory.createTime();
 
@@ -1739,6 +1811,10 @@ public class ScoreExporter
     @Override
     public boolean visit (Tuplet tuplet)
     {
+        if (logger.isFineEnabled()) {
+            logger.fine("Visiting " + tuplet);
+        }
+
         proxymusic.Tuplet pmTuplet = factory.createTuplet();
         getNotations()
             .getTiedOrSlurOrTuplet()
@@ -1786,6 +1862,10 @@ public class ScoreExporter
     @Override
     public boolean visit (Wedge wedge)
     {
+        if (logger.isFineEnabled()) {
+            logger.fine("Visiting " + wedge);
+        }
+
         Direction direction = factory.createDirection();
         current.pmMeasure.getNoteOrBackupOrForward()
                          .add(direction);

@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.glyph.text;
 
+import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
@@ -178,6 +179,14 @@ public class Sentence
             if (str == null) {
                 str = item.getTextInfo()
                           .getPseudoContent();
+
+                if (str == null) {
+                    if (logger.isFineEnabled()) {
+                        logger.warning("Flat sentence " + this);
+                    }
+
+                    continue;
+                }
             }
 
             if (sb == null) {
@@ -647,8 +656,9 @@ public class Sentence
                                         .getLanguage();
 
             // If we have no content or if a new language is being used for OCR
-            if ((info.getOcrContent() == null) ||
-                !language.equals(info.getOcrLanguage())) {
+            if (constants.useOCR.getValue() &&
+                ((info.getOcrContent() == null) ||
+                !language.equals(info.getOcrLanguage()))) {
                 List<OcrLine> lines = Language.getOcr()
                                               .recognize(
                     glyph.getImage(),
@@ -676,7 +686,7 @@ public class Sentence
                             ti.setOcrInfo(language, ocrLine);
                             ti.setTextRole(getTextRole());
 
-                            // Alocate a sentence for this glyph
+                            // Allocate a sentence for this glyph
                             Sentence sentence = new Sentence(
                                 systemInfo,
                                 lineGlyph,
@@ -1054,15 +1064,18 @@ public class Sentence
     {
         //~ Instance fields ----------------------------------------------------
 
-        Scale.Fraction maxItemDy = new Scale.Fraction(
+        Scale.Fraction   maxItemDy = new Scale.Fraction(
             0,
             "Maximum vertical distance between a text line and a text item");
-        Scale.Fraction maxItemDx = new Scale.Fraction(
+        Scale.Fraction   maxItemDx = new Scale.Fraction(
             20,
             "Maximum horizontal distance between an alien and a text item");
-        Scale.Fraction maxSentenceDy = new Scale.Fraction(
+        Scale.Fraction   maxSentenceDy = new Scale.Fraction(
             0.6,
             "Maximum vertical distance between two sentence chunks");
+        Constant.Boolean useOCR = new Constant.Boolean(
+            true,
+            "Should we use the OCR feature?");
     }
 
     //-------//

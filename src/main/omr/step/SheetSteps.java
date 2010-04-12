@@ -360,7 +360,7 @@ public class SheetSteps
             throws StepException
         {
             ScoreManager.getInstance()
-                        .export(sheet.getScore(), null);
+                        .export(sheet.getScore(), null, null);
         }
     }
 

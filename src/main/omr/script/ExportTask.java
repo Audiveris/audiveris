@@ -34,6 +34,10 @@ public class ExportTask
     @XmlAttribute
     private String path;
 
+    /** Should we add our signature? */
+    @XmlAttribute(name = "inject-signature")
+    private Boolean injectSignature;
+
     //~ Constructors -----------------------------------------------------------
 
     //------------//
@@ -66,7 +70,7 @@ public class ExportTask
     public void core (Sheet sheet)
     {
         ScoreManager.getInstance()
-                    .export(sheet.getScore(), new File(path));
+                    .export(sheet.getScore(), new File(path), injectSignature);
     }
 
     //-----------------//

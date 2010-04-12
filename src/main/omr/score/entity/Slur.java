@@ -324,8 +324,18 @@ public class Slur
 
         // Compute the approximating circle
         // Build a curve using system-based coordinates
-        Circle            circle = SlurInspector.computeCircle(glyph);
-        CubicCurve2D      curve = computeCurve(circle, system);
+        Circle       circle = SlurInspector.computeCircle(glyph);
+        CubicCurve2D curve = computeCurve(circle, system);
+
+        // Safer
+        if (curve == null) {
+            if (logger.isFineEnabled()) {
+                logger.info(
+                    "No curve found for slur candidate #" + glyph.getId());
+            }
+
+            return;
+        }
 
         // Retrieve & sort nodes (notes or chords) on both ends of the slur
         List<MeasureNode> leftNodes = new ArrayList<MeasureNode>();
@@ -634,19 +644,24 @@ public class Slur
                                               ScoreSystem system)
     {
         CubicCurve2D pixelCurve = circle.getCurve();
-        SystemPoint  p1 = system.toSystemPoint(
+
+        if (pixelCurve == null) {
+            return null;
+        }
+
+        SystemPoint p1 = system.toSystemPoint(
             new PixelPoint(
                 (int) Math.rint(pixelCurve.getX1()),
                 (int) Math.rint(pixelCurve.getY1())));
-        SystemPoint  c1 = system.toSystemPoint(
+        SystemPoint c1 = system.toSystemPoint(
             new PixelPoint(
                 (int) Math.rint(pixelCurve.getCtrlX1()),
                 (int) Math.rint(pixelCurve.getCtrlY1())));
-        SystemPoint  c2 = system.toSystemPoint(
+        SystemPoint c2 = system.toSystemPoint(
             new PixelPoint(
                 (int) Math.rint(pixelCurve.getCtrlX2()),
                 (int) Math.rint(pixelCurve.getCtrlY2())));
-        SystemPoint  p2 = system.toSystemPoint(
+        SystemPoint p2 = system.toSystemPoint(
             new PixelPoint(
                 (int) Math.rint(pixelCurve.getX2()),
                 (int) Math.rint(pixelCurve.getY2())));
