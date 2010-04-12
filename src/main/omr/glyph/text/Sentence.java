@@ -631,6 +631,18 @@ public class Sentence
 
         if (items.size() > 1) {
             Glyph compound = systemInfo.buildTransientCompound(items);
+
+            // Check that this glyph is not forbidden as text
+            Glyph original = systemInfo.getSheet()
+                                       .getVerticalLag()
+                                       .getOriginal(compound);
+
+            if ((original != null) && original.isShapeForbidden(Shape.TEXT)) {
+                toRemove.add(this);
+
+                return;
+            }
+
             glyph = systemInfo.addGlyph(compound);
             glyph.setShape(Shape.TEXT, Evaluation.ALGORITHM);
             items.clear();
