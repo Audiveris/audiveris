@@ -53,6 +53,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RefineryUtilities;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.util.*;
 
 import javax.swing.WindowConstants;
@@ -176,6 +177,10 @@ public class SkewBuilder
         if (Math.abs(angle) > constants.maxSkewAngle.getValue()) {
             try {
                 picture.rotate(-angle);
+                sheet.getBench()
+                     .recordRotatedDimension(
+                    picture.getWidth(),
+                    picture.getHeight());
             } catch (ImageFormatException ex) {
                 throw new StepException(ex);
             }

@@ -29,6 +29,8 @@ import omr.util.DoubleValue;
 
 import java.awt.Rectangle;
 
+import javax.xml.bind.annotation.*;
+
 /**
  * Class <code>Scale</code> encapsulates what drives the scale of a given sheet,
  * namely the main lengths of foreground and background vertical lags (which are
@@ -53,6 +55,8 @@ import java.awt.Rectangle;
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "scale")
 public class Scale
 {
     //~ Static fields/initializers ---------------------------------------------
@@ -66,12 +70,15 @@ public class Scale
     private ScaleBuilder builder;
 
     /** Most frequent vertical distance in pixels from one line to the other*/
+    @XmlElement
     private int interline;
 
     /** Most frequent background height */
+    @XmlElement
     private int mainBack;
 
     /** Most frequent run lengths for foreground & background runs. */
+    @XmlElement
     private int mainFore;
 
     //~ Constructors -----------------------------------------------------------
@@ -124,6 +131,18 @@ public class Scale
         mainBack = builder.getMainBack();
         mainFore = builder.getMainFore();
         interline = mainFore + mainBack;
+
+        sheet.getBench()
+             .recordScale(this);
+    }
+
+    //-------//
+    // Scale //
+    //-------//
+    /** Needed by JAXB */
+    private Scale()
+    {
+
     }
 
     //~ Methods ----------------------------------------------------------------

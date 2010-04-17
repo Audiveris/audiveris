@@ -182,6 +182,9 @@ public class LinesBuilder
                 " Check Staff Lines ratio in score parameters.");
         }
 
+        sheet.getBench()
+             .recordStaveCount(staves.size());
+
         // Display the resulting lag is so asked for
         if (constants.displayFrame.getValue() && (Main.getGui() != null)) {
             displayFrame();

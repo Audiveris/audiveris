@@ -456,6 +456,11 @@ public class SheetSteps
                 picture = new Picture(imageFile);
                 picture.setMaxForeground(sheet.getMaxForeground());
                 sheet.setPicture(picture);
+
+                sheet.getBench()
+                     .recordInitialDimension(
+                    picture.getWidth(),
+                    picture.getHeight());
             } catch (FileNotFoundException ex) {
                 logger.warning("Cannot find file " + imageFile);
                 throw new StepException(ex);
@@ -893,6 +898,8 @@ public class SheetSteps
         {
             sheet.setSkewBuilder(new SkewBuilder(sheet));
             sheet.setSkew(sheet.getSkewBuilder().buildInfo());
+            sheet.getBench()
+                 .recordSkew(sheet.getSkew().angle());
 
             // If rotated, rescale the sheet
             if (sheet.getPicture()

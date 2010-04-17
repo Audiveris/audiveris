@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.score;
 
+import omr.sheet.SheetBench;
 import omr.Main;
 
 import omr.constant.Constant;
@@ -44,6 +45,9 @@ public class ScoreManager
 
     /** The extension used for score output files: {@value} */
     public static final String SCORE_EXTENSION = ".xml";
+
+    /** The extension used for score bench files: {@value} */
+    public static final String BENCH_EXTENSION = ".bench.xml";
 
     /** The single instance of this class */
     private static volatile ScoreManager INSTANCE;
@@ -264,6 +268,55 @@ public class ScoreManager
         }
     }
 
+    //------------//
+    // storeBench //
+    //------------//
+    /**
+     * Store the score bench
+     * @param score the score whose bench is to be stored
+     * @param file the written file, or null
+     */
+    public void storeBench (Score score,
+                            File  file)
+    {
+        if (file == null) {
+            file = new File(
+                constants.defaultBenchDirectory.getValue(),
+                score.getRadix() + BENCH_EXTENSION);
+        }
+
+        // Make sure the folder exists
+        File folder = new File(file.getParent());
+
+        if (folder.mkdirs()) {
+            logger.info("Creating folder " + folder);
+        }
+
+        // Actually store the score bench
+        FileOutputStream fos = null;
+
+        try {
+            SheetBench bench = score.getSheet()
+                                    .getBench();
+            fos = new FileOutputStream(file);
+            bench.store(fos);
+
+            logger.info("Score bench stored as " + file);
+
+            // Remember (even across runs) the selected directory
+            constants.defaultBenchDirectory.setValue(file.getParent());
+        } catch (Exception ex) {
+            logger.warning("Error storing score bench to " + file, ex);
+        } finally {
+            if (fos != null) {
+                try {
+                    fos.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
     //-----------//
@@ -278,6 +331,11 @@ public class ScoreManager
         Constant.String defaultScoreDirectory = new Constant.String(
             "",
             "Default directory for saved scores");
+
+        /** Default directory for saved benches */
+        Constant.String defaultBenchDirectory = new Constant.String(
+            "",
+            "Default directory for saved benches");
 
         /** Default directory for writing Midi files */
         Constant.String defaultMidiDirectory = new Constant.String(

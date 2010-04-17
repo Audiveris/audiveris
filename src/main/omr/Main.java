@@ -18,6 +18,8 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
+import omr.score.Score;
+
 import omr.script.Script;
 import omr.script.ScriptManager;
 
@@ -172,6 +174,15 @@ public class Main
                                 logger.info(
                                     "Script file " + file + " run in " +
                                     (stop - start) + " ms");
+
+                                // Close when in batch mode
+                                if (gui == null) {
+                                    Sheet sheet = script.getSheet();
+
+                                    if (sheet != null) {
+                                        sheet.close();
+                                    }
+                                }
                             } catch (FileNotFoundException ex) {
                                 logger.warning(
                                     "Cannot find script file " + file);
@@ -212,6 +223,11 @@ public class Main
                             if (file.exists()) {
                                 final Sheet sheet = new Sheet(file);
                                 parameters.targetStep.performUntil(sheet);
+
+                                // Close when in batch mode
+                                if (gui == null) {
+                                    sheet.close();
+                                }
                             } else {
                                 logger.warning("Cannot find " + file);
                             }

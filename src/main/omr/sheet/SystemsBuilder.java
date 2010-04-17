@@ -537,6 +537,9 @@ public class SystemsBuilder
             sb.append("no part found");
         }
 
+        sheet.getBench()
+             .recordPartCount(partNb);
+
         if (sysNb > 0) {
             sb.append(", ")
               .append(sysNb)
@@ -548,6 +551,9 @@ public class SystemsBuilder
         } else {
             sb.append("no system found");
         }
+
+        sheet.getBench()
+             .recordSystemCount(sysNb);
 
         logger.info(sb.toString());
     }

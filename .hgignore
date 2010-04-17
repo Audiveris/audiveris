@@ -8,6 +8,7 @@ syntax: regexp
 \.orig$
 \.orig\..*$
 \.rej$
+benches
 bugs
 dist
 lib

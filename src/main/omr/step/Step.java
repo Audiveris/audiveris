@@ -412,6 +412,10 @@ public enum Step {
             logger.fine(
                 this + " completed in " + (stopTime - startTime) + " ms");
         }
+
+        // Record this in bench
+        sheet.getBench()
+             .recordStep(this);
     }
 
     //----------//

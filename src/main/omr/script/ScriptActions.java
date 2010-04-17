@@ -334,13 +334,13 @@ public class ScriptActions
             FileOutputStream fos = null;
 
             try {
-                java.io.File folder = new java.io.File(file.getParent());
+                File folder = new File(file.getParent());
 
                 if (folder.mkdirs()) {
                     logger.info("Creating folder " + folder);
                 }
 
-                fos = new java.io.FileOutputStream(file);
+                fos = new FileOutputStream(file);
                 omr.script.ScriptManager.getInstance()
                                         .store(script, fos);
                 logger.info("Script stored as " + file);

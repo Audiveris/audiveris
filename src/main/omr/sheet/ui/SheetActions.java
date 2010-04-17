@@ -104,13 +104,7 @@ public class SheetActions
         Sheet sheet = SheetsController.selectedSheet();
 
         if (sheet != null) {
-            Score score = sheet.getScore();
-
-            if (sheet.close()) {
-                if (score != null) {
-                    score.close();
-                }
-            }
+            sheet.close();
         }
     }
 

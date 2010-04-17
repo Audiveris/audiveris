@@ -157,10 +157,6 @@ public class Score
         super(null); // No container
 
         setImagePath(imagePath);
-
-        if (logger.isFineEnabled()) {
-            Main.dumping.dump(this, "Constructed");
-        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -1026,9 +1022,15 @@ public class Score
             scoreTree.close();
         }
 
-        // Close Midi interface if needed
+        // Store score bench
         ScoreManager.getInstance()
-                    .midiClose(this);
+                    .storeBench(this, null);
+
+        // Close Midi interface if needed
+        if (Main.getGui() != null) {
+            ScoreManager.getInstance()
+                        .midiClose(this);
+        }
     }
 
     //--------------------//

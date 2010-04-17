@@ -87,6 +87,9 @@ public class Sheet
 
     //~ Instance fields --------------------------------------------------------
 
+    /** The recording of key processing data */
+    private SheetBench bench;
+
     /** Link with sheet original image file. Set by constructor. */
     private File imageFile;
 
@@ -205,6 +208,9 @@ public class Sheet
             score = new Score(getPath());
             score.setSheet(this);
 
+            // Related bench
+            bench = new SheetBench(this);
+
             // Update UI information if so needed
             if (Main.getGui() != null) {
                 errorsEditor = new ErrorsEditor(this);
@@ -254,6 +260,18 @@ public class Sheet
     public SheetAssembly getAssembly ()
     {
         return assembly;
+    }
+
+    //----------//
+    // getBench //
+    //----------//
+    /**
+     * Report the related sheet bench
+     * @return the related bench
+     */
+    public SheetBench getBench ()
+    {
+        return bench;
     }
 
     //----------------------//
@@ -1173,7 +1191,7 @@ public class Sheet
     //-------//
     /**
      * Close this sheet, as well as its assembly if any.
-     * @return true if we have actually closed ths sheet
+     * @return true if we have actually closed this sheet
      */
     public boolean close ()
     {
@@ -1186,6 +1204,10 @@ public class Sheet
 
             if (picture != null) {
                 picture.close();
+            }
+
+            if (score != null) {
+                score.close();
             }
 
             return true;
@@ -1269,7 +1291,10 @@ public class Sheet
     {
         SymbolsModel model = new SymbolsModel(this, getVerticalLag());
         symbolsController = new SymbolsController(model);
-        editor = new SymbolsEditor(this, symbolsController);
+
+        if (Main.getGui() != null) {
+            editor = new SymbolsEditor(this, symbolsController);
+        }
     }
 
     //----------------------//
