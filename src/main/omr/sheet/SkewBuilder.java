@@ -178,7 +178,7 @@ public class SkewBuilder
             try {
                 picture.rotate(-angle);
                 sheet.getBench()
-                     .recordRotatedDimension(
+                     .recordImageDimension(
                     picture.getWidth(),
                     picture.getHeight());
             } catch (ImageFormatException ex) {

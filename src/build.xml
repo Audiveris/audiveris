@@ -228,7 +228,7 @@
     <!--  J A R  -->
     <!-- ======= -->
     <target name="jar"
-        depends="-compile, -pre-jar, -copy-libs"
+        depends="-compile, -pre-jar, -copy-libs, -hg-tip"
         description="Compile and generate the application jar file.">
 
 	<!-- Prepare the proper string of all companion jar files -->
@@ -254,7 +254,7 @@
                 <attribute name="Specification-Version"
                            value="${spec.version}"/>
                 <attribute name="Implementation-Version"
-                           value="${impl.version} ${DSTAMP}"/>
+                           value="${ant4hg.log.revision}:${ant4hg.log.changeset}"/>
             </manifest>
         </jar>
         

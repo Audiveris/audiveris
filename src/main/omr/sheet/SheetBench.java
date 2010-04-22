@@ -13,15 +13,10 @@ package omr.sheet;
 
 import omr.Main;
 
-import omr.script.Script;
-
 import omr.step.Step;
 
 import java.io.*;
 import java.util.*;
-
-import javax.xml.bind.*;
-import javax.xml.bind.annotation.*;
 
 /**
  * Class {@code SheetBench} is in charge of recording all important information
@@ -29,16 +24,12 @@ import javax.xml.bind.annotation.*;
  *
  * @author Hervé Bitteur
  */
-@XmlAccessorType(XmlAccessType.NONE)
-@XmlRootElement(name = "bench")
 public class SheetBench
 {
-    //~ Static fields/initializers ---------------------------------------------
-
-    /** JAXB context for marshalling score benches */
-    private static JAXBContext jaxbContext;
-
     //~ Instance fields --------------------------------------------------------
+
+    /** The set of properties */
+    private final Properties props = new Properties();
 
     /** The related sheet */
     private final Sheet sheet;
@@ -46,72 +37,11 @@ public class SheetBench
     /** Time stamp when this instance was created */
     private final long startTime = System.currentTimeMillis();
 
-    /** Starting date */
-    @XmlElement
-    Date date = new Date(startTime);
-
-    /** Application name */
-    @XmlElement
-    private final String program = Main.getToolName();
-
-    /** Functional specification */
-    @XmlElement
-    private final String version = Main.getToolVersion();
-
-    /** Hg tip revision */
-    @XmlElement
-    private final String revision = "No yet implemented"; // Place-holder
-
-    /** Build info */
-    @XmlElement
-    private final String build = Main.getToolBuild();
-
-    /** Score image */
-    @XmlElement(name = "image")
-    private String imagePath;
-
-    /** The processing script */
-    @XmlElement
-    private Script script;
-
     /** Time when we started current step */
     private long stepStartTime = startTime;
 
-    /** Size of the initial (non-rotated) image */
-    @XmlElement(name = "initial-dimension")
-    private Dim initialDimension;
-
-    /** Skew angle */
-    @XmlElement
-    private double skew;
-
-    /** Size of the rotated image */
-    @XmlElement(name = "rotated-dimension")
-    private Dim rotatedDimension;
-
-    /** Scale of the sheet */
-    @XmlElement(name = "scale")
-    private Scale scale;
-
-    /** Total number of staves */
-    @XmlElement
-    private int staves;
-
-    /** Number of parts */
-    @XmlElement
-    private int parts;
-
-    /** Number of systems */
-    @XmlElement
-    private int systems;
-
-    /** Step sequence */
-    @XmlElement(name = "step")
-    private final List<StepBench> steps = new ArrayList<StepBench>();
-
-    /** Whole processing duration */
-    @XmlElement(name = "whole-duration")
-    private long wholeDuration;
+    /** Starting date */
+    private final Date date = new Date(startTime);
 
     //~ Constructors -----------------------------------------------------------
 
@@ -125,26 +55,22 @@ public class SheetBench
     public SheetBench (Sheet sheet)
     {
         this.sheet = sheet;
-    }
-
-    //------------//
-    // SheetBench //
-    //------------//
-    /** Needed by JAXB */
-    private SheetBench ()
-    {
-        sheet = null;
+        setProp("date", date.toString());
+        setProp("program", Main.getToolName());
+        setProp("version", Main.getToolVersion());
+        setProp("revision", Main.getToolBuild());
     }
 
     //~ Methods ----------------------------------------------------------------
 
-    //------------------------//
-    // recordInitialDimension //
-    //------------------------//
-    public void recordInitialDimension (int width,
+    //----------------------//
+    // recordImageDimension //
+    //----------------------//
+    public void recordImageDimension (int width,
                                         int height)
     {
-        this.initialDimension = new Dim(width, height);
+        setProp("image.width", "" + width);
+        setProp("image.height", "" + height);
     }
 
     //-----------------//
@@ -152,16 +78,7 @@ public class SheetBench
     //-----------------//
     public void recordPartCount (int partCount)
     {
-        this.parts = partCount;
-    }
-
-    //------------------------//
-    // recordRotatedDimension //
-    //------------------------//
-    public void recordRotatedDimension (int width,
-                                        int height)
-    {
-        this.rotatedDimension = new Dim(width, height);
+        setProp("parts", "" + partCount);
     }
 
     //-------------//
@@ -169,7 +86,9 @@ public class SheetBench
     //-------------//
     public void recordScale (Scale scale)
     {
-        this.scale = scale;
+        setProp("scale.mainBack", "" + scale.mainBack());
+        setProp("scale.mainFore", "" + scale.mainFore());
+        setProp("scale.interline", "" + scale.interline());
     }
 
     //------------//
@@ -177,7 +96,7 @@ public class SheetBench
     //------------//
     public void recordSkew (double skew)
     {
-        this.skew = skew;
+        setProp("skew", "" + skew);
     }
 
     //------------------//
@@ -185,7 +104,7 @@ public class SheetBench
     //------------------//
     public void recordStaveCount (int staveCount)
     {
-        this.staves = staveCount;
+        setProp("staves", "" + staveCount);
     }
 
     //------------//
@@ -194,7 +113,9 @@ public class SheetBench
     public void recordStep (Step step)
     {
         long now = System.currentTimeMillis();
-        steps.add(new StepBench(step.name(), now - stepStartTime));
+        setProp(
+            "step." + step.label.toLowerCase() + ".duration",
+            "" + (now - stepStartTime));
         stepStartTime = now;
     }
 
@@ -203,7 +124,7 @@ public class SheetBench
     //-------------------//
     public void recordSystemCount (int systemCount)
     {
-        this.systems = systemCount;
+        setProp("systems", "" + systemCount);
     }
 
     //-------//
@@ -213,94 +134,115 @@ public class SheetBench
      * Store this bench into an output stream
      *
      * @param output the output stream to be written
-     * @throws JAXBException
+     * @throws IOException
      */
     public void store (OutputStream output)
-        throws JAXBException
+        throws IOException
     {
-        wholeDuration = System.currentTimeMillis() - startTime;
-
         // Finalize this bench
-        script = sheet.getScript();
-        imagePath = sheet.getPath();
+        long wholeDuration = System.currentTimeMillis() - startTime;
+        setProp("whole.duration", "" + wholeDuration);
 
-        // Store to file
-        Marshaller m = getJaxbContext()
-                           .createMarshaller();
-        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-        m.marshal(this, output);
+        setProp("image", sheet.getPath());
+
+        //        script = sheet.getScript();
+        cleanupProps();
+
+        // Sort and store to file
+        SortedSet<String> keys = new TreeSet<String>();
+
+        for (Object obj : props.keySet()) {
+            String key = (String) obj;
+            keys.add(key);
+        }
+
+        PrintWriter writer = new PrintWriter(output);
+
+        for (String key : keys) {
+            writer.println(key + " = " + props.getProperty(key));
+        }
+
+        writer.flush();
     }
 
-    //----------------//
-    // getJaxbContext //
-    //----------------//
-    private static JAXBContext getJaxbContext ()
-        throws JAXBException
+    //---------//
+    // setProp //
+    //---------//
+    /**
+     * This is a specific setProperty functionality, that creates new keys by
+     * appending numbered suffixes
+     * @param radix
+     * @param value
+     */
+    private void setProp (String radix,
+                          String value)
     {
-        // Lazy creation
-        if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(SheetBench.class);
+        if ((value == null) || (value.length() == 0)) {
+            return;
         }
 
-        return jaxbContext;
+        String key = null;
+        int    index = 0;
+
+        do {
+            key = keyOf(radix, ++index);
+        } while (props.containsKey(key));
+
+        props.setProperty(key, value);
     }
 
-    //~ Inner Classes ----------------------------------------------------------
-
-    //-----//
-    // Dim //
-    //-----//
-    private static class Dim
+    //--------------//
+    // cleanupProps //
+    //--------------//
+    private void cleanupProps ()
     {
-        //~ Instance fields ----------------------------------------------------
+        // Retrieve key radices
+        SortedSet<String> radices = new TreeSet<String>();
 
-        @XmlElement
-        final int            width;
-        @XmlElement
-        final int            height;
-
-        //~ Constructors -------------------------------------------------------
-
-        public Dim (int width,
-                    int height)
-        {
-            this.width = width;
-            this.height = height;
+        for (Object obj : props.keySet()) {
+            String key = (String) obj;
+            int    dot = key.lastIndexOf(".");
+            String radix = key.substring(0, dot);
+            radices.add(radix);
         }
 
-        // For JAXB
-        private Dim ()
-        {
-            width = height = 0;
+        for (String radix : radices) {
+            // Do we have just 1 property?
+            if (!props.containsKey(keyOf(radix, 2))) {
+                String key1 = keyOf(radix, 1);
+                props.setProperty(radix, props.getProperty(key1));
+                props.remove(key1);
+            }
+        }
+
+        // Special case for step: we sum the durations
+        for (String radix : radices) {
+            if (radix.startsWith("step.") && radix.endsWith(".duration")) {
+                // Sum all the values into the radix property
+                int sum = 0;
+
+                for (int index = 1;; index++) {
+                    String key = keyOf(radix, index);
+                    String str = props.getProperty(key);
+
+                    if (str == null) {
+                        break;
+                    } else {
+                        sum += Integer.parseInt(str);
+                    }
+                }
+
+                props.setProperty(radix, "" + sum);
+            }
         }
     }
 
-    //-----------//
-    // StepBench //
-    //-----------//
-    private static class StepBench
+    //-------//
+    // keyOf //
+    //-------//
+    private String keyOf (String radix,
+                          int    index)
     {
-        //~ Instance fields ----------------------------------------------------
-
-        @XmlElement
-        final String            name;
-        @XmlElement
-        final long              duration;
-
-        //~ Constructors -------------------------------------------------------
-
-        public StepBench (String step,
-                          long   duration)
-        {
-            this.name = step;
-            this.duration = duration;
-        }
-
-        // For JAXB
-        private StepBench ()
-        {
-            name = null;
-            duration = 0;
-        }
+        return String.format("%s.%02d", radix, index);
     }
 }

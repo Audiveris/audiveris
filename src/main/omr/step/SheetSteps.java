@@ -458,7 +458,7 @@ public class SheetSteps
                 sheet.setPicture(picture);
 
                 sheet.getBench()
-                     .recordInitialDimension(
+                     .recordImageDimension(
                     picture.getWidth(),
                     picture.getHeight());
             } catch (FileNotFoundException ex) {

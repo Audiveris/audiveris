@@ -47,7 +47,7 @@ public class ScoreManager
     public static final String SCORE_EXTENSION = ".xml";
 
     /** The extension used for score bench files: {@value} */
-    public static final String BENCH_EXTENSION = ".bench.xml";
+    public static final String BENCH_EXTENSION = ".bench.properties";
 
     /** The single instance of this class */
     private static volatile ScoreManager INSTANCE;
