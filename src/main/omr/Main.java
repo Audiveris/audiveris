@@ -367,9 +367,11 @@ public class Main
             // Wait for batch completion and exit
             OmrExecutors.shutdown();
 
-            // Store latest constant values on disk
-            ConstantManager.getInstance()
-                           .storeResource();
+            // Store latest constant values on disk ?
+            if (constants.persistBatchCliConstants.getValue()) {
+                ConstantManager.getInstance()
+                               .storeResource();
+            }
 
             if (logger.isFineEnabled()) {
                 logger.fine("End of main");
@@ -463,5 +465,10 @@ public class Main
         private final Constant.String localeCountry = new Constant.String(
             "",
             "Locale country to be used in the whole application (US, FR, ...)");
+
+        /** "Should we persist CLI-defined constants when running in batch? */
+        private final Constant.Boolean persistBatchCliConstants = new Constant.Boolean(
+            false,
+            "Should we persist CLI-defined constants when running in batch?");
     }
 }
