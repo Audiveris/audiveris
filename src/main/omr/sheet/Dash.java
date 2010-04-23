@@ -28,8 +28,8 @@ import java.util.List;
  * represent a ledger, a legato sign or the horizontal part of an alternate
  * ending.
  *
- * <p>The role of a Dash, as compared to a plain {@link omr.stick.Stick} is to
- * handle the horizontal segment (its Line and contour box), even if the
+ * <p>The role of a Dash, as compared to a plain {@link omr.glyph.facets.Stick}
+ * is to handle the horizontal segment (its Line and contour box), even if the
  * underlying stick has been discarded. Doing so saves us the need to serialize
  * the whole horizontal GlyphLag.
  *

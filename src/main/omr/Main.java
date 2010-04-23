@@ -14,11 +14,10 @@ package omr;
 import static omr.WellKnowns.*;
 
 import omr.constant.Constant;
+import omr.constant.ConstantManager;
 import omr.constant.ConstantSet;
 
 import omr.log.Logger;
-
-import omr.score.Score;
 
 import omr.script.Script;
 import omr.script.ScriptManager;
@@ -56,6 +55,14 @@ import javax.swing.*;
  * step. 'STEPNAME' can be any one of the step names (the case is irrelevant) as
  * defined in the {@link omr.step.Step} class. This step will be performed on
  * each sheet referenced from the command line.</dd>
+ *
+ * <dt> <b>-option (KEY=VALUE | &#64;OPTIONLIST)+</b> </dt> <dd> to specify
+ * the value of some application parameters (that can also be set via the
+ * pull-down menu "Tools|Options"), either by stating the key=value pair or by
+ * referencing (flagged by a &#64; sign) a file that lists key=value pairs (or
+ * even other files list recursively). A list file is a simple text file, with
+ * one key=value pair per line. <b>Nota</b>: The syntax used in the Properties
+ * syntax, so for example back-slashes must be escaped.</dd>
  *
  * <dt> <b>-sheet (SHEETNAME | &#64;SHEETLIST)+</b> </dt> <dd> to specify some
  * sheets to be read, either by naming the image file or by referencing (flagged
@@ -114,6 +121,18 @@ public class Main
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-----------------//
+    // getCliConstants //
+    //-----------------//
+    /**
+     * Report the properties set at the CLI level
+     * @return the CLI-defined constant values
+     */
+    public static Properties getCliConstants ()
+    {
+        return parameters.constants;
+    }
 
     //--------//
     // setGui //
@@ -313,14 +332,14 @@ public class Main
      */
     public static void main (String[] args)
     {
-        // Locale to be used in the whole application ?
-        checkLocale();
-
         // Initialize tool parameters
         initialize();
 
         // Process CLI arguments
         process(args);
+
+        // Locale to be used in the whole application ?
+        checkLocale();
 
         // For non-batch mode
         if (!parameters.batchMode) {
@@ -347,6 +366,10 @@ public class Main
 
             // Wait for batch completion and exit
             OmrExecutors.shutdown();
+
+            // Store latest constant values on disk
+            ConstantManager.getInstance()
+                           .storeResource();
 
             if (logger.isFineEnabled()) {
                 logger.fine("End of main");

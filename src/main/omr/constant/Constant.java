@@ -304,7 +304,8 @@ public abstract class Constant
             //                Thread.currentThread().getName() + ": " + "Done unit:" + unit +
             //                " name:" + name);
         } catch (Exception ex) {
-            logger.warning("Error registering constant " + qName, ex);
+            logger.warning("Error registering constant " + qName);
+            ex.printStackTrace();
         }
     }
 

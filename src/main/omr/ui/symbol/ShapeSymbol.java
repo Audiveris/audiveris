@@ -472,7 +472,7 @@ public class ShapeSymbol
      * Draw this symbol image on the provided graphics environment (which may
      * be scaled) using the topLeft point. We of course use the most suitable
      * image that we have. The image is rendered with {@link
-     * ScoreConstants.INTER_LINE} normalized size.
+     * omr.score.ui.ScoreConstants#INTER_LINE} normalized size.
      * @param g the graphics context
      * @param topLeft the upper left corner of the image, using the coordinate
      * references of the display (PixelPoint for sheet, SystemPoint for score)

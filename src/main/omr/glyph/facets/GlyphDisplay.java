@@ -38,7 +38,7 @@ interface GlyphDisplay
      * the color policy which is based on the glyph shape
      *
      * @return the related shape color of the glyph, or the predefined {@link
-     * Shape#missedColor} if the glyph has no related shape
+     * omr.glyph.Shape#missedColor} if the glyph has no related shape
      */
     Color getColor ();
 

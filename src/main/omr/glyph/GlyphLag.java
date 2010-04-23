@@ -447,7 +447,7 @@ public class GlyphLag
      * Map a section to a glyph, making the glyph active
      *
      * @param section the section to map
-     * @param alien the assigned glyph
+     * @param glyph the assigned glyph
      */
     synchronized void mapSection (GlyphSection section,
                                   Glyph        glyph)

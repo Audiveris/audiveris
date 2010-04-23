@@ -15,13 +15,8 @@ import omr.log.Logger;
 
 import omr.step.Step;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 
 /**
  * Class <code>CLI</code> handles the parameters of the command line interface
@@ -41,7 +36,8 @@ public class CLI
     private static enum Status {
         //~ Enumeration constant initializers ----------------------------------
 
-        STEP,SHEET, SCRIPT;
+        STEP,OPTION, SHEET,
+        SCRIPT;
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -106,24 +102,24 @@ public class CLI
         return sb.toString();
     }
 
-    //--------//
-    // addRef //
-    //--------//
+    //---------//
+    // addItem //
+    //---------//
     /**
-     * Add a reference to a provided list, while handling indirections if needed
-     * @param ref the reference to add, which can be a plain name (which is
-     * simply added to the list) or an indirection (a name starting by the '@'
-     * character) which denotes a file of references to be recursively added
-     * @param list the collection of references to be augmented
+     * Add an item to a provided list, while handling indirections if needed
+     * @param item the item to add, which can be a plain string (which is
+     * simply added to the list) or an indirection (a string starting by the '@'
+     * character) which denotes a file of items to be recursively added
+     * @param list the collection of items to be augmented
      */
-    private void addRef (String       ref,
-                         List<String> list)
+    private void addItem (String       item,
+                          List<String> list)
     {
-        // The ref may be a plain file name or the name of a pack that lists
-        // ref(s). This is signalled by a starting '@' character in ref
-        if (ref.startsWith("@")) {
-            // File with other refs inside
-            String         pack = ref.substring(1);
+        // The item may be a plain string or the name of a pack that lists
+        // item(s). This is signalled by a starting '@' character in string
+        if (item.startsWith("@")) {
+            // File with other items inside
+            String         pack = item.substring(1);
 
             BufferedReader br = null;
 
@@ -134,7 +130,7 @@ public class CLI
 
                 try {
                     while ((newRef = br.readLine()) != null) {
-                        addRef(newRef.trim(), list);
+                        addItem(newRef.trim(), list);
                     }
 
                     br.close();
@@ -152,10 +148,36 @@ public class CLI
                     }
                 }
             }
-        } else if (ref.length() > 0) {
-            // Plain file name
-            list.add(ref);
+        } else if (item.length() > 0) {
+            // Plain item
+            list.add(item);
         }
+    }
+
+    //-----------------//
+    // decodeConstants //
+    //-----------------//
+    /**
+     * Retrieve properties out of the flat sequence of "key = value" pairs
+     * @param constantPairs the flat sequence of key = value pairs
+     * @return the resulting constant properties
+     */
+    private Properties decodeConstants (List<String> constantPairs)
+        throws IOException
+    {
+        Properties    props = new Properties();
+
+        // Use a simple string buffer in memory
+        StringBuilder sb = new StringBuilder();
+
+        for (String pair : constantPairs) {
+            sb.append(pair)
+              .append("\n");
+        }
+
+        props.load(new StringReader(sb.toString()));
+
+        return props;
     }
 
     //-------//
@@ -169,10 +191,11 @@ public class CLI
     private Parameters parse ()
     {
         // Status of the finite state machine
-        boolean    paramNeeded = false; // Are we expecting a param?
-        Status     status = Status.SHEET; // By default
-        String     currentCommand = null;
-        Parameters params = new Parameters();
+        boolean      paramNeeded = false; // Are we expecting a param?
+        Status       status = Status.SHEET; // By default
+        String       currentCommand = null;
+        Parameters   params = new Parameters();
+        List<String> optionPairs = new ArrayList<String>();
 
         // Parse all arguments from command line
         for (int i = 0; i < args.length; i++) {
@@ -199,6 +222,9 @@ public class CLI
                     paramNeeded = false;
                 } else if (token.equalsIgnoreCase("-step")) {
                     status = Status.STEP;
+                    paramNeeded = true;
+                } else if (token.equalsIgnoreCase("-option")) {
+                    status = Status.OPTION;
                     paramNeeded = true;
                 } else if (token.equalsIgnoreCase("-sheet")) {
                     status = Status.SHEET;
@@ -238,14 +264,20 @@ public class CLI
 
                     break;
 
+                case OPTION :
+                    addItem(token, optionPairs);
+                    paramNeeded = false;
+
+                    break;
+
                 case SHEET :
-                    addRef(token, params.sheetNames);
+                    addItem(token, params.sheetNames);
                     paramNeeded = false;
 
                     break;
 
                 case SCRIPT :
-                    addRef(token, params.scriptNames);
+                    addItem(token, params.scriptNames);
                     paramNeeded = false;
 
                     break;
@@ -260,6 +292,13 @@ public class CLI
                 "Expecting a parameter after command '" + currentCommand + "'");
 
             return null;
+        }
+
+        // Decode option pairs
+        try {
+            params.constants = decodeConstants(optionPairs);
+        } catch (Exception ex) {
+            logger.warning("Error decoding -option ", ex);
         }
 
         // Results
@@ -304,6 +343,7 @@ public class CLI
            .append(" [-help]")
            .append(" [-batch]")
            .append(" [-step STEPNAME]")
+           .append(" [-option (KEY=VALUE|@OPTIONLIST)+]")
            .append(" [-sheet (SHEETNAME|@SHEETLIST)+]")
            .append(" [-script (SCRIPTNAME|@SCRIPTLIST)+]");
 
@@ -328,7 +368,7 @@ public class CLI
     // Parameters //
     //------------//
     /**
-     * A structure that collects the various parameters to be parsed from the
+     * A structure that collects the various parameters parsed out of the
      * command line
      */
     public static class Parameters
@@ -340,6 +380,9 @@ public class CLI
 
         /** The desired step if any (option: -step stepName) */
         Step targetStep = Step.LOAD;
+
+        /** The map of constants */
+        Properties constants = null;
 
         /** The list of sheet file names to load */
         final List<String> sheetNames = new ArrayList<String>();
@@ -363,6 +406,8 @@ public class CLI
               .append(batchMode);
             sb.append("\ntargetStep=")
               .append(targetStep);
+            sb.append("\noptions=")
+              .append(constants);
             sb.append("\nsheetNames=")
               .append(sheetNames);
             sb.append("\nscriptNames=")

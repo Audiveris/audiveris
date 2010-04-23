@@ -63,7 +63,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * </li><br/>
  *
- * <li> Then, <b>DEFAULT</b> values, contained in a property file named
+ * <li>Then, <b>DEFAULT</b> values, contained in a property file named
  * <em><b>"config/run.default.properties"</b></em> can assign overriding values
  * to some constants. For example, the <code>minInterline</code> constant above
  * could be altered by the following line in this default file: <pre>
@@ -76,7 +76,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * of this file is to manually edit it, and this should be reserved to a
  * knowledgeable person.</li> <br/>
  *
- * <li> Finally, <b>USER</b> values, may be contained in another property file
+ * <li>Then, <b>USER</b> values, may be contained in another property file
  * named <em><b>"run.properties"</b></em>. This file is modified every time the
  * user updates the value of a constant by means of the provided Constant user
  * interface at run-time. The file is not mandatory, the user's home directory
@@ -86,11 +86,20 @@ import java.util.concurrent.ConcurrentHashMap;
  * represent some modification made by the end user at run-time and thus saved
  * from one run to the other. The format of the user file is the same as the
  * default file, and it is not meant to be edited manually, but rather through
- * the provided GUI tool.</li> </ol>
+ * the provided GUI tool.</li> <br/>
  *
- * <p>The difference between DEFAULT and USER, besides the fact that USER values
- * override DEFAULT values, is that there is exactly one DEFAULT file but there
- * may be zero or several USER files. They address different purposes.
+ * <li>Then, <b>CLI</b> values, as set on the command line interface, by means
+ * of the <em><b>"-option"</b> key=value</em> command. For further details on
+ * this command, refer to the {@link Main} documentation. These constant values
+ * defined at the CLI level are persisted in the USER file.</li> <br/>
+ *
+ * <li>Finally, <b>UI Options Menu</b> values, as set online through the
+ * graphical user interface. These constant values defined at the GUI level are
+ * persisted in the USER file.</li> </ol>
+ *
+ * <p>The difference between DEFAULT and USER files, besides the fact that USER
+ * values override DEFAULT values, is that there is exactly one DEFAULT file but
+ * there may be zero or several USER files. They address different purposes.
  * Different users on the same machine may want to have some common Audiveris
  * technical values, while allowing separate user-related values for each
  * user. The common (shared) values should go to the DEFAULT file, while the
@@ -126,6 +135,9 @@ public class ConstantManager
     /** User properties file name */
     private static final String USER_FILE_NAME = "run.properties";
 
+//    /** Current properties file name */
+//    private static final String CURRENT_FILE_NAME = "run.properties.xml";
+
     /** User properties file folder */
     private static final File USER_FILE_FOLDER = new File(
         System.getProperty("user.home") +
@@ -152,6 +164,11 @@ public class ConstantManager
         null,
         new File(USER_FILE_FOLDER, USER_FILE_NAME),
         defaultHolder);
+
+//    /** Current properties */
+//    private final CurrentHolder currentHolder = new CurrentHolder(
+//        null,
+//        new File(USER_FILE_FOLDER, CURRENT_FILE_NAME));
 
     //~ Constructors -----------------------------------------------------------
 
@@ -256,6 +273,20 @@ public class ConstantManager
                 "Attempt to duplicate constant " + qName);
         }
 
+        // Value set at CLI level?
+        Properties cliConstants = Main.getCliConstants();
+
+        if (cliConstants != null) {
+            String cliValue = cliConstants.getProperty(qName);
+
+            if (cliValue != null) {
+                return cliValue;
+            }
+        } else {
+            System.err.println("*** cliConstants are not yet available ***");
+        }
+
+        // Fallback on using default/user value
         return userHolder.getProperty(qName);
     }
 
@@ -288,6 +319,7 @@ public class ConstantManager
     public void storeResource ()
     {
         userHolder.store();
+        ///currentHolder.store();
     }
 
     //-------------------------//
@@ -430,11 +462,11 @@ public class ConstantManager
                 if (in != null) {
                     properties.load(in);
                     in.close();
-                } else {
-                    // We should have a resource available
-                    logger.warning(
-                        "[" + ConstantManager.class.getName() + "]" +
-                        " No property resource " + resourceName);
+//                } else {
+//                    // We should have a resource available
+//                    logger.warning(
+//                        "[" + ConstantManager.class.getName() + "]" +
+//                        " No property resource " + resourceName);
                 }
             } catch (IOException ex) {
                 logger.severe(
@@ -442,6 +474,82 @@ public class ConstantManager
             }
         }
     }
+
+//    //---------------//
+//    // CurrentHolder //
+//    //---------------//
+//    /**
+//     * This utility holder is meant to ease the storing of ALL current values
+//     * in some XML file
+//     */
+//    private class CurrentHolder
+//        extends AbstractHolder
+//    {
+//        //~ Constructors -------------------------------------------------------
+//
+//        public CurrentHolder (String resourceName,
+//                              File   file)
+//        {
+//            super(resourceName, file);
+//        }
+//
+//        //~ Methods ------------------------------------------------------------
+//
+//        public void buildProperties ()
+//        {
+//            properties = new Properties();
+//
+//            // Browse all constant entries
+//            for (Entry<String, Constant> entry : constants.entrySet()) {
+//                final String   key = entry.getKey();
+//                final Constant constant = entry.getValue();
+//                final String   current = constant.getCurrentString();
+//                properties.setProperty(key, current);
+//            }
+//        }
+//
+//        public void store ()
+//        {
+//            buildProperties();
+//
+//            // Save all the current values
+//            FileOutputStream out = null;
+//
+//            try {
+//                if (logger.isFineEnabled()) {
+//                    logger.fine("Store constants into " + file);
+//                }
+//
+//                // First make sure the directory exists
+//                if (file.getParentFile()
+//                        .mkdirs()) {
+//                    logger.info("Creating " + file);
+//                }
+//
+//                // Then write down the properties
+//                out = new FileOutputStream(file);
+//                properties.storeToXML(
+//                    out,
+//                    "Audiveris current properties. Do not edit");
+//                out.close();
+//            } catch (FileNotFoundException ex) {
+//                logger.warning(
+//                    "Property file " + file.getAbsolutePath() +
+//                    " not found or not writable");
+//            } catch (IOException ex) {
+//                logger.warning(
+//                    "Error while storing the property file " +
+//                    file.getAbsolutePath());
+//            } finally {
+//                if (out != null) {
+//                    try {
+//                        out.close();
+//                    } catch (Exception ignored) {
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     //---------------//
     // DefaultHolder //

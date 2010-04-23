@@ -37,7 +37,7 @@ import javax.xml.bind.*;
  * artifacts which need such music icons</li>
  *
  * <li>They are used also to build <i>artificial glyphs</i>, instances of the
- * {@link omr.glyph.IconGlyph} class, which can be used to train the evaluator
+ * {@link omr.glyph.SymbolGlyph} class, which can be used to train the evaluator
  * when no other real glyph is available for a given shape.</li></p>
  *
  * <p>These symbols use a custom (un)marshalling technique (using JAXB)
