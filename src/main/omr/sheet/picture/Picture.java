@@ -36,6 +36,7 @@ import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URL;
 
 import javax.media.jai.BorderExtender;
 import javax.media.jai.InterpolationBilinear;
@@ -220,6 +221,28 @@ public class Picture
         throws FileNotFoundException, IOException, ImageFormatException
     {
         setImage(PictureLoader.loadFile(imgFile));
+
+        logger.info(
+            "Image loaded " + image.getWidth() + " x " + image.getHeight());
+    }
+
+    //---------//
+    // Picture //
+    //---------//
+    /**
+     * Build a picture instance, given  url where the related
+     * image should be read.
+     *
+     * @param imgUrl the image url
+     *
+     * @throws FileNotFoundException raised when the file is not found
+     * @throws IOException           raised when an IO error occurred
+     * @throws ImageFormatException
+     */
+    public Picture (URL imgUrl)
+        throws FileNotFoundException, IOException, ImageFormatException
+    {
+        setImage(PictureLoader.loadUrl(imgUrl));
 
         logger.info(
             "Image loaded " + image.getWidth() + " x " + image.getHeight());

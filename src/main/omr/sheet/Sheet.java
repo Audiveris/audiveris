@@ -61,6 +61,7 @@ import omr.util.FileUtil;
 
 import java.awt.*;
 import java.io.*;
+import java.net.URL;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -92,6 +93,9 @@ public class Sheet
 
     /** Link with sheet original image file. Set by constructor. */
     private File imageFile;
+
+    /** Link with sheet original image url. Set by constructor. */
+    private URL imageUrl;
 
     /** The related picture */
     private Picture picture;
@@ -190,7 +194,7 @@ public class Sheet
      */
     public Sheet (File imageFile)
     {
-        sheetSteps = new SheetSteps(this);
+        this(imageFile.getPath());
 
         if (logger.isFineEnabled()) {
             logger.fine("creating Sheet from image " + imageFile);
@@ -199,25 +203,46 @@ public class Sheet
         try {
             // We make sure we have a canonical form for the file name
             this.imageFile = imageFile.getCanonicalFile();
-
-            // Insert in list of handled sheets
-            SheetsManager.getInstance()
-                         .insertInstance(this);
-
-            // Related score
-            score = new Score(getPath());
-            score.setSheet(this);
-
-            // Related bench
-            bench = new SheetBench(this);
-
-            // Update UI information if so needed
-            if (Main.getGui() != null) {
-                errorsEditor = new ErrorsEditor(this);
-                Main.getGui().sheetsController.showSheet(this);
-            }
         } catch (IOException ex) {
             logger.warning(ex.toString(), ex);
+        }
+    }
+
+    /**
+     * Creates a new Sheet object, with an URL as input
+     *
+     * @param imageUrl URL to a sheet image
+     */
+    public Sheet (URL imageUrl)
+    {
+        this(imageUrl.getPath());
+
+        if (logger.isFineEnabled()) {
+            logger.fine("creating Sheet from url " + imageUrl);
+        }
+
+        this.imageUrl = imageUrl;
+    }
+
+    private Sheet (String path)
+    {
+        sheetSteps = new SheetSteps(this);
+
+        // Insert in list of handled sheets
+        SheetsManager.getInstance()
+                     .insertInstance(this);
+
+        // Related score
+        score = new Score(path);
+        score.setSheet(this);
+
+        // Related bench
+        bench = new SheetBench(this);
+
+        // Update UI information if so needed
+        if (Main.getGui() != null) {
+            errorsEditor = new ErrorsEditor(this);
+            Main.getGui().sheetsController.showSheet(this);
         }
     }
 
@@ -456,6 +481,19 @@ public class Sheet
         return imageFile;
     }
 
+    //-------------//
+    // getImageUrl //
+    //-------------//
+    /**
+     * Report the URL used to load the image from.
+     *
+     * @return the Url entity
+     */
+    public URL getImageUrl ()
+    {
+        return imageUrl;
+    }
+
     //--------------//
     // getInterline //
     //--------------//
@@ -539,7 +577,15 @@ public class Sheet
      */
     public String getPath ()
     {
-        return imageFile.getPath();
+        if (imageFile != null) {
+            return imageFile.getPath();
+        }
+
+        if (imageUrl != null) {
+            return imageUrl.getPath();
+        }
+
+        return null;
     }
 
     //------------//
@@ -596,7 +642,15 @@ public class Sheet
      */
     public String getRadix ()
     {
-        return FileUtil.getNameSansExtension(imageFile);
+        if (imageFile != null) {
+            return FileUtil.getNameSansExtension(imageFile);
+        }
+
+        if (imageUrl != null) {
+            return imageUrl.getFile();
+        }
+
+        return null;
     }
 
     //----------//

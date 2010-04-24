@@ -27,19 +27,23 @@ import java.awt.image.ImageObserver;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Iterator;
+import java.util.logging.Level;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.ImageWriter;
 import javax.imageio.event.IIOReadProgressListener;
 import javax.imageio.event.IIOWriteProgressListener;
+import javax.imageio.stream.FileCacheImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.media.jai.JAI;
 
@@ -96,7 +100,17 @@ public class PictureLoader
 
         logger.info("Loading image from " + imgFile + " ...");
 
-        RenderedImage image = loadImageIO(imgFile);
+        ImageInputStream stream = null;
+
+        try {
+            stream = ImageIO.createImageInputStream(imgFile);
+        } catch (IOException ex) {
+            logger.warning("Unable to make ImageIO stream", ex);
+
+            return null;
+        }
+
+        RenderedImage image = loadImageIO(stream);
 
         if (image == null) {
             if (imgFile.getName()
@@ -119,22 +133,11 @@ public class PictureLoader
     //-------------//
     // loadImageIO //
     //-------------//
-    public static BufferedImage loadImageIO (File imgFile)
+    public static BufferedImage loadImageIO (ImageInputStream stream)
     {
-        ImageInputStream stream = null;
-
         try {
-            try {
-                stream = ImageIO.createImageInputStream(imgFile);
-
-                if (stream == null) {
-                    logger.fine("No ImageIO input stream provider");
-
-                    return null;
-                }
-            } catch (IOException e) {
-                stream = null;
-                logger.warning("Unable to make ImageIO stream", e);
+            if (stream == null) {
+                logger.fine("No ImageIO input stream provider");
 
                 return null;
             }
@@ -173,6 +176,59 @@ public class PictureLoader
             } catch (IOException e) {
             }
         }
+    }
+
+    public static RenderedImage loadUrl (URL imgUrl)
+    {
+        //        if (!imgFile.exists()) {
+        //            throw new IllegalArgumentException(imgFile + " does not exist");
+        //        }
+        logger.info("Loading image from " + imgUrl + " ...");
+
+        InputStream is = null;
+
+        try {
+            is = imgUrl.openStream();
+        } catch (IOException ex) {
+            logger.warning("Could not open url " + imgUrl, ex);
+
+            return null;
+        } finally {
+            try {
+                is.close();
+            } catch (IOException ignored) {
+            }
+        }
+
+        ImageInputStream stream;
+
+        try {
+            stream = new FileCacheImageInputStream(
+                is,
+                new File("t:/temp/cache"));
+        } catch (IOException ex) {
+            logger.warning("Could not create FileCacheImageInputStream", ex);
+
+            return null;
+        }
+
+        RenderedImage image = loadImageIO(stream);
+
+        //        if (image == null) {
+        //            if (imgFile.getName()
+        //                       .endsWith(".pdf")) {
+        //                logger.fine("Using PDF renderer");
+        //                image = loadPDF(imgFile);
+        //            } else {
+        //                logger.fine("Using JAI");
+        //                image = (JAI.create("fileload", imgFile.getPath()));
+        //            }
+        //        }
+        if (image == null) {
+            throw new RuntimeException("Unable to load image");
+        }
+
+        return image;
     }
 
     //---------//

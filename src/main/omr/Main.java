@@ -33,6 +33,8 @@ import omr.util.OmrExecutors;
 import org.jdesktop.application.Application;
 
 import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
 import java.util.concurrent.Callable;
 
@@ -227,7 +229,7 @@ public class Main
         List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
 
         // Launch desired step on each sheet in parallel
-        for (String name : parameters.sheetNames) {
+        for (final String name : parameters.sheetNames) {
             final File file = new File(name);
 
             tasks.add(
@@ -237,7 +239,7 @@ public class Main
                         {
                             logger.info(
                                 "Launching " + parameters.targetStep + " on " +
-                                file);
+                                name);
 
                             if (file.exists()) {
                                 final Sheet sheet = new Sheet(file);
@@ -247,9 +249,33 @@ public class Main
                                 if (gui == null) {
                                     sheet.close();
                                 }
+
+                                return null;
                             } else {
-                                logger.warning("Cannot find " + file);
+                                // Try a URL
+                                URL url = null;
+
+                                try {
+                                    url = new URL(name);
+                                    logger.info("Trying URL " + name);
+
+                                    final Sheet sheet = new Sheet(url);
+                                    parameters.targetStep.performUntil(sheet);
+
+                                    // Close when in batch mode
+                                    if (gui == null) {
+                                        sheet.close();
+                                    }
+
+                                    return null;
+                                } catch (MalformedURLException ex) {
+                                    logger.warning("Malformed URL");
+                                } catch (Exception ex) {
+                                    logger.warning("Exception occurred", ex);
+                                }
                             }
+
+                            logger.warning("Could not process sheet " + name);
 
                             return null;
                         }

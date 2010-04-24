@@ -46,6 +46,7 @@ import static omr.step.Step.*;
 import omr.util.Wrapper;
 
 import java.io.*;
+import java.net.URL;
 import java.util.*;
 
 import javax.swing.*;
@@ -426,8 +427,7 @@ public class SheetSteps
     // LoadTask //
     //----------//
     /**
-     * Step to (re)load sheet picture. A brand new sheet is created with the
-     * provided image file as parameter.
+     * Step to (re)load sheet picture.
      */
     private static class LoadTask
         extends SheetTask
@@ -450,39 +450,73 @@ public class SheetSteps
         public void doit (Collection<SystemInfo> unused)
             throws StepException
         {
-            File imageFile = sheet.getImageFile();
+            if (sheet.getImageFile() != null) {
+                File imageFile = sheet.getImageFile();
 
-            try {
-                picture = new Picture(imageFile);
-                picture.setMaxForeground(sheet.getMaxForeground());
-                sheet.setPicture(picture);
+                try {
+                    picture = new Picture(imageFile);
+                    picture.setMaxForeground(sheet.getMaxForeground());
+                    sheet.setPicture(picture);
 
-                sheet.getBench()
-                     .recordImageDimension(
-                    picture.getWidth(),
-                    picture.getHeight());
-            } catch (FileNotFoundException ex) {
-                logger.warning("Cannot find file " + imageFile);
-                throw new StepException(ex);
-            } catch (IOException ex) {
-                logger.warning("Input error on file " + imageFile);
-                throw new StepException(ex);
-            } catch (ImageFormatException ex) {
-                String msg = "Unsupported image format in file " + imageFile +
-                             "\n" + ex.getMessage() +
-                             "\nPlease use gray scale with 256 values";
+                    sheet.getBench()
+                         .recordImageDimension(
+                        picture.getWidth(),
+                        picture.getHeight());
+                } catch (FileNotFoundException ex) {
+                    logger.warning("Cannot find file " + imageFile);
+                    throw new StepException(ex);
+                } catch (IOException ex) {
+                    logger.warning("Input error on file " + imageFile);
+                    throw new StepException(ex);
+                } catch (ImageFormatException ex) {
+                    String msg = "Unsupported image format in file " +
+                                 imageFile + "\n" + ex.getMessage() +
+                                 "\nPlease use gray scale with 256 values";
 
-                if (Main.getGui() != null) {
-                    Main.getGui()
-                        .displayWarning(msg);
-                } else {
-                    logger.warning(msg);
+                    if (Main.getGui() != null) {
+                        Main.getGui()
+                            .displayWarning(msg);
+                    } else {
+                        logger.warning(msg);
+                    }
+
+                    throw new StepException(ex);
+                } catch (Exception ex) {
+                    logger.warning("Exception", ex);
+                    throw new StepException(ex);
                 }
+            } else if (sheet.getImageUrl() != null) {
+                URL imageUrl = sheet.getImageUrl();
 
-                throw new StepException(ex);
-            } catch (Exception ex) {
-                logger.warning("Exception", ex);
-                throw new StepException(ex);
+                try {
+                    picture = new Picture(imageUrl);
+                    picture.setMaxForeground(sheet.getMaxForeground());
+                    sheet.setPicture(picture);
+
+                    sheet.getBench()
+                         .recordImageDimension(
+                        picture.getWidth(),
+                        picture.getHeight());
+                } catch (IOException ex) {
+                    logger.warning("Input error on URL " + imageUrl);
+                    throw new StepException(ex);
+                } catch (ImageFormatException ex) {
+                    String msg = "Unsupported image format in URL " + imageUrl +
+                                 "\n" + ex.getMessage() +
+                                 "\nPlease use gray scale with 256 values";
+
+                    if (Main.getGui() != null) {
+                        Main.getGui()
+                            .displayWarning(msg);
+                    } else {
+                        logger.warning(msg);
+                    }
+
+                    throw new StepException(ex);
+                } catch (Exception ex) {
+                    logger.warning("Exception", ex);
+                    throw new StepException(ex);
+                }
             }
         }
 
@@ -490,9 +524,11 @@ public class SheetSteps
         public void done ()
         {
             // Remember (even across runs) the parent directory
-            SheetsManager.getInstance()
-                         .setDefaultSheetDirectory(
-                sheet.getImageFile().getParent());
+            if (sheet.getImageFile() != null) {
+                SheetsManager.getInstance()
+                             .setDefaultSheetDirectory(
+                    sheet.getImageFile().getParent());
+            }
 
             // Insert in sheet history
             SheetsManager.getInstance()
