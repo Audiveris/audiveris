@@ -1022,9 +1022,9 @@ public class Score
             scoreTree.close();
         }
 
-        // Store score bench
+        // Complete and Store score bench
         ScoreManager.getInstance()
-                    .storeBench(this, null);
+                    .storeBench(getSheet().getBench(), null, true);
 
         // Close Midi interface if needed
         if (Main.getGui() != null) {

@@ -237,7 +237,7 @@ public class Sheet
         score.setSheet(this);
 
         // Related bench
-        bench = new SheetBench(this);
+        bench = new SheetBench(this, path);
 
         // Update UI information if so needed
         if (Main.getGui() != null) {

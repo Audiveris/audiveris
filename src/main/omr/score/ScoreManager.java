@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.score;
 
-import omr.sheet.SheetBench;
 import omr.Main;
 
 import omr.constant.Constant;
@@ -22,6 +21,8 @@ import omr.log.Logger;
 import omr.score.midi.MidiAbstractions;
 import omr.score.midi.MidiAgent;
 import omr.score.ui.ScoreActions;
+
+import omr.sheet.SheetBench;
 
 import omr.ui.util.OmrFileFilter;
 import omr.ui.util.UIUtilities;
@@ -272,17 +273,19 @@ public class ScoreManager
     // storeBench //
     //------------//
     /**
-     * Store the score bench
-     * @param score the score whose bench is to be stored
+     * Store the sheet bench
+     * @param bench the bench to write to disk
      * @param file the written file, or null
+     * @param complete true if we need to complete the bench data
      */
-    public void storeBench (Score score,
-                            File  file)
+    public void storeBench (SheetBench bench,
+                            File       file,
+                            boolean    complete)
     {
         if (file == null) {
             file = new File(
                 constants.defaultBenchDirectory.getValue(),
-                score.getRadix() + BENCH_EXTENSION);
+                bench.getScore().getRadix() + BENCH_EXTENSION);
         }
 
         // Make sure the folder exists
@@ -296,12 +299,12 @@ public class ScoreManager
         FileOutputStream fos = null;
 
         try {
-            SheetBench bench = score.getSheet()
-                                    .getBench();
             fos = new FileOutputStream(file);
-            bench.store(fos);
+            bench.store(fos, complete);
 
-            logger.info("Score bench stored as " + file);
+            if (complete) {
+                logger.info("Score bench stored as " + file);
+            }
 
             // Remember (even across runs) the selected directory
             constants.defaultBenchDirectory.setValue(file.getParent());

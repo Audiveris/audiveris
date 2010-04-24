@@ -13,6 +13,9 @@ package omr.sheet;
 
 import omr.Main;
 
+import omr.score.Score;
+import omr.score.ScoreManager;
+
 import omr.step.Step;
 
 import java.io.*;
@@ -51,23 +54,35 @@ public class SheetBench
     /**
      * Creates a new SheetBench object.
      * @param sheet the related sheet
+     * @param path path to the image file
      */
-    public SheetBench (Sheet sheet)
+    public SheetBench (Sheet  sheet,
+                       String path)
     {
         this.sheet = sheet;
         setProp("date", date.toString());
         setProp("program", Main.getToolName());
         setProp("version", Main.getToolVersion());
         setProp("revision", Main.getToolBuild());
+        setProp("image", path);
+        autoStore();
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //----------//
+    // getScore //
+    //----------//
+    public Score getScore ()
+    {
+        return sheet.getScore();
+    }
 
     //----------------------//
     // recordImageDimension //
     //----------------------//
     public void recordImageDimension (int width,
-                                        int height)
+                                      int height)
     {
         setProp("image.width", "" + width);
         setProp("image.height", "" + height);
@@ -117,6 +132,7 @@ public class SheetBench
             "step." + step.label.toLowerCase() + ".duration",
             "" + (now - stepStartTime));
         stepStartTime = now;
+        autoStore();
     }
 
     //-------------------//
@@ -134,19 +150,22 @@ public class SheetBench
      * Store this bench into an output stream
      *
      * @param output the output stream to be written
+     * @param complete true if bench data must be finalized
      * @throws IOException
      */
-    public void store (OutputStream output)
+    public void store (OutputStream output,
+                       boolean      complete)
         throws IOException
     {
-        // Finalize this bench
-        long wholeDuration = System.currentTimeMillis() - startTime;
-        setProp("whole.duration", "" + wholeDuration);
+        // Finalize this bench?
+        if (complete) {
+            long wholeDuration = System.currentTimeMillis() - startTime;
+            setProp("whole.duration", "" + wholeDuration);
 
-        setProp("image", sheet.getPath());
+            cleanupProps();
+        }
 
         //        script = sheet.getScript();
-        cleanupProps();
 
         // Sort and store to file
         SortedSet<String> keys = new TreeSet<String>();
@@ -189,6 +208,18 @@ public class SheetBench
         } while (props.containsKey(key));
 
         props.setProperty(key, value);
+    }
+
+    //-----------//
+    // autoStore //
+    //-----------//
+    /**
+     * Store the current content of bench to disk
+     */
+    private void autoStore ()
+    {
+        ScoreManager.getInstance()
+                    .storeBench(this, null, false);
     }
 
     //--------------//
