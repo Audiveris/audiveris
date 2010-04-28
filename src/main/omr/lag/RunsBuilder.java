@@ -13,6 +13,8 @@ package omr.lag;
 
 import omr.log.Logger;
 
+import omr.step.ProcessingCancellationException;
+
 import omr.util.OmrExecutors;
 
 import java.awt.Rectangle;
@@ -113,7 +115,13 @@ public class RunsBuilder
             OmrExecutors.getHighExecutor()
                         .invokeAll(tasks);
         } catch (InterruptedException ex) {
-            logger.warning("ParallelRuns got interrupted", ex);
+            logger.warning("ParallelRuns got interrupted");
+            throw new ProcessingCancellationException(ex);
+        } catch (ProcessingCancellationException pce) {
+            throw pce;
+        } catch (Throwable ex) {
+            logger.warning("Exception raised in ParallelRuns", ex);
+            throw new RuntimeException(ex);
         }
     }
 

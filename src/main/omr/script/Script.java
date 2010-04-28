@@ -15,6 +15,8 @@ import omr.log.Logger;
 
 import omr.sheet.Sheet;
 
+import omr.step.ProcessingCancellationException;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -193,6 +195,8 @@ public class Script
                 try {
                     // Run the task synchronously (prolog/core/epilog)
                     task.run(sheet);
+                } catch (ProcessingCancellationException pce) {
+                    throw pce;
                 } catch (Exception ex) {
                     logger.warning("Error running " + task, ex);
                     throw new RuntimeException(task.toString());
@@ -202,6 +206,8 @@ public class Script
             if (logger.isFineEnabled()) {
                 logger.fine("All tasks run on sheet " + sheet.getRadix());
             }
+        } catch (ProcessingCancellationException pce) {
+            throw pce;
         } catch (Exception ex) {
             logger.warning("Script aborted", ex);
         } finally {

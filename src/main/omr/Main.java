@@ -24,6 +24,8 @@ import omr.script.ScriptManager;
 
 import omr.sheet.Sheet;
 
+import omr.step.ProcessingCancellationException;
+
 import omr.ui.MainGui;
 
 import omr.util.Clock;
@@ -37,6 +39,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.*;
 
@@ -181,13 +185,14 @@ public class Main
                         public Void call ()
                             throws Exception
                         {
-                            long start = System.currentTimeMillis();
-                            File file = new File(scriptName);
+                            long   start = System.currentTimeMillis();
+                            Script script = null;
+                            File   file = new File(scriptName);
                             logger.info("Loading script file " + file + " ...");
 
                             try {
-                                final Script script = ScriptManager.getInstance()
-                                                                   .load(
+                                script = ScriptManager.getInstance()
+                                                      .load(
                                     new FileInputStream(file));
                                 script.run();
 
@@ -195,18 +200,28 @@ public class Main
                                 logger.info(
                                     "Script file " + file + " run in " +
                                     (stop - start) + " ms");
+                            } catch (ProcessingCancellationException pce) {
+                                Sheet sheet = script.getSheet();
+                                logger.warning("Cancelled " + sheet, pce);
 
+                                if (sheet != null) {
+                                    sheet.getBench()
+                                         .recordCancellation();
+                                }
+                            } catch (FileNotFoundException ex) {
+                                logger.warning(
+                                    "Cannot find script file " + file);
+                            } catch (Exception ex) {
+                                logger.warning("Exception occurred", ex);
+                            } finally {
                                 // Close when in batch mode
-                                if (gui == null) {
+                                if ((gui == null) && (script != null)) {
                                     Sheet sheet = script.getSheet();
 
                                     if (sheet != null) {
                                         sheet.close();
                                     }
                                 }
-                            } catch (FileNotFoundException ex) {
-                                logger.warning(
-                                    "Cannot find script file " + file);
                             }
 
                             return null;
@@ -243,11 +258,20 @@ public class Main
 
                             if (file.exists()) {
                                 final Sheet sheet = new Sheet(file);
-                                parameters.targetStep.performUntil(sheet);
 
-                                // Close when in batch mode
-                                if (gui == null) {
-                                    sheet.close();
+                                try {
+                                    parameters.targetStep.performUntil(sheet);
+                                } catch (ProcessingCancellationException pce) {
+                                    logger.warning("Cancelled " + sheet, pce);
+                                    sheet.getBench()
+                                         .recordCancellation();
+                                } catch (Exception ex) {
+                                    logger.warning("Exception occurred", ex);
+                                } finally {
+                                    // Close when in batch mode
+                                    if (gui == null) {
+                                        sheet.close();
+                                    }
                                 }
 
                                 return null;
@@ -367,14 +391,15 @@ public class Main
         // Locale to be used in the whole application ?
         checkLocale();
 
-        // For non-batch mode
         if (!parameters.batchMode) {
+            // For interactive mode
             if (logger.isFineEnabled()) {
                 logger.fine("Main. Launching MainGui");
             }
 
             Application.launch(MainGui.class, args);
         } else {
+            // For batch mode
             // Launch the required tasks, if any
             List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
             tasks.addAll(getSheetsTasks());
@@ -383,15 +408,29 @@ public class Main
             if (!tasks.isEmpty()) {
                 try {
                     logger.info("Submitting " + tasks.size() + " tasks");
-                    OmrExecutors.getCachedLowExecutor()
-                                .invokeAll(tasks);
+
+                    List<Future<Void>> futures = OmrExecutors.getCachedLowExecutor()
+                                                             .invokeAll(
+                        tasks,
+                        constants.processTimeOut.getValue(),
+                        TimeUnit.SECONDS);
+
+                    // Check for time-out
+                    for (Future<Void> future : futures) {
+                        if (future.isCancelled()) {
+                            logger.warning("*** TIME_OUT on Main tasks ***");
+
+                            break;
+                        }
+                    }
                 } catch (Exception ex) {
                     logger.warning("Error in processing tasks", ex);
                 }
             }
 
-            // Wait for batch completion and exit
-            OmrExecutors.shutdown();
+            // At this point all tasks have completed (normally or not)
+            // So shutdown immediately the executors
+            OmrExecutors.shutdown(true);
 
             // Store latest constant values on disk ?
             if (constants.persistBatchCliConstants.getValue()) {
@@ -496,5 +535,11 @@ public class Main
         private final Constant.Boolean persistBatchCliConstants = new Constant.Boolean(
             false,
             "Should we persist CLI-defined constants when running in batch?");
+
+        /** Process time-out, specified in seconds */
+        private final Constant.Integer processTimeOut = new Constant.Integer(
+            "Seconds",
+            300,
+            "Process time-out, specified in seconds");
     }
 }

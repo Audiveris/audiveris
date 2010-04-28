@@ -157,7 +157,8 @@ public abstract class SystemTask
             OmrExecutors.getLowExecutor()
                         .invokeAll(tasks);
         } catch (InterruptedException ex) {
-            logger.warning("doitPerSystem got interrupted", ex);
+            logger.warning("doitPerSystem got interrupted");
+            throw new ProcessingCancellationException(ex);
         }
     }
 }

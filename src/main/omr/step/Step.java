@@ -250,6 +250,8 @@ public enum Step {
                     }
                 }
             }
+        } catch (ProcessingCancellationException pce) {
+            throw pce;
         } catch (Exception ex) {
             logger.warning("Error in processing " + this, ex);
         }
@@ -335,6 +337,8 @@ public enum Step {
                             }
                         });
             }
+        } catch (ProcessingCancellationException pce) {
+            throw pce;
         } catch (Exception ex) {
             logger.warning("Processing aborted", ex);
         } finally {

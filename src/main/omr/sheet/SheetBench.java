@@ -65,7 +65,8 @@ public class SheetBench
         setProp("version", Main.getToolVersion());
         setProp("revision", Main.getToolBuild());
         setProp("image", path);
-        autoStore();
+
+        flushBench();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -76,6 +77,14 @@ public class SheetBench
     public Score getScore ()
     {
         return sheet.getScore();
+    }
+
+    //--------------------//
+    // recordCancellation //
+    //--------------------//
+    public void recordCancellation ()
+    {
+        setProp("whole.cancelled", "true");
     }
 
     //----------------------//
@@ -132,7 +141,7 @@ public class SheetBench
             "step." + step.label.toLowerCase() + ".duration",
             "" + (now - stepStartTime));
         stepStartTime = now;
-        autoStore();
+        flushBench();
     }
 
     //-------------------//
@@ -210,21 +219,13 @@ public class SheetBench
         props.setProperty(key, value);
     }
 
-    //-----------//
-    // autoStore //
-    //-----------//
-    /**
-     * Store the current content of bench to disk
-     */
-    private void autoStore ()
-    {
-        ScoreManager.getInstance()
-                    .storeBench(this, null, false);
-    }
-
     //--------------//
     // cleanupProps //
     //--------------//
+    /**
+     * Clean up the current properties, radix by radix, playing with the
+     * key suffixes
+     */
     private void cleanupProps ()
     {
         // Retrieve key radices
@@ -266,6 +267,18 @@ public class SheetBench
                 props.setProperty(radix, "" + sum);
             }
         }
+    }
+
+    //------------//
+    // flushBench //
+    //------------//
+    /**
+     * Flush the current content of bench to disk
+     */
+    private void flushBench ()
+    {
+        ScoreManager.getInstance()
+                    .storeBench(this, null, false);
     }
 
     //-------//

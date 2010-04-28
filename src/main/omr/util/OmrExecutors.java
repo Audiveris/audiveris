@@ -16,6 +16,8 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
+import omr.step.ProcessingCancellationException;
+
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -44,10 +46,22 @@ public class OmrExecutors
     /** Number of processors available */
     private static final int cpuCount = Runtime.getRuntime()
                                                .availableProcessors();
-    private static Pool highs = new Highs();
-    private static Pool lows = new Lows();
-    private static Pool cachedLows = new CachedLows();
-    private static Pool ocrs = new Ocrs();
+
+    // Specific pools
+    private static Pool             highs = new Highs();
+    private static Pool             lows = new Lows();
+    private static Pool             cachedLows = new CachedLows();
+    private static Pool             ocrs = new Ocrs();
+
+    /** To handle all the pools as a whole */
+    private static Collection<Pool> allPools = Arrays.asList(
+        cachedLows,
+        lows,
+        highs,
+        ocrs);
+
+    /** To prevent parallel creation of pools when closing */
+    private static volatile boolean creationAllowed = true;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -128,16 +142,20 @@ public class OmrExecutors
     //----------//
     /**
      * Gracefully shut down all the executors launched
+     * @param immediately set to true for an immediate shutdown
      */
-    public static void shutdown ()
+    public static void shutdown (boolean immediately)
     {
         if (logger.isFineEnabled()) {
-            logger.fine("Closing all pools");
+            logger.fine("Closing all pools ...");
         }
 
-        for (Pool pool : Arrays.asList(cachedLows, lows, highs, ocrs)) {
+        // No creation of pools from now on!
+        creationAllowed = false;
+
+        for (Pool pool : allPools) {
             if (pool.isActive()) {
-                pool.close();
+                pool.close(immediately);
             } else {
                 if (logger.isFineEnabled()) {
                     logger.fine("Pool " + pool.getName() + " not active");
@@ -185,6 +203,12 @@ public class OmrExecutors
         /** Get the pool ready to use */
         public synchronized ExecutorService getPool ()
         {
+            if (!creationAllowed) {
+                logger.info("No longer allowed to create pool: " + getName());
+
+                throw new ProcessingCancellationException("Executor closed");
+            }
+
             if (!isActive()) {
                 if (logger.isFineEnabled()) {
                     logger.fine("Creating pool: " + getName());
@@ -197,40 +221,45 @@ public class OmrExecutors
         }
 
         /** Terminate the pool */
-        public synchronized void close ()
+        public synchronized void close (boolean immediately)
         {
             if (!isActive()) {
                 return;
             }
 
             if (logger.isFineEnabled()) {
-                logger.fine("Closing pool: " + getName());
+                logger.fine(
+                    "Closing pool: " + getName() +
+                    (immediately ? " immediately" : ""));
             }
 
-            pool.shutdown(); // Disable new tasks from being submitted
+            if (!immediately) {
+                pool.shutdown(); // Disable new tasks from being submitted
 
-            try {
-                // Wait a while for existing tasks to terminate
-                if (!pool.awaitTermination(
-                    constants.graceDelay.getValue(),
-                    TimeUnit.SECONDS)) {
-                    // Cancel currently executing tasks
-                    pool.shutdownNow();
-
-                    // Wait a while for tasks to respond to being cancelled
+                try {
+                    // Wait a while for existing tasks to terminate
                     if (!pool.awaitTermination(
                         constants.graceDelay.getValue(),
                         TimeUnit.SECONDS)) {
+                        // Cancel currently executing tasks
+                        pool.shutdownNow();
                         logger.warning(
                             "Pool " + getName() + " did not terminate");
                     }
+                } catch (InterruptedException ie) {
+                    // (Re-)Cancel if current thread also got interrupted
+                    pool.shutdownNow();
+                    // Preserve interrupt status
+                    Thread.currentThread()
+                          .interrupt();
                 }
-            } catch (InterruptedException ie) {
-                // (Re-)Cancel if current thread also interrupted
+            } else {
+                // Cancel currently executing tasks
                 pool.shutdownNow();
-                // Preserve interrupt status
-                Thread.currentThread()
-                      .interrupt();
+            }
+
+            if (logger.isFineEnabled()) {
+                logger.fine("Pool " + getName() + " closed.");
             }
         }
 
@@ -253,7 +282,7 @@ public class OmrExecutors
         //
         Constant.Integer graceDelay = new Constant.Integer(
             "seconds",
-            15,
+            60, //15,
             "Time to wait for terminating tasks");
     }
 
