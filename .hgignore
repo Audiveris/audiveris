@@ -11,6 +11,7 @@ syntax: regexp
 benches
 bugs
 dist
+jars
 lib
 manifest\.mf
 \./midi

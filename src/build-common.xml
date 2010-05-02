@@ -108,6 +108,130 @@
 
         </zip>
     </target>
+    
+    <!-- =================== -->
+    <!--  F U L L - J A R S  -->
+    <!-- =================== -->
+    <target name="full-jars"
+            depends="jar, -clean-jars"
+	    description="Build the jars distribution." >
+
+        <mkdir dir="${jars.dir}"/>
+        <mkdir dir="${jars.dir}/lib"/>
+
+	<!-- Copy/rename the audiveris jar file -->
+	<copy preservelastmodified="true"
+	      file="${dist.jar}"
+	      tofile="${jars.dir}/audiveris-latest.jar"/>
+	
+	<!-- Copy all the lib jar files -->
+	<copy preservelastmodified="true"
+	    todir="${jars.dir}/lib">
+	    <fileset dir="${lib.dir}"/>
+	</copy>
+
+	<!-- Build the listing of lib (lib.dir) -->
+	<pathconvert pathsep="${line.separator}" property="lib-dir">
+	    <fileset dir="${jars.dir}/lib">
+ 		<include name="*.jar"/>
+ 	    </fileset>
+	    <chainedmapper>
+		<flattenmapper/>
+	    </chainedmapper>
+	</pathconvert>
+ 	<echo file="${jars.dir}/lib.dir">${lib-dir}${line.separator}</echo>
+	
+
+	<!-- Write down the checksum of each jar file -->
+	<checksum>
+	    <fileset dir="${jars.dir}">
+		<include name="*.jar"/>
+	    </fileset>
+	    <fileset dir="${jars.dir}/lib">
+		<include name="*.jar"/>
+	    </fileset>
+	</checksum>
+
+	<!-- Plus the total lib checksum -->
+	<checksum totalproperty="lib-md5">
+	    <fileset dir="${jars.dir}/lib">
+ 		<include name="*.jar"/>
+	    </fileset>
+	</checksum>
+	<echo file="${jars.dir}/lib.MD5">${lib-md5}</echo>
+
+	<!-- The revision information -->
+	<echo file="${jars.dir}/revision.txt">${ant4hg.log.revision}:${ant4hg.log.changeset}</echo>
+	
+    </target>
+      
+    <!-- ===================== -->
+    <!--  C H E C K - J A R S  -->
+    <!-- ===================== -->
+    <target name="check-jars"
+	    description="Check that the jars on the remote Kenai site are uptodate">
+        <for param="file">
+            <path>
+                <fileset dir="${jars.dir}"
+			 includes="*.jar"/>
+            </path>
+            <sequential>
+		<antcall>
+		    <param name="archive" value="@{file}"/>
+		    <param name="prefix" value="http://kenai.com/projects/audiveris/downloads/download/jars%252F"/>
+		    <target name="-check-jar"/>
+		    <target name="-update-jar"/>
+		</antcall>
+            </sequential>
+        </for>
+        <for param="file">
+            <path>
+                <fileset dir="${jars.dir}"
+			 includes="lib/*.jar"/>
+            </path>
+            <sequential>
+		<antcall>
+		    <param name="archive" value="@{file}"/>
+		    <param name="prefix" value="http://kenai.com/projects/audiveris/downloads/download/jars%252Flib%252F"/>
+		    <target name="-check-jar"/>
+		    <target name="-update-jar"/>
+		</antcall>
+            </sequential>
+        </for>
+    </target>
+    
+    <target name="-check-jar">
+	<!-- Check that the file checksum matches the registered signature -->
+        <pathconvert property="justName">
+	    <path location="${archive}"/>
+            <chainedmapper>
+                <flattenmapper/>
+            </chainedmapper>
+        </pathconvert>
+	<echo>Checking ${justName}</echo>
+	
+ 	<get src="${prefix}${justName}.MD5"
+ 	     dest="${archive}.MD5.remote"
+	     ignoreerrors="true"/>
+	<loadfile property="md5"
+		  srcFile="${archive}.MD5.remote">
+	    <filterchain>
+		<striplinebreaks/>
+	    </filterchain>
+	</loadfile>
+	
+	<condition property="unchanged">
+	    <checksum file="${archive}"
+		      property="${md5}"/>
+	</condition>
+    </target>
+
+    <target name="-update-jar"
+	    unless="unchanged">
+	<!-- The archive on the remote site must be updated -->
+	<echo>*** Need to update ${archive}</echo>
+	<echo append="true" file="${jars.dir}/check.log">*** Need to update ${archive}${line.separator}</echo>
+    </target>
 
     <!-- =========== -->
     <!--  - I N I T  -->
@@ -132,8 +256,6 @@
             depends="uml">
         <!--         description="Generate project documentation." -->
         
-<!--         <echo>DEBUG build-common -javadoc-build</echo> -->
-
         <!-- Get rid of existing html files -->
         <!-- without deleting the directory (to keep CVS admin files) -->
         <mkdir dir="${dist.javadoc.dir}" />
@@ -371,19 +493,11 @@ Implementation-Version: ${impl.version} ${DSTAMP}
     <target name="-post-compile"
             depends="jar"/>
 
-    <!--
-    <import file="${dev.dir}/build-utils.xml"/>
-    -->
-
-    <!--
-    <import file="${dev.dir}/build-onejar.xml"/>
-    -->
-
     <!-- =============== -->
     <!--  - H G - T I P  -->
     <!-- =============== -->
-    <target name="-hg-tip"
-            description="Retrieve Hg tip revision">
+    <target name="-hg-tip">
+	<!-- description="Retrieve Hg tip revision" -->
         
         <!-- Just in case this property is not already set -->
         <property name="ant4hg.jar" value="p:/prog/ant4hg/ant4hg.jar" />

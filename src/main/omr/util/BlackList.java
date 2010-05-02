@@ -15,7 +15,6 @@ import omr.log.Logger;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.Level;
 
 /**
  * Class <code>BlackList</code> handles the mechanism of excluding certain files
