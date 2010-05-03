@@ -109,13 +109,13 @@
         </zip>
     </target>
     
-    <!-- =================== -->
-    <!--  F U L L - J A R S  -->
-    <!-- =================== -->
-    <target name="full-jars"
-            depends="jar, -clean-jars"
-	    description="Build the jars distribution." >
-
+    <!-- ===================== -->
+    <!--  - C O P Y - J A R S  -->
+    <!-- ===================== -->
+    <target name="-copy-jars"
+	    depends="jar, -clean-jars">
+	<!-- Copy the jars distribution -->
+	
         <mkdir dir="${jars.dir}"/>
         <mkdir dir="${jars.dir}/lib"/>
 
@@ -141,7 +141,6 @@
 	</pathconvert>
  	<echo file="${jars.dir}/lib.dir">${lib-dir}${line.separator}</echo>
 	
-
 	<!-- Write down the checksum of each jar file -->
 	<checksum>
 	    <fileset dir="${jars.dir}">
@@ -165,21 +164,30 @@
 	
     </target>
       
-    <!-- ===================== -->
-    <!--  C H E C K - J A R S  -->
-    <!-- ===================== -->
-    <target name="check-jars"
-	    description="Check that the jars on the remote Kenai site are uptodate">
+    <!-- =================== -->
+    <!--  F U L L - J A R S  -->
+    <!-- =================== -->
+    <target name="full-jars"
+	    depends="-copy-jars, -read-sigs, -print-todo, -tell-ok"
+	    description="Build the jars and check the remote Kenai site is uptodate">
+    </target>
+
+    <target name="-read-sigs">
+	<delete file="${jars.dir}/todo.log"/>
+	
         <for param="file">
             <path>
-                <fileset dir="${jars.dir}"
-			 includes="*.jar"/>
+                <fileset dir="${jars.dir}">
+		    <include name="*.MD5"/>
+		    <include name="*.txt"/>
+		    <include name="*.dir"/>
+		</fileset>
             </path>
             <sequential>
 		<antcall>
-		    <param name="archive" value="@{file}"/>
+		    <param name="sig" value="@{file}"/>
 		    <param name="prefix" value="http://kenai.com/projects/audiveris/downloads/download/jars%252F"/>
-		    <target name="-check-jar"/>
+		    <target name="-read-sig"/>
 		    <target name="-update-jar"/>
 		</antcall>
             </sequential>
@@ -187,50 +195,69 @@
         <for param="file">
             <path>
                 <fileset dir="${jars.dir}"
-			 includes="lib/*.jar"/>
+			 includes="lib/*.MD5"/>
             </path>
             <sequential>
 		<antcall>
-		    <param name="archive" value="@{file}"/>
+		    <param name="sig" value="@{file}"/>
 		    <param name="prefix" value="http://kenai.com/projects/audiveris/downloads/download/jars%252Flib%252F"/>
-		    <target name="-check-jar"/>
+		    <target name="-read-sig"/>
 		    <target name="-update-jar"/>
 		</antcall>
             </sequential>
         </for>
+
+	<condition property="todo-present">
+	    <available file="${jars.dir}/todo.log"/>
+	</condition>
+
+    </target>
+
+    <target name="-print-todo"
+	    if="${todo-present}">
+	<loadfile property="log"
+		  srcFile="${jars.dir}/todo.log"/>
+	<echo>Summary:${line.separator}${log}</echo>
+    </target>
+
+    <target name="-tell-ok"
+	    unless="${todo-present}">
+	<echo>Remote site is up to date.</echo>
     </target>
     
-    <target name="-check-jar">
+    <target name="-read-sig">
 	<!-- Check that the file checksum matches the registered signature -->
         <pathconvert property="justName">
-	    <path location="${archive}"/>
+	    <path location="${sig}"/>
             <chainedmapper>
                 <flattenmapper/>
             </chainedmapper>
         </pathconvert>
-	<echo>Checking ${justName}</echo>
+	<echo>Checking ${justName} ...</echo>
 	
- 	<get src="${prefix}${justName}.MD5"
- 	     dest="${archive}.MD5.remote"
+ 	<get src="${prefix}${justName}"
+ 	     dest="${sig}.remote"
 	     ignoreerrors="true"/>
 	<loadfile property="md5"
-		  srcFile="${archive}.MD5.remote">
+		  srcFile="${sig}.remote">
 	    <filterchain>
 		<striplinebreaks/>
 	    </filterchain>
 	</loadfile>
 	
 	<condition property="unchanged">
-	    <checksum file="${archive}"
-		      property="${md5}"/>
+	    <filesmatch
+		textfile="true"
+		file1="${sig}"
+		file2="${sig}.remote"/>
 	</condition>
     </target>
 
     <target name="-update-jar"
 	    unless="unchanged">
 	<!-- The archive on the remote site must be updated -->
-	<echo>*** Need to update ${archive}</echo>
-	<echo append="true" file="${jars.dir}/check.log">*** Need to update ${archive}${line.separator}</echo>
+	<echo>*** Need to update ${sig}</echo>
+	<echo append="true" file="${jars.dir}/todo.log">*** Need to update ${sig}${line.separator}</echo>
     </target>
 
     <!-- =========== -->
