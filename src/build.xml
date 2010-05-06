@@ -226,6 +226,14 @@
  	    depends="-full-jars"
             description="Copy and check the various jars">
     </target>
+
+    <!-- ===================== -->
+    <!--  C H E C K - J A R S  -->
+    <!-- ===================== -->
+    <target name="check-jars"
+ 	    depends="-check-jars"
+            description="Check the remote jars are up to date">
+    </target>
     
     <!-- ======= -->
     <!--  J A R  -->

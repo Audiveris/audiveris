@@ -176,8 +176,16 @@
     <!--  - F U L L - J A R S  -->
     <!-- ===================== -->
     <target name="-full-jars"
-	    depends="-copy-jars, -read-sigs, -print-todo, -tell-ok">
+	    depends="-copy-jars, -check-jars">
 	<!--Build the jars and check the remote Kenai site is uptodate-->
+    </target>
+      
+    <!-- ======================= -->
+    <!--  - C H E C K - J A R S  -->
+    <!-- ======================= -->
+    <target name="-check-jars"
+	    depends="-read-sigs, -print-todo, -tell-ok">
+	<!-- Check the remote Kenai site is uptodate-->
     </target>
 
     <target name="-read-sigs">
