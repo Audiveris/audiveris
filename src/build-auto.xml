@@ -45,5 +45,33 @@
 	</findbugs>
 	
     </target>
+
+    <!-- ===================== -->
+    <!--  T E S T - B A T C H  -->
+    <!-- ===================== -->
+    <target name="test-batch"
+	    depends="jar"
+	    description="Test of a batch execution">
+
+	<antcall target="run">
+	    <param name="run.batch" value="-batch"/>
+	    <param name="run.step"  value=""/>
+	    <param name="run.sheet" value=""/>
+	    <param name="run.script" value="-script scripts/chula-test.script.xml"/>
+	</antcall>
+
+	<exec executable="diff">
+	    <arg value="scores/chula-test.xml"/>
+	    <arg value="scores-ref/chula.xml"/>
+	</exec>
+	
+    </target>
+
+    <!-- =================== -->
+    <!--  A L L - T E S T S  -->
+    <!-- =================== -->
+    <target name="all-tests"
+	    depends="test, test-batch" />
+    
     
 </project>

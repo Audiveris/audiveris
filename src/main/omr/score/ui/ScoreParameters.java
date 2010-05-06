@@ -636,7 +636,8 @@ public class ScoreParameters
             // Build the item list, only with the supported languages
             List<String> items = new ArrayList<String>();
 
-            for (String code : Language.getSupportedLanguages()) {
+            for (String code : new TreeSet<String>(
+                Language.getSupportedLanguages())) {
                 items.add(itemOf(code));
             }
 

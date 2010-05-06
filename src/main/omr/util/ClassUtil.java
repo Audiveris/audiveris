@@ -137,16 +137,21 @@ public class ClassUtil
     /**
      * Try to load a (library) file
      * @param file the file to load, which must point to the precise location
+     * @throws Exception
      */
     public static void load (File file)
+        throws Exception
     {
         String path = file.getAbsolutePath();
 
         try {
             System.load(path);
-        } catch (Throwable ex) {
-            logger.warning("Error while loading " + path, ex);
-            throw new RuntimeException(ex);
+        } catch (Exception ex) {
+            if (logger.isFineEnabled()) {
+                logger.warning("Error while loading " + path, ex);
+            }
+
+            throw ex;
         }
     }
 
@@ -156,14 +161,19 @@ public class ClassUtil
     /**
      * Try to load a library
      * @param library the library to load
+     * @throws Exception
      */
     public static void loadLibrary (String library)
+        throws Exception
     {
         try {
             System.loadLibrary(library);
-        } catch (Throwable ex) {
-            logger.warning("Error while loading " + library, ex);
-            throw new RuntimeException(ex);
+        } catch (Exception ex) {
+            if (logger.isFineEnabled()) {
+                logger.warning("Error while loading " + library, ex);
+            }
+
+            throw ex;
         }
     }
 

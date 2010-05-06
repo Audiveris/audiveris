@@ -109,6 +109,14 @@
         </zip>
     </target>
     
+    <!-- ======================= -->
+    <!--  - C L E A N - J A R S  -->
+    <!-- ======================= -->
+    <target name="-clean-jars">
+<!--         description="Remove all bleeding libraries." -->
+	<delete verbose="${verbose}" dir="${jars.dir}"/>
+    </target>
+    
     <!-- ===================== -->
     <!--  - C O P Y - J A R S  -->
     <!-- ===================== -->
@@ -164,12 +172,12 @@
 	
     </target>
       
-    <!-- =================== -->
-    <!--  F U L L - J A R S  -->
-    <!-- =================== -->
-    <target name="full-jars"
-	    depends="-copy-jars, -read-sigs, -print-todo, -tell-ok"
-	    description="Build the jars and check the remote Kenai site is uptodate">
+    <!-- ===================== -->
+    <!--  - F U L L - J A R S  -->
+    <!-- ===================== -->
+    <target name="-full-jars"
+	    depends="-copy-jars, -read-sigs, -print-todo, -tell-ok">
+	<!--Build the jars and check the remote Kenai site is uptodate-->
     </target>
 
     <target name="-read-sigs">

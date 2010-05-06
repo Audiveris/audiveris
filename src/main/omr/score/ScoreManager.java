@@ -285,7 +285,7 @@ public class ScoreManager
         if (file == null) {
             file = new File(
                 constants.defaultBenchDirectory.getValue(),
-                bench.getScore().getRadix() + BENCH_EXTENSION);
+                bench.getRadix() + BENCH_EXTENSION);
         }
 
         // Make sure the folder exists

@@ -21,8 +21,10 @@ import omr.score.common.PixelRectangle;
 
 import omr.util.Implement;
 import omr.util.OmrExecutors;
+import omr.util.ClassUtil;
 
 import net.gencsoy.tesjeract.EANYCodeChar;
+import net.gencsoy.tesjeract.Tesjeract;
 
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -60,7 +62,7 @@ public class TesseractOCR
     //~ Instance fields --------------------------------------------------------
 
     /** The OS-dependent chars retriever */
-    private CharsRetriever charsRetriever;
+    private boolean tesjeractLoaded = false;
 
     /** Permanent flag to avoid endless error messages */
     private boolean userWarned = false;
@@ -97,31 +99,15 @@ public class TesseractOCR
     @Implement(OCR.class)
     public Set<String> getSupportedLanguages ()
     {
-        Set<String> codes = new TreeSet<String>();
-
-        try {
-            // Retrieve all implemented codes
-            String[] dirNames = new File(ocrHome, "tessdata").list(
-                new FilenameFilter() {
-                        public boolean accept (File   dir,
-                                               String name)
-                        {
-                            return name.endsWith(".inttemp");
-                        }
-                    });
-
-            // Fill the language set with only the implemented languages
-            if (dirNames != null) {
-                for (String fileName : dirNames) {
-                    String code = fileName.replace(".inttemp", "");
-                    codes.add(code);
-                }
+        if (retrieverInstalled()) {
+            try {
+                return Tesjeract.getLanguages();
+            } catch (Exception ex) {
+                logger.warning("Error in loading languages", ex);
             }
-        } catch (Exception ex) {
-            logger.warning("Error in loading languages", ex);
         }
 
-        return codes;
+        return new HashSet<String>();
     }
 
     //-----------//
@@ -149,10 +135,7 @@ public class TesseractOCR
                     throws Exception
                 {
                     synchronized (this) {
-                        EANYCodeChar[] chars = charsRetriever.retrieveChars(
-                            buf,
-                            languageCode);
-
+                        EANYCodeChar[] chars = new Tesjeract(languageCode).recognizeAllWords(buf);
                         return getLines(chars, label);
                     }
                 }
@@ -333,33 +316,32 @@ public class TesseractOCR
      */
     private boolean retrieverInstalled ()
     {
-        if (charsRetriever == null) {
+        if (!tesjeractLoaded) {
             if (userWarned) {
                 return false;
             }
 
             try {
-                if (WellKnowns.WINDOWS) {
-                    charsRetriever = new WindowsCharsRetriever();
-                } else if (WellKnowns.MAC_OS_X) {
-                    // TODO
-                } else if (WellKnowns.LINUX) {
-                    charsRetriever = new LinuxCharsRetriever();
+                try {
+                    ClassUtil.loadLibrary("tesjeract");
+                } catch (UnsatisfiedLinkError ex) {
+                    if (WellKnowns.WINDOWS) {
+                        ClassUtil.load(new File(TesseractOCR.ocrHome, "tessdll.dll"));
+                        ClassUtil.load(new File(TesseractOCR.ocrHome, "tesjeract.dll"));
+                    } else {
+                        ClassUtil.load(new File(TesseractOCR.ocrHome, "libtesjeract.so"));
+                    }
                 }
+
+                Tesjeract.setTessdataFallback(TesseractOCR.ocrHome + "/");
             } catch (Throwable ex) {
-                logger.severe("Error in OCR installation", ex);
-            }
-
-            if (charsRetriever == null) {
                 userWarned = true;
-                logger.warning(
-                    "Could not install OCR CharsRetriever for " +
-                    System.getProperty("os.name"));
-
+                logger.warning("Could not load Tesjeract");
                 return false;
             }
         }
 
+        tesjeractLoaded = true;
         return true;
     }
 

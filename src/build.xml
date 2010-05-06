@@ -89,14 +89,6 @@
         <delete verbose="${verbose}" dir="${dist.dir}"/>
     </target>
     
-    <!-- ======================= -->
-    <!--  - C L E A N - J A R S  -->
-    <!-- ======================= -->
-    <target name="-clean-jars">
-<!--         description="Remove all bleeding libraries." -->
-	<delete verbose="${verbose}" dir="${jars.dir}"/>
-    </target>
-    
     <!-- ================= -->
     <!--  - C O M P I L E  -->
     <!-- ================= -->
@@ -222,6 +214,14 @@
     <target name="full-dist"
  	    depends="clean, -full-dist"
             description="Build the full distribution">
+    </target>
+
+    <!-- =================== -->
+    <!--  F U L L - J A R S  -->
+    <!-- =================== -->
+    <target name="full-jars"
+ 	    depends="-full-jars"
+            description="Copy and check the various jars">
     </target>
     
     <!-- ======= -->
