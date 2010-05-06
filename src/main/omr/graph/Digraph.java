@@ -295,6 +295,7 @@ public class Digraph<D extends Digraph<D, V, SIG>, V extends Vertex, SIG>
      * future retrieval of the vertex via its signature
      * @param vertex the provided signature
      */
+    @SuppressWarnings("unchecked")
     public void registerSignature (V vertex)
     {
         SIG sig = (SIG) vertex.getSignature();

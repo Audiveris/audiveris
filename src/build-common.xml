@@ -135,7 +135,7 @@
 	<!-- Copy all the lib jar files -->
 	<copy preservelastmodified="true"
 	    todir="${jars.dir}/lib">
-	    <fileset dir="${lib.dir}"/>
+	    <fileset dir="${audi-lib.dir}"/>
 	</copy>
 
 	<!-- Build the listing of lib (lib.dir) -->

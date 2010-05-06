@@ -390,9 +390,9 @@ public class ActionManager
             }
         } catch (Throwable ex) {
             logger.warning("Error while registering " + desc, ex);
-        } finally {
-            return action;
         }
+
+        return action;
     }
 
     //-----------------------//

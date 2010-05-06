@@ -212,9 +212,9 @@ public class ShapeBoard
                                            .getGlassPane();
 
     // Listeners for DnD
-    private MouseMotionListener motionAdapter = new MyGhostMotionAdapter(
+    private MouseMotionListener      motionAdapter = new MyGhostMotionAdapter(
         glassPane);
-    private GhostDropListener   dropListener = new MyDropListener();
+    private GhostDropListener<Shape> dropListener = new MyDropListener();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -393,9 +393,9 @@ public class ShapeBoard
             } else if (screenPoint.isInComponent(
                 // The (zoomed) sheet view
                 sheet.getAssembly().getSelectedView().getComponent().getViewport())) {
-                RubberPanel view = (RubberPanel) sheet.getAssembly()
-                                                      .getSelectedView()
-                                                      .getView();
+                RubberPanel view = sheet.getAssembly()
+                                        .getSelectedView()
+                                        .getView();
                 Point       localPt = screenPoint.getLocalPoint(view);
                 view.getZoom()
                     .unscale(localPt);
@@ -452,7 +452,7 @@ public class ShapeBoard
                 sheet.getAssembly().getSelectedView().getComponent().getViewport())) {
                 publishOnTarget(
                     screenPoint,
-                    (RubberPanel) sheet.getAssembly().getSelectedView().getView(),
+                    sheet.getAssembly().getSelectedView().getView(),
                     sheet.getScale().interline() / 16d);
             } else {
                 // Not on a droppable target, use icon size

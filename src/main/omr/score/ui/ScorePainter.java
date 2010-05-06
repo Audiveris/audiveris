@@ -111,10 +111,10 @@ public class ScorePainter
         new float[] { 20f, 10f },
         0);
 
+    //~ Enumerations -----------------------------------------------------------
+
     /** Specific font for music symbols */
     //private static final Font musicFont = new Font("SToccata", Font.PLAIN, 180);
-
-    //~ Enumerations -----------------------------------------------------------
 
     /** How a symbol should be horizontally aligned wrt a given point */
     private static enum HorizontalAlignment {
@@ -175,7 +175,7 @@ public class ScorePainter
         this.zoom = zoom;
 
         // Size of default font
-        Font font = g.getFont(); //new Font("Arial", Font.PLAIN, 40);
+        Font  font = g.getFont(); //new Font("Arial", Font.PLAIN, 40);
         float fontSize = font.getSize2D();
         g.setFont(font.deriveFont(fontSize / (float) zoom.getRatio()));
 
@@ -243,7 +243,7 @@ public class ScorePainter
 
         if (symbol != null) {
             // Vertical ratio to extend the symbol image */
-            final double      yRatio = (double) height / symbol.getHeight();
+            final double      yRatio = height / symbol.getHeight();
             final SystemPoint topLeft = new SystemPoint(
                 arpeggiate.getReferencePoint().x - (symbol.getWidth() / 2),
                 top);

@@ -203,7 +203,7 @@ public class SheetPainter
             }
         }
 
-        ((Graphics2D) g).setStroke(oldStroke);
+        g.setStroke(oldStroke);
 
         return true;
     }

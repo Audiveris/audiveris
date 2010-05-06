@@ -895,7 +895,7 @@ public class ScoreView
         //-----------------//
         private void updateSelection ()
         {
-            ScoreLocation location = (ScoreLocation) getSelectedScoreLocation();
+            ScoreLocation location = getSelectedScoreLocation();
 
             if (location != null) {
                 publish(new ScoreLocationEvent(this, null, null, location));

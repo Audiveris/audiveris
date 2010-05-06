@@ -1627,8 +1627,7 @@ public class ScoreExporter
         current.system = system;
         isFirst.measure = true;
 
-        SystemPart systemPart = (SystemPart) system.getPart(
-            current.part.getId());
+        SystemPart systemPart = system.getPart(current.part.getId());
 
         if (systemPart != null) {
             systemPart.accept(this);

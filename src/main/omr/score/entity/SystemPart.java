@@ -578,7 +578,7 @@ public class SystemPart
 
         // Find some concrete system part for the provided id
         SystemPart  nextPart;
-        ScoreSystem nextSystem = (ScoreSystem) getSystem();
+        ScoreSystem nextSystem = getSystem();
 
         while (true) {
             nextSystem = (ScoreSystem) nextSystem.getNextSibling();

@@ -29,17 +29,17 @@
     
     <!-- Tools classpath -->
     <path id="tools.classpath">
-      <fileset dir="${lib.dir}">
+      <fileset dir="${audi-lib.dir}">
         <include name="**/*.jar"/>
       </fileset>
     </path>
     
     <!-- Build classpath -->
     <path id="build.classpath">
-        <pathelement path="${build.classes.dir}"/>
+<!--         <pathelement path="${build.classes.dir}"/> -->
         <path refid="tools.classpath"/>
     </path>
-    <property name="javac.classpath" refid="build.classpath"/>
+<!--     <property name="javac.classpath" refid="build.classpath"/> -->
     
     <!-- Build Test classpath -->
     <path id="build.test.classpath">
@@ -102,7 +102,7 @@
         <mkdir dir="${dist.dir}/lib"/>
 	
 	<copy todir="${dist.dir}/lib">
-	    <fileset dir="${lib.dir}"/>
+	    <fileset dir="${audi-lib.dir}"/>
 	</copy>
 
     </target>
@@ -132,6 +132,7 @@
         
         <!-- baseline classes -->
         <javac
+	    includeantruntime = "false"
 	    encoding     = "${build.encoding}"
 	    target       = "${javac.target}"
             classpathref = "build.classpath"
@@ -142,13 +143,14 @@
             source       = "${build.compile.source}"
             srcdir       = "${src.dir}"
             >
-<!--             <compilerarg value="-Xlint"/> -->
-<!--             <compilerarg value="-Xlint:-serial"/> -->
-<!--             <compilerarg value="-Xlint:-path"/> -->
+ 	    <compilerarg value="-Xlint"/>  
+ 	    <compilerarg value="-Xlint:-serial"/>  
+ 	    <compilerarg value="-Xlint:-path"/>  
         </javac>
         
         <!-- plugin classes -->
         <javac
+	    includeantruntime = "false"
 	    encoding     = "${build.encoding}"
 	    target       = "${javac.target}"
             classpathref = "build.classpath"
@@ -159,9 +161,9 @@
             source       = "${build.compile.source}"
             srcdir       = "${plugins.dir}"
             >
-<!--             <compilerarg value="-Xlint"/> -->
-<!--             <compilerarg value="-Xlint:-serial"/> -->
-<!--             <compilerarg value="-Xlint:-path"/> -->
+	    <compilerarg value="-Xlint"/> 
+	    <compilerarg value="-Xlint:-serial"/> 
+	    <compilerarg value="-Xlint:-path"/> 
         </javac>
     </target>
     
@@ -175,6 +177,7 @@
         <mkdir dir="${build.test.classes.dir}"/>
         
         <javac
+	    includeantruntime = "false"
 	    encoding     = "${build.encoding}"
 	    target       = "${javac.target}"
             classpathref = "build.test.classpath"

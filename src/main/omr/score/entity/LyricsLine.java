@@ -94,8 +94,8 @@ public class LyricsLine
         LyricsLine nextLine = null;
 
         // Check existence of similar line in following system part
-        SystemPart nextPart = (SystemPart) getPart()
-                                               .getFollowing();
+        SystemPart nextPart = getPart()
+                                  .getFollowing();
 
         if (nextPart != null) {
             // Retrieve the same lyrics line in the next (system) part

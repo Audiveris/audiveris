@@ -26,7 +26,7 @@ import javax.imageio.ImageIO;
  * @author Hervé Bitteur (from Romain Guy's demo)
  */
 public class GhostPictureAdapter<A>
-    extends GhostDropAdapter
+    extends GhostDropAdapter<A>
 {
     //~ Constructors -----------------------------------------------------------
 

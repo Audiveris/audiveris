@@ -40,7 +40,7 @@ public abstract class GhostDropAdapter<A>
     protected BufferedImage image;
 
     /** The registered listeners */
-    private List<GhostDropListener> listeners;
+    private List<GhostDropListener<A>> listeners;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -58,7 +58,7 @@ public abstract class GhostDropAdapter<A>
     {
         this.glassPane = glassPane;
         this.action = action;
-        this.listeners = new ArrayList<GhostDropListener>();
+        this.listeners = new ArrayList<GhostDropListener<A>>();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -70,7 +70,7 @@ public abstract class GhostDropAdapter<A>
      * Register a drop listener
      * @param listener the listener to registrate
      */
-    public void addGhostDropListener (GhostDropListener listener)
+    public void addGhostDropListener (GhostDropListener<A> listener)
     {
         if (listener != null) {
             listeners.add(listener);
@@ -108,7 +108,7 @@ public abstract class GhostDropAdapter<A>
         glassPane.setVisible(false);
         glassPane.setImage(null);
 
-        fireGhostDropEvent(new GhostDropEvent(action, eventPoint));
+        fireGhostDropEvent(new GhostDropEvent<A>(action, eventPoint));
     }
 
     //-------------------------//
@@ -132,9 +132,9 @@ public abstract class GhostDropAdapter<A>
      * Forward the provided drop event to all registered listeners
      * @param event the drop event to forward
      */
-    protected void fireGhostDropEvent (GhostDropEvent event)
+    protected void fireGhostDropEvent (GhostDropEvent<A> event)
     {
-        for (GhostDropListener listener : listeners) {
+        for (GhostDropListener<A> listener : listeners) {
             listener.ghostDropped(event);
         }
     }

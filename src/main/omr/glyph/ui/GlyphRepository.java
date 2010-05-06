@@ -677,7 +677,7 @@ public class GlyphRepository
 
         try {
             is = new FileInputStream(file);
-            glyph = (Glyph) jaxbUnmarshal(is);
+            glyph = jaxbUnmarshal(is);
         } catch (Exception ex) {
             logger.warning("Could not unmarshal file " + file);
             ex.printStackTrace();

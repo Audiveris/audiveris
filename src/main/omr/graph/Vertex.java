@@ -158,6 +158,7 @@ public abstract class Vertex<D extends Digraph, V extends Vertex<D, V, SIG>, SIG
      * would modify the signature, note that the signature will not be
      * automatically recomputed.
      */
+    @SuppressWarnings("unchecked")
     public void setSignature ()
     {
         SIG sig = computeSignature();

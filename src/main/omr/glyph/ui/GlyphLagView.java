@@ -180,7 +180,7 @@ public class GlyphLagView
     @Override
     public GlyphLag getLag ()
     {
-        return (GlyphLag) lag;
+        return lag;
     }
 
     //---------------------//

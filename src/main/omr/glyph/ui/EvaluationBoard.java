@@ -231,7 +231,8 @@ class EvaluationBoard
         FormLayout   layout = new FormLayout(
             buttonWidth + "," + fieldInterval + "," + buttonWidth + "," +
             fieldInterval + "," + buttonWidth + "," + fieldInterval + "," +
-            buttonWidth,"");
+            buttonWidth,
+            "");
 
         int          visibleButtons = Math.min(
             constants.visibleButtons.getValue(),
@@ -380,8 +381,8 @@ class EvaluationBoard
         {
             // Assign current glyph with selected shape
             if (glyphsController != null) {
-                Glyph glyph = (Glyph) glyphsController.getLag()
-                                                      .getSelectedGlyph();
+                Glyph glyph = glyphsController.getLag()
+                                              .getSelectedGlyph();
 
                 if (glyph != null) {
                     Shape shape = Shape.valueOf(button.getText());

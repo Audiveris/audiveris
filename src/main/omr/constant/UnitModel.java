@@ -429,6 +429,8 @@ public class UnitModel
                 return Boolean.valueOf(constant.isModified());
             }
 
+            return "";
+
         case VALUE :
 
             if (node instanceof Constant) {
