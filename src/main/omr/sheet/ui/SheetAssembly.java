@@ -328,13 +328,21 @@ public class SheetAssembly
         false);
 
         // Display the errors pane of this assembly?
-        MainGui gui = Main.getGui();
-
         if (GuiActions.getInstance()
                       .isErrorsDisplayed()) {
-            gui.showErrorsPane(getErrorsPane());
+            if (logger.isFineEnabled()) {
+                logger.fine("Errors window ON");
+            }
+
+            Main.getGui()
+                .showErrorsPane(getErrorsPane());
         } else {
-            gui.hideErrorsPane();
+            if (logger.isFineEnabled()) {
+                logger.fine("Errors window OFF");
+            }
+
+            Main.getGui()
+                .hideErrorsPane();
         }
     }
 

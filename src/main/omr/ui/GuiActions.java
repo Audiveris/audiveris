@@ -50,8 +50,6 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;

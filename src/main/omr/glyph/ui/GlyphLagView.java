@@ -46,6 +46,7 @@ import omr.selection.UserEvent;
 
 import omr.ui.util.UIUtilities;
 
+import omr.util.Implement;
 import omr.util.WeakPropertyChangeListener;
 
 import java.awt.*;
@@ -309,6 +310,7 @@ public class GlyphLagView
     //----------------//
     // propertyChange //
     //----------------//
+    @Implement(PropertyChangeListener.class)
     public void propertyChange (PropertyChangeEvent evt)
     {
         // Whatever the property change, we simply repaint the view

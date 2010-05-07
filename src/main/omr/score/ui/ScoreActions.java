@@ -33,6 +33,7 @@ import omr.ui.util.OmrFileFilter;
 import omr.ui.util.UIUtilities;
 
 import omr.util.BasicTask;
+import omr.util.Implement;
 import omr.util.Wrapper;
 
 import org.jdesktop.application.Action;
@@ -154,6 +155,7 @@ public class ScoreActions
 
         optionPane.addPropertyChangeListener(
             new PropertyChangeListener() {
+                    @Implement(PropertyChangeListener.class)
                     public void propertyChange (PropertyChangeEvent e)
                     {
                         String prop = e.getPropertyName();
