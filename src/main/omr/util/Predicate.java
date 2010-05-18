@@ -15,7 +15,7 @@ package omr.util;
 /**
  * Interface <code>Predicate</code> is used to specify a filter on a provided
  * entity
- * @param E Specific type of the entity on which the predicate is checked
+ * @param <E> Specific type of the entity on which the predicate is checked
  */
 public interface Predicate<E>
 {

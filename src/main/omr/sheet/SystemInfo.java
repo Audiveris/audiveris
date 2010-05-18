@@ -14,7 +14,6 @@ package omr.sheet;
 import omr.check.CheckSuite;
 
 import omr.glyph.GlyphInspector;
-import omr.glyph.GlyphInspector.CompoundAdapter;
 import omr.glyph.GlyphSection;
 import omr.glyph.Glyphs;
 import omr.glyph.GlyphsBuilder;
@@ -37,6 +36,8 @@ import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
 
 import omr.step.StepException;
+
+import omr.util.Predicate;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -699,6 +700,17 @@ public class SystemInfo
         return glyphsBuilder.buildTransientGlyph(sections);
     }
 
+    //-----------------//
+    // checkBoundaries //
+    //-----------------//
+    /**
+     * Check this system for glyphs that cross the system boundaries
+     */
+    public void checkBoundaries ()
+    {
+        glyphsBuilder.retrieveGlyphs(false);
+    }
+
     //-------------//
     // clearGlyphs //
     //-------------//
@@ -721,6 +733,35 @@ public class SystemInfo
     public int compareTo (SystemInfo o)
     {
         return Integer.signum(id - o.id);
+    }
+
+    //----------------------//
+    // computeGlyphFeatures //
+    //----------------------//
+    /**
+     * Compute all the features that will be used to recognize the glyph at hand
+     * (it's a mix of moments plus a few other characteristics)
+     *
+     * @param glyph the glyph at hand
+     */
+    public void computeGlyphFeatures (Glyph glyph)
+    {
+        glyphsBuilder.computeGlyphFeatures(glyph);
+    }
+
+    //----------------------//
+    // createStemCheckSuite //
+    //----------------------//
+    /**
+     * Build a check suite for stem retrievals
+     * @param isShort are we looking for short (vs standard) stems?
+     * @return the newly built check suite
+     * @throws omr.step.StepException
+     */
+    public CheckSuite<Stick> createStemCheckSuite (boolean isShort)
+        throws StepException
+    {
+        return verticalsBuilder.createStemCheckSuite(isShort);
     }
 
     //------------//
@@ -785,6 +826,56 @@ public class SystemInfo
                     section.toString());
             }
         }
+    }
+
+    //------------------//
+    // extractNewGlyphs //
+    //------------------//
+    /**
+     * In the specified system, build new glyphs from unknown sections (sections
+     * not linked to a known glyph)
+     */
+    public void extractNewGlyphs ()
+    {
+        removeInactiveGlyphs();
+        retrieveGlyphs();
+    }
+
+    //--------------//
+    // fixLargeSlur //
+    //--------------//
+    /**
+     * For large glyphs, we suspect a slur with a stuck object. So the strategy
+     * is to rebuild the true Slur portions from the underlying sections. These
+     * "good" sections are put into the "kept" collection. Sections left over
+     * are put into the "left" collection in order to be used to rebuild the
+     * stuck object(s).
+     *
+     * <p>The method by itself does not build the new slur glyph, this task must
+     * be done by the caller.
+     *
+     * @param slur the spurious slur slur
+     * @return the extracted slur glyph, if any
+     */
+    public Glyph fixLargeSlur (Glyph slur)
+    {
+        return slurInspector.fixLargeSlur(slur);
+    }
+
+    //-----------------//
+    // fixSpuriousSlur //
+    //-----------------//
+    /**
+     * Try to correct the slur glyphs (which have a too high circle distance) by
+     * either adding a neigboring glyph (for small slurs) or removing stuck
+     * glyph sections (for large slurs)
+     *
+     * @param glyph the spurious glyph at hand
+     * @return true if the slur glyph has actually been fixed
+     */
+    public Glyph fixSpuriousSlur (Glyph glyph)
+    {
+        return slurInspector.fixSpuriousSlur(glyph);
     }
 
     //---------------//
@@ -940,6 +1031,48 @@ public class SystemInfo
         return verticalsBuilder.retrieveVerticals();
     }
 
+    //-----------------//
+    // runAlterPattern //
+    //-----------------//
+    /**
+     * In a specified system, look for pairs of close stems that in fact result
+     * from indue segmentation of sharp or natural signs.
+     *
+     * @return the number of symbols recognized
+     */
+    public int runAlterPattern ()
+    {
+        return glyphInspector.runAlterPattern();
+    }
+
+    //----------------//
+    // runBassPattern //
+    //----------------//
+    /**
+     * In a specified system, look for dot patterns typical of a segmented
+     * bass clef
+     *
+     * @return the number of bass clefs fixed
+     */
+    public int runBassPattern ()
+    {
+        return glyphInspector.runBassPattern();
+    }
+
+    //----------------//
+    // runClefPattern //
+    //----------------//
+    /**
+     * In a specified system, look for clefs at the beginning of the system,
+     * and check that every staff has a clef
+     *
+     * @return the number of clefs fixed
+     */
+    public int runClefPattern ()
+    {
+        return glyphInspector.runClefPattern();
+    }
+
     //-------------//
     // runPatterns //
     //-------------//
@@ -950,6 +1083,59 @@ public class SystemInfo
     public boolean runPatterns ()
     {
         return patternsChecker.runPatterns();
+    }
+
+    //-----------------//
+    // runShapePattern //
+    //-----------------//
+    /**
+     * A general pattern to check some glyph shapes within their environment
+     * @return the number of glyphs deassigned
+     */
+    public int runShapePattern ()
+    {
+        return glyphInspector.runShapePattern();
+    }
+
+    //----------------//
+    // runSlurPattern //
+    //----------------//
+    /**
+     * Process all the slur glyphs in the given system, and try to correct the
+     * spurious ones if any
+     * @return the number of slurs fixed
+     */
+    public int runSlurPattern ()
+    {
+        return slurInspector.runSlurPattern();
+    }
+
+    //----------------//
+    // runStemPattern //
+    //----------------//
+    /**
+     * In a specified system, look for all stems that should not be kept,
+     * rebuild surrounding glyphs and try to recognize them. If this action does
+     * not lead to some recognized symbol, then we restore the stems.
+     *
+     * @return the number of symbols recognized
+     */
+    public int runStemPattern ()
+    {
+        return stemInspector.runStemPattern();
+    }
+
+    //----------------//
+    // runTextPattern //
+    //----------------//
+    /**
+     * Retrieve the various glyphs and series of glyphs that could represent
+     * text portions in the system at hand
+     * @return the number of text glyphs built
+     */
+    public int runTextPattern ()
+    {
+        return textInspector.runTextPattern();
     }
 
     //---------------------//
@@ -964,6 +1150,35 @@ public class SystemInfo
                                      boolean isShort)
     {
         verticalsBuilder.segmentGlyphOnStems(glyph, isShort);
+    }
+
+    //--------------//
+    // selectGlyphs //
+    //--------------//
+    /**
+     * Select glyphs out of a provided collection of glyphs,for which the
+     * provided predicate hlos true
+     * @param glyphs the provided collection of glyphs candidates, or the full
+     * system collectino if null
+     * @param predicate the conditon to be fulfilled to get selected
+     * @return
+     */
+    public SortedSet selectGlyphs (Collection<Glyph> glyphs,
+                                   Predicate<Glyph>  predicate)
+    {
+        SortedSet<Glyph> selected = new TreeSet<Glyph>();
+
+        if (glyphs == null) {
+            glyphs = getGlyphs();
+        }
+
+        for (Glyph glyph : glyphs) {
+            if (predicate.check((glyph))) {
+                selected.add(glyph);
+            }
+        }
+
+        return selected;
     }
 
     //----------//
@@ -1064,177 +1279,6 @@ public class SystemInfo
         return glyphsBuilder.buildTransientCompound(parts);
     }
 
-    //-----------------//
-    // checkBoundaries //
-    //-----------------//
-    /**
-     * Check this system for glyphs that cross the system boundaries
-     */
-    public void checkBoundaries ()
-    {
-        glyphsBuilder.retrieveGlyphs(false);
-    }
-
-    //----------------------//
-    // computeGlyphFeatures //
-    //----------------------//
-    /**
-     * Compute all the features that will be used to recognize the glyph at hand
-     * (it's a mix of moments plus a few other characteristics)
-     *
-     * @param glyph the glyph at hand
-     */
-    public void computeGlyphFeatures (Glyph glyph)
-    {
-        glyphsBuilder.computeGlyphFeatures(glyph);
-    }
-
-    //----------------------//
-    // createStemCheckSuite //
-    //----------------------//
-    /**
-     * Build a check suite for stem retrievals
-     * @param isShort are we looking for short (vs standard) stems?
-     * @return the newly built check suite
-     * @throws omr.step.StepException
-     */
-    public CheckSuite<Stick> createStemCheckSuite (boolean isShort)
-        throws StepException
-    {
-        return verticalsBuilder.createStemCheckSuite(isShort);
-    }
-
-    //------------------//
-    // extractNewGlyphs //
-    //------------------//
-    /**
-     * In the specified system, build new glyphs from unknown sections (sections
-     * not linked to a known glyph)
-     */
-    public void extractNewGlyphs ()
-    {
-        removeInactiveGlyphs();
-        retrieveGlyphs();
-    }
-
-    //--------------//
-    // fixLargeSlur //
-    //--------------//
-    /**
-     * For large glyphs, we suspect a slur with a stuck object. So the strategy
-     * is to rebuild the true Slur portions from the underlying sections. These
-     * "good" sections are put into the "kept" collection. Sections left over
-     * are put into the "left" collection in order to be used to rebuild the
-     * stuck object(s).
-     *
-     * <p>The method by itself does not build the new slur glyph, this task must
-     * be done by the caller.
-     *
-     * @param slur the spurious slur slur
-     * @return the extracted slur glyph, if any
-     */
-    public Glyph fixLargeSlur (Glyph slur)
-    {
-        return slurInspector.fixLargeSlur(slur);
-    }
-
-    //-----------------//
-    // fixSpuriousSlur //
-    //-----------------//
-    /**
-     * Try to correct the slur glyphs (which have a too high circle distance) by
-     * either adding a neigboring glyph (for small slurs) or removing stuck
-     * glyph sections (for large slurs)
-     *
-     * @param glyph the spurious glyph at hand
-     * @return true if the slur glyph has actually been fixed
-     */
-    public Glyph fixSpuriousSlur (Glyph glyph)
-    {
-        return slurInspector.fixSpuriousSlur(glyph);
-    }
-
-    //-----------------//
-    // runAlterPattern //
-    //-----------------//
-    /**
-     * In a specified system, look for pairs of close stems that in fact result
-     * from indue segmentation of sharp or natural signs.
-     *
-     * @return the number of symbols recognized
-     */
-    public int runAlterPattern ()
-    {
-        return glyphInspector.runAlterPattern();
-    }
-
-    //----------------//
-    // runClefPattern //
-    //----------------//
-    /**
-     * In a specified system, look for clefs at the beginning of the system,
-     * and check that every staff has a clef
-     *
-     * @return the number of clefs fixed
-     */
-    public int runClefPattern ()
-    {
-        return glyphInspector.runClefPattern();
-    }
-
-    //-----------------//
-    // runShapePattern //
-    //-----------------//
-    /**
-     * A general pattern to check some glyph shapes within their environment
-     * @return the number of glyphs deassigned
-     */
-    public int runShapePattern ()
-    {
-        return glyphInspector.runShapePattern();
-    }
-
-    //----------------//
-    // runSlurPattern //
-    //----------------//
-    /**
-     * Process all the slur glyphs in the given system, and try to correct the
-     * spurious ones if any
-     * @return the number of slurs fixed
-     */
-    public int runSlurPattern ()
-    {
-        return slurInspector.runSlurPattern();
-    }
-
-    //----------------//
-    // runStemPattern //
-    //----------------//
-    /**
-     * In a specified system, look for all stems that should not be kept,
-     * rebuild surrounding glyphs and try to recognize them. If this action does
-     * not lead to some recognized symbol, then we restore the stems.
-     *
-     * @return the number of symbols recognized
-     */
-    public int runStemPattern ()
-    {
-        return stemInspector.runStemPattern();
-    }
-
-    //----------------//
-    // runTextPattern //
-    //----------------//
-    /**
-     * Retrieve the various glyphs and series of glyphs that could represent
-     * text portions in the system at hand
-     * @return the number of text glyphs built
-     */
-    public int runTextPattern ()
-    {
-        return textInspector.runTextPattern();
-    }
-
     //----------------//
     // translateFinal //
     //----------------//
@@ -1256,29 +1300,6 @@ public class SystemInfo
     public void translateSystem ()
     {
         translator.translateSystem();
-    }
-
-    //-------------//
-    // tryCompound //
-    //-------------//
-    /**
-     * Try to build a compound, starting from given seed and looking into the
-     * collection of suitable glyphs.
-     *
-     * <p>Note that this method has no impact on the system/lag environment.
-     * It is the caller's responsability, for a successful (i.e. non-null)
-     * compound, to assign its shape and to add the glyph to the system/lag.
-     *
-     * @param seed the initial glyph around which the compound is built
-     * @param suitables collection of potential glyphs
-     * @param adapter the specific behavior of the compound tests
-     * @return the compound built if successful, null otherwise
-     */
-    public Glyph tryCompound (Glyph           seed,
-                              List<Glyph>     suitables,
-                              CompoundAdapter adapter)
-    {
-        return glyphInspector.tryCompound(seed, suitables, adapter);
     }
 
     //-----------------//

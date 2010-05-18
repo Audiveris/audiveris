@@ -71,7 +71,6 @@ public class ShapeRange
     public static final ShapeRange Notes = new ShapeRange(
         BREVE,
         EnumSet.range(BREVE, WHOLE_NOTE_3));
-
     public static final ShapeRange Ornaments = new ShapeRange(
         MORDENT,
         EnumSet.range(GRACE_NOTE_SLASH, INVERTED_MORDENT));
@@ -87,7 +86,6 @@ public class ShapeRange
             THIRTY_SECOND_REST,
             SIXTY_FOURTH_REST,
             ONE_HUNDRED_TWENTY_EIGHTH_REST));
-
     public static final ShapeRange Times = new ShapeRange(
         TIME_FOUR_FOUR,
         EnumSet.range(TIME_ZERO, CUT_TIME),
@@ -187,6 +185,12 @@ public class ShapeRange
         COMBINING_AUGMENTATION_DOT,
         STACCATO,
         REPEAT_DOTS);
+
+    /** All sorts of F clefs */
+    public static final EnumSet<Shape> BassClefs = EnumSet.of(
+        F_CLEF,
+        F_CLEF_OTTAVA_ALTA,
+        F_CLEF_OTTAVA_BASSA);
 
     //~ Instance fields --------------------------------------------------------
 

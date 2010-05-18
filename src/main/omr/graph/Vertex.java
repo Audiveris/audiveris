@@ -444,6 +444,8 @@ public abstract class Vertex<D extends Digraph, V extends Vertex<D, V, SIG>, SIG
 
         sb.append(internalsString());
 
+        sb.append("}");
+
         return sb.toString();
     }
 

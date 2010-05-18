@@ -226,19 +226,21 @@ public class BasicStick
         alignment.renderLine(g);
     }
 
-    //----------//
-    // toString //
-    //----------//
+    //-----------------//
+    // internalsString //
+    //-----------------//
     /**
-     * A readable image of the Stick
+     * Return the string of the internals of this class, typically for inclusion
+     * in a toString. The overriding methods, if any, should return a string
+     * that begins with a " " followed by some content.
      *
-     * @return The image string
+     * @return the string of internals
      */
     @Override
-    public String toString ()
+    protected String internalsString ()
     {
-        StringBuffer sb = new StringBuffer(256);
-        sb.append(super.toString());
+        StringBuffer sb = new StringBuffer(25);
+        sb.append(super.internalsString());
 
         if (getResult() != null) {
             sb.append(" ")
@@ -287,12 +289,6 @@ public class BasicStick
             } finally {
                 sb.append("]");
             }
-        }
-
-        if (this.getClass()
-                .getName()
-                .equals(Stick.class.getName())) {
-            sb.append("}");
         }
 
         return sb.toString();

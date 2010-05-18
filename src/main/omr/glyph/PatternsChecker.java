@@ -40,7 +40,15 @@ public class PatternsChecker
             }
         }
     ,
-                                            
+
+    new Pattern("Bass") {
+            public int run (SystemInfo system)
+            {
+                return system.runBassPattern();
+            }
+        }
+    ,
+
     new Pattern("Clef") {
             public int run (SystemInfo system)
             {

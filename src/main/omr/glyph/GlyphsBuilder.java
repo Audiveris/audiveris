@@ -198,22 +198,17 @@ public class GlyphsBuilder
      */
     public Glyph buildTransientCompound (Collection<Glyph> parts)
     {
-        // Build a glyph from all sections
-        Glyph compound = new BasicStick(scale.interline());
+        // Gather all the sections involved
+        Collection<GlyphSection> sections = new HashSet<GlyphSection>();
 
-        for (Glyph glyph : parts) {
-            compound.addGlyphSections(glyph, Glyph.Linking.NO_LINK_BACK);
-
-            if (compound.getLag() == null) {
-                compound.setLag(glyph.getLag());
-            }
+        for (Glyph part : parts) {
+            sections.addAll(part.getMembers());
         }
+
+        Glyph compound = buildTransientGlyph(sections);
 
         // Register (a copy of) the parts in the compound itself
         compound.setParts(parts);
-
-        // Compute glyph parameters
-        computeGlyphFeatures(compound);
 
         return compound;
     }

@@ -95,7 +95,7 @@ class BasicRecognition
     //---------------//
     public void setEvaluation (Evaluation evaluation)
     {
-        this.evaluation = evaluation;
+        setShape(evaluation.shape, evaluation.doubt);
     }
 
     //---------------//

@@ -542,6 +542,26 @@ public class BasicGlyph
         display.recolorize(viewIndex);
     }
 
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        StringBuffer sb = new StringBuffer();
+
+        sb.append("{")
+          .append(getClass().getSimpleName())
+          .append("#")
+          .append(this.getId());
+
+        sb.append(internalsString());
+
+        sb.append("}");
+
+        return sb.toString();
+    }
+
     //-----------//
     // translate //
     //-----------//
@@ -550,17 +570,19 @@ public class BasicGlyph
         geometry.translate(vector);
     }
 
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
+    //-----------------//
+    // internalsString //
+    //-----------------//
+    /**
+     * Return the string of the internals of this class, typically for inclusion
+     * in a toString. The overriding methods, if any, should return a string
+     * that begins with a " " followed by some content.
+     *
+     * @return the string of internals
+     */
+    protected String internalsString ()
     {
-        StringBuffer sb = new StringBuffer(256);
-        sb.append("{")
-          .append(getClass().getSimpleName());
-        sb.append("#")
-          .append(getId());
+        StringBuffer sb = new StringBuffer(25);
 
         if (getShape() != null) {
             sb.append(" ")
@@ -607,13 +629,6 @@ public class BasicGlyph
             sb.append(" trans=[")
               .append(getTranslations())
               .append("]");
-        }
-
-        // Is that all?
-        if (this.getClass()
-                .getName()
-                .equals(BasicGlyph.class.getName())) {
-            sb.append("}");
         }
 
         return sb.toString();

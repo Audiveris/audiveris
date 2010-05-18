@@ -413,6 +413,19 @@ class BasicAlignment
         }
     }
 
+    //------//
+    // dump //
+    //------//
+    /**
+     * Print out glyph internal data
+     */
+    @Override
+    public void dump ()
+    {
+        super.dump();
+        System.out.println("   line=" + getLine());
+    }
+
     //--------------//
     // overlapsWith //
     //--------------//
@@ -446,128 +459,5 @@ class BasicAlignment
                 null);
             g.drawLine(start.x, start.y, stop.x, stop.y);
         }
-    }
-
-        //------//
-        // dump //
-        //------//
-        /**
-         * Print out glyph internal data
-         */
-        @Override
-        public void dump ()
-        {
-            super.dump();
-            System.out.println("   line=" + getLine());
-        }
-    
-    //    //------//
-    //    // dump //
-    //    //------//
-    //    /**
-    //     * Dump the stick as well as its contained sections is so desired
-    //     *
-    //     * @param withContent Flag to specify the dump of contained sections
-    //     */
-    //    public void dump (boolean withContent)
-    //    {
-    //        if (withContent) {
-    //            System.out.println();
-    //        }
-    //
-    //        StringBuilder sb = new StringBuilder(toString());
-    //
-    //        if (line != null) {
-    //            sb.append(" pointNb=")
-    //              .append(line.getNumberOfPoints());
-    //        }
-    //
-    //        sb.append(" start=")
-    //          .append(getStart());
-    //        sb.append(" stop=")
-    //          .append(getStop());
-    //        sb.append(" midPos=")
-    //          .append(getMidPos());
-    //        System.out.println(sb);
-    //
-    //        if (withContent) {
-    //            System.out.println("-members:" + getMembers().size());
-    //
-    //            for (GlyphSection sct : getMembers()) {
-    //                System.out.println(" " + sct.toString());
-    //            }
-    //        }
-    //    }
-
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * A readable image of the Stick
-     *
-     * @return The image string
-     */
-    @Override
-    public String toString ()
-    {
-        StringBuffer sb = new StringBuffer(256);
-        sb.append(super.toString());
-
-        if (glyph.getResult() != null) {
-            sb.append(" ")
-              .append(glyph.getResult());
-        }
-
-        if (!glyph.getMembers()
-                  .isEmpty()) {
-            sb.append(" th=")
-              .append(getThickness());
-            sb.append(" lg=")
-              .append(getLength());
-            sb.append(" l/t=")
-              .append(String.format("%.2f", getAspect()));
-            sb.append(" fa=")
-              .append((100 * getFirstStuck()) / getLength())
-              .append("%");
-            sb.append(" la=")
-              .append((100 * getLastStuck()) / getLength())
-              .append("%");
-        }
-
-        if ((line != null) && (line.getNumberOfPoints() > 1)) {
-            try {
-                sb.append(" start[");
-
-                PixelPoint start = getStartPoint();
-                sb.append(start.x)
-                  .append(",")
-                  .append(start.y);
-            } catch (Exception ignored) {
-                sb.append("INVALID");
-            } finally {
-                sb.append("]");
-            }
-
-            try {
-                sb.append(" stop[");
-
-                PixelPoint stop = getStopPoint();
-                sb.append(stop.x)
-                  .append(",")
-                  .append(stop.y);
-            } catch (Exception ignored) {
-                sb.append("INVALID");
-            } finally {
-                sb.append("]");
-            }
-        }
-
-        if (this.getClass()
-                .getName()
-                .equals(Stick.class.getName())) {
-            sb.append("}");
-        }
-
-        return sb.toString();
     }
 }

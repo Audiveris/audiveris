@@ -22,6 +22,8 @@ import omr.log.Logger;
 
 import omr.math.Circle;
 
+import omr.score.common.PixelRectangle;
+
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
@@ -50,6 +52,9 @@ public class SlurInspector
     /** Dedicated system */
     private final SystemInfo system;
 
+    /** Related compound builder */
+    private final CompoundBuilder compoundBuilder;
+
     //~ Constructors -----------------------------------------------------------
 
     //---------------//
@@ -63,6 +68,7 @@ public class SlurInspector
     public SlurInspector (SystemInfo system)
     {
         this.system = system;
+        compoundBuilder = new CompoundBuilder(system);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -414,15 +420,14 @@ public class SlurInspector
             logger.finest("fixing Small Slur for glyph #" + oldSlur.getId());
         }
 
-        SlurCompoundAdapter adapter = new SlurCompoundAdapter(
-            system.getScoreSystem().getScale());
+        SlurCompoundAdapter adapter = new SlurCompoundAdapter(system);
+        adapter.setSeed(oldSlur);
 
         // Collect glyphs suitable for participating in compound building
-        List<Glyph>         suitables = new ArrayList<Glyph>(
-            system.getGlyphs().size());
+        List<Glyph> suitables = new ArrayList<Glyph>(system.getGlyphs().size());
 
         for (Glyph g : system.getGlyphs()) {
-            if ((g != oldSlur) && adapter.isSuitable(g)) {
+            if ((g != oldSlur) && adapter.isCandidateSuitable(g)) {
                 suitables.add(g);
             }
         }
@@ -431,22 +436,19 @@ public class SlurInspector
         Collections.sort(suitables, Glyph.reverseWeightComparator);
 
         // Process that slur, looking at neighbors
-        Glyph compound = system.tryCompound(oldSlur, suitables, adapter);
+        Glyph compound = compoundBuilder.buildCompound(
+            oldSlur,
+            suitables,
+            adapter);
 
         if (compound != null) {
-            // Beware, the compound may now belong to a different system
-            SystemInfo newSystem = system.getSheet()
-                                         .getSystemOf(compound);
-            Glyph      newSlur = newSystem.addGlyph(compound);
-            newSlur.setShape(Shape.SLUR);
-
             if (logger.isFineEnabled()) {
                 logger.fine(
                     "Fixed small slur #" + oldSlur.getId() + " as compound #" +
-                    newSlur.getId());
+                    compound.getId());
             }
 
-            return newSlur;
+            return compound;
         } else {
             oldSlur.setShape(null); // Since this slur has not been fixed
 
@@ -495,44 +497,26 @@ public class SlurInspector
     // SlurCompoundAdapter //
     //---------------------//
     /**
-     * Class <code>SlurCompoundAdapter</code> is a CompoundAdapter meant to process a
-     * small oldSlur.
+     * Class {@code SlurCompoundAdapter} is a CompoundAdapter meant to process
+     * a small slur.
      */
-    private static class SlurCompoundAdapter
-        implements GlyphInspector.CompoundAdapter
+    private class SlurCompoundAdapter
+        extends CompoundBuilder.AbstractAdapter
     {
-        //~ Instance fields ----------------------------------------------------
-
-        /** The scale around the oldSlur */
-        private final Scale scale;
-
         //~ Constructors -------------------------------------------------------
 
-        public SlurCompoundAdapter (Scale scale)
+        public SlurCompoundAdapter (SystemInfo system)
         {
-            this.scale = scale;
+            super(system, 0d); // Value is irrelevant
         }
 
         //~ Methods ------------------------------------------------------------
 
-        @Implement(GlyphInspector.CompoundAdapter.class)
-        public int getBoxDx ()
+        @Implement(CompoundBuilder.CompoundAdapter.class)
+        public boolean isCandidateSuitable (Glyph glyph)
         {
-            return scale.toPixels(constants.slurBoxDx);
-        }
-
-        @Implement(GlyphInspector.CompoundAdapter.class)
-        public int getBoxDy ()
-        {
-            return scale.toPixels(constants.slurBoxDy);
-        }
-
-        @Implement(GlyphInspector.CompoundAdapter.class)
-        public boolean isSuitable (Glyph glyph)
-        {
-            if (!glyph.isActive()) { // Safer
-
-                return false;
+            if (!glyph.isActive()) {
+                return false; // Safer
             }
 
             if (!glyph.isKnown()) {
@@ -558,13 +542,34 @@ public class SlurInspector
                    (glyph.getDoubt() >= GlyphInspector.getMinCompoundPartDoubt());
         }
 
-        @Implement(GlyphInspector.CompoundAdapter.class)
-        public boolean isValid (Glyph compound)
+        @Implement(CompoundBuilder.CompoundAdapter.class)
+        public boolean isCompoundValid (Glyph compound)
         {
             // Look for a circle
             Circle circle = computeCircle(compound);
 
-            return circle.isValid(getMaxCircleDistance());
+            if (circle.isValid(getMaxCircleDistance())) {
+                chosenEvaluation = new Evaluation(
+                    Shape.SLUR,
+                    Evaluation.ALGORITHM);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        @Implement(CompoundBuilder.CompoundAdapter.class)
+        public PixelRectangle getIntersectionBox ()
+        {
+            Scale          scale = system.getScoreSystem()
+                                         .getScale();
+            PixelRectangle box = new PixelRectangle(seed.getContourBox());
+            box.grow(
+                scale.toPixels(constants.slurBoxDx),
+                scale.toPixels(constants.slurBoxDy));
+
+            return box;
         }
     }
 }

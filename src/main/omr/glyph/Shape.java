@@ -115,10 +115,11 @@ public enum Shape {
     /** Double Sharp */
     DOUBLE_SHARP("Double Sharp", 220), 
     /** Double Flat */
-    DOUBLE_FLAT("Double Flat", 186), TIME_ZERO("Digit 0", 48), 
-
+    DOUBLE_FLAT("Double Flat", 186), 
+    /** Digit 0 */
+    TIME_ZERO("Digit 0", 48), 
     /** Digit 1 */
-    TIME_ONE("Digit 1", 49),
+    TIME_ONE("Digit 1", 49), 
     /** Digit 2 */
     TIME_TWO("Digit 2", 50), 
     /** Digit 3 */

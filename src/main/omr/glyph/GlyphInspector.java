@@ -11,8 +11,10 @@
 // </editor-fold>
 package omr.glyph;
 
+import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.CompoundBuilder.CompoundAdapter;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -21,14 +23,13 @@ import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
 import omr.sheet.Scale;
+import omr.sheet.Scale.InterlineFraction;
 import omr.sheet.StaffInfo;
 import omr.sheet.SystemInfo;
 
 import omr.util.Implement;
 
-import java.awt.*;
 import java.util.*;
-import java.util.List;
 
 /**
  * Class <code>GlyphInspector</code> is at a System level, dedicated to the
@@ -58,6 +59,9 @@ public class GlyphInspector
     /** Related lag */
     private final GlyphLag lag;
 
+    /** Related compound builder */
+    private final CompoundBuilder compoundBuilder;
+
     // Constants for alter verification
     private final int    maxCloseStemDx;
     private final int    minCloseStemOverlap;
@@ -69,6 +73,8 @@ public class GlyphInspector
     // Constants for clef verification
     private final int    clefHalfWidth;
     private final double clefMaxDoubt;
+    private final double maxBassDotPitchDy;
+    private final double maxBassDotDx;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -87,6 +93,7 @@ public class GlyphInspector
                       .getScale();
         lag = system.getSheet()
                     .getVerticalLag();
+        compoundBuilder = new CompoundBuilder(system);
 
         maxCloseStemDx = scale.toPixels(constants.maxCloseStemDx);
         minCloseStemOverlap = scale.toPixels(constants.minCloseStemOverlap);
@@ -97,6 +104,8 @@ public class GlyphInspector
 
         clefHalfWidth = scale.toPixels(constants.clefHalfWidth);
         clefMaxDoubt = constants.clefMaxDoubt.getValue();
+        maxBassDotPitchDy = constants.maxBassDotPitchDy.getValue();
+        maxBassDotDx = scale.toPixels(constants.maxBassDotDx);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -198,7 +207,7 @@ public class GlyphInspector
                 // Get vote
                 Evaluation vote = evaluator.vote(glyph, maxDoubt);
 
-                if (vote != null) {
+                if ((vote != null) && !glyph.isShapeForbidden(vote.shape)) {
                     glyph.setShape(vote.shape, vote.doubt);
                 }
             }
@@ -317,6 +326,66 @@ public class GlyphInspector
                     // Restore stem shapes
                     glyph.setShape(Shape.COMBINING_STEM);
                     other.setShape(Shape.COMBINING_STEM);
+                }
+            }
+        }
+
+        return successNb;
+    }
+
+    //----------------//
+    // runBassPattern //
+    //----------------//
+    /**
+     * Check for segmented bass clefs, in the neighborhood of typical vertical
+     * two-dot patterns
+     * @return the number of bass clefs fixed
+     */
+    public int runBassPattern ()
+    {
+        int             successNb = 0;
+
+        // Specific adapter definition for bass clefs
+        CompoundAdapter bassAdapter = new BassAdapter(system, clefMaxDoubt);
+
+        for (Glyph top : system.getGlyphs()) {
+            // Look for top dot
+            if ((top.getShape() != Shape.DOT) ||
+                (Math.abs(top.getPitchPosition() - -3) > maxBassDotPitchDy)) {
+                continue;
+            }
+
+            int       topX = top.getCentroid().x;
+            StaffInfo topStaff = system.getStaffAtY(top.getCentroid().y);
+
+            // Look for bottom dot right underneath, and in the same staff
+            for (Glyph bot : system.getGlyphs()) {
+                if ((bot.getShape() != Shape.DOT) ||
+                    (Math.abs(bot.getPitchPosition() - -1) > maxBassDotPitchDy)) {
+                    continue;
+                }
+
+                if (Math.abs(bot.getCentroid().x - topX) > maxBassDotDx) {
+                    continue;
+                }
+
+                if (system.getStaffAtY(bot.getCentroid().y) != topStaff) {
+                    continue;
+                }
+
+                // Here we have a couple
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "Got bass dots #" + top.getId() + " & #" + bot.getId());
+                }
+
+                Glyph compound = compoundBuilder.buildCompound(
+                    top,
+                    system.getGlyphs(),
+                    bassAdapter);
+
+                if (compound != null) {
+                    successNb++;
                 }
             }
         }
@@ -454,85 +523,11 @@ public class GlyphInspector
         return modifNb;
     }
 
-    //-------------//
-    // tryCompound //
-    //-------------//
-    /**
-     * Try to build a compound, starting from given seed and looking into the
-     * collection of suitable glyphs.
-     *
-     * <p>Note that this method has no impact on the system/lag environment.
-     * It is the caller's responsability, for a successful (i.e. non-null)
-     * compound, to assign its shape and to add the glyph to the system/lag.
-     *
-     * @param seed the initial glyph around which the compound is built
-     * @param suitables collection of potential glyphs
-     * @param adapter the specific behavior of the compound tests
-     * @return the compound built if successful, null otherwise
-     */
-    public Glyph tryCompound (Glyph           seed,
-                              List<Glyph>     suitables,
-                              CompoundAdapter adapter)
-    {
-        // Build box extended around the seed
-        Rectangle   rect = seed.getContourBox();
-        Rectangle   box = new Rectangle(
-            rect.x - adapter.getBoxDx(),
-            rect.y - adapter.getBoxDy(),
-            rect.width + (2 * adapter.getBoxDx()),
-            rect.height + (2 * adapter.getBoxDy()));
-
-        // Retrieve good neighbors among the suitable glyphs
-        List<Glyph> neighbors = new ArrayList<Glyph>();
-
-        // Include the seed in the compound glyphs
-        neighbors.add(seed);
-
-        for (Glyph g : suitables) {
-            if (!adapter.isSuitable(g)) {
-                continue;
-            }
-
-            if (box.intersects(g.getContourBox())) {
-                neighbors.add(g);
-            }
-        }
-
-        if (neighbors.size() > 1) {
-            if (logger.isFineEnabled()) {
-                logger.finest(
-                    "neighbors=" + Glyphs.toString(neighbors) + " seed=" +
-                    seed);
-            }
-
-            Glyph compound = system.buildTransientCompound(neighbors);
-
-            if (adapter.isValid(compound)) {
-                // If this compound duplicates an original glyph,
-                // make sure the shape was not forbidden in the original
-                Glyph original = system.getSheet()
-                                       .getVerticalLag()
-                                       .getOriginal(compound);
-
-                if ((original == null) ||
-                    !original.isShapeForbidden(compound.getShape())) {
-                    if (logger.isFineEnabled()) {
-                        logger.fine("Inserted compound " + compound);
-                    }
-
-                    return compound;
-                }
-            }
-        }
-
-        return null;
-    }
-
     //-----------//
     // checkClef //
     //-----------//
     /**
-     * Try to recognize a glef in the compound of the provided glyphs
+     * Try to recognize a clef in the compound of the provided glyphs
      * @param glyphs the parts of a clef candidate
      * @return true if successful
      */
@@ -678,76 +673,23 @@ public class GlyphInspector
      */
     private void retrieveCompounds (double maxDoubt)
     {
-        BasicAdapter adapter = new BasicAdapter(maxDoubt);
-
-        // Collect glyphs suitable for participating in compound building
-        List<Glyph>  suitables = new ArrayList<Glyph>(
-            system.getGlyphs().size());
-
-        for (Glyph glyph : system.getGlyphs()) {
-            if (adapter.isSuitable(glyph)) {
-                suitables.add(glyph);
-            }
-        }
-
         // Sort suitable glyphs by decreasing weight
-        Collections.sort(suitables, Glyph.reverseWeightComparator);
+        List<Glyph> glyphs = new ArrayList<Glyph>(system.getGlyphs());
+        Collections.sort(glyphs, Glyph.reverseWeightComparator);
 
         // Now process each seed in turn, by looking at smaller ones
-        for (int index = 0; index < suitables.size(); index++) {
-            Glyph seed = suitables.get(index);
-            adapter.setSeed(seed);
+        BasicAdapter adapter = new BasicAdapter(system, maxDoubt);
 
-            Glyph compound = tryCompound(
-                seed,
-                suitables.subList(index + 1, suitables.size()),
-                adapter);
+        for (int index = 0; index < glyphs.size(); index++) {
+            Glyph seed = glyphs.get(index);
 
-            if (compound != null) {
-                compound = system.addGlyph(compound);
-                compound.setShape(
-                    adapter.getVote().shape,
-                    adapter.getVote().doubt);
+            if (adapter.isCandidateSuitable(seed)) {
+                compoundBuilder.buildCompound(
+                    seed,
+                    glyphs.subList(index + 1, glyphs.size()),
+                    adapter);
             }
         }
-    }
-
-    //~ Inner Interfaces -------------------------------------------------------
-
-    //-----------------//
-    // CompoundAdapter //
-    //-----------------//
-    /**
-     * Interface <code>CompoundAdapter</code> provides the needed features for
-     * a generic compound building.
-     */
-    public static interface CompoundAdapter
-    {
-        //~ Methods ------------------------------------------------------------
-
-        /** Extension in abscissa to look for neighbors
-         * @return the extension on left and right
-         */
-        int getBoxDx ();
-
-        /** Extension in ordinate to look for neighbors
-         * @return the extension on top and bottom
-         */
-        int getBoxDy ();
-
-        /**
-         * Predicate for a glyph to be a potential part of the building (the
-         * location criteria is handled separately)
-         * @param glyph the glyph to check
-         * @return true if the glyph is suitable for inclusion
-         */
-        boolean isSuitable (Glyph glyph);
-
-        /** Predicate to check the success of the newly built compound
-         * @param compound the resulting compound glyph to check
-         * @return true if the compound is found OK
-         */
-        boolean isValid (Glyph compound);
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -757,51 +699,28 @@ public class GlyphInspector
     //--------------//
     /**
      * Class <code>BasicAdapter</code> is a CompoundAdapter meant to retrieve
-     * all compounds (in a system). It is reusable from one candidate to the
-     * other, by using the setSeed() method.
+     * all compounds (in a system).
      */
     private class BasicAdapter
-        implements CompoundAdapter
+        extends CompoundBuilder.AbstractAdapter
     {
-        //~ Instance fields ----------------------------------------------------
-
-        /** Maximum doubt for a compound */
-        private final double maxDoubt;
-
-        /** The seed being considered */
-        private Glyph seed;
-
-        /** The result of compound evaluation */
-        private Evaluation vote;
-
         //~ Constructors -------------------------------------------------------
 
-        public BasicAdapter (double maxDoubt)
+        /**
+         * Construct a BasicAdapter around a given seed
+         * @param system the containing system
+         * @param maxDoubt maximum acceptable doubt
+         */
+        public BasicAdapter (SystemInfo system,
+                             double     maxDoubt)
         {
-            this.maxDoubt = maxDoubt;
+            super(system, maxDoubt);
         }
 
         //~ Methods ------------------------------------------------------------
 
         @Implement(CompoundAdapter.class)
-        public int getBoxDx ()
-        {
-            return scale.toPixels(constants.boxWiden);
-        }
-
-        @Implement(CompoundAdapter.class)
-        public int getBoxDy ()
-        {
-            return scale.toPixels(constants.boxWiden);
-        }
-
-        public void setSeed (Glyph seed)
-        {
-            this.seed = seed;
-        }
-
-        @Implement(CompoundAdapter.class)
-        public boolean isSuitable (Glyph glyph)
+        public boolean isCandidateSuitable (Glyph glyph)
         {
             return glyph.isActive() &&
                    (!glyph.isKnown() ||
@@ -812,27 +731,87 @@ public class GlyphInspector
                    (glyph.getShape() == Shape.VOID_NOTEHEAD) ||
                    (glyph.getShape() == Shape.VOID_NOTEHEAD_2) ||
                    (glyph.getShape() == Shape.VOID_NOTEHEAD_3) ||
-                   (glyph.getDoubt() >= getMinCompoundPartDoubt()))));
+                   (glyph.getDoubt() >= GlyphInspector.getMinCompoundPartDoubt()))));
         }
 
         @Implement(CompoundAdapter.class)
-        public boolean isValid (Glyph compound)
+        public boolean isCompoundValid (Glyph compound)
         {
-            vote = GlyphNetwork.getInstance()
-                               .vote(compound, maxDoubt);
+            Evaluation eval = GlyphNetwork.getInstance()
+                                          .vote(compound, maxDoubt);
 
-            if (vote != null) {
-                compound.setShape(vote.shape, vote.doubt);
+            if ((eval != null) &&
+                eval.shape.isWellKnown() &&
+                (eval.shape != Shape.CLUTTER) &&
+                (!seed.isKnown() || (eval.doubt < seed.getDoubt()))) {
+                chosenEvaluation = eval;
+
+                return true;
+            } else {
+
+                return false;
             }
-
-            return (vote != null) && vote.shape.isWellKnown() &&
-                   (vote.shape != Shape.CLUTTER) &&
-                   (!seed.isKnown() || (vote.doubt < seed.getDoubt()));
         }
 
-        public Evaluation getVote ()
+        @Implement(CompoundAdapter.class)
+        public PixelRectangle getIntersectionBox ()
         {
-            return vote;
+            if (seed == null) {
+                throw new NullPointerException(
+                    "Compound seed has not been set");
+            }
+
+            PixelRectangle box = new PixelRectangle(seed.getContourBox());
+            Scale          scale = system.getScoreSystem()
+                                         .getScale();
+            int            boxWiden = scale.toPixels(
+                GlyphInspector.constants.boxWiden);
+            box.grow(boxWiden, boxWiden);
+
+            return box;
+        }
+    }
+
+    //-------------//
+    // BassAdapter //
+    //-------------//
+    private class BassAdapter
+        extends CompoundBuilder.TopShapeAdapter
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public BassAdapter (SystemInfo system,
+                            double     maxDoubt)
+        {
+            super(system, maxDoubt, ShapeRange.BassClefs);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public boolean isCandidateSuitable (Glyph glyph)
+        {
+            return !glyph.isManualShape() ||
+                   ShapeRange.BassClefs.contains(glyph.getShape());
+        }
+
+        @Override
+        public PixelRectangle getIntersectionBox ()
+        {
+            if (seed == null) {
+                throw new NullPointerException(
+                    "Compound seed has not been set");
+            }
+
+            Scale          scale = system.getScoreSystem()
+                                         .getScale();
+            PixelRectangle pixRect = new PixelRectangle(seed.getCentroid());
+            pixRect.add(
+                new PixelPoint(
+                    pixRect.x - scale.toPixels(new InterlineFraction(2)),
+                    pixRect.y + scale.toPixels(new InterlineFraction(3))));
+
+            return pixRect;
         }
     }
 
@@ -883,6 +862,13 @@ public class GlyphInspector
         Scale.Fraction   clefHalfWidth = new Scale.Fraction(
             2d,
             "Half width of a clef");
+        Scale.Fraction   maxBassDotDx = new Scale.Fraction(
+            0.25,
+            "Tolerance on Bass dot abscissae");
+        Constant.Double  maxBassDotPitchDy = new Constant.Double(
+            "pitch",
+            0.5,
+            "Ordinate tolerance on a Bass dot pitch position");
         Evaluation.Doubt clefMaxDoubt = new Evaluation.Doubt(
             3d,
             "Maximum doubt for clef verification");
