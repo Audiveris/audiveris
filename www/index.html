@@ -1,10 +1,10 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head>
-<!-- $Id$ -->
+<html xmlns="http://www.w3.org/1999/xhtml"><head><!-- $Id$ -->
+
 <meta http-equiv="CONTENT-TYPE" content="text/html; charset=us-ascii" /><title>Audiveris Home Page</title>
 
-<meta name="author" content="Herv&#195;&#169; Bitteur" />
-<!-- The following links are meant to be solved on my local PC --><!-- The java.net site uses its own style sheets -->
+<meta name="author" content="Herv&#195;&#169; Bitteur" /><!-- The following links are meant to be solved on my local PC --><!-- The java.net site uses its own style sheets -->
+
 <link rel="stylesheet" type="text/css" href="branding/css/tigris.css" />
 <link rel="stylesheet" type="text/css" href="branding/css/inst.css" />
 <script type="text/javascript">
@@ -30,31 +30,26 @@ td.feature {text-align: right;}
 td.feature-domain {border-right: 2px solid rgb(170, 170, 170) ; text-align: right; vertical-align: middle;}
 tr.a, tr.b {font-size:smaller;}
 /*]]>*/
-</style>
-</head>
-
-    <body>
+</style></head>
+<body>
 <h1 class="title"> Audiveris Music Scanner </h1>
 <div class="donemessage">
 <p> Audiveris is a complete music scanner going all the way from
 the scanned music sheet input to the MusicXML output. </p>
-<p> The latest release&nbsp;is&nbsp;<strong>Version
+<p style="font-weight: bold;">Latest informations:&nbsp;</p><ul><li>The latest release&nbsp;is&nbsp;<strong>Version
 3.3</strong>
 &nbsp;whose main new feature is the ability to inject entities directly
-into the score structure via drag and drop from a shape palette.</p><p>The Tesseract OCR features work now under
-both Windows and Linux. Please refer to the <a href="index.html#INSTALLATION">installation section</a>
-for the installation of the&nbsp;Tesseract companion. We&nbsp;<strong>need help on&nbsp;Mac OS platform</strong>
-to implement the link with Tesseract, see the section below on <a href="index.html#Foreseen-Contributions">Foreseen Contributions</a>.</p>Nota:
-Audiveris has long been hosted on Java.Net and migrated to Kenai a few
+into the score structure via drag and drop from a shape palette.</li><li><a href="mailto:chewi@aura-online.co.uk">James Le Cuirot</a> has made the Tesseract OCR features work&nbsp;consistently under
+both Windows and Linux.&nbsp;Sorry, we have yet no access to<strong><span style="font-weight: normal;"> </span>Mac OS<span style="font-weight: normal;"> platform, and we would appreciate contribution there.</span></strong></li><li><strong><span style="font-weight: normal;"><a href="mailto:vladimir@viro.name">Vladimir Viro</a> has set up an impressive testbed for OMR engines with thousands of inputs from the Petrucci Music Library. This environment will greatly help us improve the recognition ratio of Audiveris. See the testbed in action on <a href="http://omr.viro.name/">http://omr.viro.name/</a></span></strong></li></ul><span style="font-weight: bold;">Note on project hosting:</span><br /><div style="margin-left: 40px;"><span style="font-style: italic;">Audiveris has long been hosted on Java.Net and migrated to Kenai a few
 months ago. Only the mailing list is still active on Java.Net to keep
 the set of registered members and provide easy browsing of the existing
 list archive. Oracle intends to re-implement Java.Net on top of Kenai
-infrastructure, so one day everything will be back on Java.Net.<br /><p>For the time being please provide any feedback on <a href="mailto:users@audiveris.dev.java.net">users@audiveris.dev.java.net</a>,
-in the form of suggestions or bug reports (please provide the scanned
-image with your report, to help us analyze the program behavior). </p>
+infrastructure, so one day everything will be back on Java.Net.</span><br style="font-style: italic;" /><span style="font-style: italic;">For the time being please provide any feedback on </span><a style="font-style: italic;" href="mailto:users@audiveris.dev.java.net">users@audiveris.dev.java.net</a><span style="font-style: italic;"> mailing list,
+in the form of suggestions or bug reports (if possible please attach the scanned
+image to your report, to help us analyze the program behavior).</span> </div>
 
 </div>
-<p> <img src="docs/images/whole-window.png" alt="Audiveris main window" /> </p>
+<p> <img src="docs/images/chula-score.png" alt="Audiveris main window" /> </p>
 <!-- --><!-- ============== --><!-- PROJECT COLUMN --><!-- ============== -->
 <div id="project-column">
 <h3>Project Management</h3>
@@ -67,12 +62,10 @@ issue tracking, etc).</p>
 Music Recognition</strong> (OMR) module. Starting from the image
 of a music sheet, it provides high-level logical music information
 compliant with the MusicXML definition. Other tools such as a Midi
-Sequencer, or a Composition Editor can then read and update this
-standard data. </p>
+Sequencer, or a Composition Editor can then read and update this&nbsp;data. </p>
 <p> There are already commercial tools in this area but Audiveris
-is, to our knowledge, the first Java open-source OMR tool. It is a
-cross-platform tool, written entirely in Java, and tested on Windows,
-Solaris, Linux and Mac OS. </p>
+is, to our knowledge, the only open-source OMR tool. It is a
+cross-platform tool, written&nbsp;in Java, and tested on Windows and Linux. Mac OS would require a volunteer. </p>
 <p> Audiveris works with printed music sheets only, the task of
 recognizing hand-written scores being significantly harder. </p>
 <h3> Main Features </h3>
@@ -138,7 +131,7 @@ via user interface </td>
 </tr>
 <tr class="b">
 <td class="feature"> Integrated learning: </td>
-<td> <strong>Yes</strong> To recognize new
+<td> <strong>Yes</strong> To train on specific
 symbol shapes </td>
 </tr>
 <tr class="a">
@@ -179,9 +172,7 @@ at measure level </td>
 implement a much better score display, providing the ability to move and resize individual items. </li>
 <li>Integrate with a <strong>Visual Music Editor</strong>
 via MusicXML for manual correction, for printing, etc. </li>
-<li>Investigate support for <strong>hand-written scores</strong>.
-This domain could take benefit of a significant part of Audiveris
-framework, however this would really be a project on its own. </li>
+
 </ul>
 </div>
 <!-- --><!-- =============== --><!-- MATERIAL COLUMN --><!-- =============== -->
@@ -198,7 +189,7 @@ document.write("<iframe src='docs/manual/chula.xml.html' width='100%' height='20
 <h3> Download </h3>
 <div class="filebrowse">
 <ul>
-<li class="leafnode"> <a href="http://kenai.com/projects/audiveris/downloads%22">
+<li class="leafnode"> <a href="http://kenai.com/projects/audiveris/downloads">
 Download area</a>: The latest stable release is provided in a
 single distribution, combining binaries and user documentation, as well
 as source code, build procedures, Javadoc, and training material. </li>
@@ -217,29 +208,14 @@ sub-folder. </li>
 <ul>
 <li>Launch the program by a double-click on the jar file,
 or use a CLI command such as:<br />
-<code>java -jar <i>&lt;install-dir&gt;</i>/dist/audiveris-3.2.jar</code>
+<code>java -jar <i>&lt;install-dir&gt;</i>/dist/audiveris-3.3.jar</code>
 </li>
-<li>A more convenient way is, from the command line, to
-'cd' to the Audiveris <strong>dist</strong> folder and,
+<li>You can also use the command line,&nbsp;'cd' to the Audiveris <strong>dist</strong> sub-folder and,
 once there, run the <strong>audiveris.bat</strong> file. </li>
 </ul>
 </li>
 </ol>
-<p> <strong>Very important notice</strong> about the
-OCR feature available today under Windows only: </p>
-<ul>
-<li> <strong>Microsoft C/C++ 2008 SP1 runtime</strong>
-must be installed beforehand. You don't need the full Visual Studio,
-just the redistributable components (msvcr90.dll and msvcp90.dll). If
-you don't have them installed already, simply download and run <strong>vcredist_x86.exe</strong>
-from this Microsoft site: <a href="http://www.microsoft.com/downloads/details.aspx?FamilyID=a5c84275-3b97-4ab7-a40d-3802b2af5fc2">
-Microsoft Visual C++ 2008 SP1 Redistributable Package (x86)</a>. </li>
-<li>The system environment variable <strong>TESSDATA_PREFIX</strong>
-must be set to <strong><i>&lt;install-dir&gt;</i>/ocr/</strong>
-(including the final "/" character) so that Tesseract software can
-retrieve its own data. </li>
-</ul>
-<h3> Documentation </h3>
+<p style="margin-left: 40px;"> <strong><span style="font-weight: normal;">Note: The previous Audiveris version </span></strong><strong><span style="font-weight: normal;">required both the installation of Microsoft C/C++ and the setting of </span></strong><strong style="font-weight: normal;">TESSDATA_PREFIX&nbsp;variable for Tesseract OCR</strong><strong><span style="font-weight: normal;">. None of these is needed anymore</span></strong><strong style="font-weight: normal;">, OCR features work out-of-the-box for Windows and&nbsp;Linux.</strong></p><h3> Documentation </h3>
 <div class="filebrowse">
 <script type="text/javascript">
 //<![CDATA[
