@@ -64,6 +64,14 @@
  	    depends="clean, jar, -full-dist"
             description="Build the full distribution">
     </target>
+
+    <!-- =================== -->
+    <!--  F U L L - J A R S  -->
+    <!-- =================== -->
+    <target name="full-jars"
+ 	    depends="-full-jars"
+            description="Copy and check the various jars">
+    </target>
     
     <!-- =============== -->
     <!--  J A V A D O C  -->
@@ -102,6 +110,9 @@
     <!-- ================= -->
     <target name="-pre-jar"
 	    depends="common.-pre-jar" />
+
+    <target name="-post-init"
+	    depends="common.-hg-tip" />
 
     <!-- === Imports ======================================================== -->
 

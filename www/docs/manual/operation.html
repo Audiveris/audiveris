@@ -1,256 +1,240 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML>
-    <HEAD>
-	<!-- $Id$ -->
-	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html;
-						 charset=windows-1252"/>
-	<TITLE>Audiveris Operation Manual</TITLE>
+<html><head><!-- $Id$ -->
+	
+	<meta http-equiv="CONTENT-TYPE" content="text/html;
+						 charset=windows-1252">
+	
 
-	<META NAME="AUTHOR" CONTENT="Hervé Bitteur"/>
+	<title>Audiveris Operation Manual</title><meta name="AUTHOR" content="Hervé Bitteur">
 
-	<META NAME="CREATED" CONTENT="20050429;15271809"/>
+	<meta name="CREATED" content="20050429;15271809">
 
-	<META NAME="CLASSIFICATION" CONTENT="Documentation for Audiveris operation"/>
+	<meta name="CLASSIFICATION" content="Documentation for Audiveris operation">
 
-	<META NAME="DESCRIPTION" CONTENT="How to operate the Audiveris software"/>
+	<meta name="DESCRIPTION" content="How to operate the Audiveris software"><!-- The following links are meant to be solved on my local PC --><!-- The java.net site uses its own style sheets -->
                 
-        <!-- The following links are meant to be solved on my local PC -->
+        
 
-	<!-- The java.net site uses its own style sheets -->
+	
 
-	<LINK REL="stylesheet" TYPE="text/css" HREF="../../branding/css/tigris.css"/>
+	<link rel="stylesheet" type="text/css" href="../../branding/css/tigris.css">
 
-	<LINK REL="stylesheet" TYPE="text/css" HREF="../../branding/css/inst.css"/>
+	<link rel="stylesheet" type="text/css" href="../../branding/css/inst.css">
         <script type="text/javascript" src="util.js">
-</script>
-    </HEAD>
-    
-    <BODY MARGINWIDTH="0" MARGINHEIGHT="0" CLASS="app" STYLE="text-align: justify;"
-	   onLoad="parent.parent.clientSideInclude(document, 'includeone', 'example.xml.html');">
+</script></head>
+
+    <body class="app" style="text-align: justify;" onload="parent.parent.clientSideInclude(document, 'includeone', 'example.xml.html');" marginheight="0" marginwidth="0">
 	
-	<H1 ALIGN=CENTER>Audiveris Operation Manual</H1>
+	<h1 align="center">Audiveris Operation Manual</h1>
 	
-	<DIV CLASS="warningmessage">
-	    <P CLASS="alert"><b>BEWARE:</b> This documentation has not yet been 
-		updated for Audiveris 3.2, please consider this file as obsolete.</P>
-	</DIV>
+	<div class="warningmessage">
+	    <p class="alert"><b>BEWARE:</b> This documentation has not been 
+		updated for a while, please consider this file as obsolete.</p>
+	</div>
 	
-	<ADDRESS>Updated :
-	    <SCRIPT TYPE="text/javascript" >
-		document.write(getCVSDate("$Id$"));
-	    </SCRIPT>
-	</ADDRESS>
+	<div id="includeone">
+	</div>
 	
-	<DIV id="includeone">
-	</DIV>
+	<a name="BASICS_SECTION">
+	    <h2>Basics</h2>
+	</a>
 	
-	<A NAME="BASICS_SECTION">
-	    <H2>Basics</H2>
-	</A>
+	<a name="LAUNCHING">
+	    <h3>Launching Audiveris</h3>
+	</a>
 	
-	<A NAME="LAUNCHING">
-	    <H3>Launching Audiveris</H3>
-	</A>
-	
-	<P>First, move to the directory where you've extracted the Audiveris
-	    archive. Audiveris can be launched by different means:</P>
-	<OL>
-	    <LI>A double click on the jar file <u>audiveris-3.0.jar</u> located
-		in the <u>dist</u> folder of the installation directory.</LI>
-		<BR/>
-	    <LI>Using the command line:
-		<UL>
-		    <LI>For a simple launch:
-			<DIV CLASS="info">$&gt; java -jar
-			    dist/audiveris-3.0.jar</DIV></LI> <BR/>
-		    <LI>For a launch with additional JVM parameters (this
+	<p>First, move to the directory where you've extracted the Audiveris
+	    archive. Audiveris can be launched by different means:</p>
+	<ol>
+	    <li>A double click on the jar file <u>audiveris-3.0.jar</u> located
+		in the <u>dist</u> folder of the installation directory.</li>
+		<br>
+	    <li>Using the command line:
+		<ul>
+		    <li>For a simple launch:
+			<div class="info">$&gt; java -jar
+			    dist/audiveris-3.0.jar</div></li> <br>
+		    <li>For a launch with additional JVM parameters (this
 			example provides additional memory to the application):
-			<DIV CLASS="info">$&gt; java -Xmx256m -jar
-			    dist/audiveris-3.0.jar</DIV></LI> <BR/>
-		    <LI>The full command line syntax is the following:
-			<BR/>
-			<BR/>
-			<TEXTAREA style="background-color: rgb(255, 255, 240);
-					 color: rgb(0,0,150)"
-				  COLS="80" ROWS="17" WRAP="off" READONLY="true">
-			    
-$&gt; java -jar dist/audiveris-3.0.jar [-help] [-batch] [-step STEPNAME] [-sheet (SHEETNAME|@SHEETLIST)+] [-script (SCRIPTNAME|@SCRIPTLIST)+]
-			    
-	Known step names are in order (non case-sensitive):
-			    
-LOAD        : Load the sheet picture
-SCALE       : Compute the global Skew, and rotate if needed
-SKEW        : Detect & remove all Staff Lines
-LINES       : Retrieve horizontal Dashes
+			<div class="info">$&gt; java -Xmx256m -jar
+			    dist/audiveris-3.0.jar</div></li> <br>
+		    <li>The full command line syntax is the following:
+			<br>
+			<br>
+			<textarea style="background-color: rgb(255, 255, 240); color: rgb(0, 0, 150);" cols="80" rows="17" wrap="off" readonly="true">
+$&gt; java -jar dist/audiveris-3.0.jar [-help] [-batch] [-step
+STEPNAME] [-sheet (SHEETNAME|@SHEETLIST)+] [-script
+(SCRIPTNAME|@SCRIPTLIST)+] Known step names are in order (non
+case-sensitive): LOAD : Load the sheet picture
+SCALE : Compute the global Skew, and rotate if needed
+SKEW : Detect &amp; remove all Staff Lines
+LINES : Retrieve horizontal Dashes
 HORIZONTALS : Detect horizontal dashes
-BARS        : Detect vertical Bar lines
-SYMBOLS     : Recognize Symbols & Compounds
-VERTICALS   : Extract verticals
-LEAVES      : Recognize Leaves & Compounds
-CLEANUP     : Cleanup stems and slurs
-SCORE       : Translate glyphs to score items</TEXTAREA>
-			<P> Most of the time, there is no need for command-line
+BARS : Detect vertical Bar lines
+SYMBOLS : Recognize Symbols &amp; Compounds
+VERTICALS : Extract verticals
+LEAVES : Recognize Leaves &amp; Compounds
+CLEANUP : Cleanup stems and slurs
+SCORE : Translate glyphs to score items</textarea>
+			<p> Most of the time, there is no need for command-line
 			    arguments. They are useful when a batch mode
 			    (i.e. with no user interface) is required, or to set
-			    some parameters beforehand.</P>
+			    some parameters beforehand.</p>
 			
-			<P> A comprehensive list of command-line arguments is
-			    available in the javadoc API of the <A
-			    HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/Main.html">Main</A>
-			    class.</P>
-		    </LI>
-		</UL>
-	    </LI>
-	    <BR/>
-	    <LI>Other possibilities include:
-		<UL>
-		    <LI>Using the .bat file located in the <u>dist</u>
+			<p> A comprehensive list of command-line arguments is
+			    available in the javadoc API of the <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/Main.html">Main</a>
+			    class.</p>
+		    </li>
+		</ul>
+	    </li>
+	    <br>
+	    <li>Other possibilities include:
+		<ul>
+		    <li>Using the .bat file located in the <u>dist</u>
 			folder. You can add parameters to the file, so this is a
-			convenient way to register these parameters</LI>
-		    <LI>Using the <i>ant</i> utility from the <u>src</u> folder,
-			and running the <b>run</b> target.</LI>
-		    <LI>Using NetBeans IDE. For this, after creating a NetBeans
+			convenient way to register these parameters</li>
+		    <li>Using the <i>ant</i> utility from the <u>src</u> folder,
+			and running the <b>run</b> target.</li>
+		    <li>Using NetBeans IDE. For this, after creating a NetBeans
 			project in the installation directory, you'll have first
 			to rename the <u>build-for-netbeans.xml</u> file
 			as <u>build.xml</u> and then ask NetBeans to launch the
-			application.</LI>
-		</UL>
-	    </LI>
-	</OL>
+			application.</li>
+		</ul>
+	    </li>
+	</ol>
 	
-	<A NAME="POSSIBLE">
-	    <H3>Possible Operations</H3>
-	</A>
+	<a name="POSSIBLE">
+	    <h3>Possible Operations</h3>
+	</a>
 	
-	<P>The purpose of this section is to identify and quickly present the
+	<p>The purpose of this section is to identify and quickly present the
 	    various operations that an end user may perform with
 	    Audiveris. Additional details will be provided in the other sections
-	    of this document.</P>
+	    of this document.</p>
 	
-	<DL>
-	    <DT>Get the scan of a sheet of music</DT>
-	    <DD>
-		<DIV CLASS="warningmessage">
+	<dl>
+	    <dt>Get the scan of a sheet of music</dt>
+	    <dd>
+		<div class="warningmessage">
 		    Note that for the time being there is no direct link to any
 		    scanning device. So if you don't have image files available,
 		    you'll have to operate the scanner beforehand by yourself
 		    and store the scanned image into a file that you'll read
 		    from Audiveris.
-		</DIV>
+		</div>
 		Whatever the origin of the scan, please pay attention to:
-		<DL>
-		    <DT>The scan resolution</DT>
-		    <DD>The best fit is around 300 DPI. Less than that results
+		<dl>
+		    <dt>The scan resolution</dt>
+		    <dd>The best fit is around 300 DPI. Less than that results
 			in glyphs hard to recognize. More than that result in
-			huge waste of CPU.</DD>
+			huge waste of CPU.</dd>
 		    
-		    <DT>The image format</DT>
-		    <DD>All the major formats can be used: GIF, PNG, BMP,
+		    <dt>The image format</dt>
+		    <dd>All the major formats can be used: GIF, PNG, BMP,
 			etc. The only limits are imposed by the underlying JAI
-			library (more details available on: XXX)</DD>
-		    <DD>Try to get gray or black &amp; white images, where a
+			library (more details available on: XXX)</dd>
+		    <dd>Try to get gray or black &amp; white images, where a
 			pixel is stored on 1 byte. This is by far the most
-			efficient configuration.</DD>
-		</DL>
-	    </DD>
+			efficient configuration.</dd>
+		</dl>
+	    </dd>
 
-	    <DT>Translate a sheet of music</DT>
-	    <DD>The most common operation is to load a sheet image, let
+	    <dt>Translate a sheet of music</dt>
+	    <dd>The most common operation is to load a sheet image, let
 		Audiveris run through the SCORE step, manually make some
 		adjustments if needed, and then write the resulting score
 		material into a file using MusicXML format.
-	    </DD>
-	    <DD>The automatic processing is organized in a sequence of <A
-		href="#STEPS_SECTION">steps</A> which are detailed below. Every
-		step, with the exception of <A href="#SCALE">SCALE</A>, has a
+	    </dd>
+	    <dd>The automatic processing is organized in a sequence of <a href="#STEPS_SECTION">steps</a> which are detailed below. Every
+		step, with the exception of <a href="#SCALE">SCALE</a>, has a
 		related sheet view which provides visual feedback on what is
-		being done. The user can modify the <A
-		href="#OPTIONS">parameters</A> values used for a specific
+		being done. The user can modify the <a href="#OPTIONS">parameters</a> values used for a specific
 		processing. The user can also directly modify the shape assigned
 		to one or several glyphs, by selecting these glyphs and use menu
-		items or buttons to modify the assignment.</DD>
+		items or buttons to modify the assignment.</dd>
 	    
-	    <DT>Run a script</DT>
-	    <DD>A script defines a sequence of actions to be performed on a
+	    <dt>Run a script</dt>
+	    <dd>A script defines a sequence of actions to be performed on a
 		sheet. It is typically recorded as you manually interact with a
-		sheet, and can be saved on disk.</DD>
-	    <DD>At any time you can load a script file and it will run to its
+		sheet, and can be saved on disk.</dd>
+	    <dd>At any time you can load a script file and it will run to its
 		end. You can then go on and any action you'll perform on the
 		sheet will be recorded as an additional task at the end of the
-		script.</DD>
-	    <DD><A href="#SCRIPTS">Scripts</A> can be run in batch mode as well
-		as in interactive (non-batch) mode.</DD>
+		script.</dd>
+	    <dd><a href="#SCRIPTS">Scripts</a> can be run in batch mode as well
+		as in interactive (non-batch) mode.</dd>
 
-	    <DT>Train the evaluator</DT>
-	    <DD>At the heart of Audiveris, a neural network is in charge of
-		finding the best shape(s) to fit a given glyph.</DD>
-	    <DD>Such a neural network needs to be properly trained, and the
+	    <dt>Train the evaluator</dt>
+	    <dd>At the heart of Audiveris, a neural network is in charge of
+		finding the best shape(s) to fit a given glyph.</dd>
+	    <dd>Such a neural network needs to be properly trained, and the
 		Audiveris distribution provides an already-trained version of
 		it. However, the training is very dependent upon the diversity
 		and the coverage of the training set. By manually assigning
 		shapes, you can feed the trainer with additional data, and come
-		up with a more performant evaluator.</DD>
+		up with a more performant evaluator.</dd>
 
-	    <DT>Tune the application</DT>
-	    <DD>Audiveris provides many ways to inspect intermediate results,
+	    <dt>Tune the application</dt>
+	    <dd>Audiveris provides many ways to inspect intermediate results,
 		through specific graphic charts, dedicated sheet views,
-		context-dependent tables, etc.</DD>
-	    <DD>There is no hard-coded constant in Audiveris code. All values
-		are defined as "<I>logical constants</I>" and backed up on
+		context-dependent tables, etc.</dd>
+	    <dd>There is no hard-coded constant in Audiveris code. All values
+		are defined as "<i>logical constants</i>" and backed up on
 		disk. A general purpose interface is available in interactive
 		mode to browse these constants and modify them if so
 		desired. Any new value is then made available for the current
-		and the next runs of Audiveris.</DD>
-	</DL>
+		and the next runs of Audiveris.</dd>
+	</dl>
 	
-	<A NAME="INTERACTIONS_SECTION">
-	    <H2>Interactions</H2>
-	</A>
+	<a name="INTERACTIONS_SECTION">
+	    <h2>Interactions</h2>
+	</a>
 	
-	<A NAME="UI">
-	    <H3>User Interface</H3>
-	</A>
+	<a name="UI">
+	    <h3>User Interface</h3>
+	</a>
 	
-	<P> Here is a quick presentation of the main user interface. This main
+	<p> Here is a quick presentation of the main user interface. This main
 	    windows is organized as follows:
-	    <UL>
-		<LI>The top pane is dedicated to the <b><i><u>Score
+	    </p><ul>
+		<li>The top pane is dedicated to the <b><i><u>Score
 		    View</u></i></b> of one sheet. We can have several sheets
 		    opened, in that case there will be several sheets tabs. The
 		    score view is organized horizontally, all systems are
-		    presented one besides the other.</LI>
-		<LI>In the center, there are several <b><i><u>Sheet
+		    presented one besides the other.</li>
+		<li>In the center, there are several <b><i><u>Sheet
 		    Views</u></i></b>, roughly one per step. All the sheet views
 		    present the same organization of a sheet of music where the
 		    various systems are located one above the other. The Picture
 		    view is the original image (perhaps deskewed), while the
-		    other ones display synthetic objects.</LI>
-		<LI>The bottom left pane is the <b><i><u>Log Pane</u></i></b>
-		    where all messages are logged.</LI>
-		<LI>The bottom middle pane is the <b><i><u>Errors
+		    other ones display synthetic objects.</li>
+		<li>The bottom left pane is the <b><i><u>Log Pane</u></i></b>
+		    where all messages are logged.</li>
+		<li>The bottom middle pane is the <b><i><u>Errors
 		    Pane</u></i></b> where the set of translation errors are
-		    displayed.</LI>
-		<LI>The right pane of the window is used by the <b><i><u>Boards
+		    displayed.</li>
+		<li>The right pane of the window is used by the <b><i><u>Boards
 		    Pane</u></i></b> which is a vertical assembly of boards. The
 		    Boards Pane contant depends on the selected Sheet View. Here
 		    are the various types of Boards available:
-		    <UL>
-			<LI><B>Pixel:</B> Displays the current position (point
+		    <ul>
+			<li><b>Pixel:</b> Displays the current position (point
 			    or rectangle) in pixels in the sheet space. The
 			    'Level' field is filled only in the Picture sheet
 			    view, it gives the level of gray for the selected
 			    pixel. Note that apart Level, all the other fields
 			    are also input fields. Just modify their values and
-			    press return to modify the selected location.</LI>
-			<LI><B>Run:</B> Displays the current lag Run if any</LI>
-			<LI><B>Section:</B> Display the current lag Section if
+			    press return to modify the selected location.</li>
+			<li><b>Run:</b> Displays the current lag Run if any</li>
+			<li><b>Section:</b> Display the current lag Section if
 			    any, with parameters related to the section
 			    itself. The Id field is both output and input, so a
 			    Section can be directly selected via its ID. The 3
 			    last fields (layer, dir and role) describe the
 			    relation between this section and a Stick if
-			    any</LI>
-			<LI><B>Glyph:</B> Displays parameters of the selected
+			    any</li>
+			<li><b>Glyph:</b> Displays parameters of the selected
 			    Glyph if any. The 'Id' field allows to browse all
 			    glyphs, while the 'Known' field handles only the
 			    glyphs with an assigned shape, and the 'Symb' field
@@ -260,505 +244,500 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 			    the selection of one of its sections will select
 			    that glyph. The current glyph shape is displayed,
 			    both the graphic and the name of the shape, and a
-			    button allows to deassign the shape at once.</LI>
-			<LI><B>Focus:</B> Allows to browse the whole sheet for
+			    button allows to deassign the shape at once.</li>
+			<li><b>Focus:</b> Allows to browse the whole sheet for
 			    specific shapes of glyphs. It also allows to switch
 			    the sheet display for all glyphs, just the known
 			    (shape assigned) or just the unknown ones, just the
 			    translated (to score entity) or just the
-			    untranslated ones.</LI>
-			<LI><B>Neural:</B> Displays the result of the glyph
+			    untranslated ones.</li>
+			<li><b>Neural:</b> Displays the result of the glyph
 			    evaluation by the neural network, the 5 best shapes
 			    are displayed, with their related doubt (1.0 is the
 			    best value, infinity is the worst). The color gives
 			    information about the decision made: green means an
 			    accepted shape, red a non-accepted shape, red
 			    background color indicates a shape manually
-			    discarded.</LI>
-			<LI><B>Check:</B> There are many different Check boards,
+			    discarded.</li>
+			<li><b>Check:</b> There are many different Check boards,
 			    but they are all organized as a table which displays
 			    a suite of checks and their results for the glyph at
-			    hand.</LI>
-		    </UL>
-		</LI>
-	    </UL>
-	</P>
+			    hand.</li>
+		    </ul>
+		</li>
+	    </ul>
+	<p></p>
 	
-	<IMG SRC="../images/whole-window-annotated.png" TITLE="Main Window
-	     Layout" />
-	<BR/>
+	<img src="../images/whole-window-annotated.png" title="Main Window
+	     Layout">
+	<br>
 	
-	<A NAME="MANUALS">
-	    <H3>Manual Interactions</H3>
-	</A>
+	<a name="MANUALS">
+	    <h3>Manual Interactions</h3>
+	</a>
 	
-	<P>Besides the predefined steps which operate on the whole set of
+	<p>Besides the predefined steps which operate on the whole set of
 	    sections and glyphs, any manual interaction can only be performed on
 	    selected glyphs. So this section first describes how to set one or
-	    several glyphs, then goes through the possible actions.</P>
+	    several glyphs, then goes through the possible actions.</p>
 
-	<DL>
-	    <DT>Selection</DT>
-	    <DD>An entity can be selected:
-		<UL>
-		    <LI>By <B>typing</B> its ID (section ID, glyph ID) in the
+	<dl>
+	    <dt>Selection</dt>
+	    <dd>An entity can be selected:
+		<ul>
+		    <li>By <b>typing</b> its ID (section ID, glyph ID) in the
 			proper board. The ID of a section, or the ID of a glyph
 			never changes, whatever the actions performed on the
 			sheet. This is the reason why many log or error messages
-			use the glyph ID.</LI>
-		    <LI>By <B>pointing</B> to it with the mouse in the sheet
+			use the glyph ID.</li>
+		    <li>By <b>pointing</b> to it with the mouse in the sheet
 			view (or in the score view). A left click selects a
 			section (if there is one at this location) which in turn
 			selects a glyph if this section is assigned to a
 			glyph. Other glyphs can be added to the selection, by
 			pressing the Control key while pointing to another glyph
-			in the sheet view.</LI>
-		    <LI>By using a <B>lasso</B>, a rectangle displayed by
+			in the sheet view.</li>
+		    <li>By using a <b>lasso</b>, a rectangle displayed by
 			dragging the mouse (left button) in the sheet view while
 			a Shift key is pressed. To be selected, the glyphs must
-			be fully enclosed by the rectangle</LI>
-		</UL>
-	    </DD>
-	    <DD>The current location is indicated by the crossing of vertical
+			be fully enclosed by the rectangle</li>
+		</ul>
+	    </dd>
+	    <dd>The current location is indicated by the crossing of vertical
 		and horizontal brown lines. Note that the score view and the
 		sheet view are synchronized regarding the location
-		selection.</DD>
-	    <DD>The coordinates of the selection are displayed in the
+		selection.</dd>
+	    <dd>The coordinates of the selection are displayed in the
 		Pixel board for the sheet view, while coordinates expressed as a
-		SystemPoint are displayed just under the score view.</DD>
-	    <DD>According to the current selection, the various boards have
+		SystemPoint are displayed just under the score view.</dd>
+	    <dd>According to the current selection, the various boards have
 		their content updated dynamically. In particular, the Neural
 		board runs on the current selection and displays the best
 		evaluations. Note that if several glyphs are selected, the
 		evaluation is computed against a compound dynamically built from
-		all the selected glyphs.</DD>
+		all the selected glyphs.</dd>
 
-	    <DT>Actions</DT>
-	    <DD>On the selected entity (or entities), several manual actions are
+	    <dt>Actions</dt>
+	    <dd>On the selected entity (or entities), several manual actions are
 		possible:
-		<DL>
-		    <DT>Assignment</DT>
-		    <DD>A shape is assigned to the selected entities. This
+		<dl>
+		    <dt>Assignment</dt>
+		    <dd>A shape is assigned to the selected entities. This
 			manually assigned shape will never be called into
 			question by the program. Only another manual operation
-			can change this assignment.</DD>
-		    <DT>Deassignment</DT>
-		    <DD>A null shape is assigned to the selected entities. Each
+			can change this assignment.</dd>
+		    <dt>Deassignment</dt>
+		    <dd>A null shape is assigned to the selected entities. Each
 			of the previously assigned entities registers its former
 			shape in a personal blacklist. Doing so, the shape that
 			has been manually deassigned won't be reassigned by the
-			program. Only a manual operation can change this.</DD>
-		    <DT>Merging</DT>
-		    <DD>The selected glyphs (more precisely the sections they
+			program. Only a manual operation can change this.</dd>
+		    <dt>Merging</dt>
+		    <dd>The selected glyphs (more precisely the sections they
 			are composed of) are assembled into one new compound
 			glyph. If the new glyph is found to have the same
 			signature than an existing glyph, they are considered as
-			being the same entity.</DD>
-		    <DT>Segmentation</DT>
-		    <DD>The selected glyphs are looked up for the presence of
+			being the same entity.</dd>
+		    <dt>Segmentation</dt>
+		    <dd>The selected glyphs are looked up for the presence of
 			verticals (such as potential stems, or shorter vertical
 			segments). The remaining sections are then assembled
-			into leaf glyphs.</DD>
-		</DL>
-	    </DD>
+			into leaf glyphs.</dd>
+		</dl>
+	    </dd>
 
-	    <DT>Injection</DT>
-	    <DD>Score entities, as they appear in the score view and are
+	    <dt>Injection</dt>
+	    <dd>Score entities, as they appear in the score view and are
 		exported to MusicXML, are "translated" from assigned glyphs by
-		the ScoreBuilder class.</DD>
-	    <DD>There is no "direct injection" of any score entity to the score
+		the ScoreBuilder class.</dd>
+	    <dd>There is no "direct injection" of any score entity to the score
 		structure. This is consistent with the rationale that Audiveris
 		is a music scanner, not a score editor. Manually injecting score
 		entities is typically an editor feature, and should be addressed
 		by connecting an external score editor to Audiveris MusicXML
-		output.</DD>
-	    <DD>Unless such editor can be tightly integrated with Audiveris,
+		output.</dd>
+	    <dd>Unless such editor can be tightly integrated with Audiveris,
 		this unability to inject score entities may be felt as a
 		limitation, perhaps to be addressed in a future Audiveris
-		release.</DD>
-	</DL>
+		release.</dd>
+	</dl>
 	
-	<A NAME="SCRIPTS">
-	    <H3>Scripts</H3>
-	</A>
-	<P> The loading and processing of a sheet produces a related script,
-	    that the user may save on disk or discard.</P>
-	<P> Here after is the script file which corresponds to the actions
+	<a name="SCRIPTS">
+	    <h3>Scripts</h3>
+	</a>
+	<p> The loading and processing of a sheet produces a related script,
+	    that the user may save on disk or discard.</p>
+	<p> Here after is the script file which corresponds to the actions
 	    performed on the 'Chula.png' sheet as described in the quick start
-	    <A target="Pack" href="index.html?manual=example">example</A>.</P>
-	<P> Its understanding is straightforward: the tag name defines an action
+	    <a target="Pack" href="index.html?manual=example">example</a>.</p>
+	<p> Its understanding is straightforward: the tag name defines an action
 	    (step, assign, segment, deassign, export) associated with its proper
 	    parameters. You can manually edit the script, but note that the
 	    glyphs are designated via their ID, a simplistic solution to be
-	    secured in a future release of Audiveris.</P>
-	<B><I>chula.script</I></B>
-	<BR/>
-	<iframe src="chula.script.html" width="60%" height="200" frameborder="1">
-	    <a href="chula.script.html">You are using a very old browser.
-		Click here to go directly to included content.</a>
+	    secured in a future release of Audiveris.</p>
+	<b><i>chula.script.xml</i></b>
+	<br>
+	<iframe src="chula.script.xml.html" frameborder="1" height="200" width="60%">
+	    &lt;a&gt;You are using a very old browser.
+		Click here to go directly to included content.&lt;/a&gt;
 	</iframe>		    
 	
-	<A NAME="EXPORT">
-	    <H3>Score Export</H3>
-	</A>
-	<P> A score can be exported to a file, using MusicXML format (V2 for the
-	    time being, as this is the most common version).</P>
-	<P> Here is the export of the 'chula.png' sheet, processed through the
-	    quick start example:</P>
-	<B><I>chula.xml</I></B> <BR/>
-	<iframe src="chula.xml.html" width="100%" height="300" frameborder="1">
-	    <a href="chula.xml.html">You are using a very old browser.  Click
-		here to go directly to included content.</a>
+	<a name="EXPORT">
+	    <h3>Score Export</h3>
+	</a>
+	<p> A score can be exported to a file, using MusicXML format (V2 for the
+	    time being, as this is the most common version).</p>
+	<p> Here is the export of the 'chula.png' sheet, processed through the
+	    quick start example:</p>
+	<b><i>chula.xml</i></b> <br>
+	<iframe src="chula.xml.html" frameborder="1" height="300" width="100%">
+	    &lt;a&gt;You are using a very old browser.  Click
+		here to go directly to included content.&lt;/a&gt;
 	</iframe>
 	
-	<A NAME="MIDI">
-	    <H3>Midi Export</H3>
-	</A>
-	<P> A score can also be exported to a file, using MIDI format 1.</P>
-	<P> A direct MIDI playback can also be launched, please refer to the
-	    Example documentation.</P>
+	<a name="MIDI">
+	    <h3>Midi Export</h3>
+	</a>
+	<p> A score can also be exported to a file, using MIDI format 1.</p>
+	<p> A direct MIDI playback can also be launched, please refer to the
+	    Example documentation.</p>
 	
-	<A NAME="MENUS">
-	    <H3>Menu description</H3>
-	</A>
+	<a name="MENUS">
+	    <h3>Menu description</h3>
+	</a>
 	
-	<P> Here is a quick catalog of the various menu items, as found on
-	    Audiveris main user interface.</P>
+	<p> Here is a quick catalog of the various menu items, as found on
+	    Audiveris main user interface.</p>
 	
-	<DIV CLASS="axial">
+	<div class="axial">
 
-	    <DL>
-		<DT><B>File</B></DT>
+	    <dl>
+		<dt><b>File</b></dt>
 		
-		<DD>All these commands deal with the sheet at hand</DD>
+		<dd>All these commands deal with the sheet at hand</dd>
 		
-		<TABLE WIDTH=100% BORDER=1>
-		    <TR>
-			<TD WIDTH="200px">
-			    <IMG SRC="../images/File-menu.png" TITLE="File menu"
-				 />
-			</TD>
-			<TD>
-			    <TABLE>
-				<TR>
-				    <TH WIDTH="200px">Sheet History</TH>
-				    <TD>List the more recent sheet files you've
-					loaded</TD>
-				</TR>
-				<TR>
-				    <TH>Open</TH>
-				    <TD>Select a file that contains a printed
+		<table border="1" width="100%">
+		    <tbody><tr>
+			<td width="200">
+			    <img src="../images/File-menu.png" title="File menu">
+			</td>
+			<td>
+			    <table>
+				<tbody><tr>
+				    <th width="200">Sheet History</th>
+				    <td>List the more recent sheet files you've
+					loaded</td>
+				</tr>
+				<tr>
+				    <th>Open</th>
+				    <td>Select a file that contains a printed
 					sheet of music. Most graphic file
-					formats should be usable, <EM>provided
+					formats should be usable, <em>provided
 					the pixel info uses a grey scale of 256
-					values</EM>. </TD>
-				</TR>
-				<TR>
-				    <TH>Width Fit</TH>
-				    <TD>Adjust the zoom ratio so that the sheet
+					values</em>. </td>
+				</tr>
+				<tr>
+				    <th>Width Fit</th>
+				    <td>Adjust the zoom ratio so that the sheet
 					WIDTH is fully displayed in the
-					window</TD>
-				</TR>
-				<TR>
-				    <TH>Height Fit</TH>
-				    <TD>Adjust the zoom ratio so that the sheet
+					window</td>
+				</tr>
+				<tr>
+				    <th>Height Fit</th>
+				    <td>Adjust the zoom ratio so that the sheet
 					HEIGHT is fully displayed in the
-					window</TD>
-				</TR>
-				<TR>
-				    <TH>Display Scale Plot</TH>
-				    <TD>Display histogram of run lengths for
+					window</td>
+				</tr>
+				<tr>
+				    <th>Display Scale Plot</th>
+				    <td>Display histogram of run lengths for
 					foreground (black) and background
 					(white) pixels. This gives the general
 					scale (interline value) of the sheet.
-					Here is <A HREF="#SCALE_PLOT">a scale
+					Here is <a href="#SCALE_PLOT">a scale
 					plot example produced by the SCALE
-					step</A>.
-				    </TD>
-				</TR>
-				<TR>
-				    <TH>Display Skew Plot</TH>
-				    <TD>Display histogram of measured slopes of
+					step</a>.
+				    </td>
+				</tr>
+				<tr>
+				    <th>Display Skew Plot</th>
+				    <td>Display histogram of measured slopes of
 					longest horizontal sticks. This gives
 					the angle to de-skew the image.  Here
-					is <A HREF="#SKEW_PLOT">a skew plot
-					example produced by the SKEW step</A>.
-				    </TD>
-				</TR>
-				<TR>
-				    <TH>Display Line Plot</TH>
-				    <TD>Display histogram of horizontal
+					is <a href="#SKEW_PLOT">a skew plot
+					example produced by the SKEW step</a>.
+				    </td>
+				</tr>
+				<tr>
+				    <th>Display Line Plot</th>
+				    <td>Display histogram of horizontal
 					projections of black pixels. This
 					indicates area for each staff line.
-					Here is <A HREF="#LINE_PLOT">a line plot
-					example produced by the LINES step</A>.
-				    </TD>
-				</TR>
-				<TR>
-				    <TH>Record Glyphs</TH>
-				    <TD>Save on disk the definition of
+					Here is <a href="#LINE_PLOT">a line plot
+					example produced by the LINES step</a>.
+				    </td>
+				</tr>
+				<tr>
+				    <th>Record Glyphs</th>
+				    <td>Save on disk the definition of
 					recognized glyphs as material for future
-					training of the evaluator</TD>
-				</TR>
-				<TR>
-				    <TH>Close Sheet</TH>
-				    <TD>Close the current sheet, and release all
-					resources linked to it.</TD>
-				</TR>
-				<TR>
-				    <TH>Load Script</TH>
-				    <TD>Select and run a script file</TD>
-				</TR>
-				<TR>
-				    <TH>Store Script</TH>
-				    <TD>Save the current script of the
-					sheet</TD>
-				</TR>
-				<TR>
-				    <TH>Exit</TH>
-				    <TD>Exit the application. If you have
+					training of the evaluator</td>
+				</tr>
+				<tr>
+				    <th>Close Sheet</th>
+				    <td>Close the current sheet, and release all
+					resources linked to it.</td>
+				</tr>
+				<tr>
+				    <th>Load Script</th>
+				    <td>Select and run a script file</td>
+				</tr>
+				<tr>
+				    <th>Store Script</th>
+				    <td>Save the current script of the
+					sheet</td>
+				</tr>
+				<tr>
+				    <th>Exit</th>
+				    <td>Exit the application. If you have
 					pending unsaved scripts, you'll be
-					prompted to save them.</TD>
-				</TR>
-			    </TABLE>
-			</TD>
-		    </TR>
-		</TABLE>
+					prompted to save them.</td>
+				</tr>
+			    </tbody></table>
+			</td>
+		    </tr>
+		</tbody></table>
 		
-		<DT><B>Step</B></DT>
+		<dt><b>Step</b></dt>
 		
-		<DD> Launch the processing of a step on the sheet at hand </DD>
+		<dd> Launch the processing of a step on the sheet at hand </dd>
 		
-		<TABLE WIDTH=100% BORDER=1>
-		    <TR>
-			<TD WIDTH="200px">
-			    <IMG SRC="../images/Step-menu.png" TITLE="Step menu"
-				 />
-			</TD>
-			<TD>
-			    <TABLE>
-				<TR>
-				    <TH WIDTH="200px"><A HREF="#STEPS">&lt;Any
-					Step&gt;</A></TH>
-				    <TD>Select the target in this menu which
+		<table border="1" width="100%">
+		    <tbody><tr>
+			<td width="200">
+			    <img src="../images/Step-menu.png" title="Step menu">
+			</td>
+			<td>
+			    <table>
+				<tbody><tr>
+				    <th width="200"><a href="#STEPS">&lt;Any
+					Step&gt;</a></th>
+				    <td>Select the target in this menu which
 					lists in order the defined processing
-					steps, as described in <A
-					HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/step/Step.html">Step</A>
+					steps, as described in <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/step/Step.html">Step</a>
 					class documentation. Note that you can
 					only move forward.
 					
-					<P> Direct access to any step is
+					<p> Direct access to any step is
 					    available from the navigation frame
-					    on the left of the window</P>
-				    </TD>
-				</TR>
-			    </TABLE>
-			</TD>
-		    </TR>
-		</TABLE>
+					    on the left of the window</p>
+				    </td>
+				</tr>
+			    </tbody></table>
+			</td>
+		    </tr>
+		</tbody></table>
 		
-		<DT><B>Score</B></DT>
+		<dt><b>Score</b></dt>
 		
-		<DD> All these commands deal with the score part of the sheet at
-		    hand</DD>
+		<dd> All these commands deal with the score part of the sheet at
+		    hand</dd>
 		
-		<TABLE WIDTH=100% BORDER=1>
-		    <TR>
-			<TD WIDTH="200px">
-			    <IMG SRC="../images/Score-menu.png" TITLE="Score
-			    menu" />
-			</TD>
-			<TD>
-			    <TABLE>
-				<TR>
-				    <TH>Rebuild Score</TH>
-				    <TD>Clean up the score, then rtranslate the
-					glyph shapes into score entities</TD>
-				</TR>
-				<TR>
-				    <TH>Set Parameters</TH>
-				    <TD>Assign values to global score
-					parameters</TD>
-				</TR>
-				<TR>
-				    <TH>Browse Score</TH>
-				    <TD>Display and browse the hierarchical
-					information about the current score</TD>
-				</TR>
-				<TR>
-				    <TH>Dump Score</TH>
-				    <TD>Print main score information on the
-					output console</TD>
-				</TR>
-				<TR>
-				    <TH>Store in XML</TH>
-				    <TD>Save the current score, using MusicXML
-					format</TD>
-				</TR>
-				<TR>
-				    <TH>Store in Midi</TH>
-				    <TD>Save the current score, using MIDI
-					format</TD>
-				</TR>
-				<TR>
-				    <TH>Play</TH>
-				    <TD>Start (or pause) the Midi playback</TD>
-				</TR>
-				<TR>
-				    <TH>Stop</TH>
-				    <TD>Stop the Midi playback</TD>
-				</TR>
-			    </TABLE>
-			</TD>
-		    </TR>
-		</TABLE>
+		<table border="1" width="100%">
+		    <tbody><tr>
+			<td width="200">
+			    <img src="../images/Score-menu.png" title="Score
+			    menu">
+			</td>
+			<td>
+			    <table>
+				<tbody><tr>
+				    <th>Rebuild Score</th>
+				    <td>Clean up the score, then rtranslate the
+					glyph shapes into score entities</td>
+				</tr>
+				<tr>
+				    <th>Set Parameters</th>
+				    <td>Assign values to global score
+					parameters</td>
+				</tr>
+				<tr>
+				    <th>Browse Score</th>
+				    <td>Display and browse the hierarchical
+					information about the current score</td>
+				</tr>
+				<tr>
+				    <th>Dump Score</th>
+				    <td>Print main score information on the
+					output console</td>
+				</tr>
+				<tr>
+				    <th>Store in XML</th>
+				    <td>Save the current score, using MusicXML
+					format</td>
+				</tr>
+				<tr>
+				    <th>Store in Midi</th>
+				    <td>Save the current score, using MIDI
+					format</td>
+				</tr>
+				<tr>
+				    <th>Play</th>
+				    <td>Start (or pause) the Midi playback</td>
+				</tr>
+				<tr>
+				    <th>Stop</th>
+				    <td>Stop the Midi playback</td>
+				</tr>
+			    </tbody></table>
+			</td>
+		    </tr>
+		</tbody></table>
 		
-		<DT><B>Views</B></DT>
+		<dt><b>Views</b></dt>
 		
-		<DD> These commands define switches used in different views,
-		    from top to bottom: score view, sheet views, log pane</DD>
+		<dd> These commands define switches used in different views,
+		    from top to bottom: score view, sheet views, log pane</dd>
 		
-		<TABLE WIDTH=100% BORDER=1>
-		    <TR>
-			<TD WIDTH="200px">
-			    <IMG SRC="../images/Views-menu.png" TITLE="Views
-								       menu" />
-			</TD>
-			<TD>
-			    <TABLE>
-				<TR>
-				    <TH>Show score Slots</TH>
-				    <TD>In the score view, display the vertical
-					blue lines that indicate time slots</TD>
-				</TR>
-				<TR>
-				    <TH>Show score Voices</TH>
-				    <TD>In the score view, display the different
+		<table border="1" width="100%">
+		    <tbody><tr>
+			<td width="200">
+			    <img src="../images/Views-menu.png" title="Views
+								       menu">
+			</td>
+			<td>
+			    <table>
+				<tbody><tr>
+				    <th>Show score Slots</th>
+				    <td>In the score view, display the vertical
+					blue lines that indicate time slots</td>
+				</tr>
+				<tr>
+				    <th>Show score Voices</th>
+				    <td>In the score view, display the different
 					voices found, as colored lines between
-					the participating notes</TD>
-				</TR>
-				<TR>
-				    <TH>Show score Marks</TH>
-				    <TD>In the score view, display the marks
-					that indicate insertion of forwards</TD>
-				</TR>
-				<TR>
-				    <TH>Show stick Lines</TH>
-				    <TD>In the sheet symbol view, display the
-					mean line of every selected stick.</TD>
-				</TR>
-				<TR>
-				    <TH>Show slur Circles</TH>
-				    <TD>In the sheet symbol view, display the
+					the participating notes</td>
+				</tr>
+				<tr>
+				    <th>Show score Marks</th>
+				    <td>In the score view, display the marks
+					that indicate insertion of forwards</td>
+				</tr>
+				<tr>
+				    <th>Show stick Lines</th>
+				    <td>In the sheet symbol view, display the
+					mean line of every selected stick.</td>
+				</tr>
+				<tr>
+				    <th>Show slur Circles</th>
+				    <td>In the sheet symbol view, display the
 					approximating circle arc of any selected
-					slur.</TD>
-				</TR>
-				<TR>
-				    <TH>Show original staff lines</TH>
-				    <TD>In the sheet LINES view, display in
+					slur.</td>
+				</tr>
+				<tr>
+				    <th>Show original staff lines</th>
+				    <td>In the sheet LINES view, display in
 					yellow the original staff lines that
-					have been removed</TD>
-				</TR>
-				<TR>
-				    <TH>Show original ledger lines</TH>
-				    <TD>In the sheet HORIZONTALS view, display
+					have been removed</td>
+				</tr>
+				<tr>
+				    <th>Show original ledger lines</th>
+				    <td>In the sheet HORIZONTALS view, display
 					in yellow the original ledger lines that
-					have been removed</TD>
-				</TR>
-				<TR>
-				    <TH>Clear log</TH>
-				    <TD>Erase all messages in the log pane</TD>
-				</TR>
-			    </TABLE>
-			</TD>
-		    </TR>
-		</TABLE>
+					have been removed</td>
+				</tr>
+				<tr>
+				    <th>Clear log</th>
+				    <td>Erase all messages in the log pane</td>
+				</tr>
+			    </tbody></table>
+			</td>
+		    </tr>
+		</tbody></table>
 		
-		<DT><B>Tools</B></DT>
+		<dt><b>Tools</b></dt>
 		
-		<TABLE WIDTH=100% BORDER=1>
-		    <TR>
-			<TD WIDTH="200px">
-			    <IMG SRC="../images/Tools-menu.png" TITLE="Tools
-								       menu" />
-			</TD>
-			<TD>
-			    <TABLE>
-				<TR>
-				    <TH><A HREF="#TRAINING_MATERIAL">Training
-					Material</A></TH>
-				    <TD>Verify and potentially discard glyph
+		<table border="1" width="100%">
+		    <tbody><tr>
+			<td width="200">
+			    <img src="../images/Tools-menu.png" title="Tools
+								       menu">
+			</td>
+			<td>
+			    <table>
+				<tbody><tr>
+				    <th><a href="#TRAINING_MATERIAL">Training
+					Material</a></th>
+				    <td>Verify and potentially discard glyph
 					material used to train the
-					evaluator</TD>
-				</TR>
-				<TR>
-				    <TH><A HREF="#TRAINERS">Network
-					Trainer</A></TH>
-				    <TD>Launch and monitor the training phases
-					of the evaluator</TD>
-				</TR>
-				<TR>
-				    <TH WIDTH="200px"><A
-							  HREF="#SHAPE_COLORS">Shape
-							  Colors</A></TH>
-				    <TD>Select the color display for each
-					recognized shape</TD>
-				</TR>
-				<TR>
-				    <TH>Memory</TH>
-				    <TD>Display the current memory
-					occupancy</TD>
-				</TR>
-				<TR>
-				    <TH><A HREF="#OPTIONS">Options</A></TH>
-				    <TD>Set the various constants used by
-					Audiveris software</TD>
-				</TR>
-			    </TABLE>
-			</TD>
-		    </TR>
-		</TABLE>
+					evaluator</td>
+				</tr>
+				<tr>
+				    <th><a href="#TRAINERS">Network
+					Trainer</a></th>
+				    <td>Launch and monitor the training phases
+					of the evaluator</td>
+				</tr>
+				<tr>
+				    <th width="200"><a href="#SHAPE_COLORS">Shape
+							  Colors</a></th>
+				    <td>Select the color display for each
+					recognized shape</td>
+				</tr>
+				<tr>
+				    <th>Memory</th>
+				    <td>Display the current memory
+					occupancy</td>
+				</tr>
+				<tr>
+				    <th><a href="#OPTIONS">Options</a></th>
+				    <td>Set the various constants used by
+					Audiveris software</td>
+				</tr>
+			    </tbody></table>
+			</td>
+		    </tr>
+		</tbody></table>
 		
-		<DT><B>Help</B></DT>
+		<dt><b>Help</b></dt>
 		
-		<TABLE WIDTH=100% BORDER=1>
-		    <TR>
-			<TD WIDTH="200px">
-			    <IMG SRC="../images/Help-menu.png" TITLE="Help menu"
-				 />
-			</TD>
-			<TD>
-			    <TABLE>
-				<TR>
-				    <TH WIDTH="200px">Operation Manual</TH>
-				    <TD>A direct link to this documentation</TD>
-				</TR>
-				<TR>
-				    <TH>Web Site</TH>
-				    <TD>Launch a browser to Audiveris web
-					site</TD>
-				</TR>
-				<TR>
-				    <TH>About</TH>
-				    <TD>Display information about Audiveris
+		<table border="1" width="100%">
+		    <tbody><tr>
+			<td width="200">
+			    <img src="../images/Help-menu.png" title="Help menu">
+			</td>
+			<td>
+			    <table>
+				<tbody><tr>
+				    <th width="200">Operation Manual</th>
+				    <td>A direct link to this documentation</td>
+				</tr>
+				<tr>
+				    <th>Web Site</th>
+				    <td>Launch a browser to Audiveris web
+					site</td>
+				</tr>
+				<tr>
+				    <th>About</th>
+				    <td>Display information about Audiveris
 					version, build, launch mode and related
-					web-site</TD>
-				</TR>
-			    </TABLE>
-			</TD>
-		    </TR>
-		</TABLE>
-	    </DL>
-	</DIV>
+					web-site</td>
+				</tr>
+			    </tbody></table>
+			</td>
+		    </tr>
+		</tbody></table>
+	    </dl>
+	</div>
 	
-	<A NAME="STEPS_SECTION">
-	    <H2>Steps</H2>
-	</A>
+	<a name="STEPS_SECTION">
+	    <h2>Steps</h2>
+	</a>
 	
-	<P CLASS="alert"><b>NOTA:</b> This section on steps needs to be updated
-	    for certain pictures, however the logic still apply.</P>
+	<p class="alert"><b>NOTA:</b> This section on steps needs to be updated
+	    for certain pictures, however the logic still apply.</p>
 
-        <table border="2" padding="5">
+        <table padding="5" border="2">
             <thead>
                 <tr>
                     <th style="text-align: center;">Step Name</th>
@@ -844,516 +823,513 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
         </table>
 
 	
-	<P> To present the various operations, and the related user interface,
+	<p> To present the various operations, and the related user interface,
 	    we'll use a tour based on the usual sequence of processing steps,
-	    since nearly every step has a related view</P>
+	    since nearly every step has a related view</p>
 	
-	<A NAME="LOAD">
-	    <H3>Load Step</H3>
-	</A>
+	<a name="LOAD">
+	    <h3>Load Step</h3>
+	</a>
 	
-	<P> The following image represents the main window of user interface,
-	    just after a picture has been loaded </P>
+	<p> The following image represents the main window of user interface,
+	    just after a picture has been loaded </p>
 	
-	<IMG SRC="../images/load.png" TITLE="General Window Structure" />
+	<img src="../images/load.png" title="General Window Structure">
 	
-	<P> In this example, we have a black and white image, so the grey level
+	<p> In this example, we have a black and white image, so the grey level
 	    of the current pixel is either 0 (black foreground) or 255 (white
 	    background). The mouse is currently on a pixel of the C Clef, so the
 	    "Pixel" board of the data panel reports a 0 level value for abscissa
-	    235 and ordinate 459.</P>
+	    235 and ordinate 459.</p>
 	
-	<P> By dragging the mouse, while keeping the shift key pressed, we can
+	<p> By dragging the mouse, while keeping the shift key pressed, we can
 	    define a rectangle. The x and y values are the coordinates of the
 	    upper left corner, and the width and height are the dimensions of
-	    the defined rectangular area.</P>
+	    the defined rectangular area.</p>
 	
-	<BR/>
-	<A NAME="SCALE">
-	    <H3>Scale Step</H3>
-	</A>
+	<br>
+	<a name="SCALE">
+	    <h3>Scale Step</h3>
+	</a>
 	
-	<P> This step aims at computing the general "scale" of the music sheet,
+	<p> This step aims at computing the general "scale" of the music sheet,
 	    which is basically the average vertical distance between two staff
-	    lines.</P>
+	    lines.</p>
 	
-	<P> To do so, we use a very simple algorithm, based on vertical runs of
+	<p> To do so, we use a very simple algorithm, based on vertical runs of
 	    foreground (black) pixels and vertical runs of background (white)
-	    pixels.</P>
+	    pixels.</p>
 	
-	<P> The black histogram gives the average line thickness, and the white
+	<p> The black histogram gives the average line thickness, and the white
 	    histogram the white interval between two staff lines. The interline
-	    value is thus defined as the sum of these two values.</P>
+	    value is thus defined as the sum of these two values.</p>
 	
-	<P> This step has no related sheet view. But, using the
-	    menu <I><U>File</U> &gt; <U>Scale Plot</U></I>, we get a separate
+	<p> This step has no related sheet view. But, using the
+	    menu <i><u>File</u> &gt; <u>Scale Plot</u></i>, we get a separate
 	    chart as displayed below:
-	    <UL>
-		<LI>The red histogram describes the lengths of the black runs,
-		    with a sharp peak on value 3 for this example.</LI>
-		<LI>The blue histogram displays the white runs, with also a peak
-		    on value 18 for this sheet example.</LI>
-	    </UL>
+	    </p><ul>
+		<li>The red histogram describes the lengths of the black runs,
+		    with a sharp peak on value 3 for this example.</li>
+		<li>The blue histogram displays the white runs, with also a peak
+		    on value 18 for this sheet example.</li>
+	    </ul>
 	    
-	    <P> For this sheet example, the main interline value is thus 3 + 18
+	    <p> For this sheet example, the main interline value is thus 3 + 18
 		= 21 pixels. And this value will drive the computation of nearly
-		all parameters used in the recognition process.</P>
-	</P>
+		all parameters used in the recognition process.</p>
+	<p></p>
 	
-	<A NAME="SCALE_PLOT">
-	    <IMG SRC="../images/scale-chart.png" TITLE="Histogram of run
-							lengths" />
-	</A>
-	<BR/>
-	<A NAME="SKEW">
-	    <H3>Skew Step</H3>
-	</A>
+	<a name="SCALE_PLOT">
+	    <img src="../images/scale-chart.png" title="Histogram of run
+							lengths">
+	</a>
+	<br>
+	<a name="SKEW">
+	    <h3>Skew Step</h3>
+	</a>
 	
-	<P> The purpose of this step is to compute the average skew angle of the
+	<p> The purpose of this step is to compute the average skew angle of the
 	    staff lines for the whole sheet. This of course is just an average
-	    value, since all staff lines may not be strictly parallel.</P>
+	    value, since all staff lines may not be strictly parallel.</p>
 	
-	<P> If the absolute value of the computed slope exceeds a given
-	    threshold, then the image is rotated (<I>de-skewed</I>) is the
+	<p> If the absolute value of the computed slope exceeds a given
+	    threshold, then the image is rotated (<i>de-skewed</i>) is the
 	    opposite direction, so as to ease the later detection of vertical
-	    and horizontal sticks.</P>
+	    and horizontal sticks.</p>
 	
-	<P> We can display the sheet view related to the skew computation, as in
+	<p> We can display the sheet view related to the skew computation, as in
 	    the following picture. Nota: if this view is not displayed, check
 	    the property <em>"omr.SkewBuilder.displayFrame"</em> using
-	    the <B>Options</B> tool. The <I>"common"</I> sections are colorized
+	    the <b>Options</b> tool. The <i>"common"</i> sections are colorized
 	    in colors close to green or blue, while the sections that compose
-	    the <I>"significant"</I> horizontal sections are colorized in
+	    the <i>"significant"</i> horizontal sections are colorized in
 	    red. We can notice that the staff lines are the main contributors to
-	    the long horizontal section.</P>
+	    the long horizontal section.</p>
 	
-	<P> Notice that the Data Panel exhibits two additional boards:
-	    <OL>
-		<LI>The <I>"Run"</I> board displays information about the run
+	<p> Notice that the Data Panel exhibits two additional boards:
+	    </p><ol>
+		<li>The <i>"Run"</i> board displays information about the run
 		    designated by the mouse location. The selected run here
 		    starts at abscissa 200 (we have horizontal runs in this
 		    view) and is 312 pixel long. The average grey level along
 		    the run is 0, since here it is made of only foreground
-		    pixels with 0 as gray level.</LI>
-		<LI>The <I>"Section"</I> board displays data that pertains to
+		    pixels with 0 as gray level.</li>
+		<li>The <i>"Section"</i> board displays data that pertains to
 		    the current section (a section is a set of contiguous
-		    runs). A section is given an <I>"Id"</I> to ease its future
+		    runs). A section is given an <i>"Id"</i> to ease its future
 		    handling. The fields
-		    labelled <I>"X"</I>, <I>"Y"</I>, <I>"Width"</I>
-		    and <I>"Height"</I> represent the bounding rectangle of this
+		    labelled <i>"X"</i>, <i>"Y"</i>, <i>"Width"</i>
+		    and <i>"Height"</i> represent the bounding rectangle of this
 		    (here horizontal) section. The fields
-		    labelled <I>"Layer"</I> and <I>"Dir"</I> are actually not
-		    used for this step.</LI>
-	    </OL>
-	</P>
+		    labelled <i>"Layer"</i> and <i>"Dir"</i> are actually not
+		    used for this step.</li>
+	    </ol>
+	<p></p>
 	
-	<IMG SRC="../images/skew.png" TITLE="Sections for skew computation" />
+	<img src="../images/skew.png" title="Sections for skew computation">
 	
-	<P> We can also get the following chart, by using the
-	    menu <I><U>File</U> &gt; <U>Skew Plot</U></I>:</P>
+	<p> We can also get the following chart, by using the
+	    menu <i><u>File</u> &gt; <u>Skew Plot</u></i>:</p>
 	
-	<A NAME="SKEW_PLOT">
-	    <IMG SRC="../images/slope-chart.png" TITLE="Histogram of main
-							slopes" />
-	</A>
-	<BR/>
-	<A NAME="LINES">
-	    <H3>Lines Step</H3>
-	</A>
+	<a name="SKEW_PLOT">
+	    <img src="../images/slope-chart.png" title="Histogram of main
+							slopes">
+	</a>
+	<br>
+	<a name="LINES">
+	    <h3>Lines Step</h3>
+	</a>
 	
-	<P> This step is about staff lines, to properly detect all staff lines
-	    and "remove" them from the sheet.</P>
+	<p> This step is about staff lines, to properly detect all staff lines
+	    and "remove" them from the sheet.</p>
 	
-	<P> The detection is driven by the horizontal projection of foreground
+	<p> The detection is driven by the horizontal projection of foreground
 	    (black) pixels. A dedicated chart, displayed from
-	    menu <I><U>File</U> &gt; <U>Line Plot</U></I>, makes this more
+	    menu <i><u>File</u> &gt; <u>Line Plot</u></i>, makes this more
 	    obvious as can be seen on the following chart. We use a threshold
 	    (at roughly half the maximum histogram value, and indicated by a
 	    vertical red line on the chart), and every regular series of 5 peaks
 	    above this threshold defines the 5 stick areas supposed to contain
-	    one staff line each.</P>
+	    one staff line each.</p>
 	
-	<A NAME="LINE_PLOT">
-	    <IMG SRC="../images/line-chart.png" TITLE="Histogram of horizontal
-						       projections" />
-	</A>
+	<a name="LINE_PLOT">
+	    <img src="../images/line-chart.png" title="Histogram of horizontal
+						       projections">
+	</a>
 	
-	<P> The processing is then performed stick area per stick area. In such
+	<p> The processing is then performed stick area per stick area. In such
 	    area, we retrieve the long horizontal sticks that compose the staff
-	    line.</P>
+	    line.</p>
 	
-	<P> The detected lines are then cleaned up: The underlying pixels are
+	<p> The detected lines are then cleaned up: The underlying pixels are
 	    erased from the original picture, and a specific algorithm is used
 	    to extend crossing objects (objects that were overlaid upon the
-	    staff lines).</P>
+	    staff lines).</p>
 	
-	<P> The cleaned data is visible on the following view, where former
-	    staff lines have been replaced by synthetic lines:</P>
+	<p> The cleaned data is visible on the following view, where former
+	    staff lines have been replaced by synthetic lines:</p>
 	
-	<IMG SRC="../images/lines.png" TITLE="Staff lines detected and cleaned
-					      up" />
+	<img src="../images/lines.png" title="Staff lines detected and cleaned
+					      up">
 	
-	<P> Note that, by using <I><U>Views</U> &gt; <U>Show original staff
-	    lines</U></I>, we can switch between:
-	    <UL>
-		<LI>The display of the former line pixels (colorized in
-		    yellow),</LI>
-		<LI>The display of synthetic lines and of extended crossing
-		    objects.</LI>
-	    </UL>
-	</P>
+	<p> Note that, by using <i><u>Views</u> &gt; <u>Show original staff
+	    lines</u></i>, we can switch between:
+	    </p><ul>
+		<li>The display of the former line pixels (colorized in
+		    yellow),</li>
+		<li>The display of synthetic lines and of extended crossing
+		    objects.</li>
+	    </ul>
+	<p></p>
 	
-	<P> Here is the display of retrieved staff lines:</P>
+	<p> Here is the display of retrieved staff lines:</p>
 	
-	<IMG SRC="../images/lines-toggled.png" TITLE="Display of staff line
-						      pixels" />
+	<img src="../images/lines-toggled.png" title="Display of staff line
+						      pixels">
 	
-	<P> Here are two zoomed view of details from a similar sheet, first the
+	<p> Here are two zoomed view of details from a similar sheet, first the
 	    original staff line pixels, then the resulting data, where line
 	    pixels have been removed, and crossing objects have been carefully
 	    extended (note the extension goes until the synthetic staff
-	    line): </P>
+	    line): </p>
 	
-	<IMG SRC="../images/lines-toggled-large.png" TITLE="Focus on staff line
-							    pixels" />
-	<EM><B>Changed for:</B></EM>
-	<IMG SRC="../images/lines-large.png" TITLE="Focus on object extension"
-	     />
+	<img src="../images/lines-toggled-large.png" title="Focus on staff line
+							    pixels">
+	<em><b>Changed for:</b></em>
+	<img src="../images/lines-large.png" title="Focus on object extension">
 	
 	
-	<BR/>
-	<A NAME="HORIZONTALS">
-	    <H3>Horizontal Step</H3>
-	</A>
+	<br>
+	<a name="HORIZONTALS">
+	    <h3>Horizontal Step</h3>
+	</a>
 	
-	<P> This step retrieves and removes the horizontal sticks that are
+	<p> This step retrieves and removes the horizontal sticks that are
 	    recognized as ledgers of alternate endings. The following figure
 	    shows that the ledger for a 'A' note has been removed and the two
 	    parts of the note head have been properly joined into one glyph (a
-	    black note head.</P>
+	    black note head.</p>
 	
-	<IMG SRC="../images/horizontals.png" TITLE="Focus on horizontal ledger"/>
-	<EM><B>Changed for:</B></EM>
-	<IMG SRC="../images/horizontals-replaced.png" TITLE="Focus on horizontal ledger"/>
+	<img src="../images/horizontals.png" title="Focus on horizontal ledger">
+	<em><b>Changed for:</b></em>
+	<img src="../images/horizontals-replaced.png" title="Focus on horizontal ledger">
 	
 	
-	<BR/>
-	<A NAME="BARS">
-	    <H3>Bars Step</H3>
-	</A>
+	<br>
+	<a name="BARS">
+	    <h3>Bars Step</h3>
+	</a>
 	
-	<P> This step retrieves and does not remove the vertical sticks that are
+	<p> This step retrieves and does not remove the vertical sticks that are
 	    recognized as bar lines (either thick or thin bar lines). Notice in
 	    the following figure that the glyph of the bar line is properly
-	    assigned the shape name "THIN_BAR_LINE".</P>
+	    assigned the shape name "THIN_BAR_LINE".</p>
 
-	<P> Notice also that, by clicking with the mouse on the related barline
+	<p> Notice also that, by clicking with the mouse on the related barline
 	    glyph, a new boards gets visible in the boards pane, labelled "Bar
 	    check". It contains a table of all results for a suite of checks
 	    applied to the glyph at hand before accepting it as a barline
 	    glyph. Other tests are performed, using for example the location of
 	    the other barlines of the same system, but this one is focused on
-	    the characteristic of just the glyph at hand.</P>
+	    the characteristic of just the glyph at hand.</p>
 
-	<P> The table contains one row per check:
-	    <UL>
-		<LI>T/F is true/false boolean for covariance of the measured
-		    variable. Covariant means "<I>larger is better</I>".</LI>
-		<LI>The following number (here 1) is the relative weight of the
-		    check within the suite.</LI>
-		<LI>Then the name for the value checked. "Top" measures the
+	<p> The table contains one row per check:
+	    </p><ul>
+		<li>T/F is true/false boolean for covariance of the measured
+		    variable. Covariant means "<i>larger is better</i>".</li>
+		<li>The following number (here 1) is the relative weight of the
+		    check within the suite.</li>
+		<li>Then the name for the value checked. "Top" measures the
 		    ordinate difference between the top of the candidate barline
 		    glyph and the upper line of the staff. Values are stated in
-		    fractions of interline.</LI>
-		<LI>The the measure value is displayed with green, orange or red
+		    fractions of interline.</li>
+		<li>The the measure value is displayed with green, orange or red
 		    color, depending on how this value fits with respect to the
-		    defined range.</LI>
-	    </UL>
+		    defined range.</li>
+	    </ul>
 	    And the final row gives the final result, positive in this case.
 
-	    <P> All fields in this table have tooltip text that is displayed
-		when simply moving the mouse over them.</P>
-	</P>
+	    <p> All fields in this table have tooltip text that is displayed
+		when simply moving the mouse over them.</p>
+	<p></p>
 	
-	<IMG SRC="../images/bars.png" TITLE="Extraction of bar lines" />
+	<img src="../images/bars.png" title="Extraction of bar lines">
 	
 	
-	<BR/>
-	<A NAME="SYMBOLS">
-	    <H3>Symbols Step</H3>
-	</A>
+	<br>
+	<a name="SYMBOLS">
+	    <h3>Symbols Step</h3>
+	</a>
 	
-	<P> In this step, browsing through the yet unassigned sections, we
+	<p> In this step, browsing through the yet unassigned sections, we
 	    aggregate connected sections into symbol glyphs, and try to
 	    recognize these symbols. This of course works only for symbols with
 	    a rather fixed appearance, such as clefs or time signatures on the
 	    following picture, it does not work for constructions like notes
-	    with stem, chords, etc...</P>
-	<P> For example, we have correctly recognized "BRACE", "G_CLEF",
-	    "FLAT", "TIME_TWO_FOUR", "DOT" and "STRUCTURE".</P>
+	    with stem, chords, etc...</p>
+	<p> For example, we have correctly recognized "BRACE", "G_CLEF",
+	    "FLAT", "TIME_TWO_FOUR", "DOT" and "STRUCTURE".</p>
 	
-	<P> The mouse is currently on what is called a structure, recognized as
+	<p> The mouse is currently on what is called a structure, recognized as
 	    such by the evaluator, which is a structure of to-be-segmented
-	    smaller parts (note head, stem, flag).</P>
+	    smaller parts (note head, stem, flag).</p>
 	
-	<IMG SRC="../images/symbols.png" TITLE="Extraction of stand-alone
-						symbols" />
+	<img src="../images/symbols.png" title="Extraction of stand-alone
+						symbols">
 	
-	<P> This step also focuses on non-recognized glyphs that may be the
+	<p> This step also focuses on non-recognized glyphs that may be the
 	    result of undesired segmentation. This frequently occurs because of
 	    staff line removal for symbols such as F clef or common time
-	    signature.</P>
+	    signature.</p>
 	
-	<P> The algorithm used is to browse through all unknown glyphs, ordered
+	<p> The algorithm used is to browse through all unknown glyphs, ordered
 	    by decreasing weight, and to try to aggregate neighbors that are
 	    other unknown glyphs of the same system. If the result of this
 	    combination leads to some recognized symbol, then we keep it as a
-	    (compound) glyph. Otherwise, we don't keep the compound.</P>
+	    (compound) glyph. Otherwise, we don't keep the compound.</p>
 	
-	<P> This cares for symbols that are typically segmented by the removal of
+	<p> This cares for symbols that are typically segmented by the removal of
 	    staff lines, despite the efforts made to keep crossing objects
 	    connected. This happens frequently for bass clefs, or for common
-	    time signatures.</P>
+	    time signatures.</p>
 	
-	<BR/>
-	<A NAME="VERTICALS">
-	    <H3>Verticals Step</H3>
-	</A>
+	<br>
+	<a name="VERTICALS">
+	    <h3>Verticals Step</h3>
+	</a>
 	
-	<P> This step aims at retrieving all the vertical sticks which are
+	<p> This step aims at retrieving all the vertical sticks which are
 	    either stems, or vertical parts of alternate endings. (Nota: just
-	    the stems are extracted for the time being).</P>
+	    the stems are extracted for the time being).</p>
 	
-	<P> The following image shows the various stems detected, displayed in
-	    yellow color, each stem with its main line.</P>
+	<p> The following image shows the various stems detected, displayed in
+	    yellow color, each stem with its main line.</p>
 	
-	<P> Notice also that pointing on a retrieved stem (or on just a
+	<p> Notice also that pointing on a retrieved stem (or on just a
 	    candidate stem) displays a "Stem check" board with the detailed result
-	    of stem tests.</P>
+	    of stem tests.</p>
 	
-	<IMG SRC="../images/verticals.png" TITLE="Retrieval of vertical sticks"
-	     />
+	<img src="../images/verticals.png" title="Retrieval of vertical sticks">
 	
-	<BR/>
-	<A NAME="LEAVES">
-	    <H3>Leaves Step</H3>
-	</A>
+	<br>
+	<a name="LEAVES">
+	    <h3>Leaves Step</h3>
+	</a>
 	
-	<P> The stem extraction has led to the creation of numerous "leaves",
+	<p> The stem extraction has led to the creation of numerous "leaves",
 	    which we now try to assign a shape to. The "Leaves" step thus
 	    recognized all the individual leaves of the following image (most of
-	    the time, these leaves are note heads, or flags, or beams).</P>
+	    the time, these leaves are note heads, or flags, or beams).</p>
 	
-	<IMG SRC="../images/leaves.png" TITLE="Recognized leaves" />
+	<img src="../images/leaves.png" title="Recognized leaves">
 	
 	
-	<BR/>
+	<br>
 	
-	<P> Just like symbols, leaves may have been unduely segmented. The
+	<p> Just like symbols, leaves may have been unduely segmented. The
 	    difference between the two images below is the building of a
-	    compound, properly recognized as a void notehead.</P>
+	    compound, properly recognized as a void notehead.</p>
 	
-	<IMG SRC="../images/void_notehead-segmented.png" TITLE="Void notehead
-	     unduely segmented" />
-	<EM><B>Changed for:</B></EM>
+	<img src="../images/void_notehead-segmented.png" title="Void notehead
+	     unduely segmented">
+	<em><b>Changed for:</b></em>
 	
-	<IMG SRC="../images/void_notehead-compound.png" TITLE="Void notehead
-	     properly recomposed" />
+	<img src="../images/void_notehead-compound.png" title="Void notehead
+	     properly recomposed">
 
 	
-	<BR/>
-	<A NAME="CLEANUP">
-	    <H3>Cleanup Step</H3>
-	</A>
+	<br>
+	<a name="CLEANUP">
+	    <h3>Cleanup Step</h3>
+	</a>
 	
-	<P> This is a final cleaning up step, focused on glyphs unduely
+	<p> This is a final cleaning up step, focused on glyphs unduely
 	    segmented to stems. For example, accidentals such as sharps,
 	    naturals or flats are symbols which actually contain one or two
 	    (small) stems. If these symbols are not recognized during the
 	    SYMBOLS step, then their stems are extracted and new leave glyphs
-	    are then tried, generally to no avail.</P>
+	    are then tried, generally to no avail.</p>
 	
-	<P> For the time being, we simply call these stems into questions. To do
+	<p> For the time being, we simply call these stems into questions. To do
 	    so, we try to cancel any stem which has no connected recognized
 	    leave. Then, we build new glyphs from these now unassigned
 	    sections. If we get to recognized glyphs, then we keep these glyphs,
-	    otherwise we "resurrect" the stems.</P>
+	    otherwise we "resurrect" the stems.</p>
 	
 	
-	<BR/>
-	<A NAME="SCORE">
-	    <H3>Score Step</H3>
-	</A>
+	<br>
+	<a name="SCORE">
+	    <h3>Score Step</h3>
+	</a>
 	
-	<P> The purpose of this step if, starting from the set of recognized
-	    glyphs, to translate each of them into proper score entity.</P>
+	<p> The purpose of this step if, starting from the set of recognized
+	    glyphs, to translate each of them into proper score entity.</p>
 	
-	<P> Note that several such glyphs may be translated to a single score
+	<p> Note that several such glyphs may be translated to a single score
 	    entity. This is the case for all the glyphs that compose a key
 	    signature: the collection of all related sharps for example are
-	    assigned to one key signature score entity.</P>
+	    assigned to one key signature score entity.</p>
 	
-	<P> The result is a complete Score hierarchy, whose components are
+	<p> The result is a complete Score hierarchy, whose components are
 	    displayed in the Score view. Here they will still need some manual
-	    adjustments, before being exported to MusicXML.</P>
+	    adjustments, before being exported to MusicXML.</p>
 
-	<P> This closes the series of automated steps, since the adjustments are
-	    performed manually. They are described in detail in the <A
-	    href="#MANUALS">Manual Interactions</A> section.</P>
+	<p> This closes the series of automated steps, since the adjustments are
+	    performed manually. They are described in detail in the <a href="#MANUALS">Manual Interactions</a> section.</p>
 
-	<IMG SRC="../images/score.png" TITLE="Score view" />
+	<img src="../images/score.png" title="Score view">
 	
-	<A NAME="TOOLS_SECTION">
-	    <H2>Tools</H2>
-	</A>
+	<a name="TOOLS_SECTION">
+	    <h2>Tools</h2>
+	</a>
 	
-	<A NAME="SHAPE_COLORS">
-	    <H3>Shape Colors</H3>
-	</A>
-	<P> This interface is used to ease the setting of shape colors. It is a
+	<a name="SHAPE_COLORS">
+	    <h3>Shape Colors</h3>
+	</a>
+	<p> This interface is used to ease the setting of shape colors. It is a
 	    very basic interface, which gathers a typical color chooser with a
-	    selection for shape ranges and individual shapes.</P>
-	<P> The policy is to assign a color to a shape range. A shape range for
+	    selection for shape ranges and individual shapes.</p>
+	<p> The policy is to assign a color to a shape range. A shape range for
 	    example can be all note heads, or all rests. And by default, all
 	    shapes within the range are assigned the color of the range, unless
-	    of course we assign them a specific color.</P>
+	    of course we assign them a specific color.</p>
 	
-	<IMG SRC="../images/shape-colors.png" TITLE="Setting shape colors" />
+	<img src="../images/shape-colors.png" title="Setting shape colors">
 	
 	
-	<BR/>
-	<A NAME="TRAINING_MATERIAL">
-	    <H3>Training Material</H3>
-	</A>
+	<br>
+	<a name="TRAINING_MATERIAL">
+	    <h3>Training Material</h3>
+	</a>
 	
-	<P> The purpose of this "Glyph Verifier" is to provide a user interface
+	<p> The purpose of this "Glyph Verifier" is to provide a user interface
 	    to review visually some or all of the various glyphs which are used
-	    for training the evaluator.</P>
-	<P> The main objective is thus to easily identify glyphs which have been
+	    for training the evaluator.</p>
+	<p> The main objective is thus to easily identify glyphs which have been
 	    assigned a wrong shape. Using them as part of the training base
 	    could make serious damage in the performance of the evaluator. So
 	    the strategy, when such a wrong glyph has been identified, is simply
-	    to delete the glyph from the base.</P>
+	    to delete the glyph from the base.</p>
 	
-	<P> Here is an example of the glyph verifier:</P>
+	<p> Here is an example of the glyph verifier:</p>
 	
-	<IMG SRC="../images/training_material.png" TITLE="User Interface to
+	<img src="../images/training_material.png" title="User Interface to
 							  verify the training
-							  material" />
+							  material">
 	
-	<P> The top panels are dedicated to selectors, in that order:
-	    <OL>
-		<LI>The <B>Sheet</B> selector. It allows to select one or
+	<p> The top panels are dedicated to selectors, in that order:
+	    </p><ol>
+		<li>The <b>Sheet</b> selector. It allows to select one or
 		    several sheets from the base at hand (which by default is
-		    the global <I><U>/train/sheets</U></I> directory</LI>
-		<LI>The <B>Shape</B> selector. Only the shapes that are
+		    the global <i><u>/train/sheets</u></i> directory</li>
+		<li>The <b>Shape</b> selector. Only the shapes that are
 		    contained in the selected sheets in the Sheet selector are
 		    displayed here. And you can select some or all shapes form
-		    the displayed list.</LI>
-		<LI>The <B>Glyph</B> selector. Similarly, only glyphs whose
+		    the displayed list.</li>
+		<li>The <b>Glyph</b> selector. Similarly, only glyphs whose
 		    shape is selected in selected sheets are displayed in the
 		    list. You can manually select the glyph instances you want
-		    to review.</LI>
-	    </OL>
-	</P>
+		    to review.</li>
+	    </ol>
+	<p></p>
 	
-	<P> The large panel, on the lower right side, is dedicated to the
+	<p> The large panel, on the lower right side, is dedicated to the
 	    display of the selected glyphs, using their own coordinates. Notice
 	    that glyphs that belong to separate sheets, can thus happen to have
-	    similar coordinates and thus be displayed as overlapping glyphs.</P>
+	    similar coordinates and thus be displayed as overlapping glyphs.</p>
 	
-	<P> The lower left panel is composed of two main parts:
-	    <OL>
-		<LI>The <B>Navigator</B> to drive the loading and display of
+	<p> The lower left panel is composed of two main parts:
+	    </p><ol>
+		<li>The <b>Navigator</b> to drive the loading and display of
 		    glyphs from the selection as it comes out of the
-		    selectors. You can navigate through the loaded glyphs.</LI>
-		<LI>The <B>Glyph</B> panel, similar to the one that appear on
+		    selectors. You can navigate through the loaded glyphs.</li>
+		<li>The <b>Glyph</b> panel, similar to the one that appear on
 		    the main Audiveris windows, is used to display information
 		    about the glyph at hand, together with the evaluations
 		    performed by the Neural Network evaluator. The "Deassign"
 		    button can be used to discard a wrong glyph: this is
 		    implemented through the mere deletion of the underlying
-		    glyph XML file.</LI>
-	    </OL>
-	</P>
+		    glyph XML file.</li>
+	    </ol>
+	<p></p>
 	
-	<P> By default, this user interface looks for glyphs files under
-	    the <I><U>/train/sheets</U></I> directory. However, from
-	    the <B>Trainers</B> interface, you can ask to <B>Verify</B> glyphs
-	    (see that interface). In that latter case, the <B>Training
-	    Material</B> interface is automatically loaded with the
+	<p> By default, this user interface looks for glyphs files under
+	    the <i><u>/train/sheets</u></i> directory. However, from
+	    the <b>Trainers</b> interface, you can ask to <b>Verify</b> glyphs
+	    (see that interface). In that latter case, the <b>Training
+	    Material</b> interface is automatically loaded with the
 	    corresponding glyphs, which may be part of either the whole glyph
-	    base (the default), or just the core glyph base.</P>
+	    base (the default), or just the core glyph base.</p>
 	
 	
-	<BR/>
-	<A NAME="TRAINER">
-	    <H3>Trainer</H3>
-	</A>
+	<br>
+	<a name="TRAINER">
+	    <h3>Trainer</h3>
+	</a>
 	
-	<P> This interface is dedicated to the proper training of the Neural
-	    Network evaluator. The display is as follows:</P>
+	<p> This interface is dedicated to the proper training of the Neural
+	    Network evaluator. The display is as follows:</p>
 	
-	<IMG SRC="../images/trainer.png" TITLE="User Interface to train the
-						evaluator" />
+	<img src="../images/trainer.png" title="User Interface to train the
+						evaluator">
 	
-	<OL>
-	    <LI>The upper part is for the <B>Repository</B>, in charge of
+	<ol>
+	    <li>The upper part is for the <b>Repository</b>, in charge of
 		selecting and loading the glyph XML files, as stored from the
 		previous sheet recognitions. Actually, we use this panel, only
-		when we want to identify a <B>Core</B> part within the whole
+		when we want to identify a <b>Core</b> part within the whole
 		glyph base.
-		<P> To build the Core part out of the whole set of recorded
+		<p> To build the Core part out of the whole set of recorded
 		    glyphs, it suffices to define the maximum number of similar
 		    shapes (20 is a good guess) and press the "Select Core"
-		    button. The <I><U>/train/core</U></I> directory will be
+		    button. The <i><u>/train/core</u></i> directory will be
 		    emptied and repopulated by the core selected glyph
-		    files.</P>
-		<DIV CLASS="warningmessage">
-		    <I>Nota</I>: this notion of Core may well be dropped in a
+		    files.</p>
+		<div class="warningmessage">
+		    <i>Nota</i>: this notion of Core may well be dropped in a
 		    future version, since although it saves computing time in
 		    training the neural evaluator, it also leads to suboptimal
 		    results.
-		</DIV>
-	    </LI>
+		</div>
+	    </li>
 	    
-	    <LI>The lower part is used to train the Neural Network evaluator.
-		<OL>
-		    <LI>On the left, radio buttons allow to select either the
+	    <li>The lower part is used to train the Neural Network evaluator.
+		<ol>
+		    <li>On the left, radio buttons allow to select either the
 			whole base or the core base. Default is to select the
-			whole base.</LI>
-		    <LI>On the upper right part, we find the trainer parameters
-			and commands:</LI>
-		    <UL>
-			<LI>Ability to choose between a <B>re-train</B>, which
+			whole base.</li>
+		    <li>On the upper right part, we find the trainer parameters
+			and commands:</li>
+		    <ul>
+			<li>Ability to choose between a <b>re-train</b>, which
 			    consists in retraining from scratch, and only an
-			    <B>inc-train</B>, which works incrementally on top
+			    <b>inc-train</b>, which works incrementally on top
 			    of the previous training sessions. With say 6000
 			    glyphs in the whole training base, training the
 			    Neural evaluator along 2500 iterations takes a
-			    <FONT COLOR="red">whole night</FONT>... So be aware
+			    <font color="red">whole night</font>... So be aware
 			    of this, and back-up the evaluator file
 			    (<u>/config/neural-network.xml</u>) before playing
-			    with the trainer.</LI>
-			<LI>Several key parameters for training a Neural network
-			    : the <B>momentum</B> and <B>learning rate</B> allow
+			    with the trainer.</li>
+			<li>Several key parameters for training a Neural network
+			    : the <b>momentum</b> and <b>learning rate</b> allow
 			    to influence the convergence of the training,
 			    although they should be kept close to their default
-			    values. <B>Max error</B> (residual error)
-			    and <B>epochs</B> (number of iterations) are two
+			    values. <b>Max error</b> (residual error)
+			    and <b>epochs</b> (number of iterations) are two
 			    different ways to stop the training, since the
 			    processing stops when either of these is
-			    reached.</LI>
-			<LI>The trainer always stores on disk
-			    the <B>snapshots</B> of the latest best
+			    reached.</li>
+			<li>The trainer always stores on disk
+			    the <b>snapshots</b> of the latest best
 			    configuration. This slightly slows down the
 			    training, but guarantees to keep the really best
 			    configuration found so far. This is the default
 			    behavior, but we can force the trainer to select
 			    only the last configuration (via the "Use Last"
-			    button).</LI>
-		    </UL>
-		    <LI>On the lower right part, a Validation panel is used to
+			    button).</li>
+		    </ul>
+		    <li>On the lower right part, a Validation panel is used to
 			test the current evaluator tuning against the selected
 			population (either the Whole base, or the Core base,
 			according to the selection made via the radio
@@ -1361,74 +1337,72 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 			different bases). We explicitly flag the glyphs which
 			are either not recognized or (worse) mistaken for
 			another shape. The corresponding Verify buttons, allow
-			to visually check these questionable glyphs.</LI>
-		</OL>
-	    </LI>
-	</OL>
+			to visually check these questionable glyphs.</li>
+		</ol>
+	    </li>
+	</ol>
 	
-	<BR/>
-	<A NAME="OPTIONS">
-	    <H3>Options</H3>
-	</A>
+	<br>
+	<a name="OPTIONS">
+	    <h3>Options</h3>
+	</a>
 	
-	<P> This interface, accessible from <I><U>Tool</U>
-	    &gt; <U>Options</U></I>, allows to interactively display and modify
+	<p> This interface, accessible from <i><u>Tool</u>
+	    &gt; <u>Options</u></i>, allows to interactively display and modify
 	    data related to Audiveris classes:
-	    <UL>
-		<LI>Logging level</LI>
-		<LI>Logical constants</LI>
-	    </UL>
-	</P>
-	<P> The display is a kind of JTreeTable, a combination of a tree on the
+	    </p><ul>
+		<li>Logging level</li>
+		<li>Logical constants</li>
+	    </ul>
+	<p></p>
+	<p> The display is a kind of JTreeTable, a combination of a tree on the
 	    left side, where the hierarchy of packages, subpackages and classes
 	    is displayed, and a table on the right side, where details of the
-	    containing classes are available for display and modification.</P>
+	    containing classes are available for display and modification.</p>
 	
-	<IMG SRC="../images/options.png" TITLE="User Interface to edit options"
-	     />
-	<P> The picture above represents a typical Options view:
-	    <OL>
-		<LI>We are in the package named <I>"sheet"</I>, (actually, its
-		    full name is <I>"omr.sheet"</I>, but we drop the
-		    ubiquitous <I>"omr."</I> prefix) and the class
-		    named <I>"LinesBuilder"</I>, in charge of retrieving and
-		    removing the staff lines.</LI>
-		<LI>This class has a logging level, currently assigned
-		    to <I>"INFO"</I>. This information comes from
-		    the <U>config/logging.properties</U> file, but can be modified
+	<img src="../images/options.png" title="User Interface to edit options">
+	<p> The picture above represents a typical Options view:
+	    </p><ol>
+		<li>We are in the package named <i>"sheet"</i>, (actually, its
+		    full name is <i>"omr.sheet"</i>, but we drop the
+		    ubiquitous <i>"omr."</i> prefix) and the class
+		    named <i>"LinesBuilder"</i>, in charge of retrieving and
+		    removing the staff lines.</li>
+		<li>This class has a logging level, currently assigned
+		    to <i>"INFO"</i>. This information comes from
+		    the <u>config/logging.properties</u> file, but can be modified
 		    on the fly, thanks to this interface, to any legal logging
-		    value (such as DEBUG, INFO, etc...). <B>NOTA</B>: these
+		    value (such as DEBUG, INFO, etc...). <b>NOTA</b>: these
 		    logging level modifications are meant to be temporary, and
 		    thus not stored on disk. For persistent modification, please
-		    edit the logging property file directly.</LI>
-		<LI>The class also contains several logical constants, which are
+		    edit the logging property file directly.</li>
+		<li>The class also contains several logical constants, which are
 		    application-level parameters, whose precise value is kept
 		    separate from the algorithmic code. For example, the second
-		    constant, named <I>histoThresholdFrac</I>, is a java
-		    variable declared in the <I>LinesBuilder</I> class. It is a
+		    constant, named <i>histoThresholdFrac</i>, is a java
+		    variable declared in the <i>LinesBuilder</i> class. It is a
 		    Constant.Double, whose current value is 0.5. A tip text is
 		    displayed, which says "Peak threshold stated as a ration of
 		    maximum histogram value". In other words, this defines the
 		    threshold that indicates a staff line on the histogram built
-		    with horizontal projections.</LI>
-	    </OL>
-	</P>
+		    with horizontal projections.</li>
+	    </ol>
+	<p></p>
 	
-	<P>There is a predefined list of types available for such constants (for
-	    details, please refer to the JavaDoc of class <A
-	    HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/constant/Constant.html">Constant</A>)
+	<p>There is a predefined list of types available for such constants (for
+	    details, please refer to the JavaDoc of class <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/constant/Constant.html">Constant</a>)
 	   :
-	    <UL>
-		<LI><I>Constant.Boolean</I></LI>
-		<LI><I>Constant.Color</I></LI>
-		<LI><I>Constant.Double</I></LI>
-		<LI><I>Constant.Integer</I></LI>
-		<LI><I>Constant.String</I></LI>
-	    </UL>
+	    </p><ul>
+		<li><i>Constant.Boolean</i></li>
+		<li><i>Constant.Color</i></li>
+		<li><i>Constant.Double</i></li>
+		<li><i>Constant.Integer</i></li>
+		<li><i>Constant.String</i></li>
+	    </ul>
 	    All these Constant subtypes encapsulate values of their standard
 	    counterpart, in other words a Constant.Boolean contains a Boolean
 	    value, etc...
-	    <P> Another possible type is <I>Scale.Fraction</I> which is a
+	    <p> Another possible type is <i>Scale.Fraction</i> which is a
 		double, whose unit is the interline value. For example, in a
 		sheet with interline value of 20 pixels, a Fraction of 0.15 will
 		represent 3 pixels. It's a way to express a length regardless of
@@ -1436,37 +1410,34 @@ SCORE       : Translate glyphs to score items</TEXTAREA>
 		such a Fraction value is displayed, its counterpart in pixels is
 		also displayed provided that the current sheet has already had
 		its scale computed. Otherwise, just a question mark is
-		displayed. Please refer to details in <A
-		HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/Scale.html">Scale</A>
+		displayed. Please refer to details in <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/Scale.html">Scale</a>
 		JavaDoc.
-	    </P>
-	</P>
+	    </p>
+	<p></p>
 	
-	<P>How do we define the current value of such logical constant ? The
-	    JavaDoc of class <A
-	    HREF="https://audiveris.dev.java.net/nonav/docs/api/omr/constant/ConstantManager.html">ConstantManager</A>
+	<p>How do we define the current value of such logical constant ? The
+	    JavaDoc of class <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/constant/ConstantManager.html">ConstantManager</a>
 	    explains this mechanism in details. The overriding sequence is
 	    defined as follows:
-	    <OL>
-		<LI>First the value as defined in the source code,</LI>
-		<LI>Then, if the constant name is found in the file
-		    named <U>config/run.default.properties</U>, the related
-		    value is used.</LI>
-		<LI>Finally, the user home directory may contain a file
-		    named <U>.audiveris/run.properties</U>. Is such file exists
+	    </p><ol>
+		<li>First the value as defined in the source code,</li>
+		<li>Then, if the constant name is found in the file
+		    named <u>config/run.default.properties</u>, the related
+		    value is used.</li>
+		<li>Finally, the user home directory may contain a file
+		    named <u>.audiveris/run.properties</u>. Is such file exists
 		    and contains the constant name, then its related value is
 		    taken for the constant. This last file is not meant to be
 		    manually edited by a user, it is automatically updated each
-		    time the user uses the <I><U>Options</U></I> interface to
+		    time the user uses the <i><u>Options</u></i> interface to
 		    modify a constant value, thus making the modification
-		    persistent for the subsequent runs of the application.</LI>
-	    </OL>
-	</P>
+		    persistent for the subsequent runs of the application.</li>
+	    </ol>
+	<p></p>
 
-	<BR/>
-	<BR/>
-	<HR/> 
-	<I>End of Operation Manual</I>
+	<br>
+	<br>
+	<hr> 
+	<i>End of Operation Manual</i>
 	
-    </BODY>
-</HTML>
+    </body></html>

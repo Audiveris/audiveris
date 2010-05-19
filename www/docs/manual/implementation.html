@@ -1,25 +1,16 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-    <head>
-        <!-- $Id$ -->
-        <meta http-equiv="CONTENT-TYPE" content=
-        "text/html; charset=us-ascii" />
-        <title>
-            Audiveris Implementation Manual
-        </title>
-        <meta name="AUTHOR" content="Hervé Bitteur" />
-        <meta name="CLASSIFICATION" content=
-        "Implementation Documentation of Audiveris" />
-        <meta name="DESCRIPTION" content=
-        "Description of Audiveris techniques" />
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><!-- $Id$ -->
+        
+        <meta http-equiv="CONTENT-TYPE" content="text/html; charset=us-ascii" />
+        
+        <title>Audiveris Implementation Manual</title><meta name="AUTHOR" content="Herv&#195;&#169; Bitteur" />
+        <meta name="CLASSIFICATION" content="Implementation Documentation of Audiveris" />
+        <meta name="DESCRIPTION" content="Description of Audiveris techniques" /><!-- The following links are meant to be solved on my local PC --><!-- The java.net site uses its own style sheets -->
 
-        <!-- The following links are meant to be solved on my local PC -->
-        <!-- The java.net site uses its own style sheets -->
-        <link rel="stylesheet" type="text/css" href=
-        "../../branding/css/tigris.css" />
-        <link rel="stylesheet" type="text/css" href=
-        "../../branding/css/inst.css" />
+        
+        
+        <link rel="stylesheet" type="text/css" href="../../branding/css/tigris.css" />
+        <link rel="stylesheet" type="text/css" href="../../branding/css/inst.css" />
         <script type="text/javascript" src="util.js">
 </script>
         <style type="text/css">
@@ -37,20 +28,12 @@
         div.comment {display: inline; font-style: italic; font-size: smaller;
                  color: gray;}
         /*]]>*/
-        </style>
-    </head>
-    <body class="app c5">
+        </style></head>
+<body class="app c5">
 
         <h1 class="c1">
             Audiveris Implementation Manual
         </h1>
-        <address>
-            Updated : <script type="text/javascript">
-//<![CDATA[
-                document.write(getCVSDate("$Id$"));
-            //]]>
-            </script>
-        </address>
         <p>
             Purpose of this implementation manual is to help any programmer's
             task: understanding the source code, modifying existing functions,
@@ -90,17 +73,14 @@
                 <ul>
                     <li>
                         <strong>Java Advanced Imaging</strong> (JAI) for number
-                        crunching in image processing (See <a href=
-                        "http://java.sun.com/javase/technologies/desktop/media/jai/">
+                        crunching in image processing (See <a href="http://java.sun.com/javase/technologies/desktop/media/jai/">
                         http://java.sun.com/javase/technologies/desktop/media/jai/</a>)
                     </li>
                     <li>
                         <strong>Swing</strong> for user interface, enhanced
-                        with <strong>JGoodies</strong> (See <a href=
-                        "https://looks.dev.java.net/">https://looks.dev.java.net/</a>
+                        with <strong>JGoodies</strong> (See <a href="https://looks.dev.java.net/">https://looks.dev.java.net/</a>
 
-                        and <a href=
-                        "https://forms.dev.java.net/">https://forms.dev.java.net/</a>)
+                        and <a href="https://forms.dev.java.net/">https://forms.dev.java.net/</a>)
                     </li>
                     <li>
                         <strong>Swing Application Framework</strong> for
@@ -108,23 +88,19 @@
                     </li>
                     <li>
                         <strong>EventBus</strong> for decoupling UI events (See
-                        <a href=
-                        "https://eventbus.dev.java.net/">https://eventbus.dev.java.net/</a>)
+                        <a href="https://eventbus.dev.java.net/">https://eventbus.dev.java.net/</a>)
                     </li>
 
                     <li>
-                        <strong>JFreeChart</strong> for charts (See <a href=
-                        "http://www.jfree.org/jfreechart/">http://www.jfree.org/jfreechart/</a>)
+                        <strong>JFreeChart</strong> for charts (See <a href="http://www.jfree.org/jfreechart/">http://www.jfree.org/jfreechart/</a>)
                     </li>
                     <li>
                         <strong>JAXB 2</strong> for XML persistency (See
-                        <a href=
-                        "https://jaxb.dev.java.net/">https://jaxb.dev.java.net/</a>)
+                        <a href="https://jaxb.dev.java.net/">https://jaxb.dev.java.net/</a>)
                     </li>
 
                     <li>
-                        <strong>Jama</strong> for linear algebra (See <a href=
-                        "http://math.nist.gov/javanumerics/jama/">http://math.nist.gov/javanumerics/jama/</a>)
+                        <strong>Jama</strong> for linear algebra (See <a href="http://math.nist.gov/javanumerics/jama/">http://math.nist.gov/javanumerics/jama/</a>)
                     </li>
                     <li>
                         <strong>Java&nbsp;6</strong>.
@@ -137,32 +113,27 @@
                     <li>
                         <strong>ProxyMusic</strong> is a separate project,
                         dedicated to the marshalling between Java objects and
-                        MusicXML files. (See <a href=
-                        "http://kenai.com/projects/proxymusic">http://kenai.com/projects/proxymusic</a>)
+                        MusicXML files. (See <a href="http://kenai.com/projects/proxymusic">http://kenai.com/projects/proxymusic</a>)
                     </li>
                     <li>
-                        <strong>XenoPlay</strong> is a project owned by Andreas
+                        <strong>Zong! </strong>is a project owned by Andreas
                         Wenger, to provide a Java MIDI player interface to
-                        MusicXML content. (See <a href=
-                        "http://www.xenoage.com/player/">http://www.xenoage.com/player/</a>)
+                        MusicXML content. It replaces the former <strong style="font-weight: normal;">XenoPlay</strong>&nbsp;player (see <a href="http://www.xenoage.com/zongplayer.html">http://www.xenoage.com/zongplayer.html</a>)&nbsp;
                     </li>
 
                     <li>
                         <strong>Tesseract</strong> is the well known
-                        open-source OCR released by Google. (See <a href=
-                        "http://code.google.com/p/tesseract-ocr/">http://code.google.com/p/tesseract-ocr/</a>)<br />
+                        open-source OCR released by Google. (See <a href="http://code.google.com/p/tesseract-ocr/">http://code.google.com/p/tesseract-ocr/</a>)<br />
 
-                        Under Windows, it is accessed via a JNI interface
+                        Under Windows and Linux, it is accessed via a JNI interface
                         provided by <strong>Tesjeract</strong> project of Bahri
-                        Gencsoy. (See <a href=
-                        "http://code.google.com/p/tesjeract/">http://code.google.com/p/tesjeract/</a>)
+                        Gencsoy. (See <a href="http://code.google.com/p/tesjeract/">http://code.google.com/p/tesjeract/</a>)
                     </li>
 
                     <li>
                         <strong>Java look and feel Graphics Repository</strong>
                         is a collection of toolbar button graphics. (See
-                        <a href=
-                        "http://java.sun.com/developer/techDocs/hi/repository/">
+                        <a href="http://java.sun.com/developer/techDocs/hi/repository/">
                         http://java.sun.com/developer/techDocs/hi/repository/</a>)
                     </li>
                 </ul>
@@ -170,13 +141,12 @@
             <li>Cocomo
                 <ul>
 
-                    <li>This Java stand-alone application is made of 370
-                    classes and 120000 lines of commented Java code. In the
+                    <li>This Java stand-alone application is made of 420
+                    classes and 130_000 lines of commented Java code. In the
                     little table below, selecting "code only" gives the most
                     realistic estimate :-)<br />
                         <br />
-                        <script type="text/javascript" src=
-                        "http://www.ohloh.net/p/3072/widgets/project_cocomo.js">
+                        <script type="text/javascript" src="http://www.ohloh.net/p/3072/widgets/project_cocomo.js">
 </script>
                     </li>
                 </ul>
@@ -190,44 +160,17 @@
             <a name="HIERARCHY" id="HIERARCHY">
 		Folders Hierarchy</a>
         </h3>
-        <table>
-            <tr>
-                <td>
                     <table>
 
                         <caption>
                             Full distribution
                         </caption>
-                        <tr>
+                        <tbody><tr>
                             <td>
-                                <img class="framed" src=
-                                "../images/hierarchy-full.png" alt=
-                                "Folder hierarchy for full distribution" title=
-                                "Hierarchy of folders from full distribution" />
+                                <img class="framed" src="../images/hierarchy-full.png" alt="Folder hierarchy for full distribution" title="Hierarchy of folders from full distribution" />
                             </td>
                         </tr>
-                    </table>
-
-                </td>
-                <td>
-                    <table>
-                        <caption>
-                            Binary distribution
-                        </caption>
-                        <tr>
-                            <td>
-                                <img class="framed" src=
-                                "../images/hierarchy-bin.png" alt=
-                                "Folder hierarchy for binary distribution"
-                                title=
-                                "Hierarchy of folders from binary distribution" />
-
-                            </td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-        </table>
+                    </tbody></table>
         <h3>
             <a name="DETAILS" id="DETAILS">
 		Folders Details</a>
@@ -296,7 +239,7 @@
                 </li>
                 <li class="leafnode">dist/
                     <ul>
-                        <li class="leaf">audiveris-3.2a.jar
+                        <li class="leaf">audiveris-3.3.jar
                             <div class="comment">
                                 -- The application jar file
                             </div>
@@ -310,7 +253,7 @@
                         </li>
                         <li class="leafnode">lib/
                             <div class="comment">
-                                -- All jars referenced from Audiveris manifest
+                                -- All jars referenced from Audiveris manifest (the actual content may vary)
                             </div>
                             <ul>
                                 <li class="leaf">AppFramework.jar
@@ -400,14 +343,17 @@
                                         -- Marshalling Java objects from/to
                                         MusicXML
                                     </div>
-                                </li>
-                                <li class="leaf">tesjeract.jar
+                                </li><li class="leaf">gervill.jar
                                     <div class="comment">
 
-                                        -- Connection to Tesseract tessdll.dll
+                                        -- Needed by Zong! player
                                     </div>
-                                </li>
-                                <li class="leaf">xenoplay.jar
+                                </li><li class="leaf">tesjeract.jar
+                                    <div class="comment">
+
+                                        -- Connection to Tesseract OCR
+                                    </div>
+                                </li><li class="leaf">zong.jar
                                     <div class="comment">
                                         -- MIDI sequencer
                                     </div>
@@ -421,37 +367,15 @@
                     <div class="comment">
                         -- A few examples of input images
                     </div>
-                </li>
-                <li class="leafnode">icons/
+                </li><li class="leafnode">ocr/
                     <div class="comment">
-                        -- Definitions of music icons, used for display &amp;
-
-                        training
-                    </div>
-                    <ul>
-                        <li class="leaf">.glyphignore
-                            <div class="comment">
-                                -- File names to ignore for training
-                            </div>
-                        </li>
-                        <li class="leaf">
-                            <div class="comment">
-
-                                -- One or several xml file(s) for each shape
-                            </div>
-                        </li>
-                    </ul>
-                </li>
-                <li class="leafnode">ocr/
-                    <div class="comment">
-                        -- Tesseract material (<b>TESSDATA_PREFIX</b> must
-                        point to this folder)
+                        -- Tesseract material&nbsp;
                     </div>
 
                     <ul>
                         <li class="leaf">tesjeract.dll
                             <div class="comment">
-                                -- Connection to tessdll.dll
+                                -- Connection to tessdll.dll under Windows
                             </div>
                         </li>
                         <li class="leafnode">tessdata/
@@ -480,7 +404,7 @@
                         </li>
                         <li class="leaf">tessdll.dll
                             <div class="comment">
-                                -- Tesseract DLL
+                                -- Tesseract DLL under Windows
                             </div>
 
                         </li>
@@ -545,7 +469,23 @@
                     </ul>
                 </li>
 
-                <li class="leafnode">train/
+                <li class="leafnode">symbols/
+                    <div class="comment">
+                        -- Definitions of shape symbols, used for display &amp;
+
+                        training
+                    </div>
+                    <ul><li class="leaf">.glyphignore
+                            <div class="comment">
+                                -- File names to ignore for training
+                            </div>
+                        </li><li class="leaf">
+                            <div class="comment">
+
+                                -- One or several xml file(s) for each shape
+                            </div>
+                        </li></ul>
+                </li><li class="leafnode">train/
                     <div class="comment">
                         -- Training material for the evaluators
                     </div>
@@ -674,16 +614,8 @@
             Let's take a (rather comprehensive) line taken out of
             system-actions.xml:
         </p>
-        <pre>
-&lt;<b>action</b>
-     <b>domain</b>="VIEW"
-     <b>section</b>="EDIT"
-     <b>class</b>="omr.glyph.ui.ViewParameters"
-     <b>method</b>="toggleSections"
-     <b>item</b>="javax.swing.JCheckBoxMenuItem"
-     <b>button</b>="javax.swing.JToggleButton"
-/&gt;
-</pre>
+        <pre>&lt;<b>action</b>
+     <b>domain</b>="VIEW"<br />     <b>section</b>="EDIT"<br />     <b>class</b>="omr.glyph.ui.ViewParameters"<br />     <b>method</b>="toggleSections"<br />     <b>item</b>="javax.swing.JCheckBoxMenuItem"<br />     <b>button</b>="javax.swing.JToggleButton"<br />/&gt;<br /></pre>
         <p>
             This line can be read as follows: In the <strong>VIEW</strong>
             pulldown menu, insert in the section <strong>EDIT</strong> a menu
@@ -767,7 +699,7 @@
             </li>
         </ul>
         <table>
-            <tr>
+            <tbody><tr>
                 <th>
 
                     from omr.score package
@@ -784,32 +716,27 @@
             </tr>
             <tr>
                 <td>
-                    <a href=
-                    "https://audiveris.dev.java.net/nonav/docs/api/omr/score/Score.html">
+                    <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/score/Score.html">
                     Score</a>
                 </td>
 
                 <td>
-                    <a href=
-                    "https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/Sheet.html">
+                    <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/Sheet.html">
                     Sheet</a>
                 </td>
             </tr>
             <tr>
                 <td>
-                    <a href=
-                    "https://audiveris.dev.java.net/nonav/docs/api/omr/score/System.html">
+                    <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/score/System.html">
 
                     System</a>
                 </td>
                 <td>
-                    <a href=
-                    "https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/SystemInfo.html">
+                    <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/SystemInfo.html">
                     SystemInfo</a>
                 </td>
                 <td>
-                    <a href=
-                    "https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/BarsBuilder.html">
+                    <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/BarsBuilder.html">
 
                     BarsBuilder</a> handles the vertical lines that are
                     recognized as bar lines
@@ -817,19 +744,16 @@
             </tr>
             <tr>
                 <td>
-                    <a href=
-                    "https://audiveris.dev.java.net/nonav/docs/api/omr/score/Stave.html">
+                    <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/score/Stave.html">
                     Stave</a>
                 </td>
 
                 <td>
-                    <a href=
-                    "https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/StaveInfo.html">
+                    <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/StaveInfo.html">
                     StaveInfo</a>
                 </td>
                 <td>
-                    <a href=
-                    "https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/LinesBuilder.html">
+                    <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/LinesBuilder.html">
                     LinesBuilder</a> processes the stave areas, according to
                     the series of peaks found in the horizontal projection.
                 </td>
@@ -838,14 +762,12 @@
             <tr>
                 <td></td>
                 <td>
-                    <a href=
-                    "https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/LineInfo.html">
+                    <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/LineInfo.html">
                     LineInfo</a>
                 </td>
                 <td>
 
-                    <a href=
-                    "https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/LinesBuilder.html">
+                    <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/LinesBuilder.html">
                     LineBuilder</a> processes the horizontal area that
                     corresponds to one histogram peak, and thus to one stave
                     line.
@@ -853,19 +775,16 @@
             </tr>
             <tr>
                 <td>
-                    <a href=
-                    "https://audiveris.dev.java.net/nonav/docs/api/omr/score/Measure.html">
+                    <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/score/Measure.html">
                     Measure</a>
 
                 </td>
                 <td>
-                    <a href=
-                    "https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/BarInfo.html">
+                    <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/BarInfo.html">
                     BarInfo</a>
                 </td>
                 <td>
-                    <a href=
-                    "https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/BarsBuilder.html">
+                    <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/BarsBuilder.html">
                     BarsBuilder</a> processes the vertical lines that are
                     recognized as bar lines.
                 </td>
@@ -874,14 +793,12 @@
             <tr>
                 <td></td>
                 <td>
-                    <a href=
-                    "https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/Ledger.html">
+                    <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/Ledger.html">
                     Ledger</a>
                 </td>
                 <td>
 
-                    <a href=
-                    "https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/HorizontalsBuilder.html">
+                    <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/HorizontalsBuilder.html">
                     HorizontalsBuilder</a> retrieves horizontal dashes in the
                     given sheet. We use it for all horizontal glyphs (ledgers
                     of course, but also legato signs or alternate endings).
@@ -890,8 +807,7 @@
             <tr>
                 <td></td>
                 <td>
-                    <a href=
-                    "https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/Ending.html">
+                    <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/Ending.html">
 
                     Ending</a>
                 </td>
@@ -903,13 +819,11 @@
                 <td></td>
                 <td>
 
-                    <a href=
-                    "https://audiveris.dev.java.net/nonav/docs/api/omr/stick/Stick.html">
+                    <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/stick/Stick.html">
                     Stick</a> (vertical)
                 </td>
                 <td>
-                    <a href=
-                    "https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/VerticalsBuilder.html">
+                    <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/VerticalsBuilder.html">
                     VerticalsBuilder</a> retrieves all the vertical sticks of
                     all systems in the sheet at hand. Bars are assumed to have
                     been already recognized, so this accounts for stems,
@@ -921,19 +835,17 @@
             <tr>
                 <td></td>
                 <td>
-                    <a href=
-                    "https://audiveris.dev.java.net/nonav/docs/api/omr/glyph/Glyph.html">
+                    <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/glyph/Glyph.html">
                     Glyph</a>
                 </td>
                 <td>
-                    <a href=
-                    "https://audiveris.dev.java.net/nonav/docs/api/omr/glyph/GlyphBuilder.html">
+                    <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/glyph/GlyphBuilder.html">
 
                     GlyphBuilder</a> gathers non-assigned remaining glyphs out
                     of a sheet.
                 </td>
             </tr>
-        </table>
+        </tbody></table>
         <h3>
             <a name="SHEET" id="SHEET">Sheet</a>
         </h3>
@@ -942,21 +854,16 @@
             All the music entities are organized in Systems, read from left to
             right. Since <b>System</b> is actually an entity within the
             <i>omr.score</i> package, here in the <i>omr.sheet</i> package we
-            use the class <a href=
-            "https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/SystemInfo.html">
+            use the class <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/SystemInfo.html">
             SystemInfo</a>.
         </p>
         <p>
 
             A <b>SystemInfo</b> is the repository for all physical entities
-            found within the System, such as <a href=
-            "https://audiveris.dev.java.net/nonav/docs/api/omr/glyph/Glyph.html">
-            Glyph</a>'s, <a href=
-            "https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/BarInfo.html">
-            BarInfo</a>'s, <a href=
-            "https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/Ledger.html">
-            Ledger</a>'s, <a href=
-            "https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/StaveInfo.html">
+            found within the System, such as <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/glyph/Glyph.html">
+            Glyph</a>'s, <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/BarInfo.html">
+            BarInfo</a>'s, <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/Ledger.html">
+            Ledger</a>'s, <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/sheet/StaveInfo.html">
 
             StaveInfo</a>'s, and the like.
         </p>
@@ -964,13 +871,7 @@
             So, the general schema to browse through all sheet entities is
             usually similar to the following piece of code :
         </p>
-        <pre>
-     for (SystemInfo system : sheet.getSystems()) {
-         for (Glyph glyph : system.getGlyphs()) {
-            // Do the glyph-based processing here
-         }
-     }
-</pre>
+        <pre>     for (SystemInfo system : sheet.getSystems()) {<br />         for (Glyph glyph : system.getGlyphs()) {<br />            // Do the glyph-based processing here<br />         }<br />     }<br /></pre>
         <p>
             All the entities that result from the phase called <b>Music
             Extraction</b> are made accessible through the collection of
@@ -984,8 +885,7 @@
         </h3>
         <p>
             The <b>Score</b> is organized as a hierarchy of instances of
-            subclasses of <a href=
-            "https://audiveris.dev.java.net/nonav/docs/api/omr/score/MusicNode.html">
+            subclasses of <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/score/MusicNode.html">
             MusicNode</a>, rooted at the Score.
         </p>
 
@@ -996,9 +896,7 @@
             entities. So the Score hierarchy can be listed as follows :
         </p>
         <p>
-	<img src="../api/omr/score/entity/doc-files/Visitable-Hierarchy.jpg"
-             alt="Sketch of score entities"
-             title="Visitable hierarchy of score entities"/>
+	<img src="../api/omr/score/entity/doc-files/Visitable-Hierarchy.jpg" alt="Sketch of score entities" title="Visitable hierarchy of score entities" />
         </p>
         <p>
             The beginning of figure above can be read as follows :
@@ -1056,14 +954,12 @@
             The hierarchical nature of this structure can be conveniently used
             by various traversals. It is used for example when the physical
             counterpart of each music node has to be rendered in the Sheet
-            display (see method <a href=
-            "https://audiveris.dev.java.net/nonav/docs/api/omr/score/MusicNode.html#renderNode(java.awt.Graphics,%20omr.ui.Zoom)">
+            display (see method <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/score/MusicNode.html#renderNode%28java.awt.Graphics,%20omr.ui.Zoom%29">
             renderNode()</a>).
         </p>
         <p>
             Similarly, a <b>ScoreView</b> window handles the painting of Score
-            entities, using method <a href=
-            "https://audiveris.dev.java.net/nonav/docs/api/omr/score/MusicNode.html#paintNode(java.awt.Graphics)">
+            entities, using method <a href="https://audiveris.dev.java.net/nonav/docs/api/omr/score/MusicNode.html#paintNode%28java.awt.Graphics%29">
 
             paintNode()</a>.
         </p>
@@ -1071,5 +967,4 @@
             A similar construction, coupled with JAXB, is used to store the
             content of a Score to the MusicXML format.
         </p>
-    </body>
-</html>
+    </body></html>

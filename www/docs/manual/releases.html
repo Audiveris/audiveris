@@ -23,19 +23,11 @@
         h1.title {text-align: center}
         /*]]>*/
         </style></head>
-
-    <body class="app" id="whole-body">
+<body class="app" id="whole-body">
 
         <h1 class="title">
             Audiveris Releases
         </h1>
-        <address>
-            Updated: <script type="text/javascript">
-//<![CDATA[
-                document.write(getCVSDate("$Id$"));
-            //]]>
-            </script>
-        </address>
         <div class="axial">
             <!-- =========================================================== -->
             <h3>
@@ -59,7 +51,10 @@
                             </li><li><b>ScoreView</b>:
 NetBeans Visual&nbsp;Library is considered to re-implement the score
 display, and for example provide the ability to more and / or resize
-any injected score entity.</li><li><span style="font-weight: bold;">Symbols</span>: The current symbols are defined through bitmaps. A much better display should result from the consistent&nbsp;use of&nbsp;Stoccata which is a TrueType font.</li><li><span style="font-weight: bold;">Modularity</span>:
+any injected score entity.</li><li><span style="font-weight: bold;">Symbols</span>:
+The current symbols are defined through bitmaps. A much better display
+should result from the consistent&nbsp;use of&nbsp;Stoccata which is a
+TrueType font.</li><li><span style="font-weight: bold;">Modularity</span>:
 Though this is not a user-visible topic, Audiveris will enter a
 re-engineering task, using NetBeans Platform, in order to simplify and
 modularize the software (with its 120 000 lines of Java code) before
@@ -84,7 +79,10 @@ further developments are launched.</li>
 			    <li>Release
 3.3 is the first Audiveris release available on Kenai, a much more
 convenient environment than former java.net. So the source code is now
-handled by Mercurial (Hg) instead of CVS and JIRA is the issues manager.</li><li>The old Audiveris page on java.net now points to the Kenai site. Only the users mailing list has been kept on java.net.</li><li>With Sun / Oracle integration, java.net is announced to be re-implemented on top of Kenai infrastructure. So, these 2 Audiveris sites should merge one day.</li>
+handled by Mercurial (Hg) instead of CVS and JIRA is the issues manager.</li><li>The old Audiveris page on java.net now points to the Kenai site. Only the users mailing list has been kept on java.net.</li><li>With
+Sun / Oracle integration, java.net is announced to be re-implemented on
+top of Kenai infrastructure. So, these 2 Audiveris sites should merge
+one day.</li>
                         </ul>
 
                     </td>
@@ -96,9 +94,9 @@ handled by Mercurial (Hg) instead of CVS and JIRA is the issues manager.</li><li
                     <td>
                         <ul>
 			    <li><span style="font-weight: bold;">Libraries</span>: All the external jars
-(21 as of this writing) needed to rebuild Audiveris are now provided in
+(22 as of this writing) needed to rebuild Audiveris are now provided in
 a dedicated /lib folder available in the download area. A developer can
-still pick a newer jar from the Internet.</li><li><span style="font-weight: bold;">Player</span>: The XenoPlay MusicXML player has been replaced by a better player, named Zong!, still developed by Andreas Wenger.</li></ul>
+still pick up a newer jar from the Internet.</li><li><span style="font-weight: bold;">Player</span>: The XenoPlay MusicXML player has been replaced by a better player, named Zong!, still developed by Andreas Wenger.</li></ul>
                     </td>
                 </tr>
                 <tr>
@@ -107,13 +105,26 @@ still pick a newer jar from the Internet.</li><li><span style="font-weight: bold
                         New Features
                     </th>
                     <td>
-                        <ul><li><span style="font-weight: bold;">Bar Lines</span>: The user can now assign / deassign a bar line that defines parts, thus recreating the systems from scratch.<span style="font-weight: bold;"></span></li><li><span style="font-weight: bold;">Dots</span>: Support for double dots, ability to assign the role of any dot (augmentation, repeat bar line, staccato, ...)<span style="font-weight: bold;"></span></li><li><span style="font-weight: bold;">Horizontals</span>: Horizontal entities (ledgers, endings) can now be forced or deassigned manually.<span style="font-weight: bold;"></span></li><li><span style="font-weight: bold;">MIDI Player</span>: The MIDI playback is now driven from a separate console window, borrowed from&nbsp;Zong! player.</li><li><span style="font-weight: bold;">OCR</span>: Tesseract OCR is now available under both Windows and Linux, thanks to James Le Cuirot.</li><li><span style="font-weight: bold;">Score</span>: From a dedicated Shape palette, the user can Drag n' Drop a (virtual) glyph to either the score view or the sheet view, thus injecting entities directly into the score structure.</li><li><span style="font-weight: bold;">ScoreView</span>: The zoom of the score view can now be ajusted at will, thanks to a slider and better symbol definitions.</li><li><span style="font-weight: bold;">Time Signature</span>: The user can now enter any custom time signature, defining numerator and denominator values explicitly.</li><li><span style="font-weight: bold;">Time Slots</span>: Within
+                        <ul><li><span style="font-weight: bold;">Bench data</span>:
+To allow the analysis of multiple batch runs, and compare the
+recognition efficiency, each sheet processing can log key data in a
+dedicated file. For the same purpose, time-out values can be defined
+for script or step processing. <span style="font-weight: bold;"></span></li><li><span style="font-weight: bold;">Bar Lines</span>: The user can now interactively assign / deassign a bar line that defines parts, thus recreating the systems from scratch.<span style="font-weight: bold;"></span></li><li><span style="font-weight: bold;">Constants</span>:
+All application constants can now be set from the CLI with
+the&nbsp;-option keyword. This complements the ability to set them from
+the Tools | Options UI menu. <span style="font-weight: bold;"></span></li><li><span style="font-weight: bold;">Dots</span>: Support for double dots, ability to&nbsp;assign the role of any dot (augmentation, repeat bar line, staccato, ...)<span style="font-weight: bold;"></span></li><li><span style="font-weight: bold;">Horizontals</span>: Horizontal entities (ledgers, endings) can now be forced or deassigned manually.<span style="font-weight: bold;"></span></li><li><span style="font-weight: bold;">MIDI Player</span>: The MIDI playback is now driven from a separate console window, borrowed from&nbsp;Zong! player.</li><li><span style="font-weight: bold;">OCR</span>: Tesseract OCR is now available under both Windows and Linux.</li><li><span style="font-weight: bold;">Score</span>:
+From a dedicated Shape palette, the user can Drag n' Drop a (virtual)
+glyph to either the score view or the sheet view, thus injecting
+entities directly into the score structure.</li><li><span style="font-weight: bold;">ScoreView</span>:
+The zoom of the score view can now be adjusted at will, thanks to a
+slider and better symbol bitmap definitions. A next version will
+replace them with the use of Stocatta true-type font.</li><li><span style="font-weight: bold;">Time Signature</span>: The user can now enter any custom time signature, defining numerator and denominator values explicitly.</li><li><span style="font-weight: bold;">Time Slots</span>: Within
 a measure, the time slots are meant to gather notes that begin at the
 same moment in time. The user can now choose at the score level the
 policy for determining the time slots, either through stem alignment or
 through note head alignment.</li><li><span style="font-weight: bold;">Tuplets</span>: 6-tuplets are now supported, as well as tuplets mixing beamed notes with other notes (flagged notes, rests, ...)</li><li><span style="font-weight: bold;">UI</span>:
 A new board (Shape palette) is available. It allows&nbsp;drag n' drop
-for entity injection, easier navigation through shape ranges, shape
+for entity injection, easier navigation through shape ranges, and shape
 assignment by double-click.</li><li><span style="font-weight: bold;">UI</span>: All boards now have an expand / collapse mechanism, thus allowing to save room in the&nbsp;column of boards.</li>
                         </ul>
 
@@ -140,7 +151,9 @@ assignment by double-click.</li><li><span style="font-weight: bold;">UI</span>: 
 The player raises an exception whenever the notes durations
 within&nbsp;a measure are not consistent with the measure expected
 duration, resulting in the unability to play any not-totally-correct
-score. This is to be fixed in the external Zong! player.<span style="font-weight: bold;"></span></li><li><span style="font-weight: bold;">Virtual Glyphs</span>: For the time being, the (virtual) glyphs created by direct injection cannot be moved or resized once they have been dropped from
+score. This is to be fixed in the external Zong! player.<span style="font-weight: bold;"></span></li><li><span style="font-weight: bold;">Virtual Glyphs</span>:
+For the time being, the (virtual) glyphs created by direct injection
+cannot be moved or resized once they have been dropped from
 the Shape palette to their target view. However, they can be deleted
 and re-injected (this workaround addresses a move but not a resize).</li>
                         </ul>
@@ -155,10 +168,10 @@ and re-injected (this workaround addresses a move but not a resize).</li>
                         <ul>
 			    <li><span style="font-weight: bold;">Images</span>: Support for most pixel sizes.<span style="font-weight: bold;"></span></li><li><span style="font-weight: bold;">Lyrics</span>:
 Much better handling of lyric text pieces, with the ability for the
-user to enter extension sign or to split words with a space, and the
-OCR processing of several text lines as a whole.</li><li><span style="font-weight: bold;">Symbols</span>: The symbols definitions (in&nbsp;the
+user to enter extension sign or to split words with a space. The
+OCR can process several text lines as a whole, which often leads to better results.</li><li><span style="font-weight: bold;">Symbols</span>: The symbols bitmap definitions (in&nbsp;the
 /symbol folder) have been refined with at least a 16-pixel interline
-definition, resulting in better display in score view notably.</li><li><span style="font-weight: bold;">Tiff</span>: Images are forwarded to Tesseract OCR by memory, avoiding temporary files (James Le Cuirot)</li></ul>
+definition, resulting in better display notably in score view.</li><li><span style="font-weight: bold;">Tiff</span>: Images are forwarded to Tesseract OCR by memory, avoiding temporary files</li></ul>
                     </td>
                 </tr>
             </tbody></table>
