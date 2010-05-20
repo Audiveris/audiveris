@@ -354,8 +354,8 @@ public class GuiActions
             description(new JTextField()), 
             /** Current version */
             version(new JTextField()), 
-            /** Current build */
-            build(new JTextField()), 
+            /** Current revision */
+            revision(new JTextField()), 
             /** Precise classes */
             classes(new JTextField()), 
             /** Link to web site */
@@ -443,7 +443,7 @@ public class GuiActions
 
             // Manual injection
             resource.injectComponents(dialog);
-            Topic.build.comp.setText(Main.getToolBuild());
+            Topic.revision.comp.setText(Main.getToolBuild());
             Topic.classes.comp.setText(WellKnowns.CLASS_CONTAINER.toString());
 
             return dialog;
@@ -451,9 +451,6 @@ public class GuiActions
 
         //~ Inner Classes ------------------------------------------------------
 
-        //            sb.append("<A HREF=\"http://kenai.com/projects/audiveris\">http://kenai.com/projects/audiveris</A>");
-        //        htmlPane.addHyperlinkListener(new ActivatedHyperlinkListener());
-        //
         private static class LinkListener
             implements HyperlinkListener
         {

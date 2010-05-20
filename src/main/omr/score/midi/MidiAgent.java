@@ -114,7 +114,9 @@ public class MidiAgent
             String langID = LanguageInfo.getDefaultID(languages);
             Lang.loadLanguage(langID);
         } catch (Exception ex) {
-            logger.warning("Could not load language", ex);
+            logger.warning(
+                "Could not load Zong language from " + Lang.defaultLangPath,
+                ex);
             Lang.loadLanguage("en");
         }
 
