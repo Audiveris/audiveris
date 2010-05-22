@@ -272,7 +272,7 @@ public class ShapeBoard
 
             if (rep != null) {
                 JButton button = new JButton();
-                button.setIcon(rep.getSymbol());
+                button.setIcon(rep.getDecoratedSymbol());
                 button.setName(range.getName());
                 button.addActionListener(rangeListener);
                 button.setToolTipText(range.getName());
@@ -310,14 +310,14 @@ public class ShapeBoard
         panel.add(close);
 
         // One button per shape
-        for (Shape shape : range.getShapes()) {
+        for (Shape shape : range.getSortedShapes()) {
             JButton                 button = new ShapeButton(shape);
 
             // Directly use the shape icon image for DnD ghost
             GhostDropAdapter<Shape> imageAdapter = new GhostImageAdapter<Shape>(
                 glassPane,
                 shape,
-                shape.getSymbol().getIconImage());
+                shape.getDecoratedSymbol().getIconImage());
             imageAdapter.addGhostDropListener(dropListener);
 
             // Handle the click (MouseListener's)
@@ -351,7 +351,7 @@ public class ShapeBoard
         public ShapeButton (Shape shape)
         {
             this.shape = shape;
-            setIcon(shape.getSymbol());
+            setIcon(shape.getDecoratedSymbol());
             setName(shape.toString());
             setToolTipText(shape.toString());
 

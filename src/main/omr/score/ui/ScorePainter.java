@@ -637,7 +637,7 @@ public class ScorePainter
             paintSymbol(displayShape, center, staff, pitch, chord);
         } else {
             // Use special display icons for some shapes
-            displayShape = shape.getNakedShape();
+            displayShape = shape.getPhysicalShape();
             paintSymbol(displayShape, center);
         }
 

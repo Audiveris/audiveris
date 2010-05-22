@@ -260,7 +260,12 @@ public class MusicXML
     public static AccidentalText accidentalTextOf (Shape shape)
     {
         ///sharp, natural, flat, double-sharp, sharp-sharp, flat-flat
-        return AccidentalText.valueOf(shape.toString());
+        // But no double-flat ???
+        if (shape == Shape.DOUBLE_FLAT) {
+            return AccidentalText.FLAT_FLAT;
+        } else {
+            return AccidentalText.valueOf(shape.toString());
+        }
     }
 
     //------------//

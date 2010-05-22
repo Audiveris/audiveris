@@ -291,7 +291,7 @@ public class SheetPainter
         for (Glyph glyph : systemInfo.getGlyphs()) {
             if (glyph.isVirtual()) {
                 ShapeSymbol symbol = glyph.getShape()
-                                          .getNakedShape()
+                                          .getPhysicalShape()
                                           .getSymbol();
 
                 if (symbol != null) {

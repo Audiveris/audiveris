@@ -127,6 +127,6 @@ public class SymbolGlyph
     public SymbolGlyph (Shape shape,
                         int   interline)
     {
-        this(shape.getNakedShape().getSymbol(), shape, interline);
+        this(shape.getPhysicalShape().getSymbol(), shape, interline);
     }
 }

@@ -202,7 +202,7 @@
             <sequential>
 		<antcall>
 		    <param name="sig" value="@{file}"/>
-		    <param name="prefix" value="http://kenai.com/projects/audiveris/downloads/download/jars%252F"/>
+		    <param name="prefix" value="http://kenai.com/downloads/audiveris/jars/"/>
 		    <target name="-read-sig"/>
 		    <target name="-update-jar"/>
 		</antcall>
@@ -216,7 +216,7 @@
             <sequential>
 		<antcall>
 		    <param name="sig" value="@{file}"/>
-		    <param name="prefix" value="http://kenai.com/projects/audiveris/downloads/download/jars%252Flib%252F"/>
+		    <param name="prefix" value="http://kenai.com/downloads/audiveris/jars/lib/"/>
 		    <target name="-read-sig"/>
 		    <target name="-update-jar"/>
 		</antcall>

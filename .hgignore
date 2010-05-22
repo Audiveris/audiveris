@@ -35,3 +35,4 @@ index.html.*
 # Images handled by conf management should use other suffix (.png for example)
 src/**/*.jpg
 src/**/*.pdf
+train/core/*

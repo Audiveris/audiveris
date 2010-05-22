@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<symbol name="LEDGER" interline="8">
+<symbol name="LEDGER.DECORATED" interline="8">
     <stem-number>1</stem-number>
     <bitmap>
         <row>-------......-----</row>

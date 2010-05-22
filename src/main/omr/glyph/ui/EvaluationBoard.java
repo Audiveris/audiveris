@@ -347,7 +347,7 @@ class EvaluationBoard
                     }
 
                     button.setText(eval.shape.toString());
-                    button.setIcon(eval.shape.getSymbol());
+                    button.setIcon(eval.shape.getDecoratedSymbol());
                 } else {
                     if (barred) {
                         field.setBackground(Color.PINK);
@@ -356,7 +356,7 @@ class EvaluationBoard
                     }
 
                     field.setText(eval.shape.toString());
-                    field.setIcon(eval.shape.getSymbol());
+                    field.setIcon(eval.shape.getDecoratedSymbol());
                 }
 
                 comp.setVisible(true);

@@ -735,7 +735,7 @@ public class Chord
                                    .get(0);
 
             return note.getShape()
-                       .isWholeRest();
+                       .isMeasureRest();
         }
 
         return false;
@@ -1123,7 +1123,7 @@ public class Chord
                                    .get(0);
 
             if (!note.getShape()
-                     .isWholeRest()) {
+                     .isMeasureRest()) {
                 rawDuration = Note.getTypeDuration(note.getShape());
 
                 // Apply fraction (for non-rests only)

@@ -589,9 +589,9 @@ public class BasicGlyph
               .append(recognition.getEvaluation());
 
             if (getShape()
-                    .getNakedShape() != getShape()) {
-                sb.append(" training=")
-                  .append(getShape().getNakedShape());
+                    .getPhysicalShape() != getShape()) {
+                sb.append(" physical=")
+                  .append(getShape().getPhysicalShape());
             }
 
             if (getShape()

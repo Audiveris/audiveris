@@ -480,7 +480,7 @@ public abstract class Slot
         // Special case for whole rests: they don't belong to any time slot,
         // and their duration is the measure duration
         if (glyph.getShape()
-                 .isWholeRest()) {
+                 .isMeasureRest()) {
             measure.addWholeChord(glyph);
         } else {
             ScoreSystem system = measure.getSystem();

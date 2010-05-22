@@ -125,7 +125,9 @@ public class ClassUtil
         }
 
         if (input == null) {
-            logger.warning("Cannot find config resource " + resName);
+            if (logger.isFineEnabled()) {
+                logger.fine("Cannot find config resource " + resName);
+            }
         }
 
         return input;

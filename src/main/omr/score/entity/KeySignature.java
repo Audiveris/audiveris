@@ -634,6 +634,9 @@ public class KeySignature
         case C_CLEF :
             return C_CLEF;
 
+        case PERCUSSION_CLEF :
+            return PERCUSSION_CLEF;
+
         default :
             return null;
         }

@@ -52,7 +52,7 @@ public class ShapeRange
         EnumSet.range(BEAM, BEAM_HOOK));
     public static final ShapeRange Clefs = new ShapeRange(
         G_CLEF,
-        EnumSet.range(G_CLEF, F_CLEF_OTTAVA_BASSA));
+        EnumSet.range(G_CLEF, PERCUSSION_CLEF));
     public static final ShapeRange Dynamics = new ShapeRange(
         DYNAMICS_F,
         EnumSet.range(DYNAMICS_CHAR_M, DECRESCENDO));
@@ -76,11 +76,13 @@ public class ShapeRange
         EnumSet.range(GRACE_NOTE_SLASH, INVERTED_MORDENT));
     public static final ShapeRange Rests = new ShapeRange(
         QUARTER_REST,
-        EnumSet.of(
-            MULTI_REST,
+        Arrays.asList(
+            LONG_REST,
+            BREVE_REST,
             WHOLE_REST,
             HALF_REST,
             QUARTER_REST,
+            OLD_QUARTER_REST,
             EIGHTH_REST,
             SIXTEENTH_REST,
             THIRTY_SECOND_REST,
@@ -200,6 +202,9 @@ public class ShapeRange
     /** Underlying shapes */
     private final EnumSet<Shape> shapes;
 
+    /** Specific sequence of shapes, if any */
+    private final List<Shape> sortedShapes;
+
     /** The representative shape for this range */
     private final Shape rep;
 
@@ -210,6 +215,25 @@ public class ShapeRange
     private Constant.Color constantColor;
 
     //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new ShapeRange object from a specified sequence of shapes
+     *
+     * @param rep the representative shape
+     * @param sortedShapes specific sequence of shapes
+     */
+    public ShapeRange (Shape       rep,
+                       List<Shape> sortedShapes)
+    {
+        this.rep = rep;
+        shapes = EnumSet.noneOf(Shape.class);
+
+        for (Shape shape : sortedShapes) {
+            shapes.add(shape);
+        }
+
+        this.sortedShapes = new ArrayList<Shape>(sortedShapes);
+    }
 
     /**
      * Creates a new ShapeRange object.
@@ -228,6 +252,8 @@ public class ShapeRange
         for (Shape shape : addedShapes) {
             shapes.add(shape);
         }
+
+        sortedShapes = null;
     }
 
     /**
@@ -325,6 +351,23 @@ public class ShapeRange
         return shapes;
     }
 
+    //-----------------//
+    // getSortedShapes //
+    //-----------------//
+    /**
+     * Exports the sorted collection of shapes
+     *
+     * @return the proper enum set
+     */
+    public List<Shape> getSortedShapes ()
+    {
+        if (sortedShapes != null) {
+            return sortedShapes;
+        } else {
+            return new ArrayList<Shape>(shapes);
+        }
+    }
+
     //------------------//
     // addAllRangeItems //
     //------------------//
@@ -382,7 +425,7 @@ public class ShapeRange
         for (Shape shape : range.shapes) {
             JMenuItem menuItem = new JMenuItem(
                 shape.toString(),
-                shape.getSymbol());
+                shape.getDecoratedSymbol());
             addColoredItem(top, menuItem, shape.getColor());
 
             menuItem.setToolTipText(shape.getDescription());
@@ -410,7 +453,7 @@ public class ShapeRange
                 JMenu      menu = new JMenu(field.getName());
 
                 if (range.rep != null) {
-                    menu.setIcon(range.rep.getSymbol());
+                    menu.setIcon(range.rep.getDecoratedSymbol());
                 }
 
                 addColoredItem(top, menu, Color.black);

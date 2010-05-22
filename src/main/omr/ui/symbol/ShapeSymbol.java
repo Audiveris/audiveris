@@ -87,7 +87,7 @@ public class ShapeSymbol
     @XmlAttribute
     private Integer interline;
 
-    /** Related (shape) name */
+    /** Related name (generally the name of the related shape if any) */
     @XmlAttribute
     private String name;
 

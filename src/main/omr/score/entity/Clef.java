@@ -244,6 +244,12 @@ public class Clef
 
             return true;
 
+        case PERCUSSION_CLEF :
+            glyph.setTranslation(
+                new Clef(measure, staff, shape, center, 0, glyph));
+
+            return true;
+
         default :
             measure.addError(glyph, "No implementation yet for " + shape);
 
@@ -301,10 +307,13 @@ public class Clef
         case F_CLEF_OTTAVA_BASSA :
             return Note.Step.values()[(73 - pitchPosition) % 7];
 
+        case PERCUSSION_CLEF :
+            return null;
+
         default :
             logger.severe("No note step defined for " + this);
 
-            return Note.Step.A; // To keep compiler happy
+            return null; // To keep compiler happy
         }
     }
 
@@ -343,6 +352,9 @@ public class Clef
 
         case F_CLEF_OTTAVA_BASSA :
             return ((22 - pitchPosition) / 7) - 1;
+
+        case PERCUSSION_CLEF :
+            return 0;
 
         default :
             logger.severe("No note octave defined for " + this);

@@ -312,7 +312,7 @@ public class GlyphBoard
 
                 if (shape != null) {
                     shapeField.setText(shape.toString());
-                    shapeIcon.setIcon(shape.getSymbol());
+                    shapeIcon.setIcon(shape.getDecoratedSymbol());
                 } else {
                     shapeField.setText("");
                     shapeIcon.setIcon(null);

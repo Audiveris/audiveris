@@ -493,6 +493,11 @@ public class ScoreExporter
 
                 break;
 
+            case PERCUSSION_CLEF :
+                pmClef.setSign(ClefSign.PERCUSSION);
+
+                break;
+
             default :
             }
         }

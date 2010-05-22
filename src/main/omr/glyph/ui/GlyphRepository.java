@@ -411,7 +411,7 @@ public class GlyphRepository
         for (Glyph glyph : sheet.getActiveGlyphs()) {
             if (!glyph.isVirtual() && (glyph.getShape() != null)) {
                 Shape shape = glyph.getShape()
-                                   .getNakedShape();
+                                   .getPhysicalShape();
 
                 if (shape.isTrainable() && (shape != Shape.NOISE)) {
                     {

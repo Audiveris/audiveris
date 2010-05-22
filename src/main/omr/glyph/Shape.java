@@ -23,7 +23,24 @@ import java.awt.Color;
  * is organized according to the Unicode Standard 4.0, with a few addition for
  * convenience only.
  *
- * <p>As far as possible, an Icon should be generated for every shape.
+ * <p>The enumeration begins with physical shapes (which are the
+ * only ones usable for training) and end with the logical shapes. The
+ * method {@link #isTrainable()} can be used to disambiguate between physical
+ * and logical shapes</p>
+ *
+ * <p>A logical shape, such as STACCATO, may use the same physical shape
+ * (in this case DOT) as other shapes. In that case we say that the physical
+ * shape of STACCATO is DOT. The method {@link getPhysicalShape()} returns the
+ * shape to use for training and for drawing.
+ *
+ * <p>As far as possible, a symbol should be generated for every shape.</p>
+ *
+ * <p>A shape may have a related "decorated" symbol. For example the BREVE_REST
+ * is similar to a black rectangle which is used for training / recognition and
+ * the related symbol is used for drawing in score view. However, in menu items,
+ * it is displayed as a black rectangle surrounded by a staff line above and a
+ * staff line below, a symbol which is known as BREVE_REST_DECORATED. The method
+ * {@link #getDecoratedSymbol()} returns the symbol to use in menu items.</p>
  *
  * @author Hervé Bitteur
  */
@@ -36,7 +53,6 @@ public enum Shape {
     // Nota: Do not change the order of these physical shapes, otherwise the
     // evaluators won't detect this and you'll have to retrain them on your own.
     // =========================================================================
-    // Percussion ST47
 
     /** Structure of items */
     STRUCTURE("Structure of items"),
@@ -63,10 +79,11 @@ public enum Shape {
     /** Sign */
     SEGNO("Sign", 37), 
     /** Closing section */
-    CODA("Closing section", 222), FERMATA("Fermata", 85), 
-
+    CODA("Closing section", 222), 
+    /** Fermata */
+    FERMATA("Fermata", 85), 
     /** Fermata Below */
-    FERMATA_BELOW("Fermata Below", 117),
+    FERMATA_BELOW("Fermata Below", 117), 
     /** Breath Mark */
     BREATH_MARK("Breath Mark", 44), 
     /** Caesura */
@@ -107,6 +124,10 @@ public enum Shape {
 
     /** Bass Clef Ottava Bassa */
     F_CLEF_OTTAVA_BASSA("Bass Clef Ottava Bassa"), 
+
+    /** Percussion (neutral) clef */
+    PERCUSSION_CLEF("Percussion Clef", 47), 
+    /** Flat */
     FLAT("Minus one half step", 98), 
     /** Natural value */
     NATURAL("Natural value", 110), 
@@ -158,13 +179,17 @@ public enum Shape {
     OTTAVA_ALTA("8 va", 195), 
     /** 8 vb */
     OTTAVA_BASSA("8 vb", 215), 
-    /** Multi Rest */
-    MULTI_REST("Rest for multiple measures", 208), 
+    /** Long Rest */
+    LONG_REST("Rest for 4 measures", 208), 
+
+    /** Breve Rest */
+    BREVE_REST("Rest for 2 measures", 208), 
 
     /** Same shape for whole or half Rest */
     WHOLE_OR_HALF_REST("Same shape for whole or half Rest", 183), 
 
     /** Rest for a 1/4 */
+    OLD_QUARTER_REST("(old) Rest for a 1/4"), 
     QUARTER_REST("Rest for a 1/4", 206), 
     /** Rest for a 1/8 */
     EIGHTH_REST("Rest for a 1/8", 228), 
@@ -337,11 +362,15 @@ public enum Shape {
     //     COMBINING_MARCATO_STACCATO,
     //     COMBINING_ACCENT_STACCATO,
     //     COMBINING_LOURE,
-    ACCENT(62), TENUTO(45), STACCATISSIMO(137),
-    STRONG_ACCENT("Marcato", 94),
-
+    ACCENT(62), 
     //
-    ARPEGGIATO(103),
+    TENUTO(45), 
+    //
+    STACCATISSIMO(137), 
+    //
+    STRONG_ACCENT("Marcato", 94), 
+    //
+    ARPEGGIATO(103), 
     //
     // Dynamics ----------------------------------------------------------------
     //
@@ -381,8 +410,9 @@ public enum Shape {
     GRACE_NOTE_SLASH("Grace Note with a Slash", 201),
 
     /** Grace Note with no Slash */
-    GRACE_NOTE_NO_SLASH("Grace Note with no Slash", 59), TR(96), TURN(84),
-    INVERTED_TURN(249),
+    GRACE_NOTE_NO_SLASH("Grace Note with no Slash", 59), 
+    /** Trille */
+    TR(96), TURN(84), INVERTED_TURN(249),
     TURN_SLASH,
     TURN_UP,
     MORDENT(109),
@@ -476,7 +506,7 @@ public enum Shape {
     ENDING_VERTICAL("Vertical part of ending"), 
     // Stems
     //
-    STEM_NAKED, COMBINING_STEM("Stem", STEM_NAKED), 
+    COMBINING_STEM("Stem"), 
     //     COMBINING_SPRECHGESANG_STEM,
 
     //
@@ -484,7 +514,7 @@ public enum Shape {
     //
 
     /** Seven Flats */
-    KEY_FLAT_7("Seven Flats"),
+    KEY_FLAT_7("Seven Flats"), 
     /** Six Flats */
     KEY_FLAT_6("Six Flats"), 
     /** Five Flats */
@@ -515,14 +545,10 @@ public enum Shape {
     //
     // Rests -------------------------------------------------------------------
     //
-
-    /** Rest for whole measure */
     WHOLE_REST("Rest for whole measure", WHOLE_OR_HALF_REST), 
 
     /** Rest for a 1/2 */
     HALF_REST("Rest for a 1/2", WHOLE_OR_HALF_REST), 
-    /** Multi Rest w/o decoration */
-    MULTI_REST_NAKED, 
     //
     // Other stuff -------------------------------------------------------------
     //
@@ -539,16 +565,16 @@ public enum Shape {
      * time signature shape
      */
     NO_LEGAL_TIME("No Legal Time Shape");
-    static {
-        // Static block to workaround forward references */
-        MULTI_REST.nakedShape = MULTI_REST_NAKED;
-    }
+    //
+    //
+    // =========================================================================
+    // =========================================================================
+    // This is the end of shape enumeration
+    // =========================================================================
+    // =========================================================================
+    //
 
-    /**
-     * Last physical shape an evaluator should be able to recognize based on
-     * their physical characteristics. For example a DOT is a DOT. Also, a DOT
-     * plus a FERMATA_BEND together can compose a FERMATA.
-     */
+    /** Last physical shape */
     public static final Shape LAST_PHYSICAL_SHAPE = PEDAL_UP_MARK;
 
     /** Color for unknown shape */
@@ -559,6 +585,8 @@ public enum Shape {
 
     /** Empty array returned when no point codes are defined for this shape */
     private static final int[] NO_CODES = new int[0];
+
+    //--------------------------------------------------------------------------
 
     /** Explanation of the glyph shape */
     private final String description;
@@ -572,14 +600,22 @@ public enum Shape {
     /** Potential related symbol */
     private ShapeSymbol symbol;
 
-    /** Potential related naked shape to be used for training or drawing */
-    private Shape nakedShape;
+    /** Potential related decorated symbol for menus */
+    private ShapeSymbol decoratedSymbol;
 
     /** Remember the fact that this shape has no related symbol */
     private boolean hasNoSymbol;
 
+    /** Remember the fact that this shape has no related decorated symbol */
+    private boolean hasNoDecoratedSymbol;
+
+    /** Potential related physical shape */
+    private Shape physicalShape;
+
     /** Sequence of corresponding point codes in Stoccata font */
     private int[] pointCodes;
+
+    //--------------------------------------------------------------------------
 
     //-------//
     // Shape //
@@ -602,11 +638,11 @@ public enum Shape {
     // Shape //
     //-------//
     Shape (String description,
-           Shape  nakedShape,
+           Shape  physicalShape,
            int... codes)
     {
         this.description = description;
-        this.nakedShape = nakedShape;
+        this.physicalShape = physicalShape;
 
         if (codes != null) {
             this.pointCodes = new int[codes.length];
@@ -616,6 +652,8 @@ public enum Shape {
             }
         }
     }
+
+    //--------------------------------------------------------------------------
 
     //---------------//
     // getPointCodes //
@@ -634,6 +672,21 @@ public enum Shape {
         }
     }
 
+    //---------------//
+    // isMeasureRest //
+    //---------------//
+    /**
+     * Check whether the shape is a whole (or multi) rest, for which no duration
+     * can be specified
+     *
+     * @return true if whole or multi rest
+     */
+    public boolean isMeasureRest ()
+    {
+        return (this == WHOLE_REST) || (this == BREVE_REST) ||
+               (this == LONG_REST);
+    }
+
     //--------------//
     // isPersistent //
     //--------------//
@@ -650,6 +703,19 @@ public enum Shape {
         return ShapeRange.Clefs.contains(this) ||
                ShapeRange.Times.contains(this) ||
                ShapeRange.Accidentals.contains(this);
+    }
+
+    //--------//
+    // isText //
+    //--------//
+    /**
+     * Check whether the shape is a text or a character
+     *
+     * @return true if text or character
+     */
+    public boolean isText ()
+    {
+        return (this == TEXT) || (this == CHARACTER);
     }
 
     //-------------//
@@ -677,33 +743,6 @@ public enum Shape {
     {
         return (this != NO_LEGAL_TIME) && (this != GLYPH_PART) &&
                ((this != STRUCTURE) && (this != NOISE));
-    }
-
-    //-------------//
-    // isWholeRest //
-    //-------------//
-    /**
-     * Check whether the shape is a whole (or multi) rest, for which no duration
-     * can be specified
-     *
-     * @return true if whole or multi rest
-     */
-    public boolean isWholeRest ()
-    {
-        return (this == WHOLE_REST) || (this == MULTI_REST);
-    }
-
-    //--------//
-    // isText //
-    //--------//
-    /**
-     * Check whether the shape is a text or a character
-     *
-     * @return true if text or character
-     */
-    public boolean isText ()
-    {
-        return (this == TEXT) || (this == CHARACTER);
     }
 
     //----------------//
@@ -852,17 +891,58 @@ public enum Shape {
         this.symbol = symbol;
     }
 
-    //---------------//
-    // getNakedShape //
-    //---------------//
+    //--------------------//
+    // getDecoratedSymbol //
+    //--------------------//
+    /**
+     * Report the symbol to use for menu items
+     * @return the shape symbol, with decorations if any
+     */
+    public ShapeSymbol getDecoratedSymbol ()
+    {
+        if (hasNoDecoratedSymbol) {
+            return getSymbol();
+        }
+
+        if (decoratedSymbol == null) {
+            setDecoratedSymbol(
+                SymbolManager.getInstance().loadSymbol(
+                    toString() + ".DECORATED"));
+
+            if (decoratedSymbol == null) {
+                hasNoDecoratedSymbol = true;
+
+                return getSymbol();
+            }
+        }
+
+        return decoratedSymbol;
+    }
+
+    //--------------------//
+    // setDecoratedSymbol //
+    //--------------------//
+    /**
+     * Assign a decorated symbol to this shape
+     *
+     * @param decoratedSymbol the assigned decorated symbol, which may be null
+     */
+    public void setDecoratedSymbol (ShapeSymbol decoratedSymbol)
+    {
+        this.decoratedSymbol = decoratedSymbol;
+    }
+
+    //------------------//
+    // getPhysicalShape //
+    //------------------//
     /**
      * Report the shape to use for training or precise drawing in a view
-     * @return generally the same shape, without any decoration
+     * @return the related physical shape, if different
      */
-    public Shape getNakedShape ()
+    public Shape getPhysicalShape ()
     {
-        if (nakedShape != null) {
-            return nakedShape;
+        if (physicalShape != null) {
+            return physicalShape;
         } else {
             return this;
         }

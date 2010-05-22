@@ -274,14 +274,14 @@ class ValidationPanel
                 if (vote == null) {
                     negatives.add(gName);
                     System.out.printf("%-35s: Not recognized%n", gName);
-                } else if (vote.shape.getNakedShape() == glyph.getShape()) {
+                } else if (vote.shape.getPhysicalShape() == glyph.getShape()) {
                     positives++;
                 } else {
                     falsePositives.add(gName);
                     System.out.printf(
                         "%-35s: Mistaken as %s%n",
                         gName,
-                        vote.shape.getNakedShape());
+                        vote.shape.getPhysicalShape());
                 }
             }
 

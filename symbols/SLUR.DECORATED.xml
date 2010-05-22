@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<symbol name="SLUR" interline="8">
+<symbol name="SLUR.DECORATED" interline="8">
     <pitch-position>-6</pitch-position>
     <bitmap>
         <row>------------------------------------</row>

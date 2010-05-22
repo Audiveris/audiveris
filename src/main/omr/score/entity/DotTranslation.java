@@ -301,7 +301,7 @@ public class DotTranslation
                     Note note = (Note) n;
 
                     if (!note.getShape()
-                             .isWholeRest()) {
+                             .isMeasureRest()) {
                         SystemPoint noteRef = note.getCenterRight();
                         SystemPoint toDot = new SystemPoint(
                             dotCenter.x - noteRef.x,

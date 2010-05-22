@@ -325,6 +325,7 @@ public class Note
             return 2 * QUARTER_DURATION;
 
         case QUARTER_REST :
+        case OLD_QUARTER_REST :
         case NOTEHEAD_BLACK :
             return QUARTER_DURATION;
 
