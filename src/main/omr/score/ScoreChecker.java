@@ -99,7 +99,11 @@ public class ScoreChecker
     @Override
     public boolean visit (Beam beam)
     {
-        if (!beam.isHook()) {
+        if (!beam.isHook() ||
+            beam.getItems()
+                .first()
+                .getGlyph()
+                .isManualShape()) {
             return true;
         }
 
@@ -550,7 +554,8 @@ public class ScoreChecker
                     break;
                 }
 
-                if (ShapeRange.Beams.contains(vote.shape)) {
+                if (ShapeRange.Beams.contains(vote.shape) &&
+                    (vote.shape != Shape.COMBINING_STEM)) {
                     glyph.setShape(vote.shape, Evaluation.ALGORITHM);
 
                     if (logger.isFineEnabled()) {

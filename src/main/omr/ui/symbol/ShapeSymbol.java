@@ -39,7 +39,7 @@ import javax.xml.bind.annotation.*;
  *
  * <li>It can be used as an <b>image</b> for precise drawing on score and
  * sheet views.
- * The {@code ShapeSymbol} provides {@link #getDimension()}, as weel as
+ * The {@code ShapeSymbol} provides {@link #getDimension()}, as well as
  * {@link #getWidth()} and {@link #getHeight()} methods that report the
  * <b>normalized</> size of the symbol for an interline value of {@link
  * ScoreConstants#INTER_LINE}, even if the size of the underlying image is
@@ -52,10 +52,10 @@ import javax.xml.bind.annotation.*;
  * especially the <b>reference point</b> of that shape.
  * Most of shapes have no reference point, and thus we use their area center,
  * which is the center of their bounding box.
- * However, a few shapes (clefs to precisely position them
- * on the staff, head/flags combos to handle the precise position of the head
- * part) need a very precise reference center (actually the y ordinate) which is
- * somewhat different from the area center. This is the difference between the
+ * However, a few shapes (clefs to precisely position them  on the staff,
+ * head/flags combos to handle the precise position of the head part) need a
+ * very precise reference center (actually the y ordinate) which is somewhat
+ * different from the area center. This is the difference between the
  * {@link #getAreaCenter} and the {@link #getCenter} methods.</li></ul>
  *
  * @author Hervé Bitteur

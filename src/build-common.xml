@@ -69,6 +69,12 @@
                      includes="**"
                      excludes="${dist.excludes}"
                      />
+
+            <!-- zong files -->
+            <zipfileset dir="${zong.dir}" prefix="data"
+                     includes="**"
+                     excludes="${dist.excludes}"
+                     />
         
             <!-- config files -->
             <zipfileset dir="${config.dir}" prefix="config"

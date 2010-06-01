@@ -495,10 +495,10 @@ public enum Shape {
     // Miscellaneous
     //
 
+    /** Staff Line */
+    STAFF_LINE("Staff Line"),
     /** Ledger */
     LEDGER("Ledger"), 
-    /** Staff Line */
-    STAFF_LINE("Staff Line"), 
     /** Horizontal part of ending */
     ENDING_HORIZONTAL("Horizontal part of ending"), 
 
@@ -555,7 +555,9 @@ public enum Shape {
     /** A staccato is nothing but a dot */
     STACCATO("Staccato", DOT), 
     /** Meant to indicate a forward in score view */
-    FORWARD, 
+    FORWARD,
+    /** Non-draggable shape */
+    NON_DRAGGABLE,
     /** A glyph which is nothing but part of a larger glyph */
     GLYPH_PART("Part of a larger glyph"), 
     /** A time signature whose values are defined by the user */

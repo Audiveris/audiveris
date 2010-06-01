@@ -12,7 +12,6 @@
 package omr.script;
 
 import omr.glyph.GlyphLag;
-import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.VirtualGlyph;
 import omr.glyph.facets.Glyph;
@@ -136,9 +135,6 @@ public class InsertTask
         if (logger.isFineEnabled()) {
             logger.fine(toString());
         }
-
-        logger.info(
-            "Insertion of virtual " + shape + " " + Glyphs.toString(glyphs));
 
         // Take inserted glyph(s) as selected glyph(s)
         GlyphLag lag = (orientation == LagOrientation.VERTICAL)

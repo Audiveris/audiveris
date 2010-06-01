@@ -476,7 +476,7 @@ public class SystemTranslator
         {
             Shape shape = glyph.getShape();
 
-            return Beams.contains(shape) && (shape != Shape.SLUR);
+            return Beams.contains(shape) && (shape != Shape.COMBINING_STEM);
         }
 
         @Override

@@ -49,7 +49,8 @@ public class ShapeRange
         EnumSet.range(PART_DEFINING_BARLINE, BACK_TO_BACK_REPEAT_SIGN));
     public static final ShapeRange Beams = new ShapeRange(
         BEAM,
-        EnumSet.range(BEAM, BEAM_HOOK));
+        EnumSet.range(BEAM, BEAM_HOOK),
+        COMBINING_STEM);
     public static final ShapeRange Clefs = new ShapeRange(
         G_CLEF,
         EnumSet.range(G_CLEF, PERCUSSION_CLEF));
@@ -95,9 +96,8 @@ public class ShapeRange
 
     /** A bag of miscellaneous shapes */
     public static final ShapeRange Others = new ShapeRange(
-        COMBINING_STEM,
+        PEDAL_MARK,
         EnumSet.of(
-            COMBINING_STEM,
             SLUR,
             OTTAVA_ALTA,
             OTTAVA_BASSA,

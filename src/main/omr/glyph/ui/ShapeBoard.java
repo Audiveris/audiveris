@@ -312,15 +312,27 @@ public class ShapeBoard
         // One button per shape
         for (Shape shape : range.getSortedShapes()) {
             JButton                 button = new ShapeButton(shape);
+            GhostDropAdapter<Shape> imageAdapter = null;
 
             // Directly use the shape icon image for DnD ghost
-            GhostDropAdapter<Shape> imageAdapter = new GhostImageAdapter<Shape>(
-                glassPane,
-                shape,
-                shape.getDecoratedSymbol().getIconImage());
-            imageAdapter.addGhostDropListener(dropListener);
+            if (shape.getPhysicalShape()
+                     .getSymbol() != null) {
+                ShapeSymbol symbol = (shape == Shape.BEAM_HOOK)
+                                     ? shape.getPhysicalShape()
+                                            .getSymbol()
+                                     : shape.getDecoratedSymbol();
+                imageAdapter = new GhostImageAdapter<Shape>(
+                    glassPane,
+                    shape,
+                    symbol.getIconImage());
+                imageAdapter.addGhostDropListener(dropListener);
+            } else {
+                imageAdapter = new GhostImageAdapter<Shape>(
+                    glassPane,
+                    Shape.NON_DRAGGABLE,
+                    Shape.NON_DRAGGABLE.getSymbol().getIconImage());
+            }
 
-            // Handle the click (MouseListener's)
             button.addMouseListener(imageAdapter); // For DnD transfer
             button.addMouseListener(mouseListener); // For double-click
 

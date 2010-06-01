@@ -283,22 +283,30 @@ public class SheetPainter
 
         for (Glyph glyph : systemInfo.getGlyphs()) {
             if (glyph.isVirtual()) {
-                ShapeSymbol symbol = glyph.getShape()
-                                          .getPhysicalShape()
-                                          .getSymbol();
+                try {
+                    ShapeSymbol symbol = glyph.getShape()
+                                              .getPhysicalShape()
+                                              .getSymbol();
 
-                if (symbol != null) {
-                    ScoreSystem scoreSystem = systemInfo.getScoreSystem();
+                    if (symbol != null) {
+                        ScoreSystem scoreSystem = systemInfo.getScoreSystem();
 
-                    if (scoreSystem != null) {
-                        Point center = glyph.getAreaCenter();
-                        Point topLeft = new Point(
-                            (int) Math.rint(
-                                center.x - ((symbol.getWidth() * ratio) / 2)),
-                            (int) Math.rint(
-                                center.y - ((symbol.getHeight() * ratio) / 2)));
-                        symbol.draw(g, topLeft, interline);
+                        if (scoreSystem != null) {
+                            Point center = glyph.getAreaCenter();
+                            Point topLeft = new Point(
+                                (int) Math.rint(
+                                    center.x -
+                                    ((symbol.getWidth() * ratio) / 2)),
+                                (int) Math.rint(
+                                    center.y -
+                                    ((symbol.getHeight() * ratio) / 2)));
+                            symbol.draw(g, topLeft, interline);
+                        }
                     }
+                } catch (Exception ex) {
+                    logger.warning(
+                        "Error drawing virtual glyph#" + glyph.getId(),
+                        ex);
                 }
             }
         }

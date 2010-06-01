@@ -98,7 +98,7 @@
         <copy
             verbose="${verbose}"
             todir="${netbackup.dir}/${name}">
-            <fileset dir="${backup.dir}/$name}">
+            <fileset dir="${backup.dir}/${name}">
                 <include name="**/${DSTAMP}-${machine.name}-*.zip"/>
             </fileset>
         </copy>
