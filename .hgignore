@@ -27,6 +27,7 @@ zong.log
 
 syntax: glob
 
+audiveris.bat
 build/**/*
 build.xml
 index.html
