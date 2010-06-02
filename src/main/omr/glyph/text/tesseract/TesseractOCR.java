@@ -325,11 +325,21 @@ public class TesseractOCR
                 try {
                     ClassUtil.loadLibrary("tesjeract");
                 } catch (UnsatisfiedLinkError ex) {
+                    String arch = System.getProperty("os.arch");
+
+                    if (arch.equals("amd64")) {
+                        arch = "x86_64";
+                    } else if (arch.endsWith("86")) {
+                        arch = "x86";
+                    }
+
                     if (WellKnowns.WINDOWS) {
                         ClassUtil.load(new File(TesseractOCR.ocrHome, "tessdll.dll"));
                         ClassUtil.load(new File(TesseractOCR.ocrHome, "tesjeract.dll"));
-                    } else {
-                        ClassUtil.load(new File(TesseractOCR.ocrHome, "libtesjeract.so"));
+                    } else if (WellKnowns.LINUX) {
+                        ClassUtil.load(new File(TesseractOCR.ocrHome, "libtesjeract-linux-" + arch + ".so"));
+                    } else if (WellKnowns.MAC_OS_X) {
+                        ClassUtil.load(new File(TesseractOCR.ocrHome, "libtesjeract-macosx-" + arch + ".so"));
                     }
                 }
 
