@@ -13,7 +13,6 @@ bugs
 dist
 jars
 lib
-manifest\.mf
 \./midi
 nbproject
 project

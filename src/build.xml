@@ -202,6 +202,7 @@
     <target name="clean"
             depends="-clean-build, -clean-dist, -clean-jars"
 	    description="Remove all the generated outputs.">
+        <delete verbose="${verbose}" file="${basedir}/manifest.mf"/>	
     </target>
 
     <!-- =================== -->

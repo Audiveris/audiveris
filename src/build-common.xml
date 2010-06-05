@@ -26,7 +26,7 @@
     <!--  - F U L L - D I S T  -->
     <!-- ===================== -->
     <target name="-full-dist"
-            depends="jar, -launcher">
+            depends="clean, jar, -launcher">
 <!--         description="Build the whole release distribution." -->
 
         <!-- Special copy for NetBeans -->
@@ -127,7 +127,7 @@
     <!--  - C O P Y - J A R S  -->
     <!-- ===================== -->
     <target name="-copy-jars"
-	    depends="jar, -clean-jars">
+	    depends="-clean-jars, jar">
 	<!-- Copy the jars distribution -->
 	
         <mkdir dir="${jars.dir}"/>
@@ -462,15 +462,6 @@ endlocal
     <!-- ================= -->
     <target name="-pre-jar">	
 
-        <!-- Prepare a (half) manifest -->
-        <tstamp/>
-        <property name="manifest.file" value="manifest.mf" />
-        <echo file="${manifest.file}" append="false">Manifest-Version: 1.0
-Built-By: ${build.owner}
-Specification-Title: ${spec.title}
-Specification-Version: ${spec.version}
-Implementation-Version: ${impl.version} ${DSTAMP}
-</echo>
         <!-- Copy config files into a config folder in the classes dir -->
         <mkdir dir="${build.classes.dir}/config" />
         <copy
