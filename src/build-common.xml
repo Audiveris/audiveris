@@ -545,14 +545,9 @@ Implementation-Version: ${impl.version} ${DSTAMP}
     <target name="-hg-tip">
 	<!-- description="Retrieve Hg tip revision" -->
         
-        <!-- Just in case this property is not already set -->
-        <property name="ant4hg.jar" value="p:/prog/ant4hg/ant4hg.jar" />
-        
         <taskdef name="hg"
-                 classname="net.sourceforge.ant4hg.taskdefs.HgTask">
-            <classpath>
-                <pathelement location="${ant4hg.jar}"/>
-            </classpath>
+		 classpathref="tools.classpath"
+                 classname="net.sourceforge.ant4hg.taskdefs.HgTask">           
         </taskdef>
         
         <hg cmd="log" dir="${basedir}">

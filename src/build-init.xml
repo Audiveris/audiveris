@@ -25,7 +25,14 @@
 
     <!-- Load the environment variables -->
     <property environment="env"/>
-
+    
+    <!-- Tools classpath -->
+    <path id="tools.classpath">
+      <fileset dir="${audi-lib.dir}">
+        <include name="**/*.jar"/>
+      </fileset>
+    </path>
+    
     
     <!-- =========== -->
     <!--  - I N I T  -->

@@ -27,13 +27,6 @@
     <!-- Load the environment variables -->
     <property environment="env"/>
     
-    <!-- Tools classpath -->
-    <path id="tools.classpath">
-      <fileset dir="${audi-lib.dir}">
-        <include name="**/*.jar"/>
-      </fileset>
-    </path>
-    
     <!-- Build classpath -->
     <path id="build.classpath">
 <!--         <pathelement path="${build.classes.dir}"/> -->
