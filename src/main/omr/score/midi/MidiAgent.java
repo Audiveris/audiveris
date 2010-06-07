@@ -20,13 +20,16 @@ import omr.score.ui.ScoreActions;
 
 import omr.util.OmrExecutors;
 
+import com.xenoage.util.io.IO;
 import com.xenoage.util.language.Lang;
 import com.xenoage.util.language.LanguageInfo;
+import com.xenoage.util.logging.Log;
 import com.xenoage.zong.io.midi.out.SynthManager;
 
 import proxymusic.ScorePartwise;
 
 import java.io.*;
+import java.net.URL;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -105,25 +108,45 @@ public class MidiAgent
     private MidiAgent ()
     {
         //== Stolen from Zong Player init sequence
+        ///System.out.println("Initializing Log");
+        Log.initAppletLog();
+
+        ///System.out.println("Initializing IO");
+        IO.initApplet(null);
+
         try {
             //get available languages
+            ///System.out.println("Getting available languages");
             List<LanguageInfo> languages = LanguageInfo.getAvailableLanguages(
                 Lang.defaultLangPath);
 
+            for (LanguageInfo info : languages) {
+                ///System.out.println("available: " + info.getID());
+            }
+
             //use system's default (TODO: config)
+            ///System.out.println("Getting langId");
             String langID = LanguageInfo.getDefaultID(languages);
+            ///System.out.println("Loading language " + langID);
             Lang.loadLanguage(langID);
         } catch (Exception ex) {
             logger.warning(
                 "Could not load Zong language from " + Lang.defaultLangPath,
                 ex);
-            Lang.loadLanguage("en");
+            logger.info("Loading 'en' language");
+
+            try {
+                Lang.loadLanguage("en");
+            } catch (Exception e) {
+                logger.warning("Could not load 'en' language", ex);
+            }
         }
 
         try {
+            ///System.out.println("Init SynthManager");
             SynthManager.init(true);
-        } catch (MidiUnavailableException ex) {
-            logger.warning("Could not initialize MIDI");
+        } catch (Exception ex) {
+            logger.warning("Could not initialize MIDI", ex);
             receiver = null;
             controller = null;
 
