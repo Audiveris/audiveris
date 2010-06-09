@@ -1,39 +1,39 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"><head><!-- $Id$ -->
         
-        <meta http-equiv="CONTENT-TYPE" content="text/html; charset=us-ascii" />
+    <meta http-equiv="CONTENT-TYPE" content="text/html; charset=us-ascii" />
+    
+    <title>Audiveris Releases</title><meta name="AUTHOR" content="Herv&#195;&#169; Bitteur" />
+    <meta name="CLASSIFICATION" content="Documentation on Audiveris releases" />
+    <meta name="DESCRIPTION" content="Details on each Audiveris release" />
+    <!-- The following links are meant to be solved on my local PC -->
+    <!-- The java.net site uses its own style sheets -->
+    
+    <link rel="stylesheet" type="text/css" href="../../branding/css/tigris.css" />
+    <link rel="stylesheet" type="text/css" href="../../branding/css/inst.css" />
+    <script type="text/javascript" src="util.js">
+    </script>
         
-        <title>Audiveris Releases</title><meta name="AUTHOR" content="Herv&#195;&#169; Bitteur" />
-        <meta name="CLASSIFICATION" content="Documentation on Audiveris releases" />
-        <meta name="DESCRIPTION" content="Details on each Audiveris release" /><!-- The following links are meant to be solved on my local PC --><!-- The java.net site uses its own style sheets -->
-
-        
-        
-        <link rel="stylesheet" type="text/css" href="../../branding/css/tigris.css" />
-        <link rel="stylesheet" type="text/css" href="../../branding/css/inst.css" />
-        <script type="text/javascript" src="util.js">
-</script>
-	
-        <style type="text/css">
+    <style type="text/css">
 /*<![CDATA[*/
-            th {
+      th {
                 vertical-align: middle !important;
                 background-color: #eee !important;
             }
-        h1.title {text-align: center}
-        /*]]>*/
-        </style></head>
-<body class="app" id="whole-body">
-
+      h1.title {text-align: center}
+/*]]>*/
+    </style></head>
+    <body class="app" id="whole-body">
+        
         <h1 class="title">
             Audiveris Releases
         </h1>
         <div class="axial">
             <!-- =========================================================== -->
             <h3>
-                <a id="PENDING" name="PENDING">Pending Features</a>
+                <a id="PENDING" name="PENDING">Still Pending Features...</a>
             </h3>
-
+            
             <table border="1" width="100%">
                 <tbody><tr>
                     <th>
@@ -48,18 +48,26 @@
                                 exported into the MusicXML stream. Today these
                                 glyphs, though correctly recognized, are not
                                 translated into score entities.
-                            </li><li><b>ScoreView</b>:
-NetBeans Visual&nbsp;Library is considered to re-implement the score
-display, and for example provide the ability to more and / or resize
-any injected score entity.</li><li><span style="font-weight: bold;">Symbols</span>:
-The current symbols are defined through bitmaps. A much better display
-should result from the consistent&nbsp;use of&nbsp;Stoccata which is a
-TrueType font.</li><li><span style="font-weight: bold;">Modularity</span>:
-Though this is not a user-visible topic, Audiveris will enter a
-re-engineering task, using NetBeans Platform, in order to simplify and
-modularize the software (with its 120 000 lines of Java code) before
-further developments are launched.</li>
-
+                            </li>
+                            <li>
+                                <b>ScoreView</b>: NetBeans Visual Library is
+                                considered for re-implementing the score
+                                display, and for example provide the ability to
+                                move and / or resize any injected score entity.
+                            </li>
+                            <li>
+                                <b>Symbols</b>: The current symbols are defined
+                                through bitmaps. A much better display would
+                                result from the consistent use of Stoccata font
+                                which is a TrueType font.</li>
+                            <li>
+                                <b>Modularity</b>: Though this is not a
+                                user-visible topic, Audiveris may enter a
+                                re-engineering task, using NetBeans Platform, in
+                                order to simplify and modularize the software
+                                (with its 120 000 lines of Java code) before
+                                further significant developments are launched.
+                            </li>                           
                         </ul>
                     </td>
                 </tr>
@@ -70,62 +78,151 @@ further developments are launched.</li>
             </h3>
 
             <table border="1" width="100%">
-                <tbody><tr>
-                    <th>
-                        Introduction
-                    </th>
-                    <td>
-                        <ul>
-			    <li>Release
-3.3 is the first Audiveris release available on Kenai, a much more
-convenient environment than former java.net. So the source code is now
-handled by Mercurial (Hg) instead of CVS and JIRA is the issues manager.</li><li>The old Audiveris page on java.net now points to the Kenai site. Only the users mailing list has been kept on java.net.</li><li>With
-Sun / Oracle integration, java.net is announced to be re-implemented on
-top of Kenai infrastructure. So, these 2 Audiveris sites should merge
-one day.</li>
-                        </ul>
-
-                    </td>
-                </tr>
-                <tr>
-                    <th>
-                        Distribution Changes
-                    </th>
-                    <td>
-                        <ul>
-			    <li><span style="font-weight: bold;">Libraries</span>: All the external jars
-(22 as of this writing) needed to rebuild Audiveris are now provided in
-a dedicated /lib folder available in the download area. A developer can
-still pick up a newer jar from the Internet.</li><li><span style="font-weight: bold;">Player</span>: The XenoPlay MusicXML player has been replaced by a better player, named Zong!, still developed by Andreas Wenger.</li></ul>
-                    </td>
-                </tr>
-                <tr>
+                <tbody>
+                    <tr>
+                        <th>
+                            Introduction
+                        </th>
+                        <td>
+                            <ul>
+                                <li>Release 3.3 is the first Audiveris release
+                                    available on Kenai, a much more convenient
+                                    environment than former java.net. So the
+                                    source code is now handled by Mercurial (Hg)
+                                    instead of CVS and JIRA is the issues
+                                    manager.
+                                </li>
+                                <li>The old Audiveris page on java.net now
+                                    points to the Kenai site. Only the users
+                                    mailing list has been kept on java.net.
+                                </li>
+                                <li>With Sun / Oracle integration, java.net is
+                                    announced to be re-implemented on top of
+                                    Kenai infrastructure. So, these 2 Audiveris
+                                    sites should merge one day.
+                                </li>
+                            </ul>
+                            
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Distribution Changes
+                        </th>
+                        <td>
+                            <ul>
+                                <li>
+                                    <b>Libraries</b>: All the external jars (23
+                                    as of this writing) needed to rebuild and/or
+                                    run Audiveris are now provided in a
+                                    dedicated /lib folder available in the
+                                    download area. A developer can still pick up
+                                    a newer jar version from the Internet.
+                                </li>
+                                <li>
+                                    <b>Player</b>: The XenoPlay MusicXML player
+                                    has been replaced by a better player, named
+                                    Zong!, still developed by Andreas
+                                    Wenger.
+                                </li>
+				<li>
+				    <b>Tesseract</b>: The JNI link to Tesseract
+				    OCR is now statically linked, thus requiring
+				    no C++ installation.
+				</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
 
                     <th>
                         New Features
                     </th>
                     <td>
-                        <ul><li><span style="font-weight: bold;">Bench data</span>:
-To allow the analysis of multiple batch runs, and compare the
-recognition efficiency, each sheet processing can log key data in a
-dedicated file. For the same purpose, time-out values can be defined
-for script or step processing. <span style="font-weight: bold;"></span></li><li><span style="font-weight: bold;">Bar Lines</span>: The user can now interactively assign / deassign a bar line that defines parts, thus recreating the systems from scratch.<span style="font-weight: bold;"></span></li><li><span style="font-weight: bold;">Constants</span>:
-All application constants can now be set from the CLI with
-the&nbsp;-option keyword. This complements the ability to set them from
-the Tools | Options UI menu. <span style="font-weight: bold;"></span></li><li><span style="font-weight: bold;">Dots</span>: Support for double dots, ability to&nbsp;assign the role of any dot (augmentation, repeat bar line, staccato, ...)<span style="font-weight: bold;"></span></li><li><span style="font-weight: bold;">Horizontals</span>: Horizontal entities (ledgers, endings) can now be forced or deassigned manually.<span style="font-weight: bold;"></span></li><li><span style="font-weight: bold;">MIDI Player</span>: The MIDI playback is now driven from a separate console window, borrowed from&nbsp;Zong! player.</li><li><span style="font-weight: bold;">OCR</span>: Tesseract OCR is now available under both Windows and Linux.</li><li><span style="font-weight: bold;">Score</span>:
-From a dedicated Shape palette, the user can Drag n' Drop a (virtual)
-glyph to either the score view or the sheet view, thus injecting
-entities directly into the score structure.</li><li><span style="font-weight: bold;">ScoreView</span>:
-The zoom of the score view can now be adjusted at will, thanks to a
-slider and better symbol bitmap definitions. A next version will
-replace them with the use of Stocatta true-type font.</li><li><span style="font-weight: bold;">Time Signature</span>: The user can now enter any custom time signature, defining numerator and denominator values explicitly.</li><li><span style="font-weight: bold;">Time Slots</span>: Within
-a measure, the time slots are meant to gather notes that begin at the
-same moment in time. The user can now choose at the score level the
-policy for determining the time slots, either through stem alignment or
-through note head alignment.</li><li><span style="font-weight: bold;">Tuplets</span>: 6-tuplets are now supported, as well as tuplets mixing beamed notes with other notes (flagged notes, rests, ...)</li><li><span style="font-weight: bold;">UI</span>:
-A new board (Shape palette) is available. It allows&nbsp;drag n' drop
-for entity injection, easier navigation through shape ranges, and shape
-assignment by double-click.</li><li><span style="font-weight: bold;">UI</span>: All boards now have an expand / collapse mechanism, thus allowing to save room in the&nbsp;column of boards.</li>
+                        <ul>
+			    <li>
+				<b>Bench data</b>: To allow the analysis of
+				multiple batch runs, and compare the recognition
+				efficiency, each sheet processing can log key
+				data in a dedicated file. For the same purpose,
+				time-out values can be defined for script or
+				step processing.
+			    </li>
+			    <li>
+				<b>Bar Lines</b>: The user can now interactively
+				assign / deassign a bar line that defines parts,
+				thus recreating the systems from scratch.
+			    </li>
+			    <li>
+				<b>Constants</b>: All application constants can
+				now be set from the CLI with the&nbsp;-option
+				keyword. This complements the ability to set
+				them from the Tools | Options UI menu.
+			    </li>
+			    <li>
+				<b>Dots</b>: Support for double dots, ability
+				to&nbsp;assign the role of any dot
+				(augmentation, repeat bar line, staccato,
+				...)
+			    </li>
+			    <li>
+				<b>Horizontals</b>: Horizontal entities
+				(ledgers, endings) can now be forced or
+				deassigned manually.
+			    </li>
+			    <li>
+				<b>MIDI Player</b>: The MIDI playback is now
+				driven from a separate console window, borrowed
+				from&nbsp;Zong! player.
+			    </li>
+			    <li>
+				<b>OCR</b>: Tesseract OCR is now available under
+				both Windows and Linux.
+			    </li>
+			    <li>
+				<b>Score</b>: From a dedicated Shape palette,
+				the user can Drag n' Drop a (virtual) glyph to
+				either the score view or the sheet view, thus
+				injecting entities directly into the score
+				structure.
+			    </li>
+			    <li>
+				<b>ScoreView</b>: The zoom of the score view can
+				now be adjusted at will, thanks to a slider and
+				better symbol bitmap definitions. A next version
+				will replace them with the use of Stocatta
+				true-type font.
+			    </li>
+			    <li>
+				<b>Time Signature</b>: The user can now enter
+				any custom time signature, defining numerator
+				and denominator values explicitly.
+			    </li>
+			    <li>
+				<b>Time Slots</b>: Within a measure, the time
+				slots are meant to gather notes that begin at
+				the same moment in time. The user can now choose
+				at the score level the policy for determining
+				the time slots, either through stem alignment or
+				through note head alignment.
+			    </li>
+			    <li>
+				<b>Tuplets</b>: 6-tuplets are now supported, as
+				well as tuplets mixing beamed notes with other
+				notes (flagged notes, rests, ...).
+			    </li>
+			    <li>
+				<b>UI</b>: A new board (Shape palette) is
+				available. It allows&nbsp;drag n' drop for
+				entity injection, easier navigation through
+				shape ranges, and shape assignment by
+				double-click.
+			    </li>
+			    <li>
+				<b>UI</b>: All boards now have an expand /
+				collapse mechanism, thus allowing to save room
+				in the&nbsp;column of boards.
+			    </li>
                         </ul>
 
                     </td>
@@ -136,46 +233,87 @@ assignment by double-click.</li><li><span style="font-weight: bold;">UI</span>: 
                     </th>
                     <td>
                         <ul>
-			    <li>Many fixes, please refer to Hg log command</li><li>Exception handler have been removed from all unitary tests, so that the results are clearly seen as successes or failures</li>
+                            <li>
+				Many fixes, please refer to Hg log command
+			    </li>
+			    <li><b>Player Data</b>: The data part of Zong player
+				is now provided as a resource in a dedicated jar
+				file, thus allowing the launching of Audiveris
+				from any location of your computer.
+			    </li>
+			    <li>
+				Exception handler have been removed from all
+				unitary tests, so that the results are clearly
+				seen as successes or failures
+			    </li>
                         </ul>
-
+			
                     </td>
                 </tr>
-                <tr>
-                    <th>
-                        Known Issues
-                    </th>
-                    <td>
-                        <ul>
-			    <li><span style="font-weight: bold;">Player</span>:
-The player raises an exception whenever the notes durations
-within&nbsp;a measure are not consistent with the measure expected
-duration, resulting in the unability to play any not-totally-correct
-score. This is to be fixed in the external Zong! player.<span style="font-weight: bold;"></span></li><li><span style="font-weight: bold;">Virtual Glyphs</span>:
-For the time being, the (virtual) glyphs created by direct injection
-cannot be moved or resized once they have been dropped from
-the Shape palette to their target view. However, they can be deleted
-and re-injected (this workaround addresses a move but not a resize).</li>
-                        </ul>
-                    </td>
-                </tr>
-                <tr>
-
-                    <th>
-                        Other Changes
-                    </th>
-                    <td>
-                        <ul>
-			    <li><span style="font-weight: bold;">Images</span>: Support for most pixel sizes.<span style="font-weight: bold;"></span></li><li><span style="font-weight: bold;">Lyrics</span>:
-Much better handling of lyric text pieces, with the ability for the
-user to enter extension sign or to split words with a space. The
-OCR can process several text lines as a whole, which often leads to better results.</li><li><span style="font-weight: bold;">Symbols</span>: The symbols bitmap definitions (in&nbsp;the
-/symbol folder) have been refined with at least a 16-pixel interline
-definition, resulting in better display notably in score view.</li><li><span style="font-weight: bold;">Tiff</span>: Images are forwarded to Tesseract OCR by memory, avoiding temporary files</li></ul>
-                    </td>
-                </tr>
-            </tbody></table>
-
+		    <tr>
+			<th>
+			    Known Issues
+			</th>
+			<td>
+			    <ul>
+				<li>
+				    <b>Player</b>: The player raises an
+				    exception whenever the notes durations
+				    within&nbsp;a measure are not consistent
+				    with the measure expected duration,
+				    resulting in the unability to play any
+				    not-totally-correct score. This is to be
+				    fixed in the external Zong! player.
+				</li>
+				<li>
+				    <b>Virtual Glyphs</b>: For the time being,
+				    the (virtual) glyphs created by direct
+				    injection cannot be moved or resized once
+				    they have been dropped from the Shape
+				    palette to their target view. However, they
+				    can be deleted and re-injected (this
+				    workaround addresses a move but not a
+				    resize).
+				</li>
+			    </ul>
+			</td>
+		    </tr>
+		    <tr>
+			
+			<th>
+			    Other Changes
+			</th>
+			<td>
+			    <ul>
+				<li>
+				    <b>Images</b>: Support for most pixel sizes.
+				</li>
+				<li>
+				    <b>Lyrics</b>: Much better handling of lyric
+				    text pieces, with the ability for the user
+				    to enter extension sign or to split words
+				    with a space. The OCR can process several
+				    text lines as a whole, which often leads to
+				    better results.
+				</li>
+				<li>
+				    <b>Symbols</b>: The symbols bitmap
+				    definitions (in&nbsp;the /symbol folder)
+				    have been refined with at least a 16-pixel
+				    interline definition, resulting in better
+				    display notably in score view.
+				</li>
+				<li>
+				    <b>Tiff</b>: Images are forwarded to
+				    Tesseract OCR by memory, avoiding temporary
+				    files
+				</li>
+			    </ul>
+			</td>
+		    </tr>
+		</tbody>
+	    </table>
+	    
             <!-- =========================================================== -->
             <h3>
                 <a id="R3.2" name="R3.2">3.2c Release</a>
@@ -204,13 +342,13 @@ definition, resulting in better display notably in score view.</li><li><span sty
                     </th>
                     <td>
                         <ul>
-			    <li>
-				<b>Examples</b>: Included 2 PDF examples
-				(BrahWiMeSample.pdf and Dichterliebe01.pdf) by
-				curtesy of <a href="http://www.recordare.com">
-				Recordare</a>. They demonstrate rather complex
-				measures in terms of voices.
-			    </li>
+                            <li>
+                                <b>Examples</b>: Included 2 PDF examples
+                                (BrahWiMeSample.pdf and Dichterliebe01.pdf) by
+                                curtesy of <a href="http://www.recordare.com">
+                                Recordare</a>. They demonstrate rather complex
+                                measures in terms of voices.
+                            </li>
                             <li>
 
                                 <b>Application</b>: We have switched to the
@@ -370,14 +508,14 @@ definition, resulting in better display notably in score view.</li><li><span sty
                     </th>
                     <td>
                         <ul>
-			    <li>
-				<b>Active Glyphs</b>: Use of a reliable test for
-				detecting which glyphs are active in a system.
-			    </li>
-			    <li>
-				<b>Beams</b>: They do not divide the duration of
-				embraced notes when these ones are rests.
-			    </li>
+                            <li>
+                                <b>Active Glyphs</b>: Use of a reliable test for
+                                detecting which glyphs are active in a system.
+                            </li>
+                            <li>
+                                <b>Beams</b>: They do not divide the duration of
+                                embraced notes when these ones are rests.
+                            </li>
                             <li>
                                 <b>Message Log</b>: The Log window now displays
                                 all messages, including the ones that were
@@ -388,13 +526,13 @@ definition, resulting in better display notably in score view.</li><li><span sty
                                 navigate to the Audiveris documentation stored
                                 locally in the installation folder.
                             </li>
-			    <li>
-				<b>MusicXML Export</b>: Fixed wrong order in
-				elements for lyrics item, which triggered error
-				messages in Finale. Also removed an xmlns:ns2
-				namespace which was legal but not accepted by
-				Finale.
-			    </li>
+                            <li>
+                                <b>MusicXML Export</b>: Fixed wrong order in
+                                elements for lyrics item, which triggered error
+                                messages in Finale. Also removed an xmlns:ns2
+                                namespace which was legal but not accepted by
+                                Finale.
+                            </li>
                             <li>
                                 <b>Vertex removal</b>: The removal of a vertex
                                 sometimes led to a double removal attempt.
