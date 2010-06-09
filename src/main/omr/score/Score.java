@@ -1342,14 +1342,14 @@ public class Score
 
         /** Default slot policy */
         SlotPolicy.Constant defaultSlotPolicy = new SlotPolicy.Constant(
-            SlotPolicy.STEM_BASED,
-            "Default policy for determining time slots");
+            SlotPolicy.HEAD_BASED,
+            "Default policy for determining time slots (HEAD_BASED or SLOT_BASED)");
 
         /**
          * Default horizontal margin between a slot and a glyph candidate
          */
         Scale.Fraction defaultSlotMargin = new Scale.Fraction(
-            0.3,
+            0.5,
             "Default horizontal margin between a slot and a glyph candidate");
 
         /** Minimum spacing between slots before alerting user */

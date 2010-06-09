@@ -24,6 +24,7 @@ public enum SlotPolicy {
     STEM_BASED("Stem based"),
     /** Use heads as key for slot position */
     HEAD_BASED("Head based");
+    //
     /** For user reading */
     private final String description;
 
@@ -40,16 +41,6 @@ public enum SlotPolicy {
         this.description = description;
     }
 
-//    //----------//
-//    // toString //
-//    //----------//
-//    @Override
-//    public String toString ()
-//    {
-//        return description;
-//    }
-
-    //
     //----------//
     // Constant //
     //----------//
