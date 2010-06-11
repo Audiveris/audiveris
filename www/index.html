@@ -1,254 +1,413 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><!-- $Id$ -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <!-- $Id$ -->
+        <meta http-equiv="CONTENT-TYPE" content="text/html; charset=us-ascii" />
+        <title>
+            Audiveris Home Page
+        </title>
+        <meta name="author" content="Herv&Atilde;&copy; Bitteur" />
+        <!-- The following links are meant to be solved on my local PC -->
+        <!-- The java.net site uses its own style sheets -->
 
-<meta http-equiv="CONTENT-TYPE" content="text/html; charset=us-ascii" /><title>Audiveris Home Page</title>
-
-<meta name="author" content="Herv&#195;&#169; Bitteur" /><!-- The following links are meant to be solved on my local PC --><!-- The java.net site uses its own style sheets -->
-
-<link rel="stylesheet" type="text/css" href="branding/css/tigris.css" />
-<link rel="stylesheet" type="text/css" href="branding/css/inst.css" />
-<script type="text/javascript">
+        <link rel="stylesheet" type="text/css" href="branding/css/tigris.css" />
+        <link rel="stylesheet" type="text/css" href="branding/css/inst.css" />
+        <script type="text/javascript">
 //<![CDATA[
-// Special nonav prefix for java.net hosted files
-function mynonav(url,label)
-{
-var ch = "<div class='doc'> <ul> <li class='leaf'> <a target='_top' href='";
-if (document.title != "Audiveris Home Page")
-ch = ch + "nonav/";
-ch = ch + url + "'>" + label + "<\/a><\/li><\/ul><\/div>";
-return ch;
-}
-//]]>
-</script>
-<style type="text/css">
+        // Special nonav prefix for java.net hosted files
+        function mynonav(url,label)
+        {
+        var ch = "<div class='doc'> <ul> <li class='leaf'> <a target='_top' href='";
+        if (document.title != "Audiveris Home Page")
+        ch = ch + "nonav/";
+        ch = ch + url + "'>" + label + "<\/a><\/li><\/ul><\/div>";
+        return ch;
+        }
+        //]]>
+        </script>
+        <style type="text/css">
 /*<![CDATA[*/
-div.doc {float: left; width: 25%; color: rgb(170, 170, 170);}
-div#project-column {float: left; width: 50%}
-div#material-column {float: left; width: 48%}
-h1.title {text-align: center;}
-td.feature {text-align: right;}
-td.feature-domain {border-right: 2px solid rgb(170, 170, 170) ; text-align: right; vertical-align: middle;}
-tr.a, tr.b {font-size:smaller;}
-/*]]>*/
-</style></head>
-<body>
-<h1 class="title"> Audiveris Music Scanner </h1>
-<div class="donemessage">
-<p> Audiveris is a complete music scanner going all the way from
-the scanned music sheet input to the MusicXML output. </p>
-<p style="font-weight: bold;">Latest informations:&nbsp;</p><ul><li>The latest release&nbsp;is&nbsp;<strong>Version
-3.3</strong>
-&nbsp;whose main new feature is the ability to inject entities directly
-into the score structure via drag and drop from a shape palette.</li><li><a href="mailto:chewi@aura-online.co.uk">James Le Cuirot</a> has made the Tesseract OCR features work&nbsp;consistently under
-both Windows and Linux.&nbsp;Sorry, we have yet no access to<strong><span style="font-weight: normal;"> </span>Mac OS<span style="font-weight: normal;"> platform, and we would appreciate contribution there.</span></strong></li><li><strong><span style="font-weight: normal;"><a href="mailto:omr@viro.name">Vladimir Viro</a>
-has set up an impressive testbed for OMR engines with thousands of
-inputs from the Petrucci Music Library. This environment will greatly
-help us improve the recognition ratio of Audiveris.<a href="http://omr.viro.name/"></a></span></strong></li><li><span style="font-weight: normal;"><a href="mailto:andi@xenoage.com">Andreas Wenger</a> has provided <a href="http://www.xenoage.com/zongplayer.html">Zong!</a>, his new MusicXML player still in beta stage, directly integrated with Audiveris.<br /></span></li></ul><span style="font-weight: bold;">Note on project hosting:</span><br /><div style="margin-left: 40px;"><span style="font-style: italic;">Audiveris has long been hosted on Java.Net and migrated to Kenai a few
-months ago. Only the mailing list is still active on Java.Net to keep
-the set of registered members and provide easy browsing of the existing
-list archive. Oracle intends to re-implement Java.Net on top of Kenai
-infrastructure, so one day everything will be back on Java.Net.</span><br style="font-style: italic;" /><span style="font-style: italic;">For the time being please provide any feedback on </span><a style="font-style: italic;" href="mailto:users@audiveris.dev.java.net">users@audiveris.dev.java.net</a><span style="font-style: italic;"> mailing list,
-in the form of suggestions or bug reports (if possible please attach the scanned
-image to your report, to help us analyze the program behavior).</span> </div>
+        div.doc {float: left; width: 25%; color: rgb(170, 170, 170);}
+        div#project-column {float: left; width: 50%}
+        div#material-column {float: left; width: 48%}
+        h1.title {text-align: center;}
+        td.feature {text-align: right;}
+        td.feature-domain {border-right: 2px solid rgb(170, 170, 170) ; text-align: right; vertical-align: middle;}
+        tr.a, tr.b {font-size:smaller;}
+        /*]]>*/
+        </style>
+        <style type="text/css">
+/*<![CDATA[*/
+        p.c8 {margin-left: 40px;}
+        div.c7 {margin-left: 40px;}
+        a.c6 {font-style: italic;}
+        br.c5 {font-style: italic;}
+        span.c4 {font-style: italic;}
+        span.c3 {font-weight: bold;}
+        span.c2 {font-weight: normal;}
+        p.c1 {font-weight: bold;}
+        /*]]>*/
+        </style>
+    </head>
+    <body>
 
-</div>
-<p> <img src="docs/images/chula-score.png" alt="Audiveris main window" /> </p>
-<!-- --><!-- ============== --><!-- PROJECT COLUMN --><!-- ============== -->
-<div id="project-column">
-<h3>Project Management</h3>
-<p>On <a href="http://kenai.com/projects/audiveris/">
-http://kenai.com/projects/audiveris/</a> you'll find all related
-management features (source code, wiki, [mailing list], download area,
-issue tracking, etc).</p>
-<h3> Project Goals </h3>
-<p> <strong>Audiveris</strong> is an <strong>Optical
-Music Recognition</strong> (OMR) module. Starting from the image
-of a music sheet, it provides high-level logical music information
-compliant with the MusicXML definition. Other tools such as a Midi
-Sequencer, or a Composition Editor can then read and update this&nbsp;data. </p>
-<p> There are already commercial tools in this area but Audiveris
-is, to our knowledge, the only open-source OMR tool. It is a
-cross-platform tool, written&nbsp;in Java, and tested on Windows and Linux. Mac OS would require a volunteer. </p>
-<p> Audiveris works with printed music sheets only, the task of
-recognizing hand-written scores being significantly harder. </p>
-<h3> Main Features </h3>
-<table width="100%">
-<tbody>
-<tr>
-<td rowspan="4" class="feature-domain"> Input
-</td>
-</tr>
-<tr class="a">
-<td class="feature"> Input image formats: </td>
-<td> <strong>All major formats:</strong> gif,
-png, tiff, bmp, etc. </td>
-</tr>
-<tr class="b">
-<td class="feature"> Input PDF files: </td>
-<td> <strong>Yes</strong> </td>
-</tr>
-<tr class="a">
-<td class="feature"> Direct scanner input: </td>
-<td> <strong>No</strong> (Lack of open-source
-twain interface) </td>
-</tr>
-<tr>
-<td> <br />
-</td>
-</tr>
-<tr>
-<td rowspan="10" class="feature-domain">
-Processing </td>
-</tr>
-<tr class="a">
-<td class="feature"> Support for handwritten scores:
-</td>
-<td> <strong>No</strong> </td>
-</tr>
-<tr class="b">
-<td class="feature"> Number of pages per score: </td>
-<td> <strong>One</strong> (Improvement is
-planned) </td>
-</tr>
-<tr class="a">
-<td class="feature"> Number of staves per system: </td>
-<td> <strong>Any</strong> (And can vary
-between systems) </td>
-</tr>
-<tr class="b">
-<td class="feature"> Number of lines per staff: </td>
-<td> <strong>5</strong> </td>
-</tr>
-<tr class="a">
-<td class="feature"> Support for tablatures: </td>
-<td> <strong>No</strong> </td>
-</tr>
-<tr class="b">
-<td class="feature"> Number of voices per measure: </td>
-<td> <strong>Any</strong> </td>
-</tr>
-<tr class="a">
-<td class="feature"> Customizable parameters: </td>
-<td> <strong>Yes</strong> For detailed tuning
-via user interface </td>
-</tr>
-<tr class="b">
-<td class="feature"> Integrated learning: </td>
-<td> <strong>Yes</strong> To train on specific
-symbol shapes </td>
-</tr>
-<tr class="a">
-<td class="feature"> User plugins: </td>
-<td> <strong>Yes</strong> To allow user
-extensions </td>
-</tr>
-<tr>
-<td> <br />
-</td>
-</tr>
-<tr>
-<td rowspan="4" class="feature-domain">
-Output </td>
-</tr>
-<tr class="a">
-<td class="feature"> MusicXML file: </td>
-<td> <strong>Yes</strong> Using MusicXML
-version 2.0 </td>
-</tr>
-<tr class="b">
-<td class="feature"> Integrated playback: </td>
-<td> <strong>Yes</strong> At score level and
-at measure level </td>
-</tr>
-<tr class="a">
-<td class="feature"> MIDI file: </td>
-<td> <strong>Yes</strong> </td>
-</tr>
-</tbody>
-</table>
-<h3> <a name="Foreseen-Contributions" id="Foreseen-Contributions">Foreseen Contributions</a>
-</h3>
-<ul>
-<li>Implement the connection with Tesseract OCR for <strong>Mac OS</strong>.</li><li>Re-engineer the application on top of NetBeans Platform.</li>
+        <h1 class="title">
+            Audiveris Music Scanner
+        </h1>
+        <div class="donemessage">
+            <p>
+                Audiveris is a complete music scanner going all the way from the scanned music sheet input to the
+                MusicXML output.
+            </p>
+            <p class="c1">
+                Latest informations: 
 
-<li>Use NetBeans <strong>Visual Library</strong>&nbsp;to
-implement a much better score display, providing the ability to move and resize individual items. </li>
-<li>Integrate with a <strong>Visual Music Editor</strong>
-via MusicXML for manual correction, for printing, etc. </li>
+            </p>
+            <ul>
+                <li>The latest release is <strong>Version 3.3</strong>  whose main new feature is the
+                ability to inject entities directly into the score structure via drag and drop from a shape palette.
+                </li>
+                <li>
+                    <a href="mailto:chewi@aura-online.co.uk">James Le Cuirot</a> has made the Tesseract OCR features
+                    work consistently under both Windows and Linux. Sorry, we have yet no access to
+                    <strong>Mac OS <span class="c2">platform, and we would appreciate contribution
+                    there.</span></strong>
 
-</ul>
-</div>
-<!-- --><!-- =============== --><!-- MATERIAL COLUMN --><!-- =============== -->
-<div id="material-column">
-<h3> Exported MusicXML </h3>
-<script type="text/javascript">
+                </li>
+                <li>
+                    <strong><span class="c2"><a href="mailto:omr@viro.name">Vladimir Viro</a> has set up an impressive
+                    testbed for OMR engines with thousands of inputs from the Petrucci Music Library. This environment
+                    will greatly help us improve the recognition ratio of Audiveris.<a href=
+                    "http://omr.viro.name/"></a></span></strong>
+                </li>
+                <li>
+                    <span class="c2"><a href="mailto:andi@xenoage.com">Andreas Wenger</a> has provided <a href=
+                    "http://www.xenoage.com/zongplayer.html">Zong!</a>, his new MusicXML player still in beta stage,
+                    directly integrated with Audiveris.<br /></span>
+
+                </li>
+            </ul><span class="c3">Note on project hosting:</span><br />
+            <div class="c7">
+                <span class="c4">Audiveris has long been hosted on Java.Net and migrated to Kenai a few months ago.
+                Only the mailing list is still active on Java.Net to keep the set of registered members and provide
+                easy browsing of the existing list archive. Oracle intends to re-implement Java.Net on top of Kenai
+                infrastructure, so one day everything will be back on Java.Net.</span><br class="c5" />
+                <span class="c4">For the time being please provide any feedback on</span> <a class="c6" href=
+                "mailto:users@audiveris.dev.java.net">users@audiveris.dev.java.net</a> <span class="c4">mailing list,
+                in the form of suggestions or bug reports (if possible please attach the scanned image to your report,
+                to help us analyze the program behavior).</span>
+
+            </div>
+        </div>
+        <p>
+            <img src="docs/images/chula-score.png" alt="Audiveris main window" />
+        </p><!-- --><!-- ============== --><!-- PROJECT COLUMN --><!-- ============== -->
+        <div id="project-column">
+            <h3>
+                Project Management
+            </h3>
+
+            <p>
+                On <a href="http://kenai.com/projects/audiveris/">http://kenai.com/projects/audiveris/</a> you'll find
+                all related management features (source code, wiki, [mailing list], download area, issue tracking,
+                etc).
+            </p>
+            <h3>
+                Project Goals
+            </h3>
+            <p>
+                <strong>Audiveris</strong> is an <strong>Optical Music Recognition</strong> (OMR) module. Starting from
+                the image of a music sheet, it provides high-level logical music information compliant with the
+                MusicXML definition. Other tools such as a Midi Sequencer, or a Composition Editor can then read and
+                update this data.
+            </p>
+
+            <p>
+                There are already commercial tools in this area but Audiveris is, to our knowledge, the only
+                open-source OMR tool. It is a cross-platform tool, written in Java, and tested on Windows and
+                Linux. Mac OS would require a volunteer.
+            </p>
+            <p>
+                Audiveris works with printed music sheets only, the task of recognizing hand-written scores being
+                significantly harder.
+            </p>
+            <h3>
+                Main Features
+            </h3>
+            <table width="100%">
+
+                <tbody>
+                    <tr>
+                        <td rowspan="4" class="feature-domain">
+                            Input
+                        </td>
+                    </tr>
+                    <tr class="a">
+                        <td class="feature">
+                            Input image formats:
+                        </td>
+
+                        <td>
+                            <strong>All major formats:</strong> gif, png, tiff, bmp, etc.
+                        </td>
+                    </tr>
+                    <tr class="b">
+                        <td class="feature">
+                            Input PDF files:
+                        </td>
+                        <td>
+
+                            <strong>Yes</strong>
+                        </td>
+                    </tr>
+                    <tr class="a">
+                        <td class="feature">
+                            Direct scanner input:
+                        </td>
+                        <td>
+                            <strong>No</strong> (Lack of open-source twain interface)
+                        </td>
+
+                    </tr>
+                    <tr>
+                        <td>
+                            <br />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td rowspan="10" class="feature-domain">
+                            Processing
+                        </td>
+
+                    </tr>
+                    <tr class="a">
+                        <td class="feature">
+                            Support for handwritten scores:
+                        </td>
+                        <td>
+                            <strong>No</strong>
+                        </td>
+                    </tr>
+
+                    <tr class="b">
+                        <td class="feature">
+                            Number of pages per score:
+                        </td>
+                        <td>
+                            <strong>One</strong> (Improvement is planned)
+                        </td>
+                    </tr>
+                    <tr class="a">
+
+                        <td class="feature">
+                            Number of staves per system:
+                        </td>
+                        <td>
+                            <strong>Any</strong> (And can vary between systems)
+                        </td>
+                    </tr>
+                    <tr class="b">
+                        <td class="feature">
+
+                            Number of lines per staff:
+                        </td>
+                        <td>
+                            <strong>5</strong>
+                        </td>
+                    </tr>
+                    <tr class="a">
+                        <td class="feature">
+                            Support for tablatures:
+                        </td>
+
+                        <td>
+                            <strong>No</strong>
+                        </td>
+                    </tr>
+                    <tr class="b">
+                        <td class="feature">
+                            Number of voices per measure:
+                        </td>
+                        <td>
+
+                            <strong>Any</strong>
+                        </td>
+                    </tr>
+                    <tr class="a">
+                        <td class="feature">
+                            Customizable parameters:
+                        </td>
+                        <td>
+                            <strong>Yes</strong> For detailed tuning via user interface
+                        </td>
+
+                    </tr>
+                    <tr class="b">
+                        <td class="feature">
+                            Integrated learning:
+                        </td>
+                        <td>
+                            <strong>Yes</strong> To train on specific symbol shapes
+                        </td>
+                    </tr>
+
+                    <tr class="a">
+                        <td class="feature">
+                            User plugins:
+                        </td>
+                        <td>
+                            <strong>Yes</strong> To allow user extensions
+                        </td>
+                    </tr>
+                    <tr>
+
+                        <td>
+                            <br />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td rowspan="4" class="feature-domain">
+                            Output
+                        </td>
+                    </tr>
+
+                    <tr class="a">
+                        <td class="feature">
+                            MusicXML file:
+                        </td>
+                        <td>
+                            <strong>Yes</strong> Using MusicXML version 2.0
+                        </td>
+                    </tr>
+                    <tr class="b">
+
+                        <td class="feature">
+                            Integrated playback:
+                        </td>
+                        <td>
+                            <strong>Yes</strong> At score level and at measure level
+                        </td>
+                    </tr>
+                    <tr class="a">
+                        <td class="feature">
+
+                            MIDI file:
+                        </td>
+                        <td>
+                            <strong>Yes</strong>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <h3>
+
+                <a name="Foreseen-Contributions" id="Foreseen-Contributions">Foreseen Contributions</a>
+            </h3>
+            <ul>
+                <li>Implement the connection with Tesseract OCR for <strong>Mac OS</strong>.
+                </li>
+                <li>Re-engineer the application on top of NetBeans Platform.
+                </li>
+                <li>Use NetBeans <strong>Visual Library</strong> to implement a much better score display,
+                providing the ability to move and resize individual items.
+                </li>
+
+                <li>Integrate with a <strong>Visual Music Editor</strong> via MusicXML for manual correction, for
+                printing, etc.
+                </li>
+            </ul>
+        </div><!-- --><!-- =============== --><!-- MATERIAL COLUMN --><!-- =============== -->
+        <div id="material-column">
+            <h3>
+                Exported MusicXML
+            </h3><script type="text/javascript">
 //<![CDATA[
-if (document.title != "Audiveris Home Page")
-document.write("<iframe src='nonav/docs/manual/chula.xml.html' width='100%' height='200' frameborder='0'><\/iframe>");
-else
-document.write("<iframe src='docs/manual/chula.xml.html' width='100%' height='200' frameborder='0'><\/iframe>");
-//]]>
-</script>
-<h3> Download </h3>
-<div class="filebrowse">
-<ul>
-<li class="leafnode"> <a href="http://kenai.com/projects/audiveris/downloads">
-Download area</a>: The latest stable release is provided in a
-single distribution, combining binaries and user documentation, as well
-as source code, build procedures, Javadoc, and training material. </li>
-<li class="leafnode"> <a href="http://kenai.com/projects/audiveris/sources">
-Hg repository</a>: For the very latest version of any software
-item. </li>
-</ul>
-</div>
-<h3> <a name="INSTALLATION" id="INSTALLATION">Installation</a>
-</h3>
-<ol>
-<li>Just extract the distribution zip file in the directory of
-your choice. The Audiveris main jar file is located in the <strong>dist</strong>
-sub-folder. </li>
-<li>Run the program:
-<ul>
-<li>Launch the program by a double-click on the jar file,
-or use a CLI command such as:<br />
-<code>java -jar <i>&lt;install-dir&gt;</i>/dist/audiveris-3.3.jar</code>
-</li>
-<li>You can also use the command line, and run the <strong>audiveris.bat</strong> file. Doing so, the program is launched with more memory, resulting in much faster processing. </li>
-</ul>
-</li>
-</ol>
-<p style="margin-left: 40px;"> <strong><span style="font-weight: bold;">
-            Important notice for Windows</span></strong>: You need the Microsoft C/C++ 2008 runtime.
-            If you don't have it installed already, simply download and run the
-            <a href="http://www.microsoft.com/downloads/details.aspx?familyid=a5c84275-3b97-4ab7-a40d-3802b2af5fc2&displaylang=en">Microsoft Visual C++ 2008 SP1 Redistributable Package (x86)</a>
-           </p>
+            if (document.title != "Audiveris Home Page")
+            document.write("<iframe src='nonav/docs/manual/chula.xml.html' width='100%' height='200' frameborder='0'><\/iframe>");
+            else
+            document.write("<iframe src='docs/manual/chula.xml.html' width='100%' height='200' frameborder='0'><\/iframe>");
+            //]]>
+            </script>
 
-<h3> Documentation </h3>
-<div class="filebrowse">
-<script type="text/javascript">
+            <h3>
+                Download
+            </h3>
+            <div class="filebrowse">
+                <ul>
+                    <li class="leafnode">
+                        <a href="http://kenai.com/projects/audiveris/downloads">Download area</a>: The latest stable
+                        release is provided in a single distribution, combining binaries and user documentation, as
+                        well as source code, build procedures, Javadoc, and training material.
+                    </li>
+                    <li class="leafnode">
+
+                        <a href="http://kenai.com/projects/audiveris/sources">Hg repository</a>: For the very latest
+                        version of any software item.
+                    </li>
+                </ul>
+            </div>
+            <h3>
+                <a name="INSTALLATION" id="INSTALLATION">Installation</a>
+            </h3>
+            <ol>
+
+                <li>Just extract the distribution zip file in the directory of your choice. The Audiveris main jar file
+                is located in the <strong>dist</strong> sub-folder.
+                </li>
+                <li>Run the program:
+                    <ul>
+                        <li>Launch the program by a double-click on the jar file, or use a CLI command such as:<br />
+
+                            <code>java -jar <i>&lt;install-dir&gt;</i>/dist/audiveris-3.3.jar</code>
+
+                        </li>
+                        <li>You can also use the command line, and run the <strong>audiveris.bat</strong> file. Doing
+                        so, the program is launched with more memory, resulting in much faster processing.
+                        </li>
+                    </ul>
+                </li>
+            </ol>
+            <p class="c8">
+                <strong><span class="c3">Important notice for Windows</span></strong>: You need the Microsoft C/C++
+                2008 runtime. If you don't have it installed already, simply download and run the <a href=
+                "http://www.microsoft.com/downloads/details.aspx?familyid=a5c84275-3b97-4ab7-a40d-3802b2af5fc2&amp;displaylang=en">
+                Microsoft Visual C++ 2008 SP1 Redistributable Package (x86)</a>
+            </p>
+            <p class="c8">
+                <strong><span class="c3">For Linux</span></strong>: Download the source of tesjeract interface from <a href="http://code.google.com/p/tesjeract/">http://code.google.com/p/tesjeract/</a> and build the software according to the provided instructions.
+            </p>
+            <h3>
+                Documentation
+            </h3>
+            <div class="filebrowse">
+                <script type="text/javascript">
 //<![CDATA[
-document.write(mynonav("docs/manual/index.html?manual=releases", "Release notes"));
-document.write(mynonav("docs/manual/index.html?manual=installation", "Installation"));
-document.write(mynonav("docs/manual/index.html?manual=example", "Quick example"));
-document.write(mynonav("docs/manual/index.html?manual=operation", "Operation"));
-document.write(mynonav("docs/manual/index.html?manual=design", "Design"));
-document.write(mynonav("docs/manual/index.html?manual=implementation", "Implementation"));
-document.write(mynonav("docs/wiki/notebook.html", "Notes"));
-document.write(mynonav("docs/api/index.html", "JavaDoc API"));
-//]]>
-</script>
-</div>
-<br />
-<br />
-</div>
-<script type="text/javascript">
-var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-</script>
-<script type="text/javascript">
-try {
-var pageTracker = _gat._getTracker("UA-11988874-1");
-pageTracker._trackPageview();
-} catch(err) {}
-</script>
-</body></html>
+                document.write(mynonav("docs/manual/index.html?manual=releases", "Release notes"));
+                document.write(mynonav("docs/manual/index.html?manual=installation", "Installation"));
+                document.write(mynonav("docs/manual/index.html?manual=example", "Quick example"));
+                document.write(mynonav("docs/manual/index.html?manual=operation", "Operation"));
+                document.write(mynonav("docs/manual/index.html?manual=design", "Design"));
+                document.write(mynonav("docs/manual/index.html?manual=implementation", "Implementation"));
+                document.write(mynonav("docs/wiki/notebook.html", "Notes"));
+                document.write(mynonav("docs/api/index.html", "JavaDoc API"));
+                //]]>
+                </script>
+            </div><br />
+
+            <br />
+        </div><script type="text/javascript">
+//<![CDATA[
+        var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+        document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+        //]]>
+        </script><script type="text/javascript">
+//<![CDATA[
+        try {
+        var pageTracker = _gat._getTracker("UA-11988874-1");
+        pageTracker._trackPageview();
+        } catch(err) {}
+        //]]>
+        </script>
+    </body>
+</html>

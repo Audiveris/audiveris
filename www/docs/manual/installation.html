@@ -1,15 +1,20 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><!--  $Id$  -->
-        
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <!--  $Id$  -->
         <meta http-equiv="CONTENT-TYPE" content="text/html; charset=us-ascii" />
-        
-        <title>Audiveris Installation Manual</title><meta name="AUTHOR" content="Herv&#195;&#169; Bitteur" />
+        <title>
+            Audiveris Installation Manual
+        </title>
+        <meta name="AUTHOR" content="Herv&Atilde;&copy; Bitteur" />
         <meta name="CREATED" content="20050429;15271809" />
         <meta name="CLASSIFICATION" content="Procedure for Audiveris installation" />
 
-        <meta name="DESCRIPTION" content="How to retrieve the Audiveris software and how to install it on your environment" /><!-- The following links are meant to be solved on my local PC --><!-- The java.net site uses its own style sheets -->
-        
-        
+        <meta name="DESCRIPTION" content=
+        "How to retrieve the Audiveris software and how to install it on your environment" />
+        <!-- The following links are meant to be solved on my local PC -->
+        <!-- The java.net site uses its own style sheets -->
         <link rel="stylesheet" type="text/css" href="../../branding/css/tigris.css" />
         <link rel="stylesheet" type="text/css" href="../../branding/css/inst.css" />
         <script type="text/javascript" src="util.js">
@@ -19,50 +24,55 @@
         h1.c1 {text-align: center}
         h2 {background-color: #d4e4b4 ;}
         /*]]>*/
-        </style></head>
+        </style>
+        <style type="text/css">
+/*<![CDATA[*/
+        span.c3 {font-weight: bold; font-style: italic; text-decoration: underline;}
+        strong.c2 {font-weight: normal;}
+        span.c1 {font-weight: bold;}
+        /*]]>*/
+        </style>
 
+    </head>
     <body class="app">
         <h1 class="c1">
             Audiveris Installation Manual
         </h1>
         <h2>
-
             <a name="DOWNLOAD" id="DOWNLOAD">Downloading Audiveris software</a>
         </h2>
         <p>
-            The latest version is always available on the <a href="http://kenai.com/projects/audiveris/downloads">
-            Audiveris download area</a> on Kenai site.
-        </p>
-        <p>
-            There is now one single distribution per release which, besides the
-            binary components and user manuals, provides source code, JavaDoc,
-            build procedures, training material, etc. Example:&nbsp;audiveris-3.3-full-20100519.zip
-        </p>
 
+            The latest version is always available on the <a href=
+            "http://kenai.com/projects/audiveris/downloads">Audiveris download area</a> on Kenai site.
+        </p>
         <p>
-            Just download the latest distribution (about 30MB) and expand this archive into some
-            local directory on your computer.
+            There is now one single distribution per release which, besides the binary components and user manuals,
+            provides source code, JavaDoc, build procedures, training material, etc. Example:
+            audiveris-3.3-full-20100519.zip
+        </p>
+        <p>
+            Just download the latest distribution (about 30MB) and expand this archive into some local directory on
+            your computer.
         </p>
         <h2>
+
             <a name="REQUIREMENTS" id="REQUIREMENTS">System Requirements</a>
         </h2>
         <ul>
             <li>
-                <b>OS</b>: Audiveris is essentially a Java application, and as
-                such should be usable on a wide variety of platforms. It is
-                today being developed under <b>Windows</b> and&nbsp;<b>Linux</b>. It has run on <span style="font-weight: bold;">Mac&nbsp;OS</span>
-for some time, but the connection to Tesseract is not yet implemented
-for this platform.&nbsp; Since release 3.2a, Audiveris uses <strong>Google Tesseract OCR</strong> for the translation
-                    of textual glyphs. Tesseract was developed in C++ and is
-                    OS-dependent.
+                <b>OS</b>: Audiveris is essentially a Java application, and as such should be usable on a wide variety
+                of platforms. It is today being developed under <b>Windows</b> and <b>Linux</b>. It has run on
+                <span class="c1">Mac OS</span> for some time, but the connection to Tesseract is not yet implemented
+                for this platform. Since release 3.2a, Audiveris uses <strong>Google Tesseract OCR</strong> for the
+                translation of textual glyphs. Tesseract was developed in C++ and is OS-dependent.
             </li>
+
             <li>
-                <b>Java</b>: <b>Java&nbsp;6</b> is highly recommended since it
-                already contains the <b>JAXB&nbsp;2</b> component which is
-                needed for XML persistency. If you cannot use Java 6, you can
-                use <b>Java&nbsp;5</b> but you will have to download
-                <b>JAXB&nbsp;2</b> from the <a href="https://jaxb.dev.java.net/">JAXB web site</a> and install it
-                on your own.
+                <b>Java</b>: <b>Java 6</b> is highly recommended since it already contains the <b>JAXB 2</b> component
+                which is needed for XML persistency. If you cannot use Java 6, you can use <b>Java 5</b> but you will
+                have to download <b>JAXB 2</b> from the <a href="https://jaxb.dev.java.net/">JAXB web site</a> and
+                install it on your own.
             </li>
 
         </ul>
@@ -74,33 +84,32 @@ for this platform.&nbsp; Since release 3.2a, Audiveris uses <strong>Google Tesse
         </h3>
         <p>
 
-            Tesseract OCR is a C++ program and Audiveris is a Java application.
-            For the time being, the JNI connection between Audiveris and Tesseract
-            has been implemented for Windows and Linux only.
+            Tesseract OCR is a C++ program and Audiveris is a Java application. For the time being, the JNI connection
+            between Audiveris and Tesseract has been implemented for Windows and Linux only.
         </p>
-        <ul><li>
-            For <strong>Windows</strong>
-environment, the Tesseract "tessdll.dll" component is used, via the
-Tesjeract Java companion. No specific installation is required, all the
-needed software&nbsp;comes with the full Audiveris distribution. In
-particular, you no longer need to install Microsoft C/C++ runtime, nor
-define the <strong style="font-weight: normal;">TESSDATA_PREFIX variable.</strong>
-        </li><li>
-            For <span style="font-weight: bold;">Linux</span> environment, [[[<span style="font-weight: bold; font-style: italic; text-decoration: underline;">wait for James indications</span>]]]
-        </li></ul>
-        
-        
-        <h3>
-            <a name="OTHER_COMPONENTS" id="OTHER_COMPONENTS">Other
-            components</a>
-        </h3>
+        <ul>
+            <li>For <strong>Windows</strong> environment, the Tesseract "tessdll.dll" component is used, via the
+            Tesjeract Java companion. You still need the Microsoft C/C++ runtime, that you can install by running the
+            vcredist_x86.exe installer downloadable from <a href=
+            "http://www.microsoft.com/downloads/details.aspx?FamilyID=a5c84275-3b97-4ab7-a40d-3802b2af5fc2&amp;displaylang=en">
+                Microsoft Visual C++ 2008 SP1 Redistributable Package (x86)</a>. Note that uou no longer need to define
+                the TESSDATA_PREFIX variable.
+            </li>
+            <li>For <span class="c1">Linux</span> environment, download the tesjeract source from <a href=
+            "http://code.google.com/p/tesjeract/">http://code.google.com/p/tesjeract/</a> and follow the provided
+            instructions to build this interface.
+            </li>
 
+        </ul>
+        <h3>
+            <a name="OTHER_COMPONENTS" id="OTHER_COMPONENTS">Other components</a>
+        </h3>
         <p>
-            All the other components need no special installation procedure,
-            since their jar files are already provided in the
-            <strong>dist/lib</strong> folder of the Audiveris installation
-            directory and directly referenced from the manifest of the
-            Audiveris jar file. See the Implementation manual if you need more
-            detailed information on these components.
+            All the other components need no special installation procedure, since their jar files are already provided
+            in the <strong>dist/lib</strong> folder of the Audiveris installation directory and directly referenced
+            from the manifest of the Audiveris jar file. See the Implementation manual if you need more detailed
+            information on these components.
         </p>
-    </body></html>
+
+    </body>
+</html>
