@@ -313,10 +313,14 @@ public class Note
     public static int getTypeDuration (Shape shape)
     {
         switch (baseShapeOf(shape)) {
+        case LONG_REST : // 4 measures
+            return 16 * QUARTER_DURATION;
+
+        case BREVE_REST : // 2 measures
         case BREVE :
             return 8 * QUARTER_DURATION;
 
-        case WHOLE_REST :
+        case WHOLE_REST : // 1 measure
         case WHOLE_NOTE :
             return 4 * QUARTER_DURATION;
 
