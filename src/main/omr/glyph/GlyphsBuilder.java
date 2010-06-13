@@ -137,11 +137,6 @@ public class GlyphsBuilder
         // Insert in lag, which assigns an id to the glyph
         Glyph oldGlyph = vLag.addGlyph(glyph);
 
-        if (oldGlyph != glyph) {
-            // Perhaps some members to carry over (TODO: check this!)
-            oldGlyph.copyStemInformation(glyph);
-        }
-
         system.addToGlyphsCollection(oldGlyph);
 
         return oldGlyph;
