@@ -610,6 +610,11 @@ public class ScoreExporter
             logger.fine("Visiting " + dynamics);
         }
 
+        // No point to export incorrect dynamics
+        if (dynamics.getShape() == null) {
+            return false;
+        }
+
         try {
             Direction direction = factory.createDirection();
             current.pmMeasure.getNoteOrBackupOrForward()
