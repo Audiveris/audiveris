@@ -67,7 +67,6 @@ public class GlyphInspector
     private final int    minCloseStemOverlap;
     private final int    maxCloseStemLength;
     private final int    maxNaturalOverlap;
-    private final int    maxSharpNonOverlap;
     private final double alterMaxDoubt;
 
     // Constants for clef verification
@@ -99,7 +98,6 @@ public class GlyphInspector
         minCloseStemOverlap = scale.toPixels(constants.minCloseStemOverlap);
         maxCloseStemLength = scale.toPixels(constants.maxCloseStemLength);
         maxNaturalOverlap = scale.toPixels(constants.maxNaturalOverlap);
-        maxSharpNonOverlap = scale.toPixels(constants.maxSharpNonOverlap);
         alterMaxDoubt = constants.alterMaxDoubt.getValue();
 
         clefHalfWidth = scale.toPixels(constants.clefHalfWidth);
@@ -248,6 +246,9 @@ public class GlyphInspector
      */
     public int runAlterPattern ()
     {
+        final AlterAdapter     sharpAdapter = new SharpAdapter(system);
+        final AlterAdapter     naturalAdapter = new NaturalAdapter(system);
+
         // First retrieve the collection of all stems in the system
         // Ordered naturally by their abscissa
         final SortedSet<Glyph> stems = Glyphs.sortedSet();
@@ -309,19 +310,35 @@ public class GlyphInspector
                 glyph.setShape(null);
                 other.setShape(null);
 
-                boolean success = false;
+                AlterAdapter adapter = null;
 
                 if (overlap <= maxNaturalOverlap) {
-                    // TODO: implement this case !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                    //                    logger.info(
-                    //                        "Natural glyph rebuilt as #" + compound.getId());
-                    //                    success = true;
+                    if (logger.isFineEnabled()) {
+                        logger.fine("NATURAL sign?");
+                    }
+
+                    adapter = naturalAdapter;
                 } else {
-                    success = checkSharp(lBox, rBox);
+                    if (logger.isFineEnabled()) {
+                        logger.fine("SHARP sign?");
+                    }
+
+                    adapter = sharpAdapter;
                 }
 
-                if (success) {
+                // Prepare the adapter with proper stem boxes
+                adapter.setStemBoxes(lBox, rBox);
+
+                Glyph compound = compoundBuilder.buildCompound(
+                    glyph,
+                    system.getGlyphs(),
+                    adapter);
+
+                if (compound != null) {
                     successNb++;
+                    logger.info(
+                        "Compound #" + compound.getId() + " rebuilt as " +
+                        compound.getShape());
                 } else {
                     // Restore stem shapes
                     glyph.setShape(Shape.COMBINING_STEM);
@@ -567,79 +584,6 @@ public class GlyphInspector
         return false;
     }
 
-    //------------//
-    // checkSharp //
-    //------------//
-    /**
-     * Check if, around the two (stem) boxes, there is actually a sharp sign
-     * @param lbox contour box of left stem
-     * @param rBox contour box of right stem
-     * @return true if successful
-     */
-    private boolean checkSharp (PixelRectangle lBox,
-                                PixelRectangle rBox)
-    {
-        final int lX = lBox.x + (lBox.width / 2);
-        final int rX = rBox.x + (rBox.width / 2);
-        final int dyTop = Math.abs(lBox.y - rBox.y);
-        final int dyBot = Math.abs(
-            (lBox.y + lBox.height) - rBox.y - rBox.height);
-
-        if ((dyTop <= maxSharpNonOverlap) && (dyBot <= maxSharpNonOverlap)) {
-            if (logger.isFineEnabled()) {
-                logger.fine("SHARP sign?");
-            }
-
-            final int            halfWidth = (3 * maxCloseStemDx) / 2;
-            final int            hMargin = minCloseStemOverlap / 2;
-            final PixelRectangle box = new PixelRectangle(
-                ((lX + rX) / 2) - halfWidth,
-                Math.min(lBox.y, rBox.y) - hMargin,
-                2 * halfWidth,
-                Math.max(lBox.y + lBox.height, rBox.y + rBox.height) -
-                Math.min(lBox.y, rBox.y) + (2 * hMargin));
-
-            if (logger.isFineEnabled()) {
-                logger.fine("outerBox: " + box);
-            }
-
-            // Look for glyphs in this outer box
-            final Set<Glyph> glyphs = lag.lookupGlyphs(system.getGlyphs(), box);
-            Glyphs.purgeManualShapes(glyphs);
-
-            if (glyphs.isEmpty()) {
-                return false;
-            }
-
-            Glyph compound = system.buildTransientCompound(glyphs);
-            system.computeGlyphFeatures(compound);
-
-            final Evaluation[] votes = GlyphNetwork.getInstance()
-                                                   .getEvaluations(compound);
-
-            // Check if a sharp appears in the top evaluations
-            for (Evaluation vote : votes) {
-                if (vote.doubt > alterMaxDoubt) {
-                    break;
-                }
-
-                if (vote.shape == Shape.SHARP) {
-                    compound = system.addGlyph(compound);
-                    compound.setShape(vote.shape, Evaluation.ALGORITHM);
-
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            "SHARP rebuilt as glyph#" + compound.getId());
-                    }
-
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
     //-----------//
     // foundClef //
     //-----------//
@@ -748,7 +692,6 @@ public class GlyphInspector
 
                 return true;
             } else {
-
                 return false;
             }
         }
@@ -775,6 +718,9 @@ public class GlyphInspector
     //-------------//
     // BassAdapter //
     //-------------//
+    /**
+     * This is the compound adapter meant to build bass clefs
+     */
     private class BassAdapter
         extends CompoundBuilder.TopShapeAdapter
     {
@@ -847,11 +793,8 @@ public class GlyphInspector
         Scale.Fraction   maxCloseStemDx = new Scale.Fraction(
             0.7d,
             "Maximum horizontal distance for close stems");
-        Scale.Fraction   maxSharpNonOverlap = new Scale.Fraction(
-            1d,
-            "Maximum vertical non overlap for sharp stems");
         Scale.Fraction   maxNaturalOverlap = new Scale.Fraction(
-            1.5d,
+            2.0d,
             "Maximum vertical overlap for natural stems");
         Scale.Fraction   minCloseStemOverlap = new Scale.Fraction(
             0.5d,
@@ -875,5 +818,118 @@ public class GlyphInspector
         Evaluation.Doubt hookMaxDoubt = new Evaluation.Doubt(
             5d,
             "Maximum doubt for beam hook verification");
+    }
+
+    //--------------//
+    // AlterAdapter //
+    //--------------//
+    /**
+     * Abstract compound adapter meant to build sharps or naturals
+     */
+    private abstract class AlterAdapter
+        extends CompoundBuilder.TopShapeAdapter
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        protected PixelRectangle lBox;
+        protected PixelRectangle rBox;
+
+        //~ Constructors -------------------------------------------------------
+
+        public AlterAdapter (SystemInfo     system,
+                             EnumSet<Shape> shapes)
+        {
+            super(system, alterMaxDoubt, shapes);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public boolean isCandidateSuitable (Glyph glyph)
+        {
+            return !glyph.isManualShape();
+        }
+
+        @Override
+        public boolean isGlyphClose (PixelRectangle box,
+                                     Glyph          glyph)
+        {
+            return box.contains(glyph.getContourBox());
+        }
+
+        public void setStemBoxes (PixelRectangle lBox,
+                                  PixelRectangle rBox)
+        {
+            this.lBox = lBox;
+            this.rBox = rBox;
+        }
+
+        protected PixelRectangle getStemsBox ()
+        {
+            if ((lBox == null) || (rBox == null)) {
+                throw new NullPointerException("Stem boxes have not been set");
+            }
+
+            PixelRectangle box = new PixelRectangle(lBox);
+            box.add(rBox);
+
+            return box;
+        }
+    }
+
+    //----------------//
+    // NaturalAdapter //
+    //----------------//
+    /**
+     * Compound adapter meant to build naturals
+     */
+    private class NaturalAdapter
+        extends AlterAdapter
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public NaturalAdapter (SystemInfo system)
+        {
+            super(system, EnumSet.of(Shape.NATURAL));
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public PixelRectangle getIntersectionBox ()
+        {
+            PixelRectangle box = getStemsBox();
+            box.grow(maxCloseStemDx / 4, minCloseStemOverlap / 2);
+
+            return box;
+        }
+    }
+
+    //--------------//
+    // SharpAdapter //
+    //--------------//
+    /**
+     * Compound adapter meant to build sharps
+     */
+    private class SharpAdapter
+        extends AlterAdapter
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public SharpAdapter (SystemInfo system)
+        {
+            super(system, EnumSet.of(Shape.SHARP));
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public PixelRectangle getIntersectionBox ()
+        {
+            PixelRectangle box = getStemsBox();
+            box.grow(maxCloseStemDx / 2, minCloseStemOverlap / 2);
+
+            return box;
+        }
     }
 }

@@ -81,17 +81,13 @@ public class CompoundBuilder
         PixelRectangle box = adapter.getIntersectionBox();
 
         // Retrieve good neighbors among the suitable glyphs
-        List<Glyph>    neighbors = new ArrayList<Glyph>();
+        Set<Glyph>     neighbors = new HashSet<Glyph>();
 
         // Include the seed in the compound glyphs
         neighbors.add(seed);
 
         for (Glyph g : suitables) {
-            if (!adapter.isCandidateSuitable(g)) {
-                continue;
-            }
-
-            if (box.intersects(g.getContourBox())) {
+            if (adapter.isCandidateSuitable(g) && adapter.isGlyphClose(box, g)) {
                 neighbors.add(g);
             }
         }
@@ -117,6 +113,7 @@ public class CompoundBuilder
                     adapter.getChosenEvaluation().shape)) {
                     // Assign and insert into system & lag environments
                     compound = system.addGlyph(compound);
+                    system.computeGlyphFeatures(compound);
                     compound.setEvaluation(adapter.getChosenEvaluation());
 
                     if (logger.isFineEnabled()) {
@@ -175,6 +172,16 @@ public class CompoundBuilder
          * getChosenEvaluation() method.
          */
         boolean isCompoundValid (Glyph compound);
+
+        /**
+         * Predicate to check whether a given glyph is close enough to the
+         * provided compound box
+         * @param box the provided compound box
+         * @param glyph the glyph to check for proximity
+         * @return true if glyph is close enough
+         */
+        boolean isGlyphClose (PixelRectangle box,
+                              Glyph          glyph);
 
         //--------------------//
         // getIntersectionBox //
@@ -238,6 +245,13 @@ public class CompoundBuilder
         public Evaluation getChosenEvaluation ()
         {
             return chosenEvaluation;
+        }
+
+        public boolean isGlyphClose (PixelRectangle box,
+                                     Glyph          glyph)
+        {
+            // By default, we use box intersection
+            return box.intersects(glyph.getContourBox());
         }
 
         public void setSeed (Glyph seed)
