@@ -206,6 +206,8 @@ public class Sheet
         } catch (IOException ex) {
             logger.warning(ex.toString(), ex);
         }
+
+        createAssembly();
     }
 
     /**
@@ -222,6 +224,8 @@ public class Sheet
         }
 
         this.imageUrl = imageUrl;
+
+        createAssembly();
     }
 
     private Sheet (String path)
@@ -238,12 +242,6 @@ public class Sheet
 
         // Related bench
         bench = new SheetBench(this, path);
-
-        // Update UI information if so needed
-        if (Main.getGui() != null) {
-            errorsEditor = new ErrorsEditor(this);
-            Main.getGui().sheetsController.showSheet(this);
-        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -1559,6 +1557,18 @@ public class Sheet
     public String toString ()
     {
         return "{Sheet " + getPath() + "}";
+    }
+
+    //----------------//
+    // createAssembly //
+    //----------------//
+    private void createAssembly ()
+    {
+        // Update UI information if so needed
+        if (Main.getGui() != null) {
+            errorsEditor = new ErrorsEditor(this);
+            Main.getGui().sheetsController.showSheet(this);
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------
