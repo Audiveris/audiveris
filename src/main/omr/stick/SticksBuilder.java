@@ -655,7 +655,7 @@ public class SticksBuilder
         }
 
         // Include only sections that are slim enough
-        if ((section.getRunNb() > 1) &&
+        if ((section.getRunNb() > 2) &&
             (section.getAspect() < minSectionAspect)) {
             mark(section, null, TOO_FAT, layer, direction);
 

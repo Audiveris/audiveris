@@ -644,6 +644,12 @@ public class SystemsBuilder
         Constant.Ratio draggingRatio = new Constant.Ratio(
             5.0,
             "Windox enlarging ratio when dragging a boundary reference point");
+
+        /** Maximum cotangent for checking a barline candidate */
+        Constant.Double maxCoTangentForCheck = new Constant.Double(
+            "cotangent",
+            0.1,
+            "Maximum cotangent for checking a barline candidate");
     }
 
     //--------------//
@@ -682,11 +688,14 @@ public class SystemsBuilder
                     Glyph                    entity = glyphEvent.getData();
 
                     if (entity instanceof Stick) {
-                        // To get a fresh suite
-                        setSuite(barsChecker.new BarCheckSuite());
-
                         Stick stick = (Stick) entity;
-                        context = new BarsChecker.GlyphContext(stick);
+
+                        // Make sure this is a rather vertical stick
+                        if (Math.abs(stick.getLine().getSlope()) <= constants.maxCoTangentForCheck.getValue()) {
+                            // To get a fresh suite
+                            setSuite(barsChecker.new BarCheckSuite());
+                            context = new BarsChecker.GlyphContext(stick);
+                        }
                     }
 
                     tellObject(context);
@@ -739,7 +748,7 @@ public class SystemsBuilder
         {
             int viewIndex = lag.viewIndexOf(this);
 
-            // Nonn recognized bar lines
+            // Non recognized bar lines
             for (Glyph glyph : lag.getAllGlyphs()) {
                 Stick stick = (Stick) glyph;
 

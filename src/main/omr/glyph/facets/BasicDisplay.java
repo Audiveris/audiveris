@@ -18,10 +18,9 @@ import omr.lag.Lag;
 import omr.lag.Section;
 import omr.lag.ui.SectionView;
 
-import java.awt.Color;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.Collection;
+import java.util.*;
 
 /**
  * Class {@code BasicDisplay} is the basic implementation of a display facet
@@ -32,6 +31,17 @@ class BasicDisplay
     extends BasicFacet
     implements GlyphDisplay
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    // Empty map always returned when there is no attachment
+    protected static Map<String, Rectangle> EMPTY_MAP = Collections.unmodifiableMap(
+        new HashMap<String, Rectangle>());
+
+    //~ Instance fields --------------------------------------------------------
+
+    // Map for potential attachments
+    protected Map<String, Rectangle> attachments;
+
     //~ Constructors -----------------------------------------------------------
 
     //--------------//
@@ -48,6 +58,18 @@ class BasicDisplay
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //----------------//
+    // getAttachments //
+    //----------------//
+    public Map<String, Rectangle> getAttachments ()
+    {
+        if (attachments != null) {
+            return Collections.unmodifiableMap(attachments);
+        } else {
+            return EMPTY_MAP;
+        }
+    }
 
     //----------//
     // getColor //
@@ -79,6 +101,19 @@ class BasicDisplay
         }
 
         return image;
+    }
+
+    //-----------------//
+    // addAttachment //
+    //-----------------//
+    public void addAttachment (String    id,
+                               Rectangle rectangle)
+    {
+        if (attachments == null) {
+            attachments = new HashMap<String, Rectangle>();
+        }
+
+        attachments.put(id, rectangle);
     }
 
     //----------//
@@ -138,6 +173,17 @@ class BasicDisplay
 
         // Draw the result
         Section.drawTable(table, box);
+    }
+
+    //------//
+    // dump //
+    //------//
+    @Override
+    public void dump ()
+    {
+        if (attachments != null) {
+            System.out.println("   attachments=" + getAttachments());
+        }
     }
 
     //------------//

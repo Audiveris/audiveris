@@ -130,6 +130,11 @@ public class BasicGlyph
         return geometry.getAreaCenter();
     }
 
+    public Map<String, Rectangle> getAttachments ()
+    {
+        return display.getAttachments();
+    }
+
     public boolean isBar ()
     {
         return recognition.isBar();
@@ -440,6 +445,12 @@ public class BasicGlyph
         return environment.isWithLedger();
     }
 
+    public void addAttachment (String    id,
+                               Rectangle rectangle)
+    {
+        display.addAttachment(id, rectangle);
+    }
+
     public void addGlyphSections (Glyph   other,
                                   Linking linkSections)
     {
@@ -548,7 +559,7 @@ public class BasicGlyph
     @Override
     public String toString ()
     {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
 
         sb.append("{")
           .append(getClass().getSimpleName())
@@ -582,7 +593,7 @@ public class BasicGlyph
      */
     protected String internalsString ()
     {
-        StringBuffer sb = new StringBuffer(25);
+        StringBuilder sb = new StringBuilder(25);
 
         if (getShape() != null) {
             sb.append(" ")
@@ -641,7 +652,7 @@ public class BasicGlyph
      * Register a facet
      * @param facet the facet to register
      */
-    void addFacet (GlyphFacet facet)
+    final void addFacet (GlyphFacet facet)
     {
         facets.add(facet);
     }

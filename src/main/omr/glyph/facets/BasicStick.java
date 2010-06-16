@@ -239,7 +239,7 @@ public class BasicStick
     @Override
     protected String internalsString ()
     {
-        StringBuffer sb = new StringBuffer(25);
+        StringBuilder sb = new StringBuilder(25);
         sb.append(super.internalsString());
 
         if (getResult() != null) {

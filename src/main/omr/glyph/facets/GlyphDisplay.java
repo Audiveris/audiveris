@@ -15,9 +15,9 @@ import omr.glyph.GlyphSection;
 
 import omr.lag.Lag;
 
-import java.awt.Color;
+import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.Collection;
+import java.util.*;
 
 /**
  * Interface {@code GlyphDisplay} defines the facet which handles the way a
@@ -29,6 +29,15 @@ interface GlyphDisplay
     extends GlyphFacet
 {
     //~ Methods ----------------------------------------------------------------
+
+    //----------------//
+    // getAttachments //
+    //----------------//
+    /**
+     * Report a map of attachments
+     * @return  a (perhaps empty) map of attachments
+     */
+    Map<String, Rectangle> getAttachments ();
 
     //----------//
     // getColor //
@@ -50,6 +59,18 @@ interface GlyphDisplay
      * @return a black & white image (contour box size )
      */
     BufferedImage getImage ();
+
+    //---------------//
+    // addAttachment //
+    //---------------//
+    /**
+     * Flag the glyph with a key and a rectangle. This is meant to add arbitrary
+     * rectangles to a glyph, mainly for display and analysis purposes.
+     * @param id the rectangle ID
+     * @param rectangle the rectangle to attach
+     */
+    void addAttachment (String    id,
+                        Rectangle rectangle);
 
     //----------//
     // colorize //

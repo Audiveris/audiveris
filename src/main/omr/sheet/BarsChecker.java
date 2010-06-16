@@ -31,6 +31,9 @@ import omr.lag.SectionsBuilder;
 
 import omr.log.Logger;
 
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
+
 import omr.step.StepException;
 
 import omr.util.Implement;
@@ -77,17 +80,21 @@ public class BarsChecker
     private static final FailureResult NOT_STAFF_ANCHORED = new FailureResult(
         "Bar-NotStaffAnchored");
 
-    /** Failure, since bar has too many glyphs stuck on it */
-    private static final FailureResult TOO_HIGH_ADJACENCY = new FailureResult(
-        "Bar-TooHighAdjacency");
+    /** Failure, since bar has a large chunk stuck on the top left */
+    private static final FailureResult TOP_LEFT_CHUNK = new FailureResult(
+        "Bar-TopLeftChunk");
 
-    /** Failure, since bar has a large chunk stuck at the top (a hote head?) */
-    private static final FailureResult CHUNK_AT_TOP = new FailureResult(
-        "Bar-ChunkAtTop");
+    /** Failure, since bar has a large chunk stuck on the top right */
+    private static final FailureResult TOP_RIGHT_CHUNK = new FailureResult(
+        "Bar-TopRightChunk");
 
-    /** Failure, since bar has a large chunk stuck at the bottom (a hote head?) */
-    private static final FailureResult CHUNK_AT_BOTTOM = new FailureResult(
-        "Bar-ChunkAtBottom");
+    /** Failure, since bar has a large chunk stuck on the bottom left */
+    private static final FailureResult BOTTOM_LEFT_CHUNK = new FailureResult(
+        "Bar-BottomLeftChunk");
+
+    /** Failure, since bar has a large chunk stuck on the bottom right */
+    private static final FailureResult BOTTOM_RIGHT_CHUNK = new FailureResult(
+        "Bar-BottomRightChunk");
 
     //~ Instance fields --------------------------------------------------------
 
@@ -353,10 +360,10 @@ public class BarsChecker
             add(1, new AnchorCheck());
             add(1, new LeftCheck());
             add(1, new RightCheck());
-            add(1, new TopChunkCheck());
-            add(1, new BottomChunkCheck());
-            add(1, new LeftAdjacencyCheck());
-            add(1, new RightAdjacencyCheck());
+            add(1, new TopLeftChunkCheck());
+            add(1, new TopRightChunkCheck());
+            add(1, new BottomLeftChunkCheck());
+            add(1, new BottomRightChunkCheck());
 
             if (logger.isFineEnabled()) {
                 dump();
@@ -457,58 +464,6 @@ public class BarsChecker
         }
     }
 
-    //------------------//
-    // BottomChunkCheck //
-    //------------------//
-    /**
-     * Class <code>BottomChunkCheck</code> checks for lack of chunk at bottom
-     */
-    private class BottomChunkCheck
-        extends Check<GlyphContext>
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        // Half width for chunk window at bottom
-        private final int    nWidth;
-
-        // Half height for chunk window at bottom
-        private final int    nHeight;
-
-        // Total area for chunk window
-        private final double area;
-
-        //~ Constructors -------------------------------------------------------
-
-        protected BottomChunkCheck ()
-        {
-            super(
-                "BotChunk",
-                "Check there is no big chunck stuck on bottom of stick",
-                constants.chunkRatioLow,
-                constants.chunkRatioHigh,
-                false,
-                CHUNK_AT_BOTTOM);
-
-            // Adjust chunk window according to system scale (problem, we have
-            // sheet scale and staff scale, not system scale...)
-            Scale scale = sheet.getScale();
-            nWidth = scale.toPixels(constants.chunkWidth);
-            nHeight = scale.toPixels(constants.chunkHeight);
-            area = 4 * nWidth * nHeight;
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(Check.class)
-        protected double getValue (GlyphContext context)
-        {
-            Stick stick = context.stick;
-
-            // Retrieve the stick chunk ratio at bottom
-            return stick.getAliensAtStop(nHeight, nWidth) / area;
-        }
-    }
-
     //-----------//
     // Constants //
     //-----------//
@@ -523,24 +478,18 @@ public class BarsChecker
         Scale.Fraction maxDeltaLength = new Scale.Fraction(
             0.2,
             "Maximum difference in run length to be part of the same section");
-        Scale.Fraction chunkHeight = new Scale.Fraction(
-            0.33,
-            "Height of half area to look for chunks");
+        Scale.Fraction chunkWidth = new Scale.Fraction(
+            0.3,
+            "Width of box to look for chunks");
+        Scale.Fraction chunkHalfHeight = new Scale.Fraction(
+            0.5,
+            "Half height of box to look for chunks");
         Constant.Ratio chunkRatioHigh = new Constant.Ratio(
-            0.14,
+            1.8,
             "High Minimum ratio of alien pixels to detect chunks");
         Constant.Ratio chunkRatioLow = new Constant.Ratio(
-            0.08,
+            1.0,
             "Low Minimum ratio of alien pixels to detect chunks");
-        Scale.Fraction chunkWidth = new Scale.Fraction(
-            0.33,
-            "Width of half area to look for chunks");
-        Constant.Ratio maxAdjacencyHigh = new Constant.Ratio(
-            0.3d,
-            "High Maximum adjacency ratio for a bar stick");
-        Constant.Ratio maxAdjacencyLow = new Constant.Ratio(
-            0.25d,
-            "Low Maximum adjacency ratio for a bar stick");
         Scale.Fraction maxStaffShiftDyHigh = new Scale.Fraction(
             4.0,
             "High Maximum vertical distance between a bar edge and the staff line");
@@ -570,35 +519,135 @@ public class BarsChecker
             "* DO NOT EDIT * - switch between true & false for a boolean");
     }
 
-    //--------------------//
-    // LeftAdjacencyCheck //
-    //--------------------//
-    private static class LeftAdjacencyCheck
+    //------------//
+    // ChunkCheck //
+    //------------//
+    private abstract class ChunkCheck
         extends Check<GlyphContext>
     {
+        //~ Instance fields ----------------------------------------------------
+
+        // Width for chunk window
+        protected final int nWidth;
+
+        // Height for chunk window
+        protected final int nHeight;
+
         //~ Constructors -------------------------------------------------------
 
-        protected LeftAdjacencyCheck ()
+        protected ChunkCheck (String        name,
+                              String        description,
+                              FailureResult redResult)
         {
             super(
-                "LeftAdj",
-                "Check that left side of the stick is open enough",
-                constants.maxAdjacencyLow,
-                constants.maxAdjacencyHigh,
+                name,
+                description,
+                constants.chunkRatioLow,
+                constants.chunkRatioHigh,
                 false,
-                TOO_HIGH_ADJACENCY);
+                redResult);
+
+            // Adjust chunk window according to system scale 
+            nWidth = scale.toPixels(constants.chunkWidth);
+            nHeight = scale.toPixels(constants.chunkHalfHeight);
         }
 
         //~ Methods ------------------------------------------------------------
 
-        // Retrieve the adjacency value
+        protected abstract PixelRectangle getBox (Stick stick);
+
         @Implement(Check.class)
         protected double getValue (GlyphContext context)
         {
-            Stick stick = context.stick;
-            int   length = stick.getLength();
+            Stick          stick = context.stick;
+            PixelRectangle box = getBox(stick);
 
-            return (double) stick.getFirstStuck() / (double) length;
+            int            aliens = stick.getAlienPixelsIn(
+                lag.switchRef(box, null));
+            int            area = box.width * box.height;
+
+            // Normalize the ratio with stick length
+            double ratio = (1000 * aliens) / ((double) area * stick.getLength());
+
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "Glyph#" + stick.getId() + " " + getName() + " aliens:" +
+                    aliens + " area:" + area + " ratio:" + (float) ratio);
+            }
+
+            return ratio;
+        }
+    }
+
+    //----------------------//
+    // BottomLeftChunkCheck //
+    //----------------------//
+    /**
+     * Check for lack of chunk on lower left side of the bar stick
+     */
+    private class BottomLeftChunkCheck
+        extends ChunkCheck
+    {
+        //~ Constructors -------------------------------------------------------
+
+        protected BottomLeftChunkCheck ()
+        {
+            super(
+                "BLChunk",
+                "Check there is no big chunk stuck on lower left side of stick",
+                BOTTOM_LEFT_CHUNK);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        protected PixelRectangle getBox (Stick stick)
+        {
+            PixelPoint     bottom = stick.getStopPoint();
+            PixelRectangle box = new PixelRectangle(
+                bottom.x - nWidth,
+                bottom.y - ((3 * nHeight) / 2),
+                nWidth,
+                2 * nHeight);
+            stick.addAttachment("BL", box);
+
+            return box;
+        }
+    }
+
+    //-----------------------//
+    // BottomRightChunkCheck //
+    //-----------------------//
+    /**
+     * Check for lack of chunk on lower right side of the bar stick
+     */
+    private class BottomRightChunkCheck
+        extends ChunkCheck
+    {
+        //~ Constructors -------------------------------------------------------
+
+        protected BottomRightChunkCheck ()
+        {
+            super(
+                "BRChunk",
+                "Check there is no big chunk stuck on lower right side of stick",
+                BOTTOM_RIGHT_CHUNK);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        protected PixelRectangle getBox (Stick stick)
+        {
+            PixelPoint     bottom = stick.getStopPoint();
+            PixelRectangle box = new PixelRectangle(
+                bottom.x,
+                bottom.y - ((3 * nHeight) / 2),
+                nWidth,
+                2 * nHeight);
+            stick.addAttachment("BR", box);
+
+            return box;
         }
     }
 
@@ -680,38 +729,6 @@ public class BarsChecker
 
             return sheet.getScale()
                         .pixelsToFrac(dist);
-        }
-    }
-
-    //---------------------//
-    // RightAdjacencyCheck //
-    //---------------------//
-    private static class RightAdjacencyCheck
-        extends Check<GlyphContext>
-    {
-        //~ Constructors -------------------------------------------------------
-
-        protected RightAdjacencyCheck ()
-        {
-            super(
-                "RightAdj",
-                "Check that right side of the stick is open enough",
-                constants.maxAdjacencyLow,
-                constants.maxAdjacencyHigh,
-                false,
-                TOO_HIGH_ADJACENCY);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        // Retrieve the adjacency value
-        @Implement(Check.class)
-        protected double getValue (GlyphContext context)
-        {
-            Stick stick = context.stick;
-            int   length = stick.getLength();
-
-            return (double) stick.getLastStuck() / (double) length;
         }
     }
 
@@ -806,55 +823,75 @@ public class BarsChecker
         }
     }
 
-    //---------------//
-    // TopChunkCheck //
-    //---------------//
+    //-------------------//
+    // TopLeftChunkCheck //
+    //-------------------//
     /**
-     * Class <code>TopChunkCheck</code> checks for lack of chunk at top
+     * Check for lack of chunk on upper left side of the bar stick
      */
-    private class TopChunkCheck
-        extends Check<GlyphContext>
+    private class TopLeftChunkCheck
+        extends ChunkCheck
     {
-        //~ Instance fields ----------------------------------------------------
-
-        // Half width for chunk window at top
-        private final int    nWidth;
-
-        // Half height for chunk window at top
-        private final int    nHeight;
-
-        // Total area for chunk window
-        private final double area;
-
         //~ Constructors -------------------------------------------------------
 
-        protected TopChunkCheck ()
+        protected TopLeftChunkCheck ()
         {
             super(
-                "TopChunk",
-                "Check there is no big chunck stuck on top of stick",
-                constants.chunkRatioLow,
-                constants.chunkRatioHigh,
-                false,
-                CHUNK_AT_TOP);
-
-            // Adjust chunk window according to system scale (problem, we have
-            // sheet scale and staff scale, not system scale...)
-            Scale scale = sheet.getScale();
-            nWidth = scale.toPixels(constants.chunkWidth);
-            nHeight = scale.toPixels(constants.chunkHeight);
-            area = 4 * nWidth * nHeight;
+                "TLChunk",
+                "Check there is no big chunk stuck on upper left side of stick",
+                TOP_LEFT_CHUNK);
         }
 
         //~ Methods ------------------------------------------------------------
 
-        @Implement(Check.class)
-        protected double getValue (GlyphContext context)
+        @Override
+        protected PixelRectangle getBox (Stick stick)
         {
-            Stick stick = context.stick;
+            PixelPoint     top = stick.getStartPoint();
+            PixelRectangle box = new PixelRectangle(
+                top.x - nWidth,
+                top.y - (nHeight / 2),
+                nWidth,
+                2 * nHeight);
+            stick.addAttachment("TL", box);
 
-            // Retrieve the stick chunk ratio at top
-            return stick.getAliensAtStart(nHeight, nWidth) / area;
+            return box;
+        }
+    }
+
+    //--------------------//
+    // TopRightChunkCheck //
+    //--------------------//
+    /**
+     * Check for lack of chunk on upper right side of the bar stick
+     */
+    private class TopRightChunkCheck
+        extends ChunkCheck
+    {
+        //~ Constructors -------------------------------------------------------
+
+        protected TopRightChunkCheck ()
+        {
+            super(
+                "TRChunk",
+                "Check there is no big chunk stuck on upper right side of stick",
+                TOP_RIGHT_CHUNK);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        protected PixelRectangle getBox (Stick stick)
+        {
+            PixelPoint     top = stick.getStartPoint();
+            PixelRectangle box = new PixelRectangle(
+                top.x,
+                top.y - (nHeight / 2),
+                nWidth,
+                2 * nHeight);
+            stick.addAttachment("TR", box);
+
+            return box;
         }
     }
 }

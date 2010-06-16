@@ -50,6 +50,9 @@ public class ViewParameters
     /** Should the Sections selection be enabled  */
     public static final String SECTION_SELECTION_ENABLED = "sectionSelectionEnabled";
 
+    /** Should the stick attachments be painted */
+    public static final String ATTACHMENT_PAINTING = "attachmentPainting";
+
     //~ Instance fields --------------------------------------------------------
 
     /** Dynamic flag to remember if section selection is enabled */
@@ -63,6 +66,24 @@ public class ViewParameters
     public static ViewParameters getInstance ()
     {
         return Holder.INSTANCE;
+    }
+
+    //-----------------------//
+    // setAttachmentPainting //
+    //-----------------------//
+    public void setAttachmentPainting (boolean value)
+    {
+        boolean oldValue = constants.attachmentPainting.getValue();
+        constants.attachmentPainting.setValue(value);
+        firePropertyChange(ATTACHMENT_PAINTING, oldValue, value);
+    }
+
+    //----------------------//
+    // isAttachmentPainting //
+    //----------------------//
+    public boolean isAttachmentPainting ()
+    {
+        return constants.attachmentPainting.getValue();
     }
 
     //-------------------//
@@ -137,6 +158,18 @@ public class ViewParameters
         return sectionSelectionEnabled;
     }
 
+    //-------------------//
+    // toggleAttachments //
+    //-------------------//
+    /**
+     * Action that toggles the display of attachments in selected sticks
+     * @param e the event that triggered this action
+     */
+    @Action(selectedProperty = ATTACHMENT_PAINTING)
+    public void toggleAttachments (ActionEvent e)
+    {
+    }
+
     //---------------//
     // toggleCircles //
     //---------------//
@@ -184,7 +217,6 @@ public class ViewParameters
     @Action(selectedProperty = SECTION_SELECTION_ENABLED)
     public void toggleSections (ActionEvent e)
     {
-        logger.info("SectionSelection enabled:" + isSectionSelectionEnabled());
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -211,6 +243,11 @@ public class ViewParameters
         final Constant.Boolean linePainting = new Constant.Boolean(
             false,
             "Should the stick lines be painted");
+
+        /** Should the glyph attachments be painted */
+        final Constant.Boolean attachmentPainting = new Constant.Boolean(
+            true,
+            "Should the glyph attachments be painted");
     }
 
     //--------//

@@ -472,6 +472,15 @@ public class GlyphLagView
                     }
                 }
             }
+
+            // Draw attachments, if any
+            if (ViewParameters.getInstance()
+                              .isAttachmentPainting()) {
+                for (Rectangle rect : glyph.getAttachments()
+                                           .values()) {
+                    g.drawRect(rect.x, rect.y, rect.width, rect.height);
+                }
+            }
         }
 
         ((Graphics2D) g).setStroke(oldStroke);
