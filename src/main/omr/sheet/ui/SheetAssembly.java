@@ -582,23 +582,12 @@ public class SheetAssembly
                 tab.title);
         }
 
-        ScrollView  scrollView = tab.scrollView;
-        RubberPanel view = scrollView.getView();
+        final ScrollView  scrollView = tab.scrollView;
+        final RubberPanel view = scrollView.getView();
 
         // Link rubber with proper view
         rubber.connectComponent(view);
         rubber.setMouseMonitor(scrollView.getView());
-
-        // Keep previous scroll bar positions
-        if (previousTab != null) {
-            JScrollPane prev = previousTab.scrollView.getComponent();
-            scrollView.getComponent()
-                      .getVerticalScrollBar()
-                      .setValue(prev.getVerticalScrollBar().getValue());
-            scrollView.getComponent()
-                      .getHorizontalScrollBar()
-                      .setValue(prev.getHorizontalScrollBar().getValue());
-        }
 
         // Make connections to events
         scrollView.getView()
@@ -617,6 +606,27 @@ public class SheetAssembly
         if (location != null) {
             locationService.publish(
                 new SheetLocationEvent(this, null, null, location));
+        }
+
+        // Keep the same scroll bar positions as with previous tab
+        if (previousTab != null) {
+            JScrollPane prev = previousTab.scrollView.getComponent();
+            final int vert = prev.getVerticalScrollBar()
+                                     .getValue();
+            final int hori = prev.getHorizontalScrollBar()
+                                       .getValue();
+            SwingUtilities.invokeLater(
+                new Runnable() {
+                        public void run ()
+                        {
+                            scrollView.getComponent()
+                                      .getVerticalScrollBar()
+                                      .setValue(vert);
+                            scrollView.getComponent()
+                                      .getHorizontalScrollBar()
+                                      .setValue(hori);
+                        }
+                    });
         }
     }
 
