@@ -609,7 +609,11 @@ public class MainGui
         public void addBoards (JComponent boards)
         {
             removeBoards();
-            add(boards);
+
+            if (boards != null) {
+                add(boards);
+            }
+
             revalidate();
             repaint();
         }

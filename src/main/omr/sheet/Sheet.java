@@ -151,7 +151,7 @@ public class Sheet
     private volatile SkewBuilder skewBuilder;
 
     /** A staff line extractor for this sheet */
-    private volatile LinesBuilder linesBuilder;
+    private volatile StavesBuilder stavesBuilder;
 
     /** A ledger line extractor for this sheet */
     private volatile HorizontalsBuilder horizontalsBuilder;
@@ -502,32 +502,6 @@ public class Sheet
     public int getInterline ()
     {
         return scale.interline();
-    }
-
-    //-----------------//
-    // setLinesBuilder //
-    //-----------------//
-    /**
-     * Set the builder in charge of staff lines
-     *
-     * @param linesBuilder the builder instance
-     */
-    public void setLinesBuilder (LinesBuilder linesBuilder)
-    {
-        this.linesBuilder = linesBuilder;
-    }
-
-    //-----------------//
-    // getLinesBuilder //
-    //-----------------//
-    /**
-     * Give access to the builder in charge of staff lines
-     *
-     * @return the builder instance
-     */
-    public LinesBuilder getLinesBuilder ()
-    {
-        return linesBuilder;
     }
 
     //------------------//
@@ -905,6 +879,32 @@ public class Sheet
     public List<StaffInfo> getStaves ()
     {
         return staves;
+    }
+
+    //------------------//
+    // setStavesBuilder //
+    //------------------//
+    /**
+     * Set the builder in charge of staff lines
+     *
+     * @param stavesBuilder the builder instance
+     */
+    public void setStavesBuilder (StavesBuilder stavesBuilder)
+    {
+        this.stavesBuilder = stavesBuilder;
+    }
+
+    //------------------//
+    // getStavesBuilder //
+    //------------------//
+    /**
+     * Give access to the builder in charge of staff lines
+     *
+     * @return the builder instance
+     */
+    public StavesBuilder getStavesBuilder ()
+    {
+        return stavesBuilder;
     }
 
     //----------------------//

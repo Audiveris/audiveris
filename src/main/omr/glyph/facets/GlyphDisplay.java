@@ -37,7 +37,7 @@ interface GlyphDisplay
      * Report a map of attachments
      * @return  a (perhaps empty) map of attachments
      */
-    Map<String, Rectangle> getAttachments ();
+    Map<String, java.awt.Shape> getAttachments ();
 
     //----------//
     // getColor //
@@ -65,12 +65,12 @@ interface GlyphDisplay
     //---------------//
     /**
      * Flag the glyph with a key and a rectangle. This is meant to add arbitrary
-     * rectangles to a glyph, mainly for display and analysis purposes.
-     * @param id the rectangle ID
-     * @param rectangle the rectangle to attach
+     * awt shapes to a glyph, mainly for display and analysis purposes.
+     * @param id the attachment ID
+     * @param shape the awt shape to attach
      */
-    void addAttachment (String    id,
-                        Rectangle rectangle);
+    void addAttachment (String         id,
+                        java.awt.Shape attachment);
 
     //----------//
     // colorize //

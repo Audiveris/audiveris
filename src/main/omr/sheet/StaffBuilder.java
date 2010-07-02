@@ -12,18 +12,12 @@
 package omr.sheet;
 
 import omr.glyph.GlyphLag;
-import omr.glyph.GlyphSection;
 
 import omr.log.Logger;
 
 import omr.step.StepException;
 
-import omr.stick.StickSection;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.*;
 
 /**
  * Class <code>StaffBuilder</code> processes the (five) line areas, according to
@@ -46,12 +40,6 @@ public class StaffBuilder
     /** Related lag */
     private GlyphLag hLag;
 
-    /** Vertex iterator */
-    private ListIterator<GlyphSection> vi;
-
-    /** To allow unique identifiers to staves (for debug only) */
-    private int id;
-
     //~ Constructors -----------------------------------------------------------
 
     //--------------//
@@ -62,53 +50,44 @@ public class StaffBuilder
      *
      * @param sheet the sheet we are analyzing
      * @param hLag  the horizontal lag
-     * @param vi    the underlying vertex iterator
      */
-    public StaffBuilder (Sheet                      sheet,
-                         GlyphLag                   hLag,
-                         ListIterator<GlyphSection> vi)
+    public StaffBuilder (Sheet    sheet,
+                         GlyphLag hLag)
     {
         this.sheet = sheet;
         this.hLag = hLag;
-        this.vi = vi;
     }
 
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * Create a staff info, using a list of related peaks that correspond to the
+     * Create a staff info, using the staffCandidate that correspond to the
      * staff lines.
      *
-     * @param peaks    the histogram peaks that belong to this staff area
-     * @param interval the mean interval between peaks of this staff area
+     * @param candidate the staff candidate (sequence of peaks)
      * @return the created staff information
      * @throws StepException if anything goes wrong
      */
-    public StaffInfo buildInfo (List<Peak> peaks,
-                                double     interval)
+    public StaffInfo buildInfo (StaffCandidate candidate)
         throws StepException
     {
-        // Id for the newly created staff
-        ++id;
-
         if (logger.isFineEnabled()) {
-            logger.fine("Staff #" + id + " interval=" + interval);
+            logger.fine("candidate: " + candidate);
         }
 
         // Specific staff scale
         Scale          scale = new Scale(
-            (int) Math.rint(interval),
+            (int) Math.rint(candidate.interval),
             sheet.getScale().mainFore());
 
         // Process each peak into a line of the set
         List<LineInfo> lines = new ArrayList<LineInfo>();
 
-        for (Peak peak : peaks) {
+        for (Peak peak : candidate.getPeaks()) {
             LineBuilder builder = new LineBuilder(
                 hLag,
                 peak.getTop(),
                 peak.getBottom(),
-                vi,
                 sheet,
                 scale);
             lines.add(builder.buildInfo());
@@ -132,10 +111,16 @@ public class StaffBuilder
         int right = rights.get(2);
 
         if (logger.isFineEnabled()) {
-            logger.fine("End of Staff #" + id + " " + this);
+            logger.fine("End of Staff #" + candidate.id);
         }
 
         // Allocate the staff info
-        return new StaffInfo(id, left, right, scale, sheet.getScale(), lines);
+        return new StaffInfo(
+            candidate.id,
+            left,
+            right,
+            scale,
+            sheet.getScale(),
+            lines);
     }
 }

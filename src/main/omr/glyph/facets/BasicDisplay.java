@@ -34,13 +34,13 @@ class BasicDisplay
     //~ Static fields/initializers ---------------------------------------------
 
     // Empty map always returned when there is no attachment
-    protected static Map<String, Rectangle> EMPTY_MAP = Collections.unmodifiableMap(
-        new HashMap<String, Rectangle>());
+    protected static Map<String, java.awt.Shape> EMPTY_MAP = Collections.unmodifiableMap(
+        new HashMap<String, java.awt.Shape>());
 
     //~ Instance fields --------------------------------------------------------
 
     // Map for potential attachments
-    protected Map<String, Rectangle> attachments;
+    protected Map<String, java.awt.Shape> attachments;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -62,7 +62,7 @@ class BasicDisplay
     //----------------//
     // getAttachments //
     //----------------//
-    public Map<String, Rectangle> getAttachments ()
+    public Map<String, java.awt.Shape> getAttachments ()
     {
         if (attachments != null) {
             return Collections.unmodifiableMap(attachments);
@@ -103,17 +103,17 @@ class BasicDisplay
         return image;
     }
 
-    //-----------------//
+    //---------------//
     // addAttachment //
-    //-----------------//
-    public void addAttachment (String    id,
-                               Rectangle rectangle)
+    //---------------//
+    public void addAttachment (String         id,
+                               java.awt.Shape attachment)
     {
         if (attachments == null) {
-            attachments = new HashMap<String, Rectangle>();
+            attachments = new HashMap<String, java.awt.Shape>();
         }
 
-        attachments.put(id, rectangle);
+        attachments.put(id, attachment);
     }
 
     //----------//

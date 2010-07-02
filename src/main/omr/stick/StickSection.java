@@ -153,7 +153,7 @@ public class StickSection
     @Override
     protected String internalsString ()
     {
-        StringBuffer sb = new StringBuffer(super.internalsString());
+        StringBuilder sb = new StringBuilder(super.internalsString());
 
         if (relation != null) {
             sb.append(" ")

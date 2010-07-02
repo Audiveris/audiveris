@@ -472,6 +472,58 @@ public abstract class GlyphEvaluator
 
     //~ Inner Classes ----------------------------------------------------------
 
+    //-------------//
+    // Constraints //
+    //-------------//
+    public static class Constraints
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Related shape */
+        private final Shape shape;
+
+        /** Minimum values */
+        Double[] minima = new Double[paramCount];
+
+        /** Maximum values */
+        Double[] maxima = new Double[paramCount];
+
+        //~ Constructors -------------------------------------------------------
+
+        public Constraints (Shape shape)
+        {
+            this.shape = shape;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        /**
+         * Check if the Shape constraints are matched  for the glyph at hand
+         * @param glyph the glyph to be checked
+         * @return true if OK
+         */
+        public boolean areOkFor (Glyph glyph)
+        {
+            double[] ins = feedInput(glyph, null);
+
+            for (int i = 0; i < paramCount; i++) {
+                Double min = minima[i];
+
+                if ((min != null) && (ins[i] < min)) {
+                    return false;
+                }
+
+                Double max = maxima[i];
+
+                if ((max != null) && (ins[i] > max)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//

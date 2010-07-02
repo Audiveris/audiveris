@@ -43,7 +43,8 @@ public class GlyphChecks
     private static final Logger logger = Logger.getLogger(GlyphChecks.class);
 
     /** Map of Shape => Sequence of checkers */
-    private static final Map<Shape, Collection<Checker>> checkerMap = new TreeMap<Shape, Collection<Checker>>();
+    private static final EnumMap<Shape, Collection<Checker>> checkerMap = new EnumMap<Shape, Collection<Checker>>(
+        Shape.class);
 
     static {
         registerChecks();
@@ -138,6 +139,18 @@ public class GlyphChecks
      */
     private static void registerChecks ()
     {
+        // General check on weight, width, height
+        new Checker(allSymbols) {
+                public Shape check (Shape shape,
+                                    Glyph glyph)
+                {
+                    // Retrieve constraints, if any, related to given shape
+                    // Apply each constraint in turn
+                    //if (glyph.getNormalizedWeight() < minWeight)
+                    return shape; // Pass through for the time being
+                }
+            };
+
         new Checker(WHOLE_OR_HALF_REST) {
                 public Shape check (Shape shape,
                                     Glyph glyph)
@@ -160,6 +173,11 @@ public class GlyphChecks
                 {
                     // Check reasonable height
                     if (glyph.getNormalizedHeight() > constants.maxClefHeight.getValue()) {
+                        return null;
+                    }
+
+                    // Check minimum width
+                    if (glyph.getNormalizedWidth() < constants.minClefWidth.getValue()) {
                         return null;
                     }
 
@@ -467,6 +485,9 @@ public class GlyphChecks
         Scale.Fraction     maxClefHeight = new Scale.Fraction(
             9d,
             "Maximum normalized height for a clef");
+        Scale.Fraction     minClefWidth = new Scale.Fraction(
+            2d,
+            "Minimum normalized width for a clef");
         Scale.Fraction     maxTitleHeight = new Scale.Fraction(
             4d,
             "Maximum normalized height for a title text");

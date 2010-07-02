@@ -26,6 +26,7 @@ import omr.graph.DigraphView;
 
 import omr.lag.Run;
 import omr.lag.Section;
+import omr.lag.Sections;
 
 import omr.log.Logger;
 
@@ -217,12 +218,7 @@ public class LineCleaner
                 }
 
                 // Delete the section itself
-                try {
-                    section.delete();
-                } catch (Exception ignored) {
-                    // In some cases we try to remove a section several times
-                    // So simply ignore this
-                }
+                section.delete();
             }
 
             // Include the border sections as line members
@@ -254,12 +250,7 @@ public class LineCleaner
                 }
 
                 // Delete the section itself
-                try {
-                    section.delete();
-                } catch (Exception ignored) {
-                    // In some cases we try to remove a section several times
-                    // So simply ignore this
-                }
+                section.delete();
             }
 
             // Erase pixels from line sections

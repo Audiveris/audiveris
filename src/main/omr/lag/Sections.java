@@ -57,6 +57,15 @@ public class Sections
     }
 
     //----------//
+    // contains //
+    //----------//
+    public static boolean contains (Collection<?extends Section> sections,
+                                    Section                      section)
+    {
+        return sections.contains(section);
+    }
+
+    //----------//
     // toString //
     //----------//
     /**

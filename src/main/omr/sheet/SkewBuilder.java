@@ -53,7 +53,6 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RefineryUtilities;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.util.*;
 
 import javax.swing.WindowConstants;
@@ -96,8 +95,8 @@ public class SkewBuilder
     /** Length Threshold, for slope computation */
     private int lengthThreshold;
 
-    /** Maximum accetable section thickness */
-    private int maxThickness;
+    /** Maximum acceptable section thickness */
+    private int maxSectionThickness;
 
     /** Minimum acceptable section length */
     private int minSectionLength;
@@ -132,12 +131,12 @@ public class SkewBuilder
     public Skew buildInfo ()
         throws StepException
     {
-        // Needed out for previous steps
         Picture picture = sheet.getPicture();
         Scale   scale = sheet.getScale();
 
         // Parameters
         minSectionLength = scale.toPixels(constants.minSectionLength);
+        maxSectionThickness = scale.mainFore();
 
         // Retrieve the horizontal lag of runs
         sLag = new GlyphLag(
@@ -148,13 +147,12 @@ public class SkewBuilder
         SectionsBuilder<GlyphLag, GlyphSection> lagBuilder;
         lagBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
             sLag,
-            new JunctionRatioPolicy(constants.maxHeightRatio.getValue())); // maxHeightRatio
+            new JunctionRatioPolicy(constants.maxLengthRatio.getValue()));
         lagBuilder.createSections(
             picture,
-            scale.toPixels(constants.minRunLength)); // minRunLength
+            scale.toPixels(constants.minRunLength));
 
         // Detect long sticks
-        maxThickness = scale.mainFore();
         detectSticks();
 
         if (logger.isFineEnabled()) {
@@ -163,7 +161,7 @@ public class SkewBuilder
 
         // Produce histogram of slopes
         if (constants.plotting.getValue()) {
-            writePlot();
+            displayChart();
         }
 
         logger.info("Skew angle is " + (float) angle + " radians");
@@ -199,163 +197,6 @@ public class SkewBuilder
      * Build and display the slope histogram of lengthy horizontal sticks
      */
     public void displayChart ()
-    {
-        writePlot();
-    }
-
-    //--------------//
-    // isMajorChunk //
-    //--------------//
-    private boolean isMajorChunk (StickSection section)
-    {
-        // Check section length
-        // Check /quadratic mean/ section thickness
-        int     length = section.getLength();
-        boolean result = (length >= minSectionLength) &&
-                         ((section.getWeight() / length) <= maxThickness);
-
-        return result;
-    }
-
-    //---------------//
-    // areCompatible //
-    //---------------//
-    private boolean areCompatible (StickSection left,
-                                   StickSection right)
-    {
-        // Make sure that two sections can be combined into a stick.
-        // Tests are based on the angle between them,
-        boolean result = Math.abs(
-            left.getLine().getSlope() - right.getLine().getSlope()) <= constants.maxDeltaSlope.getValue();
-
-        return result;
-    }
-
-    //---------------//
-    // detectSticks //
-    //---------------//
-    private void detectSticks ()
-    {
-        Stick stick;
-
-        // Try to aggregate sections into sticks.  Visit all sections of the lag
-        for (GlyphSection s : sLag.getVertices()) {
-            StickSection section = (StickSection) s;
-
-            if (logger.isFineEnabled()) {
-                logger.fine(section.toString());
-            }
-
-            // We consider only significant chunks
-            if (isMajorChunk(section)) {
-                // Is this chunk already part of a stick ?
-                if (section.getGlyph() != null) {
-                    // If so, reuse the stick
-                    stick = (Stick) section.getGlyph();
-                } else {
-                    // Otherwise, start a brand new stick
-                    stick = new BasicStick(sheet.getInterline());
-
-                    // Include this section in the stick list
-                    stick.addSection(section, Glyph.Linking.LINK_BACK);
-
-                    // Register the stick in containing lag
-                    // Store this new stick into the stick table
-                    sticks.add((Stick) sLag.addGlyph(stick));
-                }
-
-                // Now, from this stick section, Look at following connected
-                // chunks
-                for (GlyphSection gs : section.getTargets()) {
-                    StickSection lnkSection = (StickSection) gs;
-
-                    if (isMajorChunk(lnkSection) &&
-                        areCompatible(section, lnkSection)) {
-                        // If this section is already part of (another) stick,
-                        // then merge this other stick with ours
-                        if (lnkSection.getGlyph() != null) {
-                            // Add the content of the other stick
-                            if (lnkSection.getGlyph() != stick) {
-                                stick.addGlyphSections(
-                                    lnkSection.getGlyph(),
-                                    Glyph.Linking.LINK_BACK);
-                                sticks.remove(lnkSection.getGlyph());
-                            }
-                        } else {
-                            // Let's add this section to the stick
-                            stick.addSection(
-                                lnkSection,
-                                Glyph.Linking.LINK_BACK);
-                        }
-                    }
-                }
-
-                if (logger.isFineEnabled()) {
-                    stick.dump();
-                }
-            }
-        }
-
-        // Now process these sticks
-        if (!sticks.isEmpty()) {
-            // Sort the sticks on their length, longest first (so the swap)
-            Collections.sort(sticks, Stick.reverseLengthComparator);
-
-            // Length of longest stick
-            Iterator<Stick> it = sticks.iterator();
-            Stick           longest = it.next();
-            lengthThreshold = (int) ((double) longest.getLength() * constants.sizeRatio.getValue());
-
-            double slopeSum = longest.getLine()
-                                     .getSlope() * longest.getLength();
-            double slopeNb = longest.getLength();
-
-            // Compute on sticks w/ significant length
-            while (it.hasNext()) {
-                stick = it.next();
-
-                if (stick.getLength() >= lengthThreshold) {
-                    slopeSum += (stick.getLine()
-                                      .getSlope() * stick.getLength());
-                    slopeNb += stick.getLength();
-
-                    //stick.dump (false);
-                } else {
-                    break; // Remaining ones are shorter!
-                }
-            }
-
-            slope = slopeSum / slopeNb;
-            angle = Math.atan(slope);
-        }
-    }
-
-    //--------------//
-    // displayFrame //
-    //--------------//
-    private void displayFrame ()
-    {
-        // Create a view
-        MyView        view = new MyView();
-
-        // Create a hosting frame for the view
-        final String  unit = sheet.getRadix() + ":SkewBuilder";
-        ScrollLagView slv = new ScrollLagView(view);
-        BoardsPane    boards = new BoardsPane(
-            sheet,
-            view,
-            new PixelBoard(unit, sheet),
-            new RunBoard(unit, sLag),
-            new SectionBoard(unit, sLag.getLastVertexId(), sLag));
-
-        sheet.getAssembly()
-             .addViewTab(Step.SKEW, slv, boards);
-    }
-
-    //-----------//
-    // writePlot //
-    //-----------//
-    private void writePlot ()
     {
         if (logger.isFineEnabled()) {
             logger.fine("Slope computation based on following sticks :");
@@ -423,6 +264,150 @@ public class SkewBuilder
         frame.setVisible(true);
     }
 
+    //--------------//
+    // isMajorChunk //
+    //--------------//
+    private boolean isMajorChunk (StickSection section)
+    {
+        // Check section length
+        // Check /quadratic mean/ section thickness
+        int length = section.getLength();
+
+        return (length >= minSectionLength) &&
+               ((section.getWeight() / length) <= maxSectionThickness);
+    }
+
+    //---------------//
+    // areCompatible //
+    //---------------//
+    private boolean areCompatible (StickSection left,
+                                   StickSection right)
+    {
+        // Make sure that two sections can be combined into a stick.
+        // Tests are based on the angle between them,
+        return Math.abs(left.getLine().getSlope() - right.getLine().getSlope()) <= constants.maxDeltaSlope.getValue();
+    }
+
+    //---------------//
+    // detectSticks //
+    //---------------//
+    private void detectSticks ()
+    {
+        Stick stick;
+
+        // Try to aggregate sections into sticks.  Visit all sections of the lag
+        for (GlyphSection s : sLag.getVertices()) {
+            StickSection section = (StickSection) s;
+
+            if (logger.isFineEnabled()) {
+                logger.fine(section.toString());
+            }
+
+            // We consider only significant chunks
+            if (isMajorChunk(section)) {
+                // Is this chunk already part of a stick ?
+                if (section.getGlyph() != null) {
+                    // If so, reuse the stick
+                    stick = (Stick) section.getGlyph();
+                } else {
+                    // Otherwise, start a brand new stick
+                    stick = new BasicStick(sheet.getInterline());
+
+                    // Include this section in the stick list
+                    stick.addSection(section, Glyph.Linking.LINK_BACK);
+
+                    // Register the stick in containing lag
+                    // Store this new stick into the stick table
+                    sticks.add((Stick) sLag.addGlyph(stick));
+                }
+
+                // Now, starting from this stick section, look at following
+                // connected chunks
+                for (GlyphSection gs : section.getTargets()) {
+                    StickSection lnkSection = (StickSection) gs;
+
+                    if (isMajorChunk(lnkSection) &&
+                        areCompatible(section, lnkSection)) {
+                        // If this section is already part of (another) stick,
+                        // then merge this other stick with ours
+                        if (lnkSection.getGlyph() != null) {
+                            // Add the content of the other stick
+                            if (lnkSection.getGlyph() != stick) {
+                                Glyph other = lnkSection.getGlyph();
+                                stick.addGlyphSections(
+                                    other,
+                                    Glyph.Linking.LINK_BACK);
+                                sticks.remove(other);
+                            }
+                        } else {
+                            // Let's add this section to the stick
+                            stick.addSection(
+                                lnkSection,
+                                Glyph.Linking.LINK_BACK);
+                        }
+                    }
+                }
+
+                if (logger.isFineEnabled()) {
+                    stick.dump();
+                }
+            }
+        }
+
+        // Now process these sticks
+        if (!sticks.isEmpty()) {
+            // Sort the sticks on their length, longest first
+            Collections.sort(sticks, Stick.reverseLengthComparator);
+
+            // Length of longest stick
+            Iterator<Stick> it = sticks.iterator();
+            Stick           longest = it.next();
+            lengthThreshold = (int) (longest.getLength() * constants.sizeRatio.getValue());
+
+            double slopeSum = longest.getLine()
+                                     .getSlope() * longest.getLength();
+            double slopeNb = longest.getLength();
+
+            // Compute on sticks w/ significant length
+            while (it.hasNext()) {
+                stick = it.next();
+
+                if (stick.getLength() >= lengthThreshold) {
+                    slopeSum += (stick.getLine()
+                                      .getSlope() * stick.getLength());
+                    slopeNb += stick.getLength();
+                } else {
+                    break; // Remaining ones are shorter!
+                }
+            }
+
+            slope = slopeSum / slopeNb;
+            angle = Math.atan(slope);
+        }
+    }
+
+    //--------------//
+    // displayFrame //
+    //--------------//
+    private void displayFrame ()
+    {
+        // Create a view
+        MyView        view = new MyView();
+
+        // Create a hosting frame for the view
+        final String  unit = sheet.getRadix() + ":SkewBuilder";
+        ScrollLagView slv = new ScrollLagView(view);
+        BoardsPane    boards = new BoardsPane(
+            sheet,
+            view,
+            new PixelBoard(unit, sheet),
+            new RunBoard(unit, sLag),
+            new SectionBoard(unit, sLag.getLastVertexId(), sLag));
+
+        sheet.getAssembly()
+             .addViewTab(Step.SKEW, slv, boards);
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
     //-----------//
@@ -439,9 +424,9 @@ public class SkewBuilder
         Constant.Angle   maxDeltaSlope = new Constant.Angle(
             0.05,
             "Maximum difference in slope between two sections in the same stick");
-        Constant.Ratio   maxHeightRatio = new Constant.Ratio(
+        Constant.Ratio   maxLengthRatio = new Constant.Ratio(
             2.5,
-            "Maximum ratio in height for a run to be combined with an existing section");
+            "Maximum ratio in length for a run to be combined with an existing section");
         Constant.Angle   maxSkewAngle = new Constant.Angle(
             0.001,
             "Maximum value for skew angle before a rotation is performed");
@@ -453,10 +438,10 @@ public class SkewBuilder
             "Minimum length for a section to be considered in skew computation");
         Constant.Boolean plotting = new Constant.Boolean(
             false,
-            "Should we produce a GnuPlot about computed skew data ?");
+            "Should we produce a plot about computed skew data ?");
         Constant.Ratio   sizeRatio = new Constant.Ratio(
             0.5,
-            "Only sticks with length higher than this threshold are used for final computation");
+            "Only sticks with length larger than this threshold are used for final computation");
     }
 
     //--------//

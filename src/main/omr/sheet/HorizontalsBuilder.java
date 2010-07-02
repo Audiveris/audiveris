@@ -45,7 +45,6 @@ import omr.selection.UserEvent;
 
 import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.SheetPainter;
-import omr.sheet.ui.SheetsController;
 
 import omr.step.Step;
 import omr.step.StepException;
@@ -53,6 +52,8 @@ import omr.step.StepException;
 import omr.stick.LineCleaner;
 
 import omr.ui.BoardsPane;
+
+import omr.util.WeakPropertyChangeListener;
 
 import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.Action;
@@ -567,6 +568,11 @@ public class HorizontalsBuilder
     public static class LedgerParameters
         extends AbstractBean
     {
+        //~ Static fields/initializers -----------------------------------------
+
+        /** Should the original ledger be painted */
+        public static final String ORIGINAL_LEDGER_PAINTING = "linePainting";
+
         //~ Methods ------------------------------------------------------------
 
         //-------------//
@@ -585,7 +591,7 @@ public class HorizontalsBuilder
             boolean oldValue = constants.displayLedgerLines.getValue();
             constants.displayLedgerLines.setValue(value);
             firePropertyChange(
-                "linePainting",
+                ORIGINAL_LEDGER_PAINTING,
                 oldValue,
                 constants.displayLedgerLines.getValue());
         }
@@ -606,19 +612,9 @@ public class HorizontalsBuilder
          * lines
          * @param e the event that triggered this action
          */
-        @Action(selectedProperty = "linePainting")
+        @Action(selectedProperty = ORIGINAL_LEDGER_PAINTING)
         public void toggleLines (ActionEvent e)
         {
-            // Trigger a repaint if needed
-            Sheet currentSheet = SheetsController.selectedSheet();
-
-            if (currentSheet != null) {
-                HorizontalsBuilder builder = currentSheet.getHorizontalsBuilder();
-
-                if ((builder != null) && (builder.lagView != null)) {
-                    builder.lagView.repaint();
-                }
-            }
         }
 
         //~ Inner Classes ------------------------------------------------------
@@ -1069,7 +1065,13 @@ public class HorizontalsBuilder
         {
             super(lag, members, constants.displayLedgerLines, controller, null);
             setName("HorizontalsBuilder-View");
+
             dashMenu = new DashMenu(controller);
+
+            // (Weakly) listening on LineParameters properties
+            LedgerParameters.getInstance()
+                            .addPropertyChangeListener(
+                new WeakPropertyChangeListener(this));
         }
 
         //~ Methods ------------------------------------------------------------

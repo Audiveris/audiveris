@@ -476,9 +476,10 @@ public class GlyphLagView
             // Draw attachments, if any
             if (ViewParameters.getInstance()
                               .isAttachmentPainting()) {
-                for (Rectangle rect : glyph.getAttachments()
+                Graphics2D g2 = (Graphics2D)g;
+                for (java.awt.Shape attach : glyph.getAttachments()
                                            .values()) {
-                    g.drawRect(rect.x, rect.y, rect.width, rect.height);
+                    g2.draw(attach);
                 }
             }
         }

@@ -134,7 +134,6 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
             this.specificSections = new ArrayList<S>(0);
         }
 
-        // Process vertices
         for (S section : lag.getVertices()) {
             addSectionView(section);
         }
@@ -229,6 +228,11 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     public void colorizeAllSections ()
     {
         int viewIndex = lag.viewIndexOf(this);
+
+        // Safety check DEBUG DEBUG
+        if (!Collections.disjoint(lag.getVertices(), specificSections)) {
+            logger.severe("The specific sections are not disjoint from lag");
+        }
 
         // Colorize (normal) vertices and transitively all the connected ones
         for (S section : lag.getVertices()) {

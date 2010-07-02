@@ -145,7 +145,7 @@ public class GraphTest
         createEdges();
 
         // Remove an edge
-        MyVertex.removeEdge(v2, v3);
+        MyVertex.removeEdge(v2, v3, true);
 
         graph.dump("\nDump after removal of edge from v2 to v3:");
         assertEquals(
@@ -247,7 +247,7 @@ public class GraphTest
 
         try {
             // Remove a non-existing edge
-            MyVertex.removeEdge(v2, v3);
+            MyVertex.removeEdge(v2, v3, true);
             fail(
                 "Exception should be raised" +
                 " when attempting to remove a non-existent edge");

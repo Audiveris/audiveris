@@ -271,7 +271,9 @@ public class SheetAssembly
                             ScrollView sv,
                             BoardsPane boardsPane)
     {
-        boardsPane.setName(sheet.getRadix() + ":" + step.label);
+        if (boardsPane != null) {
+            boardsPane.setName(sheet.getRadix() + ":" + step.label);
+        }
 
         if (logger.isFineEnabled()) {
             logger.fine(
@@ -493,21 +495,26 @@ public class SheetAssembly
         JScrollPane comp = (JScrollPane) tabbedPane.getSelectedComponent();
 
         if (comp != null) {
-            // Retrieve the proper boards pane
+            // Retrieve the proper boards pane, if any
             BoardsPane boardsPane = tabs.get(comp).boardsPane;
 
-            if (logger.isFineEnabled()) {
-                logger.fine("displaying " + boardsPane);
-            }
+            if (boardsPane != null) {
+                if (logger.isFineEnabled()) {
+                    logger.fine("displaying " + boardsPane);
+                }
 
-            // (Re)connect the boards to their selection inputs?
-            if (connectBoards) {
-                boardsPane.shown();
-            }
+                // (Re)connect the boards to their selection inputs?
+                if (connectBoards) {
+                    boardsPane.shown();
+                }
 
-            // Display the boards pane related to the selected view
-            Main.getGui()
-                .setBoardsPane(boardsPane.getComponent());
+                // Display the boards pane related to the selected view
+                Main.getGui()
+                    .setBoardsPane(boardsPane.getComponent());
+            } else {
+                Main.getGui()
+                    .setBoardsPane(null);
+            }
         }
     }
 
@@ -563,8 +570,10 @@ public class SheetAssembly
         tab.scrollView.getView()
                       .unsubscribe();
 
-        // Disconnection of related boards
-        tab.boardsPane.hidden();
+        // Disconnection of related boards, if any
+        if (tab.boardsPane != null) {
+            tab.boardsPane.hidden();
+        }
     }
 
     //-----------------//
@@ -611,10 +620,10 @@ public class SheetAssembly
         // Keep the same scroll bar positions as with previous tab
         if (previousTab != null) {
             JScrollPane prev = previousTab.scrollView.getComponent();
-            final int vert = prev.getVerticalScrollBar()
-                                     .getValue();
-            final int hori = prev.getHorizontalScrollBar()
-                                       .getValue();
+            final int   vert = prev.getVerticalScrollBar()
+                                   .getValue();
+            final int   hori = prev.getHorizontalScrollBar()
+                                   .getValue();
             SwingUtilities.invokeLater(
                 new Runnable() {
                         public void run ()

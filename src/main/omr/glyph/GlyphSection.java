@@ -43,6 +43,15 @@ public class GlyphSection
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(GlyphSection.class);
 
+    /** For comparing GlyphSection instances on their decreasing length */
+    public static final Comparator<GlyphSection> reverseLengthComparator = new Comparator<GlyphSection>() {
+        public int compare (GlyphSection s1,
+                            GlyphSection s2)
+        {
+            return Integer.signum(s2.getLength() - s1.getLength());
+        }
+    };
+
     /** For comparing GlyphSection instances on their decreasing weight */
     public static final Comparator<GlyphSection> reverseWeightComparator = new Comparator<GlyphSection>() {
         public int compare (GlyphSection s1,
@@ -245,7 +254,7 @@ public class GlyphSection
     @Override
     protected String internalsString ()
     {
-        StringBuffer sb = new StringBuffer(super.internalsString());
+        StringBuilder sb = new StringBuilder(super.internalsString());
 
         if (isPatch()) {
             sb.append(" patch");

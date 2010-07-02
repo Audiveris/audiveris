@@ -290,7 +290,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
         int runStop = run.getStop();
         int adjacency = 0;
 
-        for (S source : sources) {
+        for (S source : getSources()) {
             Run lastRun = source.getLastRun();
             int start = Math.max(runStart, lastRun.getStart());
             int stop = Math.min(runStop, lastRun.getStop());
@@ -388,7 +388,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
         int runStop = run.getStop();
         int adjacency = 0;
 
-        for (S target : targets) {
+        for (S target : getTargets()) {
             Run firstRun = target.getFirstRun();
             int start = Math.max(runStart, firstRun.getStart());
             int stop = Math.min(runStop, firstRun.getStop());
@@ -598,6 +598,75 @@ public class Section<L extends Lag, S extends Section<L, S>>
         }
 
         return table;
+    }
+
+    //----------------------//
+    // getRectangleCentroid //
+    //----------------------//
+    /**
+     * Report the mass center of the section runs intersected by the provided
+     * rectangle
+     * @param rectangle the rectangle of interest (roi)
+     * @return the centroid of the intersected points, or null
+     * @throws IllegalArgumentException if provided roi is null
+     */
+    public Point getRectangleCentroid (Rectangle roi)
+    {
+        if (roi == null) {
+            throw new IllegalArgumentException("Rectangle of Interest is null");
+        }
+
+        int   roiWeight = 0;
+        Point roiCentroid = new Point(0, 0);
+        int   y = firstPos - 1;
+        int   yMax = Math.min(firstPos + runs.size(), roi.y + roi.height) - 1;
+        int   xMax = (roi.x + roi.width) - 1;
+
+        for (Run run : runs) {
+            y++;
+
+            if (y < roi.y) {
+                continue;
+            }
+
+            if (y > yMax) {
+                break;
+            }
+
+            final int roiStart = Math.max(run.getStart(), roi.x);
+            final int roiStop = Math.min(run.getStop(), xMax);
+            final int length = roiStop - roiStart + 1;
+
+            if (length > 0) {
+                roiWeight += length;
+                roiCentroid.y += (length * (2 * y));
+                roiCentroid.x += (length * ((2 * roiStart) + length));
+            }
+        }
+
+        if (roiWeight > 0) {
+            roiCentroid.x /= (2 * roiWeight);
+            roiCentroid.y /= (2 * roiWeight);
+
+            return roiCentroid;
+        } else {
+            return null;
+        }
+    }
+
+    //----------------------//
+    // getRectangleCentroid //
+    //----------------------//
+    public PixelPoint getRectangleCentroid (PixelRectangle roi)
+    {
+        if (roi == null) {
+            throw new IllegalArgumentException("Rectangle of Interest is null");
+        }
+
+        Rectangle rect = graph.switchRef(roi, null);
+        Point     point = getRectangleCentroid(rect);
+
+        return graph.switchRef(point, null);
     }
 
     //--------//
@@ -872,10 +941,12 @@ public class Section<L extends Lag, S extends Section<L, S>>
         }
 
         // Proper source section
-        S source = sources.get(getInDegree() - 1);
+        S source = getSources()
+                       .get(getInDegree() - 1);
 
         // Browse till we get to this as target
-        for (Iterator<S> li = source.targets.iterator(); li.hasNext();) {
+        for (Iterator<S> li = source.getTargets()
+                                    .iterator(); li.hasNext();) {
             S section = li.next();
 
             if (section == this) {
@@ -908,11 +979,13 @@ public class Section<L extends Lag, S extends Section<L, S>>
         }
 
         // Proper source section
-        S source = sources.get(0);
+        S source = getSources()
+                       .get(0);
 
         // Browse till we get to this as target
-        for (ListIterator<S> li = source.targets.listIterator(
-            source.getOutDegree()); li.hasPrevious();) {
+        for (ListIterator<S> li = source.getTargets()
+                                        .listIterator(source.getOutDegree());
+             li.hasPrevious();) {
             S section = li.previous();
 
             if (section == this) {
@@ -971,10 +1044,12 @@ public class Section<L extends Lag, S extends Section<L, S>>
         }
 
         // Proper target section
-        S target = targets.get(getOutDegree() - 1);
+        S target = getTargets()
+                       .get(getOutDegree() - 1);
 
         // Browse till we get to this as source
-        for (Iterator<S> li = target.sources.iterator(); li.hasNext();) {
+        for (Iterator<S> li = target.getSources()
+                                    .iterator(); li.hasNext();) {
             S section = li.next();
 
             if (section == this) {
@@ -1007,11 +1082,13 @@ public class Section<L extends Lag, S extends Section<L, S>>
         }
 
         // Proper target section
-        S target = targets.get(getOutDegree() - 1);
+        S target = getTargets()
+                       .get(getOutDegree() - 1);
 
         // Browse till we get to this as source
-        for (ListIterator<S> li = target.sources.listIterator(
-            target.getInDegree()); li.hasPrevious();) {
+        for (ListIterator<S> li = target.getSources()
+                                        .listIterator(target.getInDegree());
+             li.hasPrevious();) {
             S section = li.previous();
 
             if (section == this) {

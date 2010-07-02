@@ -23,6 +23,8 @@ import omr.glyph.facets.BasicStick;
 import omr.glyph.facets.Glyph;
 import omr.glyph.facets.Stick;
 
+import omr.lag.Sections;
+
 import omr.log.Logger;
 
 import omr.sheet.Sheet;
@@ -184,6 +186,23 @@ public class SticksBuilder
 
     //~ Methods ----------------------------------------------------------------
 
+    //-------------//
+    // isDiscarded //
+    //-------------//
+    /**
+     * Checks whether a given section has been discarded
+     *
+     * @param section the section to check
+     *
+     * @return true if actually discarded
+     */
+    public static boolean isDiscarded (StickSection section)
+    {
+        StickRelation relation = section.getRelation();
+
+        return (relation != null) && (relation.role == DISCARDED);
+    }
+
     //-----------//
     // getSticks //
     //-----------//
@@ -216,7 +235,6 @@ public class SticksBuilder
                 " maxThickness=" + maxThickness + " longAlignment=" +
                 longAlignment);
         }
-
         // Use a brand new glyph map
         visited = new HashMap<GlyphSection, Glyph>();
 
@@ -242,8 +260,9 @@ public class SticksBuilder
 
                 // By vertue of the Source adaptor, all provided sections are
                 // entirely within the stick area. So tests for core sections
-                // are thickness and length, that's all.
-                if ((section.getRunNb() <= maxThickness) &&
+                // are not already taken, thickness and length, that's all.
+                if (!section.isGlyphMember() &&
+                    (section.getRunNb() <= maxThickness) &&
                     (section.getMaxRunLength() >= minCoreLength)) {
                     // OK, this section is candidate as core member of stick set
                     mark(section, target, SectionRole.CORE, 0, 0);
@@ -257,7 +276,8 @@ public class SticksBuilder
         }
 
         if (logger.isFineEnabled()) {
-            logger.fine(members.size() + " Core sections");
+            logger.fine(
+                members.size() + Sections.toString(" Core sections", members));
         }
 
         // Collect candidate sections around the core ones
@@ -280,7 +300,8 @@ public class SticksBuilder
         }
 
         if (logger.isFineEnabled()) {
-            logger.fine(members.size() + " total sections");
+            logger.fine(
+                members.size() + Sections.toString(" total sections", members));
         }
 
         // Aggregate member sections into as few sticks as possible. This
@@ -472,23 +493,6 @@ public class SticksBuilder
         return true;
     }
 
-    //-------------//
-    // isDiscarded //
-    //-------------//
-    /**
-     * Checks whether a given section has been discarded
-     *
-     * @param section the section to check
-     *
-     * @return true if actually discarded
-     */
-    private boolean isDiscarded (StickSection section)
-    {
-        StickRelation relation = section.getRelation();
-
-        return (relation != null) && (relation.role == DISCARDED);
-    }
-
     //--------//
     // isFree //
     //--------//
@@ -655,7 +659,7 @@ public class SticksBuilder
         }
 
         // Include only sections that are slim enough
-        if ((section.getRunNb() > 2) &&
+        if ((section.getRunNb() > 1) &&
             (section.getAspect() < minSectionAspect)) {
             mark(section, null, TOO_FAT, layer, direction);
 

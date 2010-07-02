@@ -39,7 +39,6 @@ import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.SheetPainter;
 
 import omr.step.Step;
-import omr.step.StepException;
 
 import omr.ui.BoardsPane;
 

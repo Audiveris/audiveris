@@ -20,10 +20,10 @@ import omr.glyph.ui.GlyphRepository;
 
 import omr.log.Logger;
 
-import omr.score.Score;
-
+import omr.sheet.LinesBuilder;
 import omr.sheet.Sheet;
 import omr.sheet.SheetsManager;
+import omr.sheet.StavesBuilder;
 
 import omr.step.Step;
 
@@ -153,11 +153,12 @@ public class SheetActions
         Sheet sheet = SheetsController.selectedSheet();
 
         if (sheet != null) {
-            if (sheet.getLinesBuilder() != null) {
-                sheet.getLinesBuilder()
-                     .displayChart();
+            StavesBuilder builder = sheet.getStavesBuilder();
+
+            if (builder != null) {
+                builder.displayChart();
             } else {
-                logger.warning("Data from staff line builder is not available");
+                logger.warning("Data from staves builder is not available");
             }
         }
     }

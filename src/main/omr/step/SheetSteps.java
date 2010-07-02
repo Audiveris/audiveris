@@ -33,7 +33,6 @@ import omr.selection.GlyphEvent;
 import omr.selection.SelectionService;
 
 import omr.sheet.HorizontalsBuilder;
-import omr.sheet.LinesBuilder;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SheetsManager;
@@ -50,6 +49,7 @@ import java.net.URL;
 import java.util.*;
 
 import javax.swing.*;
+import omr.sheet.LinesBuilder;
 
 /**
  * Class <code>SheetSteps</code> handles the actual progress of steps for a
@@ -73,7 +73,8 @@ public class SheetSteps
     private final Sheet sheet;
 
     /** The tasks that relate to each step */
-    private final Map<Step, SheetTask> tasks = new LinkedHashMap<Step, SheetTask>();
+    private final EnumMap<Step, SheetTask> tasks = new EnumMap<Step, SheetTask>(
+        Step.class);
 
     /** Step currently being processed */
     private Step currentStep;
@@ -416,10 +417,12 @@ public class SheetSteps
         public void doit (Collection<SystemInfo> unused)
             throws StepException
         {
-            sheet.setLinesBuilder(new LinesBuilder(sheet));
-            sheet.getLinesBuilder()
+            //logger.info("*** Using StavesFuzzyBuilder ***");
+            sheet.setStavesBuilder(new LinesBuilder(sheet));
+            ///sheet.setStavesBuilder(new StavesFuzzyBuilder(sheet));
+            sheet.getStavesBuilder()
                  .buildInfo();
-            sheet.setStaves(sheet.getLinesBuilder().getStaves());
+            sheet.setStaves(sheet.getStavesBuilder().getStaves());
         }
     }
 

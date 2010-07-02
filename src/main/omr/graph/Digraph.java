@@ -16,7 +16,6 @@ import omr.log.Logger;
 import net.jcip.annotations.ThreadSafe;
 
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -174,6 +173,18 @@ public class Digraph<D extends Digraph<D, V, SIG>, V extends Vertex, SIG>
     public int getVertexCount ()
     {
         return vertices.size();
+    }
+
+    // DEBUG
+    public boolean isVertexCurrent (int id)
+    {
+        return vertices.get(id) != null;
+    }
+
+    // DEBUG
+    public boolean isVertexOld (int id)
+    {
+        return oldVertices.get(id) != null;
     }
 
     //-------------//
@@ -359,7 +370,7 @@ public class Digraph<D extends Digraph<D, V, SIG>, V extends Vertex, SIG>
      */
     protected String internalsString ()
     {
-        StringBuffer sb = new StringBuffer(25);
+        StringBuilder sb = new StringBuilder(25);
 
         sb.append("#")
           .append(name);

@@ -15,8 +15,7 @@ import omr.log.Logger;
 
 import net.jcip.annotations.NotThreadSafe;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import javax.xml.bind.annotation.*;
 
@@ -59,17 +58,17 @@ public abstract class Vertex<D extends Digraph, V extends Vertex<D, V, SIG>, SIG
     /**
      * Unique vertex Id (for debugging mainly)
      */
-    protected int id;
+    private int id;
 
     /**
      * Incoming edges from other vertices
      */
-    protected final List<V> sources = new ArrayList<V>();
+    private final List<V> sources = new ArrayList<V>();
 
     /**
      * Outgoing edges to other vertices
      */
-    protected final List<V> targets = new ArrayList<V>();
+    private final List<V> targets = new ArrayList<V>();
 
     /**
      * Containing graph
@@ -121,6 +120,32 @@ public abstract class Vertex<D extends Digraph, V extends Vertex<D, V, SIG>, SIG
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //----------//
+    // getGraph //
+    //----------//
+    /**
+     * Report the containing graph of this vertex
+     *
+     * @return the containing graph
+     */
+    public D getGraph ()
+    {
+        return graph;
+    }
+
+    //-------//
+    // getId //
+    //-------//
+    /**
+     * Report the unique Id (within the containing graph) of this vertex
+     *
+     * @return the id
+     */
+    public int getId ()
+    {
+        return id;
+    }
 
     //-------------//
     // getInDegree //
@@ -223,38 +248,12 @@ public abstract class Vertex<D extends Digraph, V extends Vertex<D, V, SIG>, SIG
         }
 
         if (NO_EDGE_DUPLICATES) {
-            source.targets.remove(target);
-            target.sources.remove(source);
+            source.removeTarget(target);
+            target.removeSource(source);
         }
 
-        source.targets.add(target);
-        target.sources.add(source);
-    }
-
-    //----------//
-    // getGraph //
-    //----------//
-    /**
-     * Report the containing graph of this vertex
-     *
-     * @return the containing graph
-     */
-    public D getGraph ()
-    {
-        return graph;
-    }
-
-    //-------//
-    // getId //
-    //-------//
-    /**
-     * Report the unique Id (within the containing graph) of this vertex
-     *
-     * @return the id
-     */
-    public int getId ()
-    {
-        return id;
+        source.addTarget(target);
+        target.addSource(source);
     }
 
     //------------//
@@ -267,7 +266,7 @@ public abstract class Vertex<D extends Digraph, V extends Vertex<D, V, SIG>, SIG
      */
     public List<V> getSources ()
     {
-        return sources;
+        return Collections.unmodifiableList(sources);
     }
 
     //------------//
@@ -280,7 +279,7 @@ public abstract class Vertex<D extends Digraph, V extends Vertex<D, V, SIG>, SIG
      */
     public List<V> getTargets ()
     {
-        return targets;
+        return Collections.unmodifiableList(targets);
     }
 
     //---------//
@@ -295,6 +294,15 @@ public abstract class Vertex<D extends Digraph, V extends Vertex<D, V, SIG>, SIG
     {
         return getViews()
                    .get(index);
+    }
+
+    //---------------//
+    // getViewsCount //
+    //---------------//
+    public int getViewsCount ()
+    {
+        return getViews()
+                   .size();
     }
 
     //---------//
@@ -333,22 +341,26 @@ public abstract class Vertex<D extends Digraph, V extends Vertex<D, V, SIG>, SIG
     @SuppressWarnings("unchecked")
     public void delete ()
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("deleting vertex " + this);
-        }
+        try {
+            if (logger.isFineEnabled()) {
+                logger.fine("deleting vertex " + this);
+            }
 
-        // Remove in vertices of the vertex
-        for (V source : sources) {
-            source.targets.remove(this);
-        }
+            // Remove in vertices of the vertex
+            for (V source : new ArrayList<V>(getSources())) {
+                removeEdge(source, this, false);
+            }
 
-        // Remove out vertices of the vertex
-        for (V target : targets) {
-            target.sources.remove(this);
-        }
+            // Remove out vertices of the vertex
+            for (V target : new ArrayList<V>(getTargets())) {
+                removeEdge(this, target, false);
+            }
 
-        // Remove from graph
-        graph.removeVertex(this); // Compiler warning here
+            // Remove from graph
+            graph.removeVertex(this); // Compiler warning here
+        } catch (Exception ex) {
+            logger.severe("Error deleting " + this, ex);
+        }
     }
 
     //------//
@@ -382,21 +394,23 @@ public abstract class Vertex<D extends Digraph, V extends Vertex<D, V, SIG>, SIG
      *
      * @param source departure vertex
      * @param target arrival vertex
+     * @param strict throw RuntimeException if the edge does not exist
      */
-    public static <V extends Vertex> void removeEdge (V source,
-                                                      V target)
+    public static <V extends Vertex> void removeEdge (V       source,
+                                                      V       target,
+                                                      boolean strict)
     {
         if (logger.isFineEnabled()) {
             logger.fine("removing edge from " + source + " to " + target);
         }
 
-        if (!source.targets.remove(target)) {
+        if (!source.removeTarget(target) && strict) {
             throw new RuntimeException(
                 "Attempting to remove non-existing edge between " + source +
                 " and " + target);
         }
 
-        if (!target.sources.remove(source)) {
+        if (!target.removeSource(source) && strict) {
             throw new RuntimeException(
                 "Attempting to remove non-existing edge between " + source +
                 " and " + target);
@@ -449,6 +463,22 @@ public abstract class Vertex<D extends Digraph, V extends Vertex<D, V, SIG>, SIG
         return sb.toString();
     }
 
+    //-----------//
+    // addSource //
+    //-----------//
+    protected boolean addSource (V source)
+    {
+        return sources.add(source);
+    }
+
+    //-----------//
+    // addTarget //
+    //-----------//
+    protected boolean addTarget (V target)
+    {
+        return targets.add(target);
+    }
+
     //------------------//
     // computeSignature //
     //------------------//
@@ -470,7 +500,17 @@ public abstract class Vertex<D extends Digraph, V extends Vertex<D, V, SIG>, SIG
      */
     protected String internalsString ()
     {
-        StringBuffer sb = new StringBuffer(25);
+        StringBuilder sb = new StringBuilder(100);
+
+        if (this.getGraph()
+                .isVertexCurrent(id)) {
+            sb.append(" current");
+        }
+
+        if (this.getGraph()
+                .isVertexOld(id)) {
+            sb.append(" old");
+        }
 
         sb.append(" ")
           .append(getInDegree());
@@ -478,6 +518,22 @@ public abstract class Vertex<D extends Digraph, V extends Vertex<D, V, SIG>, SIG
           .append(getOutDegree());
 
         return sb.toString();
+    }
+
+    //--------------//
+    // removeSource //
+    //--------------//
+    protected boolean removeSource (V source)
+    {
+        return sources.remove(source);
+    }
+
+    //--------------//
+    // removeTarget //
+    //--------------//
+    protected boolean removeTarget (V target)
+    {
+        return targets.remove(target);
     }
 
     //----------//

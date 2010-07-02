@@ -74,6 +74,10 @@ public class HorizontalOrientation
     public PixelPoint switchRef (Point      cp,
                                  PixelPoint xy)
     {
+        if (cp == null) {
+            return null;
+        }
+
         if (xy == null) {
             xy = new PixelPoint();
         }
@@ -101,6 +105,10 @@ public class HorizontalOrientation
     public PixelRectangle switchRef (Rectangle      cplt,
                                      PixelRectangle xywh)
     {
+        if (cplt == null) {
+            return null;
+        }
+
         if (xywh == null) {
             xywh = new PixelRectangle();
         }

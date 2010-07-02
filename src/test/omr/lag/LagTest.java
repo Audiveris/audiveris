@@ -12,6 +12,7 @@
 package omr.lag;
 
 import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 
 import omr.util.BaseTestCase;
 import static junit.framework.Assert.*;
@@ -48,6 +49,73 @@ public class LagTest
         } catch (IllegalArgumentException expected) {
             checkException(expected);
         }
+    }
+
+    public void testGetRectangleCendroidEmpty ()
+    {
+        MySection s2 = hLag.createSection(180, new Run(100, 10, 127));
+
+        Rectangle roi = new PixelRectangle(0, 0, 20, 20);
+        Point     pt = null;
+
+        pt = s2.getRectangleCentroid(roi);
+        System.out.println("roi=" + roi + " pt=" + pt);
+        assertNull("External roi should give a null centroid", pt);
+    }
+
+    public void testGetRectangleCendroidHori ()
+    {
+        MySection s2 = hLag.createSection(180, new Run(100, 10, 127));
+        s2.append(new Run(102, 20, 127));
+        s2.append(new Run(102, 20, 127));
+        s2.append(new Run(102, 20, 127));
+        s2.setSignature();
+
+        PixelRectangle roi = null;
+        Point          pt = null;
+
+        roi = new PixelRectangle(100, 180, 1, 1);
+        pt = s2.getRectangleCentroid(roi);
+        System.out.println("roi=" + roi + " pt=" + pt);
+
+        PixelPoint expected = new PixelPoint(100, 180);
+        assertEquals("Wrong pt", expected, pt);
+    }
+
+    public void testGetRectangleCendroidNull ()
+    {
+        MySection s2 = hLag.createSection(180, new Run(100, 10, 127));
+
+        try {
+            PixelRectangle roi = null;
+            System.out.println("roi=" + roi);
+
+            Point pt = s2.getRectangleCentroid(roi);
+            fail(
+                "IllegalArgumentException should be raised" +
+                " when rectangle of interest is null");
+        } catch (IllegalArgumentException expected) {
+            checkException(expected);
+        }
+    }
+
+    public void testGetRectangleCendroidVert ()
+    {
+        MySection s2 = vLag.createSection(180, new Run(100, 10, 127));
+        s2.append(new Run(102, 20, 127));
+        s2.append(new Run(102, 20, 127));
+        s2.append(new Run(102, 20, 127));
+        s2.setSignature();
+
+        PixelRectangle roi = null;
+        Point          pt = null;
+
+        roi = new PixelRectangle(179, 102, 4, 3);
+        pt = s2.getRectangleCentroid(roi);
+        System.out.println("roi=" + roi + " pt=" + pt);
+
+        PixelPoint expected = new PixelPoint(181, 103);
+        assertEquals("Wrong pt", expected, pt);
     }
 
     //-----------------//
@@ -204,6 +272,26 @@ public class LagTest
             vLag.getVertexBySignature(s3.getSignature()));
     }
 
+    //---------------//
+    // testTranslate //
+    //---------------//
+    public void testTranslate ()
+    {
+        List<List<Run>> runs = new ArrayList<List<Run>>();
+        vLag.setRuns(runs);
+
+        MySection s1 = vLag.createSection(1, createRun(runs, 1, 2, 5));
+        s1.append(createRun(runs, 2, 0, 3));
+        s1.append(createRun(runs, 3, 1, 2));
+        s1.append(createRun(runs, 4, 1, 1));
+        s1.append(createRun(runs, 5, 1, 6));
+        dump("Before translation", s1);
+
+        PixelPoint vector = new PixelPoint(10, 2);
+        s1.translate(vector);
+        dump("After translation", s1);
+    }
+
     //----------//
     // testVLag //
     //----------//
@@ -257,26 +345,6 @@ public class LagTest
 
         // And an edge between 2 sections (of the same lag)
         MySection.addEdge(s2, s3);
-    }
-
-    //---------------//
-    // testTranslate //
-    //---------------//
-    public void testTranslate()
-    {
-        List<List<Run>> runs = new ArrayList<List<Run>>();
-        vLag.setRuns(runs);
-
-        MySection s1 = vLag.createSection(1, createRun(runs, 1, 2, 5));
-        s1.append(createRun(runs, 2, 0, 3));
-        s1.append(createRun(runs, 3, 1, 2));
-        s1.append(createRun(runs, 4, 1, 1));
-        s1.append(createRun(runs, 5, 1, 6));
-        dump("Before translation", s1);
-
-        PixelPoint vector = new PixelPoint(10, 2);
-        s1.translate(vector);
-        dump("After translation", s1);
     }
 
     //----------------//

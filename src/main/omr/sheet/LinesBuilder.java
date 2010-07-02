@@ -26,7 +26,7 @@ import omr.glyph.ui.GlyphsController;
 import omr.lag.HorizontalOrientation;
 import omr.lag.JunctionDeltaPolicy;
 import omr.lag.Run;
-import omr.lag.Section;
+import omr.lag.Sections;
 import omr.lag.SectionsBuilder;
 import omr.lag.ui.RunBoard;
 import omr.lag.ui.ScrollLagView;
@@ -36,9 +36,7 @@ import omr.log.Logger;
 
 import omr.math.Population;
 
-import omr.sheet.picture.Picture;
 import omr.sheet.ui.PixelBoard;
-import omr.sheet.ui.SheetsController;
 
 import omr.step.Step;
 import omr.step.StepException;
@@ -46,6 +44,9 @@ import omr.step.StepException;
 import omr.stick.StickSection;
 
 import omr.ui.BoardsPane;
+
+import omr.util.Implement;
+import omr.util.WeakPropertyChangeListener;
 
 import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.Action;
@@ -68,14 +69,16 @@ import javax.swing.*;
 /**
  * Class <code>LinesBuilder</code> is dedicated to the retrieval of the grid of
  * staff lines. The various series of staves lines are detected, and their lines
- * are carefully cleaned up when an object crosses them. Note that staves are
- * not yet gathered into Systems, this will be done in the BarsBuilder
- * processing.
+ * are carefully cleaned up when an object crosses them.
+ *
+ * <p>Note that staves are not yet gathered into Systems, this will be done in
+ * the {@link SystemsBuilder} processing.
  *
  * @author Hervé Bitteur
  */
 public class LinesBuilder
     extends GlyphsModel
+    implements StavesBuilder
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -88,7 +91,7 @@ public class LinesBuilder
     //~ Instance fields --------------------------------------------------------
 
     /** Series of horizontal peaks that signal staff areas */
-    private List<StaffInfo> staves = new ArrayList<StaffInfo>();
+    private final List<StaffInfo> staves = new ArrayList<StaffInfo>();
 
     /** Related scale */
     private Scale scale;
@@ -132,6 +135,7 @@ public class LinesBuilder
      *
      * @return the collection of staves found
      */
+    @Implement(StavesBuilder.class)
     public List<StaffInfo> getStaves ()
     {
         return staves;
@@ -144,50 +148,59 @@ public class LinesBuilder
      * Perform the retrieval of the various staves
      * @throws StepException is processing must stop
      */
+    @Implement(StavesBuilder.class)
     public void buildInfo ()
         throws StepException
     {
-        // Check output needed from previous steps
-        scale = sheet.getScale(); // Will run Scale if not yet done
-        sheet.getSkew(); // Will run Skew  if not yet done
-
-        Picture                                 picture = sheet.getPicture();
+        scale = sheet.getScale();
 
         // Populate the lag
         SectionsBuilder<GlyphLag, GlyphSection> lagBuilder;
         lagBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
             lag,
             new JunctionDeltaPolicy(scale.toPixels(constants.maxDeltaLength)));
-        lagBuilder.createSections(picture, 0); // 0 = minRunLength
+        lagBuilder.createSections(sheet.getPicture(), 0); // 0 = minRunLength
         sheet.setHorizontalLag(lag);
 
-        retrieveStaves(retrievePeaks(picture.getHeight()));
+        // This is the heart of staff lines detection ...
+        try {
+            // Retrieve all peaks in horizontal projection
+            List<Peak>           peaks = retrievePeaks(
+                sheet.getPicture().getHeight());
 
-        // Clean up the staff lines in the found staves.
-        cleanup();
+            // Retrieve staff candidates, as sequences of peaks
+            List<StaffCandidate> candidates = retrieveStaffCandidates(peaks);
 
-        // Determine limits in ordinate for each staff area
-        if (!staves.isEmpty()) {
-            computeStaffLimits();
-        }
+            // Build staves out of candidates
+            buildStaves(candidates);
 
-        // User feedback
-        if (staves.size() > 1) {
-            logger.info(staves.size() + " staves");
-        } else if (!staves.isEmpty()) {
-            logger.info(staves.size() + " staff");
-        } else {
-            logger.warning(
-                "No staff found." + " Check Line plot." +
-                " Check Staff Lines ratio in score parameters.");
-        }
+            // Clean up all the staff lines in the found staves.
+            cleanupStaves();
 
-        sheet.getBench()
-             .recordStaveCount(staves.size());
+            // Determine limits in ordinate for each staff area
+            if (!staves.isEmpty()) {
+                computeStaffLimits();
+            }
 
-        // Display the resulting lag is so asked for
-        if (constants.displayFrame.getValue() && (Main.getGui() != null)) {
-            displayFrame();
+            // User feedback
+            if (staves.size() > 1) {
+                logger.info(staves.size() + " staves");
+            } else if (!staves.isEmpty()) {
+                logger.info(staves.size() + " staff");
+            } else {
+                logger.warning(
+                    "No staff found." + " Check Line plot." +
+                    " Check Staff Lines ratio in score parameters.");
+            }
+
+            // Record step information
+            sheet.getBench()
+                 .recordStaveCount(staves.size());
+        } finally {
+            // Display the resulting lag if so asked for
+            if (constants.displayFrame.getValue() && (Main.getGui() != null)) {
+                displayFrame();
+            }
         }
 
         if (staves.isEmpty()) {
@@ -201,15 +214,36 @@ public class LinesBuilder
     /**
      * Build and display the histogram of projections
      */
+    @Implement(StavesBuilder.class)
     public void displayChart ()
     {
         writePlot(histo, maxHisto, histoRatio);
     }
 
-    //---------//
-    // cleanup //
-    //---------//
-    private void cleanup ()
+    //-------------//
+    // buildStaves //
+    //-------------//
+    /**
+     * Build each staff out of its staff candidate
+     *
+     * @param staffCandidates the collection of staff candidates
+     */
+    private void buildStaves (List<StaffCandidate> staffCandidates)
+        throws StepException
+    {
+        // Use a new staff retriever
+        StaffBuilder staffBuilder = new StaffBuilder(sheet, lag);
+
+        for (StaffCandidate candidate : staffCandidates) {
+            StaffInfo info = staffBuilder.buildInfo(candidate);
+            staves.add(info);
+        }
+    }
+
+    //---------------//
+    // cleanupStaves //
+    //---------------//
+    private void cleanupStaves ()
     {
         for (StaffInfo staff : staves) {
             staff.cleanup();
@@ -263,7 +297,7 @@ public class LinesBuilder
     private void displayFrame ()
     {
         // Sections that, as members of staff lines, will be treated as specific
-        List<GlyphSection> members = new ArrayList<GlyphSection>();
+        List<GlyphSection> specifics = new ArrayList<GlyphSection>();
 
         /*
          * Populate the specific sections, to hide or display the removed
@@ -272,14 +306,15 @@ public class LinesBuilder
 
         // Browse StaffInfos
         for (StaffInfo staff : staves) {
+
             // Browse LineInfos
             for (LineInfo line : staff.getLines()) {
-                members.addAll(line.getSections());
+                specifics.addAll(line.getSections());
             }
         }
 
         GlyphsController controller = new GlyphsController(this);
-        lagView = new MyView(lag, members, controller);
+        lagView = new MyView(lag, specifics, controller);
 
         final String  unit = sheet.getRadix() + ":LinesBuilder";
         BoardsPane    boardsPane = new BoardsPane(
@@ -384,25 +419,20 @@ public class LinesBuilder
         return peaks;
     }
 
-    //----------------//
-    // retrieveStaves //
-    //----------------//
+    //-------------------------//
+    // retrieveStaffCandidates //
+    //-------------------------//
     /**
-     * Staff are detected in the list of (raw) peaks, simply by looking for
-     * regular series of peaks.
-     *
-     * @param peaks the raw list of peaks found
+     * Out of the collection of detected horizontal peaks, retrieve sequences of
+     * (5) peaks that are very likely to correspond to a staff.
+     * @param peaks the whole collection of horizontal peaks
+     * @return the collection of staff candidates
      */
-    private void retrieveStaves (List<Peak> peaks)
+    private List<StaffCandidate> retrieveStaffCandidates (List<Peak> peaks)
         throws StepException
     {
-        // One single iterator, since from peak area to peak area, we keep
-        // moving forward in an ordered list of vertices
-        ArrayList<GlyphSection> vertices = new ArrayList<GlyphSection>(
-            lag.getVertices());
-        Collections.sort(vertices, Section.idComparator);
-
-        ListIterator<GlyphSection> vi = vertices.listIterator();
+        List<StaffCandidate> candidateStaves = new ArrayList<StaffCandidate>();
+        int                  staffCount = 0;
 
         // Maximum deviation accepted in the series of peaks in a staff
         final double maxDeviation = scale.toPixelsDouble(
@@ -420,9 +450,6 @@ public class LinesBuilder
         int        lastPeak = 0;
         Population intervals = new Population();
         LineBuilder.reset();
-
-        // Use a new staff retriever
-        StaffBuilder staffBuilder = new StaffBuilder(sheet, lag, vi);
 
         // Browse through the peak list
         Peak prevPeak = null;
@@ -510,14 +537,11 @@ public class LinesBuilder
                             lastPeak);
                     }
 
-                    staves.add(
-                        staffBuilder.buildInfo(
-                            peaks.subList(firstPeak, lastPeak + 1),
-                            intervals.getMeanValue()));
-
-                    if (logger.isFineEnabled()) {
-                        System.out.println();
-                    }
+                    StaffCandidate candidate = new StaffCandidate(
+                        ++staffCount,
+                        peaks.subList(firstPeak, lastPeak + 1),
+                        intervals.getMeanValue());
+                    candidateStaves.add(candidate);
 
                     // Move to the next peak, candidate for starting a new
                     // staff
@@ -532,6 +556,8 @@ public class LinesBuilder
                 }
             }
         }
+
+        return candidateStaves;
     }
 
     //-----------//
@@ -590,6 +616,11 @@ public class LinesBuilder
     public static class LinesParameters
         extends AbstractBean
     {
+        //~ Static fields/initializers -----------------------------------------
+
+        /** Should the original staff lines be painted */
+        public static final String ORIGINAL_LINES_PAINTING = "linePainting";
+
         //~ Methods ------------------------------------------------------------
 
         //-------------//
@@ -608,7 +639,7 @@ public class LinesBuilder
             boolean oldValue = constants.displayOriginalStaffLines.getValue();
             constants.displayOriginalStaffLines.setValue(value);
             firePropertyChange(
-                "linePainting",
+                ORIGINAL_LINES_PAINTING,
                 oldValue,
                 constants.displayOriginalStaffLines.getValue());
         }
@@ -629,19 +660,9 @@ public class LinesBuilder
          * lines
          * @param e the event that triggered this action
          */
-        @Action(selectedProperty = "linePainting")
+        @Action(selectedProperty = ORIGINAL_LINES_PAINTING)
         public void toggleLines (ActionEvent e)
         {
-            // Trigger a repaint if needed
-            Sheet currentSheet = SheetsController.selectedSheet();
-
-            if (currentSheet != null) {
-                LinesBuilder builder = currentSheet.getLinesBuilder();
-
-                if ((builder != null) && (builder.lagView != null)) {
-                    builder.lagView.repaint();
-                }
-            }
         }
 
         //~ Inner Classes ------------------------------------------------------
@@ -715,6 +736,11 @@ public class LinesBuilder
                 controller,
                 null);
             setName("LinesBuilder-View");
+
+            // (Weakly) listening on LineParameters properties
+            LinesParameters.getInstance()
+                           .addPropertyChangeListener(
+                new WeakPropertyChangeListener(this));
         }
 
         //~ Methods ------------------------------------------------------------

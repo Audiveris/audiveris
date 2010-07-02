@@ -130,7 +130,7 @@ public class BasicGlyph
         return geometry.getAreaCenter();
     }
 
-    public Map<String, Rectangle> getAttachments ()
+    public Map<String, java.awt.Shape> getAttachments ()
     {
         return display.getAttachments();
     }
@@ -445,10 +445,10 @@ public class BasicGlyph
         return environment.isWithLedger();
     }
 
-    public void addAttachment (String    id,
-                               Rectangle rectangle)
+    public void addAttachment (String         id,
+                               java.awt.Shape attachment)
     {
-        display.addAttachment(id, rectangle);
+        display.addAttachment(id, attachment);
     }
 
     public void addGlyphSections (Glyph   other,

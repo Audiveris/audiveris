@@ -46,7 +46,7 @@ import java.util.List;
  *
  * <li> At line creation, the whole area is scanned to retrieve core sections
  * then peripheral and internal sections. This is done by the inherited
- * SticksBuilder class. This phase is done by {@link #buildInfo()}.</li>
+ * {@link SticksBuilder} class. This phase is done by {@link #buildInfo()}.</li>
  *
  * <li> Then, after all lines of the containing staff have been processed, we
  * have a better knowledge of what left and right extrema should be. We use this
@@ -75,15 +75,14 @@ public class LineBuilder
     // Allocate comparator once & for all
     private static final StickStartComparator  stickStartComparator = new StickStartComparator();
     private static final StickWeightComparator stickWeightComparator = new StickWeightComparator();
-    private static int                         globalId = 0;
+
+    // To assign unique ids
+    private static int          globalId = 0;
 
     //~ Instance fields --------------------------------------------------------
 
     /** Best line equation */
     private Line line = null;
-
-    /** Source for sections in this area */
-    ///private LineSource source;
 
     /** Hole areas */
     private List<SticksBuilder> holeAreas = new ArrayList<SticksBuilder>();
@@ -114,16 +113,14 @@ public class LineBuilder
      * @param hLag       the containing horizontal lag
      * @param yTop       ordinate at the beginning of the peak
      * @param yBottom    ordinate at the end of the peak
-     * @param vi         the underlying vertex iterator
      * @param sheet      the sheet on which the analysis is performed
      * @param staffScale the specific scale of the containing staff
      */
-    public LineBuilder (GlyphLag                   hLag,
-                        int                        yTop,
-                        int                        yBottom,
-                        ListIterator<GlyphSection> vi,
-                        Sheet                      sheet,
-                        Scale                      staffScale)
+    public LineBuilder (GlyphLag hLag,
+                        int      yTop,
+                        int      yBottom,
+                        Sheet    sheet,
+                        Scale    staffScale)
     {
         super(
             sheet,
@@ -131,7 +128,7 @@ public class LineBuilder
             new LineSource(
                 yTop - staffScale.toPixels(constants.yMargin),
                 yBottom + staffScale.toPixels(constants.yMargin),
-                vi),
+                hLag.getVertices()),
             sheet.getScale().toPixels(constants.coreSectionLength), // minCoreLength
             constants.maxAdjacency.getValue(), // maxAdjacency
             staffScale.toPixels(constants.maxThickness),
@@ -669,9 +666,9 @@ public class LineBuilder
         //------------//
         // LineSource //
         //------------//
-        public LineSource (int                        yMin,
-                           int                        yMax,
-                           ListIterator<GlyphSection> it)
+        public LineSource (int                      yMin,
+                           int                      yMax,
+                           Collection<GlyphSection> browsedSections)
         {
             super(null, null);
 
@@ -679,16 +676,14 @@ public class LineBuilder
             this.yMax = yMax;
 
             // Build my private list upfront
-            while (it.hasNext()) {
-                // Update cached data
-                GlyphSection sct = it.next();
-
+            for (GlyphSection sct : browsedSections) {
                 if (isInArea(sct)) {
                     sections.add(sct);
-                } else if (sct.getFirstPos() > yMax) {
-                    it.previous();
 
-                    break;
+                    //                } else if (sct.getFirstPos() > yMax) {
+                    //                    it.previous();
+                    //
+                    //                    break;
                 }
             }
 

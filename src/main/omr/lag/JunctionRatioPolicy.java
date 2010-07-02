@@ -13,7 +13,7 @@ package omr.lag;
 
 
 /**
- * Class <code>JunctionRatioPolicy</code> defined a junction policy based on the
+ * Class <code>JunctionRatioPolicy</code> defines a junction policy based on the
  * ratio between the length of the candidate run and the mean length of the
  * section runs so far.
  *
@@ -25,14 +25,14 @@ public class JunctionRatioPolicy
     //~ Instance fields --------------------------------------------------------
 
     /**
-     * Maximum value acceptable for height ratio, for a ratio criteria
+     * Maximum value acceptable for length ratio, for a ratio criteria
      */
-    private final double maxHeightRatio;
+    private final double maxLengthRatio;
 
     /**
-     * Minimum value acceptable for height ratio, for a ratio criteria
+     * Minimum value acceptable for length ratio, for a ratio criteria
      */
-    private final double minHeightRatio;
+    private final double minLengthRatio;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -43,13 +43,13 @@ public class JunctionRatioPolicy
      * Creates a policy based on ratio of run length versus mean length of
      * section runs
      *
-     * @param maxHeightRatio maximum difference ratio to continue the
+     * @param maxLengthRatio maximum difference ratio to continue the
      *                       current section
      */
-    public JunctionRatioPolicy (double maxHeightRatio)
+    public JunctionRatioPolicy (double maxLengthRatio)
     {
-        this.maxHeightRatio = maxHeightRatio;
-        this.minHeightRatio = 1f / maxHeightRatio;
+        this.maxLengthRatio = maxLengthRatio;
+        this.minLengthRatio = 1f / maxLengthRatio;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -70,9 +70,9 @@ public class JunctionRatioPolicy
                                   Section section)
     {
         // Check is based on ratio of lengths
-        final float ratio = (float) run.getLength() / (float) section.getMeanRunLength();
+        final double ratio = (double) run.getLength() / section.getMeanRunLength();
 
-        return (ratio <= maxHeightRatio) && (ratio >= minHeightRatio);
+        return (ratio <= maxLengthRatio) && (ratio >= minLengthRatio);
     }
 
     //----------//
@@ -86,7 +86,7 @@ public class JunctionRatioPolicy
     @Override
     public String toString ()
     {
-        return "{JunctionRatioPolicy" + " maxHeightRatio=" + maxHeightRatio +
-               " minHeightRatio=" + minHeightRatio + "}";
+        return "{JunctionRatioPolicy" + " maxLengthRatio=" + maxLengthRatio +
+               " minLengthRatio=" + minLengthRatio + "}";
     }
 }

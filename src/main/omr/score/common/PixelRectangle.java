@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.score.common;
 
-import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
