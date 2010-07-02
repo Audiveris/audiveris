@@ -359,16 +359,10 @@ public class GlyphsBuilder
                                         int                 maxItemWidth,
                                         PixelRectangle      box)
     {
-        int startIdx = Dash.getDashIndexAtX(items, box.x - maxItemWidth);
-
-        if (startIdx < items.size()) {
-            int stopIdx = Dash.getDashIndexAtX(items, box.x + box.width + 1); // Not sure we need "+1"
-
-            for (Dash item : items.subList(startIdx, stopIdx)) {
-                if (item.getContourBox()
-                        .intersects(box)) {
-                    return true;
-                }
+        for (Dash item : items) {
+            if (item.getContourBox()
+                    .intersects(box)) {
+                return true;
             }
         }
 

@@ -84,50 +84,6 @@ public abstract class Dash
         return box;
     }
 
-    //------------------//
-    // getDashIndexAtX //
-    //------------------//
-    /**
-     * Retrieve the index of the very first dash in the provided ordered list,
-     * whose left abscissa is equal or greater than the provided x value.
-     *
-     * @param list the list to search, ordered by increasing abscissa
-     * @param x the desired abscissa
-     * @return the index of the first suitable dash, or list.size() if no such
-     * dash can be found.
-     */
-    public static int getDashIndexAtX (List<?extends Dash> list,
-                                       int                 x)
-    {
-        int low = 0;
-        int high = list.size() - 1;
-
-        while (low <= high) {
-            int mid = (low + high) >> 1;
-            int gx = list.get(mid)
-                         .getContourBox().x;
-
-            if (gx < x) {
-                low = mid + 1;
-            } else if (gx > x) {
-                high = mid - 1;
-            } else {
-                // We are pointing to a dash with desired x
-                // Let's now pick the very first one
-                for (mid = mid - 1; mid >= 0; mid--) {
-                    if (list.get(mid)
-                            .getContourBox().x < x) {
-                        break;
-                    }
-                }
-
-                return mid + 1;
-            }
-        }
-
-        return low;
-    }
-
     //-----------//
     // getDashOf //
     //-----------//

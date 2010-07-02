@@ -1471,7 +1471,10 @@ public class Sheet
 
         for (Ledger ledger : getHorizontals()
                                  .getLedgers()) {
-            SystemInfo system = getSystemOf(ledger.getStick());
+            GlyphSection section = ledger.getStick()
+                                         .getFirstSection();
+            SystemInfo   system = getSystemOf(
+                section.getGraph().switchRef(section.getCentroid(), null));
 
             if (system != null) {
                 system.getLedgers()
@@ -1481,7 +1484,10 @@ public class Sheet
 
         for (Ending ending : getHorizontals()
                                  .getEndings()) {
-            SystemInfo system = getSystemOf(ending.getStick());
+            GlyphSection section = ending.getStick()
+                                         .getFirstSection();
+            SystemInfo   system = getSystemOf(
+                section.getGraph().switchRef(section.getCentroid(), null));
 
             if (system != null) {
                 system.getEndings()
