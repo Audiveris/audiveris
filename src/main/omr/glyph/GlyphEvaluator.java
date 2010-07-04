@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.glyph;
 
-import omr.Main;
 import omr.WellKnowns;
 
 import omr.constant.ConstantSet;
@@ -139,6 +138,25 @@ public abstract class GlyphEvaluator
     }
 
     //-------------------//
+    // getParameterIndex //
+    //-------------------//
+    /**
+     * Report the index of parameters for the provided label
+     * @param label the provided label
+     * @return the parameter index
+     */
+    public static int getParameterIndex (String label)
+    {
+        for (int i = 0; i < LabelsHolder.labels.length; i++) {
+            if (LabelsHolder.labels[i].equals(label)) {
+                return i;
+            }
+        }
+
+        throw new IllegalArgumentException("Invalid parameter label: " + label);
+    }
+
+    //-------------------//
     // getParameterLabel //
     //-------------------//
     /**
@@ -193,7 +211,7 @@ public abstract class GlyphEvaluator
             ins[i] = k[i];
         }
 
-        // We append flags and step position
+        // We append ledger presence and stem count)
         int i = inMoments;
         /* 10 */ ins[i++] = boolAsDouble(glyph.isWithLedger());
         /* 11 */ ins[i++] = glyph.getStemNumber();
@@ -471,58 +489,6 @@ public abstract class GlyphEvaluator
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
-    //-------------//
-    // Constraints //
-    //-------------//
-    public static class Constraints
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /** Related shape */
-        private final Shape shape;
-
-        /** Minimum values */
-        Double[] minima = new Double[paramCount];
-
-        /** Maximum values */
-        Double[] maxima = new Double[paramCount];
-
-        //~ Constructors -------------------------------------------------------
-
-        public Constraints (Shape shape)
-        {
-            this.shape = shape;
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        /**
-         * Check if the Shape constraints are matched  for the glyph at hand
-         * @param glyph the glyph to be checked
-         * @return true if OK
-         */
-        public boolean areOkFor (Glyph glyph)
-        {
-            double[] ins = feedInput(glyph, null);
-
-            for (int i = 0; i < paramCount; i++) {
-                Double min = minima[i];
-
-                if ((min != null) && (ins[i] < min)) {
-                    return false;
-                }
-
-                Double max = maxima[i];
-
-                if ((max != null) && (ins[i] > max)) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-    }
 
     //-----------//
     // Constants //

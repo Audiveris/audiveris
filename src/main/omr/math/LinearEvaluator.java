@@ -120,6 +120,78 @@ public class LinearEvaluator
         return parameters.length;
     }
 
+    //------------//
+    // setMaximum //
+    //------------//
+    /**
+     * Set the constraint test on maximum for a parameter of the provided
+     * category
+     * @param paramIndex the impacted parameter
+     * @param categoryId the targeted category
+     * @param val the new maximum value (null for disabling the test)
+     */
+    public void setMaximum (int    paramIndex,
+                            String categoryId,
+                            Double val)
+    {
+        CategoryParam catParam = checkCategoryParam(paramIndex, categoryId);
+        catParam.max = val;
+    }
+
+    //------------//
+    // getMaximum //
+    //------------//
+    /**
+     * Get the constraint test on maximum for a parameter of the provided
+     * category
+     * @param paramIndex the impacted parameter
+     * @param categoryId the targeted category
+     * @return the current maximum value (null if test is disabled)
+     */
+    public Double getMaximum (int    paramIndex,
+                              String categoryId)
+    {
+        CategoryParam catParam = checkCategoryParam(paramIndex, categoryId);
+
+        return catParam.max;
+    }
+
+    //------------//
+    // setMinimum //
+    //------------//
+    /**
+     * Set the constraint test on minimum for a parameter of the provided
+     * category
+     * @param paramIndex the impacted parameter
+     * @param categoryId the targeted category
+     * @param val the new minimum value (null for disabling the test)
+     */
+    public void setMinimum (int    paramIndex,
+                            String categoryId,
+                            Double val)
+    {
+        CategoryParam catParam = checkCategoryParam(paramIndex, categoryId);
+        catParam.min = val;
+    }
+
+    //------------//
+    // getMinimum //
+    //------------//
+    /**
+     * Get the constraint test on minimum for a parameter of the provided
+     * category
+     * @param paramIndex the impacted parameter
+     * @param categoryId the targeted category
+     * @return the current minimum value (null if test is disabled)
+     */
+    public Double getMinimum (int    paramIndex,
+                              String categoryId)
+    {
+        CategoryParam catParam = checkCategoryParam(paramIndex, categoryId);
+
+        return catParam.min;
+    }
+
     //------------------//
     // categoryDistance //
     //------------------//
@@ -134,21 +206,26 @@ public class LinearEvaluator
     public double categoryDistance (double[] pattern,
                                     String   categoryId)
     {
-        // Check sizes
-        if ((pattern == null) || (pattern.length != getInputSize())) {
-            throw new IllegalArgumentException(
-                "Pattern is null or inconsistent with the LinearEvaluator");
-        }
+        return checkArguments(pattern, categoryId)
+                   .distance(pattern, parameters);
+    }
 
-        // Check category label
-        Category category = categories.get(categoryId);
-
-        if (category == null) {
-            throw new IllegalArgumentException(
-                "Unknown category: " + categoryId);
-        }
-
-        return category.distance(pattern, parameters);
+    //-----------------//
+    // categoryMatched //
+    //-----------------//
+    /**
+     * Perform a basic check on max / min bounds, if any, for each parameter
+     * value of the provided pattern
+     * @param pattern the collection of parameters to check with respect to
+     * targeted category
+     * @param categoryId the targeted category
+     * @return true if all constraints are matched, false otherwise
+     */
+    public boolean categoryMatched (double[] pattern,
+                                    String   categoryId)
+    {
+        return checkArguments(pattern, categoryId)
+                   .matched(pattern, parameters);
     }
 
     //------//
@@ -161,17 +238,14 @@ public class LinearEvaluator
         System.out.println("===============");
         System.out.println();
 
-        // Input
-        System.out.print("Inputs  : " + getInputSize());
-        System.out.println(" parameters\n");
+        // Input size
+        System.out.println("Inputs  : " + getInputSize() + " parameters");
 
-        // Output
-        System.out.print("Outputs : " + categories.keySet().size());
-        System.out.println(" categories\n");
+        // Output size
+        System.out.println(
+            "Outputs : " + categories.keySet().size() + " categories");
 
-        // Known output
-        System.out.println("Known   : " + categories.size());
-
+        // Description of each category
         for (Category category : categories.values()) {
             category.dump();
         }
@@ -212,22 +286,6 @@ public class LinearEvaluator
         logger.fine("LinearEvaluator marshalled");
     }
 
-    //---------------//
-    // patternDeltas //
-    //---------------//
-    public double[] patternDeltas (double[] one,
-                                   double[] two)
-    {
-        double[] table = new double[getInputSize()];
-
-        for (int p = 0; p < table.length; p++) {
-            double dif = one[p] - two[p];
-            table[p] = dif * dif;
-        }
-
-        return table;
-    }
-
     //-----------------//
     // patternDistance //
     //-----------------//
@@ -266,7 +324,7 @@ public class LinearEvaluator
     // train //
     //-------//
     /**
-     * Launch the training of the evaluator
+     * Perform the training of the evaluator
      *
      * @param samples a collection of samples (category + pattern)
      */
@@ -278,14 +336,14 @@ public class LinearEvaluator
                 "samples collection is null or empty");
         }
 
-        // Reset counters
-        for (Category desc : categories.values()) {
-            for (CategoryParam param : desc.params) {
+        // Reset counters for each category, if needed
+        for (Category category : categories.values()) {
+            for (CategoryParam param : category.params) {
                 param.reset();
             }
         }
 
-        // Accumulate
+        // Accumulate data from samples into categories descriptors
         for (Sample sample : samples) {
             Category category = categories.get(sample.category);
 
@@ -303,7 +361,7 @@ public class LinearEvaluator
             }
         }
 
-        // Determine means & weights
+        // Compute parameters means & weights for each category
         for (Category category : categories.values()) {
             if (logger.isFineEnabled()) {
                 logger.fine(
@@ -314,7 +372,8 @@ public class LinearEvaluator
             category.compute();
         }
 
-        // Compute default weights (using all sample populations)
+        // Compute default weight for each parameter
+        // (using the sample populations of all categories)
         for (int p = 0; p < parameters.length; p++) {
             Population sample = new Population();
 
@@ -322,7 +381,7 @@ public class LinearEvaluator
                 CategoryParam param = category.params[p];
 
                 if (param.training != CategoryParam.TrainingStatus.NONE) {
-                    sample.includePopulation(param.sample);
+                    sample.includePopulation(param.population);
                 }
             }
 
@@ -390,55 +449,47 @@ public class LinearEvaluator
         return jaxbContext;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
-
-    //-----------//
-    // Parameter //
-    //-----------//
-    /**
-     * Description of an input parameter for the LinearEvaluator
-     */
-    public static class Parameter
+    //----------------//
+    // checkArguments //
+    //----------------//
+    private Category checkArguments (double[] pattern,
+                                     String   categoryId)
     {
-        //~ Instance fields ----------------------------------------------------
-
-        /** Default weight */
-        @XmlAttribute(name = "weight")
-        public double defaultWeight;
-
-        /** Name used for this parameter */
-        @XmlID
-        @XmlAttribute(name = "name")
-        public final String name;
-
-        //~ Constructors -------------------------------------------------------
-
-        /**
-         * Creates a new Parameter object.
-         *
-         * @param name the unique name for this parameter
-         */
-        public Parameter (String name)
-        {
-            this.name = name;
+        // Check sizes
+        if ((pattern == null) || (pattern.length != getInputSize())) {
+            throw new IllegalArgumentException(
+                "Pattern is null or inconsistent with the LinearEvaluator");
         }
 
-        /**
-         * Needed by JAXB
-         */
-        public Parameter ()
-        {
-            name = null;
+        // Check category label
+        Category category = categories.get(categoryId);
+
+        if (category == null) {
+            throw new IllegalArgumentException(
+                "Unknown category: " + categoryId);
         }
 
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public String toString ()
-        {
-            return "{Param " + name + " defaultWeight:" + defaultWeight + "}";
-        }
+        return category;
     }
+
+    //--------------------//
+    // checkCategoryParam //
+    //--------------------//
+    private CategoryParam checkCategoryParam (int    paramIndex,
+                                              String categoryId)
+    {
+        // Check category label
+        Category category = categories.get(categoryId);
+
+        if (category == null) {
+            throw new IllegalArgumentException(
+                "Unknown category: " + categoryId);
+        }
+
+        return category.params[paramIndex];
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
 
     //--------//
     // Sample //
@@ -451,7 +502,10 @@ public class LinearEvaluator
     {
         //~ Instance fields ----------------------------------------------------
 
-        public final String   category;
+        /** The known category */
+        public final String category;
+
+        /** The observed pattern */
         public final double[] pattern;
 
         //~ Constructors -------------------------------------------------------
@@ -615,7 +669,7 @@ public class LinearEvaluator
 
         public int getCardinality ()
         {
-            return params[0].sample.getCardinality();
+            return params[0].population.getCardinality();
         }
 
         /**
@@ -702,6 +756,7 @@ public class LinearEvaluator
             }
         }
 
+        /** Include data from the provided pattern into category descriptor */
         public void include (double[] pattern)
         {
             if ((pattern == null) || (pattern.length != params.length)) {
@@ -712,6 +767,41 @@ public class LinearEvaluator
             for (int p = 0; p < params.length; p++) {
                 params[p].includeValue(pattern[p]);
             }
+        }
+
+        public boolean matched (double[]    pattern,
+                                Parameter[] parameters)
+        {
+            for (int p = 0; p < params.length; p++) {
+                double        val = pattern[p];
+                CategoryParam catParam = params[p];
+                Double        min = catParam.min;
+
+                if ((min != null) && (val < min)) {
+                    if (logger.isFineEnabled()) {
+                        logger.fine(
+                            "Category " + id + " failed on minimum for " +
+                            parameters[p].name + " " + val + " < " + min);
+                    }
+
+                    return false;
+                }
+
+                Double max = catParam.max;
+
+                if ((max != null) && (val > max)) {
+                    if (logger.isFineEnabled()) {
+                        logger.fine(
+                            "Category " + id + " failed on maximum for " +
+                            parameters[p].name + " " + val + " > " + max);
+                    }
+
+                    return false;
+                }
+            }
+
+            // Everything is OK
+            return true;
         }
     }
 
@@ -807,12 +897,20 @@ public class LinearEvaluator
 
         //~ Instance fields ----------------------------------------------------
 
-        /** Sample to compute mean value & std deviation */
-        private Population sample = new Population();
+        /** Population to compute mean value & std deviation */
+        private Population population = new Population();
+
+        /** Maximum value for this parameter */
+        @XmlAttribute(name = "max")
+        private Double max = null;
 
         /** Mean value for this parameter */
         @XmlAttribute(name = "mean")
         private double mean;
+
+        /** Minimum value for this parameter */
+        @XmlAttribute(name = "min")
+        private Double min = null;
 
         /** Weight for this parameter */
         @XmlAttribute(name = "weight")
@@ -846,16 +944,16 @@ public class LinearEvaluator
         /** Compute the param characteristics out of its data sample */
         public void compute ()
         {
-            int count = sample.getCardinality();
+            int count = population.getCardinality();
 
             if (count > 0) {
-                mean = sample.getMeanValue();
+                mean = population.getMeanValue();
             }
 
             if (count == 1) {
                 training = TrainingStatus.SINGLE_DATA;
             } else {
-                double var = sample.getVariance();
+                double var = population.getVariance();
 
                 if (var < EPSILON) {
                     training = TrainingStatus.IDENTICAL_VALUES;
@@ -870,18 +968,27 @@ public class LinearEvaluator
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.append(" param=")
+            sb.append(" ")
               .append(parameter);
+
             sb.append(" training=")
               .append(training);
+
+            sb.append(" min=")
+              .append(min);
+
             sb.append(" mean=")
               .append(mean);
+
+            sb.append(" max=")
+              .append(max);
+
             sb.append(" weight=")
               .append(weight);
 
-            if (sample.getCardinality() > 1) {
+            if (population.getCardinality() > 1) {
                 sb.append(" var=")
-                  .append(sample.getVariance());
+                  .append(population.getVariance());
             }
 
             System.out.println(sb);
@@ -889,12 +996,29 @@ public class LinearEvaluator
 
         public void includeValue (double val)
         {
-            sample.includeValue(val);
+            // Cumulate into Population 
+            population.includeValue(val);
+
+            // Handle min value
+            if (min != null) {
+                min = Math.min(min, val);
+            } else {
+                min = val;
+            }
+
+            // Handle max value
+            if (max != null) {
+                max = Math.max(max, val);
+            } else {
+                max = val;
+            }
         }
 
         public void reset ()
         {
-            sample.reset();
+            population.reset();
+            min = null;
+            max = null;
             mean = 0;
             weight = 0;
         }
@@ -937,6 +1061,54 @@ public class LinearEvaluator
             default :
                 return weight;
             }
+        }
+    }
+
+    //-----------//
+    // Parameter //
+    //-----------//
+    /**
+     * Description of an input parameter for the LinearEvaluator
+     */
+    private static class Parameter
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Default weight */
+        @XmlAttribute(name = "weight")
+        public double defaultWeight;
+
+        /** Name used for this parameter */
+        @XmlID
+        @XmlAttribute(name = "name")
+        public final String name;
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a new Parameter object.
+         *
+         * @param name the unique name for this parameter
+         */
+        public Parameter (String name)
+        {
+            this.name = name;
+        }
+
+        /**
+         * Needed by JAXB
+         */
+        public Parameter ()
+        {
+            name = null;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public String toString ()
+        {
+            return "{Param " + name + " defaultWeight:" + defaultWeight + "}";
         }
     }
 }

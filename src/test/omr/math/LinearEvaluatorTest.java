@@ -95,6 +95,55 @@ public class LinearEvaluatorTest
     }
 
     /**
+     * Test of categoryMatchedmethod, of class LinearEvaluator.
+     */
+    @Test
+    public void testCategoryMatchedTrue ()
+    {
+        System.out.println("\n--categoryMatchedTrue");
+
+        double[]        pattern = new double[] { 92, 218 };
+        String          category = "C";
+        LinearEvaluator instance = createTrainedInstance();
+        boolean         expResult = true;
+        boolean         result = instance.categoryMatched(pattern, category);
+        assertEquals(expResult, result);
+    }
+
+    /**
+     * Test of categoryMatchedmethod, of class LinearEvaluator.
+     */
+    @Test
+    public void testCategoryMatchedFalse ()
+    {
+        System.out.println("\n--categoryMatchedFalse");
+
+        double[]        pattern = new double[] { 88, 218 };
+        String          category = "C";
+        LinearEvaluator instance = createTrainedInstance();
+        boolean         expResult = false;
+        boolean         result = instance.categoryMatched(pattern, category);
+        assertEquals(expResult, result);
+    }
+
+    /**
+     * Test of categoryMatchedmethod, of class LinearEvaluator.
+     */
+    @Test
+    public void testCategoryMatchedDisabled ()
+    {
+        System.out.println("\n--categoryMatchedDisabled");
+
+        double[]        pattern = new double[] { 88, 218 };
+        String          category = "C";
+        LinearEvaluator instance = createTrainedInstance();
+        instance.setMinimum(0, category, null);
+        boolean         expResult = true;
+        boolean         result = instance.categoryMatched(pattern, category);
+        assertEquals(expResult, result);
+    }
+
+    /**
      * Test of dump method, of class LinearEvaluator.
      */
     @Test
@@ -175,7 +224,7 @@ public class LinearEvaluatorTest
     }
 
     /**
-     * Test of patternDeltasmethod, of class LinearEvaluator.
+     * Test of Printer methods, of class LinearEvaluator.
      */
     @Test
     public void testPrinter ()

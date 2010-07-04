@@ -28,7 +28,10 @@ import java.util.*;
 
 /**
  * Class <code>GlyphChecks</code> gathers additional specific glyph checks,
- * meant to complement the work done by the neural network evaluator
+ * still working on symbols in isolation from other symbols, meant to complement
+ * the work done by the neural network evaluator.
+ * <p>Checks made in relation with other symbols are the purpose of the
+ * patterns step
  *
  * @author Hervé Bitteur
  */
@@ -68,10 +71,12 @@ public class GlyphChecks
      * Run a check on the provided glyph, according to the candidate shape
      * @param shape the shape found by the evaluator
      * @param glyph the glyph to check for a shape
+     * @param features the glyph features
      * @return the inferred shape if the shape is confirmed, null otherwise
      */
-    public static Shape specificCheck (Shape shape,
-                                       Glyph glyph)
+    public static Shape specificCheck (Shape    shape,
+                                       Glyph    glyph,
+                                       double[] features)
     {
         Collection<Checker> checks = checkerMap.get(shape);
 
@@ -82,7 +87,7 @@ public class GlyphChecks
         Shape res = null;
 
         for (Checker checker : checks) {
-            res = checker.check(shape, glyph);
+            res = checker.check(shape, glyph, features);
 
             if (res == null) {
                 return null;
@@ -139,21 +144,26 @@ public class GlyphChecks
      */
     private static void registerChecks ()
     {
-        // General check on weight, width, height
+        // General constraint check on weight, width, height
         new Checker(allSymbols) {
-                public Shape check (Shape shape,
-                                    Glyph glyph)
+                public Shape check (Shape    shape,
+                                    Glyph    glyph,
+                                    double[] features)
                 {
-                    // Retrieve constraints, if any, related to given shape
-                    // Apply each constraint in turn
-                    //if (glyph.getNormalizedWeight() < minWeight)
-                    return shape; // Pass through for the time being
+                    // Apply registered parameters constraints
+                    if (GlyphRegression.getInstance()
+                                       .constraintsMatched(glyph, shape)) {
+                        return shape;
+                    } else {
+                        return null;
+                    }
                 }
             };
 
         new Checker(WHOLE_OR_HALF_REST) {
-                public Shape check (Shape shape,
-                                    Glyph glyph)
+                public Shape check (Shape    shape,
+                                    Glyph    glyph,
+                                    double[] features)
                 {
                     int pp = (int) Math.rint(2 * glyph.getPitchPosition());
 
@@ -168,21 +178,12 @@ public class GlyphChecks
             };
 
         new Checker(Clefs) {
-                public Shape check (Shape shape,
-                                    Glyph glyph)
+                public Shape check (Shape    shape,
+                                    Glyph    glyph,
+                                    double[] features)
                 {
-                    // Check reasonable height
-                    if (glyph.getNormalizedHeight() > constants.maxClefHeight.getValue()) {
-                        return null;
-                    }
-
-                    // Check minimum width
-                    if (glyph.getNormalizedWidth() < constants.minClefWidth.getValue()) {
-                        return null;
-                    }
-
-                    // Check distance from closest staff
-                    if (Math.abs(glyph.getPitchPosition()) >= 15) {
+                    // Must be within staff height
+                    if (Math.abs(glyph.getPitchPosition()) >= 4) {
                         return null;
                     }
 
@@ -191,8 +192,9 @@ public class GlyphChecks
             };
 
         new Checker(BEAM_HOOK) {
-                public Shape check (Shape shape,
-                                    Glyph glyph)
+                public Shape check (Shape    shape,
+                                    Glyph    glyph,
+                                    double[] features)
                 { // Check we have exactly 1 stem
 
                     if (glyph.getStemNumber() != 1) {
@@ -231,8 +233,9 @@ public class GlyphChecks
 
         // Shapes that require a stem on the left side
         new Checker(HeadAndFlags) {
-                public Shape check (Shape shape,
-                                    Glyph glyph)
+                public Shape check (Shape    shape,
+                                    Glyph    glyph,
+                                    double[] features)
                 {
                     if (glyph.getLeftStem() == null) {
                         return null;
@@ -244,8 +247,9 @@ public class GlyphChecks
 
         // Shapes that require a stem nearby
         new Checker(StemSymbols) {
-                public Shape check (Shape shape,
-                                    Glyph glyph)
+                public Shape check (Shape    shape,
+                                    Glyph    glyph,
+                                    double[] features)
                 {
                     if (glyph.getStemNumber() < 1) {
                         return null;
@@ -256,8 +260,9 @@ public class GlyphChecks
             };
 
         new Checker(TEXT, CHARACTER) {
-                public Shape check (Shape shape,
-                                    Glyph glyph)
+                public Shape check (Shape    shape,
+                                    Glyph    glyph,
+                                    double[] features)
                 {
                     // Check reasonable height (Cannot be too tall when close to staff)
                     double maxHeight = (Math.abs(glyph.getPitchPosition()) >= constants.minTitlePitchPosition.getValue())
@@ -325,8 +330,9 @@ public class GlyphChecks
             };
 
         new Checker(FullTimes) {
-                public Shape check (Shape shape,
-                                    Glyph glyph)
+                public Shape check (Shape    shape,
+                                    Glyph    glyph,
+                                    double[] features)
                 {
                     double absPos = Math.abs(glyph.getPitchPosition());
                     double maxDy = constants.maxTimePitchPositionMargin.getValue();
@@ -346,8 +352,9 @@ public class GlyphChecks
             };
 
         new Checker(PartialTimes) {
-                public Shape check (Shape shape,
-                                    Glyph glyph)
+                public Shape check (Shape    shape,
+                                    Glyph    glyph,
+                                    double[] features)
                 {
                     double absPos = Math.abs(glyph.getPitchPosition());
                     double maxDy = constants.maxTimePitchPositionMargin.getValue();
@@ -362,8 +369,9 @@ public class GlyphChecks
             };
 
         new Checker(Dynamics) {
-                public Shape check (Shape shape,
-                                    Glyph glyph)
+                public Shape check (Shape    shape,
+                                    Glyph    glyph,
+                                    double[] features)
                 {
                     // Check distance from closest staff
                     if (Math.abs(glyph.getPitchPosition()) >= 15) {
@@ -379,21 +387,10 @@ public class GlyphChecks
                 }
             };
 
-        new Checker(NOTEHEAD_BLACK) {
-                public Shape check (Shape shape,
-                                    Glyph glyph)
-                {
-                    if (glyph.getNormalizedWeight() > constants.maxHeadBlackWeight.getValue()) {
-                        return null;
-                    }
-
-                    return shape;
-                }
-            };
-
         new Checker(Notes, NoteHeads, Rests, HeadAndFlags) {
-                public Shape check (Shape shape,
-                                    Glyph glyph)
+                public Shape check (Shape    shape,
+                                    Glyph    glyph,
+                                    double[] features)
                 {
                     // A note / rest cannot be too far from a staff
                     if (Math.abs(glyph.getPitchPosition()) >= 15) {
@@ -405,8 +402,9 @@ public class GlyphChecks
             };
 
         new Checker(Pedals) {
-                public Shape check (Shape shape,
-                                    Glyph glyph)
+                public Shape check (Shape    shape,
+                                    Glyph    glyph,
+                                    double[] features)
                 {
                     // Pedal marks must be below the staff
                     if (glyph.getPitchPosition() <= 4) {
@@ -418,8 +416,9 @@ public class GlyphChecks
             };
 
         new Checker(Tuplets) {
-                public Shape check (Shape shape,
-                                    Glyph glyph)
+                public Shape check (Shape    shape,
+                                    Glyph    glyph,
+                                    double[] features)
                 {
                     // Tuplets cannot be too far from a staff
                     if (Math.abs(glyph.getPitchPosition()) > constants.maxTupletPitchPosition.getValue()) {
@@ -465,10 +464,12 @@ public class GlyphChecks
          * Run the specific test
          * @param shape the potential shape
          * @param glyph the glyph at hand
+         * @param features the glyph features
          * @return the inferred shape, which is null for negative test
          */
-        public abstract Shape check (Shape shape,
-                                     Glyph glyph);
+        public abstract Shape check (Shape    shape,
+                                     Glyph    glyph,
+                                     double[] features);
     }
 
     //-----------//
@@ -479,34 +480,25 @@ public class GlyphChecks
     {
         //~ Instance fields ----------------------------------------------------
 
-        Scale.AreaFraction maxHeadBlackWeight = new Scale.AreaFraction(
-            1.2,
-            "Maximum normalized weight for a NOTEHEAD_BLACK");
-        Scale.Fraction     maxClefHeight = new Scale.Fraction(
-            9d,
-            "Maximum normalized height for a clef");
-        Scale.Fraction     minClefWidth = new Scale.Fraction(
-            2d,
-            "Minimum normalized width for a clef");
-        Scale.Fraction     maxTitleHeight = new Scale.Fraction(
+        Scale.Fraction  maxTitleHeight = new Scale.Fraction(
             4d,
             "Maximum normalized height for a title text");
-        Scale.Fraction     maxLyricsHeight = new Scale.Fraction(
+        Scale.Fraction  maxLyricsHeight = new Scale.Fraction(
             2.5d,
             "Maximum normalized height for a lyrics text");
-        Constant.Double    minTitlePitchPosition = new Constant.Double(
+        Constant.Double minTitlePitchPosition = new Constant.Double(
             "PitchPosition",
             15d,
             "Minimum absolute pitch position for a title");
-        Constant.Double    maxTupletPitchPosition = new Constant.Double(
+        Constant.Double maxTupletPitchPosition = new Constant.Double(
             "PitchPosition",
             15d,
             "Minimum absolute pitch position for a tuplet");
-        Constant.Double    maxTimePitchPositionMargin = new Constant.Double(
+        Constant.Double maxTimePitchPositionMargin = new Constant.Double(
             "PitchPosition",
             1d,
             "Maximum absolute pitch position margin for a time signature");
-        Scale.Fraction     maxTextGap = new Scale.Fraction(
+        Scale.Fraction  maxTextGap = new Scale.Fraction(
             5.0,
             "Maximum value for a horizontal gap between glyphs of the same text");
     }

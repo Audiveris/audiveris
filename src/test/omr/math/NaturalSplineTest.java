@@ -58,8 +58,8 @@ public class NaturalSplineTest
     @Test
     public void testInterpolate0 ()
     {
-        int[] xx = new int[] {  };
-        int[] yy = new int[] {  };
+        double[] xx = new double[] {  };
+        double[] yy = new double[] {  };
 
         try {
             NaturalSpline spline = NaturalSpline.interpolate(xx, yy);
@@ -76,8 +76,8 @@ public class NaturalSplineTest
     @Test
     public void testInterpolate1 ()
     {
-        int[] xx = new int[] { 1 };
-        int[] yy = new int[] { 1 };
+        double[] xx = new double[] { 1 };
+        double[] yy = new double[] { 1 };
 
         try {
             NaturalSpline spline = NaturalSpline.interpolate(xx, yy);
@@ -94,12 +94,12 @@ public class NaturalSplineTest
     @Test
     public void testInterpolate4 ()
     {
-        int[]         xx = new int[] { 0, 12, 19, 30 };
-        int[]         yy = new int[] { 0, 1, 2, 3 };
+        double[]         xx = new double[] { 0, 12, 19, 30 };
+        double[]         yy = new double[] { 0, 1, 2, 3 };
         NaturalSpline spline = NaturalSpline.interpolate(xx, yy);
         System.out.println(spline.toString());
 
-        for (int x = xx[0]; x <= xx[xx.length - 1]; x++) {
+        for (double x = xx[0]; x <= xx[xx.length - 1]; x++) {
             double y = spline.yAt(x);
             System.out.println("x=" + x + " y=" + (float) y);
         }
@@ -111,12 +111,12 @@ public class NaturalSplineTest
     @Test
     public void testInterpolate5 ()
     {
-        int[]         xx = new int[] { 1, 11, 20, 30, 40 };
-        int[]         yy = new int[] { 1, 2, 3, 4, 3 };
+        double[]         xx = new double[] { 1, 11, 20, 30, 40 };
+        double[]         yy = new double[] { 1, 2, 3, 4, 3 };
         NaturalSpline spline = NaturalSpline.interpolate(xx, yy);
         System.out.println(spline.toString());
 
-        for (int x = xx[0]; x <= xx[xx.length - 1]; x++) {
+        for (double x = xx[0]; x <= xx[xx.length - 1]; x++) {
             double y = spline.yAt(x);
             System.out.println("x=" + x + " y=" + (float) y);
         }
@@ -128,8 +128,8 @@ public class NaturalSplineTest
     @Test
     public void testInterpolateDiff ()
     {
-        int[] xx = new int[] {  };
-        int[] yy = new int[] { 1 };
+        double[] xx = new double[] {  };
+        double[] yy = new double[] { 1 };
 
         try {
             NaturalSpline spline = NaturalSpline.interpolate(xx, yy);
@@ -146,12 +146,12 @@ public class NaturalSplineTest
     @Test
     public void testInterpolateFour ()
     {
-        int[]         xx = new int[] { 0, 10, 10, 20 };
-        int[]         yy = new int[] { 0, 2, 2, 2 };
+        double[]         xx = new double[] { 0, 10, 10, 20 };
+        double[]         yy = new double[] { 0, 2, 2, 2 };
         NaturalSpline spline = NaturalSpline.interpolate(xx, yy);
         System.out.println(spline.toString());
 
-        for (int x = xx[0]; x <= xx[xx.length - 1]; x++) {
+        for (double x = xx[0]; x <= xx[xx.length - 1]; x++) {
             double y = spline.yAt(x);
             System.out.println("x=" + x + " y=" + (float) y);
         }
@@ -163,12 +163,12 @@ public class NaturalSplineTest
     @Test
     public void testInterpolateLine ()
     {
-        int[]         xx = new int[] { 0, 10 };
-        int[]         yy = new int[] { 0, 1 };
+        double[]         xx = new double[] { 0, 10 };
+        double[]         yy = new double[] { 0, 1 };
         NaturalSpline spline = NaturalSpline.interpolate(xx, yy);
         System.out.println(spline.toString());
 
-        for (int x = xx[0]; x <= xx[xx.length - 1]; x++) {
+        for (double x = xx[0]; x <= xx[xx.length - 1]; x++) {
             double y = spline.yAt(x);
             System.out.println("x=" + x + " y=" + (float) y);
         }
@@ -180,8 +180,8 @@ public class NaturalSplineTest
     @Test
     public void testInterpolateNull ()
     {
-        int[] xx = new int[] {  };
-        int[] yy = null;
+        double[] xx = new double[] {  };
+        double[] yy = null;
 
         try {
             NaturalSpline spline = NaturalSpline.interpolate(xx, yy);
@@ -198,12 +198,12 @@ public class NaturalSplineTest
     @Test
     public void testInterpolateQuad ()
     {
-        int[]         xx = new int[] { 0, 20, 30 };
-        int[]         yy = new int[] { 0, 10, 10};
+        double[]         xx = new double[] { 0, 20, 30 };
+        double[]         yy = new double[] { 0, 10, 10};
         NaturalSpline spline = NaturalSpline.interpolate(xx, yy);
         System.out.println(spline.toString());
 
-        for (int x = xx[0]; x <= xx[xx.length - 1]; x++) {
+        for (double x = xx[0]; x <= xx[xx.length - 1]; x++) {
             double y = spline.yAt(x);
             System.out.println("x=" + x + " y=" + (float) y);
         }

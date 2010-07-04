@@ -139,7 +139,8 @@ public class GlyphNetwork
             for (int s = 0; s < shapeCount; s++) {
                 Shape shape = GlyphChecks.specificCheck(
                     Shape.values()[s],
-                    glyph);
+                    glyph,
+                    ins);
 
                 if (shape != null) {
                     evals[s] = new Evaluation(shape, 1d / outs[s]);

@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.glyph;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+import static omr.glyph.Shape.*;
 import omr.glyph.facets.Glyph;
 import omr.glyph.ui.GlyphRepository;
 
@@ -19,14 +22,8 @@ import omr.log.Logger;
 import omr.math.LinearEvaluator;
 import omr.math.LinearEvaluator.Sample;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 
 import javax.swing.JOptionPane;
 import javax.xml.bind.JAXBException;
@@ -41,6 +38,9 @@ public class GlyphRegression
     extends GlyphEvaluator
 {
     //~ Static fields/initializers ---------------------------------------------
+
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
@@ -87,6 +87,8 @@ public class GlyphRegression
             logger.info("Creating a brand new LinearEvaluator");
             engine = new LinearEvaluator(getParameterLabels());
         }
+
+        customizeEngine();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -125,7 +127,7 @@ public class GlyphRegression
 
             for (int s = 0; s < shapeCount; s++) {
                 Shape shape = values[s];
-                shape = GlyphChecks.specificCheck(shape, glyph);
+                shape = GlyphChecks.specificCheck(shape, glyph, ins);
 
                 if (shape != null) {
                     evals[s] = new Evaluation(
@@ -143,6 +145,9 @@ public class GlyphRegression
         }
     }
 
+    //-----------//
+    // getEngine //
+    //-----------//
     /**
      * @return the engine
      */
@@ -158,6 +163,38 @@ public class GlyphRegression
     public String getName ()
     {
         return "Regression";
+    }
+
+    //--------------------//
+    // constraintsMatched //
+    //--------------------//
+    /**
+     * Check that all the (non-disabled) constraints matched between a given
+     * glyph and a shape
+     * @param glyph the glyph at hand
+     * @param shape the shape to check constraints for
+     * @return true if matched, false otherwise
+     */
+    public boolean constraintsMatched (Glyph glyph,
+                                       Shape shape)
+    {
+        return constraintsMatched(feedInput(glyph, null), shape);
+    }
+
+    //--------------------//
+    // constraintsMatched //
+    //--------------------//
+    /**
+     * Check that all the (non-disabled) constraints matched between a given
+     * glyph and a shape
+     * @param params the glyph features
+     * @param shape the shape to check constraints for
+     * @return true if matched, false otherwise
+     */
+    public boolean constraintsMatched (double[] params,
+                                       Shape    shape)
+    {
+        return engine.categoryMatched(params, shape.toString());
     }
 
     //------//
@@ -325,5 +362,121 @@ public class GlyphRegression
         throws JAXBException
     {
         return LinearEvaluator.unmarshal(is);
+    }
+
+    //-----------------//
+    // customizeEngine //
+    //-----------------//
+    private void customizeEngine ()
+    {
+        for (Shape shape : ShapeRange.allSymbols) {
+            final String id = shape.name();
+
+            // Add some margin around constraints
+            double minFactor = constants.factorForMinima.getValue();
+            double maxFactor = constants.factorForMaxima.getValue();
+
+            for (String label : Arrays.asList("weight", "width", "height")) {
+                int p = GlyphEvaluator.getParameterIndex(label);
+                engine.setMinimum(p, id, engine.getMinimum(p, id) * minFactor);
+                engine.setMaximum(p, id, engine.getMaximum(p, id) * maxFactor);
+            }
+
+            // Use only selected features
+            for (String label : Arrays.asList(
+                "n20",
+                "n11",
+                "n02",
+                "n30",
+                "n21",
+                "n12",
+                "n03",
+                "ledger")) {
+                int p = GlyphEvaluator.getParameterIndex(label);
+                engine.setMinimum(p, id, null);
+                engine.setMaximum(p, id, null);
+            }
+
+            // Keep "stemNb" exactly as it is, with no margin
+        }
+
+        // Some specific tuning
+        disableMaximum(TEXT, "weight");
+        disableMaximum(TEXT, "width");
+
+        disableMaximum(STRUCTURE, "weight");
+        disableMaximum(STRUCTURE, "width");
+        disableMaximum(STRUCTURE, "height");
+
+        disableMaximum(BRACE, "weight");
+        disableMaximum(BRACE, "height");
+
+        disableMaximum(BRACKET, "weight");
+        disableMaximum(BRACKET, "height");
+
+        disableMaximum(BEAM, "weight");
+        disableMaximum(BEAM, "width");
+        disableMaximum(BEAM, "height");
+
+        disableMaximum(BEAM_2, "weight");
+        disableMaximum(BEAM_2, "width");
+        disableMaximum(BEAM_2, "height");
+
+        disableMaximum(BEAM_3, "weight");
+        disableMaximum(BEAM_3, "width");
+        disableMaximum(BEAM_3, "height");
+
+        disableMaximum(SLUR, "weight");
+        disableMaximum(SLUR, "width");
+        disableMaximum(SLUR, "height");
+
+        disableMaximum(ARPEGGIATO, "weight");
+        disableMaximum(ARPEGGIATO, "height");
+
+        disableMaximum(CRESCENDO, "weight");
+        disableMaximum(CRESCENDO, "width");
+        disableMaximum(CRESCENDO, "height");
+
+        disableMaximum(DECRESCENDO, "weight");
+        disableMaximum(DECRESCENDO, "width");
+        disableMaximum(DECRESCENDO, "height");
+    }
+
+    private void disableMaximum (Shape  shape,
+                                 String paramLabel)
+    {
+        engine.setMaximum(
+            GlyphEvaluator.getParameterIndex(paramLabel),
+            shape.name(),
+            null);
+    }
+
+    private void disableMinimum (Shape  shape,
+                                 String paramLabel)
+    {
+        engine.setMinimum(
+            GlyphEvaluator.getParameterIndex(paramLabel),
+            shape.name(),
+            null);
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        Constant.Double factorForMinima = new Constant.Double(
+            "factor",
+            0.8,
+            "Factor applied to all minimum constraints");
+        Constant.Double factorForMaxima = new Constant.Double(
+            "factor",
+            1.2,
+            "Factor applied to all maximum constraints");
     }
 }

@@ -26,7 +26,6 @@ import omr.graph.DigraphView;
 
 import omr.lag.Run;
 import omr.lag.Section;
-import omr.lag.Sections;
 
 import omr.log.Logger;
 
@@ -477,25 +476,25 @@ public class LineCleaner
                         for (int y = yBegin; y != yPast; y += direction) {
                             int start = -1;
 
-                            if (tangents.startTg != null) {
-                                start = tangents.startTg.xAt(y);
-                                runLength = tangents.stopTg.xAt(y) - start + 1;
-
-                                if (logger.isFineEnabled()) {
-                                    logger.fine(
-                                        "y=" + y + " start=" + start +
-                                        " length=" + runLength);
-                                }
-
-                                if (runLength <= 0) { // We have decreased to nothing
-
-                                    if (logger.isFineEnabled()) {
-                                        logger.fine("* length is zero *");
-                                    }
-
-                                    break;
-                                }
-                            } else {
+//                            if (tangents.startTg != null) {
+//                                start = tangents.startTg.xAt(y);
+//                                runLength = tangents.stopTg.xAt(y) - start + 1;
+//
+//                                if (logger.isFineEnabled()) {
+//                                    logger.fine(
+//                                        "y=" + y + " start=" + start +
+//                                        " length=" + runLength);
+//                                }
+//
+//                                if (runLength <= 0) { // We have decreased to nothing
+//
+//                                    if (logger.isFineEnabled()) {
+//                                        logger.fine("* length is zero *");
+//                                    }
+//
+//                                    break;
+//                                }
+//                            } else {
                                 if (tangents.axis != null) {
                                     xAxis = tangents.axis.xAt(y);
 
@@ -506,7 +505,7 @@ public class LineCleaner
 
                                 start = (int) ((0.5d + xAxis) -
                                         (runLength / 2.0));
-                            }
+//                            }
 
                             if (logger.isFineEnabled()) {
                                 logger.fine(

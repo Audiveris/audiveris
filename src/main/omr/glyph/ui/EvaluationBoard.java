@@ -53,10 +53,8 @@ import javax.swing.*;
  * Class <code>EvaluationBoard</code> is a board dedicated to the display of
  * evaluation results performed by an evaluator.
  *
- * <p>By pressing one of the result buttons, the user can force the assignment
- * of the evaluated glyph.
- *
- * @author Hervé Bitteur and Brenton Partridge
+ * @author Hervé Bitteur
+ * @author Brenton Partridge
  */
 class EvaluationBoard
     extends Board
@@ -154,12 +152,6 @@ class EvaluationBoard
         this.sheet = sheet;
         this.view = view;
 
-        // Buttons
-        //        if (sheet != null) {
-        //            testButton = new JButton(new TestAction());
-        //            testPercent = new JLabel("0%", SwingConstants.CENTER);
-        //            testResult = new JLabel("", SwingConstants.CENTER);
-        //        }
         selector = new Selector();
         defineLayout();
     }
@@ -250,11 +242,6 @@ class EvaluationBoard
 
         CellConstraints cst = new CellConstraints();
 
-        //        if (sheet != null) {
-        //            builder.add(testButton, cst.xy(3, r));
-        //            builder.add(testPercent, cst.xy(5, r));
-        //            builder.add(testResult, cst.xy(7, r));
-        //        }
         for (int i = 0; i < visibleButtons; i++) {
             int r = i + 1; // --------------------------------
             builder.add(selector.buttons.get(i).grade, cst.xy(1, r));
@@ -278,7 +265,7 @@ class EvaluationBoard
         //~ Instance fields ----------------------------------------------------
 
         Evaluation.Doubt maxDoubt = new Evaluation.Doubt(
-            100000.0,
+            500000.0,
             "Threshold on displayable doubt");
         Constant.Integer visibleButtons = new Constant.Integer(
             "buttons",
