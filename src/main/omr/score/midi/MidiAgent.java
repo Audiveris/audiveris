@@ -25,15 +25,18 @@ import com.xenoage.util.language.Lang;
 import com.xenoage.util.language.LanguageInfo;
 import com.xenoage.util.logging.Log;
 import com.xenoage.zong.io.midi.out.SynthManager;
+import com.xenoage.zong.musicxml.MusicXMLDocument;
+import com.xenoage.zong.player.gui.Controller;
 
-import proxymusic.ScorePartwise;
+import org.w3c.dom.Document;
 
 import java.io.*;
-import java.net.URL;
 import java.util.List;
 import java.util.concurrent.*;
 
 import javax.sound.midi.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 /**
  * Class <code>MidiAgent</code> is in charge of representing a score when
@@ -92,7 +95,8 @@ public class MidiAgent
     private Score score;
 
     /** The MusicXML document */
-    private ScorePartwise document;
+    //private ScorePartwise document;
+    private Document document;
 
     /** The range of measures to play (perhaps null, meaning whole score) */
     private MeasureRange measureRange;
@@ -359,13 +363,46 @@ public class MidiAgent
      */
     private void retrieveMusic (MeasureRange measureRange)
     {
+        /*
+         *
+         * So here are the functions you need for Audiveris:
+                       1) call com.xenoage.zong.musicxml.MusicXMLDocument.read(org.w3c.dom.Document doc)
+         * to get an instance of a MusicXMLDocument out of your DOM document
+                       2) handle this document to
+         * com.xenoage.zong.player.gui.Controller.loadScore(MxlScorePartwise doc, boolean ignoreErrors)
+         * (set ignoreErrors to true, of course)
+         */
         try {
+            // Populate the document
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder        builder = factory.newDocumentBuilder();
+            document = builder.newDocument();
+
             ScoreExporter exporter = new ScoreExporter(score);
             exporter.setMeasureRange(measureRange);
-            document = exporter.buildScorePartwise();
+            exporter.export(document, true); // true for injectSignature
 
-            // Hand it over directly to the MusicXML reader
-            controller.loadDocument(document);
+            // Hand it over directly to MusicXML reader
+            MusicXMLDocument mxlDocument = MusicXMLDocument.read(document);
+            controller.loadDocument(mxlDocument.getScore());
+
+            //
+            //
+            //            // Hand it over directly to the MusicXML reader
+            //            controller.loadDocument(document);
+            //            
+            //            
+            //            try {
+            //                this.measureRange = measureRange;
+            //
+            //
+            //                ScoreExporter exporter = new ScoreExporter(score);
+            //
+            //                if (measureRange == null) {
+            //                    measureRange = score.getMeasureRange();
+            //                }
+            //
+            //                exporter.setMeasureRange(measureRange);
         } catch (Exception ex) {
             logger.warning("Midi Agent error", ex);
             document = null; // Safer

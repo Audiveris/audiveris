@@ -1,88 +1,53 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<stick shape="BEAM" interline="21" id="824">
+<glyph shape="BEAM" interline="21" id="824">
     <stem-number>2</stem-number>
     <with-ledger>false</with-ledger>
-    <pitch-position>2.3255813953488373</pitch-position>
-    <section first-pos="2148" id="3707">
-        <run start="654" level="65" length="10"/>
-        <run start="654" level="64" length="10"/>
-        <run start="654" level="64" length="10"/>
-        <run start="654" level="65" length="10"/>
-        <run start="654" level="65" length="10"/>
-        <run start="654" level="65" length="10"/>
-        <run start="654" level="65" length="10"/>
-        <run start="654" level="65" length="10"/>
-        <run start="654" level="66" length="10"/>
-        <run start="654" level="66" length="10"/>
-        <run start="654" level="66" length="10"/>
-        <run start="654" level="66" length="10"/>
-        <run start="654" level="66" length="10"/>
-        <run start="654" level="66" length="10"/>
-        <run start="654" level="67" length="10"/>
-        <run start="654" level="67" length="10"/>
-        <run start="654" level="67" length="10"/>
-        <run start="654" level="67" length="10"/>
-        <run start="654" level="67" length="10"/>
-        <run start="654" level="63" length="11"/>
-        <run start="654" level="62" length="11"/>
-        <run start="654" level="62" length="11"/>
-        <run start="654" level="62" length="11"/>
-        <run start="654" level="62" length="11"/>
-        <run start="654" level="62" length="11"/>
-        <run start="654" level="63" length="11"/>
-        <run start="654" level="63" length="11"/>
-        <run start="654" level="63" length="11"/>
-        <run start="654" level="63" length="11"/>
-        <run start="654" level="63" length="11"/>
-        <run start="654" level="63" length="11"/>
-        <run start="654" level="64" length="11"/>
-        <run start="654" level="64" length="11"/>
-        <run start="654" level="64" length="11"/>
-        <run start="654" level="64" length="11"/>
-        <run start="654" level="64" length="11"/>
-        <run start="654" level="65" length="11"/>
-        <run start="654" level="65" length="11"/>
-        <run start="654" level="65" length="11"/>
-        <run start="654" level="65" length="11"/>
-        <run start="654" level="65" length="11"/>
-        <run start="654" level="65" length="11"/>
-        <run start="654" level="66" length="11"/>
-        <run start="654" level="66" length="11"/>
-        <run start="654" level="66" length="11"/>
-        <run start="654" level="66" length="11"/>
-        <run start="654" level="66" length="11"/>
-        <run start="654" level="66" length="11"/>
-        <run start="654" level="67" length="11"/>
-        <run start="654" level="67" length="11"/>
-        <run start="654" level="67" length="11"/>
-        <run start="654" level="67" length="11"/>
-        <run start="654" level="67" length="11"/>
-        <run start="654" level="67" length="11"/>
-        <run start="654" level="68" length="11"/>
-        <run start="654" level="68" length="11"/>
-        <run start="654" level="68" length="11"/>
-        <run start="654" level="68" length="11"/>
-        <run start="654" level="68" length="11"/>
-        <run start="654" level="68" length="11"/>
-        <run start="654" level="69" length="11"/>
-        <run start="654" level="69" length="11"/>
-        <run start="654" level="69" length="11"/>
-        <run start="654" level="69" length="11"/>
-        <run start="654" level="69" length="11"/>
-        <run start="654" level="69" length="11"/>
-        <run start="654" level="70" length="11"/>
-        <run start="654" level="70" length="11"/>
-        <run start="654" level="70" length="11"/>
-        <run start="654" level="66" length="12"/>
-        <run start="654" level="65" length="12"/>
-        <run start="654" level="65" length="12"/>
-        <run start="654" level="65" length="12"/>
-        <run start="654" level="65" length="12"/>
-        <run start="654" level="65" length="12"/>
-        <run start="654" level="65" length="12"/>
-        <run start="654" level="66" length="12"/>
-        <run start="654" level="66" length="12"/>
-        <run start="654" level="66" length="12"/>
-        <run start="654" level="66" length="12"/>
+    <pitch-position>4.376470588235295</pitch-position>
+    <section first-pos="1551" id="2873">
+        <run start="1284" level="66" length="11"/>
+        <run start="1284" level="66" length="11"/>
+        <run start="1284" level="66" length="11"/>
+        <run start="1284" level="66" length="11"/>
+        <run start="1284" level="67" length="11"/>
+        <run start="1284" level="67" length="11"/>
+        <run start="1284" level="67" length="11"/>
+        <run start="1284" level="67" length="11"/>
+        <run start="1284" level="67" length="11"/>
+        <run start="1284" level="67" length="11"/>
+        <run start="1284" level="68" length="11"/>
+        <run start="1284" level="68" length="11"/>
+        <run start="1284" level="68" length="11"/>
+        <run start="1284" level="68" length="11"/>
+        <run start="1284" level="68" length="11"/>
+        <run start="1284" level="69" length="11"/>
+        <run start="1284" level="69" length="11"/>
+        <run start="1284" level="69" length="11"/>
+        <run start="1284" level="69" length="11"/>
+        <run start="1284" level="69" length="11"/>
+        <run start="1284" level="69" length="11"/>
+        <run start="1284" level="70" length="11"/>
+        <run start="1284" level="70" length="11"/>
+        <run start="1284" level="58" length="10"/>
+        <run start="1284" level="58" length="10"/>
+        <run start="1284" level="58" length="10"/>
+        <run start="1284" level="58" length="10"/>
+        <run start="1284" level="58" length="10"/>
+        <run start="1284" level="58" length="10"/>
+        <run start="1284" level="58" length="10"/>
+        <run start="1284" level="58" length="10"/>
+        <run start="1284" level="58" length="10"/>
+        <run start="1284" level="64" length="11"/>
+        <run start="1284" level="52" length="11"/>
+        <run start="1284" level="60" length="11"/>
+        <run start="1284" level="58" length="10"/>
+        <run start="1284" level="58" length="10"/>
+        <run start="1284" level="58" length="10"/>
+        <run start="1284" level="58" length="10"/>
+        <run start="1284" level="58" length="10"/>
+        <run start="1284" level="58" length="10"/>
+        <run start="1284" level="58" length="10"/>
+        <run start="1284" level="58" length="10"/>
+        <run start="1284" level="58" length="10"/>
+        <run start="1284" level="65" length="11"/>
     </section>
-</stick>
+</glyph>

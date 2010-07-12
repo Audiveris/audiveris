@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="BEAM_HOOK" interline="21" id="645">
+    <stem-number>1</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>1.3647058823529412</pitch-position>
+    <section first-pos="955" id="1901">
+        <run start="662" level="52" length="11"/>
+        <run start="662" level="35" length="11"/>
+        <run start="662" level="35" length="11"/>
+        <run start="662" level="35" length="11"/>
+        <run start="662" level="35" length="11"/>
+        <run start="662" level="35" length="11"/>
+        <run start="662" level="35" length="11"/>
+        <run start="662" level="35" length="11"/>
+        <run start="662" level="35" length="11"/>
+        <run start="662" level="35" length="11"/>
+        <run start="662" level="35" length="11"/>
+        <run start="662" level="35" length="11"/>
+        <run start="662" level="38" length="11"/>
+        <run start="663" level="38" length="10"/>
+        <run start="663" level="38" length="10"/>
+        <run start="662" level="50" length="11"/>
+        <run start="662" level="37" length="11"/>
+        <run start="662" level="49" length="11"/>
+        <run start="662" level="37" length="11"/>
+        <run start="662" level="49" length="11"/>
+    </section>
+</glyph>

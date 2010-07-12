@@ -331,9 +331,9 @@ public class SheetSteps
             "count",
             1,
             "Maximum number of iterations for PATTERNS task");
-        private final Constant.Integer MaxScoreIterations = new Constant.Integer(
+        private final Constant.Integer maxScoreIterations = new Constant.Integer(
             "count",
-            1,
+            2,
             "Maximum number of iterations for SCORE task");
     }
 
@@ -851,7 +851,7 @@ public class SheetSteps
         public void doSystem (final SystemInfo system)
             throws StepException
         {
-            final int              iterNb = constants.MaxScoreIterations.getValue();
+            final int              iterNb = constants.maxScoreIterations.getValue();
             final ScoreSystem      scoreSystem = system.getScoreSystem();
             final Wrapper<Boolean> modified = new Wrapper<Boolean>();
 

@@ -13,15 +13,15 @@ package omr.sheet;
 
 import omr.check.CheckSuite;
 
+import omr.glyph.CompoundBuilder;
 import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphSection;
 import omr.glyph.Glyphs;
 import omr.glyph.GlyphsBuilder;
-import omr.glyph.PatternsChecker;
-import omr.glyph.SlurInspector;
-import omr.glyph.StemInspector;
 import omr.glyph.facets.Glyph;
 import omr.glyph.facets.Stick;
+import omr.glyph.pattern.PatternsChecker;
+import omr.glyph.pattern.SlurInspector;
 import omr.glyph.text.Sentence;
 import omr.glyph.text.TextInspector;
 
@@ -50,8 +50,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
  * <p>Many processing tasks are actually handled by companion classes, but
  * this SystemInfo is the interface of choice, with delegation to the proper
  * companion (such as {@link GlyphsBuilder}, {@link GlyphInspector},
- * {@link StemInspector}, {@link SlurInspector}, {@link TextInspector},
- * {@link SystemTranslator}, etc)
+ * {@link SlurInspector}, {@link TextInspector}, {@link SystemTranslator}, etc)
  *
  * <p>Nota: All measurements are assumed in pixels.
  *
@@ -76,14 +75,14 @@ public class SystemInfo
     /** Dedicated glyph builder */
     private final GlyphsBuilder glyphsBuilder;
 
+    /** Dedicated compound builder */
+    private final CompoundBuilder compoundBuilder;
+
     /** Dedicated verticals builder */
     private final VerticalsBuilder verticalsBuilder;
 
     /** Dedicated glyph inspector */
     private final GlyphInspector glyphInspector;
-
-    /** Dedicated stem inspector */
-    private final StemInspector stemInspector;
 
     /** Dedicated slur inspector */
     private final SlurInspector slurInspector;
@@ -187,9 +186,9 @@ public class SystemInfo
 
         measuresBuilder = new MeasuresBuilder(this);
         glyphsBuilder = new GlyphsBuilder(this);
+        compoundBuilder = new CompoundBuilder(this);
         verticalsBuilder = new VerticalsBuilder(this);
         glyphInspector = new GlyphInspector(this);
-        stemInspector = new StemInspector(this);
         slurInspector = new SlurInspector(this);
         textInspector = new TextInspector(this);
         translator = new SystemTranslator(this);
@@ -250,6 +249,14 @@ public class SystemInfo
         } else {
             return null;
         }
+    }
+
+    //--------------------//
+    // getCompoundBuilder //
+    //--------------------//
+    public CompoundBuilder getCompoundBuilder ()
+    {
+        return compoundBuilder;
     }
 
     //-----------//
@@ -417,6 +424,15 @@ public class SystemInfo
         return scoreSystem;
     }
 
+    //------------------//
+    // getSlurInspector //
+    //------------------//
+
+    public SlurInspector getSlurInspector ()
+    {
+        return slurInspector;
+    }
+
     //-------------//
     // getStaffAtY //
     //-------------//
@@ -488,6 +504,14 @@ public class SystemInfo
     public int getStopIdx ()
     {
         return stopIdx;
+    }
+
+    //------------------//
+    // getTextInspector //
+    //------------------//
+    public TextInspector getTextInspector ()
+    {
+        return textInspector;
     }
 
     //--------//
@@ -1031,48 +1055,6 @@ public class SystemInfo
         return verticalsBuilder.retrieveVerticals();
     }
 
-    //-----------------//
-    // runAlterPattern //
-    //-----------------//
-    /**
-     * In a specified system, look for pairs of close stems that in fact result
-     * from indue segmentation of sharp or natural signs.
-     *
-     * @return the number of symbols recognized
-     */
-    public int runAlterPattern ()
-    {
-        return glyphInspector.runAlterPattern();
-    }
-
-    //----------------//
-    // runBassPattern //
-    //----------------//
-    /**
-     * In a specified system, look for dot patterns typical of a segmented
-     * bass clef
-     *
-     * @return the number of bass clefs fixed
-     */
-    public int runBassPattern ()
-    {
-        return glyphInspector.runBassPattern();
-    }
-
-    //----------------//
-    // runClefPattern //
-    //----------------//
-    /**
-     * In a specified system, look for clefs at the beginning of the system,
-     * and check that every staff has a clef
-     *
-     * @return the number of clefs fixed
-     */
-    public int runClefPattern ()
-    {
-        return glyphInspector.runClefPattern();
-    }
-
     //-------------//
     // runPatterns //
     //-------------//
@@ -1083,59 +1065,6 @@ public class SystemInfo
     public boolean runPatterns ()
     {
         return patternsChecker.runPatterns();
-    }
-
-    //-----------------//
-    // runShapePattern //
-    //-----------------//
-    /**
-     * A general pattern to check some glyph shapes within their environment
-     * @return the number of glyphs deassigned
-     */
-    public int runShapePattern ()
-    {
-        return glyphInspector.runShapePattern();
-    }
-
-    //----------------//
-    // runSlurPattern //
-    //----------------//
-    /**
-     * Process all the slur glyphs in the given system, and try to correct the
-     * spurious ones if any
-     * @return the number of slurs fixed
-     */
-    public int runSlurPattern ()
-    {
-        return slurInspector.runSlurPattern();
-    }
-
-    //----------------//
-    // runStemPattern //
-    //----------------//
-    /**
-     * In a specified system, look for all stems that should not be kept,
-     * rebuild surrounding glyphs and try to recognize them. If this action does
-     * not lead to some recognized symbol, then we restore the stems.
-     *
-     * @return the number of symbols recognized
-     */
-    public int runStemPattern ()
-    {
-        return stemInspector.runStemPattern();
-    }
-
-    //----------------//
-    // runTextPattern //
-    //----------------//
-    /**
-     * Retrieve the various glyphs and series of glyphs that could represent
-     * text portions in the system at hand
-     * @return the number of text glyphs built
-     */
-    public int runTextPattern ()
-    {
-        return textInspector.runTextPattern();
     }
 
     //---------------------//
@@ -1157,11 +1086,11 @@ public class SystemInfo
     //--------------//
     /**
      * Select glyphs out of a provided collection of glyphs,for which the
-     * provided predicate hlos true
+     * provided predicate holds true
      * @param glyphs the provided collection of glyphs candidates, or the full
-     * system collectino if null
-     * @param predicate the conditon to be fulfilled to get selected
-     * @return
+     * system collection if null
+     * @param predicate the condition to be fulfilled to get selected
+     * @return the sorted set of selected glyphs
      */
     public SortedSet selectGlyphs (Collection<Glyph> glyphs,
                                    Predicate<Glyph>  predicate)

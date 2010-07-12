@@ -1,38 +1,39 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<stick shape="NOTEHEAD_BLACK" interline="21" id="839">
+<glyph shape="NOTEHEAD_BLACK" interline="21" id="839">
     <stem-number>1</stem-number>
     <with-ledger>false</with-ledger>
-    <pitch-position>-0.047058823529411764</pitch-position>
-    <section first-pos="1030" id="1958">
-        <run start="1223" level="200" length="2"/>
-        <run start="1222" level="171" length="3"/>
+    <pitch-position>-2.023529411764706</pitch-position>
+    <section first-pos="1750" id="3232">
+        <run start="1219" level="192" length="2"/>
     </section>
-    <section first-pos="1032" id="1959">
-        <run start="1220" level="90" length="13"/>
-        <run start="1219" level="70" length="14"/>
-        <run start="1218" level="70" length="16"/>
-        <run start="1217" level="65" length="17"/>
-        <run start="1217" level="55" length="17"/>
-        <run start="1216" level="59" length="19"/>
-        <run start="1216" level="56" length="19"/>
-        <run start="1215" level="56" length="20"/>
-        <run start="1214" level="46" length="20"/>
-        <run start="1214" level="50" length="20"/>
-        <run start="1214" level="46" length="19"/>
-        <run start="1214" level="45" length="19"/>
-        <run start="1213" level="52" length="20"/>
-        <run start="1213" level="45" length="19"/>
-        <run start="1213" level="45" length="19"/>
-        <run start="1213" level="53" length="19"/>
-        <run start="1214" level="59" length="17"/>
-        <run start="1214" level="53" length="16"/>
-        <run start="1214" level="63" length="16"/>
-        <run start="1215" level="85" length="14"/>
-        <run start="1215" level="70" length="12"/>
-        <run start="1217" level="70" length="9"/>
-        <run start="1218" level="61" length="7"/>
+    <section first-pos="1751" id="3235">
+        <run start="1218" level="72" length="11"/>
+        <run start="1216" level="62" length="13"/>
+        <run start="1215" level="55" length="15"/>
+        <run start="1214" level="50" length="16"/>
+        <run start="1213" level="46" length="18"/>
+        <run start="1213" level="44" length="18"/>
+        <run start="1212" level="42" length="19"/>
+        <run start="1212" level="42" length="19"/>
+        <run start="1211" level="42" length="19"/>
+        <run start="1211" level="42" length="19"/>
+        <run start="1211" level="43" length="19"/>
+        <run start="1210" level="41" length="20"/>
+        <run start="1210" level="41" length="20"/>
+        <run start="1210" level="43" length="19"/>
+        <run start="1210" level="43" length="19"/>
+        <run start="1210" level="45" length="18"/>
+        <run start="1210" level="48" length="17"/>
+        <run start="1210" level="49" length="17"/>
+        <run start="1211" level="55" length="15"/>
+        <run start="1211" level="59" length="14"/>
+        <run start="1212" level="70" length="11"/>
+        <run start="1213" level="77" length="10"/>
     </section>
-    <section first-pos="1055" id="1990">
-        <run start="1222" level="200" length="1"/>
+    <section first-pos="1773" id="3250">
+        <run start="1213" level="32" length="6"/>
     </section>
-</stick>
+    <section first-pos="1773" id="3251">
+        <run start="1220" level="192" length="2"/>
+    </section>
+</glyph>

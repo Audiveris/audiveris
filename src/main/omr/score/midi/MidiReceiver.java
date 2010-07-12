@@ -25,7 +25,7 @@ import omr.util.Implement;
 import omr.util.TreeNode;
 
 import com.xenoage.util.math.Fraction;
-import com.xenoage.zong.data.ScorePosition;
+import com.xenoage.zong.core.music.MP;
 import com.xenoage.zong.io.midi.out.PlaybackListener;
 
 /**
@@ -90,14 +90,14 @@ public class MidiReceiver
         }
     }
 
-    //-------------------------//
-    // playbackAtScorePosition //
-    //-------------------------//
+    //--------------//
+    // playbackAtMP //
+    //--------------//
     @Implement(PlaybackListener.class)
-    public void playbackAtScorePosition (ScorePosition position)
+    public void playbackAtMP (MP position)
     {
         if (logger.isFineEnabled()) {
-            logger.fine("playbackAtScorePosition");
+            logger.fine("playbackAtMP");
         }
 
         showPosition(position);
@@ -107,7 +107,7 @@ public class MidiReceiver
     // playbackStopped //
     //-----------------//
     @Implement(PlaybackListener.class)
-    public void playbackStopped (ScorePosition position)
+    public void playbackStopped (MP position)
     {
         if (logger.isFineEnabled()) {
             logger.info("playbackStopped");
@@ -237,7 +237,7 @@ public class MidiReceiver
      * Translate position (measure index & beat) to proper slot
      * @param position score position, as forwarded by Zong player
      */
-    private void showPosition (ScorePosition position)
+    private void showPosition (MP position)
     {
         Score score = agent.getScore();
 

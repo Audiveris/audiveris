@@ -14,12 +14,15 @@ package omr.glyph.text;
 import omr.glyph.Evaluation;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
+import omr.glyph.pattern.GlyphPattern;
 
 import omr.lag.HorizontalOrientation;
 
 import omr.log.Logger;
 
 import omr.sheet.SystemInfo;
+
+import omr.util.Implement;
 
 import java.util.*;
 
@@ -30,6 +33,7 @@ import java.util.*;
  * @author Hervé Bitteur
  */
 public class TextInspector
+    extends GlyphPattern
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -37,9 +41,6 @@ public class TextInspector
     private static final Logger logger = Logger.getLogger(TextInspector.class);
 
     //~ Instance fields --------------------------------------------------------
-
-    /** Dedicated system */
-    private final SystemInfo system;
 
     /** Used to assign a unique ID to system sentences */
     private int sentenceCount = 0;
@@ -53,7 +54,7 @@ public class TextInspector
      */
     public TextInspector (SystemInfo system)
     {
-        this.system = system;
+        super("Text", system);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -128,16 +129,17 @@ public class TextInspector
         return modifs;
     }
 
-    //----------------//
-    // runTextPattern //
-    //----------------//
+    //-----//
+    // run //
+    //-----//
     /**
      * Besides the existing text-shaped glyphs, using system area subdivision,
      * try to retrieve additional series of glyphs that could represent text
      * portions in the system at hand
      * @return the number of text glyphs built
      */
-    public int runTextPattern ()
+    @Implement(GlyphPattern.class)
+    public int run ()
     {
         // Create a TextArea on the whole system
         TextArea area = new TextArea(

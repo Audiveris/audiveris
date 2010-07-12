@@ -69,6 +69,9 @@ public class GlyphNetwork
     /** The underlying neural network */
     private NeuralNetwork engine;
 
+    /** The glyph checker for additional specific checks */
+    private GlyphChecker glyphChecker = GlyphChecker.getInstance();
+
     //~ Constructors -----------------------------------------------------------
 
     //--------------//
@@ -120,44 +123,6 @@ public class GlyphNetwork
         return INSTANCE;
     }
 
-    //-------------------//
-    // getAllEvaluations //
-    //-------------------//
-    @Override
-    public Evaluation[] getAllEvaluations (Glyph glyph)
-    {
-        // If too small, it's just NOISE
-        if (!isBigEnough(glyph)) {
-            return noiseEvaluations;
-        } else {
-            double[]     ins = feedInput(glyph, null);
-            double[]     outs = new double[shapeCount];
-            Evaluation[] evals = new Evaluation[shapeCount];
-
-            engine.run(ins, null, outs);
-
-            for (int s = 0; s < shapeCount; s++) {
-                Shape shape = GlyphChecks.specificCheck(
-                    Shape.values()[s],
-                    glyph,
-                    ins);
-
-                if (shape != null) {
-                    evals[s] = new Evaluation(shape, 1d / outs[s]);
-                } else {
-                    evals[s] = new Evaluation(
-                        Shape.values()[s],
-                        Double.MAX_VALUE);
-                }
-            }
-
-            // Order the evals from best to worst
-            Arrays.sort(evals, comparator);
-
-            return evals;
-        }
-    }
-
     //--------------//
     // setAmplitude //
     //--------------//
@@ -182,6 +147,41 @@ public class GlyphNetwork
     public double getAmplitude ()
     {
         return constants.amplitude.getValue();
+    }
+
+    //-----------------------//
+    // getCheckedEvaluations //
+    //-----------------------//
+    @Override
+    public Evaluation[] getCheckedEvaluations (Glyph glyph)
+    {
+        // If too small, it's just NOISE
+        if (!isBigEnough(glyph)) {
+            return noiseEvaluations;
+        } else {
+            double[]     ins = feedInput(glyph, null);
+            double[]     outs = new double[shapeCount];
+            Evaluation[] evals = new Evaluation[shapeCount];
+            Shape[]      values = Shape.values();
+
+            engine.run(ins, null, outs);
+
+            for (int s = 0; s < shapeCount; s++) {
+                Shape shape = values[s];
+                shape = glyphChecker.specificCheck(shape, glyph, ins);
+
+                if (shape != null) {
+                    evals[s] = new Evaluation(shape, 1d / outs[s]);
+                } else {
+                    evals[s] = new Evaluation(values[s], Double.MAX_VALUE);
+                }
+            }
+
+            // Order the evals from best to worst
+            Arrays.sort(evals, comparator);
+
+            return evals;
+        }
     }
 
     //-----------------//
@@ -319,6 +319,35 @@ public class GlyphNetwork
     public NeuralNetwork getNetwork ()
     {
         return engine;
+    }
+
+    //-------------------//
+    // getRawEvaluations //
+    //-------------------//
+    @Override
+    public Evaluation[] getRawEvaluations (Glyph glyph)
+    {
+        // If too small, it's just NOISE
+        if (!isBigEnough(glyph)) {
+            return noiseEvaluations;
+        } else {
+            double[]     ins = feedInput(glyph, null);
+            double[]     outs = new double[shapeCount];
+            Evaluation[] evals = new Evaluation[shapeCount];
+            Shape[]      values = Shape.values();
+
+            engine.run(ins, null, outs);
+
+            for (int s = 0; s < shapeCount; s++) {
+                Shape shape = values[s];
+                evals[s] = new Evaluation(shape, 1d / outs[s]);
+            }
+
+            // Order the evals from best to worst
+            Arrays.sort(evals, comparator);
+
+            return evals;
+        }
     }
 
     //------//
@@ -500,7 +529,7 @@ public class GlyphNetwork
             "Learning Rate");
         Constant.Integer listEpochs = new Constant.Integer(
             "Epochs",
-            8000,
+            4000,
             "Number of epochs for training on list of glyphs");
         Constant.Integer quorum = new Constant.Integer(
             "Glyphs",

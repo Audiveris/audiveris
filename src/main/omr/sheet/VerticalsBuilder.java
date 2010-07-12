@@ -336,7 +336,7 @@ public class VerticalsBuilder
             2.4,
             "Low Minimum length for a stem");
         Scale.Fraction minShortStemLengthLow = new Scale.Fraction(
-            1.5,
+            2.5,
             "Low Minimum length for a short stem");
         Scale.Fraction maxStemThickness = new Scale.Fraction(
             0.4,

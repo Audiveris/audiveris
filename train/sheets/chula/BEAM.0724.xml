@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="BEAM" interline="21" id="724">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>2.604651162790698</pitch-position>
+    <section first-pos="1625" id="3016">
+        <run start="673" level="41" length="15"/>
+        <run start="673" level="41" length="15"/>
+        <run start="673" level="41" length="15"/>
+        <run start="673" level="41" length="15"/>
+        <run start="673" level="42" length="15"/>
+        <run start="673" level="42" length="15"/>
+        <run start="673" level="42" length="15"/>
+        <run start="673" level="42" length="15"/>
+        <run start="673" level="42" length="15"/>
+        <run start="673" level="42" length="15"/>
+        <run start="673" level="42" length="15"/>
+        <run start="673" level="42" length="15"/>
+        <run start="673" level="43" length="15"/>
+        <run start="673" level="43" length="15"/>
+        <run start="673" level="43" length="15"/>
+        <run start="673" level="43" length="15"/>
+        <run start="673" level="43" length="15"/>
+        <run start="673" level="53" length="16"/>
+        <run start="673" level="55" length="15"/>
+        <run start="673" level="43" length="15"/>
+        <run start="673" level="44" length="15"/>
+        <run start="673" level="44" length="15"/>
+        <run start="673" level="55" length="15"/>
+        <run start="673" level="43" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="55" length="15"/>
+        <run start="673" level="53" length="16"/>
+        <run start="673" level="55" length="15"/>
+        <run start="673" level="53" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+        <run start="673" level="52" length="16"/>
+    </section>
+</glyph>

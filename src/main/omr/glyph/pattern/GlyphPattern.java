@@ -1,0 +1,68 @@
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                          G l y p h P a t t e r n                           //
+//                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
+//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  This software is released under the GNU General Public License.           //
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
+//----------------------------------------------------------------------------//
+// </editor-fold>
+package omr.glyph.pattern;
+
+import omr.sheet.SystemInfo;
+
+/**
+ * Class <code>GlyphPattern</code> describes a specific pattern applied on glyphs
+ *
+ * @author Hervé Bitteur
+ */
+public abstract class GlyphPattern
+{
+    //~ Instance fields --------------------------------------------------------
+
+    /** Name for debugging */
+    public final String name;
+
+    /** Related system */
+    protected final SystemInfo system;
+
+    //~ Constructors -----------------------------------------------------------
+
+    //--------------//
+    // GlyphPattern //
+    //--------------//
+    /**
+     * Creates a new GlyphPattern object.
+     *
+     * @param name the unique name for this pattern
+     * @param system the related system
+     */
+    public GlyphPattern (String     name,
+                    SystemInfo system)
+    {
+        this.name = name;
+        this.system = system;
+    }
+
+    //~ Methods ----------------------------------------------------------------
+
+    //-----//
+    // run //
+    //-----//
+    /**
+     * This method runs the pattern and report the number of modified glyphs
+     * @return the number of modified glyphs
+     */
+    public abstract int run ();
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return "S" + system.getId() + " pattern:" + name;
+    }
+}

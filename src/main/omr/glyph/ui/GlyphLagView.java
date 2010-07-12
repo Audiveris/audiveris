@@ -18,6 +18,7 @@ import omr.glyph.*;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 import omr.glyph.facets.Stick;
+import omr.glyph.pattern.SlurInspector;
 import omr.glyph.text.OcrChar;
 import omr.glyph.text.OcrLine;
 import omr.glyph.text.TextInfo;
@@ -476,9 +477,10 @@ public class GlyphLagView
             // Draw attachments, if any
             if (ViewParameters.getInstance()
                               .isAttachmentPainting()) {
-                Graphics2D g2 = (Graphics2D)g;
+                Graphics2D g2 = (Graphics2D) g;
+
                 for (java.awt.Shape attach : glyph.getAttachments()
-                                           .values()) {
+                                                  .values()) {
                     g2.draw(attach);
                 }
             }

@@ -311,12 +311,12 @@
         <!-- Just in case these properties are not already set -->
         <property name="javadoc.additionalparam" value="" />
         <property name="javadoc.author"          value="true" />
-        <property name="javadoc.noindex"         value="false" />
+        <property name="javadoc.noindex"         value="true" />
         <property name="javadoc.nonavbar"        value="false" />
-        <property name="javadoc.notree"          value="false" />
+        <property name="javadoc.notree"          value="true" />
         <property name="javadoc.private"         value="false" />
-        <property name="javadoc.splitindex"      value="true" />
-        <property name="javadoc.use"             value="true" />
+        <property name="javadoc.splitindex"      value="false" />
+        <property name="javadoc.use"             value="false" />
         <property name="javadoc.version"         value="true" />
         <property name="javadoc.windowtitle"     value="" />
         

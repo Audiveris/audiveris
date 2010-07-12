@@ -63,6 +63,23 @@ public class ShapeRange
     public static final ShapeRange HeadAndFlags = new ShapeRange(
         HEAD_AND_FLAG_1,
         EnumSet.range(HEAD_AND_FLAG_1, HEAD_AND_FLAG_5_UP));
+    public static final ShapeRange Keys = new ShapeRange(
+        KEY_SHARP_3,
+        Arrays.asList(
+            KEY_SHARP_1,
+            KEY_SHARP_2,
+            KEY_SHARP_3,
+            KEY_SHARP_4,
+            KEY_SHARP_5,
+            KEY_SHARP_6,
+            KEY_SHARP_7,
+            KEY_FLAT_1,
+            KEY_FLAT_2,
+            KEY_FLAT_3,
+            KEY_FLAT_4,
+            KEY_FLAT_5,
+            KEY_FLAT_6,
+            KEY_FLAT_7));
     public static final ShapeRange NoteHeads = new ShapeRange(
         NOTEHEAD_BLACK,
         EnumSet.range(VOID_NOTEHEAD, NOTEHEAD_BLACK_3));

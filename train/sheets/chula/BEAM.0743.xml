@@ -1,59 +1,50 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<stick shape="BEAM" interline="21" id="743">
+<glyph shape="BEAM" interline="21" id="743">
     <stem-number>2</stem-number>
     <with-ledger>false</with-ledger>
-    <pitch-position>-5.223529411764706</pitch-position>
-    <section first-pos="1520" id="2676">
-        <run start="914" level="19" length="14"/>
-        <run start="914" level="19" length="14"/>
-        <run start="914" level="19" length="14"/>
-        <run start="914" level="22" length="13"/>
-        <run start="915" level="22" length="12"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="22" length="12"/>
-        <run start="915" level="22" length="12"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="20" length="13"/>
-        <run start="915" level="20" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="20" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="21" length="13"/>
-        <run start="915" level="22" length="12"/>
-        <run start="915" level="22" length="12"/>
-        <run start="915" level="21" length="13"/>
+    <pitch-position>2.604651162790698</pitch-position>
+    <section first-pos="1581" id="2940">
+        <run start="673" level="42" length="14"/>
+        <run start="673" level="41" length="14"/>
+        <run start="673" level="41" length="14"/>
+        <run start="673" level="41" length="14"/>
+        <run start="673" level="41" length="14"/>
+        <run start="673" level="41" length="14"/>
+        <run start="673" level="41" length="14"/>
+        <run start="673" level="41" length="14"/>
+        <run start="673" level="41" length="14"/>
+        <run start="673" level="41" length="14"/>
+        <run start="673" level="41" length="14"/>
+        <run start="673" level="41" length="14"/>
+        <run start="673" level="41" length="14"/>
+        <run start="673" level="41" length="14"/>
+        <run start="673" level="41" length="14"/>
+        <run start="673" level="41" length="14"/>
+        <run start="673" level="41" length="14"/>
+        <run start="673" level="41" length="14"/>
+        <run start="673" level="41" length="14"/>
+        <run start="673" level="41" length="14"/>
+        <run start="673" level="41" length="14"/>
+        <run start="673" level="41" length="14"/>
+        <run start="673" level="41" length="14"/>
+        <run start="673" level="41" length="14"/>
+        <run start="673" level="41" length="14"/>
+        <run start="673" level="41" length="14"/>
+        <run start="673" level="40" length="15"/>
+        <run start="673" level="39" length="15"/>
+        <run start="673" level="39" length="15"/>
+        <run start="673" level="39" length="15"/>
+        <run start="673" level="39" length="15"/>
+        <run start="673" level="39" length="15"/>
+        <run start="673" level="40" length="15"/>
+        <run start="673" level="40" length="15"/>
+        <run start="673" level="40" length="15"/>
+        <run start="673" level="40" length="15"/>
+        <run start="673" level="40" length="15"/>
+        <run start="673" level="40" length="15"/>
+        <run start="673" level="40" length="15"/>
+        <run start="673" level="40" length="15"/>
+        <run start="673" level="41" length="15"/>
+        <run start="670" level="45" length="18"/>
     </section>
-</stick>
+</glyph>

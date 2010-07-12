@@ -15,7 +15,9 @@ import omr.log.Logger;
 
 import omr.ui.MainGui;
 
-import com.xenoage.zong.data.ScorePosition;
+import com.xenoage.util.exceptions.InvalidFormatException;
+import com.xenoage.zong.core.music.MP;
+import com.xenoage.zong.musicxml.types.MxlScorePartwise;
 import com.xenoage.zong.player.gui.BasicFrameController;
 
 /**
@@ -58,6 +60,20 @@ public class OmrFrameController
         return playing;
     }
 
+    //--------------//
+    // loadDocument //
+    //--------------//
+    @Override
+    public void loadDocument (MxlScorePartwise doc)
+        throws InvalidFormatException
+    {
+        controller.loadScore(doc, true); // true for ignoreErrors
+        view.setScoreInfo(controller.getScore());
+    }
+
+    //------//
+    // play //
+    //------//
     @Override
     public void play ()
     {
@@ -70,8 +86,11 @@ public class OmrFrameController
         super.play();
     }
 
+    //-----------------//
+    // playbackStopped //
+    //-----------------//
     @Override
-    public void playbackStopped (ScorePosition position)
+    public void playbackStopped (MP position)
     {
         playing = false;
     }

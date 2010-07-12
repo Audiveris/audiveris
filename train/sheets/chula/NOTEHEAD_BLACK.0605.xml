@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="NOTEHEAD_BLACK" interline="21" id="605">
+    <stem-number>1</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-1.1162790697674418</pitch-position>
+    <section first-pos="1913" id="3560">
+        <run start="395" level="63" length="16"/>
+        <run start="394" level="48" length="15"/>
+        <run start="392" level="42" length="17"/>
+        <run start="391" level="40" length="18"/>
+        <run start="390" level="39" length="19"/>
+        <run start="390" level="38" length="19"/>
+    </section>
+    <section first-pos="1917" id="3565">
+        <run start="386" level="192" length="2"/>
+        <run start="386" level="158" length="3"/>
+    </section>
+    <section first-pos="1919" id="3571">
+        <run start="386" level="51" length="23"/>
+        <run start="386" level="42" length="23"/>
+        <run start="386" level="42" length="23"/>
+        <run start="386" level="42" length="23"/>
+        <run start="386" level="42" length="23"/>
+        <run start="386" level="42" length="23"/>
+        <run start="386" level="42" length="23"/>
+        <run start="386" level="42" length="23"/>
+        <run start="386" level="42" length="23"/>
+        <run start="386" level="35" length="22"/>
+        <run start="386" level="28" length="21"/>
+        <run start="386" level="26" length="20"/>
+        <run start="386" level="27" length="19"/>
+        <run start="386" level="29" length="18"/>
+        <run start="386" level="31" length="17"/>
+        <run start="386" level="36" length="16"/>
+        <run start="386" level="59" length="15"/>
+    </section>
+    <section first-pos="1936" id="3582">
+        <run start="386" level="170" length="3"/>
+        <run start="386" level="171" length="3"/>
+        <run start="388" level="151" length="1"/>
+    </section>
+    <section first-pos="1936" id="3583">
+        <run start="391" level="51" length="8"/>
+    </section>
+    <section first-pos="1937" id="3584">
+        <run start="393" level="106" length="3"/>
+    </section>
+</glyph>

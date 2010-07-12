@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="BEAM_HOOK" interline="21" id="596">
+    <stem-number>1</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>4.470588235294118</pitch-position>
+    <section first-pos="1295" id="2476">
+        <run start="452" level="192" length="2"/>
+    </section>
+    <section first-pos="1296" id="2480">
+        <run start="452" level="110" length="7"/>
+        <run start="452" level="63" length="10"/>
+        <run start="452" level="41" length="11"/>
+        <run start="452" level="47" length="12"/>
+        <run start="452" level="48" length="12"/>
+        <run start="452" level="48" length="12"/>
+        <run start="452" level="48" length="12"/>
+        <run start="452" level="48" length="12"/>
+        <run start="452" level="35" length="11"/>
+        <run start="452" level="35" length="11"/>
+        <run start="452" level="35" length="11"/>
+        <run start="452" level="35" length="11"/>
+        <run start="452" level="35" length="11"/>
+        <run start="452" level="35" length="11"/>
+        <run start="452" level="35" length="11"/>
+        <run start="452" level="35" length="11"/>
+        <run start="452" level="35" length="11"/>
+        <run start="452" level="35" length="11"/>
+        <run start="452" level="35" length="11"/>
+        <run start="452" level="35" length="11"/>
+        <run start="452" level="35" length="11"/>
+        <run start="450" level="52" length="13"/>
+        <run start="450" level="47" length="13"/>
+    </section>
+</glyph>

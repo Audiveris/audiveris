@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="BEAM" interline="21" id="676">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>5.129411764705883</pitch-position>
+    <section first-pos="655" id="1498">
+        <run start="458" level="2" length="12"/>
+        <run start="458" level="2" length="12"/>
+        <run start="458" level="2" length="12"/>
+        <run start="458" level="2" length="12"/>
+        <run start="458" level="2" length="12"/>
+        <run start="458" level="1" length="12"/>
+        <run start="458" level="1" length="12"/>
+        <run start="458" level="1" length="12"/>
+        <run start="458" level="1" length="12"/>
+        <run start="458" level="1" length="12"/>
+        <run start="458" level="1" length="12"/>
+        <run start="458" level="0" length="12"/>
+        <run start="458" level="0" length="12"/>
+        <run start="458" level="0" length="12"/>
+        <run start="458" level="0" length="12"/>
+        <run start="458" level="0" length="12"/>
+        <run start="458" level="0" length="12"/>
+        <run start="458" level="15" length="12"/>
+        <run start="459" level="1" length="11"/>
+        <run start="459" level="1" length="11"/>
+        <run start="459" level="1" length="11"/>
+        <run start="459" level="1" length="11"/>
+        <run start="459" level="1" length="11"/>
+        <run start="459" level="2" length="11"/>
+        <run start="459" level="2" length="11"/>
+        <run start="459" level="2" length="11"/>
+        <run start="459" level="11" length="12"/>
+        <run start="459" level="2" length="12"/>
+        <run start="459" level="2" length="12"/>
+        <run start="459" level="2" length="12"/>
+        <run start="459" level="3" length="12"/>
+        <run start="459" level="3" length="12"/>
+        <run start="459" level="3" length="12"/>
+        <run start="459" level="3" length="12"/>
+        <run start="459" level="3" length="12"/>
+        <run start="459" level="3" length="12"/>
+        <run start="459" level="4" length="12"/>
+        <run start="459" level="4" length="12"/>
+        <run start="459" level="4" length="12"/>
+        <run start="459" level="4" length="12"/>
+    </section>
+</glyph>

@@ -25,6 +25,7 @@ import omr.math.NeuralNetwork;
 import omr.sheet.Scale;
 
 import omr.util.ClassUtil;
+import omr.util.Predicate;
 
 import java.io.*;
 import java.util.*;
@@ -222,36 +223,75 @@ public abstract class GlyphEvaluator
         return ins;
     }
 
-    //-------------------//
-    // getAllEvaluations //
-    //-------------------//
+    //-----------------------//
+    // getCheckedEvaluations //
+    //-----------------------//
     /**
-     * Run the evaluator with the specified glyph, and return a prioritized
-     * collection of interpretations (ordered from best to worst).
+     * Run specific checks on raw evaluations produced by the evaluator, and
+     * return them ordered from best to worst
      *
      * @param glyph the glyph to be examined
      *
-     * @return the ordered best evaluations
+     * @return the ordered best checked evaluations
      */
-    public abstract Evaluation[] getAllEvaluations (Glyph glyph);
+    public abstract Evaluation[] getCheckedEvaluations (Glyph glyph);
 
-    //----------------//
-    // getEvaluations //
-    //----------------//
+    //-------------------//
+    // getRawEvaluations //
+    //-------------------//
     /**
      * Run the evaluator with the specified glyph, and return a prioritized
-     * collection of interpretations (ordered from best to worst), without the
-     * shapes that are flagged as forbidden for this glyph.
+     * collection of interpretations (ordered from best to worst) with no
+     * additional check
      *
      * @param glyph the glyph to be examined
      *
      * @return the ordered best evaluations
      */
-    public Evaluation[] getEvaluations (Glyph glyph)
+    public abstract Evaluation[] getRawEvaluations (Glyph glyph);
+
+    //-----------------------//
+    // getAllowedEvaluations //
+    //-----------------------//
+    /**
+     * Run the evaluator with the specified glyph as well as speciic checks,
+     * and return only the shapes that are not flagged as forbidden for this
+     * glyph.
+     *
+     * @param glyph the glyph to be examined
+     *
+     * @return the ordered best checked and allowed evaluations
+     */
+    public Evaluation[] getAllowedEvaluations (Glyph glyph)
     {
         List<Evaluation> kept = new ArrayList<Evaluation>();
 
-        for (Evaluation eval : getAllEvaluations(glyph)) {
+        for (Evaluation eval : getCheckedEvaluations(glyph)) {
+            if (!glyph.isShapeForbidden(eval.shape)) {
+                kept.add(eval);
+            }
+        }
+
+        return kept.toArray(new Evaluation[kept.size()]);
+    }
+
+    //--------------------------//
+    // getRawAllowedEvaluations //
+    //--------------------------//
+    /**
+     * Run the evaluator with the specified glyph,
+     * and return only the shapes that are not flagged as forbidden for this
+     * glyph.
+     *
+     * @param glyph the glyph to be examined
+     *
+     * @return the ordered best allowed evaluations
+     */
+    public Evaluation[] getRawAllowedEvaluations (Glyph glyph)
+    {
+        List<Evaluation> kept = new ArrayList<Evaluation>();
+
+        for (Evaluation eval : getRawEvaluations(glyph)) {
             if (!glyph.isShapeForbidden(eval.shape)) {
                 kept.add(eval);
             }
@@ -316,6 +356,43 @@ public abstract class GlyphEvaluator
         }
     }
 
+    //---------//
+    // topVote //
+    //---------//
+    /**
+     * Report the best evaluation for the provided glyph, below a maximum doubt
+     * value, among the shapes (non checked, but allowed) that match
+     * the provided predicate
+     * @param glyph the provided glyph
+     * @param maxDoubt the maximum doubt to be accepted
+     * @param predicate filter for acceptable shapes
+     * @return the best acceptable evaluation, or null
+     */
+    public Evaluation topRawVote (Glyph            glyph,
+                                  double           maxDoubt,
+                                  Predicate<Shape> predicate)
+    {
+        return bestOf(getRawAllowedEvaluations(glyph), maxDoubt, predicate);
+    }
+
+    //---------//
+    // topVote //
+    //---------//
+    /**
+     * Report the best evaluation for the provided glyph, below a maximum doubt
+     * value, among the shapes that match the provided predicate
+     * @param glyph the provided glyph
+     * @param maxDoubt the maximum doubt to be accepted
+     * @param predicate filter for acceptable shapes
+     * @return the best acceptable evaluation, or null
+     */
+    public Evaluation topVote (Glyph            glyph,
+                               double           maxDoubt,
+                               Predicate<Shape> predicate)
+    {
+        return bestOf(getAllowedEvaluations(glyph), maxDoubt, predicate);
+    }
+
     //------//
     // vote //
     //------//
@@ -329,27 +406,10 @@ public abstract class GlyphEvaluator
     public Evaluation vote (Glyph  glyph,
                             double maxDoubt)
     {
-        Evaluation[] evaluations = getEvaluations(glyph);
+        Evaluation[] evaluations = getAllowedEvaluations(glyph);
 
         if ((evaluations.length > 0) && (evaluations[0].doubt <= maxDoubt)) {
-            Evaluation best = evaluations[0];
-
-            // Temporary logic, to be validated:
-            // If the best shape found is a CLUTTER while a second best is also
-            // acceptable wrt maxDoubt, we choose the second
-            if ((best.shape == Shape.CLUTTER) &&
-                (evaluations.length > 1) &&
-                (evaluations[1].doubt <= maxDoubt)) {
-                best = evaluations[1];
-
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "Shape CLUTTER discarded for " + best.shape +
-                        " at glyph #" + glyph.getId());
-                }
-            }
-
-            return best;
+            return evaluations[0];
         } else {
             return null;
         }
@@ -427,6 +487,27 @@ public abstract class GlyphEvaluator
      */
     protected abstract Object unmarshal (InputStream is)
         throws JAXBException, IOException;
+
+    //--------//
+    // bestOf //
+    //--------//
+    private Evaluation bestOf (Evaluation[]     evaluations,
+                               double           maxDoubt,
+                               Predicate<Shape> predicate)
+    {
+        // Check if a suitable shape appears in the top evaluations
+        for (Evaluation evaluation : evaluations) {
+            if (evaluation.doubt > maxDoubt) {
+                break;
+            }
+
+            if (predicate.check(evaluation.shape)) {
+                return evaluation;
+            }
+        }
+
+        return null;
+    }
 
     //--------------//
     // boolAsDouble //

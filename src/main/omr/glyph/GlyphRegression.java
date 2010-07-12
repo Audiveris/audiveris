@@ -57,6 +57,9 @@ public class GlyphRegression
     /** The encapsulated linear evaluator */
     private LinearEvaluator engine;
 
+    /** The glyph checker for additional specific checks */
+    private GlyphChecker glyphChecker = GlyphChecker.getInstance();
+
     //~ Constructors -----------------------------------------------------------
 
     //-----------------//
@@ -86,9 +89,9 @@ public class GlyphRegression
             // Get a brand new one (not trained)
             logger.info("Creating a brand new LinearEvaluator");
             engine = new LinearEvaluator(getParameterLabels());
+        } else {
+            customizeEngine();
         }
-
-        customizeEngine();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -111,11 +114,11 @@ public class GlyphRegression
         return INSTANCE;
     }
 
-    //-------------------//
-    // getAllEvaluations //
-    //-------------------//
+    //-----------------------//
+    // getCheckedEvaluations //
+    //-----------------------//
     @Override
-    public Evaluation[] getAllEvaluations (Glyph glyph)
+    public Evaluation[] getCheckedEvaluations (Glyph glyph)
     {
         // If too small, it's just NOISE
         if (!isBigEnough(glyph)) {
@@ -127,7 +130,7 @@ public class GlyphRegression
 
             for (int s = 0; s < shapeCount; s++) {
                 Shape shape = values[s];
-                shape = GlyphChecks.specificCheck(shape, glyph, ins);
+                shape = glyphChecker.specificCheck(shape, glyph, ins);
 
                 if (shape != null) {
                     evals[s] = new Evaluation(
@@ -163,6 +166,32 @@ public class GlyphRegression
     public String getName ()
     {
         return "Regression";
+    }
+
+    //-------------------//
+    // getRawEvaluations //
+    //-------------------//
+    @Override
+    public Evaluation[] getRawEvaluations (Glyph glyph)
+    {
+        // If too small, it's just NOISE
+        if (!isBigEnough(glyph)) {
+            return noiseEvaluations;
+        } else {
+            double[]     ins = feedInput(glyph, null);
+            Evaluation[] evals = new Evaluation[shapeCount];
+            Shape[]      values = Shape.values();
+
+            for (int s = 0; s < shapeCount; s++) {
+                Shape shape = values[s];
+                evals[s] = new Evaluation(shape, measureDistance(ins, shape));
+            }
+
+            // Order the evals from best to worst
+            Arrays.sort(evals, comparator);
+
+            return evals;
+        }
     }
 
     //--------------------//

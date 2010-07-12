@@ -61,7 +61,7 @@ public class Chord
      * Compare two notes of the same chord, ordered by increasing distance from
      * chord head ordinate
      */
-    private static Comparator<TreeNode> noteHeadComparator = new Comparator<TreeNode>() {
+    public static Comparator<TreeNode> noteHeadComparator = new Comparator<TreeNode>() {
         public int compare (TreeNode tn1,
                             TreeNode tn2)
         {
@@ -556,14 +556,11 @@ public class Chord
     {
         List<Chord> chords = new ArrayList<Chord>();
 
-        ///stem.clearTranslations();
         for (TreeNode node : measure.getChords()) {
             Chord chord = (Chord) node;
 
             if (chord.getStem() == stem) {
                 chords.add(chord);
-
-                ///stem.addTranslation(chord);
             }
         }
 

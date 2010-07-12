@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="BEAM_HOOK" interline="21" id="1174">
+    <stem-number>1</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-4.376470588235295</pitch-position>
+    <section first-pos="1983" id="3702">
+        <run start="1534" level="160" length="7"/>
+        <run start="1532" level="113" length="9"/>
+        <run start="1531" level="91" length="10"/>
+        <run start="1531" level="81" length="10"/>
+        <run start="1531" level="81" length="10"/>
+        <run start="1531" level="96" length="10"/>
+        <run start="1532" level="89" length="9"/>
+        <run start="1532" level="89" length="9"/>
+        <run start="1532" level="89" length="9"/>
+        <run start="1532" level="89" length="9"/>
+        <run start="1532" level="89" length="9"/>
+        <run start="1532" level="88" length="9"/>
+        <run start="1532" level="88" length="9"/>
+        <run start="1532" level="88" length="9"/>
+        <run start="1532" level="88" length="9"/>
+        <run start="1532" level="87" length="9"/>
+        <run start="1532" level="87" length="9"/>
+        <run start="1532" level="87" length="9"/>
+        <run start="1532" level="87" length="9"/>
+        <run start="1532" level="87" length="9"/>
+        <run start="1532" level="86" length="9"/>
+        <run start="1532" level="86" length="9"/>
+        <run start="1532" level="103" length="9"/>
+        <run start="1532" level="97" length="9"/>
+        <run start="1532" level="86" length="9"/>
+    </section>
+</glyph>

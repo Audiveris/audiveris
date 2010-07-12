@@ -400,6 +400,24 @@ public class TextArea
                               .next();
             }
 
+            if (logger.isFineEnabled()) {
+                // Use OCR for debug
+                // Current language
+                String        language = system.getScoreSystem()
+                                               .getScore()
+                                               .getLanguage();
+
+                List<OcrLine> lines = Language.getOcr()
+                                              .recognize(
+                    glyph.getImage(),
+                    language,
+                    "g" + glyph.getId() + ".");
+
+                for (OcrLine ocrLine : lines) {
+                    logger.warning(ocrLine.toString());
+                }
+            }
+
             GlyphEvaluator evaluator = GlyphNetwork.getInstance();
             Evaluation     vote = evaluator.vote(
                 glyph,
@@ -407,7 +425,9 @@ public class TextArea
 
             if (vote != null) {
                 if (logger.isFineEnabled()) {
-                    logger.fine("Vote: " + vote.toString());
+                    logger.info(
+                        "Vote: " + vote.toString() +
+                        Glyphs.toString(" for", glyphs));
                 }
 
                 if (vote.shape.isText()) {

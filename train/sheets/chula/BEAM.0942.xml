@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="BEAM" interline="21" id="942">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>4.658823529411765</pitch-position>
+    <section first-pos="1801" id="3300">
+        <run start="1281" level="67" length="19"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="59" length="16"/>
+        <run start="1288" level="17" length="12"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="59" length="16"/>
+        <run start="1284" level="61" length="16"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="52" length="16"/>
+        <run start="1284" level="50" length="16"/>
+        <run start="1284" level="48" length="16"/>
+        <run start="1284" level="50" length="16"/>
+        <run start="1284" level="43" length="15"/>
+        <run start="1284" level="42" length="15"/>
+        <run start="1284" level="42" length="15"/>
+        <run start="1284" level="42" length="15"/>
+        <run start="1284" level="46" length="16"/>
+        <run start="1284" level="36" length="16"/>
+        <run start="1284" level="37" length="16"/>
+        <run start="1284" level="39" length="16"/>
+        <run start="1281" level="57" length="19"/>
+    </section>
+</glyph>

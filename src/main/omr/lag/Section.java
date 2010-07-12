@@ -606,7 +606,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
     /**
      * Report the mass center of the section runs intersected by the provided
      * rectangle
-     * @param rectangle the rectangle of interest (roi)
+     * @param roi the rectangle of interest (roi)
      * @return the centroid of the intersected points, or null
      * @throws IllegalArgumentException if provided roi is null
      */

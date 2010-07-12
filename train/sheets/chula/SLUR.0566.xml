@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="SLUR" interline="21" id="566">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-13.6</pitch-position>
+    <section first-pos="1564" id="2893">
+        <run start="1443" level="185" length="2"/>
+        <run start="1442" level="58" length="4"/>
+        <run start="1441" level="46" length="5"/>
+        <run start="1440" level="34" length="5"/>
+        <run start="1439" level="26" length="4"/>
+        <run start="1438" level="26" length="4"/>
+        <run start="1437" level="26" length="4"/>
+        <run start="1435" level="59" length="5"/>
+        <run start="1435" level="32" length="4"/>
+        <run start="1434" level="84" length="5"/>
+        <run start="1434" level="31" length="4"/>
+        <run start="1433" level="57" length="4"/>
+        <run start="1433" level="31" length="4"/>
+        <run start="1432" level="72" length="4"/>
+        <run start="1432" level="18" length="3"/>
+        <run start="1432" level="18" length="3"/>
+        <run start="1431" level="53" length="4"/>
+        <run start="1431" level="13" length="4"/>
+        <run start="1431" level="30" length="4"/>
+        <run start="1431" level="15" length="3"/>
+        <run start="1431" level="15" length="3"/>
+        <run start="1431" level="14" length="3"/>
+        <run start="1431" level="13" length="3"/>
+        <run start="1431" level="45" length="4"/>
+        <run start="1431" level="9" length="4"/>
+        <run start="1431" level="32" length="4"/>
+        <run start="1432" level="11" length="3"/>
+        <run start="1432" level="45" length="4"/>
+        <run start="1432" level="30" length="4"/>
+        <run start="1433" level="45" length="4"/>
+        <run start="1433" level="29" length="4"/>
+        <run start="1434" level="45" length="4"/>
+        <run start="1434" level="54" length="5"/>
+        <run start="1435" level="54" length="5"/>
+        <run start="1436" level="37" length="5"/>
+        <run start="1436" level="59" length="6"/>
+        <run start="1438" level="53" length="5"/>
+        <run start="1439" level="38" length="5"/>
+        <run start="1439" level="45" length="6"/>
+        <run start="1440" level="17" length="5"/>
+        <run start="1441" level="73" length="4"/>
+    </section>
+</glyph>

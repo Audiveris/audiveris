@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="COMBINING_FLAG_1" interline="21" id="607">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-5.767441860465116</pitch-position>
+    <section first-pos="1147" id="2193">
+        <run start="334" level="22" length="13"/>
+        <run start="336" level="18" length="12"/>
+        <run start="336" level="34" length="12"/>
+        <run start="337" level="29" length="11"/>
+        <run start="338" level="42" length="11"/>
+        <run start="340" level="26" length="10"/>
+        <run start="340" level="32" length="10"/>
+        <run start="341" level="32" length="10"/>
+        <run start="342" level="31" length="10"/>
+        <run start="343" level="45" length="10"/>
+        <run start="345" level="34" length="9"/>
+        <run start="346" level="45" length="10"/>
+        <run start="347" level="31" length="10"/>
+        <run start="348" level="53" length="11"/>
+        <run start="350" level="61" length="12"/>
+    </section>
+    <section first-pos="1161" id="2210">
+        <run start="364" level="191" length="3"/>
+    </section>
+    <section first-pos="1162" id="2211">
+        <run start="352" level="60" length="15"/>
+    </section>
+</glyph>

@@ -418,7 +418,7 @@ public class Scale
      *
      * @return the computed rectangle in pixels
      */
-    public Rectangle toPixels (Rectangle pagRect)
+    public PixelRectangle toPixels (PageRectangle pagRect)
     {
         return toPixels(pagRect, null);
     }
@@ -436,11 +436,11 @@ public class Scale
      *
      * @return the computed rectangle in pixels
      */
-    public Rectangle toPixels (Rectangle pagRect,
-                               Rectangle pixRect)
+    public PixelRectangle toPixels (PageRectangle pagRect,
+                               PixelRectangle pixRect)
     {
         if (pixRect == null) {
-            pixRect = new Rectangle();
+            pixRect = new PixelRectangle();
         }
 
         pixRect.x = unitsToPixels(pagRect.x);

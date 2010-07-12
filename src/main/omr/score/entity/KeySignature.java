@@ -53,32 +53,50 @@ public class KeySignature
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(KeySignature.class);
 
-    /** Pitch position for the members of the sharp keys assuming a G clef */
+    /** Standard (in G clef) pitch position for the members of the sharp keys */
     private static final double[] sharpPositions = new double[] {
                                                        -4, // F - Fa
     -1, // C - Do
     -5, // G - Sol
-    -2, // D - Re
+    -2, // D - Ré
     +1, // A - La
     -3, // E - Mi
     0 // B - Si
                                                    };
+
+    /** Standard (in G clef) pitch position of any sharp key signature */
+    private static final double[] sharpKeyPositions = new double[1 + 7];
+
+    static {
+        for (int k = 0; k < sharpKeyPositions.length; k++) {
+            sharpKeyPositions[k] = getStandardPosition(k);
+        }
+    }
 
     /** Note steps according to sharp key */
     private static final Note.Step[] sharpSteps = new Note.Step[] {
                                                       F, C, G, D, A, E, B
                                                   };
 
-    /** Pitch position for the members of the flat keys assuming a G clef */
+    /** Standard(in G clef) pitch position  for the members of the flat keys */
     private static final double[] flatPositions = new double[] {
                                                       0, // B - Si
     -3, // E - Mi
     +1, // A - La
-    -2, // D - Re
+    -2, // D - Ré
     +2, // G - Sol
     -1, // C - Do
     +3 // F - Fa
                                                   };
+
+    /** Standard (in G clef) pitch position of any flat key signature */
+    private static final double[] flatKeyPositions = new double[1 + 7];
+
+    static {
+        for (int k = 0; k < flatKeyPositions.length; k++) {
+            flatKeyPositions[k] = getStandardPosition(-k);
+        }
+    }
 
     /** Note steps according to flat key */
     private static final Note.Step[] flatSteps = new Note.Step[] {
@@ -151,7 +169,7 @@ public class KeySignature
         key = other.getKey();
         pitchPosition = other.getPitchPosition();
         shape = other.getShape();
-        clefKind = other.guessClefKind();
+        clefKind = other.clefKind;
 
         // Nota: Center.y is irrelevant
         setCenter(new SystemPoint(other.getCenter().x, 0));
@@ -215,13 +233,14 @@ public class KeySignature
     public Double getPitchPosition ()
     {
         if (pitchPosition == null) {
-            Shape guess = guessClefKind();
+            clefKind = getClefKind();
 
-            if (guess == null) {
-                guess = G_CLEF;
+            if (clefKind == null) {
+                clefKind = G_CLEF;
             }
 
-            pitchPosition = getTheoreticalPosition() + clefToDelta(guess);
+            pitchPosition = getStandardPosition(getKey()) +
+                            clefToDelta(clefKind);
         }
 
         return pitchPosition;
@@ -238,12 +257,51 @@ public class KeySignature
     public Shape getShape ()
     {
         if (shape == null) {
-            getKey();
+            switch (getKey()) {
+            case -1 :
+                return KEY_FLAT_1;
 
-            if (key > 0) {
-                shape = Shape.values()[(Shape.KEY_SHARP_1.ordinal() + key) - 1];
-            } else {
-                shape = Shape.values()[(Shape.KEY_FLAT_1.ordinal() + key) + 1];
+            case -2 :
+                return KEY_FLAT_2;
+
+            case -3 :
+                return KEY_FLAT_3;
+
+            case -4 :
+                return KEY_FLAT_4;
+
+            case -5 :
+                return KEY_FLAT_5;
+
+            case -6 :
+                return KEY_FLAT_6;
+
+            case -7 :
+                return KEY_FLAT_7;
+
+            case 1 :
+                return KEY_SHARP_1;
+
+            case 2 :
+                return KEY_SHARP_2;
+
+            case 3 :
+                return KEY_SHARP_3;
+
+            case 4 :
+                return KEY_SHARP_4;
+
+            case 5 :
+                return KEY_SHARP_5;
+
+            case 6 :
+                return KEY_SHARP_6;
+
+            case 7 :
+                return KEY_SHARP_7;
+
+            default :
+                return null;
             }
         }
 
@@ -295,11 +353,24 @@ public class KeySignature
             logger.fine("Populating keysig for " + glyph);
         }
 
-        ScoreSystem    system = measure.getSystem();
-        SystemInfo     systemInfo = system.getInfo();
+        ScoreSystem system = measure.getSystem();
+        SystemInfo  systemInfo = system.getInfo();
+
+        // Make sure the glyph pitch position is within the bounds
+        double pitchPosition = staff.pitchPositionOf(center);
+
+        if ((pitchPosition < -5) || (pitchPosition > 5)) {
+            if (logger.isFineEnabled()) {
+                logger.fine("Glyph not within vertical bounds");
+            }
+
+            return false;
+        }
 
         // Make sure we have no note nearby
         // Use a enlarged rectangular box around the glyph, and check what's in
+        // Check for lack of stem symbols (beam, beam hook, note head, flags),
+        // or stand-alone note (THIS IS TOO RESTRICTIVE!!!)
         PixelRectangle glyphFatBox = glyph.getContourBox();
         glyphFatBox.grow(
             measure.getScale().toPixels(constants.xMargin),
@@ -309,8 +380,6 @@ public class KeySignature
             glyphFatBox,
             glyph);
 
-        // Check for lack of stem symbols (beam, beam hook, note head, flags),
-        // or stand-alone note
         for (Glyph g : neighbors) {
             Shape shape = g.getShape();
 
@@ -341,8 +410,7 @@ public class KeySignature
             if (!fatBox.intersects(keysig.getBox())) {
                 if (logger.isFineEnabled()) {
                     logger.fine(
-                        "Glyph " + glyph.getId() +
-                        " too far from previous key signature");
+                        "Glyph " + glyph.getId() + " too far from " + keysig);
                 }
 
                 continue;
@@ -351,7 +419,7 @@ public class KeySignature
                 // Check sharp or flat key sig, wrt current glyph
                 if (logger.isFineEnabled()) {
                     logger.fine(
-                        "Cannot extend key signature with glyph " +
+                        "Cannot extend opposite key signature with glyph " +
                         glyph.getId());
                 }
 
@@ -359,6 +427,10 @@ public class KeySignature
             } else {
                 // Everything is OK
                 found = true;
+
+                if (logger.isFineEnabled()) {
+                    logger.fine("Extending " + keysig);
+                }
 
                 break;
             }
@@ -371,6 +443,12 @@ public class KeySignature
                 measure.computeGlyphCenter(glyph));
 
             if (!checkPitchPosition(glyph, center, staff, 0, clef)) {
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "Cannot start a new key signature with glyph " +
+                        glyph.getId());
+                }
+
                 return false;
             }
 
@@ -379,10 +457,11 @@ public class KeySignature
 
         // Extend the keysig with this glyph
         keysig.addGlyph(glyph);
+        keysig.getKey();
         glyph.setTranslation(keysig);
 
         if (logger.isFineEnabled()) {
-            logger.fine("key=" + keysig.getKey());
+            logger.fine("OK: " + keysig);
         }
 
         return true;
@@ -412,7 +491,8 @@ public class KeySignature
               .append(getBox());
             sb.append(" pitch=")
               .append(getPitchPosition());
-            sb.append(Glyphs.toString(glyphs));
+            sb.append(" ")
+              .append(Glyphs.toString(glyphs));
         } catch (Exception e) {
             sb.append("INVALID");
         }
@@ -602,6 +682,7 @@ public class KeySignature
 
         setCenter(null);
         key = null;
+        pitchPosition = null;
         shape = null;
         centroid = null;
         clefKind = null;
@@ -815,34 +896,52 @@ public class KeySignature
         return centroid;
     }
 
-    //------------------------//
-    // getTheoreticalPosition //
-    //------------------------//
+    //---------------------//
+    // getStandardPosition //
+    //---------------------//
     /**
-     * Compute the theoretical mean pitch position, based on key value
+     * Compute the standard mean pitch position of the provided key
      *
-     * @return the mean pitch position (for the signature symbol, for example)
+     * @param k the provided key value
+     * @return the corresponding standard mean pitch position
      */
-    private double getTheoreticalPosition ()
+    private static double getStandardPosition (int k)
     {
-        double sum = 0;
-        getKey();
-
-        if (key == null) {
+        if (k == 0) {
             return 0;
         }
 
-        if (key > 0) {
-            for (int k = 0; k < key; k++) {
-                sum += sharpPositions[k];
+        double sum = 0;
+
+        if (k > 0) {
+            for (int i = 0; i < k; i++) {
+                sum += sharpPositions[i];
             }
         } else {
-            for (int k = 0; k > key; k--) {
-                sum -= flatPositions[-k];
+            for (int i = 0; i > k; i--) {
+                sum -= flatPositions[-i];
             }
         }
 
-        return sum / key;
+        return sum / k;
+    }
+
+    //---------------------//
+    // getStandardPosition //
+    //---------------------//
+    /**
+     * Return the standard (assuming G clef) mean pitch position, based on known
+     * key value
+     *
+     * @return the standard mean pitch position
+     */
+    private double getStandardPosition ()
+    {
+        if (getKey() >= 0) {
+            return sharpKeyPositions[key];
+        } else {
+            return flatKeyPositions[key];
+        }
     }
 
     //--------------------//
@@ -882,6 +981,63 @@ public class KeySignature
                 flatPositions,
                 index,
                 clef);
+        }
+    }
+
+    //-------------//
+    // getClefKind //
+    //-------------//
+    /**
+     * Report the current clef kind, if known
+     * @return the current clef kind, or null
+     */
+    private Shape getClefKind ()
+    {
+        if (clefKind == null) {
+            // First is there a clef right before, within the same measure?
+            Clef clef = getMeasure()
+                            .getMeasureClefBefore(getCenter(), null);
+
+            if (clef != null) {
+                return clefKind = clefKindOf(clef.getShape());
+            }
+
+            // Second, guess the clef based on key position
+            clefKind = guessClefKind();
+        }
+
+        return clefKind;
+    }
+
+    //------------//
+    // clefKindOf //
+    //------------//
+    /**
+     * Report the kind of the provided clef
+     * @param clef the provided clef
+     * @return the kind of the clef
+     */
+    private Shape clefKindOf (Shape clef)
+    {
+        switch (clef) {
+        case G_CLEF :
+        case G_CLEF_OTTAVA_ALTA :
+        case G_CLEF_OTTAVA_BASSA :
+            return G_CLEF;
+
+        case C_CLEF :
+            return C_CLEF;
+
+        case F_CLEF :
+        case F_CLEF_OTTAVA_ALTA :
+        case F_CLEF_OTTAVA_BASSA :
+            return F_CLEF;
+
+        case PERCUSSION_CLEF :
+            return null;
+
+        default :
+            return null;
         }
     }
 
@@ -941,13 +1097,13 @@ public class KeySignature
     {
         switch (delta) {
         case 0 :
-            return clefKind = G_CLEF;
+            return G_CLEF;
 
         case 1 :
-            return clefKind = C_CLEF;
+            return C_CLEF;
 
         case 2 :
-            return clefKind = F_CLEF;
+            return F_CLEF;
 
         default :
             return null;
@@ -965,35 +1121,33 @@ public class KeySignature
      */
     private Shape guessClefKind ()
     {
-        if (clefKind == null) {
-            double theoPos = getTheoreticalPosition();
-            double realPos = getStaff()
-                                 .pitchPositionOf(getCentroid());
+        double theoPos = getStandardPosition(getKey());
+        double realPos = getStaff()
+                             .pitchPositionOf(getCentroid());
 
-            // Correction for flats
-            if (glyphs.first()
-                      .getShape() == Shape.FLAT) {
-                realPos += 0.75;
-            }
+        // Correction for flats
+        if (glyphs.first()
+                  .getShape() == Shape.FLAT) {
+            realPos += 0.75;
+        }
 
-            int delta = (int) Math.rint(realPos - theoPos);
+        int delta = (int) Math.rint(realPos - theoPos);
 
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                "theoPos=" + theoPos + " realPos=" + realPos + " delta=" +
+                delta);
+        }
+
+        Shape kind = deltaToClef(delta);
+
+        if (kind == null) {
             if (logger.isFineEnabled()) {
-                logger.fine(
-                    "theoPos=" + theoPos + " realPos=" + realPos + " delta=" +
-                    delta);
-            }
-
-            clefKind = deltaToClef(delta);
-
-            if (clefKind == null) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("Cannot guess Clef from Key signature");
-                }
+                logger.fine("Cannot guess Clef from Key signature");
             }
         }
 
-        return clefKind;
+        return kind;
     }
 
     //-------------//

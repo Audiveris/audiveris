@@ -67,7 +67,7 @@ interface GlyphDisplay
      * Flag the glyph with a key and a rectangle. This is meant to add arbitrary
      * awt shapes to a glyph, mainly for display and analysis purposes.
      * @param id the attachment ID
-     * @param shape the awt shape to attach
+     * @param attachment the awt shape to attach
      */
     void addAttachment (String         id,
                         java.awt.Shape attachment);

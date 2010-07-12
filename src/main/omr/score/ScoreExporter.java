@@ -855,8 +855,13 @@ public class ScoreExporter
                         direction.getDirectionType()
                                  .add(directionType);
 
-                        proxymusic.Dynamics dynamics = factory.createDynamics();
-                        directionType.setDynamics(dynamics);
+                        //                        proxymusic.Dynamics dynamics = factory.createDynamics();
+                        //                        directionType.setDynamics(dynamics);
+                        // Use a dummy words
+                        FormattedText pmWords = factory.createFormattedText();
+                        directionType.getWords()
+                                     .add(pmWords);
+                        pmWords.setValue("");
 
                         Sound sound = factory.createSound();
 
@@ -871,6 +876,9 @@ public class ScoreExporter
                         }
 
                         direction.setSound(sound);
+
+                        //                        current.pmMeasure.getNoteOrBackupOrForward()
+                        //                                         .add(sound);
                     }
                 } else {
                     // SystemDistance

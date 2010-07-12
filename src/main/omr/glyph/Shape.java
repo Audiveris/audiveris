@@ -30,7 +30,7 @@ import java.awt.Color;
  *
  * <p>A logical shape, such as STACCATO, may use the same physical shape
  * (in this case DOT) as other shapes. In that case we say that the physical
- * shape of STACCATO is DOT. The method {@link getPhysicalShape()} returns the
+ * shape of STACCATO is DOT. The method {@link #getPhysicalShape()} returns the
  * shape to use for training and for drawing.
  *
  * <p>As far as possible, a symbol should be generated for every shape.</p>
@@ -179,6 +179,38 @@ public enum Shape {
     OTTAVA_ALTA("8 va", 195), 
     /** 8 vb */
     OTTAVA_BASSA("8 vb", 215), 
+    //
+    // Key signatures ----------------------------------------------------------
+    //
+
+    /** Seven Flats */
+    KEY_FLAT_7("Seven Flats"), 
+    /** Six Flats */
+    KEY_FLAT_6("Six Flats"), 
+    /** Five Flats */
+    KEY_FLAT_5("Five Flats"), 
+    /** Four Flats */
+    KEY_FLAT_4("Four Flats"), 
+    /** Three Flats */
+    KEY_FLAT_3("Three Flats"), 
+    /** Two Flats */
+    KEY_FLAT_2("Two Flats"), 
+    /** Two Sharps */
+    KEY_SHARP_2("Two Sharps"), 
+    /** Three Sharps */
+    KEY_SHARP_3("Three Sharps"), 
+    /** Four Sharps */
+    KEY_SHARP_4("Four Sharps"), 
+    /** Five Sharps */
+    KEY_SHARP_5("Five Sharps"), 
+    /** Six Sharps */
+    KEY_SHARP_6("Six Sharps"), 
+    /** Seven Sharps */
+    KEY_SHARP_7("Seven Sharps"), 
+    //
+    // Rests -------------------------------------------------------------------
+    //
+
     /** Long Rest */
     LONG_REST("Rest for 4 measures", 208), 
 
@@ -496,7 +528,7 @@ public enum Shape {
     //
 
     /** Staff Line */
-    STAFF_LINE("Staff Line"),
+    STAFF_LINE("Staff Line"), 
     /** Ledger */
     LEDGER("Ledger"), 
     /** Horizontal part of ending */
@@ -513,34 +545,10 @@ public enum Shape {
     // Key signatures ----------------------------------------------------------
     //
 
-    /** Seven Flats */
-    KEY_FLAT_7("Seven Flats"), 
-    /** Six Flats */
-    KEY_FLAT_6("Six Flats"), 
-    /** Five Flats */
-    KEY_FLAT_5("Five Flats"), 
-    /** Four Flats */
-    KEY_FLAT_4("Four Flats"), 
-    /** Three Flats */
-    KEY_FLAT_3("Three Flats"), 
-    /** Two Flats */
-    KEY_FLAT_2("Two Flats"), 
     /** One Flat */
     KEY_FLAT_1("One Flat"), 
     /** One Sharp */
     KEY_SHARP_1("One Sharp"), 
-    /** Two Sharps */
-    KEY_SHARP_2("Two Sharps"), 
-    /** Three Sharps */
-    KEY_SHARP_3("Three Sharps"), 
-    /** Four Sharps */
-    KEY_SHARP_4("Four Sharps"), 
-    /** Five Sharps */
-    KEY_SHARP_5("Five Sharps"), 
-    /** Six Sharps */
-    KEY_SHARP_6("Six Sharps"), 
-    /** Seven Sharps */
-    KEY_SHARP_7("Seven Sharps"), 
 
     //
     // Rests -------------------------------------------------------------------
@@ -555,9 +563,9 @@ public enum Shape {
     /** A staccato is nothing but a dot */
     STACCATO("Staccato", DOT), 
     /** Meant to indicate a forward in score view */
-    FORWARD,
+    FORWARD, 
     /** Non-draggable shape */
-    NON_DRAGGABLE,
+    NON_DRAGGABLE, 
     /** A glyph which is nothing but part of a larger glyph */
     GLYPH_PART("Part of a larger glyph"), 
     /** A time signature whose values are defined by the user */

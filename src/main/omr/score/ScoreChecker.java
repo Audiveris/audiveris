@@ -11,9 +11,11 @@
 // </editor-fold>
 package omr.score;
 
+import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
+import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Glyphs;
@@ -25,6 +27,7 @@ import omr.log.Logger;
 
 import omr.math.Rational;
 
+import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.common.SystemPoint;
 import omr.score.entity.Beam;
@@ -32,6 +35,7 @@ import omr.score.entity.BeamGroup;
 import omr.score.entity.Chord;
 import omr.score.entity.Dynamics;
 import omr.score.entity.Measure;
+import omr.score.entity.Note;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Staff;
 import omr.score.entity.TimeSignature;
@@ -41,6 +45,8 @@ import omr.score.visitor.AbstractScoreVisitor;
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
+import omr.util.Predicate;
+import omr.util.TreeNode;
 import omr.util.Wrapper;
 
 import java.util.*;
@@ -53,6 +59,8 @@ import java.util.*;
  * <li>Fixing false beam hooks</li>
  * <li>Forcing consistency among time signatures</li>
  * <li>Making sure all dynamics can be assigned a shape</li>
+ * <li>Merge note heads with pitches too close to each other</li>
+ * <li>Enforce consistency of note heads within the same chord</li>
  * </ul>
  *
  * @author Hervé Bitteur
@@ -68,8 +76,22 @@ public class ScoreChecker
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScoreChecker.class);
 
+    /** Specific predicate for beam hooks */
+    private static final Predicate<Shape> hookPredicate = new Predicate<Shape>() {
+        public boolean check (Shape shape)
+        {
+            return ShapeRange.Beams.contains(shape) &&
+                   (shape != Shape.COMBINING_STEM);
+        }
+    };
+
+
     //~ Instance fields --------------------------------------------------------
 
+    /** Glyph evaluator */
+    private final GlyphEvaluator evaluator = GlyphNetwork.getInstance();
+
+    /** Output of the checks */
     private final Wrapper<Boolean> modified;
 
     //~ Constructors -----------------------------------------------------------
@@ -138,7 +160,22 @@ public class ScoreChecker
         }
 
         glyph.setShape(null);
-        modified.value = true;
+        setModified();
+
+        return true;
+    }
+
+    //-------------//
+    // visit Chord //
+    //-------------//
+    @Override
+    public boolean visit (Chord chord)
+    {
+        // Check note heads pitches
+        checkNotePitches(chord);
+
+        // Check note heads consistency
+        checkNoteConsistency(chord);
 
         return true;
     }
@@ -225,7 +262,7 @@ public class ScoreChecker
     // visit TimeSignature //
     //---------------------//
     /**
-     * Method use to check and correct the consistency between all time
+     * Method used to check and correct the consistency between all time
      * signatures that occur in parallel measures.
      * @param timeSignature the score entity that triggers the check
      * @return true
@@ -257,7 +294,7 @@ public class ScoreChecker
             } else if (shape == Shape.NO_LEGAL_TIME) {
                 timeSignature.addError("Illegal " + timeSignature);
             } else if (ShapeRange.PartialTimes.contains(shape)) {
-                // This time sig has the same of a single digit
+                // This time sig has the shape of a single digit
                 // So some other part is still missing
                 timeSignature.addError(
                     "Orphan time signature shape : " + shape);
@@ -273,6 +310,186 @@ public class ScoreChecker
         }
 
         return true;
+    }
+
+    //-------------//
+    // setModified //
+    //-------------//
+    private void setModified ()
+    {
+        modified.value = true;
+    }
+
+    //------------------//
+    // arePitchDeltasOk //
+    //------------------//
+    private boolean arePitchDeltasOk (List<Note> list)
+    {
+        double minDeltaPitch = constants.minDeltaNotePitch.getValue();
+        Note   lastNote = null;
+
+        for (Note note : list) {
+            if (lastNote != null) {
+                double deltaPitch = note.getPitchPosition() -
+                                    lastNote.getPitchPosition();
+
+                if (Math.abs(deltaPitch) < minDeltaPitch) {
+                    if (logger.isFineEnabled()) {
+                        logger.fine(
+                            "Too small delta pitch between " + note + " & " +
+                            lastNote);
+                    }
+
+                    mergeNotes(lastNote, note);
+
+                    return false;
+                }
+            }
+
+            lastNote = note;
+        }
+
+        return true;
+    }
+
+    //----------------------//
+    // checkNoteConsistency //
+    //----------------------//
+    /**
+     * Check that all note heads of a chord are of the same shape (either all
+     * black or all void).
+     * @param chord
+     */
+    private void checkNoteConsistency (Chord chord)
+    {
+        EnumMap<Shape, List<Note>> shapes = new EnumMap<Shape, List<Note>>(
+            Shape.class);
+
+        for (TreeNode node : chord.getNotes()) {
+            Note note = (Note) node;
+
+            if (!note.isRest()) {
+                Shape      shape = note.getShape();
+                List<Note> notes = shapes.get(shape);
+
+                if (notes == null) {
+                    notes = new ArrayList<Note>();
+                }
+
+                notes.add(note);
+                shapes.put(shape, notes);
+            }
+        }
+
+        if (shapes.keySet()
+                  .size() > 1) {
+            chord.addError(
+                chord.getStem(),
+                "Note inconsistency in " + chord + shapes);
+
+            // Check evaluations
+            double bestEval = Double.MAX_VALUE;
+            Shape  bestShape = null;
+
+            for (Shape shape : shapes.keySet()) {
+                List<Note> notes = shapes.get(shape);
+
+                for (Note note : notes) {
+                    for (Glyph glyph : note.getGlyphs()) {
+                        if (glyph.getDoubt() < bestEval) {
+                            bestEval = glyph.getDoubt();
+                            bestShape = shape;
+                        }
+                    }
+                }
+            }
+
+            logger.info(chord + " aligned on shape " + bestShape);
+
+            final Shape      baseShape = bestShape; // Must be final
+            final double     maxDoubt = constants.maxConsistentNoteDoubt.getValue();
+
+            Predicate<Shape> predicate = new Predicate<Shape>() {
+                final Collection<Shape> desiredShapes = Arrays.asList(
+                    Note.getActualShape(baseShape, 1),
+                    Note.getActualShape(baseShape, 2),
+                    Note.getActualShape(baseShape, 3));
+
+                public boolean check (Shape shape)
+                {
+                    return desiredShapes.contains(shape);
+                }
+            };
+
+            for (Shape shape : shapes.keySet()) {
+                if (shape == bestShape) {
+                    continue;
+                }
+
+                List<Note> notes = shapes.get(shape);
+
+                for (Note note : notes) {
+                    for (Glyph glyph : note.getGlyphs()) {
+                        Evaluation vote = evaluator.topRawVote(
+                            glyph,
+                            maxDoubt,
+                            predicate);
+
+                        if (vote != null) {
+                            glyph.setEvaluation(vote);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    //------------------//
+    // checkNotePitches //
+    //------------------//
+    /**
+     * Check that on each side of the chord stem, the notes pitches are not
+     * too close to each other.
+     * @param chord the chord at hand
+     */
+    private void checkNotePitches (Chord chord)
+    {
+        Glyph stem = chord.getStem();
+
+        if (stem == null) {
+            return;
+        }
+
+        PixelPoint     pixPoint = stem.getAreaCenter();
+        SystemPoint    stemCenter = chord.getSystem()
+                                         .toSystemPoint(pixPoint);
+
+        // Look on left and right sides
+        List<TreeNode> allNotes = new ArrayList<TreeNode>(chord.getNotes());
+        Collections.sort(allNotes, Chord.noteHeadComparator);
+
+        List<Note> lefts = new ArrayList<Note>();
+        List<Note> rights = new ArrayList<Note>();
+
+        for (TreeNode nNode : allNotes) {
+            Note        note = (Note) nNode;
+            SystemPoint center = note.getCenter();
+
+            if (center.x < stemCenter.x) {
+                lefts.add(note);
+            } else {
+                rights.add(note);
+            }
+        }
+
+        // Check on left & right
+        if (!arePitchDeltasOk(lefts)) {
+            setModified();
+        }
+
+        if (!arePitchDeltasOk(rights)) {
+            setModified();
+        }
     }
 
     //- Utilities --------------------------------------------------------------
@@ -459,6 +676,38 @@ public class ScoreChecker
         return manualSig;
     }
 
+    //------------//
+    // mergeNotes //
+    //------------//
+    private void mergeNotes (Note first,
+                             Note second)
+    {
+        if ((first.getShape() == Shape.VOID_NOTEHEAD) &&
+            (second.getShape() == Shape.VOID_NOTEHEAD)) {
+            List<Glyph> glyphs = new ArrayList<Glyph>();
+
+            glyphs.addAll(first.getGlyphs());
+            glyphs.addAll(second.getGlyphs());
+
+            SystemInfo system = first.getSystem()
+                                     .getInfo();
+            Glyph      compound = system.buildTransientCompound(glyphs);
+            system.computeGlyphFeatures(compound);
+
+            Evaluation vote = GlyphNetwork.getInstance()
+                                          .vote(
+                compound,
+                constants.maxNoteDoubt.getValue());
+
+            if (vote != null) {
+                compound = system.addGlyph(compound);
+                compound.setEvaluation(vote);
+                logger.info(
+                    "Glyph#" + compound.getId() + " merged two note heads");
+            }
+        }
+    }
+
     //----------------//
     // replaceTimeSig //
     //----------------//
@@ -549,25 +798,21 @@ public class ScoreChecker
             }
 
             // Check if a beam appears in the top evaluations
-            for (Evaluation vote : network.getEvaluations(glyph)) {
-                if (vote.doubt > hookMaxDoubt) {
-                    break;
+            Evaluation vote = network.topVote(
+                glyph,
+                hookMaxDoubt,
+                hookPredicate);
+
+            if (vote != null) {
+                glyph.setShape(vote.shape, Evaluation.ALGORITHM);
+
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "glyph#" + glyph.getId() + " recognized as " +
+                        vote.shape);
                 }
 
-                if (ShapeRange.Beams.contains(vote.shape) &&
-                    (vote.shape != Shape.COMBINING_STEM)) {
-                    glyph.setShape(vote.shape, Evaluation.ALGORITHM);
-
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            "glyph#" + glyph.getId() + " recognized as " +
-                            vote.shape);
-                    }
-
-                    modified.value = true;
-
-                    break;
-                }
+                setModified();
             }
         }
     }
@@ -605,5 +850,15 @@ public class ScoreChecker
         private final Scale.Fraction stemYMargin = new Scale.Fraction(
             0.2d,
             "Margin around stem height for intersecting beams & beam hooks");
+        Constant.Double              minDeltaNotePitch = new Constant.Double(
+            "PitchPosition",
+            1.5,
+            "Minimum pitch difference between note heads on same stem side");
+        Evaluation.Doubt             maxNoteDoubt = new Evaluation.Doubt(
+            5d,
+            "Maximum doubt for merged void heads");
+        Evaluation.Doubt             maxConsistentNoteDoubt = new Evaluation.Doubt(
+            1000d,
+            "Maximum doubt for consistent note heads");
     }
 }

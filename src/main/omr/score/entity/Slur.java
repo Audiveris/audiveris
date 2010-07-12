@@ -13,14 +13,16 @@ package omr.score.entity;
 
 import omr.constant.ConstantSet;
 
-import omr.glyph.SlurInspector;
 import omr.glyph.facets.Glyph;
+import omr.glyph.pattern.SlurInspector;
 
 import omr.log.Logger;
 
 import omr.math.Circle;
 
+import omr.score.common.PageRectangle;
 import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 import omr.score.common.SystemPoint;
 import omr.score.common.SystemRectangle;
 import omr.score.visitor.ScoreVisitor;
@@ -342,6 +344,7 @@ public class Slur
         List<MeasureNode> rightNodes = new ArrayList<MeasureNode>();
 
         boolean           below = retrieveEmbracedNotes(
+            glyph,
             system,
             curve,
             leftNodes,
@@ -753,7 +756,8 @@ public class Slur
      * @param rightNodes output: the ordered list of notes found on right side
      * @return true if the placement is 'below'
      */
-    private static boolean retrieveEmbracedNotes (ScoreSystem       system,
+    private static boolean retrieveEmbracedNotes (Glyph             glyph,
+                                                  ScoreSystem       system,
                                                   CubicCurve2D      curve,
                                                   List<MeasureNode> leftNodes,
                                                   List<MeasureNode> rightNodes)
@@ -780,6 +784,14 @@ public class Slur
             leftRect.y -= dy;
             rightRect.y -= dy;
         }
+
+        // Visualize these rectangles (for debug)
+        glyph.addAttachment(
+            "leftRect",
+            scale.toPixels(system.toPageRectangle(leftRect)));
+        glyph.addAttachment(
+            "rightRect",
+            scale.toPixels(system.toPageRectangle(rightRect)));
 
         // System > Part > Measure > Chord > Note
         for (TreeNode pNode : system.getParts()) {
@@ -833,12 +845,12 @@ public class Slur
 
         /** Abscissa extension when looking for embraced notes */
         Scale.Fraction areaDx = new Scale.Fraction(
-            2,
+            1,
             "Abscissa extension when looking for embraced notes");
 
         /** Abscissa margin when looking for embraced notes */
         Scale.Fraction areaXMargin = new Scale.Fraction(
-            1,
+            0.5,
             "Abscissa margin when looking for embraced notes");
 
         /** Ordinate extension when looking for embraced notes */

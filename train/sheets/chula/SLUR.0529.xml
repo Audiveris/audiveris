@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="SLUR" interline="21" id="529">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-10.325581395348838</pitch-position>
+    <section first-pos="848" id="1757">
+        <run start="1706" level="172" length="2"/>
+        <run start="1705" level="43" length="4"/>
+        <run start="1704" level="58" length="7"/>
+        <run start="1705" level="29" length="7"/>
+        <run start="1707" level="33" length="6"/>
+        <run start="1709" level="38" length="5"/>
+        <run start="1710" level="61" length="5"/>
+        <run start="1711" level="61" length="5"/>
+        <run start="1712" level="65" length="5"/>
+        <run start="1713" level="75" length="4"/>
+        <run start="1714" level="75" length="4"/>
+        <run start="1715" level="58" length="4"/>
+        <run start="1715" level="51" length="5"/>
+        <run start="1715" level="59" length="5"/>
+        <run start="1716" level="51" length="5"/>
+        <run start="1716" level="64" length="5"/>
+        <run start="1717" level="64" length="4"/>
+        <run start="1717" level="58" length="4"/>
+        <run start="1717" level="63" length="5"/>
+        <run start="1718" level="64" length="4"/>
+        <run start="1718" level="64" length="4"/>
+        <run start="1718" level="64" length="4"/>
+        <run start="1718" level="57" length="4"/>
+        <run start="1718" level="74" length="5"/>
+        <run start="1719" level="66" length="3"/>
+        <run start="1718" level="74" length="5"/>
+        <run start="1719" level="66" length="3"/>
+        <run start="1718" level="62" length="5"/>
+        <run start="1718" level="64" length="4"/>
+        <run start="1718" level="57" length="4"/>
+        <run start="1717" level="51" length="5"/>
+        <run start="1717" level="62" length="5"/>
+        <run start="1717" level="57" length="4"/>
+        <run start="1716" level="63" length="5"/>
+        <run start="1716" level="57" length="4"/>
+        <run start="1715" level="57" length="5"/>
+        <run start="1714" level="58" length="5"/>
+        <run start="1713" level="45" length="5"/>
+        <run start="1712" level="48" length="6"/>
+        <run start="1711" level="49" length="6"/>
+        <run start="1709" level="67" length="7"/>
+        <run start="1708" level="42" length="7"/>
+        <run start="1707" level="53" length="7"/>
+        <run start="1706" level="55" length="6"/>
+        <run start="1706" level="83" length="5"/>
+        <run start="1707" level="138" length="3"/>
+    </section>
+</glyph>

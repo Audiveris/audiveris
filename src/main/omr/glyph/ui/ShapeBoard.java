@@ -86,6 +86,7 @@ public class ShapeBoard
         heights.put(ShapeRange.Dynamics, 220);
         heights.put(ShapeRange.Flags, 130);
         heights.put(ShapeRange.HeadAndFlags, 140);
+        heights.put(ShapeRange.Keys, 220);
         heights.put(ShapeRange.NoteHeads, 40);
         heights.put(ShapeRange.Markers, 120);
         heights.put(ShapeRange.Notes, 40);
@@ -261,7 +262,7 @@ public class ShapeBoard
     {
         Panel panel = new Panel();
         panel.setNoInsets();
-        panel.setPreferredSize(new Dimension(BOARD_WIDTH, 120));
+        panel.setPreferredSize(new Dimension(BOARD_WIDTH, 180));
 
         FlowLayout layout = new FlowLayout();
         layout.setAlignment(FlowLayout.LEADING);

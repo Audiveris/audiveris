@@ -22,9 +22,9 @@ import java.awt.geom.*;
  * curve between two consecutive knots.
  * Each curve is a bezier curve defined by the 2 related knots separated by 2
  * control points (or just a quadratic or straight line).
+ * <p>Cf http://www.cse.unsw.edu.au/~lambert/splines/
  *
  * @author Hervé Bitteur
- * @see http://www.cse.unsw.edu.au/~lambert/splines/
  */
 public class NaturalSpline
     extends Path2D.Double
@@ -69,8 +69,7 @@ public class NaturalSpline
     //-------------//
     /**
      * Computes the natural cubic spline that interpolates the provided knots
-     * @param xx the abscissae of the provided points
-     * @param yy the ordinates of the provided points
+     * @param points the provided points
      * @return the resulting spline curve
      */
     public static NaturalSpline interpolate (Point... points)

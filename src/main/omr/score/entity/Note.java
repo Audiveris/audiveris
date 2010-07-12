@@ -15,6 +15,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
+import static omr.glyph.Shape.*;
 import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
 
@@ -129,7 +130,12 @@ public class Note
     public Note (Chord chord,
                  Glyph glyph)
     {
-        this(chord, glyph, getHeadCenter(glyph, 0), 1, 0);
+        this(
+            chord,
+            glyph,
+            getItemCenter(glyph, 0, chord.getScale().interline()),
+            1,
+            0);
         glyph.setTranslation(this);
     }
 
@@ -236,14 +242,19 @@ public class Note
         this.packCard = packCard;
         this.packIndex = packIndex;
 
+        ScoreSystem system = getSystem();
+        int         interline = system.getScale()
+                                      .interline();
+
         // Rest?
         isRest = ShapeRange.Rests.contains(glyph.getShape());
 
         // Location center
-        setCenter(getSystem().toSystemPoint(center));
+        setCenter(system.toSystemPoint(center));
 
         // Note box
-        setBox(getSystem().toSystemRectangle(getItemBox(glyph, packIndex)));
+        setBox(
+            system.toSystemRectangle(getItemBox(glyph, packIndex, interline)));
 
         // Shape of this note
         shape = baseShapeOf(glyph.getShape());
@@ -282,6 +293,61 @@ public class Note
 
     //~ Methods ----------------------------------------------------------------
 
+    //----------------//
+    // getActualShape //
+    //----------------//
+    public static Shape getActualShape (Shape base,
+                                        int   card)
+    {
+        switch (card) {
+        case 3 :
+
+            switch (base) {
+            case VOID_NOTEHEAD :
+                return VOID_NOTEHEAD_3;
+
+            case NOTEHEAD_BLACK :
+                return NOTEHEAD_BLACK_3;
+
+            case WHOLE_NOTE :
+                return WHOLE_NOTE_3;
+
+            default :
+                return null;
+            }
+
+        case 2 :
+
+            switch (base) {
+            case VOID_NOTEHEAD :
+                return VOID_NOTEHEAD_2;
+
+            case NOTEHEAD_BLACK :
+                return NOTEHEAD_BLACK_2;
+
+            case WHOLE_NOTE :
+                return WHOLE_NOTE_2;
+
+            default :
+                return null;
+            }
+
+        case 1 :
+            return base;
+
+        default :
+            return null;
+        }
+    }
+
+    //--------------------//
+    // getPackCardinality //
+    //--------------------//
+    public int getPackCardinality ()
+    {
+        return packCard;
+    }
+
     //-----------------//
     // createWholeRest //
     //-----------------//
@@ -290,6 +356,77 @@ public class Note
                                         SystemPoint center)
     {
         return new Note(staff, chord, Shape.WHOLE_REST, -1.5, center);
+    }
+
+    //------------------//
+    // getPitchPosition //
+    //------------------//
+    /**
+     * Report the pith position of the note within the containing staff
+     *
+     * @return staff-based pitch position
+     */
+    public double getPitchPosition ()
+    {
+        return pitchPosition;
+    }
+
+    //--------//
+    // isRest //
+    //--------//
+    /**
+     * Check whether this note is a rest (vs a 'real' note)
+     *
+     * @return true if a rest, false otherwise
+     */
+    public boolean isRest ()
+    {
+        return isRest;
+    }
+
+    //----------//
+    // getShape //
+    //----------//
+    /**
+     * Report the shape of the note
+     *
+     * @return the note shape
+     */
+    public Shape getShape ()
+    {
+        return shape;
+    }
+
+    //----------//
+    // getSlurs //
+    //----------//
+    /**
+     * Report the collection of slurs that start or stop at this note
+     *
+     * @return a perhaps empty collection of slurs
+     */
+    public List<Slur> getSlurs ()
+    {
+        return slurs;
+    }
+
+    //---------//
+    // getStep //
+    //---------//
+    /**
+     * Report the note step (within the octave)
+     *
+     * @return the note step
+     */
+    public Note.Step getStep ()
+    {
+        if (step == null) {
+            step = Clef.noteStepOf(
+                getMeasure().getClefBefore(getCenter()),
+                (int) Math.rint(getPitchPosition()));
+        }
+
+        return step;
     }
 
     //--------------//
@@ -356,6 +493,28 @@ public class Note
         }
     }
 
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
+    //---------//
+    // addSlur //
+    //---------//
+    /**
+     * Add a slur in the collection of slurs connected to this note
+     *
+     * @param slur the slur to connect
+     */
+    public void addSlur (Slur slur)
+    {
+        slurs.add(slur);
+    }
+
     //-------------//
     // addSyllable //
     //-------------//
@@ -386,9 +545,9 @@ public class Note
         // Be strict when glyph has 2 stems and more relaxed with just one stem
         final Glyph    stem = chord.getStem();
         PixelRectangle stemBox = null;
+        Scale          scale = chord.getScale();
 
         if (stem != null) {
-            Scale scale = chord.getScale();
             stemBox = stem.getContourBox();
             stemBox.grow(
                 scale.toUnits(constants.maxStemDx),
@@ -398,15 +557,17 @@ public class Note
         }
 
         for (int i = 0; i < card; i++) {
-            if (stem != null) {
-                PixelRectangle itemBox = getItemBox(glyph, i);
+            PixelRectangle itemBox = getItemBox(glyph, i, scale.interline());
 
+            if (stem != null) {
                 if (!itemBox.intersects(stemBox)) {
                     continue;
                 }
             }
 
-            PixelPoint center = getHeadCenter(glyph, i);
+            PixelPoint center = new PixelPoint(
+                itemBox.x + (itemBox.width / 2),
+                itemBox.y + (itemBox.height / 2));
             glyph.addTranslation(new Note(chord, glyph, center, card, i));
         }
     }
@@ -644,90 +805,6 @@ public class Note
         return octave;
     }
 
-    //------------------//
-    // getPitchPosition //
-    //------------------//
-    /**
-     * Report the pith position of the note within the containing staff
-     *
-     * @return staff-based pitch position
-     */
-    public double getPitchPosition ()
-    {
-        return pitchPosition;
-    }
-
-    //--------//
-    // isRest //
-    //--------//
-    /**
-     * Check whether this note is a rest (vs a 'real' note)
-     *
-     * @return true if a rest, false otherwise
-     */
-    public boolean isRest ()
-    {
-        return isRest;
-    }
-
-    //----------//
-    // getShape //
-    //----------//
-    /**
-     * Report the shape of the note
-     *
-     * @return the note shape
-     */
-    public Shape getShape ()
-    {
-        return shape;
-    }
-
-    //----------//
-    // getSlurs //
-    //----------//
-    /**
-     * Report the collection of slurs that start or stop at this note
-     *
-     * @return a perhaps empty collection of slurs
-     */
-    public List<Slur> getSlurs ()
-    {
-        return slurs;
-    }
-
-    //---------//
-    // getStep //
-    //---------//
-    /**
-     * Report the note step (within the octave)
-     *
-     * @return the note step
-     */
-    public Note.Step getStep ()
-    {
-        if (step == null) {
-            step = Clef.noteStepOf(
-                getMeasure().getClefBefore(getCenter()),
-                (int) Math.rint(getPitchPosition()));
-        }
-
-        return step;
-    }
-
-    //---------//
-    // addSlur //
-    //---------//
-    /**
-     * Add a slur in the collection of slurs connected to this note
-     *
-     * @param slur the slur to connect
-     */
-    public void addSlur (Slur slur)
-    {
-        slurs.add(slur);
-    }
-
     //--------//
     // moveTo //
     //--------//
@@ -832,15 +909,6 @@ public class Note
         }
     }
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
     //----------------//
     // quarterValueOf //
     //----------------//
@@ -928,47 +996,6 @@ public class Note
         return sb.toString();
     }
 
-    //---------------//
-    // getHeadCenter //
-    //---------------//
-    /**
-     * Compute the area center of item with rank 'index' in the provided note
-     * pack glyph
-     */
-    private static PixelPoint getHeadCenter (Glyph glyph,
-                                             int   index)
-    {
-        final int      card = packCardOf(glyph.getShape());
-        final int      maxDy = (int) Math.rint(
-            constants.maxCenterDy.getValue() * glyph.getInterline());
-        PixelRectangle box = glyph.getContourBox();
-        int            centerY = box.y + (box.height / 2);
-        PixelPoint     centroid = glyph.getCentroid();
-
-        // Make sure centroid and box center are close to each other,
-        // otherwise force ordinate using the interline value.
-        // This trick applies for heads, not for rests
-        if (!ShapeRange.Rests.contains(glyph.getShape())) {
-            if (centerY > (centroid.y + maxDy)) {
-                // Force heads at top
-                return new PixelPoint(
-                    box.x + (box.width / 2),
-                    box.y + ((((2 * index) + 1) * glyph.getInterline()) / 2));
-            } else if (centerY < (centroid.y - maxDy)) {
-                // Force heads at bottom
-                return new PixelPoint(
-                    box.x + (box.width / 2),
-                    (box.y + box.height) -
-                    ((((2 * (card - index - 1)) + 1) * glyph.getInterline()) / 2));
-            }
-        }
-
-        // Use normal area location for all other cases
-        return new PixelPoint(
-            box.x + (box.width / 2),
-            box.y + ((box.height * ((2 * index) + 1)) / (2 * card)));
-    }
-
     //------------//
     // getItemBox //
     //------------//
@@ -977,16 +1004,37 @@ public class Note
      * pack glyph
      */
     private static PixelRectangle getItemBox (Glyph glyph,
-                                              int   index)
+                                              int   index,
+                                              int   interline)
     {
-        final int      card = packCardOf(glyph.getShape());
-        PixelRectangle box = glyph.getContourBox();
+        final int            card = packCardOf(glyph.getShape());
+        final PixelRectangle box = glyph.getContourBox();
+        final PixelPoint     centroid = glyph.getCentroid();
+        final int            top = centroid.y - ((card * interline) / 2);
 
         return new PixelRectangle(
             box.x,
-            box.y + ((box.height * index) / card),
+            top + (index * interline),
             box.width,
-            box.height / card);
+            interline);
+    }
+
+    //---------------//
+    // getItemCenter //
+    //---------------//
+    /**
+     * Compute the center of item with rank 'index' in the provided note
+     * pack glyph
+     */
+    private static PixelPoint getItemCenter (Glyph glyph,
+                                             int   index,
+                                             int   interline)
+    {
+        PixelRectangle box = getItemBox(glyph, index, interline);
+
+        return new PixelPoint(
+            box.x + (box.width / 2),
+            box.y + (box.height / 2));
     }
 
     //-------------//

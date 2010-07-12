@@ -175,7 +175,7 @@ class EvaluationBoard
             // Blank the output
             selector.setEvals(null, null);
         } else {
-            selector.setEvals(evaluator.getAllEvaluations(glyph), glyph);
+            selector.setEvals(evaluator.getCheckedEvaluations(glyph), glyph);
         }
     }
 

@@ -644,7 +644,7 @@ public class LineBuilder
             0.1d,
             "Margin on hole ordinates to define the area where hole sections are searched");
         Scale.Fraction yMargin = new Scale.Fraction(
-            0.2d,
+            0.5d,
             "Margin on peak ordinates to define the area where line sections are searched ");
     }
 

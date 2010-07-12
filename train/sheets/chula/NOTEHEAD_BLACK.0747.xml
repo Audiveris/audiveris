@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="NOTEHEAD_BLACK" interline="21" id="747">
+    <stem-number>1</stem-number>
+    <with-ledger>true</with-ledger>
+    <pitch-position>-6.729411764705882</pitch-position>
+    <section first-pos="505" id="1218">
+        <run start="576" level="49" length="15"/>
+        <run start="575" level="43" length="16"/>
+        <run start="574" level="40" length="17"/>
+        <run start="573" level="37" length="18"/>
+        <run start="572" level="35" length="19"/>
+        <run start="572" level="33" length="19"/>
+        <run start="571" level="33" length="20"/>
+        <run start="570" level="31" length="21"/>
+        <run start="570" level="29" length="21"/>
+        <run start="570" level="29" length="21"/>
+        <run start="569" level="30" length="22"/>
+        <run start="569" level="28" length="22"/>
+        <run start="569" level="28" length="22"/>
+        <run start="569" level="28" length="22"/>
+        <run start="569" level="20" length="21"/>
+        <run start="569" level="10" length="19"/>
+        <run start="569" level="11" length="18"/>
+        <run start="569" level="11" length="17"/>
+        <run start="570" level="13" length="15"/>
+        <run start="570" level="14" length="14"/>
+        <run start="571" level="16" length="12"/>
+        <run start="572" level="22" length="9"/>
+        <run start="574" level="40" length="5"/>
+    </section>
+</glyph>

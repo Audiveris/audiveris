@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="TUPLET_THREE" interline="21" id="432">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-10.588235294117647</pitch-position>
+    <section first-pos="682" id="1527">
+        <run start="887" level="141" length="4"/>
+        <run start="886" level="62" length="7"/>
+        <run start="886" level="35" length="8"/>
+        <run start="887" level="36" length="8"/>
+    </section>
+    <section first-pos="686" id="1528">
+        <run start="887" level="91" length="4"/>
+        <run start="888" level="135" length="1"/>
+    </section>
+    <section first-pos="686" id="1529">
+        <run start="892" level="42" length="3"/>
+        <run start="893" level="61" length="3"/>
+        <run start="893" level="43" length="3"/>
+        <run start="894" level="18" length="2"/>
+        <run start="894" level="63" length="3"/>
+        <run start="894" level="13" length="3"/>
+        <run start="894" level="14" length="3"/>
+        <run start="893" level="41" length="4"/>
+        <run start="893" level="37" length="4"/>
+        <run start="892" level="41" length="4"/>
+        <run start="891" level="33" length="5"/>
+        <run start="889" level="43" length="7"/>
+    </section>
+    <section first-pos="689" id="1530">
+        <run start="869" level="113" length="2"/>
+        <run start="868" level="57" length="4"/>
+        <run start="866" level="36" length="6"/>
+        <run start="866" level="33" length="6"/>
+    </section>
+    <section first-pos="692" id="1531">
+        <run start="878" level="141" length="1"/>
+        <run start="878" level="43" length="1"/>
+        <run start="878" level="45" length="1"/>
+        <run start="878" level="84" length="2"/>
+        <run start="877" level="66" length="4"/>
+        <run start="877" level="35" length="5"/>
+    </section>
+    <section first-pos="693" id="1534">
+        <run start="865" level="93" length="3"/>
+        <run start="865" level="23" length="2"/>
+        <run start="865" level="24" length="2"/>
+        <run start="865" level="25" length="2"/>
+        <run start="865" level="26" length="2"/>
+        <run start="865" level="50" length="3"/>
+        <run start="865" level="39" length="4"/>
+    </section>
+    <section first-pos="693" id="1535">
+        <run start="869" level="158" length="3"/>
+    </section>
+    <section first-pos="698" id="1554">
+        <run start="876" level="58" length="20"/>
+        <run start="874" level="30" length="21"/>
+    </section>
+    <section first-pos="700" id="1561">
+        <run start="865" level="55" length="13"/>
+        <run start="865" level="15" length="12"/>
+        <run start="866" level="42" length="11"/>
+        <run start="867" level="60" length="8"/>
+        <run start="869" level="156" length="5"/>
+    </section>
+    <section first-pos="700" id="1562">
+        <run start="880" level="19" length="14"/>
+        <run start="881" level="43" length="12"/>
+        <run start="883" level="64" length="8"/>
+        <run start="885" level="129" length="4"/>
+    </section>
+</glyph>

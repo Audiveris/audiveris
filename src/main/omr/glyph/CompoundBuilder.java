@@ -19,6 +19,8 @@ import omr.score.common.PixelRectangle;
 
 import omr.sheet.SystemInfo;
 
+import omr.util.Predicate;
+
 import java.util.*;
 
 /**
@@ -275,6 +277,15 @@ public class CompoundBuilder
         /** Collection of desired shapes for a valid compound */
         private final EnumSet<Shape> desiredShapes;
 
+        /** Specific predicate for desired shapes*/
+        private final Predicate<Shape> predicate = new Predicate<Shape>() {
+            public boolean check (Shape shape)
+            {
+                return desiredShapes.contains(shape);
+            }
+        };
+
+
         //~ Constructors -------------------------------------------------------
 
         /**
@@ -296,23 +307,20 @@ public class CompoundBuilder
         @Override
         public boolean isCompoundValid (Glyph compound)
         {
-            final Evaluation[] votes = GlyphNetwork.getInstance()
-                                                   .getEvaluations(compound);
-
             // Check if a desired shape appears in the top evaluations
-            for (Evaluation evaluation : votes) {
-                if (evaluation.doubt > maxDoubt) {
-                    break;
-                }
+            final Evaluation vote = GlyphNetwork.getInstance()
+                                                .topVote(
+                compound,
+                maxDoubt,
+                predicate);
 
-                if (desiredShapes.contains(evaluation.shape)) {
-                    chosenEvaluation = evaluation;
+            if (vote != null) {
+                chosenEvaluation = vote;
 
-                    return true;
-                }
+                return true;
+            } else {
+                return false;
             }
-
-            return false;
         }
     }
 }

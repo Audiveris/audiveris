@@ -29,9 +29,9 @@ import java.util.*;
  * entities within the same measure time frame, for all staves that compose the
  * system part.
  *
- * <p>As a ScoreNode, the children of a Measure are : Barline, TimeSignature,
- * list of Clef(s), list of KeySignature(s), list of Chord(s) and list of
- * Beam(s).
+ * <p>As a ScoreNode, the children of a Measure are : Barline, list of 
+ * TimeSignature(s), list of Clef(s), list of KeySignature(s), list of Chord(s)
+ * and list of Beam(s).
  *
  * @author Hervé Bitteur
  */
@@ -338,26 +338,15 @@ public class Measure
     public Clef getClefBefore (SystemPoint point,
                                Staff       staff)
     {
-        Clef clef;
+        // First, look in this measure, with same staff, going backwards
+        Clef clef = getMeasureClefBefore(point, staff);
+
+        if (clef != null) {
+            return clef;
+        }
 
         // Which staff we are in
-        int staffId = (staff != null) ? staff.getId()
-                      : getPart()
-                            .getStaffAt(point)
-                            .getId();
-
-        // Look in this measure, with same staff, going backwards
-        for (int ic = getClefs()
-                          .size() - 1; ic >= 0; ic--) {
-            clef = (Clef) getClefs()
-                              .get(ic);
-
-            if ((clef.getStaff()
-                     .getId() == staffId) &&
-                (clef.getCenter().x <= point.x)) {
-                return clef;
-            }
-        }
+        int     staffId = getStaffId(point, staff);
 
         // Look in all preceding measures, with the same staff id
         Measure measure = this;
@@ -956,6 +945,41 @@ public class Measure
         return getBox().x;
     }
 
+    //----------------------//
+    // getMeasureClefBefore //
+    //----------------------//
+    /**
+     * Report the current clef, if any, defined within this measure and staff,
+     * and located before this measure point.
+     *
+     * @param point the point before which to look
+     * @param staff the containing staff (if null, it is derived from point.y)
+     * @return the measure clef defined, or null
+     */
+    public Clef getMeasureClefBefore (SystemPoint point,
+                                      Staff       staff)
+    {
+        Clef clef = null;
+
+        // Which staff we are in
+        int staffId = getStaffId(point, staff);
+
+        // Look in this measure, with same staff, going backwards
+        for (int ic = getClefs()
+                          .size() - 1; ic >= 0; ic--) {
+            clef = (Clef) getClefs()
+                              .get(ic);
+
+            if ((clef.getStaff()
+                     .getId() == staffId) &&
+                (clef.getCenter().x <= point.x)) {
+                return clef;
+            }
+        }
+
+        return null; // No clef previously defined
+    }
+
     //------------//
     // setPartial //
     //------------//
@@ -1092,6 +1116,24 @@ public class Measure
     public SortedSet<Slot> getSlots ()
     {
         return slots;
+    }
+
+    //------------//
+    // getStaffId //
+    //------------//
+    /**
+     * Report the id of the staff containing the provided point
+     * @param point the provided point
+     * @param staff the staff if known, otherwise null
+     * @return the staff id
+     */
+    public int getStaffId (SystemPoint point,
+                           Staff       staff)
+    {
+        return (staff != null) ? staff.getId()
+               : getPart()
+                     .getStaffAt(point)
+                     .getId();
     }
 
     //--------------//

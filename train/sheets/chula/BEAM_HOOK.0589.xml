@@ -1,32 +1,30 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<stick shape="BEAM_HOOK" interline="21" id="589">
+<glyph shape="BEAM_HOOK" interline="21" id="589">
     <stem-number>1</stem-number>
     <with-ledger>false</with-ledger>
-    <pitch-position>1.4588235294117646</pitch-position>
-    <section first-pos="876" id="1739">
-        <run start="643" level="52" length="14"/>
-        <run start="643" level="51" length="14"/>
-        <run start="643" level="51" length="14"/>
-        <run start="643" level="51" length="14"/>
-        <run start="643" level="51" length="14"/>
-        <run start="643" level="51" length="14"/>
-        <run start="643" level="51" length="14"/>
-        <run start="643" level="51" length="14"/>
-        <run start="643" level="50" length="14"/>
-        <run start="643" level="50" length="14"/>
-        <run start="643" level="50" length="14"/>
-        <run start="643" level="50" length="14"/>
-        <run start="643" level="50" length="14"/>
-        <run start="643" level="50" length="14"/>
-        <run start="643" level="50" length="14"/>
-        <run start="643" level="50" length="14"/>
-        <run start="643" level="52" length="14"/>
-        <run start="644" level="64" length="13"/>
+    <pitch-position>1.3647058823529412</pitch-position>
+    <section first-pos="1218" id="2361">
+        <run start="661" level="32" length="12"/>
+        <run start="661" level="32" length="12"/>
+        <run start="661" level="32" length="12"/>
+        <run start="661" level="35" length="12"/>
+        <run start="662" level="35" length="11"/>
+        <run start="662" level="35" length="11"/>
+        <run start="662" level="35" length="11"/>
+        <run start="662" level="35" length="11"/>
+        <run start="662" level="35" length="11"/>
+        <run start="662" level="35" length="11"/>
+        <run start="662" level="35" length="11"/>
+        <run start="662" level="35" length="11"/>
+        <run start="662" level="35" length="11"/>
+        <run start="662" level="35" length="11"/>
+        <run start="662" level="35" length="11"/>
+        <run start="662" level="35" length="11"/>
+        <run start="662" level="35" length="11"/>
+        <run start="662" level="35" length="11"/>
+        <run start="662" level="49" length="11"/>
     </section>
-    <section first-pos="894" id="1758">
-        <run start="649" level="96" length="8"/>
+    <section first-pos="1237" id="2388">
+        <run start="667" level="79" length="6"/>
     </section>
-    <section first-pos="895" id="1759">
-        <run start="654" level="200" length="3"/>
-    </section>
-</stick>
+</glyph>

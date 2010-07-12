@@ -780,11 +780,9 @@ public class Sentence
 
             // Be rather permissive regarding shape
             if (!glyph.isKnown() ||
-                (!glyph.isManualShape() &&
-                ((shape == Shape.CLUTTER) || (shape == Shape.DOT) ||
-                (shape == Shape.COMBINING_STEM) || (shape == Shape.WHOLE_NOTE) ||
-                (shape == Shape.STRUCTURE)))) {
-                // Check that sentence fat box contains the alien glyph
+                (!glyph.isManualShape() ||
+                ((shape == Shape.TEXT) || (shape == Shape.CHARACTER)))) {
+                // Check that sentence fat box is close to the alien glyph
                 if (isCloseTo(glyph, fatBox)) {
                     candidates.add(glyph);
                 }

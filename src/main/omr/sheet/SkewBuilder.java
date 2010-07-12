@@ -431,7 +431,7 @@ public class SkewBuilder
             0.001,
             "Maximum value for skew angle before a rotation is performed");
         Scale.Fraction   minRunLength = new Scale.Fraction(
-            1,
+            2,
             "Minimum length for a run to be considered");
         Scale.Fraction   minSectionLength = new Scale.Fraction(
             5,

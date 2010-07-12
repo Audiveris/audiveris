@@ -58,6 +58,21 @@ public class Glyphs
         return box;
     }
 
+    //------------//
+    // containsId //
+    //------------//
+    public static boolean containsId (Collection<Glyph> glyphs,
+                                      int               id)
+    {
+        for (Glyph glyph : glyphs) {
+            if (glyph.getId() == id) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     //---------------------//
     // containsManualShape //
     //---------------------//

@@ -151,7 +151,7 @@ public class ScoreFixer
             highestTop = top;
         }
 
-        return false;
+        return true;
     }
 
     //------------//

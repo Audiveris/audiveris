@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="BEAM" interline="21" id="660">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>7.534883720930233</pitch-position>
+    <section first-pos="1867" id="3487">
+        <run start="486" level="1" length="11"/>
+        <run start="486" level="0" length="11"/>
+        <run start="486" level="0" length="11"/>
+        <run start="486" level="0" length="11"/>
+        <run start="486" level="0" length="11"/>
+        <run start="486" level="0" length="11"/>
+        <run start="486" level="0" length="11"/>
+        <run start="486" level="1" length="11"/>
+        <run start="486" level="1" length="11"/>
+        <run start="486" level="1" length="11"/>
+        <run start="486" level="1" length="11"/>
+        <run start="486" level="1" length="11"/>
+        <run start="486" level="1" length="11"/>
+        <run start="486" level="2" length="11"/>
+        <run start="486" level="2" length="11"/>
+        <run start="486" level="2" length="11"/>
+        <run start="486" level="2" length="11"/>
+        <run start="486" level="2" length="11"/>
+        <run start="486" level="3" length="11"/>
+        <run start="486" level="3" length="11"/>
+        <run start="486" level="3" length="11"/>
+        <run start="486" level="3" length="11"/>
+        <run start="486" level="12" length="11"/>
+        <run start="485" level="14" length="11"/>
+        <run start="485" level="4" length="11"/>
+        <run start="485" level="12" length="11"/>
+        <run start="485" level="15" length="11"/>
+        <run start="485" level="13" length="11"/>
+        <run start="485" level="15" length="11"/>
+        <run start="485" level="4" length="11"/>
+        <run start="485" level="5" length="11"/>
+        <run start="485" level="5" length="11"/>
+        <run start="485" level="5" length="11"/>
+        <run start="485" level="5" length="11"/>
+        <run start="485" level="5" length="11"/>
+        <run start="485" level="5" length="11"/>
+        <run start="485" level="6" length="11"/>
+        <run start="484" level="21" length="12"/>
+        <run start="484" level="21" length="12"/>
+        <run start="484" level="21" length="12"/>
+        <run start="484" level="21" length="12"/>
+        <run start="484" level="21" length="12"/>
+        <run start="484" level="21" length="12"/>
+        <run start="484" level="21" length="12"/>
+    </section>
+</glyph>
