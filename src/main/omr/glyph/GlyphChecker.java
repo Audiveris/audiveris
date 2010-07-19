@@ -150,7 +150,7 @@ public class GlyphChecker
     // addChecker //
     //------------//
     /**
-     * Add a checker to a series os shape ranges
+     * Add a checker to a series of shape ranges
      * @param checker the checker to add
      * @param shapeRanges the shape range(s) to which the check applies
      */

@@ -170,8 +170,8 @@ public class ScoreSheetBridge
                                 scoreLocation.systemId);
                             PageRectangle pagRect = system.toPageRectangle(
                                 scoreLocation.rectangle);
-                            pixRect = (PixelRectangle) system.getScale()
-                                                             .toPixels(
+                            pixRect = system.getScale()
+                                            .toPixels(
                                 pagRect,
                                 new PixelRectangle());
                         }

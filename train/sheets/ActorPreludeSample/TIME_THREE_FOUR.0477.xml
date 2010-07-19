@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="TIME_THREE_FOUR" interline="13" id="477">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-0.3333333333333333</pitch-position>
+    <section first-pos="1830" id="5674">
+        <run start="1812" level="192" length="1"/>
+        <run start="1810" level="188" length="3"/>
+        <run start="1808" level="113" length="5"/>
+        <run start="1807" level="75" length="6"/>
+        <run start="1806" level="58" length="7"/>
+        <run start="1805" level="53" length="8"/>
+        <run start="1804" level="61" length="9"/>
+    </section>
+    <section first-pos="1831" id="5696">
+        <run start="1830" level="159" length="1"/>
+        <run start="1829" level="12" length="2"/>
+    </section>
+    <section first-pos="1832" id="5743">
+        <run start="1794" level="39" length="5"/>
+    </section>
+    <section first-pos="1832" id="5744">
+        <run start="1800" level="192" length="2"/>
+    </section>
+    <section first-pos="1833" id="5779">
+        <run start="1792" level="58" length="10"/>
+        <run start="1792" level="40" length="10"/>
+        <run start="1791" level="38" length="11"/>
+    </section>
+    <section first-pos="1833" id="5780">
+        <run start="1826" level="84" length="6"/>
+        <run start="1825" level="111" length="7"/>
+    </section>
+    <section first-pos="1835" id="5830">
+        <run start="1824" level="130" length="4"/>
+        <run start="1822" level="99" length="5"/>
+    </section>
+    <section first-pos="1835" id="5831">
+        <run start="1830" level="96" length="2"/>
+        <run start="1830" level="96" length="2"/>
+        <run start="1830" level="96" length="2"/>
+        <run start="1830" level="96" length="2"/>
+        <run start="1830" level="96" length="2"/>
+        <run start="1830" level="96" length="2"/>
+    </section>
+    <section first-pos="1836" id="5882">
+        <run start="1791" level="4" length="1"/>
+        <run start="1791" level="147" length="1"/>
+    </section>
+    <section first-pos="1836" id="5883">
+        <run start="1794" level="49" length="8"/>
+    </section>
+    <section first-pos="1837" id="5920">
+        <run start="1794" level="77" length="19"/>
+    </section>
+    <section first-pos="1837" id="5921">
+        <run start="1818" level="80" length="9"/>
+        <run start="1815" level="28" length="10"/>
+        <run start="1814" level="36" length="10"/>
+    </section>
+    <section first-pos="1838" id="5954">
+        <run start="1795" level="39" length="5"/>
+    </section>
+    <section first-pos="1838" id="5955">
+        <run start="1801" level="111" length="4"/>
+        <run start="1801" level="129" length="4"/>
+        <run start="1801" level="129" length="3"/>
+        <run start="1801" level="153" length="3"/>
+        <run start="1800" level="186" length="4"/>
+        <run start="1798" level="140" length="4"/>
+    </section>
+    <section first-pos="1838" id="5956">
+        <run start="1806" level="55" length="7"/>
+        <run start="1806" level="55" length="7"/>
+    </section>
+    <section first-pos="1839" id="6015">
+        <run start="1797" level="159" length="1"/>
+    </section>
+    <section first-pos="1839" id="6016">
+        <run start="1825" level="192" length="2"/>
+        <run start="1825" level="192" length="2"/>
+    </section>
+    <section first-pos="1840" id="6058">
+        <run start="1806" level="51" length="16"/>
+        <run start="1806" level="59" length="15"/>
+        <run start="1806" level="69" length="14"/>
+        <run start="1807" level="72" length="12"/>
+        <run start="1807" level="88" length="11"/>
+        <run start="1807" level="114" length="10"/>
+        <run start="1807" level="117" length="8"/>
+        <run start="1807" level="93" length="7"/>
+    </section>
+    <section first-pos="1841" id="6086">
+        <run start="1789" level="192" length="2"/>
+        <run start="1789" level="139" length="3"/>
+        <run start="1789" level="104" length="5"/>
+    </section>
+    <section first-pos="1841" id="6087">
+        <run start="1823" level="96" length="15"/>
+        <run start="1822" level="57" length="16"/>
+        <run start="1821" level="52" length="17"/>
+        <run start="1820" level="48" length="18"/>
+    </section>
+    <section first-pos="1844" id="6119">
+        <run start="1789" level="59" length="13"/>
+        <run start="1789" level="59" length="13"/>
+        <run start="1789" level="59" length="13"/>
+        <run start="1789" level="60" length="13"/>
+        <run start="1791" level="53" length="11"/>
+    </section>
+    <section first-pos="1845" id="6136">
+        <run start="1819" level="10" length="6"/>
+        <run start="1818" level="7" length="7"/>
+    </section>
+    <section first-pos="1845" id="6137">
+        <run start="1826" level="48" length="12"/>
+        <run start="1826" level="48" length="12"/>
+    </section>
+    <section first-pos="1847" id="6195">
+        <run start="1830" level="84" length="2"/>
+        <run start="1830" level="96" length="2"/>
+        <run start="1830" level="96" length="2"/>
+        <run start="1830" level="64" length="1"/>
+    </section>
+    <section first-pos="1847" id="6196">
+        <run start="1835" level="173" length="3"/>
+    </section>
+    <section first-pos="1848" id="6226">
+        <run start="1806" level="47" length="4"/>
+        <run start="1805" level="112" length="3"/>
+    </section>
+    <section first-pos="1848" id="6227">
+        <run start="1812" level="192" length="1"/>
+    </section>
+    <section first-pos="1849" id="6241">
+        <run start="1793" level="27" length="7"/>
+    </section>
+    <section first-pos="1850" id="6259">
+        <run start="1795" level="172" length="3"/>
+    </section>
+</glyph>

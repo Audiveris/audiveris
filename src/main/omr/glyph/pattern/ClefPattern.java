@@ -1,7 +1,14 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                           C l e f P a t t e r n                            //
+//                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
+//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  This software is released under the GNU General Public License.           //
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
+//----------------------------------------------------------------------------//
+// </editor-fold>
 package omr.glyph.pattern;
 
 import omr.constant.ConstantSet;
@@ -15,19 +22,25 @@ import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
-import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
+import omr.score.common.SystemRectangle;
+import omr.score.entity.Barline;
+import omr.score.entity.Measure;
+import omr.score.entity.ScoreSystem;
+import omr.score.entity.SystemPart;
 
 import omr.sheet.Scale;
 import omr.sheet.StaffInfo;
 import omr.sheet.SystemInfo;
 
+import omr.util.Implement;
 import omr.util.Predicate;
+import omr.util.TreeNode;
 
 import java.util.Collection;
 
 /**
- * Class {@code ClefPattern} verifies the initial clefs of a system
+ * Class {@code ClefPattern} verifies all the initial clefs of a system
  *
  * @author Hervé Bitteur
  */
@@ -43,10 +56,18 @@ public class ClefPattern
     private static final Logger logger = Logger.getLogger(ClefPattern.class);
 
     /** Specific predicate to filter clef shapes */
-    private static final Predicate<Shape> clefPredicate = new Predicate<Shape>() {
+    private static final Predicate<Shape> clefShapePredicate = new Predicate<Shape>() {
         public boolean check (Shape shape)
         {
             return ShapeRange.Clefs.contains(shape);
+        }
+    };
+
+    /** Specific predicate to filter clef glyphs */
+    private static final Predicate<Glyph> clefGlyphPredicate = new Predicate<Glyph>() {
+        public boolean check (Glyph glyph)
+        {
+            return glyph.isClef();
         }
     };
 
@@ -55,6 +76,7 @@ public class ClefPattern
 
     /**
      * Creates a new ClefPattern object.
+     * @param system the containing system
      */
     public ClefPattern (SystemInfo system)
     {
@@ -63,61 +85,61 @@ public class ClefPattern
 
     //~ Methods ----------------------------------------------------------------
 
-    @Override
-    public int run ()
+    //------------//
+    // runPattern //
+    //------------//
+    /**
+     * Check that each staff begins with a clef
+     * @return the number of clefs rebuilt
+     */
+    @Implement(GlyphPattern.class)
+    public int runPattern ()
     {
-        int         successNb = 0;
+        int               successNb = 0;
 
-        final Scale scale = system.getSheet()
-                                  .getScale();
-        final int   clefHalfWidth = scale.toPixels(constants.clefHalfWidth);
+        final ScoreSystem scoreSystem = system.getScoreSystem();
+        final Scale       scale = scoreSystem.getScale();
+        final int         clefWidth = scale.toPixels(constants.clefWidth);
+        final int         xOffset = scale.toPixels(constants.xOffset);
+        final int         yOffset = scale.toPixels(constants.yOffset);
 
-        for (Glyph glyph : system.getGlyphs()) {
-            if (!glyph.isClef()) {
-                continue;
+        int               staffId = 0;
+
+        for (StaffInfo staff : system.getStaves()) {
+            staffId++;
+
+            if (staffId == 3) {
+                logger.warning("BINGO");
             }
 
-            if (logger.isFineEnabled()) {
-                logger.fine("Glyph#" + glyph.getId() + " " + glyph.getShape());
+            // Define the core box to intersect clef glyph(s)
+            int            left = staff.getLeft();
+            int            top = staff.getFirstLine()
+                                      .yAt(left);
+            PixelRectangle pixCore = new PixelRectangle(
+                left,
+                top,
+                clefWidth,
+                staff.getHeight());
+            pixCore.grow(-xOffset, -yOffset);
+
+            // Draw the clef core box, for visual debug
+            SystemRectangle sysCore = scoreSystem.toSystemRectangle(pixCore);
+            SystemPart      part = scoreSystem.getPartAt(sysCore.getCenter());
+            Barline         barline = part.getStartingBarline();
+
+            if (barline != null) {
+                Glyph line = Glyphs.firstOf(
+                    barline.getGlyphs(),
+                    Barline.linePredicate);
+                line.addAttachment("clef#" + staffId, pixCore);
             }
 
-            PixelPoint center = glyph.getAreaCenter();
-            StaffInfo  staff = system.getStaffAtY(center.y);
+            // We must find a clef out of these glyphs
+            Collection glyphs = system.lookupIntersectedGlyphs(pixCore);
 
-            // Look in the other staves
-            for (StaffInfo oStaff : system.getStaves()) {
-                if (oStaff == staff) {
-                    continue;
-                }
-
-                // Is there a clef in this staff, with similar abscissa?
-                PixelRectangle oBox = new PixelRectangle(
-                    center.x - clefHalfWidth,
-                    oStaff.getFirstLine().yAt(center.x),
-                    2 * clefHalfWidth,
-                    oStaff.getHeight());
-
-                if (logger.isFineEnabled()) {
-                    logger.fine("oBox: " + oBox);
-                }
-
-                Collection<Glyph> glyphs = system.lookupIntersectedGlyphs(oBox);
-
-                if (logger.isFineEnabled()) {
-                    logger.fine(Glyphs.toString(glyphs));
-                }
-
-                if (!foundClef(glyphs)) {
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            "No clef found at x:" + center.x + " in staff " +
-                            oStaff);
-                    }
-
-                    if (checkClef(glyphs)) {
-                        successNb++;
-                    }
-                }
+            if (checkClef(glyphs)) {
+                successNb++;
             }
         }
 
@@ -134,7 +156,7 @@ public class ClefPattern
      */
     private boolean checkClef (Collection<Glyph> glyphs)
     {
-        Glyphs.purgeManualShapes(glyphs);
+        Glyphs.purgeManuals(glyphs);
 
         if (glyphs.isEmpty()) {
             return false;
@@ -145,10 +167,10 @@ public class ClefPattern
 
         // Check if a clef appears in the top evaluations
         final Evaluation vote = GlyphNetwork.getInstance()
-                                            .topVote(
+                                            .topRawVote(
             compound,
-            constants.bassMaxDoubt.getValue(),
-            clefPredicate);
+            constants.clefMaxDoubt.getValue(),
+            clefShapePredicate);
 
         if (vote != null) {
             compound = system.addGlyph(compound);
@@ -165,30 +187,6 @@ public class ClefPattern
         }
     }
 
-    //-----------//
-    // foundClef //
-    //-----------//
-    /**
-     * Check whether the provided collection of glyphs contains a clef
-     * @param glyphs the provided glyphs
-     * @return trur if a clef shape if found
-     */
-    private boolean foundClef (Collection<Glyph> glyphs)
-    {
-        for (Glyph gl : glyphs) {
-            if (gl.isClef()) {
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "Found glyph#" + gl.getId() + " as " + gl.getShape());
-                }
-
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     //~ Inner Classes ----------------------------------------------------------
 
     //-----------//
@@ -199,11 +197,15 @@ public class ClefPattern
     {
         //~ Instance fields ----------------------------------------------------
 
-        Scale.Fraction   clefHalfWidth = new Scale.Fraction(
-            2d,
-            "Half width of a clef");
-        Evaluation.Doubt bassMaxDoubt = new Evaluation.Doubt(
-            3d,
-            "Maximum doubt for bass clef verification");
+        Scale.Fraction   clefWidth = new Scale.Fraction(4d, "Width of a clef");
+        Scale.Fraction   xOffset = new Scale.Fraction(
+            0.5d,
+            "Clef horizontal offset since left bar");
+        Scale.Fraction   yOffset = new Scale.Fraction(
+            0.5d,
+            "Clef vertical offset since left bar");
+        Evaluation.Doubt clefMaxDoubt = new Evaluation.Doubt(
+            300000d,
+            "Maximum doubt for clef verification");
     }
 }

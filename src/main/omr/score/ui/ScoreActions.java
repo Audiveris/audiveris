@@ -34,7 +34,7 @@ import omr.ui.util.UIUtilities;
 
 import omr.util.BasicTask;
 import omr.util.Implement;
-import omr.util.Wrapper;
+import omr.util.WrappedBoolean;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
@@ -134,15 +134,12 @@ public class ScoreActions
      */
     public static boolean parametersAreConfirmed (final Score score)
     {
-        final Wrapper<Boolean> apply = new Wrapper<Boolean>();
-        apply.value = false;
-
+        final WrappedBoolean  apply = new WrappedBoolean(false);
         final ScoreParameters scoreBoard = new ScoreParameters(score);
         final JOptionPane     optionPane = new JOptionPane(
             scoreBoard.getComponent(),
             JOptionPane.QUESTION_MESSAGE,
             JOptionPane.OK_CANCEL_OPTION);
-
         final String          frameTitle = (score != null)
                                            ? (score.getRadix() + " parameters")
                                            : "Score parameters";
@@ -165,15 +162,13 @@ public class ScoreActions
                             (prop.equals(JOptionPane.VALUE_PROPERTY))) {
                             Object obj = optionPane.getValue();
                             int    value = ((Integer) obj).intValue();
-
-                            apply.value = Boolean.valueOf(
-                                value == JOptionPane.OK_OPTION);
+                            apply.set(value == JOptionPane.OK_OPTION);
 
                             Sheet sheet = (score != null) ? score.getSheet()
                                           : null;
 
                             // Exit only if user gives up or enters correct data
-                            if (!apply.value || scoreBoard.commit(sheet)) {
+                            if (!apply.isSet() || scoreBoard.commit(sheet)) {
                                 dialog.setVisible(false);
                                 dialog.dispose();
                             } else {

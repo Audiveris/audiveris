@@ -129,9 +129,9 @@ public class TextInspector
         return modifs;
     }
 
-    //-----//
-    // run //
-    //-----//
+    //------------//
+    // runPattern //
+    //------------//
     /**
      * Besides the existing text-shaped glyphs, using system area subdivision,
      * try to retrieve additional series of glyphs that could represent text
@@ -139,7 +139,7 @@ public class TextInspector
      * @return the number of text glyphs built
      */
     @Implement(GlyphPattern.class)
-    public int run ()
+    public int runPattern ()
     {
         // Create a TextArea on the whole system
         TextArea area = new TextArea(

@@ -311,8 +311,8 @@ public class ErrorsEditor
                         logger.fine("value=" + record);
                     }
 
+                    // Use glyph location if available
                     if (record.glyph != null) {
-                        // Use glyph location if available
                         sheet.getVerticalLag()
                              .getSelectionService()
                              .publish(

@@ -17,6 +17,8 @@ import omr.log.Logger;
 
 import omr.score.common.PixelRectangle;
 
+import omr.util.Predicate;
+
 import java.util.*;
 
 /**
@@ -31,6 +33,23 @@ public class Glyphs
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Glyphs.class);
+
+    /** Predicate to check for a manual shape */
+    public static final Predicate<Glyph> manualPredicate = new Predicate<Glyph>() {
+        public boolean check (Glyph glyph)
+        {
+            return glyph.isManualShape();
+        }
+    };
+
+    /** Predicate to check for a barline shape */
+    public static final Predicate<Glyph> barPredicate = new Predicate<Glyph>() {
+        public boolean check (Glyph glyph)
+        {
+            return glyph.isBar();
+        }
+    };
+
 
     //~ Methods ----------------------------------------------------------------
 
@@ -58,6 +77,35 @@ public class Glyphs
         return box;
     }
 
+    //----------//
+    // contains //
+    //----------//
+    /**
+     * Check whether a collection of glyphs contains at least one glyph for
+     * which the provided predicate holds true
+     * @param glyphs the glyph collection to check
+     * @param predicate the predicate to be used
+     * @return true if there is at least one matching glyph
+     */
+    public static boolean contains (Collection<Glyph> glyphs,
+                                    Predicate<Glyph>  predicate)
+    {
+        return firstOf(glyphs, predicate) != null;
+    }
+
+    //-----------------//
+    // containsBarline //
+    //-----------------//
+    /**
+     * Check whether the collection of glyphs contains at least one barline
+     * @param glyphs the collection to check
+     * @return true if one or several glyphs are barlines components
+     */
+    public static boolean containsBarline (Collection<Glyph> glyphs)
+    {
+        return firstOf(glyphs, barPredicate) != null;
+    }
+
     //------------//
     // containsId //
     //------------//
@@ -73,24 +121,40 @@ public class Glyphs
         return false;
     }
 
-    //---------------------//
-    // containsManualShape //
-    //---------------------//
+    //----------------//
+    // containsManual //
+    //----------------//
     /**
      * Check whether a collection of glyphs contains at least one glyph with a
      * manually assigned shape
      * @param glyphs the glyph collection to check
      * @return true if there is at least one manually assigned shape
      */
-    public static boolean containsManualShape (Collection<Glyph> glyphs)
+    public static boolean containsManual (Collection<Glyph> glyphs)
+    {
+        return contains(glyphs, manualPredicate);
+    }
+
+    //---------//
+    // firstOf //
+    //---------//
+    /**
+     * Report the first glyph, if any, for which the provided predicate holds
+     * true
+     * @param glyphs the glyph collection to check
+     * @param predicate the glyph predicate
+     * @return the first matching glyph found if any, null otherwise
+     */
+    public static Glyph firstOf (Collection<Glyph> glyphs,
+                                 Predicate<Glyph>  predicate)
     {
         for (Glyph glyph : glyphs) {
-            if (glyph.isManualShape()) {
-                return true;
+            if (predicate.check(glyph)) {
+                return glyph;
             }
         }
 
-        return false;
+        return null;
     }
 
     //----------//
@@ -117,35 +181,15 @@ public class Glyphs
         return glyphs;
     }
 
-    //---------//
-    // hasBars //
-    //---------//
-    /**
-     * Check whether the collection of glyphs contains at least one barline
-     * @param glyphs the collection to check
-     * @return true if one or several glyphs are barlines components
-     */
-    public static boolean hasBars (Collection<Glyph> glyphs)
-    {
-        // Do we have at least one bar?
-        for (Glyph glyph : glyphs) {
-            if (glyph.isBar()) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    //-------------------//
-    // purgeManualShapes //
-    //-------------------//
+    //--------------//
+    // purgeManuals //
+    //--------------//
     /**
      * Purge a collection of glyphs of those which exhibit a manually assigned
      * shape
      * @param glyphs the glyph collection to purge
      */
-    public static void purgeManualShapes (Collection<Glyph> glyphs)
+    public static void purgeManuals (Collection<Glyph> glyphs)
     {
         for (Iterator<Glyph> it = glyphs.iterator(); it.hasNext();) {
             Glyph glyph = it.next();

@@ -172,6 +172,16 @@ interface GlyphGeometry
      */
     void computeMoments ();
 
+    //------------//
+    // intersects //
+    //------------//
+    /**
+     * Check whether the glyph intersect the provided rectangle
+     * @param rectangle the provided rectangle
+     * @return true if intersection is not empty, false otherwise
+     */
+    boolean intersects (PixelRectangle rectangle);
+
     //-----------//
     // translate //
     //-----------//

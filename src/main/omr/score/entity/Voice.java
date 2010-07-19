@@ -15,10 +15,14 @@ import omr.glyph.Shape;
 
 import omr.log.Logger;
 
+import omr.math.Rational;
+
 import omr.score.common.SystemPoint;
 
 import omr.util.Navigable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -76,6 +80,9 @@ public class Voice
 
     /** Whole chord of the voice, if any */
     private Chord wholeChord;
+
+    /** Inferred time signature based on this voice content */
+    private Rational inferredTimeSig;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -140,6 +147,102 @@ public class Voice
     public int getId ()
     {
         return id;
+    }
+
+    //--------------------------//
+    // getInferredTimeSignature //
+    //--------------------------//
+    /**
+     * Report the time signature value that can be inferred from the content of
+     * this voice
+     * @return the "intrinsic" time signature rational value for this voice
+     */
+    public Rational getInferredTimeSignature ()
+    {
+        if (inferredTimeSig == null) {
+            // Sequence of group (beamed or isolated chords) durations
+            List<Integer> durations = new ArrayList<Integer>();
+
+            // Current beam group, if any
+            BeamGroup currentGroup = null;
+
+            for (Map.Entry<Integer, ChordInfo> entry : slotTable.entrySet()) {
+                int       slotId = entry.getKey();
+                ChordInfo info = entry.getValue();
+
+                if (info.getStatus() == Voice.Status.BEGIN) {
+                    Chord     chord = info.getChord();
+                    BeamGroup group = chord.getBeamGroup();
+
+                    if (group == null) {
+                        // Isolated chord
+                        durations.add(chord.getDuration());
+                    } else if (group != currentGroup) {
+                        // Starting a new group
+                        durations.add(group.getDuration());
+                    }
+
+                    currentGroup = group;
+                }
+            }
+
+            StringBuilder sb = new StringBuilder("[");
+            boolean       started = false;
+            Integer       total = null;
+
+            for (Integer dur : durations) {
+                if (started) {
+                    sb.append(",");
+                }
+
+                started = true;
+
+                if (dur == null) {
+                    sb.append("null");
+                } else {
+                    sb.append(Note.quarterValueOf(dur));
+
+                    if (total == null) {
+                        total = dur;
+                    } else {
+                        total += dur;
+                    }
+                }
+            }
+
+            sb.append("] total:");
+
+            if (total != null) {
+                sb.append(Note.quarterValueOf(total));
+            } else {
+                sb.append("null");
+            }
+
+            logger.info(this + ": " + sb);
+
+            // Do we have a regular pattern?
+            int     count = 0;
+            Integer common = null;
+
+            for (Integer dur : durations) {
+                if (common == null) {
+                    common = dur;
+                } else if (!common.equals(dur)) {
+                    break;
+                }
+
+                count++;
+            }
+
+            if ((common != null) && (count == durations.size())) {
+                // All the durations are equal
+                Rational dur = Note.rationalValueOf(common);
+
+                inferredTimeSig = new Rational(count * dur.num, dur.den);
+            }
+        }
+
+        return inferredTimeSig;
     }
 
     //--------------//
@@ -251,7 +354,7 @@ public class Voice
     // getWholeChord //
     //---------------//
     /**
-     * Report the whole/multi rest chord which fills the voice , if any
+     * Report the whole/multi rest chord which fills the voice, if any
      *
      * @return the whole chord or null
      */

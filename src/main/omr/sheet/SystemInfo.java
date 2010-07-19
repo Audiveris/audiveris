@@ -427,7 +427,6 @@ public class SystemInfo
     //------------------//
     // getSlurInspector //
     //------------------//
-
     public SlurInspector getSlurInspector ()
     {
         return slurInspector;
@@ -916,6 +915,29 @@ public class SystemInfo
         glyphInspector.inspectGlyphs(maxDoubt);
     }
 
+    //-----------------------//
+    // lookupContainedGlyphs //
+    //-----------------------//
+    /**
+     * Look up in system glyphs for the glyphs contained by a
+     * provided rectangle
+     *
+     * @param rect the coordinates rectangle, in pixels
+     * @return the glyphs found, which may be an empty list
+     */
+    public List<Glyph> lookupContainedGlyphs (PixelRectangle rect)
+    {
+        List<Glyph> found = new ArrayList<Glyph>();
+
+        for (Glyph glyph : getGlyphs()) {
+            if (rect.contains(glyph.getContourBox())) {
+                found.add(glyph);
+            }
+        }
+
+        return found;
+    }
+
     //-------------------------//
     // lookupIntersectedGlyphs //
     //-------------------------//
@@ -932,10 +954,9 @@ public class SystemInfo
     {
         List<Glyph> found = new ArrayList<Glyph>();
 
-        // System glyphs are kept sorted on abscissa then ordinate of topLeft
         for (Glyph glyph : getGlyphs()) {
             if (glyph != excluded) {
-                if (rect.intersects(glyph.getContourBox())) {
+                if (glyph.intersects(rect)) {
                     found.add(glyph);
                 }
             }

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="FLAT" interline="13" id="1012">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-3.6666666666666665</pitch-position>
+    <section first-pos="2680" id="8537">
+        <run start="3330" level="192" length="1"/>
+    </section>
+    <section first-pos="2681" id="8539">
+        <run start="3315" level="88" length="28"/>
+        <run start="3315" level="126" length="28"/>
+    </section>
+    <section first-pos="2683" id="8543">
+        <run start="3330" level="116" length="2"/>
+        <run start="3331" level="183" length="1"/>
+    </section>
+    <section first-pos="2683" id="8544">
+        <run start="3342" level="192" length="1"/>
+        <run start="3340" level="192" length="3"/>
+        <run start="3339" level="149" length="4"/>
+        <run start="3337" level="107" length="5"/>
+    </section>
+    <section first-pos="2686" id="8547">
+        <run start="3331" level="72" length="1"/>
+    </section>
+    <section first-pos="2687" id="8548">
+        <run start="3330" level="62" length="10"/>
+        <run start="3330" level="33" length="9"/>
+        <run start="3330" level="36" length="8"/>
+        <run start="3330" level="42" length="7"/>
+    </section>
+    <section first-pos="2691" id="8550">
+        <run start="3330" level="192" length="1"/>
+    </section>
+    <section first-pos="2691" id="8551">
+        <run start="3332" level="148" length="3"/>
+    </section>
+</glyph>

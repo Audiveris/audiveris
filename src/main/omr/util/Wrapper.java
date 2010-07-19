@@ -13,7 +13,7 @@ package omr.util;
 
 
 /**
- * Class <code>Wrapper</code> is used to wrap an output value
+ * Class <code>Wrapper</code> is used to wrap a mutable output value
  *
  * @param <T> The specific type for carried value
  *

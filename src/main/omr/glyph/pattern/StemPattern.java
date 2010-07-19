@@ -24,6 +24,7 @@ import omr.log.Logger;
 
 import omr.sheet.SystemInfo;
 
+import omr.util.Implement;
 import omr.util.Predicate;
 
 import java.util.*;
@@ -71,9 +72,9 @@ public class StemPattern
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------------//
-    // runStemPattern //
-    //----------------//
+    //------------//
+    // runPattern //
+    //------------//
     /**
      * In a specified system, look for all stems that should not be kept,
      * rebuild surrounding glyphs and try to recognize them. If this action does
@@ -81,7 +82,8 @@ public class StemPattern
      *
      * @return the number of symbols recognized
      */
-    public int run ()
+    @Implement(GlyphPattern.class)
+    public int runPattern ()
     {
         int         nb = 0;
 

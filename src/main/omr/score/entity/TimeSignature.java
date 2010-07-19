@@ -328,7 +328,7 @@ public class TimeSignature
      */
     public boolean isManual ()
     {
-        return Glyphs.containsManualShape(getGlyphs());
+        return Glyphs.containsManual(getGlyphs());
     }
 
     //------------//

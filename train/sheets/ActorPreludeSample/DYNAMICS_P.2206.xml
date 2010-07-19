@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="DYNAMICS_P" interline="13" id="2206">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>7.5</pitch-position>
+    <section first-pos="2529" id="8138">
+        <run start="702" level="112" length="1"/>
+        <run start="702" level="64" length="1"/>
+        <run start="701" level="122" length="2"/>
+        <run start="701" level="106" length="2"/>
+        <run start="701" level="64" length="2"/>
+        <run start="698" level="58" length="5"/>
+        <run start="696" level="33" length="7"/>
+        <run start="694" level="20" length="9"/>
+        <run start="691" level="24" length="12"/>
+        <run start="689" level="22" length="14"/>
+    </section>
+    <section first-pos="2539" id="8253">
+        <run start="687" level="26" length="13"/>
+    </section>
+    <section first-pos="2540" id="8267">
+        <run start="681" level="32" length="16"/>
+        <run start="681" level="17" length="14"/>
+        <run start="681" level="21" length="14"/>
+    </section>
+    <section first-pos="2543" id="8287">
+        <run start="682" level="31" length="8"/>
+    </section>
+    <section first-pos="2543" id="8288">
+        <run start="693" level="40" length="2"/>
+        <run start="694" level="48" length="2"/>
+        <run start="693" level="81" length="3"/>
+        <run start="692" level="57" length="4"/>
+        <run start="690" level="60" length="6"/>
+        <run start="688" level="34" length="7"/>
+        <run start="685" level="49" length="10"/>
+    </section>
+    <section first-pos="2544" id="8301">
+        <run start="683" level="49" length="4"/>
+        <run start="683" level="113" length="3"/>
+        <run start="682" level="82" length="2"/>
+        <run start="682" level="60" length="2"/>
+        <run start="681" level="78" length="2"/>
+        <run start="681" level="70" length="3"/>
+    </section>
+    <section first-pos="2550" id="8331">
+        <run start="681" level="16" length="13"/>
+        <run start="681" level="26" length="12"/>
+        <run start="682" level="18" length="9"/>
+        <run start="683" level="93" length="6"/>
+    </section>
+</glyph>

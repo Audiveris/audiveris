@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="BEAM" interline="13" id="1728">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>4.326530612244898</pitch-position>
+    <section first-pos="2331" id="7232">
+        <run start="3538" level="110" length="7"/>
+        <run start="3538" level="120" length="8"/>
+        <run start="3538" level="114" length="8"/>
+        <run start="3538" level="110" length="8"/>
+        <run start="3538" level="110" length="8"/>
+        <run start="3538" level="107" length="8"/>
+        <run start="3538" level="112" length="8"/>
+        <run start="3538" level="119" length="8"/>
+        <run start="3540" level="96" length="6"/>
+        <run start="3540" level="96" length="6"/>
+        <run start="3540" level="96" length="6"/>
+        <run start="3540" level="96" length="6"/>
+        <run start="3540" level="96" length="6"/>
+        <run start="3540" level="96" length="6"/>
+        <run start="3540" level="107" length="7"/>
+        <run start="3540" level="100" length="7"/>
+        <run start="3540" level="98" length="7"/>
+        <run start="3540" level="91" length="7"/>
+        <run start="3540" level="82" length="7"/>
+        <run start="3540" level="82" length="7"/>
+        <run start="3540" level="82" length="7"/>
+        <run start="3540" level="82" length="7"/>
+        <run start="3540" level="82" length="7"/>
+        <run start="3540" level="82" length="7"/>
+        <run start="3540" level="82" length="7"/>
+        <run start="3540" level="82" length="7"/>
+        <run start="3540" level="96" length="8"/>
+        <run start="3540" level="90" length="8"/>
+        <run start="3540" level="87" length="8"/>
+        <run start="3540" level="81" length="8"/>
+        <run start="3540" level="76" length="8"/>
+    </section>
+</glyph>

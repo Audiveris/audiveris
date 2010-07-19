@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="PERCUSSION_CLEF" interline="13" id="1524">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-0.08163265306122448</pitch-position>
+    <section first-pos="398" id="1427">
+        <run start="2688" level="119" length="25"/>
+        <run start="2688" level="46" length="25"/>
+        <run start="2688" level="46" length="25"/>
+        <run start="2688" level="46" length="25"/>
+        <run start="2688" level="46" length="25"/>
+        <run start="2688" level="46" length="25"/>
+        <run start="2688" level="95" length="25"/>
+    </section>
+    <section first-pos="407" id="1577">
+        <run start="2688" level="191" length="25"/>
+        <run start="2688" level="46" length="25"/>
+        <run start="2688" level="46" length="25"/>
+        <run start="2688" level="46" length="25"/>
+        <run start="2688" level="46" length="25"/>
+        <run start="2688" level="46" length="25"/>
+        <run start="2688" level="46" length="25"/>
+    </section>
+</glyph>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="DOT" interline="13" id="1472">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-7.26530612244898</pitch-position>
+    <section first-pos="509" id="2978">
+        <run start="3148" level="116" length="2"/>
+        <run start="3147" level="14" length="4"/>
+        <run start="3146" level="51" length="6"/>
+        <run start="3146" level="54" length="6"/>
+        <run start="3147" level="29" length="4"/>
+        <run start="3148" level="167" length="2"/>
+    </section>
+</glyph>

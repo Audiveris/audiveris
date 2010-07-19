@@ -113,6 +113,39 @@ public class BeamGroup
         return chords;
     }
 
+    //-------------//
+    // getDuration //
+    //-------------//
+    /**
+     * Report the total duration of the sequence of chords within this group
+     * @return the total group duration, perhaps null
+     */
+    public Integer getDuration ()
+    {
+        Integer          duration = null;
+        SortedSet<Chord> chords = new TreeSet<Chord>();
+
+        for (Beam beam : beams) {
+            for (Chord chord : beam.getChords()) {
+                chords.add(chord);
+            }
+        }
+
+        for (Chord chord : chords) {
+            Integer dur = chord.getDuration();
+
+            if (dur != null) {
+                if (duration != null) {
+                    duration += dur;
+                } else {
+                    duration = dur;
+                }
+            }
+        }
+
+        return duration;
+    }
+
     //-------//
     // getId //
     //-------//
@@ -370,6 +403,49 @@ public class BeamGroup
         return null;
     }
 
+    //-------//
+    // align //
+    //-------//
+    /**
+     * Force all beams (and beam items) to use the same slope within that beam
+     * group
+     */
+    private void align ()
+    {
+        // Retrieve the longest beam and use its slope
+        double bestLength = 0;
+        Beam   bestBeam = null;
+
+        for (Beam beam : beams) {
+            // Extrema points of Beam hooks are not reliable, skip them
+            if (beam.isHook()) {
+                continue;
+            }
+
+            double length = beam.getLeftPoint()
+                                .distance(beam.getRightPoint());
+
+            if (length > bestLength) {
+                bestLength = length;
+                bestBeam = beam;
+            }
+        }
+
+        if (bestBeam != null) {
+            double slope = bestBeam.getLine()
+                                   .getSlope();
+
+            for (Beam beam : beams) {
+                SystemPoint left = beam.getLeftPoint();
+                SystemPoint right = beam.getRightPoint();
+                double      yMid = (left.y + right.y) / 2d;
+                double      dy = (right.x - left.x) * slope;
+                left.y = (int) Math.rint(yMid - (dy / 2));
+                right.y = (int) Math.rint(yMid + (dy / 2));
+            }
+        }
+    }
+
     //------------//
     // checkGroup //
     //------------//
@@ -514,49 +590,6 @@ public class BeamGroup
                         }
                     }
                 }
-            }
-        }
-    }
-
-    //-------//
-    // align //
-    //-------//
-    /**
-     * Force all beams (and beam items) to use the same slope within that beam
-     * group
-     */
-    private void align ()
-    {
-        // Retrieve the longest beam and use its slope
-        double bestLength = 0;
-        Beam   bestBeam = null;
-
-        for (Beam beam : beams) {
-            // Extrema points of Beam hooks are not reliable, skip them
-            if (beam.isHook()) {
-                continue;
-            }
-
-            double length = beam.getLeftPoint()
-                                .distance(beam.getRightPoint());
-
-            if (length > bestLength) {
-                bestLength = length;
-                bestBeam = beam;
-            }
-        }
-
-        if (bestBeam != null) {
-            double slope = bestBeam.getLine()
-                                   .getSlope();
-
-            for (Beam beam : beams) {
-                SystemPoint left = beam.getLeftPoint();
-                SystemPoint right = beam.getRightPoint();
-                double      yMid = (left.y + right.y) / 2d;
-                double      dy = (right.x - left.x) * slope;
-                left.y = (int) Math.rint(yMid - (dy / 2));
-                right.y = (int) Math.rint(yMid + (dy / 2));
             }
         }
     }

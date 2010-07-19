@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="VOID_NOTEHEAD" interline="13" id="1672">
+    <stem-number>1</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>4.979591836734694</pitch-position>
+    <section first-pos="1872" id="6304">
+        <run start="3874" level="151" length="3"/>
+    </section>
+    <section first-pos="1873" id="6314">
+        <run start="3871" level="46" length="7"/>
+    </section>
+    <section first-pos="1874" id="6320">
+        <run start="3870" level="49" length="5"/>
+        <run start="3869" level="50" length="5"/>
+        <run start="3868" level="59" length="5"/>
+        <run start="3867" level="82" length="5"/>
+        <run start="3867" level="109" length="5"/>
+        <run start="3867" level="111" length="4"/>
+        <run start="3867" level="129" length="3"/>
+        <run start="3867" level="161" length="3"/>
+        <run start="3867" level="192" length="2"/>
+        <run start="3867" level="192" length="1"/>
+    </section>
+    <section first-pos="1874" id="6321">
+        <run start="3877" level="76" length="2"/>
+        <run start="3877" level="82" length="2"/>
+        <run start="3877" level="76" length="2"/>
+        <run start="3877" level="81" length="3"/>
+        <run start="3877" level="56" length="3"/>
+        <run start="3876" level="69" length="4"/>
+        <run start="3876" level="47" length="4"/>
+        <run start="3875" level="22" length="4"/>
+        <run start="3875" level="13" length="4"/>
+        <run start="3874" level="45" length="5"/>
+        <run start="3873" level="42" length="5"/>
+        <run start="3873" level="15" length="4"/>
+        <run start="3872" level="26" length="4"/>
+        <run start="3869" level="38" length="6"/>
+    </section>
+</glyph>

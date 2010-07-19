@@ -27,6 +27,8 @@ import omr.score.common.PixelRectangle;
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
+import omr.util.Implement;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,11 +65,11 @@ public class GreedyTextPattern
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----//
-    // run //
-    //-----//
-    @Override
-    public int run ()
+    //------------//
+    // runPattern //
+    //------------//
+    @Implement(GlyphPattern.class)
+    public int runPattern ()
     {
         int                  successNb = 0;
         Scale                scale = system.getScoreSystem()
@@ -118,7 +120,7 @@ public class GreedyTextPattern
                 box = box.union(other.getContourBox());
                 box.width += maxDx;
 
-                // Check is this series could be a text
+                // Check whether this series could be a text
                 Glyph      compound = system.buildTransientCompound(neighbors);
                 Evaluation vote = evaluator.vote(compound, maxDoubt);
                 logger.fine(

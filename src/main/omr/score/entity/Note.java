@@ -22,6 +22,7 @@ import omr.glyph.facets.Glyph;
 import omr.log.Logger;
 
 import omr.math.GCD;
+import omr.math.Rational;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -945,6 +946,24 @@ public class Note
         }
 
         return sb.toString();
+    }
+
+    //-----------------//
+    // rationalValueOf //
+    //-----------------//
+    /**
+     * Report the rational equivalent to provided duration
+     *
+     * @param val a duration value
+     * @return a rational such as 1/4, 3/4, ...
+     */
+    public static Rational rationalValueOf (int val)
+    {
+        final int gcd = GCD.gcd(val, QUARTER_DURATION);
+        final int num = val / gcd;
+        final int den = (4 * QUARTER_DURATION) / gcd;
+
+        return new Rational(num, den);
     }
 
     //----------//

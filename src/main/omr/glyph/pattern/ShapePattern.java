@@ -1,7 +1,14 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                          S h a p e P a t t e r n                           //
+//                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
+//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  This software is released under the GNU General Public License.           //
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
+//----------------------------------------------------------------------------//
+// </editor-fold>
 package omr.glyph.pattern;
 
 import omr.constant.ConstantSet;
@@ -27,6 +34,8 @@ import omr.score.entity.SystemPart;
 import omr.sheet.Scale;
 import omr.sheet.StaffInfo;
 import omr.sheet.SystemInfo;
+
+import omr.util.Implement;
 
 import java.util.*;
 
@@ -59,6 +68,7 @@ public class ShapePattern
     //--------------//
     /**
      * Creates a new ShapePattern object.
+     * @param system the containing system
      */
     public ShapePattern (SystemInfo system)
     {
@@ -71,15 +81,15 @@ public class ShapePattern
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----//
-    // run //
-    //-----//
+    //------------//
+    // runPattern //
+    //------------//
     /**
      * A general pattern to check some glyph shapes within their environment
      * @return the number of glyphs deassigned
      */
-    @Override
-    public int run ()
+    @Implement(GlyphPattern.class)
+    public int runPattern ()
     {
         int modifNb = 0;
 
@@ -154,11 +164,19 @@ public class ShapePattern
                 }
             };
 
-        new ShapeChecker(Tuplets) {
+        new ShapeChecker(allSymbols) {
                 public boolean check (Shape shape,
                                       Glyph glyph)
                 {
                     // They must be within the abscissa bounds of the system
+                    // Except a few shapes
+                    if ((shape == BRACKET) ||
+                        (shape == BRACE) ||
+                        (shape == TEXT) ||
+                        (shape == CHARACTER)) {
+                        return true;
+                    }
+
                     PixelRectangle glyphBox = glyph.getContourBox();
 
                     if (((glyphBox.x + glyphBox.width) < system.getLeft()) ||
@@ -170,7 +188,7 @@ public class ShapePattern
                 }
             };
 
-        new ShapeChecker(Keys) {
+        new ShapeChecker(Keys.getShapes()) {
                 public boolean check (Shape shape,
                                       Glyph glyph)
                 {
@@ -224,17 +242,23 @@ public class ShapePattern
             addChecker(shapes);
         }
 
-        public ShapeChecker (EnumSet<Shape> shapes)
+        public ShapeChecker (Collection<Shape>... shapeCollections)
         {
+            Collection<Shape> shapes = new HashSet<Shape>();
+
+            for (Collection<Shape> col : shapeCollections) {
+                shapes.addAll(col);
+            }
+
             addChecker(shapes.toArray(new Shape[0]));
         }
 
-        public ShapeChecker (ShapeRange... shapeRanges)
-        {
-            addChecker(shapeRanges);
-        }
-
         //~ Methods ------------------------------------------------------------
+
+        //        public ShapeChecker (ShapeRange... shapeRanges)
+        //        {
+        //            addChecker(shapeRanges);
+        //        }
 
         /**
          * Run the specific test

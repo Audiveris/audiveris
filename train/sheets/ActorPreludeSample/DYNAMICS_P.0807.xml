@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="DYNAMICS_P" interline="13" id="807">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>8.244897959183673</pitch-position>
+    <section first-pos="480" id="2830">
+        <run start="3579" level="32" length="1"/>
+        <run start="3579" level="8" length="1"/>
+        <run start="3579" level="0" length="1"/>
+        <run start="3579" level="0" length="1"/>
+        <run start="3577" level="68" length="3"/>
+        <run start="3575" level="28" length="5"/>
+        <run start="3572" level="34" length="8"/>
+        <run start="3570" level="19" length="10"/>
+        <run start="3568" level="10" length="12"/>
+        <run start="3565" level="34" length="15"/>
+    </section>
+    <section first-pos="486" id="2850">
+        <run start="3562" level="112" length="2"/>
+        <run start="3561" level="102" length="2"/>
+        <run start="3560" level="110" length="2"/>
+        <run start="3559" level="104" length="2"/>
+        <run start="3559" level="88" length="2"/>
+    </section>
+    <section first-pos="490" id="2881">
+        <run start="3563" level="26" length="13"/>
+    </section>
+    <section first-pos="490" id="2882">
+        <run start="3579" level="0" length="1"/>
+        <run start="3579" level="24" length="1"/>
+        <run start="3579" level="116" length="1"/>
+    </section>
+    <section first-pos="491" id="2890">
+        <run start="3558" level="29" length="16"/>
+        <run start="3558" level="24" length="14"/>
+        <run start="3559" level="18" length="13"/>
+    </section>
+    <section first-pos="494" id="2904">
+        <run start="3560" level="30" length="6"/>
+        <run start="3561" level="62" length="3"/>
+        <run start="3560" level="66" length="2"/>
+        <run start="3559" level="118" length="3"/>
+        <run start="3559" level="48" length="2"/>
+        <run start="3559" level="54" length="2"/>
+    </section>
+    <section first-pos="494" id="2905">
+        <run start="3571" level="52" length="2"/>
+        <run start="3571" level="44" length="2"/>
+        <run start="3570" level="66" length="3"/>
+        <run start="3569" level="32" length="4"/>
+        <run start="3567" level="37" length="6"/>
+        <run start="3565" level="18" length="7"/>
+    </section>
+    <section first-pos="500" id="2940">
+        <run start="3558" level="44" length="14"/>
+        <run start="3558" level="24" length="13"/>
+        <run start="3559" level="7" length="10"/>
+        <run start="3560" level="26" length="8"/>
+    </section>
+    <section first-pos="504" id="2965">
+        <run start="3562" level="144" length="3"/>
+    </section>
+</glyph>

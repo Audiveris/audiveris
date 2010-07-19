@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="NOTEHEAD_BLACK" interline="13" id="1921">
+    <stem-number>1</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>0.08163265306122448</pitch-position>
+    <section first-pos="2599" id="8429">
+        <run start="3516" level="162" length="4"/>
+        <run start="3516" level="77" length="6"/>
+        <run start="3514" level="68" length="9"/>
+        <run start="3513" level="57" length="10"/>
+        <run start="3513" level="49" length="11"/>
+        <run start="3512" level="47" length="12"/>
+        <run start="3512" level="40" length="12"/>
+        <run start="3511" level="50" length="13"/>
+        <run start="3511" level="47" length="13"/>
+        <run start="3511" level="34" length="12"/>
+        <run start="3511" level="41" length="12"/>
+        <run start="3511" level="37" length="11"/>
+        <run start="3511" level="54" length="11"/>
+        <run start="3511" level="64" length="10"/>
+    </section>
+</glyph>

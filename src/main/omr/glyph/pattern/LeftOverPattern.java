@@ -23,6 +23,8 @@ import omr.log.Logger;
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
+import omr.util.Implement;
+
 /**
  * Class {@code LeftOverPattern} processes the significant glyphs which have
  * been left over. It addresses glyphs of non-assigned shape with significant
@@ -59,11 +61,11 @@ public class LeftOverPattern
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----//
-    // run //
-    //-----//
-    @Override
-    public int run ()
+    //------------//
+    // runPattern //
+    //------------//
+    @Implement(GlyphPattern.class)
+    public int runPattern ()
     {
         int                  successNb = 0;
         final double         minWeight = constants.minWeight.getValue();

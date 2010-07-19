@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="BRACE" interline="13" id="408">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>0.0</pitch-position>
+    <section first-pos="376" id="1162">
+        <run start="299" level="33" length="1016"/>
+        <run start="299" level="1" length="1016"/>
+        <run start="299" level="1" length="1016"/>
+        <run start="299" level="1" length="1016"/>
+        <run start="299" level="96" length="1016"/>
+    </section>
+    <section first-pos="381" id="1168">
+        <run start="299" level="56" length="4"/>
+        <run start="299" level="56" length="4"/>
+        <run start="299" level="56" length="4"/>
+        <run start="299" level="44" length="4"/>
+        <run start="299" level="0" length="3"/>
+        <run start="299" level="0" length="3"/>
+        <run start="298" level="55" length="4"/>
+        <run start="298" level="56" length="4"/>
+        <run start="298" level="57" length="4"/>
+        <run start="298" level="19" length="3"/>
+        <run start="298" level="23" length="3"/>
+        <run start="297" level="78" length="4"/>
+        <run start="297" level="35" length="3"/>
+        <run start="296" level="50" length="3"/>
+        <run start="296" level="10" length="2"/>
+        <run start="295" level="48" length="2"/>
+        <run start="294" level="116" length="2"/>
+    </section>
+    <section first-pos="381" id="1169">
+        <run start="1308" level="106" length="7"/>
+        <run start="1307" level="122" length="8"/>
+    </section>
+</glyph>

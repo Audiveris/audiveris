@@ -31,6 +31,8 @@ import omr.sheet.Scale.InterlineFraction;
 import omr.sheet.StaffInfo;
 import omr.sheet.SystemInfo;
 
+import omr.util.Implement;
+
 /**
  * Class {@code BassPattern} checks for segmented bass clefs, in the
  * neighborhood of typical vertical two-dot patterns
@@ -55,6 +57,7 @@ public class BassPattern
     //-------------//
     /**
      * Creates a new BassPattern object.
+     * @param system the containing system
      */
     public BassPattern (SystemInfo system)
     {
@@ -63,11 +66,11 @@ public class BassPattern
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----//
-    // run //
-    //-----//
-    @Override
-    public int run ()
+    //------------//
+    // runPattern //
+    //------------//
+    @Implement(GlyphPattern.class)
+    public int runPattern ()
     {
         int             successNb = 0;
         Scale           scale = system.getSheet()

@@ -22,6 +22,8 @@ import omr.score.common.PagePoint;
 import omr.score.common.SystemRectangle;
 import omr.score.visitor.ScoreVisitor;
 
+import omr.util.Predicate;
+
 import java.awt.*;
 import java.util.*;
 
@@ -38,6 +40,19 @@ public class Barline
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Barline.class);
+
+    /** Predicate to detect a barline glyph (not a repeat dot) */
+    public static final Predicate<Glyph> linePredicate = new Predicate<Glyph>() {
+        public boolean check (Glyph glyph)
+        {
+            Shape shape = glyph.getShape();
+
+            return (shape == Shape.PART_DEFINING_BARLINE) ||
+                   (shape == Shape.THIN_BARLINE) ||
+                   (shape == Shape.THICK_BARLINE);
+        }
+    };
+
 
     //~ Instance fields --------------------------------------------------------
 
@@ -78,9 +93,7 @@ public class Barline
                                 .getTopLeft();
 
         for (Glyph glyph : getGlyphs()) {
-            if ((glyph.getShape() == Shape.PART_DEFINING_BARLINE) ||
-                (glyph.getShape() == Shape.THIN_BARLINE) ||
-                (glyph.getShape() == Shape.THICK_BARLINE)) {
+            if (linePredicate.check(glyph)) {
                 // Beware : Vertical sticks using Horizontal line equation
                 Stick stick = (Stick) glyph;
                 int   x = stick.getLine()

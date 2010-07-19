@@ -12,6 +12,8 @@
 package omr.glyph.pattern;
 
 import omr.glyph.GlyphInspector;
+import omr.glyph.Glyphs;
+import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
@@ -34,7 +36,7 @@ public class PatternsChecker
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Sequence of patterns to run */
+    /** Sequence of patterns to runPattern */
     private final GlyphPattern[] patterns;
 
     /** Dedicated system */
@@ -89,12 +91,11 @@ public class PatternsChecker
     {
         int           totalModifs = 0;
         StringBuilder sb = new StringBuilder();
+        system.inspectGlyphs(GlyphInspector.getLeafMaxDoubt());
 
         for (GlyphPattern pattern : patterns) {
             try {
-                system.inspectGlyphs(GlyphInspector.getLeafMaxDoubt());
-
-                int modifs = pattern.run();
+                int modifs = pattern.runPattern();
 
                 if (logger.isFineEnabled()) {
                     sb.append(" ")

@@ -135,10 +135,10 @@ public class SystemTranslator
 
             syst.fillMissingParts();
             syst.retrieveSlurConnections();
-            syst.accept(new ScoreTimeFixer());
             syst.refineLyricSyllables();
         }
 
+        score.accept(new ScoreTimeFixer());
         score.accept(new ScoreFixer());
 
         // Invalidate score data within MidiAgent, if needed

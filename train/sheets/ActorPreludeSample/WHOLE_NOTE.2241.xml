@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="WHOLE_NOTE" interline="13" id="2241">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-3.183673469387755</pitch-position>
+    <section first-pos="2107" id="7047">
+        <run start="3171" level="69" length="5"/>
+        <run start="3170" level="13" length="7"/>
+    </section>
+    <section first-pos="2108" id="7052">
+        <run start="3178" level="192" length="2"/>
+    </section>
+    <section first-pos="2109" id="7054">
+        <run start="3168" level="60" length="12"/>
+        <run start="3167" level="59" length="13"/>
+        <run start="3167" level="59" length="13"/>
+        <run start="3167" level="59" length="13"/>
+    </section>
+    <section first-pos="2110" id="7062">
+        <run start="3183" level="183" length="1"/>
+        <run start="3183" level="159" length="1"/>
+        <run start="3183" level="191" length="1"/>
+    </section>
+    <section first-pos="2113" id="7076">
+        <run start="3167" level="148" length="4"/>
+        <run start="3167" level="192" length="1"/>
+    </section>
+    <section first-pos="2113" id="7077">
+        <run start="3174" level="99" length="6"/>
+    </section>
+    <section first-pos="2114" id="7083">
+        <run start="3177" level="36" length="1"/>
+    </section>
+    <section first-pos="2118" id="7089">
+        <run start="3167" level="192" length="1"/>
+        <run start="3167" level="153" length="3"/>
+        <run start="3167" level="110" length="5"/>
+    </section>
+    <section first-pos="2120" id="7091">
+        <run start="3177" level="172" length="3"/>
+    </section>
+    <section first-pos="2121" id="7093">
+        <run start="3167" level="79" length="13"/>
+        <run start="3167" level="59" length="13"/>
+        <run start="3167" level="59" length="13"/>
+        <run start="3167" level="61" length="13"/>
+        <run start="3168" level="76" length="12"/>
+    </section>
+    <section first-pos="2126" id="7100">
+        <run start="3171" level="31" length="6"/>
+    </section>
+    <section first-pos="2127" id="7101">
+        <run start="3173" level="169" length="2"/>
+    </section>
+</glyph>

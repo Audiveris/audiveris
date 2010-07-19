@@ -242,12 +242,10 @@ public enum Step {
                     steps.add(this);
 
                     doStepRange(steps, sheet, null);
-                } else {
-                    if (monitor != null) {
-                        // Update sheet (& score) dependent entities
-                        SheetsController.getInstance()
-                                        .setSelectedSheet(sheet);
-                    }
+                } else if (monitor != null) {
+                    // Update sheet (& score) dependent entities
+                    SheetsController.getInstance()
+                                    .setSelectedSheet(sheet);
                 }
             }
         } catch (ProcessingCancellationException pce) {

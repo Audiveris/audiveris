@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="TUPLET_SIX" interline="13" id="1389">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-10.204081632653061</pitch-position>
+    <section first-pos="1568" id="5101">
+        <run start="3450" level="191" length="17"/>
+        <run start="3449" level="7" length="19"/>
+    </section>
+    <section first-pos="1570" id="5116">
+        <run start="3449" level="11" length="9"/>
+        <run start="3449" level="11" length="9"/>
+        <run start="3449" level="11" length="9"/>
+        <run start="3449" level="11" length="9"/>
+        <run start="3449" level="11" length="9"/>
+        <run start="3449" level="11" length="9"/>
+        <run start="3449" level="11" length="9"/>
+        <run start="3449" level="11" length="9"/>
+        <run start="3449" level="11" length="9"/>
+        <run start="3449" level="11" length="9"/>
+        <run start="3449" level="11" length="9"/>
+        <run start="3449" level="11" length="9"/>
+        <run start="3449" level="11" length="9"/>
+        <run start="3449" level="10" length="9"/>
+    </section>
+    <section first-pos="1584" id="5156">
+        <run start="3449" level="7" length="19"/>
+    </section>
+</glyph>

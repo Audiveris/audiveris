@@ -353,16 +353,16 @@ public class SlurInspector
         }
     }
 
-    //-----//
-    // run //
-    //-----//
+    //------------//
+    // runPattern //
+    //------------//
     /**
      * Process all the oldSlur glyphs in the given system, and try to correct the
      * spurious ones if any
      * @return the number of slurs fixed
      */
     @Implement(GlyphPattern.class)
-    public int run ()
+    public int runPattern ()
     {
         int         modifs = 0;
 

@@ -47,7 +47,7 @@ import omr.sheet.SystemInfo;
 
 import omr.util.Predicate;
 import omr.util.TreeNode;
-import omr.util.Wrapper;
+import omr.util.WrappedBoolean;
 
 import java.util.*;
 
@@ -92,7 +92,7 @@ public class ScoreChecker
     private final GlyphEvaluator evaluator = GlyphNetwork.getInstance();
 
     /** Output of the checks */
-    private final Wrapper<Boolean> modified;
+    private final WrappedBoolean modified;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -103,7 +103,7 @@ public class ScoreChecker
      * Creates a new ScoreChecker object.
      * @param modified An out parameter, to tell if entities have been modified
      */
-    public ScoreChecker (Wrapper<Boolean> modified)
+    public ScoreChecker (WrappedBoolean modified)
     {
         this.modified = modified;
     }
@@ -160,7 +160,7 @@ public class ScoreChecker
         }
 
         glyph.setShape(null);
-        setModified();
+        modified.set(true);
 
         return true;
     }
@@ -288,8 +288,13 @@ public class ScoreChecker
                     (timeSignature.getDenominator() == null)) {
                     timeSignature.addError(
                         "Time signature with no rational value");
-                } else { // Normal complex shape
+                } else {
                     logger.fine("Complex " + timeSignature);
+
+                    // Normal complex shape
+                    if (!timeSignature.isDummy()) {
+                        checkTimeSig(timeSignature);
+                    }
                 }
             } else if (shape == Shape.NO_LEGAL_TIME) {
                 timeSignature.addError("Illegal " + timeSignature);
@@ -298,8 +303,8 @@ public class ScoreChecker
                 // So some other part is still missing
                 timeSignature.addError(
                     "Orphan time signature shape : " + shape);
-            } else { // Normal predefined shape
-
+            } else {
+                // Normal predefined shape
                 if (!timeSignature.isDummy()) {
                     checkTimeSig(timeSignature);
                 }
@@ -310,14 +315,6 @@ public class ScoreChecker
         }
 
         return true;
-    }
-
-    //-------------//
-    // setModified //
-    //-------------//
-    private void setModified ()
-    {
-        modified.value = true;
     }
 
     //------------------//
@@ -484,11 +481,11 @@ public class ScoreChecker
 
         // Check on left & right
         if (!arePitchDeltasOk(lefts)) {
-            setModified();
+            modified.set(true);
         }
 
         if (!arePitchDeltasOk(rights)) {
-            setModified();
+            modified.set(true);
         }
     }
 
@@ -498,7 +495,7 @@ public class ScoreChecker
     // checkTimeSig //
     //--------------//
     /**
-     * Here we check time signature considered as "not complex" (TBD: why?)
+     * Here we check time signature across all staves of the system
      * @param timeSignature the sig to check
      */
     private void checkTimeSig (TimeSignature timeSignature)
@@ -812,7 +809,7 @@ public class ScoreChecker
                         vote.shape);
                 }
 
-                setModified();
+                modified.set(true);
             }
         }
     }

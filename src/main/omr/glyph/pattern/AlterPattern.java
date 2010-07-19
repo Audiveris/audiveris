@@ -26,6 +26,8 @@ import omr.score.common.PixelRectangle;
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
+import omr.util.Implement;
+
 import java.util.EnumSet;
 import java.util.SortedSet;
 
@@ -59,16 +61,16 @@ public class AlterPattern
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----//
-    // run //
-    //-----//
+    //------------//
+    // runPattern //
+    //------------//
     /**
      * Verify the case of stems very close to each other since they may result
      * from wrong segmentation of sharp or natural signs
      * @return the number of cases fixed
      */
-    @Override
-    public int run ()
+    @Implement(GlyphPattern.class)
+    public int runPattern ()
     {
         CompoundBuilder        compoundBuilder = system.getCompoundBuilder();
         Scale                  scale = system.getScoreSystem()

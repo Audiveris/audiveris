@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="WHOLE_OR_HALF_REST" interline="13" id="1488">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-1.6666666666666667</pitch-position>
+    <section first-pos="2930" id="9541">
+        <run start="1801" level="192" length="2"/>
+    </section>
+    <section first-pos="2931" id="9555">
+        <run start="1801" level="130" length="8"/>
+        <run start="1801" level="64" length="8"/>
+        <run start="1801" level="64" length="8"/>
+        <run start="1801" level="64" length="8"/>
+        <run start="1801" level="64" length="8"/>
+        <run start="1801" level="64" length="8"/>
+        <run start="1801" level="64" length="8"/>
+        <run start="1801" level="64" length="8"/>
+        <run start="1801" level="64" length="8"/>
+        <run start="1801" level="64" length="8"/>
+        <run start="1801" level="64" length="8"/>
+        <run start="1801" level="64" length="8"/>
+        <run start="1801" level="64" length="8"/>
+        <run start="1801" level="64" length="8"/>
+        <run start="1801" level="64" length="8"/>
+        <run start="1803" level="51" length="6"/>
+    </section>
+</glyph>

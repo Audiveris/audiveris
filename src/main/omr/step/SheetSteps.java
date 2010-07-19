@@ -33,6 +33,7 @@ import omr.selection.GlyphEvent;
 import omr.selection.SelectionService;
 
 import omr.sheet.HorizontalsBuilder;
+import omr.sheet.LinesBuilder;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SheetsManager;
@@ -42,14 +43,13 @@ import omr.sheet.picture.ImageFormatException;
 import omr.sheet.picture.Picture;
 import static omr.step.Step.*;
 
-import omr.util.Wrapper;
+import omr.util.WrappedBoolean;
 
 import java.io.*;
 import java.net.URL;
 import java.util.*;
 
 import javax.swing.*;
-import omr.sheet.LinesBuilder;
 
 /**
  * Class <code>SheetSteps</code> handles the actual progress of steps for a
@@ -788,6 +788,8 @@ public class SheetSteps
             // For the very first time, we reperform the VERTICALS step
             // The other times will be triggered by glyph deassignments which
             // reperform from VERTICALS.
+            // TODO: This is wrong, VERTICALS is not triggered by programmatic
+            // deassignments...
             if (firstTime) {
                 firstTime = false;
 
@@ -851,16 +853,15 @@ public class SheetSteps
         public void doSystem (final SystemInfo system)
             throws StepException
         {
-            final int              iterNb = constants.maxScoreIterations.getValue();
-            final ScoreSystem      scoreSystem = system.getScoreSystem();
-            final Wrapper<Boolean> modified = new Wrapper<Boolean>();
+            final int            iterMax = constants.maxScoreIterations.getValue();
+            final ScoreSystem    scoreSystem = system.getScoreSystem();
+            final WrappedBoolean modified = new WrappedBoolean(true);
 
+            // Purge system of non-active glyphs
             system.removeInactiveGlyphs();
 
-            modified.value = true;
-
-            for (int iter = 1; modified.value && (iter <= iterNb); iter++) {
-                modified.value = false;
+            for (int iter = 1; modified.isSet() && (iter <= iterMax); iter++) {
+                modified.set(false);
 
                 if (logger.isFineEnabled()) {
                     logger.fine(
@@ -873,17 +874,6 @@ public class SheetSteps
                     system.getSheet()
                           .getErrorsEditor()
                           .clearSystem(step, system.getId());
-
-                    // Re-insert errors from previous steps if any
-                    // TODO: We should use something more elegant
-                    // (Having the previous steps register at the ErrorsEditor)
-                    SwingUtilities.invokeLater(
-                        new Runnable() {
-                                public void run ()
-                                {
-                                    system.checkBoundaries();
-                                }
-                            });
                 }
 
                 // Cleanup the system, staves, measures, barlines, ...

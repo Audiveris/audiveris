@@ -48,14 +48,14 @@ public abstract class GlyphPattern
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----//
-    // run //
-    //-----//
+    //------------//
+    // runPattern //
+    //------------//
     /**
      * This method runs the pattern and report the number of modified glyphs
      * @return the number of modified glyphs
      */
-    public abstract int run ();
+    public abstract int runPattern ();
 
     //----------//
     // toString //

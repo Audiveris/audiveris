@@ -202,7 +202,7 @@ public class GlyphsController
             }
         }
 
-        if (ShapeRange.Barlines.contains(shape) || Glyphs.hasBars(glyphs)) {
+        if (ShapeRange.Barlines.contains(shape) || Glyphs.containsBarline(glyphs)) {
             // Special case for barlines
             return new BarlineTask(shape, compound, glyphs).launch(sheet);
         } else {

@@ -533,6 +533,11 @@ public class BasicGlyph
         recognition.forbidShape(shape);
     }
 
+    public boolean intersects (PixelRectangle rectangle)
+    {
+        return geometry.intersects(rectangle);
+    }
+
     //-----------------//
     // invalidateCache //
     //-----------------//

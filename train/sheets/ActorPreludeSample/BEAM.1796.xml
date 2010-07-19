@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="BEAM" interline="13" id="1796">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>4.653061224489796</pitch-position>
+    <section first-pos="1097" id="3815">
+        <run start="3542" level="58" length="10"/>
+        <run start="3542" level="53" length="10"/>
+        <run start="3542" level="44" length="10"/>
+        <run start="3542" level="47" length="10"/>
+        <run start="3542" level="51" length="10"/>
+        <run start="3542" level="56" length="10"/>
+        <run start="3542" level="43" length="9"/>
+        <run start="3542" level="43" length="9"/>
+        <run start="3542" level="43" length="9"/>
+        <run start="3542" level="47" length="9"/>
+        <run start="3542" level="60" length="9"/>
+        <run start="3542" level="43" length="9"/>
+        <run start="3542" level="43" length="9"/>
+        <run start="3542" level="43" length="9"/>
+        <run start="3542" level="55" length="9"/>
+        <run start="3542" level="59" length="9"/>
+        <run start="3542" level="64" length="9"/>
+        <run start="3542" level="48" length="8"/>
+    </section>
+</glyph>

@@ -342,6 +342,24 @@ class BasicGeometry
         System.out.println("   weight=" + getWeight());
     }
 
+    //------------//
+    // intersects //
+    //------------//
+    public boolean intersects (PixelRectangle rectangle)
+    {
+        // First make a rough test
+        if (rectangle.intersects(glyph.getContourBox())) {
+            // Make sure at least one section intersects the rectangle
+            for (Section section : glyph.getMembers()) {
+                if (rectangle.intersects(section.getContourBox())) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     //-----------------//
     // invalidateCache //
     //-----------------//
