@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                           C l e f P a t t e r n                            //
+//                           T i m e P a t t e r n                            //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -22,11 +22,9 @@ import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
+import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
-import omr.score.common.SystemRectangle;
-import omr.score.entity.Barline;
 import omr.score.entity.ScoreSystem;
-import omr.score.entity.SystemPart;
 
 import omr.sheet.Scale;
 import omr.sheet.StaffInfo;
@@ -38,11 +36,11 @@ import omr.util.Predicate;
 import java.util.Collection;
 
 /**
- * Class {@code ClefPattern} verifies all the initial clefs of a system
+ * Class {@code TimePattern} verifies the time signature glyphs
  *
  * @author Hervé Bitteur
  */
-public class ClefPattern
+public class TimePattern
     extends GlyphPattern
 {
     //~ Static fields/initializers ---------------------------------------------
@@ -51,13 +49,13 @@ public class ClefPattern
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ClefPattern.class);
+    private static final Logger logger = Logger.getLogger(TimePattern.class);
 
-    /** Specific predicate to filter clef shapes */
-    private static final Predicate<Shape> clefPredicate = new Predicate<Shape>() {
+    /** Specific predicate to filter time shapes */
+    private static final Predicate<Shape> timePredicate = new Predicate<Shape>() {
         public boolean check (Shape shape)
         {
-            return ShapeRange.Clefs.contains(shape);
+            return ShapeRange.Times.contains(shape);
         }
     };
 
@@ -65,12 +63,12 @@ public class ClefPattern
     //~ Constructors -----------------------------------------------------------
 
     /**
-     * Creates a new ClefPattern object.
+     * Creates a new TimePattern object.
      * @param system the containing system
      */
-    public ClefPattern (SystemInfo system)
+    public TimePattern (SystemInfo system)
     {
-        super("Clef", system);
+        super("Time", system);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -79,52 +77,39 @@ public class ClefPattern
     // runPattern //
     //------------//
     /**
-     * Check that each staff begins with a clef
-     * @return the number of clefs rebuilt
+     * Check that each staff begins with a time
+     * @return the number of times rebuilt
      */
     @Implement(GlyphPattern.class)
     public int runPattern ()
     {
-        int               successNb = 0;
+        int successNb = 0;
 
-        final ScoreSystem scoreSystem = system.getScoreSystem();
-        final Scale       scale = scoreSystem.getScale();
-        final int         clefWidth = scale.toPixels(constants.clefWidth);
-        final int         xOffset = scale.toPixels(constants.xOffset);
-        final int         yOffset = scale.toPixels(constants.yOffset);
-
-        int               staffId = 0;
-
-        for (StaffInfo staff : system.getStaves()) {
-            staffId++;
-
-            // Define the core box to intersect clef glyph(s)
-            int            left = staff.getLeft();
-            int            top = staff.getFirstLine()
-                                      .yAt(left);
-            PixelRectangle pixCore = new PixelRectangle(
-                left,
-                top,
-                clefWidth,
-                staff.getHeight());
-            pixCore.grow(-xOffset, -yOffset);
-
-            // Draw the clef core box, for visual debug
-            SystemRectangle sysCore = scoreSystem.toSystemRectangle(pixCore);
-            SystemPart      part = scoreSystem.getPartAt(sysCore.getCenter());
-            Barline         barline = part.getStartingBarline();
-
-            if (barline != null) {
-                Glyph line = Glyphs.firstOf(
-                    barline.getGlyphs(),
-                    Barline.linePredicate);
-                line.addAttachment("clef#" + staffId, pixCore);
+        for (Glyph glyph : system.getGlyphs()) {
+            if (!ShapeRange.Times.contains(glyph.getShape())) {
+                continue;
             }
 
-            // We must find a clef out of these glyphs
+            // Retrieve environment (staff)
+            PixelPoint        center = glyph.getAreaCenter();
+            final StaffInfo   staff = system.getStaffAtY(center.y);
+
+            final ScoreSystem scoreSystem = system.getScoreSystem();
+            final Scale       scale = scoreSystem.getScale();
+            final int         xOffset = scale.toPixels(constants.xOffset);
+            final int         yOffset = scale.toPixels(constants.yOffset);
+
+            // Define the core box to intersect time glyph(s)
+            PixelRectangle pixCore = glyph.getContourBox();
+            pixCore.grow(-xOffset, -yOffset);
+
+            // Draw the time core box, for visual debug
+            glyph.addAttachment("time", pixCore);
+
+            // We must find a time out of these glyphs
             Collection glyphs = system.lookupIntersectedGlyphs(pixCore);
 
-            if (checkClef(glyphs)) {
+            if (checkTime(glyphs)) {
                 successNb++;
             }
         }
@@ -133,14 +118,14 @@ public class ClefPattern
     }
 
     //-----------//
-    // checkClef //
+    // checkTime //
     //-----------//
     /**
-     * Try to recognize a clef in the compound of the provided glyphs
-     * @param glyphs the parts of a clef candidate
+     * Try to recognize a time glyph in the compound of the provided glyphs
+     * @param glyphs the parts of a time candidate
      * @return true if successful
      */
-    private boolean checkClef (Collection<Glyph> glyphs)
+    private boolean checkTime (Collection<Glyph> glyphs)
     {
         Glyphs.purgeManuals(glyphs);
 
@@ -151,12 +136,12 @@ public class ClefPattern
         Glyph compound = system.buildTransientCompound(glyphs);
         system.computeGlyphFeatures(compound);
 
-        // Check if a clef appears in the top evaluations
+        // Check if a time appears in the top evaluations
         final Evaluation vote = GlyphNetwork.getInstance()
                                             .topRawVote(
             compound,
-            constants.clefMaxDoubt.getValue(),
-            clefPredicate);
+            constants.timeMaxDoubt.getValue(),
+            timePredicate);
 
         if (vote != null) {
             compound = system.addGlyph(compound);
@@ -183,15 +168,14 @@ public class ClefPattern
     {
         //~ Instance fields ----------------------------------------------------
 
-        Scale.Fraction   clefWidth = new Scale.Fraction(4d, "Width of a clef");
         Scale.Fraction   xOffset = new Scale.Fraction(
-            0.5d,
-            "Clef horizontal offset since left bar");
+            0.25d,
+            "Core Time horizontal offset");
         Scale.Fraction   yOffset = new Scale.Fraction(
-            0.5d,
-            "Clef vertical offset since left bar");
-        Evaluation.Doubt clefMaxDoubt = new Evaluation.Doubt(
-            300000d,
-            "Maximum doubt for clef verification");
+            0.25d,
+            "Core Time vertical offset");
+        Evaluation.Doubt timeMaxDoubt = new Evaluation.Doubt(
+            300d,
+            "Maximum doubt for time verification");
     }
 }

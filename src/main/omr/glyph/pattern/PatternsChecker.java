@@ -12,8 +12,6 @@
 package omr.glyph.pattern;
 
 import omr.glyph.GlyphInspector;
-import omr.glyph.Glyphs;
-import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
@@ -61,8 +59,10 @@ public class PatternsChecker
         new ShapePattern(system),
                        
         new BassPattern(system),
-                       
+
         new ClefPattern(system),
+
+        new TimePattern(system),
                        
         new AlterPattern(system),
                        
