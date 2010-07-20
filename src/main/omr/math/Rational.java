@@ -54,6 +54,20 @@ public class Rational
     //----------//
     // Rational //
     //----------//
+    /**
+     * Clone a Rational instance
+     *
+     * @param rational the rational to clone
+     */
+    public Rational (Rational rational)
+    {
+        this.num = rational.num;
+        this.den = rational.den;
+    }
+
+    //----------//
+    // Rational //
+    //----------//
     /** Needed for JAXB */
     private Rational ()
     {
@@ -61,6 +75,34 @@ public class Rational
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //--------//
+    // equals //
+    //--------//
+    @Override
+    public boolean equals (Object obj)
+    {
+        if (!(obj instanceof Rational)) {
+            return false;
+        }
+
+        Rational r = (Rational) obj;
+
+        return (this.num == r.num) && (this.den == r.den);
+    }
+
+    //----------//
+    // hashCode //
+    //----------//
+    @Override
+    public int hashCode ()
+    {
+        int hash = 5;
+        hash = (89 * hash) + den;
+        hash = (89 * hash) + num;
+
+        return hash;
+    }
 
     //----------//
     // toString //

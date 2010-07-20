@@ -13,6 +13,7 @@ package omr.score.entity;
 
 import omr.constant.ConstantSet;
 
+import omr.glyph.Evaluation;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
@@ -27,6 +28,7 @@ import omr.score.common.SystemPoint;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
+import omr.sheet.SystemInfo;
 
 import java.util.*;
 
@@ -166,6 +168,10 @@ public class TimeSignature
     //----------------------//
     // getDenominatorShapes //
     //----------------------//
+    /**
+     * Report the sequence of shapes that depict the denominator
+     * @return for example: [1, 6] if denominator is 16
+     */
     public List<Shape> getDenominatorShapes ()
     {
         try {
@@ -185,6 +191,18 @@ public class TimeSignature
     public boolean isDummy ()
     {
         return isDummy;
+    }
+
+    //----------//
+    // isManual //
+    //----------//
+    /**
+     * Report whether this time signature is based on manual assignment
+     * @return true if manually assigned
+     */
+    public boolean isManual ()
+    {
+        return Glyphs.containsManual(getGlyphs());
     }
 
     //--------------//
@@ -213,6 +231,10 @@ public class TimeSignature
     //--------------------//
     // getNumeratorShapes //
     //--------------------//
+    /**
+     * Report the sequence of shapes that depict the numerator
+     * @return for example: [1, 2] if numerator is 12
+     */
     public List<Shape> getNumeratorShapes ()
     {
         try {
@@ -222,13 +244,43 @@ public class TimeSignature
         }
     }
 
+    //-------------//
+    // setRational //
+    //-------------//
+    /**
+     * Force this time signature to align to the provided rational value
+     * @param rational the forced value
+     */
+    public void setRational (Rational rational)
+    {
+        numerator = rational.num;
+        denominator = rational.den;
+        shape = predefinedShape();
+    }
+
+    //-------------//
+    // getRational //
+    //-------------//
+    /**
+     * Report the time signature as a rational
+     * @return the num/den rational, or null
+     */
+    public Rational getRational ()
+    {
+        try {
+            return new Rational(getNumerator(), getDenominator());
+        } catch (InvalidTimeSignature its) {
+            return null;
+        }
+    }
+
     //----------//
     // getShape //
     //----------//
     /**
      * Report the shape of this time signature
      *
-     * @return the (lazily determined) shape
+     * @return the (lazily determined) shape, which may be null
      * @throws omr.score.entity.TimeSignature.InvalidTimeSignature
      */
     public Shape getShape ()
@@ -267,16 +319,6 @@ public class TimeSignature
     }
 
     //----------//
-    // deassign //
-    //----------//
-    public void deassign ()
-    {
-        for (Glyph glyph : glyphs) {
-            glyph.setShape(null);
-        }
-    }
-
-    //----------//
     // populate //
     //----------//
     /**
@@ -309,7 +351,7 @@ public class TimeSignature
             return false;
         }
 
-        // Then, processing depends on partial / full time signature
+        // Then, processing depends on partial / full time-signature
         Shape shape = glyph.getShape();
 
         if (ShapeRange.PartialTimes.contains(shape)) {
@@ -317,18 +359,6 @@ public class TimeSignature
         } else {
             return populateFullTime(glyph, measure, staff);
         }
-    }
-
-    //----------//
-    // isManual //
-    //----------//
-    /**
-     * Report whether this time signature is based on manual assignment
-     * @return true if manually assigned
-     */
-    public boolean isManual ()
-    {
-        return Glyphs.containsManual(getGlyphs());
     }
 
     //------------//
@@ -362,6 +392,59 @@ public class TimeSignature
         default :
             return null;
         }
+    }
+
+    //------//
+    // copy //
+    //------//
+    /**
+     * Replaces in situ this time signature by the logical information
+     * of 'newSig'.
+     * @param newSig the correct sig to assign in lieu of this one
+     */
+    public void copy (TimeSignature newSig)
+    {
+        try {
+            modify(
+                newSig.getShape(),
+                new Rational(newSig.getNumerator(), newSig.getDenominator()));
+        } catch (InvalidTimeSignature ex) {
+            logger.warning("Invalid time signature", ex);
+        }
+    }
+
+    //--------//
+    // modify //
+    //--------//
+    /**
+     * Modify in situ this time signature using provided shape and
+     * rational. We use the intersected glyphs of the old sig as the glyphs
+     * for the newly built signature.
+     * @param shape the shape (perhaps null) of correct signature
+     * @param rational the new sig rational value
+     */
+    public void modify (Shape    shape,
+                        Rational rational)
+    {
+        SystemInfo systemInfo = getSystem()
+                                    .getInfo();
+        Glyph      compound = systemInfo.buildTransientCompound(getGlyphs());
+        systemInfo.computeGlyphFeatures(compound);
+        compound = systemInfo.addGlyph(compound);
+
+        if (shape == null) {
+            shape = predefinedShape(rational);
+        }
+
+        compound.setShape(shape, Evaluation.ALGORITHM);
+
+        if (shape == Shape.CUSTOM_TIME_SIGNATURE) {
+            compound.setRational(new Rational(rational));
+        }
+
+        setRational(rational);
+
+        logger.info(shape + " assigned to glyph#" + compound.getId());
     }
 
     //-------//
@@ -734,14 +817,29 @@ public class TimeSignature
     {
         if ((numerator == null) || (denominator == null)) {
             return null; // Safer
+        } else {
+            return predefinedShape(new Rational(numerator, denominator));
+        }
+    }
+
+    //-----------------//
+    // predefinedShape //
+    //-----------------//
+    /**
+     * Look for a predefined shape, if any, that would correspond to the current
+     * num and den values of this time sig
+     * @return the shape found or null
+     */
+    private static Shape predefinedShape (Rational rational)
+    {
+        if (rational == null) {
+            return null; // Safer
         }
 
         for (Shape s : ShapeRange.FullTimes) {
             Rational nd = rationals.get(s);
 
-            if ((nd != null) &&
-                (nd.num == numerator) &&
-                (nd.den == denominator)) {
+            if ((nd != null) && nd.equals(rational)) {
                 return s;
             }
         }

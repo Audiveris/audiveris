@@ -139,6 +139,7 @@ public class SystemTranslator
         }
 
         score.accept(new ScoreTimeFixer());
+        score.accept(new TimeSignatureFixer());
         score.accept(new ScoreFixer());
 
         // Invalidate score data within MidiAgent, if needed

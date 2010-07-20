@@ -155,11 +155,15 @@ public class Voice
     /**
      * Report the time signature value that can be inferred from the content of
      * this voice
-     * @return the "intrinsic" time signature rational value for this voice
+     *
+     * @return the "intrinsic" time signature rational value for this voice,
+     * or null
      */
     public Rational getInferredTimeSignature ()
     {
         if (inferredTimeSig == null) {
+            // TODO: update for the use of tuplets
+
             // Sequence of group (beamed or isolated chords) durations
             List<Integer> durations = new ArrayList<Integer>();
 
@@ -167,7 +171,6 @@ public class Voice
             BeamGroup currentGroup = null;
 
             for (Map.Entry<Integer, ChordInfo> entry : slotTable.entrySet()) {
-                int       slotId = entry.getKey();
                 ChordInfo info = entry.getValue();
 
                 if (info.getStatus() == Voice.Status.BEGIN) {
@@ -186,39 +189,42 @@ public class Voice
                 }
             }
 
-            StringBuilder sb = new StringBuilder("[");
-            boolean       started = false;
-            Integer       total = null;
+            // Debug
+            if (logger.isFineEnabled()) {
+                StringBuilder sb = new StringBuilder("[");
+                boolean       started = false;
+                Integer       total = null;
 
-            for (Integer dur : durations) {
-                if (started) {
-                    sb.append(",");
-                }
+                for (Integer dur : durations) {
+                    if (started) {
+                        sb.append(",");
+                    }
 
-                started = true;
+                    started = true;
 
-                if (dur == null) {
-                    sb.append("null");
-                } else {
-                    sb.append(Note.quarterValueOf(dur));
-
-                    if (total == null) {
-                        total = dur;
+                    if (dur == null) {
+                        sb.append("null");
                     } else {
-                        total += dur;
+                        sb.append(Note.quarterValueOf(dur));
+
+                        if (total == null) {
+                            total = dur;
+                        } else {
+                            total += dur;
+                        }
                     }
                 }
+
+                sb.append("] total:");
+
+                if (total != null) {
+                    sb.append(Note.quarterValueOf(total));
+                } else {
+                    sb.append("null");
+                }
+
+                logger.fine(this + ": " + sb);
             }
-
-            sb.append("] total:");
-
-            if (total != null) {
-                sb.append(Note.quarterValueOf(total));
-            } else {
-                sb.append("null");
-            }
-
-            logger.info(this + ": " + sb);
 
             // Do we have a regular pattern?
             int     count = 0;
@@ -236,9 +242,11 @@ public class Voice
 
             if ((common != null) && (count == durations.size())) {
                 // All the durations are equal
-                Rational dur = Note.rationalValueOf(common);
+                Rational rational = Note.rationalValueOf(common);
 
-                inferredTimeSig = new Rational(count * dur.num, dur.den);
+                inferredTimeSig = new Rational(
+                    count * rational.num,
+                    rational.den);
             }
         }
 

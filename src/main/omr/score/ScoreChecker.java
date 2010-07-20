@@ -591,17 +591,8 @@ public class ScoreChecker
 
                 // Inconsistency detected
                 if (manualSig != null) {
-                    // Replace sig !
-                    TimeSignature oldSig = sig;
-                    oldSig.getParent()
-                          .getChildren()
-                          .remove(oldSig);
-                    sig = new TimeSignature(measure, staff, manualSig);
-
-                    // Assign this manual sig to this incorrect sig?
-
-                    ///oldSig.deassign();
-                    replaceTimeSig(oldSig, manualSig);
+                    // Assign this manual sig to this (incorrect) sig
+                    sig.copy(manualSig);
                 } else {
                     // Inconsistent sigs
                     if (logger.isFineEnabled()) {
@@ -703,55 +694,6 @@ public class ScoreChecker
                     "Glyph#" + compound.getId() + " merged two note heads");
             }
         }
-    }
-
-    //----------------//
-    // replaceTimeSig //
-    //----------------//
-    /**
-     * Replaces in situ the time signature 'oldSig' by the logical information
-     * of 'newSig'. We use the intersected glyphs of the old sig as the glyphs
-     * for the newly built signature.
-     * @param oldSig the old (incorrect) time sig
-     * @param newSig the correct sig to assign in lieu of oldSig
-     */
-    private void replaceTimeSig (TimeSignature oldSig,
-                                 TimeSignature newSig)
-    {
-        Shape shape;
-
-        try {
-            shape = newSig.getShape();
-        } catch (InvalidTimeSignature ex) {
-            return;
-        }
-
-        SystemInfo        systemInfo = oldSig.getSystem()
-                                             .getInfo();
-        Collection<Glyph> glyphs = systemInfo.lookupIntersectedGlyphs(
-            Glyphs.getContourBox(oldSig.getGlyphs()));
-
-        if (logger.isFineEnabled()) {
-            logger.fine("oldSig " + Glyphs.toString(glyphs));
-        }
-
-        Glyph compound = systemInfo.buildTransientCompound(glyphs);
-        systemInfo.computeGlyphFeatures(compound);
-        compound = systemInfo.addGlyph(compound);
-        compound.setShape(shape, Evaluation.ALGORITHM);
-
-        if (shape == Shape.CUSTOM_TIME_SIGNATURE) {
-            try {
-                compound.setRational(
-                    new Rational(
-                        newSig.getNumerator(),
-                        newSig.getDenominator()));
-            } catch (InvalidTimeSignature ex) {
-                logger.warning("Invalid time signature", ex);
-            }
-        }
-
-        logger.info(shape + " assigned to glyph#" + compound.getId());
     }
 
     //-------------//
