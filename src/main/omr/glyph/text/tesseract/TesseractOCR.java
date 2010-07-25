@@ -19,9 +19,9 @@ import omr.log.Logger;
 
 import omr.score.common.PixelRectangle;
 
+import omr.util.ClassUtil;
 import omr.util.Implement;
 import omr.util.OmrExecutors;
-import omr.util.ClassUtil;
 
 import net.gencsoy.tesjeract.EANYCodeChar;
 import net.gencsoy.tesjeract.Tesjeract;
@@ -134,8 +134,12 @@ public class TesseractOCR
                 public List<OcrLine> call ()
                     throws Exception
                 {
+                    String lang = (languageCode == null) ? "eng" : languageCode;
+
                     synchronized (this) {
-                        EANYCodeChar[] chars = new Tesjeract(languageCode).recognizeAllWords(buf);
+                        EANYCodeChar[] chars = new Tesjeract(lang).recognizeAllWords(
+                            buf);
+
                         return getLines(chars, label);
                     }
                 }
@@ -307,54 +311,6 @@ public class TesseractOCR
         }
     }
 
-    //--------------------//
-    // retrieverInstalled //
-    //--------------------//
-    /**
-     * Make sure the OCR retriever is properly installed
-     * @return true if OK
-     */
-    private boolean retrieverInstalled ()
-    {
-        if (!tesjeractLoaded) {
-            if (userWarned) {
-                return false;
-            }
-
-            try {
-                try {
-                    ClassUtil.loadLibrary("tesjeract");
-                } catch (UnsatisfiedLinkError ex) {
-                    String arch = System.getProperty("os.arch");
-
-                    if (arch.equals("amd64")) {
-                        arch = "x86_64";
-                    } else if (arch.endsWith("86")) {
-                        arch = "x86";
-                    }
-
-                    if (WellKnowns.WINDOWS) {
-                        ClassUtil.load(new File(TesseractOCR.ocrHome, "tessdll.dll"));
-                        ClassUtil.load(new File(TesseractOCR.ocrHome, "tesjeract.dll"));
-                    } else if (WellKnowns.LINUX) {
-                        ClassUtil.load(new File(TesseractOCR.ocrHome, "libtesjeract-linux-" + arch + ".so"));
-                    } else if (WellKnowns.MAC_OS_X) {
-                        ClassUtil.load(new File(TesseractOCR.ocrHome, "libtesjeract-macosx-" + arch + ".so"));
-                    }
-                }
-
-                Tesjeract.setTessdataFallback(TesseractOCR.ocrHome + "/");
-            } catch (Throwable ex) {
-                userWarned = true;
-                logger.warning("Could not load Tesjeract");
-                return false;
-            }
-        }
-
-        tesjeractLoaded = true;
-        return true;
-    }
-
     //-------------------//
     // imageToTiffBuffer //
     //-------------------//
@@ -382,6 +338,64 @@ public class TesseractOCR
         buf.put(baos.toByteArray());
 
         return buf;
+    }
+
+    //--------------------//
+    // retrieverInstalled //
+    //--------------------//
+    /**
+     * Make sure the OCR retriever is properly installed
+     * @return true if OK
+     */
+    private boolean retrieverInstalled ()
+    {
+        if (!tesjeractLoaded) {
+            if (userWarned) {
+                return false;
+            }
+
+            try {
+                try {
+                    ClassUtil.loadLibrary("tesjeract");
+                } catch (UnsatisfiedLinkError ex) {
+                    String arch = System.getProperty("os.arch");
+
+                    if (arch.equals("amd64")) {
+                        arch = "x86_64";
+                    } else if (arch.endsWith("86")) {
+                        arch = "x86";
+                    }
+
+                    if (WellKnowns.WINDOWS) {
+                        ClassUtil.load(
+                            new File(TesseractOCR.ocrHome, "tessdll.dll"));
+                        ClassUtil.load(
+                            new File(TesseractOCR.ocrHome, "tesjeract.dll"));
+                    } else if (WellKnowns.LINUX) {
+                        ClassUtil.load(
+                            new File(
+                                TesseractOCR.ocrHome,
+                                "libtesjeract-linux-" + arch + ".so"));
+                    } else if (WellKnowns.MAC_OS_X) {
+                        ClassUtil.load(
+                            new File(
+                                TesseractOCR.ocrHome,
+                                "libtesjeract-macosx-" + arch + ".so"));
+                    }
+                }
+
+                Tesjeract.setTessdataFallback(TesseractOCR.ocrHome + "/");
+            } catch (Throwable ex) {
+                userWarned = true;
+                logger.warning("Could not load Tesjeract");
+
+                return false;
+            }
+        }
+
+        tesjeractLoaded = true;
+
+        return true;
     }
 
     //---------------//
