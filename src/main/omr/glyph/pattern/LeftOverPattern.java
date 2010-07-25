@@ -106,7 +106,7 @@ public class LeftOverPattern
         //~ Instance fields ----------------------------------------------------
 
         Scale.AreaFraction minWeight = new Scale.AreaFraction(
-            1,
+            0.5,
             "Minimum normalized weight to be a left over glyph");
         Evaluation.Doubt   maxDoubt = new Evaluation.Doubt(
             100d,

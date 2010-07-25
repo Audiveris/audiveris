@@ -85,10 +85,12 @@ public class StemPattern
     @Implement(GlyphPattern.class)
     public int runPattern ()
     {
-        int         nb = 0;
+        int                    nb = 0;
+
+        Map<Glyph, Set<Glyph>> badsMap = new HashMap<Glyph, Set<Glyph>>();
 
         // Collect all undue stems
-        List<Glyph> SuspectedStems = new ArrayList<Glyph>();
+        List<Glyph>            SuspectedStems = new ArrayList<Glyph>();
 
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.isStem() && glyph.isActive()) {
@@ -105,6 +107,8 @@ public class StemPattern
                     SuspectedStems.add(glyph);
 
                     // Discard "bad" ones
+                    badsMap.put(glyph, bads);
+
                     for (Glyph g : bads) {
                         if (logger.isFineEnabled()) {
                             logger.finest("Deassigning bad glyph " + g);
@@ -173,6 +177,21 @@ public class StemPattern
 
                 // Restore the stem
                 system.addGlyph(stem);
+
+                // Deassign the nearby glyphs that cannot accept a stem
+                Set<Glyph> bads = badsMap.get(stem);
+
+                if (bads != null) {
+                    for (Glyph g : bads) {
+                        Shape shape = g.getShape();
+
+                        if ((shape != null) &&
+                            !g.isManualShape() &&
+                            !ShapeRange.StemSymbols.contains(shape)) {
+                            g.setShape(null);
+                        }
+                    }
+                }
             }
         }
 

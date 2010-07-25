@@ -204,7 +204,6 @@ public class GlyphInspector
         system.removeInactiveGlyphs();
     }
 
-
     //-------------------//
     // retrieveCompounds //
     //-------------------//
@@ -302,7 +301,7 @@ public class GlyphInspector
                     "Compound seed has not been set");
             }
 
-            PixelRectangle box = new PixelRectangle(seed.getContourBox());
+            PixelRectangle box = seed.getContourBox();
             Scale          scale = system.getScoreSystem()
                                          .getScale();
             int            boxWiden = scale.toPixels(

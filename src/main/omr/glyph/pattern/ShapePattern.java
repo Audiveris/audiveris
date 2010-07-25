@@ -255,11 +255,6 @@ public class ShapePattern
 
         //~ Methods ------------------------------------------------------------
 
-        //        public ShapeChecker (ShapeRange... shapeRanges)
-        //        {
-        //            addChecker(shapeRanges);
-        //        }
-
         /**
          * Run the specific test
          * @param system the containing system

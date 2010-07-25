@@ -77,10 +77,10 @@ class EvaluationBoard
     }
 
     /** Color for well recognized glyphs */
-    private static final Color EVAL_GOOD_COLOR = new Color(100, 150, 0);
+    private static final Color EVAL_GOOD_COLOR = new Color(100, 200, 100);
 
     /** Color for hardly recognized glyphs */
-    private static final Color EVAL_SOSO_COLOR = new Color(255, 100, 150);
+    private static final Color EVAL_SOSO_COLOR = new Color(150, 150, 150);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -98,9 +98,6 @@ class EvaluationBoard
 
     /** Pane for detailed info display about the glyph evaluation */
     private final Selector selector;
-
-    /** Button for testing ratio of recognized glyphs */
-    private JButton testButton;
 
     /** Numeric result of whole sheet test */
     private JLabel testPercent;
@@ -324,6 +321,11 @@ class EvaluationBoard
             }
 
             if (eval != null) {
+                Evaluation.Failure failure = eval.failure;
+                String             text = eval.shape.toString();
+                String             tip = (failure != null)
+                                         ? (failure + " failed") : null;
+
                 if (sheet != null) {
                     button.setEnabled(enabled);
 
@@ -333,7 +335,8 @@ class EvaluationBoard
                         button.setBackground(null);
                     }
 
-                    button.setText(eval.shape.toString());
+                    button.setText(text);
+                    button.setToolTipText(tip);
                     button.setIcon(eval.shape.getDecoratedSymbol());
                 } else {
                     if (barred) {
@@ -342,13 +345,15 @@ class EvaluationBoard
                         field.setBackground(null);
                     }
 
-                    field.setText(eval.shape.toString());
+                    field.setText(text);
+                    field.setToolTipText(tip);
                     field.setIcon(eval.shape.getDecoratedSymbol());
                 }
 
                 comp.setVisible(true);
 
-                if (eval.doubt <= GlyphInspector.getSymbolMaxDoubt()) {
+                ///if (eval.doubt <= GlyphInspector.getSymbolMaxDoubt()) {
+                if (failure == null) {
                     comp.setForeground(EVAL_GOOD_COLOR);
                 } else {
                     comp.setForeground(EVAL_SOSO_COLOR);
@@ -372,7 +377,8 @@ class EvaluationBoard
                                               .getSelectedGlyph();
 
                 if (glyph != null) {
-                    Shape shape = Shape.valueOf(button.getText());
+                    String str = button.getText();
+                    Shape  shape = Shape.valueOf(str);
 
                     // Actually assign the shape
                     glyphsController.asyncAssignGlyphs(
@@ -433,7 +439,7 @@ class EvaluationBoard
             }
 
             boolean enabled = !glyph.isVirtual();
-            double  maxDist = constants.maxDoubt.getValue();
+            double  maxDoubt = constants.maxDoubt.getValue();
             int     iBound = Math.min(buttons.size(), evals.length);
             int     i;
 
@@ -441,7 +447,7 @@ class EvaluationBoard
                 Evaluation eval = evals[i];
 
                 // Limitation on shape relevance
-                if (eval.doubt > maxDist) {
+                if (eval.doubt > maxDoubt) {
                     break;
                 }
 

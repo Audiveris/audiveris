@@ -268,7 +268,10 @@ public class TimeSignature
     public Rational getRational ()
     {
         try {
-            return new Rational(getNumerator(), getDenominator());
+            int num = getNumerator();
+            int den = getDenominator();
+
+            return new Rational(num, den);
         } catch (InvalidTimeSignature its) {
             return null;
         }
@@ -426,25 +429,28 @@ public class TimeSignature
     public void modify (Shape    shape,
                         Rational rational)
     {
-        SystemInfo systemInfo = getSystem()
-                                    .getInfo();
-        Glyph      compound = systemInfo.buildTransientCompound(getGlyphs());
-        systemInfo.computeGlyphFeatures(compound);
-        compound = systemInfo.addGlyph(compound);
+        if (!isDummy()) {
+            if (shape == null) {
+                shape = predefinedShape(rational);
+            }
 
-        if (shape == null) {
-            shape = predefinedShape(rational);
-        }
+            SystemInfo systemInfo = getSystem()
+                                        .getInfo();
+            Glyph      compound = systemInfo.buildTransientCompound(
+                getGlyphs());
+            systemInfo.computeGlyphFeatures(compound);
+            compound = systemInfo.addGlyph(compound);
 
-        compound.setShape(shape, Evaluation.ALGORITHM);
+            compound.setShape(shape, Evaluation.ALGORITHM);
 
-        if (shape == Shape.CUSTOM_TIME_SIGNATURE) {
-            compound.setRational(new Rational(rational));
+            if (shape == Shape.CUSTOM_TIME_SIGNATURE) {
+                compound.setRational(new Rational(rational));
+            }
+
+            logger.info(shape + " assigned to glyph#" + compound.getId());
         }
 
         setRational(rational);
-
-        logger.info(shape + " assigned to glyph#" + compound.getId());
     }
 
     //-------//

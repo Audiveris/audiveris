@@ -41,6 +41,11 @@ public class Evaluation
      */
     public double doubt;
 
+    /**
+     * The specific check that failed, if any.
+     */
+    public Failure failure;
+
     //~ Constructors -----------------------------------------------------------
 
     //------------//
@@ -82,6 +87,11 @@ public class Evaluation
             sb.append((float) doubt);
         }
 
+        if (failure != null) {
+            sb.append(" failure:")
+              .append(failure);
+        }
+
         sb.append(")");
 
         return sb.toString();
@@ -110,6 +120,35 @@ public class Evaluation
                       java.lang.String description)
         {
             super("Doubt", defaultValue, description);
+        }
+    }
+
+    //---------//
+    // Failure //
+    //---------//
+    /**
+     * A class to handle which specific check has failed in the evaluation
+     */
+    public static class Failure
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** The name of the test that failed */
+        public final String test;
+
+        //~ Constructors -------------------------------------------------------
+
+        public Failure (String test)
+        {
+            this.test = test;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public String toString ()
+        {
+            return test;
         }
     }
 }

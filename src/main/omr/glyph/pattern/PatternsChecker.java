@@ -59,9 +59,9 @@ public class PatternsChecker
         new ShapePattern(system),
                        
         new BassPattern(system),
-
+                       
         new ClefPattern(system),
-
+                       
         new TimePattern(system),
                        
         new AlterPattern(system),
@@ -112,6 +112,8 @@ public class PatternsChecker
                     ex);
             }
         }
+
+        system.inspectGlyphs(GlyphInspector.getLeafMaxDoubt());
 
         if ((totalModifs > 0) && logger.isFineEnabled()) {
             logger.fine("S#" + system.getId() + " Patterns" + sb);

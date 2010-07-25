@@ -210,22 +210,22 @@ public class LinearEvaluator
                    .distance(pattern, parameters);
     }
 
-    //-----------------//
-    // categoryMatched //
-    //-----------------//
+    //-------------------------//
+    // categoryFirstMisMatched //
+    //-------------------------//
     /**
      * Perform a basic check on max / min bounds, if any, for each parameter
      * value of the provided pattern
      * @param pattern the collection of parameters to check with respect to
      * targeted category
      * @param categoryId the targeted category
-     * @return true if all constraints are matched, false otherwise
+     * @return the name of the first failing check, null otherwise
      */
-    public boolean categoryMatched (double[] pattern,
-                                    String   categoryId)
+    public String categoryFirstMisMatched (double[] pattern,
+                                           String   categoryId)
     {
         return checkArguments(pattern, categoryId)
-                   .matched(pattern, parameters);
+                   .firstMisMatched(pattern, parameters);
     }
 
     //------//
@@ -756,21 +756,8 @@ public class LinearEvaluator
             }
         }
 
-        /** Include data from the provided pattern into category descriptor */
-        public void include (double[] pattern)
-        {
-            if ((pattern == null) || (pattern.length != params.length)) {
-                throw new IllegalArgumentException(
-                    "include. Pattern array is null or non compatible in length ");
-            }
-
-            for (int p = 0; p < params.length; p++) {
-                params[p].includeValue(pattern[p]);
-            }
-        }
-
-        public boolean matched (double[]    pattern,
-                                Parameter[] parameters)
+        public String firstMisMatched (double[]    pattern,
+                                       Parameter[] parameters)
         {
             for (int p = 0; p < params.length; p++) {
                 double        val = pattern[p];
@@ -784,7 +771,7 @@ public class LinearEvaluator
                             parameters[p].name + " " + val + " < " + min);
                     }
 
-                    return false;
+                    return parameters[p].name + ".min";
                 }
 
                 Double max = catParam.max;
@@ -796,12 +783,25 @@ public class LinearEvaluator
                             parameters[p].name + " " + val + " > " + max);
                     }
 
-                    return false;
+                    return parameters[p].name + ".max";
                 }
             }
 
             // Everything is OK
-            return true;
+            return null;
+        }
+
+        /** Include data from the provided pattern into category descriptor */
+        public void include (double[] pattern)
+        {
+            if ((pattern == null) || (pattern.length != params.length)) {
+                throw new IllegalArgumentException(
+                    "include. Pattern array is null or non compatible in length ");
+            }
+
+            for (int p = 0; p < params.length; p++) {
+                params[p].includeValue(pattern[p]);
+            }
         }
     }
 

@@ -24,9 +24,9 @@ import omr.score.entity.Voice;
 import omr.score.visitor.AbstractScoreVisitor;
 
 import omr.util.TreeNode;
+import omr.util.WrappedBoolean;
 
 import java.util.*;
-import omr.glyph.Shape;
 
 /**
  * Class <code>TimeSignatureFixer</code> can visit the score hierarchy to
@@ -54,6 +54,11 @@ public class TimeSignatureFixer
     };
 
 
+    //~ Instance fields --------------------------------------------------------
+
+    /** To flag a score modification */
+    private final WrappedBoolean modified;
+
     //~ Constructors -----------------------------------------------------------
 
     //--------------------//
@@ -61,9 +66,11 @@ public class TimeSignatureFixer
     //--------------------//
     /**
      * Creates a new TimeSignatureFixer object.
+     * @param modified An output boolean to signal a modification has occurred
      */
-    public TimeSignatureFixer ()
+    public TimeSignatureFixer (WrappedBoolean modified)
     {
+        this.modified = modified;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -166,6 +173,7 @@ public class TimeSignatureFixer
                             staff.getContextString() + "T" + staff.getId() +
                             " " + rational + "->" + bestRational);
                         sig.modify(null, bestRational);
+                        modified.set(true);
                     }
                 }
             }

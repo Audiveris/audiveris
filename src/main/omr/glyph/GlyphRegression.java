@@ -114,40 +114,6 @@ public class GlyphRegression
         return INSTANCE;
     }
 
-    //-----------------------//
-    // getCheckedEvaluations //
-    //-----------------------//
-    @Override
-    public Evaluation[] getCheckedEvaluations (Glyph glyph)
-    {
-        // If too small, it's just NOISE
-        if (!isBigEnough(glyph)) {
-            return noiseEvaluations;
-        } else {
-            double[]     ins = feedInput(glyph, null);
-            Evaluation[] evals = new Evaluation[shapeCount];
-            Shape[]      values = Shape.values();
-
-            for (int s = 0; s < shapeCount; s++) {
-                Shape shape = values[s];
-                shape = glyphChecker.specificCheck(shape, glyph, ins);
-
-                if (shape != null) {
-                    evals[s] = new Evaluation(
-                        shape,
-                        measureDistance(ins, shape));
-                } else {
-                    evals[s] = new Evaluation(values[s], Double.MAX_VALUE);
-                }
-            }
-
-            // Order the evals from best to worst
-            Arrays.sort(evals, comparator);
-
-            return evals;
-        }
-    }
-
     //-----------//
     // getEngine //
     //-----------//
@@ -201,13 +167,13 @@ public class GlyphRegression
      * Check that all the (non-disabled) constraints matched between a given
      * glyph and a shape
      * @param glyph the glyph at hand
-     * @param shape the shape to check constraints for
+     * @param eval the evaluation context
      * @return true if matched, false otherwise
      */
-    public boolean constraintsMatched (Glyph glyph,
-                                       Shape shape)
+    public boolean constraintsMatched (Glyph      glyph,
+                                       Evaluation eval)
     {
-        return constraintsMatched(feedInput(glyph, null), shape);
+        return constraintsMatched(feedInput(glyph, null), eval);
     }
 
     //--------------------//
@@ -217,13 +183,23 @@ public class GlyphRegression
      * Check that all the (non-disabled) constraints matched between a given
      * glyph and a shape
      * @param params the glyph features
-     * @param shape the shape to check constraints for
+     * @param eval the evaluation context to update
      * @return true if matched, false otherwise
      */
-    public boolean constraintsMatched (double[] params,
-                                       Shape    shape)
+    public boolean constraintsMatched (double[]   params,
+                                       Evaluation eval)
     {
-        return engine.categoryMatched(params, shape.toString());
+        String failed = engine.categoryFirstMisMatched(
+            params,
+            eval.shape.toString());
+
+        if (failed != null) {
+            eval.failure = new Evaluation.Failure(failed);
+
+            return false;
+        } else {
+            return true;
+        }
     }
 
     //------//
@@ -329,9 +305,9 @@ public class GlyphRegression
      * @param mode incremental or scratch mode
      */
     @Override
-    public void train (List<Glyph>  base,
-                       Monitor      monitor,
-                       StartingMode mode)
+    public void train (Collection<Glyph> base,
+                       Monitor           monitor,
+                       StartingMode      mode)
     {
         if (base.isEmpty()) {
             logger.warning("No glyph to retrain Regression Evaluator");
@@ -405,22 +381,38 @@ public class GlyphRegression
             double minFactor = constants.factorForMinima.getValue();
             double maxFactor = constants.factorForMaxima.getValue();
 
-            for (String label : Arrays.asList("weight", "width", "height")) {
-                int p = GlyphEvaluator.getParameterIndex(label);
-                engine.setMinimum(p, id, engine.getMinimum(p, id) * minFactor);
-                engine.setMaximum(p, id, engine.getMaximum(p, id) * maxFactor);
+            for (String label : Arrays.asList(
+                "weight",
+                "width",
+                "height")) {
+                int    p = GlyphEvaluator.getParameterIndex(label);
+                double val = engine.getMinimum(p, id);
+
+                if (val > 0) {
+                    engine.setMinimum(p, id, val * minFactor);
+                } else {
+                    engine.setMinimum(p, id, val * maxFactor);
+                }
+
+                val = engine.getMaximum(p, id);
+
+                if (val > 0) {
+                    engine.setMaximum(p, id, val * maxFactor);
+                } else {
+                    engine.setMaximum(p, id, val * minFactor);
+                }
             }
 
-            // Use only selected features
+            // Disable some selected features
             for (String label : Arrays.asList(
-                "n20",
+                "ledger",
                 "n11",
+                "n20",
                 "n02",
                 "n30",
                 "n21",
                 "n12",
-                "n03",
-                "ledger")) {
+                "n03")) {
                 int p = GlyphEvaluator.getParameterIndex(label);
                 engine.setMinimum(p, id, null);
                 engine.setMaximum(p, id, null);

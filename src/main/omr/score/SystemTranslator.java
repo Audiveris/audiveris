@@ -56,7 +56,11 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
+import omr.step.Step;
+import omr.step.StepException;
+
 import omr.util.TreeNode;
+import omr.util.WrappedBoolean;
 
 import java.util.*;
 
@@ -130,6 +134,8 @@ public class SystemTranslator
             system.getId() - 1,
             sheet.getSystems().size());
 
+        WrappedBoolean   modified = new WrappedBoolean(false);
+
         for (SystemInfo info : systems) {
             ScoreSystem syst = info.getScoreSystem();
 
@@ -139,8 +145,16 @@ public class SystemTranslator
         }
 
         score.accept(new ScoreTimeFixer());
-        score.accept(new TimeSignatureFixer());
+        score.accept(new TimeSignatureFixer(modified));
         score.accept(new ScoreFixer());
+
+        if (modified.isSet()) {
+            try {
+                sheet.getSheetSteps().doStep(Step.SCORE, systems);
+            } catch (StepException ex) {
+                logger.warning("Error redoing score step", ex);
+            }
+        }
 
         // Invalidate score data within MidiAgent, if needed
         if (Main.getGui() != null) {

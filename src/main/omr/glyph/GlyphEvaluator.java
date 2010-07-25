@@ -103,6 +103,11 @@ public abstract class GlyphEvaluator
         SCRATCH;
     }
 
+    //~ Instance fields --------------------------------------------------------
+
+    /** The glyph checker for additional specific checks */
+    private GlyphChecker glyphChecker = GlyphChecker.getInstance();
+
     //~ Methods ----------------------------------------------------------------
 
     //---------//
@@ -223,19 +228,6 @@ public abstract class GlyphEvaluator
         return ins;
     }
 
-    //-----------------------//
-    // getCheckedEvaluations //
-    //-----------------------//
-    /**
-     * Run specific checks on raw evaluations produced by the evaluator, and
-     * return them ordered from best to worst
-     *
-     * @param glyph the glyph to be examined
-     *
-     * @return the ordered best checked evaluations
-     */
-    public abstract Evaluation[] getCheckedEvaluations (Glyph glyph);
-
     //-------------------//
     // getRawEvaluations //
     //-------------------//
@@ -266,13 +258,36 @@ public abstract class GlyphEvaluator
     {
         List<Evaluation> kept = new ArrayList<Evaluation>();
 
-        for (Evaluation eval : getCheckedEvaluations(glyph)) {
+        for (Evaluation eval : getFilteredEvaluations(glyph)) {
             if (!glyph.isShapeForbidden(eval.shape)) {
                 kept.add(eval);
             }
         }
 
         return kept.toArray(new Evaluation[kept.size()]);
+    }
+
+    //-----------------------//
+    // getCheckedEvaluations //
+    //-----------------------//
+    /**
+     * Use specific checks  to annotate the raw evaluations produced by the
+     * evaluator
+     *
+     * @param glyph the glyph to be examined
+     *
+     * @return the ordered annotated evaluations
+     */
+    public Evaluation[] getCheckedEvaluations (Glyph glyph)
+    {
+        double[]     ins = feedInput(glyph, null);
+        Evaluation[] evals = getRawEvaluations(glyph);
+
+        for (Evaluation eval : evals) {
+            glyphChecker.specificCheck(eval, glyph, ins);
+        }
+
+        return evals;
     }
 
     //--------------------------//
@@ -299,31 +314,6 @@ public abstract class GlyphEvaluator
 
         return kept.toArray(new Evaluation[kept.size()]);
     }
-
-    //------//
-    // stop //
-    //------//
-    /**
-     * Stop the on-going training. By default, this is a no-op
-     */
-    public void stop ()
-    {
-    }
-
-    //-------//
-    // train //
-    //-------//
-    /**
-     * Here we train the evaluator "ab initio", based on the set of known glyphs
-     * accumulated in the previous runs.
-     *
-     * @param base the list of glyphs to retrain the evaluator
-     * @param monitor a monitoring interface
-     * @param mode specify the starting mode of the training session
-     */
-    public abstract void train (List<Glyph>  base,
-                                Monitor      monitor,
-                                StartingMode mode);
 
     //---------//
     // marshal //
@@ -354,6 +344,54 @@ public abstract class GlyphEvaluator
                 }
             }
         }
+    }
+
+    //------//
+    // stop //
+    //------//
+    /**
+     * Stop the on-going training. By default, this is a no-op
+     */
+    public void stop ()
+    {
+    }
+
+    //-------//
+    // train //
+    //-------//
+    /**
+     * Here we train the evaluator "ab initio", based on the set of known glyphs
+     * accumulated in the previous runs.
+     *
+     * @param base the collection of glyphs to retrain the evaluator
+     * @param monitor a monitoring interface
+     * @param mode specify the starting mode of the training session
+     */
+    public abstract void train (Collection<Glyph> base,
+                                Monitor           monitor,
+                                StartingMode      mode);
+
+    //------------------------//
+    // getFilteredEvaluations //
+    //------------------------//
+    /**
+     * Return the checked & filtered evaluations, from best to worst
+     *
+     * @param glyph the glyph to be examined
+     *
+     * @return the ordered best filtered evaluations
+     */
+    public Evaluation[] getFilteredEvaluations (Glyph glyph)
+    {
+        List<Evaluation> kept = new ArrayList<Evaluation>();
+
+        for (Evaluation eval : getCheckedEvaluations(glyph)) {
+            if (eval.failure == null) {
+                kept.add(eval);
+            }
+        }
+
+        return kept.toArray(new Evaluation[kept.size()]);
     }
 
     //---------//
@@ -415,6 +453,16 @@ public abstract class GlyphEvaluator
         }
     }
 
+    //-------------//
+    // getFileName //
+    //-------------//
+    /**
+     * Report the simple file name, including extension but excluding parent,
+     * which contains the marshalled data of the evaluator
+     * @return the file name
+     */
+    protected abstract String getFileName ();
+
     //---------//
     // marshal //
     //---------//
@@ -447,16 +495,6 @@ public abstract class GlyphEvaluator
     {
         return "/config/" + getFileName();
     }
-
-    //-------------//
-    // getFileName //
-    //-------------//
-    /**
-     * Report the simple file name, including extension but excluding parent,
-     * which contains the marshalled data of the evaluator
-     * @return the file name
-     */
-    protected abstract String getFileName ();
 
     //-----------//
     // unmarshal //

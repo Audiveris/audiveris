@@ -69,9 +69,6 @@ public class GlyphNetwork
     /** The underlying neural network */
     private NeuralNetwork engine;
 
-    /** The glyph checker for additional specific checks */
-    private GlyphChecker glyphChecker = GlyphChecker.getInstance();
-
     //~ Constructors -----------------------------------------------------------
 
     //--------------//
@@ -147,41 +144,6 @@ public class GlyphNetwork
     public double getAmplitude ()
     {
         return constants.amplitude.getValue();
-    }
-
-    //-----------------------//
-    // getCheckedEvaluations //
-    //-----------------------//
-    @Override
-    public Evaluation[] getCheckedEvaluations (Glyph glyph)
-    {
-        // If too small, it's just NOISE
-        if (!isBigEnough(glyph)) {
-            return noiseEvaluations;
-        } else {
-            double[]     ins = feedInput(glyph, null);
-            double[]     outs = new double[shapeCount];
-            Evaluation[] evals = new Evaluation[shapeCount];
-            Shape[]      values = Shape.values();
-
-            engine.run(ins, null, outs);
-
-            for (int s = 0; s < shapeCount; s++) {
-                Shape shape = values[s];
-                shape = glyphChecker.specificCheck(shape, glyph, ins);
-
-                if (shape != null) {
-                    evals[s] = new Evaluation(shape, 1d / outs[s]);
-                } else {
-                    evals[s] = new Evaluation(values[s], Double.MAX_VALUE);
-                }
-            }
-
-            // Order the evals from best to worst
-            Arrays.sort(evals, comparator);
-
-            return evals;
-        }
     }
 
     //-----------------//
@@ -378,15 +340,15 @@ public class GlyphNetwork
     // train //
     //-------//
     /**
-     * Train the network using the provided collection of lists
+     * Train the network using the provided collection of glyphs
      *
-     * @param glyphs  the provided list of glyphs
+     * @param glyphs  the provided collection of glyphs
      * @param monitor the monitoring entity if any
      * @param mode the starting mode of the trainer (scratch, replay or
      * incremental)
      */
     @SuppressWarnings("unchecked")
-    public void train (List<Glyph>  glyphs,
+    public void train (Collection<Glyph>  glyphs,
                        Monitor      monitor,
                        StartingMode mode)
     {

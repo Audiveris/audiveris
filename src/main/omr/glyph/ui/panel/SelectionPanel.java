@@ -16,6 +16,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphRegression;
+import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 import omr.glyph.ui.*;
 import static omr.glyph.ui.panel.GlyphTrainer.Task.Activity.*;
@@ -279,84 +280,51 @@ class SelectionPanel
         // Quickly train the regression evaluator
         regression.train(glyphs, null, GlyphEvaluator.StartingMode.SCRATCH);
 
-        // Measure every glyph
-        List<NotedGlyph> palmares = new ArrayList<NotedGlyph>(gNames.size());
+        // Measure all glyphs of each shape
+        Map<Shape, List<NotedGlyph>> palmares = new HashMap<Shape, List<NotedGlyph>>();
 
         for (String gName : gNames) {
             Glyph glyph = repository.getGlyph(gName, this);
 
             if (glyph != null) {
                 try {
-                    double grade = regression.measureDistance(
+                    Shape            shape = glyph.getShape();
+                    double           grade = regression.measureDistance(
                         glyph,
-                        glyph.getShape());
-                    palmares.add(new NotedGlyph(gName, glyph, grade));
+                        shape);
+                    List<NotedGlyph> shapeNotes = palmares.get(shape);
+
+                    if (shapeNotes == null) {
+                        shapeNotes = new ArrayList<NotedGlyph>();
+                        palmares.put(shape, shapeNotes);
+                    }
+
+                    shapeNotes.add(new NotedGlyph(gName, glyph, grade));
                 } catch (Exception ex) {
                     logger.warning("Cannot evaluate " + glyph);
                 }
             }
         }
 
-        // Sort the palmares, shape by shape, by decreasing doubt, so that
-        // the worst glyphs are found first
-        Collections.sort(palmares, NotedGlyph.reverseGradeComparator);
-
         // Set of chosen shapes
-        Set<NotedGlyph> set = new HashSet<NotedGlyph>();
+        final Set<NotedGlyph> set = new HashSet<NotedGlyph>();
+        final int             maxSimilar = similar.getValue();
 
-        // Allocate shape-based counters
-        int[] counters = new int[GlyphEvaluator.shapeCount];
-        Arrays.fill(counters, 0);
+        // Sort the palmares, shape by shape, by (decreasing) grade
+        for (List<NotedGlyph> shapeNotes : palmares.values()) {
+            Collections.sort(shapeNotes, NotedGlyph.reverseGradeComparator);
 
-        final int maxSimilar = (similar.getValue() + 1) / 2;
+            // Take a sample equally distributed on instances of this shape
+            final int   size = shapeNotes.size();
+            final float delta = ((float) (size - 1)) / (maxSimilar - 1);
 
-        // Keep only MaxSimilar/2 of each WORST shape
-        for (NotedGlyph ng : palmares) {
-            int index = ng.glyph.getShape()
-                                .ordinal();
+            for (int i = 0; i < maxSimilar; i++) {
+                int        idx = Math.min(size - 1, Math.round(i * delta));
+                NotedGlyph ng = shapeNotes.get(idx);
 
-            if (logger.isFineEnabled()) {
-                logger.fine("index:" + index + " ng:" + ng);
-            }
-
-            if (ng.glyph.getShape()
-                        .isTrainable()) {
-                if (++counters[index] <= maxSimilar) {
+                if (ng.glyph.getShape()
+                            .isTrainable()) {
                     set.add(ng);
-                } else {
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            String.format(
-                                "%.5f worst Core %s",
-                                ng.grade,
-                                ng.gName));
-                    }
-                }
-            }
-        }
-
-        // Keep only MaxSimilar/2 of each BEST shape
-        // We just have to browse backward
-        Arrays.fill(counters, 0);
-
-        for (ListIterator<NotedGlyph> it = palmares.listIterator(
-            palmares.size() - 1); it.hasPrevious();) {
-            NotedGlyph ng = it.previous();
-            int        index = ng.glyph.getShape()
-                                       .ordinal();
-
-            if (ng.glyph.getShape()
-                        .isTrainable()) {
-                if (++counters[index] <= maxSimilar) {
-                    set.add(ng);
-                } else {
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            String.format(
-                                "%.5f best Core %s",
-                                ng.grade,
-                                ng.gName));
-                    }
                 }
             }
         }
