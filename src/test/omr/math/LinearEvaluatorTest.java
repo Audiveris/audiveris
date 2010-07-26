@@ -98,15 +98,17 @@ public class LinearEvaluatorTest
      * Test of categoryMatchedmethod, of class LinearEvaluator.
      */
     @Test
-    public void testCategoryMatchedTrue ()
+    public void testCategoryMatchedDisabled ()
     {
-        System.out.println("\n--categoryMatchedTrue");
+        System.out.println("\n--categoryMatchedDisabled");
 
-        double[]        pattern = new double[] { 92, 218 };
+        double[]        pattern = new double[] { 88, 218 };
         String          category = "C";
         LinearEvaluator instance = createTrainedInstance();
-        boolean         expResult = true;
-        boolean         result = instance.categoryMatched(pattern, category);
+        instance.setMinimum(0, category, null);
+
+        String expResult = null;
+        String result = instance.categoryFirstMisMatched(pattern, category);
         assertEquals(expResult, result);
     }
 
@@ -121,8 +123,10 @@ public class LinearEvaluatorTest
         double[]        pattern = new double[] { 88, 218 };
         String          category = "C";
         LinearEvaluator instance = createTrainedInstance();
-        boolean         expResult = false;
-        boolean         result = instance.categoryMatched(pattern, category);
+        String          expResult = "first.min";
+        String          result = instance.categoryFirstMisMatched(
+            pattern,
+            category);
         assertEquals(expResult, result);
     }
 
@@ -130,16 +134,17 @@ public class LinearEvaluatorTest
      * Test of categoryMatchedmethod, of class LinearEvaluator.
      */
     @Test
-    public void testCategoryMatchedDisabled ()
+    public void testCategoryMatchedTrue ()
     {
-        System.out.println("\n--categoryMatchedDisabled");
+        System.out.println("\n--categoryMatchedTrue");
 
-        double[]        pattern = new double[] { 88, 218 };
+        double[]        pattern = new double[] { 92, 218 };
         String          category = "C";
         LinearEvaluator instance = createTrainedInstance();
-        instance.setMinimum(0, category, null);
-        boolean         expResult = true;
-        boolean         result = instance.categoryMatched(pattern, category);
+        String          expResult = null;
+        String          result = instance.categoryFirstMisMatched(
+            pattern,
+            category);
         assertEquals(expResult, result);
     }
 
