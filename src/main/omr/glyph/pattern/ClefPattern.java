@@ -35,10 +35,12 @@ import omr.sheet.SystemInfo;
 import omr.util.Implement;
 import omr.util.Predicate;
 
-import java.util.Collection;
+import java.util.*;
 
 /**
- * Class {@code ClefPattern} verifies all the initial clefs of a system
+ * Class {@code ClefPattern} verifies all the initial clefs of a system, using
+ * an intersection inner rectangle and a containing outer rectangle to retrieve
+ * the clef glyphs and only those.
  *
  * @author Hervé Bitteur
  */
@@ -61,6 +63,14 @@ public class ClefPattern
         }
     };
 
+
+    //~ Instance fields --------------------------------------------------------
+
+    private int clefWidth;
+    private int xOffset;
+    private int yOffset;
+    private int xMargin;
+    private int yMargin;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -85,46 +95,55 @@ public class ClefPattern
     @Implement(GlyphPattern.class)
     public int runPattern ()
     {
-        int               successNb = 0;
+        int         successNb = 0;
 
-        final ScoreSystem scoreSystem = system.getScoreSystem();
-        final Scale       scale = scoreSystem.getScale();
-        final int         clefWidth = scale.toPixels(constants.clefWidth);
-        final int         xOffset = scale.toPixels(constants.xOffset);
-        final int         yOffset = scale.toPixels(constants.yOffset);
+        ScoreSystem scoreSystem = system.getScoreSystem();
+        Scale       scale = scoreSystem.getScale();
+        clefWidth = scale.toPixels(constants.clefWidth);
+        xOffset = scale.toPixels(constants.xOffset);
+        yOffset = scale.toPixels(constants.yOffset);
+        xMargin = scale.toPixels(constants.xMargin);
+        yMargin = scale.toPixels(constants.yMargin);
 
-        int               staffId = 0;
+        int staffId = 0;
 
         for (StaffInfo staff : system.getStaves()) {
             staffId++;
 
-            // Define the core box to intersect clef glyph(s)
             int            left = staff.getLeft();
-            int            top = staff.getFirstLine()
-                                      .yAt(left);
-            PixelRectangle pixCore = new PixelRectangle(
-                left,
-                top,
-                clefWidth,
-                staff.getHeight());
-            pixCore.grow(-xOffset, -yOffset);
+            PixelRectangle pix = new PixelRectangle(
+                left + (2 * xOffset) + (clefWidth / 2),
+                staff.getFirstLine().yAt(left) + (staff.getHeight() / 2),
+                0,
+                0);
 
-            // Draw the clef core box, for visual debug
-            SystemRectangle sysCore = scoreSystem.toSystemRectangle(pixCore);
-            SystemPart      part = scoreSystem.getPartAt(sysCore.getCenter());
+            // Define the inner box to intersect clef glyph(s)
+            PixelRectangle pixInner = new PixelRectangle(pix);
+            pixInner.grow(
+                (clefWidth / 2) - xOffset,
+                (staff.getHeight() / 2) - yOffset);
+
+            // Draw the box, for visual debug
+            SystemRectangle sysInner = scoreSystem.toSystemRectangle(pixInner);
+            SystemPart      part = scoreSystem.getPartAt(sysInner.getCenter());
             Barline         barline = part.getStartingBarline();
+            Glyph           line = null;
 
             if (barline != null) {
-                Glyph line = Glyphs.firstOf(
+                line = Glyphs.firstOf(
                     barline.getGlyphs(),
                     Barline.linePredicate);
-                line.addAttachment("clef#" + staffId, pixCore);
+                line.addAttachment("clefInner#" + staffId, pixInner);
             }
 
             // We must find a clef out of these glyphs
-            Collection glyphs = system.lookupIntersectedGlyphs(pixCore);
+            Collection<Glyph> glyphs = system.lookupIntersectedGlyphs(pixInner);
 
-            if (checkClef(glyphs)) {
+            if (logger.isFineEnabled()) {
+                logger.fine(staffId + Glyphs.toString(" int", glyphs));
+            }
+
+            if (checkClef(glyphs, line, staffId)) {
                 successNb++;
             }
         }
@@ -140,7 +159,9 @@ public class ClefPattern
      * @param glyphs the parts of a clef candidate
      * @return true if successful
      */
-    private boolean checkClef (Collection<Glyph> glyphs)
+    private boolean checkClef (Collection<Glyph> glyphs,
+                               Glyph             line,
+                               int               staffId)
     {
         Glyphs.purgeManuals(glyphs);
 
@@ -152,13 +173,65 @@ public class ClefPattern
         system.computeGlyphFeatures(compound);
 
         // Check if a clef appears in the top evaluations
-        final Evaluation vote = GlyphNetwork.getInstance()
-                                            .topRawVote(
+        Evaluation vote = GlyphNetwork.getInstance()
+                                      .topRawVote(
             compound,
             constants.clefMaxDoubt.getValue(),
             clefPredicate);
 
         if (vote != null) {
+            // We now have a clef!
+            // Look around for an even better result...
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    vote.shape + " built from " + Glyphs.toString(glyphs));
+            }
+
+            PixelRectangle outer = compound.getContourBox();
+            outer.grow(xMargin, yMargin);
+
+            if (line != null) {
+                line.addAttachment("clefOuter#" + staffId, outer);
+            }
+
+            List<Glyph> outerGlyphs = system.lookupIntersectedGlyphs(outer);
+            outerGlyphs.removeAll(glyphs);
+            Collections.sort(outerGlyphs, Glyph.reverseWeightComparator);
+
+            final double minWeight = constants.minWeight.getValue();
+
+            for (Glyph g : outerGlyphs) {
+                // Consider only glyphs with a minimum weight
+                if (g.getNormalizedWeight() < minWeight) {
+                    break;
+                }
+
+                if (logger.isFineEnabled()) {
+                    logger.fine("Considering " + g);
+                }
+
+                Glyph newCompound = system.buildTransientCompound(
+                    Arrays.asList(compound, g));
+                system.computeGlyphFeatures(newCompound);
+
+                final Evaluation newVote = GlyphNetwork.getInstance()
+                                                       .topRawVote(
+                    newCompound,
+                    constants.clefMaxDoubt.getValue(),
+                    clefPredicate);
+
+                if ((newVote != null) && (newVote.doubt < vote.doubt)) {
+                    if (logger.isFineEnabled()) {
+                        logger.fine(
+                            vote + " better built with glyph#" + g.getId());
+                    }
+
+                    compound = newCompound;
+                    vote = newVote;
+                }
+            }
+
+            // Register the last definition of the clef
             compound = system.addGlyph(compound);
             compound.setShape(vote.shape, Evaluation.ALGORITHM);
 
@@ -183,15 +256,26 @@ public class ClefPattern
     {
         //~ Instance fields ----------------------------------------------------
 
-        Scale.Fraction   clefWidth = new Scale.Fraction(4d, "Width of a clef");
-        Scale.Fraction   xOffset = new Scale.Fraction(
-            0.5d,
+        Scale.Fraction     clefWidth = new Scale.Fraction(
+            3d,
+            "Width of a clef");
+        Scale.Fraction     xOffset = new Scale.Fraction(
+            0.2d,
             "Clef horizontal offset since left bar");
-        Scale.Fraction   yOffset = new Scale.Fraction(
+        Scale.Fraction     yOffset = new Scale.Fraction(
+            0d,
+            "Clef vertical offset since staff line");
+        Scale.Fraction     xMargin = new Scale.Fraction(
             0.5d,
-            "Clef vertical offset since left bar");
-        Evaluation.Doubt clefMaxDoubt = new Evaluation.Doubt(
-            300000d,
+            "Clef horizontal outer margin");
+        Scale.Fraction     yMargin = new Scale.Fraction(
+            0.5d,
+            "Clef vertical outer margin");
+        Scale.AreaFraction minWeight = new Scale.AreaFraction(
+            0.1,
+            "Minimum normalized weight to be added to a clef");
+        Evaluation.Doubt   clefMaxDoubt = new Evaluation.Doubt(
+            300d,
             "Maximum doubt for clef verification");
     }
 }

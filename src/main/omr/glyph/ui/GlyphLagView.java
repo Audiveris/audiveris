@@ -253,7 +253,7 @@ public class GlyphLagView
      *
      * @return the list of glyphs found, which may be empty
      */
-    public Set<Glyph> lookupGlyphs (Rectangle rect)
+    public Set<Glyph> lookupGlyphs (PixelRectangle rect)
     {
         Set<Glyph> found = null;
         GlyphLag   gLag = getLag();

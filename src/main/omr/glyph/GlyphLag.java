@@ -23,11 +23,11 @@ import omr.lag.Section;
 import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphSetEvent;
 
-import java.awt.Rectangle;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -323,8 +323,8 @@ public class GlyphLag
      *
      * @return the glyphs found, which may be an empty list
      */
-    public Set<Glyph> lookupGlyphs (Collection<?extends Glyph> collection,
-                                    Rectangle                  rect)
+    public static Set<Glyph> lookupGlyphs (Collection<?extends Glyph> collection,
+                                           PixelRectangle             rect)
     {
         Set<Glyph> set = new LinkedHashSet<Glyph>();
 
@@ -347,7 +347,7 @@ public class GlyphLag
      *
      * @return the glyphs found, which may be an empty list
      */
-    public Set<Glyph> lookupGlyphs (Rectangle rect)
+    public Set<Glyph> lookupGlyphs (PixelRectangle rect)
     {
         return lookupGlyphs(getActiveGlyphs(), rect);
     }

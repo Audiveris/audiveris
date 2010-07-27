@@ -524,7 +524,7 @@ public class Lag<L extends Lag<L, S>, S extends Section>
 
         //~ Methods ------------------------------------------------------------
 
-        public Rectangle getAbsoluteContour ()
+        public PixelRectangle getAbsoluteContour ()
         {
             return orientation.switchRef(contour, null);
         }
