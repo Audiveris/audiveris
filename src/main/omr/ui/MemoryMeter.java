@@ -61,11 +61,14 @@ public class MemoryMeter
     /** Flag on monitoring activity */
     private volatile boolean monitoring;
 
-    /** Last value for global memory */
+    /** Last value for global memory, in order to save on display */
     private int lastTotal = 0;
 
     /** Last value for used memory, in order to save on display */
     private int lastUsed = 0;
+
+    /** Last value for threshold, in order to save on display */
+    private int lastThreshold = 0;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -177,8 +180,12 @@ public class MemoryMeter
                 {
                     int totalKB = (int) (Memory.total() / KILO);
                     int usedKB = (int) (Memory.occupied() / KILO);
+                    int thresholdKB = (int) Math.rint(
+                        constants.alarmThreshold.getValue() * totalKB);
 
-                    if ((totalKB != lastTotal) || (usedKB != lastUsed)) {
+                    if ((totalKB != lastTotal) ||
+                        (usedKB != lastUsed) ||
+                        (thresholdKB != lastThreshold)) {
                         progressBar.setMaximum(totalKB);
                         progressBar.setValue(usedKB);
                         progressBar.setString(
@@ -188,8 +195,9 @@ public class MemoryMeter
                                 (float) totalKB / KILO));
                         lastTotal = totalKB;
                         lastUsed = usedKB;
+                        lastThreshold = thresholdKB;
 
-                        if (((float) usedKB / KILO) > constants.alarmThreshold.getValue()) {
+                        if (usedKB > thresholdKB) {
                             progressBar.setForeground(Color.red);
                         } else {
                             progressBar.setForeground(defaultForeground);
@@ -238,10 +246,9 @@ public class MemoryMeter
             2000,
             "Memory display period");
 
-        /** Alarm threshold */
-        Constant.Integer alarmThreshold = new Constant.Integer(
-            "MegaBytes",
-            100,
-            "Memory alarm threshold");
+        /** Alarm threshold ratio */
+        Constant.Ratio alarmThreshold = new Constant.Ratio(
+            0.75,
+            "Memory alarm threshold, expressed in ratio of total memory");
     }
 }
