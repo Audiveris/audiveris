@@ -125,8 +125,10 @@ public class ShapeRange
 
     //
     public static final ShapeRange Physicals = new ShapeRange(
+        TEXT,
         EnumSet.range(CLUTTER, TEXT));
     public static final ShapeRange Logicals = new ShapeRange(
+        REPEAT_DOTS,
         EnumSet.range(REPEAT_DOTS, ENDING));
 
     static {
