@@ -133,7 +133,10 @@ public class ClefPattern
                 line = Glyphs.firstOf(
                     barline.getGlyphs(),
                     Barline.linePredicate);
-                line.addAttachment("clefInner#" + staffId, pixInner);
+
+                if (line != null) {
+                    line.addAttachment("clefInner#" + staffId, pixInner);
+                }
             }
 
             // We must find a clef out of these glyphs

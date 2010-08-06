@@ -56,6 +56,8 @@ public class PatternsChecker
         patterns = new GlyphPattern[] {
                        
         //
+        new TextRegionPattern(system),
+                       
         new ShapePattern(system),
                        
         new BassPattern(system),
@@ -67,7 +69,7 @@ public class PatternsChecker
         new AlterPattern(system),
                        
         new StemPattern(system),
-
+                       
         new HiddenSlurPattern(system),
                        
         system.getSlurInspector(),

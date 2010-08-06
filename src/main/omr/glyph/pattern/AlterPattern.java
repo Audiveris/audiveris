@@ -32,7 +32,7 @@ import java.util.EnumSet;
 import java.util.SortedSet;
 
 /**
- * Class {@code AlterPattern} implements a pattern for alteration glyphs, which
+ * Class {@code AlterPattern} implements a pattern for alteration glyphs which
  * have been over-segmented into stems + other stuff. We use the fact that the
  * two stems are very close to each other.
  *
@@ -265,7 +265,7 @@ public class AlterPattern
         //~ Instance fields ----------------------------------------------------
 
         Evaluation.Doubt alterMaxDoubt = new Evaluation.Doubt(
-            6,
+            100,
             "Maximum doubt for alteration sign verification");
         Scale.Fraction   maxCloseStemDx = new Scale.Fraction(
             0.7d,

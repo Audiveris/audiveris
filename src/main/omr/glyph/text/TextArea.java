@@ -62,7 +62,11 @@ public class TextArea
     /** Underlying region of interest */
     private final GlyphLag.Roi roi;
 
-    /** The (default) orientation of projection for this area */
+    /**
+     * The default orientation for this area
+     * - Horizontal: we expect lines or words one below the other in this area
+     * - Vertical:   we expect words one beside the other in this area
+     */
     private final Oriented orientation;
 
     /** The horizontal histogram for this area */
@@ -103,7 +107,7 @@ public class TextArea
      * @param system the containing system, if any
      * @param parent the containing text area if any
      * @param roi the region of interest in the related lag
-     * @param orientation the default orientation when scanning this area
+     * @param orientation the default orientation when splitting this area
      */
     public TextArea (SystemInfo   system,
                      TextArea     parent,
@@ -123,7 +127,7 @@ public class TextArea
         this.orientation = orientation;
 
         if (logger.isFineEnabled()) {
-            logger.fine("Processing " + this);
+            logger.fine("Creating " + this);
         }
     }
 
@@ -259,32 +263,28 @@ public class TextArea
     public void subdivide ()
     {
         if (splitArea(false) > 1) {
-            if (logger.isFineEnabled()) {
-                logger.fine("Node " + this);
-            }
-
             // The area can still be divided
             splitArea(true);
         } else if (logger.isFineEnabled()) {
-            logger.fine("Leaf " + this);
-        }
-
-        if (isTextualArea()) {
-            if (logger.isFineEnabled()) {
-                logger.fine("Text found in " + parent);
-            }
-
-            setTextLeaf(true);
-
-            if (parent != null) {
-                parent.textGlyphNb++;
-            }
+            logger.fine(this + " is Leaf ");
         }
 
         // Recurse
         if (subareas != null) {
             for (TextArea subarea : subareas) {
                 subarea.subdivide();
+            }
+        }
+
+        if (isTextualArea()) {
+            if (logger.isFineEnabled()) {
+                logger.fine("================ Text found in " + this);
+            }
+
+            setTextLeaf(true);
+
+            if (parent != null) {
+                parent.textGlyphNb++;
             }
         }
     }
@@ -359,6 +359,8 @@ public class TextArea
      */
     private boolean isTextualArea ()
     {
+        logger.fine(this + " isTextualArea");
+
         // We cannot evaluate glyphs that do not belong to a system
         if (system == null) {
             return false;
@@ -390,70 +392,123 @@ public class TextArea
             // TODO: Glyph already member of a sentence ???
         }
 
-        if (!glyphs.isEmpty()) {
-            Glyph glyph;
-
-            if (glyphs.size() > 1) {
-                glyph = system.buildTransientCompound(glyphs);
-            } else {
-                glyph = glyphs.iterator()
-                              .next();
-            }
-
+        if (glyphs.isEmpty()) {
             if (logger.isFineEnabled()) {
-                // Use OCR for debug
-                // Current language
-                String        language = system.getScoreSystem()
-                                               .getScore()
-                                               .getLanguage();
-
-                List<OcrLine> lines = Language.getOcr()
-                                              .recognize(
-                    glyph.getImage(),
-                    language,
-                    "g" + glyph.getId() + ".");
-
-                for (OcrLine ocrLine : lines) {
-                    logger.warning(ocrLine.toString());
-                }
+                logger.fine("No glyph found");
             }
 
-            GlyphEvaluator evaluator = GlyphNetwork.getInstance();
-            Evaluation     vote = evaluator.vote(
-                glyph,
-                GlyphInspector.getTextMaxDoubt());
+            return false;
+        }
 
-            if (vote != null) {
-                if (logger.isFineEnabled()) {
-                    logger.info(
-                        "Vote: " + vote.toString() +
-                        Glyphs.toString(" for", glyphs));
-                }
+        Glyph glyph;
 
-                if (vote.shape.isText()) {
-                    // Check that this glyph is not forbidden as text
-                    Glyph original = sheet.getVerticalLag()
-                                          .getOriginal(glyph);
+        if (glyphs.size() > 1) {
+            glyph = system.buildTransientCompound(glyphs);
+        } else {
+            glyph = glyphs.iterator()
+                          .next();
+        }
 
-                    if ((original != null) &&
-                        original.isShapeForbidden(Shape.TEXT)) {
-                        return false;
-                    } else {
-                        if (glyph.getId() == 0) {
-                            glyph = system.addGlyph(glyph);
-                        }
+        // First, use the glyph evaluator
+        GlyphEvaluator evaluator = GlyphNetwork.getInstance();
+        Evaluation     vote = evaluator.vote(
+            glyph,
+            GlyphInspector.getTextMaxDoubt());
 
-                        system.computeGlyphFeatures(glyph);
+        if (vote != null) {
+            if (logger.isFineEnabled()) {
+                logger.info(
+                    "Vote: " + vote.toString() +
+                    Glyphs.toString(" for", glyphs));
+            }
 
-                        // No! glyph.setTextArea(this);
-                        glyph.setShape(vote.shape, vote.doubt);
-
-                        return true;
-                    }
-                }
+            if (vote.shape.isText()) {
+                return createText(glyph, vote);
             }
         }
 
+        //        // Second, use the OCR engine
+        //        String        language = system.getScoreSystem()
+        //                                       .getScore()
+        //                                       .getLanguage();
+        //        List<OcrLine> lines = Language.getOcr()
+        //                                      .recognize(
+        //            glyph.getImage(),
+        //            language,
+        //            "g" + glyph.getId() + ".");
+        //
+        //        final Scale   scale = sheet.getScale();
+        //        final int     maxFontSize = scale.toPixels(constants.maxFontSize);
+        //
+        //        ///logger.info("maxFontSize=" + maxFontSize);
+        //
+        //        // Debug
+        //        if (logger.isFineEnabled()) {
+        //            int i = 0;
+        //
+        //            for (OcrLine ocrLine : lines) {
+        //                i++;
+        //
+        //                String         value = ocrLine.value;
+        //                float          fontSize = ocrLine.fontSize;
+        //                PixelRectangle box = ocrLine.getContourBox();
+        //
+        //                if (logger.isFineEnabled()) {
+        //                    logger.fine(
+        //                        i + " " + box + " " + ocrLine.toString() + " w:" +
+        //                        (box.width / (fontSize * value.length())) + " h:" +
+        //                        (box.height / fontSize) + " aspect:" +
+        //                        (((float) box.height * value.length()) / box.width));
+        //                }
+        //            }
+        //        }
+        //
+        //        // Tests on OCR results
+        //        if (lines.size() < 1) {
+        //            logger.warning("No line found");
+        //
+        //            return false;
+        //        }
+        //
+        //        if (lines.size() > 1) {
+        //            logger.warning("More than 1 line found");
+        //
+        //            return false;
+        //        }
+        //
+        //        OcrLine        ocrLine = lines.get(0);
+        //        String         value = ocrLine.value;
+        //        float          fontSize = ocrLine.fontSize;
+        //        PixelRectangle box = ocrLine.getContourBox();
+        //
+        //        if (box.height == 0) {
+        //            logger.warning("No OCR");
+        //
+        //            return false;
+        //        }
+        //
+        //        if (fontSize > maxFontSize) {
+        //            logger.warning(
+        //                "Font size " + fontSize + " exceeds maximum " + maxFontSize);
+        //
+        //            return false;
+        //        }
+        //
+        //        float        aspect = ((float) box.height * value.length()) / box.width;
+        //
+        //        final double maxAspect = constants.maxAspect.getValue();
+        //
+        //        if (aspect > maxAspect) {
+        //            logger.warning(
+        //                "Char aspect " + aspect + " exceeds maximum " + maxAspect);
+        //
+        //            return false;
+        //        }
+        //
+        //        // OK
+        //        return createText(
+        //            glyph,
+        //            new Evaluation(Shape.TEXT, Evaluation.ALGORITHM));
         return false;
     }
 
@@ -548,6 +603,36 @@ public class TextArea
         }
     }
 
+    //------------//
+    // createText //
+    //------------//
+    private boolean createText (Glyph      glyph,
+                                Evaluation eval)
+    {
+        // Check that this glyph is not forbidden as text
+        Glyph original = sheet.getVerticalLag()
+                              .getOriginal(glyph);
+
+        if ((original != null) && original.isShapeForbidden(Shape.TEXT)) {
+            return false;
+        } else {
+            if (glyph.getId() == 0) {
+                glyph = system.addGlyph(glyph);
+            }
+
+            system.computeGlyphFeatures(glyph);
+
+            // No! glyph.setTextArea(this);
+            glyph.setShape(eval.shape, eval.doubt);
+
+            if (logger.isFineEnabled()) {
+                logger.fine("Glyph#" + glyph.getId() + " TEXT recognized");
+            }
+
+            return true;
+        }
+    }
+
     //---------------//
     // firstBucketAt //
     //---------------//
@@ -596,13 +681,15 @@ public class TextArea
     // splitArea //
     //-----------//
     /**
-     * Try to perform a split in the projection orientation
+     * Try to perform a split of this area using the projection orientation
      * @param building should we actually create the subareas?
      * @return the number of subareas identified (whether they are actually
      * created or not)
      */
     private int splitArea (boolean building)
     {
+        logger.fine(this + " splitArea" + " building:" + building);
+
         // Make sure the histogram is available
         int[]     histo = getHistogram();
         int       children = 0;
@@ -615,7 +702,11 @@ public class TextArea
         final int minGap = orientation.isVertical()
                            ? scale.toPixels(constants.minHorizontalGap)
                            : scale.toPixels(constants.minVerticalGap);
+        final int minPacket = orientation.isVertical()
+                              ? scale.toPixels(constants.minHorizontalPacket)
+                              : scale.toPixels(constants.minVerticalPacket);
 
+        ///logger.info(this + " minGap:" + minGap + " minPacket:" + minPacket);
         for (int i = 0; i < histo.length; i++) {
             int val = histo[i];
 
@@ -630,11 +721,15 @@ public class TextArea
                     if (packetStart != -1) {
                         if ((i - packetEnd) >= minGap) {
                             // End of real gap
-                            children++;
+                            // Do we have a big enough packet?
+                            if ((packetEnd - packetStart) >= minPacket) {
+                                children++;
 
-                            if (building) {
-                                getSubareas()
-                                    .add(createSubarea(packetStart, packetEnd));
+                                if (building) {
+                                    getSubareas()
+                                        .add(
+                                        createSubarea(packetStart, packetEnd));
+                                }
                             }
 
                             packetStart = i;
@@ -658,15 +753,14 @@ public class TextArea
 
         // Ending of a packet?
         if (packetStart != -1) {
-            children++;
+            int end = (packetEnd > packetStart) ? packetEnd : histo.length;
 
-            if (building) {
-                if (packetEnd > packetStart) {
+            if ((end - packetStart) >= minPacket) {
+                children++;
+
+                if (building) {
                     getSubareas()
-                        .add(createSubarea(packetStart, packetEnd));
-                } else {
-                    getSubareas()
-                        .add(createSubarea(packetStart, histo.length));
+                        .add(createSubarea(packetStart, end));
                 }
             }
         }
@@ -684,12 +778,21 @@ public class TextArea
     {
         //~ Instance fields ----------------------------------------------------
 
+        Scale.Fraction maxFontSize = new Scale.Fraction(
+            1.8,
+            "Maximum value for text font size");
         Scale.Fraction minVerticalGap = new Scale.Fraction(
-            0.25,
+            0.1,
             "Minimum value for a vertical gap between histogram packets");
         Scale.Fraction minHorizontalGap = new Scale.Fraction(
-            0.50,
+            1.4,
             "Minimum value for a horizontal gap between histogram packets");
+        Scale.Fraction minVerticalPacket = new Scale.Fraction(
+            0.5,
+            "Minimum value for a vertical packet");
+        Scale.Fraction minHorizontalPacket = new Scale.Fraction(
+            0.5,
+            "Minimum value for a horizontal packet");
         Constant.Ratio topHistoThreshold = new Constant.Ratio(
             0.1,
             "Threshold to detect top of characters");
@@ -699,5 +802,8 @@ public class TextArea
         Constant.Ratio maxMedianRatio = new Constant.Ratio(
             0.75,
             "Maximum ratio of x-height part in characters height");
+        Constant.Ratio maxAspect = new Constant.Ratio(
+            3.0,
+            "Maximum aspect of chars (height / width)");
     }
 }

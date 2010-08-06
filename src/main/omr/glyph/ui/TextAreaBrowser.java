@@ -175,13 +175,11 @@ public class TextAreaBrowser
 
         if ((rect == null) || (rect.width == 0)) {
             // No real rectangle, so check for a selected glyph
-            GlyphEvent glyphEvent = (GlyphEvent) sheet.getSelectionService()
-                                                      .getLastEvent(
-                GlyphEvent.class);
-            Glyph      glyph = (glyphEvent != null) ? glyphEvent.getData() : null;
+            Glyph glyph = sheet.getVerticalLag().getSelectedGlyph();
 
             if (glyph != null) {
                 rect = glyph.getContourBox();
+                rect.grow(1,1);
             }
         }
 

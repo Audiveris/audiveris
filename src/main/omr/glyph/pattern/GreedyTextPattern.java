@@ -57,6 +57,7 @@ public class GreedyTextPattern
     //-------------------//
     /**
      * Creates a new GreedyTextPattern object.
+     * @param system the containing system
      */
     public GreedyTextPattern (SystemInfo system)
     {

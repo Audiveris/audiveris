@@ -150,7 +150,8 @@ public class SystemTranslator
 
         if (modified.isSet()) {
             try {
-                sheet.getSheetSteps().doStep(Step.SCORE, systems);
+                sheet.getSheetSteps()
+                     .doStep(Step.SCORE, systems);
             } catch (StepException ex) {
                 logger.warning("Error redoing score step", ex);
             }
@@ -1108,9 +1109,7 @@ public class SystemTranslator
             if (sentence != null) {
                 Text.populate(sentence, sentence.getLocation());
             } else {
-                logger.warning(
-                    "No sentence for glyph #" + glyph.getId() +
-                    ". Cannot translate to score entity.");
+                system.addError(glyph, "Text with no enclosing sentence");
             }
         }
     }

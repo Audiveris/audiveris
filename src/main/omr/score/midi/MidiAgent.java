@@ -26,7 +26,6 @@ import com.xenoage.util.language.LanguageInfo;
 import com.xenoage.util.logging.Log;
 import com.xenoage.zong.io.midi.out.SynthManager;
 import com.xenoage.zong.musicxml.MusicXMLDocument;
-import com.xenoage.zong.player.gui.Controller;
 
 import org.w3c.dom.Document;
 
@@ -366,9 +365,9 @@ public class MidiAgent
         /*
          *
          * So here are the functions you need for Audiveris:
-                       1) call com.xenoage.zong.musicxml.MusicXMLDocument.read(org.w3c.dom.Document doc)
+                         1) call com.xenoage.zong.musicxml.MusicXMLDocument.read(org.w3c.dom.Document doc)
          * to get an instance of a MusicXMLDocument out of your DOM document
-                       2) handle this document to
+                         2) handle this document to
          * com.xenoage.zong.player.gui.Controller.loadScore(MxlScorePartwise doc, boolean ignoreErrors)
          * (set ignoreErrors to true, of course)
          */

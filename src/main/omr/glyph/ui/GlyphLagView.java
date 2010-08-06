@@ -260,7 +260,7 @@ public class GlyphLagView
 
         // Specific glyphs if any
         if (showingSpecifics()) {
-            found = gLag.lookupGlyphs(specificGlyphs, rect);
+            found = Glyphs.lookupGlyphs(specificGlyphs, rect);
         }
 
         if ((found == null) || found.isEmpty()) {

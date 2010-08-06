@@ -315,32 +315,6 @@ public class GlyphLag
     // lookupGlyphs //
     //--------------//
     /**
-     * Look up in a collection of glyphs for <b>all</b> glyphs contained in a
-     * provided rectangle
-     *
-     * @param collection the collection of glyphs to be browsed
-     * @param rect the coordinates rectangle
-     *
-     * @return the glyphs found, which may be an empty list
-     */
-    public static Set<Glyph> lookupGlyphs (Collection<?extends Glyph> collection,
-                                           PixelRectangle             rect)
-    {
-        Set<Glyph> set = new LinkedHashSet<Glyph>();
-
-        for (Glyph glyph : collection) {
-            if (rect.contains(glyph.getContourBox())) {
-                set.add(glyph);
-            }
-        }
-
-        return set;
-    }
-
-    //--------------//
-    // lookupGlyphs //
-    //--------------//
-    /**
      * Look up for <b>all</b> active glyphs contained in a provided rectangle
      *
      * @param rect the coordinates rectangle
@@ -349,7 +323,7 @@ public class GlyphLag
      */
     public Set<Glyph> lookupGlyphs (PixelRectangle rect)
     {
-        return lookupGlyphs(getActiveGlyphs(), rect);
+        return Glyphs.lookupGlyphs(getActiveGlyphs(), rect);
     }
 
     //--------------------//

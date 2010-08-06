@@ -128,9 +128,9 @@ public class Sentence
      * @param glyph A first glyph that gives birth to this sentence
      * @param id A unique ID within the containing system
      */
-    Sentence (SystemInfo systemInfo,
-              Glyph      glyph,
-              int        id)
+    public Sentence (SystemInfo systemInfo,
+                     Glyph      glyph,
+                     int        id)
     {
         this.systemInfo = systemInfo;
         this.id = systemInfo.getId() + "." + id;
@@ -671,11 +671,15 @@ public class Sentence
             if (constants.useOCR.getValue() &&
                 ((info.getOcrContent() == null) ||
                 !language.equals(info.getOcrLanguage()))) {
-                List<OcrLine> lines = Language.getOcr()
-                                              .recognize(
+                List<OcrLine>           lines = Language.getOcr()
+                                                        .recognize(
                     glyph.getImage(),
                     language,
                     "g" + glyph.getId() + ".");
+
+                // Initial collection of sections
+                SortedSet<GlyphSection> allSections = new TreeSet<GlyphSection>(
+                    glyph.getMembers());
 
                 if ((lines != null) && !lines.isEmpty()) {
                     for (OcrLine ocrLine : lines) {
@@ -689,6 +693,8 @@ public class Sentence
                             ocrLine.getChars());
 
                         if (!sections.isEmpty()) {
+                            allSections.removeAll(sections);
+
                             Glyph lineGlyph = systemInfo.buildGlyph(sections);
                             lineGlyph = systemInfo.addGlyph(lineGlyph);
                             lineGlyph.setShape(Shape.TEXT);
@@ -719,6 +725,11 @@ public class Sentence
                     }
                 } else {
                     logger.fine("No OCR line for glyph #" + glyph.getId());
+                }
+
+                // Clean up what has been left over from OCR
+                for (GlyphSection section : allSections) {
+                    section.setGlyph(null);
                 }
             }
         }
@@ -1078,7 +1089,7 @@ public class Sentence
             0,
             "Maximum vertical distance between a text line and a text item");
         Scale.Fraction   maxItemDx = new Scale.Fraction(
-            20,
+            5,
             "Maximum horizontal distance between an alien and a text item");
         Scale.Fraction   maxSentenceDy = new Scale.Fraction(
             0.6,

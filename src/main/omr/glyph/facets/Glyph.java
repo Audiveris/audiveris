@@ -44,6 +44,15 @@ public interface Glyph
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** For comparing glyphs according to their height */
+    public static final Comparator<Glyph> heightComparator = new Comparator<Glyph>() {
+        public int compare (Glyph o1,
+                            Glyph o2)
+        {
+            return o1.getContourBox().height - o2.getContourBox().height;
+        }
+    };
+
     /** For comparing glyphs according to their decreasing weight */
     public static final Comparator<Glyph> reverseWeightComparator = new Comparator<Glyph>() {
         public int compare (Glyph o1,

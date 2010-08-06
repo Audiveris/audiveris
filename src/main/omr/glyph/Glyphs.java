@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.glyph;
 
+import java.awt.Polygon;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -179,6 +180,58 @@ public class Glyphs
         }
 
         return glyphs;
+    }
+
+    //--------------//
+    // lookupGlyphs //
+    //--------------//
+    /**
+     * Look up in a collection of glyphs for <b>all</b> glyphs contained in a
+     * provided rectangle
+     *
+     * @param collection the collection of glyphs to be browsed
+     * @param rect the coordinates rectangle
+     *
+     * @return the glyphs found, which may be an empty list
+     */
+    public static Set<Glyph> lookupGlyphs (Collection<?extends Glyph> collection,
+                                           PixelRectangle             rect)
+    {
+        Set<Glyph> set = new LinkedHashSet<Glyph>();
+
+        for (Glyph glyph : collection) {
+            if (rect.contains(glyph.getContourBox())) {
+                set.add(glyph);
+            }
+        }
+
+        return set;
+    }
+
+    //--------------//
+    // lookupGlyphs //
+    //--------------//
+    /**
+     * Look up in a collection of glyphs for <b>all</b> glyphs contained in a
+     * provided polygon
+     *
+     * @param collection the collection of glyphs to be browsed
+     * @param polygon the containing polygon
+     *
+     * @return the glyphs found, which may be an empty list
+     */
+    public static Set<Glyph> lookupGlyphs (Collection<?extends Glyph> collection,
+                                           Polygon polygon)
+    {
+        Set<Glyph> set = new LinkedHashSet<Glyph>();
+
+        for (Glyph glyph : collection) {
+            if (polygon.contains(glyph.getContourBox())) {
+                set.add(glyph);
+            }
+        }
+
+        return set;
     }
 
     //--------------//

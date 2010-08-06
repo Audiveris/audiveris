@@ -525,6 +525,33 @@ public class TextInfo
         pseudoContent = null;
     }
 
+    //----------------------//
+    // retrieveSectionsFrom //
+    //----------------------//
+    /**
+     * Retrieve the glyph sections that correspond to the collection of OCR
+     * char descriptors
+     * @param chars the char descriptors for each word character
+     * @return the set of word-enclosed sections
+     */
+    public SortedSet<GlyphSection> retrieveSectionsFrom (List<OcrChar> chars)
+    {
+        SortedSet<GlyphSection> sections = new TreeSet<GlyphSection>();
+
+        for (OcrChar charDesc : chars) {
+            Rectangle charBox = charDesc.getBox();
+
+            for (GlyphSection section : glyph.getMembers()) {
+                // Do we intersect a section not (yet) assigned?
+                if (charBox.intersects(section.getContourBox()) ) {
+                    sections.add(section);
+                }
+            }
+        }
+
+        return sections;
+    }
+
     //----------------//
     // splitIntoWords //
     //----------------//
@@ -616,34 +643,6 @@ public class TextInfo
         sb.append("}");
 
         return sb.toString();
-    }
-
-    //----------------------//
-    // retrieveSectionsFrom //
-    //----------------------//
-    /**
-     * Retrieve the glyph sections that correspond to the collection of OCR
-     * char descriptors
-     * @param chars the char descriptors for each word character
-     * @return the set of word-enclosed sections
-     */
-    SortedSet<GlyphSection> retrieveSectionsFrom (List<OcrChar> chars)
-    {
-        SortedSet<GlyphSection> sections = new TreeSet<GlyphSection>();
-
-        for (OcrChar charDesc : chars) {
-            Rectangle charBox = charDesc.getBox();
-
-            for (GlyphSection section : glyph.getMembers()) {
-                // Do we intersect a section not (yet) assigned?
-                if (charBox.intersects(section.getContourBox()) &&
-                    (section.getGlyph() == this.glyph)) {
-                    sections.add(section);
-                }
-            }
-        }
-
-        return sections;
     }
 
     //-------------//

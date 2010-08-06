@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.glyph.text;
 
+import omr.score.common.PixelRectangle;
+
 import java.awt.Font;
 import java.awt.Rectangle;
 import java.util.ArrayList;
@@ -75,6 +77,30 @@ public class OcrLine
     public List<OcrChar> getChars ()
     {
         return chars;
+    }
+
+    //---------------//
+    // getContourBox //
+    //---------------//
+    /**
+     * Report the contour box of the line
+     * @return the contour box
+     */
+    public PixelRectangle getContourBox ()
+    {
+        PixelRectangle contour = null;
+
+        for (OcrChar ch : chars) {
+            PixelRectangle box = ch.getBox();
+
+            if (contour == null) {
+                contour = box;
+            } else {
+                contour = contour.union(box);
+            }
+        }
+
+        return contour;
     }
 
     //-----------------//
