@@ -72,8 +72,6 @@ public class TextRegionPattern
     //~ Instance fields --------------------------------------------------------
 
     private int glyphMinHeight;
-
-    ///private int blobXMargin;
     private int maxFontSize;
     private int smallXMargin;
 
@@ -319,12 +317,18 @@ public class TextRegionPattern
             return null;
         }
 
+        // All tests are OK
         return ocrLine;
     }
 
     //-----------//
     // checkText //
     //-----------//
+    /**
+     * Check whether the constructed blob is actually a line of text
+     * @param blob the blob to check
+     * @return true if OK
+     */
     private boolean checkText (Blob blob)
     {
         String language = system.getScoreSystem()
@@ -400,7 +404,8 @@ public class TextRegionPattern
         compound.setShape(Shape.TEXT, Evaluation.ALGORITHM);
 
         if (logger.isFineEnabled()) {
-            logger.warning("Glyph#" + compound.getId() + "==>" + ocrLine.value);
+            logger.fine(
+                "Glyph#" + compound.getId() + "=>\"" + ocrLine.value + "\"");
         }
 
         return true;
@@ -420,7 +425,7 @@ public class TextRegionPattern
     {
         for (Glyph glyph : smallGlyphs) {
             if (logger.isFineEnabled()) {
-                logger.fine("Trying to insert glyph#" + glyph.getId());
+                logger.fine("Trying to insert small glyph#" + glyph.getId());
             }
 
             // Look for a suitable blob
@@ -558,22 +563,9 @@ public class TextRegionPattern
     {
         //~ Instance fields ----------------------------------------------------
 
-        Scale.AreaFraction minWeight = new Scale.AreaFraction(
-            0.5,
-            "Minimum normalized weight to start a greedy text");
-        Scale.Fraction     maxDx = new Scale.Fraction(
-            0.2,
-            "Maximum horizontal gap between two character boxes");
-        Evaluation.Doubt   maxDoubt = new Evaluation.Doubt(
-            100d,
-            "Maximum doubt for greedy text glyphs");
-        Scale.Fraction     glyphMinHeight = new Scale.Fraction(
-            0.5,
+        Scale.Fraction glyphMinHeight = new Scale.Fraction(
+            0.8,
             "Minimum height for characters");
-
-        //        Scale.Fraction     blobXMargin = new Scale.Fraction(
-        //            5.0,
-        //            "Maximum abscissa gap between blob members");
         Constant.Ratio maxWidthRatio = new Constant.Ratio(
             1.0,
             "Ratio for maximum horizontal gap versus character width");
@@ -598,9 +590,9 @@ public class TextRegionPattern
         Scale.Fraction smallXMargin = new Scale.Fraction(
             1.0,
             "Maximum abscissa gap for small glyphs");
-        Scale.Fraction smallYMargin = new Scale.Fraction(
+        Constant.Ratio smallYRatio = new Constant.Ratio(
             1.0,
-            "Maximum ordinate gap for small glyphs");
+            "Maximum ordinate gap for small glyphs (as ratio of mean height)");
     }
 
     /**
@@ -803,23 +795,24 @@ public class TextRegionPattern
 
         /**
          * Try to insert the provided small glyph (punctuation, diacritical ...)
-         * @param glyph
-         * @return
+         * @param glyph the provided small glyph
+         * @return true if we have successfully inserted the glyph into the blob
          */
         private boolean tryToInsert (Glyph glyph)
         {
             // Check whether the glyph is not too far from the blob
+            PixelRectangle fatBox = glyph.getContourBox();
+            fatBox.grow(
+                smallXMargin,
+                (int) Math.rint(
+                    getMedianHeight() * constants.smallYRatio.getValue()));
 
             // x check
-            PixelRectangle fatBox = glyph.getContourBox();
-            fatBox.grow(smallXMargin, getMedianHeight() / 2);
-
             if (!fatBox.intersects(blobBox)) {
                 return false;
             }
 
-            // y check
-            // Beware these are vertical glyphs
+            // y check (Beware these are vertical glyphs, so use xAt for yAt)
             Line2D.Double l2D = new Line2D.Double(
                 blobBox.x,
                 average.xAt(blobBox.x),
