@@ -146,12 +146,21 @@ public class Sentence
             center);
         systemPart = staff.getPart();
 
-        // Compute parameters one for all
+        // Compute parameters once for all
         Scale scale = systemInfo.getScoreSystem()
                                 .getScale();
         maxItemDy = scale.toPixels(constants.maxItemDy);
-        maxItemDx = scale.toPixels(constants.maxItemDx);
         maxSentenceDy = scale.toPixels(constants.maxSentenceDy);
+
+        // Inter-word gap is different if we are between staves (lyrics ...)
+        // or if we are on system peripheral regions
+        StaffPosition staffPosition = system.getStaffPosition(center);
+
+        if (staffPosition == StaffPosition.within) {
+            maxItemDx = scale.toPixels(constants.maxLyricItemDx);
+        } else {
+            maxItemDx = scale.toPixels(constants.maxItemDx);
+        }
 
         if (logger.isFineEnabled()) {
             logger.fine("Created " + this);
@@ -1090,7 +1099,10 @@ public class Sentence
             "Maximum vertical distance between a text line and a text item");
         Scale.Fraction   maxItemDx = new Scale.Fraction(
             5,
-            "Maximum horizontal distance between an alien and a text item");
+            "Maximum horizontal distance between two words");
+        Scale.Fraction   maxLyricItemDx = new Scale.Fraction(
+            20,
+            "Maximum horizontal distance between two (lyric) words");
         Scale.Fraction   maxSentenceDy = new Scale.Fraction(
             0.6,
             "Maximum vertical distance between two sentence chunks");
