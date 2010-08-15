@@ -15,6 +15,7 @@ import omr.glyph.Shape;
 
 import omr.log.Logger;
 
+import omr.math.GCD;
 import omr.math.Rational;
 
 import omr.score.common.SystemPoint;
@@ -242,11 +243,7 @@ public class Voice
 
             if ((common != null) && (count == durations.size())) {
                 // All the durations are equal
-                Rational rational = Note.rationalValueOf(common);
-
-                inferredTimeSig = new Rational(
-                    count * rational.num,
-                    rational.den);
+                inferredTimeSig = timeSigOf(count, common);
             }
         }
 
@@ -570,6 +567,25 @@ public class Voice
             duration);
 
         chord.addMark(mark);
+    }
+
+    //-----------//
+    // timeSigOf //
+    //-----------//
+    private Rational timeSigOf (int count,
+                                int common)
+    {
+        int      total = count * common;
+        Rational r = Note.rationalValueOf(total);
+        int      g = GCD.gcd(r.num, r.den);
+        Rational rational = new Rational(r.num / g, r.den / g);
+
+        // Make sure num is a multiple of count
+        int gcd = GCD.gcd(count, rational.num);
+
+        return new Rational(
+            (count / gcd) * rational.num,
+            (count / gcd) * rational.den);
     }
 
     //~ Inner Classes ----------------------------------------------------------
