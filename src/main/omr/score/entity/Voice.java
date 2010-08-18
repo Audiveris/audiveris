@@ -575,14 +575,15 @@ public class Voice
     private Rational timeSigOf (int count,
                                 int common)
     {
+        // Determine the rational value of measure total duration
         int      total = count * common;
         Rational r = Note.rationalValueOf(total);
         int      g = GCD.gcd(r.num, r.den);
         Rational rational = new Rational(r.num / g, r.den / g);
 
-        // Make sure num is a multiple of count
         int gcd = GCD.gcd(count, rational.num);
 
+        // Make sure num is a multiple of count
         return new Rational(
             (count / gcd) * rational.num,
             (count / gcd) * rational.den);

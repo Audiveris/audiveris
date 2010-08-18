@@ -90,33 +90,41 @@ public class TimeSignatureFixer
         // We cannot rely on standard browsing part by part, since we need to 
         // address all measures (of same Id) in a row, regardless of their 
         // containing part
-        ScoreSystem system = score.getFirstSystem();
-        SystemPart  part = system.getFirstPart();
-        Measure     measure = part.getFirstMeasure();
+        ScoreSystem    system = score.getFirstSystem();
+        SystemPart     part = system.getFirstPart();
+        Measure        measure = part.getFirstMeasure();
 
         // Measure that starts a range of measures with an explicit time sig
-        Measure startMeasure = null;
+        Measure        startMeasure = null;
+
+        // Is this starting time sig a manual one?
+        boolean        startManual = false;
 
         // Measure that ends the range
         // Right before another time sig, or last measure of the score
-        Measure stopMeasure = null;
+        Measure        stopMeasure = null;
+
+        // Remember if current signature is manual
+        // And thus should not be updated
+        WrappedBoolean isManual = new WrappedBoolean(false);
 
         while (measure != null) {
-            if (hasTimeSig(measure)) {
-                if (startMeasure != null) {
+            if (hasTimeSig(measure, isManual)) {
+                if ((startMeasure != null) && !startManual) {
                     // Complete the ongoing time sig analysis
                     checkTimeSigs(startMeasure, stopMeasure);
                 }
 
                 // Start a new analysis
                 startMeasure = measure;
+                startManual = isManual.isSet();
             }
 
             stopMeasure = measure;
             measure = measure.getFollowing();
         }
 
-        if (startMeasure != null) {
+        if ((startMeasure != null) && !startManual) {
             // Complete the ongoing time sig analysis
             checkTimeSigs(startMeasure, stopMeasure);
         }
@@ -195,8 +203,13 @@ public class TimeSignatureFixer
      * measure id, regardless of the part)
      * @return true if a time sig exists in some staff of the measure
      */
-    private boolean hasTimeSig (Measure measure)
+    private boolean hasTimeSig (Measure        measure,
+                                WrappedBoolean isManual)
     {
+        isManual.set(false);
+
+        boolean found = false;
+
         for (Staff.SystemIterator sit = new Staff.SystemIterator(measure);
              sit.hasNext();) {
             Staff         staff = sit.next();
@@ -211,11 +224,15 @@ public class TimeSignatureFixer
                         sig);
                 }
 
-                return true;
+                if (sig.isManual()) {
+                    isManual.set(true);
+                }
+
+                found = true;
             }
         }
 
-        return false;
+        return found;
     }
 
     //------------------//

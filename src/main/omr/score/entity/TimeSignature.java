@@ -105,6 +105,10 @@ public class TimeSignature
         super(measure);
         isDummy = false;
         setStaff(staff);
+
+        if (logger.isFineEnabled()) {
+            logger.fine("Created TS");
+        }
     }
 
     //---------------//
@@ -137,6 +141,10 @@ public class TimeSignature
                     staff.getPageTopLeft().y));
         } catch (InvalidTimeSignature ex) {
             logger.severe("Cannot duplicate TimeSignature", ex);
+        }
+
+        if (logger.isFineEnabled()) {
+            logger.fine("Created TS copy");
         }
     }
 
