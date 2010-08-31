@@ -293,7 +293,7 @@ public class GlyphNetwork
         if (!isBigEnough(glyph)) {
             return noiseEvaluations;
         } else {
-            double[]     ins = feedInput(glyph, null);
+            double[]     ins = feedInput(glyph);
             double[]     outs = new double[shapeCount];
             Evaluation[] evals = new Evaluation[shapeCount];
             Shape[]      values = Shape.values();
@@ -348,9 +348,9 @@ public class GlyphNetwork
      * incremental)
      */
     @SuppressWarnings("unchecked")
-    public void train (Collection<Glyph>  glyphs,
-                       Monitor      monitor,
-                       StartingMode mode)
+    public void train (Collection<Glyph> glyphs,
+                       Monitor           monitor,
+                       StartingMode      mode)
     {
         if (glyphs.isEmpty()) {
             logger.warning("No glyph to retrain Network Evaluator");
@@ -404,8 +404,7 @@ public class GlyphNetwork
         int        ig = 0;
 
         for (Glyph glyph : newGlyphs) {
-            double[] ins = new double[paramCount];
-            feedInput(glyph, ins);
+            double[] ins = feedInput(glyph);
             inputs[ig] = ins;
 
             double[] des = new double[shapeCount];

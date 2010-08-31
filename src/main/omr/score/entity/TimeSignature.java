@@ -440,6 +440,7 @@ public class TimeSignature
         if (!isDummy()) {
             if (shape == null) {
                 shape = predefinedShape(rational);
+                logger.info(rational + " shape: " + shape);
             }
 
             SystemInfo systemInfo = getSystem()

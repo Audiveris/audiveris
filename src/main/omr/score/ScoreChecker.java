@@ -18,14 +18,11 @@ import omr.glyph.Evaluation;
 import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphNetwork;
-import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
-
-import omr.math.Rational;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -101,7 +98,8 @@ public class ScoreChecker
     //--------------//
     /**
      * Creates a new ScoreChecker object.
-     * @param modified An out parameter, to tell if entities have been modified
+     * @param modified This is actually an out parameter, to tell if one or 
+     * several entities have been modified by the score visit
      */
     public ScoreChecker (WrappedBoolean modified)
     {
@@ -202,8 +200,8 @@ public class ScoreChecker
     /**
      * This method is used to detect & fix unrecognized beam hooks
      * @param measure the measure to browse
-     * @return true. The real output is stored in the modified[] array which is
-     * used to return a boolean if at least a beam_hook has been fixed.
+     * @return true. The real output is stored in the modified global which is
+     * set to true if at least a beam_hook has been fixed.
      */
     @Override
     public boolean visit (Measure measure)
@@ -316,6 +314,8 @@ public class ScoreChecker
 
         return true;
     }
+
+    //- Utilities --------------------------------------------------------------
 
     //------------------//
     // arePitchDeltasOk //
@@ -488,8 +488,6 @@ public class ScoreChecker
             modified.set(true);
         }
     }
-
-    //- Utilities --------------------------------------------------------------
 
     //--------------//
     // checkTimeSig //

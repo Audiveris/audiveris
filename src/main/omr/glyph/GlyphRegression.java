@@ -144,7 +144,7 @@ public class GlyphRegression
         if (!isBigEnough(glyph)) {
             return noiseEvaluations;
         } else {
-            double[]     ins = feedInput(glyph, null);
+            double[]     ins = feedInput(glyph);
             Evaluation[] evals = new Evaluation[shapeCount];
             Shape[]      values = Shape.values();
 
@@ -173,7 +173,7 @@ public class GlyphRegression
     public boolean constraintsMatched (Glyph      glyph,
                                        Evaluation eval)
     {
-        return constraintsMatched(feedInput(glyph, null), eval);
+        return constraintsMatched(feedInput(glyph), eval);
     }
 
     //--------------------//
@@ -240,9 +240,7 @@ public class GlyphRegression
     public double measureDistance (Glyph glyph,
                                    Shape shape)
     {
-        return engine.categoryDistance(
-            feedInput(glyph, null),
-            shape.toString());
+        return engine.categoryDistance(feedInput(glyph), shape.toString());
     }
 
     //-----------------//
@@ -274,7 +272,7 @@ public class GlyphRegression
     public double measureDistance (Glyph one,
                                    Glyph two)
     {
-        return measureDistance(one, feedInput(two, null));
+        return measureDistance(one, feedInput(two));
     }
 
     //-----------------//
@@ -291,7 +289,7 @@ public class GlyphRegression
     public double measureDistance (Glyph    glyph,
                                    double[] ins)
     {
-        return engine.patternDistance(feedInput(glyph, null), ins);
+        return engine.patternDistance(feedInput(glyph), ins);
     }
 
     //-------//
@@ -321,9 +319,7 @@ public class GlyphRegression
         for (Glyph glyph : base) {
             try {
                 Shape  shape = glyph.getShape();
-                Sample sample = new Sample(
-                    shape.toString(),
-                    feedInput(glyph, null));
+                Sample sample = new Sample(shape.toString(), feedInput(glyph));
                 samples.add(sample);
             } catch (Exception ex) {
                 logger.warning(
@@ -381,10 +377,7 @@ public class GlyphRegression
             double minFactor = constants.factorForMinima.getValue();
             double maxFactor = constants.factorForMaxima.getValue();
 
-            for (String label : Arrays.asList(
-                "weight",
-                "width",
-                "height")) {
+            for (String label : Arrays.asList("weight", "width", "height")) {
                 int    p = GlyphEvaluator.getParameterIndex(label);
                 double val = engine.getMinimum(p, id);
 

@@ -261,7 +261,7 @@ public class ShapeFocusBoard
 
         if (example != null) {
             GlyphRegression  evaluator = GlyphRegression.getInstance();
-            double[]         pattern = GlyphRegression.feedInput(example, null);
+            double[]         pattern = GlyphRegression.feedInput(example);
             List<DistIdPair> pairs = new ArrayList<DistIdPair>();
 
             // Retrieve the glyphs similar to the example
@@ -287,7 +287,7 @@ public class ShapeFocusBoard
                 for (DistIdPair pair : pairs) {
                     Glyph    glyph = sheet.getVerticalsController()
                                           .getGlyphById(pair.id);
-                    double[] gPat = GlyphRegression.feedInput(glyph, null);
+                    double[] gPat = GlyphRegression.feedInput(glyph);
                     Shape    shape = glyph.getShape();
                     System.out.printf(
                         "%18s",

@@ -883,7 +883,7 @@ public class SheetSteps
                 // Real translation
                 system.translateSystem();
 
-                /** Final checks */
+                /** Final checks at system level */
                 scoreSystem.acceptChildren(new ScoreChecker(modified));
             }
 

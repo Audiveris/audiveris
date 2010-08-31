@@ -134,32 +134,38 @@ public class SystemTranslator
             system.getId() - 1,
             sheet.getSystems().size());
 
-        WrappedBoolean   modified = new WrappedBoolean(false);
+        // All actions for completed systems
+        WrappedBoolean modified = new WrappedBoolean(false);
 
         for (SystemInfo info : systems) {
             ScoreSystem syst = info.getScoreSystem();
-
             syst.fillMissingParts();
             syst.retrieveSlurConnections();
             syst.refineLyricSyllables();
         }
 
+        // All actions for completed score
         score.accept(new ScoreTimeFixer());
         score.accept(new TimeSignatureFixer(modified));
         score.accept(new ScoreFixer());
 
+        // Should we re-run this step?
         if (modified.isSet()) {
+            logger.warning("Redoing SCORE step");
+
             try {
                 sheet.getSheetSteps()
                      .doStep(Step.SCORE, systems);
             } catch (StepException ex) {
-                logger.warning("Error redoing score step", ex);
+                logger.warning("Error redoing SCORE step", ex);
             }
+        } else {
+            logger.warning("No need to redo SCORE step");
         }
 
-        // Invalidate score data within MidiAgent, if needed
         if (Main.getGui() != null) {
             try {
+                // Invalidate score data within MidiAgent, if needed
                 if (MidiAgent.getInstance()
                              .getScore() == score) {
                     MidiAgent.getInstance()

@@ -197,17 +197,11 @@ public abstract class GlyphEvaluator
      * glyph (some of its moments, and some info on surroundings)
      *
      * @param glyph the glyph to be evaluated
-     * @param ins   the evaluator input array to be filled (if null, it is
-     *              allocated by the routine)
-     *
      * @return the filled input array
      */
-    public static double[] feedInput (Glyph    glyph,
-                                      double[] ins)
+    public static double[] feedInput (Glyph glyph)
     {
-        if (ins == null) {
-            ins = new double[paramCount];
-        }
+        double[] ins = new double[paramCount];
 
         // We take all the first moments
         Double[] k = glyph.getMoments()
@@ -280,7 +274,7 @@ public abstract class GlyphEvaluator
      */
     public Evaluation[] getCheckedEvaluations (Glyph glyph)
     {
-        double[]     ins = feedInput(glyph, null);
+        double[]     ins = feedInput(glyph);
         Evaluation[] evals = getRawEvaluations(glyph);
 
         for (Evaluation eval : evals) {

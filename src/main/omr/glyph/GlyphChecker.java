@@ -220,8 +220,8 @@ public class GlyphChecker
                 public boolean check (Evaluation eval,
                                       Glyph      glyph,
                                       double[]   features)
-                { // Check we have exactly 1 stem
-
+                {
+                    // Check we have exactly 1 stem
                     if (glyph.getStemNumber() != 1) {
                         eval.failure = new Evaluation.Failure("stem!=1");
 
