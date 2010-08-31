@@ -581,12 +581,19 @@ public class Voice
         int      g = GCD.gcd(r.num, r.den);
         Rational rational = new Rational(r.num / g, r.den / g);
 
-        int gcd = GCD.gcd(count, rational.num);
+        int      gcd = GCD.gcd(count, rational.num);
 
         // Make sure num is a multiple of count
-        return new Rational(
+        Rational rat = new Rational(
             (count / gcd) * rational.num,
             (count / gcd) * rational.den);
+
+        // No 1 as num
+        if (rat.num == 1) {
+            rat = new Rational(2 * rat.num, 2 * rat.den);
+        }
+
+        return rat;
     }
 
     //~ Inner Classes ----------------------------------------------------------

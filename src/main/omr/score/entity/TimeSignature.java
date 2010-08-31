@@ -440,7 +440,10 @@ public class TimeSignature
         if (!isDummy()) {
             if (shape == null) {
                 shape = predefinedShape(rational);
-                logger.info(rational + " shape: " + shape);
+
+                if (shape == null) {
+                    logger.warning("TimeSig: " + rational + " shape: " + shape);
+                }
             }
 
             SystemInfo systemInfo = getSystem()
@@ -456,7 +459,9 @@ public class TimeSignature
                 compound.setRational(new Rational(rational));
             }
 
-            logger.info(shape + " assigned to glyph#" + compound.getId());
+            if (logger.isFineEnabled()) {
+                logger.fine(shape + " assigned to glyph#" + compound.getId());
+            }
         }
 
         setRational(rational);

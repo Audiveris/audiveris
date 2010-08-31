@@ -151,7 +151,7 @@ public class SystemTranslator
 
         // Should we re-run this step?
         if (modified.isSet()) {
-            logger.warning("Redoing SCORE step");
+            ///logger.warning("Redoing SCORE step");
 
             try {
                 sheet.getSheetSteps()
@@ -160,7 +160,7 @@ public class SystemTranslator
                 logger.warning("Error redoing SCORE step", ex);
             }
         } else {
-            logger.warning("No need to redo SCORE step");
+            ///logger.warning("No need to redo SCORE step");
         }
 
         if (Main.getGui() != null) {
