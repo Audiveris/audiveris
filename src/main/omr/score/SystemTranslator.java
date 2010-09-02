@@ -152,7 +152,6 @@ public class SystemTranslator
         // Should we re-run this step?
         if (modified.isSet()) {
             ///logger.warning("Redoing SCORE step");
-
             try {
                 sheet.getSheetSteps()
                      .doStep(Step.SCORE, systems);
@@ -850,8 +849,8 @@ public class SystemTranslator
 
         public boolean isRelevant (Glyph glyph)
         {
-            return (glyph.getShape() == Shape.SHARP) ||
-                   (glyph.getShape() == Shape.FLAT);
+            return (glyph.getShape().isSharpBased()) ||
+                   (glyph.getShape().isFlatBased());
         }
 
         @Override

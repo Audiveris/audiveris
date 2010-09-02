@@ -38,7 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Class <code>KeySignature</code> encapsulates a key signature, which may be
- * composed of one or several glyphs (all sharps or all flats).
+ * composed of one or several glyphs (all sharp-based or all flat-based).
  *
  * @author Hervé Bitteur
  */
@@ -128,7 +128,7 @@ public class KeySignature
 
     //~ Constructors -----------------------------------------------------------
 
-    //---------------//
+    //--------------//
     // KeySignature //
     //--------------//
     /**
@@ -149,7 +149,7 @@ public class KeySignature
         }
     }
 
-    //---------------//
+    //--------------//
     // KeySignature //
     //--------------//
     /**
@@ -414,8 +414,10 @@ public class KeySignature
                 }
 
                 continue;
-            } else if (((glyph.getShape() == SHARP) && (keysig.getKey() < 0)) ||
-                       ((glyph.getShape() == FLAT) && (keysig.getKey() > 0))) {
+            } else if (((glyph.getShape().isSharpBased()) &&
+                       (keysig.getKey() < 0)) ||
+                       ((glyph.getShape().isFlatBased()) &&
+                       (keysig.getKey() > 0))) {
                 // Check sharp or flat key sig, wrt current glyph
                 if (logger.isFineEnabled()) {
                     logger.fine(
@@ -442,7 +444,7 @@ public class KeySignature
             Clef clef = measure.getClefBefore(
                 measure.computeGlyphCenter(glyph));
 
-            if (!checkPitchPosition(glyph, center, staff, 0, clef)) {
+            if (!checkPitchPosition(glyph, center, staff, clef)) {
                 if (logger.isFineEnabled()) {
                     logger.fine(
                         "Cannot start a new key signature with glyph " +
@@ -833,6 +835,59 @@ public class KeySignature
     }
 
     //-------//
+    // keyOf //
+    //-------//
+    private static Integer keyOf (Shape shape)
+    {
+        switch (shape) {
+        case KEY_FLAT_1 :
+            return -1;
+
+        case KEY_FLAT_2 :
+            return -2;
+
+        case KEY_FLAT_3 :
+            return -3;
+
+        case KEY_FLAT_4 :
+            return -4;
+
+        case KEY_FLAT_5 :
+            return -5;
+
+        case KEY_FLAT_6 :
+            return -6;
+
+        case KEY_FLAT_7 :
+            return -7;
+
+        case KEY_SHARP_1 :
+            return 1;
+
+        case KEY_SHARP_2 :
+            return 2;
+
+        case KEY_SHARP_3 :
+            return 3;
+
+        case KEY_SHARP_4 :
+            return 4;
+
+        case KEY_SHARP_5 :
+            return 5;
+
+        case KEY_SHARP_6 :
+            return 6;
+
+        case KEY_SHARP_7 :
+            return 7;
+
+        default :
+            return null;
+        }
+    }
+
+    //-------//
     // newId //
     //-------//
     private static int newId ()
@@ -955,33 +1010,41 @@ public class KeySignature
      * @param glyph the glyph to check
      * @param center the (flat-corrected) glyph center
      * @param the containing staff
-     * @param index index in signature
      * @param clef clef at this location, if known
      * @return true if OK, false otherwise
      */
     private static boolean checkPitchPosition (Glyph       glyph,
                                                SystemPoint center,
                                                Staff       staff,
-                                               int         index,
                                                Clef        clef)
     {
-        if (glyph.getShape() == SHARP) {
+        Shape glyphShape = glyph.getShape();
+
+        if (glyphShape == SHARP) {
+            return checkPosition(glyph, center, staff, sharpPositions, 0, clef);
+        } else if (glyphShape.isSharpBased()) {
             return checkPosition(
                 glyph,
                 center,
                 staff,
-                sharpPositions,
-                index,
-                clef);
-        } else {
-            return checkPosition(
-                glyph,
-                center,
-                staff,
-                flatPositions,
-                index,
+                sharpKeyPositions,
+                keyOf(glyphShape),
                 clef);
         }
+
+        if (glyphShape == FLAT) {
+            return checkPosition(glyph, center, staff, flatPositions, 0, clef);
+        } else if (glyphShape.isFlatBased()) {
+            return checkPosition(
+                glyph,
+                center,
+                staff,
+                flatKeyPositions,
+                -keyOf(glyphShape),
+                clef);
+        }
+
+        return false;
     }
 
     //-------------//
@@ -1161,28 +1224,47 @@ public class KeySignature
     {
         if ((glyphs != null) && !glyphs.isEmpty()) {
             // Check we have only sharps or only flats
-            Shape shp = null;
+            Shape kind = null;
+            int   k = 0;
 
             for (Glyph glyph : glyphs) {
-                if ((shp != null) && (glyph.getShape() != shp)) {
-                    if (logger.isFineEnabled()) {
-                        logger.fine("Inconsistent key signature " + this);
-                    }
+                Shape glyphShape = glyph.getShape();
 
-                    return;
+                if (glyphShape.isFlatBased()) {
+                    if (kind == SHARP) {
+                        if (logger.isFineEnabled()) {
+                            logger.fine("Inconsistent key signature " + this);
+                        }
+
+                        return;
+                    } else {
+                        kind = FLAT;
+                    }
+                }
+
+                if (glyphShape.isSharpBased()) {
+                    if (kind == FLAT) {
+                        if (logger.isFineEnabled()) {
+                            logger.fine("Inconsistent key signature " + this);
+                        }
+
+                        return;
+                    } else {
+                        kind = SHARP;
+                    }
+                }
+
+                // Update key value
+                if (glyphShape == SHARP) {
+                    k += 1;
+                } else if (glyphShape == FLAT) {
+                    k -= 1;
                 } else {
-                    shp = glyph.getShape();
+                    k += keyOf(glyphShape);
                 }
             }
 
-            // Number and shape determine key signature
-            if (shp == SHARP) {
-                key = glyphs.size();
-            } else if (shp == FLAT) {
-                key = -glyphs.size();
-            } else {
-                addError("Weird key signature " + this);
-            }
+            key = k;
         } else {
             addError("Empty key signature");
         }

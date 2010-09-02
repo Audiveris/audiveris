@@ -728,6 +728,32 @@ public enum Shape {
         return (this == TEXT) || (this == CHARACTER);
     }
 
+    //--------------//
+    // isSharpBased //
+    //--------------//
+    /**
+     * Check whether the shape is a sharp or a key-sig sequence of sharps
+     *
+     * @return true if sharp or sharp key sig
+     */
+    public boolean isSharpBased ()
+    {
+        return (this == SHARP) || ShapeRange.SharpKeys.contains(this);
+    }
+
+    //-------------//
+    // isFlatBased //
+    //-------------//
+    /**
+     * Check whether the shape is a flat or a key-sig sequence of flatss
+     *
+     * @return true if flat or flat key sig
+     */
+    public boolean isFlatBased ()
+    {
+        return (this == FLAT) || ShapeRange.FlatKeys.contains(this);
+    }
+
     //-------------//
     // isTrainable //
     //-------------//

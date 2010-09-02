@@ -41,16 +41,13 @@ public class ShapeRange
         EnumSet.range(FLAT, DOUBLE_FLAT));
     public static final ShapeRange Articulations = new ShapeRange(
         ARPEGGIATO,
-        EnumSet.range(ACCENT, STRONG_ACCENT),
-        STACCATO,
-        ARPEGGIATO);
+        shapesOf(EnumSet.range(ACCENT, STRONG_ACCENT), STACCATO, ARPEGGIATO));
     public static final ShapeRange Barlines = new ShapeRange(
         LEFT_REPEAT_SIGN,
         EnumSet.range(PART_DEFINING_BARLINE, BACK_TO_BACK_REPEAT_SIGN));
     public static final ShapeRange Beams = new ShapeRange(
         BEAM,
-        EnumSet.range(BEAM, BEAM_HOOK),
-        COMBINING_STEM);
+        shapesOf(EnumSet.range(BEAM, BEAM_HOOK), COMBINING_STEM));
     public static final ShapeRange Clefs = new ShapeRange(
         G_CLEF,
         EnumSet.range(G_CLEF, PERCUSSION_CLEF));
@@ -65,21 +62,21 @@ public class ShapeRange
         EnumSet.range(HEAD_AND_FLAG_1, HEAD_AND_FLAG_5_UP));
     public static final ShapeRange Keys = new ShapeRange(
         KEY_SHARP_3,
-        Arrays.asList(
-            KEY_SHARP_1,
-            KEY_SHARP_2,
-            KEY_SHARP_3,
-            KEY_SHARP_4,
-            KEY_SHARP_5,
-            KEY_SHARP_6,
-            KEY_SHARP_7,
+        shapesOf(
             KEY_FLAT_1,
             KEY_FLAT_2,
             KEY_FLAT_3,
             KEY_FLAT_4,
             KEY_FLAT_5,
             KEY_FLAT_6,
-            KEY_FLAT_7));
+            KEY_FLAT_7,
+            KEY_SHARP_1,
+            KEY_SHARP_2,
+            KEY_SHARP_3,
+            KEY_SHARP_4,
+            KEY_SHARP_5,
+            KEY_SHARP_6,
+            KEY_SHARP_7));
     public static final ShapeRange NoteHeads = new ShapeRange(
         NOTEHEAD_BLACK,
         EnumSet.range(VOID_NOTEHEAD, NOTEHEAD_BLACK_3));
@@ -94,7 +91,7 @@ public class ShapeRange
         EnumSet.range(GRACE_NOTE_SLASH, INVERTED_MORDENT));
     public static final ShapeRange Rests = new ShapeRange(
         QUARTER_REST,
-        Arrays.asList(
+        shapesOf(
             LONG_REST,
             BREVE_REST,
             WHOLE_REST,
@@ -108,8 +105,7 @@ public class ShapeRange
             ONE_HUNDRED_TWENTY_EIGHTH_REST));
     public static final ShapeRange Times = new ShapeRange(
         TIME_FOUR_FOUR,
-        EnumSet.range(TIME_ZERO, CUT_TIME),
-        CUSTOM_TIME_SIGNATURE);
+        shapesOf(EnumSet.range(TIME_ZERO, CUT_TIME), CUSTOM_TIME_SIGNATURE));
 
     /** A bag of miscellaneous shapes */
     public static final ShapeRange Others = new ShapeRange(
@@ -213,6 +209,26 @@ public class ShapeRange
         F_CLEF_OTTAVA_ALTA,
         F_CLEF_OTTAVA_BASSA);
 
+    /** All SHARP-based keys */
+    public static final EnumSet<Shape> SharpKeys = EnumSet.of(
+        KEY_SHARP_1,
+        KEY_SHARP_2,
+        KEY_SHARP_3,
+        KEY_SHARP_4,
+        KEY_SHARP_5,
+        KEY_SHARP_6,
+        KEY_SHARP_7);
+
+    /** All FLAT-based keys */
+    public static final EnumSet<Shape> FlatKeys = EnumSet.of(
+        KEY_FLAT_1,
+        KEY_FLAT_2,
+        KEY_FLAT_3,
+        KEY_FLAT_4,
+        KEY_FLAT_5,
+        KEY_FLAT_6,
+        KEY_FLAT_7);
+
     //~ Instance fields --------------------------------------------------------
 
     /** Name of the range */
@@ -236,55 +252,27 @@ public class ShapeRange
     //~ Constructors -----------------------------------------------------------
 
     /**
-     * Creates a new ShapeRange object from a specified sequence of shapes
+     * Creates a new ShapeRange object from a collection of shapes
      *
      * @param rep the representative shape
-     * @param sortedShapes specific sequence of shapes
+     * @param shapes the provided collection of shapes
      */
-    public ShapeRange (Shape       rep,
-                       List<Shape> sortedShapes)
+    public ShapeRange (Shape             rep,
+                       Collection<Shape> shapes)
     {
+        // The representative shape
         this.rep = rep;
-        shapes = EnumSet.noneOf(Shape.class);
 
-        for (Shape shape : sortedShapes) {
-            shapes.add(shape);
+        // The set of shapes
+        this.shapes = EnumSet.noneOf(Shape.class);
+        this.shapes.addAll(shapes);
+
+        // Keep a specific order?
+        if (shapes instanceof List) {
+            this.sortedShapes = new ArrayList<Shape>(shapes);
+        } else {
+            this.sortedShapes = null;
         }
-
-        this.sortedShapes = new ArrayList<Shape>(sortedShapes);
-    }
-
-    /**
-     * Creates a new ShapeRange object.
-     *
-     * @param rep the representative shape
-     * @param shapes the set of shapes defining the range
-     * @param addedShapes shapes added to the initial range
-     */
-    public ShapeRange (Shape          rep,
-                       EnumSet<Shape> shapes,
-                       Shape... addedShapes)
-    {
-        this.rep = rep;
-        this.shapes = shapes;
-
-        for (Shape shape : addedShapes) {
-            shapes.add(shape);
-        }
-
-        sortedShapes = null;
-    }
-
-    /**
-     * Creates a new ShapeRange object.
-     *
-     * @param shapes the set of shapes defining the range
-     * @param addedShapes shapes added to the initial range
-     */
-    public ShapeRange (EnumSet<Shape> shapes,
-                       Shape... addedShapes)
-    {
-        this(null, shapes, addedShapes);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -510,6 +498,39 @@ public class ShapeRange
     public static ShapeRange valueOf (String str)
     {
         return Ranges.map.get(str);
+    }
+
+    //----------//
+    // shapesOf //
+    //----------//
+    private static Collection<Shape> shapesOf (Collection<Shape> shapes,
+                                               Shape... added)
+    {
+        return shapesOf(shapes, shapesOf(added));
+    }
+
+    //----------//
+    // shapesOf //
+    //----------//
+    private static Collection<Shape> shapesOf (Collection<Shape> c1,
+                                               Collection<Shape> c2)
+    {
+        Collection<Shape> shapes = (c1 instanceof List)
+                                   ? new ArrayList<Shape>()
+                                   : EnumSet.noneOf(Shape.class);
+
+        shapes.addAll(c1);
+        shapes.addAll(c2);
+
+        return shapes;
+    }
+
+    //----------//
+    // shapesOf //
+    //----------//
+    private static Collection<Shape> shapesOf (Shape... shapes)
+    {
+        return Arrays.asList(shapes);
     }
 
     //---------//

@@ -33,6 +33,7 @@ public class DashMenu
 
     /** A specific shape range, meant just for ending and ledger shapes */
     private static final ShapeRange Dashes = new ShapeRange(
+        null,
         EnumSet.of(Shape.LEDGER, Shape.ENDING_HORIZONTAL));
 
     //~ Constructors -----------------------------------------------------------
