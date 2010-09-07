@@ -48,10 +48,10 @@ public class OmrExecutors
                                                .availableProcessors();
 
     // Specific pools
-    private static Pool             highs = new Highs();
-    private static Pool             lows = new Lows();
-    private static Pool             cachedLows = new CachedLows();
-    private static Pool             ocrs = new Ocrs();
+    private static final Pool       highs = new Highs();
+    private static final Pool       lows = new Lows();
+    private static final Pool       cachedLows = new CachedLows();
+    private static final Pool       ocrs = new Ocrs();
 
     /** To handle all the pools as a whole */
     private static Collection<Pool> allPools = Arrays.asList(

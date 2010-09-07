@@ -414,13 +414,18 @@ public class Main
                         tasks,
                         constants.processTimeOut.getValue(),
                         TimeUnit.SECONDS);
+                    logger.info("Checking " + tasks.size() + " task(s)");
 
                     // Check for time-out
                     for (Future<Void> future : futures) {
-                        if (future.isCancelled()) {
-                            logger.warning("*** TIME_OUT on Main tasks ***");
+                        try {
+                            future.get();
+                        } catch (Exception ex) {
+                            logger.warning("Future exception", ex);
+                        }
 
-                            break;
+                        if (future.isCancelled()) {
+                            logger.warning("*** Cancelled future: " + future);
                         }
                     }
                 } catch (Exception ex) {
@@ -430,6 +435,7 @@ public class Main
 
             // At this point all tasks have completed (normally or not)
             // So shutdown immediately the executors
+            logger.info("SHUTTING DOWN ...");
             OmrExecutors.shutdown(true);
 
             // Store latest constant values on disk ?

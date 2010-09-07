@@ -148,7 +148,7 @@ public class SheetsManager
      * @param sheet the sheet to close
      * @return true if we have done the closing
      */
-    public boolean close (Sheet sheet)
+    public synchronized boolean close (Sheet sheet)
     {
         if (logger.isFineEnabled()) {
             logger.fine("close " + sheet);
@@ -223,7 +223,7 @@ public class SheetsManager
      *
      * @param sheet the sheet to insert
      */
-    public void insertInstance (Sheet sheet)
+    public synchronized void insertInstance (Sheet sheet)
     {
         if (logger.isFineEnabled()) {
             logger.fine("insertInstance " + sheet);
@@ -231,10 +231,10 @@ public class SheetsManager
 
         // Remove duplicate if any
         for (Iterator<Sheet> it = instances.iterator(); it.hasNext();) {
-            Sheet s = it.next();
+            Sheet  s = it.next();
+            String path = s.getPath();
 
-            if (s.getPath()
-                 .equals(sheet.getPath())) {
+            if (path.equals(sheet.getPath())) {
                 if (logger.isFineEnabled()) {
                     logger.fine("Removing duplicate " + s);
                 }

@@ -679,7 +679,8 @@ public class SheetSteps
         public void doit (Collection<SystemInfo> unused)
             throws StepException
         {
-            new ScoreActions.WritePdfTask(sheet.getScore(), null).execute();
+            ScoreManager.getInstance()
+                        .pdfWrite(sheet.getScore(), null);
         }
     }
 

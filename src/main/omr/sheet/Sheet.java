@@ -88,6 +88,9 @@ public class Sheet
 
     //~ Instance fields --------------------------------------------------------
 
+    /** The provided path to the sheet image */
+    private final String imagePath;
+
     /** The recording of key processing data */
     private SheetBench bench;
 
@@ -230,6 +233,8 @@ public class Sheet
 
     private Sheet (String path)
     {
+        this.imagePath = path;
+
         sheetSteps = new SheetSteps(this);
 
         // Insert in list of handled sheets
@@ -542,22 +547,14 @@ public class Sheet
     // getPath //
     //---------//
     /**
-     * Report the (canonical) expression of the image file name, to uniquely and
-     * unambiguously identify this sheet.
+     * Report the path of provided image, to uniquely and unambiguously identify
+     * this sheet.
      *
-     * @return the normalized image file path
+     * @return the provided image path
      */
     public String getPath ()
     {
-        if (imageFile != null) {
-            return imageFile.getPath();
-        }
-
-        if (imageUrl != null) {
-            return imageUrl.getPath();
-        }
-
-        return null;
+        return imagePath;
     }
 
     //------------//
