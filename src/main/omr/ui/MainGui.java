@@ -743,6 +743,11 @@ public class MainGui
 
         public void willExit (EventObject e)
         {
+
+            // Close all sheets, to record their bench data
+            SheetsManager.getInstance().closeAllSheets();
+
+
             // Store latest constant values on disk
             ConstantManager.getInstance()
                            .storeResource();

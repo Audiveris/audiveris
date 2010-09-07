@@ -24,7 +24,7 @@ import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.ScorePoint;
-import omr.score.ui.ScoreView;
+import omr.score.ui.ScoreEditor;
 
 import omr.script.InsertTask;
 
@@ -197,8 +197,8 @@ public class ShapeBoard
     /** Current panel of shapes */
     private Panel shapesPanel;
 
-    /** The main target: score view */
-    private final ScoreView scoreView;
+    /** The main target: score editor view */
+    private final ScoreEditor scoreEditor;
 
     /** The window on score */
     private final JViewport scoreViewport;
@@ -236,9 +236,9 @@ public class ShapeBoard
         this.symbolsController = symbolsController;
         this.sheet = sheet;
 
-        scoreView = sheet.getScore()
-                         .getFirstView();
-        scoreViewport = scoreView.getViewport();
+        scoreEditor = sheet.getScore()
+                           .getEditor();
+        scoreViewport = scoreEditor.getViewport();
 
         body.add(rangesPanel = defineRangesPanel());
     }
@@ -404,7 +404,9 @@ public class ShapeBoard
                     .unscale(localPt);
 
                 ScorePoint scrPt = new ScorePoint(localPt.x, localPt.y);
-                dropOnTarget(shape, scoreView.toPixelPoint(scrPt));
+                dropOnTarget(
+                    shape,
+                    scoreEditor.getLayout().toPixelPoint(scrPt));
             } else if (screenPoint.isInComponent(
                 // The (zoomed) sheet view
                 sheet.getAssembly().getSelectedView().getComponent().getViewport())) {

@@ -37,7 +37,7 @@ import static javax.swing.Action.*;
 
 /**
  * Class <code>ScoreMenu</code> defines the popup menu which is linked to the
- * current selection in score view
+ * current selection in score editor view
  *
  * @author Hervé Bitteur
  */
@@ -53,8 +53,8 @@ public class ScoreMenu
     /** The related score */
     private final Score score;
 
-    /** The related score view */
-    private final ScoreView scoreView;
+    /** The related score editor view */
+    private final ScoreEditor scoreEditor;
 
     /** Set of actions to update menu according to current selections */
     private final Collection<DynAction> dynActions = new HashSet<DynAction>();
@@ -78,13 +78,13 @@ public class ScoreMenu
     /**
      * Create the popup menu
      *
-     * @param scoreView the related score view
+     * @param scoreEditor the related score editor view
      */
-    public ScoreMenu (ScoreView scoreView)
+    public ScoreMenu (ScoreEditor scoreEditor)
     {
-        this.scoreView = scoreView;
+        this.scoreEditor = scoreEditor;
 
-        score = scoreView.getScore();
+        score = scoreEditor.getScore();
         popup = new JPopupMenu();
         defineLayout();
     }
@@ -115,9 +115,9 @@ public class ScoreMenu
     public void updateMenu (ScorePoint scrPt)
     {
         // Analyze the context
-        system = scoreView.scoreLocateSystem(scrPt);
-
-        SystemView  systemView = scoreView.getSystemView(system);
+        ScoreLayout scoreLayout = scoreEditor.getLayout();
+        system = scoreLayout.scoreLocateSystem(scrPt);
+        SystemView  systemView = scoreLayout.getSystemView(system);
         PagePoint   pagPt = systemView.toPagePoint(scrPt);
         SystemPoint sysPt = system.toSystemPoint(pagPt);
         SystemPart  part = system.getPartAt(sysPt);

@@ -29,6 +29,8 @@ import omr.score.entity.SlotPolicy;
 import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
 import omr.score.ui.ScoreConstants;
+import omr.score.ui.ScoreEditor;
+import omr.score.ui.ScoreLayout;
 import omr.score.ui.ScoreOrientation;
 import omr.score.ui.ScoreTree;
 import omr.score.ui.ScoreView;
@@ -45,9 +47,7 @@ import omr.util.TreeNode;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.*;
 
 import javax.swing.JFrame;
 
@@ -142,6 +142,16 @@ public class Score
     /** Where the MIDI data is to be stored */
     private File midiFile;
 
+    /** Where the PDF data is to be stored */
+    private File pdfFile;
+
+    /** Global score and systems layouts per orientation*/
+    private final EnumMap<ScoreOrientation, ScoreLayout> layouts = new EnumMap<ScoreOrientation, ScoreLayout>(
+        ScoreOrientation.class);
+
+    /** Specific score editor view */
+    private ScoreEditor editor;
+
     //~ Constructors -----------------------------------------------------------
 
     //-------//
@@ -157,6 +167,8 @@ public class Score
         super(null); // No container
 
         setImagePath(imagePath);
+
+        createLayouts();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -363,6 +375,36 @@ public class Score
         return durationDivisor;
     }
 
+    //-----------//
+    // setEditor //
+    //-----------//
+    /**
+     * @param editor the editor to set
+     */
+    public void setEditor (ScoreEditor editor)
+    {
+        if (this.editor != null) {
+            views.remove(this.editor);
+        }
+
+        this.editor = editor;
+
+        if (editor != null) {
+            addView(editor);
+        }
+    }
+
+    //-----------//
+    // setEditor //
+    //-----------//
+    /**
+     * @return the editor
+     */
+    public ScoreEditor getEditor ()
+    {
+        return editor;
+    }
+
     //---------------//
     // setExportFile //
     //---------------//
@@ -401,23 +443,6 @@ public class Score
             return null;
         } else {
             return (ScoreSystem) children.get(0);
-        }
-    }
-
-    //--------------//
-    // getFirstView //
-    //--------------//
-    /**
-     * Report the first view on this score
-     * (actually the only one for the time being)
-     * @return the (first) view on the score, if any
-     */
-    public ScoreView getFirstView ()
-    {
-        if (!views.isEmpty()) {
-            return views.get(0);
-        } else {
-            return null;
         }
     }
 
@@ -541,6 +566,19 @@ public class Score
         }
     }
 
+    //-----------//
+    // getLayout //
+    //-----------//
+    /**
+     * Report the proper layout for the provided score orientation
+     * @param orientation the desired score orientation
+     * @return the corresponding layout
+     */
+    public ScoreLayout getLayout (ScoreOrientation orientation)
+    {
+        return layouts.get(orientation);
+    }
+
     //-------------------//
     // getMaxStaffNumber //
     //-------------------//
@@ -622,31 +660,13 @@ public class Score
     //----------------//
     // setOrientation //
     //----------------//
-    /**
-     * @param orientation the orientation to set
-     */
     public void setOrientation (ScoreOrientation orientation)
     {
-        this.orientation = orientation;
-
-        if (logger.isFineEnabled()) {
-            logger.fine("New score system layout: " + orientation);
-        }
+        ScoreLayout layout = getLayout(orientation);
 
         for (ScoreView view : views) {
-            view.setOrientation(orientation);
+            view.setLayout(layout);
         }
-    }
-
-    //----------------//
-    // getOrientation //
-    //----------------//
-    /**
-     * @return the orientation
-     */
-    public ScoreOrientation getOrientation ()
-    {
-        return orientation;
     }
 
     //-------------//
@@ -673,6 +693,30 @@ public class Score
     public List<ScorePart> getPartList ()
     {
         return partList;
+    }
+
+    //------------//
+    // setPdfFile //
+    //------------//
+    /**
+     * Remember to which file the PDF data is to be exported
+     * @param pdfFile the Midi file
+     */
+    public void setPdfFile (File pdfFile)
+    {
+        this.pdfFile = pdfFile;
+    }
+
+    //------------//
+    // getPdfFile //
+    //------------//
+    /**
+     * Report to which file, if any, the PDF data is to be written
+     * @return the PDF file, or null
+     */
+    public File getPdfFile ()
+    {
+        return pdfFile;
     }
 
     //----------//
@@ -939,7 +983,7 @@ public class Score
     //--------------//
     /**
      * Report the index of the provided view in the sequence of all views
-     * @param view the view ro look up
+     * @param view the view to look up
      * @return the sequence index, or -1 if not found
      */
     public int getViewIndex (ScoreView view)
@@ -1251,9 +1295,9 @@ public class Score
      */
     public void resetSystems ()
     {
-        // Nullify views on systems
-        for (ScoreView view : views) {
-            view.resetSystemViews();
+        // Reset views on systems
+        for (ScoreLayout layout : layouts.values()) {
+            layout.reset();
         }
 
         // Discard systems
@@ -1313,8 +1357,24 @@ public class Score
      */
     public void updateViews ()
     {
+        // Refresh the score layouts
+        for (ScoreLayout layout : layouts.values()) {
+            layout.computeLayout();
+        }
+
+        // Update the score views accordingly
         for (ScoreView view : views) {
             view.update();
+        }
+    }
+
+    //---------------//
+    // createLayouts //
+    //---------------//
+    private void createLayouts ()
+    {
+        for (ScoreOrientation orientation : ScoreOrientation.values()) {
+            layouts.put(orientation, new ScoreLayout(this, orientation));
         }
     }
 

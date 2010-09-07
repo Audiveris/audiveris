@@ -13,7 +13,7 @@ import omr.WellKnowns;
 
 /**
  * Class <code>Audiveris</code> is simply the entry point to OMR, which
- * delegates the call to {@link omr.Main#main}.
+ * delegates the call to {@link omr.Main#doMain}.
  *
  * @author Hervé Bitteur
  */
@@ -45,6 +45,6 @@ public final class Audiveris
         WellKnowns.ensureLoaded();
 
         // Then we call Main...
-        omr.Main.main(args);
+        omr.Main.doMain(args);
     }
 }

@@ -220,6 +220,9 @@ public class CLI
                 } else if (token.equalsIgnoreCase("-batch")) {
                     params.batchMode = true;
                     paramNeeded = false;
+                } else if (token.equalsIgnoreCase("-bench")) {
+                    params.benchFlag = true;
+                    paramNeeded = false;
                 } else if (token.equalsIgnoreCase("-step")) {
                     status = Status.STEP;
                     paramNeeded = true;
@@ -378,6 +381,9 @@ public class CLI
         /** Flag that indicates a batch mode */
         boolean batchMode = false;
 
+        /** Flag that indicates bench data is to be saved */
+        boolean benchFlag = false;
+
         /** The desired step if any (option: -step stepName) */
         Step targetStep = Step.LOAD;
 
@@ -404,6 +410,8 @@ public class CLI
             StringBuilder sb = new StringBuilder();
             sb.append("\nbatchMode=")
               .append(batchMode);
+            sb.append("\nbenchFlag=")
+              .append(benchFlag);
             sb.append("\ntargetStep=")
               .append(targetStep);
             sb.append("\noptions=")

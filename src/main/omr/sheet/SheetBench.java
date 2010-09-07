@@ -13,6 +13,8 @@ package omr.sheet;
 
 import omr.Main;
 
+import omr.log.Logger;
+
 import omr.score.Score;
 import omr.score.ScoreManager;
 
@@ -63,6 +65,9 @@ import java.util.*;
 public class SheetBench
 {
     //~ Static fields/initializers ---------------------------------------------
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(SheetBench.class);
 
     /** Special key which indicates that an interruption has occurred */
     private static final String INTERRUPTION_KEY = "whole.interrupted";

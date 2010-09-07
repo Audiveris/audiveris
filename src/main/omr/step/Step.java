@@ -93,6 +93,11 @@ public enum Step {
     SCORE(true, true, SYMBOLS.label, "Translate glyphs to score items"), 
 
     /**
+     * Print the whole score
+     */
+    PRINT(false, true, SYMBOLS.label, "Write the output PDF file"), 
+
+    /**
      * Play the whole score
      */
     PLAY(false, true, SYMBOLS.label, "Play the whole score"), 
@@ -225,8 +230,16 @@ public enum Step {
             synchronized (sheet.getSheetSteps()) {
                 // Determine the starting step
                 Step latest = sheet.getSheetSteps()
-                                   .getLatestStep();
-                Step from = (latest == null) ? first : latest.next();
+                                   .getLatestMandatoryStep();
+                Step from = (latest == null) ? first
+                            : ((latest == this) ? this : latest.next());
+
+                // Debug
+                if (false) {
+                    logger.info(
+                        "perfomrUntil. latest:" + latest + " from:" + from +
+                        " until:" + this);
+                }
 
                 if (from.compareTo(this) <= 0) {
                     // The precise collection of steps to perform

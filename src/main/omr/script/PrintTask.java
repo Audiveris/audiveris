@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                         M i d i W r i t e T a s k                          //
+//                             P r i n t T a s k                              //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -20,40 +20,40 @@ import java.io.File;
 import javax.xml.bind.annotation.*;
 
 /**
- * Class {@code MidiWriteTask} writes the Midi file of a score
+ * Class {@code PrintTask} prints a score to a PDFfile
  *
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
-public class MidiWriteTask
+public class PrintTask
     extends ScriptTask
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** The file used for export */
+    /** The file used for print */
     @XmlAttribute
     private String path;
 
     //~ Constructors -----------------------------------------------------------
 
-    //---------------//
-    // MidiWriteTask //
-    //---------------//
+    //------------//
+    // PrintTask //
+    //------------//
     /**
-     * Create a task to write the midi file of a sheet
+     * Create a task to print the score to a PDF file
      *
-     * @param path the full path of the midi file
+     * @param path the full path of the PDF file
      */
-    public MidiWriteTask (String path)
+    public PrintTask (String path)
     {
         this.path = path;
     }
 
-    //---------------//
-    // MidiWriteTask //
-    //---------------//
+    //------------//
+    // PrintTask //
+    //------------//
     /** No-arg constructor needed by JAXB */
-    private MidiWriteTask ()
+    private PrintTask ()
     {
     }
 
@@ -64,10 +64,9 @@ public class MidiWriteTask
     //------//
     @Override
     public void core (Sheet sheet)
-        throws Exception
     {
         ScoreManager.getInstance()
-                    .midiWrite(
+                    .pdfWrite(
             sheet.getScore(),
             (path != null) ? new File(path) : null);
     }
@@ -78,6 +77,6 @@ public class MidiWriteTask
     @Override
     protected String internalsString ()
     {
-        return " write " + path + super.internalsString();
+        return " print " + path + super.internalsString();
     }
 }

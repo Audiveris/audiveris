@@ -36,6 +36,8 @@
     <action domain="SCORE" section="10" class="omr.score.ui.ScoreActions" method="rebuildScore"     button="javax.swing.JButton"/>
     <action domain="SCORE" section="10" class="omr.score.ui.ScoreActions" method="toggleRebuild"    item="javax.swing.JCheckBoxMenuItem" />
     <action domain="SCORE" section="20" class="omr.score.ui.ScoreActions" method="defineParameters" button="javax.swing.JButton"/>
+    <action domain="SCORE" section="30" class="omr.score.ui.ScoreActions" method="writePdf"         button="javax.swing.JButton"/>
+    <action domain="SCORE" section="30" class="omr.score.ui.ScoreActions" method="writePdfAs"/>
     <action domain="SCORE" section="40" class="omr.score.ui.ScoreActions" method="storeScore"       button="javax.swing.JButton"/>
     <action domain="SCORE" section="40" class="omr.score.ui.ScoreActions" method="storeScoreAs"/>
     
@@ -43,7 +45,7 @@
     <action domain="MIDI" section="30"  class="omr.score.midi.MidiActions" method="writeMidi" />
     <action domain="MIDI" section="30"  class="omr.score.midi.MidiActions" method="writeMidiAs" />
 
-    <action domain="VIEW" section="10"  class="omr.score.ui.PaintingParameters"               method="toggleLayout"   item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="10"  class="omr.score.ui.LayoutParameter"                  method="toggleLayout"   item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="10"  class="omr.score.ui.PaintingParameters"               method="toggleDummies"  item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="20"  class="omr.score.ui.PaintingParameters"               method="toggleSlots"    item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="20"  class="omr.score.ui.PaintingParameters"               method="toggleVoices"   item="javax.swing.JCheckBoxMenuItem"/>

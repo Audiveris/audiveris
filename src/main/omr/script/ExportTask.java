@@ -70,7 +70,10 @@ public class ExportTask
     public void core (Sheet sheet)
     {
         ScoreManager.getInstance()
-                    .export(sheet.getScore(), new File(path), injectSignature);
+                    .export(
+            sheet.getScore(),
+            (path != null) ? new File(path) : null,
+            injectSignature);
     }
 
     //-----------------//

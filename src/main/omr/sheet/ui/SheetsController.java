@@ -17,6 +17,7 @@ import omr.constant.ConstantSet;
 import omr.log.Logger;
 
 import omr.score.Score;
+import omr.score.ui.LayoutParameter;
 import omr.score.ui.PaintingParameters;
 
 import omr.script.ScriptActions;
@@ -109,9 +110,9 @@ public class SheetsController
         sheetSetService = new SelectionService();
 
         // Listen to system layout property
-        PaintingParameters.getInstance()
-                          .addPropertyChangeListener(
-            PaintingParameters.VERTICAL_LAYOUT,
+        LayoutParameter.getInstance()
+                       .addPropertyChangeListener(
+            LayoutParameter.VERTICAL_LAYOUT,
             this);
     }
 
@@ -228,7 +229,7 @@ public class SheetsController
 
                             if (score != null) {
                                 score.setOrientation(
-                                    PaintingParameters.getInstance().getScoreOrientation());
+                                    LayoutParameter.getInstance().getScoreOrientation());
                             }
                         }
 

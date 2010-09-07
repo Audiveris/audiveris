@@ -66,35 +66,36 @@ public class ScoreController
         return null;
     }
 
-    //--------------//
-    // setScoreView //
-    //--------------//
+    //----------------//
+    // setScoreEditor //
+    //----------------//
     /**
-     * Set the various display parameter of a view for the given score, if such
-     * score is provided, or a blank tab otherwise.
+     * Set the various display parameter of an editor view for the given score,
+     * if such score is provided
      *
      * @param score the desired score if any, null otherwise
      */
-    public void setScoreView (Score score)
+    public void setScoreEditor (Score score)
     {
         Sheet sheet = null;
 
         if (score != null) {
             // Make sure we have a proper score view
-            ScoreView view = score.getFirstView();
+            ScoreEditor editor = score.getEditor();
 
-            if (view == null) {
+            if (editor == null) {
                 // Build a brand new display on this score
-                view = new ScoreView(score);
+                editor = new ScoreEditor(score);
+                score.setEditor(editor);
             } else {
                 // So that scroll bars be OK
-                view.update();
+                editor.update();
             }
 
-            // Make sure the view is part of the related sheet assembly
+            // Make sure the editor view is part of the related sheet assembly
             sheet = score.getSheet();
             sheet.getAssembly()
-                 .setScoreView(view);
+                 .setScoreEditor(editor);
         }
 
         SheetsController.getInstance()

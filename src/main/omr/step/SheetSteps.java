@@ -104,6 +104,7 @@ public class SheetSteps
         tasks.put(VERTICALS, new VerticalsTask(sheet, VERTICALS));
         tasks.put(PATTERNS, new PatternsTask(sheet, PATTERNS));
         tasks.put(SCORE, new ScoreTask(sheet, SCORE));
+        tasks.put(PRINT, new PrintTask(sheet, PRINT));
         tasks.put(PLAY, new PlayTask(sheet, PLAY));
         tasks.put(MIDI, new MidiWriteTask(sheet, MIDI));
         tasks.put(EXPORT, new ExportTask(sheet, EXPORT));
@@ -564,7 +565,7 @@ public class SheetSteps
         @Override
         public void displayUI ()
         {
-            Main.getGui().scoreController.setScoreView(sheet.getScore());
+            Main.getGui().scoreController.setScoreEditor(sheet.getScore());
         }
 
         @Override
@@ -656,6 +657,33 @@ public class SheetSteps
     }
 
     //-----------//
+    // PrintTask //
+    //-----------//
+    /**
+     * Step to print the whole score, to a PDF output
+     */
+    private static class PrintTask
+        extends SheetTask
+    {
+        //~ Constructors -------------------------------------------------------
+
+        PrintTask (Sheet sheet,
+                   Step  step)
+        {
+            super(sheet, step);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void doit (Collection<SystemInfo> unused)
+            throws StepException
+        {
+            new ScoreActions.WritePdfTask(sheet.getScore(), null).execute();
+        }
+    }
+
+    //-----------//
     // ScaleTask //
     //-----------//
     /**
@@ -709,7 +737,7 @@ public class SheetSteps
         @Override
         public void displayUI ()
         {
-            Main.getGui().scoreController.setScoreView(sheet.getScore());
+            Main.getGui().scoreController.setScoreEditor(sheet.getScore());
         }
 
         @Override

@@ -372,15 +372,15 @@ public class Main
         return toolVersion;
     }
 
-    //------//
-    // main //
-    //------//
+    //--------//
+    // doMain //
+    //--------//
     /**
      * Specific starting method for the application.
      * @param args command line parameters
      * @see omr.Main the possible command line parameters
      */
-    public static void main (String[] args)
+    public static void doMain (String[] args)
     {
         // Initialize tool parameters
         initialize();
@@ -407,7 +407,7 @@ public class Main
 
             if (!tasks.isEmpty()) {
                 try {
-                    logger.info("Submitting " + tasks.size() + " tasks");
+                    logger.info("Submitting " + tasks.size() + " task(s)");
 
                     List<Future<Void>> futures = OmrExecutors.getCachedLowExecutor()
                                                              .invokeAll(
@@ -442,6 +442,18 @@ public class Main
                 logger.fine("End of main");
             }
         }
+    }
+
+    //--------------//
+    // hasBenchFlag //
+    //--------------//
+    /**
+     * Report whether the bench flag is present on the CLI
+     * @return true if the bench flag appears on CLI
+     */
+    public static boolean hasBenchFlag ()
+    {
+        return parameters.benchFlag;
     }
 
     //-------------//

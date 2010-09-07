@@ -18,6 +18,7 @@ import omr.constant.ConstantSet;
 import omr.log.Logger;
 
 import omr.score.common.PixelRectangle;
+import omr.score.ui.ScoreEditor;
 import omr.score.ui.ScoreView;
 
 import omr.selection.SheetLocationEvent;
@@ -112,7 +113,7 @@ public class SheetAssembly
     private final Rubber rubber = new Rubber(zoom);
 
     /** Related Score view */
-    private ScoreView scoreView;
+    private ScoreView scoreEditor;
 
     /** Service of sheetlocation */
     private EventService locationService;
@@ -190,23 +191,23 @@ public class SheetAssembly
         return component;
     }
 
-    //--------------//
-    // setScoreView //
-    //--------------//
+    //----------------//
+    // setScoreEditor //
+    //----------------//
     /**
-     * Assign the ScoreView part to the assembly
-     * @param scoreView the Score View
+     * Assign the ScoreEditor to the assembly
+     * @param scoreEditor the Score Editor View
      */
-    public void setScoreView (final ScoreView scoreView)
+    public void setScoreEditor (final ScoreEditor scoreEditor)
     {
-        if (this.scoreView != null) {
-            closeScoreView();
+        if (this.scoreEditor != null) {
+            closeScoreEditor();
         }
 
         // Position score view as the higher part of the splitPane
-        splitPane.setTopComponent(scoreView.getComponent());
+        splitPane.setTopComponent(scoreEditor.getComponent());
         splitPane.setDividerLocation(constants.scoreSheetDivider.getValue());
-        this.scoreView = scoreView;
+        this.scoreEditor = scoreEditor;
     }
 
     //-----------------//
@@ -385,21 +386,21 @@ public class SheetAssembly
         tabs.clear(); // Useful ???
     }
 
-    //----------------//
-    // closeScoreView //
-    //----------------//
+    //------------------//
+    // closeScoreEditor //
+    //------------------//
     /**
-     * Close the score view part
+     * Close the score editor
      */
-    public void closeScoreView ()
+    public void closeScoreEditor ()
     {
-        if (scoreView != null) {
+        if (scoreEditor != null) {
             if (logger.isFineEnabled()) {
-                logger.fine("Closing scoreView for " + scoreView.getScore());
+                logger.fine("Closing scoreView for " + scoreEditor.getScore());
             }
 
             splitPane.setTopComponent(null);
-            scoreView = null;
+            scoreEditor = null;
         }
     }
 

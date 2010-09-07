@@ -133,7 +133,7 @@ public class StepMenu
                     {
                         Step sofar = steps.getLatestMandatoryStep();
 
-                        if ((sofar == null) || (sofar.compareTo(step) < 0)) {
+                        if ((sofar == null) || (sofar.compareTo(step) <= 0)) {
                             step.performUntil(sheet);
                         } else {
                             steps.rebuildFrom(step, null, true);

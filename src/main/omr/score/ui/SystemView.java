@@ -23,8 +23,8 @@ import static omr.score.ui.ScoreConstants.*;
 
 /**
  * Class <code>SystemView</code> encapsulates information for a specific
- * display of a score system, and especially the display origin in the ScoreView
- * of the topLeft corner of the related system.
+ * layout of a score system, and especially the origin in the Score layout
+ * of the top-left corner of the related system.
  *
  * @author Hervé Bitteur
  */

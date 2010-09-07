@@ -135,8 +135,8 @@ public class ConstantManager
     /** User properties file name */
     private static final String USER_FILE_NAME = "run.properties";
 
-//    /** Current properties file name */
-//    private static final String CURRENT_FILE_NAME = "run.properties.xml";
+    //    /** Current properties file name */
+    //    private static final String CURRENT_FILE_NAME = "run.properties.xml";
 
     /** User properties file folder */
     private static final File USER_FILE_FOLDER = new File(
@@ -165,12 +165,12 @@ public class ConstantManager
         new File(USER_FILE_FOLDER, USER_FILE_NAME),
         defaultHolder);
 
-//    /** Current properties */
-//    private final CurrentHolder currentHolder = new CurrentHolder(
-//        null,
-//        new File(USER_FILE_FOLDER, CURRENT_FILE_NAME));
-
     //~ Constructors -----------------------------------------------------------
+
+    //    /** Current properties */
+    //    private final CurrentHolder currentHolder = new CurrentHolder(
+    //        null,
+    //        new File(USER_FILE_FOLDER, CURRENT_FILE_NAME));
 
     //-----------------//
     // ConstantManager //
@@ -319,6 +319,7 @@ public class ConstantManager
     public void storeResource ()
     {
         userHolder.store();
+
         ///currentHolder.store();
     }
 
@@ -462,11 +463,12 @@ public class ConstantManager
                 if (in != null) {
                     properties.load(in);
                     in.close();
-//                } else {
-//                    // We should have a resource available
-//                    logger.warning(
-//                        "[" + ConstantManager.class.getName() + "]" +
-//                        " No property resource " + resourceName);
+
+                    //                } else {
+                    //                    // We should have a resource available
+                    //                    logger.warning(
+                    //                        "[" + ConstantManager.class.getName() + "]" +
+                    //                        " No property resource " + resourceName);
                 }
             } catch (IOException ex) {
                 logger.severe(
@@ -475,81 +477,81 @@ public class ConstantManager
         }
     }
 
-//    //---------------//
-//    // CurrentHolder //
-//    //---------------//
-//    /**
-//     * This utility holder is meant to ease the storing of ALL current values
-//     * in some XML file
-//     */
-//    private class CurrentHolder
-//        extends AbstractHolder
-//    {
-//        //~ Constructors -------------------------------------------------------
-//
-//        public CurrentHolder (String resourceName,
-//                              File   file)
-//        {
-//            super(resourceName, file);
-//        }
-//
-//        //~ Methods ------------------------------------------------------------
-//
-//        public void buildProperties ()
-//        {
-//            properties = new Properties();
-//
-//            // Browse all constant entries
-//            for (Entry<String, Constant> entry : constants.entrySet()) {
-//                final String   key = entry.getKey();
-//                final Constant constant = entry.getValue();
-//                final String   current = constant.getCurrentString();
-//                properties.setProperty(key, current);
-//            }
-//        }
-//
-//        public void store ()
-//        {
-//            buildProperties();
-//
-//            // Save all the current values
-//            FileOutputStream out = null;
-//
-//            try {
-//                if (logger.isFineEnabled()) {
-//                    logger.fine("Store constants into " + file);
-//                }
-//
-//                // First make sure the directory exists
-//                if (file.getParentFile()
-//                        .mkdirs()) {
-//                    logger.info("Creating " + file);
-//                }
-//
-//                // Then write down the properties
-//                out = new FileOutputStream(file);
-//                properties.storeToXML(
-//                    out,
-//                    "Audiveris current properties. Do not edit");
-//                out.close();
-//            } catch (FileNotFoundException ex) {
-//                logger.warning(
-//                    "Property file " + file.getAbsolutePath() +
-//                    " not found or not writable");
-//            } catch (IOException ex) {
-//                logger.warning(
-//                    "Error while storing the property file " +
-//                    file.getAbsolutePath());
-//            } finally {
-//                if (out != null) {
-//                    try {
-//                        out.close();
-//                    } catch (Exception ignored) {
-//                    }
-//                }
-//            }
-//        }
-//    }
+    //    //---------------//
+    //    // CurrentHolder //
+    //    //---------------//
+    //    /**
+    //     * This utility holder is meant to ease the storing of ALL current values
+    //     * in some XML file
+    //     */
+    //    private class CurrentHolder
+    //        extends AbstractHolder
+    //    {
+    //        //~ Constructors -------------------------------------------------------
+    //
+    //        public CurrentHolder (String resourceName,
+    //                              File   file)
+    //        {
+    //            super(resourceName, file);
+    //        }
+    //
+    //        //~ Methods ------------------------------------------------------------
+    //
+    //        public void buildProperties ()
+    //        {
+    //            properties = new Properties();
+    //
+    //            // Browse all constant entries
+    //            for (Entry<String, Constant> entry : constants.entrySet()) {
+    //                final String   key = entry.getKey();
+    //                final Constant constant = entry.getValue();
+    //                final String   current = constant.getCurrentString();
+    //                properties.setProperty(key, current);
+    //            }
+    //        }
+    //
+    //        public void store ()
+    //        {
+    //            buildProperties();
+    //
+    //            // Save all the current values
+    //            FileOutputStream out = null;
+    //
+    //            try {
+    //                if (logger.isFineEnabled()) {
+    //                    logger.fine("Store constants into " + file);
+    //                }
+    //
+    //                // First make sure the directory exists
+    //                if (file.getParentFile()
+    //                        .mkdirs()) {
+    //                    logger.info("Creating " + file);
+    //                }
+    //
+    //                // Then write down the properties
+    //                out = new FileOutputStream(file);
+    //                properties.storeToXML(
+    //                    out,
+    //                    "Audiveris current properties. Do not edit");
+    //                out.close();
+    //            } catch (FileNotFoundException ex) {
+    //                logger.warning(
+    //                    "Property file " + file.getAbsolutePath() +
+    //                    " not found or not writable");
+    //            } catch (IOException ex) {
+    //                logger.warning(
+    //                    "Error while storing the property file " +
+    //                    file.getAbsolutePath());
+    //            } finally {
+    //                if (out != null) {
+    //                    try {
+    //                        out.close();
+    //                    } catch (Exception ignored) {
+    //                    }
+    //                }
+    //            }
+    //        }
+    //    }
 
     //---------------//
     // DefaultHolder //

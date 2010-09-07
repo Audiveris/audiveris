@@ -39,9 +39,6 @@ public class PaintingParameters
     /** Should the slots be painted */
     public static final String SLOT_PAINTING = "slotPainting";
 
-    /** Should the systems be painted vertically */
-    public static final String VERTICAL_LAYOUT = "verticalLayout";
-
     /** Should the voices be painted */
     public static final String VOICE_PAINTING = "voicePainting";
 
@@ -100,15 +97,6 @@ public class PaintingParameters
         return constants.markPainting.getValue();
     }
 
-    //---------------------//
-    // getScoreOrientation //
-    //---------------------//
-    public ScoreOrientation getScoreOrientation ()
-    {
-        return constants.verticalLayout.getValue() ? ScoreOrientation.VERTICAL
-               : ScoreOrientation.HORIZONTAL;
-    }
-
     //-----------------//
     // setSlotPainting //
     //-----------------//
@@ -128,27 +116,6 @@ public class PaintingParameters
     public boolean isSlotPainting ()
     {
         return constants.slotPainting.getValue();
-    }
-
-    //-------------------//
-    // setVerticalLayout //
-    //-------------------//
-    public void setVerticalLayout (boolean value)
-    {
-        boolean oldValue = constants.verticalLayout.getValue();
-        constants.verticalLayout.setValue(value);
-        firePropertyChange(
-            VERTICAL_LAYOUT,
-            oldValue,
-            constants.verticalLayout.getValue());
-    }
-
-    //------------------//
-    // isVerticalLayout //
-    //------------------//
-    public boolean isVerticalLayout ()
-    {
-        return constants.verticalLayout.getValue();
     }
 
     //------------------//
@@ -181,18 +148,6 @@ public class PaintingParameters
      */
     @Action(selectedProperty = DUMMY_PAINTING)
     public void toggleDummies (ActionEvent e)
-    {
-    }
-
-    //--------------//
-    // toggleLayout //
-    //--------------//
-    /**
-     * Action that toggles the layout of the systems
-     * @param e the event that triggered this action
-     */
-    @Action(selectedProperty = VERTICAL_LAYOUT)
-    public void toggleLayout (ActionEvent e)
     {
     }
 
@@ -241,11 +196,6 @@ public class PaintingParameters
         extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
-
-        /** Should the systems be painted vertically */
-        final Constant.Boolean verticalLayout = new Constant.Boolean(
-            true,
-            "Should the systems be painted vertically");
 
         /** Should the slots be painted */
         final Constant.Boolean slotPainting = new Constant.Boolean(

@@ -20,13 +20,23 @@ import omr.log.Logger;
 
 import omr.score.midi.MidiAbstractions;
 import omr.score.midi.MidiAgent;
+import omr.score.ui.PaintingParameters;
 import omr.score.ui.ScoreActions;
+import omr.score.ui.ScoreOrientation;
+import omr.score.ui.ScorePainter;
+import omr.score.ui.ScoreView;
 
 import omr.sheet.SheetBench;
 
-import omr.ui.util.OmrFileFilter;
-import omr.ui.util.UIUtilities;
+import omr.ui.view.Zoom;
 
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfWriter;
+
+import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.io.*;
 
 /**
@@ -116,6 +126,22 @@ public class ScoreManager
             score.getRadix() + MidiAbstractions.MIDI_EXTENSION);
     }
 
+    //-------------------//
+    // getDefaultPdfFile //
+    //-------------------//
+    /**
+     * Report the file to which the PDF data would be written by default
+     * @param score the score to export
+     * @return the default file
+     */
+    public File getDefaultPdfFile (Score score)
+    {
+        return (score.getPdfFile() != null) ? score.getPdfFile()
+               : new File(
+            constants.defaultPdfDirectory.getValue(),
+            score.getRadix() + ".pdf");
+    }
+
     //--------//
     // export //
     //--------//
@@ -146,7 +172,7 @@ public class ScoreManager
                         Boolean injectSignature)
     {
         if (exportFile == null) {
-            exportFile = this.getDefaultExportFile(score);
+            exportFile = getDefaultExportFile(score);
         }
 
         // Make sure the folder exists
@@ -220,52 +246,70 @@ public class ScoreManager
             return;
         }
 
-        // Where do we write the midi file?
         if (midiFile == null) {
-            midiFile = new File(
-                constants.defaultMidiDirectory.getValue(),
-                score.getRadix() + MidiAbstractions.MIDI_EXTENSION);
-
-            // Ask user confirmation, if Gui available
-            if (Main.getGui() != null) {
-                // Let the user select a score output file
-                OmrFileFilter filter = new OmrFileFilter(
-                    "Midi files",
-                    new String[] { MidiAbstractions.MIDI_EXTENSION });
-                midiFile = UIUtilities.fileChooser(
-                    true,
-                    null,
-                    midiFile,
-                    filter);
-            }
+            midiFile = getDefaultMidiFile(score);
         }
 
-        if (midiFile != null) {
-            // Make sure the folder exists
-            File folder = new File(midiFile.getParent());
+        // Make sure the folder exists
+        File folder = new File(midiFile.getParent());
 
-            if (folder.mkdirs()) {
-                logger.info("Creating folder " + folder);
+        if (folder.mkdirs()) {
+            logger.info("Creating folder " + folder);
+        }
+
+        // Actually write the Midi file
+        try {
+            MidiAgent agent = MidiAgent.getInstance();
+
+            if (agent.getScore() != score) {
+                agent.setScore(score);
             }
 
-            // Actually write the Midi file
-            try {
-                MidiAgent agent = MidiAgent.getInstance();
+            agent.write(midiFile);
+            score.setMidiFile(midiFile);
+            logger.info("Midi written to " + midiFile);
 
-                if (agent.getScore() != score) {
-                    agent.setScore(score);
-                }
+            // Remember (even across runs) the selected directory
+            constants.defaultMidiDirectory.setValue(midiFile.getParent());
+        } catch (Exception ex) {
+            logger.warning("Cannot write Midi to " + midiFile, ex);
+            throw ex;
+        }
+    }
 
-                agent.write(midiFile);
-                score.setMidiFile(midiFile);
-                logger.info("Midi written to " + midiFile);
+    //----------//
+    // pdfWrite //
+    //----------//
+    /**
+     * Print the score into the provided PDF file.
+     *
+     * @param score the provided score
+     * @param pdfFile the PDF file to write
+     */
+    public void pdfWrite (Score score,
+                          File  pdfFile)
+    {
+        if (pdfFile == null) {
+            pdfFile = getDefaultPdfFile(score);
+        }
 
-                // Remember (even across runs) the selected directory
-                constants.defaultMidiDirectory.setValue(midiFile.getParent());
-            } catch (Exception ex) {
-                logger.warning("Cannot write Midi to " + midiFile, ex);
-                throw ex;
-            }
+        // Make sure the folder exists
+        File folder = new File(pdfFile.getParent());
+
+        if (folder.mkdirs()) {
+            logger.info("Creating folder " + folder);
+        }
+
+        // Actually write the PDF file
+        try {
+            new PdfOutput(score, pdfFile).write();
+            score.setPdfFile(pdfFile);
+            logger.info("Score printed to " + pdfFile);
+
+            // Remember (even across runs) the selected directory
+            constants.defaultPdfDirectory.setValue(pdfFile.getParent());
+        } catch (Exception ex) {
+            logger.warning("Cannot write PDF to " + pdfFile, ex);
         }
     }
 
@@ -282,6 +326,11 @@ public class ScoreManager
                             File       file,
                             boolean    complete)
     {
+        // Check if we do save bench data
+        if (!Main.hasBenchFlag() && !constants.saveBenchToDisk.getValue()) {
+            return;
+        }
+
         if (file == null) {
             file = new File(
                 constants.defaultBenchDirectory.getValue(),
@@ -303,7 +352,7 @@ public class ScoreManager
             bench.store(fos, complete);
 
             if (complete) {
-                logger.info("Score bench stored as " + file);
+                logger.info("Complete score bench stored as " + file);
             }
 
             // Remember (even across runs) the selected directory
@@ -335,6 +384,11 @@ public class ScoreManager
             "",
             "Default directory for saved scores");
 
+        /** Should we save bench data to disk */
+        Constant.Boolean saveBenchToDisk = new Constant.Boolean(
+            false,
+            "Should we save bench data to disk");
+
         /** Default directory for saved benches */
         Constant.String defaultBenchDirectory = new Constant.String(
             "",
@@ -345,9 +399,74 @@ public class ScoreManager
             "",
             "Default directory for writing Midi files");
 
+        /** Default directory for writing PDF files */
+        Constant.String defaultPdfDirectory = new Constant.String(
+            "",
+            "Default directory for writing PDF files");
+
         /** Should we export our signature? */
         Constant.Boolean defaultInjectSignature = new Constant.Boolean(
             true,
             "Should we export our signature?");
+    }
+
+    //-----------//
+    // PdfOutput //
+    //-----------//
+    private static class PdfOutput
+        extends ScoreView
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** The file to print to */
+        private File file;
+
+        //~ Constructors -------------------------------------------------------
+
+        public PdfOutput (Score score,
+                          File  file)
+        {
+            super(
+                score,
+                score.getLayout(ScoreOrientation.VERTICAL),
+                PaintingParameters.getInstance());
+            this.file = file;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        public void write ()
+            throws Exception
+        {
+            Document document = null;
+
+            try {
+                Dimension dim = scoreLayout.getScoreDimension();
+                document = new Document(new Rectangle(dim.width, dim.height));
+
+                FileOutputStream fos = new FileOutputStream(file);
+                PdfWriter        writer = PdfWriter.getInstance(document, fos);
+                document.open();
+
+                PdfContentByte cb = writer.getDirectContent();
+                Graphics2D     g2 = cb.createGraphics(dim.width, dim.height);
+                g2.scale(1, 1);
+
+                // Painting
+                Zoom         zoom = new Zoom(1);
+                ScorePainter painter = new ScorePainter(scoreLayout, g2, zoom);
+                score.accept(painter);
+
+                // This is the end...
+                g2.dispose();
+            } catch (Exception ex) {
+                logger.warning("Error printing " + file, ex);
+                throw ex;
+            } finally {
+                if (document != null) {
+                    document.close();
+                }
+            }
+        }
     }
 }

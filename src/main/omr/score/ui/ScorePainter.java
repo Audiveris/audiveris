@@ -132,8 +132,8 @@ public class ScorePainter
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Related score view, with a specific system layout */
-    private final ScoreView scoreView;
+    /** Related score layout */
+    private final ScoreLayout scoreLayout;
 
     /** Graphic context */
     private final Graphics2D g;
@@ -162,15 +162,15 @@ public class ScorePainter
     /**
      * Creates a new ScorePainter object.
      *
-     * @param scoreView the score view with its layout orientation
+     * @param scoreLayout the score layout, with its orientation
      * @param initialGraphics the Graphic context, already properly scaled
      * @param zoom the zoom factor (a temporary fix to "descale" for symbols)
      */
-    public ScorePainter (ScoreView scoreView,
-                         Graphics  initialGraphics,
-                         Zoom      zoom)
+    public ScorePainter (ScoreLayout scoreLayout,
+                         Graphics    initialGraphics,
+                         Zoom        zoom)
     {
-        this.scoreView = scoreView;
+        this.scoreLayout = scoreLayout;
         g = (Graphics2D) initialGraphics.create();
         this.zoom = zoom;
 
@@ -208,7 +208,7 @@ public class ScorePainter
                                   Color   color)
     {
         final ScoreSystem system = measure.getSystem();
-        final SystemView  systemView = scoreView.getSystemView(system);
+        final SystemView  systemView = scoreLayout.getSystemView(system);
         final Point       origin = systemView.getDisplayOrigin();
 
         // Now use system topLeft as the origin
@@ -788,7 +788,7 @@ public class ScorePainter
     @Override
     public boolean visit (ScoreSystem system)
     {
-        SystemView systemView = scoreView.getSystemView(system);
+        SystemView systemView = scoreLayout.getSystemView(system);
 
         if (systemView == null) {
             return false;

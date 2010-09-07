@@ -273,7 +273,7 @@ public class MidiReceiver
         Score score = agent.getScore();
 
         if (score != null) {
-            score.getFirstView()
+            score.getEditor()
                  .highLight(currentMeasure, currentSlot);
         }
     }

@@ -172,6 +172,25 @@ public class SheetsManager
         return true;
     }
 
+    //----------------//
+    // closeAllSheets //
+    //----------------//
+    /**
+     * Close all sheet instances
+     */
+    public void closeAllSheets ()
+    {
+        int count = 0;
+
+        // NB: Use a COPY of instances, to avoid concurrent modification
+        for (Sheet sheet : new ArrayList<Sheet>(instances)) {
+            sheet.close();
+            count++;
+        }
+
+        logger.info(count + " sheet(s) closed");
+    }
+
     //---------------//
     // dumpAllSheets //
     //---------------//
