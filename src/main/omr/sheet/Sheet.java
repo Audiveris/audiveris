@@ -246,7 +246,7 @@ public class Sheet
         score.setSheet(this);
 
         // Related bench
-        bench = new SheetBench(this, path);
+        bench = new SheetBench(this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -611,15 +611,7 @@ public class Sheet
      */
     public String getRadix ()
     {
-        if (imageFile != null) {
-            return FileUtil.getNameSansExtension(imageFile);
-        }
-
-        if (imageUrl != null) {
-            return imageUrl.getFile();
-        }
-
-        return null;
+        return FileUtil.getNameSansExtension(new File(getPath()));
     }
 
     //----------//

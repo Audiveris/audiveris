@@ -100,10 +100,8 @@ public class SheetBench
     /**
      * Creates a new SheetBench object.
      * @param sheet the related sheet
-     * @param path path to the image file
      */
-    public SheetBench (Sheet  sheet,
-                       String path)
+    public SheetBench (Sheet  sheet)
     {
         this.sheet = sheet;
 
@@ -114,9 +112,9 @@ public class SheetBench
         addProp("program", Main.getToolName());
         addProp("version", Main.getToolVersion());
         addProp("revision", Main.getToolBuild());
-        addProp("image", path);
+        addProp("image", sheet.getPath());
 
-        radix = FileUtil.getNameSansExtension(new File(path));
+        radix = sheet.getRadix();
 
         flushBench();
     }

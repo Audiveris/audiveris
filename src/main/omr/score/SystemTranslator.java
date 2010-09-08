@@ -173,10 +173,10 @@ public class SystemTranslator
             } catch (Exception ex) {
                 logger.warning("Cannot access Midi agent", ex);
             }
-
-            // Update score views if any
-            score.updateViews();
         }
+
+        // Update score views if any
+        score.updateViews();
     }
 
     //-----------------//

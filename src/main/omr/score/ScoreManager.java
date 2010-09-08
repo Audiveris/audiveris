@@ -20,29 +20,22 @@ import omr.log.Logger;
 
 import omr.score.midi.MidiAbstractions;
 import omr.score.midi.MidiAgent;
-import omr.score.ui.PaintingParameters;
 import omr.score.ui.ScoreActions;
-import omr.score.ui.ScoreOrientation;
-import omr.score.ui.ScorePainter;
-import omr.score.ui.ScoreView;
+import omr.score.ui.ScorePdfOutput;
 
 import omr.sheet.SheetBench;
 
-import omr.ui.view.Zoom;
-
-import com.itextpdf.text.Document;
-import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.pdf.PdfContentByte;
-import com.itextpdf.text.pdf.PdfWriter;
-
-import java.awt.Dimension;
-import java.awt.Graphics2D;
 import java.io.*;
 
 /**
- * Class <code>ScoreManager</code> handles a collection of score instances.
+ * Class {@code ScoreManager} is a singleton which provides administrative
+ * features for score instances.
+ * <p>This is no collection of score instances, since any score instance is
+ * cross-linked to its sheet instance counterpart, and all the sheet instances
+ * are handled by the {@code SheetsManager} class.
  *
- * @author Hervé Bitteur and Brenton Partridge
+ * @author Hervé Bitteur
+ * @author Brenton Partridge
  */
 public class ScoreManager
 {
@@ -92,6 +85,21 @@ public class ScoreManager
         }
 
         return INSTANCE;
+    }
+
+    //---------------------//
+    // getDefaultBenchFile //
+    //---------------------//
+    /**
+     * Report the file to which the bench data would be written by default
+     * @param score the score to export
+     * @return the default file
+     */
+    public File getDefaultBenchFile (Score score)
+    {
+        return new File(
+            constants.defaultBenchDirectory.getValue(),
+            score.getRadix() + BENCH_EXTENSION);
     }
 
     //----------------------//
@@ -171,16 +179,7 @@ public class ScoreManager
                         File    exportFile,
                         Boolean injectSignature)
     {
-        if (exportFile == null) {
-            exportFile = getDefaultExportFile(score);
-        }
-
-        // Make sure the folder exists
-        File folder = new File(exportFile.getParent());
-
-        if (folder.mkdirs()) {
-            logger.info("Creating folder " + folder);
-        }
+        exportFile = getActualFile(exportFile, getDefaultExportFile(score));
 
         // Actually export the score material
         try {
@@ -246,16 +245,7 @@ public class ScoreManager
             return;
         }
 
-        if (midiFile == null) {
-            midiFile = getDefaultMidiFile(score);
-        }
-
-        // Make sure the folder exists
-        File folder = new File(midiFile.getParent());
-
-        if (folder.mkdirs()) {
-            logger.info("Creating folder " + folder);
-        }
+        midiFile = getActualFile(midiFile, getDefaultMidiFile(score));
 
         // Actually write the Midi file
         try {
@@ -289,20 +279,11 @@ public class ScoreManager
     public void pdfWrite (Score score,
                           File  pdfFile)
     {
-        if (pdfFile == null) {
-            pdfFile = getDefaultPdfFile(score);
-        }
-
-        // Make sure the folder exists
-        File folder = new File(pdfFile.getParent());
-
-        if (folder.mkdirs()) {
-            logger.info("Creating folder " + folder);
-        }
+        pdfFile = getActualFile(pdfFile, getDefaultPdfFile(score));
 
         // Actually write the PDF file
         try {
-            new PdfOutput(score, pdfFile).write();
+            new ScorePdfOutput(score, pdfFile).write();
             score.setPdfFile(pdfFile);
             logger.info("Score printed to " + pdfFile);
 
@@ -331,18 +312,7 @@ public class ScoreManager
             return;
         }
 
-        if (file == null) {
-            file = new File(
-                constants.defaultBenchDirectory.getValue(),
-                bench.getRadix() + BENCH_EXTENSION);
-        }
-
-        // Make sure the folder exists
-        File folder = new File(file.getParent());
-
-        if (folder.mkdirs()) {
-            logger.info("Creating folder " + folder);
-        }
+        file = getActualFile(file, getDefaultBenchFile(bench.getScore()));
 
         // Actually store the score bench
         FileOutputStream fos = null;
@@ -367,6 +337,34 @@ public class ScoreManager
                 }
             }
         }
+    }
+
+    //---------------//
+    // getActualFile //
+    //---------------//
+    /**
+     * Report the actual file to be used as target, using the provided target
+     * file if any otherwise the score default, and making sure the file parent
+     * folder really exists
+     * @param targetFile the provided target candidate, or null
+     * @param defaultFile the default target
+     * @return the file to use
+     */
+    private File getActualFile (File targetFile,
+                                File defaultFile)
+    {
+        if (targetFile == null) {
+            targetFile = defaultFile;
+        }
+
+        // Make sure the folder exists
+        File folder = new File(targetFile.getParent());
+
+        if (folder.mkdirs()) {
+            logger.info("Creating folder " + folder);
+        }
+
+        return targetFile;
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -408,65 +406,5 @@ public class ScoreManager
         Constant.Boolean defaultInjectSignature = new Constant.Boolean(
             true,
             "Should we export our signature?");
-    }
-
-    //-----------//
-    // PdfOutput //
-    //-----------//
-    private static class PdfOutput
-        extends ScoreView
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /** The file to print to */
-        private File file;
-
-        //~ Constructors -------------------------------------------------------
-
-        public PdfOutput (Score score,
-                          File  file)
-        {
-            super(
-                score,
-                score.getLayout(ScoreOrientation.VERTICAL),
-                PaintingParameters.getInstance());
-            this.file = file;
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        public void write ()
-            throws Exception
-        {
-            Document document = null;
-
-            try {
-                Dimension dim = scoreLayout.getScoreDimension();
-                document = new Document(new Rectangle(dim.width, dim.height));
-
-                FileOutputStream fos = new FileOutputStream(file);
-                PdfWriter        writer = PdfWriter.getInstance(document, fos);
-                document.open();
-
-                PdfContentByte cb = writer.getDirectContent();
-                Graphics2D     g2 = cb.createGraphics(dim.width, dim.height);
-                g2.scale(1, 1);
-
-                // Painting
-                Zoom         zoom = new Zoom(1);
-                ScorePainter painter = new ScorePainter(scoreLayout, g2, zoom);
-                score.accept(painter);
-
-                // This is the end...
-                g2.dispose();
-            } catch (Exception ex) {
-                logger.warning("Error printing " + file, ex);
-                throw ex;
-            } finally {
-                if (document != null) {
-                    document.close();
-                }
-            }
-        }
     }
 }
