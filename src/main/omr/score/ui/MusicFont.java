@@ -61,7 +61,7 @@ public class MusicFont
 
     /** Underlying font, with some size */
     private static final Font genericFont = new Font(
-        "Machin", //"SToccata",
+        "SToccata",
         Font.PLAIN,
         100);
 
