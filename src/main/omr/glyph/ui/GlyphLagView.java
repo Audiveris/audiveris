@@ -477,11 +477,9 @@ public class GlyphLagView
             // Draw attachments, if any
             if (ViewParameters.getInstance()
                               .isAttachmentPainting()) {
-                Graphics2D g2 = (Graphics2D) g;
-
                 for (java.awt.Shape attach : glyph.getAttachments()
                                                   .values()) {
-                    g2.draw(attach);
+                    g.draw(attach);
                 }
             }
         }
@@ -496,6 +494,7 @@ public class GlyphLagView
         for (Glyph glyph : glyphs) {
             renderGlyphArea(glyph, g2);
         }
+
         g2.dispose();
     }
 
@@ -505,7 +504,7 @@ public class GlyphLagView
     /**
      * Draw the approximating circle of a slur
      */
-    private void drawCircle (Circle   circle,
+    private void drawCircle (Circle     circle,
                              Graphics2D g)
     {
         CubicCurve2D.Double curve = circle.getCurve();
@@ -530,7 +529,7 @@ public class GlyphLagView
     /**
      * Draw the mean line of a stick
      */
-    private void drawStickLine (Stick    stick,
+    private void drawStickLine (Stick      stick,
                                 Graphics2D g)
     {
         try {

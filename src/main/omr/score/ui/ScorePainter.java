@@ -633,8 +633,7 @@ public abstract class ScorePainter
         final String            str = text.getContent();
         final FontRenderContext frc = g.getFontRenderContext();
         Font                    font = text.getFont()
-                                           .deriveFont(
-            (float) text.getFontSize());
+                                           .deriveFont(text.getFontSize());
         TextLayout              layout = new TextLayout(str, font, frc);
         final Rectangle2D       rect = layout.getBounds();
         final PixelRectangle    box = text.getBox();

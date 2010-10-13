@@ -660,6 +660,7 @@ public class TextRegionPattern
                 // Start with reasonable values & Fall through
                 blobBox = new PixelRectangle(gBox);
 
+            // Fall-through
             case 2 :
                 blobBox = blobBox.union(gBox);
                 // Cumulate tops & bottoms

@@ -511,13 +511,11 @@ public class StavesFuzzyBuilder
             // Draw the line info, lineset by lineset
             g.setColor(Color.yellow);
 
-            Graphics2D g2 = (Graphics2D) g;
-
             for (Filament filament : filaments) {
                 NaturalSpline curve = filament.getCurve();
 
                 if (curve != null) {
-                    g2.draw(curve);
+                    g.draw(curve);
                 }
             }
 
