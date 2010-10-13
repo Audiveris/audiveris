@@ -86,7 +86,7 @@ public class ScorePdfOutput
 
             // Painting
             Zoom         zoom = new Zoom(1);
-            ScorePainter painter = new ScorePainter(scoreLayout, g2, zoom);
+            ScoreLogicalPainter painter = new ScoreLogicalPainter(scoreLayout, g2, zoom);
             score.accept(painter);
             // This is the end...
             g2.dispose();

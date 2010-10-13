@@ -26,8 +26,6 @@ import omr.math.Rational;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
-import omr.score.common.SystemPoint;
-import omr.score.ui.ScoreConstants;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
@@ -97,11 +95,14 @@ public class Note
     /** Indicate a rest */
     private final boolean isRest;
 
-    /** Accidental if any */
-    private Shape accidental;
+    /** First augmentation dot, if any */
+    private Glyph firstDot;
 
-    /** Accidental delta abscissa if any accidental */
-    private int accidentalDx;
+    /** Second augmentation dot, if any */
+    private Glyph secondDot;
+
+    /** Accidental glyph, if any */
+    private Glyph accidental;
 
     /** Pitch alteration (not for rests) */
     private Integer alter;
@@ -184,13 +185,13 @@ public class Note
      * @param chord the containing chord
      * @param shape the provided shape
      * @param pitchPosition the pitchPosition
-     * @param center the center (SystemPoint) of the note
+     * @param center the center (PixelPoint) of the note
      */
-    private Note (Staff       staff,
-                  Chord       chord,
-                  Shape       shape,
-                  double      pitchPosition,
-                  SystemPoint center)
+    private Note (Staff      staff,
+                  Chord      chord,
+                  Shape      shape,
+                  double     pitchPosition,
+                  PixelPoint center)
     {
         super(chord);
 
@@ -208,10 +209,12 @@ public class Note
 
         // Location center
         setCenter(
-            new SystemPoint(
+            new PixelPoint(
                 center.x,
-                (staff.getPageTopLeft().y - staff.getSystem().getTopLeft().y) +
-                ((ScoreConstants.INTER_LINE * (4d + pitchPosition)) / 2)));
+                (int) Math.rint(
+                    (staff.getTopLeft().y - staff.getSystem().getTopLeft().y) +
+                    ((chord.getScale()
+                           .interline() * (4d + pitchPosition)) / 2))));
 
         // Note box
         setBox(null);
@@ -251,11 +254,10 @@ public class Note
         isRest = ShapeRange.Rests.contains(glyph.getShape());
 
         // Location center
-        setCenter(system.toSystemPoint(center));
+        setCenter(center);
 
         // Note box
-        setBox(
-            system.toSystemRectangle(getItemBox(glyph, packIndex, interline)));
+        setBox(getItemBox(glyph, packIndex, interline));
 
         // Shape of this note
         shape = baseShapeOf(glyph.getShape());
@@ -265,25 +267,29 @@ public class Note
                                .getStaffAt(getCenter());
 
         // Pitch Position wrt staff
-        double pp = noteStaff.pitchPositionOf(getCenter());
+        double pp = noteStaff.getInfo()
+                             .precisePitchPositionOf(
+            getCenter(),
+            system.getInfo());
 
         // Beware, when note is far from staff, use staff of related stem
         if (Math.abs(pp) >= 8) {
             Glyph stem = chord.getStem();
 
             if (stem != null) {
-                SystemPoint stemCenter = getSystem()
-                                             .toSystemPoint(
-                    stem.getAreaCenter());
-                Staff       stemStaff = getSystem()
-                                            .getStaffAt(stemCenter);
+                PixelPoint stemCenter = stem.getAreaCenter();
+                Staff      stemStaff = getSystem()
+                                           .getStaffAt(stemCenter);
 
                 if (logger.isFineEnabled() && (stemStaff != noteStaff)) {
                     logger.fine("Changed staff for glyph#" + glyph.getId());
                 }
 
                 noteStaff = stemStaff;
-                pp = noteStaff.pitchPositionOf(getCenter());
+                pp = noteStaff.getInfo()
+                              .precisePitchPositionOf(
+                    getCenter(),
+                    system.getInfo());
             }
         }
 
@@ -341,6 +347,34 @@ public class Note
         }
     }
 
+    //---------//
+    // setDots //
+    //---------//
+    /**
+     * Define the number of augmentation dots that impact this chord
+     *
+     * @param dotsNumber the number of dots (should be the same for all notes
+     * within this chord)
+     */
+    public void setDots (Glyph first,
+                         Glyph second)
+    {
+        firstDot = first;
+        secondDot = second;
+    }
+
+    //-------------//
+    // getFirstDot //
+    //-------------//
+    /**
+     * Report the first augmentation dot, if any
+     * @return first dot or null
+     */
+    public Glyph getFirstDot ()
+    {
+        return firstDot;
+    }
+
     //--------------------//
     // getPackCardinality //
     //--------------------//
@@ -349,12 +383,24 @@ public class Note
         return packCard;
     }
 
+    //--------------//
+    // getSecondDot //
+    //--------------//
+    /**
+     * Report the second augmentation dot, if any
+     * @return second dot or null
+     */
+    public Glyph getSecondDot ()
+    {
+        return secondDot;
+    }
+
     //-----------------//
     // createWholeRest //
     //-----------------//
-    public static Note createWholeRest (Staff       staff,
-                                        Chord       chord,
-                                        SystemPoint center)
+    public static Note createWholeRest (Staff      staff,
+                                        Chord      chord,
+                                        PixelPoint center)
     {
         return new Note(staff, chord, Shape.WHOLE_REST, -1.5, center);
     }
@@ -551,8 +597,8 @@ public class Note
         if (stem != null) {
             stemBox = stem.getContourBox();
             stemBox.grow(
-                scale.toUnits(constants.maxStemDx),
-                scale.toUnits(
+                scale.toPixels(constants.maxStemDx),
+                scale.toPixels(
                     (glyph.getStemNumber() >= 2) ? constants.maxMultiStemDy
                                         : constants.maxSingleStemDy));
         }
@@ -581,23 +627,9 @@ public class Note
      *
      * @return the accidental, or null
      */
-    public Shape getAccidental ()
+    public Glyph getAccidental ()
     {
         return accidental;
-    }
-
-    //-----------------//
-    // getAccidentalDx //
-    //-----------------//
-    /**
-     * Report the delta in abscissa between the note and its accidental
-     *
-     * @return the difference in abscissa (in units) between the accidental
-     * center and the note center
-     */
-    public int getAccidentalDx ()
-    {
-        return accidentalDx;
     }
 
     //----------//
@@ -615,7 +647,7 @@ public class Note
         if (alter == null) {
             if (accidental != null) {
                 // TODO: handle double flat & double sharp !!!
-                switch (accidental) {
+                switch (accidental.getShape()) {
                 case SHARP :
                     return alter = 1;
 
@@ -653,7 +685,8 @@ public class Note
 
                             if ((note.getStep() == getStep()) &&
                                 (note.getAccidental() != null)) {
-                                switch (note.getAccidental()) {
+                                switch (note.getAccidental()
+                                            .getShape()) {
                                 case SHARP :
                                     return alter = 1;
 
@@ -691,9 +724,9 @@ public class Note
      *
      * @return center point at bottom of note
      */
-    public SystemPoint getCenterBottom ()
+    public PixelPoint getCenterBottom ()
     {
-        return new SystemPoint(
+        return new PixelPoint(
             getCenter().x,
             getCenter().y + (getBox().height / 2));
     }
@@ -706,9 +739,9 @@ public class Note
      *
      * @return left point at mid height
      */
-    public SystemPoint getCenterLeft ()
+    public PixelPoint getCenterLeft ()
     {
-        return new SystemPoint(
+        return new PixelPoint(
             getCenter().x - (getBox().width / 2),
             getCenter().y);
     }
@@ -721,9 +754,9 @@ public class Note
      *
      * @return right point at mid height
      */
-    public SystemPoint getCenterRight ()
+    public PixelPoint getCenterRight ()
     {
-        return new SystemPoint(
+        return new PixelPoint(
             getCenter().x + (getBox().width / 2),
             getCenter().y);
     }
@@ -736,9 +769,9 @@ public class Note
      *
      * @return center point at top of note
      */
-    public SystemPoint getCenterTop ()
+    public PixelPoint getCenterTop ()
     {
-        return new SystemPoint(
+        return new PixelPoint(
             getCenter().x,
             getCenter().y - (getBox().height / 2));
     }
@@ -837,14 +870,14 @@ public class Note
      * @param measure the containing measure
      * @param accidCenter the center of the glyph
      */
-    public static void populateAccidental (Glyph       glyph,
-                                           Measure     measure,
-                                           SystemPoint accidCenter)
+    public static void populateAccidental (Glyph      glyph,
+                                           Measure    measure,
+                                           PixelPoint accidCenter)
     {
         final Scale     scale = measure.getScale();
-        final int       minDx = scale.toUnits(constants.minAccidDx);
-        final int       maxDx = scale.toUnits(constants.maxAccidDx);
-        final int       maxDy = scale.toUnits(constants.maxAccidDy);
+        final int       minDx = scale.toPixels(constants.minAccidDx);
+        final int       maxDx = scale.toPixels(constants.maxAccidDx);
+        final int       maxDy = scale.toPixels(constants.maxAccidDy);
         final Set<Note> candidates = new HashSet<Note>();
 
         // An accidental impacts the note right after (even if duplicated)
@@ -856,8 +889,8 @@ public class Note
                 final Note note = (Note) n;
 
                 if (!note.isRest()) {
-                    final SystemPoint noteRef = note.getCenterLeft();
-                    final SystemPoint toNote = new SystemPoint(
+                    final PixelPoint noteRef = note.getCenterLeft();
+                    final PixelPoint toNote = new PixelPoint(
                         noteRef.x - accidCenter.x,
                         noteRef.y - accidCenter.y);
 
@@ -898,8 +931,7 @@ public class Note
                 }
             }
 
-            bestNote.accidental = glyph.getShape();
-            bestNote.accidentalDx = bestNote.getCenter().x - accidCenter.x;
+            bestNote.accidental = glyph;
             glyph.addTranslation(bestNote);
 
             if (logger.isFineEnabled()) {
@@ -1005,7 +1037,7 @@ public class Note
         }
 
         sb.append(" pp=")
-          .append((int) Math.rint(pitchPosition));
+          .append((float) pitchPosition);
 
         sb.append(" ")
           .append(Glyphs.toString(getGlyphs()));
@@ -1026,16 +1058,23 @@ public class Note
                                               int   index,
                                               int   interline)
     {
-        final int            card = packCardOf(glyph.getShape());
+        final Shape          shape = glyph.getShape();
+        final int            card = packCardOf(shape);
         final PixelRectangle box = glyph.getContourBox();
-        final PixelPoint     centroid = glyph.getCentroid();
-        final int            top = centroid.y - ((card * interline) / 2);
 
-        return new PixelRectangle(
-            box.x,
-            top + (index * interline),
-            box.width,
-            interline);
+        // For true notes use centroid y, for rests use area center y
+        if (ShapeRange.Rests.contains(shape)) {
+            return glyph.getContourBox();
+        } else {
+            final PixelPoint centroid = glyph.getCentroid();
+            final int        top = centroid.y - ((card * interline) / 2);
+
+            return new PixelRectangle(
+                box.x,
+                top + (index * interline),
+                box.width,
+                interline);
+        }
     }
 
     //---------------//

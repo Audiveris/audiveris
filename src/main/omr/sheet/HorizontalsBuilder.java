@@ -1136,10 +1136,11 @@ public class HorizontalsBuilder
         // renderItems //
         //-------------//
         @Override
-        public void renderItems (Graphics g)
+        public void renderItems (Graphics2D g)
         {
             // Render all physical info known so far (staff lines)
-            sheet.accept(new SheetPainter(g, false));
+            sheet.getScore()
+                 .accept(new SheetPainter(g, false));
 
             // Render the dashes found
             for (Dash dash : allDashes) {

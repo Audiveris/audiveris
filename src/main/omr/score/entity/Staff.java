@@ -13,11 +13,8 @@ package omr.score.entity;
 
 import omr.log.Logger;
 
-import omr.score.common.PagePoint;
 import omr.score.common.PixelPoint;
-import omr.score.common.SystemPoint;
-import omr.score.common.SystemRectangle;
-import static omr.score.ui.ScoreConstants.*;
+import omr.score.common.PixelRectangle;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.StaffInfo;
@@ -29,7 +26,7 @@ import java.util.Iterator;
 /**
  * Class <code>Staff</code> handles a staff in a system part. It is useful for
  * its geometric parameters (topLeft corner, width and height, ability to
- * convert between a SystemPoint ordinate and a staff-based pitchPosition. But
+ * convert between a PixelPoint ordinate and a staff-based pitchPosition. But
  * it contains no further entities, the Measure's are the actual containers.
  * Within a measure, some entities may be assigned a staff, more like a tag than
  * like a parent.
@@ -48,7 +45,7 @@ public class Staff
     //~ Instance fields --------------------------------------------------------
 
     /** Top left corner of the staff (relative to the page top left corner) */
-    private final PagePoint pageTopLeft;
+    private final PixelPoint topLeft;
 
     /** Related info from sheet analysis */
     private StaffInfo info;
@@ -69,28 +66,22 @@ public class Staff
      *
      * @param info the physical information read from the sheet
      * @param part the containing systemPart
-     * @param pageTopLeft the coordinate,in units, wrt the score upper left
-     *                  corner, of the upper left corner of this staff
-     * @param width the staff width, in units
-     * @param height the staff height, in units
+     * @param topLeft the coordinate of the upper left corner of this staff
+     * @param width the staff width
+     * @param height the staff height
      */
     public Staff (StaffInfo  info,
                   SystemPart part,
-                  PagePoint  pageTopLeft,
+                  PixelPoint topLeft,
                   int        width,
                   int        height)
     {
         super(part);
 
         this.info = info;
-        this.pageTopLeft = pageTopLeft;
+        this.topLeft = topLeft;
 
-        setBox(
-            new SystemRectangle(
-                0,
-                pageTopLeft.y - getSystem().getTopLeft().y,
-                width,
-                height));
+        setBox(new PixelRectangle(topLeft.x, topLeft.y, width, height));
         getCenter();
 
         // Assign id
@@ -100,6 +91,16 @@ public class Staff
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    public void setDummy (boolean dummy)
+    {
+        this.dummy = dummy;
+    }
+
+    public boolean isDummy ()
+    {
+        return dummy;
+    }
 
     //-----------//
     // getHeight //
@@ -140,32 +141,35 @@ public class Staff
         return info;
     }
 
-    //----------------//
-    // getPageTopLeft //
-    //----------------//
+    //------------//
+    // getTopLeft //
+    //------------//
     /**
      * Report the coordinates of the top left corner of the staff, wrt the score
      *
      * @return the top left coordinates
      */
-    public PagePoint getPageTopLeft ()
+    public PixelPoint getTopLeft ()
     {
-        return pageTopLeft;
+        return topLeft;
     }
 
-    //------------//
-    // getTopLeft //
-    //------------//
+    //----------//
+    // setWidth //
+    //----------//
     /**
-     * Report the coordinates of the top left corner of the staff, wrt the
-     * containing system
+     * Set the staff width
      *
-     * @return the top left coordinates
+     * @param unitWidth width in units of the staff
      */
-    public SystemPoint getTopLeft ()
+    public void setWidth (int unitWidth)
     {
-        return getBox()
-                   .getLocation();
+        PixelRectangle newBox = getBox();
+        reset();
+
+        newBox.width = unitWidth;
+        setBox(newBox);
+        getCenter();
     }
 
     //----------//
@@ -190,39 +194,29 @@ public class Staff
         return visitor.visit(this);
     }
 
-    //-------------//
-    // pitchToUnit //
-    //-------------//
+    //-----------------//
+    // pitchPositionOf //
+    //-----------------//
     /**
-     * Compute the ordinate Y (counted in units and measured from staff displayOrigin)
-     * that corresponds to a given step line
+     * Compute the pitch position of a pixel point
      *
-     * @param pitchPosition the pitch position (-4 for top line, +4 for bottom
-     *                      line)
-     * @return the ordinate in pixels, counted from staff displayOrigin (upper line),
-     * so top line is 0px and bottom line is 64px (with an inter line of 16).
+     * @param pt the pixel point
+     * @return the pitch position
      */
-    public static int pitchToUnit (double pitchPosition)
+    public double pitchPositionOf (PixelPoint pt)
     {
-        return (int) Math.rint(((pitchPosition + 4) * INTER_LINE) / 2.0);
+        return info.pitchPositionOf(pt);
     }
 
-    //----------//
-    // setWidth //
-    //----------//
-    /**
-     * Set the staff width
-     *
-     * @param unitWidth width in units of the staff
-     */
-    public void setWidth (int unitWidth)
+    //---------------//
+    // pitchToPixels //
+    //---------------//
+    public int pitchToPixels (double pitchPosition)
     {
-        SystemRectangle newBox = getBox();
-        reset();
+        int interline = getScale()
+                            .interline();
 
-        newBox.width = unitWidth;
-        setBox(newBox);
-        getCenter();
+        return (int) Math.rint(((pitchPosition + 4) * interline) / 2.0);
     }
 
     //----------//
@@ -240,7 +234,7 @@ public class Staff
             }
 
             sb.append(" pageTopLeft=")
-              .append(pageTopLeft);
+              .append(topLeft);
             sb.append(" width=")
               .append(getWidth());
             sb.append(" size=")
@@ -251,62 +245,6 @@ public class Staff
         } catch (NullPointerException e) {
             return "{Staff INVALID}";
         }
-    }
-
-    //-------------//
-    // unitToPitch //
-    //-------------//
-    /**
-     * Compute the pitch position of a given ordinate Y (counted in units and
-     * measured from staff displayOrigin)
-     *
-     *
-     * @param unit the ordinate in pixel units, counted from staff displayOrigin (upper
-     * line), so top line is 0px and bottom line is 64px (with an inter line of
-     * 16).
-     * @return the pitch position (-4 for top line, +4 for bottom line)
-     */
-    public static int unitToPitch (int unit)
-    {
-        return (int) Math.rint(((2D * unit) - (4D * INTER_LINE)) / INTER_LINE);
-    }
-
-    public void setDummy (boolean dummy)
-    {
-        this.dummy = dummy;
-    }
-
-    public boolean isDummy ()
-    {
-        return dummy;
-    }
-
-    //-----------------//
-    // pitchPositionOf //
-    //-----------------//
-    /**
-     * Compute the pitch position of a pixel point
-     *
-     * @param pt the pixel point
-     * @return the pitch position
-     */
-    public double pitchPositionOf (PixelPoint pt)
-    {
-        return info.pitchPositionOf(pt);
-    }
-
-    //-----------------//
-    // pitchPositionOf //
-    //-----------------//
-    /**
-     * Compute the pitch position of a system point
-     *
-     * @param pt the system point
-     * @return the pitch position
-     */
-    public double pitchPositionOf (SystemPoint pt)
-    {
-        return info.pitchPositionOf(getSystem().toPixelPoint(pt));
     }
 
     //~ Inner Classes ----------------------------------------------------------

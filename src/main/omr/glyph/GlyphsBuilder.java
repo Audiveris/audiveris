@@ -19,7 +19,7 @@ import omr.glyph.facets.Glyph;
 import omr.log.Logger;
 
 import omr.score.common.PixelRectangle;
-import omr.score.common.SystemPoint;
+import omr.score.common.PixelPoint;
 import omr.score.entity.Staff;
 
 import omr.sheet.Dash;
@@ -251,8 +251,7 @@ public class GlyphsBuilder
     public void computeGlyphFeatures (Glyph glyph)
     {
         // Mass center (which makes sure moments are available)
-        SystemPoint centroid = system.getScoreSystem()
-                                     .toSystemPoint(glyph.getCentroid());
+        PixelPoint centroid = glyph.getCentroid();
         Staff       staff = system.getScoreSystem()
                                   .getStaffAt(centroid);
 

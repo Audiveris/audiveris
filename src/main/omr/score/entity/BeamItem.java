@@ -22,8 +22,8 @@ import omr.math.BasicLine;
 import omr.math.Line;
 
 import omr.score.common.PixelPoint;
+import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
-import omr.score.common.SystemPoint;
 
 import omr.util.Implement;
 import omr.util.Navigable;
@@ -63,16 +63,16 @@ public class BeamItem
     private final int packIndex;
 
     /** The center of the beam item */
-    private SystemPoint center;
+    private PixelPoint center;
 
     /** Line equation for the beam item */
     private Line line;
 
     /** Left point of beam item */
-    private final SystemPoint left;
+    private final PixelPoint left;
 
     /** Right point of beam item */
-    private final SystemPoint right;
+    private final PixelPoint right;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -134,10 +134,8 @@ public class BeamItem
             }
 
             // Make a simple horizontal beam item
-            left = system.toSystemPoint(
-                new PixelPoint(box.x, box.y + (box.height / 2)));
-            right = system.toSystemPoint(
-                new PixelPoint(box.x + box.width, box.y + (box.height / 2)));
+            left = new PixelPoint(box.x, box.y + (box.height / 2));
+            right = new PixelPoint(box.x + box.width, box.y + (box.height / 2));
         } else {
             double deltaMid = (deltaMid1 + deltaMid2) / 2.0;
             double deltaY = (((4 * packIndex) + 1) * deltaMid) / ((2 * packCard) -
@@ -148,14 +146,12 @@ public class BeamItem
 
             if (yMidLeft > yMidRight) {
                 // This is an ascending beam
-                left = system.toSystemPoint(new PixelPoint(box.x, lowY));
-                right = system.toSystemPoint(
-                    new PixelPoint(box.x + box.width, highY));
+                left = new PixelPoint(box.x, lowY);
+                right = new PixelPoint(box.x + box.width, highY);
             } else {
                 // This is a descending beam
-                left = system.toSystemPoint(new PixelPoint(box.x, highY));
-                right = system.toSystemPoint(
-                    new PixelPoint(box.x + box.width, lowY));
+                left = new PixelPoint(box.x, highY);
+                right = new PixelPoint(box.x + box.width, lowY);
             }
         }
     }
@@ -171,10 +167,10 @@ public class BeamItem
      *
      * @return the system-based center of the beam item
      */
-    public SystemPoint getCenter ()
+    public PixelPoint getCenter ()
     {
         if (center == null) {
-            center = new SystemPoint(
+            center = new PixelPoint(
                 (left.x + right.x) / 2,
                 (left.y + right.y) / 2);
         }
@@ -213,9 +209,9 @@ public class BeamItem
     /**
      * Report the point that define the left edge of the beam item
      *
-     * @return the SystemPoint coordinates of the rigleftht point
+     * @return the PixelPoint coordinates of the rigleftht point
      */
-    public SystemPoint getLeftPoint ()
+    public PixelPoint getLeftPoint ()
     {
         return left;
     }
@@ -260,9 +256,9 @@ public class BeamItem
     /**
      * Report the point that define the right edge of the beam item
      *
-     * @return the SystemPoint coordinates of the right point
+     * @return the PixelPoint coordinates of the right point
      */
-    public SystemPoint getRightPoint ()
+    public PixelPoint getRightPoint ()
     {
         return right;
     }

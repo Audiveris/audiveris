@@ -15,19 +15,9 @@ import omr.constant.Constant;
 
 import omr.log.Logger;
 
-import omr.score.common.PagePoint;
-import omr.score.common.PageRectangle;
-import omr.score.common.PixelDimension;
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
-import omr.score.common.UnitDimension;
-import static omr.score.ui.ScoreConstants.*;
-
 import omr.step.StepException;
 
 import omr.util.DoubleValue;
-
-import java.awt.Rectangle;
 
 import javax.xml.bind.annotation.*;
 
@@ -140,9 +130,8 @@ public class Scale
     // Scale //
     //-------//
     /** Needed by JAXB */
-    private Scale()
+    private Scale ()
     {
-
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -217,121 +206,121 @@ public class Scale
         return (double) pixels / (double) interline;
     }
 
-    //---------------//
-    // pixelsToUnits //
-    //---------------//
-    /**
-     * Same as pixelsToUnitsDouble, but result is rounded to nearest int.
-     *
-     * @param pixels number of pixels
-     *
-     * @return integer number of units
-     * @see #pixelsToUnitsDouble
-     */
-    public int pixelsToUnits (int pixels)
-    {
-        return (int) Math.rint(pixelsToUnitsDouble(pixels));
-    }
-
-    //---------------------//
-    // pixelsToUnitsDouble //
-    //---------------------//
-    /**
-     * Convert a number of pixels to its equivalent in units (1/16th of
-     * interline)
-     *
-     * @param pixels number of pixels
-     *
-     * @return number (may be fraction) of units
-     */
-    public double pixelsToUnitsDouble (double pixels)
-    {
-        return (pixels * INTER_LINE) / (double) interline;
-    }
-
-    //-------------//
-    // toPagePoint //
-    //-------------//
-    /**
-     * Convert a point whose coordinates are in pixels to a point whose
-     * coordinates are in units.
-     *
-     * @param pixPt point in pixels
-     *
-     * @return the result in units
-     */
-    public PagePoint toPagePoint (PixelPoint pixPt)
-    {
-        return toPagePoint(pixPt, null);
-    }
-
-    //-------------//
-    // toPagePoint //
-    //-------------//
-    /**
-     * Convert a point whose coordinates are in pixels to a point whose
-     * coordinates are in units.
-     *
-     * @param pixPt point in pixels
-     * @param pagPt equivalent point in units, or null if allocation to be
-     *              performed by the routine
-     *
-     * @return the result in units
-     */
-    public PagePoint toPagePoint (PixelPoint pixPt,
-                                  PagePoint  pagPt)
-    {
-        if (pagPt == null) {
-            pagPt = new PagePoint();
-        }
-
-        pagPt.x = pixelsToUnits(pixPt.x);
-        pagPt.y = pixelsToUnits(pixPt.y);
-
-        return pagPt;
-    }
-
-    //--------------//
-    // toPixelPoint //
-    //--------------//
-    /**
-     * Convert a point with coordinates in units into its equivalent with
-     * coordinates in pixels. Reverse function of pixelsToUnits
-     *
-     * @param pagPt point in units
-     *
-     * @return the computed point in pixels
-     */
-    public PixelPoint toPixelPoint (PagePoint pagPt)
-    {
-        return toPixelPoint(pagPt, null);
-    }
-
-    //--------------//
-    // toPixelPoint //
-    //--------------//
-    /**
-     * Convert a point with coordinates in units into its equivalent with
-     * coordinates in pixels. Reverse function of pixelsToUnits
-     *
-     * @param pagPt point in units
-     * @param pixPt point in pixels, or null if allocation to be made by the
-     *              routine
-     *
-     * @return the computed point in pixels
-     */
-    public PixelPoint toPixelPoint (PagePoint  pagPt,
-                                    PixelPoint pixPt)
-    {
-        if (pixPt == null) {
-            pixPt = new PixelPoint();
-        }
-
-        pixPt.x = unitsToPixels(pagPt.x);
-        pixPt.y = unitsToPixels(pagPt.y);
-
-        return pixPt;
-    }
+    //    //---------------//
+    //    // pixelsToUnits //
+    //    //---------------//
+    //    /**
+    //     * Same as pixelsToUnitsDouble, but result is rounded to nearest int.
+    //     *
+    //     * @param pixels number of pixels
+    //     *
+    //     * @return integer number of units
+    //     * @see #pixelsToUnitsDouble
+    //     */
+    //    public int pixelsToUnits (int pixels)
+    //    {
+    //        return (int) Math.rint(pixelsToUnitsDouble(pixels));
+    //    }
+    //
+    //    //---------------------//
+    //    // pixelsToUnitsDouble //
+    //    //---------------------//
+    //    /**
+    //     * Convert a number of pixels to its equivalent in units (1/16th of
+    //     * interline)
+    //     *
+    //     * @param pixels number of pixels
+    //     *
+    //     * @return number (may be fraction) of units
+    //     */
+    //    public double pixelsToUnitsDouble (double pixels)
+    //    {
+    //        return (pixels * INTER_LINE) / (double) interline;
+    //    }
+    //
+    //    //-------------//
+    //    // toPixelPoint //
+    //    //-------------//
+    //    /**
+    //     * Convert a point whose coordinates are in pixels to a point whose
+    //     * coordinates are in units.
+    //     *
+    //     * @param pixPt point in pixels
+    //     *
+    //     * @return the result in units
+    //     */
+    //    public PixelPoint toPixelPoint (PixelPoint pixPt)
+    //    {
+    //        return toPixelPoint(pixPt, null);
+    //    }
+    //
+    //    //-------------//
+    //    // toPixelPoint //
+    //    //-------------//
+    //    /**
+    //     * Convert a point whose coordinates are in pixels to a point whose
+    //     * coordinates are in units.
+    //     *
+    //     * @param pixPt point in pixels
+    //     * @param pagPt equivalent point in units, or null if allocation to be
+    //     *              performed by the routine
+    //     *
+    //     * @return the result in units
+    //     */
+    //    public PixelPoint toPixelPoint (PixelPoint pixPt,
+    //                                  PixelPoint  pagPt)
+    //    {
+    //        if (pagPt == null) {
+    //            pagPt = new PixelPoint();
+    //        }
+    //
+    //        pagPt.x = pixelsToUnits(pixPt.x);
+    //        pagPt.y = pixelsToUnits(pixPt.y);
+    //
+    //        return pagPt;
+    //    }
+    //
+    //    //--------------//
+    //    // toPixelPoint //
+    //    //--------------//
+    //    /**
+    //     * Convert a point with coordinates in units into its equivalent with
+    //     * coordinates in pixels. Reverse function of pixelsToUnits
+    //     *
+    //     * @param pagPt point in units
+    //     *
+    //     * @return the computed point in pixels
+    //     */
+    //    public PixelPoint toPixelPoint (PixelPoint pagPt)
+    //    {
+    //        return toPixelPoint(pagPt, null);
+    //    }
+    //
+    //    //--------------//
+    //    // toPixelPoint //
+    //    //--------------//
+    //    /**
+    //     * Convert a point with coordinates in units into its equivalent with
+    //     * coordinates in pixels. Reverse function of pixelsToUnits
+    //     *
+    //     * @param pagPt point in units
+    //     * @param pixPt point in pixels, or null if allocation to be made by the
+    //     *              routine
+    //     *
+    //     * @return the computed point in pixels
+    //     */
+    //    public PixelPoint toPixelPoint (PixelPoint  pagPt,
+    //                                    PixelPoint pixPt)
+    //    {
+    //        if (pixPt == null) {
+    //            pixPt = new PixelPoint();
+    //        }
+    //
+    //        pixPt.x = unitsToPixels(pagPt.x);
+    //        pixPt.y = unitsToPixels(pagPt.y);
+    //
+    //        return pixPt;
+    //    }
 
     //----------//
     // toPixels //
@@ -365,91 +354,91 @@ public class Scale
         return (int) Math.rint(toPixelsDouble(frac));
     }
 
-    //----------//
-    // toPixels //
-    //----------//
-    /**
-     * Convert a dimension with components in units into its equivalent with
-     * components in pixels. Reverse function of pixelsToUnits
-     *
-     * @param unitDim  dimension in units
-     * @param pixelDim dimension in pixels, or null if allocation to be made by
-     *                 the routine
-     *
-     * @return the computed point in pixels
-     */
-    public PixelDimension toPixels (UnitDimension  unitDim,
-                                    PixelDimension pixelDim)
-    {
-        if (pixelDim == null) {
-            pixelDim = new PixelDimension();
-        }
-
-        pixelDim.width = unitsToPixels(unitDim.width);
-        pixelDim.height = unitsToPixels(unitDim.height);
-
-        return pixelDim;
-    }
-
-    //----------//
-    // toPixels //
-    //----------//
-    /**
-     * Convert a dimension with components in units into its equivalent with
-     * components in pixels. Reverse function of pixelsToUnits
-     *
-     * @param unitDim  dimension in units
-     *
-     * @return the computed point in pixels
-     */
-    public PixelDimension toPixels (UnitDimension unitDim)
-    {
-        return toPixels(unitDim, null);
-    }
-
-    //----------//
-    // toPixels //
-    //----------//
-    /**
-     * Convert a rectangle with coordinates in units into its equivalent with
-     * coordinates in pixels. Reverse function of pixelsToUnits
-     *
-     * @param pagRect rectangle in units
-     *
-     * @return the computed rectangle in pixels
-     */
-    public PixelRectangle toPixels (PageRectangle pagRect)
-    {
-        return toPixels(pagRect, null);
-    }
-
-    //----------//
-    // toPixels //
-    //----------//
-    /**
-     * Convert a rectangle with coordinates in units into its equivalent with
-     * coordinates in pixels. Reverse function of pixelsToUnits
-     *
-     * @param pagRect rectangle in units
-     * @param pixRect rectangle in pixels, or null if allocation to be made by
-     *              the routine
-     *
-     * @return the computed rectangle in pixels
-     */
-    public PixelRectangle toPixels (PageRectangle pagRect,
-                               PixelRectangle pixRect)
-    {
-        if (pixRect == null) {
-            pixRect = new PixelRectangle();
-        }
-
-        pixRect.x = unitsToPixels(pagRect.x);
-        pixRect.y = unitsToPixels(pagRect.y);
-        pixRect.width = unitsToPixels(pagRect.width);
-        pixRect.height = unitsToPixels(pagRect.height);
-
-        return pixRect;
-    }
+    //    //----------//
+    //    // toPixels //
+    //    //----------//
+    //    /**
+    //     * Convert a dimension with components in units into its equivalent with
+    //     * components in pixels. Reverse function of pixelsToUnits
+    //     *
+    //     * @param unitDim  dimension in units
+    //     * @param pixelDim dimension in pixels, or null if allocation to be made by
+    //     *                 the routine
+    //     *
+    //     * @return the computed point in pixels
+    //     */
+    //    public PixelDimension toPixels (PixelDimension  unitDim,
+    //                                    PixelDimension pixelDim)
+    //    {
+    //        if (pixelDim == null) {
+    //            pixelDim = new PixelDimension();
+    //        }
+    //
+    //        pixelDim.width = unitsToPixels(unitDim.width);
+    //        pixelDim.height = unitsToPixels(unitDim.height);
+    //
+    //        return pixelDim;
+    //    }
+    //
+    //    //----------//
+    //    // toPixels //
+    //    //----------//
+    //    /**
+    //     * Convert a dimension with components in units into its equivalent with
+    //     * components in pixels. Reverse function of pixelsToUnits
+    //     *
+    //     * @param unitDim  dimension in units
+    //     *
+    //     * @return the computed point in pixels
+    //     */
+    //    public PixelDimension toPixels (PixelDimension unitDim)
+    //    {
+    //        return toPixels(unitDim, null);
+    //    }
+    //
+    //    //----------//
+    //    // toPixels //
+    //    //----------//
+    //    /**
+    //     * Convert a rectangle with coordinates in units into its equivalent with
+    //     * coordinates in pixels. Reverse function of pixelsToUnits
+    //     *
+    //     * @param pagRect rectangle in units
+    //     *
+    //     * @return the computed rectangle in pixels
+    //     */
+    //    public PixelRectangle toPixels (PixelRectangle pagRect)
+    //    {
+    //        return toPixels(pagRect, null);
+    //    }
+    //
+    //    //----------//
+    //    // toPixels //
+    //    //----------//
+    //    /**
+    //     * Convert a rectangle with coordinates in units into its equivalent with
+    //     * coordinates in pixels. Reverse function of pixelsToUnits
+    //     *
+    //     * @param pagRect rectangle in units
+    //     * @param pixRect rectangle in pixels, or null if allocation to be made by
+    //     *              the routine
+    //     *
+    //     * @return the computed rectangle in pixels
+    //     */
+    //    public PixelRectangle toPixels (PixelRectangle  pagRect,
+    //                                    PixelRectangle pixRect)
+    //    {
+    //        if (pixRect == null) {
+    //            pixRect = new PixelRectangle();
+    //        }
+    //
+    //        pixRect.x = unitsToPixels(pagRect.x);
+    //        pixRect.y = unitsToPixels(pagRect.y);
+    //        pixRect.width = unitsToPixels(pagRect.width);
+    //        pixRect.height = unitsToPixels(pagRect.height);
+    //
+    //        return pixRect;
+    //    }
 
     //----------//
     // toPixels //
@@ -516,184 +505,184 @@ public class Scale
         return sb.toString();
     }
 
-    //---------//
-    // toUnits //
-    //---------//
-    /**
-     * Compute the number of units that corresponds to the fraction of interline
-     * provided, according to the scale.
-     *
-     * @param frac a measure based on interline (1 = one interline)
-     *
-     * @return the actual number of units with the current scale
-     */
-    public int toUnits (Fraction frac)
-    {
-        return toUnits(frac.getWrappedValue());
-    }
-
-    //---------//
-    // toUnits //
-    //---------//
-    /**
-     * Compute the number of units that corresponds to the fraction of interline
-     * provided, according to the scale.
-     *
-     * @param frac a measure based on interline (1 = one interline)
-     *
-     * @return the actual number of units with the current scale
-     */
-    public int toUnits (InterlineFraction frac)
-    {
-        return (int) Math.rint(toUnitsDouble(frac));
-    }
-
-    //---------//
-    // toUnits //
-    //---------//
-    /**
-     * Convert a dimension whose compoents are in pixels to a dimension whose
-     * components are in units.
-     *
-     * @param pixelDim dimension in pixels
-     *
-     * @return the result in units
-     */
-    public UnitDimension toUnits (PixelDimension pixelDim)
-    {
-        return toUnits(pixelDim, null);
-    }
-
-    //---------//
-    // toUnits //
-    //---------//
-    /**
-     * Convert a dimension whose compoents are in pixels to a dimension whose
-     * components are in units.
-     *
-     * @param pixelDim dimension in pixels
-     * @param unitDim equivalent dimension in units, or null if allocation to be
-     *                performed by the routine
-     *
-     * @return the result in units
-     */
-    public UnitDimension toUnits (PixelDimension pixelDim,
-                                  UnitDimension  unitDim)
-    {
-        if (unitDim == null) {
-            unitDim = new UnitDimension();
-        }
-
-        unitDim.width = pixelsToUnits(pixelDim.width);
-        unitDim.height = pixelsToUnits(pixelDim.height);
-
-        return unitDim;
-    }
-
-    //---------//
-    // toUnits //
-    //---------//
-    /**
-     * Convert a rectangle whose components are in pixels to a rectangle whose
-     * components are in units.
-     *
-     * @param pixelRect rectangle in pixels
-     *
-     * @return the result in units
-     */
-    public PageRectangle toUnits (PixelRectangle pixelRect)
-    {
-        return toUnits(pixelRect, null);
-    }
-
-    //---------//
-    // toUnits //
-    //---------//
-    /**
-     * Convert a rectangle whose components are in pixels to a rectangle whose
-     * components are in units.
-     *
-     * @param pixelRect rectangle in pixels
-     * @param unitRect equivalent rectangle in units, or null if allocation to be
-     *                performed by the routine
-     *
-     * @return the result in units
-     */
-    public PageRectangle toUnits (PixelRectangle pixelRect,
-                                  PageRectangle  unitRect)
-    {
-        if (unitRect == null) {
-            unitRect = new PageRectangle();
-        }
-
-        unitRect.x = pixelsToUnits(pixelRect.x);
-        unitRect.y = pixelsToUnits(pixelRect.y);
-        unitRect.width = pixelsToUnits(pixelRect.width);
-        unitRect.height = pixelsToUnits(pixelRect.height);
-
-        return unitRect;
-    }
-
-    //---------------//
-    // toUnitsDouble //
-    //---------------//
-    /**
-     * Same as toUnits, but the result is a double instead of a rounded int.
-     *
-     * @param frac the interline fraction
-     * @return the equivalent in number of units
-     * @see #toUnits
-     */
-    public double toUnitsDouble (InterlineFraction frac)
-    {
-        return INTER_LINE * frac.doubleValue();
-    }
-
-    //---------------//
-    // toUnitsDouble //
-    //---------------//
-    /**
-     * Same as toUnits, but the result is a double instead of a rounded int.
-     *
-     * @param frac the interline fraction
-     * @return the equivalent in number of units
-     * @see #toUnits
-     */
-    public double toUnitsDouble (Fraction frac)
-    {
-        return toUnitsDouble(frac.getWrappedValue());
-    }
-
-    //-------------//
-    // unitsToFrac //
-    //-------------//
-    /**
-     * Transtale a number of units to an interline fraction
-     *
-     * @param d the number of units
-     * @return the corresponding interline fraction
-     */
-    public double unitsToFrac (double d)
-    {
-        return d / INTER_LINE;
-    }
-
-    //---------------//
-    // unitsToPixels //
-    //---------------//
-    /**
-     * Converts a number of units into its equivalent in pixels
-     *
-     * @param units number of units
-     *
-     * @return equivalent number of pixels
-     */
-    private int unitsToPixels (int units)
-    {
-        return (units * interline) / INTER_LINE;
-    }
-
     //~ Inner Classes ----------------------------------------------------------
+
+    //    //---------//
+    //    // toUnits //
+    //    //---------//
+    //    /**
+    //     * Compute the number of units that corresponds to the fraction of interline
+    //     * provided, according to the scale.
+    //     *
+    //     * @param frac a measure based on interline (1 = one interline)
+    //     *
+    //     * @return the actual number of units with the current scale
+    //     */
+    //    public int toUnits (Fraction frac)
+    //    {
+    //        return toUnits(frac.getWrappedValue());
+    //    }
+    //
+    //    //---------//
+    //    // toUnits //
+    //    //---------//
+    //    /**
+    //     * Compute the number of units that corresponds to the fraction of interline
+    //     * provided, according to the scale.
+    //     *
+    //     * @param frac a measure based on interline (1 = one interline)
+    //     *
+    //     * @return the actual number of units with the current scale
+    //     */
+    //    public int toUnits (InterlineFraction frac)
+    //    {
+    //        return (int) Math.rint(toUnitsDouble(frac));
+    //    }
+    //
+    //    //---------//
+    //    // toUnits //
+    //    //---------//
+    //    /**
+    //     * Convert a dimension whose compoents are in pixels to a dimension whose
+    //     * components are in units.
+    //     *
+    //     * @param pixelDim dimension in pixels
+    //     *
+    //     * @return the result in units
+    //     */
+    //    public PixelDimension toUnits (PixelDimension pixelDim)
+    //    {
+    //        return toUnits(pixelDim, null);
+    //    }
+    //
+    //    //---------//
+    //    // toUnits //
+    //    //---------//
+    //    /**
+    //     * Convert a dimension whose compoents are in pixels to a dimension whose
+    //     * components are in units.
+    //     *
+    //     * @param pixelDim dimension in pixels
+    //     * @param unitDim equivalent dimension in units, or null if allocation to be
+    //     *                performed by the routine
+    //     *
+    //     * @return the result in units
+    //     */
+    //    public PixelDimension toUnits (PixelDimension pixelDim,
+    //                                  PixelDimension  unitDim)
+    //    {
+    //        if (unitDim == null) {
+    //            unitDim = new PixelDimension();
+    //        }
+    //
+    //        unitDim.width = pixelsToUnits(pixelDim.width);
+    //        unitDim.height = pixelsToUnits(pixelDim.height);
+    //
+    //        return unitDim;
+    //    }
+    //
+    //    //---------//
+    //    // toUnits //
+    //    //---------//
+    //    /**
+    //     * Convert a rectangle whose components are in pixels to a rectangle whose
+    //     * components are in units.
+    //     *
+    //     * @param pixelRect rectangle in pixels
+    //     *
+    //     * @return the result in units
+    //     */
+    //    public PixelRectangle toUnits (PixelRectangle pixelRect)
+    //    {
+    //        return toUnits(pixelRect, null);
+    //    }
+    //
+    //    //---------//
+    //    // toUnits //
+    //    //---------//
+    //    /**
+    //     * Convert a rectangle whose components are in pixels to a rectangle whose
+    //     * components are in units.
+    //     *
+    //     * @param pixelRect rectangle in pixels
+    //     * @param unitRect equivalent rectangle in units, or null if allocation to be
+    //     *                performed by the routine
+    //     *
+    //     * @return the result in units
+    //     */
+    //    public PixelRectangle toUnits (PixelRectangle pixelRect,
+    //                                  PixelRectangle  unitRect)
+    //    {
+    //        if (unitRect == null) {
+    //            unitRect = new PixelRectangle();
+    //        }
+    //
+    //        unitRect.x = pixelsToUnits(pixelRect.x);
+    //        unitRect.y = pixelsToUnits(pixelRect.y);
+    //        unitRect.width = pixelsToUnits(pixelRect.width);
+    //        unitRect.height = pixelsToUnits(pixelRect.height);
+    //
+    //        return unitRect;
+    //    }
+    //
+    //    //---------------//
+    //    // toUnitsDouble //
+    //    //---------------//
+    //    /**
+    //     * Same as toUnits, but the result is a double instead of a rounded int.
+    //     *
+    //     * @param frac the interline fraction
+    //     * @return the equivalent in number of units
+    //     * @see #toUnits
+    //     */
+    //    public double toUnitsDouble (InterlineFraction frac)
+    //    {
+    //        return INTER_LINE * frac.doubleValue();
+    //    }
+    //
+    //    //---------------//
+    //    // toUnitsDouble //
+    //    //---------------//
+    //    /**
+    //     * Same as toUnits, but the result is a double instead of a rounded int.
+    //     *
+    //     * @param frac the interline fraction
+    //     * @return the equivalent in number of units
+    //     * @see #toUnits
+    //     */
+    //    public double toUnitsDouble (Fraction frac)
+    //    {
+    //        return toUnitsDouble(frac.getWrappedValue());
+    //    }
+    //
+    //    //-------------//
+    //    // unitsToFrac //
+    //    //-------------//
+    //    /**
+    //     * Transtale a number of units to an interline fraction
+    //     *
+    //     * @param d the number of units
+    //     * @return the corresponding interline fraction
+    //     */
+    //    public double unitsToFrac (double d)
+    //    {
+    //        return d / INTER_LINE;
+    //    }
+    //
+    //    //---------------//
+    //    // unitsToPixels //
+    //    //---------------//
+    //    /**
+    //     * Converts a number of units into its equivalent in pixels
+    //     *
+    //     * @param units number of units
+    //     *
+    //     * @return equivalent number of pixels
+    //     */
+    //    private int unitsToPixels (int units)
+    //    {
+    //        return (units * interline) / INTER_LINE;
+    //    }
 
     //--------------//
     // AreaFraction //

@@ -23,7 +23,7 @@ import omr.glyph.facets.Glyph;
 import omr.log.Logger;
 
 import omr.score.common.PixelRectangle;
-import omr.score.common.SystemRectangle;
+import omr.score.common.PixelRectangle;
 import omr.score.entity.Barline;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.SystemPart;
@@ -124,8 +124,7 @@ public class ClefPattern
                 (staff.getHeight() / 2) - yOffset);
 
             // Draw the box, for visual debug
-            SystemRectangle sysInner = scoreSystem.toSystemRectangle(pixInner);
-            SystemPart      part = scoreSystem.getPartAt(sysInner.getCenter());
+            SystemPart      part = scoreSystem.getPartAt(pixInner.getCenter());
             Barline         barline = part.getStartingBarline();
             Glyph           line = null;
 

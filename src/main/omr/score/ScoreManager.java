@@ -22,6 +22,7 @@ import omr.score.midi.MidiAbstractions;
 import omr.score.midi.MidiAgent;
 import omr.score.ui.ScoreActions;
 import omr.score.ui.ScorePdfOutput;
+import omr.score.ui.SheetPdfOutput;
 
 import omr.sheet.SheetBench;
 
@@ -134,20 +135,36 @@ public class ScoreManager
             score.getRadix() + MidiAbstractions.MIDI_EXTENSION);
     }
 
-    //-------------------//
-    // getDefaultPdfFile //
-    //-------------------//
+    //------------------------//
+    // getDefaultScorePdfFile //
+    //------------------------//
     /**
-     * Report the file to which the PDF data would be written by default
+     * Report the file to which the score PDF data would be written by default
      * @param score the score to export
      * @return the default file
      */
-    public File getDefaultPdfFile (Score score)
+    public File getDefaultScorePdfFile (Score score)
     {
-        return (score.getPdfFile() != null) ? score.getPdfFile()
+        return (score.getScorePdfFile() != null) ? score.getScorePdfFile()
                : new File(
-            constants.defaultPdfDirectory.getValue(),
-            score.getRadix() + ".pdf");
+            constants.defaultScorePdfDirectory.getValue(),
+            score.getRadix() + ".score.pdf");
+    }
+
+    //------------------------//
+    // getDefaultSheetPdfFile //
+    //------------------------//
+    /**
+     * Report the file to which the sheet PDF data would be written by default
+     * @param score the score to export
+     * @return the default file
+     */
+    public File getDefaultSheetPdfFile (Score score)
+    {
+        return (score.getSheetPdfFile() != null) ? score.getSheetPdfFile()
+               : new File(
+            constants.defaultSheetPdfDirectory.getValue(),
+            score.getRadix() + ".sheet.pdf");
     }
 
     //--------//
@@ -267,33 +284,6 @@ public class ScoreManager
         }
     }
 
-    //----------//
-    // pdfWrite //
-    //----------//
-    /**
-     * Print the score into the provided PDF file.
-     *
-     * @param score the provided score
-     * @param pdfFile the PDF file to write
-     */
-    public void pdfWrite (Score score,
-                          File  pdfFile)
-    {
-        pdfFile = getActualFile(pdfFile, getDefaultPdfFile(score));
-
-        // Actually write the PDF file
-        try {
-            new ScorePdfOutput(score, pdfFile).write();
-            score.setPdfFile(pdfFile);
-            logger.info("Score printed to " + pdfFile);
-
-            // Remember (even across runs) the selected directory
-            constants.defaultPdfDirectory.setValue(pdfFile.getParent());
-        } catch (Exception ex) {
-            logger.warning("Cannot write PDF to " + pdfFile, ex);
-        }
-    }
-
     //------------//
     // storeBench //
     //------------//
@@ -340,6 +330,60 @@ public class ScoreManager
     }
 
     //---------------//
+    // writeScorePdf //
+    //---------------//
+    /**
+     * Print the score into the provided PDF file.
+     *
+     * @param score the provided score
+     * @param pdfFile the PDF file to write
+     */
+    public void writeScorePdf (Score score,
+                               File  pdfFile)
+    {
+        pdfFile = getActualFile(pdfFile, getDefaultScorePdfFile(score));
+
+        // Actually write the PDF file
+        try {
+            new ScorePdfOutput(score, pdfFile).write();
+            score.setScorePdfFile(pdfFile);
+            logger.info("Score printed to " + pdfFile);
+
+            // Remember (even across runs) the selected directory
+            constants.defaultScorePdfDirectory.setValue(pdfFile.getParent());
+        } catch (Exception ex) {
+            logger.warning("Cannot write PDF to " + pdfFile, ex);
+        }
+    }
+
+    //---------------//
+    // writeSheetPdf //
+    //---------------//
+    /**
+     * Print the sheet into the provided PDF file.
+     *
+     * @param score the provided score
+     * @param pdfFile the PDF file to write
+     */
+    public void writeSheetPdf (Score score,
+                               File  pdfFile)
+    {
+        pdfFile = getActualFile(pdfFile, getDefaultSheetPdfFile(score));
+
+        // Actually write the PDF file
+        try {
+            new SheetPdfOutput(score, pdfFile).write();
+            score.setSheetPdfFile(pdfFile);
+            logger.info("Score printed to " + pdfFile);
+
+            // Remember (even across runs) the selected directory
+            constants.defaultSheetPdfDirectory.setValue(pdfFile.getParent());
+        } catch (Exception ex) {
+            logger.warning("Cannot write PDF to " + pdfFile, ex);
+        }
+    }
+
+    //---------------//
     // getActualFile //
     //---------------//
     /**
@@ -379,7 +423,7 @@ public class ScoreManager
 
         /** Default directory for saved scores */
         Constant.String defaultScoreDirectory = new Constant.String(
-            "",
+            System.getProperty("user.home"),
             "Default directory for saved scores");
 
         /** Should we save bench data to disk */
@@ -389,18 +433,23 @@ public class ScoreManager
 
         /** Default directory for saved benches */
         Constant.String defaultBenchDirectory = new Constant.String(
-            "",
+            System.getProperty("user.home"),
             "Default directory for saved benches");
 
         /** Default directory for writing Midi files */
         Constant.String defaultMidiDirectory = new Constant.String(
-            "",
+            System.getProperty("user.home"),
             "Default directory for writing Midi files");
 
-        /** Default directory for writing PDF files */
-        Constant.String defaultPdfDirectory = new Constant.String(
-            "",
-            "Default directory for writing PDF files");
+        /** Default directory for writing score PDF files */
+        Constant.String defaultScorePdfDirectory = new Constant.String(
+            System.getProperty("user.home"),
+            "Default directory for writing score PDF files");
+
+        /** Default directory for writing sheet PDF files */
+        Constant.String defaultSheetPdfDirectory = new Constant.String(
+            System.getProperty("user.home"),
+            "Default directory for writing sheet PDF files");
 
         /** Should we export our signature? */
         Constant.Boolean defaultInjectSignature = new Constant.Boolean(

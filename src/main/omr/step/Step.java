@@ -28,7 +28,7 @@ import javax.swing.SwingUtilities;
 
 /**
  * Enum <code>Step</code> lists the various sheet processing steps in
- * chronological order.
+ * chronological order, from LOAD to SCORE, followed by optional output steps.
  *
  * @author Hervé Bitteur
  */
@@ -93,9 +93,14 @@ public enum Step {
     SCORE(true, true, SYMBOLS.label, "Translate glyphs to score items"), 
 
     /**
-     * Print the whole score
+     * Print the whole sheet (physical output)
      */
-    PRINT(false, true, SYMBOLS.label, "Write the output PDF file"), 
+    PRINT_SHEET(false, true, SYMBOLS.label, "Write the sheet output PDF file"), 
+
+    /**
+     * Print the whole score (logical output)
+     */
+    PRINT_SCORE(false, true, SYMBOLS.label, "Write the score output PDF file"), 
 
     /**
      * Play the whole score
@@ -237,7 +242,7 @@ public enum Step {
                 // Debug
                 if (false) {
                     logger.info(
-                        "perfomrUntil. latest:" + latest + " from:" + from +
+                        "performUntil. latest:" + latest + " from:" + from +
                         " until:" + this);
                 }
 
@@ -254,7 +259,7 @@ public enum Step {
                     // Last step is always included
                     steps.add(this);
 
-                    doStepRange(steps, sheet, null);
+                    doStepSet(steps, sheet, null);
                 } else if (monitor != null) {
                     // Update sheet (& score) dependent entities
                     SheetsController.getInstance()
@@ -272,20 +277,20 @@ public enum Step {
              .addTask(new StepTask(this));
     }
 
-    //-------------//
-    // doStepRange //
-    //-------------//
+    //-----------//
+    // doStepSet //
+    //-----------//
     /**
-     * Perform a range of steps, with an online display of a progress
+     * Perform a set of steps, with an online display of a progress
      * monitor.
      *
-     * @param stepRange the range of steps
+     * @param stepSet the set of steps
      * @param sheet the sheet being analyzed
      * @param systems systems to process (null means all systems)
      */
-    public static void doStepRange (final EnumSet<Step>    stepRange,
-                                    final Sheet            sheet,
-                                    Collection<SystemInfo> systems)
+    public static void doStepSet (final EnumSet<Step>    stepSet,
+                                  final Sheet            sheet,
+                                  Collection<SystemInfo> systems)
     {
         long startTime = 0;
 
@@ -293,7 +298,7 @@ public enum Step {
             startTime = System.currentTimeMillis();
 
             StringBuilder sb = new StringBuilder("Performing ");
-            sb.append(stepRange);
+            sb.append(stepSet);
 
             if (sheet != null) {
                 sb.append(" sheet=")
@@ -315,14 +320,14 @@ public enum Step {
             }
 
             // Systems are rebuilt from scratch in SYSTEMS step, so ...
-            if (stepRange.contains(Step.SYSTEMS)) {
+            if (stepSet.contains(Step.SYSTEMS)) {
                 systems = null;
             }
 
             // The actual processing
             Step lastStep = null;
 
-            for (Step step : stepRange) {
+            for (Step step : stepSet) {
                 notifyMsg(step.name());
                 step.doOneStep(sheet, systems);
 
@@ -362,7 +367,7 @@ public enum Step {
             if (logger.isFineEnabled()) {
                 long stopTime = System.currentTimeMillis();
                 logger.fine(
-                    "End of " + stepRange + " in " + (stopTime - startTime) +
+                    "End of " + stepSet + " in " + (stopTime - startTime) +
                     " ms.");
             }
         }

@@ -229,6 +229,13 @@ public class ShapeRange
         KEY_FLAT_6,
         KEY_FLAT_7);
 
+    /** Clefs ottava (alta or bassa) */
+    public static final EnumSet<Shape> OttavaClefs = EnumSet.of(
+        G_CLEF_OTTAVA_ALTA,
+        G_CLEF_OTTAVA_BASSA,
+        F_CLEF_OTTAVA_ALTA,
+        F_CLEF_OTTAVA_BASSA);
+
     //~ Instance fields --------------------------------------------------------
 
     /** Name of the range */

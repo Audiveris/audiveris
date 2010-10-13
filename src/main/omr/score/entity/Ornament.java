@@ -15,7 +15,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
-import omr.score.common.SystemPoint;
+import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
 
 /**
@@ -60,7 +60,7 @@ public class Ornament
      * @param glyph the underlying glyph
      */
     public Ornament (Measure     measure,
-                     SystemPoint point,
+                     PixelPoint point,
                      Chord       chord,
                      Glyph       glyph)
     {
@@ -90,7 +90,7 @@ public class Ornament
      */
     public static void populate (Glyph       glyph,
                                  Measure     measure,
-                                 SystemPoint point)
+                                 PixelPoint point)
     {
         // An Ornament relates to the note below on the same time slot
         Slot slot = measure.getClosestSlot(point);

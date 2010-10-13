@@ -22,7 +22,7 @@ import omr.log.Logger;
 import omr.math.BasicLine;
 import omr.math.Line;
 
-import omr.score.common.SystemPoint;
+import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
@@ -68,10 +68,10 @@ public class Beam
     private Line line;
 
     /** Left point of beam */
-    private SystemPoint left;
+    private PixelPoint left;
 
     /** Right point of beam */
-    private SystemPoint right;
+    private PixelPoint right;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -159,9 +159,9 @@ public class Beam
     /**
      * Report the point that define the left edge of the beam
      *
-     * @return the SystemPoint coordinates of the left point
+     * @return the PixelPoint coordinates of the left point
      */
-    public SystemPoint getLeftPoint ()
+    public PixelPoint getLeftPoint ()
     {
         return items.first()
                     .getLeftPoint();
@@ -211,9 +211,9 @@ public class Beam
     /**
      * Report the point that define the right edge of the beam
      *
-     * @return the SystemPoint coordinates of the right point
+     * @return the PixelPoint coordinates of the right point
      */
-    public SystemPoint getRightPoint ()
+    public PixelPoint getRightPoint ()
     {
         return items.last()
                     .getRightPoint();
@@ -300,9 +300,8 @@ public class Beam
         // Find a common chord, and use reverse order from head location
         for (Chord chord : chords) {
             if (other.chords.contains(chord)) {
-                int x = getMeasure()
-                            .getSystem()
-                            .toSystemPoint(chord.getStem().getLocation()).x;
+                int x = chord.getStem()
+                             .getLocation().x;
                 int y = getLine()
                             .yAt(x);
                 int yOther = other.getLine()
@@ -565,7 +564,7 @@ public class Beam
     {
         getLine();
         setCenter(
-            new SystemPoint((left.x + right.x) / 2, (left.y + right.y) / 2));
+            new PixelPoint((left.x + right.x) / 2, (left.y + right.y) / 2));
     }
 
     //-------//
@@ -601,11 +600,11 @@ public class Beam
         }
 
         // Check alignment
-        SystemPoint gsp = item.getCenter();
-        double      dist = getLine()
-                               .distanceOf(gsp.x, gsp.y);
-        double      maxDistance = getScale()
-                                      .toUnits(constants.maxDistance);
+        PixelPoint gsp = item.getCenter();
+        double     dist = getLine()
+                              .distanceOf(gsp.x, gsp.y);
+        double     maxDistance = getScale()
+                                     .toPixels(constants.maxDistance);
 
         if (logger.isFineEnabled()) {
             logger.fine("maxDistance=" + maxDistance + " dist=" + dist);
@@ -617,7 +616,7 @@ public class Beam
 
         // Check distance along the same alignment
         double maxGap = getScale()
-                            .toUnits(constants.maxGap);
+                            .toPixels(constants.maxGap);
 
         if (logger.isFineEnabled()) {
             logger.fine(

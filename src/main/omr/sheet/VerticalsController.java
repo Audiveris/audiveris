@@ -244,10 +244,11 @@ public class VerticalsController
         // renderItems //
         //-------------//
         @Override
-        public void renderItems (Graphics g)
+        public void renderItems (Graphics2D g)
         {
             // Render all physical info known so far
-            sheet.accept(new SheetPainter(g, false));
+            sheet.getScore()
+                 .accept(new SheetPainter(g, false));
 
             super.renderItems(g);
         }

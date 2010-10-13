@@ -16,14 +16,9 @@ import omr.glyph.text.TextRole;
 import omr.log.Logger;
 
 import omr.score.Score;
-import omr.score.common.PagePoint;
-import omr.score.common.PageRectangle;
+import omr.score.common.PixelDimension;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
-import omr.score.common.SystemPoint;
-import omr.score.common.SystemRectangle;
-import omr.score.common.UnitDimension;
-import static omr.score.ui.ScoreConstants.*;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.SystemInfo;
@@ -72,7 +67,7 @@ public class ScoreSystem
      * Top left corner of the system in the containing page. This points to the
      * first real staff, and does not count the preceding dummy staves if any.
      */
-    private final PagePoint topLeft;
+    private final PixelPoint topLeft;
 
     /** Related info from sheet analysis */
     private final SystemInfo info;
@@ -84,7 +79,7 @@ public class ScoreSystem
     private Integer actualDuration;
 
     /** Contour of all system entities to be displayed, origin being topLeft */
-    private volatile SystemRectangle displayContour;
+    private volatile PixelRectangle displayContour;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -97,20 +92,25 @@ public class ScoreSystem
      * @param info      the physical information retrieved from the sheet
      * @param score     the containing score
      * @param topLeft   the coordinate, in units, of the upper left point of the
-     *                  system in its containing score
-     * @param dimension the dimension of the system, expressed in units
+     *                  system in its containing page
+     * @param dimension the dimension of the system
      */
-    public ScoreSystem (SystemInfo    info,
-                        Score         score,
-                        PagePoint     topLeft,
-                        UnitDimension dimension)
+    public ScoreSystem (SystemInfo     info,
+                        Score          score,
+                        PixelPoint     topLeft,
+                        PixelDimension dimension)
     {
         super(score);
 
         this.info = info;
         this.topLeft = topLeft;
 
-        setBox(new SystemRectangle(0, 0, dimension.width, dimension.height));
+        setBox(
+            new PixelRectangle(
+                topLeft.x,
+                topLeft.y,
+                dimension.width,
+                dimension.height));
         getCenter();
 
         id = getParent()
@@ -152,9 +152,9 @@ public class ScoreSystem
      *
      * @return the system dimension, in units
      */
-    public UnitDimension getDimension ()
+    public PixelDimension getDimension ()
     {
-        return new UnitDimension(getBox().width, getBox().height);
+        return new PixelDimension(getBox().width, getBox().height);
     }
 
     //------------//
@@ -164,7 +164,7 @@ public class ScoreSystem
      * Define the new display contour for the system
      * @param systemContour the new display contour
      */
-    public void setDisplayContour (SystemRectangle systemContour)
+    public void setDisplayContour (PixelRectangle systemContour)
     {
         this.displayContour = systemContour;
     }
@@ -174,15 +174,15 @@ public class ScoreSystem
     //-------------------//
     /**
      * Return a copy of the system display contour, which includes the system
-     * staves plus the satellite text entities
+     * boundaries
      * @return a COPY of the system display contour
      */
-    public SystemRectangle getDisplayContour ()
+    public PixelRectangle getDisplayContour ()
     {
         if (displayContour == null) {
             return null;
         } else {
-            return (SystemRectangle) displayContour.clone();
+            return (PixelRectangle) displayContour.clone();
         }
     }
 
@@ -198,10 +198,9 @@ public class ScoreSystem
      */
     public int getDummyOffset ()
     {
-        return getTopLeft().y -
-               getFirstPart()
-                   .getFirstStaff()
-                   .getPageTopLeft().y;
+        return getTopLeft().y - getFirstPart()
+                                    .getFirstStaff()
+                                    .getTopLeft().y;
     }
 
     //--------------//
@@ -314,7 +313,7 @@ public class ScoreSystem
      * @param sysPt the system point to check
      * @return true if on left
      */
-    public boolean isLeftOfStaves (SystemPoint sysPt)
+    public boolean isLeftOfStaves (PixelPoint sysPt)
     {
         return sysPt.x < 0;
     }
@@ -350,7 +349,7 @@ public class ScoreSystem
      * @param sysPt the given system point
      * @return the containing part
      */
-    public SystemPart getPartAt (SystemPoint sysPt)
+    public SystemPart getPartAt (PixelPoint sysPt)
     {
         return getStaffAt(sysPt)
                    .getPart();
@@ -378,7 +377,7 @@ public class ScoreSystem
      * @param sysPt the given system point
      * @return the staff above
      */
-    public Staff getStaffAbove (SystemPoint sysPt)
+    public Staff getStaffAbove (PixelPoint sysPt)
     {
         Staff best = null;
 
@@ -406,7 +405,7 @@ public class ScoreSystem
      * @param sysPt the given system point
      * @return the closest staff
      */
-    public Staff getStaffAt (SystemPoint sysPt)
+    public Staff getStaffAt (PixelPoint sysPt)
     {
         int   minDy = Integer.MAX_VALUE;
         Staff best = null;
@@ -439,21 +438,21 @@ public class ScoreSystem
      * @param sysPt the system point whose ordinate is to be checked
      * @return the StaffPosition value
      */
-    public StaffPosition getStaffPosition (SystemPoint sysPt)
+    public StaffPosition getStaffPosition (PixelPoint sysPt)
     {
-        Staff     firstStaff = getFirstRealPart()
-                                   .getFirstStaff();
+        Staff      firstStaff = getFirstRealPart()
+                                    .getFirstStaff();
 
-        PagePoint pagPt = toPagePoint(sysPt);
+        PixelPoint pagPt = sysPt;
 
-        if (pagPt.y < firstStaff.getPageTopLeft().y) {
+        if (pagPt.y < firstStaff.getTopLeft().y) {
             return StaffPosition.above;
         }
 
         Staff lastStaff = getLastPart()
                               .getLastStaff();
 
-        if (pagPt.y > (lastStaff.getPageTopLeft().y + lastStaff.getHeight())) {
+        if (pagPt.y > (lastStaff.getTopLeft().y + lastStaff.getHeight())) {
             return StaffPosition.below;
         } else {
             return StaffPosition.within;
@@ -495,8 +494,8 @@ public class ScoreSystem
      * @param sysPt the provided point
      * @return the preferred staff
      */
-    public Staff getTextStaff (TextRole    role,
-                               SystemPoint sysPt)
+    public Staff getTextStaff (TextRole   role,
+                               PixelPoint sysPt)
     {
         Staff staff = null;
 
@@ -523,7 +522,7 @@ public class ScoreSystem
      * @return the top left corner
      * @see #getDummyOffset
      */
-    public PagePoint getTopLeft ()
+    public PixelPoint getTopLeft ()
     {
         return topLeft;
     }
@@ -537,7 +536,7 @@ public class ScoreSystem
      */
     public void setWidth (int unitWidth)
     {
-        SystemRectangle newBox = getBox();
+        PixelRectangle newBox = getBox();
         reset();
 
         newBox.width = unitWidth;
@@ -581,29 +580,6 @@ public class ScoreSystem
                 Collections.sort(getParts(), SystemPart.idComparator);
             }
         }
-    }
-
-    //--------//
-    // locate //
-    //--------//
-    /**
-     * Return the position of given PagePoint, relative to the system
-     *
-     * @param pagPt the given PagePoint
-     *
-     * @return -1 for above, 0 for middle, +1 for below
-     */
-    public int locate (PagePoint pagPt)
-    {
-        if (pagPt.y < topLeft.y) {
-            return -1;
-        }
-
-        if (pagPt.y > (topLeft.y + getBox().height + STAFF_HEIGHT)) {
-            return +1;
-        }
-
-        return 0;
     }
 
     //-------------------------//
@@ -659,57 +635,76 @@ public class ScoreSystem
         }
     }
 
-    //-------------//
-    // toPagePoint //
-    //-------------//
-    /**
-     * Compute the pagepoint that correspond to a given systempoint, which is
-     * basically a translation using the coordinates of the system topLeft
-     * corner.
-     *
-     * @param sysPt the point in the system
-     * @return the page point
-     */
-    public PagePoint toPagePoint (SystemPoint sysPt)
-    {
-        return new PagePoint(sysPt.x + topLeft.x, sysPt.y + topLeft.y);
-    }
-
-    //-----------------//
-    // toPageRectangle //
-    //-----------------//
-    /**
-     * Compute the page rectangle that corresonds to a given page rectangle,
-     * which boils down to a simple translation using the coordinates of the
-     * ystem topLeft corner.
-     * @param sysRect the rectangle in the system
-     * @return the page rectangle
-     */
-    public PageRectangle toPageRectangle (SystemRectangle sysRect)
-    {
-        return new PageRectangle(
-            sysRect.x + topLeft.x,
-            sysRect.y + topLeft.y,
-            sysRect.width,
-            sysRect.height);
-    }
-
-    //--------------//
-    // toPixelPoint //
-    //--------------//
-    /**
-     * Compute the pixel point that correspond to a given system point, which is
-     * basically a translation using the coordinates of the system topLeft
-     * corner, then a scaling.
-     *
-     * @param sysPt the point in the system
-     * @return the pixel point
-     */
-    public PixelPoint toPixelPoint (SystemPoint sysPt)
-    {
-        return getScale()
-                   .toPixelPoint(toPagePoint(sysPt));
-    }
+    //    //-------------//
+    //    // toPixelPoint //
+    //    //-------------//
+    //    /**
+    //     * Compute the pagepoint that correspond to a given systempoint, which is
+    //     * basically a translation using the coordinates of the system topLeft
+    //     * corner.
+    //     *
+    //     * @param sysPt the point in the system
+    //     * @return the page point
+    //     */
+    //    public PixelPoint toPixelPoint (PixelPoint sysPt)
+    //    {
+    //        return new PixelPoint(sysPt.x + topLeft.x, sysPt.y + topLeft.y);
+    //    }
+    //
+    //    //-----------------//
+    //    // toPixelRectangle //
+    //    //-----------------//
+    //    /**
+    //     * Compute the page rectangle that corresonds to a given page rectangle,
+    //     * which boils down to a simple translation using the coordinates of the
+    //     * ystem topLeft corner.
+    //     * @param sysRect the rectangle in the system
+    //     * @return the page rectangle
+    //     */
+    //    public PixelRectangle toPixelRectangle (PixelRectangle sysRect)
+    //    {
+    //        return new PixelRectangle(
+    //            sysRect.x + topLeft.x,
+    //            sysRect.y + topLeft.y,
+    //            sysRect.width,
+    //            sysRect.height);
+    //    }
+    //
+    //    //--------------//
+    //    // toPixelPoint //
+    //    //--------------//
+    //    /**
+    //     * Compute the pixel point that correspond to a given system point, which is
+    //     * basically a translation using the coordinates of the system topLeft
+    //     * corner, then a scaling.
+    //     *
+    //     * @param sysPt the point in the system
+    //     * @return the pixel point
+    //     */
+    //    public PixelPoint toPixelPoint (PixelPoint sysPt)
+    //    {
+    //        return getScale()
+    //                   .toPixelPoint(toPixelPoint(sysPt));
+    //    }
+    //
+    //    //------------------//
+    //    // toPixelRectangle //
+    //    //------------------//
+    //    /**
+    //     * XXXXXXXXXXXXXXXXXXXXXXXXXXxCompute the system rectangle that correspond to a given pixel rectangle,
+    //     * which is basically a scaling plus a translation using the coordinates of
+    //     * the system topLeft corner.
+    //     *
+    //     * @param pixRect the rectangle in the sheet
+    //     * @return the system rectangle
+    //     */
+    //    public PixelRectangle toPixelRectangle (PixelRectangle sysRect)
+    //    {
+    //        PixelRectangle pagRect = toPixelRectangle(sysRect);
+    //
+    //        return getScale()
+    //                   .toPixels(pagRect);
+    //    }
 
     //----------//
     // toString //
@@ -739,79 +734,79 @@ public class ScoreSystem
         return sb.toString();
     }
 
-    //---------------//
-    // toSystemPoint //
-    //---------------//
-    /**
-     * Compute the system point that correspond to a given page point, which is
-     * basically a translation using the coordinates of the system topLeft
-     * corner.
-     *
-     * @param pagPt the point in the sheet
-     * @return the system point
-     */
-    public SystemPoint toSystemPoint (PagePoint pagPt)
-    {
-        return new SystemPoint(pagPt.x - topLeft.x, pagPt.y - topLeft.y);
-    }
-
-    //---------------//
-    // toSystemPoint //
-    //---------------//
-    /**
-     * Compute the system point that correspond to a given pixel point, which is
-     * basically a scaling plus a translation using the coordinates of the
-     * system topLeft corner.
-     *
-     * @param pixPt the point in the sheet
-     * @return the system point
-     */
-    public SystemPoint toSystemPoint (PixelPoint pixPt)
-    {
-        PagePoint pagPt = getScale()
-                              .toPagePoint(pixPt);
-
-        return new SystemPoint(pagPt.x - topLeft.x, pagPt.y - topLeft.y);
-    }
-
-    //-------------------//
-    // toSystemRectangle //
-    //-------------------//
-    /**
-     * Compute the system rectangle that correspond to a given pixel rectangle,
-     * which is basically a scaling plus a translation using the coordinates of
-     * the system topLeft corner.
-     *
-     * @param pixRect the rectangle in the sheet
-     * @return the system rectangle
-     */
-    public SystemRectangle toSystemRectangle (PixelRectangle pixRect)
-    {
-        PageRectangle pagRect = getScale()
-                                    .toUnits(pixRect);
-
-        return toSystemRectangle(pagRect);
-    }
-
-    //-------------------//
-    // toSystemRectangle //
-    //-------------------//
-    /**
-     * Compute the system rectangle that correspond to a given page rectangle,
-     * which is basically a translation using the coordinates of the system
-     * topLeft corner.
-     *
-     * @param pagRect the rectangle in the page
-     * @return the system rectangle
-     */
-    public SystemRectangle toSystemRectangle (PageRectangle pagRect)
-    {
-        return new SystemRectangle(
-            pagRect.x - topLeft.x,
-            pagRect.y - topLeft.y,
-            pagRect.width,
-            pagRect.height);
-    }
+    //    //---------------//
+    //    // toPixelPoint //
+    //    //---------------//
+    //    /**
+    //     * Compute the system point that correspond to a given page point, which is
+    //     * basically a translation using the coordinates of the system topLeft
+    //     * corner.
+    //     *
+    //     * @param pagPt the point in the sheet
+    //     * @return the system point
+    //     */
+    //    public PixelPoint toPixelPoint (PixelPoint pagPt)
+    //    {
+    //        return new PixelPoint(pagPt.x - topLeft.x, pagPt.y - topLeft.y);
+    //    }
+    //
+    //    //---------------//
+    //    // toPixelPoint //
+    //    //---------------//
+    //    /**
+    //     * Compute the system point that correspond to a given pixel point, which is
+    //     * basically a scaling plus a translation using the coordinates of the
+    //     * system topLeft corner.
+    //     *
+    //     * @param pixPt the point in the sheet
+    //     * @return the system point
+    //     */
+    //    public PixelPoint toPixelPoint (PixelPoint pixPt)
+    //    {
+    //        PixelPoint pagPt = getScale()
+    //                              .toPixelPoint(pixPt);
+    //
+    //        return new PixelPoint(pagPt.x - topLeft.x, pagPt.y - topLeft.y);
+    //    }
+    //
+    //    //-------------------//
+    //    // toPixelRectangle //
+    //    //-------------------//
+    //    /**
+    //     * Compute the system rectangle that correspond to a given pixel rectangle,
+    //     * which is basically a scaling plus a translation using the coordinates of
+    //     * the system topLeft corner.
+    //     *
+    //     * @param pixRect the rectangle in the sheet
+    //     * @return the system rectangle
+    //     */
+    //    public PixelRectangle toPixelRectangle (PixelRectangle pixRect)
+    //    {
+    //        PixelRectangle pagRect = getScale()
+    //                                    .toUnits(pixRect);
+    //
+    //        return toPixelRectangle(pagRect);
+    //    }
+    //
+    //    //-------------------//
+    //    // toPixelRectangle //
+    //    //-------------------//
+    //    /**
+    //     * Compute the system rectangle that correspond to a given page rectangle,
+    //     * which is basically a translation using the coordinates of the system
+    //     * topLeft corner.
+    //     *
+    //     * @param pagRect the rectangle in the page
+    //     * @return the system rectangle
+    //     */
+    //    public PixelRectangle toPixelRectangle (PixelRectangle pagRect)
+    //    {
+    //        return new PixelRectangle(
+    //            pagRect.x - topLeft.x,
+    //            pagRect.y - topLeft.y,
+    //            pagRect.width,
+    //            pagRect.height);
+    //    }
 
     //-------//
     // reset //

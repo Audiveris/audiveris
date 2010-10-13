@@ -562,7 +562,7 @@ class GlyphBrowser
         // renderItems //
         //-------------//
         @Override
-        public void renderItems (Graphics g)
+        public void renderItems (Graphics2D g)
         {
             // Mark the current glyph
             int index = navigator.getIndex();

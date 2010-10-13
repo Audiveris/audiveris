@@ -15,7 +15,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
-import omr.score.common.SystemPoint;
+import omr.score.common.PixelPoint;
 
 /**
  * Class <code>Notation</code> is the basis for all variants of notations:
@@ -44,7 +44,7 @@ public abstract class AbstractNotation
      * @param glyph the underlying glyph
      */
     public AbstractNotation (Measure     measure,
-                             SystemPoint point,
+                             PixelPoint point,
                              Chord       chord,
                              Glyph       glyph)
     {

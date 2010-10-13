@@ -16,7 +16,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
-import omr.score.common.SystemPoint;
+import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
 
 /**
@@ -46,7 +46,7 @@ public class Fermata
      * @param glyph the underlying glyph
      */
     public Fermata (Measure     measure,
-                    SystemPoint point,
+                    PixelPoint point,
                     Chord       chord,
                     Glyph       glyph)
     {
@@ -76,7 +76,7 @@ public class Fermata
      */
     public static void populate (Glyph       glyph,
                                  Measure     measure,
-                                 SystemPoint point)
+                                 PixelPoint point)
     {
         // A Fermata relates to the note on the same time slot
         // With placement depending on fermata upright / inverted

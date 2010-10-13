@@ -17,6 +17,7 @@ import omr.step.Step;
 
 import java.io.*;
 import java.util.*;
+import java.util.EnumSet;
 
 /**
  * Class <code>CLI</code> handles the parameters of the command line interface
@@ -120,7 +121,6 @@ public class CLI
         if (item.startsWith("@")) {
             // File with other items inside
             String         pack = item.substring(1);
-
             BufferedReader br = null;
 
             try {
@@ -196,6 +196,7 @@ public class CLI
         String       currentCommand = null;
         Parameters   params = new Parameters();
         List<String> optionPairs = new ArrayList<String>();
+        List<String> stepStrings = new ArrayList<String>();
 
         // Parse all arguments from command line
         for (int i = 0; i < args.length; i++) {
@@ -248,22 +249,8 @@ public class CLI
                 // This is a parameter
                 switch (status) {
                 case STEP :
-
-                    try {
-                        // Read a step name
-                        params.targetStep = Step.valueOf(token.toUpperCase());
-
-                        // By default, sheets are now expected
-                        status = Status.SHEET;
-                        paramNeeded = false;
-                    } catch (Exception ex) {
-                        printCommandLine();
-                        stopUsage(
-                            "Step name expected, found '" + token +
-                            "' instead");
-
-                        return null;
-                    }
+                    addItem(token, stepStrings);
+                    paramNeeded = false;
 
                     break;
 
@@ -304,6 +291,25 @@ public class CLI
             logger.warning("Error decoding -option ", ex);
         }
 
+        // Check step names
+        for (String stepString : stepStrings) {
+            try {
+                // Read a step name
+                params.targetSteps.add(Step.valueOf(stepString.toUpperCase()));
+            } catch (Exception ex) {
+                printCommandLine();
+                stopUsage(
+                    "Step name expected, found '" + stepString + "' instead");
+
+                return null;
+            }
+        }
+
+        // At least first step
+        if (params.targetSteps.isEmpty()) {
+            params.targetSteps.add(Step.LOAD);
+        }
+
         // Results
         if (logger.isFineEnabled()) {
             logger.fine("CLI parameters:" + params);
@@ -320,7 +326,10 @@ public class CLI
      */
     private void printCommandLine ()
     {
-        System.err.println(toolName);
+        if (toolName != null) {
+            System.err.println(toolName);
+        }
+
         System.err.println(this);
     }
 
@@ -342,17 +351,18 @@ public class CLI
         StringBuilder buf = new StringBuilder();
 
         // Print standard command line syntax
-        buf.append(toolName + " options syntax:")
-           .append(" [-help]")
-           .append(" [-batch]")
-           .append(" [-step STEPNAME]")
-           .append(" [-option (KEY=VALUE|@OPTIONLIST)+]")
-           .append(" [-sheet (SHEETNAME|@SHEETLIST)+]")
-           .append(" [-script (SCRIPTNAME|@SCRIPTLIST)+]");
+        buf.append("\n options syntax:")
+           .append("\n [-help]")
+           .append("\n [-batch]")
+           .append("\n [-bench]")
+           .append("\n [-step (STEPNAME|@STEPLIST)+]")
+           .append("\n [-option (KEY=VALUE|@OPTIONLIST)+]")
+           .append("\n [-sheet (SHEETNAME|@SHEETLIST)+]")
+           .append("\n [-script (SCRIPTNAME|@SCRIPTLIST)+]");
 
         // Print all allowed step names
-        buf.append("\n      Known step names are in order")
-           .append(" (non case-sensitive) :");
+        buf.append("\n\nKnown step names are in order")
+           .append(" (non case-sensitive):");
 
         for (Step step : Step.values()) {
             buf.append(
@@ -384,8 +394,8 @@ public class CLI
         /** Flag that indicates bench data is to be saved */
         boolean benchFlag = false;
 
-        /** The desired step if any (option: -step stepName) */
-        Step targetStep = Step.LOAD;
+        /** The set of desired steps (option: -step stepName) */
+        final EnumSet<Step> targetSteps = EnumSet.noneOf(Step.class);
 
         /** The map of constants */
         Properties constants = null;
@@ -412,8 +422,8 @@ public class CLI
               .append(batchMode);
             sb.append("\nbenchFlag=")
               .append(benchFlag);
-            sb.append("\ntargetStep=")
-              .append(targetStep);
+            sb.append("\ntargetSteps=")
+              .append(targetSteps);
             sb.append("\noptions=")
               .append(constants);
             sb.append("\nsheetNames=")

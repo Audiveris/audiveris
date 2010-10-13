@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.score.entity;
 
+import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyphs;
@@ -19,12 +20,17 @@ import static omr.glyph.Shape.*;
 import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
 
+import omr.lag.VerticalOrientation;
+
 import omr.log.Logger;
+
+import omr.math.Histogram;
+import omr.math.Histogram.Pair;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
-import omr.score.common.SystemPoint;
-import omr.score.common.SystemRectangle;
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 import static omr.score.entity.Note.Step.*;
 import omr.score.visitor.ScoreVisitor;
 
@@ -54,15 +60,15 @@ public class KeySignature
     private static final Logger logger = Logger.getLogger(KeySignature.class);
 
     /** Standard (in G clef) pitch position for the members of the sharp keys */
-    private static final double[] sharpPositions = new double[] {
-                                                       -4, // F - Fa
+    private static final double[] sharpItemPositions = new double[] {
+                                                           -4, // F - Fa
     -1, // C - Do
     -5, // G - Sol
     -2, // D - Ré
     +1, // A - La
     -3, // E - Mi
     0 // B - Si
-                                                   };
+                                                       };
 
     /** Standard (in G clef) pitch position of any sharp key signature */
     private static final double[] sharpKeyPositions = new double[1 + 7];
@@ -79,15 +85,15 @@ public class KeySignature
                                                   };
 
     /** Standard(in G clef) pitch position  for the members of the flat keys */
-    private static final double[] flatPositions = new double[] {
-                                                      0, // B - Si
+    private static final double[] flatItemPositions = new double[] {
+                                                          0, // B - Si
     -3, // E - Mi
     +1, // A - La
     -2, // D - Ré
     +2, // G - Sol
     -1, // C - Do
     +3 // F - Fa
-                                                  };
+                                                      };
 
     /** Standard (in G clef) pitch position of any flat key signature */
     private static final double[] flatKeyPositions = new double[1 + 7];
@@ -126,6 +132,9 @@ public class KeySignature
     /** Related Clef kind (G, F or C) */
     private Shape clefKind;
 
+    /** Sequence of items abscissa references */
+    private List<Integer> refList;
+
     //~ Constructors -----------------------------------------------------------
 
     //--------------//
@@ -153,7 +162,7 @@ public class KeySignature
     // KeySignature //
     //--------------//
     /**
-     * Create a key signature, with containing measure by cloning an other one
+     * Create a key signature, with containing measure, by cloning an other one
      *
      * @param measure the containing measure
      * @param staff the related staff
@@ -172,7 +181,7 @@ public class KeySignature
         clefKind = other.clefKind;
 
         // Nota: Center.y is irrelevant
-        setCenter(new SystemPoint(other.getCenter().x, 0));
+        setCenter(new PixelPoint(other.getCenter().x, 0));
 
         if (logger.isFineEnabled()) {
             logger.fine(getContextString() + " KeySignature cloned: " + this);
@@ -203,6 +212,78 @@ public class KeySignature
         }
 
         return 0;
+    }
+
+    //-----------------//
+    // getItemPosition //
+    //-----------------//
+    /**
+     * Report the pitch position of the nth item, within the given clef. 'n' is
+     * negative for flats and positive for sharps, and start at 1 for sharps
+     * (and at -1 for flats)
+     * @param n the signed index (one-based) of the desired item
+     * @param clefKind the kind (G_CLEF, F_CLEF or C_CLEF) of the active clef
+     * @return the pitch position of the item (sharp or flat)
+     */
+    public static int getItemPosition (int   n,
+                                       Shape clefKind)
+    {
+        if (clefKind == null) {
+            clefKind = G_CLEF;
+        }
+
+        int stdPitch = (int) Math.rint(
+            (n >= 0) ? sharpItemPositions[n - 1] : flatItemPositions[-n - 1]);
+
+        return stdPitch + clefToDelta(clefKind);
+    }
+
+    //-------------//
+    // getClefKind //
+    //-------------//
+    /**
+     * Report the current clef kind, if known
+     * @return the current clef kind, or null
+     */
+    public Shape getClefKind ()
+    {
+        if (clefKind == null) {
+            // First is there a clef right before, within the same measure?
+            Clef clef = getMeasure()
+                            .getMeasureClefBefore(getCenter(), null);
+
+            if (clef != null) {
+                return clefKind = clefKindOf(clef.getShape());
+            }
+
+            // Second, guess the clef based on key position
+            clefKind = guessClefKind();
+        }
+
+        return clefKind;
+    }
+
+    //----------------------//
+    // getItemPixelAbscissa //
+    //----------------------//
+    /**
+     * Report the actual reference abscissa for the nth item. The reference is
+     * the left edge of stick for a flat item and the center of the two sticks
+     * for a sharp item.
+     * @param n the signed index (one-based) of the desired item
+     * @return the absolute pixel abscissa of the item reference, or null if
+     * not available
+     */
+    public Integer getItemPixelAbscissa (int n)
+    {
+        try {
+            return getRefSequence()
+                       .get(Math.abs(n) - 1);
+        } catch (Exception ex) {
+            addError("KeySignature with no items references");
+
+            return null;
+        }
     }
 
     //--------//
@@ -244,6 +325,67 @@ public class KeySignature
         }
 
         return pitchPosition;
+    }
+
+    //----------------//
+    // getRefSequence //
+    //----------------//
+    /**
+     * Report the sequence of reference abscissae for signature items
+     * @return the list of (pixel) abscissa references
+     */
+    public List<Integer> getRefSequence ()
+    {
+        if (refList == null) {
+            List<Integer>      refs = new ArrayList<Integer>();
+            Histogram<Integer> histo = getScore()
+                                           .getSheet()
+                                           .getVerticalLag()
+                                           .getHistogram(
+                new VerticalOrientation(),
+                getGlyphs());
+
+            if (logger.isFineEnabled()) {
+                histo.print(System.out);
+            }
+
+            List<Histogram.Pair<Integer>> pairs = histo.getPeaks(
+                ((int) Math.rint(
+                    histo.getMaxCount() * constants.heightRatio.getValue())));
+
+            if (logger.isFineEnabled()) {
+                for (Histogram.Pair<Integer> pair : pairs) {
+                    logger.info(pair.toString());
+                }
+            }
+
+            key = getKey();
+
+            if (key > 0) {
+                // Sharps : use center of the two vertical sticks
+                if (pairs.size() == (2 * key)) {
+                    for (int i = 0; i < key; i++) {
+                        Pair<Integer> left = pairs.get(2 * i);
+                        Pair<Integer> right = pairs.get((2 * i) + 1);
+                        refs.add(
+                            (int) Math.rint(
+                                (left.first + left.second + right.first +
+                                                                right.second) / 4d));
+                    }
+                }
+            } else {
+                // Flats : use vertical stick on left
+                if (pairs.size() == -key) {
+                    for (Pair<Integer> pair : pairs) {
+                        refs.add(pair.first);
+                    }
+                }
+            }
+
+            refList = refs;
+        }
+
+        return refList;
     }
 
     //----------//
@@ -321,7 +463,7 @@ public class KeySignature
     // createDummyCopy //
     //-----------------//
     public KeySignature createDummyCopy (Measure     measure,
-                                         SystemPoint center)
+                                         PixelPoint center)
     {
         KeySignature dummy = new KeySignature(measure, null);
 
@@ -347,7 +489,7 @@ public class KeySignature
     public static boolean populate (Glyph       glyph,
                                     Measure     measure,
                                     Staff       staff,
-                                    SystemPoint center)
+                                    PixelPoint center)
     {
         if (logger.isFineEnabled()) {
             logger.fine("Populating keysig for " + glyph);
@@ -395,7 +537,6 @@ public class KeySignature
         }
 
         // Do we have a key signature just before in the same measure & staff?
-        SystemRectangle fatBox = system.toSystemRectangle(glyphFatBox);
         KeySignature    keysig = null;
         boolean         found = false;
 
@@ -407,7 +548,7 @@ public class KeySignature
             }
 
             // Check distance
-            if (!fatBox.intersects(keysig.getBox())) {
+            if (!glyphFatBox.intersects(keysig.getBox())) {
                 if (logger.isFineEnabled()) {
                     logger.fine(
                         "Glyph " + glyph.getId() + " too far from " + keysig);
@@ -688,6 +829,7 @@ public class KeySignature
         shape = null;
         centroid = null;
         clefKind = null;
+        refList = null;
     }
 
     //-------------//
@@ -778,7 +920,7 @@ public class KeySignature
      * @return true if OK, false otherwise
      */
     private static boolean checkPosition (Glyph       glyph,
-                                          SystemPoint center,
+                                          PixelPoint center,
                                           Staff       staff,
                                           double[]    positions,
                                           int         index,
@@ -970,11 +1112,11 @@ public class KeySignature
 
         if (k > 0) {
             for (int i = 0; i < k; i++) {
-                sum += sharpPositions[i];
+                sum += sharpItemPositions[i];
             }
         } else {
             for (int i = 0; i > k; i--) {
-                sum -= flatPositions[-i];
+                sum -= flatItemPositions[-i];
             }
         }
 
@@ -1014,14 +1156,20 @@ public class KeySignature
      * @return true if OK, false otherwise
      */
     private static boolean checkPitchPosition (Glyph       glyph,
-                                               SystemPoint center,
+                                               PixelPoint center,
                                                Staff       staff,
                                                Clef        clef)
     {
         Shape glyphShape = glyph.getShape();
 
         if (glyphShape == SHARP) {
-            return checkPosition(glyph, center, staff, sharpPositions, 0, clef);
+            return checkPosition(
+                glyph,
+                center,
+                staff,
+                sharpItemPositions,
+                0,
+                clef);
         } else if (glyphShape.isSharpBased()) {
             return checkPosition(
                 glyph,
@@ -1033,7 +1181,13 @@ public class KeySignature
         }
 
         if (glyphShape == FLAT) {
-            return checkPosition(glyph, center, staff, flatPositions, 0, clef);
+            return checkPosition(
+                glyph,
+                center,
+                staff,
+                flatItemPositions,
+                0,
+                clef);
         } else if (glyphShape.isFlatBased()) {
             return checkPosition(
                 glyph,
@@ -1047,31 +1201,6 @@ public class KeySignature
         return false;
     }
 
-    //-------------//
-    // getClefKind //
-    //-------------//
-    /**
-     * Report the current clef kind, if known
-     * @return the current clef kind, or null
-     */
-    private Shape getClefKind ()
-    {
-        if (clefKind == null) {
-            // First is there a clef right before, within the same measure?
-            Clef clef = getMeasure()
-                            .getMeasureClefBefore(getCenter(), null);
-
-            if (clef != null) {
-                return clefKind = clefKindOf(clef.getShape());
-            }
-
-            // Second, guess the clef based on key position
-            clefKind = guessClefKind();
-        }
-
-        return clefKind;
-    }
-
     //------------//
     // clefKindOf //
     //------------//
@@ -1080,7 +1209,7 @@ public class KeySignature
      * @param clef the provided clef
      * @return the kind of the clef
      */
-    private Shape clefKindOf (Shape clef)
+    private static Shape clefKindOf (Shape clef)
     {
         switch (clef) {
         case G_CLEF :
@@ -1138,9 +1267,9 @@ public class KeySignature
 
         // center
         setCenter(
-            new SystemPoint(
+            new PixelPoint(
                 ks.getCenter().x,
-                ks.getCenter().y + Staff.pitchToUnit(delta)));
+                ks.getCenter().y + ks.getStaff().pitchToPixels(delta)));
 
         // pitchPosition
         pitchPosition = ks.getPitchPosition() + delta;
@@ -1300,5 +1429,8 @@ public class KeySignature
         Scale.Fraction keyYMargin = new Scale.Fraction(
             0.25d,
             "Margin when checking vertical position of single-glyph key");
+        Constant.Ratio heightRatio = new Constant.Ratio(
+            0.75d,
+            "Histogram ratio for detection of sharp/flat sticks ");
     }
 }

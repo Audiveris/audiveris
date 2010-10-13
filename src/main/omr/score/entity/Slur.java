@@ -20,11 +20,9 @@ import omr.log.Logger;
 
 import omr.math.Circle;
 
-import omr.score.common.PageRectangle;
+import omr.score.common.PixelPoint;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
-import omr.score.common.SystemPoint;
-import omr.score.common.SystemRectangle;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
@@ -73,7 +71,7 @@ public class Slur
                                  .getP2();
                 Measure measure = slur.getPart()
                                       .getMeasureAt(
-                    new SystemPoint(p2.getX(), p2.getY()));
+                    new PixelPoint((int) p2.getX(), (int) p2.getY()));
 
                 if (measure == slur.getPart()
                                    .getLastMeasure()) {
@@ -98,7 +96,7 @@ public class Slur
                                  .getP1();
                 Measure measure = slur.getPart()
                                       .getMeasureAt(
-                    new SystemPoint(p1.getX(), p1.getY()));
+                    new PixelPoint((int) p1.getX(), (int) p1.getY()));
 
                 if (measure == slur.getPart()
                                    .getFirstMeasure()) {
@@ -119,7 +117,7 @@ public class Slur
     /** Underlying glyph */
     private final Glyph glyph;
 
-    /** Underlying curve, where points are SystemPoint instances (in Double) */
+    /** Underlying curve, where points are PixelPoint instances (in Double) */
     private final CubicCurve2D curve;
 
     /** Note on left side, if any */
@@ -594,12 +592,14 @@ public class Slur
         // Retrieve prev staff, using the left point of the prev slur
         Staff prevStaff = prevSlur.getPart()
                                   .getStaffAt(
-            new SystemPoint(prevSlur.curve.getX1(), prevSlur.curve.getY1()));
+            new PixelPoint(
+                (int) prevSlur.curve.getX1(),
+                (int) prevSlur.curve.getY1()));
 
         // Retrieve staff, using the right point of the slur
         Staff staff = getPart()
                           .getStaffAt(
-            new SystemPoint(curve.getX2(), curve.getY2()));
+            new PixelPoint((int) curve.getX2(), (int) curve.getY2()));
 
         if (prevStaff.getId() != staff.getId()) {
             if (logger.isFineEnabled()) {
@@ -613,12 +613,16 @@ public class Slur
         }
 
         // Retrieve prev position, using the right point of the prev slur
-        double      prevPp = prevStaff.pitchPositionOf(
-            new SystemPoint(prevSlur.curve.getX2(), prevSlur.curve.getY2()));
+        double     prevPp = prevStaff.pitchPositionOf(
+            new PixelPoint(
+                (int) prevSlur.curve.getX2(),
+                (int) prevSlur.curve.getY2()));
 
         // Retrieve position, using the left point of the slur
-        SystemPoint pt = new SystemPoint(curve.getX1(), curve.getY1());
-        double      pp = staff.pitchPositionOf(pt);
+        PixelPoint pt = new PixelPoint(
+            (int) curve.getX1(),
+            (int) curve.getY1());
+        double     pp = staff.pitchPositionOf(pt);
 
         // Compare staves and pitch positions (very roughly)
         double  deltaPitch = pp - prevPp;
@@ -646,38 +650,7 @@ public class Slur
     private static CubicCurve2D computeCurve (Circle      circle,
                                               ScoreSystem system)
     {
-        CubicCurve2D pixelCurve = circle.getCurve();
-
-        if (pixelCurve == null) {
-            return null;
-        }
-
-        SystemPoint p1 = system.toSystemPoint(
-            new PixelPoint(
-                (int) Math.rint(pixelCurve.getX1()),
-                (int) Math.rint(pixelCurve.getY1())));
-        SystemPoint c1 = system.toSystemPoint(
-            new PixelPoint(
-                (int) Math.rint(pixelCurve.getCtrlX1()),
-                (int) Math.rint(pixelCurve.getCtrlY1())));
-        SystemPoint c2 = system.toSystemPoint(
-            new PixelPoint(
-                (int) Math.rint(pixelCurve.getCtrlX2()),
-                (int) Math.rint(pixelCurve.getCtrlY2())));
-        SystemPoint p2 = system.toSystemPoint(
-            new PixelPoint(
-                (int) Math.rint(pixelCurve.getX2()),
-                (int) Math.rint(pixelCurve.getY2())));
-
-        return new CubicCurve2D.Double(
-            p1.x,
-            p1.y,
-            c1.x,
-            c1.y,
-            c2.x,
-            c2.y,
-            p2.x,
-            p2.y);
+        return circle.getCurve();
     }
 
     //-------------//
@@ -691,7 +664,7 @@ public class Slur
      * @param ref the reference point to compare distance from
      */
     private static void filterNodes (List<MeasureNode> nodes,
-                                     SystemPoint       ref)
+                                     PixelPoint        ref)
     {
         if (nodes.size() > 1) {
             NodeComparator comparator = new NodeComparator(ref);
@@ -762,19 +735,19 @@ public class Slur
                                                   List<MeasureNode> leftNodes,
                                                   List<MeasureNode> rightNodes)
     {
-        boolean               below = isBelow(curve);
+        boolean              below = isBelow(curve);
 
         // Determine left and right search areas
-        final Scale           scale = system.getScale();
-        final int             dx = scale.toUnits(constants.areaDx);
-        final int             dy = scale.toUnits(constants.areaDy);
-        final int             xMg = scale.toUnits(constants.areaXMargin);
-        final SystemRectangle leftRect = new SystemRectangle(
+        final Scale          scale = system.getScale();
+        final int            dx = scale.toPixels(constants.areaDx);
+        final int            dy = scale.toPixels(constants.areaDy);
+        final int            xMg = scale.toPixels(constants.areaXMargin);
+        final PixelRectangle leftRect = new PixelRectangle(
             (int) Math.rint(curve.getX1() - dx),
             (int) Math.rint(curve.getY1()),
             dx + xMg,
             dy);
-        final SystemRectangle rightRect = new SystemRectangle(
+        final PixelRectangle rightRect = new PixelRectangle(
             (int) Math.rint(curve.getX2() - xMg),
             (int) Math.rint(curve.getY2()),
             dx + xMg,
@@ -786,12 +759,8 @@ public class Slur
         }
 
         // Visualize these rectangles (for debug)
-        glyph.addAttachment(
-            "leftRect",
-            scale.toPixels(system.toPageRectangle(leftRect)));
-        glyph.addAttachment(
-            "rightRect",
-            scale.toPixels(system.toPageRectangle(rightRect)));
+        glyph.addAttachment("leftRect", leftRect);
+        glyph.addAttachment("rightRect", rightRect);
 
         // System > Part > Measure > Chord > Note
         for (TreeNode pNode : system.getParts()) {
@@ -803,23 +772,26 @@ public class Slur
                 for (TreeNode cNode : measure.getChords()) {
                     Chord chord = (Chord) cNode;
 
-                    if (leftRect.contains(chord.getTailLocation())) {
-                        leftNodes.add(chord);
-                    }
-
-                    if (rightRect.contains(chord.getTailLocation())) {
-                        rightNodes.add(chord);
-                    }
-
-                    for (TreeNode nNode : chord.getNotes()) {
-                        Note note = (Note) nNode;
-
-                        if (leftRect.contains(note.getCenter())) {
-                            leftNodes.add(note);
+                    if (!chord.getNotes()
+                              .isEmpty()) {
+                        if (leftRect.contains(chord.getTailLocation())) {
+                            leftNodes.add(chord);
                         }
 
-                        if (rightRect.contains(note.getCenter())) {
-                            rightNodes.add(note);
+                        if (rightRect.contains(chord.getTailLocation())) {
+                            rightNodes.add(chord);
+                        }
+
+                        for (TreeNode nNode : chord.getNotes()) {
+                            Note note = (Note) nNode;
+
+                            if (leftRect.contains(note.getCenter())) {
+                                leftNodes.add(note);
+                            }
+
+                            if (rightRect.contains(note.getCenter())) {
+                                rightNodes.add(note);
+                            }
                         }
                     }
                 }
@@ -827,8 +799,12 @@ public class Slur
         }
 
         // Sort the collections of nodes, and keep only the closest ones
-        filterNodes(leftNodes, new SystemPoint(curve.getX1(), curve.getY1()));
-        filterNodes(rightNodes, new SystemPoint(curve.getX2(), curve.getY2()));
+        filterNodes(
+            leftNodes,
+            new PixelPoint((int) curve.getX1(), (int) curve.getY1()));
+        filterNodes(
+            rightNodes,
+            new PixelPoint((int) curve.getX2(), (int) curve.getY2()));
 
         return below;
     }
@@ -877,11 +853,11 @@ public class Slur
     {
         //~ Instance fields ----------------------------------------------------
 
-        final SystemPoint ref;
+        final PixelPoint ref;
 
         //~ Constructors -------------------------------------------------------
 
-        public NodeComparator (SystemPoint ref)
+        public NodeComparator (PixelPoint ref)
         {
             this.ref = ref;
         }
@@ -891,10 +867,10 @@ public class Slur
         public int compare (MeasureNode n1,
                             MeasureNode n2)
         {
-            SystemPoint p1 = (n1 instanceof Chord)
-                             ? ((Chord) n1).getTailLocation() : n1.getCenter();
-            SystemPoint p2 = (n2 instanceof Chord)
-                             ? ((Chord) n2).getTailLocation() : n2.getCenter();
+            PixelPoint p1 = (n1 instanceof Chord)
+                            ? ((Chord) n1).getTailLocation() : n1.getCenter();
+            PixelPoint p2 = (n2 instanceof Chord)
+                            ? ((Chord) n2).getTailLocation() : n2.getCenter();
 
             return Double.compare(p1.distance(ref), p2.distance(ref));
         }

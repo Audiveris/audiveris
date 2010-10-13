@@ -250,7 +250,7 @@ public class ScriptActions
 
         /** Default directory for saved scripts */
         Constant.String defaultScriptDirectory = new Constant.String(
-            "",
+            System.getProperty("user.home"),
             "Default directory for saved scripts");
 
         /** User confirmation for closing unsaved script */

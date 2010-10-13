@@ -22,9 +22,9 @@ import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
+import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
-import omr.score.common.SystemPoint;
-import omr.score.common.SystemRectangle;
+import omr.score.common.PixelRectangle;
 import omr.score.entity.Clef;
 import omr.score.entity.Measure;
 import omr.score.entity.ScoreSystem;
@@ -193,22 +193,21 @@ public class ShapePattern
                                       Glyph glyph)
                 {
                     // They must be rather close to the left side of the measure
-                    ScoreSystem     scoreSystem = system.getScoreSystem();
-                    Scale           scale = scoreSystem.getScale();
-                    double          maxKeyXOffset = scale.toPixels(
+                    ScoreSystem    scoreSystem = system.getScoreSystem();
+                    Scale          scale = scoreSystem.getScale();
+                    double         maxKeyXOffset = scale.toPixels(
                         constants.maxKeyXOffset);
-                    SystemRectangle box = scoreSystem.toSystemRectangle(
-                        glyph.getContourBox());
-                    SystemPoint     point = box.getLocation();
-                    SystemPart      part = scoreSystem.getPartAt(point);
-                    Measure         measure = part.getMeasureAt(point);
-                    Staff           staff = part.getStaffAt(point);
-                    Clef            clef = measure.getFirstMeasureClef(
+                    PixelRectangle box = glyph.getContourBox();
+                    PixelPoint     point = box.getLocation();
+                    SystemPart     part = scoreSystem.getPartAt(point);
+                    Measure        measure = part.getMeasureAt(point);
+                    Staff          staff = part.getStaffAt(point);
+                    Clef           clef = measure.getFirstMeasureClef(
                         staff.getId());
-                    int             start = (clef != null)
-                                            ? (clef.getBox().x +
-                                            clef.getBox().width)
-                                            : measure.getLeftX();
+                    int            start = (clef != null)
+                                           ? (clef.getBox().x +
+                                           clef.getBox().width)
+                                           : measure.getLeftX();
 
                     if ((point.x - start) > maxKeyXOffset) {
                         if (logger.isFineEnabled()) {

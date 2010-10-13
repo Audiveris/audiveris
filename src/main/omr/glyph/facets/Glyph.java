@@ -103,4 +103,37 @@ public interface Glyph
             return o1.getId() - o2.getId();
         }
     };
+
+    /** For comparing glyphs according to their ordinate, then abscissa, then id */
+    public static final Comparator<Glyph> ordinateComparator = new Comparator<Glyph>() {
+        public int compare (Glyph o1,
+                            Glyph o2)
+        {
+            if (o1 == o2) {
+                return 0;
+            }
+
+            Point ref = o1.getContourBox()
+                          .getLocation();
+            Point otherRef = o2.getContourBox()
+                               .getLocation();
+
+            // Are y values different?
+            int dy = ref.y - otherRef.y;
+
+            if (dy != 0) {
+                return dy;
+            }
+
+            // Horizontally aligned, so use abscissae
+            int dx = ref.x - otherRef.x;
+
+            if (dx != 0) {
+                return dx;
+            }
+
+            // Finally, use id ...
+            return o1.getId() - o2.getId();
+        }
+    };
 }

@@ -30,9 +30,9 @@ import omr.log.Logger;
 import omr.math.Population;
 
 import omr.score.common.PixelPoint;
+import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
-import omr.score.common.SystemPoint;
-import omr.score.common.SystemRectangle;
+import omr.score.common.PixelRectangle;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.ScoreSystem.StaffPosition;
 import omr.score.entity.Staff;
@@ -102,7 +102,7 @@ public class Sentence
     //--------------------------------------------------------------------------
 
     /** The sentence starting point (in units) within the containing system */
-    private SystemPoint location;
+    private PixelPoint location;
 
     /** The text area for this sentence */
     private TextArea textArea;
@@ -138,7 +138,8 @@ public class Sentence
         addItem(glyph);
 
         ScoreSystem system = systemInfo.getScoreSystem();
-        SystemPoint center = system.toSystemPoint(items.first().getCentroid());
+        PixelPoint  center = items.first()
+                                  .getCentroid();
 
         // Choose carefully Staff (& then Part )
         Staff staff = system.getTextStaff(
@@ -273,14 +274,12 @@ public class Sentence
      * Report the system-based starting point of this sentence
      * @return the starting point (x: left side, y: baseline)
      */
-    public SystemPoint getLocation ()
+    public PixelPoint getLocation ()
     {
         if (location == null) {
             PixelRectangle firstBox = items.first()
                                            .getContourBox();
-            location = systemInfo.getScoreSystem()
-                                 .toSystemPoint(
-                new PixelPoint(firstBox.x, getTextArea().getBaseline()));
+            location = new PixelPoint(firstBox.x, getTextArea().getBaseline());
         }
 
         return location;
@@ -290,13 +289,12 @@ public class Sentence
     // getSystemContour //
     //------------------//
     /**
-     * Report the system-based rectangular contour of this sentence
-     * @return the sentence contour, system-based
+     * Report the rectangular contour of this sentence
+     * @return the sentence contour
      */
-    public SystemRectangle getSystemContour ()
+    public PixelRectangle getSystemContour ()
     {
-        return systemInfo.getScoreSystem()
-                         .toSystemRectangle(getContourBox());
+        return getContourBox();
     }
 
     //---------------//
@@ -916,8 +914,8 @@ public class Sentence
         if (withinStaves == null) {
             if (!items.isEmpty()) {
                 ScoreSystem system = systemInfo.getScoreSystem();
-                SystemPoint first = system.toSystemPoint(
-                    items.first().getLocation());
+                PixelPoint  first = items.first()
+                                         .getLocation();
                 withinStaves = system.getStaffPosition(first) == StaffPosition.within;
             }
         }
@@ -967,9 +965,10 @@ public class Sentence
         }
 
         ScoreSystem system = systemInfo.getScoreSystem();
-        SystemPoint itemPt = system.toSystemPoint(items.first().getLocation());
-        SystemPoint otherPt = system.toSystemPoint(
-            other.items.first().getLocation());
+        PixelPoint  itemPt = items.first()
+                                  .getLocation();
+        PixelPoint  otherPt = other.items.first()
+                                         .getLocation();
 
         return system.isLeftOfStaves(itemPt) != system.isLeftOfStaves(otherPt);
     }
@@ -990,8 +989,9 @@ public class Sentence
         }
 
         ScoreSystem system = systemInfo.getScoreSystem();
-        SystemPoint itemPt = system.toSystemPoint(items.first().getLocation());
-        SystemPoint glyphPt = system.toSystemPoint(glyph.getLocation());
+        PixelPoint  itemPt = items.first()
+                                  .getLocation();
+        PixelPoint  glyphPt = glyph.getLocation();
 
         return system.isLeftOfStaves(itemPt) != system.isLeftOfStaves(glyphPt);
     }

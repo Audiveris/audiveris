@@ -13,7 +13,8 @@ package omr.score.entity;
 
 import omr.glyph.Shape;
 
-import omr.score.common.SystemPoint;
+import omr.score.common.PixelPoint;
+import omr.score.ui.MusicFont.CharDesc;
 
 import omr.util.Navigable;
 
@@ -45,13 +46,13 @@ public class Mark
     private final ScoreSystem system;
 
     /** Precise location within system */
-    private final SystemPoint location;
+    private final PixelPoint location;
 
     /** Position of the mark symbol with respect to the mark location */
     private final Position position;
 
-    /** The shape of the mark, should be an icon in fact TODO */
-    private final Shape shape;
+    /** The CharDesc of the mark in the MusicFont */
+    private final CharDesc charDesc;
 
     /** Additional data, perhaps depending on shape for example */
     private final Object data;
@@ -66,23 +67,36 @@ public class Mark
      * @param system containing system
      * @param location precise locatrion wrt the containing system
      * @param position relative symbol position wrt location
-     * @param shape symbol shape to be used
+     * @param charDesc MusicFont descriptor to be used
      * @param data related data or null
      */
     public Mark (ScoreSystem system,
-                 SystemPoint location,
+                 PixelPoint  location,
                  Position    position,
-                 Shape       shape,
+                 CharDesc    charDesc,
                  Object      data)
     {
         this.system = system;
         this.location = location;
         this.position = position;
-        this.shape = shape;
+        this.charDesc = charDesc;
         this.data = data;
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-------------//
+    // getCharDesc //
+    //-------------//
+    /**
+     * Report the descriptor of the symbol to be displayed
+     *
+     * @return the MusicFont symbol descriptor
+     */
+    public CharDesc getCharDesc ()
+    {
+        return charDesc;
+    }
 
     //---------//
     // getData //
@@ -105,7 +119,7 @@ public class Mark
      *
      * @return the mark location
      */
-    public SystemPoint getLocation ()
+    public PixelPoint getLocation ()
     {
         return location;
     }
@@ -121,19 +135,6 @@ public class Mark
     public Position getPosition ()
     {
         return position;
-    }
-
-    //----------//
-    // getShape //
-    //----------//
-    /**
-     * Report the shape of the symbol to be displayed
-     *
-     * @return the symbol shape
-     */
-    public Shape getShape ()
-    {
-        return shape;
     }
 
     //-----------//

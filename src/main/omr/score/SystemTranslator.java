@@ -22,8 +22,6 @@ import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
-import omr.score.common.SystemPoint;
-import omr.score.common.SystemRectangle;
 import omr.score.entity.Arpeggiate;
 import omr.score.entity.Articulation;
 import omr.score.entity.Barline;
@@ -91,7 +89,7 @@ public class SystemTranslator
     private Staff currentStaff;
 
     /** The current point in current system */
-    private SystemPoint currentCenter;
+    private PixelPoint currentCenter;
 
     /** The current measure */
     private Measure currentMeasure;
@@ -191,6 +189,8 @@ public class SystemTranslator
 
         // Whole score impact
         //-------------------
+        // Brace
+        translate(new BraceTranslator());
         // Clef
         translate(new ClefTranslator());
         // Time signature
@@ -321,7 +321,7 @@ public class SystemTranslator
          */
         public void computeLocation (Glyph glyph)
         {
-            currentCenter = system.toSystemPoint(glyph.getLocation());
+            currentCenter = glyph.getLocation();
             currentStaff = system.getStaffAt(currentCenter);
             currentPart = currentStaff.getPart();
             currentMeasure = currentPart.getMeasureAt(currentCenter);
@@ -531,6 +531,32 @@ public class SystemTranslator
     }
 
     //-----------------//
+    // BraceTranslator //
+    //-----------------//
+    private class BraceTranslator
+        extends Translator
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public BraceTranslator ()
+        {
+            super("Brace");
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        public boolean isRelevant (Glyph glyph)
+        {
+            return glyph.getShape() == Shape.BRACE;
+        }
+
+        public void translate (Glyph glyph)
+        {
+            currentPart.setBrace(glyph);
+        }
+    }
+
+    //-----------------//
     // ChordTranslator //
     //-----------------//
     private class ChordTranslator
@@ -567,7 +593,7 @@ public class SystemTranslator
             // Check that slots are not too close to each other
             Scale scale = system.getScale();
             Slot  prevSlot = null;
-            int   minSlotSpacing = scale.toUnits(Score.getMinSlotSpacing());
+            int   minSlotSpacing = scale.toPixels(Score.getMinSlotSpacing());
             int   minSpacing = Integer.MAX_VALUE;
             Slot  minSlot = null;
 
@@ -588,7 +614,7 @@ public class SystemTranslator
                 measure.addError(
                     minSlot.getLocationGlyph(),
                     "Suspicious narrow spacing of slots: " +
-                    scale.unitsToFrac(minSpacing));
+                    scale.pixelsToFrac(minSpacing));
             }
         }
 
@@ -1064,7 +1090,7 @@ public class SystemTranslator
     {
         //~ Instance fields ----------------------------------------------------
 
-        SystemRectangle systemBox;
+        PixelRectangle systemBox;
 
         //~ Constructors -------------------------------------------------------
 
@@ -1094,8 +1120,8 @@ public class SystemTranslator
         @Override
         public void computeLocation (Glyph glyph)
         {
-            systemBox = system.toSystemRectangle(glyph.getContourBox());
-            currentCenter = new SystemPoint(
+            systemBox = glyph.getContourBox();
+            currentCenter = new PixelPoint(
                 systemBox.x + (systemBox.width / 2),
                 systemBox.y + systemBox.height);
             currentStaff = system.getTextStaff(
@@ -1202,8 +1228,7 @@ public class SystemTranslator
         {
             // Take the left edge for glyph center
             PixelRectangle box = glyph.getContourBox();
-            currentCenter = system.toSystemPoint(
-                new PixelPoint(box.x, box.y + (box.height / 2)));
+            currentCenter = new PixelPoint(box.x, box.y + (box.height / 2));
             currentStaff = system.getStaffAt(currentCenter);
             // Bof!
             currentPart = currentStaff.getPart();

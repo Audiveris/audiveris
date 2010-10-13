@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.score.entity;
 
-import omr.score.common.SystemPoint;
+import omr.score.common.PixelPoint;
 
 /**
  * Class {@code StemBasedSlot} is a slot whose position is based on the
@@ -34,10 +34,10 @@ public class StemBasedSlot
      * @param refPoint the slot reference point
      */
     public StemBasedSlot (Measure     measure,
-                          SystemPoint refPoint)
+                          PixelPoint refPoint)
     {
         super(measure);
-        this.refPoint = new SystemPoint(refPoint);
+        this.refPoint = new PixelPoint(refPoint);
     }
 
     //~ Methods ----------------------------------------------------------------

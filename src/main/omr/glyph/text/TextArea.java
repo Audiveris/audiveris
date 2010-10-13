@@ -23,6 +23,8 @@ import omr.lag.VerticalOrientation;
 
 import omr.log.Logger;
 
+import omr.math.Histogram;
+
 import omr.score.common.PixelRectangle;
 
 import omr.sheet.Scale;
@@ -70,10 +72,10 @@ public class TextArea
     private final Oriented orientation;
 
     /** The horizontal histogram for this area */
-    private int[] horizontalHistogram;
+    private Histogram<Integer> horizontalHistogram;
 
     /** The vertical histogram for this area */
-    private int[] verticalHistogram;
+    private Histogram<Integer> verticalHistogram;
 
     /** Sub areas found if any */
     private List<TextArea> subareas;
@@ -169,7 +171,7 @@ public class TextArea
      * @param orientation specific orientation desired for the histogram
      * @return the histogram of projected pixels
      */
-    public int[] getHistogram (Oriented orientation)
+    public Histogram<Integer> getHistogram (Oriented orientation)
     {
         if (orientation.isVertical()) {
             if (verticalHistogram == null) {
@@ -189,10 +191,40 @@ public class TextArea
     //--------------//
     // getHistogram //
     //--------------//
+    /**
+     * Get the histogram for a glyph in this area, in the specified orientation
+     * @param orientation specific orientation desired for the histogram
+     * @param glyph the provided glyph if any, otherwise the whole area
+     * @return the histogram of projected pixels
+     */
+    public Histogram<Integer> getHistogram (Oriented orientation,
+                                            Glyph    glyph)
+    {
+        Histogram<Integer> histo = null;
+
+        if (glyph == null) {
+            histo = getHistogram(orientation);
+        } else {
+            histo = roi.getHistogram(orientation, glyph.getMembers());
+        }
+
+        // Cache the result
+        if (orientation.isVertical()) {
+            verticalHistogram = histo;
+        } else {
+            horizontalHistogram = histo;
+        }
+
+        return histo;
+    }
+
+    //--------------//
+    // getHistogram //
+    //--------------//
     /** Get the histogram for this area, using the area default orientation
      * @return the area histogram in its default direction
      */
-    public int[] getHistogram ()
+    public Histogram<Integer> getHistogram ()
     {
         return getHistogram(orientation);
     }
@@ -521,45 +553,36 @@ public class TextArea
     private void computeLines ()
     {
         // Get a horizontal histogram
-        int[] histo = getHistogram(new HorizontalOrientation());
+        Histogram<Integer> histo = getHistogram(new HorizontalOrientation());
 
         // Retrieve max histogram value, and take threshold at half
-        maxValue = 0;
+        maxValue = histo.getMaxCount();
 
-        for (int val : histo) {
-            if (maxValue < val) {
-                maxValue = val;
-            }
-        }
-
-        int mainThreshold = (int) Math.rint(
+        int                           mainThreshold = (int) Math.rint(
             maxValue * constants.mainHistoThreshold.getValue());
 
         // Use the main threshold for baseline
-        int baseBucket = lastBucketAt(histo, mainThreshold);
-        baseline = roi.getAbsoluteContour().y + baseBucket;
-
-        int topBucket = firstBucketAt(
-            histo,
+        List<Histogram.Pair<Integer>> mainPeaks = histo.getPeaks(mainThreshold);
+        List<Histogram.Pair<Integer>> topPeaks = histo.getPeaks(
             (int) Math.rint(maxValue * constants.topHistoThreshold.getValue()));
-        topline = roi.getAbsoluteContour().y + topBucket;
 
-        int medianBucket = firstBucketAt(
-            histo,
-            (int) Math.rint(maxValue * constants.mainHistoThreshold.getValue()));
+        topline = topPeaks.get(0).first;
+        medianLine = mainPeaks.get(0).first;
+        baseline = mainPeaks.get(mainPeaks.size() - 1).second;
 
-        int minMedianBucket = baseBucket -
-                              (int) ((baseBucket - topBucket) * constants.maxMedianRatio.getValue());
-
-        if (medianBucket < minMedianBucket) {
-            medianBucket = minMedianBucket +
-                           firstBucketAt(
-                Arrays.copyOfRange(histo, minMedianBucket, histo.length - 1),
-                (int) Math.rint(
-                    maxValue * constants.mainHistoThreshold.getValue()));
-        }
-
-        medianLine = roi.getAbsoluteContour().y + medianBucket;
+        //        int minMedianLine = baseline -
+        //                            (int) ((baseline - topline) * constants.maxMedianRatio.getValue());
+        //
+        // TODO: A REVOIR
+        //        if (medianBucket < minMedianBucket) {
+        //            medianBucket = minMedianBucket +
+        //                           firstBucketAt(
+        //                Arrays.copyOfRange(histo, minMedianBucket, histo.length - 1),
+        //                (int) Math.rint(
+        //                    maxValue * constants.mainHistoThreshold.getValue()));
+        //        }
+        ///medianLine = roi.getAbsoluteContour().y + medianBucket;
+        //        medianLine = medianBucket;
     }
 
     //---------------//
@@ -633,50 +656,6 @@ public class TextArea
         }
     }
 
-    //---------------//
-    // firstBucketAt //
-    //---------------//
-    /**
-     * Retrieve the first histogram bucket whose value is greater or equal to
-     * the given threshold
-     * @param histo the histo to search
-     * @param threshold the given threshold value
-     * @return the index of the bucket found, or -1 if not found
-     */
-    private int firstBucketAt (int[] histo,
-                               int   threshold)
-    {
-        for (int i = 0; i < histo.length; i++) {
-            if (histo[i] >= threshold) {
-                return i;
-            }
-        }
-
-        return -1;
-    }
-
-    //---------------//
-    // lastBucketAt //
-    //---------------//
-    /**
-     * Retrieve the last histogram bucket whose value is greater or equal to
-     * the given threshold
-     * @param histo the histo to search
-     * @param threshold the given threshold value
-     * @return the index of the bucket found, or -1 if not found
-     */
-    private int lastBucketAt (int[] histo,
-                              int   threshold)
-    {
-        for (int i = histo.length - 1; i >= 0; i--) {
-            if (histo[i] >= threshold) {
-                return i;
-            }
-        }
-
-        return -1;
-    }
-
     //-----------//
     // splitArea //
     //-----------//
@@ -691,12 +670,12 @@ public class TextArea
         logger.fine(this + " splitArea" + " building:" + building);
 
         // Make sure the histogram is available
-        int[]     histo = getHistogram();
-        int       children = 0;
-        Scale     scale = sheet.getScale();
-        boolean   spacing = true;
-        int       packetStart = -1;
-        int       packetEnd = 0;
+        Histogram<Integer> histo = getHistogram();
+        int                children = 0;
+        Scale              scale = sheet.getScale();
+        boolean            spacing = true;
+        Integer            packetStart = null;
+        int                packetEnd = 0;
 
         // Minimum gap (vertically between lines, or horizontally between words)
         final int minGap = orientation.isVertical()
@@ -707,61 +686,40 @@ public class TextArea
                               : scale.toPixels(constants.minVerticalPacket);
 
         ///logger.info(this + " minGap:" + minGap + " minPacket:" + minPacket);
-        for (int i = 0; i < histo.length; i++) {
-            int val = histo[i];
-
-            if (spacing) {
-                if (val == 0) {
-                    // Continue with the gap
-                } else {
-                    // End of the spacing
-                    spacing = false;
-
-                    // Pending packet?
-                    if (packetStart != -1) {
-                        if ((i - packetEnd) >= minGap) {
-                            // End of real gap
-                            // Do we have a big enough packet?
-                            if ((packetEnd - packetStart) >= minPacket) {
-                                children++;
-
-                                if (building) {
-                                    getSubareas()
-                                        .add(
-                                        createSubarea(packetStart, packetEnd));
-                                }
-                            }
-
-                            packetStart = i;
-                        } else {
-                            // Gap too small
-                        }
-                    } else {
-                        packetStart = i;
-                    }
-                }
+        for (Histogram.Pair<Integer> packet : histo.getPeaks(1)) {
+            // Pending packet?
+            if (packetStart == null) {
+                packetStart = packet.first;
+                packetEnd = packet.second;
             } else {
-                if (val == 0) {
-                    // Start a gap
-                    packetEnd = i;
-                    spacing = true;
+                // Real gap before?
+                if ((packet.first - packetEnd) >= minGap) {
+                    // Did we have a big enough packet?
+                    if ((packetEnd - packetStart) >= minPacket) {
+                        children++;
+
+                        if (building) {
+                            getSubareas()
+                                .add(createSubarea(packetStart, packetEnd));
+                        }
+                    }
+
+                    packetStart = packet.first;
                 } else {
-                    // Continue with the packet
+                    // Gap too small
                 }
+
+                packetEnd = packet.second;
             }
         }
 
-        // Ending of a packet?
-        if (packetStart != -1) {
-            int end = (packetEnd > packetStart) ? packetEnd : histo.length;
+        // Last packet
+        if ((packetStart != null) && ((packetEnd - packetStart) >= minPacket)) {
+            children++;
 
-            if ((end - packetStart) >= minPacket) {
-                children++;
-
-                if (building) {
-                    getSubareas()
-                        .add(createSubarea(packetStart, end));
-                }
+            if (building) {
+                getSubareas()
+                    .add(createSubarea(packetStart, packetEnd));
             }
         }
 

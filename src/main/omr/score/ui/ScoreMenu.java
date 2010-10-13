@@ -17,9 +17,9 @@ import omr.log.Logger;
 
 import omr.score.MeasureRange;
 import omr.score.Score;
-import omr.score.common.PagePoint;
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelPoint;
 import omr.score.common.ScorePoint;
-import omr.score.common.SystemPoint;
 import omr.score.entity.Measure;
 import omr.score.entity.Note;
 import omr.score.entity.ScoreSystem;
@@ -117,14 +117,14 @@ public class ScoreMenu
         // Analyze the context
         ScoreLayout scoreLayout = scoreEditor.getLayout();
         system = scoreLayout.scoreLocateSystem(scrPt);
-        SystemView  systemView = scoreLayout.getSystemView(system);
-        PagePoint   pagPt = systemView.toPagePoint(scrPt);
-        SystemPoint sysPt = system.toSystemPoint(pagPt);
-        SystemPart  part = system.getPartAt(sysPt);
-        measure = part.getMeasureAt(sysPt);
+
+        SystemView systemView = scoreLayout.getSystemView(system);
+        PixelPoint pagPt = systemView.toPixelPoint(scrPt);
+        SystemPart part = system.getPartAt(pagPt);
+        measure = part.getMeasureAt(pagPt);
 
         if (measure != null) {
-            slot = measure.getClosestSlot(sysPt);
+            slot = measure.getClosestSlot(pagPt);
         }
 
         // Update all dynamic actions accordingly

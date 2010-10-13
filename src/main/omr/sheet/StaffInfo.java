@@ -11,12 +11,18 @@
 // </editor-fold>
 package omr.sheet;
 
+import omr.glyph.Glyphs;
+import omr.glyph.facets.Glyph;
+
 import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 
 import java.awt.*;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Class <code>StaffInfo</code> handles the physical details of a staff with its
@@ -306,6 +312,86 @@ public class StaffInfo
         return (4.0d * ((2 * pt.y) - bottom - top)) / (bottom - top);
     }
 
+    //------------------------//
+    // precisePitchPositionOf //
+    //------------------------//
+    /**
+     * Compute the precise integral pitch position of a pixel point, taking
+     * ledgers into account for positions far from staff lines
+     *
+     * @param pt the pixel point
+     * @param the containing system
+     * @return the pitch position
+     */
+    public double precisePitchPositionOf (PixelPoint pt,
+                                          SystemInfo system)
+    {
+        int    top = getFirstLine()
+                         .yAt(pt.x);
+        int    bottom = getLastLine()
+                            .yAt(pt.x);
+
+        double raw = (4.0d * ((2 * pt.y) - bottom - top)) / (bottom - top);
+
+        if (Math.abs(raw) <= 6) {
+            return raw;
+        }
+
+        // Fallback to use of ledgers & interline value
+        // Retrieve the closest ledger
+        int            interline = specificScale.interline();
+        PixelRectangle searchBox;
+
+        if (raw < 0) {
+            searchBox = new PixelRectangle(pt.x, pt.y, 0, top - pt.y + 1);
+        } else {
+            searchBox = new PixelRectangle(pt.x, bottom, 0, pt.y - bottom + 1);
+        }
+
+        searchBox.grow(interline / 2, interline / 2);
+
+        double bestDist = Double.MAX_VALUE;
+        Ledger bestLedger = null;
+
+        for (Ledger ledger : system.getLedgers()) {
+            if (!ledger.getContourBox()
+                       .intersects(searchBox)) {
+                continue;
+            }
+
+            // Beware: A ledger glyph is a horizontal glyph
+            Glyph      glyph = ledger.getStick();
+            PixelPoint center = glyph.getAreaCenter();
+            double     dist = Math.abs(center.y - pt.y);
+
+            if (dist < bestDist) {
+                bestDist = dist;
+                bestLedger = ledger;
+            }
+        }
+
+        if (bestLedger == null) {
+            return raw;
+        }
+
+        // Force an even position for the ledger
+        Glyph      glyph = bestLedger.getStick();
+        PixelPoint center = glyph.getAreaCenter();
+        int        ledgerPitch = 2 * (int) Math.rint(
+            pitchPositionOf(center) / 2);
+        int        deltaPitch = (int) Math.rint(
+            (2d * (pt.y - center.y)) / interline);
+        int        pitch = ledgerPitch + deltaPitch;
+
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                "Ledger#" + glyph.getId() + " deltaPitch:" + deltaPitch +
+                " Precise pitch: " + pitch);
+        }
+
+        return pitch;
+    }
+
     //--------//
     // render //
     //--------//
@@ -315,7 +401,7 @@ public class StaffInfo
      * @param g the graphics context
      * @return true if something has been drawn
      */
-    public boolean render (Graphics g)
+    public boolean render (Graphics2D g)
     {
         LineInfo firstLine = getFirstLine();
         LineInfo lastLine = getLastLine();

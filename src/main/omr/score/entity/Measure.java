@@ -15,8 +15,8 @@ import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
-import omr.score.common.SystemPoint;
-import omr.score.common.SystemRectangle;
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
 import omr.score.visitor.ScoreVisitor;
 
@@ -29,7 +29,7 @@ import java.util.*;
  * entities within the same measure time frame, for all staves that compose the
  * system part.
  *
- * <p>As a ScoreNode, the children of a Measure are : Barline, list of 
+ * <p>As a ScoreNode, the children of a Measure are : Barline, list of
  * TimeSignature(s), list of Clef(s), list of KeySignature(s), list of Chord(s)
  * and list of Beam(s).
  *
@@ -226,7 +226,7 @@ public class Measure
      * @param point the provided point
      * @return the (perhaps empty) collection of chords
      */
-    public Collection<Chord> getChordsAbove (SystemPoint point)
+    public Collection<Chord> getChordsAbove (PixelPoint point)
     {
         Collection<Chord> found = new ArrayList<Chord>();
 
@@ -250,7 +250,7 @@ public class Measure
      * @param point the provided point
      * @return the (perhaps empty) collection of chords
      */
-    public Collection<Chord> getChordsBelow (SystemPoint point)
+    public Collection<Chord> getChordsBelow (PixelPoint point)
     {
         Collection<Chord> found = new ArrayList<Chord>();
 
@@ -276,7 +276,7 @@ public class Measure
      * @param point the point after which to look
      * @return the first clef defined, or null
      */
-    public Clef getClefAfter (SystemPoint point)
+    public Clef getClefAfter (PixelPoint point)
     {
         // Which staff we are in
         Clef clef;
@@ -320,7 +320,7 @@ public class Measure
      * @param point the point before which to look
      * @return the latest clef defined, or null
      */
-    public Clef getClefBefore (SystemPoint point)
+    public Clef getClefBefore (PixelPoint point)
     {
         return getClefBefore(point, null);
     }
@@ -335,8 +335,8 @@ public class Measure
      * @param staff the containing staff (if null, it is derived from center.y)
      * @return the latest clef defined, or null
      */
-    public Clef getClefBefore (SystemPoint point,
-                               Staff       staff)
+    public Clef getClefBefore (PixelPoint point,
+                               Staff      staff)
     {
         // First, look in this measure, with same staff, going backwards
         Clef clef = getMeasureClefBefore(point, staff);
@@ -400,7 +400,7 @@ public class Measure
      * @return the abscissa-wise closest chord
      */
     public Chord getClosestChord (Collection<Chord> chords,
-                                  SystemPoint       point)
+                                  PixelPoint        point)
     {
         Chord bestChord = null;
         int   bestDx = Integer.MAX_VALUE;
@@ -427,7 +427,7 @@ public class Measure
      * @param point the reference point
      * @return the abscissa-wise closest chord among the chords above, if any.
      */
-    public Chord getClosestChordAbove (SystemPoint point)
+    public Chord getClosestChordAbove (PixelPoint point)
     {
         Chord bestChord = null;
         int   bestDx = Integer.MAX_VALUE;
@@ -454,7 +454,7 @@ public class Measure
      * @param point the reference point
      * @return the abscissa-wise closest chord among the chords below, if any.
      */
-    public Chord getClosestChordBelow (SystemPoint point)
+    public Chord getClosestChordBelow (PixelPoint point)
     {
         Chord bestChord = null;
         int   bestDx = Integer.MAX_VALUE;
@@ -480,7 +480,7 @@ public class Measure
      * @param point the reference point
      * @return the abscissa-wise closest slot
      */
-    public Slot getClosestSlot (SystemPoint point)
+    public Slot getClosestSlot (PixelPoint point)
     {
         Slot bestSlot = null;
         int  bestDx = Integer.MAX_VALUE;
@@ -539,7 +539,7 @@ public class Measure
      * @param point the system-based location
      * @return the most suitable chord, or null
      */
-    public Chord getDirectionChord (SystemPoint point)
+    public Chord getDirectionChord (PixelPoint point)
     {
         // First choose the staff, then the slot/chord
         Chord chord = getClosestChordAbove(point);
@@ -576,7 +576,7 @@ public class Measure
      * @param point the system-based location
      * @return the most suitable chord, or null
      */
-    public Chord getEventChord (SystemPoint point)
+    public Chord getEventChord (PixelPoint point)
     {
         // Choose the x-closest slot
         Slot slot = getClosestSlot(point);
@@ -586,9 +586,9 @@ public class Measure
             Staff staff = getPart()
                               .getStaffAt(point);
 
-            int   staffY = staff.getPageTopLeft().y -
-                           getSystem()
-                               .getTopLeft().y + (staff.getHeight() / 2);
+            int   staffY = staff.getTopLeft().y - getSystem()
+                                                      .getTopLeft().y +
+                           (staff.getHeight() / 2);
 
             if (staffY <= point.y) {
                 return slot.getChordAbove(point);
@@ -775,7 +775,7 @@ public class Measure
      * @param point the point before which to look
      * @return the current key signature, or null if not found
      */
-    public KeySignature getKeyBefore (SystemPoint point)
+    public KeySignature getKeyBefore (PixelPoint point)
     {
         if (point == null) {
             throw new NullPointerException();
@@ -926,7 +926,7 @@ public class Measure
     //----------//
     public void setLeftX (int val)
     {
-        SystemRectangle newBox = getBox();
+        PixelRectangle newBox = getBox();
         newBox.width = val;
         setBox(newBox);
     }
@@ -935,10 +935,9 @@ public class Measure
     // getLeftX //
     //----------//
     /**
-     * Report the abscissa of the start of the measure, relative to system/part
-     * left edge (so 0 for first measure in the part)
+     * Report the abscissa of the start of the measure
      *
-     * @return part-based abscissa of left side of the measure
+     * @return abscissa of left side of the measure
      */
     public Integer getLeftX ()
     {
@@ -956,8 +955,8 @@ public class Measure
      * @param staff the containing staff (if null, it is derived from point.y)
      * @return the measure clef defined, or null
      */
-    public Clef getMeasureClefBefore (SystemPoint point,
-                                      Staff       staff)
+    public Clef getMeasureClefBefore (PixelPoint point,
+                                      Staff      staff)
     {
         Clef clef = null;
 
@@ -1127,8 +1126,8 @@ public class Measure
      * @param staff the staff if known, otherwise null
      * @return the staff id
      */
-    public int getStaffId (SystemPoint point,
-                           Staff       staff)
+    public int getStaffId (PixelPoint point,
+                           Staff      staff)
     {
         return (staff != null) ? staff.getId()
                : getPart()
@@ -1551,13 +1550,12 @@ public class Measure
         SystemPart part = this.getPart();
 
         for (TreeNode sn : part.getStaves()) {
-            Staff       staff = (Staff) sn;
-            int         right = getLeftX(); // Right of dummy = Left of current
-            int         midY = (staff.getPageTopLeft().y +
-                               (staff.getHeight() / 2)) -
-                               getSystem()
-                                   .getTopLeft().y;
-            SystemPoint staffPoint = new SystemPoint(right, midY);
+            Staff      staff = (Staff) sn;
+            int        right = getLeftX(); // Right of dummy = Left of current
+            int        midY = (staff.getTopLeft().y + (staff.getHeight() / 2)) -
+                              getSystem()
+                                  .getTopLeft().y;
+            PixelPoint staffPoint = new PixelPoint(right, midY);
 
             // Clef?
             Clef clef = getClefBefore(staffPoint);
@@ -1567,7 +1565,7 @@ public class Measure
                     dummyMeasure,
                     staff,
                     clef.getShape(),
-                    new SystemPoint(right - 40, midY),
+                    new PixelPoint(right - 40, midY),
                     clef.getPitchPosition(),
                     null); // No glyph
             }
@@ -1578,7 +1576,7 @@ public class Measure
             if (key != null) {
                 key.createDummyCopy(
                     dummyMeasure,
-                    new SystemPoint(right - 30, midY));
+                    new PixelPoint(right - 30, midY));
             }
 
             // Time?
@@ -1587,7 +1585,7 @@ public class Measure
             if (time != null) {
                 time.createDummyCopy(
                     dummyMeasure,
-                    new SystemPoint(right - 20, midY));
+                    new PixelPoint(right - 20, midY));
             }
         }
 
@@ -1732,12 +1730,14 @@ public class Measure
     @Override
     protected void computeBox ()
     {
+
         // Start of the measure
         int     leftX;
         Measure prevMeasure = (Measure) getPreviousSibling();
 
         if (prevMeasure == null) { // Very first measure in the staff
-            leftX = 0;
+            leftX = getSystem()
+                        .getTopLeft().x;
         } else {
             leftX = prevMeasure.getBarline()
                                .getCenter().x;
@@ -1756,7 +1756,7 @@ public class Measure
 
         SystemPart part = this.getPart();
         setBox(
-            new SystemRectangle(
+            new PixelRectangle(
                 leftX,
                 part.getBox().y,
                 rightX - leftX,
@@ -1772,8 +1772,8 @@ public class Measure
     @Override
     protected void computeCenter ()
     {
-        SystemPoint bl = barline.getCenter();
-        setCenter(new SystemPoint((bl.x + getLeftX()) / 2, bl.y));
+        PixelPoint bl = barline.getCenter();
+        setCenter(new PixelPoint((bl.x + getLeftX()) / 2, bl.y));
     }
 
     //---------------//
@@ -1800,8 +1800,8 @@ public class Measure
      * Insert a whole rest at provided center
      * @param center the location for the rest note
      */
-    void addWholeRest (Staff       staff,
-                       SystemPoint center)
+    void addWholeRest (Staff      staff,
+                       PixelPoint center)
     {
         Chord chord = new Chord(this, null);
         Note.createWholeRest(staff, chord, center);

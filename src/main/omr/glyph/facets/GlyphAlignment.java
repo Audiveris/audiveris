@@ -15,7 +15,7 @@ import omr.math.Line;
 
 import omr.score.common.PixelPoint;
 
-import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 
 /**
@@ -370,5 +370,5 @@ interface GlyphAlignment
      *
      * @param g the graphic context
      */
-    void renderLine (Graphics g);
+    void renderLine (Graphics2D g);
 }

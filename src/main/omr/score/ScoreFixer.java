@@ -11,27 +11,28 @@
 // </editor-fold>
 package omr.score;
 
-import omr.glyph.text.Sentence;
+import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
-import omr.score.common.SystemRectangle;
+import omr.math.Population;
+
+import omr.score.common.PixelRectangle;
+import omr.score.entity.Beam;
+import omr.score.entity.BeamItem;
 import omr.score.entity.Measure;
 import omr.score.entity.ScoreSystem;
-import omr.score.entity.Text;
-import static omr.score.ui.ScoreConstants.*;
 import omr.score.visitor.AbstractScoreVisitor;
+
+import java.awt.Rectangle;
 
 /**
  * Class <code>ScoreFixer</code> visits the score hierarchy to fix
  * internal data.
  * <ul>
- * <li>Run computations so that all display data, such as origins and widths
- * are available for display use.</li>
- * <li>Reset Measure abscissae</li>
  * <li>Assign Measure ids</li>
  * <li>Compute System contours</li>
- * <li>Compute System display origins</li>
+ * <li>Compute average beam thickness</li>
  * </ul>
  *
  * @author Hervé Bitteur
@@ -46,11 +47,8 @@ public class ScoreFixer
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Contour of the current system */
-    private SystemRectangle systemContour;
-
-    /** Retrieve max offset above first part and use it to align first staves */
-    private int highestTop = 0;
+    /** Population of all beam thickness values */
+    private Population beamPopulation = new Population();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -66,17 +64,28 @@ public class ScoreFixer
 
     //~ Methods ----------------------------------------------------------------
 
+    //------------//
+    // visit Beam //
+    //------------//
+    @Override
+    public boolean visit (Beam beam)
+    {
+        // Cumulate heights of beam items
+        for (BeamItem item : beam.getItems()) {
+            Glyph glyph = item.getGlyph();
+            beamPopulation.includeValue(
+                (double) glyph.getWeight() / glyph.getContourBox().width);
+        }
+
+        return true;
+    }
+
     //---------------//
     // visit Measure //
     //---------------//
     @Override
     public boolean visit (Measure measure)
     {
-        // Adjust measure abscissae
-        if (!measure.isDummy()) {
-            measure.resetAbscissae();
-        }
-
         // Set measure id, based on a preceding measure, whatever the part
         Measure precedingMeasure = measure.getPreceding();
 
@@ -109,11 +118,10 @@ public class ScoreFixer
     {
         score.acceptChildren(this);
 
-        if (logger.isFineEnabled()) {
-            logger.fine("highestTop=" + highestTop);
+        if (beamPopulation.getCardinality() > 0) {
+            score.setBeamThickness(
+                (int) Math.rint(beamPopulation.getMeanValue()));
         }
-
-        score.setHighestSystemTop(highestTop);
 
         return false;
     }
@@ -124,48 +132,12 @@ public class ScoreFixer
     @Override
     public boolean visit (ScoreSystem system)
     {
-        // Browse contained entities to retrieve contours
-        // Initialize system contours with staves contours
-        systemContour = new SystemRectangle(
-            0,
-            0,
-            system.getDimension().width,
-            system.getDimension().height + STAFF_HEIGHT);
-
-        // Perhaps extend this contour with text items
-        system.acceptChildren(this);
-
-        // Now add margins
-        systemContour.grow(INTER_SYSTEM_WIDTH / 2, INTER_SYSTEM_HEIGHT / 2);
-
-        // Write down the system contour
-        if (logger.isFineEnabled()) {
-            logger.fine(system + " contour:" + systemContour);
-        }
-
-        system.setDisplayContour(systemContour);
-
-        int top = system.getDisplayContour().y + system.getDummyOffset();
-
-        if (top < highestTop) {
-            highestTop = top;
-        }
-
-        return true;
-    }
-
-    //------------//
-    // visit Text //
-    //------------//
-    @Override
-    public boolean visit (Text text)
-    {
-        // Extends system contour if needed
-        Sentence sentence = text.getSentence();
-
-        if (sentence != null) {
-            systemContour.add(sentence.getSystemContour());
-        }
+        // Use system boundaries to define system contours
+        Rectangle bounds = system.getInfo()
+                                 .getBoundary()
+                                 .getBounds();
+        system.setDisplayContour(
+            new PixelRectangle(bounds.x, bounds.y, bounds.width, bounds.height));
 
         return true;
     }

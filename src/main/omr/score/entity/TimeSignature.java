@@ -24,7 +24,7 @@ import omr.log.Logger;
 
 import omr.math.Rational;
 
-import omr.score.common.SystemPoint;
+import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
@@ -135,10 +135,10 @@ public class TimeSignature
             denominator = other.getDenominator();
             shape = other.getShape();
             setCenter(
-                new SystemPoint(
+                new PixelPoint(
                     other.getCenter().x,
-                    other.getCenter().y - other.getStaff().getPageTopLeft().y +
-                    staff.getPageTopLeft().y));
+                    other.getCenter().y - other.getStaff().getTopLeft().y +
+                    staff.getTopLeft().y));
         } catch (InvalidTimeSignature ex) {
             logger.severe("Cannot duplicate TimeSignature", ex);
         }
@@ -316,8 +316,8 @@ public class TimeSignature
     //-----------------//
     // createDummyCopy //
     //-----------------//
-    public TimeSignature createDummyCopy (Measure     measure,
-                                          SystemPoint center)
+    public TimeSignature createDummyCopy (Measure    measure,
+                                          PixelPoint center)
     {
         TimeSignature dummy = new TimeSignature(measure, null);
         dummy.setCenter(center);
@@ -342,17 +342,17 @@ public class TimeSignature
      *
      * @return true if population is successful, false otherwise
      */
-    public static boolean populate (Glyph       glyph,
-                                    Measure     measure,
-                                    Staff       staff,
-                                    SystemPoint center)
+    public static boolean populate (Glyph      glyph,
+                                    Measure    measure,
+                                    Staff      staff,
+                                    PixelPoint center)
     {
         // First, some basic tests
         // Horizontal distance since beginning of measure
         int unitDx = center.x - measure.getLeftX();
 
         if (unitDx < measure.getScale()
-                            .toUnits(constants.minTimeOffset)) {
+                            .toPixels(constants.minTimeOffset)) {
             if (logger.isFineEnabled()) {
                 logger.fine(
                     "Too small offset for time signature" + " (glyph #" +
@@ -799,13 +799,12 @@ public class TimeSignature
 
         if (ts != null) {
             // Check we are not too far from this first time signature part
-            SystemPoint center = measure.computeGlyphCenter(glyph);
-            double      unitDist = center.distance(ts.getCenter());
-            double      unitMax = measure.getScale()
-                                         .toUnitsDouble(
-                constants.maxTimeDistance);
+            PixelPoint center = measure.computeGlyphCenter(glyph);
+            double     dist = center.distance(ts.getCenter());
+            double     max = measure.getScale()
+                                    .toPixelsDouble(constants.maxTimeDistance);
 
-            if (unitDist > unitMax) {
+            if (dist > max) {
                 if (logger.isFineEnabled()) {
                     logger.fine(
                         "Time signature part" + " (glyph#" + glyph.getId() +

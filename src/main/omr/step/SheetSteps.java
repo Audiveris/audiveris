@@ -29,6 +29,8 @@ import omr.score.entity.ScoreSystem;
 import omr.score.midi.MidiActions;
 import omr.score.ui.ScoreActions;
 
+import omr.script.StepTask;
+
 import omr.selection.GlyphEvent;
 import omr.selection.SelectionService;
 
@@ -104,7 +106,8 @@ public class SheetSteps
         tasks.put(VERTICALS, new VerticalsTask(sheet, VERTICALS));
         tasks.put(PATTERNS, new PatternsTask(sheet, PATTERNS));
         tasks.put(SCORE, new ScoreTask(sheet, SCORE));
-        tasks.put(PRINT, new PrintTask(sheet, PRINT));
+        tasks.put(PRINT_SHEET, new PrintSheetTask(sheet, PRINT_SHEET));
+        tasks.put(PRINT_SCORE, new PrintScoreTask(sheet, PRINT_SCORE));
         tasks.put(PLAY, new PlayTask(sheet, PLAY));
         tasks.put(MIDI, new MidiWriteTask(sheet, MIDI));
         tasks.put(EXPORT, new ExportTask(sheet, EXPORT));
@@ -228,6 +231,77 @@ public class SheetSteps
             .doStep(systems);
     }
 
+    //--------------//
+    // performSteps //
+    //--------------//
+    /**
+     * Perform in sequence on this sheet the whole set of steps
+     * @param targetSteps the set of desired steps
+     */
+    public synchronized void performSteps (EnumSet<Step> targetSteps)
+    {
+        try {
+            // First target step
+            Step firstTarget = targetSteps.iterator()
+                                          .next();
+
+            if (firstTarget == null) {
+                logger.severe("No target step");
+
+                return;
+            }
+
+            // Last target step
+            Step lastTarget = null;
+
+            for (Step step : targetSteps) {
+                lastTarget = step;
+            }
+
+            // Determine the starting step
+            Step latest = sheet.getSheetSteps()
+                               .getLatestMandatoryStep();
+
+            Step from = (latest == null) ? Step.first
+                        : ((latest == firstTarget) ? firstTarget : latest.next());
+
+            if (from.compareTo(lastTarget) <= 0) {
+                // The precise collection of steps to perform
+                EnumSet<Step> steps = EnumSet.noneOf(Step.class);
+
+                for (Step step : EnumSet.range(from, lastTarget)) {
+                    if (step.isMandatory) {
+                        steps.add(step);
+                    }
+
+                    if (targetSteps.contains(step)) {
+                        steps.add(step);
+                    }
+                }
+
+                // Last step is always included
+                steps.add(lastTarget);
+
+                doStepSet(steps, sheet, null);
+
+                //            } else if (monitor != null) {
+                //                // Update sheet (& score) dependent entities
+                //                SheetsController.getInstance()
+                //                                .setSelectedSheet(sheet);
+
+                // Record the step tasks to script
+                for (Step step : targetSteps) {
+                    sheet.getScript()
+                         .addTask(new StepTask(step));
+                }
+            }
+        } catch (ProcessingCancellationException pce) {
+            throw pce;
+        } catch (Exception ex) {
+            logger.warning("Error in processing " + this, ex);
+        }
+    }
+
     //-------------//
     // rebuildFrom //
     //-------------//
@@ -281,7 +355,7 @@ public class SheetSteps
             EnumSet<Step> stepRange = EnumSet.range(step, latest);
 
             try {
-                Step.doStepRange(stepRange, sheet, impactedSystems);
+                Step.doStepSet(stepRange, sheet, impactedSystems);
             } catch (Exception ex) {
                 logger.warning("Error in re-processing from " + this, ex);
             }
@@ -656,18 +730,18 @@ public class SheetSteps
         }
     }
 
-    //-----------//
-    // PrintTask //
-    //-----------//
+    //----------------//
+    // PrintScoreTask //
+    //----------------//
     /**
      * Step to print the whole score, to a PDF output
      */
-    private static class PrintTask
+    private static class PrintScoreTask
         extends SheetTask
     {
         //~ Constructors -------------------------------------------------------
 
-        PrintTask (Sheet sheet,
+        PrintScoreTask (Sheet sheet,
                    Step  step)
         {
             super(sheet, step);
@@ -680,7 +754,35 @@ public class SheetSteps
             throws StepException
         {
             ScoreManager.getInstance()
-                        .pdfWrite(sheet.getScore(), null);
+                        .writeScorePdf(sheet.getScore(), null);
+        }
+    }
+
+    //----------------//
+    // PrintSheetTask //
+    //----------------//
+    /**
+     * Step to print the whole sheet, to a PDF output
+     */
+    private static class PrintSheetTask
+        extends SheetTask
+    {
+        //~ Constructors -------------------------------------------------------
+
+        PrintSheetTask (Sheet sheet,
+                   Step  step)
+        {
+            super(sheet, step);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void doit (Collection<SystemInfo> unused)
+            throws StepException
+        {
+            ScoreManager.getInstance()
+                        .writeSheetPdf(sheet.getScore(), null);
         }
     }
 
@@ -827,7 +929,7 @@ public class SheetSteps
                 EnumSet<Step> stepRange = EnumSet.range(Step.VERTICALS, step);
 
                 try {
-                    Step.doStepRange(stepRange, sheet, systems);
+                    Step.doStepSet(stepRange, sheet, systems);
                 } catch (Exception ex) {
                     logger.warning("Error in re-processing from " + this, ex);
                 }

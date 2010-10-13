@@ -18,7 +18,7 @@ import omr.math.Line;
 
 import omr.util.Implement;
 
-import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.util.*;
 
 /**
@@ -139,9 +139,9 @@ public class StraightLineInfo
     // render //
     //--------//
     @Implement(LineInfo.class)
-    public void render (Graphics g,
-                        int      left,
-                        int      right)
+    public void render (Graphics2D g,
+                        int        left,
+                        int        right)
     {
         // Paint the computed line
         if (line != null) {

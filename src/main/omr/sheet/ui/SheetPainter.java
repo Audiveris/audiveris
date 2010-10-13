@@ -20,9 +20,7 @@ import omr.score.Score;
 import omr.score.common.PixelRectangle;
 import omr.score.entity.Measure;
 import omr.score.entity.ScoreSystem;
-import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
-import omr.score.ui.ScoreConstants;
 import omr.score.visitor.AbstractScoreVisitor;
 
 import omr.sheet.Ending;
@@ -93,10 +91,10 @@ public class SheetPainter
     @Override
     public boolean visit (Measure measure)
     {
-        // Render the measure ending barline, if within the clipping area
+        // Render the measure ending barline
         if (measure.getBarline() != null) {
             measure.getBarline()
-                   .render(g);
+                   .renderLine(g);
         }
 
         // Nothing lower than measure
@@ -109,63 +107,15 @@ public class SheetPainter
     @Override
     public boolean visit (Score score)
     {
-        score.acceptChildren(this);
+        Sheet sheet = score.getSheet();
 
-        return false;
-    }
-
-    //-------------//
-    // visit Staff //
-    //-------------//
-    @Override
-    public boolean visit (Staff staff)
-    {
-        StaffInfo info = staff.getInfo();
-
-        // Render the staff lines, if within the clipping area
-        if ((info != null) && info.render(g)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    //------------------//
-    // visit SystemPart //
-    //------------------//
-    @Override
-    public boolean visit (SystemPart part)
-    {
-        // Render the part starting barline, if any
-        if (part.getStartingBarline() != null) {
-            part.getStartingBarline()
-                .render(g);
-        }
-
-        return true;
-    }
-
-    //-------------//
-    // visit Sheet //
-    //-------------//
-    /**
-     * Although a Sheet is not part of the Score hierarchy, this visitor has
-     * been specifically extended to render all physical info of a sheet
-     *
-     * @param sheet the sheet to render initial elements
-     * @return true
-     */
-    public boolean visit (Sheet sheet)
-    {
         // Use specific color
         g.setColor(Color.lightGray);
 
-        Score score = sheet.getScore();
-
-        if ((score != null) && !score.getSystems()
-                                     .isEmpty()) {
+        if (!score.getSystems()
+                  .isEmpty()) {
             // Normal (full) rendering of the score
-            score.accept(this);
+            score.acceptChildren(this);
         } else {
             // Render what we have got so far
             if (sheet.getStaves() != null) {
@@ -197,6 +147,37 @@ public class SheetPainter
         }
 
         g.setStroke(oldStroke);
+
+        return false;
+    }
+
+    //    //-------------//
+    //    // visit Staff //
+    //    //-------------//
+    //    @Override
+    //    public boolean visit (Staff staff)
+    //    {
+    //        StaffInfo info = staff.getInfo();
+    //
+    //        // Render the staff lines, if within the clipping area
+    //        if ((info != null) && info.render(g)) {
+    //            return true;
+    //        } else {
+    //            return false;
+    //        }
+    //    }
+
+    //------------------//
+    // visit SystemPart //
+    //------------------//
+    @Override
+    public boolean visit (SystemPart part)
+    {
+        // Render the part starting barline, if any
+        if (part.getStartingBarline() != null) {
+            part.getStartingBarline()
+                .renderLine(g);
+        }
 
         return true;
     }
@@ -276,10 +257,9 @@ public class SheetPainter
      */
     private void paintVirtualGlyphs (SystemInfo systemInfo)
     {
-        int    interline = systemInfo.getSheet()
-                                     .getScale()
-                                     .interline();
-        double ratio = interline / (double) ScoreConstants.INTER_LINE;
+        int interline = systemInfo.getSheet()
+                                  .getScale()
+                                  .interline();
 
         for (Glyph glyph : systemInfo.getGlyphs()) {
             if (glyph.isVirtual()) {
@@ -295,11 +275,9 @@ public class SheetPainter
                             Point center = glyph.getAreaCenter();
                             Point topLeft = new Point(
                                 (int) Math.rint(
-                                    center.x -
-                                    ((symbol.getWidth() * ratio) / 2)),
+                                    center.x - (symbol.getWidth() / 2)),
                                 (int) Math.rint(
-                                    center.y -
-                                    ((symbol.getHeight() * ratio) / 2)));
+                                    center.y - (symbol.getHeight() / 2)));
                             symbol.draw(g, topLeft, interline);
                         }
                     }

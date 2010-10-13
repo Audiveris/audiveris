@@ -58,10 +58,10 @@
     <target name="global-replace"
         description="Modify token of every source file">
         
-        <replace encoding="utf8" dir="${basedir}/symbols">
-            <replacetoken><![CDATA[symbol ]]></replacetoken>
-            <replacevalue><![CDATA[symbol interline="8" ]]></replacevalue>
-            <include name="**/*.xml"/>
+        <replace encoding="utf8" dir="${src.dir}">
+            <replacetoken>PageRectangle</replacetoken>
+            <replacevalue>PixelRectangle</replacevalue>
+            <include name="**/*.java"/>
         </replace>
 
     </target>

@@ -17,7 +17,7 @@ import omr.log.Logger;
 
 import omr.math.Population;
 
-import omr.score.common.SystemPoint;
+import omr.score.common.PixelPoint;
 
 import omr.sheet.Scale;
 
@@ -291,10 +291,10 @@ public class LyricsLine
      * @param sysPt the system point to check
      * @return true if aligned
      */
-    private boolean isAlignedWith (SystemPoint sysPt)
+    private boolean isAlignedWith (PixelPoint sysPt)
     {
         return Math.abs(sysPt.y - getY()) <= getScale()
-                                                 .toUnits(constants.maxItemDy);
+                                                 .toPixels(constants.maxItemDy);
     }
 
     //---------//

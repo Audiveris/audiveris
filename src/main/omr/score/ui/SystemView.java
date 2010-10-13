@@ -13,13 +13,11 @@ package omr.score.ui;
 
 import omr.log.Logger;
 
-import omr.score.common.PagePoint;
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 import omr.score.common.ScorePoint;
 import omr.score.common.ScoreRectangle;
-import omr.score.common.SystemPoint;
-import omr.score.common.SystemRectangle;
 import omr.score.entity.ScoreSystem;
-import static omr.score.ui.ScoreConstants.*;
 
 /**
  * Class <code>SystemView</code> encapsulates information for a specific
@@ -147,7 +145,8 @@ public class SystemView
             }
 
             if (scrPt.y > (displayOrigin.y + system.getDimension().height +
-                          STAFF_HEIGHT)) {
+                          system.getScore()
+                                .getMeanStaffHeight())) {
                 return +1;
             }
 
@@ -155,9 +154,9 @@ public class SystemView
         }
     }
 
-    //-------------//
-    // toPagePoint //
-    //-------------//
+    //--------------//
+    // toPixelPoint //
+    //--------------//
     /**
      * Compute the point in the sheet that corresponds to a given point in the
      * score display
@@ -166,11 +165,11 @@ public class SystemView
      * @return the corresponding page point
      * @see #toScorePoint
      */
-    public PagePoint toPagePoint (ScorePoint scrPt)
+    public PixelPoint toPixelPoint (ScorePoint scrPt)
     {
-        PagePoint topLeft = system.getTopLeft();
+        PixelPoint topLeft = system.getTopLeft();
 
-        return new PagePoint(
+        return new PixelPoint(
             topLeft.x + (scrPt.x - displayOrigin.x),
             topLeft.y + (scrPt.y - displayOrigin.y));
     }
@@ -183,29 +182,15 @@ public class SystemView
      *
      * @param pagPt the point in the sheet
      * @return the score point
-     * @see #toPagePoint
+     * @see #toPixelPoint
      */
-    public ScorePoint toScorePoint (PagePoint pagPt)
+    public ScorePoint toScorePoint (PixelPoint pagPt)
     {
-        PagePoint topLeft = system.getTopLeft();
+        PixelPoint topLeft = system.getTopLeft();
 
         return new ScorePoint(
             displayOrigin.x + (pagPt.x - topLeft.x),
             displayOrigin.y + (pagPt.y - topLeft.y));
-    }
-
-    //--------------//
-    // toScorePoint //
-    //--------------//
-    /**
-     * Compute the score display point that corresponds to a given system point
-     *
-     * @param sysPt the point in the system
-     * @return the score point
-     */
-    public ScorePoint toScorePoint (SystemPoint sysPt)
-    {
-        return toScorePoint(system.toPagePoint(sysPt));
     }
 
     //------------------//
@@ -217,9 +202,9 @@ public class SystemView
      * @param sysRect the rectangle in the system
      * @return the score rectangle
      */
-    public ScoreRectangle toScoreRectangle (SystemRectangle sysRect)
+    public ScoreRectangle toScoreRectangle (PixelRectangle sysRect)
     {
-        ScorePoint org = toScorePoint(new SystemPoint(sysRect.x, sysRect.y));
+        ScorePoint org = toScorePoint(new PixelPoint(sysRect.x, sysRect.y));
 
         return new ScoreRectangle(org.x, org.y, sysRect.width, sysRect.height);
     }
@@ -245,19 +230,5 @@ public class SystemView
         sb.append("}");
 
         return sb.toString();
-    }
-
-    //---------------//
-    // toSystemPoint //
-    //---------------//
-    /**
-     * Compute the system-based point that corresponds to a given score point
-     *
-     * @param scrPt the point in the score display
-     * @return the system relative point
-     */
-    public SystemPoint toSystemPoint (ScorePoint scrPt)
-    {
-        return system.toSystemPoint(toPagePoint(scrPt));
     }
 }

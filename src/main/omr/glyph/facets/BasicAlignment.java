@@ -24,9 +24,11 @@ import omr.score.common.PixelPoint;
 
 import omr.stick.StickSection;
 
-import java.awt.Graphics;
+import java.awt.BasicStroke;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Stroke;
 import java.util.List;
 
 /**
@@ -439,22 +441,30 @@ class BasicAlignment
     //------------//
     // renderLine //
     //------------//
-    public void renderLine (Graphics g)
+    public void renderLine (Graphics2D g)
     {
         if (glyph.getContourBox()
                  .intersects(g.getClipBounds())) {
             getLine(); // To make sure the line has been computed
 
+            int    halfLine = 0;
+            Stroke stroke = g.getStroke();
+
+            if (stroke instanceof BasicStroke) {
+                halfLine = (int) Math.rint(
+                    ((BasicStroke) stroke).getLineWidth() / 2);
+            }
+
             Point start = glyph.getLag()
                                .switchRef(
                 new Point(
-                    getStart(),
+                    getStart() + halfLine,
                     (int) Math.rint(line.yAt((double) getStart()))),
                 null);
             Point stop = glyph.getLag()
                               .switchRef(
                 new Point(
-                    getStop() + 1,
+                    (getStop() + 1) - halfLine,
                     (int) Math.rint(line.yAt((double) getStop() + 1))),
                 null);
             g.drawLine(start.x, start.y, stop.x, stop.y);

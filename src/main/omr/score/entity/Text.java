@@ -18,8 +18,8 @@ import omr.glyph.text.TextRole;
 
 import omr.log.Logger;
 
-import omr.score.common.SystemPoint;
-import omr.score.common.SystemRectangle;
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 import omr.score.visitor.ScoreVisitor;
 
 import java.awt.Font;
@@ -86,8 +86,8 @@ public abstract class Text
      * @param sentence the larger sentence
      * @param location specific location
      */
-    public Text (Sentence    sentence,
-                 SystemPoint location)
+    public Text (Sentence   sentence,
+                 PixelPoint location)
     {
         super(sentence.getSystemPart());
         this.sentence = sentence;
@@ -150,9 +150,9 @@ public abstract class Text
      *
      * @return the exported font size
      */
-    public int getFontSize ()
+    public float getFontSize ()
     {
-        return font.getSize();
+        return font.getSize2D();
     }
 
     //---------------//
@@ -183,9 +183,9 @@ public abstract class Text
     // getWidth //
     //----------//
     /**
-     * Report the width in units of this text
+     * Report the width of this text
      *
-     * @return the text width in units
+     * @return the text width
      */
     public int getWidth ()
     {
@@ -217,8 +217,8 @@ public abstract class Text
      * @param sentence the whole sentence
      * @param location its starting reference wrt containing system
      */
-    public static void populate (Sentence    sentence,
-                                 SystemPoint location)
+    public static void populate (Sentence   sentence,
+                                 PixelPoint location)
     {
         final SystemPart  systemPart = sentence.getSystemPart();
         final ScoreSystem system = systemPart.getSystem();
@@ -245,10 +245,9 @@ public abstract class Text
 
             // Create as many lyrics items as needed
             for (Glyph item : sentence.getGlyphs()) {
-                SystemRectangle itemBox = system.toSystemRectangle(
-                    item.getContourBox());
-                String          itemStr = item.getTextInfo()
-                                              .getContent();
+                PixelRectangle itemBox = item.getContourBox();
+                String         itemStr = item.getTextInfo()
+                                             .getContent();
 
                 if (itemStr == null) {
                     int nbChar = (int) Math.rint(
@@ -259,7 +258,7 @@ public abstract class Text
                 item.setTranslation(
                     new LyricsItem(
                         sentence,
-                        new SystemPoint(itemBox.x, location.y),
+                        new PixelPoint(itemBox.x, location.y),
                         item,
                         itemBox.width,
                         itemStr));

@@ -30,5 +30,5 @@ public interface DigraphView
      *
      * @param g the graphics context
      */
-    void render (Graphics g);
+    void render (Graphics2D g);
 }

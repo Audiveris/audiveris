@@ -14,7 +14,7 @@ package omr.score.entity;
 import omr.glyph.Glyphs;
 import omr.glyph.facets.Glyph;
 
-import omr.score.common.SystemPoint;
+import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.util.Navigable;
@@ -52,7 +52,7 @@ public abstract class PartNode
     private Staff staff;
 
     /** Reference point */
-    private SystemPoint referencePoint;
+    private PixelPoint referencePoint;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -125,7 +125,7 @@ public abstract class PartNode
     //-------------------//
     // setReferencePoint //
     //-------------------//
-    public void setReferencePoint (SystemPoint referencePoint)
+    public void setReferencePoint (PixelPoint referencePoint)
     {
         this.referencePoint = referencePoint;
     }
@@ -140,7 +140,7 @@ public abstract class PartNode
      * line.
      * @return the point of reference for this element
      */
-    public SystemPoint getReferencePoint ()
+    public PixelPoint getReferencePoint ()
     {
         if (referencePoint == null) {
             computeReferencePoint();

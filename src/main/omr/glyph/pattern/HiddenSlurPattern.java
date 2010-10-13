@@ -102,7 +102,12 @@ public class HiddenSlurPattern
                 if ((vote != null) && (vote.shape == Shape.SLUR)) {
                     compound.setShape(vote.shape, vote.doubt);
                     compound = system.addGlyph(compound);
-                    logger.info("SLUR extracted as glyph#" + compound.getId());
+
+                    if (logger.isFineEnabled()) {
+                        logger.fine(
+                            "SLUR extracted as glyph#" + compound.getId());
+                    }
+
                     successNb++;
 
                     break;

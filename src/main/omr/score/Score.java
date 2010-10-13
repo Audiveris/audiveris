@@ -20,15 +20,14 @@ import omr.glyph.text.Language;
 
 import omr.log.Logger;
 
-import omr.score.common.PagePoint;
-import omr.score.common.UnitDimension;
+import omr.score.common.PixelDimension;
+import omr.score.common.PixelPoint;
 import omr.score.entity.ScoreNode;
 import omr.score.entity.ScorePart;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.SlotPolicy;
 import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
-import omr.score.ui.ScoreConstants;
 import omr.score.ui.ScoreEditor;
 import omr.score.ui.ScoreLayout;
 import omr.score.ui.ScoreOrientation;
@@ -74,6 +73,9 @@ public class Score
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Score.class);
 
+    /** Number of lines in a staff */
+    public static final int LINE_NB = 5;
+
     //~ Instance fields --------------------------------------------------------
 
     /** File of the related sheet image */
@@ -86,10 +88,10 @@ public class Score
     private String radix;
 
     /** Sheet dimension in units */
-    private UnitDimension dimension;
+    private PixelDimension dimension;
 
     /** Sheet skew angle in radians */
-    private int skewAngle;
+    private double skewAngle;
 
     /** Sheet global scale */
     private Scale scale;
@@ -142,8 +144,11 @@ public class Score
     /** Where the MIDI data is to be stored */
     private File midiFile;
 
-    /** Where the PDF data is to be stored */
-    private File pdfFile;
+    /** Where the sheet PDF data is to be stored */
+    private File sheetPdfFile;
+
+    /** Where the score PDF data is to be stored */
+    private File scorePdfFile;
 
     /** Global score and systems layouts per orientation*/
     private final EnumMap<ScoreOrientation, ScoreLayout> layouts = new EnumMap<ScoreOrientation, ScoreLayout>(
@@ -151,6 +156,9 @@ public class Score
 
     /** Specific score editor view */
     private ScoreEditor editor;
+
+    /** Average beam thickness, if known */
+    private Integer beamThickness;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -186,6 +194,22 @@ public class Score
         ScoreSystem lastSystem = getLastSystem();
 
         return lastSystem.getStartTime() + lastSystem.getActualDuration();
+    }
+
+    //------------------//
+    // setBeamThickness //
+    //------------------//
+    public void setBeamThickness (int beamThickness)
+    {
+        this.beamThickness = beamThickness;
+    }
+
+    //------------------//
+    // getBeamThickness //
+    //------------------//
+    public Integer getBeamThickness ()
+    {
+        return beamThickness;
     }
 
     //-----------------//
@@ -325,7 +349,7 @@ public class Score
      * Assign score dimension
      * @param dimension the score dimension, expressed in units
      */
-    public void setDimension (UnitDimension dimension)
+    public void setDimension (PixelDimension dimension)
     {
         this.dimension = dimension;
     }
@@ -338,7 +362,7 @@ public class Score
      *
      * @return the score/sheet dimension in units
      */
-    public UnitDimension getDimension ()
+    public PixelDimension getDimension ()
     {
         return dimension;
     }
@@ -444,22 +468,6 @@ public class Score
         } else {
             return (ScoreSystem) children.get(0);
         }
-    }
-
-    //---------------------//
-    // setHighestSystemTop //
-    //---------------------//
-    public void setHighestSystemTop (int highestSystemTop)
-    {
-        this.highestSystemTop = highestSystemTop;
-    }
-
-    //---------------------//
-    // getHighestSystemTop //
-    //---------------------//
-    public int getHighestSystemTop ()
-    {
-        return highestSystemTop;
     }
 
     //--------------//
@@ -607,6 +615,19 @@ public class Score
         return nb;
     }
 
+    //--------------------//
+    // getMeanStaffHeight //
+    //--------------------//
+    /**
+     * Report the mean staff height based on score interline. This should be
+     * refined per system, if not per staff
+     * @return the score-based average value of staff heights
+     */
+    public int getMeanStaffHeight ()
+    {
+        return (Score.LINE_NB - 1) * scale.interline();
+    }
+
     //-----------------//
     // setMeasureRange //
     //-----------------//
@@ -695,30 +716,6 @@ public class Score
         return partList;
     }
 
-    //------------//
-    // setPdfFile //
-    //------------//
-    /**
-     * Remember to which file the PDF data is to be exported
-     * @param pdfFile the Midi file
-     */
-    public void setPdfFile (File pdfFile)
-    {
-        this.pdfFile = pdfFile;
-    }
-
-    //------------//
-    // getPdfFile //
-    //------------//
-    /**
-     * Report to which file, if any, the PDF data is to be written
-     * @return the PDF file, or null
-     */
-    public File getPdfFile ()
-    {
-        return pdfFile;
-    }
-
     //----------//
     // setRadix //
     //----------//
@@ -779,6 +776,30 @@ public class Score
         return scale;
     }
 
+    //-----------------//
+    // setScorePdfFile //
+    //-----------------//
+    /**
+     * Remember to which file the score PDF data is to be exported
+     * @param scorePdfFile the score PDF file
+     */
+    public void setScorePdfFile (File scorePdfFile)
+    {
+        this.scorePdfFile = scorePdfFile;
+    }
+
+    //-----------------//
+    // getScorePdfFile //
+    //-----------------//
+    /**
+     * Report to which file, if any, the score PDF data is to be written
+     * @return the score PDF file, or null
+     */
+    public File getScorePdfFile ()
+    {
+        return scorePdfFile;
+    }
+
     //---------------//
     // setScriptFile //
     //---------------//
@@ -830,6 +851,30 @@ public class Score
         return sheet;
     }
 
+    //-----------------//
+    // setSheetPdfFile //
+    //-----------------//
+    /**
+     * Remember to which file the sheet PDF data is to be exported
+     * @param sheetPdfFile the sheet PDF file
+     */
+    public void setSheetPdfFile (File sheetPdfFile)
+    {
+        this.sheetPdfFile = sheetPdfFile;
+    }
+
+    //-----------------//
+    // getSheetPdfFile //
+    //-----------------//
+    /**
+     * Report to which file, if any, the shaat PDF data is to be written
+     * @return the sheet PDF file, or null
+     */
+    public File getSheetPdfFile ()
+    {
+        return sheetPdfFile;
+    }
+
     //--------------//
     // setSkewAngle //
     //--------------//
@@ -837,7 +882,7 @@ public class Score
      * Assign score global skew angle
      * @param skewAngle the detected skew angle, in radians, clockwise
      */
-    public void setSkewAngle (int skewAngle)
+    public void setSkewAngle (double skewAngle)
     {
         this.skewAngle = skewAngle;
     }
@@ -848,24 +893,11 @@ public class Score
     /**
      * Report the score skew angle
      *
-     * @return skew angle, in 1/1024 of radians, clock-wise
-     */
-    public int getSkewAngle ()
-    {
-        return skewAngle;
-    }
-
-    //--------------------//
-    // getSkewAngleDouble //
-    //--------------------//
-    /**
-     * Report the score skew angle
-     *
      * @return skew angle, in radians, clock-wise
      */
-    public double getSkewAngleDouble ()
+    public double getSkewAngle ()
     {
-        return (double) skewAngle / (double) ScoreConstants.BASE;
+        return skewAngle;
     }
 
     //---------------//
@@ -1097,7 +1129,7 @@ public class Score
             ScorePart  scorePart = new ScorePart(
                 sp,
                 ++index,
-                firstStaff.getPageTopLeft().y - refSystem.getTopLeft().y);
+                firstStaff.getTopLeft().y);
             scorePart.setName("Part_" + index);
             partList.add(scorePart);
         }
@@ -1217,74 +1249,11 @@ public class Score
      *
      * @return the nearest system.
      */
-    public ScoreSystem pageLocateSystem (PagePoint pagPt)
+    public ScoreSystem pageLocateSystem (PixelPoint pagPt)
     {
-        ScoreSystem recentSystem = (recentSystemRef == null) ? null
-                                   : recentSystemRef.get();
-
-        if (recentSystem != null) {
-            // Check first with most recent system (loosely)
-            switch (recentSystem.locate(pagPt)) {
-            case -1 :
-
-                // Check w/ previous system
-                ScoreSystem prevSystem = (ScoreSystem) recentSystem.getPreviousSibling();
-
-                if (prevSystem == null) { // Very first system
-
-                    return recentSystem;
-                } else if (prevSystem.locate(pagPt) > 0) {
-                    return recentSystem;
-                }
-
-                break;
-
-            case 0 :
-                return recentSystem;
-
-            case +1 :
-
-                // Check w/ next system
-                ScoreSystem nextSystem = (ScoreSystem) recentSystem.getNextSibling();
-
-                if (nextSystem == null) { // Very last system
-
-                    return recentSystem;
-                } else if (nextSystem.locate(pagPt) < 0) {
-                    return recentSystem;
-                }
-
-                break;
-            }
-        }
-
-        if (logger.isFineEnabled()) {
-            logger.fine("pageLocateSystem. Not within recent system");
-        }
-
-        // Recent system is not OK, Browse though all the score systems
-        ScoreSystem system = null;
-
-        for (TreeNode node : children) {
-            system = (ScoreSystem) node;
-
-            // How do we locate the point wrt the system  ?
-            switch (system.locate(pagPt)) {
-            case -1 : // Point is above this system, give up.
-            case 0 : // Point is within system.
-                recentSystemRef = new WeakReference<ScoreSystem>(system);
-
-                return system;
-
-            case +1 : // Point is below this system, go on.
-                break;
-            }
-        }
-
-        // Return the last system in the score
-        recentSystemRef = new WeakReference<ScoreSystem>(system);
-
-        return system;
+        return getSheet()
+                   .getSystemOf(pagPt)
+                   .getScoreSystem();
     }
 
     //--------------//

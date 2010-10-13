@@ -25,15 +25,15 @@
     
     <action domain="DEBUG" section="30" class="omr.score.ui.ScoreActions" method="browseScore"/>
     <action domain="DEBUG" section="30" class="omr.score.ui.ScoreActions" method="dumpScore"/>
-<!--
+
     <action domain="DEBUG" section="40" class="omr.glyph.ui.TextAreaBrowser"           method="showHorizontalHistogram" button="javax.swing.JButton"/>
     <action domain="DEBUG" section="40" class="omr.glyph.ui.TextAreaBrowser"           method="showVerticalHistogram" button="javax.swing.JButton"/>
--->
+
     <!--<action domain="DEBUG" section="50" class="MyClass"           method="rebuildFromStep" button="javax.swing.JButton"/>-->
     <!--<action domain="DEBUG" section="50" class="omr.sheet.SheetsManager"  method="dumpAllSheets"/>-->
     <!--<action domain="DEBUG" section="50" class="omr.sheet.ui.SheetsController"  method="dumpAllAssemblies"/>-->
     
-    <!--<action domain="DEBUG" section="60" class="MyClass"  method="launchSymbolRipper"/>-->
+    <action domain="DEBUG" section="60" class="MyClass"  method="launchSymbolRipper"/>
     <!--<action domain="DEBUG" section="70" class="MyClass"  method="launchScoreComputations"/>-->
 
 </actions>

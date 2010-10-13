@@ -730,20 +730,22 @@ public class Picture
             .add(new InterpolationBilinear()), // Interpolation hint
             null);
 
-        //        // Crop the image to fit the size of the previous one
-        //        ParameterBlock cpb = new ParameterBlock().addSource(image) // The source image
-        //                                                 .add(0f) // x
-        //                                                 .add(0f); // y
-        //
-        //        if (theta < 0d) { // counter-clock wise
-        //            cpb.add((float) (dimension.width));
-        //            cpb.add((float) ((dimension.height * Math.cos(theta)) - 1f));
-        //        } else { // clock wise
-        //            cpb.add((float) ((dimension.width * Math.cos(theta)) - 1f));
-        //            cpb.add((float) (dimension.height));
-        //        }
-        //
-        //        image = JAI.create("crop", cpb, null);
+        // Crop the image to fit the size of the previous one
+        ParameterBlock cpb = new ParameterBlock().addSource(image) // The source image
+
+                                                 .add(0f) // x
+
+                                                 .add(0f); // y
+
+        if (theta < 0d) { // counter-clock wise
+            cpb.add((float) (dimension.width));
+            cpb.add((float) ((dimension.height * Math.cos(theta)) - 1f));
+        } else { // clock wise
+            cpb.add((float) ((dimension.width * Math.cos(theta)) - 1f));
+            cpb.add((float) (dimension.height));
+        }
+
+        image = JAI.create("crop", cpb, null);
 
         // de-Invert
         image = invert(image);

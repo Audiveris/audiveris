@@ -17,7 +17,7 @@ import omr.glyph.facets.Glyph;
 import omr.log.Logger;
 
 import omr.score.common.DurationFactor;
-import omr.score.common.SystemPoint;
+import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.util.TreeNode;
@@ -58,7 +58,7 @@ public class Tuplet
      * @param glyph the underlying glyph
      */
     public Tuplet (Measure     measure,
-                   SystemPoint point,
+                   PixelPoint point,
                    Chord       firstChord,
                    Chord       lastChord,
                    Glyph       glyph)
@@ -96,7 +96,7 @@ public class Tuplet
      */
     public static void populate (Glyph       glyph,
                                  Measure     measure,
-                                 SystemPoint point)
+                                 PixelPoint point)
     {
         if (logger.isFineEnabled()) {
             logger.fine("Tuplet. populate " + glyph);
@@ -167,7 +167,7 @@ public class Tuplet
      */
     private static SortedSet<Chord> getEmbracedChords (Glyph            glyph,
                                                        Measure          measure,
-                                                       SystemPoint      point,
+                                                       PixelPoint      point,
                                                        SortedSet<Chord> candidates,
                                                        Staff            requiredStaff)
     {
@@ -309,11 +309,11 @@ public class Tuplet
         //~ Instance fields ----------------------------------------------------
 
         /** The location of the tuplet sign */
-        private final SystemPoint signPoint;
+        private final PixelPoint signPoint;
 
         //~ Constructors -------------------------------------------------------
 
-        public DxComparator (SystemPoint signPoint)
+        public DxComparator (PixelPoint signPoint)
         {
             this.signPoint = signPoint;
         }
@@ -340,11 +340,11 @@ public class Tuplet
         //~ Instance fields ----------------------------------------------------
 
         /** The location of the tuplet sign */
-        private final SystemPoint signPoint;
+        private final PixelPoint signPoint;
 
         //~ Constructors -------------------------------------------------------
 
-        public DyComparator (SystemPoint signPoint)
+        public DyComparator (PixelPoint signPoint)
         {
             this.signPoint = signPoint;
         }

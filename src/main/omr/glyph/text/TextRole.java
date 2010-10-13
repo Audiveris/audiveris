@@ -17,9 +17,9 @@ import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
-import omr.score.common.PageRectangle;
-import omr.score.common.SystemPoint;
-import omr.score.common.SystemRectangle;
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
+import omr.score.common.PixelRectangle;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.ScoreSystem.StaffPosition;
 import omr.score.entity.Staff;
@@ -73,6 +73,7 @@ public enum TextRole {
     {
         if (NbOfChars > 1000) {
             logger.warning("Abnormal text length:" + NbOfChars);
+
             return "<<" + Integer.toString(NbOfChars) + ">>";
         } else {
             StringBuilder sb = new StringBuilder("[");
@@ -121,13 +122,12 @@ public enum TextRole {
     static RoleInfo guessRole (Glyph      glyph,
                                SystemInfo systemInfo)
     {
-        Sheet           sheet = systemInfo.getSheet();
-        ScoreSystem     system = systemInfo.getScoreSystem();
-        Scale           scale = system.getScale();
-        PageRectangle   pageBox = scale.toUnits(glyph.getContourBox());
-        SystemRectangle box = system.toSystemRectangle(pageBox);
-        SystemPoint     left = new SystemPoint(box.x, box.y + (box.height / 2));
-        SystemPoint     right = new SystemPoint(
+        Sheet          sheet = systemInfo.getSheet();
+        ScoreSystem    system = systemInfo.getScoreSystem();
+        Scale          scale = system.getScale();
+        PixelRectangle box = glyph.getContourBox();
+        PixelPoint     left = new PixelPoint(box.x, box.y + (box.height / 2));
+        PixelPoint     right = new PixelPoint(
             box.x + box.width,
             box.y + (box.height / 2));
 
@@ -143,27 +143,26 @@ public enum TextRole {
 
         // Vertical distance from staff
         Staff   staff = system.getStaffAt(left);
-        int     staffDy = Math.abs(staff.getPageTopLeft().y - pageBox.y);
-        boolean closeToStaff = staffDy <= scale.toUnits(constants.maxStaffDy);
+        int     staffDy = Math.abs(staff.getTopLeft().y - box.y);
+        boolean closeToStaff = staffDy <= scale.toPixels(constants.maxStaffDy);
 
         // Begins before the part?
         boolean leftOfStaves = system.isLeftOfStaves(left);
 
         // At the center of page width?
-        int     maxCenterDx = scale.toUnits(constants.maxCenterDx);
-        int     pageCenter = scale.pixelsToUnits(sheet.getWidth() / 2);
-        boolean pageCentered = Math.abs(
-            (pageBox.x + (pageBox.width / 2)) - pageCenter) <= maxCenterDx;
+        int     maxCenterDx = scale.toPixels(constants.maxCenterDx);
+        int     pageCenter = sheet.getWidth() / 2;
+        boolean pageCentered = Math.abs((box.x + (box.width / 2)) - pageCenter) <= maxCenterDx;
 
         // Right aligned with staves
-        int     maxRightDx = scale.toUnits(constants.maxRightDx);
+        int     maxRightDx = scale.toPixels(constants.maxRightDx);
         boolean rightAligned = Math.abs(right.x - system.getDimension().width) <= maxRightDx;
 
         // Short Sentence?
-        int     maxShortLength = scale.toUnits(constants.maxShortLength);
-        boolean shortSentence = pageBox.width <= maxShortLength;
+        int     maxShortLength = scale.toPixels(constants.maxShortLength);
+        boolean shortSentence = box.width <= maxShortLength;
 
-        int     minTitleHeight = scale.toUnits(constants.minTitleHeight);
+        int     minTitleHeight = scale.toPixels(constants.minTitleHeight);
         boolean highText = box.height >= minTitleHeight;
 
         if (logger.isFineEnabled()) {

@@ -17,7 +17,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
-import omr.score.common.SystemPoint;
+import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
 
 /**
@@ -79,7 +79,7 @@ public class Clef
     public Clef (Measure     measure,
                  Staff       staff,
                  Shape       shape,
-                 SystemPoint center,
+                 PixelPoint center,
                  int         pitchPosition,
                  Glyph       glyph)
     {
@@ -213,7 +213,7 @@ public class Clef
     public static boolean populate (Glyph       glyph,
                                     Measure     measure,
                                     Staff       staff,
-                                    SystemPoint center)
+                                    PixelPoint center)
     {
         Shape shape = glyph.getShape();
 

@@ -11,11 +11,12 @@
 // </editor-fold>
 package omr.score.entity;
 
+import omr.glyph.facets.Glyph;
+
 import omr.log.Logger;
 
-import omr.score.common.PagePoint;
-import omr.score.common.SystemPoint;
-import omr.score.common.SystemRectangle;
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.util.Predicate;
@@ -63,6 +64,9 @@ public class SystemPart
     /** The corresponding ScorePart */
     private ScorePart scorePart;
 
+    /** A brace attached if any */
+    private Glyph brace;
+
     /** Specific child : sequence of staves that belong to this system */
     private final Container staves;
 
@@ -107,6 +111,28 @@ public class SystemPart
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //----------//
+    // setBrace //
+    //----------//
+    /**
+     * @param brace the brace to set
+     */
+    public void setBrace (Glyph brace)
+    {
+        this.brace = brace;
+    }
+
+    //----------//
+    // getBrace //
+    //----------//
+    /**
+     * @return the brace
+     */
+    public Glyph getBrace ()
+    {
+        return brace;
+    }
 
     //----------//
     // setDummy //
@@ -280,7 +306,7 @@ public class SystemPart
      * @param systemPoint system-based coordinates of the given point
      * @return the containing measure
      */
-    public Measure getMeasureAt (SystemPoint systemPoint)
+    public Measure getMeasureAt (PixelPoint systemPoint)
     {
         Measure measure = null;
 
@@ -394,14 +420,14 @@ public class SystemPart
      *
      * @return the nearest staff
      */
-    public Staff getStaffAt (PagePoint point)
+    public Staff getStaffAt (PixelPoint point)
     {
         int   minDy = Integer.MAX_VALUE;
         Staff best = null;
 
         for (TreeNode node : getStaves()) {
             Staff staff = (Staff) node;
-            int   midY = staff.getPageTopLeft().y + (staff.getHeight() / 2);
+            int   midY = staff.getTopLeft().y + (staff.getHeight() / 2);
             int   dy = Math.abs(point.y - midY);
 
             if (dy < minDy) {
@@ -411,21 +437,6 @@ public class SystemPart
         }
 
         return best;
-    }
-
-    //------------//
-    // getStaffAt //
-    //------------//
-    /**
-     * Report the staff nearest (in ordinate) to a provided system point
-     *
-     * @param point the provided system point
-     *
-     * @return the nearest staff
-     */
-    public Staff getStaffAt (SystemPoint point)
-    {
-        return getStaffAt(getSystem().toPagePoint(point));
     }
 
     //--------------------//
@@ -632,10 +643,10 @@ public class SystemPart
                     dummyStaff = new Staff(
                         null, // No staff info counterpart
                         dummyPart,
-                        new PagePoint(
+                        new PixelPoint(
                             getFirstStaff()
-                                .getPageTopLeft().x,
-                            getFirstStaff().getPageTopLeft().y -
+                                .getTopLeft().x,
+                            getFirstStaff().getTopLeft().y -
                             getScorePart().getDisplayOrdinate()),
                         getFirstStaff().getWidth(),
                         nextStaff.getHeight());
@@ -680,7 +691,7 @@ public class SystemPart
                 // Create dummy Whole rest
                 dummyMeasure.addWholeRest(
                     dummyStaff,
-                    new SystemPoint(
+                    new PixelPoint(
                         (spaceStart + measure.getBarline().getCenter().x) / 2,
                         nextStaff.getCenter().y -
                         getScorePart().getDisplayOrdinate()));
@@ -689,7 +700,7 @@ public class SystemPart
 
             ////dummyMeasure.setLeftX(measure.getLeftX());
             dummyMeasure.setBox(
-                new SystemRectangle(
+                new PixelRectangle(
                     measure.getBox().x,
                     nextPart.getBox().y,
                     measure.getBox().width,
@@ -744,7 +755,7 @@ public class SystemPart
             LyricsLine line = (LyricsLine) node;
             line.setId(lyrics.getChildren().indexOf(line) + 1);
             line.setStaff(
-                getSystem().getStaffAbove(new SystemPoint(0, line.getY())));
+                getSystem().getStaffAbove(new PixelPoint(0, line.getY())));
         }
     }
 
@@ -846,7 +857,7 @@ public class SystemPart
     protected void computeBox ()
     {
         // Use the union of staves boxes
-        SystemRectangle newBox = null;
+        PixelRectangle newBox = null;
 
         for (TreeNode node : getStaves()) {
             Staff staff = (Staff) node;

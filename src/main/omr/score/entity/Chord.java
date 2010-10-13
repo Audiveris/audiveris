@@ -18,8 +18,6 @@ import omr.log.Logger;
 import omr.score.common.DurationFactor;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
-import omr.score.common.SystemPoint;
-import omr.score.common.SystemRectangle;
 import omr.score.entity.Voice.ChordInfo;
 import omr.score.visitor.ScoreVisitor;
 
@@ -94,10 +92,10 @@ public class Chord
     private final Slot slot;
 
     /** Location for chord head (head farthest from chord tail) */
-    private SystemPoint headLocation;
+    private PixelPoint headLocation;
 
     /** Location for chord tail */
-    private SystemPoint tailLocation;
+    private PixelPoint tailLocation;
 
     /** Ordered collection of beams this chord is connected to */
     private SortedSet<Beam> beams = new TreeSet<Beam>();
@@ -283,12 +281,12 @@ public class Chord
      * @param bottom bottom of vertical range
      * @return true if all notes are within the given range
      */
-    public boolean isEmbracedBy (SystemPoint top,
-                                 SystemPoint bottom)
+    public boolean isEmbracedBy (PixelPoint top,
+                                 PixelPoint bottom)
     {
         for (TreeNode node : getNotes()) {
-            Note        note = (Note) node;
-            SystemPoint center = note.getCenter();
+            Note       note = (Note) node;
+            PixelPoint center = note.getCenter();
 
             if ((center.y >= top.y) && (center.y <= bottom.y)) {
                 return true;
@@ -371,7 +369,7 @@ public class Chord
      *
      * @return the head location
      */
-    public SystemPoint getHeadLocation ()
+    public PixelPoint getHeadLocation ()
     {
         if (headLocation == null) {
             computeLocations();
@@ -592,7 +590,7 @@ public class Chord
      *
      * @return the tail location
      */
-    public SystemPoint getTailLocation ()
+    public PixelPoint getTailLocation ()
     {
         if (tailLocation == null) {
             computeLocations();
@@ -989,7 +987,7 @@ public class Chord
                 }
             }
 
-            SystemRectangle box = chord.getBox();
+            PixelRectangle box = chord.getBox();
 
             if (polygon.intersects(box.x, box.y, box.width, box.height)) {
                 found.add(chord);
@@ -1033,7 +1031,7 @@ public class Chord
 
                 // Interested in rest notes only
                 if (note.isRest()) {
-                    SystemRectangle box = note.getBox();
+                    PixelRectangle box = note.getBox();
 
                     if (polygon.intersects(box.x, box.y, box.width, box.height)) {
                         return note;
@@ -1087,7 +1085,7 @@ public class Chord
     }
 
     @Override
-    public SystemPoint getCenter ()
+    public PixelPoint getCenter ()
     {
         return super.getCenter();
     }
@@ -1342,7 +1340,7 @@ public class Chord
     protected void computeBox ()
     {
         // Stem or similar info
-        SystemRectangle newBox = new SystemRectangle(getTailLocation());
+        PixelRectangle newBox = new PixelRectangle(getTailLocation());
         newBox.add(getHeadLocation());
 
         // Each and every note
@@ -1441,14 +1439,14 @@ public class Chord
      * @param note the head note
      * @return the head location
      */
-    private SystemPoint getHeadLocation (Note note)
+    private PixelPoint getHeadLocation (Note note)
     {
         Staff staff = note.getStaff();
 
-        return new SystemPoint(
+        return new PixelPoint(
             tailLocation.x,
-            staff.getPageTopLeft().y - note.getSystem().getTopLeft().y +
-            Staff.pitchToUnit(Math.rint(note.getPitchPosition())));
+            staff.getTopLeft().y +
+            staff.pitchToPixels(note.getPitchPosition()));
     }
 
     //-----------//
@@ -1523,15 +1521,13 @@ public class Chord
      */
     private void computeLocations ()
     {
-        ScoreSystem system = getSystem();
-
         // Find the note farthest from stem middle point
         if (!getNotes()
                  .isEmpty()) {
             if (stem != null) {
-                SystemPoint middle = system.toSystemPoint(stem.getLocation());
-                Note        bestNote = null;
-                int         bestDy = Integer.MIN_VALUE;
+                PixelPoint middle = stem.getLocation();
+                Note       bestNote = null;
+                int        bestDy = Integer.MIN_VALUE;
 
                 for (TreeNode node : getNotes()) {
                     Note note = (Note) node;
@@ -1548,16 +1544,14 @@ public class Chord
 
                 if (middle.y < bestNote.getCenter().y) {
                     // Stem is up
-                    tailLocation = system.toSystemPoint(
-                        new PixelPoint(
-                            stemBox.x + (stemBox.width / 2),
-                            stemBox.y));
+                    tailLocation = new PixelPoint(
+                        stemBox.x + (stemBox.width / 2),
+                        stemBox.y);
                 } else {
                     // Stem is down
-                    tailLocation = system.toSystemPoint(
-                        new PixelPoint(
-                            stemBox.x + (stemBox.width / 2),
-                            (stemBox.y + stemBox.height)));
+                    tailLocation = new PixelPoint(
+                        stemBox.x + (stemBox.width / 2),
+                        (stemBox.y + stemBox.height));
                 }
 
                 headLocation = getHeadLocation(bestNote);

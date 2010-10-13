@@ -13,9 +13,8 @@ package omr.score.entity;
 
 import omr.glyph.facets.Glyph;
 
+import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
-import omr.score.common.SystemPoint;
-import omr.score.common.SystemRectangle;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.util.Navigable;
@@ -41,10 +40,10 @@ public abstract class SystemNode
     private final ScoreSystem system;
 
     /** Bounding box of this entity, WRT system top-left corner */
-    private SystemRectangle box;
+    private PixelRectangle box;
 
     /** Location of the center of this entity, WRT system top-left corner */
-    protected SystemPoint center;
+    protected PixelPoint center;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -78,38 +77,37 @@ public abstract class SystemNode
     // getBox //
     //--------//
     /**
-     * Report a copy of the bounding box of the entity, WRT system top-left
-     * corner
+     * Report a copy of the bounding box of the entity
      * @return the box
      */
-    public SystemRectangle getBox ()
+    public PixelRectangle getBox ()
     {
         if (box == null) {
             computeBox();
         }
 
         if (box != null) {
-            return (SystemRectangle) box.clone();
+            return (PixelRectangle) box.clone();
         } else {
             return null;
         }
     }
 
-    //-------------//
-    // getLocation //
-    //-------------//
+    //-----------//
+    // getCenter //
+    //-----------//
     /**
      * Report a copy of the center of this entity, WRT system top-left corner.
      * @return the center, in units, wrt system top-left
      */
-    public SystemPoint getCenter ()
+    public PixelPoint getCenter ()
     {
         if (center == null) {
             computeCenter();
         }
 
         if (center != null) {
-            return (SystemPoint) center.clone();
+            return (PixelPoint) center.clone();
         } else {
             return null;
         }
@@ -188,7 +186,7 @@ public abstract class SystemNode
      * @param glyph the glyph
      * @return the glyph center
      */
-    public SystemPoint computeGlyphCenter (Glyph glyph)
+    public PixelPoint computeGlyphCenter (Glyph glyph)
     {
         return computeGlyphsCenter(Collections.singleton(glyph));
     }
@@ -200,7 +198,7 @@ public abstract class SystemNode
      * Assign the bounding box
      * @param box the bounding box
      */
-    protected void setBox (SystemRectangle box)
+    protected void setBox (PixelRectangle box)
     {
         this.box = box;
     }
@@ -212,7 +210,7 @@ public abstract class SystemNode
      * Remember the center of this system node
      * @param center the system-based center of the system node
      */
-    protected void setCenter (SystemPoint center)
+    protected void setCenter (PixelPoint center)
     {
         this.center = center;
     }
@@ -239,7 +237,7 @@ public abstract class SystemNode
      */
     protected void computeCenter ()
     {
-        SystemRectangle theBox = getBox();
+        PixelRectangle theBox = getBox();
 
         if (theBox != null) {
             setCenter(theBox.getCenter());
@@ -256,7 +254,7 @@ public abstract class SystemNode
      * @param glyphs the collection of glyph components
      * @return the bounding box
      */
-    protected SystemRectangle computeGlyphsBox (Collection<?extends Glyph> glyphs)
+    protected PixelRectangle computeGlyphsBox (Collection<?extends Glyph> glyphs)
     {
         if ((glyphs == null) || (getSystem() == null)) {
             return null;
@@ -272,8 +270,7 @@ public abstract class SystemNode
             }
         }
 
-        return (pixRect == null) ? null : getSystem()
-                                              .toSystemRectangle(pixRect);
+        return pixRect;
     }
 
     //---------------------//
@@ -284,11 +281,11 @@ public abstract class SystemNode
      * @param glyphs the collection of glyph components
      * @return the area center
      */
-    protected SystemPoint computeGlyphsCenter (Collection<?extends Glyph> glyphs)
+    protected PixelPoint computeGlyphsCenter (Collection<?extends Glyph> glyphs)
     {
-        SystemRectangle glyphsBox = computeGlyphsBox(glyphs);
+        PixelRectangle glyphsBox = computeGlyphsBox(glyphs);
 
-        return new SystemPoint(
+        return new PixelPoint(
             glyphsBox.x + (glyphsBox.width / 2),
             glyphsBox.y + (glyphsBox.height / 2));
     }

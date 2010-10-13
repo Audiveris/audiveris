@@ -16,7 +16,7 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
-import omr.score.common.SystemPoint;
+import omr.score.common.PixelPoint;
 
 import omr.util.Navigable;
 import omr.util.TreeNode;
@@ -436,8 +436,8 @@ public class BeamGroup
                                    .getSlope();
 
             for (Beam beam : beams) {
-                SystemPoint left = beam.getLeftPoint();
-                SystemPoint right = beam.getRightPoint();
+                PixelPoint left = beam.getLeftPoint();
+                PixelPoint right = beam.getRightPoint();
                 double      yMid = (left.y + right.y) / 2d;
                 double      dy = (right.x - left.x) * slope;
                 left.y = (int) Math.rint(yMid - (dy / 2));

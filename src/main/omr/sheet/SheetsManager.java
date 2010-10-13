@@ -267,7 +267,7 @@ public class SheetsManager
 
         /** Default directory for selection of sheet image files */
         Constant.String defaultSheetDirectory = new Constant.String(
-            "",
+            System.getProperty("user.home"),
             "Default directory for selection of sheet image files");
     }
 }

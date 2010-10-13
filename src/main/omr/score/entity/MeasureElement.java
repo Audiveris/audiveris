@@ -19,7 +19,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
-import omr.score.common.SystemPoint;
+import omr.score.common.PixelPoint;
 
 import omr.sheet.Scale;
 
@@ -68,7 +68,7 @@ public abstract class MeasureElement
      */
     public MeasureElement (Measure     measure,
                            boolean     start,
-                           SystemPoint referencePoint,
+                           PixelPoint referencePoint,
                            Chord       chord,
                            Glyph       glyph)
     {
@@ -196,14 +196,14 @@ public abstract class MeasureElement
     // findChord //
     //-----------//
     protected static Chord findChord (Measure     measure,
-                                      SystemPoint point)
+                                      PixelPoint point)
     {
         // Shift on abscissa (because of left side of note heads)
         int dx = measure.getSystem()
                         .getScale()
-                        .toUnits(constants.slotShift);
+                        .toPixels(constants.slotShift);
 
-        return measure.getEventChord(new SystemPoint(point.x + dx, point.y));
+        return measure.getEventChord(new PixelPoint(point.x + dx, point.y));
     }
 
     //-----------------//

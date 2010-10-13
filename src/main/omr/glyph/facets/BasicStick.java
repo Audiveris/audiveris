@@ -222,7 +222,7 @@ public class BasicStick
         return alignment.overlapsWith(other);
     }
 
-    public void renderLine (Graphics g)
+    public void renderLine (Graphics2D g)
     {
         alignment.renderLine(g);
     }

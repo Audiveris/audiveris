@@ -26,7 +26,6 @@ import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
-import omr.score.common.SystemPoint;
 import omr.score.entity.Beam;
 import omr.score.entity.BeamGroup;
 import omr.score.entity.Chord;
@@ -98,7 +97,7 @@ public class ScoreChecker
     //--------------//
     /**
      * Creates a new ScoreChecker object.
-     * @param modified This is actually an out parameter, to tell if one or 
+     * @param modified This is actually an out parameter, to tell if one or
      * several entities have been modified by the score visit
      */
     public ScoreChecker (WrappedBoolean modified)
@@ -458,8 +457,7 @@ public class ScoreChecker
         }
 
         PixelPoint     pixPoint = stem.getAreaCenter();
-        SystemPoint    stemCenter = chord.getSystem()
-                                         .toSystemPoint(pixPoint);
+        PixelPoint     stemCenter = pixPoint;
 
         // Look on left and right sides
         List<TreeNode> allNotes = new ArrayList<TreeNode>(chord.getNotes());
@@ -469,8 +467,8 @@ public class ScoreChecker
         List<Note> rights = new ArrayList<Note>();
 
         for (TreeNode nNode : allNotes) {
-            Note        note = (Note) nNode;
-            SystemPoint center = note.getCenter();
+            Note       note = (Note) nNode;
+            PixelPoint center = note.getCenter();
 
             if (center.x < stemCenter.x) {
                 lefts.add(note);
@@ -707,7 +705,7 @@ public class ScoreChecker
     {
         // Up(+1) or down(-1) stem?
         final int          stemDir = chord.getStemDir();
-        final SystemPoint  chordCenter = chord.getCenter();
+        final PixelPoint   chordCenter = chord.getCenter();
         final ScoreSystem  system = chord.getSystem();
         final double       hookMaxDoubt = GlyphInspector.getHookMaxDoubt();
         final GlyphNetwork network = GlyphNetwork.getInstance();
@@ -723,8 +721,7 @@ public class ScoreChecker
 
             // Check we are on the tail (beam) end of the stem
             // Beware, stemDir is >0 upwards, while y is >0 downwards
-            SystemPoint glyphCenter = system.toSystemPoint(
-                glyph.getAreaCenter());
+            PixelPoint glyphCenter = glyph.getAreaCenter();
 
             if ((chordCenter.to(glyphCenter).y * stemDir) > 0) {
                 if (logger.isFineEnabled()) {

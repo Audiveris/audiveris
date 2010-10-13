@@ -54,7 +54,6 @@ import omr.util.Implement;
 import omr.util.WeakPropertyChangeListener;
 
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -507,7 +506,7 @@ public class StavesFuzzyBuilder
         // renderItems //
         //-------------//
         @Override
-        protected void renderItems (Graphics g)
+        protected void renderItems (Graphics2D g)
         {
             // Draw the line info, lineset by lineset
             g.setColor(Color.yellow);

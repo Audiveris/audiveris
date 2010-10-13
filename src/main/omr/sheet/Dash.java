@@ -21,7 +21,6 @@ import omr.ui.util.UIUtilities;
 
 import java.awt.*;
 import java.util.*;
-import java.util.List;
 
 /**
  * Class <code>Dash</code> is used to handle a horizontal segment, which can
@@ -169,7 +168,7 @@ public abstract class Dash
     public void render (Graphics g)
     {
         if (box.intersects(g.getClipBounds())) {
-            Stroke oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
+            ///Stroke oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
 
             line = getLine();
 
@@ -181,7 +180,7 @@ public abstract class Dash
                 (int) Math.rint(line.yAt((double) box.x + box.width + 1)));
 
             g.drawLine(start.x, start.y, stop.x, stop.y);
-            ((Graphics2D) g).setStroke(oldStroke);
+            ///((Graphics2D) g).setStroke(oldStroke);
         }
     }
 

@@ -14,8 +14,8 @@ package omr.score.common;
 
 /**
  * Class <code>PixelPoint</code> is a simple Point that is meant to represent a
- * point in a deskewed page, with its coordinates specified in pixels, so the
- * name.
+ * point in a (deskewed) sheet, with its coordinates specified in pixels and the
+ * origin being the top left corner of the sheet.
  *
  * <p> This specialization is used to take benefit of compiler checks, to
  * prevent the use of points with incorrect meaning or units. </p>

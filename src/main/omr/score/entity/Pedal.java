@@ -14,7 +14,7 @@ package omr.score.entity;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.score.common.SystemPoint;
+import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
 
 /**
@@ -39,7 +39,7 @@ public class Pedal
      * @param glyph the underlying glyph
      */
     public Pedal (Measure     measure,
-                  SystemPoint point,
+                  PixelPoint point,
                   Chord       chord,
                   Glyph       glyph)
     {
@@ -74,7 +74,7 @@ public class Pedal
      */
     public static void populate (Glyph       glyph,
                                  Measure     measure,
-                                 SystemPoint point)
+                                 PixelPoint point)
     {
         glyph.setTranslation(
             new Pedal(measure, point, findChord(measure, point), glyph));

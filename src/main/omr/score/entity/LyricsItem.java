@@ -19,8 +19,8 @@ import omr.glyph.text.TextInfo;
 
 import omr.log.Logger;
 
-import omr.score.common.SystemPoint;
-import omr.score.common.SystemRectangle;
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
@@ -106,7 +106,7 @@ public class LyricsItem
      */
     private String content;
 
-    /** Width (in units) of the item */
+    /** Width of the item */
     private final int width;
 
     /** The glyph which contributed to the creation of this lyrics item */
@@ -129,11 +129,11 @@ public class LyricsItem
      * @param width The width (in units) of the related item
      * @param content The underlying text for this lyrics item
      */
-    public LyricsItem (Sentence    sentence,
-                       SystemPoint location,
-                       Glyph       seed,
-                       int         width,
-                       String      content)
+    public LyricsItem (Sentence   sentence,
+                       PixelPoint location,
+                       Glyph      seed,
+                       int        width,
+                       String     content)
     {
         super(sentence, location);
         this.seed = seed;
@@ -152,6 +152,15 @@ public class LyricsItem
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //--------//
+    // getBox //
+    //--------//
+    @Override
+    public PixelRectangle getBox ()
+    {
+        return seed.getContourBox();
+    }
 
     //------------//
     // getContent //
@@ -204,6 +213,15 @@ public class LyricsItem
     public SyllabicType getSyllabicType ()
     {
         return syllabicType;
+    }
+
+    //----------//
+    // getWidth //
+    //----------//
+    @Override
+    public int getWidth ()
+    {
+        return width;
     }
 
     //--------//
@@ -265,7 +283,7 @@ public class LyricsItem
 
         SystemPart part = lyricsLine.getPart();
         int        maxDx = part.getScale()
-                               .toUnits(constants.maxItemDx);
+                               .toPixels(constants.maxItemDx);
 
         for (TreeNode mNode : part.getMeasures()) {
             Measure measure = (Measure) mNode;
@@ -318,11 +336,10 @@ public class LyricsItem
     @Override
     protected void computeReferencePoint ()
     {
-        SystemRectangle itemBox = getSystem()
-                                      .toSystemRectangle(seed.getContourBox());
+        PixelRectangle itemBox = seed.getContourBox();
         setReferencePoint(
-            new SystemPoint(itemBox.x, getSentence()
-                                           .getLocation().y));
+            new PixelPoint(itemBox.x, getSentence()
+                                          .getLocation().y));
     }
 
     //-----------------//

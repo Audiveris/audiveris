@@ -22,6 +22,8 @@ import omr.lag.Section;
 
 import omr.log.Logger;
 
+import omr.math.Histogram;
+
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
@@ -165,6 +167,29 @@ public class GlyphLag
     public Glyph getGlyph (Integer id)
     {
         return allGlyphs.get(id);
+    }
+
+    //--------------//
+    // getHistogram //
+    //--------------//
+    /**
+     * Get the histogram for a glyph in this area, in the specified orientation
+     * @param orientation specific orientation desired for the histogram
+     * @param glyphs the provided collection of glyphs
+     * @return the histogram of projected pixels
+     */
+    public Histogram<Integer> getHistogram (Oriented          orientation,
+                                            Collection<Glyph> glyphs)
+    {
+        Histogram<Integer> histo = new Histogram<Integer>();
+
+        if (!glyphs.isEmpty()) {
+            PixelRectangle box = Glyphs.getContourBox(glyphs);
+            Roi            roi = createAbsoluteRoi(box);
+            histo = roi.getHistogram(orientation, Glyphs.sectionsOf(glyphs));
+        }
+
+        return histo;
     }
 
     //-------------//

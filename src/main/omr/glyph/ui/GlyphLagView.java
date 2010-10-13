@@ -412,7 +412,7 @@ public class GlyphLagView
      * @param g the graphic context
      */
     @Override
-    protected void renderItems (Graphics g)
+    protected void renderItems (Graphics2D g)
     {
         // Only in Glyph selection mode (?)
         // TODO: Do we want to combine display of selected glyphs & selected sections???
@@ -486,15 +486,17 @@ public class GlyphLagView
             }
         }
 
-        ((Graphics2D) g).setStroke(oldStroke);
+        g.setStroke(oldStroke);
 
         // Glyph areas second, using XOR mode for the area
-        g.setColor(Color.black);
-        g.setXORMode(Color.darkGray);
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setColor(Color.black);
+        g2.setXORMode(Color.darkGray);
 
         for (Glyph glyph : glyphs) {
-            renderGlyphArea(glyph, g);
+            renderGlyphArea(glyph, g2);
         }
+        g2.dispose();
     }
 
     //------------//
@@ -504,14 +506,13 @@ public class GlyphLagView
      * Draw the approximating circle of a slur
      */
     private void drawCircle (Circle   circle,
-                             Graphics g)
+                             Graphics2D g)
     {
         CubicCurve2D.Double curve = circle.getCurve();
-        Graphics2D          g2 = (Graphics2D) g;
 
         if (curve != null) {
             // Draw the bezier arc
-            g2.draw(curve);
+            g.draw(curve);
         } else {
             // Draw the full circle
             int radius = (int) Math.rint(circle.getRadius());
@@ -530,7 +531,7 @@ public class GlyphLagView
      * Draw the mean line of a stick
      */
     private void drawStickLine (Stick    stick,
-                                Graphics g)
+                                Graphics2D g)
     {
         try {
             Line           line = stick.getLine();

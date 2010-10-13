@@ -13,7 +13,6 @@ package omr.ui.symbol;
 
 import omr.log.Logger;
 
-import omr.score.ui.ScoreConstants;
 
 import omr.util.Implement;
 import omr.util.PointFacade;
@@ -41,9 +40,9 @@ import javax.xml.bind.annotation.*;
  * sheet views.
  * The {@code ShapeSymbol} provides {@link #getDimension()}, as well as
  * {@link #getWidth()} and {@link #getHeight()} methods that report the
- * <b>normalized</> size of the symbol for an interline value of {@link
- * ScoreConstants#INTER_LINE}, even if the size of the underlying image is
- * different. This allows better symbol definitions.</li>
+ * <b>normalized</> size of the symbol for a standard interline value, even if
+ * the size of the underlying image is different. This allows better symbol
+ * definitions.</li>
  *
  * <li>It may also be used to <b>train</> the glyph evaluator when we don't
  * have enough "real" glyphs available.</li>
@@ -472,15 +471,15 @@ public class ShapeSymbol
      * Draw this symbol image on the provided graphics environment (which may
      * be scaled) using the topLeft point. We of course use the most suitable
      * image that we have. The image is rendered with {@link
-     * omr.score.ui.ScoreConstants#INTER_LINE} normalized size.
+       ppppp     * omr.score.ui.ScoreConstants#INTER_LINE} normalized size.
      * @param g the graphics context
      * @param topLeft the upper left corner of the image, using the coordinate
-     * references of the display (PixelPoint for sheet, SystemPoint for score)
+     * references of the display (PixelPoint for sheet, PixelPoint for score)
      */
     public void draw (Graphics g,
                       Point    topLeft)
     {
-        draw(g, topLeft, ScoreConstants.INTER_LINE);
+        draw(g, topLeft, interline);
     }
 
     //------//
@@ -492,7 +491,7 @@ public class ShapeSymbol
      * image that we have.
      * @param g the graphics context
      * @param topLeft the upper left corner of the image, using the coordinate
-     * references of the display (PixelPoint for sheet, SystemPoint for score)
+     * references of the display (PixelPoint for sheet, PixelPoint for score)
      * @param contextInterline the scale of the target context
      */
     public void draw (Graphics g,
@@ -512,7 +511,7 @@ public class ShapeSymbol
      * image that we have.
      * @param g the graphics context
      * @param topLeft the upper left corner of the image, using the coordinate
-     * references of the display (PixelPoint for sheet, SystemPoint for score)
+     * references of the display (PixelPoint for sheet, PixelPoint for score)
      * @param xRatio the scaling ratio in abscissa
      * @param yRatio the scaling ratio in ordinate
      */
@@ -657,15 +656,14 @@ public class ShapeSymbol
     //-------------//
     private void computeData ()
     {
-        double ratio = (double) interline / ScoreConstants.INTER_LINE;
-        iconImage = getScaledImage(iconRatio / ratio, iconRatio / ratio);
+        iconImage = getScaledImage(iconRatio, iconRatio);
         dimension = new Dimension(
-            (int) Math.rint(image.getWidth() / ratio),
-            (int) Math.rint(image.getHeight() / ratio));
+            (int) Math.rint(image.getWidth()),
+            (int) Math.rint(image.getHeight()));
 
         if (refPoint != null) {
-            refPoint.x = (int) Math.rint(refPoint.x / ratio);
-            refPoint.y = (int) Math.rint(refPoint.y / ratio);
+            refPoint.x = (int) Math.rint(refPoint.x);
+            refPoint.y = (int) Math.rint(refPoint.y);
         }
     }
 

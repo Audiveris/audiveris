@@ -36,7 +36,6 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Iterator;
-import java.util.logging.Level;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;

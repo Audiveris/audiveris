@@ -18,8 +18,8 @@ import omr.glyph.facets.Stick;
 
 import omr.log.Logger;
 
-import omr.score.common.PagePoint;
-import omr.score.common.SystemRectangle;
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.util.Predicate;
@@ -85,23 +85,21 @@ public class Barline
     /**
      * Report the abscissa of the left side of the bar line
      *
-     * @return abscissa (in units wrt system top left) of the left side
+     * @return abscissa of the left side
      */
     public int getLeftX ()
     {
-        PagePoint topLeft = getSystem()
-                                .getTopLeft();
+        PixelPoint topLeft = getSystem()
+                                 .getTopLeft();
 
         for (Glyph glyph : getGlyphs()) {
             if (linePredicate.check(glyph)) {
                 // Beware : Vertical sticks using Horizontal line equation
                 Stick stick = (Stick) glyph;
                 int   x = stick.getLine()
-                               .yAt(getScale()
-                                        .toPixelPoint(topLeft).y);
+                               .yAt(topLeft.y);
 
-                return getScale()
-                           .pixelsToUnits(x) - topLeft.x;
+                return x;
             }
         }
 
@@ -117,21 +115,20 @@ public class Barline
     /**
      * Report the abscissa of the right side of the bar line
      *
-     * @return abscissa (in units wrt staff top left) of the right side
+     * @return abscissa of the right side
      */
     public int getRightX ()
     {
-        int       right = 0;
-        PagePoint topLeft = getSystem()
-                                .getTopLeft();
+        int        right = 0;
+        PixelPoint topLeft = getSystem()
+                                 .getTopLeft();
 
         for (Glyph glyph : getGlyphs()) {
             if (glyph.isBar()) {
                 // Beware : Vertical sticks using Horizontal line equation
                 Stick stick = (Stick) glyph;
                 int   x = stick.getLine()
-                               .yAt(getScale()
-                                        .toPixelPoint(topLeft).y);
+                               .yAt(topLeft.y);
 
                 if (x > right) {
                     right = x;
@@ -139,8 +136,7 @@ public class Barline
             }
         }
 
-        return getScale()
-                   .pixelsToUnits(right) - topLeft.x;
+        return right;
     }
 
     //----------//
@@ -198,7 +194,7 @@ public class Barline
     public boolean joinsAllStaves (Collection<Staff> staves)
     {
         // We check that the barline box intersects each staff box
-        SystemRectangle barBox = getBox();
+        PixelRectangle barBox = getBox();
 
         for (Staff staff : staves) {
             if (!barBox.intersects(staff.getBox())) {
@@ -228,11 +224,36 @@ public class Barline
     // render //
     //--------//
     /**
-     * Render the bar contour
+     * Render the bar contour, with proper strokes according to the thickness of
+     * each barline component
      *
      * @param g the graphics context
      */
-    public void render (Graphics g)
+    public void render (Graphics2D g)
+    {
+        Stroke oldStroke = g.getStroke();
+
+        for (Glyph glyph : getGlyphs()) {
+            if (glyph.isBar()) {
+                Stick stick = (Stick) glyph;
+                float thickness = (float) stick.getWeight() / stick.getLength();
+                g.setStroke(new BasicStroke(thickness));
+                stick.renderLine(g);
+            }
+        }
+
+        g.setStroke(oldStroke);
+    }
+
+    //------------//
+    // renderLine //
+    //------------//
+    /**
+     * Render the axis of each component of the bar
+     *
+     * @param g the graphics context
+     */
+    public void renderLine (Graphics2D g)
     {
         for (Glyph glyph : getGlyphs()) {
             if (glyph.isBar()) {
@@ -369,8 +390,7 @@ public class Barline
             final StringBuilder sb = new StringBuilder();
             final Staff         staffRef = measure.getPart()
                                                   .getFirstStaff();
-            final int           topStaff = staffRef.getPageTopLeft().y -
-                                           system.getTopLeft().y;
+            final int           topStaff = staffRef.getTopLeft().y ;
             final int           botStaff = topStaff + staffRef.getHeight();
             String              last = null; // Last stick
 
@@ -380,16 +400,14 @@ public class Barline
                 if (chars != null) {
                     if (chars.equals("O")) {
                         // DOT
-                        Staff staff = system.getStaffAt(
-                            system.toSystemPoint(glyph.getLocation()));
+                        Staff staff = system.getStaffAt(glyph.getLocation());
 
                         if (staff != staffRef) {
                             continue;
                         }
                     } else {
                         // BAR : Check overlap with staff reference
-                        SystemRectangle box = system.toSystemRectangle(
-                            glyph.getContourBox());
+                        PixelRectangle box = glyph.getContourBox();
 
                         if (Math.max(box.y, topStaff) > Math.min(
                             box.y + box.height,

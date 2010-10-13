@@ -26,7 +26,6 @@ import omr.glyph.ui.GlyphsController;
 import omr.lag.HorizontalOrientation;
 import omr.lag.JunctionDeltaPolicy;
 import omr.lag.Run;
-import omr.lag.Sections;
 import omr.lag.SectionsBuilder;
 import omr.lag.ui.RunBoard;
 import omr.lag.ui.ScrollLagView;
@@ -306,7 +305,6 @@ public class LinesBuilder
 
         // Browse StaffInfos
         for (StaffInfo staff : staves) {
-
             // Browse LineInfos
             for (LineInfo line : staff.getLines()) {
                 specifics.addAll(line.getSections());
@@ -749,7 +747,7 @@ public class LinesBuilder
         // renderItems //
         //-------------//
         @Override
-        protected void renderItems (Graphics g)
+        protected void renderItems (Graphics2D g)
         {
             // Draw the line info, lineset by lineset
             g.setColor(Color.black);

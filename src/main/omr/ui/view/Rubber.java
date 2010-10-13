@@ -515,9 +515,9 @@ public class Rubber
             rect = null;
         }
 
-        if (component != null) {
-            component.repaint();
-        }
+//        if (component != null) {
+//            component.repaint();
+//        }
     }
 
     //----------//

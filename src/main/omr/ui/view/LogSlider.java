@@ -83,14 +83,14 @@ public class LogSlider
         // Cache data
         this.base = (double) base;
 
-        // Ticks
-        super.setMajorTickSpacing(unit);
-
-        if (minors > 1) {
-            super.setMinorTickSpacing(unit / minors);
-        }
-
-        setPaintTicks(true);
+        //        // Ticks
+        //        super.setMajorTickSpacing(unit);
+        //
+        //        if (minors > 1) {
+        //            super.setMinorTickSpacing(unit / minors);
+        //        }
+        //
+        //        setPaintTicks(true);
 
         // More room given to labels
         //         switch (orientation) {
@@ -99,19 +99,19 @@ public class LogSlider
         //         case VERTICAL   : setBorder (BorderFactory.createEmptyBorder(0,0,0,5));
         //         }
 
-        // Create and populate the label table
-        Hashtable<Integer, JLabel> labelTable = new Hashtable<Integer, JLabel>();
-
-        for (int i = min; i <= max; i++) {
-            labelTable.put(
-                Integer.valueOf(i * unit),
-                new JLabel(
-                    (i < 0) ? ("1/" + (int) expOf(-i * unit))
-                                        : ("" + (int) expOf(i * unit))));
-        }
-
-        setLabelTable(labelTable);
-        setPaintLabels(true);
+        //        // Create and populate the label table
+        //        Hashtable<Integer, JLabel> labelTable = new Hashtable<Integer, JLabel>();
+        //
+        //        for (int i = min; i <= max; i++) {
+        //            labelTable.put(
+        //                Integer.valueOf(i * unit),
+        //                new JLabel(
+        //                    (i < 0) ? ("1/" + (int) expOf(-i * unit))
+        //                                        : ("" + (int) expOf(i * unit))));
+        //        }
+        //
+        //        setLabelTable(labelTable);
+        //        setPaintLabels(true);
 
         // Force the knob to align on predefined ticks
         setSnapToTicks(true);

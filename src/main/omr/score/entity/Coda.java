@@ -13,7 +13,7 @@ package omr.score.entity;
 
 import omr.glyph.facets.Glyph;
 
-import omr.score.common.SystemPoint;
+import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
 
 /**
@@ -38,7 +38,7 @@ public class Coda
      * @param glyph the underlying glyph
      */
     public Coda (Measure     measure,
-                 SystemPoint point,
+                 PixelPoint point,
                  Chord       chord,
                  Glyph       glyph)
     {
@@ -68,7 +68,7 @@ public class Coda
      */
     public static void populate (Glyph       glyph,
                                  Measure     measure,
-                                 SystemPoint point)
+                                 PixelPoint point)
     {
         Slot slot = measure.getClosestSlot(point);
         glyph.setTranslation(

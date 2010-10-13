@@ -859,11 +859,12 @@ public class SystemsBuilder
         // renderItems //
         //-------------//
         @Override
-        public void renderItems (Graphics g)
+        public void renderItems (Graphics2D g)
         {
             // Render all physical info known so far, which is just the staff
             // line info, lineset by lineset
-            sheet.accept(new SheetPainter(g, true));
+            sheet.getScore()
+                 .accept(new SheetPainter(g, true));
 
             super.renderItems(g);
         }

@@ -13,13 +13,13 @@ package omr.score;
 
 import omr.log.Logger;
 
-import omr.score.common.PagePoint;
-import omr.score.common.PageRectangle;
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelPoint;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
+import omr.score.common.PixelRectangle;
+import omr.score.common.PixelRectangle;
 import omr.score.common.ScoreLocation;
-import omr.score.common.SystemPoint;
-import omr.score.common.SystemRectangle;
 import omr.score.entity.ScoreSystem;
 
 import omr.selection.LocationEvent;
@@ -133,22 +133,19 @@ public class ScoreSheetBridge
 
                     if (sheetLocation.rectangle != null) {
                         // Which system ?
-                        PagePoint   pagPt = sheet.getScale()
-                                                 .toPagePoint(
-                            new PixelPoint(
-                                sheetLocation.rectangle.x +
-                                (sheetLocation.rectangle.width / 2),
-                                sheetLocation.rectangle.y +
-                                (sheetLocation.rectangle.height / 2)));
+                        PixelPoint  pagPt = new PixelPoint(
+                            sheetLocation.rectangle.x +
+                            (sheetLocation.rectangle.width / 2),
+                            sheetLocation.rectangle.y +
+                            (sheetLocation.rectangle.height / 2));
                         ScoreSystem system = score.pageLocateSystem(pagPt);
 
                         // Convert to the point at the center of the rectangle
-                        SystemPoint sysPt = system.toSystemPoint(pagPt);
                         scoreLocation = new ScoreLocation(
                             system.getId(),
-                            new SystemRectangle(sysPt.x, sysPt.y, 0, 0));
+                            new PixelRectangle(pagPt.x, pagPt.y, 0, 0));
 
-                        ///system.toSystemRectangle(sheetLocation.rectangle));
+                        ///system.toPixelRectangle(sheetLocation.rectangle));
                     }
 
                     eventService.publish(
@@ -163,18 +160,12 @@ public class ScoreSheetBridge
                     ScoreLocation      scoreLocation = scoreLocationEvent.location;
 
                     if (scoreLocation != null) {
-                        PixelRectangle pixRect = null;
-
-                        if (scoreLocation.rectangle != null) {
-                            ScoreSystem   system = score.getSystemById(
-                                scoreLocation.systemId);
-                            PageRectangle pagRect = system.toPageRectangle(
-                                scoreLocation.rectangle);
-                            pixRect = system.getScale()
-                                            .toPixels(
-                                pagRect,
-                                new PixelRectangle());
-                        }
+                        // Very simplistic for the time being
+                        PixelRectangle pixRect = new PixelRectangle(
+                            scoreLocation.rectangle.x,
+                            scoreLocation.rectangle.y,
+                            scoreLocation.rectangle.width,
+                            scoreLocation.rectangle.height);
 
                         eventService.publish(
                             new SheetLocationEvent(

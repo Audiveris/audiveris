@@ -335,7 +335,7 @@ public class RubberPanel
                     new Runnable() {
                             public void run ()
                             {
-                                showFocusLocation(rect);
+                                showFocusLocation(rect, false);
                             }
                         });
             }
@@ -396,7 +396,7 @@ public class RubberPanel
         if (rect != null) {
             // First focus on center of the specified rectangle
             setFocusLocation(rect, movement, LOCATION_INIT);
-            showFocusLocation(rect);
+            showFocusLocation(rect, true);
 
             // Then, adjust zoom ratio to fit the rectangle size
             SwingUtilities.invokeLater(
@@ -422,14 +422,11 @@ public class RubberPanel
      * super implementation or the display will not be updated by default.
      *
      * @param rect the location information
+     * @param centered true to center the display on rect center
      */
-    public void showFocusLocation (final Rectangle rect)
+    public void showFocusLocation (final Rectangle rect,
+                                   final boolean   centered)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                getClass().getName() + " showFocusLocation rect=" + rect);
-        }
-
         // Modify the rubber accordingly
         if (rubber != null) {
             rubber.resetRectangle(rect);
@@ -437,23 +434,34 @@ public class RubberPanel
 
         updatePreferredSize();
 
+        Rectangle vr = getVisibleRect();
+
         if (rect != null) {
             // Check whether the rectangle is fully visible,
             // if not, scroll so as to make (most of) it visible
             Rectangle scaledRect = zoom.scaled(rect);
-            int       margin = constants.focusMargin.getValue();
+            Point     center = new Point(
+                scaledRect.x + (scaledRect.width / 2),
+                scaledRect.y + (scaledRect.height / 2));
 
-            // Workaround
-            if (margin == 0) {
-                scaledRect.grow(1, 1);
+            if (centered) {
+                scaledRect = new Rectangle(
+                    center.x - (vr.width / 2),
+                    center.y - (vr.height / 2),
+                    vr.width,
+                    vr.height);
             } else {
-                scaledRect.grow(margin, margin);
+                int margin = constants.focusMargin.getValue();
+
+                // Workaround
+                if (margin == 0) {
+                    scaledRect.grow(1, 1);
+                } else {
+                    scaledRect.grow(margin, margin);
+                }
             }
 
-            if (!getVisibleRect()
-                     .contains(scaledRect)) {
-                scrollRectToVisible(scaledRect);
-            }
+            scrollRectToVisible(scaledRect);
         }
 
         repaint();
@@ -471,7 +479,7 @@ public class RubberPanel
     public void stateChanged (ChangeEvent e)
     {
         // Force a redisplay
-        showFocusLocation(getSelectedRectangle());
+        showFocusLocation(getSelectedRectangle(), true);
     }
 
     //-----------//
@@ -636,7 +644,7 @@ public class RubberPanel
      *
      * @param g the graphic context
      */
-    protected void render (Graphics g)
+    protected void render (Graphics2D g)
     {
         // Empty by default
     }

@@ -253,14 +253,16 @@ public class Main
                             throws Exception
                         {
                             logger.info(
-                                "Launching " + parameters.targetStep + " on " +
+                                "Launching " + parameters.targetSteps + " on " +
                                 name);
 
                             if (file.exists()) {
                                 final Sheet sheet = new Sheet(file);
 
                                 try {
-                                    parameters.targetStep.performUntil(sheet);
+                                    sheet.performSteps(parameters.targetSteps);
+
+                                    ///parameters.targetStep.performUntil(sheet);
                                 } catch (ProcessingCancellationException pce) {
                                     logger.warning("Cancelled " + sheet, pce);
                                     sheet.getBench()
@@ -275,31 +277,32 @@ public class Main
                                 }
 
                                 return null;
+
+                                //                            } else {
+                                //                                // Try a URL
+                                //                                URL url = null;
+                                //
+                                //                                try {
+                                //                                    url = new URL(name);
+                                //                                    logger.info("Trying URL " + name);
+                                //
+                                //                                    final Sheet sheet = new Sheet(url);
+                                //                                    parameters.targetStep.performUntil(sheet);
+                                //
+                                //                                    // Close when in batch mode
+                                //                                    if (gui == null) {
+                                //                                        sheet.close();
+                                //                                    }
+                                //
+                                //                                    return null;
+                                //                                } catch (MalformedURLException ex) {
+                                //                                    logger.warning("Malformed URL");
+                                //                                } catch (Exception ex) {
+                                //                                    logger.warning("Exception occurred", ex);
+                                //                                }
                             } else {
-                                // Try a URL
-                                URL url = null;
-
-                                try {
-                                    url = new URL(name);
-                                    logger.info("Trying URL " + name);
-
-                                    final Sheet sheet = new Sheet(url);
-                                    parameters.targetStep.performUntil(sheet);
-
-                                    // Close when in batch mode
-                                    if (gui == null) {
-                                        sheet.close();
-                                    }
-
-                                    return null;
-                                } catch (MalformedURLException ex) {
-                                    logger.warning("Malformed URL");
-                                } catch (Exception ex) {
-                                    logger.warning("Exception occurred", ex);
-                                }
+                                logger.warning("Could not find sheet " + name);
                             }
-
-                            logger.warning("Could not process sheet " + name);
 
                             return null;
                         }

@@ -112,18 +112,19 @@ public enum Shape {
     /** Treble Clef */
     G_CLEF("Treble Clef", 38), 
     /** Ottava Alta */
-    G_CLEF_OTTAVA_ALTA("Ottava Alta"), 
+    G_CLEF_OTTAVA_ALTA("Ottava Alta", 38), 
+
     /** Ottava Bassa */
-    G_CLEF_OTTAVA_BASSA("Ottava Bassa"), 
+    G_CLEF_OTTAVA_BASSA("Ottava Bassa", 38), 
     /** Ut Clef */
     C_CLEF("Ut Clef", 66), 
     /** Bass Clef */
     F_CLEF("Bass Clef", 63), 
     /** Bass Clef Ottava Alta */
-    F_CLEF_OTTAVA_ALTA("Bass Clef Ottava Alta"), 
+    F_CLEF_OTTAVA_ALTA("Bass Clef Ottava Alta", 63), 
 
     /** Bass Clef Ottava Bassa */
-    F_CLEF_OTTAVA_BASSA("Bass Clef Ottava Bassa"), 
+    F_CLEF_OTTAVA_BASSA("Bass Clef Ottava Bassa", 63), 
 
     /** Percussion (neutral) clef */
     PERCUSSION_CLEF("Percussion Clef", 47), 
@@ -218,7 +219,7 @@ public enum Shape {
     BREVE_REST("Rest for 2 measures", 208), 
 
     /** Same shape for whole or half Rest */
-    WHOLE_OR_HALF_REST("Same shape for whole or half Rest", 183), 
+    WHOLE_OR_HALF_REST("Same shape for whole or half Rest", 238), 
 
     /** Rest for a 1/4 */
     OLD_QUARTER_REST("(old) Rest for a 1/4"), 
@@ -665,22 +666,22 @@ public enum Shape {
 
     //--------------------------------------------------------------------------
 
-    //---------------//
-    // getPointCodes //
-    //---------------//
-    /**
-     * Report the sequence of pointCodes to use to draw this shape using
-     * the Stoccata font
-     * @return the array of codes, which may be empty but not null
-     */
-    public int[] getPointCodes ()
-    {
-        if (pointCodes == null) {
-            return NO_CODES;
-        } else {
-            return pointCodes;
-        }
-    }
+//    //---------------//
+//    // getPointCodes //
+//    //---------------//
+//    /**
+//     * Report the sequence of pointCodes to use to draw this shape using
+//     * the Stoccata font
+//     * @return the array of codes, which may be empty but not null
+//     */
+//    public int[] getPointCodes ()
+//    {
+//        if (pointCodes == null) {
+//            return NO_CODES;
+//        } else {
+//            return pointCodes;
+//        }
+//    }
 
     //---------------//
     // isMeasureRest //

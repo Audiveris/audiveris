@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.lag;
 
+import omr.math.Histogram;
+
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
@@ -316,12 +318,14 @@ public class LagTest
         s1.append(createRun(runs, 5, 1, 6));
         s1.drawAscii();
 
-        MyLag.Roi roi = vLag.createAbsoluteRoi(new Rectangle(0, 0, 6, 7));
-        int[]     histoV = roi.getHistogram(new VerticalOrientation());
-        dump(histoV, "histoV");
+        MyLag.Roi          roi = vLag.createAbsoluteRoi(
+            new Rectangle(0, 0, 6, 7));
+        Histogram<Integer> histoV = roi.getHistogram(new VerticalOrientation());
+        histoV.print(System.out);
 
-        int[] histoH = roi.getHistogram(new HorizontalOrientation());
-        dump(histoH, "histoH");
+        Histogram<Integer> histoH = roi.getHistogram(
+            new HorizontalOrientation());
+        histoH.print(System.out);
     }
 
     //--------------//

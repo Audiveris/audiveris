@@ -88,6 +88,14 @@ public class PixelRectangle
 
     //~ Methods ----------------------------------------------------------------
 
+    //-----------//
+    // getCenter //
+    //-----------//
+    public PixelPoint getCenter ()
+    {
+        return new PixelPoint(x + (width / 2), y + (height / 2));
+    }
+
     //-------------//
     // getLocation //
     //-------------//

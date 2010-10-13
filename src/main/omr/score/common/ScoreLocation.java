@@ -27,10 +27,10 @@ public class ScoreLocation
     public final int systemId;
 
     /**
-     * The SystemRectangle, relative to the containing system, and which can be
+     * The PixelRectangle, relative to the containing system, and which can be
      * degenerated to a point when both width and height values equal zero
      */
-    public final SystemRectangle rectangle;
+    public final PixelRectangle rectangle;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -44,7 +44,7 @@ public class ScoreLocation
      * @param rectangle the rectangle within the containing system
      */
     public ScoreLocation (int             systemId,
-                          SystemRectangle rectangle)
+                          PixelRectangle rectangle)
     {
         this.systemId = systemId;
         this.rectangle = rectangle;
@@ -60,10 +60,10 @@ public class ScoreLocation
      * @param sysPt the point within the containing system
      */
     public ScoreLocation (int         systemId,
-                          SystemPoint sysPt)
+                          PixelPoint sysPt)
     {
         this.systemId = systemId;
-        this.rectangle = new SystemRectangle(sysPt);
+        this.rectangle = new PixelRectangle(sysPt);
     }
 
     //~ Methods ----------------------------------------------------------------

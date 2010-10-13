@@ -13,7 +13,7 @@ package omr.sheet;
 
 import omr.glyph.GlyphSection;
 
-import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.util.Collection;
 
 /**
@@ -44,9 +44,9 @@ public interface LineInfo
      * @param left  the imposed (for clean alignment) left abscissa
      * @param right the imposed (for clean alignment) right abscissa
      */
-    public void render (Graphics g,
-                        int      left,
-                        int      right);
+    public void render (Graphics2D g,
+                        int        left,
+                        int        right);
 
     //---------//
     // getLeft //

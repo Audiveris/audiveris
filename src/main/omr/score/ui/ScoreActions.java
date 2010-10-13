@@ -349,16 +349,16 @@ public class ScoreActions
     {
     }
 
-    //----------//
-    // writePdf //
-    //----------//
+    //---------------//
+    // writeScorePdf //
+    //---------------//
     /**
      * Write the currently selected score, as a PDF file
      * @param e the event that triggered this action
      * @return the task to launch in background
      */
     @Action(enabledProperty = SCORE_AVAILABLE)
-    public Task writePdf (ActionEvent e)
+    public Task writeScorePdf (ActionEvent e)
     {
         final Score score = ScoreController.getCurrentScore();
 
@@ -366,18 +366,18 @@ public class ScoreActions
             return null;
         }
 
-        final File pdfFile = score.getPdfFile();
+        final File pdfFile = score.getScorePdfFile();
 
         if (pdfFile != null) {
-            return new WritePdfTask(score, pdfFile);
+            return new WriteScorePdfTask(score, pdfFile);
         } else {
-            return writePdfAs(e);
+            return writeScorePdfAs(e);
         }
     }
 
-    //------------//
-    // writePdfAs //
-    //------------//
+    //-----------------//
+    // writeScorePdfAs //
+    //-----------------//
     /**
      * Write the currently selected score, using PDF format,
      * to a user-provided file
@@ -385,7 +385,7 @@ public class ScoreActions
      * @return the task to launch in background
      */
     @Action(enabledProperty = SCORE_AVAILABLE)
-    public Task writePdfAs (ActionEvent e)
+    public Task writeScorePdfAs (ActionEvent e)
     {
         final Score score = ScoreController.getCurrentScore();
 
@@ -397,11 +397,69 @@ public class ScoreActions
         File pdfFile = UIUtilities.fileChooser(
             true,
             null,
-            ScoreManager.getInstance().getDefaultPdfFile(score),
+            ScoreManager.getInstance().getDefaultScorePdfFile(score),
             new OmrFileFilter("PDF files", new String[] { ".pdf" }));
 
         if (pdfFile != null) {
-            return new WritePdfTask(score, pdfFile);
+            return new WriteScorePdfTask(score, pdfFile);
+        } else {
+            return null;
+        }
+    }
+
+    //---------------//
+    // writeSheetPdf //
+    //---------------//
+    /**
+     * Write the currently selected score, as a PDF file
+     * @param e the event that triggered this action
+     * @return the task to launch in background
+     */
+    @Action(enabledProperty = SCORE_AVAILABLE)
+    public Task writeSheetPdf (ActionEvent e)
+    {
+        final Score score = ScoreController.getCurrentScore();
+
+        if (score == null) {
+            return null;
+        }
+
+        final File pdfFile = score.getSheetPdfFile();
+
+        if (pdfFile != null) {
+            return new WriteSheetPdfTask(score, pdfFile);
+        } else {
+            return writeSheetPdfAs(e);
+        }
+    }
+
+    //-----------------//
+    // writeSheetPdfAs //
+    //-----------------//
+    /**
+     * Write the currently selected score, using PDF format,
+     * to a user-provided file
+     * @param e the event that triggered this action
+     * @return the task to launch in background
+     */
+    @Action(enabledProperty = SCORE_AVAILABLE)
+    public Task writeSheetPdfAs (ActionEvent e)
+    {
+        final Score score = ScoreController.getCurrentScore();
+
+        if (score == null) {
+            return null;
+        }
+
+        // Let the user select a PDF output file
+        File pdfFile = UIUtilities.fileChooser(
+            true,
+            null,
+            ScoreManager.getInstance().getDefaultSheetPdfFile(score),
+            new OmrFileFilter("PDF files", new String[] { ".pdf" }));
+
+        if (pdfFile != null) {
+            return new WriteSheetPdfTask(score, pdfFile);
         } else {
             return null;
         }
@@ -443,6 +501,72 @@ public class ScoreActions
     }
 
     //~ Inner Classes ----------------------------------------------------------
+
+    //-------------------//
+    // WriteScorePdfTask //
+    //-------------------//
+    public static class WriteScorePdfTask
+        extends BasicTask
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final Score score;
+        final File  pdfFile;
+
+        //~ Constructors -------------------------------------------------------
+
+        public WriteScorePdfTask (Score score,
+                                  File  pdfFile)
+        {
+            this.score = score;
+            this.pdfFile = pdfFile;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        protected Void doInBackground ()
+            throws InterruptedException
+        {
+            ScoreManager.getInstance()
+                        .writeScorePdf(score, pdfFile);
+
+            return null;
+        }
+    }
+
+    //-------------------//
+    // WriteSheetPdfTask //
+    //-------------------//
+    public static class WriteSheetPdfTask
+        extends BasicTask
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final Score score;
+        final File  pdfFile;
+
+        //~ Constructors -------------------------------------------------------
+
+        public WriteSheetPdfTask (Score score,
+                                  File  pdfFile)
+        {
+            this.score = score;
+            this.pdfFile = pdfFile;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        protected Void doInBackground ()
+            throws InterruptedException
+        {
+            ScoreManager.getInstance()
+                        .writeSheetPdf(score, pdfFile);
+
+            return null;
+        }
+    }
 
     //-----------//
     // Constants //
@@ -511,39 +635,6 @@ public class ScoreActions
                 ScoreManager.getInstance()
                             .export(score, exportFile, null);
             }
-
-            return null;
-        }
-    }
-
-    //--------------//
-    // WritePdfTask //
-    //--------------//
-    public static class WritePdfTask
-        extends BasicTask
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        final Score score;
-        final File  pdfFile;
-
-        //~ Constructors -------------------------------------------------------
-
-        public WritePdfTask (Score score,
-                             File  pdfFile)
-        {
-            this.score = score;
-            this.pdfFile = pdfFile;
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        protected Void doInBackground ()
-            throws InterruptedException
-        {
-            ScoreManager.getInstance()
-                        .pdfWrite(score, pdfFile);
 
             return null;
         }

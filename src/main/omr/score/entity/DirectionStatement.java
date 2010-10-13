@@ -15,7 +15,7 @@ import omr.glyph.text.Sentence;
 
 import omr.log.Logger;
 
-import omr.score.common.SystemPoint;
+import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
 
 /**
@@ -52,7 +52,7 @@ public class DirectionStatement
      * @param text the sentence text
      */
     public DirectionStatement (Measure            measure,
-                               SystemPoint        referencePoint,
+                               PixelPoint        referencePoint,
                                Chord              chord,
                                Sentence           sentence,
                                Text.DirectionText text)

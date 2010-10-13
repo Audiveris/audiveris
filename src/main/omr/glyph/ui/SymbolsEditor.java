@@ -25,6 +25,10 @@ import omr.lag.ui.SectionBoard;
 
 import omr.log.Logger;
 
+import omr.score.ui.PaintingParameters;
+import omr.score.ui.ScorePainter;
+import omr.score.ui.ScorePhysicalPainter;
+
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphSetEvent;
 import omr.selection.MouseMovement;
@@ -43,6 +47,7 @@ import omr.step.Step;
 import omr.ui.BoardsPane;
 
 import omr.util.Implement;
+import omr.util.WeakPropertyChangeListener;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -183,6 +188,12 @@ public class SymbolsEditor
             // Use light gray color for past successful entities
             int viewIndex = lag.viewIndexOf(this);
             sheet.colorize(lag, viewIndex, Color.lightGray);
+
+            // Listen to painting parameters
+            PaintingParameters.getInstance()
+                              .addPropertyChangeListener(
+                PaintingParameters.ENTITY_PAINTING,
+                new WeakPropertyChangeListener(this));
         }
 
         //~ Methods ------------------------------------------------------------
@@ -316,13 +327,22 @@ public class SymbolsEditor
         // renderItems //
         //-------------//
         @Override
-        protected void renderItems (Graphics g)
+        protected void renderItems (Graphics2D g)
         {
             // Render all sheet physical info known so far
-            sheet.accept(new SheetPainter(g, false));
+            sheet.getScore()
+                 .accept(new SheetPainter(g, false));
 
             // Normal display of selected items
             super.renderItems(g);
+
+            // Render the recognized score entities?
+            if (PaintingParameters.getInstance()
+                                  .isEntityPainting()) {
+                sheet.getScore()
+                     .accept(
+                    new ScorePhysicalPainter(g, ScorePainter.musicColor));
+            }
         }
 
         //-------------//

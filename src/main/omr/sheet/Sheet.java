@@ -32,9 +32,6 @@ import omr.score.Score;
 import omr.score.common.PixelDimension;
 import omr.score.common.PixelPoint;
 import omr.score.entity.SystemNode;
-import omr.score.ui.ScoreConstants;
-import omr.score.visitor.ScoreVisitor;
-import omr.score.visitor.Visitable;
 
 import omr.script.Script;
 
@@ -46,7 +43,6 @@ import omr.sheet.picture.PictureView;
 import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.ScoreColorizer;
 import omr.sheet.ui.SheetAssembly;
-import omr.sheet.ui.SheetPainter;
 
 import omr.step.SheetSteps;
 import omr.step.Step;
@@ -76,7 +72,6 @@ import java.util.concurrent.ConcurrentSkipListSet;
  * @author Hervé Bitteur
  */
 public class Sheet
-    implements Visitable
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -635,8 +630,7 @@ public class Sheet
         height = getPicture()
                      .getHeight();
 
-        score.setDimension(
-            scale.toUnits(new PixelDimension(getWidth(), getHeight())));
+        score.setDimension(new PixelDimension(width, height));
 
         // Check we've got something usable
         if (scale.mainFore() == 0) {
@@ -740,8 +734,7 @@ public class Sheet
     public void setSkew (Skew skew)
     {
         this.skew = skew;
-        score.setSkewAngle(
-            (int) Math.rint(getSkew().angle() * ScoreConstants.BASE));
+        score.setSkewAngle(getSkew().angle());
 
         // Update displayed image if any
         if (getPicture()
@@ -1196,18 +1189,6 @@ public class Sheet
         return width;
     }
 
-    //--------//
-    // accept //
-    //--------//
-    public boolean accept (ScoreVisitor visitor)
-    {
-        if (visitor instanceof SheetPainter) {
-            ((SheetPainter) visitor).visit(this);
-        }
-
-        return true;
-    }
-
     //----------//
     // addError //
     //----------//
@@ -1392,6 +1373,19 @@ public class Sheet
     public boolean hasMaxForeground ()
     {
         return maxForeground != null;
+    }
+
+    //--------------//
+    // performSteps //
+    //--------------//
+    /**
+     * Perform in sequence on this sheet the whole set of steps
+     * @param targetSteps the set of desired steps
+     */
+    public void performSteps (EnumSet<Step> targetSteps)
+    {
+        getSheetSteps()
+            .performSteps(targetSteps);
     }
 
     //----------------//

@@ -21,9 +21,10 @@ import omr.lag.VerticalOrientation;
 
 import omr.log.Logger;
 
+import omr.math.Histogram;
+
 import omr.score.ui.ScoreDependent;
 
-import omr.selection.GlyphEvent;
 import omr.selection.SheetLocationEvent;
 
 import omr.sheet.Sheet;
@@ -46,6 +47,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RefineryUtilities;
 
 import java.awt.Rectangle;
+import java.util.Map;
 
 import javax.swing.WindowConstants;
 
@@ -166,30 +168,31 @@ public class TextAreaBrowser
             return;
         }
 
+        // Selected glyph, if any
+        Glyph              glyph = null;
+
         // Check for a selected rectangle
         SheetLocationEvent sheetLocation = (SheetLocationEvent) sheet.getSelectionService()
                                                                      .getLastEvent(
             SheetLocationEvent.class);
-        Rectangle          rect = (sheetLocation != null)
-                                  ? sheetLocation.rectangle : null;
+        GlyphLag           lag = sheet.getVerticalLag();
+
+        if (lag == null) {
+            return;
+        }
+
+        Rectangle rect = (sheetLocation != null) ? sheetLocation.rectangle : null;
 
         if ((rect == null) || (rect.width == 0)) {
             // No real rectangle, so check for a selected glyph
-            Glyph glyph = sheet.getVerticalLag().getSelectedGlyph();
+            glyph = lag.getSelectedGlyph();
 
             if (glyph != null) {
                 rect = glyph.getContourBox();
-                rect.grow(1,1);
             }
         }
 
         if (rect == null) {
-            return;
-        }
-
-        GlyphLag lag = sheet.getVerticalLag();
-
-        if (lag == null) {
             return;
         }
 
@@ -199,31 +202,32 @@ public class TextAreaBrowser
             lag.createAbsoluteRoi(rect),
             orientation);
 
-        showHistogram(area, orientation);
+        showHistogram(area, orientation, glyph);
     }
 
     //---------------//
     // showHistogram //
     //---------------//
     private void showHistogram (TextArea area,
-                                Oriented orientation)
+                                Oriented orientation,
+                                Glyph    glyph)
     {
-        int[]     histo = area.getHistogram(orientation);
+        Histogram<Integer> histo = area.getHistogram(orientation, glyph);
+
+        if (logger.isFineEnabled()) {
+            histo.print(System.out);
+        }
+
         boolean   vertical = orientation.isVertical();
         Rectangle rect = area.getAbsoluteContour();
 
         // Projection data
         XYSeries dataSeries = new XYSeries("Foreground Pixels");
-        int      offset = vertical ? rect.x : rect.y;
 
-        for (int i = 0; i < histo.length; i++) {
-            if (vertical) {
-                dataSeries.add(offset + i, histo[i]);
-            } else {
-                dataSeries.add(
-                    i - offset - histo.length + 1,
-                    histo[histo.length - 1 - i]);
-            }
+        for (Map.Entry<Integer, Integer> entry : histo.entrySet()) {
+            dataSeries.add(
+                vertical ? entry.getKey() : (-entry.getKey()),
+                entry.getValue());
         }
 
         XYSeriesCollection dataset = new XYSeriesCollection();

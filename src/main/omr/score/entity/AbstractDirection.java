@@ -15,7 +15,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
-import omr.score.common.SystemPoint;
+import omr.score.common.PixelPoint;
 
 /**
  * Class <code>Direction</code> is the basis for all variants of direction
@@ -48,7 +48,7 @@ public abstract class AbstractDirection
      * @param glyph the underlying glyph
      */
     public AbstractDirection (Measure     measure,
-                              SystemPoint referencePoint,
+                              PixelPoint referencePoint,
                               Chord       chord,
                               Glyph       glyph)
     {
@@ -65,7 +65,7 @@ public abstract class AbstractDirection
      */
     public AbstractDirection (Measure     measure,
                               boolean     isStart,
-                              SystemPoint referencePoint,
+                              PixelPoint referencePoint,
                               Chord       chord,
                               Glyph       glyph)
     {

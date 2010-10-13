@@ -13,6 +13,10 @@ package omr.sheet.picture;
 
 import omr.log.Logger;
 
+import omr.score.ui.PaintingParameters;
+import omr.score.ui.ScorePainter;
+import omr.score.ui.ScorePhysicalPainter;
+
 import omr.selection.SheetLocationEvent;
 
 import omr.sheet.*;
@@ -20,7 +24,12 @@ import omr.sheet.*;
 import omr.ui.view.RubberPanel;
 import omr.ui.view.ScrollView;
 
+import omr.util.Implement;
+import omr.util.WeakPropertyChangeListener;
+
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 /**
  * Class <code>PictureView</code> defines the view dedicated to the display of
@@ -30,6 +39,7 @@ import java.awt.*;
  */
 public class PictureView
     extends ScrollView
+    implements PropertyChangeListener
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -63,8 +73,25 @@ public class PictureView
             sheet.getSelectionService(),
             SheetLocationEvent.class);
 
+        // Listen to painting parameters
+        PaintingParameters.getInstance()
+                          .addPropertyChangeListener(
+            PaintingParameters.ENTITY_PAINTING,
+            new WeakPropertyChangeListener(this));
+
         // Insert view
         setView(view);
+    }
+
+    //~ Methods ----------------------------------------------------------------
+
+    //----------------//
+    // propertyChange //
+    //----------------//
+    @Implement(PropertyChangeListener.class)
+    public void propertyChange (PropertyChangeEvent evt)
+    {
+        view.repaint();
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -81,11 +108,19 @@ public class PictureView
         // render //
         //--------//
         @Override
-        public void render (Graphics g)
+        public void render (Graphics2D g)
         {
             // Render the picture image
             sheet.getPicture()
                  .render(g);
+
+            // Render the recognized score entities?
+            if (PaintingParameters.getInstance()
+                                  .isEntityPainting()) {
+                sheet.getScore()
+                     .accept(
+                    new ScorePhysicalPainter(g, ScorePainter.musicColor));
+            }
         }
     }
 }

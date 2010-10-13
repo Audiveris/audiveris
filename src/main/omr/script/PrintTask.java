@@ -66,7 +66,7 @@ public class PrintTask
     public void core (Sheet sheet)
     {
         ScoreManager.getInstance()
-                    .pdfWrite(
+                    .writeScorePdf(
             sheet.getScore(),
             (path != null) ? new File(path) : null);
     }

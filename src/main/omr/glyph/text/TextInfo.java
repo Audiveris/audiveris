@@ -24,12 +24,15 @@ import omr.lag.HorizontalOrientation;
 import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 import omr.score.entity.Text.CreatorText.CreatorType;
 
 import omr.sheet.SystemInfo;
 
 import java.awt.*;
 import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
+import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import java.util.*;
 import java.util.List;
@@ -79,17 +82,11 @@ public class TextInfo
     /** Utility font context, used to compute text characteristics */
     private static FontRenderContext frc = new FontRenderContext(
         null,
-        false,
+        true,
         true);
 
     /** (So far empirical) ratio between width and point values */
     public static final float FONT_WIDTH_POINT_RATIO = 4.4f;
-
-    /**
-     * Ratio applied to a font point size to get a correct display.
-     * TODO: If someone could explain why this ratio is not 1
-     */
-    public static final float FONT_DISPLAY_RATIO = 4.0f;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -202,17 +199,27 @@ public class TextInfo
      * @param width the string width in pixels
      * @return the computed font size
      */
-    public static Float computeFontSize (String content,
-                                         int    width)
+    public Float computeFontSize (String content,
+                                  int    width)
     {
         if (content == null) {
             return null;
         }
 
-        Rectangle2D rect = basicFont.getStringBounds(content, frc);
-        float       ratio = width / (float) rect.getWidth() / FONT_WIDTH_POINT_RATIO;
+        PixelRectangle box = glyph.getContourBox();
+        GlyphVector    glyphVector = basicFont.createGlyphVector(frc, content);
+        Rectangle2D    basicRect = glyphVector.getVisualBounds();
+        Font           font = basicFont.deriveFont(
+            (basicFont.getSize2D() * box.width) / (float) basicRect.getWidth());
 
-        return basicFont.getSize2D() * ratio;
+        //        if (logger.isFineEnabled()) {
+        //            GlyphVector newVector = font.createGlyphVector(frc, content);
+        //            Rectangle2D rect = newVector.getVisualBounds();
+        //            logger.warning(
+        //                "TextInfo box.width:" + box.width + " basicRect.width:" +
+        //                basicRect.getWidth() + " rect.width:" + rect.getWidth());
+        //        }
+        return font.getSize2D();
     }
 
     //--------------//
@@ -258,17 +265,18 @@ public class TextInfo
     public Integer getFontSize ()
     {
         if (fontSize == null) {
-            if ((ocrLine != null) && (ocrLine.isFontSizeValid())) {
-                fontSize = ocrLine.fontSize;
-            } else {
-                Float fs = computeFontSize(
-                    getContent(),
-                    glyph.getContourBox().width);
+            //            if ((ocrLine != null) && (ocrLine.isFontSizeValid())) {
+            //                fontSize = ocrLine.fontSize;
+            //            } else {
+            Float fs = computeFontSize(
+                getContent(),
+                glyph.getContourBox().width);
 
-                if (fs != null) {
-                    fontSize = (int) Math.rint(fs);
-                }
+            if (fs != null) {
+                fontSize = (int) Math.rint(fs);
             }
+
+            //            }
         }
 
         return fontSize;
@@ -330,11 +338,12 @@ public class TextInfo
         this.ocrLanguage = ocrLanguage;
         this.ocrLine = ocrLine;
 
-        if (ocrLine.isFontSizeValid()) {
-            fontSize = ocrLine.fontSize;
-        } else {
-            fontSize = null;
-        }
+        //        if (ocrLine.isFontSizeValid()) {
+        //            fontSize = ocrLine.fontSize;
+        //        } else {
+        fontSize = null;
+
+        //        }
     }
 
     //----------------//
@@ -543,7 +552,7 @@ public class TextInfo
 
             for (GlyphSection section : glyph.getMembers()) {
                 // Do we intersect a section not (yet) assigned?
-                if (charBox.intersects(section.getContourBox()) ) {
+                if (charBox.intersects(section.getContourBox())) {
                     sections.add(section);
                 }
             }

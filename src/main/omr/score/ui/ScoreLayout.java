@@ -17,11 +17,7 @@ import omr.score.Score;
 import omr.score.common.PixelPoint;
 import omr.score.common.ScorePoint;
 import omr.score.common.ScoreRectangle;
-import omr.score.common.SystemPoint;
-import omr.score.common.SystemRectangle;
-import omr.score.entity.ScorePart;
 import omr.score.entity.ScoreSystem;
-import static omr.score.ui.ScoreConstants.*;
 
 import omr.util.TreeNode;
 
@@ -286,9 +282,9 @@ public class ScoreLayout
 
         ScoreSystem system = scoreLocateSystem(scorePoint);
         SystemView  systemView = getSystemView(system);
-        SystemPoint sysPt = systemView.toSystemPoint(scorePoint);
+        PixelPoint  sysPt = systemView.toPixelPoint(scorePoint);
 
-        return system.toPixelPoint(sysPt);
+        return sysPt;
     }
 
     //----------//
@@ -331,45 +327,13 @@ public class ScoreLayout
      */
     private void createSystemViews ()
     {
-        final int        highestTop = score.getHighestSystemTop();
         List<SystemView> views = new ArrayList<SystemView>();
         SystemView       prevSystemView = null;
 
         for (TreeNode node : score.getSystems()) {
-            ScoreSystem     system = (ScoreSystem) node;
-            SystemRectangle contour = system.getDisplayContour();
-            ScorePoint      origin = new ScorePoint();
-
-            if (orientation == ScoreOrientation.HORIZONTAL) {
-                if (prevSystemView == null) {
-                    // Very first system in the score
-                    origin.x = -contour.x;
-                } else {
-                    // Not the first system
-                    origin.x = (prevSystemView.getDisplayOrigin().x +
-                               prevSystemView.getSystem().getDimension().width) +
-                               INTER_SYSTEM_WIDTH;
-                }
-
-                ScorePart scorePart = system.getFirstPart()
-                                            .getScorePart();
-                origin.y = -highestTop + system.getDummyOffset() +
-                           ((scorePart != null)
-                            ? scorePart.getDisplayOrdinate() : 0);
-            } else {
-                if (prevSystemView == null) {
-                    // Very first system in the score
-                    origin.y = -contour.y;
-                } else {
-                    // Not the first system
-                    origin.y = (prevSystemView.getDisplayOrigin().y +
-                               prevSystemView.getSystem()
-                                             .getDimension().height +
-                               STAFF_HEIGHT) + INTER_SYSTEM_HEIGHT;
-                }
-
-                origin.x = -contour.x;
-            }
+            ScoreSystem system = (ScoreSystem) node;
+            PixelPoint  topLeft = system.getTopLeft();
+            ScorePoint  origin = new ScorePoint(topLeft.x, topLeft.y);
 
             // Create an immutable view for this system
             recentSystem = null;

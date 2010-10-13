@@ -18,9 +18,8 @@ import static omr.glyph.Shape.*;
 
 import omr.log.Logger;
 import static omr.score.MusicXML.*;
-import omr.score.common.PagePoint;
-import omr.score.common.SystemPoint;
-import omr.score.common.SystemRectangle;
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 import omr.score.entity.Arpeggiate;
 import omr.score.entity.Articulation;
 import omr.score.entity.Barline;
@@ -674,13 +673,13 @@ public class ScoreExporter
 
         // default-y (of the fermata dot)
         // For upright we use bottom of the box, for inverted the top of the box
-        SystemRectangle box = fermata.getBox();
-        SystemPoint     dot;
+        PixelRectangle box = fermata.getBox();
+        PixelPoint     dot;
 
         if (fermata.getShape() == Shape.FERMATA_BELOW) {
-            dot = new SystemPoint(box.x + (box.width / 2), box.y);
+            dot = new PixelPoint(box.x + (box.width / 2), box.y);
         } else {
-            dot = new SystemPoint(box.x + (box.width / 2), box.y + box.height);
+            dot = new PixelPoint(box.x + (box.width / 2), box.y + box.height);
         }
 
         pmFermata.setDefaultY(yOf(dot, current.note.getStaff()));
@@ -914,8 +913,8 @@ public class ScoreExporter
 
                             staffLayout.setStaffDistance(
                                 toTenths(
-                                    staff.getPageTopLeft().y -
-                                    prevStaff.getPageTopLeft().y -
+                                    staff.getTopLeft().y -
+                                    prevStaff.getTopLeft().y -
                                     prevStaff.getHeight()));
                             current.pmPrint.getStaffLayout()
                                            .add(staffLayout);
@@ -1128,8 +1127,8 @@ public class ScoreExporter
 
             // Stem ?
             if (chord.getStem() != null) {
-                Stem        pmStem = factory.createStem();
-                SystemPoint tail = chord.getTailLocation();
+                Stem       pmStem = factory.createStem();
+                PixelPoint tail = chord.getTailLocation();
                 pmStem.setDefaultY(yOf(tail, staff));
 
                 if (tail.y < note.getCenter().y) {
@@ -1155,7 +1154,7 @@ public class ScoreExporter
             // Accidental ?
             if (note.getAccidental() != null) {
                 Accidental accidental = factory.createAccidental();
-                accidental.setValue(accidentalTextOf(note.getAccidental()));
+                accidental.setValue(accidentalTextOf(note.getAccidental().getShape()));
                 current.pmNote.setAccidental(accidental);
             }
 
@@ -1165,8 +1164,8 @@ public class ScoreExporter
                 pmBeam.setNumber(beam.getLevel());
 
                 if (beam.isHook()) {
-                    if (beam.getCenter().x > current.system.toSystemPoint(
-                        chord.getStem().getLocation()).x) {
+                    if (beam.getCenter().x > chord.getStem()
+                                                  .getLocation().x) {
                         pmBeam.setValue(BeamValue.FORWARD_HOOK);
                     } else {
                         pmBeam.setValue(BeamValue.BACKWARD_HOOK);
@@ -1754,8 +1753,7 @@ public class ScoreExporter
         creditWords.setFontSize("" + text.getFontSize());
 
         // Position is wrt to page
-        PagePoint pt = text.getSystem()
-                           .toPagePoint(text.getReferencePoint());
+        PixelPoint pt = text.getReferencePoint();
         creditWords.setDefaultX(toTenths(pt.x));
         creditWords.setDefaultY(toTenths(score.getDimension().height - pt.y));
 
@@ -2068,7 +2066,7 @@ public class ScoreExporter
 
         // Perhaps another clef before this one ?
         Clef previousClef = current.measure.getClefBefore(
-            new SystemPoint(clef.getCenter().x - 1, clef.getCenter().y));
+            new PixelPoint(clef.getCenter().x - 1, clef.getCenter().y));
 
         if (previousClef != null) {
             return previousClef.getShape() != clef.getShape();
@@ -2192,13 +2190,12 @@ public class ScoreExporter
         SystemPart part = measure.getPart();
 
         for (TreeNode sn : part.getStaves()) {
-            Staff       staff = (Staff) sn;
-            int         right = measure.getLeftX(); // Right of dummy = Left of current
-            int         midY = (staff.getPageTopLeft().y +
-                               (staff.getHeight() / 2)) -
-                               measure.getSystem()
-                                      .getTopLeft().y;
-            SystemPoint staffPoint = new SystemPoint(right, midY);
+            Staff      staff = (Staff) sn;
+            int        right = measure.getLeftX(); // Right of dummy = Left of current
+            int        midY = (staff.getTopLeft().y + (staff.getHeight() / 2)) -
+                              measure.getSystem()
+                                     .getTopLeft().y;
+            PixelPoint staffPoint = new PixelPoint(right, midY);
 
             // Clef?
             Clef clef = measure.getClefBefore(staffPoint);

@@ -657,8 +657,8 @@ public class SystemInfo
         scoreSystem = new ScoreSystem(
             this,
             sheet.getScore(),
-            scale.toPagePoint(new PixelPoint(getLeft(), getTop())),
-            scale.toUnits(new PixelDimension(getWidth(), getDeltaY())));
+            new PixelPoint(getLeft(), getTop()),
+            new PixelDimension(getWidth(), getDeltaY()));
 
         // Allocate the parts in the system
         for (PartInfo partInfo : getParts()) {
@@ -670,12 +670,10 @@ public class SystemInfo
                 new Staff(
                     staffInfo,
                     part,
-                    scale.toPagePoint(
-                        new PixelPoint(
-                            staffInfo.getLeft(),
-                            line.yAt(line.getLeft()))),
-                    scale.pixelsToUnits(
-                        staffInfo.getRight() - staffInfo.getLeft()),
+                    new PixelPoint(
+                        staffInfo.getLeft(),
+                        line.yAt(line.getLeft())),
+                    staffInfo.getRight() - staffInfo.getLeft(),
                     64); // Staff vertical size in units);
             }
         }

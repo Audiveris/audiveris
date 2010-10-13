@@ -19,7 +19,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
-import omr.score.common.SystemPoint;
+import omr.score.common.PixelPoint;
 
 import omr.sheet.Scale;
 
@@ -60,11 +60,11 @@ public class DotTranslation
      *
      * @param glyph the glyph of dot
      * @param measure the containing measure
-     * @param dotCenter the system-based location of the dot
+     * @param dotCenter the location of the dot
      */
-    public static void populateDot (Glyph       glyph,
-                                    Measure     measure,
-                                    SystemPoint dotCenter)
+    public static void populateDot (Glyph      glyph,
+                                    Measure    measure,
+                                    PixelPoint dotCenter)
     {
         if (logger.isFineEnabled()) {
             logger.fine(measure.getContextString() + " populateDot " + glyph);
@@ -205,9 +205,9 @@ public class DotTranslation
             return targetShape;
         }
 
-        abstract Result process (Glyph       glyph,
-                                 Measure     measure,
-                                 SystemPoint dotCenter);
+        abstract Result process (Glyph      glyph,
+                                 Measure    measure,
+                                 PixelPoint dotCenter);
 
         //~ Inner Classes ------------------------------------------------------
 
@@ -231,9 +231,9 @@ public class DotTranslation
 
             //~ Methods --------------------------------------------------------
 
-            public abstract void commit (Glyph       glyph,
-                                         Measure     measure,
-                                         SystemPoint dotCenter);
+            public abstract void commit (Glyph      glyph,
+                                         Measure    measure,
+                                         PixelPoint dotCenter);
 
             public Shape getTargetShape ()
             {
@@ -279,16 +279,16 @@ public class DotTranslation
         //~ Methods ------------------------------------------------------------
 
         @Override
-        Result process (Glyph       glyph,
-                        Measure     measure,
-                        SystemPoint dotCenter)
+        Result process (Glyph      glyph,
+                        Measure    measure,
+                        PixelPoint dotCenter)
         {
-            Scale                    scale = measure.getScale();
-            final int                maxDx = scale.toUnits(
+            Scale                            scale = measure.getScale();
+            final int                        maxDx = scale.toPixels(
                 constants.maxAugmentationDotDx);
-            final int                maxDy = scale.toUnits(
+            final int                        maxDy = scale.toPixels(
                 constants.maxAugmentationDotDy);
-            SortedMap<Double, Chord> distances = new TreeMap<Double, Chord>();
+            SortedMap<Double, ChordNotePair> distances = new TreeMap<Double, ChordNotePair>();
 
             // Check for a note/rest nearby:
             // - on the left w/ same even pitch (note w/ even pitch)
@@ -302,8 +302,8 @@ public class DotTranslation
 
                     if (!note.getShape()
                              .isMeasureRest()) {
-                        SystemPoint noteRef = note.getCenterRight();
-                        SystemPoint toDot = new SystemPoint(
+                        PixelPoint noteRef = note.getCenterRight();
+                        PixelPoint toDot = new PixelPoint(
                             dotCenter.x - noteRef.x,
                             dotCenter.y - noteRef.y);
 
@@ -315,7 +315,9 @@ public class DotTranslation
                             glyph.isManualShape()) ||
                             ((toDot.x > 0) && (toDot.x <= maxDx) &&
                             (Math.abs(toDot.y) <= maxDy))) {
-                            distances.put(toDot.distanceSq(0, 0), chord);
+                            distances.put(
+                                toDot.distanceSq(0, 0),
+                                new ChordNotePair(chord, note));
                         } else if (toDot.x < (-2 * maxDx)) {
                             break ChordLoop; // Speed up
                         }
@@ -341,54 +343,51 @@ public class DotTranslation
         {
             //~ Instance fields ------------------------------------------------
 
-            final Chord chord;
+            final ChordNotePair pair;
 
             //~ Constructors ---------------------------------------------------
 
-            public AugmentationResult (Chord  chord,
-                                       double dist)
+            public AugmentationResult (ChordNotePair pair,
+                                       double        dist)
             {
                 super(dist);
-                this.chord = chord;
+                this.pair = pair;
             }
 
             //~ Methods --------------------------------------------------------
 
             @Override
-            public void commit (Glyph       glyph,
-                                Measure     measure,
-                                SystemPoint dotCenter)
+            public void commit (Glyph      glyph,
+                                Measure    measure,
+                                PixelPoint dotCenter)
             {
                 // Is there a second dot on the right?
-                if (isDoubleDot(glyph, measure, dotCenter)) {
-                    chord.setDotsNumber(2);
-                } else {
-                    chord.setDotsNumber(1);
-                }
-
-                glyph.setTranslation(chord);
+                Glyph second = secondDot(glyph, measure, dotCenter);
+                pair.note.setDots(glyph, second);
+                glyph.setTranslation(pair.note);
+                pair.chord.setDotsNumber((second != null) ? 2 : 1);
 
                 if (logger.isFineEnabled()) {
                     logger.fine(
-                        chord.getContextString() + " dot#" + glyph.getId() +
-                        " Augmented " + chord);
+                        pair.note.getContextString() + " dot#" + glyph.getId() +
+                        " Augmented " + pair.note);
                 }
             }
 
             @Override
             protected String internals ()
             {
-                return "chord:" + chord;
+                return "chord:" + pair.chord + " note:" + pair.note;
             }
 
-            private boolean isDoubleDot (Glyph       glyph,
-                                         Measure     measure,
-                                         SystemPoint dotCenter)
+            private Glyph secondDot (Glyph      glyph,
+                                     Measure    measure,
+                                     PixelPoint dotCenter)
             {
                 Scale     scale = measure.getScale();
-                final int maxDx = scale.toUnits(
+                final int maxDx = scale.toPixels(
                     constants.maxAugmentationDoubleDotsDx);
-                final int maxDy = scale.toUnits(
+                final int maxDy = scale.toPixels(
                     constants.maxAugmentationDoubleDotsDy);
 
                 boolean   started = false;
@@ -411,14 +410,12 @@ public class DotTranslation
                         ((g.getShape() == DOT) ||
                         (g.getShape() == COMBINING_AUGMENTATION_DOT))) {
                         // Check relative position
-                        SystemPoint gCenter = measure.getSystem()
-                                                     .toSystemPoint(
-                            g.getLocation());
-                        int         dx = gCenter.x - dotCenter.x;
-                        int         dy = gCenter.y - dotCenter.y;
+                        PixelPoint gCenter = g.getLocation();
+                        int        dx = gCenter.x - dotCenter.x;
+                        int        dy = gCenter.y - dotCenter.y;
 
                         if (dx > maxDx) {
-                            return false;
+                            return null;
                         }
 
                         if ((dx > 0) && (Math.abs(dy) <= maxDy)) {
@@ -426,19 +423,36 @@ public class DotTranslation
                                 logger.fine("Double dot with " + g);
                             }
 
-                            g.setTranslation(chord);
+                            g.setTranslation(pair.note);
 
                             // Assign proper glyph shape (and thus color)
                             if (g.getShape() != targetShape) {
                                 g.setShape(targetShape);
                             }
 
-                            return true;
+                            return g;
                         }
                     }
                 }
 
-                return false;
+                return null;
+            }
+        }
+
+        private static class ChordNotePair
+        {
+            //~ Instance fields ------------------------------------------------
+
+            final Chord chord;
+            final Note  note;
+
+            //~ Constructors ---------------------------------------------------
+
+            public ChordNotePair (Chord chord,
+                                  Note  note)
+            {
+                this.chord = chord;
+                this.note = note;
             }
         }
     }
@@ -462,9 +476,9 @@ public class DotTranslation
         //~ Methods ------------------------------------------------------------
 
         @Override
-        RepeatResult process (Glyph       glyph,
-                              Measure     measure,
-                              SystemPoint dotCenter)
+        RepeatResult process (Glyph      glyph,
+                              Measure    measure,
+                              PixelPoint dotCenter)
         {
             SortedMap<Double, Barline> distances = new TreeMap<Double, Barline>();
 
@@ -476,7 +490,7 @@ public class DotTranslation
             }
 
             final Scale scale = measure.getScale();
-            final int   maxDx = scale.toUnits(constants.maxRepeatDotDx);
+            final int   maxDx = scale.toPixels(constants.maxRepeatDotDx);
 
             // Check  wrt starting barline on left and ending barline on right
             Measure prevMeasure = (Measure) measure.getPreviousSibling();
@@ -534,9 +548,9 @@ public class DotTranslation
             //~ Methods --------------------------------------------------------
 
             @Override
-            public void commit (Glyph       glyph,
-                                Measure     measure,
-                                SystemPoint dotCenter)
+            public void commit (Glyph      glyph,
+                                Measure    measure,
+                                PixelPoint dotCenter)
             {
                 barline.addGlyph(glyph);
 
@@ -574,14 +588,14 @@ public class DotTranslation
         //~ Methods ------------------------------------------------------------
 
         @Override
-        StaccatoResult process (Glyph       glyph,
-                                Measure     measure,
-                                SystemPoint dotCenter)
+        StaccatoResult process (Glyph      glyph,
+                                Measure    measure,
+                                PixelPoint dotCenter)
         {
             Scale                    scale = measure.getScale();
-            final int                maxDx = scale.toUnits(
+            final int                maxDx = scale.toPixels(
                 constants.maxStaccatoDotDx);
-            final int                maxDy = scale.toUnits(
+            final int                maxDy = scale.toPixels(
                 constants.maxStaccatoDotDy);
             SortedMap<Double, Chord> distances = new TreeMap<Double, Chord>();
 
@@ -594,10 +608,10 @@ public class DotTranslation
 
                     if (!note.isRest()) {
                         // Check distance wrt both top & bottom of note
-                        for (SystemPoint noteRef : Arrays.asList(
+                        for (PixelPoint noteRef : Arrays.asList(
                             note.getCenterTop(),
                             note.getCenterBottom())) {
-                            SystemPoint toDot = new SystemPoint(
+                            PixelPoint toDot = new PixelPoint(
                                 dotCenter.x - noteRef.x,
                                 dotCenter.y - noteRef.y);
 
@@ -648,9 +662,9 @@ public class DotTranslation
             //~ Methods --------------------------------------------------------
 
             @Override
-            public void commit (Glyph       glyph,
-                                Measure     measure,
-                                SystemPoint dotCenter)
+            public void commit (Glyph      glyph,
+                                Measure    measure,
+                                PixelPoint dotCenter)
             {
                 glyph.setTranslation(
                     new Articulation(measure, dotCenter, chord, glyph));

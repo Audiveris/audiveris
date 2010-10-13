@@ -11,14 +11,13 @@
 // </editor-fold>
 package omr.score.entity;
 
-import omr.glyph.Shape;
-
 import omr.log.Logger;
 
 import omr.math.GCD;
 import omr.math.Rational;
 
-import omr.score.common.SystemPoint;
+import omr.score.common.PixelPoint;
+import omr.score.ui.MusicFont;
 
 import omr.util.Navigable;
 
@@ -549,7 +548,7 @@ public class Voice
                                 Mark.Position position,
                                 Chord         chord)
     {
-        SystemPoint point = new SystemPoint(
+        PixelPoint point = new PixelPoint(
             chord.getHeadLocation().x,
             (chord.getHeadLocation().y + chord.getTailLocation().y) / 2);
 
@@ -563,7 +562,7 @@ public class Voice
             chord.getSystem(),
             point,
             position,
-            Shape.FORWARD,
+            MusicFont.MARK_DESC,
             duration);
 
         chord.addMark(mark);

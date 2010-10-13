@@ -15,7 +15,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
-import omr.score.common.SystemPoint;
+import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
 
 /**
@@ -65,7 +65,7 @@ public class Articulation
      * @param glyph the underlying glyph
      */
     public Articulation (Measure     measure,
-                         SystemPoint point,
+                         PixelPoint point,
                          Chord       chord,
                          Glyph       glyph)
     {
@@ -95,7 +95,7 @@ public class Articulation
      */
     public static void populate (Glyph       glyph,
                                  Measure     measure,
-                                 SystemPoint point)
+                                 PixelPoint point)
     {
         // An Articulation relates to the note below or above on the same time slot
         Chord chord = measure.getEventChord(point);

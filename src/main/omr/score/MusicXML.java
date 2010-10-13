@@ -16,7 +16,7 @@ import static omr.glyph.Shape.*;
 
 import omr.log.Logger;
 
-import omr.score.common.SystemPoint;
+import omr.score.common.PixelPoint;
 import omr.score.entity.LyricsItem;
 import omr.score.entity.Note;
 import omr.score.entity.Staff;
@@ -345,7 +345,7 @@ public class MusicXML
     // yOf //
     //-----//
     /**
-     * Report the musicXML Y value of a SystemPoint ordinate.
+     * Report the musicXML Y value of a PixelPoint ordinate.
      *
      * @param units the system-based ordinate (in units)
      * @param staff the related staff
@@ -355,7 +355,7 @@ public class MusicXML
                                   Staff  staff)
     {
         return toTenths(
-            staff.getPageTopLeft().y - staff.getSystem().getTopLeft().y -
+            staff.getTopLeft().y - staff.getSystem().getTopLeft().y -
             units);
     }
 
@@ -363,18 +363,18 @@ public class MusicXML
     // yOf //
     //-----//
     /**
-     * Report the musicXML Y value of a SystemPoint. This method is safer than
+     * Report the musicXML Y value of a PixelPoint. This method is safer than
      * the other one which simply accepts a (detyped) double ordinate.
      *
      * @param point the system-based point
      * @param staff the related staff
      * @return the upward-oriented ordinate wrt to staff top line (in tenths)
      */
-    public static BigDecimal yOf (SystemPoint point,
+    public static BigDecimal yOf (PixelPoint point,
                                   Staff       staff)
     {
         return toTenths(
-            staff.getPageTopLeft().y - staff.getSystem().getTopLeft().y -
+            staff.getTopLeft().y - staff.getSystem().getTopLeft().y -
             point.y);
     }
 }

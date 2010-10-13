@@ -15,6 +15,8 @@ import omr.graph.Digraph;
 
 import omr.log.Logger;
 
+import omr.math.Histogram;
+
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
@@ -539,56 +541,58 @@ public class Lag<L extends Lag<L, S>, S extends Section>
          * @param projection the orientation of the projection
          * @return the computed histogram
          */
-        public int[] getHistogram (Oriented projection)
+        public Histogram<Integer> getHistogram (Oriented projection)
         {
-            int[] histo;
+            // Build the sequences of runs & positions
+            final List<Run>     runList = new ArrayList<Run>();
+            final List<Integer> posList = new ArrayList<Integer>();
+            int                 pos = contour.y;
 
-            if ((orientation.isVertical() && projection.isVertical()) ||
-                (!orientation.isVertical() && !projection.isVertical())) {
-                // Same orientations : we project along the runs
-                histo = new int[contour.height];
-                Arrays.fill(histo, 0);
-
-                int bucket = 0;
-
-                for (List<Run> alignedRuns : runs.subList(
-                    contour.y,
-                    contour.y + contour.height)) {
-                    for (Run run : alignedRuns) {
-                        final int iMin = Math.max(contour.x, run.getStart());
-                        final int iMax = Math.min(
-                            (contour.x + contour.width) - 1,
-                            run.getStop());
-
-                        if (iMin <= iMax) {
-                            histo[bucket] += (iMax - iMin + 1);
-                        }
-                    }
-
-                    bucket++;
+            for (List<Run> alignedRuns : runs.subList(
+                contour.y,
+                contour.y + contour.height)) {
+                for (Run run : alignedRuns) {
+                    runList.add(run);
+                    posList.add(pos);
                 }
-            } else {
-                // Different orientations : we project across the runs
-                histo = new int[contour.width];
-                Arrays.fill(histo, 0);
 
-                for (List<Run> alignedRuns : runs.subList(
-                    contour.y,
-                    contour.y + contour.height)) {
-                    for (Run run : alignedRuns) {
-                        final int iMin = Math.max(contour.x, run.getStart());
-                        final int iMax = Math.min(
-                            (contour.x + contour.width) - 1,
-                            run.getStop());
+                pos++;
+            }
 
-                        for (int i = iMin; i <= iMax; i++) {
-                            histo[i - contour.x]++;
-                        }
-                    }
+            return getHistogram(
+                orientation.isVertical() == projection.isVertical(),
+                runList,
+                posList);
+        }
+
+        /**
+         * Report the histogram obtained in the provided projection orientation
+         * of the runs contained in the provided sections
+         * @param projection the orientation of the projection
+         * @param the provided sections
+         * @return the computed histogram
+         */
+        public Histogram<Integer> getHistogram (Oriented      projection,
+                                                Collection<S> sections)
+        {
+            // Build the sequences of runs & positions
+            final List<Run>     runList = new ArrayList<Run>();
+            final List<Integer> posList = new ArrayList<Integer>();
+
+            for (S section : sections) {
+                final List<Run> sectionRuns = section.getRuns();
+                int             pos = section.getFirstPos();
+
+                for (Run run : sectionRuns) {
+                    runList.add(run);
+                    posList.add(pos++);
                 }
             }
 
-            return histo;
+            return getHistogram(
+                orientation.isVertical() == projection.isVertical(),
+                runList,
+                posList);
         }
 
         /**
@@ -604,6 +608,67 @@ public class Lag<L extends Lag<L, S>, S extends Section>
         public String toString ()
         {
             return "Roi absContour:" + getAbsoluteContour();
+        }
+
+        /**
+         * Report the histogram obtained in the specified projection orientation
+         * of the intersection between the provided runs and the roi
+         * @param alongTheRuns true for a projection along the runs, false for
+         * a projection across the runs
+         * @param runList the provided sequence of runs
+         * @param posList the provided sequence of runs positions
+         * @return the computed histogram
+         */
+        private Histogram<Integer> getHistogram (boolean       alongTheRuns,
+                                                 List<Run>     runList,
+                                                 List<Integer> posList)
+        {
+            // Check parameters
+            if ((posList == null) || (runList == null)) {
+                throw new IllegalArgumentException(
+                    "Null sequence of runs or positions");
+            }
+
+            // Check consistency
+            if (posList.size() != runList.size()) {
+                throw new IllegalArgumentException(
+                    "Inconsistent sequences of runs and positions");
+            }
+
+            final int                minPos = contour.y;
+            final int                maxPos = (contour.y + contour.height) - 1;
+            final int                minCoord = contour.x;
+            final int                maxCoord = (contour.x + contour.width) -
+                                                1;
+            final Histogram<Integer> histo = new Histogram<Integer>();
+            int                      index = 0;
+
+            for (Run run : runList) {
+                int pos = posList.get(index++);
+
+                // Clipping on y
+                if ((pos < minPos) || (pos > maxPos)) {
+                    continue;
+                }
+
+                final int iMin = Math.max(minCoord, run.getStart());
+                final int iMax = Math.min(maxCoord, run.getStop());
+
+                // Clipping on x
+                if (iMin <= iMax) {
+                    if (alongTheRuns) {
+                        // Along the runs
+                        histo.increaseCount(pos, iMax - iMin + 1);
+                    } else {
+                        // Across the runs
+                        for (int i = iMin; i <= iMax; i++) {
+                            histo.increaseCount(i, 1);
+                        }
+                    }
+                }
+            }
+
+            return histo;
         }
     }
 }

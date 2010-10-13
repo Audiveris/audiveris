@@ -45,6 +45,9 @@ public class PaintingParameters
     /** Should the dummy parts be painted */
     public static final String DUMMY_PAINTING = "dummyPainting";
 
+    /** Should the score entities be painted */
+    public static final String ENTITY_PAINTING = "entityPainting";
+
     //~ Methods ----------------------------------------------------------------
 
     //-------------//
@@ -74,6 +77,27 @@ public class PaintingParameters
     public boolean isDummyPainting ()
     {
         return constants.dummyPainting.getValue();
+    }
+
+    //-------------------//
+    // setEntityPainting //
+    //-------------------//
+    public void setEntityPainting (boolean value)
+    {
+        boolean oldValue = constants.entityPainting.getValue();
+        constants.entityPainting.setValue(value);
+        firePropertyChange(
+            ENTITY_PAINTING,
+            oldValue,
+            constants.entityPainting.getValue());
+    }
+
+    //------------------//
+    // isEntityPainting //
+    //------------------//
+    public boolean isEntityPainting ()
+    {
+        return constants.entityPainting.getValue();
     }
 
     //-----------------//
@@ -151,6 +175,18 @@ public class PaintingParameters
     {
     }
 
+    //----------------//
+    // toggleEntities //
+    //----------------//
+    /**
+     * Action that toggles the display of score entities
+     * @param e the event that triggered this action
+     */
+    @Action(selectedProperty = ENTITY_PAINTING)
+    public void toggleEntities (ActionEvent e)
+    {
+    }
+
     //-------------//
     // toggleMarks //
     //-------------//
@@ -216,6 +252,11 @@ public class PaintingParameters
         final Constant.Boolean dummyPainting = new Constant.Boolean(
             true,
             "Should the dummy parts be painted");
+
+        /** Should the score entities be painted */
+        final Constant.Boolean entityPainting = new Constant.Boolean(
+            true,
+            "Should the score entities be painted");
     }
 
     //--------//

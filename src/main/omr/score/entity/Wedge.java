@@ -17,8 +17,8 @@ import omr.glyph.facets.Glyph;
 import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
+import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
-import omr.score.common.SystemPoint;
 import omr.score.visitor.ScoreVisitor;
 
 /**
@@ -54,35 +54,24 @@ public class Wedge
      * @param chord a related chord if any
      * @param glyph the underlying glyph
      */
-    public Wedge (Measure     measure,
-                  boolean     start,
-                  SystemPoint point,
-                  Chord       chord,
-                  Glyph       glyph)
+    public Wedge (Measure    measure,
+                  boolean    start,
+                  PixelPoint point,
+                  Chord      chord,
+                  Glyph      glyph)
     {
         super(measure, start, point, chord, glyph);
 
         // Spread
         if ((start && (getShape() == Shape.DECRESCENDO)) ||
             (!start && (getShape() == Shape.CRESCENDO))) {
-            spread = getSystem()
-                         .getScale()
-                         .pixelsToUnits(glyph.getContourBox().height);
+            spread = glyph.getContourBox().height;
         } else {
             spread = 0;
         }
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
 
     //-----------//
     // getSpread //
@@ -97,6 +86,15 @@ public class Wedge
         return spread;
     }
 
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
     //----------//
     // populate //
     //----------//
@@ -107,9 +105,9 @@ public class Wedge
      * @param startingMeasure measure where left side is located
      * @param startingPoint location for left point
      */
-    public static void populate (Glyph       glyph,
-                                 Measure     startingMeasure,
-                                 SystemPoint startingPoint)
+    public static void populate (Glyph      glyph,
+                                 Measure    startingMeasure,
+                                 PixelPoint startingPoint)
     {
         ScoreSystem    system = startingMeasure.getSystem();
         SystemPart     part = startingMeasure.getPart();
@@ -125,9 +123,10 @@ public class Wedge
                 glyph));
 
         // Stop
-        SystemPoint endingPoint = system.toSystemPoint(
-            new PixelPoint(box.x + box.width, box.y + (box.height / 2)));
-        Measure     endingMeasure = part.getMeasureAt(endingPoint);
+        PixelPoint endingPoint = new PixelPoint(
+            box.x + box.width,
+            box.y + (box.height / 2));
+        Measure    endingMeasure = part.getMeasureAt(endingPoint);
         glyph.addTranslation(
             new Wedge(
                 endingMeasure,

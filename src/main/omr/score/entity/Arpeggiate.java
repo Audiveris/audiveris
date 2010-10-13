@@ -18,8 +18,8 @@ import omr.glyph.facets.Glyph;
 import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
+import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
-import omr.score.common.SystemPoint;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
@@ -56,10 +56,10 @@ public class Arpeggiate
      * @param chord the chord related to the mark
      * @param glyph the underlying glyph
      */
-    public Arpeggiate (Measure     measure,
-                       SystemPoint point,
-                       Chord       chord,
-                       Glyph       glyph)
+    public Arpeggiate (Measure    measure,
+                       PixelPoint point,
+                       Chord      chord,
+                       Glyph      glyph)
     {
         super(measure, point, chord, glyph);
     }
@@ -85,24 +85,24 @@ public class Arpeggiate
      * @param measure measure where the mark is located
      * @param point location for the mark
      */
-    public static void populate (Glyph       glyph,
-                                 Measure     measure,
-                                 SystemPoint point)
+    public static void populate (Glyph      glyph,
+                                 Measure    measure,
+                                 PixelPoint point)
     {
         // A Arpeggiate relates to ALL the embraced note(s)
         // We look on the right
         int            dx = measure.getScale()
-                                   .toUnits(constants.areaDx);
-        SystemPoint    shiftedPoint = new SystemPoint(point.x + dx, point.y);
+                                   .toPixels(constants.areaDx);
+        PixelPoint     shiftedPoint = new PixelPoint(point.x + dx, point.y);
         Slot           slot = measure.getClosestSlot(shiftedPoint);
 
         // We look for ALL embraced chord notes
         PixelRectangle box = glyph.getContourBox();
         ScoreSystem    system = measure.getSystem();
-        SystemPoint    top = system.toSystemPoint(
-            new PixelPoint(box.x + (box.width / 2), box.y));
-        SystemPoint    bottom = system.toSystemPoint(
-            new PixelPoint(box.x + (box.width / 2), box.y + box.height));
+        PixelPoint     top = new PixelPoint(box.x + (box.width / 2), box.y);
+        PixelPoint     bottom = new PixelPoint(
+            box.x + (box.width / 2),
+            box.y + box.height);
         List<Chord>    chords = slot.getEmbracedChords(top, bottom);
 
         if (!chords.isEmpty()) {

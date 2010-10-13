@@ -18,9 +18,7 @@ import omr.log.Logger;
 import omr.math.InjectionSolver;
 
 import omr.score.common.PixelPoint;
-import omr.score.common.SystemPoint;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
-import omr.score.ui.ScoreConstants;
 
 import omr.sheet.Scale.InterlineFraction;
 
@@ -92,7 +90,7 @@ public abstract class Slot
     private int id;
 
     /** Reference point of the slot */
-    protected SystemPoint refPoint;
+    protected PixelPoint refPoint;
 
     /** The containing measure */
     @Navigable(false)
@@ -127,7 +125,7 @@ public abstract class Slot
         InterlineFraction slotMargin = measure.getScore()
                                               .getSlotMargin();
         xUnitsMargin = measure.getScale()
-                              .toUnits(slotMargin);
+                              .toPixels(slotMargin);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -141,7 +139,7 @@ public abstract class Slot
      * @param sysPt the system point to check
      * @return true if aligned
      */
-    public boolean isAlignedWith (SystemPoint sysPt)
+    public boolean isAlignedWith (PixelPoint sysPt)
     {
         return Math.abs(sysPt.x - getX()) <= xUnitsMargin;
     }
@@ -274,7 +272,7 @@ public abstract class Slot
     /**
      * Report the abscissa of this slot
      *
-     * @return the slot abscissa, wrt the containing system (and not measure)
+     * @return the slot abscissa, wrt the page (and not measure)
      */
     public abstract int getX ();
 
@@ -371,7 +369,7 @@ public abstract class Slot
      * @param point the given point
      * @return the chord above, or null
      */
-    public Chord getChordAbove (SystemPoint point)
+    public Chord getChordAbove (PixelPoint point)
     {
         Chord chordAbove = null;
 
@@ -396,7 +394,7 @@ public abstract class Slot
      * @param point the given point
      * @return the chord below, or null
      */
-    public Chord getChordBelow (SystemPoint point)
+    public Chord getChordBelow (PixelPoint point)
     {
         // We look for the chord just below
         for (Chord chord : getChords()) {
@@ -432,8 +430,8 @@ public abstract class Slot
      * @param bottom lower point of range
      * @return the collection of chords, which may be empty
      */
-    public List<Chord> getEmbracedChords (SystemPoint top,
-                                          SystemPoint bottom)
+    public List<Chord> getEmbracedChords (PixelPoint top,
+                                          PixelPoint bottom)
     {
         List<Chord> embracedChords = new ArrayList<Chord>();
 
@@ -514,11 +512,9 @@ public abstract class Slot
                 pt = glyph.getAreaCenter();
             }
 
-            SystemPoint sysPt = system.toSystemPoint(pt);
-
             // First look for a suitable slot
             for (Slot slot : measure.getSlots()) {
-                if (slot.isAlignedWith(sysPt)) {
+                if (slot.isAlignedWith(pt)) {
                     slot.addGlyph(glyph);
 
                     return;
@@ -530,7 +526,7 @@ public abstract class Slot
 
             switch (policy) {
             case STEM_BASED :
-                slot = new StemBasedSlot(measure, sysPt);
+                slot = new StemBasedSlot(measure, pt);
 
                 break;
 
@@ -902,7 +898,8 @@ public abstract class Slot
             } else {
                 int dy = Math.abs(
                     newChord.getHeadLocation().y -
-                    oldChord.getHeadLocation().y) / ScoreConstants.INTER_LINE;
+                    oldChord.getHeadLocation().y) / newChord.getScale()
+                                                            .interline();
                 int dStem = Math.abs(
                     newChord.getStemDir() - oldChord.getStemDir());
 

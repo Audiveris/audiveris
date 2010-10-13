@@ -23,7 +23,7 @@ import omr.glyph.facets.Stick;
 
 import omr.log.Logger;
 
-import omr.score.common.PageRectangle;
+import omr.score.common.PixelRectangle;
 import omr.score.entity.Barline;
 import omr.score.entity.Measure;
 import omr.score.entity.ScoreSystem;
@@ -130,15 +130,15 @@ public class MeasuresBuilder
                                     Glyph      glyph)
     {
         // Extrema of glyph
-        PageRectangle box = scale.toUnits(glyph.getContourBox());
-        int           top = box.y;
-        int           bot = box.y + box.height;
+        PixelRectangle box = glyph.getContourBox();
+        int            top = box.y;
+        int            bot = box.y + box.height;
 
         // Check that part and glyph overlap vertically
         final int topPart = part.getFirstStaff()
-                                .getPageTopLeft().y;
+                                .getTopLeft().y;
         final int botPart = part.getLastStaff()
-                                .getPageTopLeft().y +
+                                .getTopLeft().y +
                             part.getLastStaff()
                                 .getHeight();
 
@@ -199,19 +199,22 @@ public class MeasuresBuilder
                 SystemPart part = (SystemPart) node;
 
                 if (isPartEmbraced(part, bar)) {
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            part + " - Creating measure for bar-line " + bar);
-                    }
-
                     Measure measure = new Measure(part);
                     Barline barline = new Barline(measure);
                     barline.addGlyph(bar);
+
+                    if (logger.isFineEnabled()) {
+                        logger.fine(
+                            "S#" + scoreSystem.getId() + " " + part +
+                            " - Created measure " + "@" +
+                            Integer.toHexString(measure.hashCode()) +
+                            " for barline " + bar);
+                    }
                 }
             }
         }
 
-        // Degraded case w/ no bar stisk
+        // Degraded case w/ no bar stick at all!
         for (TreeNode node : scoreSystem.getParts()) {
             SystemPart part = (SystemPart) node;
 
@@ -353,14 +356,14 @@ public class MeasuresBuilder
             int lastX = barline.getRightX();
             int minWidth = scale.toPixels(constants.minMeasureWidth);
 
-            if ((part.getFirstStaff()
-                     .getWidth() - lastX) < minWidth) {
+            if (((scoreSystem.getTopLeft().x + part.getFirstStaff()
+                                                   .getWidth()) - lastX) < minWidth) {
                 if (logger.isFineEnabled()) {
                     logger.fine("Adjusting EndingBar " + system);
                 }
 
                 // Adjust end of system & staff(s) to this one
-                scoreSystem.setWidth(lastX);
+                scoreSystem.setWidth(lastX - scoreSystem.getTopLeft().x);
 
                 for (TreeNode pnode : scoreSystem.getParts()) {
                     SystemPart prt = (SystemPart) pnode;
@@ -368,7 +371,7 @@ public class MeasuresBuilder
                     for (Iterator sit = prt.getStaves()
                                            .iterator(); sit.hasNext();) {
                         Staff stv = (Staff) sit.next();
-                        stv.setWidth(lastX);
+                        stv.setWidth(scoreSystem.getDimension().width);
                     }
                 }
             }
@@ -493,19 +496,19 @@ public class MeasuresBuilder
             return;
         }
 
-        int firstX = firstBarline.getLeftX();
+        int dx = firstBarline.getLeftX() - scoreSystem.getTopLeft().x;
 
         // Check is based on the width of this first measure
-        if (firstX < minWidth) {
+        if (dx < minWidth) {
             // Adjust system parameters if needed : topLeft and dimension
-            if (firstX != 0) {
+            if (dx != 0) {
                 if (logger.isFineEnabled()) {
-                    logger.fine("Adjusting firstX=" + firstX + " " + system);
+                    logger.fine("Adjusting firstX=" + dx + " " + system);
                 }
 
                 scoreSystem.getTopLeft()
-                           .translate(firstX, 0);
-                scoreSystem.getDimension().width -= firstX;
+                           .translate(dx, 0);
+                scoreSystem.getDimension().width -= dx;
             }
 
             // Adjust beginning of all staves to this one
@@ -519,14 +522,14 @@ public class MeasuresBuilder
                     part.setStartingBarline(measure.getBarline());
 
                     // Remove this first measure
-                    part.getMeasures()
-                        .remove(0);
+                    List<TreeNode> measures = part.getMeasures();
+                    measures.remove(0);
 
                     // Update abscissa of top-left corner of every staff
                     for (TreeNode sNode : part.getStaves()) {
                         Staff staff = (Staff) sNode;
-                        staff.getPageTopLeft()
-                             .translate(firstX, 0);
+                        staff.getTopLeft()
+                             .translate(dx, 0);
                     }
 
                     // Update other bar lines abscissae accordingly

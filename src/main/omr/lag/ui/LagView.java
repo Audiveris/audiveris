@@ -358,7 +358,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
      * @param g the graphics context
      */
     @Override
-    public void render (Graphics g)
+    public void render (Graphics2D g)
     {
         // Should we draw the section borders?
         boolean      drawBorders = ViewParameters.getInstance()
@@ -380,7 +380,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         renderItems(g);
 
         // Restore stoke
-        ((Graphics2D) g).setStroke(oldStroke);
+        g.setStroke(oldStroke);
     }
 
     //-----------//
@@ -468,7 +468,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
      *
      * @param g the graphic context
      */
-    protected void renderItems (Graphics g)
+    protected void renderItems (Graphics2D g)
     {
         // Only in Section selection mode
         if (!ViewParameters.getInstance()
@@ -773,7 +773,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     //------------------//
     // renderCollection //
     //------------------//
-    private void renderCollection (Graphics      g,
+    private void renderCollection (Graphics2D      g,
                                    Collection<S> collection,
                                    int           index,
                                    boolean       drawBorders)

@@ -15,7 +15,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.math.Population;
 
-import omr.score.common.SystemPoint;
+import omr.score.common.PixelPoint;
 
 /**
  * Class {@code HeadBasedSlot} is a slot whose position is based on the
@@ -63,7 +63,7 @@ public class HeadBasedSlot
     {
         if (refPoint == null) {
             if (xPop.getCardinality() > 0) {
-                refPoint = new SystemPoint(
+                refPoint = new PixelPoint(
                     (int) Math.rint(xPop.getMeanValue()),
                     (int) Math.rint(yPop.getMeanValue()));
             }
@@ -86,8 +86,7 @@ public class HeadBasedSlot
     {
         super.addGlyph(glyph);
 
-        SystemPoint sysPt = measure.getSystem()
-                                   .toSystemPoint(glyph.getLocation());
+        PixelPoint sysPt = glyph.getLocation();
         xPop.includeValue(sysPt.x);
         yPop.includeValue(sysPt.y);
 

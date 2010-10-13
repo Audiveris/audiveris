@@ -18,7 +18,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
-import omr.score.common.SystemPoint;
+import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
@@ -124,7 +124,7 @@ public class Dynamics
      * @param glyph the underlying glyph
      */
     public Dynamics (Measure     measure,
-                     SystemPoint point,
+                     PixelPoint point,
                      Chord       chord,
                      Glyph       glyph)
     {
@@ -158,7 +158,7 @@ public class Dynamics
      */
     public static void populate (Glyph       glyph,
                                  Measure     measure,
-                                 SystemPoint point)
+                                 PixelPoint point)
     {
         // Can we gather with another dynamics letter? (e.g. m + p -> mp)
         for (TreeNode node : measure.getChildren()) {
@@ -212,13 +212,13 @@ public class Dynamics
     //------------------//
     // isCompatibleWith //
     //------------------//
-    private boolean isCompatibleWith (SystemPoint point)
+    private boolean isCompatibleWith (PixelPoint point)
     {
         // Check x-proximity and y-alignment
         Scale scale = getSystem()
                           .getScale();
-        int   dx = scale.toUnits(constants.maxDx);
-        int   dy = scale.toUnits(constants.maxDy);
+        int   dx = scale.toPixels(constants.maxDx);
+        int   dy = scale.toPixels(constants.maxDy);
 
         // Horizontal distance
         int xDist = Math.min(

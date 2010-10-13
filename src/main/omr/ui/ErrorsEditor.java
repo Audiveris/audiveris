@@ -16,8 +16,8 @@ import omr.glyph.facets.Glyph;
 import omr.log.Logger;
 
 import omr.score.common.ScoreLocation;
-import omr.score.common.SystemPoint;
-import omr.score.common.SystemRectangle;
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 import omr.score.entity.Measure;
 import omr.score.entity.MeasureNode;
 import omr.score.entity.ScoreSystem;
@@ -325,7 +325,7 @@ public class ErrorsEditor
                         // Otherwise use system node location as possible
                         try {
                             ScoreSystem system = record.node.getSystem();
-                            SystemPoint sysPt = null;
+                            PixelPoint sysPt = null;
 
                             try {
                                 sysPt = record.node.getCenter();
@@ -351,7 +351,7 @@ public class ErrorsEditor
                                     null,
                                     new ScoreLocation(
                                         system.getId(),
-                                        new SystemRectangle(sysPt))));
+                                        new PixelRectangle(sysPt))));
                         } catch (Exception ex) {
                             logger.warning(
                                 "Failed pointing to " + record.node,

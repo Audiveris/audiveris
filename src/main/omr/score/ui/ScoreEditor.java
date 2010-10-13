@@ -17,16 +17,14 @@ import omr.log.Logger;
 
 import omr.score.Score;
 import omr.score.ScoreSheetBridge;
-import omr.score.common.PagePoint;
+import omr.score.common.PixelDimension;
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 import omr.score.common.ScoreLocation;
 import omr.score.common.ScorePoint;
-import omr.score.common.SystemPoint;
-import omr.score.common.SystemRectangle;
-import omr.score.common.UnitDimension;
 import omr.score.entity.Measure;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Slot;
-import static omr.score.ui.ScoreConstants.*;
 
 import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
@@ -246,9 +244,8 @@ public class ScoreEditor
     //-----------//
     // tellPoint //
     //-----------//
-    private void tellPoint (ScorePoint  scrPt,
-                            PagePoint   pagPt,
-                            SystemPoint sysPt)
+    private void tellPoint (ScorePoint scrPt,
+                            PixelPoint sysPt)
     {
         StringBuilder sb = new StringBuilder();
 
@@ -261,17 +258,8 @@ public class ScoreEditor
               .append(" ");
         }
 
-        if (pagPt != null) {
-            sb.append("PagePoint")
-              .append(" X:")
-              .append(pagPt.x)
-              .append(" Y:")
-              .append(pagPt.y)
-              .append(" ");
-        }
-
         if (sysPt != null) {
-            sb.append("SystemPoint")
+            sb.append("PixelPoint")
               .append(" X:")
               .append(sysPt.x)
               .append(" Y:")
@@ -364,7 +352,7 @@ public class ScoreEditor
                 ScoreLocation scoreLocation = locationEvent.location;
 
                 if (scoreLocation != null) {
-                    SystemRectangle rect = scoreLocation.rectangle;
+                    PixelRectangle rect = scoreLocation.rectangle;
 
                     if (rect != null) {
                         // Beware, the id may no longer be valid
@@ -428,30 +416,30 @@ public class ScoreEditor
                 return;
             }
 
-            ScoreSystem     system = measure.getSystem();
-            UnitDimension   dimension = system.getDimension();
-            SystemView      systemView = scoreLayout.getSystemView(system);
-            SystemRectangle systemBox = new SystemRectangle(
-                0,
-                0,
+            ScoreSystem    system = measure.getSystem();
+            PixelDimension dimension = system.getDimension();
+            SystemView     systemView = scoreLayout.getSystemView(system);
+            PixelRectangle systemBox = new PixelRectangle(
+                system.getTopLeft().x,
+                system.getTopLeft().y,
                 dimension.width,
-                dimension.height + STAFF_HEIGHT);
+                dimension.height + score.getMeanStaffHeight());
 
             // If the current measure is at the beginning of a system,
             // make the most of this (new) system as visible as possible
             // We need absolute rectangle (non system-based)
             if (measure.getPreviousSibling() == null) {
-                showFocusLocation(systemView.toScoreRectangle(systemBox));
+                showFocusLocation(systemView.toScoreRectangle(systemBox), false);
             }
 
             // Make the measure rectangle visible
-            SystemRectangle rect = measure.getBox();
-            int             margin = constants.measureMargin.getValue();
+            PixelRectangle rect = measure.getBox();
+            int            margin = constants.measureMargin.getValue();
             // Actually, use the whole system height
             rect.y = systemBox.y;
             rect.height = systemBox.height;
             rect.grow(margin, margin);
-            showFocusLocation(systemView.toScoreRectangle(rect));
+            showFocusLocation(systemView.toScoreRectangle(rect), false);
         }
 
         //---------//
@@ -483,22 +471,21 @@ public class ScoreEditor
                     ScoreLocation scoreLocation = ((ScoreLocationEvent) event).location;
 
                     if (scoreLocation != null) {
-                        SystemRectangle rect = scoreLocation.rectangle;
+                        PixelRectangle rect = scoreLocation.rectangle;
 
                         if (rect != null) {
                             int         id = scoreLocation.systemId;
                             SystemView  systemView = scoreLayout.getSystemView(
                                 id);
                             ScoreSystem system = systemView.getSystem();
-                            SystemPoint sysPt = new SystemPoint(rect.x, rect.y);
+                            PixelPoint  sysPt = new PixelPoint(rect.x, rect.y);
                             ScorePoint  scrPt = systemView.toScorePoint(sysPt);
-                            PagePoint   pagPt = system.toPagePoint(sysPt);
-                            tellPoint(scrPt, pagPt, sysPt);
+                            tellPoint(scrPt, sysPt);
                         } else {
-                            tellPoint(null, null, null);
+                            tellPoint(null, null);
                         }
                     } else {
-                        tellPoint(null, null, null);
+                        tellPoint(null, null);
                     }
                 }
             } catch (Exception ex) {
@@ -519,9 +506,12 @@ public class ScoreEditor
         // render //
         //--------//
         @Override
-        public void render (Graphics g)
+        public void render (Graphics2D g)
         {
-            ScorePainter painter = new ScorePainter(scoreLayout, g, zoom);
+            ScoreLogicalPainter painter = new ScoreLogicalPainter(
+                scoreLayout,
+                g,
+                zoom);
             score.accept(painter);
 
             if (highlightedSlot != null) {
@@ -582,7 +572,7 @@ public class ScoreEditor
                 ScorePoint  scrPt = new ScorePoint(rect.x, rect.y);
                 ScoreSystem system = scoreLayout.scoreLocateSystem(scrPt);
                 SystemView  systemView = scoreLayout.getSystemView(system);
-                SystemPoint sysPt = systemView.toSystemPoint(scrPt);
+                PixelPoint  sysPt = systemView.toPixelPoint(scrPt);
                 scoreLocation = new ScoreLocation(system.getId(), sysPt);
             }
 

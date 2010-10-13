@@ -135,9 +135,6 @@ public class ConstantManager
     /** User properties file name */
     private static final String USER_FILE_NAME = "run.properties";
 
-    //    /** Current properties file name */
-    //    private static final String CURRENT_FILE_NAME = "run.properties.xml";
-
     /** User properties file folder */
     private static final File USER_FILE_FOLDER = new File(
         System.getProperty("user.home") +
@@ -166,11 +163,6 @@ public class ConstantManager
         defaultHolder);
 
     //~ Constructors -----------------------------------------------------------
-
-    //    /** Current properties */
-    //    private final CurrentHolder currentHolder = new CurrentHolder(
-    //        null,
-    //        new File(USER_FILE_FOLDER, CURRENT_FILE_NAME));
 
     //-----------------//
     // ConstantManager //
@@ -319,8 +311,6 @@ public class ConstantManager
     public void storeResource ()
     {
         userHolder.store();
-
-        ///currentHolder.store();
     }
 
     //-------------------------//
