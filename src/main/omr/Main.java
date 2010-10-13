@@ -19,6 +19,8 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
+import omr.score.ui.MusicFont;
+
 import omr.script.Script;
 import omr.script.ScriptManager;
 
@@ -35,8 +37,6 @@ import omr.util.OmrExecutors;
 import org.jdesktop.application.Application;
 
 import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -277,29 +277,6 @@ public class Main
                                 }
 
                                 return null;
-
-                                //                            } else {
-                                //                                // Try a URL
-                                //                                URL url = null;
-                                //
-                                //                                try {
-                                //                                    url = new URL(name);
-                                //                                    logger.info("Trying URL " + name);
-                                //
-                                //                                    final Sheet sheet = new Sheet(url);
-                                //                                    parameters.targetStep.performUntil(sheet);
-                                //
-                                //                                    // Close when in batch mode
-                                //                                    if (gui == null) {
-                                //                                        sheet.close();
-                                //                                    }
-                                //
-                                //                                    return null;
-                                //                                } catch (MalformedURLException ex) {
-                                //                                    logger.warning("Malformed URL");
-                                //                                } catch (Exception ex) {
-                                //                                    logger.warning("Exception occurred", ex);
-                                //                                }
                             } else {
                                 logger.warning("Could not find sheet " + name);
                             }
@@ -403,6 +380,10 @@ public class Main
             Application.launch(MainGui.class, args);
         } else {
             // For batch mode
+
+            // Check MusicFont is loaded
+            MusicFont.checkMusicFont();
+
             // Launch the required tasks, if any
             List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
             tasks.addAll(getSheetsTasks());

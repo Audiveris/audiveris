@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.score.ui;
 
+import omr.Main;
+
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
@@ -59,7 +61,7 @@ public class MusicFont
 
     /** Underlying font, with some size */
     private static final Font genericFont = new Font(
-        "SToccata",
+        "Machin", //"SToccata",
         Font.PLAIN,
         100);
 
@@ -335,6 +337,29 @@ public class MusicFont
         }
 
         return font;
+    }
+
+    //----------------//
+    // checkMusicFont //
+    //----------------//
+    public static boolean checkMusicFont ()
+    {
+        // Check we have been able to load the font
+        if (genericFont.getFamily()
+                       .equals("Dialog")) {
+            String msg = "*** SToccata font not found." +
+                         " Please install SToccata.ttf ***";
+            logger.severe(msg);
+
+            if (Main.getGui() != null) {
+                Main.getGui()
+                    .displayError(msg);
+            }
+
+            return false;
+        }
+
+        return true;
     }
 
     //----------//

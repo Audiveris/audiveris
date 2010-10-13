@@ -23,6 +23,7 @@ import omr.log.Logger;
 
 import omr.score.ScoreExporter;
 import omr.score.midi.MidiAgent;
+import omr.score.ui.MusicFont;
 import omr.score.ui.ScoreController;
 
 import omr.selection.MouseMovement;
@@ -223,6 +224,24 @@ public class MainGui
         logPane.clearLog();
     }
 
+    //--------------//
+    // displayError //
+    //--------------//
+    /**
+     * Allow to display a modal dialog with an error message
+     *
+     * @param message the error message
+     */
+    public void displayError (String message)
+    {
+        JOptionPane.showMessageDialog(
+            frame,
+            message,
+            "Error - " +
+            app.getContext().getResourceMap().getString("Application.name"),
+            JOptionPane.ERROR_MESSAGE);
+    }
+
     //----------------//
     // displayMessage //
     //----------------//
@@ -416,6 +435,9 @@ public class MainGui
         }
 
         Main.setGui(this);
+
+        // Check MusicFont is loaded
+        MusicFont.checkMusicFont();
 
         // Just in case we already have messages pending
         notifyLog();
@@ -743,10 +765,9 @@ public class MainGui
 
         public void willExit (EventObject e)
         {
-
             // Close all sheets, to record their bench data
-            SheetsManager.getInstance().closeAllSheets();
-
+            SheetsManager.getInstance()
+                         .closeAllSheets();
 
             // Store latest constant values on disk
             ConstantManager.getInstance()
