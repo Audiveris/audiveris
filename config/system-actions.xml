@@ -47,8 +47,7 @@
     <action domain="MIDI" section="30"  class="omr.score.midi.MidiActions" method="writeMidi" />
     <action domain="MIDI" section="30"  class="omr.score.midi.MidiActions" method="writeMidiAs" />
 
-    <action domain="VIEW" section="10"  class="omr.score.ui.LayoutParameter"                  method="toggleLayout"   item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="20"  class="omr.score.ui.PaintingParameters"               method="toggleEntities" item="javax.swing.JCheckBoxMenuItem" button="javax.swing.JToggleButton"/>
+    <action domain="VIEW" section="10"  class="omr.score.ui.PaintingParameters"               method="toggleEntities" item="javax.swing.JCheckBoxMenuItem" button="javax.swing.JToggleButton"/>
     <action domain="VIEW" section="20"  class="omr.score.ui.PaintingParameters"               method="toggleDummies"  item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="20"  class="omr.score.ui.PaintingParameters"               method="toggleSlots"    item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="20"  class="omr.score.ui.PaintingParameters"               method="toggleVoices"   item="javax.swing.JCheckBoxMenuItem"/>
