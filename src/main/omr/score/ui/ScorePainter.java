@@ -237,13 +237,22 @@ public abstract class ScorePainter
         // Compute precise abscissae values
         if (beam.isHook()) {
             // Just a hook stuck to a stem on one side
-            Chord chord = beam.getChords()
-                              .first();
+            if (!beam.getChords()
+                     .isEmpty()) {
+                Chord chord = beam.getChords()
+                                  .first();
 
-            if (chord.getCenter().x < beam.getCenter().x) {
-                left.x -= dx;
+                if (chord.getCenter().x < beam.getCenter().x) {
+                    left.x -= dx;
+                } else {
+                    right.x += dx;
+                }
             } else {
-                right.x += dx;
+                beam.addError(
+                    beam.getGlyphs().iterator().next(),
+                    "Beam hook with no related chord");
+
+                return false;
             }
         } else {
             // Standard beam stuck to 2 stems, one on either side
