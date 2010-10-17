@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.score.midi;
 
+import omr.Main;
+
 import omr.log.Logger;
 
 import omr.score.MeasureRange;
@@ -158,14 +160,18 @@ public class MidiAgent
 
         //== End of init sequence
 
-        // Our playback listener
-        receiver = new MidiReceiver(this);
+        // Our playback listener, if needed
+        if (Main.getGui() != null) {
+            receiver = new MidiReceiver(this);
 
-        try {
-            controller = new OmrFrameController(new OmrFrameView());
-            controller.addPlaybackListener(receiver);
-        } catch (Exception ex) {
-            logger.warning("Error creating OmrFrameController", ex);
+            try {
+                controller = new OmrFrameController(new OmrFrameView());
+                controller.addPlaybackListener(receiver);
+            } catch (Exception ex) {
+                logger.warning("Error creating OmrFrameController", ex);
+            }
+        } else {
+            receiver = null;
         }
     }
 
@@ -365,9 +371,9 @@ public class MidiAgent
         /*
          *
          * So here are the functions you need for Audiveris:
-                         1) call com.xenoage.zong.musicxml.MusicXMLDocument.read(org.w3c.dom.Document doc)
+                               1) call com.xenoage.zong.musicxml.MusicXMLDocument.read(org.w3c.dom.Document doc)
          * to get an instance of a MusicXMLDocument out of your DOM document
-                         2) handle this document to
+                               2) handle this document to
          * com.xenoage.zong.player.gui.Controller.loadScore(MxlScorePartwise doc, boolean ignoreErrors)
          * (set ignoreErrors to true, of course)
          */
@@ -384,24 +390,6 @@ public class MidiAgent
             // Hand it over directly to MusicXML reader
             MusicXMLDocument mxlDocument = MusicXMLDocument.read(document);
             controller.loadDocument(mxlDocument.getScore());
-
-            //
-            //
-            //            // Hand it over directly to the MusicXML reader
-            //            controller.loadDocument(document);
-            //            
-            //            
-            //            try {
-            //                this.measureRange = measureRange;
-            //
-            //
-            //                ScoreExporter exporter = new ScoreExporter(score);
-            //
-            //                if (measureRange == null) {
-            //                    measureRange = score.getMeasureRange();
-            //                }
-            //
-            //                exporter.setMeasureRange(measureRange);
         } catch (Exception ex) {
             logger.warning("Midi Agent error", ex);
             document = null; // Safer

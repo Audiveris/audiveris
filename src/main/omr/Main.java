@@ -27,6 +27,7 @@ import omr.script.ScriptManager;
 import omr.sheet.Sheet;
 
 import omr.step.ProcessingCancellationException;
+import omr.step.Step;
 
 import omr.ui.MainGui;
 
@@ -57,10 +58,14 @@ import javax.swing.*;
  * <dt> <b>-batch</b> </dt> <dd> to run in batch mode, with no user
  * interface. </dd>
  *
- * <dt> <b>-step STEPNAME</b> </dt> <dd> to run till the specified
- * step. 'STEPNAME' can be any one of the step names (the case is irrelevant) as
- * defined in the {@link omr.step.Step} class. This step will be performed on
- * each sheet referenced from the command line.</dd>
+ * <dt> <b>-bench</b> </dt> <dd> to record bench data and save it to disk.
+ * </dd>
+ *
+ * <dt> <b>-step (STEPNAME | &#64;STEPLIST)+</b> </dt> <dd> to run all the
+ * specified steps (including the steps which are mandatory to get to the
+ * specified ones). 'STEPNAME' can be any one of the step names (the case is
+ * irrelevant) as defined in the {@link omr.step.Step} class. These steps will
+ * be performed on each sheet referenced from the command line.</dd>
  *
  * <dt> <b>-option (KEY=VALUE | &#64;OPTIONLIST)+</b> </dt> <dd> to specify
  * the value of some application parameters (that can also be set via the
@@ -509,7 +514,16 @@ public class Main
         // Interactive or Batch mode ?
         if (parameters.batchMode) {
             logger.info("Running in batch mode");
-            System.setProperty("java.awt.headless", "true");
+
+            ///System.setProperty("java.awt.headless", "true");
+
+            // Check MIDI output is not asked for
+            if (parameters.targetSteps.contains(Step.MIDI)) {
+                logger.warning(
+                    "MIDI output is not compatible with -batch mode." +
+                    " MIDI output is ignored.");
+                parameters.targetSteps.remove(Step.MIDI);
+            }
         } else {
             logger.fine("Running in interactive mode");
 

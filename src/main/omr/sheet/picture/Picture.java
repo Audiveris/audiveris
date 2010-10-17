@@ -990,7 +990,6 @@ public class Picture
 
         // Cache dimensions
         dimension = new java.awt.Dimension(image.getWidth(), image.getHeight());
-        ///dimensionWidth = dimension.width;
         raster = Raster.createWritableRaster(
             image.getData().getSampleModel(),
             image.getData().getDataBuffer(),

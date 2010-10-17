@@ -240,6 +240,12 @@ public class SheetSteps
      */
     public synchronized void performSteps (EnumSet<Step> targetSteps)
     {
+        if (targetSteps.isEmpty()) {
+            logger.info("Set of required steps is empty");
+
+            return;
+        }
+
         try {
             // First target step
             Step firstTarget = targetSteps.iterator()
@@ -742,7 +748,7 @@ public class SheetSteps
         //~ Constructors -------------------------------------------------------
 
         PrintScoreTask (Sheet sheet,
-                   Step  step)
+                        Step  step)
         {
             super(sheet, step);
         }
@@ -770,7 +776,7 @@ public class SheetSteps
         //~ Constructors -------------------------------------------------------
 
         PrintSheetTask (Sheet sheet,
-                   Step  step)
+                        Step  step)
         {
             super(sheet, step);
         }
