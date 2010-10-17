@@ -30,8 +30,6 @@ import omr.log.Logger;
 import omr.math.Population;
 
 import omr.score.common.PixelPoint;
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import omr.score.common.PixelRectangle;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.ScoreSystem.StaffPosition;
@@ -410,6 +408,18 @@ public class Sentence
         return sb.toString();
     }
 
+    //--------//
+    // useOCR //
+    //--------//
+    /**
+     * Can we use the OCR companion program?
+     * @return true if the allow access to the OCR program (Tesseract)
+     */
+    public static boolean useOCR ()
+    {
+        return constants.useOCR.getValue();
+    }
+
     //-----------//
     // isCloseTo //
     //-----------//
@@ -675,7 +685,7 @@ public class Sentence
                                         .getLanguage();
 
             // If we have no content or if a new language is being used for OCR
-            if (constants.useOCR.getValue() &&
+            if (useOCR() &&
                 ((info.getOcrContent() == null) ||
                 !language.equals(info.getOcrLanguage()))) {
                 List<OcrLine>           lines = Language.getOcr()

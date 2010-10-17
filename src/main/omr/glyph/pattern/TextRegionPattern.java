@@ -21,6 +21,7 @@ import omr.glyph.facets.Glyph;
 import omr.glyph.facets.Stick;
 import omr.glyph.text.Language;
 import omr.glyph.text.OcrLine;
+import omr.glyph.text.Sentence;
 import omr.glyph.text.TextInfo;
 
 import omr.log.Logger;
@@ -357,58 +358,63 @@ public class TextRegionPattern
         }
 
         // Call the OCR?
-        OcrLine ocrLine = null;
+        if (Sentence.useOCR()) {
+            OcrLine ocrLine = null;
 
-        if (compound.getTextInfo()
-                    .getContent() == null) {
-            ocrLine = callOCR(compound, language);
+            if (compound.getTextInfo()
+                        .getContent() == null) {
+                ocrLine = callOCR(compound, language);
 
-            if (ocrLine == null) {
+                if (ocrLine == null) {
+                    return false;
+                }
+
+                // Record the OCR information
+                TextInfo ti = compound.getTextInfo();
+                ti.setOcrInfo(language, ocrLine);
+                ti.setTextRole(ti.getTextRole());
+            } else {
+                ocrLine = compound.getTextInfo()
+                                  .getOcrLine();
+            }
+
+            // Check this is not a tuplet
+            if (ocrLine.value.equals("3") &&
+                (compound.getShape() == Shape.TUPLET_THREE)) {
+                if (logger.isFineEnabled()) {
+                    logger.fine("This text is a tuplet 3");
+                }
+
                 return false;
             }
 
-            // Record the OCR information
-            TextInfo ti = compound.getTextInfo();
-            ti.setOcrInfo(language, ocrLine);
-            ti.setTextRole(ti.getTextRole());
+            if (ocrLine.value.equals("6") &&
+                (compound.getShape() == Shape.TUPLET_SIX)) {
+                if (logger.isFineEnabled()) {
+                    logger.fine("This text is a tuplet 6");
+                }
+
+                return false;
+            }
+
+            // OK
+            if (original == null) {
+                compound = system.addGlyph(compound);
+                system.computeGlyphFeatures(compound);
+            }
+
+            compound.setShape(Shape.TEXT, Evaluation.ALGORITHM);
+
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "Glyph#" + compound.getId() + "=>\"" + ocrLine.value +
+                    "\"");
+            }
+
+            return true;
         } else {
-            ocrLine = compound.getTextInfo()
-                              .getOcrLine();
+            return true; // By default (with no OCR call...)
         }
-
-        // Check this is not a tuplet
-        if (ocrLine.value.equals("3") &&
-            (compound.getShape() == Shape.TUPLET_THREE)) {
-            if (logger.isFineEnabled()) {
-                logger.fine("This text is a tuplet 3");
-            }
-
-            return false;
-        }
-
-        if (ocrLine.value.equals("6") &&
-            (compound.getShape() == Shape.TUPLET_SIX)) {
-            if (logger.isFineEnabled()) {
-                logger.fine("This text is a tuplet 6");
-            }
-
-            return false;
-        }
-
-        // OK
-        if (original == null) {
-            compound = system.addGlyph(compound);
-            system.computeGlyphFeatures(compound);
-        }
-
-        compound.setShape(Shape.TEXT, Evaluation.ALGORITHM);
-
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "Glyph#" + compound.getId() + "=>\"" + ocrLine.value + "\"");
-        }
-
-        return true;
     }
 
     //-------------------//
@@ -457,9 +463,6 @@ public class TextRegionPattern
         // Build one compound per blob and hand it over to OCR
         // Then retrieve the sections that are contained in char boxes
         // And make text glyphs out of these sections
-        String           language = system.getScoreSystem()
-                                          .getScore()
-                                          .getLanguage();
         SortedSet<Glyph> glyphs = new TreeSet<Glyph>(Glyph.globalComparator);
         glyphs.addAll(Glyphs.lookupGlyphs(system.getGlyphs(), polygon));
 

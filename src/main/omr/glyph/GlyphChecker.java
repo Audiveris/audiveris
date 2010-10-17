@@ -19,6 +19,7 @@ import omr.glyph.facets.Glyph;
 import omr.glyph.facets.Stick;
 import omr.glyph.text.Language;
 import omr.glyph.text.OcrLine;
+import omr.glyph.text.Sentence;
 
 import omr.log.Logger;
 
@@ -454,29 +455,33 @@ public class GlyphChecker
                         return false;
                     }
 
-                    // Simply check the tuplet character via OCR
-                    List<OcrLine> lines = Language.getOcr()
-                                                  .recognize(
-                        glyph.getImage(),
-                        null,
-                        "g" + glyph.getId() + ".");
+                    // Simply check the tuplet character via OCR, if available
+                    if (Sentence.useOCR()) {
+                        List<OcrLine> lines = Language.getOcr()
+                                                      .recognize(
+                            glyph.getImage(),
+                            null,
+                            "g" + glyph.getId() + ".");
 
-                    if ((lines != null) && !lines.isEmpty()) {
-                        String str = lines.get(0).value;
-                        Shape  shape = eval.shape;
+                        if ((lines != null) && !lines.isEmpty()) {
+                            String str = lines.get(0).value;
+                            Shape  shape = eval.shape;
 
-                        if ((shape == TUPLET_THREE) && str.equals("3")) {
-                            return true;
+                            if ((shape == TUPLET_THREE) && str.equals("3")) {
+                                return true;
+                            }
+
+                            if ((shape == TUPLET_SIX) && str.equals("6")) {
+                                return true;
+                            }
                         }
 
-                        if ((shape == TUPLET_SIX) && str.equals("6")) {
-                            return true;
-                        }
+                        eval.failure = new Evaluation.Failure("ocr");
+
+                        return false;
                     }
 
-                    eval.failure = new Evaluation.Failure("ocr");
-
-                    return false;
+                    return true;
                 }
             };
 
