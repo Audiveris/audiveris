@@ -320,7 +320,7 @@ public class StaffInfo
      * ledgers into account for positions far from staff lines
      *
      * @param pt the pixel point
-     * @param the containing system
+     * @param system the containing system
      * @return the pitch position
      */
     public double precisePitchPositionOf (PixelPoint pt,

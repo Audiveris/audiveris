@@ -59,8 +59,8 @@ public class MusicFont
     /** Cache of map according to desired staff height */
     private static final Map<Integer, Font> sizeMap = new HashMap<Integer, Font>();
 
-    /** Underlying font, with some size */
-    private static final Font genericFont = new Font(
+    /** Underlying music font, with some size */
+    public static final Font genericFont = new Font(
         "SToccata",
         Font.PLAIN,
         100);
@@ -367,9 +367,8 @@ public class MusicFont
     //----------//
     /**
      * Report the translation to go from the point specified by the alignment
-     * parameter to the drawing origin of the text layout (intersection of
-     * baseline with left edge)
-     * @param textLayout the symbol considered
+     * parameter to the drawing origin of the character bounds
+     * @param bounds the character drawing bounds
      * @param alignment the horizontal and vertical alignments used by the
      * calling program
      * @return the translation vector which goes from the program point to

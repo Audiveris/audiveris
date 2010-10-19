@@ -1124,11 +1124,11 @@ public abstract class ScorePainter
      * Paint a (time) number using the coordinates in units of its center point
      * within the containing system part
      *
-     * @param shape the shape whose icon must be painted
-     * @param point system-based given point in units
+     * @param number the number whose icon must be painted
+     * @param center the center of desired location
      */
     protected void paintTimeNumber (int        number,
-                                    PixelPoint sysCenter)
+                                    PixelPoint center)
     {
         int   base = MusicFont.getCodes(TIME_ZERO)[0];
         int[] codes = (number > 9) ? new int[2] : new int[1];
@@ -1143,7 +1143,7 @@ public abstract class ScorePainter
         String str = new String(codes, 0, codes.length);
         paint(
             layout(str),
-            location(sysCenter),
+            location(center),
             new Alignment(Horizontal.CENTER, Vertical.MIDDLE));
     }
 

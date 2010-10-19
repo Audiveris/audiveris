@@ -353,8 +353,8 @@ public class Note
     /**
      * Define the number of augmentation dots that impact this chord
      *
-     * @param dotsNumber the number of dots (should be the same for all notes
-     * within this chord)
+     * @param first the glyph of first dot
+     * @param second the glyph of second dot (if any)
      */
     public void setDots (Glyph first,
                          Glyph second)

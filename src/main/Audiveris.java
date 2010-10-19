@@ -35,7 +35,7 @@ public final class Audiveris
     // main //
     //------//
     /**
-     * The main entry point, which just calls {@link omr.Main#main}
+     * The main entry point, which just calls {@link omr.Main#doMain}
      *
      * @param args These args are simply passed to Main
      */

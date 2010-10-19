@@ -36,9 +36,9 @@ public class OmrFileFilter
 
     //~ Constructors -----------------------------------------------------------
 
-    //------------//
+    //---------------//
     // OmrFileFilter //
-    //------------//
+    //---------------//
     /**
      * Create a file filter, with only one file extension to consider
      *
@@ -49,9 +49,9 @@ public class OmrFileFilter
         this(null, extension);
     }
 
-    //------------//
+    //---------------//
     // OmrFileFilter //
-    //------------//
+    //---------------//
     /**
      * Create a file filter, with only one file extension to consider, and
      * a related description.
@@ -65,9 +65,9 @@ public class OmrFileFilter
         this(description, new String[] { extension });
     }
 
-    //------------//
+    //---------------//
     // OmrFileFilter //
-    //------------//
+    //---------------//
     /**
      * Create a file filter with a whole array of file name extensions, and
      * the related user description.

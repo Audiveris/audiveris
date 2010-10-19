@@ -569,7 +569,7 @@ public class Lag<L extends Lag<L, S>, S extends Section>
          * Report the histogram obtained in the provided projection orientation
          * of the runs contained in the provided sections
          * @param projection the orientation of the projection
-         * @param the provided sections
+         * @param sections the provided sections
          * @return the computed histogram
          */
         public Histogram<Integer> getHistogram (Oriented      projection,

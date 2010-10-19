@@ -506,7 +506,7 @@ endlocal
                             fork="true"
                             dir="${umlet.dir}"
                             jar="${umlet.jar}">
-			    <jvmarg value="-Dlog4j.configuration=file://${umlet.dir}/src/log4j.properties" />
+			    <jvmarg value="-Dlog4j.configuration=file:${umlet.dir}/src/log4j.properties" />
                             <arg value="-action=convert" />
                             <arg value="-format=@{format}" />
                             <arg value="-filename=@{file}" />

@@ -28,7 +28,7 @@ import javax.xml.bind.annotation.*;
  * and the sum of both which represents the main interline value.
  *
  * <p>This class also provides methods for converting values based on what the
- * interline is actually worth. There are three different measurements :
+ * interline is actually worth. There are two different measurements :
  *
  * <dl> <dt> <b>pixel</b> </dt> <dd> This is simply an absolute number of
  * pixels, so generally an integer. One pixel is worth 1 pixel (sic) </dd>
@@ -36,12 +36,6 @@ import javax.xml.bind.annotation.*;
  * <dt> <b>(interline) fraction</b> </dt> <dd> This is a number of interlines,
  * so generally a fraction which is implemented as a double. One interline is
  * worth whatever the scale is, generally something around 20 pixels </dd>
- *
- * <dt> <b>unit</b> </dt> <dd> This is a number of 1/16th of interline, since
- * the score display is built on this value. One unit is thus generally worth
- * something like 20/16 of pixels </dd> </dl>
- *
- * @see omr.score.ui.ScoreConstants#BASE
  *
  * @author Hervé Bitteur
  */

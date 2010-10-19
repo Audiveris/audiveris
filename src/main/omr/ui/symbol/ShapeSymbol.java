@@ -11,8 +11,12 @@
 // </editor-fold>
 package omr.ui.symbol;
 
+import omr.glyph.Shape;
+
 import omr.log.Logger;
 
+import omr.score.ui.MusicFont;
+import omr.score.ui.MusicFont.CharDesc;
 
 import omr.util.Implement;
 import omr.util.PointFacade;
@@ -21,7 +25,10 @@ import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.font.FontRenderContext;
+import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.*;
 import java.io.IOException;
 
@@ -120,9 +127,8 @@ public class ShapeSymbol
     private Point centroid;
 
     /**
-     * Related image, full scale. Generally interline = {link
-     * omr.score.ui.ScoreConstants#INTER_LINE}, but it can be larger for better
-     * display.
+     * Related image, full scale. Generally interline but it can be larger for
+     * better display.
      */
     private BufferedImage image;
 
@@ -470,8 +476,7 @@ public class ShapeSymbol
     /**
      * Draw this symbol image on the provided graphics environment (which may
      * be scaled) using the topLeft point. We of course use the most suitable
-     * image that we have. The image is rendered with {@link
-       ppppp     * omr.score.ui.ScoreConstants#INTER_LINE} normalized size.
+     * image that we have. The image is rendered with normalized size (?).
      * @param g the graphics context
      * @param topLeft the upper left corner of the image, using the coordinate
      * references of the display (PixelPoint for sheet, PixelPoint for score)
@@ -550,6 +555,28 @@ public class ShapeSymbol
                            int       y)
     {
         g.drawImage(iconImage, x, y, c);
+//        try {
+//            Shape    shape = Shape.valueOf(name);
+//            CharDesc desc = MusicFont.getCharDesc(shape);
+//
+//            if (desc != null) {
+//                String            str = desc.getString();
+//                Font              font = MusicFont.genericFont;
+//                Graphics2D        g2 = (Graphics2D) g;
+//                FontRenderContext frc = g2.getFontRenderContext();
+//                TextLayout        layout = new TextLayout(str, font, frc);
+//                Rectangle2D       rect = layout.getBounds();
+//                layout.draw(
+//                    g2,
+//                    x + (int) Math.rint(rect.getX()),
+//                    (y + (int) Math.rint(rect.getY())) +
+//                    (int) Math.rint(rect.getHeight()));
+//            } else {
+//                g.drawImage(iconImage, x, y, c);
+//            }
+//        } catch (Exception ex) {
+//            g.drawImage(iconImage, x, y, c);
+//        }
     }
 
     //----------//
