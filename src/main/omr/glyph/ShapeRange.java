@@ -236,6 +236,22 @@ public class ShapeRange
         F_CLEF_OTTAVA_ALTA,
         F_CLEF_OTTAVA_BASSA);
 
+    /** Head/Flag combinations with flags down */
+    public static final EnumSet<Shape> HeadAndFlagsDown = EnumSet.of(
+        HEAD_AND_FLAG_1,
+        HEAD_AND_FLAG_2,
+        HEAD_AND_FLAG_3,
+        HEAD_AND_FLAG_4,
+        HEAD_AND_FLAG_5);
+
+    /** Head/Flag combinations with flags up */
+    public static final EnumSet<Shape> HeadAndFlagsUp = EnumSet.of(
+        HEAD_AND_FLAG_1_UP,
+        HEAD_AND_FLAG_2_UP,
+        HEAD_AND_FLAG_3_UP,
+        HEAD_AND_FLAG_4_UP,
+        HEAD_AND_FLAG_5_UP);
+
     //~ Instance fields --------------------------------------------------------
 
     /** Name of the range */
@@ -587,8 +603,8 @@ public class ShapeRange
     {
         //~ Static fields/initializers -----------------------------------------
 
-        static Map<String, ShapeRange> map = new HashMap<String, ShapeRange>();
-        static List<ShapeRange>        rangeList = new ArrayList<ShapeRange>();
+        static final Map<String, ShapeRange> map = new HashMap<String, ShapeRange>();
+        static final List<ShapeRange>        rangeList = new ArrayList<ShapeRange>();
 
         static {
             for (Field field : ShapeRange.class.getDeclaredFields()) {

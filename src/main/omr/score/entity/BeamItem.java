@@ -114,7 +114,6 @@ public class BeamItem
         this.packIndex = packIndex;
 
         // Location of left and right points
-        ScoreSystem    system = measure.getSystem();
         Stick          stick = (Stick) glyph;
         PixelRectangle box = stick.getContourBox();
         double         yMidLeft = stick.getLine()

@@ -15,6 +15,7 @@ import omr.Main;
 
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
+import omr.glyph.text.TextFont;
 
 import omr.log.Logger;
 import static omr.score.MusicXML.*;
@@ -272,6 +273,32 @@ public class ScoreExporter
 
     //- All Visiting Methods ---------------------------------------------------
 
+    //------------------//
+    // visit Arpeggiate //
+    //------------------//
+    @Override
+    public boolean visit (Arpeggiate arpeggiate)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("Visiting " + arpeggiate);
+        }
+
+        proxymusic.Arpeggiate pmArpeggiate = factory.createArpeggiate();
+        getNotations()
+            .getTiedOrSlurOrTuplet()
+            .add(pmArpeggiate);
+
+        // relative-x
+        pmArpeggiate.setRelativeX(
+            toTenths(
+                arpeggiate.getReferencePoint().x -
+                current.note.getCenterLeft().x));
+
+        // number ???
+        // TODO
+        return false;
+    }
+
     //--------------------//
     // visit Articulation //
     //--------------------//
@@ -315,32 +342,6 @@ public class ScoreExporter
             logger.severe("Could not setDefaultY for element " + classe);
         }
 
-        return false;
-    }
-
-    //------------------//
-    // visit Arpeggiate //
-    //------------------//
-    @Override
-    public boolean visit (Arpeggiate arpeggiate)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("Visiting " + arpeggiate);
-        }
-
-        proxymusic.Arpeggiate pmArpeggiate = factory.createArpeggiate();
-        getNotations()
-            .getTiedOrSlurOrTuplet()
-            .add(pmArpeggiate);
-
-        // relative-x
-        pmArpeggiate.setRelativeX(
-            toTenths(
-                arpeggiate.getReferencePoint().x -
-                current.note.getCenterLeft().x));
-
-        // number ???
-        // TODO
         return false;
     }
 
@@ -587,7 +588,8 @@ public class ScoreExporter
             pmWords.setDefaultY(yOf(words.getReferencePoint(), staff));
 
             // font-size
-            pmWords.setFontSize("" + words.getText().getFontSize());
+            pmWords.setFontSize(
+                "" + (words.getText().getFontSize() * TextFont.TO_POINT));
 
             // relative-x
             pmWords.setRelativeX(
@@ -1154,7 +1156,8 @@ public class ScoreExporter
             // Accidental ?
             if (note.getAccidental() != null) {
                 Accidental accidental = factory.createAccidental();
-                accidental.setValue(accidentalTextOf(note.getAccidental().getShape()));
+                accidental.setValue(
+                    accidentalTextOf(note.getAccidental().getShape()));
                 current.pmNote.setAccidental(accidental);
             }
 
@@ -1453,6 +1456,47 @@ public class ScoreExporter
         return false; // That's all
     }
 
+    //-------------------//
+    // visit ScoreSystem //
+    //-------------------//
+    /**
+     * Allocate/populate everything that directly relates to this system in the
+     * current part. The rest of processing is directly delegated to the
+     * measures
+     *
+     * @param system visit the system to export
+     * @return false
+     */
+    @Override
+    public boolean visit (ScoreSystem system)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("Visiting " + system);
+        }
+
+        current.system = system;
+        isFirst.measure = true;
+
+        SystemPart systemPart = system.getPart(current.part.getId());
+
+        if (systemPart != null) {
+            systemPart.accept(this);
+        } else {
+            // Need to build an artificial system part
+            // Or simply delegating to the series of artificial measures
+            SystemPart dummyPart = system.getFirstRealPart()
+                                         .createDummyPart(current.part.getId());
+            visit(dummyPart);
+        }
+
+        // If we have exported a measure, we are no longer in the first system
+        if (!isFirst.measure) {
+            isFirst.system = false;
+        }
+
+        return false; // No default browsing this way
+    }
+
     //-------------//
     // visit Segno //
     //-------------//
@@ -1623,47 +1667,6 @@ public class ScoreExporter
         return true;
     }
 
-    //--------------//
-    // visit System //
-    //--------------//
-    /**
-     * Allocate/populate everything that directly relates to this system in the
-     * current part. The rest of processing is directly delegated to the
-     * measures
-     *
-     * @param system visit the system to export
-     * @return false
-     */
-    @Override
-    public boolean visit (ScoreSystem system)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("Visiting " + system);
-        }
-
-        current.system = system;
-        isFirst.measure = true;
-
-        SystemPart systemPart = system.getPart(current.part.getId());
-
-        if (systemPart != null) {
-            systemPart.accept(this);
-        } else {
-            // Need to build an artificial system part
-            // Or simply delegating to the series of artificial measures
-            SystemPart dummyPart = system.getFirstRealPart()
-                                         .createDummyPart(current.part.getId());
-            visit(dummyPart);
-        }
-
-        // If we have exported a measure, we are no longer in the first system
-        if (!isFirst.measure) {
-            isFirst.system = false;
-        }
-
-        return false; // No default browsing this way
-    }
-
     //------------------//
     // visit SystemPart //
     //------------------//
@@ -1750,7 +1753,7 @@ public class ScoreExporter
         Credit        pmCredit = factory.createCredit();
         FormattedText creditWords = factory.createFormattedText();
         creditWords.setValue(text.getContent());
-        creditWords.setFontSize("" + text.getFontSize());
+        creditWords.setFontSize("" + (text.getFontSize() * TextFont.TO_POINT));
 
         // Position is wrt to page
         PixelPoint pt = text.getReferencePoint();

@@ -316,11 +316,10 @@ public class Beam
                     //                    logger.warning(
                     //                        other.getContextString() + " equality between " +
                     //                        this.toLongString() + " and " + other.toLongString());
-                    logger.warning(
-                        "Beam comparison data " + "x=" + x + " y=" + y +
-                        " yOther=" + yOther + " yHead=" + yHead);
-                    Main.dumping.dump(this, "this");
-                    Main.dumping.dump(other, "other");
+                    //                    logger.warning(
+                    //                        "Beam comparison data " + "x=" + x + " y=" + y +
+                    //                        " yOther=" + yOther + " yHead=" + yHead);
+                    addError(chord.getStem(), "Weird beam configuration");
                 }
 
                 return result;

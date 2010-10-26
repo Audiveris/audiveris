@@ -19,7 +19,7 @@ import static omr.glyph.Shape.*;
 import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
 import omr.glyph.text.Sentence;
-import omr.glyph.text.TextInfo;
+import omr.glyph.text.TextFont;
 
 import omr.log.Logger;
 
@@ -599,7 +599,7 @@ public abstract class ScorePainter
         if (part.getBrace() != null) {
             final String            str = "{";
             final FontRenderContext frc = g.getFontRenderContext();
-            Font                    font = TextInfo.basicFont.deriveFont(100f);
+            Font                    font = TextFont.basicFont.deriveFont(100f);
             TextLayout              layout = new TextLayout(str, font, frc);
             final Rectangle2D       rect = layout.getBounds();
             final PixelRectangle    braceBox = braceBox(part);
@@ -641,35 +641,28 @@ public abstract class ScorePainter
         final PixelPoint        refPoint = text.getReferencePoint();
         final String            str = text.getContent();
         final FontRenderContext frc = g.getFontRenderContext();
-        Font                    font = text.getFont()
-                                           .deriveFont(text.getFontSize());
+        Font                    font = text.getFont();
         TextLayout              layout = new TextLayout(str, font, frc);
-        final Rectangle2D       rect = layout.getBounds();
-        final PixelRectangle    box = text.getBox();
-        final double            xRatio = box.width / rect.getWidth();
-
-        if (xRatio > 100) {
-            logger.warning("BINGO");
-        }
-
-        double yRatio = box.height / rect.getHeight();
-
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "xRatio:" + (float) xRatio + " yRatio:" + (float) yRatio + " " +
-                text);
-        }
-
-        // Sign of something wrong
-        if (yRatio > 1.3) {
-            yRatio = 1;
-        }
-
-        final AffineTransform fat = AffineTransform.getScaleInstance(
-            xRatio,
-            yRatio);
-        font = font.deriveFont(fat);
-        layout = new TextLayout(str, font, frc);
+//        final Rectangle2D       rect = layout.getBounds();
+//        final PixelRectangle    box = text.getBox();
+//        final double            xRatio = box.width / rect.getWidth();
+//        final double            yRatio = box.height / rect.getHeight();
+//
+//        if (logger.isFineEnabled()) {
+//            logger.fine(
+//                "xRatio:" + (float) xRatio + " yRatio:" + (float) yRatio + " " +
+//                text);
+//        }
+//
+//        //        // Sign of something wrong
+//        //        if (yRatio > 1.3) {
+//        //            yRatio = 1;
+//        //        }
+//        final AffineTransform fat = AffineTransform.getScaleInstance(
+//            xRatio,
+//            yRatio);
+//        font = font.deriveFont(fat);
+//        layout = new TextLayout(str, font, frc);
         paint(
             layout,
             new PixelPoint(refPoint.x, location.y),
@@ -813,7 +806,7 @@ public abstract class ScorePainter
             BasicStroke.JOIN_ROUND);
 
         // Determine stems parameters
-        stemThickness = scale.mainFore();
+        stemThickness = scale.mainFore() /2;
         stemHalfThickness = stemThickness / 2;
         stemStroke = new BasicStroke(
             stemThickness,
@@ -1078,7 +1071,7 @@ public abstract class ScorePainter
     protected void paintBrace (PixelPoint top,
                                int        height)
     {
-        Font                  font = TextInfo.basicFont.deriveFont(100f);
+        Font                  font = TextFont.basicFont.deriveFont(100f);
         TextLayout            layout = new TextLayout(
             "{",
             font,

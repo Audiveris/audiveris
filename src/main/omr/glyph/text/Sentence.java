@@ -219,7 +219,7 @@ public class Sentence
      * Report the font size of this sentence
      * @return the font size
      */
-    public Integer getFontSize ()
+    public Float getFontSize ()
     {
         return items.first()
                     .getTextInfo()
@@ -729,7 +729,7 @@ public class Sentence
                             ti.setSentence(sentence);
                             logger.info(
                                 "Glyph#" + lineGlyph.getId() + " (" + language +
-                                ")->\"" + ocrLine.value + "\"");
+                                ")->\"" + ocrLine.value + "\"" + " font:" + ocrLine.fontSize );
 
                             toRemove.add(this);
                             toAdd.add(sentence);

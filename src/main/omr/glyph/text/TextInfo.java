@@ -24,27 +24,24 @@ import omr.lag.HorizontalOrientation;
 import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import omr.score.entity.Text.CreatorText.CreatorType;
 
 import omr.sheet.SystemInfo;
 
 import java.awt.*;
-import java.awt.font.FontRenderContext;
-import java.awt.font.GlyphVector;
-import java.awt.font.TextLayout;
-import java.awt.geom.Rectangle2D;
 import java.util.*;
 import java.util.List;
 
 /**
- * Class <code>TextInfo</code> handles the textual aspects of a glyph. It
- * handles several text contents, by decreasing priority: <ol><li>manual content
- * (entered manually by the user)</li><li>ocr content (as computed by the OCR
- * engine)</li><li>pseudo content, meant to be used as a placeholder, based on
- * the text type</li></ol>
+ * Class <code>TextInfo</code> handles the textual aspects of a glyph.
  *
- * <p>The {@link #getContent} method return the manual content if any, otherwise
+ * <p>It handles several text contents, by decreasing priority: <ol>
+ * <li>manual content (entered manually by the user)</li>
+ * <li>ocr content (as computed by the OCR engine)</li>
+ * <li>pseudo content, meant to be used as a placeholder based on text type</li>
+ * </ol>
+ *
+ * <p>The {@link #getContent} method returns the manual content if any, otherwise
  * the ocr content. Access to the pseudo content is done only through the {@link
  * #getPseudoContent} method.</p>
  *
@@ -72,21 +69,6 @@ public class TextInfo
 
     /** String equivalent of Character used for hyphen */
     public static final String HYPHEN_STRING = "-";
-
-    /** The basic font used for text entities */
-    public static final Font basicFont = new Font(
-        constants.basicFontName.getValue(),
-        Font.PLAIN,
-        constants.basicFontSize.getValue());
-
-    /** Utility font context, used to compute text characteristics */
-    private static FontRenderContext frc = new FontRenderContext(
-        null,
-        true,
-        true);
-
-    /** (So far empirical) ratio between width and point values */
-    public static final float FONT_WIDTH_POINT_RATIO = 4.4f;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -118,7 +100,7 @@ public class TextInfo
     private CreatorType creatorType;
 
     /** Font size */
-    private Integer fontSize;
+    private Float fontSize;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -190,54 +172,6 @@ public class TextInfo
         return constants.minExtensionAspect.getValue();
     }
 
-    //-----------------//
-    // computeFontSize //
-    //-----------------//
-    /**
-     * Convenient method to compute a font size using a string content and width
-     * @param content the string value
-     * @param width the string width in pixels
-     * @return the computed font size
-     */
-    public Float computeFontSize (String content,
-                                  int    width)
-    {
-        if (content == null) {
-            return null;
-        }
-
-        PixelRectangle box = glyph.getContourBox();
-        GlyphVector    glyphVector = basicFont.createGlyphVector(frc, content);
-        Rectangle2D    basicRect = glyphVector.getVisualBounds();
-        Font           font = basicFont.deriveFont(
-            (basicFont.getSize2D() * box.width) / (float) basicRect.getWidth());
-
-        //        if (logger.isFineEnabled()) {
-        //            GlyphVector newVector = font.createGlyphVector(frc, content);
-        //            Rectangle2D rect = newVector.getVisualBounds();
-        //            logger.warning(
-        //                "TextInfo box.width:" + box.width + " basicRect.width:" +
-        //                basicRect.getWidth() + " rect.width:" + rect.getWidth());
-        //        }
-        return font.getSize2D();
-    }
-
-    //--------------//
-    // computeWidth //
-    //--------------//
-    /**
-     * Convenient method to report the width of a string in a given font
-     * @param content the string value
-     * @param font the provided font
-     * @return the computed width
-     */
-    public static double computeWidth (String content,
-                                       Font   font)
-    {
-        return font.getStringBounds(content, frc)
-                   .getWidth() * FONT_WIDTH_POINT_RATIO;
-    }
-
     //------------//
     // getContent //
     //------------//
@@ -262,21 +196,15 @@ public class TextInfo
      * Report the proper font size for the textual glyph
      * @return the fontSize
      */
-    public Integer getFontSize ()
+    public Float getFontSize ()
     {
         if (fontSize == null) {
             //            if ((ocrLine != null) && (ocrLine.isFontSizeValid())) {
             //                fontSize = ocrLine.fontSize;
             //            } else {
-            Float fs = computeFontSize(
+            fontSize = TextFont.computeFontSize(
                 getContent(),
                 glyph.getContourBox().width);
-
-            if (fs != null) {
-                fontSize = (int) Math.rint(fs);
-            }
-
-            //            }
         }
 
         return fontSize;

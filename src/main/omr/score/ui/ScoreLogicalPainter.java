@@ -642,6 +642,7 @@ public class ScoreLogicalPainter
         final Color oldColor = g.getColor();
         g.setColor(color);
 
+        final Stroke         oldStroke = UIUtilities.setAbsoluteStroke(g, 1);
         final int            x = slot.getX();
         final PixelDimension systemDimension = measure.getSystem()
                                                       .getDimension();
@@ -667,6 +668,7 @@ public class ScoreLogicalPainter
                 score.getMeanStaffHeight());
         }
 
+        g.setStroke(oldStroke);
         g.setColor(oldColor);
     }
 

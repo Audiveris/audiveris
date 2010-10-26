@@ -26,15 +26,10 @@ import java.util.List;
  */
 public class OcrLine
 {
-    //~ Static fields/initializers ---------------------------------------------
-
-    /** Specific value to indicate an invalid font size value */
-    public static final int INVALID_FONT_SIZE = -1;
-
     //~ Instance fields --------------------------------------------------------
 
-    /** Detected font size, defined in points (use -1 if not available) */
-    public final int fontSize;
+    /** Detected font size, defined in points. Null if invalid */
+    public final Float fontSize;
 
     /** Detected line content */
     public final String value;
@@ -51,7 +46,7 @@ public class OcrLine
      * @param chars the sequence of character descriptors
      * @param value the string ascii value
      */
-    public OcrLine (int           fontSize,
+    public OcrLine (float         fontSize,
                     List<OcrChar> chars,
                     String        value)
     {
@@ -112,7 +107,7 @@ public class OcrLine
      */
     public boolean isFontSizeValid ()
     {
-        return fontSize != INVALID_FONT_SIZE;
+        return fontSize != null;
     }
 
     //------//
@@ -171,10 +166,10 @@ public class OcrLine
     private String computeValue ()
     {
         // Font used for space computation only
-        Font          font = TextInfo.basicFont.deriveFont((float) fontSize);
+        Font          font = TextFont.basicFont.deriveFont((float) fontSize);
 
         // Retrieve half standard space width with this font
-        double        halfSpace = TextInfo.computeWidth(" ", font); // / 2;
+        double        halfSpace = TextFont.computeWidth(" ", font); // / 2;
 
         // Abscissa of right side of previous char
         int           lastRight = 0;
@@ -196,7 +191,7 @@ public class OcrLine
                 // Add all spaces needed to insert char at target location
                 double gap = ch.getBox().x - lastRight - halfSpace;
 
-                while (TextInfo.computeWidth(spaces.toString(), font) < gap) {
+                while (TextFont.computeWidth(spaces.toString(), font) < gap) {
                     spaces.append(" ");
                 }
 

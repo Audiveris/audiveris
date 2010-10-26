@@ -64,12 +64,13 @@ public class ScoreReduction
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScoreReduction.class);
 
-    /** Factory for proxymusic entities */
-    private static final proxymusic.ObjectFactory factory = new proxymusic.ObjectFactory();
-
     //~ Instance fields --------------------------------------------------------
 
+    /** Map of XML fragments, one entry per page */
     private final Map<Integer, String> fragments;
+
+    /** Factory for proxymusic entities */
+    private final proxymusic.ObjectFactory factory = new proxymusic.ObjectFactory();
 
     //~ Constructors -----------------------------------------------------------
 
