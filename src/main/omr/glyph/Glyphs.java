@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.glyph;
 
-import java.awt.Polygon;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -20,6 +19,7 @@ import omr.score.common.PixelRectangle;
 
 import omr.util.Predicate;
 
+import java.awt.Polygon;
 import java.util.*;
 
 /**
@@ -51,6 +51,8 @@ public class Glyphs
         }
     };
 
+    /** A immutable empty set of glyphs */
+    public static final Set<Glyph> NO_GLYPHS = Collections.emptySet();
 
     //~ Methods ----------------------------------------------------------------
 
@@ -221,7 +223,7 @@ public class Glyphs
      * @return the glyphs found, which may be an empty list
      */
     public static Set<Glyph> lookupGlyphs (Collection<?extends Glyph> collection,
-                                           Polygon polygon)
+                                           Polygon                    polygon)
     {
         Set<Glyph> set = new LinkedHashSet<Glyph>();
 

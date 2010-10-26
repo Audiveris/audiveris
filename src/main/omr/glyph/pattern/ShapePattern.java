@@ -24,13 +24,13 @@ import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
-import omr.score.common.PixelRectangle;
 import omr.score.entity.Clef;
 import omr.score.entity.Measure;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
 
+import omr.sheet.Ledger;
 import omr.sheet.Scale;
 import omr.sheet.StaffInfo;
 import omr.sheet.SystemInfo;
@@ -220,6 +220,29 @@ public class ShapePattern
                     }
 
                     return true;
+                }
+            };
+
+        new ShapeChecker(Shape.WHOLE_NOTE) {
+                @Override
+                public boolean check (Shape shape,
+                                      Glyph glyph)
+                {
+                    // Check that whole notes are not too far from staves 
+                    // without ledgers
+                    PixelPoint point = glyph.getAreaCenter();
+                    StaffInfo  staff = system.getStaffAtY(point.y);
+                    double     pitch = staff.pitchPositionOf(point);
+
+                    if (Math.abs(pitch) <= 6) {
+                        return true;
+                    }
+
+                    Set<Ledger> ledgers = staff.getLedgersToStaff(
+                        point,
+                        system);
+
+                    return !ledgers.isEmpty();
                 }
             };
     }

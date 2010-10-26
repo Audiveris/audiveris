@@ -20,9 +20,9 @@ import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
 import java.awt.*;
+import java.util.HashSet;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.Set;
 
 /**
  * Class <code>StaffInfo</code> handles the physical details of a staff with its
@@ -188,6 +188,52 @@ public class StaffInfo
         return lines.get(lines.size() - 1);
     }
 
+    //-------------------//
+    // getLedgersToStaff //
+    //-------------------//
+    /**
+     * Report the set of ledgers between the provided point and this staff
+     * @param pt the provided point
+     * @param system the containing system
+     * @return the set (perhaps empty) of ledgers found
+     */
+    public Set<Ledger> getLedgersToStaff (PixelPoint pt,
+                                          SystemInfo system)
+    {
+        Set<Ledger> ledgers = new HashSet<Ledger>();
+        int         top = getFirstLine()
+                              .yAt(pt.x);
+        int         bottom = getLastLine()
+                                 .yAt(pt.x);
+
+        double      rawPitch = (4.0d * ((2 * pt.y) - bottom - top)) / (bottom -
+                                                                      top);
+
+        if (Math.abs(rawPitch) <= 6) {
+            return ledgers;
+        }
+
+        int            interline = specificScale.interline();
+        PixelRectangle searchBox;
+
+        if (rawPitch < 0) {
+            searchBox = new PixelRectangle(pt.x, pt.y, 0, top - pt.y + 1);
+        } else {
+            searchBox = new PixelRectangle(pt.x, bottom, 0, pt.y - bottom + 1);
+        }
+
+        searchBox.grow(interline / 2, interline / 2);
+
+        for (Ledger ledger : system.getLedgers()) {
+            if (ledger.getContourBox()
+                      .intersects(searchBox)) {
+                ledgers.add(ledger);
+            }
+        }
+
+        return ledgers;
+    }
+
     //---------//
     // getLeft //
     //---------//
@@ -339,27 +385,12 @@ public class StaffInfo
 
         // Fallback to use of ledgers & interline value
         // Retrieve the closest ledger
-        int            interline = specificScale.interline();
-        PixelRectangle searchBox;
+        Set<Ledger> ledgers = getLedgersToStaff(pt, system);
 
-        if (raw < 0) {
-            searchBox = new PixelRectangle(pt.x, pt.y, 0, top - pt.y + 1);
-        } else {
-            searchBox = new PixelRectangle(pt.x, bottom, 0, pt.y - bottom + 1);
-        }
-
-        searchBox.grow(interline / 2, interline / 2);
-
-        double bestDist = Double.MAX_VALUE;
-        Ledger bestLedger = null;
+        double      bestDist = Double.MAX_VALUE;
+        Ledger      bestLedger = null;
 
         for (Ledger ledger : system.getLedgers()) {
-            if (!ledger.getContourBox()
-                       .intersects(searchBox)) {
-                continue;
-            }
-
-            // Beware: A ledger glyph is a horizontal glyph
             Glyph      glyph = ledger.getStick();
             PixelPoint center = glyph.getAreaCenter();
             double     dist = Math.abs(center.y - pt.y);
@@ -380,7 +411,7 @@ public class StaffInfo
         int        ledgerPitch = 2 * (int) Math.rint(
             pitchPositionOf(center) / 2);
         int        deltaPitch = (int) Math.rint(
-            (2d * (pt.y - center.y)) / interline);
+            (2d * (pt.y - center.y)) / specificScale.interline());
         int        pitch = ledgerPitch + deltaPitch;
 
         if (logger.isFineEnabled()) {
