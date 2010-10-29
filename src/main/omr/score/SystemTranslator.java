@@ -144,6 +144,7 @@ public class SystemTranslator
 
         // All actions for completed score
         score.accept(new ScoreTimeFixer());
+        score.accept(new TimeSignatureRetriever(modified));
         score.accept(new TimeSignatureFixer(modified));
         score.accept(new ScoreFixer());
 

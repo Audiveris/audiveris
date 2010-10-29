@@ -417,6 +417,34 @@ public class Measure
         return bestChord;
     }
 
+    //-----------------//
+    // getClosestChord //
+    //-----------------//
+    /**
+     * Report the chord of this measure which has the closest
+     * abscissa to a provided point
+     *
+     * @param point the reference point
+     * @return the abscissa-wise closest chord, perhaps null
+     */
+    public Chord getClosestChord (PixelPoint point)
+    {
+        Chord bestChord = null;
+        int   bestDx = Integer.MAX_VALUE;
+
+        for (TreeNode node : getChords()) {
+            Chord chord = (Chord) node;
+            int   dx = Math.abs(chord.getHeadLocation().x - point.x);
+
+            if (dx < bestDx) {
+                bestDx = dx;
+                bestChord = chord;
+            }
+        }
+
+        return bestChord;
+    }
+
     //----------------------//
     // getClosestChordAbove //
     //----------------------//
@@ -681,6 +709,30 @@ public class Measure
             if (clef.getStaff()
                     .getId() == staffId) {
                 return clef;
+            }
+        }
+
+        return null;
+    }
+
+    //--------------------//
+    // getFirstMeasureKey //
+    //--------------------//
+    /**
+     * Report the first key signature (if any) in this measure, tagged with the
+     * provided staff
+     *
+     * @param staffId the imposed related staff id
+     * @return the first key signature, or null
+     */
+    public KeySignature getFirstMeasureKey (int staffId)
+    {
+        for (TreeNode kn : getKeySignatures()) {
+            KeySignature key = (KeySignature) kn;
+
+            if (key.getStaff()
+                   .getId() == staffId) {
+                return key;
             }
         }
 
@@ -1730,7 +1782,6 @@ public class Measure
     @Override
     protected void computeBox ()
     {
-
         // Start of the measure
         int     leftX;
         Measure prevMeasure = (Measure) getPreviousSibling();

@@ -23,7 +23,6 @@ import omr.glyph.facets.Glyph;
 import omr.log.Logger;
 
 import omr.score.common.PixelRectangle;
-import omr.score.common.PixelRectangle;
 import omr.score.entity.Barline;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.SystemPart;
@@ -40,7 +39,7 @@ import java.util.*;
 /**
  * Class {@code ClefPattern} verifies all the initial clefs of a system, using
  * an intersection inner rectangle and a containing outer rectangle to retrieve
- * the clef glyphs and only those.
+ * the clef glyphs and only those ones.
  *
  * @author Hervé Bitteur
  */
@@ -110,23 +109,21 @@ public class ClefPattern
         for (StaffInfo staff : system.getStaves()) {
             staffId++;
 
+            // Define the inner box to intersect clef glyph(s)
             int            left = staff.getLeft();
-            PixelRectangle pix = new PixelRectangle(
+            PixelRectangle inner = new PixelRectangle(
                 left + (2 * xOffset) + (clefWidth / 2),
                 staff.getFirstLine().yAt(left) + (staff.getHeight() / 2),
                 0,
                 0);
-
-            // Define the inner box to intersect clef glyph(s)
-            PixelRectangle pixInner = new PixelRectangle(pix);
-            pixInner.grow(
+            inner.grow(
                 (clefWidth / 2) - xOffset,
                 (staff.getHeight() / 2) - yOffset);
 
             // Draw the box, for visual debug
-            SystemPart      part = scoreSystem.getPartAt(pixInner.getCenter());
-            Barline         barline = part.getStartingBarline();
-            Glyph           line = null;
+            SystemPart part = scoreSystem.getPartAt(inner.getCenter());
+            Barline    barline = part.getStartingBarline();
+            Glyph      line = null;
 
             if (barline != null) {
                 line = Glyphs.firstOf(
@@ -134,12 +131,12 @@ public class ClefPattern
                     Barline.linePredicate);
 
                 if (line != null) {
-                    line.addAttachment("clefInner#" + staffId, pixInner);
+                    line.addAttachment("clefInner#" + staffId, inner);
                 }
             }
 
             // We must find a clef out of these glyphs
-            Collection<Glyph> glyphs = system.lookupIntersectedGlyphs(pixInner);
+            Collection<Glyph> glyphs = system.lookupIntersectedGlyphs(inner);
 
             if (logger.isFineEnabled()) {
                 logger.fine(staffId + Glyphs.toString(" int", glyphs));

@@ -27,9 +27,6 @@ import java.util.TreeMap;
  * Class <code>ScoreTimeFixer</code> can visit the score hierarchy to compute
  * all measure and system start times and durations.
  *
- * <p>We check if an initial time signature is defined in the first measure and,
- * if so, that it is consistent with most of measures intrinsic time signature.
- *
  * @author Hervé Bitteur
  */
 public class ScoreTimeFixer
