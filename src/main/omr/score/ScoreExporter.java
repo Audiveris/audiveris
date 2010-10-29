@@ -113,7 +113,10 @@ public class ScoreExporter
     //~ Instance fields --------------------------------------------------------
 
     /** The related score */
-    private Score score;
+    private final Score score;
+
+    /** The related scale */
+    private final Scale scale;
 
     /** The score proxy built precisely for export via JAXB */
     private final ScorePartwise scorePartwise = new ScorePartwise();
@@ -158,6 +161,7 @@ public class ScoreExporter
         loading.get();
 
         this.score = score;
+        scale = score.getScale();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -269,6 +273,22 @@ public class ScoreExporter
 
         //  Finally, marshal the proxy
         Marshalling.marshal(scorePartwise, node, injectSignature);
+    }
+
+    //----------//
+    // toTenths //
+    //----------//
+    /**
+     * Convert a distance expressed in pixels to a string value expressed in
+     * tenths of interline
+     *
+     * @param dist the distance in pixels
+     * @return the number of tenths as a string
+     */
+    public BigDecimal toTenths (double dist)
+    {
+        return new BigDecimal(
+            "" + (int) Math.rint((10f * dist) / scale.interline()));
     }
 
     //- All Visiting Methods ---------------------------------------------------
@@ -847,40 +867,35 @@ public class ScoreExporter
                         toTenths(current.system.getTopLeft().y));
 
                     // Tempo? Volume?
-                    if (score.hasTempo() || score.hasVolume()) {
-                        Direction direction = factory.createDirection();
-                        current.pmMeasure.getNoteOrBackupOrForward()
-                                         .add(direction);
-
-                        DirectionType directionType = factory.createDirectionType();
-                        direction.getDirectionType()
-                                 .add(directionType);
-
-                        //                        proxymusic.Dynamics dynamics = factory.createDynamics();
-                        //                        directionType.setDynamics(dynamics);
-                        // Use a dummy words
-                        FormattedText pmWords = factory.createFormattedText();
-                        directionType.getWords()
-                                     .add(pmWords);
-                        pmWords.setValue("");
-
-                        Sound sound = factory.createSound();
-
-                        // Tempo?
-                        if (score.hasTempo()) {
-                            sound.setTempo(createDecimal(score.getTempo()));
-                        }
-
-                        // Volume?
-                        if (score.hasVolume()) {
-                            sound.setDynamics(createDecimal(score.getVolume()));
-                        }
-
-                        direction.setSound(sound);
-
-                        //                        current.pmMeasure.getNoteOrBackupOrForward()
-                        //                                         .add(sound);
-                    }
+                    //                    if (score.hasTempo() || score.hasVolume()) {
+                    //                        Direction direction = factory.createDirection();
+                    //                        current.pmMeasure.getNoteOrBackupOrForward()
+                    //                                         .add(direction);
+                    //
+                    //                        DirectionType directionType = factory.createDirectionType();
+                    //                        direction.getDirectionType()
+                    //                                 .add(directionType);
+                    //
+                    //                        // Use a dummy words
+                    //                        FormattedText pmWords = factory.createFormattedText();
+                    //                        directionType.getWords()
+                    //                                     .add(pmWords);
+                    //                        pmWords.setValue("");
+                    //
+                    //                        Sound sound = factory.createSound();
+                    //
+                    //                        // Tempo?
+                    //                        if (score.hasTempo()) {
+                    //                            sound.setTempo(createDecimal(score.getTempo()));
+                    //                        }
+                    //
+                    //                        // Volume?
+                    //                        if (score.hasVolume()) {
+                    //                            sound.setDynamics(createDecimal(score.getVolume()));
+                    //                        }
+                    //
+                    //                        direction.setSound(sound);
+                    //                    }
                 } else {
                     // SystemDistance
                     ScoreSystem prevSystem = (ScoreSystem) current.system.getPreviousSibling();
@@ -1366,9 +1381,6 @@ public class ScoreExporter
         scorePartwise.setDefaults(defaults);
 
         // [Defaults]/Scaling
-        Scale scale = score.getSheet()
-                           .getScale();
-
         if (scale != null) {
             Scaling scaling = factory.createScaling();
             defaults.setScaling(scaling);
@@ -1714,8 +1726,7 @@ public class ScoreExporter
 
             break;
 
-        case Rights : { // Rights
-
+        case Rights : {
             TypedText typedText = factory.createTypedText();
             typedText.setValue(text.getContent());
             scorePartwise.getIdentification()
@@ -1725,8 +1736,7 @@ public class ScoreExporter
 
         break;
 
-        case Creator : { // Creator
-
+        case Creator : {
             TypedText typedText = factory.createTypedText();
             typedText.setValue(text.getContent());
 
@@ -1755,7 +1765,7 @@ public class ScoreExporter
         creditWords.setValue(text.getContent());
         creditWords.setFontSize("" + (text.getFontSize() * TextFont.TO_POINT));
 
-        // Position is wrt to page
+        // Position is wrt page
         PixelPoint pt = text.getReferencePoint();
         creditWords.setDefaultX(toTenths(pt.x));
         creditWords.setDefaultY(toTenths(score.getDimension().height - pt.y));
@@ -1930,6 +1940,40 @@ public class ScoreExporter
         return true;
     }
 
+    //-----//
+    // yOf //
+    //-----//
+    /**
+     * Report the musicXML staff-based Y value of a PixelPoint ordinate.
+     *
+     * @param ordinate the ordinate (page-based, in pixels)
+     * @param staff the related staff
+     * @return the upward-oriented ordinate wrt staff top line (in tenths)
+     */
+    public BigDecimal yOf (double ordinate,
+                           Staff  staff)
+    {
+        return toTenths(staff.getTopLeft().y - ordinate);
+    }
+
+    //-----//
+    // yOf //
+    //-----//
+    /**
+     * Report the musicXML staff-based Y value of a PixelPoint.
+     * This method is safer than the other one which simply accepts a (detyped)
+     * double ordinate.
+     *
+     * @param point the pixel point
+     * @param staff the related staff
+     * @return the upward-oriented ordinate wrt staff top line (in tenths)
+     */
+    public BigDecimal yOf (PixelPoint point,
+                           Staff      staff)
+    {
+        return yOf(point.y, staff);
+    }
+
     //--------//
     // getDen // A VERIFIER A VERIFIER A VERIFIER A VERIFIER A VERIFIER
     //--------//
@@ -1964,6 +2008,33 @@ public class ScoreExporter
         logger.severe("No numerator found in " + time);
 
         return "";
+    }
+
+    //------------------//
+    // getArticulations //
+    //------------------//
+    /**
+     * Report (after creating it if necessary) the articulations elements in the
+     * notations element of the current note
+     *
+     * @return the note notations articulations element
+     */
+    private Articulations getArticulations ()
+    {
+        for (Object obj : getNotations()
+                              .getTiedOrSlurOrTuplet()) {
+            if (obj instanceof Articulations) {
+                return (Articulations) obj;
+            }
+        }
+
+        // Need to allocate articulations
+        Articulations articulations = factory.createArticulations();
+        getNotations()
+            .getTiedOrSlurOrTuplet()
+            .add(articulations);
+
+        return articulations;
     }
 
     //- Utility Methods --------------------------------------------------------
@@ -2002,33 +2073,6 @@ public class ScoreExporter
     {
         return left.getFifths()
                    .equals(right.getFifths());
-    }
-
-    //------------------//
-    // getArticulations //
-    //------------------//
-    /**
-     * Report (after creating it if necessary) the articulations elements in the
-     * notations element of the current note
-     *
-     * @return the note notations articulations element
-     */
-    private Articulations getArticulations ()
-    {
-        for (Object obj : getNotations()
-                              .getTiedOrSlurOrTuplet()) {
-            if (obj instanceof Articulations) {
-                return (Articulations) obj;
-            }
-        }
-
-        // Need to allocate articulations
-        Articulations articulations = factory.createArticulations();
-        getNotations()
-            .getTiedOrSlurOrTuplet()
-            .add(articulations);
-
-        return articulations;
     }
 
     //----------------------//

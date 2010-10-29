@@ -99,7 +99,7 @@ public class Sentence
     // Cached data, invalidated whenever items are modified
     //--------------------------------------------------------------------------
 
-    /** The sentence starting point (in units) within the containing system */
+    /** The sentence starting point */
     private PixelPoint location;
 
     /** The text area for this sentence */
@@ -155,7 +155,7 @@ public class Sentence
         // or if we are on system peripheral regions
         StaffPosition staffPosition = system.getStaffPosition(center);
 
-        if (staffPosition == StaffPosition.within) {
+        if (staffPosition == StaffPosition.WITHIN_STAVES) {
             maxItemDx = scale.toPixels(constants.maxLyricItemDx);
         } else {
             maxItemDx = scale.toPixels(constants.maxItemDx);
@@ -354,7 +354,7 @@ public class Sentence
     // getTextType//
     //-------------//
     /**
-     * Report the text type of the sentence within the score
+     * Report the text type of the sentence if any
      * @return the type of this sentence
      */
     public CreatorType getTextType ()
@@ -729,7 +729,8 @@ public class Sentence
                             ti.setSentence(sentence);
                             logger.info(
                                 "Glyph#" + lineGlyph.getId() + " (" + language +
-                                ")->\"" + ocrLine.value + "\"" + " font:" + ocrLine.fontSize );
+                                ")->\"" + ocrLine.value + "\"" + " font:" +
+                                ocrLine.fontSize);
 
                             toRemove.add(this);
                             toAdd.add(sentence);
@@ -926,7 +927,7 @@ public class Sentence
                 ScoreSystem system = systemInfo.getScoreSystem();
                 PixelPoint  first = items.first()
                                          .getLocation();
-                withinStaves = system.getStaffPosition(first) == StaffPosition.within;
+                withinStaves = system.getStaffPosition(first) == StaffPosition.WITHIN_STAVES;
             }
         }
 

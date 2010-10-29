@@ -1129,7 +1129,7 @@ public class Score
             ScorePart  scorePart = new ScorePart(
                 sp,
                 ++index,
-                firstStaff.getTopLeft().y);
+                firstStaff.getTopLeft().y - refSystem.getTopLeft().y);
             scorePart.setName("Part_" + index);
             partList.add(scorePart);
         }

@@ -113,8 +113,7 @@ public enum TextRole {
     //-----------//
     /**
      * Try to infer the role of this textual item. For the time being, this is a
-     * simple algorithm based on sentence location within the page,
-     * but perhaps a neural network approach would better fit this task.
+     * simple algorithm based on sentence location within the page.
      * @param glyph the (only) sentence glyph
      * @param systemInfo the containing system
      * @return the role information inferred for the provided sentence glyph
@@ -141,7 +140,7 @@ public enum TextRole {
         // Vertical position wrt staves
         StaffPosition staffPosition = system.getStaffPosition(left);
 
-        // Vertical distance from staff
+        // Vertical distance from staff?
         Staff   staff = system.getStaffAt(left);
         int     staffDy = Math.abs(staff.getTopLeft().y - box.y);
         boolean closeToStaff = staffDy <= scale.toPixels(constants.maxStaffDy);
@@ -154,14 +153,20 @@ public enum TextRole {
         int     pageCenter = sheet.getWidth() / 2;
         boolean pageCentered = Math.abs((box.x + (box.width / 2)) - pageCenter) <= maxCenterDx;
 
-        // Right aligned with staves
+        // Right aligned with staves?
         int     maxRightDx = scale.toPixels(constants.maxRightDx);
-        boolean rightAligned = Math.abs(right.x - system.getDimension().width) <= maxRightDx;
+        boolean rightAligned = Math.abs(
+            right.x - system.getTopLeft().x - system.getDimension().width) <= maxRightDx;
 
         // Short Sentence?
         int     maxShortLength = scale.toPixels(constants.maxShortLength);
         boolean shortSentence = box.width <= maxShortLength;
 
+        // Tiny Sentence?
+        int     maxTinyLength = scale.toPixels(constants.maxTinyLength);
+        boolean tinySentence = box.width <= maxTinyLength;
+
+        // High text?
         int     minTitleHeight = scale.toPixels(constants.minTitleHeight);
         boolean highText = box.height >= minTitleHeight;
 
@@ -177,12 +182,16 @@ public enum TextRole {
 
         // Decisions ...
         switch (staffPosition) {
-        case above : // Title, Number, Creator, Direction (Accord)
+        case ABOVE_STAVES : // Title, Number, Creator, Direction (Accord)
+
+            if (tinySentence) {
+                return new RoleInfo(TextRole.Unknown);
+            }
 
             if (leftOfStaves) {
                 return new RoleInfo(
                     TextRole.Creator,
-                    Text.CreatorText.CreatorType.lyricist);
+                    Text.CreatorText.CreatorType.poet);
             } else if (rightAligned) {
                 return new RoleInfo(
                     TextRole.Creator,
@@ -200,7 +209,7 @@ public enum TextRole {
 
             break;
 
-        case within : // Name, Lyrics, Direction
+        case WITHIN_STAVES : // Name, Lyrics, Direction
 
             if (leftOfStaves) {
                 return new RoleInfo(TextRole.Name);
@@ -210,13 +219,18 @@ public enum TextRole {
                 return new RoleInfo(TextRole.Lyrics);
             }
 
-        case below : // Copyright
+        case BELOW_STAVES : // Copyright
+
+            if (tinySentence) {
+                return new RoleInfo(TextRole.Unknown);
+            }
 
             if (pageCentered && shortSentence && lastSystem) {
                 return new RoleInfo(TextRole.Rights);
             }
         }
 
+        // Default
         return new RoleInfo(TextRole.Unknown);
     }
 
@@ -235,6 +249,9 @@ public enum TextRole {
         Scale.Fraction maxShortLength = new Scale.Fraction(
             30,
             "Maximum length for a short sentence (no lyrics)");
+        Scale.Fraction maxTinyLength = new Scale.Fraction(
+            2,
+            "Maximum length for a tiny sentence (no lyrics)");
         Scale.Fraction maxStaffDy = new Scale.Fraction(
             7,
             "Maximum distance above staff for a direction");

@@ -32,6 +32,7 @@ import omr.score.entity.Beam;
 import omr.score.entity.Chord;
 import omr.score.entity.Clef;
 import omr.score.entity.Coda;
+import omr.score.entity.DirectionStatement;
 import omr.score.entity.Dynamics;
 import omr.score.entity.Fermata;
 import omr.score.entity.KeySignature;
@@ -643,26 +644,26 @@ public abstract class ScorePainter
         final FontRenderContext frc = g.getFontRenderContext();
         Font                    font = text.getFont();
         TextLayout              layout = new TextLayout(str, font, frc);
-//        final Rectangle2D       rect = layout.getBounds();
-//        final PixelRectangle    box = text.getBox();
-//        final double            xRatio = box.width / rect.getWidth();
-//        final double            yRatio = box.height / rect.getHeight();
-//
-//        if (logger.isFineEnabled()) {
-//            logger.fine(
-//                "xRatio:" + (float) xRatio + " yRatio:" + (float) yRatio + " " +
-//                text);
-//        }
-//
-//        //        // Sign of something wrong
-//        //        if (yRatio > 1.3) {
-//        //            yRatio = 1;
-//        //        }
-//        final AffineTransform fat = AffineTransform.getScaleInstance(
-//            xRatio,
-//            yRatio);
-//        font = font.deriveFont(fat);
-//        layout = new TextLayout(str, font, frc);
+        //        final Rectangle2D       rect = layout.getBounds();
+        //        final PixelRectangle    box = text.getBox();
+        //        final double            xRatio = box.width / rect.getWidth();
+        //        final double            yRatio = box.height / rect.getHeight();
+        //
+        //        if (logger.isFineEnabled()) {
+        //            logger.fine(
+        //                "xRatio:" + (float) xRatio + " yRatio:" + (float) yRatio + " " +
+        //                text);
+        //        }
+        //
+        //        //        // Sign of something wrong
+        //        //        if (yRatio > 1.3) {
+        //        //            yRatio = 1;
+        //        //        }
+        //        final AffineTransform fat = AffineTransform.getScaleInstance(
+        //            xRatio,
+        //            yRatio);
+        //        font = font.deriveFont(fat);
+        //        layout = new TextLayout(str, font, frc);
         paint(
             layout,
             new PixelPoint(refPoint.x, location.y),
@@ -806,7 +807,7 @@ public abstract class ScorePainter
             BasicStroke.JOIN_ROUND);
 
         // Determine stems parameters
-        stemThickness = scale.mainFore() /2;
+        stemThickness = scale.mainFore() / 2;
         stemHalfThickness = stemThickness / 2;
         stemStroke = new BasicStroke(
             stemThickness,

@@ -51,11 +51,11 @@ public class ScoreSystem
 
 
         /** Above the first staff of the first (real)part */
-        above,
+        ABOVE_STAVES,
         /** Somewhere within the staves of this system */
-        within, 
+        WITHIN_STAVES, 
         /** Below the last staff of the last part */
-        below;
+        BELOW_STAVES;
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -315,7 +315,7 @@ public class ScoreSystem
      */
     public boolean isLeftOfStaves (PixelPoint sysPt)
     {
-        return sysPt.x < 0;
+        return sysPt.x < topLeft.x;
     }
 
     //---------//
@@ -435,27 +435,25 @@ public class ScoreSystem
     /**
      * Report the vertical position of the provided system point with respect to
      * the system staves
-     * @param sysPt the system point whose ordinate is to be checked
+     * @param point the point whose ordinate is to be checked
      * @return the StaffPosition value
      */
-    public StaffPosition getStaffPosition (PixelPoint sysPt)
+    public StaffPosition getStaffPosition (PixelPoint point)
     {
-        Staff      firstStaff = getFirstRealPart()
-                                    .getFirstStaff();
+        Staff firstStaff = getFirstRealPart()
+                               .getFirstStaff();
 
-        PixelPoint pagPt = sysPt;
-
-        if (pagPt.y < firstStaff.getTopLeft().y) {
-            return StaffPosition.above;
+        if (point.y < firstStaff.getTopLeft().y) {
+            return StaffPosition.ABOVE_STAVES;
         }
 
         Staff lastStaff = getLastPart()
                               .getLastStaff();
 
-        if (pagPt.y > (lastStaff.getTopLeft().y + lastStaff.getHeight())) {
-            return StaffPosition.below;
+        if (point.y > (lastStaff.getTopLeft().y + lastStaff.getHeight())) {
+            return StaffPosition.BELOW_STAVES;
         } else {
-            return StaffPosition.within;
+            return StaffPosition.WITHIN_STAVES;
         }
     }
 
@@ -488,7 +486,7 @@ public class ScoreSystem
     //--------------//
     /**
      * Report the related staff for a text at the provided point, since some
-     * texts (direction, lyrics) are preferably assigned to the staff above if
+     * texts (direction, lyrics) are preferably assigned to the staff ABOVE_STAVES if
      * any
      * @param role the precise role of text glyph
      * @param sysPt the provided point

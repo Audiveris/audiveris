@@ -26,6 +26,7 @@ import omr.score.ScoreFixer;
 import omr.score.ScoreManager;
 import omr.score.entity.Measure;
 import omr.score.entity.ScoreSystem;
+import omr.score.entity.SystemPart;
 import omr.score.midi.MidiActions;
 import omr.score.ui.ScoreActions;
 
@@ -45,6 +46,7 @@ import omr.sheet.picture.ImageFormatException;
 import omr.sheet.picture.Picture;
 import static omr.step.Step.*;
 
+import omr.util.TreeNode;
 import omr.util.WrappedBoolean;
 
 import java.io.*;
@@ -896,9 +898,23 @@ public class SheetSteps
         public void doSystem (SystemInfo system)
             throws StepException
         {
+            // Cleanup system sentences
             system.getSentences()
                   .clear();
 
+            // Cleanup system dummy parts
+            ScoreSystem scoreSystem = system.getScoreSystem();
+
+            for (Iterator<TreeNode> it = scoreSystem.getParts()
+                                                    .iterator(); it.hasNext();) {
+                SystemPart part = (SystemPart) it.next();
+
+                if (part.isDummy()) {
+                    it.remove();
+                }
+            }
+
+            // Iterate
             for (int iter = 1;
                  iter <= constants.MaxPatternsIterations.getValue(); iter++) {
                 if (logger.isFineEnabled()) {

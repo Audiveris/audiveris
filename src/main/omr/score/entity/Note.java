@@ -1022,8 +1022,8 @@ public class Note
         }
 
         if (accidental != null) {
-            sb.append(" ")
-              .append(accidental);
+            sb.append(" accid=")
+              .append(accidental.getShape());
         }
 
         if (isRest) {

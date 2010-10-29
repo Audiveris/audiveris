@@ -663,10 +663,10 @@ public class TextInfo
                             }
                         }
                     } else {
-                        logger.warning(
-                            "Text Glyph#" + glyph.getId() +
-                            " has no section for word '" + word.text +
-                            "' beginning at " + word.chars.get(0).getBox());
+                        system.getScoreSystem()
+                              .addError(
+                            glyph,
+                            "No section for word '" + word.text + "'");
                     }
                 }
             }

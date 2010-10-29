@@ -698,7 +698,6 @@ public class SystemPart
                 dummyMeasure.buildVoices();
             }
 
-            ////dummyMeasure.setLeftX(measure.getLeftX());
             dummyMeasure.setBox(
                 new PixelRectangle(
                     measure.getBox().x,

@@ -323,7 +323,6 @@ public class Slur
         }
 
         // Compute the approximating circle
-        // Build a curve using system-based coordinates
         Circle       circle = SlurInspector.computeCircle(glyph);
         CubicCurve2D curve = computeCurve(circle, system);
 
