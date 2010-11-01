@@ -459,8 +459,7 @@ public class ScoreExporter
                 .add(pmClef);
 
             // Staff number (only for multi-staff parts)
-            if (current.part.getStaffIds()
-                            .size() > 1) {
+            if (current.part.isMultiStaff()) {
                 pmClef.setNumber(
                     new BigInteger("" + (clef.getStaff().getId())));
             }
@@ -758,7 +757,7 @@ public class ScoreExporter
             logger.fine("Visiting " + measure);
         }
 
-        // Make sure this measure is to be exported
+        // Make sure this measure is within the range to be exported
         if (!isDesired(measure)) {
             if (logger.isFineEnabled()) {
                 logger.fine(measure + " skipped.");
@@ -810,13 +809,10 @@ public class ScoreExporter
 
         if (isFirst.measure) {
             // Allocate Print
+            boolean printUsed = false;
             current.pmPrint = factory.createPrint();
-            current.pmMeasure.getNoteOrBackupOrForward()
-                             .add(current.pmPrint);
 
             if (isFirst.system) {
-                // New Page ? TODO
-
                 // Divisions
                 try {
                     getMeasureAttributes()
@@ -838,17 +834,19 @@ public class ScoreExporter
                 if (current.part.isMultiStaff()) {
                     getMeasureAttributes()
                         .setStaves(
-                        new BigInteger("" + current.part.getStaffIds().size()));
+                        new BigInteger("" + current.part.getStaffCount()));
                 }
             } else {
                 // New system
                 current.pmPrint.setNewSystem(YesNo.YES);
+                printUsed = true;
             }
 
-            if (isFirst.part) {
+            if (isFirst.part && !measure.isDummy()) {
                 // SystemLayout
                 SystemLayout systemLayout = factory.createSystemLayout();
                 current.pmPrint.setSystemLayout(systemLayout);
+                printUsed = true;
 
                 // SystemMargins
                 SystemMargins systemMargins = factory.createSystemMargins();
@@ -925,16 +923,22 @@ public class ScoreExporter
                             if (prevStaff == null) {
                                 SystemPart prevPart = (SystemPart) measure.getPart()
                                                                           .getPreviousSibling();
-                                prevStaff = prevPart.getLastStaff();
+
+                                if (!prevPart.isDummy()) {
+                                    prevStaff = prevPart.getLastStaff();
+                                }
                             }
 
-                            staffLayout.setStaffDistance(
-                                toTenths(
-                                    staff.getTopLeft().y -
-                                    prevStaff.getTopLeft().y -
-                                    prevStaff.getHeight()));
-                            current.pmPrint.getStaffLayout()
-                                           .add(staffLayout);
+                            if (prevStaff != null) {
+                                staffLayout.setStaffDistance(
+                                    toTenths(
+                                        staff.getTopLeft().y -
+                                        prevStaff.getTopLeft().y -
+                                        prevStaff.getHeight()));
+                                current.pmPrint.getStaffLayout()
+                                               .add(staffLayout);
+                                printUsed = true;
+                            }
                         } catch (Exception ex) {
                             logger.warning(
                                 "Error exporting staff layout system#" +
@@ -954,6 +958,12 @@ public class ScoreExporter
             getMeasureAttributes()
                 .getStaffDetails()
                 .add(staffDetails);
+
+            // Anything to print?
+            if (printUsed) {
+                current.pmMeasure.getNoteOrBackupOrForward()
+                                 .add(current.pmPrint);
+            }
         }
 
         // Specific browsing down the measure
@@ -1138,9 +1148,12 @@ public class ScoreExporter
             current.pmNote.setVoice("" + chord.getVoice().getId());
 
             // Type
-            NoteType noteType = factory.createNoteType();
-            noteType.setValue("" + getNoteTypeName(note));
-            current.pmNote.setType(noteType);
+            if (!note.getMeasure()
+                     .isDummy()) {
+                NoteType noteType = factory.createNoteType();
+                noteType.setValue("" + getNoteTypeName(note));
+                current.pmNote.setType(noteType);
+            }
 
             // Stem ?
             if (chord.getStem() != null) {

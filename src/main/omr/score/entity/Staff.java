@@ -66,7 +66,8 @@ public class Staff
      *
      * @param info the physical information read from the sheet
      * @param part the containing systemPart
-     * @param topLeft the coordinate of the upper left corner of this staff
+     * @param topLeft the coordinate of the upper left corner of this staff,
+     * usually null for dummy staves
      * @param width the staff width
      * @param height the staff height
      */
@@ -81,8 +82,10 @@ public class Staff
         this.info = info;
         this.topLeft = topLeft;
 
-        setBox(new PixelRectangle(topLeft.x, topLeft.y, width, height));
-        getCenter();
+        if (topLeft != null) {
+            setBox(new PixelRectangle(topLeft.x, topLeft.y, width, height));
+            getCenter();
+        }
 
         // Assign id
         id = getParent()
@@ -233,7 +236,7 @@ public class Staff
                 sb.append(" dummy");
             }
 
-            sb.append(" pageTopLeft=")
+            sb.append(" topLeft=")
               .append(topLeft);
             sb.append(" width=")
               .append(getWidth());

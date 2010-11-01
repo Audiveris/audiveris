@@ -207,14 +207,17 @@ public class Note
         // Pitch Position
         this.pitchPosition = pitchPosition;
 
-        // Location center
-        setCenter(
-            new PixelPoint(
-                center.x,
-                (int) Math.rint(
-                    (staff.getTopLeft().y - staff.getSystem().getTopLeft().y) +
-                    ((chord.getScale()
-                           .interline() * (4d + pitchPosition)) / 2))));
+        // Location center?
+        if (center != null) {
+            setCenter(
+                new PixelPoint(
+                    center.x,
+                    (int) Math.rint(
+                        (staff.getTopLeft().y -
+                                                staff.getSystem().getTopLeft().y) +
+                        ((chord.getScale()
+                               .interline() * (4d + pitchPosition)) / 2))));
+        }
 
         // Note box
         setBox(null);

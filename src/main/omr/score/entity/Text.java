@@ -485,7 +485,6 @@ public abstract class Text
 
             if (getContent() != null) {
                 sentence.getSystemPart()
-                        .getScorePart()
                         .setName(getContent());
             }
         }

@@ -26,7 +26,6 @@ import omr.score.entity.ScoreNode;
 import omr.score.entity.ScorePart;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.SlotPolicy;
-import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
 import omr.score.ui.ScoreEditor;
 import omr.score.ui.ScoreLayout;
@@ -1106,32 +1105,6 @@ public class Score
         if (Main.getGui() != null) {
             ScoreManager.getInstance()
                         .midiClose(this);
-        }
-    }
-
-    //--------------------//
-    // createPartListFrom //
-    //--------------------//
-    /**
-     * Create the list of score parts, based on the provided reference system
-     *
-     * @param refSystem the system taken as reference
-     */
-    public void createPartListFrom (ScoreSystem refSystem)
-    {
-        // Build a ScorePart list based on the parts of the ref system
-        int index = 0;
-        partList.clear();
-
-        for (TreeNode node : refSystem.getParts()) {
-            SystemPart sp = (SystemPart) node;
-            Staff      firstStaff = sp.getFirstStaff();
-            ScorePart  scorePart = new ScorePart(
-                sp,
-                ++index,
-                firstStaff.getTopLeft().y - refSystem.getTopLeft().y);
-            scorePart.setName("Part_" + index);
-            partList.add(scorePart);
         }
     }
 

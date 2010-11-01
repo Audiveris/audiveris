@@ -25,8 +25,8 @@ import omr.util.TreeNode;
 import java.util.*;
 
 /**
- * Class <code>SystemPart</code> handles the various parts found in one system,
- * since the layout of parts may vary from system to system
+ * Class <code>SystemPart</code> handles each of the various parts found in
+ * one system, since the layout of parts may vary from system to system.
  *
  * @author Hervé Bitteur
  */
@@ -60,6 +60,9 @@ public class SystemPart
 
     /** Id of this part within the system, starting at 1 */
     private int id;
+
+    /** Name, if any, that faces this system part */
+    private String name;
 
     /** The corresponding ScorePart */
     private ScorePart scorePart;
@@ -334,6 +337,28 @@ public class SystemPart
     public List<TreeNode> getMeasures ()
     {
         return measures.getChildren();
+    }
+
+    //---------//
+    // setName //
+    //---------//
+    /**
+     * @param name the name to set
+     */
+    public void setName (String name)
+    {
+        this.name = name;
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * @return the name
+     */
+    public String getName ()
+    {
+        return name;
     }
 
     //--------------//
@@ -636,18 +661,13 @@ public class SystemPart
                 staffIndex++;
 
                 Staff dummyStaff;
-                int   spaceStart = measure.getLeftX();
 
                 if (isFirstMeasure) {
                     // Create dummy Staff
                     dummyStaff = new Staff(
                         null, // No staff info counterpart
                         dummyPart,
-                        new PixelPoint(
-                            getFirstStaff()
-                                .getTopLeft().x,
-                            getFirstStaff().getTopLeft().y -
-                            getScorePart().getDisplayOrdinate()),
+                        null,
                         getFirstStaff().getWidth(),
                         nextStaff.getHeight());
                     dummyStaff.setDummy(true);
@@ -661,7 +681,6 @@ public class SystemPart
                             dummyMeasure,
                             dummyStaff,
                             nextClef);
-                        spaceStart = dummyStaff.getCenter().x;
                     }
 
                     isFirstMeasure = false;
@@ -677,7 +696,6 @@ public class SystemPart
                         dummyMeasure,
                         dummyStaff,
                         (KeySignature) measure.getKeySignatures().get(0));
-                    spaceStart = dummyKey.getCenter().x;
                 }
 
                 // Replicate Time if any
@@ -685,16 +703,10 @@ public class SystemPart
 
                 if (ts != null) {
                     new TimeSignature(dummyMeasure, dummyStaff, ts);
-                    spaceStart = ts.getCenter().x;
                 }
 
-                // Create dummy Whole rest
-                dummyMeasure.addWholeRest(
-                    dummyStaff,
-                    new PixelPoint(
-                        (spaceStart + measure.getBarline().getCenter().x) / 2,
-                        nextStaff.getCenter().y -
-                        getScorePart().getDisplayOrdinate()));
+                // Create dummy Whole rest (w/ no precise location)
+                dummyMeasure.addWholeRest(dummyStaff, null);
                 dummyMeasure.buildVoices();
             }
 
@@ -836,15 +848,31 @@ public class SystemPart
         sb.append(" [");
 
         if (getStaves() != null) {
+            boolean first = true;
+
             for (TreeNode node : getStaves()) {
                 if (node != null) {
                     Staff staff = (Staff) node;
-                    sb.append(staff.getId() + " ");
+
+                    if (!first) {
+                        sb.append(",");
+                    }
+
+                    sb.append(staff.getId());
                 }
+
+                first = false;
             }
         }
 
-        sb.append("]}");
+        sb.append("]");
+
+        if (name != null) {
+            sb.append(" name:")
+              .append(name);
+        }
+
+        sb.append("}");
 
         return sb.toString();
     }

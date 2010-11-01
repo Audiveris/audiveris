@@ -134,11 +134,14 @@ public class TimeSignature
             numerator = other.getNumerator();
             denominator = other.getDenominator();
             shape = other.getShape();
-            setCenter(
-                new PixelPoint(
-                    other.getCenter().x,
-                    other.getCenter().y - other.getStaff().getTopLeft().y +
-                    staff.getTopLeft().y));
+
+            if (!staff.isDummy()) {
+                setCenter(
+                    new PixelPoint(
+                        other.getCenter().x,
+                        other.getCenter().y - other.getStaff().getTopLeft().y +
+                        staff.getTopLeft().y));
+            }
         } catch (InvalidTimeSignature ex) {
             logger.severe("Cannot duplicate TimeSignature", ex);
         }

@@ -123,8 +123,11 @@ public class SystemTranslator
             logger.fine("buildFinal starting from " + system);
         }
 
-        final Score      score = system.getScore();
-        final Sheet      sheet = score.getSheet();
+        final Score score = system.getScore();
+        final Sheet sheet = score.getSheet();
+
+        // Connect parts across systems 
+        PartConnector.connectSystems(score);
 
         // Get the (sub) list of all systems for final processing
         List<SystemInfo> systems = sheet.getSystems()

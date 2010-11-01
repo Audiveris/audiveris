@@ -16,10 +16,6 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
-import omr.util.TreeNode;
-
-import java.util.*;
-
 /**
  * Class <code>ScorePart</code> defines a part at score level. It is
  * instantiated in each System by a SystemPart.
@@ -42,19 +38,19 @@ public class ScorePart
      * Distinguished id for this part (the same id is used by the corresponding
      * SystemPart in each System)
      */
-    private final int id;
+    private int id;
+
+    /** Count of staves */
+    private final int staffCount;
 
     /** Name for this part */
     private String name;
 
-    /** Typical ordinate for displaying this part in the score display */
-    private final int displayOrdinate;
+    /** Abbreviation for this part, if any */
+    private String abbreviation;
 
     /** Instrument MIDI program, if any */
     private Integer midiProgram;
-
-    /** List of staff ids */
-    private List<Integer> ids = new ArrayList<Integer>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -64,39 +60,53 @@ public class ScorePart
     /**
      * Creates a new instance of ScorePart, built from a SystemPart
      *
-     * @param systemPart the concrete SystemPart
      * @param id the id for this part
-     * @param displayOrdinate the ordinate offset of this part wrt system
+     * @param staffCount the count of staves within this part
      */
-    public ScorePart (SystemPart systemPart,
-                      int        id,
-                      int        displayOrdinate)
+    public ScorePart (int id,
+                      int staffCount)
     {
-        this.id = id;
-        this.displayOrdinate = displayOrdinate;
-
-        for (TreeNode node : systemPart.getStaves()) {
-            Staff staff = (Staff) node;
-            ids.add(staff.getId());
-        }
+        setId(id);
+        this.staffCount = staffCount;
     }
 
     /** Meant for XML binder only */
     private ScorePart ()
     {
-        id = 0;
-        displayOrdinate = 0;
+        setId(0);
+        staffCount = 0;
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-----------------//
+    // setAbbreviation //
+    //-----------------//
+    /**
+     * @param abbreviation the abbreviation to set
+     */
+    public void setAbbreviation (String abbreviation)
+    {
+        this.abbreviation = abbreviation;
+    }
+
+    //-----------------//
+    // getAbbreviation //
+    //-----------------//
+    /**
+     * @return the abbreviation
+     */
+    public String getAbbreviation ()
+    {
+        return abbreviation;
+    }
 
     //----------------//
     // getDefaultName //
     //----------------//
     public String getDefaultName ()
     {
-        switch (getStaffIds()
-                    .size()) {
+        switch (staffCount) {
         case 1 :
             return constants.defaultSingleStaffPartName.getValue();
 
@@ -114,11 +124,10 @@ public class ScorePart
     public Integer getDefaultProgram ()
     {
         if (logger.isFineEnabled()) {
-            logger.fine("Part #" + getId() + " size=" + getStaffIds().size());
+            logger.fine("Part #" + getId() + " count=" + staffCount);
         }
 
-        switch (getStaffIds()
-                    .size()) {
+        switch (staffCount) {
         case 1 :
             return constants.defaultSingleStaffPartProgram.getValue();
 
@@ -130,12 +139,17 @@ public class ScorePart
         }
     }
 
-    //--------------------//
-    // getDisplayOrdinate //
-    //--------------------//
-    public int getDisplayOrdinate ()
+    //-------//
+    // getId //
+    //-------//
+    /**
+     * Set the id of this part
+     *
+     * @id the distinguished part id
+     */
+    public final void setId (int id)
     {
-        return displayOrdinate;
+        this.id = id;
     }
 
     //-------//
@@ -177,7 +191,7 @@ public class ScorePart
      */
     public boolean isMultiStaff ()
     {
-        return ids.size() > 1;
+        return staffCount > 1;
     }
 
     //---------//
@@ -219,65 +233,16 @@ public class ScorePart
         return "P" + id;
     }
 
-    //-------------//
-    // getStaffIds //
-    //-------------//
+    //---------------//
+    // getStaffCount //
+    //---------------//
     /**
-     * Report the staff ids for this part
-     *
-     * @return the list of staff ids
+     * @return the staffCount
      */
-    public List<Integer> getStaffIds ()
+    public int getStaffCount ()
     {
-        return ids;
+        return staffCount;
     }
-
-    //
-    //    //--------//
-    //    // equals //
-    //    //--------//
-    //    /**
-    //     * Check whether the list of ids are identical
-    //     *
-    //     * @param obj the object to compare to
-    //     * @return true if equal
-    //     */
-    //    @Override
-    //    public boolean equals (Object obj)
-    //    {
-    //        if (obj instanceof ScorePart) {
-    //            ScorePart sp = (ScorePart) obj;
-    //
-    //            if (sp.ids.size() != ids.size()) {
-    //                return false;
-    //            }
-    //
-    //            for (int i = 0; i < ids.size(); i++) {
-    //                if (!(sp.ids.get(i).equals(ids.get(i)))) {
-    //                    return false;
-    //                }
-    //            }
-    //
-    //            return true;
-    //        } else {
-    //            return false;
-    //        }
-    //    }
-    //
-    //    //----------//
-    //    // hashCode //
-    //    //----------//
-    //    /**
-    //     * To please FindBugs, because of overriding of equals method
-    //     * @return nothing
-    //     */
-    //    @Override
-    //    public int hashCode ()
-    //    {
-    //        assert false : "hashCode not designed";
-    //
-    //        return 42; // any arbitrary constant will do
-    //    }
 
     //----------//
     // toString //
@@ -286,7 +251,7 @@ public class ScorePart
     public String toString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("{Part");
+        sb.append("{ScorePart");
 
         sb.append(" id=")
           .append(id);
@@ -296,13 +261,15 @@ public class ScorePart
               .append(name);
         }
 
-        sb.append(" [");
-
-        for (Integer i : ids) {
-            sb.append(i + " ");
+        if (abbreviation != null) {
+            sb.append(" abrv=")
+              .append(abbreviation);
         }
 
-        sb.append("]}");
+        sb.append(" staffCount:")
+          .append(staffCount);
+
+        sb.append("}");
 
         return sb.toString();
     }
