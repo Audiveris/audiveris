@@ -127,7 +127,7 @@ public class SystemTranslator
         final Sheet sheet = score.getSheet();
 
         // Connect parts across systems 
-        PartConnector.connectSystems(score);
+        PartConnection.connectSystems(score);
 
         // Get the (sub) list of all systems for final processing
         List<SystemInfo> systems = sheet.getSystems()

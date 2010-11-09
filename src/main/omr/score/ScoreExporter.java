@@ -1421,61 +1421,14 @@ public class ScoreExporter
             (lyricFont.getStyle() == Font.ITALIC) ? FontStyle.ITALIC
                         : FontStyle.NORMAL);
 
-        // PartList
+        // PartList & sequence of parts
         PartList partList = factory.createPartList();
         scorePartwise.setPartList(partList);
         isFirst.part = true;
 
         for (ScorePart p : score.getPartList()) {
-            current.part = p;
-
-            ///logger.info("Processing " + p);
-
-            // Scorepart in partList
-            proxymusic.ScorePart scorePart = factory.createScorePart();
             partList.getPartGroupOrScorePart()
-                    .add(scorePart);
-            scorePart.setId(current.part.getPid());
-
-            PartName partName = factory.createPartName();
-            scorePart.setPartName(partName);
-            partName.setValue(current.part.getName());
-
-            if (p.getMidiProgram() != null) {
-                // Score instrument
-                ScoreInstrument scoreInstrument = new ScoreInstrument();
-                scorePart.getScoreInstrument()
-                         .add(scoreInstrument);
-                scoreInstrument.setId(scorePart.getId() + "-I1");
-                scoreInstrument.setInstrumentName(
-                    MidiAbstractions.getProgramName(p.getMidiProgram()));
-
-                // Midi instrument
-                MidiInstrument midiInstrument = factory.createMidiInstrument();
-                scorePart.getMidiInstrument()
-                         .add(midiInstrument);
-                midiInstrument.setId(scoreInstrument);
-                midiInstrument.setMidiChannel(p.getId());
-                midiInstrument.setMidiProgram(p.getMidiProgram());
-            }
-
-            // ScorePart in scorePartwise
-            current.pmPart = factory.createScorePartwisePart();
-            scorePartwise.getPart()
-                         .add(current.pmPart);
-            current.pmPart.setId(scorePart);
-
-            // Delegate to children the filling of measures
-            if (logger.isFineEnabled()) {
-                logger.fine("Populating " + current.part);
-            }
-
-            isFirst.system = true; // TODO: to be reviewed when adding pages
-            slurNumbers.clear(); // Reset slur numbers
-            score.acceptChildren(this);
-
-            // Next part, if any
-            isFirst.part = false;
+                    .add(getScorePart(p));
         }
 
         return false; // That's all
@@ -2066,6 +2019,68 @@ public class ScoreExporter
         return (measureRange == null) || // No range : take all of them
                (measure.isTemporary()) || // A temporary measure for export
                measureRange.contains(measure.getId()); // Part of the range
+    }
+
+    //--------------//
+    // getScorePart //
+    //--------------//
+    /**
+     * Generate the proxymusic ScorePart instance that relates to the Audiveris
+     * provided ScorePart
+     * @param p provided ScorePart 
+     * @return the newly built proxymusic ScorePart instance
+     */
+    private proxymusic.ScorePart getScorePart (ScorePart p)
+    {
+        current.part = p;
+
+        ///logger.info("Processing " + p);
+
+        // Scorepart in partList
+        proxymusic.ScorePart scorePart = factory.createScorePart();
+        scorePart.setId(p.getPid());
+
+        PartName partName = factory.createPartName();
+        scorePart.setPartName(partName);
+        partName.setValue(p.getName());
+
+        if (p.getMidiProgram() != null) {
+            // Score instrument
+            ScoreInstrument scoreInstrument = new ScoreInstrument();
+            scorePart.getScoreInstrument()
+                     .add(scoreInstrument);
+            scoreInstrument.setId(scorePart.getId() + "-I1");
+            scoreInstrument.setInstrumentName(
+                MidiAbstractions.getProgramName(p.getMidiProgram()));
+
+            // Midi instrument
+            MidiInstrument midiInstrument = factory.createMidiInstrument();
+            scorePart.getMidiInstrument()
+                     .add(midiInstrument);
+            midiInstrument.setId(scoreInstrument);
+            midiInstrument.setMidiChannel(p.getId());
+            midiInstrument.setMidiProgram(p.getMidiProgram());
+        }
+
+        // ScorePart in scorePartwise
+        current.pmPart = factory.createScorePartwisePart();
+        scorePartwise.getPart()
+                     .add(current.pmPart);
+        current.pmPart.setId(scorePart);
+
+        // Delegate to children the filling of measures
+        if (logger.isFineEnabled()) {
+            logger.fine("Populating " + current.part);
+        }
+
+        isFirst.system = true; // TODO: to be reviewed when adding pages
+        slurNumbers.clear(); // Reset slur numbers
+        score.acceptChildren(this);
+
+        // Next part, if any
+        isFirst.part = false;
+
+        return scorePart;
     }
 
     //----------//

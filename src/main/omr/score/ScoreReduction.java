@@ -13,7 +13,17 @@ package omr.score;
 
 import omr.log.Logger;
 
+import omr.score.PartConnection.Candidate;
+import omr.score.PartConnection.Result;
+
+import proxymusic.Credit;
+import proxymusic.Instrument;
+import proxymusic.MidiInstrument;
+import proxymusic.Note;
+import proxymusic.PartList;
 import proxymusic.Print;
+import proxymusic.ScoreInstrument;
+import proxymusic.ScorePart;
 import proxymusic.ScorePartwise;
 
 import proxymusic.ScorePartwise.Part;
@@ -24,36 +34,47 @@ import proxymusic.YesNo;
 import proxymusic.util.Marshalling;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.util.*;
+import java.util.Map.Entry;
 
 import javax.xml.bind.JAXBException;
 
 /**
  * Class {@code ScoreReduction} is a first attempt to implement the "reduce"
  * part of a MapReduce Job for a given score.  <ol>
- *
  * <li>Any Map task processes a score page and produces the related XML fragment
  * as its output.</li>
- *
  * <li>The Reduce task takes all the XML fragments as input and consolidates
  * them in a global Score output.</li></ol>
  *
  * <p>Typical calling of the feature is the following:
  * <code>
  * <pre>
- * HashMap&lt;Integer, String&gt; fragments = ...;
+ * Map&lt;Integer, String&gt; fragments = ...;
  * ScoreReduction reduction = new ScoreReduction(fragments);
  * String output = reduction.reduce();
  * </pre>
  * </code>
+ * </p>
  *
- * <p>A main() method is provided to ease the testing of this class, assuming
- * that the individual pages have already been scanned and their XML fragments
- * are available on disk.
+ * <p><b>Features not yet implemented:</b> <ul>
+ * <li>Connection of slurs between pages</li>
+ * <li>In part-list, handling of part-group beside score-part</li>
+ * </ul></p>
+ *
+ * <p><b>Test:</b> A main() method is provided only to ease the testing of
+ * this class, assuming that the individual pages have already been scanned and
+ * their XML fragments are available on disk.
  * It requires 3 arguments: name of the folder to lookup, prefix for
  * matching files, suffix for matching files.
  * It with search the specified folder for matching files, read their content as
- * XML fragments and launch a ScoreReduction instance on this data.
+ * XML fragments, launch a ScoreReduction instance on this data and finally
+ * write the global score in the input folder.</p>
+ *
+ * <p><b>Relevant MusicXML elements:</b><br/>
+ *  <img src="doc-files/Part.jpg" />
+ * </p>
  *
  * @author Hervé Bitteur
  */
@@ -71,6 +92,18 @@ public class ScoreReduction
 
     /** Factory for proxymusic entities */
     private final proxymusic.ObjectFactory factory = new proxymusic.ObjectFactory();
+
+    /** Global connection of parts */
+    private PartConnection connection;
+
+    /** Map of (new) ScorePart -> (new) Part */
+    private Map<ScorePart, Part> partData;
+
+    /** Map of old ScorePart -> new ScorePart */
+    private Map<ScorePart, ScorePart> newParts;
+
+    /** Map of old ScoreInstrument -> new ScoreInstrument */
+    private Map<ScoreInstrument, ScoreInstrument> newInsts;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -92,19 +125,26 @@ public class ScoreReduction
     // main //
     //------//
     /**
-     * Pseudo-main method, just to allocate an instance of ScoreReduction and
-     * launch the reduce() method
+     * Pseudo-main test method, just to allocate an instance of ScoreReduction
+     * and launch the reduce() method
      * @param args the template to filter relevant files
      */
     public static void main (String... args)
         throws FileNotFoundException, IOException, JAXBException
     {
+        for (int i = 0; i < args.length; i++) {
+            logger.info("args[" + i + "] = \"" + args[i] + "\"");
+        }
+
         if (args.length != 3) {
             throw new IllegalArgumentException(
                 "Expected 3 arguments (folder, prefix, suffix)");
         }
 
-        SortedMap<Integer, File> files = retrieveFiles(args);
+        File                     dir = new File(args[0]);
+        String                   prefix = args[1].trim();
+        String                   suffix = args[2];
+        SortedMap<Integer, File> files = retrieveFiles(dir, prefix, suffix);
 
         if (files.isEmpty()) {
             return;
@@ -136,9 +176,11 @@ public class ScoreReduction
         }
 
         // For debugging
-        FileOutputStream fos = new FileOutputStream("global.xml");
+        File             file = new File(dir, prefix + "global.xml");
+        FileOutputStream fos = new FileOutputStream(file);
         fos.write(output.getBytes());
         fos.close();
+        logger.info("Output written to " + file);
     }
 
     //--------//
@@ -157,17 +199,17 @@ public class ScoreReduction
         // Debug
         //logger.setLevel(Level.FINEST);
 
-        // Load pages
+        // Load pages (MusicXML fragments -> ScorePartwise instances)
         SortedMap<Integer, ScorePartwise> pages = loadPages(fragments);
 
         if (pages.isEmpty()) {
             return "";
         }
 
-        // Consolidate
+        // Consolidate (set of {page ScorePartwise} -> 1! global ScorePartwise)
         ScorePartwise globalPartwise = consolidate(pages);
 
-        // Build output
+        // Build output (global ScorePartwise -> MusicXML)
         return buildOutput(globalPartwise);
     }
 
@@ -177,7 +219,7 @@ public class ScoreReduction
     /**
      * Retrieve the Print element in the object list, even if we need to create
      * a new one and insert it to the list
-     * @param noteOrBackupOrForward the list to search (andupdate)
+     * @param noteOrBackupOrForward the list to search (and update)
      * @return the print element (old or brand new)
      */
     private Print getPrint (List<Object> noteOrBackupOrForward)
@@ -202,75 +244,181 @@ public class ScoreReduction
      * Create the header of the global partwise, by replicating information
      * form first page header
      * @param global the global partwise to update
-     * @param first the partwise for first page
-     */
-    private void addHeader (ScorePartwise global,
-                            ScorePartwise first)
-    {
-        // Work
-        global.setWork(first.getWork());
-
-        // Identification
-        // TODO Encoding:
-        // - Signature is inserted twice (page then global)
-        // - Source should be the whole score file, not the first page file
-        global.setIdentification(first.getIdentification());
-
-        // Defaults
-        global.setDefaults(first.getDefaults());
-
-        // Credits
-        global.getCredit()
-              .addAll(first.getCredit());
-
-        // Part list
-        // TODO: Verify consistency, part per part, across pages
-        global.setPartList(first.getPartList());
-    }
-
-    //----------//
-    // addParts //
-    //----------//
-    /**
-     * Add all part elements to the global partwise
-     * @param global the global partwise
      * @param pages the individual page partwise instances
      */
-    private void addParts (ScorePartwise                     global,
-                           SortedMap<Integer, ScorePartwise> pages)
+    private void addHeader (ScorePartwise                     global,
+                            SortedMap<Integer, ScorePartwise> pages)
     {
-        // TODO: check that all part lists are consistent ...
+        //
+        //  <!ENTITY % score-header
+        //          "(work?, movement-number?, movement-title?,
+        //            identification?, defaults?, credit*, part-list)">
+        //
+
+        // First page data
         ScorePartwise first = pages.get(pages.firstKey());
-        int           partCount = first.getPart()
-                                       .size();
 
-        // Loop on parts
-        for (int ip = 0; ip < partCount; ip++) {
-            // We create a brand new part in global partwise
-            Part gPart = factory.createScorePartwisePart();
+        // work?
+        if (first.getWork() != null) {
+            global.setWork(first.getWork());
+        }
+
+        // movement-number?
+        if (first.getMovementNumber() != null) {
+            global.setMovementNumber(first.getMovementNumber());
+        }
+
+        // movement-title?
+        if (first.getMovementTitle() != null) {
+            global.setMovementTitle(first.getMovementTitle());
+        }
+
+        // identification?
+        if (first.getIdentification() != null) {
+            // TODO Encoding:
+            // - Signature is inserted twice (page then global)
+            // - Source should be the whole score file, not the first page file
+            global.setIdentification(first.getIdentification());
+        }
+
+        // defaults?
+        if (first.getDefaults() != null) {
+            global.setDefaults(first.getDefaults());
+        }
+
+        // credit(s) for first page and others as well
+        for (Entry<Integer, ScorePartwise> entry : pages.entrySet()) {
+            int           index = entry.getKey();
+            ScorePartwise page = entry.getValue();
+            List<Credit>  credits = page.getCredit();
+
+            if (!credits.isEmpty()) {
+                // Add page index
+                insertPageIndex(index, credits);
+                global.getCredit()
+                      .addAll(credits);
+            }
+        }
+    }
+
+    //-------------//
+    // addPartList //
+    //-------------//
+    /**
+     * Build the part-list as the sequence of Result/ScorePart instances, and
+     * map each of them to a Part.
+     * Create list2part, newParts, newInsts
+     */
+    private void addPartList (ScorePartwise global)
+    {
+        // Map ScorePart -> Part data
+        partData = new HashMap<ScorePart, Part>();
+
+        PartList partList = factory.createPartList();
+        global.setPartList(partList);
+
+        for (Result result : connection.getResultMap()
+                                       .keySet()) {
+            ScorePart scorePart = (ScorePart) result.getUnderlyingObject();
+            partList.getPartGroupOrScorePart()
+                    .add(scorePart);
+
+            Part globalPart = factory.createScorePartwisePart();
+            globalPart.setId(scorePart);
             global.getPart()
-                  .add(gPart);
+                  .add(globalPart);
+            partData.put(scorePart, globalPart);
+        }
 
-            int     midOffset = 0; // Page offset on measure id
-            boolean isFirstPage = true; // First page?
+        // Align each candidate to its related result */
+        newParts = new HashMap<ScorePart, ScorePart>();
+        newInsts = new HashMap<ScoreInstrument, ScoreInstrument>();
 
-            // Loop on pages
-            for (ScorePartwise page : pages.values()) {
-                Part part = page.getPart()
-                                .get(ip);
+        for (Result result : connection.getResultMap()
+                                       .keySet()) {
+            ScorePart newSP = (ScorePart) result.getUnderlyingObject();
 
-                if (isFirstPage) {
-                    gPart.setId(part.getId());
+            for (Candidate candidate : connection.getResultMap()
+                                                 .get(result)) {
+                ScorePart old = (ScorePart) candidate.getUnderlyingObject();
+                newParts.put(old, newSP);
+
+                // Map the instruments. We use the same order
+                List<ScoreInstrument> newInstruments = newSP.getScoreInstrument();
+
+                for (int idx = 1; idx <= old.getScoreInstrument()
+                                            .size(); idx++) {
+                    ScoreInstrument si = old.getScoreInstrument()
+                                            .get(idx - 1);
+
+                    if (idx > newInstruments.size()) {
+                        if (logger.isFineEnabled()) {
+                            logger.fine(
+                                result + " #" + idx + " Creating " +
+                                stringOf(si));
+                        }
+
+                        newInstruments.add(si);
+                        si.setId("P" + result.getId() + "-I" + idx);
+
+                        // Related Midi instrument
+                        for (MidiInstrument midi : old.getMidiInstrument()) {
+                            if (midi.getId() == si) {
+                                newSP.getMidiInstrument()
+                                     .add(midi);
+
+                                break;
+                            }
+                        }
+                    } else {
+                        if (logger.isFineEnabled()) {
+                            logger.fine(
+                                result + " #" + idx + " Reusing " +
+                                stringOf(si));
+                        }
+                    }
+
+                    newInsts.put(si, newInstruments.get(idx - 1));
+                }
+            }
+        }
+    }
+
+    //--------------//
+    // addPartsData //
+    //--------------//
+    /**
+     * Populate all part elements
+     * Page after page, append to each part the proper measures of the page
+     * @param pages the individual page partwise instances
+     */
+    private void addPartsData (SortedMap<Integer, ScorePartwise> pages)
+    {
+        int     midOffset = 0; // Page offset on measure id
+        boolean isFirstPage = true; // First page?
+
+        for (Entry<Integer, ScorePartwise> entry : pages.entrySet()) {
+            ScorePartwise page = entry.getValue();
+            int           mid = 0; // Measure id (in this page)
+
+            for (Part part : page.getPart()) {
+                ScorePart oldScorePart = (ScorePart) part.getId();
+                ScorePart newScorePart = newParts.get(oldScorePart);
+                Part      globalPart = partData.get(newScorePart);
+
+                if (newScorePart != oldScorePart) {
+                    part.setId(newScorePart);
                 }
 
-                int     mid = 0; // Measure id (in this page)
                 boolean isFirstMeasure = true; // First measure? (in this page)
 
                 // Update measure in situ and reference them from containing part
                 for (Measure measure : part.getMeasure()) {
                     if (logger.isFineEnabled()) {
                         logger.fine(
-                            "ip:" + ip + " Measure #" + measure.getNumber());
+                            "page#" + entry.getKey() + " part:" +
+                            oldScorePart.getId() + " Measure#" +
+                            measure.getNumber());
                     }
 
                     // New page?
@@ -283,15 +431,29 @@ public class ScoreReduction
                     // Shift measure number
                     mid = Integer.decode(measure.getNumber());
                     measure.setNumber("" + (mid + midOffset));
-                    gPart.getMeasure()
-                         .add(measure);
+                    globalPart.getMeasure()
+                              .add(measure);
+
+                    // Instrument references, if any
+                    for (Object obj : measure.getNoteOrBackupOrForward()) {
+                        if (obj instanceof Note) {
+                            Note       note = (Note) obj;
+                            Instrument inst = note.getInstrument();
+
+                            if (inst != null) {
+                                inst.setId(
+                                    newInsts.get(
+                                        (ScoreInstrument) inst.getId()));
+                            }
+                        }
+                    }
 
                     isFirstMeasure = false;
                 }
-
-                midOffset += mid;
-                isFirstPage = false;
             }
+
+            midOffset += mid;
+            isFirstPage = false;
         }
     }
 
@@ -318,27 +480,80 @@ public class ScoreReduction
     // consolidate //
     //-------------//
     /**
-     * This is the bulk of reduction task, consolidating the outputs of
+     * This is the heart of reduction task, consolidating the outputs of
      * individual pages
-     * @param pages the individual pages
-     * @return the global score partwise
+     * @param pages the individual pages, indexed by their page number
+     * @return the resulting global score partwise
      */
     private ScorePartwise consolidate (SortedMap<Integer, ScorePartwise> pages)
     {
+        // Resulting data
         ScorePartwise global = new ScorePartwise();
-        ScorePartwise first = pages.get(pages.firstKey());
 
         // Score header: more or less reuse the header of first page
-        addHeader(global, first);
+        addHeader(global, pages);
 
-        // Append parts content, inserting page breaks, re-numbering measures
-        addParts(global, pages);
+        /* Connect parts across the pages */
+        connection = PartConnection.connectPages(pages);
+
+        // Force the ids of all ScorePart's 
+        if (logger.isFineEnabled()) {
+            numberResults();
+        }
+
+        // part-list (-> list2part, newParts, newInsts)
+        // and ScoreInstrument's ids
+        addPartList(global);
+
+        // Fill each of the score part results with elements from candidates
+        fillResults();
+
+        // Debug: List all candidates per result
+        dumpResultMapping();
+
+        // parts data, inserting page breaks, re-numbering measures
+        addPartsData(pages);
 
         // Handle cross-page slurs
         // TBD
 
         // The end
         return global;
+    }
+
+    //-------------------//
+    // dumpResultMapping //
+    //-------------------//
+    /**
+     * Debug: List details of all candidates per result
+     */
+    private void dumpResultMapping ()
+    {
+        for (Entry<Result, SortedSet<Candidate>> entry : connection.getResultMap()
+                                                                   .entrySet()) {
+            logger.fine("Result: " + entry.getKey());
+
+            ScorePart spr = (ScorePart) entry.getKey()
+                                             .getUnderlyingObject();
+
+            for (proxymusic.ScoreInstrument si : spr.getScoreInstrument()) {
+                logger.fine(
+                    "-- final inst: " + si.getId() + " " +
+                    si.getInstrumentName());
+            }
+
+            for (Candidate candidate : entry.getValue()) {
+                logger.fine("* candidate: " + candidate);
+
+                ScorePart sp = (ScorePart) candidate.getUnderlyingObject();
+
+                for (proxymusic.ScoreInstrument si : sp.getScoreInstrument()) {
+                    logger.fine(
+                        "-- instrument: " + si.getId() + " " +
+                        si.getInstrumentName());
+                }
+            }
+        }
     }
 
     //-----------//
@@ -355,24 +570,53 @@ public class ScoreReduction
         throws JAXBException
     {
         // Access the page fragments in the right order
-        SortedSet<Integer>                pageNumbers = new TreeSet<Integer>(
+        SortedSet<Integer> pageNumbers = new TreeSet<Integer>(
             pageFragments.keySet());
+        logger.info("About to read fragments " + pageNumbers);
 
-        // Load pages content
+        /** For user feedback */
+        String range = " of [" + pageNumbers.first() + ".." +
+                       pageNumbers.last() + "]...";
+
+        /* Load pages content */
         SortedMap<Integer, ScorePartwise> pages = new TreeMap<Integer, ScorePartwise>();
 
         for (int pageNumber : pageNumbers) {
-            logger.info("Reading fragment #" + pageNumber + " ...");
+            logger.info("Reading fragment " + pageNumber + range);
 
             String               fragment = pageFragments.get(pageNumber);
             ByteArrayInputStream is = new ByteArrayInputStream(
                 fragment.getBytes());
 
-            ScorePartwise        partwise = Marshalling.unmarshal(is);
-            pages.put(pageNumber, partwise);
+            try {
+                ScorePartwise partwise = Marshalling.unmarshal(is);
+                pages.put(pageNumber, partwise);
+            } catch (Exception ex) {
+                logger.warning(
+                    "*** Could not unmarshall page " + pageNumber + " *** " +
+                    ex);
+            }
         }
 
         return pages;
+    }
+
+    //---------------//
+    // numberResults //
+    //---------------//
+    /**
+     * Force the id of each result (score-part) as P1, P2, etc.
+     */
+    private void numberResults ()
+    {
+        int partIndex = 0;
+
+        for (Result result : connection.getResultMap()
+                                       .keySet()) {
+            ScorePart scorePart = (ScorePart) result.getUnderlyingObject();
+            String    partId = "P" + ++partIndex;
+            scorePart.setId(partId);
+        }
     }
 
     //---------------//
@@ -380,21 +624,25 @@ public class ScoreReduction
     //---------------//
     /**
      * Retrieve the map of files whose names match the provided filter
-     * @param args an array of 3 strings: folder, prefix, suffix
+     * @param dir path to folder where files are to be read
+     * @param prefix prefix of desired file names
+     * @param suffix suffix of desired file names
      * @return the sorted map of matching files, indexed by their number
      */
-    private static SortedMap<Integer, File> retrieveFiles (String... args)
+    private static SortedMap<Integer, File> retrieveFiles (File   dir,
+                                                           String prefix,
+                                                           String suffix)
     {
         SortedMap<Integer, File> map = new TreeMap<Integer, File>();
-        File                     dir = new File(args[0]);
-        String                   prefix = args[1];
-        String                   suffix = args[2];
         MyFilenameFilter         filter = new MyFilenameFilter(prefix, suffix);
         File[]                   files = dir.listFiles(filter);
+        File                     template = new File(
+            dir,
+            prefix + "*" + suffix);
+        logger.info("Looking for " + template);
 
         if (files.length == 0) {
-            logger.warning(
-                "No file matching " + new File(dir, prefix + "*" + suffix));
+            logger.warning("No file matching " + template);
         } else {
             for (File file : files) {
                 map.put(filter.getFileNumber(file.getName()), file);
@@ -402,6 +650,129 @@ public class ScoreReduction
         }
 
         return map;
+    }
+
+    //-------------//
+    // fillResults //
+    //-------------//
+    /**
+     * We fill results with data copied from the candidates
+     */
+    private void fillResults ()
+    {
+        for (Result result : connection.getResultMap()
+                                       .keySet()) {
+            ScorePart newSP = (ScorePart) result.getUnderlyingObject();
+
+            for (Candidate candidate : connection.getResultMap()
+                                                 .get(result)) {
+                ScorePart             old = (ScorePart) candidate.getUnderlyingObject();
+
+                // Score instruments. We use the same order
+                List<ScoreInstrument> newInstruments = newSP.getScoreInstrument();
+
+                for (int idx = 1; idx <= old.getScoreInstrument()
+                                            .size(); idx++) {
+                    ScoreInstrument si = old.getScoreInstrument()
+                                            .get(idx - 1);
+
+                    if (idx > newInstruments.size()) {
+                        if (logger.isFineEnabled()) {
+                            logger.fine(
+                                result + " #" + idx + " Creating " +
+                                stringOf(si));
+                        }
+
+                        newInstruments.add(si);
+                        si.setId("P" + result.getId() + "-I" + idx);
+
+                        // Related Midi instrument
+                        for (MidiInstrument midi : old.getMidiInstrument()) {
+                            if (midi.getId() == si) {
+                                newSP.getMidiInstrument()
+                                     .add(midi);
+
+                                break;
+                            }
+                        }
+                    } else {
+                        if (logger.isFineEnabled()) {
+                            logger.fine(
+                                result + " #" + idx + " Reusing " +
+                                stringOf(si));
+                        }
+                    }
+
+                    newInsts.put(si, newInstruments.get(idx - 1));
+                }
+
+                // Group
+                if (!old.getGroup()
+                        .isEmpty() && newSP.getGroup()
+                                           .isEmpty()) {
+                    newSP.getGroup()
+                         .addAll(old.getGroup());
+                }
+
+                // Identification
+                if ((old.getIdentification() != null) &&
+                    (newSP.getIdentification() == null)) {
+                    newSP.setIdentification(old.getIdentification());
+                }
+
+                // Midi device
+                if ((old.getMidiDevice() != null) &&
+                    (newSP.getMidiDevice() == null)) {
+                    newSP.setMidiDevice(old.getMidiDevice());
+                }
+
+                // Name display
+                if ((old.getPartNameDisplay() != null) &&
+                    (newSP.getPartNameDisplay() == null)) {
+                    newSP.setPartNameDisplay(old.getPartNameDisplay());
+                }
+
+                // Abbreviation display
+                if ((old.getPartAbbreviationDisplay() != null) &&
+                    (newSP.getPartAbbreviationDisplay() == null)) {
+                    newSP.setPartAbbreviationDisplay(
+                        old.getPartAbbreviationDisplay());
+                }
+            }
+        }
+    }
+
+    //-----------------//
+    // insertPageIndex //
+    //-----------------//
+    /**
+     * Insert proper page index in credit elements
+     * @param index the page index to insert
+     * @param credits the credits to update
+     */
+    private void insertPageIndex (int          index,
+                                  List<Credit> credits)
+    {
+        for (Credit credit : credits) {
+            credit.setPage(new BigInteger("" + index));
+        }
+    }
+
+    //----------//
+    // stringOf //
+    //----------//
+    private String stringOf (ScoreInstrument si)
+    {
+        StringBuilder sb = new StringBuilder("{ScoreInstrument");
+        sb.append(" id:")
+          .append(si.getId());
+        sb.append(" name:\"")
+          .append(si.getInstrumentName())
+          .append("\"");
+
+        sb.append("}");
+
+        return sb.toString();
     }
 
     //~ Inner Classes ----------------------------------------------------------

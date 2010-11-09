@@ -145,7 +145,7 @@ public class ScorePart
     /**
      * Set the id of this part
      *
-     * @id the distinguished part id
+     * @param id the distinguished part id
      */
     public final void setId (int id)
     {
