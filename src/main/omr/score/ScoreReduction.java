@@ -16,6 +16,9 @@ import omr.log.Logger;
 import omr.score.PartConnection.Candidate;
 import omr.score.PartConnection.Result;
 
+import omr.util.StopWatch;
+import omr.util.WrappedBoolean;
+
 import proxymusic.Credit;
 import proxymusic.Instrument;
 import proxymusic.MidiInstrument;
@@ -85,6 +88,9 @@ public class ScoreReduction
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScoreReduction.class);
 
+    /** Just for debug */
+    private static StopWatch watch;
+
     //~ Instance fields --------------------------------------------------------
 
     /** Map of XML fragments, one entry per page */
@@ -132,40 +138,34 @@ public class ScoreReduction
     public static void main (String... args)
         throws FileNotFoundException, IOException, JAXBException
     {
-        for (int i = 0; i < args.length; i++) {
-            logger.info("args[" + i + "] = \"" + args[i] + "\"");
-        }
+        watch = new StopWatch("Global measurement");
 
+        // Checking parameters
         if (args.length != 3) {
+            for (int i = 0; i < args.length; i++) {
+                logger.info("args[" + i + "] = \"" + args[i] + "\"");
+            }
+
             throw new IllegalArgumentException(
                 "Expected 3 arguments (folder, prefix, suffix)");
         }
 
+        // Selecting files
         File                     dir = new File(args[0]);
         String                   prefix = args[1].trim();
         String                   suffix = args[2];
-        SortedMap<Integer, File> files = retrieveFiles(dir, prefix, suffix);
+        SortedMap<Integer, File> files = selectFiles(dir, prefix, suffix);
 
-        if (files.isEmpty()) {
+        if ((files == null) || files.isEmpty()) {
+            logger.warning("No file selected");
+
             return;
         }
 
-        HashMap<Integer, String> fragments = new HashMap<Integer, String>();
+        // Reading files & checking XML character validity
+        SortedMap<Integer, String> fragments = readFiles(files);
 
-        for (Map.Entry<Integer, File> entry : files.entrySet()) {
-            BufferedReader input = new BufferedReader(
-                new FileReader(entry.getValue()));
-            StringBuilder  fragment = new StringBuilder();
-            String         line;
-
-            while ((line = input.readLine()) != null) {
-                fragment.append(line)
-                        .append("\n");
-            }
-
-            fragments.put(entry.getKey(), fragment.toString());
-        }
-
+        // Reduction
         ScoreReduction reduction = new ScoreReduction(fragments);
         String         output = reduction.reduce();
 
@@ -176,11 +176,16 @@ public class ScoreReduction
         }
 
         // For debugging
+        watch.start("Writing output file");
+
         File             file = new File(dir, prefix + "global.xml");
         FileOutputStream fos = new FileOutputStream(file);
         fos.write(output.getBytes());
         fos.close();
         logger.info("Output written to " + file);
+
+        watch.stop();
+        watch.print();
     }
 
     //--------//
@@ -196,8 +201,9 @@ public class ScoreReduction
     public String reduce ()
         throws JAXBException, IOException
     {
-        // Debug
-        //logger.setLevel(Level.FINEST);
+        // Preloading of JAXBContext
+        watch.start("Preloading JAXB Context");
+        Marshalling.getContext();
 
         // Load pages (MusicXML fragments -> ScorePartwise instances)
         SortedMap<Integer, ScorePartwise> pages = loadPages(fragments);
@@ -207,10 +213,54 @@ public class ScoreReduction
         }
 
         // Consolidate (set of {page ScorePartwise} -> 1! global ScorePartwise)
-        ScorePartwise globalPartwise = consolidate(pages);
+        ScorePartwise globalPartwise = merge(pages);
 
         // Build output (global ScorePartwise -> MusicXML)
         return buildOutput(globalPartwise);
+    }
+
+    //----------------------------//
+    // stripNonValidXMLCharacters //
+    //----------------------------//
+    /**
+     * Copied from Mark Mclaren blog:
+     * http://cse-mjmcl.cse.bris.ac.uk/blog/2007/02/14/1171465494443.html
+     *
+     * This method ensures that the output String has only valid XML unicode
+     * characters as specified by the XML 1.0 standard. For reference, please
+     * see <a href="http://www.w3.org/TR/2000/REC-xml-20001006#NT-Char">
+     * the standard</a>.
+     *
+     * Char ::= #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
+     * (any Unicode character, excluding the surrogate blocks, FFFE, and FFFF)
+     *
+     * @param input The String whose non-valid characters we want to remove.
+     * @param stripped set to true if one or more characters have been stripped
+     * @return The in String, stripped of non-valid characters.
+     */
+    public static String stripNonValidXMLCharacters (String         input,
+                                                     WrappedBoolean stripped)
+    {
+        if (input == null) {
+            return null;
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        for (char c : input.toCharArray()) {
+            if ((c == 0x9) ||
+                (c == 0xA) ||
+                (c == 0xD) ||
+                ((c >= 0x20) && (c <= 0xD7FF)) ||
+                ((c >= 0xE000) && (c <= 0xFFFD)) ||
+                ((c >= 0x10000) && (c <= 0x10FFFF))) {
+                sb.append(c);
+            } else {
+                stripped.set(true);
+            }
+        }
+
+        return sb.toString();
     }
 
     //----------//
@@ -470,55 +520,12 @@ public class ScoreReduction
     private String buildOutput (ScorePartwise globalPartwise)
         throws JAXBException, IOException
     {
+        watch.start("Marshalling output");
+
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         Marshalling.marshal(globalPartwise, os, true);
 
         return os.toString();
-    }
-
-    //-------------//
-    // consolidate //
-    //-------------//
-    /**
-     * This is the heart of reduction task, consolidating the outputs of
-     * individual pages
-     * @param pages the individual pages, indexed by their page number
-     * @return the resulting global score partwise
-     */
-    private ScorePartwise consolidate (SortedMap<Integer, ScorePartwise> pages)
-    {
-        // Resulting data
-        ScorePartwise global = new ScorePartwise();
-
-        // Score header: more or less reuse the header of first page
-        addHeader(global, pages);
-
-        /* Connect parts across the pages */
-        connection = PartConnection.connectPages(pages);
-
-        // Force the ids of all ScorePart's 
-        if (logger.isFineEnabled()) {
-            numberResults();
-        }
-
-        // part-list (-> list2part, newParts, newInsts)
-        // and ScoreInstrument's ids
-        addPartList(global);
-
-        // Fill each of the score part results with elements from candidates
-        fillResults();
-
-        // Debug: List all candidates per result
-        dumpResultMapping();
-
-        // parts data, inserting page breaks, re-numbering measures
-        addPartsData(pages);
-
-        // Handle cross-page slurs
-        // TBD
-
-        // The end
-        return global;
     }
 
     //-------------------//
@@ -554,102 +561,6 @@ public class ScoreReduction
                 }
             }
         }
-    }
-
-    //-----------//
-    // loadPages //
-    //-----------//
-    /**
-     * Retrieve individual page partwise instance, by unmarshalling MusicXML data from the page
-     * string fragments
-     * @param pageFragments the sequence of input fragments (one string per page)
-     * @return the related sequence of partwise instances (one instance per page)
-     * @throws JAXBException
-     */
-    private SortedMap<Integer, ScorePartwise> loadPages (Map<Integer, String> pageFragments)
-        throws JAXBException
-    {
-        // Access the page fragments in the right order
-        SortedSet<Integer> pageNumbers = new TreeSet<Integer>(
-            pageFragments.keySet());
-        logger.info("About to read fragments " + pageNumbers);
-
-        /** For user feedback */
-        String range = " of [" + pageNumbers.first() + ".." +
-                       pageNumbers.last() + "]...";
-
-        /* Load pages content */
-        SortedMap<Integer, ScorePartwise> pages = new TreeMap<Integer, ScorePartwise>();
-
-        for (int pageNumber : pageNumbers) {
-            logger.info("Reading fragment " + pageNumber + range);
-
-            String               fragment = pageFragments.get(pageNumber);
-            ByteArrayInputStream is = new ByteArrayInputStream(
-                fragment.getBytes());
-
-            try {
-                ScorePartwise partwise = Marshalling.unmarshal(is);
-                pages.put(pageNumber, partwise);
-            } catch (Exception ex) {
-                logger.warning(
-                    "*** Could not unmarshall page " + pageNumber + " *** " +
-                    ex);
-            }
-        }
-
-        return pages;
-    }
-
-    //---------------//
-    // numberResults //
-    //---------------//
-    /**
-     * Force the id of each result (score-part) as P1, P2, etc.
-     */
-    private void numberResults ()
-    {
-        int partIndex = 0;
-
-        for (Result result : connection.getResultMap()
-                                       .keySet()) {
-            ScorePart scorePart = (ScorePart) result.getUnderlyingObject();
-            String    partId = "P" + ++partIndex;
-            scorePart.setId(partId);
-        }
-    }
-
-    //---------------//
-    // retrieveFiles //
-    //---------------//
-    /**
-     * Retrieve the map of files whose names match the provided filter
-     * @param dir path to folder where files are to be read
-     * @param prefix prefix of desired file names
-     * @param suffix suffix of desired file names
-     * @return the sorted map of matching files, indexed by their number
-     */
-    private static SortedMap<Integer, File> retrieveFiles (File   dir,
-                                                           String prefix,
-                                                           String suffix)
-    {
-        SortedMap<Integer, File> map = new TreeMap<Integer, File>();
-        MyFilenameFilter         filter = new MyFilenameFilter(prefix, suffix);
-        File[]                   files = dir.listFiles(filter);
-        File                     template = new File(
-            dir,
-            prefix + "*" + suffix);
-        logger.info("Looking for " + template);
-
-        if (files.length == 0) {
-            logger.warning("No file matching " + template);
-        } else {
-            for (File file : files) {
-                map.put(filter.getFileNumber(file.getName()), file);
-            }
-        }
-
-        return map;
     }
 
     //-------------//
@@ -758,6 +669,219 @@ public class ScoreReduction
         }
     }
 
+    //-----------//
+    // loadPages //
+    //-----------//
+    /**
+     * Retrieve individual page partwise instance, by unmarshalling MusicXML data from the page
+     * string fragments
+     * @param pageFragments the sequence of input fragments (one string per page)
+     * @return the related sequence of partwise instances (one instance per page)
+     * @throws JAXBException
+     */
+    private SortedMap<Integer, ScorePartwise> loadPages (Map<Integer, String> pageFragments)
+        throws JAXBException
+    {
+        ///watch.start("Unmarshalling pages");
+
+        // Access the page fragments in the right order
+        SortedSet<Integer> pageNumbers = new TreeSet<Integer>(
+            pageFragments.keySet());
+        logger.info("About to read fragments " + pageNumbers);
+
+        /** For user feedback */
+        String range = " of [" + pageNumbers.first() + ".." +
+                       pageNumbers.last() + "]...";
+
+        /* Load pages content */
+        SortedMap<Integer, ScorePartwise> pages = new TreeMap<Integer, ScorePartwise>();
+
+        for (int pageNumber : pageNumbers) {
+            watch.start("Unmarshalling page #" + pageNumber);
+            logger.info("Unmarshalling fragment " + pageNumber + range);
+
+            String               fragment = pageFragments.get(pageNumber);
+            ByteArrayInputStream is = new ByteArrayInputStream(
+                fragment.getBytes());
+
+            try {
+                ScorePartwise partwise = Marshalling.unmarshal(is);
+                pages.put(pageNumber, partwise);
+            } catch (Exception ex) {
+                logger.warning(
+                    "*** Could not unmarshall page " + pageNumber + " *** " +
+                    ex);
+            }
+        }
+
+        return pages;
+    }
+
+    //-------//
+    // merge //
+    //-------//
+    /**
+     * This is the heart of reduction task, consolidating the outputs of
+     * individual pages
+     * @param pages the individual pages, indexed by their page number
+     * @return the resulting global score partwise
+     */
+    private ScorePartwise merge (SortedMap<Integer, ScorePartwise> pages)
+    {
+        watch.start("Merge");
+
+        // Resulting data
+        ScorePartwise global = new ScorePartwise();
+
+        // Score header: more or less reuse the header of first page
+        addHeader(global, pages);
+
+        /* Connect parts across the pages */
+        connection = PartConnection.connectPages(pages);
+
+        // Force the ids of all ScorePart's 
+        if (logger.isFineEnabled()) {
+            numberResults();
+        }
+
+        // part-list (-> list2part, newParts, newInsts)
+        // and ScoreInstrument's ids
+        addPartList(global);
+
+        // Fill each of the score part results with elements from candidates
+        fillResults();
+
+        // Debug: List all candidates per result
+        dumpResultMapping();
+
+        // parts data, inserting page breaks, re-numbering measures
+        addPartsData(pages);
+
+        // Handle cross-page slurs
+        // TBD
+
+        // The end
+        return global;
+    }
+
+    //---------------//
+    // numberResults //
+    //---------------//
+    /**
+     * Force the id of each result (score-part) as P1, P2, etc.
+     */
+    private void numberResults ()
+    {
+        int partIndex = 0;
+
+        for (Result result : connection.getResultMap()
+                                       .keySet()) {
+            ScorePart scorePart = (ScorePart) result.getUnderlyingObject();
+            String    partId = "P" + ++partIndex;
+            scorePart.setId(partId);
+        }
+    }
+
+    //-----------//
+    // readFiles //
+    //-----------//
+    /**
+     * Actually read the files content, filtering out invalid XML characters if
+     * any
+     * @param files the collection of files to read
+     * @return the collection of (char-valid) XML fragments
+     */
+    private static SortedMap<Integer, String> readFiles (SortedMap<Integer, File> files)
+    {
+        watch.start("Reading input files");
+
+        SortedMap<Integer, String> fragments = new TreeMap<Integer, String>();
+
+        for (Map.Entry<Integer, File> entry : files.entrySet()) {
+            BufferedReader input;
+            File           file = entry.getValue();
+
+            try {
+                input = new BufferedReader(new FileReader(file));
+            } catch (FileNotFoundException ex) {
+                System.err.println(ex + " " + file);
+
+                continue;
+            }
+
+            StringBuilder fragment = new StringBuilder();
+            String        line;
+
+            try {
+                int count = 0;
+
+                while ((line = input.readLine()) != null) {
+                    count++;
+
+                    WrappedBoolean stripped = new WrappedBoolean(false);
+                    String         filteredLine = stripNonValidXMLCharacters(
+                        line,
+                        stripped);
+
+                    if (stripped.isSet()) {
+                        logger.warning(
+                            "Illegal XML characters found in line " + count +
+                            " of file " + file);
+                    }
+
+                    fragment.append(filteredLine)
+                            .append("\n");
+                }
+            } catch (IOException ex) {
+                System.err.println(ex + " " + file);
+
+                continue;
+            }
+
+            fragments.put(entry.getKey(), fragment.toString());
+        }
+
+        return fragments;
+    }
+
+    //-------------//
+    // selectFiles //
+    //-------------//
+    /**
+     * Retrieve the map of files whose names match the provided filter
+     * @param dir path to folder where files are to be read
+     * @param prefix prefix of desired file names
+     * @param suffix suffix of desired file names
+     * @return the sorted map of matching files, indexed by their number
+     */
+    private static SortedMap<Integer, File> selectFiles (File   dir,
+                                                         String prefix,
+                                                         String suffix)
+    {
+        SortedMap<Integer, File> map = new TreeMap<Integer, File>();
+        MyFilenameFilter         filter = new MyFilenameFilter(prefix, suffix);
+        File[]                   files = dir.listFiles(filter);
+
+        if (files == null) {
+            logger.warning("Cannot read folder " + dir);
+
+            return null;
+        }
+
+        File template = new File(dir, prefix + "*" + suffix);
+        logger.info("Looking for " + template);
+
+        if (files.length == 0) {
+            logger.warning("No file matching " + template);
+        } else {
+            for (File file : files) {
+                map.put(filter.getFileNumber(file.getName()), file);
+            }
+        }
+
+        return map;
+    }
+
     //----------//
     // stringOf //
     //----------//
@@ -812,12 +936,12 @@ public class ScoreReduction
                 prefix.length(),
                 name.length() - suffix.length());
 
-            ///logger.info("num:" + numStr);
             try {
                 return Integer.decode(numStr);
             } catch (Exception ex) {
                 logger.warning(
-                    "Cannot decode number \"" + numStr + "\" in " + name);
+                    "Cannot decode number \"" + numStr + "\" in file name \"" +
+                    name + "\"");
 
                 return null;
             }
