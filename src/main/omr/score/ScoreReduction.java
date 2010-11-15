@@ -51,12 +51,13 @@ import javax.xml.bind.JAXBException;
  * <li>The Reduce task takes all the XML fragments as input and consolidates
  * them in a global Score output.</li></ol>
  *
- * <p>Typical calling of the feature is the following:
+ * <p>Typical calling of the feature is as follows:
  * <code>
  * <pre>
  * Map&lt;Integer, String&gt; fragments = ...;
  * ScoreReduction reduction = new ScoreReduction(fragments);
  * String output = reduction.reduce();
+ * Map&lt;Integer, Status&gt; statuses = reduction.getStatuses();
  * </pre>
  * </code>
  * </p>
@@ -91,10 +92,28 @@ public class ScoreReduction
     /** Just for debug */
     private static StopWatch watch;
 
+    //~ Enumerations -----------------------------------------------------------
+
+    /** End status of processing for a single XML fragment */
+    public static enum Status {
+        //~ Enumeration constant initializers ----------------------------------
+
+
+        /** Fragment was processed correctly */
+        OK,
+        /** Some invalid XML characters had to be skipped */
+        CHARACTERS_SKIPPED, 
+        /** The fragment as a whole could not be processed */
+        FRAGMENT_FAILED;
+    }
+
     //~ Instance fields --------------------------------------------------------
 
     /** Map of XML fragments, one entry per page */
     private final Map<Integer, String> fragments;
+
+    /** Map of fragments final statuses, one status per page */
+    private final Map<Integer, Status> statuses;
 
     /** Factory for proxymusic entities */
     private final proxymusic.ObjectFactory factory = new proxymusic.ObjectFactory();
@@ -123,6 +142,8 @@ public class ScoreReduction
     public ScoreReduction (Map<Integer, String> fragments)
     {
         this.fragments = fragments;
+
+        statuses = new TreeMap<Integer, Status>();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -131,9 +152,10 @@ public class ScoreReduction
     // main //
     //------//
     /**
-     * Pseudo-main test method, just to allocate an instance of ScoreReduction
-     * and launch the reduce() method
-     * @param args the template to filter relevant files
+     * Pseudo-main test method, just to allocate an instance of ScoreReduction,
+     * launch the reduce() method, and print the results. The resulting score
+     * in written to a global.xml file in the same folder as the input pieces.
+     * @param args the template items to filter relevant files
      */
     public static void main (String... args)
         throws FileNotFoundException, IOException, JAXBException
@@ -162,7 +184,7 @@ public class ScoreReduction
             return;
         }
 
-        // Reading files & checking XML character validity
+        // Reading files without any checking
         SortedMap<Integer, String> fragments = readFiles(files);
 
         // Reduction
@@ -186,6 +208,30 @@ public class ScoreReduction
 
         watch.stop();
         watch.print();
+
+        // Final statuses
+        System.out.println("\nProcessing results:");
+
+        for (Entry<Integer, Status> entry : reduction.getStatuses()
+                                                     .entrySet()) {
+            System.out.println(
+                String.format(
+                    "Fragment #%3d: %s",
+                    entry.getKey(),
+                    entry.getValue()));
+        }
+    }
+
+    //-------------//
+    // getStatuses //
+    //-------------//
+    /**
+     * Report for each input fragment the final processing status
+     * @return a map (fragment ID -> processing status)
+     */
+    public Map<Integer, Status> getStatuses ()
+    {
+        return statuses;
     }
 
     //--------//
@@ -196,6 +242,8 @@ public class ScoreReduction
      * from each page. The fragments are a map of XML fragments, the map key
      * being the page number in the containing score. They are provided to the
      * ScoreReduction constructor.
+     * <p>The final processing status for each fragment is made available
+     * through the {@link #getStatuses()} method.</p>
      * @return the resulting global XML output for the score
      */
     public String reduce ()
@@ -205,62 +253,24 @@ public class ScoreReduction
         watch.start("Preloading JAXB Context");
         Marshalling.getContext();
 
-        // Load pages (MusicXML fragments -> ScorePartwise instances)
-        SortedMap<Integer, ScorePartwise> pages = loadPages(fragments);
+        // Initialize statuses
+        for (Integer page : fragments.keySet()) {
+            statuses.put(page, Status.OK);
+        }
 
-        if (pages.isEmpty()) {
+        // Unmarshall pages (MusicXML fragments -> ScorePartwise instances)
+        SortedMap<Integer, ScorePartwise> partwises = unmarshallPages(
+            fragments);
+
+        if (partwises.isEmpty()) {
             return "";
         }
 
         // Consolidate (set of {page ScorePartwise} -> 1! global ScorePartwise)
-        ScorePartwise globalPartwise = merge(pages);
+        ScorePartwise globalPartwise = merge(partwises);
 
         // Build output (global ScorePartwise -> MusicXML)
         return buildOutput(globalPartwise);
-    }
-
-    //----------------------------//
-    // stripNonValidXMLCharacters //
-    //----------------------------//
-    /**
-     * Copied from Mark Mclaren blog:
-     * http://cse-mjmcl.cse.bris.ac.uk/blog/2007/02/14/1171465494443.html
-     *
-     * This method ensures that the output String has only valid XML unicode
-     * characters as specified by the XML 1.0 standard. For reference, please
-     * see <a href="http://www.w3.org/TR/2000/REC-xml-20001006#NT-Char">
-     * the standard</a>.
-     *
-     * Char ::= #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
-     * (any Unicode character, excluding the surrogate blocks, FFFE, and FFFF)
-     *
-     * @param input The String whose non-valid characters we want to remove.
-     * @param stripped set to true if one or more characters have been stripped
-     * @return The in String, stripped of non-valid characters.
-     */
-    public static String stripNonValidXMLCharacters (String         input,
-                                                     WrappedBoolean stripped)
-    {
-        if (input == null) {
-            return null;
-        }
-
-        StringBuilder sb = new StringBuilder();
-
-        for (char c : input.toCharArray()) {
-            if ((c == 0x9) ||
-                (c == 0xA) ||
-                (c == 0xD) ||
-                ((c >= 0x20) && (c <= 0xD7FF)) ||
-                ((c >= 0xE000) && (c <= 0xFFFD)) ||
-                ((c >= 0x10000) && (c <= 0x10FFFF))) {
-                sb.append(c);
-            } else {
-                stripped.set(true);
-            }
-        }
-
-        return sb.toString();
     }
 
     //----------//
@@ -669,54 +679,6 @@ public class ScoreReduction
         }
     }
 
-    //-----------//
-    // loadPages //
-    //-----------//
-    /**
-     * Retrieve individual page partwise instance, by unmarshalling MusicXML data from the page
-     * string fragments
-     * @param pageFragments the sequence of input fragments (one string per page)
-     * @return the related sequence of partwise instances (one instance per page)
-     * @throws JAXBException
-     */
-    private SortedMap<Integer, ScorePartwise> loadPages (Map<Integer, String> pageFragments)
-        throws JAXBException
-    {
-        ///watch.start("Unmarshalling pages");
-
-        // Access the page fragments in the right order
-        SortedSet<Integer> pageNumbers = new TreeSet<Integer>(
-            pageFragments.keySet());
-        logger.info("About to read fragments " + pageNumbers);
-
-        /** For user feedback */
-        String range = " of [" + pageNumbers.first() + ".." +
-                       pageNumbers.last() + "]...";
-
-        /* Load pages content */
-        SortedMap<Integer, ScorePartwise> pages = new TreeMap<Integer, ScorePartwise>();
-
-        for (int pageNumber : pageNumbers) {
-            watch.start("Unmarshalling page #" + pageNumber);
-            logger.info("Unmarshalling fragment " + pageNumber + range);
-
-            String               fragment = pageFragments.get(pageNumber);
-            ByteArrayInputStream is = new ByteArrayInputStream(
-                fragment.getBytes());
-
-            try {
-                ScorePartwise partwise = Marshalling.unmarshal(is);
-                pages.put(pageNumber, partwise);
-            } catch (Exception ex) {
-                logger.warning(
-                    "*** Could not unmarshall page " + pageNumber + " *** " +
-                    ex);
-            }
-        }
-
-        return pages;
-    }
-
     //-------//
     // merge //
     //-------//
@@ -786,10 +748,9 @@ public class ScoreReduction
     // readFiles //
     //-----------//
     /**
-     * Actually read the files content, filtering out invalid XML characters if
-     * any
+     * Simply read the files raw content into strings in memory
      * @param files the collection of files to read
-     * @return the collection of (char-valid) XML fragments
+     * @return the collection of raw XML fragments
      */
     private static SortedMap<Integer, String> readFiles (SortedMap<Integer, File> files)
     {
@@ -813,23 +774,8 @@ public class ScoreReduction
             String        line;
 
             try {
-                int count = 0;
-
                 while ((line = input.readLine()) != null) {
-                    count++;
-
-                    WrappedBoolean stripped = new WrappedBoolean(false);
-                    String         filteredLine = stripNonValidXMLCharacters(
-                        line,
-                        stripped);
-
-                    if (stripped.isSet()) {
-                        logger.warning(
-                            "Illegal XML characters found in line " + count +
-                            " of file " + file);
-                    }
-
-                    fragment.append(filteredLine)
+                    fragment.append(line)
                             .append("\n");
                 }
             } catch (IOException ex) {
@@ -897,6 +843,111 @@ public class ScoreReduction
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //----------------------------//
+    // stripNonValidXMLCharacters //
+    //----------------------------//
+    /**
+     * Copied from Mark Mclaren blog:
+     * http://cse-mjmcl.cse.bris.ac.uk/blog/2007/02/14/1171465494443.html
+     *
+     * This method ensures that the output String has only valid XML unicode
+     * characters as specified by the XML 1.0 standard. For reference, please
+     * see <a href="http://www.w3.org/TR/2000/REC-xml-20001006#NT-Char">
+     * the standard</a>.
+     *
+     * Char ::= #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
+     * (any Unicode character, excluding the surrogate blocks, FFFE, and FFFF)
+     *
+     * @param input The String whose non-valid characters we want to remove.
+     * @param stripped set to true if one or more characters have been stripped
+     * @return The in String, stripped of non-valid characters.
+     */
+    private String stripNonValidXMLCharacters (String         input,
+                                               WrappedBoolean stripped)
+    {
+        if (input == null) {
+            return null;
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        for (char c : input.toCharArray()) {
+            if ((c == 0x9) ||
+                (c == 0xA) ||
+                (c == 0xD) ||
+                ((c >= 0x20) && (c <= 0xD7FF)) ||
+                ((c >= 0xE000) && (c <= 0xFFFD)) ||
+                ((c >= 0x10000) && (c <= 0x10FFFF))) {
+                sb.append(c);
+            } else {
+                stripped.set(true);
+            }
+        }
+
+        return sb.toString();
+    }
+
+    //-----------------//
+    // unmarshallPages //
+    //-----------------//
+    /**
+     * Retrieve individual page partwise instances, by unmarshalling MusicXML
+     * data from the page string fragments
+     * @param pageFragments the sequence of input fragments (one string per page)
+     * @return the related sequence of partwise instances (one instance per page)
+     * @throws JAXBException
+     */
+    private SortedMap<Integer, ScorePartwise> unmarshallPages (Map<Integer, String> pageFragments)
+        throws JAXBException
+    {
+        ///watch.start("Unmarshalling pages");
+
+        // Access the page fragments in the right order
+        SortedSet<Integer> pageNumbers = new TreeSet<Integer>(
+            pageFragments.keySet());
+        logger.info("About to read fragments " + pageNumbers);
+
+        /** For user feedback */
+        String range = " of [" + pageNumbers.first() + ".." +
+                       pageNumbers.last() + "]...";
+
+        /* Load pages content */
+        SortedMap<Integer, ScorePartwise> pages = new TreeMap<Integer, ScorePartwise>();
+
+        for (int pageNumber : pageNumbers) {
+            watch.start("Unmarshalling page #" + pageNumber);
+
+            ///logger.info("Unmarshalling fragment " + pageNumber + range);
+            String         rawFragment = pageFragments.get(pageNumber);
+
+            // Filter out invalid XML characters if any
+            WrappedBoolean stripped = new WrappedBoolean(false);
+            String         fragment = stripNonValidXMLCharacters(
+                rawFragment,
+                stripped);
+
+            if (stripped.isSet()) {
+                logger.warning(
+                    "Illegal XML characters found in fragment #" + pageNumber);
+                statuses.put(pageNumber, Status.CHARACTERS_SKIPPED);
+            }
+
+            ByteArrayInputStream is = new ByteArrayInputStream(
+                fragment.getBytes());
+
+            try {
+                ScorePartwise partwise = Marshalling.unmarshal(is);
+                pages.put(pageNumber, partwise);
+            } catch (Exception ex) {
+                logger.warning(
+                    "Could not unmarshall fragment #" + pageNumber + " " + ex);
+                statuses.put(pageNumber, Status.FRAGMENT_FAILED);
+            }
+        }
+
+        return pages;
     }
 
     //~ Inner Classes ----------------------------------------------------------
