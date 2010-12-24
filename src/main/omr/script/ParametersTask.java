@@ -19,6 +19,8 @@ import omr.sheet.Scale.InterlineFraction;
 import omr.sheet.Sheet;
 
 import omr.step.Step;
+import omr.step.Stepping;
+import omr.step.Steps;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -212,27 +214,28 @@ public class ParametersTask
             }
         }
 
-        // Slot policy
-        if (slotPolicy != null) {
-            if (!score.hasSlotPolicy() ||
-                !slotPolicy.equals(score.getSlotPolicy())) {
-                score.setSlotPolicy(slotPolicy);
-                sb.append(" slotPolicy:")
-                  .append(slotPolicy);
-                slotChanged = true;
-            }
-        }
-
-        // Slot margin
-        if (slotMargin != null) {
-            if (!score.hasSlotMargin() ||
-                !slotMargin.equals(score.getSlotMargin())) {
-                score.setSlotMargin(slotMargin);
-                sb.append(" slotMargin:")
-                  .append(slotMargin);
-                slotChanged = true;
-            }
-        }
+        //TODO
+        //        // Slot policy
+        //        if (slotPolicy != null) {
+        //            if (!score.hasSlotPolicy() ||
+        //                !slotPolicy.equals(score.getSlotPolicy())) {
+        //                score.setSlotPolicy(slotPolicy);
+        //                sb.append(" slotPolicy:")
+        //                  .append(slotPolicy);
+        //                slotChanged = true;
+        //            }
+        //        }
+        //
+        //        // Slot margin
+        //        if (slotMargin != null) {
+        //            if (!score.hasSlotMargin() ||
+        //                !slotMargin.equals(score.getSlotMargin())) {
+        //                score.setSlotMargin(slotMargin);
+        //                sb.append(" slotMargin:")
+        //                  .append(slotMargin);
+        //                slotChanged = true;
+        //            }
+        //        }
 
         // Language
         if (language != null) {
@@ -296,45 +299,41 @@ public class ParametersTask
     @Override
     public void epilog (Sheet sheet)
     {
-        Score score = sheet.getScore();
-        Step  latestStep = sheet.getSheetSteps()
-                                .getLatestStep();
-
-        Step  from = null;
+        Step latestStep = Stepping.getLatestStep(sheet);
+        Step from = null;
 
         if (slotChanged) {
-            from = Step.SCORE;
+            from = Steps.valueOf(Steps.PAGES);
         }
 
         if (languageChanged) {
-            from = Step.PATTERNS;
+            from = Steps.valueOf(Steps.PATTERNS);
         }
+
+        Step loadStep = Steps.valueOf(Steps.LOAD);
 
         if (histoRatioChanged) {
             // Nota: we should rebuild from LINES, but this step modifies
             // the image (pixels removed, pixels added). So the have to restart
             // from LOAD step instead.
-            if (latestStep.compareTo(Step.LINES) >= 0) {
-                from = Step.LOAD;
+            if (Steps.compare(latestStep, Steps.valueOf(Steps.LINES)) >= 0) {
+                from = loadStep;
             } else {
                 from = null;
             }
         }
 
         if (foregroundChanged) {
-            if (latestStep.compareTo(Step.LOAD) > 0) {
-                from = Step.LOAD;
+            if (Steps.compare(latestStep, loadStep) > 0) {
+                from = loadStep;
             } else {
                 from = null;
             }
         }
 
-        if ((from != null) && sheet.getSheetSteps()
-                                   .shouldRebuildFrom(from)) {
+        if ((from != null) && Stepping.shouldReprocessSheet(from, sheet)) {
             logger.info("Rebuilding from " + from);
-            score.getSheet()
-                 .getSheetSteps()
-                 .rebuildFrom(from, null, true);
+            Stepping.reprocessSheet(from, sheet, null, true);
         }
 
         super.epilog(sheet);

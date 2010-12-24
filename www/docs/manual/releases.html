@@ -74,6 +74,231 @@
             </tbody></table>
             <!-- =========================================================== -->
             <h3>
+                <a id="R3.4" name="R3.4">3.4 Release</a>
+            </h3>
+
+            <table border="1" width="100%">
+                <tbody>
+                    <tr>
+                        <th>
+                            Introduction
+                        </th>
+                        <td>
+                            <ul>
+                                <li>
+                                </li>
+                            </ul>
+                            
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Distribution Changes
+                        </th>
+                        <td>
+                            <ul>
+                                <li>
+                                    <b>Libraries</b>: All the external jars (23
+                                    as of this writing) needed to rebuild and/or
+                                    run Audiveris are now provided in a
+                                    dedicated /lib folder available in the
+                                    download area. A developer can still pick up
+                                    a newer jar version from the Internet.
+                                </li>
+                                <li>
+                                    <b>Player</b>: The XenoPlay MusicXML player
+                                    has been replaced by a better player, named
+                                    Zong!, still developed by Andreas
+                                    Wenger.
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+
+                    <th>
+                        New Features
+                    </th>
+                    <td>
+                        <ul>
+                            <li>
+                                <b>Bench data</b>: To allow the analysis of
+                                multiple batch runs, and compare the recognition
+                                efficiency, each sheet processing can log key
+                                data in a dedicated file. For the same purpose,
+                                time-out values can be defined for script or
+                                step processing.
+                            </li>
+                            <li>
+                                <b>Bar Lines</b>: The user can now interactively
+                                assign / deassign a bar line that defines parts,
+                                thus recreating the systems from scratch.
+                            </li>
+                            <li>
+                                <b>Constants</b>: All application constants can
+                                now be set from the CLI with the -option
+                                keyword. This complements the ability to set
+                                them from the Tools | Options UI menu.
+                            </li>
+                            <li>
+                                <b>Dots</b>: Support for double dots, ability
+                                to assign the role of any dot
+                                (augmentation, repeat bar line, staccato,
+                                ...)
+                            </li>
+                            <li>
+                                <b>Horizontals</b>: Horizontal entities
+                                (ledgers, endings) can now be forced or
+                                deassigned manually.
+                            </li>
+                            <li>
+                                <b>MIDI Player</b>: The MIDI playback is now
+                                driven from a separate console window, borrowed
+                                from Zong! player.
+                            </li>
+                            <li>
+                                <b>OCR</b>: Tesseract OCR is now available under
+                                both Windows and Linux.
+                            </li>
+                            <li>
+                                <b>Score</b>: From a dedicated Shape palette,
+                                the user can Drag n' Drop a (virtual) glyph to
+                                either the score view or the sheet view, thus
+                                injecting entities directly into the score
+                                structure.
+                            </li>
+                            <li>
+                                <b>ScoreView</b>: The zoom of the score view can
+                                now be adjusted at will, thanks to a slider and
+                                better symbol bitmap definitions. A next version
+                                will replace them with the use of Stocatta
+                                true-type font.
+                            </li>
+                            <li>
+                                <b>Time Signature</b>: The user can now enter
+                                any custom time signature, defining numerator
+                                and denominator values explicitly.
+                            </li>
+                            <li>
+                                <b>Time Slots</b>: Within a measure, the time
+                                slots are meant to gather notes that begin at
+                                the same moment in time. The user can now choose
+                                at the score level the policy for determining
+                                the time slots, either through stem alignment or
+                                through note head alignment.
+                            </li>
+                            <li>
+                                <b>Tuplets</b>: 6-tuplets are now supported, as
+                                well as tuplets mixing beamed notes with other
+                                notes (flagged notes, rests, ...).
+                            </li>
+                            <li>
+                                <b>UI</b>: A new board (Shape palette) is
+                                available. It allows drag n' drop for
+                                entity injection, easier navigation through
+                                shape ranges, and shape assignment by
+                                double-click.
+                            </li>
+                            <li>
+                                <b>UI</b>: All boards now have an expand /
+                                collapse mechanism, thus allowing to save room
+                                in the column of boards.
+                            </li>
+                        </ul>
+
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        Bug Fixes
+                    </th>
+                    <td>
+                        <ul>
+                            <li>
+                                <b>Player</b>: The Zong! Player is now more
+				tolerant with respect to measure defects. It no
+				longer throws an exception when has been fixed
+				in order to not throw an exceptionraises an
+				exception whenever the notes durations
+				within a measure are not consistent with
+				the measure expected duration, resulting in the
+				unability to play any not-totally-correct
+				score. This is to be fixed in the external Zong!
+				player.
+                            </li>
+                            <li><b>Player Data</b>: The data part of Zong player
+                                is now provided as a resource in a dedicated jar
+                                file, thus allowing the launching of Audiveris
+                                from any location of your computer.
+                            </li>
+                            <li>
+                                Exception handler have been removed from all
+                                unitary tests, so that the results are clearly
+                                seen as successes or failures
+                            </li>
+                        </ul>
+                        
+                    </td>
+                </tr>
+                    <tr>
+                        <th>
+                            Known Issues
+                        </th>
+                        <td>
+                            <ul>
+                                <li>
+                                </li>
+                                <li>
+                                    <b>Virtual Glyphs</b>: For the time being,
+                                    the (virtual) glyphs created by direct
+                                    injection cannot be moved or resized once
+                                    they have been dropped from the Shape
+                                    palette to their target view. However, they
+                                    can be deleted and re-injected (this
+                                    workaround addresses a move but not a
+                                    resize).
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        
+                        <th>
+                            Other Changes
+                        </th>
+                        <td>
+                            <ul>
+                                <li>
+                                    <b>Images</b>: Support for most pixel sizes.
+                                </li>
+                                <li>
+                                    <b>Lyrics</b>: Much better handling of lyric
+                                    text pieces, with the ability for the user
+                                    to enter extension sign or to split words
+                                    with a space. The OCR can process several
+                                    text lines as a whole, which often leads to
+                                    better results.
+                                </li>
+                                <li>
+                                    <b>Symbols</b>: The symbols bitmap
+                                    definitions (in the /symbol folder)
+                                    have been refined with at least a 16-pixel
+                                    interline definition, resulting in better
+                                    display notably in score view.
+                                </li>
+                                <li>
+                                    <b>Tiff</b>: Images are forwarded to
+                                    Tesseract OCR by memory, avoiding temporary
+                                    files
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <!-- =========================================================== -->
+            <h3>
                 <a id="R3.3" name="R3.3">3.3 Release</a>
             </h3>
 
@@ -135,89 +360,89 @@
                     </th>
                     <td>
                         <ul>
-			    <li>
-				<b>Bench data</b>: To allow the analysis of
-				multiple batch runs, and compare the recognition
-				efficiency, each sheet processing can log key
-				data in a dedicated file. For the same purpose,
-				time-out values can be defined for script or
-				step processing.
-			    </li>
-			    <li>
-				<b>Bar Lines</b>: The user can now interactively
-				assign / deassign a bar line that defines parts,
-				thus recreating the systems from scratch.
-			    </li>
-			    <li>
-				<b>Constants</b>: All application constants can
-				now be set from the CLI with the&nbsp;-option
-				keyword. This complements the ability to set
-				them from the Tools | Options UI menu.
-			    </li>
-			    <li>
-				<b>Dots</b>: Support for double dots, ability
-				to&nbsp;assign the role of any dot
-				(augmentation, repeat bar line, staccato,
-				...)
-			    </li>
-			    <li>
-				<b>Horizontals</b>: Horizontal entities
-				(ledgers, endings) can now be forced or
-				deassigned manually.
-			    </li>
-			    <li>
-				<b>MIDI Player</b>: The MIDI playback is now
-				driven from a separate console window, borrowed
-				from&nbsp;Zong! player.
-			    </li>
-			    <li>
-				<b>OCR</b>: Tesseract OCR is now available under
-				both Windows and Linux.
-			    </li>
-			    <li>
-				<b>Score</b>: From a dedicated Shape palette,
-				the user can Drag n' Drop a (virtual) glyph to
-				either the score view or the sheet view, thus
-				injecting entities directly into the score
-				structure.
-			    </li>
-			    <li>
-				<b>ScoreView</b>: The zoom of the score view can
-				now be adjusted at will, thanks to a slider and
-				better symbol bitmap definitions. A next version
-				will replace them with the use of Stocatta
-				true-type font.
-			    </li>
-			    <li>
-				<b>Time Signature</b>: The user can now enter
-				any custom time signature, defining numerator
-				and denominator values explicitly.
-			    </li>
-			    <li>
-				<b>Time Slots</b>: Within a measure, the time
-				slots are meant to gather notes that begin at
-				the same moment in time. The user can now choose
-				at the score level the policy for determining
-				the time slots, either through stem alignment or
-				through note head alignment.
-			    </li>
-			    <li>
-				<b>Tuplets</b>: 6-tuplets are now supported, as
-				well as tuplets mixing beamed notes with other
-				notes (flagged notes, rests, ...).
-			    </li>
-			    <li>
-				<b>UI</b>: A new board (Shape palette) is
-				available. It allows&nbsp;drag n' drop for
-				entity injection, easier navigation through
-				shape ranges, and shape assignment by
-				double-click.
-			    </li>
-			    <li>
-				<b>UI</b>: All boards now have an expand /
-				collapse mechanism, thus allowing to save room
-				in the&nbsp;column of boards.
-			    </li>
+                            <li>
+                                <b>Bench data</b>: To allow the analysis of
+                                multiple batch runs, and compare the recognition
+                                efficiency, each sheet processing can log key
+                                data in a dedicated file. For the same purpose,
+                                time-out values can be defined for script or
+                                step processing.
+                            </li>
+                            <li>
+                                <b>Bar Lines</b>: The user can now interactively
+                                assign / deassign a bar line that defines parts,
+                                thus recreating the systems from scratch.
+                            </li>
+                            <li>
+                                <b>Constants</b>: All application constants can
+                                now be set from the CLI with the -option
+                                keyword. This complements the ability to set
+                                them from the Tools | Options UI menu.
+                            </li>
+                            <li>
+                                <b>Dots</b>: Support for double dots, ability
+                                to assign the role of any dot
+                                (augmentation, repeat bar line, staccato,
+                                ...)
+                            </li>
+                            <li>
+                                <b>Horizontals</b>: Horizontal entities
+                                (ledgers, endings) can now be forced or
+                                deassigned manually.
+                            </li>
+                            <li>
+                                <b>MIDI Player</b>: The MIDI playback is now
+                                driven from a separate console window, borrowed
+                                from Zong! player.
+                            </li>
+                            <li>
+                                <b>OCR</b>: Tesseract OCR is now available under
+                                both Windows and Linux.
+                            </li>
+                            <li>
+                                <b>Score</b>: From a dedicated Shape palette,
+                                the user can Drag n' Drop a (virtual) glyph to
+                                either the score view or the sheet view, thus
+                                injecting entities directly into the score
+                                structure.
+                            </li>
+                            <li>
+                                <b>ScoreView</b>: The zoom of the score view can
+                                now be adjusted at will, thanks to a slider and
+                                better symbol bitmap definitions. A next version
+                                will replace them with the use of Stocatta
+                                true-type font.
+                            </li>
+                            <li>
+                                <b>Time Signature</b>: The user can now enter
+                                any custom time signature, defining numerator
+                                and denominator values explicitly.
+                            </li>
+                            <li>
+                                <b>Time Slots</b>: Within a measure, the time
+                                slots are meant to gather notes that begin at
+                                the same moment in time. The user can now choose
+                                at the score level the policy for determining
+                                the time slots, either through stem alignment or
+                                through note head alignment.
+                            </li>
+                            <li>
+                                <b>Tuplets</b>: 6-tuplets are now supported, as
+                                well as tuplets mixing beamed notes with other
+                                notes (flagged notes, rests, ...).
+                            </li>
+                            <li>
+                                <b>UI</b>: A new board (Shape palette) is
+                                available. It allows drag n' drop for
+                                entity injection, easier navigation through
+                                shape ranges, and shape assignment by
+                                double-click.
+                            </li>
+                            <li>
+                                <b>UI</b>: All boards now have an expand /
+                                collapse mechanism, thus allowing to save room
+                                in the column of boards.
+                            </li>
                         </ul>
 
                     </td>
@@ -229,86 +454,86 @@
                     <td>
                         <ul>
                             <li>
-				Many fixes, please refer to Hg log command
-			    </li>
-			    <li><b>Player Data</b>: The data part of Zong player
-				is now provided as a resource in a dedicated jar
-				file, thus allowing the launching of Audiveris
-				from any location of your computer.
-			    </li>
-			    <li>
-				Exception handler have been removed from all
-				unitary tests, so that the results are clearly
-				seen as successes or failures
-			    </li>
+                                Many fixes, please refer to Hg log command
+                            </li>
+                            <li><b>Player Data</b>: The data part of Zong player
+                                is now provided as a resource in a dedicated jar
+                                file, thus allowing the launching of Audiveris
+                                from any location of your computer.
+                            </li>
+                            <li>
+                                Exception handler have been removed from all
+                                unitary tests, so that the results are clearly
+                                seen as successes or failures
+                            </li>
                         </ul>
-			
+                        
                     </td>
                 </tr>
-		    <tr>
-			<th>
-			    Known Issues
-			</th>
-			<td>
-			    <ul>
-				<li>
-				    <b>Player</b>: The player raises an
-				    exception whenever the notes durations
-				    within&nbsp;a measure are not consistent
-				    with the measure expected duration,
-				    resulting in the unability to play any
-				    not-totally-correct score. This is to be
-				    fixed in the external Zong! player.
-				</li>
-				<li>
-				    <b>Virtual Glyphs</b>: For the time being,
-				    the (virtual) glyphs created by direct
-				    injection cannot be moved or resized once
-				    they have been dropped from the Shape
-				    palette to their target view. However, they
-				    can be deleted and re-injected (this
-				    workaround addresses a move but not a
-				    resize).
-				</li>
-			    </ul>
-			</td>
-		    </tr>
-		    <tr>
-			
-			<th>
-			    Other Changes
-			</th>
-			<td>
-			    <ul>
-				<li>
-				    <b>Images</b>: Support for most pixel sizes.
-				</li>
-				<li>
-				    <b>Lyrics</b>: Much better handling of lyric
-				    text pieces, with the ability for the user
-				    to enter extension sign or to split words
-				    with a space. The OCR can process several
-				    text lines as a whole, which often leads to
-				    better results.
-				</li>
-				<li>
-				    <b>Symbols</b>: The symbols bitmap
-				    definitions (in&nbsp;the /symbol folder)
-				    have been refined with at least a 16-pixel
-				    interline definition, resulting in better
-				    display notably in score view.
-				</li>
-				<li>
-				    <b>Tiff</b>: Images are forwarded to
-				    Tesseract OCR by memory, avoiding temporary
-				    files
-				</li>
-			    </ul>
-			</td>
-		    </tr>
-		</tbody>
-	    </table>
-	    
+                    <tr>
+                        <th>
+                            Known Issues
+                        </th>
+                        <td>
+                            <ul>
+                                <li>
+                                    <b>Player</b>: The player raises an
+                                    exception whenever the notes durations
+                                    within a measure are not consistent
+                                    with the measure expected duration,
+                                    resulting in the unability to play any
+                                    not-totally-correct score. This is to be
+                                    fixed in the external Zong! player.
+                                </li>
+                                <li>
+                                    <b>Virtual Glyphs</b>: For the time being,
+                                    the (virtual) glyphs created by direct
+                                    injection cannot be moved or resized once
+                                    they have been dropped from the Shape
+                                    palette to their target view. However, they
+                                    can be deleted and re-injected (this
+                                    workaround addresses a move but not a
+                                    resize).
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        
+                        <th>
+                            Other Changes
+                        </th>
+                        <td>
+                            <ul>
+                                <li>
+                                    <b>Images</b>: Support for most pixel sizes.
+                                </li>
+                                <li>
+                                    <b>Lyrics</b>: Much better handling of lyric
+                                    text pieces, with the ability for the user
+                                    to enter extension sign or to split words
+                                    with a space. The OCR can process several
+                                    text lines as a whole, which often leads to
+                                    better results.
+                                </li>
+                                <li>
+                                    <b>Symbols</b>: The symbols bitmap
+                                    definitions (in the /symbol folder)
+                                    have been refined with at least a 16-pixel
+                                    interline definition, resulting in better
+                                    display notably in score view.
+                                </li>
+                                <li>
+                                    <b>Tiff</b>: Images are forwarded to
+                                    Tesseract OCR by memory, avoiding temporary
+                                    files
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
             <!-- =========================================================== -->
             <h3>
                 <a id="R3.2" name="R3.2">3.2c Release</a>

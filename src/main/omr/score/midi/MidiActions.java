@@ -15,7 +15,7 @@ import omr.log.Logger;
 
 import omr.score.MeasureRange;
 import omr.score.Score;
-import omr.score.ScoreManager;
+import omr.score.ScoresManager;
 import omr.score.ui.ScoreActions;
 import omr.score.ui.ScoreDependent;
 
@@ -25,7 +25,7 @@ import omr.selection.SheetEvent;
 import omr.sheet.Sheet;
 import omr.sheet.ui.SheetsController;
 
-import omr.step.Step;
+import omr.step.Steps;
 
 import omr.ui.util.OmrFileFilter;
 import omr.ui.util.UIUtilities;
@@ -141,7 +141,7 @@ public class MidiActions
     @Action(enabledProperty = MIDI_AVAILABLE)
     public Task playMidi (ActionEvent e)
     {
-        Sheet sheet = SheetsController.selectedSheet();
+        Sheet sheet = SheetsController.getCurrentSheet();
 
         if (sheet != null) {
             Score score = sheet.getScore();
@@ -162,9 +162,9 @@ public class MidiActions
      */
     public void updateActions ()
     {
-        final Sheet sheet = SheetsController.selectedSheet();
+        final Sheet sheet = SheetsController.getCurrentSheet();
         setMidiAvailable(
-            (sheet != null) && sheet.getSheetSteps().isDone(Step.SCORE));
+            (sheet != null) && sheet.isDone(Steps.valueOf(Steps.MERGE)));
     }
 
     //-----------//
@@ -226,7 +226,7 @@ public class MidiActions
         File midiFile = UIUtilities.fileChooser(
             true,
             null,
-            ScoreManager.getInstance().getDefaultMidiFile(score),
+            ScoresManager.getInstance().getDefaultMidiFile(score),
             new OmrFileFilter(
                 "MIDI files",
                 new String[] { MidiAbstractions.MIDI_EXTENSION }));
@@ -263,7 +263,7 @@ public class MidiActions
      */
     private Score getCurrentScore ()
     {
-        Sheet sheet = SheetsController.selectedSheet();
+        Sheet sheet = SheetsController.getCurrentSheet();
 
         if (sheet == null) {
             return null;
@@ -357,8 +357,8 @@ public class MidiActions
             throws InterruptedException
         {
             try {
-                ScoreManager.getInstance()
-                            .midiWrite(score, midiFile);
+                ScoresManager.getInstance()
+                             .midiWrite(score, midiFile);
             } catch (Exception ignored) {
                 // User already informed
             }

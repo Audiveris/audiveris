@@ -19,15 +19,16 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
+import omr.score.Score;
 import omr.score.ui.MusicFont;
 
 import omr.script.Script;
 import omr.script.ScriptManager;
 
-import omr.sheet.Sheet;
-
 import omr.step.ProcessingCancellationException;
 import omr.step.Step;
+import omr.step.Stepping;
+import omr.step.Steps;
 
 import omr.ui.MainGui;
 
@@ -75,11 +76,11 @@ import javax.swing.*;
  * one key=value pair per line. <b>Nota</b>: The syntax used in the Properties
  * syntax, so for example back-slashes must be escaped.</dd>
  *
- * <dt> <b>-sheet (SHEETNAME | &#64;SHEETLIST)+</b> </dt> <dd> to specify some
- * sheets to be read, either by naming the image file or by referencing (flagged
- * by a &#64; sign) a file that lists image files (or even other files list
- * recursively). A list file is a simple text file, with one image file name per
- * line.</dd>
+ * <dt> <b>-sheet (FILENAME | &#64;FILELIST)+</b> </dt> <dd> to specify some
+ * image files to be read, either by naming the image file or by referencing
+ * (flagged by a &#64; sign) a file that lists image files (or even other files
+ * list recursively). A list file is a simple text file, with one image file
+ * name per line.</dd>
  *
  * <dt> <b>-script (SCRIPTNAME | &#64;SCRIPTLIST)+</b> </dt> <dd> to specify
  * some scripts to be read, using the same mechanism than sheets. These script
@@ -145,6 +146,63 @@ public class Main
         return parameters.constants;
     }
 
+    //---------------//
+    // getFilesTasks //
+    //---------------//
+    /**
+     * Prepare the processing of image files listed on command line
+     * @return the collection of proper callables
+     */
+    public static List<Callable<Void>> getFilesTasks ()
+    {
+        List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
+
+        // Launch desired step on each sheet in parallel
+        for (final String name : parameters.sheetNames) {
+            final File file = new File(name);
+
+            tasks.add(
+                new Callable<Void>() {
+                        public Void call ()
+                            throws Exception
+                        {
+                            logger.info(
+                                "Launching " + parameters.desiredSteps +
+                                " on " + name);
+
+                            if (file.exists()) {
+                                final Score score = new Score(file);
+
+                                try {
+                                    Stepping.processScore(
+                                        parameters.desiredSteps,
+                                        score);
+                                } catch (ProcessingCancellationException pce) {
+                                    logger.warning("Cancelled " + score, pce);
+                                    score.getBench()
+                                         .recordCancellation();
+                                } catch (Exception ex) {
+                                    logger.warning("Exception occurred", ex);
+                                } finally {
+                                    // Close (when in batch mode only)
+                                    if (gui == null) {
+                                        score.close();
+                                    }
+                                }
+
+                                return null;
+                            } else {
+                                logger.warning("Could not find sheet " + name);
+                            }
+
+                            return null;
+                        }
+                    });
+        }
+
+        return tasks;
+    }
+
     //--------//
     // setGui //
     //--------//
@@ -206,11 +264,11 @@ public class Main
                                     "Script file " + file + " run in " +
                                     (stop - start) + " ms");
                             } catch (ProcessingCancellationException pce) {
-                                Sheet sheet = script.getSheet();
-                                logger.warning("Cancelled " + sheet, pce);
+                                Score score = script.getScore();
+                                logger.warning("Cancelled " + score, pce);
 
-                                if (sheet != null) {
-                                    sheet.getBench()
+                                if (score != null) {
+                                    score.getBench()
                                          .recordCancellation();
                                 }
                             } catch (FileNotFoundException ex) {
@@ -221,69 +279,12 @@ public class Main
                             } finally {
                                 // Close when in batch mode
                                 if ((gui == null) && (script != null)) {
-                                    Sheet sheet = script.getSheet();
+                                    Score score = script.getScore();
 
-                                    if (sheet != null) {
-                                        sheet.close();
+                                    if (score != null) {
+                                        score.close();
                                     }
                                 }
-                            }
-
-                            return null;
-                        }
-                    });
-        }
-
-        return tasks;
-    }
-
-    //----------------//
-    // getSheetsTasks //
-    //----------------//
-    /**
-     * Prepare the processing of sheets listed on command line
-     * @return the collection of proper sheet callables
-     */
-    public static List<Callable<Void>> getSheetsTasks ()
-    {
-        List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
-
-        // Launch desired step on each sheet in parallel
-        for (final String name : parameters.sheetNames) {
-            final File file = new File(name);
-
-            tasks.add(
-                new Callable<Void>() {
-                        public Void call ()
-                            throws Exception
-                        {
-                            logger.info(
-                                "Launching " + parameters.targetSteps + " on " +
-                                name);
-
-                            if (file.exists()) {
-                                final Sheet sheet = new Sheet(file);
-
-                                try {
-                                    sheet.performSteps(parameters.targetSteps);
-
-                                    ///parameters.targetStep.performUntil(sheet);
-                                } catch (ProcessingCancellationException pce) {
-                                    logger.warning("Cancelled " + sheet, pce);
-                                    sheet.getBench()
-                                         .recordCancellation();
-                                } catch (Exception ex) {
-                                    logger.warning("Exception occurred", ex);
-                                } finally {
-                                    // Close when in batch mode
-                                    if (gui == null) {
-                                        sheet.close();
-                                    }
-                                }
-
-                                return null;
-                            } else {
-                                logger.warning("Could not find sheet " + name);
                             }
 
                             return null;
@@ -391,7 +392,7 @@ public class Main
 
             // Launch the required tasks, if any
             List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
-            tasks.addAll(getSheetsTasks());
+            tasks.addAll(getFilesTasks());
             tasks.addAll(getScriptsTasks());
 
             if (!tasks.isEmpty()) {
@@ -518,11 +519,14 @@ public class Main
             ///System.setProperty("java.awt.headless", "true");
 
             // Check MIDI output is not asked for
-            if (parameters.targetSteps.contains(Step.MIDI)) {
+            Step midiStep = Steps.valueOf(Steps.MIDI);
+
+            if ((midiStep != null) &&
+                parameters.desiredSteps.contains(midiStep)) {
                 logger.warning(
                     "MIDI output is not compatible with -batch mode." +
                     " MIDI output is ignored.");
-                parameters.targetSteps.remove(Step.MIDI);
+                parameters.desiredSteps.remove(midiStep);
             }
         } else {
             logger.fine("Running in interactive mode");

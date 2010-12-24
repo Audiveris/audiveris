@@ -20,7 +20,8 @@ import omr.lag.LagOrientation;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
-import omr.step.Step;
+import omr.step.Stepping;
+import omr.step.Steps;
 
 import java.util.*;
 
@@ -39,7 +40,7 @@ import javax.xml.bind.annotation.*;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public abstract class GlyphTask
-    extends ScriptTask
+    extends SheetTask
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -53,9 +54,6 @@ public abstract class GlyphTask
     /** The set of (pre) impacted systems, using status before action */
     protected SortedSet<SystemInfo> initialSystems;
 
-    /** The related sheet */
-    protected Sheet sheet;
-
     //~ Constructors -----------------------------------------------------------
 
     //-----------//
@@ -64,10 +62,12 @@ public abstract class GlyphTask
     /**
      * Creates a new GlyphTask object.
      *
+     * @param sheet the sheet impacted
      * @param orientation orientation of the containing lag
      * @param glyphs the collection of glyphs concerned by this task
      */
-    protected GlyphTask (LagOrientation    orientation,
+    protected GlyphTask (Sheet             sheet,
+                         LagOrientation    orientation,
                          Collection<Glyph> glyphs)
     {
         // Check parameters
@@ -93,11 +93,13 @@ public abstract class GlyphTask
     /**
      * Creates a new GlyphTask object, for vertical glyphs by default
      *
+     * @param sheet the sheet impacted
      * @param glyphs the collection of glyphs concerned by this task
      */
-    protected GlyphTask (Collection<Glyph> glyphs)
+    protected GlyphTask (Sheet             sheet,
+                         Collection<Glyph> glyphs)
     {
-        this(LagOrientation.VERTICAL, glyphs);
+        this(sheet, LagOrientation.VERTICAL, glyphs);
     }
 
     //-----------//
@@ -105,16 +107,20 @@ public abstract class GlyphTask
     //-----------//
     /**
      * Creates a new GlyphTask object, of specified orientation
+     * @param sheet the sheet impacted
      * @param orientation the specified lag orientation
      */
-    protected GlyphTask (LagOrientation orientation)
+    protected GlyphTask (Sheet          sheet,
+                         LagOrientation orientation)
     {
+        super(sheet);
+
         if (orientation == null) {
             throw new IllegalArgumentException(
                 getClass().getSimpleName() + " needs a non-null orientation");
+        } else {
+            this.orientation = orientation;
         }
-
-        this.orientation = orientation;
     }
 
     //-----------//
@@ -167,14 +173,20 @@ public abstract class GlyphTask
     {
         switch (orientation) {
         case HORIZONTAL :
-            sheet.getSheetSteps()
-                 .rebuildFrom(Step.SYSTEMS, null, false);
+            Stepping.reprocessSheet(
+                Steps.valueOf(Steps.SYSTEMS),
+                sheet,
+                null,
+                false);
 
             break;
 
         case VERTICAL :
-            sheet.getSheetSteps()
-                 .rebuildFrom(Step.PATTERNS, getImpactedSystems(sheet), false);
+            Stepping.reprocessSheet(
+                Steps.valueOf(Steps.PATTERNS),
+                sheet,
+                getImpactedSystems(sheet),
+                false);
         }
     }
 
@@ -221,7 +233,7 @@ public abstract class GlyphTask
     @Override
     protected String internalsString ()
     {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(super.internalsString());
 
         if (glyphs != null) {
             sb.append(" ")
@@ -230,7 +242,7 @@ public abstract class GlyphTask
             sb.append(" no-glyphs");
         }
 
-        return sb + super.internalsString();
+        return sb.toString();
     }
 
     //-----------//

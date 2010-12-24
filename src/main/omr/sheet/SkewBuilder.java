@@ -138,6 +138,12 @@ public class SkewBuilder
         minSectionLength = scale.toPixels(constants.minSectionLength);
         maxSectionThickness = scale.mainFore();
 
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                "minSectionLength:" + minSectionLength +
+                " maxSectionThickness:" + maxSectionThickness);
+        }
+
         // Retrieve the horizontal lag of runs
         sLag = new GlyphLag(
             "sLag",
@@ -175,6 +181,7 @@ public class SkewBuilder
         if (Math.abs(angle) > constants.maxSkewAngle.getValue()) {
             try {
                 picture.rotate(-angle);
+                picture.setMaxForeground(sheet.getMaxForeground());
                 sheet.getBench()
                      .recordImageDimension(
                     picture.getWidth(),
@@ -242,7 +249,7 @@ public class SkewBuilder
 
         // Chart
         JFreeChart chart = ChartFactory.createXYLineChart(
-            sheet.getRadix() + " (Slope Histogram)", // Title
+            sheet.getId() + " (Slope Histogram)", // Title
             "Slope [" + (float) (RESOLUTION * angle) + " Radians/" +
             RESOLUTION + "]", // X-Axis label
             "Counts", // Y-Axis label
@@ -255,7 +262,7 @@ public class SkewBuilder
 
         // Hosting frame
         ChartFrame frame = new ChartFrame(
-            sheet.getRadix() + " - Slope",
+            sheet.getId() + " - Slope",
             chart,
             true);
         frame.pack();
@@ -395,7 +402,7 @@ public class SkewBuilder
         MyView        view = new MyView();
 
         // Create a hosting frame for the view
-        final String  unit = sheet.getRadix() + ":SkewBuilder";
+        final String  unit = sheet.getId() + ":SkewBuilder";
         ScrollLagView slv = new ScrollLagView(view);
         BoardsPane    boards = new BoardsPane(
             sheet,
@@ -405,7 +412,7 @@ public class SkewBuilder
             new SectionBoard(unit, sLag.getLastVertexId(), sLag));
 
         sheet.getAssembly()
-             .addViewTab(Step.SKEW, slv, boards);
+             .addViewTab(Step.SKEW_TAB, slv, boards);
     }
 
     //~ Inner Classes ----------------------------------------------------------

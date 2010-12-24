@@ -11,39 +11,33 @@
 // </editor-fold>
 package omr.score.ui;
 
-import omr.Main;
-
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
 import omr.score.Score;
-import omr.score.ScoreManager;
+import omr.score.ScoresManager;
 import omr.score.entity.ScorePart;
 import omr.score.midi.MidiAgent;
 
 import omr.sheet.Sheet;
 import omr.sheet.ui.SheetsController;
 
-import omr.step.Step;
+import omr.step.Stepping;
+import omr.step.Steps;
 
 import omr.ui.MainGui;
 import omr.ui.util.OmrFileFilter;
 import omr.ui.util.UIUtilities;
 
 import omr.util.BasicTask;
-import omr.util.Implement;
-import omr.util.WrappedBoolean;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
 
 import java.awt.event.*;
-import java.beans.*;
 import java.io.File;
-
-import javax.swing.*;
 
 /**
  * Class <code>ScoreActions</code> gathers user actions related to scores
@@ -120,75 +114,6 @@ public class ScoreActions
         } else {
             return fillParametersWithDefaults(score);
         }
-    }
-
-    //------------------------//
-    // parametersAreConfirmed //
-    //------------------------//
-    /**
-     * Prompts the user for interactive confirmation or modification of
-     * score parameters
-     *
-     * @param score the provided score
-     * @return true if parameters are applied, false otherwise
-     */
-    public static boolean parametersAreConfirmed (final Score score)
-    {
-        final WrappedBoolean  apply = new WrappedBoolean(false);
-        final ScoreParameters scoreBoard = new ScoreParameters(score);
-        final JOptionPane     optionPane = new JOptionPane(
-            scoreBoard.getComponent(),
-            JOptionPane.QUESTION_MESSAGE,
-            JOptionPane.OK_CANCEL_OPTION);
-        final String          frameTitle = (score != null)
-                                           ? (score.getRadix() + " parameters")
-                                           : "Score parameters";
-        final JDialog         dialog = new JDialog(
-            Main.getGui().getFrame(),
-            frameTitle,
-            true); // Modal flag
-        dialog.setContentPane(optionPane);
-        dialog.setName("scoreBoard");
-
-        optionPane.addPropertyChangeListener(
-            new PropertyChangeListener() {
-                    @Implement(PropertyChangeListener.class)
-                    public void propertyChange (PropertyChangeEvent e)
-                    {
-                        String prop = e.getPropertyName();
-
-                        if (dialog.isVisible() &&
-                            (e.getSource() == optionPane) &&
-                            (prop.equals(JOptionPane.VALUE_PROPERTY))) {
-                            Object obj = optionPane.getValue();
-                            int    value = ((Integer) obj).intValue();
-                            apply.set(value == JOptionPane.OK_OPTION);
-
-                            Sheet sheet = (score != null) ? score.getSheet()
-                                          : null;
-
-                            // Exit only if user gives up or enters correct data
-                            if (!apply.isSet() || scoreBoard.commit(sheet)) {
-                                dialog.setVisible(false);
-                                dialog.dispose();
-                            } else {
-                                // Incorrect data, so don't exit yet
-                                try {
-                                    // TODO: Is there a more civilized way?
-                                    optionPane.setValue(
-                                        JOptionPane.UNINITIALIZED_VALUE);
-                                } catch (Exception ignored) {
-                                }
-                            }
-                        }
-                    }
-                });
-
-        dialog.pack();
-        MainGui.getInstance()
-               .show(dialog);
-
-        return apply.value;
     }
 
     //-------------------//
@@ -325,10 +250,10 @@ public class ScoreActions
         File exportFile = UIUtilities.fileChooser(
             true,
             null,
-            ScoreManager.getInstance().getDefaultExportFile(score),
+            ScoresManager.getInstance().getDefaultExportFile(score),
             new OmrFileFilter(
                 "XML files",
-                new String[] { ScoreManager.SCORE_EXTENSION }));
+                new String[] { ScoresManager.SCORE_EXTENSION }));
 
         if (exportFile != null) {
             return new StoreScoreTask(score, exportFile);
@@ -350,65 +275,7 @@ public class ScoreActions
     }
 
     //---------------//
-    // writeScorePdf //
-    //---------------//
-    /**
-     * Write the currently selected score, as a PDF file
-     * @param e the event that triggered this action
-     * @return the task to launch in background
-     */
-    @Action(enabledProperty = SCORE_AVAILABLE)
-    public Task writeScorePdf (ActionEvent e)
-    {
-        final Score score = ScoreController.getCurrentScore();
-
-        if (score == null) {
-            return null;
-        }
-
-        final File pdfFile = score.getScorePdfFile();
-
-        if (pdfFile != null) {
-            return new WriteScorePdfTask(score, pdfFile);
-        } else {
-            return writeScorePdfAs(e);
-        }
-    }
-
-    //-----------------//
-    // writeScorePdfAs //
-    //-----------------//
-    /**
-     * Write the currently selected score, using PDF format,
-     * to a user-provided file
-     * @param e the event that triggered this action
-     * @return the task to launch in background
-     */
-    @Action(enabledProperty = SCORE_AVAILABLE)
-    public Task writeScorePdfAs (ActionEvent e)
-    {
-        final Score score = ScoreController.getCurrentScore();
-
-        if (score == null) {
-            return null;
-        }
-
-        // Let the user select a PDF output file
-        File pdfFile = UIUtilities.fileChooser(
-            true,
-            null,
-            ScoreManager.getInstance().getDefaultScorePdfFile(score),
-            new OmrFileFilter("PDF files", new String[] { ".pdf" }));
-
-        if (pdfFile != null) {
-            return new WriteScorePdfTask(score, pdfFile);
-        } else {
-            return null;
-        }
-    }
-
-    //---------------//
-    // writeSheetPdf //
+    // writePhysicalPdf //
     //---------------//
     /**
      * Write the currently selected score, as a PDF file
@@ -455,7 +322,7 @@ public class ScoreActions
         File pdfFile = UIUtilities.fileChooser(
             true,
             null,
-            ScoreManager.getInstance().getDefaultSheetPdfFile(score),
+            ScoresManager.getInstance().getDefaultSheetPdfFile(score),
             new OmrFileFilter("PDF files", new String[] { ".pdf" }));
 
         if (pdfFile != null) {
@@ -500,40 +367,78 @@ public class ScoreActions
         return true;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
-
-    //-------------------//
-    // WriteScorePdfTask //
-    //-------------------//
-    public static class WriteScorePdfTask
-        extends BasicTask
+    //------------------------//
+    // parametersAreConfirmed //
+    //------------------------//
+    /**
+     * Prompts the user for interactive confirmation or modification of
+     * score parameters
+     *
+     * @param score the provided score
+     * @return true if parameters are applied, false otherwise
+     */
+    private static boolean parametersAreConfirmed (final Score score)
     {
-        //~ Instance fields ----------------------------------------------------
+        throw new RuntimeException("Not yet implemented");
 
-        final Score score;
-        final File  pdfFile;
-
-        //~ Constructors -------------------------------------------------------
-
-        public WriteScorePdfTask (Score score,
-                                  File  pdfFile)
-        {
-            this.score = score;
-            this.pdfFile = pdfFile;
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        protected Void doInBackground ()
-            throws InterruptedException
-        {
-            ScoreManager.getInstance()
-                        .writeScorePdf(score, pdfFile);
-
-            return null;
-        }
+        //        final WrappedBoolean  apply = new WrappedBoolean(false);
+        //        final ScoreParameters scoreBoard = new ScoreParameters(score);
+        //        final JOptionPane     optionPane = new JOptionPane(
+        //            scoreBoard.getComponent(),
+        //            JOptionPane.QUESTION_MESSAGE,
+        //            JOptionPane.OK_CANCEL_OPTION);
+        //        final String          frameTitle = (score != null)
+        //                                           ? (score.getRadix() + " parameters")
+        //                                           : "Score parameters";
+        //        final JDialog         dialog = new JDialog(
+        //            Main.getGui().getFrame(),
+        //            frameTitle,
+        //            true); // Modal flag
+        //        dialog.setContentPane(optionPane);
+        //        dialog.setName("scoreBoard");
+        //
+        //        optionPane.addPropertyChangeListener(
+        //            new PropertyChangeListener() {
+        //                    @Implement(PropertyChangeListener.class)
+        //                    public void propertyChange (PropertyChangeEvent e)
+        //                    {
+        //                        String prop = e.getPropertyName();
+        //
+        //                        if (dialog.isVisible() &&
+        //                            (e.getSource() == optionPane) &&
+        //                            (prop.equals(JOptionPane.VALUE_PROPERTY))) {
+        //                            Object obj = optionPane.getValue();
+        //                            int    value = ((Integer) obj).intValue();
+        //                            apply.set(value == JOptionPane.OK_OPTION);
+        //
+        //                            Sheet sheet = (score != null) ? score.getSheet()
+        //                                          : null;
+        //
+        //                            // Exit only if user gives up or enters correct data
+        //                            if (!apply.isSet() || scoreBoard.commit(sheet)) {
+        //                                dialog.setVisible(false);
+        //                                dialog.dispose();
+        //                            } else {
+        //                                // Incorrect data, so don't exit yet
+        //                                try {
+        //                                    // TODO: Is there a more civilized way?
+        //                                    optionPane.setValue(
+        //                                        JOptionPane.UNINITIALIZED_VALUE);
+        //                                } catch (Exception ignored) {
+        //                                }
+        //                            }
+        //                        }
+        //                    }
+        //                });
+        //
+        //        dialog.pack();
+        //        MainGui.getInstance()
+        //               .show(dialog);
+        //
+        //        return apply.value;
     }
+
+    //~ Inner Classes ----------------------------------------------------------
 
     //-------------------//
     // WriteSheetPdfTask //
@@ -561,8 +466,8 @@ public class ScoreActions
         protected Void doInBackground ()
             throws InterruptedException
         {
-            ScoreManager.getInstance()
-                        .writeSheetPdf(score, pdfFile);
+            ScoresManager.getInstance()
+                         .writePhysicalPdf(score, pdfFile);
 
             return null;
         }
@@ -594,9 +499,12 @@ public class ScoreActions
             throws InterruptedException
         {
             try {
-                SheetsController.selectedSheet()
-                                .getSheetSteps()
-                                .rebuildFrom(Step.VERTICALS, null, true);
+                Sheet sheet = SheetsController.getCurrentSheet();
+                Stepping.reprocessSheet(
+                    Steps.valueOf(Steps.VERTICALS),
+                    sheet,
+                    null,
+                    true);
             } catch (Exception ex) {
                 logger.warning("Could not refresh score", ex);
             }
@@ -632,8 +540,8 @@ public class ScoreActions
             throws InterruptedException
         {
             if (checkParameters(score)) {
-                ScoreManager.getInstance()
-                            .export(score, exportFile, null);
+                ScoresManager.getInstance()
+                             .export(score, exportFile, null);
             }
 
             return null;

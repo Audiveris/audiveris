@@ -222,7 +222,7 @@ public class NameSet
     //----------------//
     private void updateConstant ()
     {
-        StringBuffer buf = new StringBuffer(1024);
+        StringBuilder buf = new StringBuilder(1024);
 
         for (String n : names) {
             if (buf.length() > 0) {

@@ -39,6 +39,7 @@ import omr.sheet.ui.PixelBoard;
 
 import omr.step.Step;
 import omr.step.StepException;
+import omr.step.Steps;
 
 import omr.stick.StickSection;
 
@@ -121,7 +122,7 @@ public class LinesBuilder
                 "hLag",
                 StickSection.class,
                 new HorizontalOrientation()),
-            Step.LINES);
+            Steps.valueOf(Steps.LINES));
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -314,7 +315,7 @@ public class LinesBuilder
         GlyphsController controller = new GlyphsController(this);
         lagView = new MyView(lag, specifics, controller);
 
-        final String  unit = sheet.getRadix() + ":LinesBuilder";
+        final String  unit = sheet.getId() + ":LinesBuilder";
         BoardsPane    boardsPane = new BoardsPane(
             sheet,
             lagView,
@@ -326,7 +327,7 @@ public class LinesBuilder
         // Create a hosting frame for the view
         ScrollLagView slv = new ScrollLagView(lagView);
         sheet.getAssembly()
-             .addViewTab(Step.LINES, slv, boardsPane);
+             .addViewTab(Step.LINES_TAB, slv, boardsPane);
     }
 
     //---------------//
@@ -585,7 +586,7 @@ public class LinesBuilder
 
         // Chart
         JFreeChart chart = ChartFactory.createXYLineChart(
-            sheet.getRadix() + " (Horizontal Projections)", // Title
+            sheet.getId() + " (Horizontal Projections)", // Title
             "Ordinate",
             "Ratios of horizontal counts",
             dataset, // Dataset
@@ -597,7 +598,7 @@ public class LinesBuilder
 
         // Hosting frame
         ChartFrame frame = new ChartFrame(
-            sheet.getRadix() + " - Staff Lines",
+            sheet.getId() + " - Staff Lines",
             chart,
             true);
         frame.pack();

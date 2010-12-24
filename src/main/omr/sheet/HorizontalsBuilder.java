@@ -48,6 +48,7 @@ import omr.sheet.ui.SheetPainter;
 
 import omr.step.Step;
 import omr.step.StepException;
+import omr.step.Steps;
 
 import omr.stick.LineCleaner;
 
@@ -166,7 +167,10 @@ public class HorizontalsBuilder
     public HorizontalsBuilder (Sheet sheet)
     {
         // Reuse the horizontal lag of runs (from staff lines)
-        super(sheet, sheet.getHorizontalLag(), Step.HORIZONTALS);
+        super(
+            sheet,
+            sheet.getHorizontalLag(),
+            Steps.valueOf(Steps.HORIZONTALS));
 
         lineCleaner = new LineCleaner(
             sheet,
@@ -424,7 +428,7 @@ public class HorizontalsBuilder
         // Specific rubber display
         lagView = new MyView(lag, dashSections, getController());
 
-        final String  unit = sheet.getRadix() + ":HorizontalsBuilder";
+        final String  unit = sheet.getId() + ":HorizontalsBuilder";
         BoardsPane    boardsPane = new BoardsPane(
             sheet,
             lagView,
@@ -451,7 +455,7 @@ public class HorizontalsBuilder
         // Create a hosting frame for the view
         ScrollLagView slv = new ScrollLagView(lagView);
         sheet.getAssembly()
-             .addViewTab(Step.HORIZONTALS, slv, boardsPane);
+             .addViewTab(Step.HORIZONTALS_TAB, slv, boardsPane);
     }
 
     //---------------------//
@@ -1139,7 +1143,7 @@ public class HorizontalsBuilder
         public void renderItems (Graphics2D g)
         {
             // Render all physical info known so far (staff lines)
-            sheet.getScore()
+            sheet.getPage()
                  .accept(new SheetPainter(g, false));
 
             // Render the dashes found

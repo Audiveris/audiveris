@@ -20,6 +20,10 @@ import omr.log.Logger;
  * Class <code>ScorePart</code> defines a part at score level. It is
  * instantiated in each System by a SystemPart.
  *
+ * <p>There is an intermediate ScorePart instance at Page level, which records
+ * the merge of system parts at page level, and which is then used when merging
+ * the part information from pages to score.</p>
+ *
  * @author Hervé Bitteur
  */
 public class ScorePart
@@ -58,7 +62,7 @@ public class ScorePart
     // ScorePart //
     //-----------//
     /**
-     * Creates a new instance of ScorePart, built from a SystemPart
+     * Creates a new instance of ScorePart
      *
      * @param id the id for this part
      * @param staffCount the count of staves within this part

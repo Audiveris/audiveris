@@ -225,7 +225,7 @@ public abstract class Text
         final ScoreSystem system = systemPart.getSystem();
         final TextRole    role = sentence.getTextRole();
 
-        if ((role == null) || (role == TextRole.Unknown)) {
+        if ((role == null) || (role == TextRole.UnknownRole)) {
             systemPart.addError(
                 sentence.getGlyphs().first(),
                 "Sentence with no role defined");
@@ -305,7 +305,7 @@ public abstract class Text
 
             break;
 
-        default :
+        case UnknownRole :default :
             sentence.setGlyphsTranslation(new DefaultText(sentence));
         }
     }
@@ -442,7 +442,6 @@ public abstract class Text
     //-------------//
     /**
      * Subclass of Text, with no precise role assigned.
-     * Perhaps, we could get rid of this class
      */
     public static class DefaultText
         extends Text

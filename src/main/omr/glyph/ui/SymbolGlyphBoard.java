@@ -302,7 +302,7 @@ class SymbolGlyphBoard
                                     textInfo.getCreatorType());
                             }
                         } else {
-                            roleCombo.setSelectedItem(TextRole.Unknown);
+                            roleCombo.setSelectedItem(TextRole.UnknownRole);
                         }
 
                         selfUpdatingText = false;
@@ -473,7 +473,7 @@ class SymbolGlyphBoard
                     }
 
                     TextRole role = (TextRole) roleCombo.getSelectedItem();
-                    SheetsController.selectedSheet()
+                    SheetsController.getCurrentSheet()
                                     .getSymbolsController()
                                     .asyncAssignTexts(
                         glyphs,
@@ -488,7 +488,7 @@ class SymbolGlyphBoard
                     int den = timeDen.getValue();
 
                     if ((num != 0) && (den != 0)) {
-                        SheetsController.selectedSheet()
+                        SheetsController.getCurrentSheet()
                                         .getSymbolsController()
                                         .asyncAssignRationals(
                             glyphs,

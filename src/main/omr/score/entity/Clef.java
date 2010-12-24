@@ -76,12 +76,12 @@ public class Clef
      * @param pitchPosition pitch position
      * @param glyph underlying glyph, if any
      */
-    public Clef (Measure     measure,
-                 Staff       staff,
-                 Shape       shape,
+    public Clef (Measure    measure,
+                 Staff      staff,
+                 Shape      shape,
                  PixelPoint center,
-                 int         pitchPosition,
-                 Glyph       glyph)
+                 int        pitchPosition,
+                 Glyph      glyph)
     {
         super(measure);
 
@@ -210,9 +210,9 @@ public class Clef
      * @param center the precise location in the system
      * @return true if Clef was successfully created
      */
-    public static boolean populate (Glyph       glyph,
-                                    Measure     measure,
-                                    Staff       staff,
+    public static boolean populate (Glyph      glyph,
+                                    Measure    measure,
+                                    Staff      staff,
                                     PixelPoint center)
     {
         Shape shape = glyph.getShape();
@@ -269,7 +269,7 @@ public class Clef
           .append(shape);
 
         sb.append(" pp=")
-          .append((int) Math.rint(pitchPosition));
+          .append(pitchPosition);
 
         sb.append(" ")
           .append(Glyphs.toString(getGlyphs()));

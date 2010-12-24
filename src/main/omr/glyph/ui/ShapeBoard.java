@@ -24,7 +24,6 @@ import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.ScorePoint;
-import omr.score.ui.ScoreEditor;
 
 import omr.script.InsertTask;
 
@@ -197,12 +196,6 @@ public class ShapeBoard
     /** Current panel of shapes */
     private Panel shapesPanel;
 
-    /** The main target: score editor view */
-    private final ScoreEditor scoreEditor;
-
-    /** The window on score */
-    private final JViewport scoreViewport;
-
     /** Time of last click */
     private long lastClick;
 
@@ -235,10 +228,6 @@ public class ShapeBoard
         super("Palette", "Shapes", null, null);
         this.symbolsController = symbolsController;
         this.sheet = sheet;
-
-        scoreEditor = sheet.getScore()
-                           .getEditor();
-        scoreViewport = scoreEditor.getViewport();
 
         body.add(rangesPanel = defineRangesPanel());
     }
@@ -385,7 +374,7 @@ public class ShapeBoard
         public MyDropListener ()
         {
             // Target is the score view
-            super(scoreViewport);
+            super(null); // TODO:scoreViewport);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -396,18 +385,7 @@ public class ShapeBoard
             ScreenPoint screenPoint = e.getDropLocation();
             Shape       shape = e.getAction();
 
-            if (screenPoint.isInComponent(scoreViewport)) {
-                // The (zoomed) score view
-                RubberPanel view = (RubberPanel) scoreViewport.getView();
-                Point       localPt = screenPoint.getLocalPoint(view);
-                view.getZoom()
-                    .unscale(localPt);
-
-                ScorePoint scrPt = new ScorePoint(localPt.x, localPt.y);
-                dropOnTarget(
-                    shape,
-                    scoreEditor.getLayout().toPixelPoint(scrPt));
-            } else if (screenPoint.isInComponent(
+            if (screenPoint.isInComponent(
                 // The (zoomed) sheet view
                 sheet.getAssembly().getSelectedView().getComponent().getViewport())) {
                 RubberPanel view = sheet.getAssembly()
@@ -425,6 +403,7 @@ public class ShapeBoard
                                    PixelPoint pixPt)
         {
             new InsertTask(
+                sheet,
                 shape,
                 Collections.singleton(pixPt),
                 LagOrientation.VERTICAL).launch(sheet);
@@ -458,13 +437,7 @@ public class ShapeBoard
                 e.getComponent(),
                 e.getPoint());
 
-            if (screenPoint.isInComponent(scoreViewport)) {
-                // The (zoomed) score view
-                publishOnTarget(
-                    screenPoint,
-                    (RubberPanel) scoreViewport.getView(),
-                    1);
-            } else if (screenPoint.isInComponent(
+            if (screenPoint.isInComponent(
                 // The (zoomed) sheet view
                 sheet.getAssembly().getSelectedView().getComponent().getViewport())) {
                 publishOnTarget(

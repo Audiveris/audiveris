@@ -77,6 +77,11 @@ public class ScoreReductor
                 durations.add(duration);
             }
         } catch (InvalidTimeSignature ex) {
+            // Ignored here (TBC)
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + chord,
+                ex);
         }
 
         return false;
@@ -88,11 +93,17 @@ public class ScoreReductor
     @Override
     public boolean visit (Score score)
     {
-        // Collect duration values for each part
-        score.acceptChildren(this);
+        try {
+            // Collect duration values for each part
+            score.acceptChildren(this);
 
-        // Compute and remember greatest duration divisor for the score
-        score.setDurationDivisor(computeDurationDivisor());
+            // Compute and remember greatest duration divisor for the score
+            score.setDurationDivisor(computeDurationDivisor());
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + score,
+                ex);
+        }
 
         return false;
     }

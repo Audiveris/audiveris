@@ -54,17 +54,19 @@ public class TextTask
     /**
      * Creates a new TextTask object.
      *
+     * @param sheet the sheet impacted
      * @param type the type of creator (if relevant, otherwise null)
      * @param role the role of this text item
      * @param content The content as a string
      * @param glyphs the impacted glyph(s)
      */
-    public TextTask (CreatorType       type,
+    public TextTask (Sheet             sheet,
+                     CreatorType       type,
                      TextRole          role,
                      String            content,
                      Collection<Glyph> glyphs)
     {
-        super(glyphs);
+        super(sheet, glyphs);
         this.type = type;
         this.role = role;
         this.content = content;
@@ -106,7 +108,7 @@ public class TextTask
     @Override
     protected String internalsString ()
     {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(super.internalsString());
         sb.append(" text");
 
         sb.append(" ")
@@ -121,6 +123,6 @@ public class TextTask
           .append(content)
           .append("\"");
 
-        return sb + super.internalsString();
+        return sb.toString();
     }
 }

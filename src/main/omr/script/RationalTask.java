@@ -45,13 +45,15 @@ public class RationalTask
     /**
      * Creates a new RationalTask object.
      *
+     * @param sheet the sheet impacted
      * @param rational the custom time sig rational value
      * @param glyphs the impacted glyph(s)
      */
-    public RationalTask (Rational          rational,
+    public RationalTask (Sheet             sheet,
+                         Rational          rational,
                          Collection<Glyph> glyphs)
     {
-        super(glyphs);
+        super(sheet, glyphs);
         this.rational = rational;
     }
 
@@ -84,7 +86,7 @@ public class RationalTask
     @Override
     protected String internalsString ()
     {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(super.internalsString());
         sb.append(" rational");
 
         if (rational != null) {
@@ -92,6 +94,6 @@ public class RationalTask
               .append(rational);
         }
 
-        return sb + super.internalsString();
+        return sb.toString();
     }
 }

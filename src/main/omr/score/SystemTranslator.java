@@ -37,6 +37,7 @@ import omr.score.entity.Measure;
 import omr.score.entity.MeasureNode;
 import omr.score.entity.Note;
 import omr.score.entity.Ornament;
+import omr.score.entity.Page;
 import omr.score.entity.Pedal;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Segno;
@@ -54,8 +55,10 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
-import omr.step.Step;
+import omr.step.ProcessingCancellationException;
 import omr.step.StepException;
+import omr.step.Stepping;
+import omr.step.Steps;
 
 import omr.util.TreeNode;
 import omr.util.WrappedBoolean;
@@ -113,7 +116,7 @@ public class SystemTranslator
     //----------------//
     /**
      * Final actions to be done, starting on this first impacted system,
-     * until the very last system in the score
+     * until the very last system in the page
      */
     public void translateFinal ()
     {
@@ -123,11 +126,11 @@ public class SystemTranslator
             logger.fine("buildFinal starting from " + system);
         }
 
-        final Score score = system.getScore();
-        final Sheet sheet = score.getSheet();
+        final Page  page = system.getPage();
+        final Sheet sheet = page.getSheet();
 
         // Connect parts across systems 
-        PartConnection.connectSystems(score);
+        new PageReduction(page).reduce();
 
         // Get the (sub) list of all systems for final processing
         List<SystemInfo> systems = sheet.getSystems()
@@ -145,30 +148,57 @@ public class SystemTranslator
             syst.refineLyricSyllables();
         }
 
-        // All actions for completed score
-        score.accept(new ScoreTimeFixer());
-        score.accept(new TimeSignatureRetriever(modified));
-        score.accept(new TimeSignatureFixer(modified));
-        score.accept(new ScoreFixer());
+        // All actions for completed page
+        page.accept(new ScoreTimeFixer());
 
-        // Should we re-run this step?
-        if (modified.isSet()) {
-            ///logger.warning("Redoing SCORE step");
-            try {
-                sheet.getSheetSteps()
-                     .doStep(Step.SCORE, systems);
-            } catch (StepException ex) {
-                logger.warning("Error redoing SCORE step", ex);
+        page.accept(new TimeSignatureRetriever(modified));
+
+        if (logger.isFineEnabled()) {
+            logger.fine("TimeSignatureRetriever modified:" + modified.isSet());
+        }
+
+        if (!modified.isSet()) {
+            page.accept(new TimeSignatureFixer(modified));
+
+            if (logger.isFineEnabled()) {
+                logger.fine("TimeSignatureFixer modified:" + modified.isSet());
             }
-        } else {
-            ///logger.warning("No need to redo SCORE step");
+        }
+
+        if (!modified.isSet()) {
+            page.accept(new MeasureFixer(modified));
+
+            if (logger.isFineEnabled()) {
+                logger.fine("MeasureFixer modified:" + modified.isSet());
+            }
+        }
+
+        if (!modified.isSet()) {
+            page.accept(new BeamReader());
+        }
+
+        // Should we re-run this step? (on this sheet only) 
+        // There is a risk of ENDLESS LOOP...
+        if (modified.isSet()) {
+            logger.info("Restarting step " + Steps.PAGES);
+
+            try {
+                Stepping.doOneSheetStep(
+                    Steps.valueOf(Steps.PAGES),
+                    sheet,
+                    systems);
+            } catch (ProcessingCancellationException pce) {
+                throw pce;
+            } catch (StepException ex) {
+                logger.warning("Error redoing PAGES step", ex);
+            }
         }
 
         if (Main.getGui() != null) {
             try {
                 // Invalidate score data within MidiAgent, if needed
                 if (MidiAgent.getInstance()
-                             .getScore() == score) {
+                             .getScore() == system.getScore()) {
                     MidiAgent.getInstance()
                              .reset();
                 }
@@ -178,7 +208,7 @@ public class SystemTranslator
         }
 
         // Update score views if any
-        score.updateViews();
+        //TODO score.updateViews();
     }
 
     //-----------------//
@@ -597,7 +627,7 @@ public class SystemTranslator
             // Check that slots are not too close to each other
             Scale scale = system.getScale();
             Slot  prevSlot = null;
-            int   minSlotSpacing = scale.toPixels(Score.getMinSlotSpacing());
+            int   minSlotSpacing = scale.toPixels(Page.getMinSlotSpacing());
             int   minSpacing = Integer.MAX_VALUE;
             Slot  minSlot = null;
 
@@ -634,12 +664,12 @@ public class SystemTranslator
 
         public void translate (Glyph glyph)
         {
-            Score score = system.getScore();
+            Page page = system.getPage();
             Slot.populate(
                 glyph,
                 currentMeasure,
-                score.hasSlotPolicy() ? score.getSlotPolicy()
-                                : Score.getDefaultSlotPolicy());
+                page.hasSlotPolicy() ? page.getSlotPolicy()
+                                : Page.getDefaultSlotPolicy());
         }
     }
 

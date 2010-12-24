@@ -16,9 +16,9 @@ import omr.glyph.facets.Stick;
 
 import omr.log.Logger;
 
-import omr.score.Score;
 import omr.score.common.PixelRectangle;
 import omr.score.entity.Measure;
+import omr.score.entity.Page;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.SystemPart;
 import omr.score.visitor.AbstractScoreVisitor;
@@ -35,7 +35,7 @@ import omr.ui.util.UIUtilities;
 import java.awt.*;
 
 /**
- * Class <code>SheetPainter</code> defines for every node in Score hierarchy
+ * Class <code>SheetPainter</code> defines for every node in Page hierarchy
  * the rendering of related sections (with preset colors) in the dedicated
  * <b>Sheet</b> display.
  *
@@ -91,81 +91,77 @@ public class SheetPainter
     @Override
     public boolean visit (Measure measure)
     {
-        // Render the measure ending barline
-        if (measure.getBarline() != null) {
-            measure.getBarline()
-                   .renderLine(g);
+        try {
+            // Render the measure ending barline
+            if (measure.getBarline() != null) {
+                measure.getBarline()
+                       .renderLine(g);
+            }
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + measure,
+                ex);
         }
 
         // Nothing lower than measure
         return false;
     }
 
-    //-------------//
-    // visit Score //
-    //-------------//
+    //------------//
+    // visit Page //
+    //------------//
     @Override
-    public boolean visit (Score score)
+    public boolean visit (Page page)
     {
-        Sheet sheet = score.getSheet();
+        try {
+            Sheet sheet = page.getSheet();
 
-        // Use specific color
-        g.setColor(Color.lightGray);
+            // Use specific color
+            g.setColor(Color.lightGray);
 
-        if (!score.getSystems()
-                  .isEmpty()) {
-            // Normal (full) rendering of the score
-            score.acceptChildren(this);
-        } else {
-            // Render what we have got so far
-            if (sheet.getStaves() != null) {
-                for (StaffInfo staff : sheet.getStaves()) {
-                    staff.render(g);
+            if (!page.getSystems()
+                     .isEmpty()) {
+                // Normal (full) rendering of the score
+                page.acceptChildren(this);
+            } else {
+                // Render what we have got so far
+                if (sheet.getStaves() != null) {
+                    for (StaffInfo staff : sheet.getStaves()) {
+                        staff.render(g);
+                    }
                 }
             }
-        }
 
-        if (sheet.getSystems() != null) {
-            for (SystemInfo system : sheet.getSystems()) {
-                visit(system);
-            }
-        }
-
-        // Horizontals
-        if (sheet.getHorizontals() != null) {
-            // Ledgers
-            for (Ledger ledger : sheet.getHorizontals()
-                                      .getLedgers()) {
-                ledger.render(g);
+            if (sheet.getSystems() != null) {
+                for (SystemInfo system : sheet.getSystems()) {
+                    visit(system);
+                }
             }
 
-            // Endings
-            for (Ending ending : sheet.getHorizontals()
-                                      .getEndings()) {
-                ending.render(g);
-            }
-        }
+            // Horizontals
+            if (sheet.getHorizontals() != null) {
+                // Ledgers
+                for (Ledger ledger : sheet.getHorizontals()
+                                          .getLedgers()) {
+                    ledger.render(g);
+                }
 
-        g.setStroke(oldStroke);
+                // Endings
+                for (Ending ending : sheet.getHorizontals()
+                                          .getEndings()) {
+                    ending.render(g);
+                }
+            }
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + page,
+                ex);
+        } finally {
+            g.setStroke(oldStroke);
+        }
 
         return false;
     }
-
-    //    //-------------//
-    //    // visit Staff //
-    //    //-------------//
-    //    @Override
-    //    public boolean visit (Staff staff)
-    //    {
-    //        StaffInfo info = staff.getInfo();
-    //
-    //        // Render the staff lines, if within the clipping area
-    //        if ((info != null) && info.render(g)) {
-    //            return true;
-    //        } else {
-    //            return false;
-    //        }
-    //    }
 
     //------------------//
     // visit SystemPart //
@@ -173,10 +169,16 @@ public class SheetPainter
     @Override
     public boolean visit (SystemPart part)
     {
-        // Render the part starting barline, if any
-        if (part.getStartingBarline() != null) {
-            part.getStartingBarline()
-                .renderLine(g);
+        try {
+            // Render the part starting barline, if any
+            if (part.getStartingBarline() != null) {
+                part.getStartingBarline()
+                    .renderLine(g);
+            }
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + part,
+                ex);
         }
 
         return true;
@@ -188,11 +190,19 @@ public class SheetPainter
     @Override
     public boolean visit (ScoreSystem system)
     {
-        if (system == null) {
+        try {
+            if (system == null) {
+                return false;
+            }
+
+            return visit(system.getInfo());
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + system,
+                ex);
+
             return false;
         }
-
-        return visit(system.getInfo());
     }
 
     //------------------//
@@ -200,49 +210,55 @@ public class SheetPainter
     //------------------//
     public boolean visit (SystemInfo systemInfo)
     {
-        PixelRectangle bounds = systemInfo.getBounds();
+        try {
+            PixelRectangle bounds = systemInfo.getBounds();
 
-        if (bounds == null) {
-            return false;
-        }
-
-        // Check that this system is visible
-        if (bounds.intersects(g.getClipBounds())) {
-            g.setColor(Color.lightGray);
-
-            // System boundary
-            systemInfo.getBoundary()
-                      .render(g, editableBoundaries);
-
-            // Staff lines
-            for (StaffInfo staff : systemInfo.getStaves()) {
-                staff.render(g);
+            if (bounds == null) {
+                return false;
             }
 
-            g.setColor(Color.black);
+            // Check that this system is visible
+            if (bounds.intersects(g.getClipBounds())) {
+                g.setColor(Color.lightGray);
 
-            // Stems
-            for (Glyph glyph : systemInfo.getGlyphs()) {
-                if (glyph.isStem()) {
-                    Stick stick = (Stick) glyph;
-                    stick.renderLine(g);
+                // System boundary
+                systemInfo.getBoundary()
+                          .render(g, editableBoundaries);
+
+                // Staff lines
+                for (StaffInfo staff : systemInfo.getStaves()) {
+                    staff.render(g);
                 }
+
+                g.setColor(Color.black);
+
+                // Stems
+                for (Glyph glyph : systemInfo.getGlyphs()) {
+                    if (glyph.isStem()) {
+                        Stick stick = (Stick) glyph;
+                        stick.renderLine(g);
+                    }
+                }
+
+                // Ledgers
+                for (Ledger ledger : systemInfo.getLedgers()) {
+                    ledger.render(g);
+                }
+
+                // Endings
+                for (Ending ending : systemInfo.getEndings()) {
+                    ending.render(g);
+                }
+
+                // Virtual glyphs
+                paintVirtualGlyphs(systemInfo);
+
+                return true;
             }
-
-            // Ledgers
-            for (Ledger ledger : systemInfo.getLedgers()) {
-                ledger.render(g);
-            }
-
-            // Endings
-            for (Ending ending : systemInfo.getEndings()) {
-                ending.render(g);
-            }
-
-            // Virtual glyphs
-            paintVirtualGlyphs(systemInfo);
-
-            return true;
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + systemInfo,
+                ex);
         }
 
         return false;

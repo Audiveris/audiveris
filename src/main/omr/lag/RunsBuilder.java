@@ -93,35 +93,44 @@ public class RunsBuilder
                                      final int cMin,
                                      final int cMax)
     {
-        try {
-            // Browse one dimension
-            List<Callable<Void>> tasks = new ArrayList<Callable<Void>>(
-                pMax - pMin + 1);
-
+        if (true) {
+            // Sequential
             for (int p = pMin; p <= pMax; p++) {
                 final int pp = p;
-                tasks.add(
-                    new Callable<Void>() {
-                            public Void call ()
-                                throws Exception
-                            {
-                                processPosition(pp, cMin, cMax);
-
-                                return null;
-                            }
-                        });
+                processPosition(pp, cMin, cMax);
             }
+        } else {
+            // Parallel
+            try {
+                // Browse one dimension
+                List<Callable<Void>> tasks = new ArrayList<Callable<Void>>(
+                    pMax - pMin + 1);
 
-            OmrExecutors.getHighExecutor()
-                        .invokeAll(tasks);
-        } catch (InterruptedException ex) {
-            logger.warning("ParallelRuns got interrupted");
-            throw new ProcessingCancellationException(ex);
-        } catch (ProcessingCancellationException pce) {
-            throw pce;
-        } catch (Throwable ex) {
-            logger.warning("Exception raised in ParallelRuns", ex);
-            throw new RuntimeException(ex);
+                for (int p = pMin; p <= pMax; p++) {
+                    final int pp = p;
+                    tasks.add(
+                        new Callable<Void>() {
+                                public Void call ()
+                                    throws Exception
+                                {
+                                    processPosition(pp, cMin, cMax);
+
+                                    return null;
+                                }
+                            });
+                }
+
+                OmrExecutors.getHighExecutor()
+                            .invokeAll(tasks);
+            } catch (InterruptedException ex) {
+                logger.warning("ParallelRuns got interrupted");
+                throw new ProcessingCancellationException(ex);
+            } catch (ProcessingCancellationException pce) {
+                throw pce;
+            } catch (Throwable ex) {
+                logger.warning("Exception raised in ParallelRuns", ex);
+                throw new RuntimeException(ex);
+            }
         }
     }
 
@@ -151,6 +160,7 @@ public class RunsBuilder
         for (int c = cMin; c <= cMax; c++) {
             final int level = reader.getLevel(c, p);
 
+            ///System.out.println("p:" + p + " c:" + c + " level:" + level);
             if (reader.isFore(level)) {
                 // We are on a foreground pixel
                 if (isFore) {

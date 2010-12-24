@@ -449,7 +449,7 @@ public abstract class Vertex<D extends Digraph, V extends Vertex<D, V, SIG>, SIG
     @Override
     public String toString ()
     {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
 
         sb.append("{")
           .append(getClass().getSimpleName())

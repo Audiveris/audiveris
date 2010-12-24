@@ -43,7 +43,6 @@ public class SelectionService
         allEventClasses.add(LocationEvent.class);
         allEventClasses.add(PixelLevelEvent.class);
         allEventClasses.add(RunEvent.class);
-        allEventClasses.add(ScoreLocationEvent.class);
         allEventClasses.add(SectionEvent.class);
         allEventClasses.add(SectionIdEvent.class);
         allEventClasses.add(SectionSetEvent.class);

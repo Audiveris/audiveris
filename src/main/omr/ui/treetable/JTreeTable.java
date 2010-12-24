@@ -3,7 +3,6 @@
 //                            J T r e e T a b l e                             //
 //                                                                            //
 //----------------------------------------------------------------------------//
-//      $Id$
 package omr.ui.treetable;
 
 import java.awt.*;
@@ -142,7 +141,7 @@ public class JTreeTable
 
     /**
      * Overridden to message super and forward the method to the tree. Since
-     * the tree is not actually in the component hieachy it will never receive
+     * the tree is not actually in the component hierarchy it will never receive
      * this unless we forward it in this manner.
      */
 

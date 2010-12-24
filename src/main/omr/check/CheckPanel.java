@@ -369,7 +369,7 @@ public class CheckPanel<C extends Checkable>
     private FormLayout createLayout (int checkNb)
     {
         // Build proper column specification
-        StringBuffer sbc = new StringBuffer();
+        StringBuilder sbc = new StringBuilder();
         sbc.append("center:pref")
            .append(", ")
            .append(COLUMN_GAP)
@@ -401,7 +401,7 @@ public class CheckPanel<C extends Checkable>
         sbc.append(" right:pref");
 
         // Build proper row specification
-        StringBuffer sbr = new StringBuffer();
+        StringBuilder sbr = new StringBuilder();
 
         for (int n = 0; n <= checkNb; n++) {
             if (n != 0) {

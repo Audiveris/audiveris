@@ -50,8 +50,8 @@ public class Actions
         //~ Enumeration constant initializers ----------------------------------
 
 
-        /** Domain of sheet actions */
-        SHEET,
+        /** Domain of file actions */
+        FILE,
         /** Domain of individual steps */
         STEP, 
         /** Domain of score actions */

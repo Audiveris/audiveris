@@ -36,13 +36,15 @@ public class SegmentTask
     /**
      * Creates a new SegmentTask object.
      *
+     * @param sheet the sheet impacted
      * @param isShort true if we are looking for short verticals
      * @param glyphs the collection of glyphs to look up
      */
-    public SegmentTask (boolean           isShort,
+    public SegmentTask (Sheet             sheet,
+                        boolean           isShort,
                         Collection<Glyph> glyphs)
     {
-        super(glyphs);
+        super(sheet, glyphs);
         this.isShort = isShort;
     }
 
@@ -75,7 +77,7 @@ public class SegmentTask
     @Override
     protected String internalsString ()
     {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(super.internalsString());
         sb.append(" segment");
 
         if (isShort) {
@@ -83,6 +85,6 @@ public class SegmentTask
               .append("short");
         }
 
-        return sb + super.internalsString();
+        return sb.toString();
     }
 }

@@ -29,8 +29,6 @@ import omr.math.Histogram.Pair;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import static omr.score.entity.Note.Step.*;
 import omr.score.visitor.ScoreVisitor;
 
@@ -338,7 +336,7 @@ public class KeySignature
     {
         if (refList == null) {
             List<Integer>      refs = new ArrayList<Integer>();
-            Histogram<Integer> histo = getScore()
+            Histogram<Integer> histo = getPage()
                                            .getSheet()
                                            .getVerticalLag()
                                            .getHistogram(
@@ -462,7 +460,7 @@ public class KeySignature
     //-----------------//
     // createDummyCopy //
     //-----------------//
-    public KeySignature createDummyCopy (Measure     measure,
+    public KeySignature createDummyCopy (Measure    measure,
                                          PixelPoint center)
     {
         KeySignature dummy = new KeySignature(measure, null);
@@ -486,9 +484,9 @@ public class KeySignature
      *
      * @return true if population is successful, false otherwise
      */
-    public static boolean populate (Glyph       glyph,
-                                    Measure     measure,
-                                    Staff       staff,
+    public static boolean populate (Glyph      glyph,
+                                    Measure    measure,
+                                    Staff      staff,
                                     PixelPoint center)
     {
         if (logger.isFineEnabled()) {
@@ -537,8 +535,8 @@ public class KeySignature
         }
 
         // Do we have a key signature just before in the same measure & staff?
-        KeySignature    keysig = null;
-        boolean         found = false;
+        KeySignature keysig = null;
+        boolean      found = false;
 
         for (TreeNode node : measure.getKeySignatures()) {
             keysig = (KeySignature) node;
@@ -919,12 +917,12 @@ public class KeySignature
      * @param clef current clef, if known
      * @return true if OK, false otherwise
      */
-    private static boolean checkPosition (Glyph       glyph,
+    private static boolean checkPosition (Glyph      glyph,
                                           PixelPoint center,
-                                          Staff       staff,
-                                          double[]    positions,
-                                          int         index,
-                                          Clef        clef)
+                                          Staff      staff,
+                                          double[]   positions,
+                                          int        index,
+                                          Clef       clef)
     {
         int[] deltas = (clef != null)
                        ? new int[] { clefToDelta(clef.getShape()) }
@@ -1155,10 +1153,10 @@ public class KeySignature
      * @param clef clef at this location, if known
      * @return true if OK, false otherwise
      */
-    private static boolean checkPitchPosition (Glyph       glyph,
+    private static boolean checkPitchPosition (Glyph      glyph,
                                                PixelPoint center,
-                                               Staff       staff,
-                                               Clef        clef)
+                                               Staff      staff,
+                                               Clef       clef)
     {
         Shape glyphShape = glyph.getShape();
 

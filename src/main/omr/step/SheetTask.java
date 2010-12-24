@@ -13,7 +13,6 @@ package omr.step;
 
 import omr.log.Logger;
 
-import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import java.util.Collection;
@@ -34,9 +33,6 @@ public abstract class SheetTask
 
     //~ Instance fields --------------------------------------------------------
 
-    /** The related sheet */
-    protected final Sheet sheet;
-
     /** The related step for this task */
     protected final Step step;
 
@@ -53,13 +49,10 @@ public abstract class SheetTask
     //-----------//
     /**
      * Creates a task at sheet level
-     * @param sheet the processed sheet
      * @param step the step performed by the task
      */
-    protected SheetTask (Sheet sheet,
-                         Step  step)
+    protected SheetTask (Step step)
     {
-        this.sheet = sheet;
         this.step = step;
     }
 

@@ -36,7 +36,7 @@ import omr.lag.ui.SectionBoard;
 
 import omr.log.Logger;
 
-import omr.score.ScoreFixer;
+import omr.score.MeasureFixer;
 
 import omr.script.BoundaryTask;
 
@@ -54,6 +54,7 @@ import omr.sheet.ui.SheetPainter;
 
 import omr.step.Step;
 import omr.step.StepException;
+import omr.step.Steps;
 
 import omr.stick.StickSection;
 
@@ -143,7 +144,7 @@ public class SystemsBuilder
         super(
             sheet,
             new GlyphLag("vLag", StickSection.class, new VerticalOrientation()),
-            Step.SYSTEMS);
+            Steps.valueOf(Steps.SYSTEMS));
 
         systems = sheet.getSystems();
 
@@ -224,14 +225,6 @@ public class SystemsBuilder
         // Split the entities (horizontals sections, vertical sections,
         // vertical sticks) to the system they belong to.
         splitSystemEntities();
-
-        // Update score internal data
-        sheet.getScore()
-             .accept(new ScoreFixer());
-
-        // Update score views if any
-        sheet.getScore()
-             .updateViews();
     }
 
     //-------------------//
@@ -261,7 +254,7 @@ public class SystemsBuilder
         throws StepException
     {
         // Clear Score -> Systems
-        sheet.getScore()
+        sheet.getPage()
              .resetSystems();
 
         for (SystemInfo system : systems) {
@@ -397,7 +390,7 @@ public class SystemsBuilder
         lagView = new MyView(lag, getSpecificGlyphs(), barsController);
         lagView.colorizeAllGlyphs();
 
-        final String  unit = sheet.getRadix() + ":BarsBuilder";
+        final String  unit = sheet.getId() + ":BarsBuilder";
         BoardsPane    boardsPane = new BoardsPane(
             sheet,
             lagView,
@@ -414,7 +407,7 @@ public class SystemsBuilder
         // Create a hosting frame for the view
         ScrollLagView slv = new ScrollLagView(lagView);
         sheet.getAssembly()
-             .addViewTab(Step.SYSTEMS, slv, boardsPane);
+             .addViewTab(Step.SYSTEMS_TAB, slv, boardsPane);
     }
 
     //----------------//
@@ -444,10 +437,13 @@ public class SystemsBuilder
     private void reportResults ()
     {
         StringBuilder sb = new StringBuilder();
-        int           partNb = sheet.getScore()
-                                    .getPartList()
-                                    .size();
-        int           sysNb = systems.size();
+        int           partNb = 0;
+
+        for (SystemInfo system : sheet.getSystems()) {
+            partNb = Math.max(partNb, system.getParts().size());
+        }
+
+        int sysNb = systems.size();
 
         if (partNb > 0) {
             sb.append(partNb)
@@ -786,7 +782,7 @@ public class SystemsBuilder
         {
             // Render all physical info known so far, which is just the staff
             // line info, lineset by lineset
-            sheet.getScore()
+            sheet.getPage()
                  .accept(new SheetPainter(g, true));
 
             super.renderItems(g);

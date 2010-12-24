@@ -171,7 +171,7 @@ public class LagReader
     public final void terminate ()
     {
         if (logger.isFineEnabled()) {
-            StringBuffer buf = new StringBuffer(2048);
+            StringBuilder buf = new StringBuilder(2048);
             buf.append("Retrieved runs");
 
             int i = 0;

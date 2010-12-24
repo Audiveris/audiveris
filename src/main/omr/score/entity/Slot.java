@@ -122,7 +122,7 @@ public abstract class Slot
     {
         this.measure = measure;
 
-        InterlineFraction slotMargin = measure.getScore()
+        InterlineFraction slotMargin = measure.getPage()
                                               .getSlotMargin();
         xUnitsMargin = measure.getScale()
                               .toPixels(slotMargin);

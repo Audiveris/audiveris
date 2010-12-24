@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                          S c o r e M a n a g e r                           //
+//                         S c o r e s M a n a g e r                          //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -21,24 +21,25 @@ import omr.log.Logger;
 import omr.score.midi.MidiAbstractions;
 import omr.score.midi.MidiAgent;
 import omr.score.ui.ScoreActions;
-import omr.score.ui.ScorePdfOutput;
 import omr.score.ui.SheetPdfOutput;
 
-import omr.sheet.SheetBench;
+import omr.util.NameSet;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
- * Class {@code ScoreManager} is a singleton which provides administrative
+ * Class {@code ScoresManager} is a singleton which provides administrative
  * features for score instances.
- * <p>This is no collection of score instances, since any score instance is
- * cross-linked to its sheet instance counterpart, and all the sheet instances
- * are handled by the {@code SheetsManager} class.
+ * <p>It handles the collection of all loaded score instances.</p>
+ * <p>It handles the history of scores previously loaded.</p>
  *
  * @author Hervé Bitteur
  * @author Brenton Partridge
  */
-public class ScoreManager
+public class ScoresManager
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -46,7 +47,7 @@ public class ScoreManager
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ScoreManager.class);
+    private static final Logger logger = Logger.getLogger(ScoresManager.class);
 
     /** The extension used for score output files: {@value} */
     public static final String SCORE_EXTENSION = ".xml";
@@ -55,21 +56,121 @@ public class ScoreManager
     public static final String BENCH_EXTENSION = ".bench.properties";
 
     /** The single instance of this class */
-    private static volatile ScoreManager INSTANCE;
+    private static volatile ScoresManager INSTANCE;
+
+    //~ Instance fields --------------------------------------------------------
+
+    /** Instances of Score */
+    private List<Score> instances = new ArrayList<Score>();
+
+    /** Image file history  (filled only when images are successfully loaded) */
+    private NameSet history;
 
     //~ Constructors -----------------------------------------------------------
 
-    //--------------//
-    // ScoreManager //
-    //--------------//
+    //---------------//
+    // ScoresManager //
+    //---------------//
     /**
-     * Creates a Score Manager.
+     * Private constructor
      */
-    private ScoreManager ()
+    private ScoresManager ()
     {
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //----------------------//
+    // getDefaultExportFile //
+    //----------------------//
+    /**
+     * Report the file to which the score would be written by default
+     * @param score the score to export
+     * @return the default file
+     */
+    public File getDefaultExportFile (Score score)
+    {
+        return (score.getExportFile() != null) ? score.getExportFile()
+               : new File(
+            constants.defaultScoreDirectory.getValue(),
+            score.getRadix() + SCORE_EXTENSION);
+    }
+
+    //--------------------------//
+    // setDefaultImageDirectory //
+    //--------------------------//
+    /**
+     * Remember the directory where images should be found
+     * @param directory the latest image directory
+     */
+    public void setDefaultImageDirectory (String directory)
+    {
+        constants.defaultImageDirectory.setValue(directory);
+    }
+
+    //--------------------------//
+    // getDefaultImageDirectory //
+    //--------------------------//
+    /**
+     * Report the directory where images should be found
+     * @return the latest image directory
+     */
+    public String getDefaultImageDirectory ()
+    {
+        return constants.defaultImageDirectory.getValue();
+    }
+
+    //--------------------//
+    // getDefaultMidiFile //
+    //--------------------//
+    /**
+     * Report the file to which the MIDI data would be written by default
+     * @param score the score to export
+     * @return the default file
+     */
+    public File getDefaultMidiFile (Score score)
+    {
+        return (score.getMidiFile() != null) ? score.getMidiFile()
+               : new File(
+            constants.defaultMidiDirectory.getValue(),
+            score.getRadix() + MidiAbstractions.MIDI_EXTENSION);
+    }
+
+    //------------------------//
+    // getDefaultSheetPdfFile //
+    //------------------------//
+    /**
+     * Report the file to which the sheet PDF data would be written by default
+     * @param score the score to export
+     * @return the default file
+     */
+    public File getDefaultSheetPdfFile (Score score)
+    {
+        return (score.getSheetPdfFile() != null) ? score.getSheetPdfFile()
+               : new File(
+            constants.defaultSheetPdfDirectory.getValue(),
+            score.getRadix() + ".sheet.pdf");
+    }
+
+    //------------//
+    // getHistory //
+    //------------//
+    /**
+     * Get access to the list of previously handled images
+     *
+     * @return the history set of image files
+     */
+    public NameSet getHistory ()
+    {
+        if (history == null) {
+            history = new NameSet(
+                "Images History",
+                constants.imagesHistory,
+                10);
+        }
+
+        return history;
+    }
 
     //-------------//
     // getInstance //
@@ -79,10 +180,10 @@ public class ScoreManager
      *
      * @return the single instance
      */
-    public static ScoreManager getInstance ()
+    public static ScoresManager getInstance ()
     {
         if (INSTANCE == null) {
-            INSTANCE = new ScoreManager();
+            INSTANCE = new ScoresManager();
         }
 
         return INSTANCE;
@@ -103,68 +204,72 @@ public class ScoreManager
             score.getRadix() + BENCH_EXTENSION);
     }
 
-    //----------------------//
-    // getDefaultExportFile //
-    //----------------------//
+    //--------------//
+    // isMultiScore //
+    //--------------//
     /**
-     * Report the file to which the score would be written by default
-     * @param score the score to export
-     * @return the default file
+     * Report whether we are handling more than one score
+     * @return true if more than one score
      */
-    public File getDefaultExportFile (Score score)
+    public static boolean isMultiScore ()
     {
-        return (score.getExportFile() != null) ? score.getExportFile()
-               : new File(
-            constants.defaultScoreDirectory.getValue(),
-            score.getRadix() + SCORE_EXTENSION);
+        return getInstance().instances.size() > 1;
     }
 
-    //--------------------//
-    // getDefaultMidiFile //
-    //--------------------//
+    //-------------//
+    // addInstance //
+    //-------------//
     /**
-     * Report the file to which the MIDI data would be written by default
-     * @param score the score to export
-     * @return the default file
+     * Insert this new score in the set of score instances
+     *
+     * @param score the score to insert
      */
-    public File getDefaultMidiFile (Score score)
+    public synchronized void addInstance (Score score)
     {
-        return (score.getMidiFile() != null) ? score.getMidiFile()
-               : new File(
-            constants.defaultMidiDirectory.getValue(),
-            score.getRadix() + MidiAbstractions.MIDI_EXTENSION);
+        if (logger.isFineEnabled()) {
+            logger.fine("addInstance " + score);
+        }
+
+        // Remove duplicate if any
+        for (Iterator<Score> it = instances.iterator(); it.hasNext();) {
+            Score  s = it.next();
+            String path = s.getImagePath();
+
+            if (path.equals(score.getImagePath())) {
+                if (logger.isFineEnabled()) {
+                    logger.fine("Removing duplicate " + s);
+                }
+
+                it.remove();
+                s.close();
+
+                break;
+            }
+        }
+
+        // Insert new score instance
+        instances.add(score);
     }
 
-    //------------------------//
-    // getDefaultScorePdfFile //
-    //------------------------//
+    //----------------//
+    // closeAllScores //
+    //----------------//
     /**
-     * Report the file to which the score PDF data would be written by default
-     * @param score the score to export
-     * @return the default file
+     * Close all score instances
      */
-    public File getDefaultScorePdfFile (Score score)
+    public void closeAllScores ()
     {
-        return (score.getScorePdfFile() != null) ? score.getScorePdfFile()
-               : new File(
-            constants.defaultScorePdfDirectory.getValue(),
-            score.getRadix() + ".score.pdf");
-    }
+        int count = 0;
 
-    //------------------------//
-    // getDefaultSheetPdfFile //
-    //------------------------//
-    /**
-     * Report the file to which the sheet PDF data would be written by default
-     * @param score the score to export
-     * @return the default file
-     */
-    public File getDefaultSheetPdfFile (Score score)
-    {
-        return (score.getSheetPdfFile() != null) ? score.getSheetPdfFile()
-               : new File(
-            constants.defaultSheetPdfDirectory.getValue(),
-            score.getRadix() + ".sheet.pdf");
+        // NB: Use a COPY of instances, to avoid concurrent modification
+        for (Score score : new ArrayList<Score>(instances)) {
+            score.close();
+            count++;
+        }
+
+        if (logger.isFineEnabled()) {
+            logger.fine(count + " score(s) closed");
+        }
     }
 
     //--------//
@@ -284,6 +389,22 @@ public class ScoreManager
         }
     }
 
+    //----------------//
+    // removeInstance //
+    //----------------//
+    /**
+     * Remove the provided score from the collection of instances
+     * @param score the score to remove
+     */
+    public synchronized void removeInstance (Score score)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("removeInstance " + score);
+        }
+
+        instances.remove(score);
+    }
+
     //------------//
     // storeBench //
     //------------//
@@ -293,7 +414,7 @@ public class ScoreManager
      * @param file the written file, or null
      * @param complete true if we need to complete the bench data
      */
-    public void storeBench (SheetBench bench,
+    public void storeBench (ScoreBench bench,
                             File       file,
                             boolean    complete)
     {
@@ -329,44 +450,17 @@ public class ScoreManager
         }
     }
 
-    //---------------//
-    // writeScorePdf //
-    //---------------//
+    //------------------//
+    // writePhysicalPdf //
+    //------------------//
     /**
-     * Print the score into the provided PDF file.
+     * Print the score physical appearance into the provided PDF file.
      *
      * @param score the provided score
      * @param pdfFile the PDF file to write
      */
-    public void writeScorePdf (Score score,
-                               File  pdfFile)
-    {
-        pdfFile = getActualFile(pdfFile, getDefaultScorePdfFile(score));
-
-        // Actually write the PDF file
-        try {
-            new ScorePdfOutput(score, pdfFile).write();
-            score.setScorePdfFile(pdfFile);
-            logger.info("Score printed to " + pdfFile);
-
-            // Remember (even across runs) the selected directory
-            constants.defaultScorePdfDirectory.setValue(pdfFile.getParent());
-        } catch (Exception ex) {
-            logger.warning("Cannot write PDF to " + pdfFile, ex);
-        }
-    }
-
-    //---------------//
-    // writeSheetPdf //
-    //---------------//
-    /**
-     * Print the sheet into the provided PDF file.
-     *
-     * @param score the provided score
-     * @param pdfFile the PDF file to write
-     */
-    public void writeSheetPdf (Score score,
-                               File  pdfFile)
+    public void writePhysicalPdf (Score score,
+                                  File  pdfFile)
     {
         pdfFile = getActualFile(pdfFile, getDefaultSheetPdfFile(score));
 
@@ -441,11 +535,6 @@ public class ScoreManager
             System.getProperty("user.home"),
             "Default directory for writing Midi files");
 
-        /** Default directory for writing score PDF files */
-        Constant.String defaultScorePdfDirectory = new Constant.String(
-            System.getProperty("user.home"),
-            "Default directory for writing score PDF files");
-
         /** Default directory for writing sheet PDF files */
         Constant.String defaultSheetPdfDirectory = new Constant.String(
             System.getProperty("user.home"),
@@ -454,6 +543,16 @@ public class ScoreManager
         /** Should we export our signature? */
         Constant.Boolean defaultInjectSignature = new Constant.Boolean(
             true,
-            "Should we export our signature?");
+            "Should we inject our signature in the exported scores?");
+
+        /** Backing constant for image history */
+        Constant.String imagesHistory = new Constant.String(
+            "",
+            "History of loaded images");
+
+        /** Default directory for selection of image files */
+        Constant.String defaultImageDirectory = new Constant.String(
+            System.getProperty("user.home"),
+            "Default directory for selection of image files");
     }
 }

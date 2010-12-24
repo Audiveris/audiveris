@@ -35,11 +35,13 @@ public class SlurTask
     /**
      * Creates a new SlurTask object.
      *
+     * @param sheet the sheet impacted
      * @param glyphs the collection of glyphs to process
      */
-    public SlurTask (Collection<Glyph> glyphs)
+    public SlurTask (Sheet             sheet,
+                     Collection<Glyph> glyphs)
     {
-        super(glyphs);
+        super(sheet, glyphs);
     }
 
     //----------//
@@ -70,9 +72,9 @@ public class SlurTask
     @Override
     protected String internalsString ()
     {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(super.internalsString());
         sb.append(" slur");
 
-        return sb + super.internalsString();
+        return sb.toString();
     }
 }

@@ -16,7 +16,8 @@ import omr.glyph.facets.Glyph;
 
 import omr.sheet.Sheet;
 
-import omr.step.Step;
+import omr.step.Stepping;
+import omr.step.Steps;
 
 import java.util.Collection;
 
@@ -47,11 +48,12 @@ public class BarlineTask
      * be assigned to the given shape
      * @param glyphs the collection of concerned glyphs
      */
-    public BarlineTask (Shape             shape,
+    public BarlineTask (Sheet             sheet,
+                        Shape             shape,
                         boolean           compound,
                         Collection<Glyph> glyphs)
     {
-        super(shape, compound, glyphs);
+        super(sheet, shape, compound, glyphs);
     }
 
     //-------------//
@@ -62,9 +64,10 @@ public class BarlineTask
      *
      * @param glyphs the collection of glyphs to deassign
      */
-    public BarlineTask (Collection<Glyph> glyphs)
+    public BarlineTask (Sheet             sheet,
+                        Collection<Glyph> glyphs)
     {
-        super(glyphs);
+        super(sheet, glyphs);
     }
 
     //-------------//
@@ -85,8 +88,11 @@ public class BarlineTask
     {
         sheet.getSystemsBuilder()
              .rebuildAllSystems();
-        sheet.getSheetSteps()
-             .rebuildFrom(Step.MEASURES, sheet.getSystems(), false);
+        Stepping.reprocessSheet(
+            Steps.valueOf(Steps.MEASURES),
+            sheet,
+            sheet.getSystems(),
+            false);
     }
 
     //-----------------//
@@ -95,9 +101,9 @@ public class BarlineTask
     @Override
     protected String internalsString ()
     {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(super.internalsString());
         sb.append(" barline");
 
-        return sb + super.internalsString();
+        return sb.toString();
     }
 }

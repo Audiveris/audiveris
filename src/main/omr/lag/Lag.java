@@ -471,7 +471,7 @@ public class Lag<L extends Lag<L, S>, S extends Section>
     @Override
     protected String internalsString ()
     {
-        StringBuffer sb = new StringBuffer(super.internalsString());
+        StringBuilder sb = new StringBuilder(super.internalsString());
 
         // Orientation
         if (orientation.isVertical()) {

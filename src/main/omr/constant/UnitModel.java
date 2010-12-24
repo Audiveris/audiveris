@@ -26,7 +26,7 @@ import javax.swing.*;
  * Class <code>UnitModel</code> implements a data model for units suitable for
  * use in a JTreeTable.
  *
- * <p>A row in the UnitModel can any instance of the 3 following types: <ul>
+ * <p>A row in the UnitModel can be any instance of the 3 following types: <ul>
  *
  * <li><b>PackageNode</b> to represent a package. Its children rows can be
  * either (sub) PackageNodes or UnitNodes.
@@ -478,7 +478,7 @@ public class UnitModel
                     // Compute the equivalent in pixels of this interline-based
                     // fraction or area fraction, provided that we have a
                     // current sheet and its scale is available.
-                    Sheet sheet = SheetsController.selectedSheet();
+                    Sheet sheet = SheetsController.getCurrentSheet();
 
                     if (sheet != null) {
                         Scale scale = sheet.getScale();

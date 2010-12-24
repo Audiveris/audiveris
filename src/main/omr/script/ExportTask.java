@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.script;
 
-import omr.score.ScoreManager;
+import omr.score.ScoresManager;
 
 import omr.sheet.Sheet;
 
@@ -69,7 +69,7 @@ public class ExportTask
     @Override
     public void core (Sheet sheet)
     {
-        ScoreManager.getInstance()
+        ScoresManager.getInstance()
                     .export(
             sheet.getScore(),
             (path != null) ? new File(path) : null,

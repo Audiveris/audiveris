@@ -18,7 +18,8 @@ import omr.lag.LagOrientation;
 
 import omr.sheet.Sheet;
 
-import omr.step.Step;
+import omr.step.Stepping;
+import omr.step.Steps;
 
 import java.util.Collection;
 
@@ -62,12 +63,13 @@ public class AssignTask
      * @param glyphs the collection of concerned glyphs
      * @param orientation orientation of the containing lag
      */
-    public AssignTask (Shape             shape,
+    public AssignTask (Sheet             sheet,
+                       Shape             shape,
                        boolean           compound,
                        Collection<Glyph> glyphs,
                        LagOrientation    orientation)
     {
-        super(orientation, glyphs);
+        super(sheet, orientation, glyphs);
         this.shape = shape;
         this.compound = compound;
     }
@@ -84,11 +86,12 @@ public class AssignTask
      * be assigned to the given shape
      * @param glyphs the collection of concerned glyphs
      */
-    public AssignTask (Shape             shape,
+    public AssignTask (Sheet             sheet,
+                       Shape             shape,
                        boolean           compound,
                        Collection<Glyph> glyphs)
     {
-        this(shape, compound, glyphs, LagOrientation.VERTICAL);
+        this(sheet, shape, compound, glyphs, LagOrientation.VERTICAL);
     }
 
     //------------//
@@ -100,10 +103,11 @@ public class AssignTask
      * @param glyphs the collection of glyphs to deassign
      * @param orientation orientation of the containing lag
      */
-    public AssignTask (Collection<Glyph> glyphs,
+    public AssignTask (Sheet             sheet,
+                       Collection<Glyph> glyphs,
                        LagOrientation    orientation)
     {
-        this(null, false, glyphs, orientation);
+        this(sheet, null, false, glyphs, orientation);
     }
 
     //------------//
@@ -114,9 +118,10 @@ public class AssignTask
      *
      * @param glyphs the collection of glyphs to deassign
      */
-    public AssignTask (Collection<Glyph> glyphs)
+    public AssignTask (Sheet             sheet,
+                       Collection<Glyph> glyphs)
     {
-        this(null, false, glyphs, LagOrientation.VERTICAL);
+        this(sheet, null, false, glyphs, LagOrientation.VERTICAL);
     }
 
     //------------//
@@ -136,7 +141,7 @@ public class AssignTask
     //------------------//
     /**
      * Report the assigned shape (for an assignment impact)
-     * @return the assignedShape (null for a deasssignment)
+     * @return the assignedShape (null for a deassignment)
      */
     public Shape getAssignedShape ()
     {
@@ -190,19 +195,31 @@ public class AssignTask
     {
         switch (orientation) {
         case HORIZONTAL :
-            sheet.getSheetSteps()
-                 .rebuildFrom(Step.SYSTEMS, null, false);
+            Stepping.reprocessSheet(
+                Steps.valueOf(Steps.SYSTEMS),
+                sheet,
+                null,
+                false);
 
             break;
 
         case VERTICAL :
+
             // We rebuild from VERTICALS is case of deassignment
             // And just from PATTERNS in case of assignment
-            sheet.getSheetSteps()
-                 .rebuildFrom(
-                (shape == null) ? Step.VERTICALS : Step.PATTERNS,
-                getImpactedSystems(sheet),
-                false);
+            if (shape == null) {
+                Stepping.reprocessSheet(
+                    Steps.valueOf(Steps.VERTICALS),
+                    sheet,
+                    getImpactedSystems(sheet),
+                    false);
+            } else {
+                Stepping.reprocessSheet(
+                    Steps.valueOf(Steps.PATTERNS),
+                    sheet,
+                    getImpactedSystems(sheet),
+                    false);
+            }
         }
     }
 
@@ -212,7 +229,7 @@ public class AssignTask
     @Override
     protected String internalsString ()
     {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(super.internalsString());
         sb.append(" assign");
 
         if (compound) {
@@ -229,6 +246,6 @@ public class AssignTask
             sb.append(" no-shape");
         }
 
-        return sb + super.internalsString();
+        return sb.toString();
     }
 }

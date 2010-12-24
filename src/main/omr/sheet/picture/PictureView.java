@@ -76,7 +76,7 @@ public class PictureView
         // Listen to painting parameters
         PaintingParameters.getInstance()
                           .addPropertyChangeListener(
-            PaintingParameters.ENTITY_PAINTING,
+            PaintingParameters.LAYER_PAINTING,
             new WeakPropertyChangeListener(this));
 
         // Insert view
@@ -110,16 +110,27 @@ public class PictureView
         @Override
         public void render (Graphics2D g)
         {
+            PaintingParameters painting = PaintingParameters.getInstance();
+
             // Render the picture image
-            sheet.getPicture()
-                 .render(g);
+            if (painting.isInputPainting()) {
+                sheet.getPicture()
+                     .render(g);
+            } else {
+                // Use a white background
+                Color oldColor = g.getColor();
+                g.setColor(Color.WHITE);
+                Rectangle rect = g.getClipBounds();
+                
+                g.fill(rect);
+                g.setColor(oldColor);
+            }
 
             // Render the recognized score entities?
-            if (PaintingParameters.getInstance()
-                                  .isEntityPainting()) {
-                sheet.getScore()
-                     .accept(
-                    new ScorePhysicalPainter(g, ScorePainter.musicColor));
+            if (painting.isOutputPainting()) {
+                Color color = ScorePainter.musicColor;
+                sheet.getPage()
+                     .accept(new ScorePhysicalPainter(g, color, false));
             }
         }
     }

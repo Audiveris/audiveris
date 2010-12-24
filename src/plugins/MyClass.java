@@ -44,10 +44,11 @@ public class MyClass
     @Action(enabledProperty = "sheetAvailable")
     public void dumpCurrentScript ()
     {
-        Sheet sheet = SheetsController.selectedSheet();
+        Sheet sheet = SheetsController.getCurrentSheet();
 
         if (sheet != null) {
-            Script script = sheet.getScript();
+            Script script = sheet.getScore()
+                                 .getScript();
 
             if (script != null) {
                 script.dump();
@@ -61,7 +62,7 @@ public class MyClass
     @Action(enabledProperty = "sheetAvailable")
     public void launchScoreComputations ()
     {
-        Sheet sheet = SheetsController.selectedSheet();
+        Sheet sheet = SheetsController.getCurrentSheet();
         sheet.getScore()
              .accept(new ScoreDimensions());
     }

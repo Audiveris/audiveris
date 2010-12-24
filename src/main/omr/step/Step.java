@@ -11,502 +11,136 @@
 // </editor-fold>
 package omr.step;
 
-import omr.Main;
-
-import omr.log.Logger;
-
-import omr.script.StepTask;
-
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
-import omr.sheet.ui.SheetsController;
 
 import java.util.Collection;
-import java.util.EnumSet;
-
-import javax.swing.SwingUtilities;
 
 /**
- * Enum <code>Step</code> lists the various sheet processing steps in
- * chronological order, from LOAD to SCORE, followed by optional output steps.
+ * Interface {@code Step} describes a sheet processing step.
+ *
+ * <p>Implementation note: {@code Step} is no longer an enum type, to allow a
+ * better decoupling between code parts of the application, since all steps
+ * no longer need to be available at the same build time. To some extent,
+ * different steps could be provided by separate modules.
  *
  * @author Hervé Bitteur
  */
-public enum Step {
-    /**
-     * Load the image for the sheet, from a provided image file
-     */
-    LOAD(true, true, "Picture", "Load the sheet picture"),
+public interface Step
+{
+    //~ Static fields/initializers ---------------------------------------------
 
-    /**
-     * Determine the general scale of the sheet, based on the mean distance
-     * between staff lines
-     */
-    SCALE(true, false, LOAD.label, "Compute global Skew and rotate if needed"), 
+    /** Labels for view in tabbed panel */
+    public static final String PICTURE_TAB = "Picture";
+    public static final String SKEW_TAB = "Skew";
+    public static final String LINES_TAB = "Lines";
+    public static final String HORIZONTALS_TAB = "Horizontals";
+    public static final String SYSTEMS_TAB = "Systems";
+    public static final String GLYPHS_TAB = "Glyphs";
+    public static final String VERTICALS_TAB = "Verticals";
 
-    /**
-     * Determine the average skew of the picture, and deskews it if needed
-     */
-    SKEW(true, false, "Skew", "Detect & remove all Staff Lines"), 
+    //~ Enumerations -----------------------------------------------------------
 
-    /**
-     * Retrieve the staff lines, erases their pixels and creates crossing
-     * objects when needed
-     */
-    LINES(true, false, "Lines", "Retrieve horizontal Dashes"), 
+    public enum Mandatory {
+        //~ Enumeration constant initializers ----------------------------------
 
-    /**
-     * Retrieve the horizontal dashes (ledgers, endings)
-     */
-    HORIZONTALS(true, false, "Horizontals", "Detect horizontal dashes"), 
 
-    /**
-     * Retrieve the vertical bar lines, and so the systems
-     */
-    SYSTEMS(true, true, "Systems", "Retrieve Systems from Bar sticks"), 
+        /** Must be performed before any output */
+        MANDATORY,
+        /** Non mandatory */
+        OPTIONAL;
+    }
+    public enum Redoable {
+        //~ Enumeration constant initializers ----------------------------------
 
-    /**
-     * Retrieve the measures from the bar line glyphs
-     */
-    MEASURES(true, true, SYSTEMS.label, "Retrieve Measures from Bar sticks"), 
 
-    /**
-     * Recognize isolated symbols glyphs and aggregates unknown symbols into
-     * compound glyphs
-     */
-    SYMBOLS(true, true, "Glyphs", "Recognize Symbols & Compounds"), 
+        /** Step can be redone at will */
+        REDOABLE,
+        /** Step cannot be redone at will (but a previous step may be) */
+        NON_REDOABLE;
+    }
+    public enum Level {
+        //~ Enumeration constant initializers ----------------------------------
 
-    /**
-     * Retrieve the vertical items such as stems
-     */
-    VERTICALS(true, true, "Verticals", "Extract verticals"), 
 
-    /**
-     * Process specific patterns at sheet glyph level
-     * (true,clefs, sharps, naturals, stems, slurs, ...)
-     */
-    PATTERNS(true, true, SYMBOLS.label, "Specific sheet glyph patterns"), 
+        /** Step makes sense at score level only */
+        SCORE_LEVEL,
+        /** The step can be performed at sheet level */
+        SHEET_LEVEL;
+    }
 
-    /**
-     * Translate glyphs into score entities
-     */
-    SCORE(true, true, SYMBOLS.label, "Translate glyphs to score items"), 
+    //~ Methods ----------------------------------------------------------------
 
-    /**
-     * Print the whole sheet (physical output)
-     */
-    PRINT_SHEET(false, true, SYMBOLS.label, "Write the sheet output PDF file"), 
+    //----------------//
+    // getDescription //
+    //----------------//
+    /** Report a description of the step */
+    public String getDescription ();
 
-    /**
-     * Print the whole score (logical output)
-     */
-    PRINT_SCORE(false, true, SYMBOLS.label, "Write the score output PDF file"), 
+    //--------//
+    // isDone //
+    //--------//
+    /** Check whether this step has been done for the specified sheet */
+    public boolean isDone (Sheet sheet);
 
-    /**
-     * Play the whole score
-     */
-    PLAY(false, true, SYMBOLS.label, "Play the whole score"), 
-
-    /**
-     * Write the output MIDI file
-     */
-    MIDI(false, true, SYMBOLS.label, "Write the output MIDI file"), 
-
-    /**
-     * Export the score into the MusicXML file
-     */
-    EXPORT(false, true, SYMBOLS.label, "Export the score to MusicXML file");
-    //
-    //--------------------------------------------------------------------------
-    //
-    /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Step.class);
-
-    /** Related UI when used in interactive mode */
-    private static volatile StepMonitor monitor;
-
+    //-------------//
+    // isMandatory //
+    //-------------//
     /** Is the step mandatory? */
-    public final boolean isMandatory;
+    public boolean isMandatory ();
 
+    //---------//
+    // getName //
+    //---------//
+    /** Name of the step */
+    public String getName ();
+
+    //------------//
+    // isRedoable //
+    //------------//
     /** Is the step repeatable at will? */
-    public final boolean isRedoable;
-
-    /** Related short label */
-    public final String label;
-
-    /** Description of the step */
-    public final String description;
-
-    /** First step */
-    public static final Step first = Step.values()[0];
-
-    /** Last step */
-    public static final Step last = Step.values()[Step.values().length - 1];
-
-    //--------------------------------------------------------------------------
-
-    //------//
-    // Step //
-    //------//
-    /**
-     * This enumeration is not meant to be instantiated outside of this class
-     * @param isMandatory true if step must be done
-     * @param isRedoable true if step can be redone at will
-     * @param label The title of the related (or most relevant) view tab
-     * @param description A step description for the end user
-     */
-    private Step (boolean isMandatory,
-                  boolean isRedoable,
-                  String  label,
-                  String  description)
-    {
-        this.isMandatory = isMandatory;
-        this.isRedoable = isRedoable;
-        this.label = label;
-        this.description = description;
-    }
-
-    //--------------------------------------------------------------------------
-
-    //---------------//
-    // createMonitor //
-    //---------------//
-    /**
-     * Allows to couple the steps with a UI.
-     * @return the monitor to deal with steps
-     */
-    public static StepMonitor createMonitor ()
-    {
-        monitor = new StepMonitor();
-
-        return monitor;
-    }
-
-    //------------//
-    // getMonitor //
-    //------------//
-    /**
-     * Give access to a related UI monitor
-     * @return the related step monitor, or null
-     */
-    public static StepMonitor getMonitor ()
-    {
-        return monitor;
-    }
-
-    //-----------//
-    // notifyMsg //
-    //-----------//
-    /**
-     * Notify a simple message, which may be not related to any step.
-     *
-     * @param msg the message to display on the UI window, or to write in the
-     *            log if there is no UI.
-     */
-    public static void notifyMsg (String msg)
-    {
-        if (monitor != null) {
-            monitor.notifyMsg(msg);
-        } else {
-            logger.info(msg);
-        }
-    }
+    public boolean isRedoable ();
 
     //--------------//
-    // performUntil //
+    // isScoreLevel //
     //--------------//
-    /**
-     * Trigger the execution of all mandatory steps until this one.
-     * Processing is done synchronously, so if asynchronicity is desired, it
-     * must be handled by the caller.
-     *
-     * <p>There is a mutual exclusion with {@link SheetSteps#rebuildFrom}
-     *
-     * @param sheet the sheet on which analysis is performed
-     */
-    public void performUntil (final Sheet sheet)
-    {
-        if (sheet == null) {
-            throw new IllegalArgumentException(
-                "Cannot run performUntil() on a null sheet");
-        }
+    /** Does the step need to be performed at score level only? */
+    public boolean isScoreLevel ();
 
-        try {
-            synchronized (sheet.getSheetSteps()) {
-                // Determine the starting step
-                Step latest = sheet.getSheetSteps()
-                                   .getLatestMandatoryStep();
-                Step from = (latest == null) ? first
-                            : ((latest == this) ? this : latest.next());
-
-                // Debug
-                if (false) {
-                    logger.info(
-                        "performUntil. latest:" + latest + " from:" + from +
-                        " until:" + this);
-                }
-
-                if (from.compareTo(this) <= 0) {
-                    // The precise collection of steps to perform
-                    EnumSet<Step> steps = EnumSet.noneOf(Step.class);
-
-                    for (Step step : EnumSet.range(from, this)) {
-                        if (step.isMandatory) {
-                            steps.add(step);
-                        }
-                    }
-
-                    // Last step is always included
-                    steps.add(this);
-
-                    doStepSet(steps, sheet, null);
-                } else if (monitor != null) {
-                    // Update sheet (& score) dependent entities
-                    SheetsController.getInstance()
-                                    .setSelectedSheet(sheet);
-                }
-            }
-        } catch (ProcessingCancellationException pce) {
-            throw pce;
-        } catch (Exception ex) {
-            logger.warning("Error in processing " + this, ex);
-        }
-
-        // Record the step task to script
-        sheet.getScript()
-             .addTask(new StepTask(this));
-    }
+    //--------//
+    // getTab //
+    //--------//
+    /** Related short tab */
+    public String getTab ();
 
     //-----------//
-    // doStepSet //
+    // displayUI //
     //-----------//
+    /** Make the related user interface visible for this step */
+    public void displayUI (Sheet sheet);
+
+    //--------//
+    // doStep //
+    //--------//
     /**
-     * Perform a set of steps, with an online display of a progress
-     * monitor.
-     *
-     * @param stepSet the set of steps
-     * @param sheet the sheet being analyzed
+     * Run the step and mark it as started then done
      * @param systems systems to process (null means all systems)
+     * @param sheet the sheet to work upon
+     * @throws StepException if processing had to stop at this step
      */
-    public static void doStepSet (final EnumSet<Step>    stepSet,
-                                  final Sheet            sheet,
-                                  Collection<SystemInfo> systems)
-    {
-        long startTime = 0;
-
-        if (logger.isFineEnabled()) {
-            startTime = System.currentTimeMillis();
-
-            StringBuilder sb = new StringBuilder("Performing ");
-            sb.append(stepSet);
-
-            if (sheet != null) {
-                sb.append(" sheet=")
-                  .append(sheet.getRadix());
-            }
-
-            if (systems != null) {
-                sb.append(SystemInfo.toString(systems));
-            }
-
-            sb.append(" ...");
-            logger.fine(sb.toString());
-        }
-
-        try {
-            // "Activate" the progress bar?
-            if (monitor != null) {
-                monitor.animate(true);
-            }
-
-            // Systems are rebuilt from scratch in SYSTEMS step, so ...
-            if (stepSet.contains(Step.SYSTEMS)) {
-                systems = null;
-            }
-
-            // The actual processing
-            Step lastStep = null;
-
-            for (Step step : stepSet) {
-                notifyMsg(step.name());
-                step.doOneStep(sheet, systems);
-
-                if (monitor != null) {
-                    monitor.animate();
-                    // Update sheet (& score) dependent entities
-                    SheetsController.getInstance()
-                                    .setSelectedSheet(sheet);
-                }
-
-                lastStep = step;
-            }
-
-            // Display the assembly tab related to the last step
-            if ((lastStep != null) && (Main.getGui() != null)) {
-                final Step finalStep = lastStep;
-                SwingUtilities.invokeLater(
-                    new Runnable() {
-                            public void run ()
-                            {
-                                sheet.getAssembly()
-                                     .selectTab(finalStep);
-                            }
-                        });
-            }
-        } catch (ProcessingCancellationException pce) {
-            throw pce;
-        } catch (Exception ex) {
-            logger.warning("Processing aborted", ex);
-        } finally {
-            // Reset the progress bar?
-            if (monitor != null) {
-                notifyMsg("");
-                monitor.animate(false);
-            }
-
-            if (logger.isFineEnabled()) {
-                long stopTime = System.currentTimeMillis();
-                logger.fine(
-                    "End of " + stepSet + " in " + (stopTime - startTime) +
-                    " ms.");
-            }
-        }
-    }
+    public void doStep (Collection<SystemInfo> systems,
+                        Sheet                  sheet)
+        throws StepException;
 
     //------//
-    // next //
+    // done //
     //------//
-    /**
-     * Report the step right after this one
-     * @return the following step, or null if none
-     */
-    public Step next ()
-    {
-        if (this != last) {
-            return Step.values()[ordinal() + 1];
-        } else {
-            return null;
-        }
-    }
+    /** Flag this step as done */
+    public void done (Sheet sheet);
 
-    //-----------//
-    // doOneStep //
-    //-----------//
-    /**
-     * Do this step, synchronously.
-     *
-     * @param sheet the sheet to be processed
-     * @param systems systems to process (null means all systems)
-     * @throws StepException
-     */
-    private void doOneStep (Sheet                  sheet,
-                            Collection<SystemInfo> systems)
-        throws StepException
-    {
-        long startTime = 0;
-
-        if (logger.isFineEnabled()) {
-            logger.fine(this + " Starting");
-            startTime = System.currentTimeMillis();
-        }
-
-        // Standard processing on an existing sheet
-        sheet.getSheetSteps()
-             .doStep(this, systems);
-
-        // Update user interface ?
-        if (monitor != null) {
-            final Sheet finalSheet = sheet;
-            SwingUtilities.invokeLater(
-                new Runnable() {
-                        public void run ()
-                        {
-                            finalSheet.getSheetSteps()
-                                      .displayUI(Step.this);
-                        }
-                    });
-        }
-
-        if (logger.isFineEnabled()) {
-            final long stopTime = System.currentTimeMillis();
-            logger.fine(
-                this + " completed in " + (stopTime - startTime) + " ms");
-        }
-
-        // Record this in bench
-        sheet.getBench()
-             .recordStep(this);
-    }
-
-    //----------//
-    // Constant //
-    //----------//
-    /**
-     * Class <code>Constant</code> is a subclass of
-     * {@link omr.constant.Constant}, meant to store a {@link Step} value.
-     */
-    public static class Constant
-        extends omr.constant.Constant
-    {
-        /**
-         * Normal constructor
-         *
-         * @param unit         the enclosing unit
-         * @param name         the constant name
-         * @param defaultValue the default Step value
-         * @param description  the semantic of the constant
-         */
-        public Constant (java.lang.String unit,
-                         java.lang.String name,
-                         Step             defaultValue,
-                         java.lang.String description)
-        {
-            super(null, defaultValue.toString(), description);
-            setUnitAndName(unit, name);
-        }
-
-        /**
-         * Specific constructor, where 'unit' and 'name' are assigned later
-         *
-         * @param defaultValue the default Step value
-         * @param description  the semantic of the constant
-         */
-        public Constant (Step             defaultValue,
-                         java.lang.String description)
-        {
-            super(null, defaultValue.toString(), description);
-        }
-
-        /**
-         * Set a new value to the constant
-         *
-         * @param val the new Step value
-         */
-        public void setValue (Step val)
-        {
-            setTuple(val.toString(), val);
-        }
-
-        @Override
-        public void setValue (java.lang.String string)
-        {
-            setValue(decode(string));
-        }
-
-        /**
-         * Retrieve the current constant value
-         *
-         * @return the current Step value
-         */
-        public Step getValue ()
-        {
-            return (Step) getCachedValue();
-        }
-
-        @Override
-        protected Step decode (java.lang.String str)
-        {
-            return Step.valueOf(str);
-        }
-    }
+    //--------------//
+    // toLongString //
+    //--------------//
+    /** A detailed description */
+    public String toLongString ();
 }

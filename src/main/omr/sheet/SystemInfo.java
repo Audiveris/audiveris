@@ -651,18 +651,19 @@ public class SystemInfo
      */
     public void allocateScoreStructure ()
     {
-        Scale scale = sheet.getScale();
-
         // Allocate the score system
         scoreSystem = new ScoreSystem(
             this,
-            sheet.getScore(),
+            sheet.getPage(),
             new PixelPoint(getLeft(), getTop()),
             new PixelDimension(getWidth(), getDeltaY()));
 
         // Allocate the parts in the system
+        int id = 0;
+
         for (PartInfo partInfo : getParts()) {
             SystemPart part = new SystemPart(scoreSystem);
+            part.setId(--id); // Temporary id
 
             // Allocate the staves in this part
             for (StaffInfo staffInfo : partInfo.getStaves()) {
@@ -1140,7 +1141,7 @@ public class SystemInfo
     @Override
     public String toString ()
     {
-        StringBuffer sb = new StringBuffer(80);
+        StringBuilder sb = new StringBuilder(80);
         sb.append("{SystemInfo#")
           .append(id);
         sb.append(" T")

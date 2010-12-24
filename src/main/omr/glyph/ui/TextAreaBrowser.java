@@ -31,7 +31,8 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 import omr.sheet.ui.SheetsController;
 
-import omr.step.Step;
+import omr.step.Stepping;
+import omr.step.Steps;
 
 import omr.util.BasicTask;
 
@@ -162,7 +163,7 @@ public class TextAreaBrowser
     //-------------------------//
     private void processDesiredRectangle (Oriented orientation)
     {
-        Sheet sheet = SheetsController.selectedSheet();
+        Sheet sheet = SheetsController.getCurrentSheet();
 
         if (sheet == null) {
             return;
@@ -288,10 +289,13 @@ public class TextAreaBrowser
         protected Void doInBackground ()
             throws InterruptedException
         {
-            Sheet sheet = SheetsController.selectedSheet();
+            Sheet sheet = SheetsController.getCurrentSheet();
             alignTexts(sheet);
-            sheet.getSheetSteps()
-                 .rebuildFrom(Step.PATTERNS, null, true);
+            Stepping.reprocessSheet(
+                Steps.valueOf(Steps.PATTERNS),
+                sheet,
+                null,
+                true);
 
             return null;
         }

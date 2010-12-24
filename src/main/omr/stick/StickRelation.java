@@ -117,7 +117,7 @@ public class StickRelation
     @Override
     public String toString ()
     {
-        StringBuffer sb = new StringBuffer(256);
+        StringBuilder sb = new StringBuilder(256);
 
         sb.append("[");
 

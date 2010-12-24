@@ -165,6 +165,7 @@ public class MidiReceiver
         if (measureId != currentMeasureId) {
             if (currentSystem == null) {
                 currentSystem = agent.getScore()
+                                     .getFirstPage()
                                      .getFirstSystem();
             }
 
@@ -270,11 +271,11 @@ public class MidiReceiver
      */
     private void showSlot ()
     {
-        Score score = agent.getScore();
-
-        if (score != null) {
-            score.getEditor()
-                 .highLight(currentMeasure, currentSlot);
-        }
+        //        Score score = agent.getScore();
+        //
+        //        if (score != null) {
+        //            score.getEditor()
+        //                 .highLight(currentMeasure, currentSlot);
+        //        }
     }
 }

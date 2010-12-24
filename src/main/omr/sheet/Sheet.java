@@ -13,6 +13,7 @@ package omr.sheet;
 
 import omr.Main;
 
+import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
@@ -29,45 +30,42 @@ import omr.lag.Sections;
 import omr.log.Logger;
 
 import omr.score.Score;
+import omr.score.ScoresManager;
 import omr.score.common.PixelDimension;
 import omr.score.common.PixelPoint;
+import omr.score.entity.Page;
 import omr.score.entity.SystemNode;
-
-import omr.script.Script;
 
 import omr.selection.SelectionService;
 import omr.selection.SheetLocationEvent;
 
+import omr.sheet.picture.ImageFormatException;
 import omr.sheet.picture.Picture;
 import omr.sheet.picture.PictureView;
 import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.ScoreColorizer;
 import omr.sheet.ui.SheetAssembly;
+import omr.sheet.ui.SheetsController;
 
-import omr.step.SheetSteps;
 import omr.step.Step;
-import static omr.step.Step.*;
 import omr.step.StepException;
+import omr.step.Stepping;
+import omr.step.Steps;
 
 import omr.ui.BoardsPane;
 import omr.ui.ErrorsEditor;
 
 import omr.util.BrokenLine;
-import omr.util.FileUtil;
 
 import java.awt.*;
-import java.io.*;
-import java.net.URL;
+import java.awt.image.RenderedImage;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * Class <code>Sheet</code> is the corner stone for Sheet processing, keeping
- * pointers to all processings related to the image. An instance of Sheet is
- * created before any processing (including image loading) is done. Most of the
- * processings take place in an instance of the companion class
- * {@link SheetSteps}.
+ * pointers to all processings related to the image.
  *
  * @author Hervé Bitteur
  */
@@ -83,17 +81,14 @@ public class Sheet
 
     //~ Instance fields --------------------------------------------------------
 
-    /** The provided path to the sheet image */
-    private final String imagePath;
+    /** Containing score */
+    private final Score score;
+
+    /** Corresponding page */
+    private final Page page;
 
     /** The recording of key processing data */
     private SheetBench bench;
-
-    /** Link with sheet original image file. Set by constructor. */
-    private File imageFile;
-
-    /** Link with sheet original image url. Set by constructor. */
-    private URL imageUrl;
 
     /** The related picture */
     private Picture picture;
@@ -124,15 +119,6 @@ public class Sheet
 
     /** Retrieved systems. Set by SYSTEMS. */
     private final List<SystemInfo> systems = new ArrayList<SystemInfo>();
-
-    /** Link with related score. Set by SYSTEMS. */
-    private Score score;
-
-    /** Steps for this instance */
-    private final SheetSteps sheetSteps;
-
-    /** The script of user actions on this sheet */
-    private Script script;
 
     /**
      * Non-lag related selections for this sheet
@@ -175,73 +161,44 @@ public class Sheet
     /** The histogram ratio to be used on this sheet to retrieve staves */
     private Double histoRatio;
 
+    /** The step being done on this sheet */
+    private Step currentStep;
+
+    /** All steps already done on this sheet */
+    private Set<Step> doneSteps = new HashSet<Step>();
+
     //~ Constructors -----------------------------------------------------------
 
     //-------//
     // Sheet //
     //-------//
     /**
-     * Create a new <code>Sheet</code> instance, based on a given image file.
-     * Several files extensions are supported, including the most common ones.
+     * Create a new <code>Sheet</code> instance, based on a given image.
      *
-     * <p>This constructor only constructs the minimum, no processing takes place
-     * (in particular no image is loaded), these processings are the purpose of
-     * the various Steps to be applied to this sheet.
-     *
-     * @param imageFile a <code>File</code> value to specify the image file.
+     * @param page the related score page
+     * @param image the already loaded image
      */
-    public Sheet (File imageFile)
+    public Sheet (Page          page,
+                  RenderedImage image)
+        throws StepException
     {
-        this(imageFile.getPath());
+        this.page = page;
+        this.score = page.getScore();
 
-        if (logger.isFineEnabled()) {
-            logger.fine("creating Sheet from image " + imageFile);
-        }
-
-        try {
-            // We make sure we have a canonical form for the file name
-            this.imageFile = imageFile.getCanonicalFile();
-        } catch (IOException ex) {
-            logger.warning(ex.toString(), ex);
-        }
-
-        createAssembly();
-    }
-
-    /**
-     * Creates a new Sheet object, with an URL as input
-     *
-     * @param imageUrl URL to a sheet image
-     */
-    public Sheet (URL imageUrl)
-    {
-        this(imageUrl.getPath());
-
-        if (logger.isFineEnabled()) {
-            logger.fine("creating Sheet from url " + imageUrl);
-        }
-
-        this.imageUrl = imageUrl;
-
-        createAssembly();
-    }
-
-    private Sheet (String path)
-    {
-        this.imagePath = path;
-
-        sheetSteps = new SheetSteps(this);
-
-        // Insert in list of handled sheets
-        SheetsManager.getInstance()
-                     .insertInstance(this);
-
-        // Related score
-        score = new Score(path);
-        score.setSheet(this);
-
-        // Related bench
+        // Related bench at sheet level
         bench = new SheetBench(this);
+
+        // Update UI information if so needed
+        if (Main.getGui() != null) {
+            errorsEditor = new ErrorsEditor(this);
+            Main.getGui().sheetsController.createAssembly(this);
+        }
+
+        setImage(image);
+
+        if (logger.isFineEnabled()) {
+            logger.fine("Created " + this);
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -297,6 +254,18 @@ public class Sheet
         return bench;
     }
 
+    //----------------//
+    // getCurrentStep //
+    //----------------//
+    /**
+     * Retrieve the step being processed "as we speak"
+     * @return the current step
+     */
+    public Step getCurrentStep ()
+    {
+        return currentStep;
+    }
+
     //----------------------//
     // setDefaultHistoRatio //
     //----------------------//
@@ -335,6 +304,27 @@ public class Sheet
     public static int getDefaultMaxForeground ()
     {
         return constants.maxForegroundGrayLevel.getValue();
+    }
+
+    //----------------//
+    // setCurrentStep //
+    //----------------//
+    public void setCurrentStep (Step step)
+    {
+        currentStep = step;
+    }
+
+    //--------//
+    // isDone //
+    //--------//
+    /**
+     * Report whether the specified step has been performed onn this sheet
+     * @param step the step to check
+     * @return true if already performed
+     */
+    public boolean isDone (Step step)
+    {
+        return doneSteps.contains(step);
     }
 
     //-----------------//
@@ -466,30 +456,46 @@ public class Sheet
         return horizontalsBuilder;
     }
 
-    //--------------//
-    // getImageFile //
-    //--------------//
-    /**
-     * Report the file used to load the image from.
-     *
-     * @return the File entity
-     */
-    public File getImageFile ()
+    //-------//
+    // getId //
+    //-------//
+    public String getId ()
     {
-        return imageFile;
+        return page.getId();
     }
 
-    //-------------//
-    // getImageUrl //
-    //-------------//
-    /**
-     * Report the URL used to load the image from.
-     *
-     * @return the Url entity
-     */
-    public URL getImageUrl ()
+    //----------//
+    // setImage //
+    //----------//
+    public final void setImage (RenderedImage image)
+        throws StepException
     {
-        return imageUrl;
+        try {
+            picture = new Picture(image);
+
+            if (picture.getImplicitForeground() == null) {
+                picture.setMaxForeground(getMaxForeground());
+            }
+
+            setPicture(picture);
+            getBench()
+                .recordImageDimension(picture.getWidth(), picture.getHeight());
+
+            done(Steps.valueOf(Steps.LOAD));
+        } catch (ImageFormatException ex) {
+            String msg = "Unsupported image format in file " +
+                         getScore()
+                             .getImagePath() + "\n" + ex.getMessage();
+
+            if (Main.getGui() != null) {
+                Main.getGui()
+                    .displayWarning(msg);
+            } else {
+                logger.warning(msg);
+            }
+
+            throw new StepException(ex);
+        }
     }
 
     //--------------//
@@ -502,6 +508,26 @@ public class Sheet
     public int getInterline ()
     {
         return scale.interline();
+    }
+
+    //--------------//
+    // getLogPrefix //
+    //--------------//
+    /**
+     * Report the proper prefix to use when logging a message
+     * @return the proper prefix
+     */
+    public String getLogPrefix ()
+    {
+        if (ScoresManager.isMultiScore()) {
+            return getId() + " ";
+        } else {
+            if (score.isMultiPage()) {
+                return "#" + page.getIndex() + " ";
+            } else {
+                return "";
+            }
+        }
     }
 
     //------------------//
@@ -534,52 +560,18 @@ public class Sheet
      */
     public boolean isOnSymbols ()
     {
-        return getSheetSteps()
-                   .getLatestStep() == SYMBOLS;
+        return Stepping.getLatestStep(this) == Steps.valueOf(Steps.SYMBOLS);
     }
 
     //---------//
-    // getPath //
+    // getPage //
     //---------//
     /**
-     * Report the path of provided image, to uniquely and unambiguously identify
-     * this sheet.
-     *
-     * @return the provided image path
+     * @return the page
      */
-    public String getPath ()
+    public Page getPage ()
     {
-        return imagePath;
-    }
-
-    //------------//
-    // setPicture //
-    //------------//
-    /**
-     * Set the picture of this sheet, that is the image to be processed.
-     *
-     * @param picture the related picture
-     */
-    public void setPicture (Picture picture)
-    {
-        this.picture = picture;
-
-        // Attach proper Selection objects
-        // (reading from pixel location & writing to gray level)
-        picture.setLevelService(selectionService);
-        selectionService.subscribe(SheetLocationEvent.class, picture);
-
-        // Display sheet picture if not batch mode
-        if (Main.getGui() != null) {
-            PictureView pictureView = new PictureView(Sheet.this);
-            assembly.addViewTab(
-                Step.LOAD,
-                pictureView,
-                new BoardsPane(
-                    Sheet.this,
-                    pictureView.getView(),
-                    new PixelBoard(getRadix() + ":Picture", Sheet.this)));
-        }
+        return page;
     }
 
     //------------//
@@ -596,20 +588,6 @@ public class Sheet
     }
 
     //----------//
-    // getRadix //
-    //----------//
-    /**
-     * Report a short name for this sheet (no path, no extension). Useful for
-     * tab labels for example.
-     *
-     * @return just the name of the image file
-     */
-    public String getRadix ()
-    {
-        return FileUtil.getNameSansExtension(new File(getPath()));
-    }
-
-    //----------//
     // setScale //
     //----------//
     /**
@@ -622,7 +600,7 @@ public class Sheet
         throws StepException
     {
         this.scale = scale;
-        score.setScale(scale);
+        page.setScale(scale);
 
         // Remember current sheet dimensions in pixels
         width = getPicture()
@@ -630,7 +608,7 @@ public class Sheet
         height = getPicture()
                      .getHeight();
 
-        score.setDimension(new PixelDimension(width, height));
+        page.setDimension(new PixelDimension(width, height));
 
         // Check we've got something usable
         if (scale.mainFore() == 0) {
@@ -668,18 +646,6 @@ public class Sheet
         return score;
     }
 
-    //-----------//
-    // getScript //
-    //-----------//
-    public Script getScript ()
-    {
-        if (script == null) {
-            script = new Script(this);
-        }
-
-        return script;
-    }
-
     //---------------------//
     // getSelectionService //
     //---------------------//
@@ -715,14 +681,6 @@ public class Sheet
         return found;
     }
 
-    //---------------//
-    // getSheetSteps //
-    //---------------//
-    public SheetSteps getSheetSteps ()
-    {
-        return sheetSteps;
-    }
-
     //---------//
     // setSkew //
     //---------//
@@ -734,7 +692,7 @@ public class Sheet
     public void setSkew (Skew skew)
     {
         this.skew = skew;
-        score.setSkewAngle(getSkew().angle());
+        page.setSkewAngle(getSkew().angle());
 
         // Update displayed image if any
         if (getPicture()
@@ -1208,36 +1166,6 @@ public class Sheet
         }
     }
 
-    //-------//
-    // close //
-    //-------//
-    /**
-     * Close this sheet, as well as its assembly if any.
-     * @return true if we have actually closed this sheet
-     */
-    public boolean close ()
-    {
-        if (SheetsManager.getInstance()
-                         .close(this)) {
-            // Close related UI assembly if any
-            if (assembly != null) {
-                assembly.close();
-            }
-
-            if (picture != null) {
-                picture.close();
-            }
-
-            if (score != null) {
-                score.close();
-            }
-
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     //----------//
     // colorize //
     //----------//
@@ -1324,7 +1252,7 @@ public class Sheet
     //----------------------//
     public void createSystemsBuilder ()
     {
-        score.resetSystems();
+        page.resetSystems();
         systemsBuilder = new SystemsBuilder(this);
     }
 
@@ -1334,6 +1262,18 @@ public class Sheet
     public void createVerticalsController ()
     {
         verticalsController = new VerticalsController(this);
+    }
+
+    //------//
+    // done //
+    //------//
+    /**
+     * Remember that the provided step has been done on the sheet
+     * @param step the provided step
+     */
+    public final void done (Step step)
+    {
+        doneSteps.add(step);
     }
 
     //-----------------//
@@ -1375,17 +1315,38 @@ public class Sheet
         return maxForeground != null;
     }
 
-    //--------------//
-    // performSteps //
-    //--------------//
+    //--------//
+    // remove //
+    //--------//
     /**
-     * Perform in sequence on this sheet the whole set of steps
-     * @param targetSteps the set of desired steps
+     * Remove this sheet from the containing score
      */
-    public void performSteps (EnumSet<Step> targetSteps)
+    public void remove ()
     {
-        getSheetSteps()
-            .performSteps(targetSteps);
+        if (logger.isFineEnabled()) {
+            logger.fine("Closing " + this);
+        }
+
+        // Close the related page
+        getScore()
+            .remove(page);
+
+        // Close related UI assembly if any
+        if (assembly != null) {
+            assembly.close();
+            SheetsController.getInstance()
+                            .removeAssembly(this);
+        }
+
+        if (picture != null) {
+            picture.close();
+        }
+
+        // If no sheet is left, close the score
+        if (score.getPages()
+                 .isEmpty()) {
+            score.close();
+        }
     }
 
     //----------------//
@@ -1545,18 +1506,36 @@ public class Sheet
     @Override
     public String toString ()
     {
-        return "{Sheet " + getPath() + "}";
+        return "{Sheet " + page.getId() + "}";
     }
 
-    //----------------//
-    // createAssembly //
-    //----------------//
-    private void createAssembly ()
+    //------------//
+    // setPicture //
+    //------------//
+    /**
+     * Set the picture of this sheet, that is the image to be processed.
+     *
+     * @param picture the related picture
+     */
+    private final void setPicture (Picture picture)
     {
-        // Update UI information if so needed
+        this.picture = picture;
+
+        // Attach proper Selection objects
+        // (reading from pixel location & writing to gray level)
+        picture.setLevelService(selectionService);
+        selectionService.subscribe(SheetLocationEvent.class, picture);
+
+        // Display sheet picture if not batch mode
         if (Main.getGui() != null) {
-            errorsEditor = new ErrorsEditor(this);
-            Main.getGui().sheetsController.showSheet(this);
+            PictureView pictureView = new PictureView(Sheet.this);
+            assembly.addViewTab(
+                Step.PICTURE_TAB,
+                pictureView,
+                new BoardsPane(
+                    Sheet.this,
+                    pictureView.getView(),
+                    new PixelBoard(page.getIndex() + ":Picture", Sheet.this)));
         }
     }
 

@@ -24,7 +24,7 @@ import omr.score.entity.Text.CreatorText.CreatorType;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
-import omr.step.Step;
+import omr.step.Steps;
 
 import java.util.*;
 
@@ -56,7 +56,7 @@ public class SymbolsModel
     public SymbolsModel (Sheet    sheet,
                          GlyphLag lag)
     {
-        super(sheet, lag, Step.SYMBOLS);
+        super(sheet, lag, Steps.valueOf(Steps.SYMBOLS));
     }
 
     //~ Methods ----------------------------------------------------------------

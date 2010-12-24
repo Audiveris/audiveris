@@ -15,9 +15,11 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
-import omr.sheet.Sheet;
+import omr.score.Score;
 
 import omr.step.Step;
+import omr.step.Stepping;
+import omr.step.Steps;
 
 import omr.util.BasicTask;
 
@@ -26,6 +28,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 
 import javax.swing.TransferHandler;
 import javax.swing.TransferHandler.TransferSupport;
@@ -159,8 +162,8 @@ public class FileDropHandler
     {
         //~ Instance fields ----------------------------------------------------
 
-        private final Step.Constant defaultStep = new Step.Constant(
-            Step.SCORE,
+        private final Steps.Constant defaultStep = new Steps.Constant(
+            Steps.valueOf(Steps.LOAD),
             "Default step executed when a file is dropped");
     }
 
@@ -191,7 +194,9 @@ public class FileDropHandler
             throws Exception
         {
             logger.info("Dropping file " + file);
-            target.performUntil(new Sheet(file));
+
+            Score score = new Score(file);
+            Stepping.processScore(Collections.singleton(target), score);
 
             return null;
         }

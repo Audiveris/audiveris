@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                         S h e e t A s s e m b l y                          //
+//                         S c o r e A s s e m b l y                          //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -18,8 +18,6 @@ import omr.constant.ConstantSet;
 import omr.log.Logger;
 
 import omr.score.common.PixelRectangle;
-import omr.score.ui.ScoreEditor;
-import omr.score.ui.ScoreView;
 
 import omr.selection.SheetLocationEvent;
 
@@ -54,8 +52,6 @@ import javax.swing.event.*;
  * Class <code>SheetAssembly</code> is a UI assembly dedicated to the display of
  * one sheet, gathering: <ul>
  *
- * <li>a single {@link omr.score.ui.ScoreView}</li>
- *
  * <li>a {@link Zoom} with its dedicated graphical {@link LogSlider}</li>
  *
  * <li>a mouse adapter {@link Rubber}</li>
@@ -87,7 +83,7 @@ public class SheetAssembly
     /** Tabbed container for all views of the sheet */
     private final JTabbedPane tabbedPane = new JTabbedPane();
 
-    /** Split pane for score and sheet views */
+    /** Split pane for score and sheet views TODO: no more split!*/
     private final JSplitPane splitPane = new JSplitPane(
         JSplitPane.VERTICAL_SPLIT);
 
@@ -111,9 +107,6 @@ public class SheetAssembly
 
     /** Mouse adapter */
     private final Rubber rubber = new Rubber(zoom);
-
-    /** Related Score view */
-    private ScoreView scoreEditor;
 
     /** Service of sheetlocation */
     private EventService locationService;
@@ -191,25 +184,6 @@ public class SheetAssembly
         return component;
     }
 
-    //----------------//
-    // setScoreEditor //
-    //----------------//
-    /**
-     * Assign the ScoreEditor to the assembly
-     * @param scoreEditor the Score Editor View
-     */
-    public void setScoreEditor (final ScoreEditor scoreEditor)
-    {
-        if (this.scoreEditor != null) {
-            closeScoreEditor();
-        }
-
-        // Position score view as the higher part of the splitPane
-        splitPane.setTopComponent(scoreEditor.getComponent());
-        splitPane.setDividerLocation(constants.scoreSheetDivider.getValue());
-        this.scoreEditor = scoreEditor;
-    }
-
     //-----------------//
     // getSelectedView //
     //-----------------//
@@ -264,26 +238,26 @@ public class SheetAssembly
     //------------//
     /**
      * Add a new tab, that contains a new view on the sheet
-     * @param step the step whose results are displayed in this tab
+     * @param label the label to use for the tab
      * @param sv the view on the sheet
      * @param boardsPane the board pane associated to the tab
      */
-    public void addViewTab (Step       step,
+    public void addViewTab (String     label,
                             ScrollView sv,
                             BoardsPane boardsPane)
     {
         if (boardsPane != null) {
-            boardsPane.setName(sheet.getRadix() + ":" + step.label);
+            boardsPane.setName(sheet.getId() + ":" + label);
         }
 
         if (logger.isFineEnabled()) {
             logger.fine(
-                "addViewTab begin " + step.label + " boardsPane=" + boardsPane +
+                "addViewTab begin " + label + " boardsPane=" + boardsPane +
                 " comp=@" + Integer.toHexString(sv.getComponent().hashCode()));
         }
 
         // Remove any existing viewTab with the same label
-        removeViewTab(step);
+        removeViewTab(label);
 
         // Make the new view reuse the common zoom and rubber instances
         sv.getView()
@@ -299,15 +273,15 @@ public class SheetAssembly
 
         // Force scroll bar computations
         zoom.fireStateChanged();
-        tabs.put(sv.getComponent(), new ViewTab(step.label, boardsPane, sv));
+        tabs.put(sv.getComponent(), new ViewTab(label, boardsPane, sv));
 
         // Actually insert a Swing tab
-        tabbedPane.addTab(step.label, sv.getComponent());
+        tabbedPane.addTab(label, sv.getComponent());
         tabbedPane.setSelectedComponent(sv.getComponent());
 
         if (logger.isFineEnabled()) {
             logger.fine(
-                "addViewTab end " + step.label + " boardsPane=" + boardsPane);
+                "addViewTab end " + label + " boardsPane=" + boardsPane);
         }
     }
 
@@ -323,7 +297,7 @@ public class SheetAssembly
     public void assemblySelected ()
     {
         if (logger.isFineEnabled()) {
-            logger.fine(sheet.getRadix() + " assemblySelected");
+            logger.fine(sheet.getId() + " assemblySelected");
         }
 
         // Display current context (no reconnection required)
@@ -366,7 +340,7 @@ public class SheetAssembly
 
         MainGui gui = Main.getGui();
         gui.removeBoardsPane(); // Disconnect boards pane
-        gui.hideErrorsPane(); // Disconnect errors pane (USEFUL??? TODO)
+        ///gui.hideErrorsPane(); // Disconnect errors pane (USEFUL??? TODO)
 
         // Disconnect all keyboard bindings from PixelBoard's (as a workaround
         // for a Swing memory leak)
@@ -384,24 +358,6 @@ public class SheetAssembly
         }
 
         tabs.clear(); // Useful ???
-    }
-
-    //------------------//
-    // closeScoreEditor //
-    //------------------//
-    /**
-     * Close the score editor
-     */
-    public void closeScoreEditor ()
-    {
-        if (scoreEditor != null) {
-            if (logger.isFineEnabled()) {
-                logger.fine("Closing scoreView for " + scoreEditor.getScore());
-            }
-
-            splitPane.setTopComponent(null);
-            scoreEditor = null;
-        }
     }
 
     //----------------//
@@ -428,12 +384,13 @@ public class SheetAssembly
      */
     public void selectTab (Step step)
     {
-        final String title = step.label;
+        final String title = step.getTab();
 
         for (int i = 0, count = tabbedPane.getTabCount(); i < count; i++) {
             if (tabbedPane.getTitleAt(i)
                           .equals(title)) {
                 tabbedPane.setSelectedIndex(i);
+                tabbedPane.repaint();
 
                 if (logger.isFineEnabled()) {
                     logger.fine("Selected view tab " + title);
@@ -442,6 +399,8 @@ public class SheetAssembly
                 return;
             }
         }
+
+        // Currently, there is no tab displayed for this step
     }
 
     //--------------//
@@ -501,7 +460,9 @@ public class SheetAssembly
 
             if (boardsPane != null) {
                 if (logger.isFineEnabled()) {
-                    logger.fine("displaying " + boardsPane);
+                    logger.fine(
+                        "displaying " + boardsPane + " connectBoards:" +
+                        connectBoards);
                 }
 
                 // (Re)connect the boards to their selection inputs?
@@ -524,15 +485,15 @@ public class SheetAssembly
     //---------------//
     /**
      * Remove an existing view tab for the provided step, if such a tab exists
-     * @param step the provided step
+     * @param label the label of the tab to remove
      * @return true if a view tab has been actually removed
      */
-    private boolean removeViewTab (Step step)
+    private boolean removeViewTab (String label)
     {
         for (Map.Entry<JScrollPane, ViewTab> entry : tabs.entrySet()) {
             ViewTab tab = entry.getValue();
 
-            if (tab.title.equals(step.label)) {
+            if (tab.title.equals(label)) {
                 ScrollView sv = tab.scrollView;
                 sv.getView()
                   .unsetZoom(zoom);
@@ -542,7 +503,7 @@ public class SheetAssembly
                 tabs.remove(sv.getComponent());
 
                 if (logger.isFineEnabled()) {
-                    logger.fine("Removed tab: " + step.label);
+                    logger.fine("Removed tab: " + label);
                 }
 
                 return true;
@@ -563,8 +524,8 @@ public class SheetAssembly
     {
         if (logger.isFineEnabled()) {
             logger.fine(
-                "SheetAssembly: " + sheet.getRadix() +
-                " viewTabDeselected for " + tab.title);
+                "SheetAssembly: " + sheet.getId() + " viewTabDeselected for " +
+                tab.title);
         }
 
         // Disconnection of events
@@ -588,7 +549,7 @@ public class SheetAssembly
     {
         if (logger.isFineEnabled()) {
             logger.fine(
-                "SheetAssembly: " + sheet.getRadix() + " viewTabSelected for " +
+                "SheetAssembly: " + sheet.getId() + " viewTabSelected for " +
                 tab.title);
         }
 

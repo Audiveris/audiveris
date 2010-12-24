@@ -13,7 +13,8 @@ package omr.util;
 
 
 /**
- * Class {@code WrappedBoolean} is a specific wrapper around a boolean
+ * Class {@code WrappedBoolean} is a specific wrapper around a boolean, meant
+ * to carry an output boolean as method parameter
  *
  * @author Hervé Bitteur
  */
@@ -56,7 +57,7 @@ public class WrappedBoolean
      * Assign the boolean value
      * @param value the assigned value
      */
-    public void set (boolean value)
+    public final void set (boolean value)
     {
         this.value = value;
     }

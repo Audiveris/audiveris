@@ -13,6 +13,9 @@ package omr.score.ui;
 
 import omr.Main;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
@@ -32,8 +35,18 @@ import java.util.Map.Entry;
 /**
  * Class <code>MusicFont</code> is meant to simplify the use of the underlying
  * music font when rendering picture or score views.
- * <p>The underlying font is SToccata, and we define a map between each shape
- * and the corresponding point code (or sequence of point codes) in this font
+ *
+ * <p>The underlying font is either Maestro or SToccata, and we define a map
+ * between each shape and the corresponding point code (or sequence of point
+ * codes) in this font. The chosen font name is defined by the public member
+ * {@link #fontName}.</p>
+ *
+ * <p>For Maestro:
+ * See http://www.fontyukle.net/en/</p>
+ *
+ * <p>for SToccata:
+ * Download from http://fonts.goldenweb.it/download2.php?d2=Freeware_fonts&c=s&file2=SToccata.ttf
+ * See http://fonts.goldenweb.it/pan_file/l/en/font2/SToccata.ttf/d2/Freeware_fonts/c/s/default.html</p>
  *
  * @author Hervé Bitteur
  */
@@ -41,14 +54,39 @@ public class MusicFont
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(MusicFont.class);
+
+    /** First possible music font names */
+    private static final String maestro = "Maestro";
+
+    /** Second possible music font names */
+    private static final String stoccata = "SToccata";
+
+    /** Name of the chosen underlying music font */
+    private static final String fontName = constants.musicFontName.getValue();
+
+    /** Convenient boolean for tests */
+    public static final boolean useMaestro = fontName.toLowerCase()
+                                                     .contains(
+        maestro.toLowerCase());
+
+    /** Convenient boolean for tests */
+    public static final boolean useStoccata = fontName.toLowerCase()
+                                                      .contains(
+        stoccata.toLowerCase());
+
+    /** Underlying music font, initialized with some size */
+    public static final Font genericFont = new Font(fontName, Font.PLAIN, 100);
+
     /** Descriptor of '8' char for alta & bassa */
     public static final CharDesc ALTA_BASSA_DESC = new CharDesc(165);
 
     /** Descriptor for a user mark */
     public static final CharDesc MARK_DESC = new CharDesc(205);
-
-    /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(MusicFont.class);
 
     /** Needed for font size computation */
     private static final FontRenderContext frc = new FontRenderContext(
@@ -59,62 +97,60 @@ public class MusicFont
     /** Cache of map according to desired staff height */
     private static final Map<Integer, Font> sizeMap = new HashMap<Integer, Font>();
 
-    /** Underlying music font, with some size */
-    public static final Font genericFont = new Font(
-        "SToccata",
-        Font.PLAIN,
-        100);
-
     /** Empty array returned when no point codes are defined for a shape */
     private static final int[] NO_CODES = new int[0];
 
-    /** Map Shape -> point codes for Stoccata font */
+    /** Map Shape -> point codes for music font */
     private static final EnumMap<Shape, CharDesc> descMap = new EnumMap<Shape, CharDesc>(
         Shape.class);
 
     static {
         map(ACCENT, Vertical.BOTTOM, 62);
         map(ARPEGGIATO, Vertical.BOTTOM, 103);
-        map(BACK_TO_BACK_REPEAT_SIGN);
-        map(BEAM);
-        map(BEAM_2);
-        map(BEAM_3);
-        map(BEAM_HOOK);
-        map(BRACE);
-        map(BRACKET);
+        //        map(BACK_TO_BACK_REPEAT_SIGN);
+        //        map(BEAM);
+        //        map(BEAM_2);
+        //        map(BEAM_3);
+        //        map(BEAM_HOOK);
+        //        map(BRACE);
+        //        map(BRACKET);
         map(BREATH_MARK, 44);
         map(BREVE, Vertical.MIDDLE, 87);
         map(BREVE_REST, Vertical.MIDDLE, 208);
-        map(CAESURA);
-        map(CHARACTER);
-        map(CLUTTER);
+        //        map(CAESURA);
+        //        map(CHARACTER);
+        //        map(CLUTTER);
         map(CODA, Vertical.BOTTOM, 222);
-        map(COMBINING_AUGMENTATION_DOT);
+        //        map(COMBINING_AUGMENTATION_DOT);
         map(COMBINING_FLAG_1, Vertical.BOTTOM, 106);
         map(COMBINING_FLAG_1_UP, Vertical.TOP, 74);
-        map(COMBINING_FLAG_2, Vertical.BOTTOM, 107);
-        map(COMBINING_FLAG_2_UP, Vertical.TOP, 75);
-        map(COMBINING_FLAG_3);
-        map(COMBINING_FLAG_3_UP);
-        map(COMBINING_FLAG_4);
-        map(COMBINING_FLAG_4_UP);
-        map(COMBINING_FLAG_5);
-        map(COMBINING_FLAG_5_UP);
-        map(COMBINING_STEM);
+        map(COMBINING_FLAG_2, Vertical.BOTTOM, useMaestro ? 144 : 107);
+        map(COMBINING_FLAG_2_UP, Vertical.TOP, useMaestro ? 146 : 75);
+        //        map(COMBINING_FLAG_3);
+        //        map(COMBINING_FLAG_3_UP);
+        //        map(COMBINING_FLAG_4);
+        //        map(COMBINING_FLAG_4_UP);
+        //        map(COMBINING_FLAG_5);
+        //        map(COMBINING_FLAG_5_UP);
+        //        map(COMBINING_STEM);
         map(COMMON_TIME, Vertical.MIDDLE, 99);
-        map(CRESCENDO);
-        map(CUSTOM_TIME_SIGNATURE);
+        //        map(CRESCENDO);
+        //        map(CUSTOM_TIME_SIGNATURE);
         map(CUT_TIME, Vertical.MIDDLE, 67);
         map(C_CLEF, Vertical.BOTTOM, 66);
-        map(DAL_SEGNO, 100);
-        map(DA_CAPO, 68);
-        map(DECRESCENDO);
+
+        if (useStoccata) {
+            map(DAL_SEGNO, 100); // SToccata only
+            map(DA_CAPO, 68); // SToccata only
+        }
+
+        //        map(DECRESCENDO);
         map(DOT, Vertical.MIDDLE, 46);
-        map(DOUBLE_BARLINE);
+        //        map(DOUBLE_BARLINE);
         map(DOUBLE_FLAT, 186);
         map(DOUBLE_SHARP, Vertical.MIDDLE, 220);
         map(DYNAMICS_CHAR_M, 189);
-        map(DYNAMICS_CHAR_R, 243);
+        map(DYNAMICS_CHAR_R, useMaestro ? 142 : 243);
         map(DYNAMICS_CHAR_S, 115);
         map(DYNAMICS_CHAR_Z, 122);
         map(DYNAMICS_F, 102);
@@ -123,7 +159,13 @@ public class MusicFont
         map(DYNAMICS_FFFF, 236, 102);
         map(DYNAMICS_FFFFF, 236, 196);
         map(DYNAMICS_FFFFFF, 236, 236);
-        map(DYNAMICS_FP, 102, 112);
+
+        if (useMaestro) {
+            map(DYNAMICS_FP, 234);
+        } else {
+            map(DYNAMICS_FP, 102, 112);
+        }
+
         map(DYNAMICS_FZ, 90);
         map(DYNAMICS_MF, 70);
         map(DYNAMICS_MP, 80);
@@ -141,119 +183,146 @@ public class MusicFont
         map(DYNAMICS_SFPP, 83, 185);
         map(DYNAMICS_SFZ, 83, 122);
         map(EIGHTH_REST, 228);
-        map(ENDING);
-        map(ENDING_HORIZONTAL);
-        map(ENDING_VERTICAL);
+        //        map(ENDING);
+        //        map(ENDING_HORIZONTAL);
+        //        map(ENDING_VERTICAL);
         map(FERMATA, Vertical.BOTTOM, 85);
         map(FERMATA_BELOW, Vertical.TOP, 117);
-        map(FINAL_BARLINE, 211);
+
+        if (useStoccata) {
+            map(FINAL_BARLINE, 211);
+        }
+
         map(FLAT, 98);
-        map(FORWARD);
-        map(F_CLEF, 63);
-        map(F_CLEF_OTTAVA_ALTA, 63);
-        map(F_CLEF_OTTAVA_BASSA, 63);
-        map(GLYPH_PART);
+        //        map(FORWARD);
+        map(F_CLEF, 63); // Maestro: F line is on baseline
+        map(F_CLEF_OTTAVA_ALTA, useMaestro ? 230 : 63);
+        map(F_CLEF_OTTAVA_BASSA, useMaestro ? 116 : 63);
+        //        map(GLYPH_PART);
         map(GRACE_NOTE_NO_SLASH, 59);
         map(GRACE_NOTE_SLASH, 201);
         map(G_CLEF, 38);
-        map(G_CLEF_OTTAVA_ALTA, 38);
-        map(G_CLEF_OTTAVA_BASSA, 38);
-        map(HALF_REST);
-        map(HEAD_AND_FLAG_1);
-        map(HEAD_AND_FLAG_1_UP);
-        map(HEAD_AND_FLAG_2);
-        map(HEAD_AND_FLAG_2_UP);
-        map(HEAD_AND_FLAG_3);
-        map(HEAD_AND_FLAG_3_UP);
-        map(HEAD_AND_FLAG_4);
-        map(HEAD_AND_FLAG_4_UP);
-        map(HEAD_AND_FLAG_5);
-        map(HEAD_AND_FLAG_5_UP);
+        map(G_CLEF_OTTAVA_ALTA, useMaestro ? 160 : 38);
+        map(G_CLEF_OTTAVA_BASSA, useMaestro ? 86 : 38);
+        //        map(HALF_REST);
+        //        map(HEAD_AND_FLAG_1);
+        //        map(HEAD_AND_FLAG_1_UP);
+        //        map(HEAD_AND_FLAG_2);
+        //        map(HEAD_AND_FLAG_2_UP);
+        //        map(HEAD_AND_FLAG_3);
+        //        map(HEAD_AND_FLAG_3_UP);
+        //        map(HEAD_AND_FLAG_4);
+        //        map(HEAD_AND_FLAG_4_UP);
+        //        map(HEAD_AND_FLAG_5);
+        //        map(HEAD_AND_FLAG_5_UP);
         map(INVERTED_MORDENT, 77);
-        map(INVERTED_TURN, Vertical.MIDDLE, 249);
-        map(KEY_FLAT_1);
-        map(KEY_FLAT_2);
-        map(KEY_FLAT_3);
-        map(KEY_FLAT_4);
-        map(KEY_FLAT_5);
-        map(KEY_FLAT_6);
-        map(KEY_FLAT_7);
-        map(KEY_SHARP_1);
-        map(KEY_SHARP_2);
-        map(KEY_SHARP_3);
-        map(KEY_SHARP_4);
-        map(KEY_SHARP_5);
-        map(KEY_SHARP_6);
-        map(KEY_SHARP_7);
-        map(LEDGER);
-        map(LEFT_REPEAT_SIGN, 93);
-        map(LONG_REST, Vertical.MIDDLE, 208);
+
+        if (useStoccata) {
+            map(INVERTED_TURN, Vertical.MIDDLE, 249);
+        }
+
+        //        map(KEY_FLAT_1);
+        //        map(KEY_FLAT_2);
+        //        map(KEY_FLAT_3);
+        //        map(KEY_FLAT_4);
+        //        map(KEY_FLAT_5);
+        //        map(KEY_FLAT_6);
+        //        map(KEY_FLAT_7);
+        //        map(KEY_SHARP_1);
+        //        map(KEY_SHARP_2);
+        //        map(KEY_SHARP_3);
+        //        map(KEY_SHARP_4);
+        //        map(KEY_SHARP_5);
+        //        map(KEY_SHARP_6);
+        //        map(KEY_SHARP_7);
+        //        map(LEDGER);
+        if (useStoccata) {
+            map(LEFT_REPEAT_SIGN, 93);
+        }
+
+        map(LONG_REST, Vertical.MIDDLE, 227);
         map(MORDENT, 109);
         map(NATURAL, 110);
-        map(NOISE);
-        map(NON_DRAGGABLE);
+        //        map(NOISE);
+        //        map(NON_DRAGGABLE);
         map(NOTEHEAD_BLACK, Vertical.MIDDLE, 207);
-        map(NOTEHEAD_BLACK_2);
-        map(NOTEHEAD_BLACK_3);
-        map(NO_LEGAL_TIME);
-        map(OLD_QUARTER_REST, 228);
-        map(ONE_HUNDRED_TWENTY_EIGHTH_REST);
+        //        map(NOTEHEAD_BLACK_2);
+        //        map(NOTEHEAD_BLACK_3);
+        //        map(NO_LEGAL_TIME);
+        map(OLD_QUARTER_REST, 228); // To be flipped horizontally
+
+        if (useMaestro) {
+            map(ONE_HUNDRED_TWENTY_EIGHTH_REST, 229);
+        }
+
         map(OTTAVA_ALTA, Vertical.BOTTOM, 195);
         map(OTTAVA_BASSA, Vertical.BOTTOM, 215);
-        map(PART_DEFINING_BARLINE);
+        //        map(PART_DEFINING_BARLINE);
         map(PEDAL_MARK, 161);
         map(PEDAL_UP_MARK, 42);
-        map(PERCUSSION_CLEF, Vertical.BOTTOM, 47);
+        map(PERCUSSION_CLEF, Vertical.BOTTOM, useMaestro ? 139 : 47);
         map(QUARTER_REST, Vertical.MIDDLE, 206);
-        map(REPEAT_DOTS, 123);
-        map(REVERSE_FINAL_BARLINE, 210);
-        map(RIGHT_REPEAT_SIGN, 125);
+
+        if (useStoccata) {
+            map(REPEAT_DOTS, 123);
+        }
+
+        if (useStoccata) {
+            map(REVERSE_FINAL_BARLINE, 210);
+            map(RIGHT_REPEAT_SIGN, 125);
+        }
+
         map(SEGNO, Vertical.BOTTOM, 37);
         map(SHARP, Vertical.MIDDLE, 35);
         map(SIXTEENTH_REST, 197);
         map(SIXTY_FOURTH_REST, 244);
-        map(SLUR);
-        map(STACCATISSIMO, 137);
+        //        map(SLUR);
+        map(STACCATISSIMO, useMaestro ? 171 : 137);
         map(STACCATO, Vertical.MIDDLE, 46);
-        map(STAFF_LINE);
+        //        map(STAFF_LINE);
         map(STRONG_ACCENT, 94);
-        map(STRUCTURE);
+        //        map(STRUCTURE);
         map(TENUTO, Vertical.MIDDLE, 45);
-        map(TEXT);
-        map(THICK_BARLINE, 91);
-        map(THIN_BARLINE, 108);
+
+        //        map(TEXT);
+        if (useStoccata) {
+            map(THICK_BARLINE, 91);
+        }
+
+        map(THIN_BARLINE, useMaestro ? 92 : 108);
         map(THIRTY_SECOND_REST, 168);
         map(TIME_EIGHT, Vertical.MIDDLE, 56);
         map(TIME_FIVE, Vertical.MIDDLE, 53);
         map(TIME_FOUR, Vertical.MIDDLE, 52);
-        map(TIME_FOUR_FOUR);
+        //        map(TIME_FOUR_FOUR);
         map(TIME_NINE, Vertical.MIDDLE, 57);
         map(TIME_ONE, Vertical.MIDDLE, 49);
         map(TIME_SEVEN, Vertical.MIDDLE, 55);
         map(TIME_SIX, Vertical.MIDDLE, 54);
         map(TIME_SIXTEEN, Vertical.MIDDLE, 49, 54);
-        map(TIME_SIX_EIGHT);
+        //        map(TIME_SIX_EIGHT);
         map(TIME_THREE, Vertical.MIDDLE, 51);
-        map(TIME_THREE_FOUR);
+        //        map(TIME_THREE_FOUR);
         map(TIME_TWELVE, Vertical.MIDDLE, 49, 50);
         map(TIME_TWO, Vertical.MIDDLE, 50);
-        map(TIME_TWO_FOUR);
-        map(TIME_TWO_TWO);
+        //        map(TIME_TWO_FOUR);
+        //        map(TIME_TWO_TWO);
         map(TIME_ZERO, Vertical.MIDDLE, 48);
-        map(TR, 96);
+        map(TR, useMaestro ? 217 : 96);
         map(TUPLET_SIX, 164);
         map(TUPLET_THREE, 163);
         map(TURN, Vertical.MIDDLE, 84);
-        map(TURN_SLASH);
-        map(TURN_UP);
+        //        map(TURN_SLASH);
+        //        map(TURN_UP);
         map(VOID_NOTEHEAD, Vertical.MIDDLE, 250);
-        map(VOID_NOTEHEAD_2);
-        map(VOID_NOTEHEAD_3);
+        //        map(VOID_NOTEHEAD_2);
+        //        map(VOID_NOTEHEAD_3);
         map(WHOLE_NOTE, Vertical.MIDDLE, 119);
-        map(WHOLE_NOTE_2);
-        map(WHOLE_NOTE_3);
+        //        map(WHOLE_NOTE_2);
+        //        map(WHOLE_NOTE_3);
         map(WHOLE_OR_HALF_REST, Vertical.BOTTOM, 238);
-        map(WHOLE_REST);
+
+        //        map(WHOLE_REST);
     }
 
     static {
@@ -305,7 +374,7 @@ public class MusicFont
     //----------//
     /**
      * Report the sequence of pointCodes to use to draw the provided shape using
-     * the Stoccata font
+     * the music font
      * @return the array of codes, which may be empty but not null
      */
     public static int[] getCodes (Shape shape)
@@ -347,8 +416,8 @@ public class MusicFont
         // Check we have been able to load the font
         if (genericFont.getFamily()
                        .equals("Dialog")) {
-            String msg = "*** SToccata font not found." +
-                         " Please install SToccata.ttf ***";
+            String msg = "*** " + fontName + " font not found." +
+                         " Please install " + fontName + ".ttf ***";
             logger.severe(msg);
 
             if (Main.getGui() != null) {
@@ -400,7 +469,7 @@ public class MusicFont
     // determineMusicFont //
     //--------------------//
     /**
-     * Determine the music font (SToccata) with best size. This is based on the
+     * Determine the music font with best size. This is based on the
      * C_CLEF symbol which must match the staff height as exactly as possible.
      * @param scale the global sheet scale
      * @return the font ready to use
@@ -478,6 +547,12 @@ public class MusicFont
     //-----//
     // map //
     //-----//
+    /**
+     *
+     * @param shape the shape symbol
+     * @param vAlign where the (vertical) reference point is WRT the shape
+     * @param codes the sequence of codes (perhaps specific to a font)
+     */
     private static void map (Shape    shape,
                              Vertical vAlign,
                              int... codes)
@@ -538,7 +613,7 @@ public class MusicFont
     //----------//
     /**
      * Class {@code CharDesc} gathers the parameters of a given character
-     * within the SToccata font
+     * within the music font
      */
     public static class CharDesc
     {
@@ -570,5 +645,18 @@ public class MusicFont
         {
             return new String(codes, 0, codes.length);
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        Constant.String musicFontName = new Constant.String(
+            "Maestro",
+            "Name of font for music symbols (Maestro/SToccata)");
     }
 }

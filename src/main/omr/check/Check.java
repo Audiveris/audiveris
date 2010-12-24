@@ -289,7 +289,7 @@ public abstract class Check<C extends Checkable>
     @Override
     public String toString ()
     {
-        StringBuffer sb = new StringBuffer(128);
+        StringBuilder sb = new StringBuilder(128);
         sb.append("{Check ")
           .append(name);
         sb.append(" Covariant:")

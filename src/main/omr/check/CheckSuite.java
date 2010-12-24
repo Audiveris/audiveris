@@ -252,10 +252,10 @@ public class CheckSuite<C extends Checkable>
     {
         double       grade = 0.0d;
         CheckResult  result = new CheckResult();
-        StringBuffer sb = null;
+        StringBuilder sb = null;
 
         if (logger.isFineEnabled()) {
-            sb = new StringBuffer(512);
+            sb = new StringBuilder(512);
             sb.append(name)
               .append(" ");
         }

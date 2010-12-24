@@ -16,6 +16,9 @@ import omr.WellKnowns;
 import omr.log.Logger;
 
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.awt.geom.AffineTransform;
 import java.io.*;
 import java.util.*;
@@ -40,6 +43,14 @@ public class UIUtilities
      * components
      */
     private static Border toolBorder;
+    public static final WindowListener closeWindow = new WindowAdapter() {
+        public void windowClosing (WindowEvent e)
+        {
+            e.getWindow()
+             .dispose();
+        }
+    };
+
 
     //~ Methods ----------------------------------------------------------------
 

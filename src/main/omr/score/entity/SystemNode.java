@@ -24,14 +24,13 @@ import java.util.*;
 
 /**
  * Class <code>SystemNode</code> is an abstract class that is subclassed
- * for any ScoreNode that is contained in a system, beginning by the system
- * itself. So this class encapsulates a direct link to the enclosing
- * system.
+ * for any Node that is contained in a system, beginning by the system itself.
+ * So this class encapsulates a direct link to the enclosing system.
  *
  * @author Hervé Bitteur
  */
 public abstract class SystemNode
-    extends ScoreNode
+    extends PageNode
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -54,7 +53,7 @@ public abstract class SystemNode
      * Create a SystemNode
      * @param container the (direct) container of the node
      */
-    public SystemNode (ScoreNode container)
+    public SystemNode (PageNode container)
     {
         super(container);
 
@@ -170,9 +169,9 @@ public abstract class SystemNode
     public void addError (Glyph  glyph,
                           String text)
     {
-        if ((getScore() != null) && (getScore()
-                                         .getSheet() != null)) {
-            getScore()
+        if ((getPage() != null) && (getPage()
+                                        .getSheet() != null)) {
+            getPage()
                 .getSheet()
                 .addError(this, glyph, text);
         }

@@ -48,35 +48,30 @@ public class ScoreCleaner
 
     //~ Methods ----------------------------------------------------------------
 
-    //    //-------------//
-    //    // visit Score //
-    //    //-------------//
-    //    @Override
-    //    public boolean visit (Score score)
-    //    {
-    //        score.cleanupNode();
-    //
-    //        return true;
-    //    }
-
     //--------------//
     // visit System //
     //--------------//
     @Override
     public boolean visit (ScoreSystem system)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Cleaning up " + system);
-        }
+        try {
+            if (logger.isFineEnabled()) {
+                logger.fine("Cleaning up " + system);
+            }
 
-        // Remove recorded translations for all system glyphs
-        for (Glyph glyph : system.getInfo()
-                                 .getGlyphs()) {
-            glyph.clearTranslations();
-        }
+            // Remove recorded translations for all system glyphs
+            for (Glyph glyph : system.getInfo()
+                                     .getGlyphs()) {
+                glyph.clearTranslations();
+            }
 
-        system.acceptChildren(this);
-        system.cleanupNode();
+            system.acceptChildren(this);
+            system.cleanupNode();
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + system,
+                ex);
+        }
 
         return false;
     }
@@ -87,18 +82,26 @@ public class ScoreCleaner
     @Override
     public boolean visit (SystemPart systemPart)
     {
-        if (systemPart.isDummy()) {
-            systemPart.getParent()
-                      .getChildren()
-                      .remove(systemPart);
+        try {
+            if (systemPart.isDummy()) {
+                systemPart.getParent()
+                          .getChildren()
+                          .remove(systemPart);
 
-            return false;
-        } else {
-            // Remove slurs and wedges
-            systemPart.cleanupNode();
+                return false;
+            } else {
+                // Remove slurs and wedges
+                systemPart.cleanupNode();
 
-            return true;
+                return true;
+            }
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + systemPart,
+                ex);
         }
+
+        return false;
     }
 
     //---------------//
@@ -107,7 +110,13 @@ public class ScoreCleaner
     @Override
     public boolean visit (Measure measure)
     {
-        measure.cleanupNode();
+        try {
+            measure.cleanupNode();
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + measure,
+                ex);
+        }
 
         return false;
     }

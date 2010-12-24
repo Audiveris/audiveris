@@ -74,12 +74,18 @@ public class ScoreColorizer
     @Override
     public boolean visit (Barline barline)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Colorizing " + barline);
-        }
+        try {
+            if (logger.isFineEnabled()) {
+                logger.fine("Colorizing " + barline);
+            }
 
-        for (Glyph glyph : barline.getGlyphs()) {
-            glyph.colorize(lag, viewIndex, color);
+            for (Glyph glyph : barline.getGlyphs()) {
+                glyph.colorize(lag, viewIndex, color);
+            }
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + barline,
+                ex);
         }
 
         return true;
@@ -91,11 +97,17 @@ public class ScoreColorizer
     @Override
     public boolean visit (Score score)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Colorizing score ...");
-        }
+        try {
+            if (logger.isFineEnabled()) {
+                logger.fine("Colorizing score ...");
+            }
 
-        score.acceptChildren(this);
+            score.acceptChildren(this);
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + score,
+                ex);
+        }
 
         return false;
     }
@@ -106,11 +118,17 @@ public class ScoreColorizer
     @Override
     public boolean visit (SystemPart part)
     {
-        // Set color for the starting bar line, if any
-        Barline startingBarline = part.getStartingBarline();
+        try {
+            // Set color for the starting bar line, if any
+            Barline startingBarline = part.getStartingBarline();
 
-        if (startingBarline != null) {
-            startingBarline.accept(this);
+            if (startingBarline != null) {
+                startingBarline.accept(this);
+            }
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + part,
+                ex);
         }
 
         return true;

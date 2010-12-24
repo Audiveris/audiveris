@@ -15,6 +15,8 @@ import omr.WellKnowns;
 
 import omr.log.Logger;
 
+import omr.score.Score;
+
 import omr.script.Script;
 import omr.script.ScriptManager;
 
@@ -126,8 +128,7 @@ public class MacApplication
                 worker.execute();
             } else {
                 // Actually load the sheet picture
-                Sheet sheet = new Sheet(new File(filename));
-                Step.LOAD.performUntil(sheet);
+                Score score = new Score(new File(filename));
             }
         }
 

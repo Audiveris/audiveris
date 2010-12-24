@@ -95,7 +95,7 @@ public class SymbolsController
     public Task asyncAssignRationals (Collection<Glyph> glyphs,
                                       final Rational    rational)
     {
-        return new RationalTask(rational, glyphs).launch(sheet);
+        return new RationalTask(sheet, rational, glyphs).launch(sheet);
     }
 
     //------------------//
@@ -116,7 +116,7 @@ public class SymbolsController
                                   final TextRole    textRole,
                                   final String      textContent)
     {
-        return new TextTask(textType, textRole, textContent, glyphs).launch(
+        return new TextTask(sheet, textType, textRole, textContent, glyphs).launch(
             sheet);
     }
 
@@ -131,7 +131,7 @@ public class SymbolsController
      */
     public Task asyncFixLargeSlurs (Collection<Glyph> glyphs)
     {
-        return new SlurTask(glyphs).launch(sheet);
+        return new SlurTask(sheet, glyphs).launch(sheet);
     }
 
     //--------------//
@@ -147,7 +147,7 @@ public class SymbolsController
     public Task asyncSegment (Collection<Glyph> glyphs,
                               final boolean     isShort)
     {
-        return new SegmentTask(isShort, glyphs).launch(sheet);
+        return new SegmentTask(sheet, isShort, glyphs).launch(sheet);
     }
 
     //------------------//

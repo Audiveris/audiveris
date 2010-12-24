@@ -15,7 +15,6 @@ import omr.glyph.text.TextRole;
 
 import omr.log.Logger;
 
-import omr.score.Score;
 import omr.score.common.PixelDimension;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -72,14 +71,11 @@ public class ScoreSystem
     /** Related info from sheet analysis */
     private final SystemInfo info;
 
-    /** Start time of this system since beginning of the score */
+    /** Start time of this system since beginning of the page */
     private Integer startTime;
 
     /** Duration of this system */
     private Integer actualDuration;
-
-    /** Contour of all system entities to be displayed, origin being topLeft */
-    private volatile PixelRectangle displayContour;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -89,18 +85,18 @@ public class ScoreSystem
     /**
      * Create a system with all needed parameters
      *
-     * @param info      the physical information retrieved from the sheet
-     * @param score     the containing score
-     * @param topLeft   the coordinate, in units, of the upper left point of the
-     *                  system in its containing page
+     * @param info the physical information retrieved from the sheet
+     * @param page the containing page
+     * @param topLeft the coordinate of the upper left point of the system in
+     * its containing page
      * @param dimension the dimension of the system
      */
     public ScoreSystem (SystemInfo     info,
-                        Score          score,
+                        Page           page,
                         PixelPoint     topLeft,
                         PixelDimension dimension)
     {
-        super(score);
+        super(page);
 
         this.info = info;
         this.topLeft = topLeft;
@@ -155,35 +151,6 @@ public class ScoreSystem
     public PixelDimension getDimension ()
     {
         return new PixelDimension(getBox().width, getBox().height);
-    }
-
-    //------------//
-    // setContour //
-    //------------//
-    /**
-     * Define the new display contour for the system
-     * @param systemContour the new display contour
-     */
-    public void setDisplayContour (PixelRectangle systemContour)
-    {
-        this.displayContour = systemContour;
-    }
-
-    //-------------------//
-    // getDisplayContour //
-    //-------------------//
-    /**
-     * Return a copy of the system display contour, which includes the system
-     * boundaries
-     * @return a COPY of the system display contour
-     */
-    public PixelRectangle getDisplayContour ()
-    {
-        if (displayContour == null) {
-            return null;
-        } else {
-            return (PixelRectangle) displayContour.clone();
-        }
     }
 
     //----------------//
@@ -462,7 +429,7 @@ public class ScoreSystem
     //--------------//
     /**
      * Report the start time of this system, with respect to the beginning of
-     * the score.
+     * the page.
      * @return the system start time
      */
     public int getStartTime ()
@@ -570,7 +537,7 @@ public class ScoreSystem
     public void fillMissingParts ()
     {
         // Check we have all the defined parts in this system
-        for (ScorePart scorePart : getScore()
+        for (ScorePart scorePart : getPage()
                                        .getPartList()) {
             if (getPart(scorePart.getId()) == null) {
                 getFirstRealPart()

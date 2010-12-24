@@ -51,6 +51,8 @@ import omr.util.WeakPropertyChangeListener;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Set;
 
 /**
@@ -60,6 +62,7 @@ import java.util.Set;
  * @author Hervé Bitteur
  */
 public class SymbolsEditor
+    implements PropertyChangeListener
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -127,7 +130,7 @@ public class SymbolsEditor
 
         glyphMenu = new SymbolMenu(symbolsController, evaluator, focus);
 
-        final String  unit = sheet.getRadix() + ":SymbolsEditor";
+        final String  unit = sheet.getId() + ":SymbolsEditor";
 
         BoardsPane    boardsPane = new BoardsPane(
             sheet,
@@ -153,16 +156,31 @@ public class SymbolsEditor
         // Create a hosting pane for the view
         ScrollLagView slv = new ScrollLagView(view);
         sheet.getAssembly()
-             .addViewTab(Step.SYMBOLS, slv, boardsPane);
+             .addViewTab(Step.GLYPHS_TAB, slv, boardsPane);
+
+        // Listen to painting parameters
+        PaintingParameters.getInstance()
+                          .addPropertyChangeListener(
+            PaintingParameters.ANNOTATION_PAINTING,
+            new WeakPropertyChangeListener(this));
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //----------------//
+    // propertyChange //
+    //----------------//
+    @Implement(PropertyChangeListener.class)
+    public void propertyChange (PropertyChangeEvent evt)
+    {
+        view.repaint();
+    }
 
     //---------//
     // refresh //
     //---------//
     /**
-     * Refresh the UI display (reset the model values of all spinners, updateMenu
+     * Refresh the UI display (reset the model values of all spinners, update
      * the colors of the glyphs)
      */
     public void refresh ()
@@ -192,7 +210,7 @@ public class SymbolsEditor
             // Listen to painting parameters
             PaintingParameters.getInstance()
                               .addPropertyChangeListener(
-                PaintingParameters.ENTITY_PAINTING,
+                PaintingParameters.LAYER_PAINTING,
                 new WeakPropertyChangeListener(this));
         }
 
@@ -323,25 +341,46 @@ public class SymbolsEditor
             }
         }
 
+        //--------//
+        // render //
+        //--------//
+        @Override
+        public void render (Graphics2D g)
+        {
+            PaintingParameters painting = PaintingParameters.getInstance();
+
+            if (painting.isInputPainting()) {
+                super.render(g);
+            } else {
+                renderItems(g);
+            }
+        }
+
         //-------------//
         // renderItems //
         //-------------//
         @Override
         protected void renderItems (Graphics2D g)
         {
-            // Render all sheet physical info known so far
-            sheet.getScore()
-                 .accept(new SheetPainter(g, false));
+            PaintingParameters painting = PaintingParameters.getInstance();
 
-            // Normal display of selected items
-            super.renderItems(g);
+            if (painting.isInputPainting()) {
+                // Render all sheet physical info known so far
+                sheet.getPage()
+                     .accept(new SheetPainter(g, false));
 
-            // Render the recognized score entities?
-            if (PaintingParameters.getInstance()
-                                  .isEntityPainting()) {
-                sheet.getScore()
+                // Normal display of selected items
+                super.renderItems(g);
+            }
+
+            if (painting.isOutputPainting()) {
+                // Render the recognized score entities
+                sheet.getPage()
                      .accept(
-                    new ScorePhysicalPainter(g, ScorePainter.musicColor));
+                    new ScorePhysicalPainter(
+                        g,
+                        ScorePainter.musicColor,
+                        painting.isAnnotationPainting()));
             }
         }
 

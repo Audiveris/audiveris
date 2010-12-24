@@ -16,9 +16,6 @@ import omr.WellKnowns;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
-import omr.constant.UnitManager;
-import omr.constant.UnitModel;
-import omr.constant.UnitTreeTable;
 
 import omr.glyph.ui.GlyphVerifier;
 import omr.glyph.ui.ShapeColorChooser;
@@ -30,7 +27,6 @@ import omr.score.ui.ScoreDependent;
 
 import omr.sheet.ui.SheetsController;
 
-import omr.ui.treetable.JTreeTable;
 import omr.ui.util.WebBrowser;
 
 import omr.util.Memory;
@@ -45,6 +41,9 @@ import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.Task;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.net.MalformedURLException;
@@ -74,7 +73,7 @@ public class GuiActions
     private static final Logger logger = Logger.getLogger(GuiActions.class);
 
     /** Options UI */
-    private static JFrame optionsFrame;
+    private static Options options;
 
     // Resource injection
     private static ResourceMap          resource = Application.getInstance()
@@ -162,7 +161,7 @@ public class GuiActions
     // defineOptions //
     //---------------//
     /**
-     *  Action that opens a window where units options (logger level, constants)
+     * Action that opens a window where units options (logger level, constants)
      * can be managed
      * @param e the event that triggered this action
      * @return the SAF task
@@ -193,7 +192,7 @@ public class GuiActions
      * Action to erase the dump the content of all event services
      * @param e the event which triggered this action
      */
-    @Action(enabledProperty = "sheetAvailable")
+    @Action(enabledProperty = SHEET_AVAILABLE)
     public void dumpEventServices (ActionEvent e)
     {
         SheetsController.getInstance()
@@ -395,21 +394,27 @@ public class GuiActions
 
         private JDialog createAboutBox ()
         {
-            StringBuilder rows = new StringBuilder("pref,5dlu");
+            StringBuilder rows = new StringBuilder("pref,10dlu,pref,5dlu");
 
-            for (int i = 0; i < Topic.values().length; i++) {
+            for (int i = 0; i < (Topic.values().length); i++) {
                 rows.append(",pref,3dlu");
             }
 
             // Layout
             final FormLayout      layout = new FormLayout(
-                "right:pref, 5dlu, pref",
+                "right:pref, 5dlu, pref, 200dlu",
                 rows.toString());
             final PanelBuilder    builder = new PanelBuilder(layout);
             final CellConstraints cst = new CellConstraints();
 
-            int                   iRow = 1;
             builder.setDefaultDialogBorder();
+
+            int    iRow = 1;
+
+            JPanel logoPanel = new ImagePanel(
+                WellKnowns.CONFIG_FOLDER_NAME + "/Splash.png");
+            builder.add(logoPanel, cst.xyw(1, iRow, 4));
+            iRow += 2;
 
             JLabel titleLabel = new JLabel();
             titleLabel.setName("aboutTitleLabel");
@@ -451,6 +456,46 @@ public class GuiActions
 
         //~ Inner Classes ------------------------------------------------------
 
+        //------------//
+        // ImagePanel //
+        //------------//
+        private static class ImagePanel
+            extends JPanel
+        {
+            //~ Instance fields ------------------------------------------------
+
+            private Image img;
+
+            //~ Constructors ---------------------------------------------------
+
+            public ImagePanel (String img)
+            {
+                this(new ImageIcon(img).getImage());
+            }
+
+            public ImagePanel (Image img)
+            {
+                this.img = img;
+
+                Dimension size = new Dimension(
+                    img.getWidth(null),
+                    img.getHeight(null));
+                setPreferredSize(size);
+                setMinimumSize(size);
+                setMaximumSize(size);
+                setSize(size);
+                setLayout(null);
+            }
+
+            //~ Methods --------------------------------------------------------
+
+            @Override
+            public void paintComponent (Graphics g)
+            {
+                g.drawImage(img, 0, 0, null);
+            }
+        }
+
         private static class LinkListener
             implements HyperlinkListener
         {
@@ -478,10 +523,13 @@ public class GuiActions
     {
         //~ Instance fields ----------------------------------------------------
 
-        Constant.String        webSiteUrl = new Constant.String(
+        /** URL of Audiveris home page */
+        Constant.String webSiteUrl = new Constant.String(
             "http://kenai.com/projects/audiveris",
             "URL of Audiveris home page");
-        Constant.String        manualUrl = new Constant.String(
+
+        /** URL of local Audiveris manual */
+        Constant.String manualUrl = new Constant.String(
             "/docs/manual/index.html",
             "URL of local Audiveris manual");
 
@@ -495,27 +543,8 @@ public class GuiActions
     // OptionsTask //
     //-------------//
     private static class OptionsTask
-        extends Task<JFrame, Void>
+        extends Task<Options, Void>
     {
-        //~ Static fields/initializers -----------------------------------------
-
-        private static final AbstractAction dumping = new AbstractAction() {
-            public void actionPerformed (ActionEvent e)
-            {
-                UnitManager.getInstance()
-                           .dumpAllUnits();
-            }
-        };
-
-        private static final AbstractAction checking = new AbstractAction() {
-            public void actionPerformed (ActionEvent e)
-            {
-                UnitManager.getInstance()
-                           .checkAllUnits();
-            }
-        };
-
-
         //~ Constructors -------------------------------------------------------
 
         public OptionsTask ()
@@ -526,51 +555,22 @@ public class GuiActions
         //~ Methods ------------------------------------------------------------
 
         @Override
-        protected JFrame doInBackground ()
+        protected Options doInBackground ()
             throws Exception
         {
-            if (optionsFrame == null) {
-                // Preload constant units
-                UnitManager.getInstance()
-                           .preLoadUnits(Main.class.getName());
-
-                optionsFrame = new JFrame();
-                optionsFrame.setName("optionsFrame");
-                optionsFrame.setDefaultCloseOperation(
-                    WindowConstants.DISPOSE_ON_CLOSE);
-                optionsFrame.getContentPane()
-                            .setLayout(new BorderLayout());
-
-                JToolBar toolBar = new JToolBar(JToolBar.HORIZONTAL);
-                optionsFrame.getContentPane()
-                            .add(toolBar, BorderLayout.NORTH);
-
-                JButton dumpButton = new JButton(dumping);
-                dumpButton.setName("optionsDumpButton");
-                toolBar.add(dumpButton);
-
-                JButton checkButton = new JButton(checking);
-                checkButton.setName("optionsCheckButton");
-                toolBar.add(checkButton);
-
-                UnitModel  cm = new UnitModel();
-                JTreeTable jtt = new UnitTreeTable(cm);
-                optionsFrame.getContentPane()
-                            .add(new JScrollPane(jtt));
-
-                // Resources injection
-                resource.injectComponents(optionsFrame);
+            if (options == null) {
+                options = new Options();
             }
 
-            return optionsFrame;
+            return options;
         }
 
         @Override
-        protected void succeeded (JFrame frame)
+        protected void succeeded (Options options)
         {
-            if (frame != null) {
+            if (options != null) {
                 MainGui.getInstance()
-                       .show(frame);
+                       .show(options.getComponent());
             }
         }
     }

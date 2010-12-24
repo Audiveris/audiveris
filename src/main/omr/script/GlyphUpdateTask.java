@@ -18,6 +18,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.lag.LagOrientation;
 
+import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import java.util.*;
@@ -60,13 +61,15 @@ public abstract class GlyphUpdateTask
     /**
      * Creates a new GlyphUpdateTask object.
      *
+     * @param sheet the sheet impacted
      * @param orientation orientation of the containing lag
      * @param glyphs the collection of glyphs concerned by this task
      */
-    public GlyphUpdateTask (LagOrientation    orientation,
+    public GlyphUpdateTask (Sheet             sheet,
+                            LagOrientation    orientation,
                             Collection<Glyph> glyphs)
     {
-        super(orientation, glyphs);
+        super(sheet, orientation, glyphs);
         sectionSets = SectionSets.createFromGlyphs(glyphs);
     }
 
@@ -76,11 +79,13 @@ public abstract class GlyphUpdateTask
     /**
      * Creates a new GlyphUpdateTask object, for vertical glyphs by default
      *
+     * @param sheet the sheet impacted
      * @param glyphs the collection of glyphs concerned by this task
      */
-    public GlyphUpdateTask (Collection<Glyph> glyphs)
+    public GlyphUpdateTask (Sheet             sheet,
+                            Collection<Glyph> glyphs)
     {
-        this(LagOrientation.VERTICAL, glyphs);
+        this(sheet, LagOrientation.VERTICAL, glyphs);
     }
 
     //-----------------//

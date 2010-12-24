@@ -457,15 +457,15 @@ public class StaffInfo
                 return false;
             }
 
-            // Paint each horizontal line in the set
+            // Draw each horizontal line in the set
             for (LineInfo line : lines) {
                 line.render(g, left, right);
             }
 
-            // Left vertical line
+            // Draw the left vertical line
             g.drawLine(left, yTopLeft, left, yBottomLeft);
 
-            // Right vertical line
+            // Draw the right vertical line
             g.drawLine(right, yTopRight, right, yBottomRight);
 
             return true;

@@ -33,18 +33,12 @@ import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
 import java.awt.image.*;
 import java.awt.image.renderable.ParameterBlock;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URL;
 
 import javax.media.jai.BorderExtender;
 import javax.media.jai.InterpolationBilinear;
-import javax.media.jai.InterpolationNearest;
 import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.RenderedImageAdapter;
-import javax.media.jai.operator.MosaicDescriptor;
 
 /**
  * Class <code>Picture</code> encapsulates an image, allowing modifications and
@@ -52,8 +46,6 @@ import javax.media.jai.operator.MosaicDescriptor;
  * Imaging).
  *
  * <p> Operations allow : <ul>
- *
- * <li> To <b>load</b> the original image from a file </li>
  *
  * <li> To <b>store</b> the current image to a file </li>
  *
@@ -68,7 +60,10 @@ import javax.media.jai.operator.MosaicDescriptor;
  *
  * </ul> </p>
  *
- * @author Hervé Bitteur and Brenton Partridge
+ * @author Hervé Bitteur
+ * @author Brenton Partridge
+ *
+ * TODO: work on grayFactor, BACKGROUND, etc...
  */
 public class Picture
     implements PixelSource, EventSubscriber<SheetLocationEvent>
@@ -98,9 +93,6 @@ public class Picture
     /** Dimension of current image */
     private Dimension dimension;
 
-    /** Original image dimension */
-    private Dimension originalDimension;
-
     /** Current image */
     private PlanarImage image;
 
@@ -120,7 +112,13 @@ public class Picture
     /** The factor to apply to raw pixel value to get gray level on 0..255 */
     private int grayFactor = 1;
 
-    /** The current maximum value for foreground pixels */
+    /**
+     * The implicit (maximum) value for foreground pixels, as determined by the
+     * picture itself. Null if undetermined.
+     */
+    private Integer implicitForeground;
+
+    /** The current maximum value for foreground pixels, null if not set */
     private Integer maxForeground;
 
     //~ Constructors -----------------------------------------------------------
@@ -129,274 +127,18 @@ public class Picture
     // Picture //
     //---------//
     /**
-     * Build a picture instance, using a given image.
+     * Build a picture instance from a given image.
      *
-     * @param image the image provided
-     * @exception ImageFormatException
+     * @param image the provided image
+     * @throws ImageFormatException
      */
     public Picture (RenderedImage image)
         throws ImageFormatException
     {
-        this(image, 1f);
-    }
-
-    //---------//
-    // Picture //
-    //---------//
-    /**
-     * Build a picture instance, using a given image.
-     *
-     * @param image the image provided
-     * @exception ImageFormatException
-     */
-    public Picture (BufferedImage image)
-        throws ImageFormatException
-    {
-        this(image, 1f);
-    }
-
-    //---------//
-    // Picture //
-    //---------//
-    /**
-     * Build a picture instance, using a given image, and the scaling to apply
-     * on the image
-     *
-     * @param image the image provided
-     * @param scaling the scaling to apply (1.0 means no scaling)
-     * @exception ImageFormatException
-     */
-    public Picture (RenderedImage image,
-                    float         scaling)
-        throws ImageFormatException
-    {
-        RenderedImage src = image;
-
-        if (scaling != 1.0f) {
-            ParameterBlock pb = new ParameterBlock().addSource(image)
-                                                    .add(scaling)
-                                                    .add(scaling)
-                                                    .add(0f)
-                                                    .add(0f)
-                                                    .add(
-                new InterpolationNearest());
-            src = JAI.create("scale", pb);
-        }
-
-        setImage(src);
-    }
-
-    //---------//
-    // Picture //
-    //---------//
-    /**
-     * Build a picture instance, using a given image, and the scaling to apply
-     * on the image
-     *
-     * @param image the image provided
-     * @param scaling the scaling to apply (1.0 means no scaling)
-     * @exception ImageFormatException
-     */
-    public Picture (BufferedImage image,
-                    float         scaling)
-        throws ImageFormatException
-    {
-        setImage(image, scaling);
-    }
-
-    //---------//
-    // Picture //
-    //---------//
-    /**
-     * Build a picture instance, given the name of a file where the related
-     * image should be read.
-     *
-     * @param imgFile the image file
-     *
-     * @throws FileNotFoundException raised when the file is not found
-     * @throws IOException           raised when an IO error occurred
-     * @throws ImageFormatException
-     */
-    public Picture (File imgFile)
-        throws FileNotFoundException, IOException, ImageFormatException
-    {
-        setImage(PictureLoader.loadFile(imgFile));
-
-        logger.info(
-            "Image loaded " + image.getWidth() + " x " + image.getHeight());
-    }
-
-    //---------//
-    // Picture //
-    //---------//
-    /**
-     * Build a picture instance, given  url where the related
-     * image should be read.
-     *
-     * @param imgUrl the image url
-     *
-     * @throws FileNotFoundException raised when the file is not found
-     * @throws IOException           raised when an IO error occurred
-     * @throws ImageFormatException
-     */
-    public Picture (URL imgUrl)
-        throws FileNotFoundException, IOException, ImageFormatException
-    {
-        setImage(PictureLoader.loadUrl(imgUrl));
-
-        logger.info(
-            "Image loaded " + image.getWidth() + " x " + image.getHeight());
-    }
-
-    //---------//
-    // Picture //
-    //---------//
-    /**
-     * Create a picture as a mosaic of other images, which are to be composed
-     * one above the other.
-     *
-     * This method is not currently used
-     *
-     * @param files  ordered array of image files,
-     * @param thetas array parallel to files, that specifies the needed rotation
-     *               angles
-     *
-     * @throws FileNotFoundException
-     * @throws IOException
-     * @throws ImageFormatException
-     */
-    public Picture (File[]   files,
-                    double[] thetas)
-        throws FileNotFoundException, IOException, ImageFormatException
-    {
-        //int           globalWidth = 0; // Width of resulting mosaic
-        int           globalHeight = 0; // Height of resulting mosaic
-
-        int           narrowestIndex = 0; // Index of narrowest image
-        int           narrowestWidth = Integer.MAX_VALUE; // Width of narrowest image
-
-        // Array of images and related shifts
-        PlanarImage[] images = new PlanarImage[files.length];
-
-        for (int i = 0; i < files.length; i++) {
-            logger.info("Loading image " + files[i].getPath());
-
-            PlanarImage img0 = JAI.create("fileload", files[i].getPath());
-            System.out.println("i=" + i + " file=" + files[i]);
-            System.out.println(
-                "img0 width=" + img0.getWidth() + ", height=" +
-                img0.getHeight());
-
-            // Rotation
-            PlanarImage img1;
-
-            if (thetas[i] != 0) {
-                img1 = invert(
-                    JAI.create(
-                        "Rotate",
-                        (new ParameterBlock()).addSource(invert(img0)).add(
-                            0.0F).add(0.0F).add((float) thetas[i]).add(
-                            new InterpolationBilinear()),
-                        null));
-            } else {
-                img1 = img0;
-            }
-
-            System.out.println(
-                "img1 width=" + img1.getWidth() + ", height=" +
-                img1.getHeight());
-
-            // Shift
-            AffineTransform shift = AffineTransform.getTranslateInstance(
-                0,
-                globalHeight);
-            images[i] = JAI.create(
-                "Affine",
-                (new ParameterBlock()).addSource(img1).add(shift).add(
-                    new InterpolationBilinear()));
-            System.out.println(
-                "final width=" + images[i].getWidth() + ", height=" +
-                images[i].getHeight());
-
-            int width = images[i].getWidth();
-
-            if (width < narrowestWidth) {
-                narrowestWidth = width;
-                narrowestIndex = i;
-            }
-
-            System.out.println("globalHeight=" + globalHeight);
-            globalHeight += images[i].getHeight();
-        }
-
-        // Compute the mosaic parameter block, with narrowest image first
-        System.out.println("narrowestIndex=" + narrowestIndex);
-
-        ParameterBlock mosaicParam = new ParameterBlock();
-        mosaicParam.addSource(images[narrowestIndex]); // Narrowest first !!!
-
-        for (int i = 0; i < files.length; i++) {
-            if (i != narrowestIndex) {
-                mosaicParam.addSource(images[i]);
-            }
-        }
-
-        double[][] threshold = {
-                                   { 0 }
-                               };
-        double[]   bgColor = new double[] { 150 };
-        //double[]   bgColor = new double[] {255};
-        mosaicParam.add(MosaicDescriptor.MOSAIC_TYPE_OVERLAY);
-        mosaicParam.add(null);
-        mosaicParam.add(null);
-        mosaicParam.add(threshold);
-        mosaicParam.add(bgColor);
-
-        image = JAI.create("mosaic", mosaicParam);
-
-        // Cache dimensions
-        updateParams();
-
-        // Remember original stuff
-        originalDimension = getDimension();
-
-        logger.info(
-            "Mosaic " + " " + image.getWidth() + " x " + image.getHeight());
+        setImage(image);
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //--------------------//
-    // getAsBufferedImage //
-    //--------------------//
-    /**
-     * Return a copy of the underlying image as a buffered image.
-     *
-     * @return the proper buffered image
-     */
-    public final BufferedImage getAsBufferedImage ()
-    {
-        return image.getAsBufferedImage();
-    }
-
-    //--------------------//
-    // getAsBufferedImage //
-    //--------------------//
-    /**
-     * Return a copy of a portion of the underlying image as a buffered image.
-     *
-     * @param rectangle the clip rectangle
-     * @return the proper buffered image
-     */
-    public final BufferedImage getAsBufferedImage (Rectangle rectangle)
-    {
-        if (!image.getBounds()
-                  .contains(rectangle)) {
-            throw new IllegalArgumentException("Rectangle not within image");
-        }
-
-        return image.getAsBufferedImage(rectangle, null);
-    }
 
     //--------------//
     // getDimension //
@@ -425,9 +167,18 @@ public class Picture
         return dimension.height;
     }
 
+    //-----------------------//
+    // getImplicitForeground //
+    //-----------------------//
+    public Integer getImplicitForeground ()
+    {
+        return implicitForeground;
+    }
+
     //------------------//
     // setMaxForeground //
     //------------------//
+    @Implement(PixelSource.class)
     public void setMaxForeground (int level)
     {
         this.maxForeground = level;
@@ -436,9 +187,14 @@ public class Picture
     //------------------//
     // getMaxForeground //
     //------------------//
+    @Implement(PixelSource.class)
     public int getMaxForeground ()
     {
-        return maxForeground;
+        if (maxForeground != null) {
+            return maxForeground;
+        } else {
+            return implicitForeground;
+        }
     }
 
     //---------//
@@ -452,34 +208,6 @@ public class Picture
     public String getName ()
     {
         return "Picture";
-    }
-
-    //---------------//
-    // getOrigHeight //
-    //---------------//
-    /**
-     * Report the original picture height, as read from the image file, before
-     * any potential rotation.
-     *
-     * @return the original height value, in pixels
-     */
-    public int getOrigHeight ()
-    {
-        return originalDimension.height;
-    }
-
-    //--------------//
-    // getOrigWidth //
-    //--------------//
-    /**
-     * Report the original picture width, as read from the image file, before
-     * any potential rotation.
-     *
-     * @return the original width value, in pixels
-     */
-    public int getOrigWidth ()
-    {
-        return originalDimension.width;
     }
 
     //----------//
@@ -709,6 +437,7 @@ public class Picture
     //--------//
     /**
      * Rotate the image according to the provided angle.
+     * <p>Experience with JAI shows that we must use bytes rather than bits
      *
      * @param theta the desired rotation angle, in radians, positive for
      * clockwise, negative for counter-clockwise
@@ -717,35 +446,50 @@ public class Picture
     public void rotate (double theta)
         throws ImageFormatException
     {
+        // Move bit -> byte if needed
+        if (image.getColorModel()
+                 .getPixelSize() == 1) {
+            image = binaryToGray(image);
+        }
+
         // Invert
-        PlanarImage img = invert(image);
+        image = invert(image);
+        ///printBounds();
 
         // Rotate
         image = JAI.create(
             "Rotate",
-            new ParameterBlock().addSource(img) // Source image
+            new ParameterBlock().addSource(image) // Source image
             .add(0f) // x origin
             .add(0f) // y origin
             .add((float) theta) // angle
             .add(new InterpolationBilinear()), // Interpolation hint
             null);
 
-        // Crop the image to fit the size of the previous one
-        ParameterBlock cpb = new ParameterBlock().addSource(image) // The source image
+        ///printBounds();
 
-                                                 .add(0f) // x
+        // Translate the image so that we stay in non-negative coordinates
+        if ((image.getMinX() != 0) || (image.getMinY() != 0)) {
+            image = JAI.create(
+                "translate",
+                new ParameterBlock().addSource(image) // Source
+                .add(image.getMinX() * -1.0f) // dx
+                .add(image.getMinY() * -1.0f), // dy
+                null);
 
-                                                 .add(0f); // y
-
-        if (theta < 0d) { // counter-clock wise
-            cpb.add((float) (dimension.width));
-            cpb.add((float) ((dimension.height * Math.cos(theta)) - 1f));
-        } else { // clock wise
-            cpb.add((float) ((dimension.width * Math.cos(theta)) - 1f));
-            cpb.add((float) (dimension.height));
+            ///printBounds();
         }
 
-        image = JAI.create("crop", cpb, null);
+        //        // Crop the image to fit the size of the previous one
+        //        image = JAI.create(
+        //            "crop",
+        //            new ParameterBlock().addSource(image) // The source image
+        //            .add(0f) // x
+        //            .add(0f) // y
+        //            .add(dimension.width * 0.735f) // width
+        //            .add(dimension.height * 0.825f), // height
+        //            null);
+        //        printBounds();
 
         // de-Invert
         image = invert(image);
@@ -758,25 +502,6 @@ public class Picture
         updateParams();
 
         logger.info("Image rotated " + getWidth() + " x " + getHeight());
-    }
-
-    //-------//
-    // store //
-    //-------//
-    /**
-     * Save the current image to a file, in PNG format
-     *
-     * @param fname the name of the file, without its extension
-     *
-     * @return the path name of the created file
-     */
-    public String store (String fname)
-    {
-        fname = fname + ".png";
-        JAI.create("filestore", image, fname, "PNG", null);
-        logger.info("Image stored in " + fname);
-
-        return fname;
     }
 
     //----------//
@@ -795,39 +520,6 @@ public class Picture
         throws ImageFormatException
     {
         image = PlanarImage.wrapRenderedImage(renderedImage);
-
-        checkImage();
-    }
-
-    //----------//
-    // setImage //
-    //----------//
-    private void setImage (BufferedImage bufferedImage,
-                           float         scaling)
-        throws ImageFormatException
-    {
-        image = PlanarImage.wrapRenderedImage(bufferedImage);
-
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "planarImage hasAlpha=" + image.getColorModel().hasAlpha());
-        }
-
-        if (scaling != 1.0f) {
-            ParameterBlock pb = new ParameterBlock().addSource(image)
-                                                    .add(scaling)
-                                                    .add(scaling)
-                                                    .add(0f)
-                                                    .add(0f)
-                                                    .add(
-                new InterpolationNearest());
-            image = JAI.create("scale", pb);
-
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "scaled hasAlpha=" + image.getColorModel().hasAlpha());
-            }
-        }
 
         checkImage();
     }
@@ -866,7 +558,7 @@ public class Picture
     //--------------//
     // binaryToGray //
     //--------------//
-    private static PlanarImage binaryToGray (PlanarImage image)
+    private PlanarImage binaryToGray (PlanarImage image)
     {
         logger.info("Converting binary image to gray ...");
 
@@ -908,6 +600,8 @@ public class Picture
             }
         }
 
+        implicitForeground = null;
+
         return result;
     }
 
@@ -923,9 +617,6 @@ public class Picture
         } else {
             // Check & cache all parameters
             updateParams();
-
-            // Remember original dimension
-            originalDimension = getDimension();
         }
     }
 
@@ -945,7 +636,8 @@ public class Picture
                              .getPixelSize();
 
         if (pixelSize == 1) {
-            image = binaryToGray(image);
+            ///image = binaryToGray(image); // Only if rotation is needed!
+            implicitForeground = 0;
         }
 
         // Check nb of bands
@@ -980,6 +672,16 @@ public class Picture
             null);
     }
 
+    //-------------//
+    // printBounds //
+    //-------------//
+    private void printBounds ()
+    {
+        logger.info(
+            "minX:" + image.getMinX() + " minY:" + image.getMinY() + " maxX:" +
+            image.getMaxX() + " maxY:" + image.getMaxY());
+    }
+
     //--------------//
     // updateParams //
     //--------------//
@@ -1009,18 +711,19 @@ public class Picture
             logger.fine("colorModel=" + colorModel + " pixelSize=" + pixelSize);
         }
 
-        if (pixelSize <= 8) {
+        if (pixelSize == 1) {
+            grayFactor = 1;
+        } else if (pixelSize <= 8) {
             grayFactor = (int) Math.rint(128 / Math.pow(2, pixelSize - 1));
         } else {
             throw new RuntimeException("Unsupported pixel size:" + pixelSize);
         }
 
-        if (pixelSize != 8) {
-            logger.warning(
-                "The input image has a pixel size of " + pixelSize + " bits." +
-                "\nConsider converting to a format with pixel color on 8 bits (1 byte)");
-        }
-
+        //        if (pixelSize != 8) {
+        //            logger.warning(
+        //                "The input image has a pixel size of " + pixelSize + " bits." +
+        //                "\nConsider converting to a format with pixel color on 8 bits (1 byte)");
+        //        }
         if (logger.isFineEnabled()) {
             logger.fine("grayFactor=" + grayFactor);
         }

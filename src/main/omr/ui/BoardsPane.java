@@ -77,7 +77,7 @@ public class BoardsPane
 
         // Prepare layout elements
         final String panelInterline = Panel.getPanelInterline();
-        StringBuffer sbr = new StringBuffer();
+        StringBuilder sbr = new StringBuilder();
 
         for (int n = 0; n <= boards.length; n++) {
             if (n != 0) {

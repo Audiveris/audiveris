@@ -55,14 +55,16 @@ public class DeleteTask
     /**
      * Create an glyph deletion task
      *
+     * @param sheet the sheet impacted
      * @param orientation the orientation of the containing lag
      * @param glyphs the (virtual) glyphs to delete
      * @throws IllegalArgumentException if any of the arguments is not valid
      */
-    public DeleteTask (LagOrientation    orientation,
+    public DeleteTask (Sheet             sheet,
+                       LagOrientation    orientation,
                        Collection<Glyph> glyphs)
     {
-        super(orientation, glyphs);
+        super(sheet, orientation, glyphs);
 
         locations = new ArrayList<PixelPoint>();
 
@@ -118,7 +120,7 @@ public class DeleteTask
     @Override
     protected String internalsString ()
     {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(super.internalsString());
         sb.append(" delete");
 
         sb.append(" ")
@@ -137,7 +139,7 @@ public class DeleteTask
             sb.append(" no-locations");
         }
 
-        return sb + super.internalsString();
+        return sb.toString();
     }
 
     //-----------------------//

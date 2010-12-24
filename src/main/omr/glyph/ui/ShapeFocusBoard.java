@@ -128,7 +128,7 @@ public class ShapeFocusBoard
                             ActionListener   filterListener)
     {
         super(
-            sheet.getRadix() + "-ShapeFocusBoard",
+            sheet.getId() + "-ShapeFocusBoard",
             "Focus",
             controller.getLag().getSelectionService(),
             eventClasses);
@@ -302,7 +302,7 @@ public class ShapeFocusBoard
             // Update the shape button
             selectButton.setText("Glyphs similar to #" + example.getId());
             selectButton.setIcon(null);
-            
+
             // Expand this board if so needed
             expand();
         } else {

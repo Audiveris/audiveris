@@ -1234,7 +1234,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
     @Override
     protected String internalsString ()
     {
-        StringBuffer sb = new StringBuffer(super.internalsString());
+        StringBuilder sb = new StringBuilder(super.internalsString());
 
         sb.append(" fPos=")
           .append(firstPos)

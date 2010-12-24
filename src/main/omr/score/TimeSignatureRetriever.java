@@ -30,6 +30,7 @@ import omr.score.entity.Clef;
 import omr.score.entity.KeySignature;
 import omr.score.entity.Measure;
 import omr.score.entity.Note;
+import omr.score.entity.Page;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
@@ -74,7 +75,7 @@ public class TimeSignatureRetriever
 
     //~ Instance fields --------------------------------------------------------
 
-    /** To flag a score modification */
+    /** To flag a page modification */
     private final WrappedBoolean modified;
 
     //~ Constructors -----------------------------------------------------------
@@ -84,7 +85,7 @@ public class TimeSignatureRetriever
     //------------------------//
     /**
      * Creates a new TimeSignatureRetriever object.
-     * @param modified An output boolean to signal a modification has occurred
+     * @param modified the output to set in case of modification
      */
     public TimeSignatureRetriever (WrappedBoolean modified)
     {
@@ -93,89 +94,97 @@ public class TimeSignatureRetriever
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------------//
-    // visit Score //
-    //-------------//
+    //------------//
+    // visit Page //
+    //------------//
     /**
-     * Score hierarchy entry point
+     * Page hierarchy (sole) entry point
      *
-     * @param score visit the score to export
-     * @return false, since no further processing is required after this node
+     * @param page the page to check
+     * @return false
      */
     @Override
-    public boolean visit (Score score)
+    public boolean visit (Page page)
     {
-        // We simply consider the very first measure of every staff
-        ScoreSystem system = score.getFirstSystem();
-        Measure     firstMeasure = system.getFirstPart()
-                                         .getFirstMeasure();
+        try {
+            // We simply consider the very first measure of every staff
+            ScoreSystem system = page.getFirstSystem();
+            Measure     firstMeasure = system.getFirstPart()
+                                             .getFirstMeasure();
 
-        // If we have some TS, then it's OK
-        if (hasTimeSig(firstMeasure)) {
-            return false;
-        }
-
-        // No TS found. Let's look where it would be, if there was one
-        PixelRectangle roi = getRoi(firstMeasure);
-        int            timeSigWidth = system.getScale()
-                                            .toPixels(constants.timeSigWidth);
-
-        if (roi.width < timeSigWidth) {
-            logger.info("No room for time sig: " + roi.width);
-
-            return false;
-        }
-
-        Scale scale = system.getScale();
-        int   yOffset = scale.toPixels(constants.yOffset);
-
-        for (Staff.SystemIterator sit = new Staff.SystemIterator(firstMeasure);
-             sit.hasNext();) {
-            Staff staff = sit.next();
-
-            if (staff.isDummy()) {
-                continue;
+            // If we have some TS, then it's OK
+            if (hasTimeSig(firstMeasure)) {
+                return false;
             }
 
-            // Define the inner box to intersect clef glyph(s)
-            int            center = roi.x + (roi.width / 2);
-            StaffInfo      staffInfo = staff.getInfo();
-            PixelRectangle inner = new PixelRectangle(
-                center,
-                staffInfo.getFirstLine().yAt(center) +
-                (staffInfo.getHeight() / 2),
-                0,
-                0);
-            inner.grow(
-                (timeSigWidth / 2),
-                (staffInfo.getHeight() / 2) - yOffset);
+            // No TS found. Let's look where it would be, if there was one
+            PixelRectangle roi = getRoi(firstMeasure);
+            Scale          scale = system.getScale();
+            int            timeSigWidth = scale.toPixels(
+                constants.timeSigWidth);
 
-            // Draw the box, for visual debug
-            SystemPart part = system.getPartAt(inner.getCenter());
-            Barline    barline = part.getStartingBarline();
-            Glyph      line = null;
+            if (roi.width < timeSigWidth) {
+                logger.info("No room for time sig: " + roi.width);
 
-            if (barline != null) {
-                line = Glyphs.firstOf(
-                    barline.getGlyphs(),
-                    Barline.linePredicate);
+                return false;
+            }
 
-                if (line != null) {
-                    line.addAttachment("TimeSigInner#" + staff.getId(), inner);
+            int yOffset = scale.toPixels(constants.yOffset);
+
+            for (Staff.SystemIterator sit = new Staff.SystemIterator(
+                firstMeasure); sit.hasNext();) {
+                Staff staff = sit.next();
+
+                if (staff.isDummy()) {
+                    continue;
+                }
+
+                // Define the inner box to intersect clef glyph(s)
+                int            center = roi.x + (roi.width / 2);
+                StaffInfo      staffInfo = staff.getInfo();
+                PixelRectangle inner = new PixelRectangle(
+                    center,
+                    staffInfo.getFirstLine().yAt(center) +
+                    (staffInfo.getHeight() / 2),
+                    0,
+                    0);
+                inner.grow(
+                    (timeSigWidth / 2),
+                    (staffInfo.getHeight() / 2) - yOffset);
+
+                // Draw the box, for visual debug
+                SystemPart part = system.getPartAt(inner.getCenter());
+                Barline    barline = part.getStartingBarline();
+                Glyph      line = null;
+
+                if (barline != null) {
+                    line = Glyphs.firstOf(
+                        barline.getGlyphs(),
+                        Barline.linePredicate);
+
+                    if (line != null) {
+                        line.addAttachment(
+                            "TimeSigInner#" + staff.getId(),
+                            inner);
+                    }
+                }
+
+                // We now must find a time sig out of these glyphs
+                Collection<Glyph> glyphs = system.getInfo()
+                                                 .lookupIntersectedGlyphs(
+                    inner);
+
+                if (checkTimeSig(glyphs, system)) {
+                    modified.set(true);
                 }
             }
-
-            // We now must find a time sig out of these glyphs
-            Collection<Glyph> glyphs = system.getInfo()
-                                             .lookupIntersectedGlyphs(inner);
-
-            if (checkTimeSig(glyphs, system)) {
-                modified.set(true);
-            }
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + page,
+                ex);
         }
 
-        // This is the end
-        return false;
+        return false; // No navigation
     }
 
     //--------//
@@ -251,7 +260,7 @@ public class TimeSignatureRetriever
      * glyphs
      * @param glyphs the glyphs to build up the time sig
      * @param scoreSystem the containing system
-     * @return true if the tiem sig has been recognized and inserted
+     * @return true if the time sig has been recognized and inserted
      */
     private boolean checkTimeSig (Collection<Glyph> glyphs,
                                   ScoreSystem       scoreSystem)
@@ -266,7 +275,7 @@ public class TimeSignatureRetriever
         Glyph compound = system.buildTransientCompound(glyphs);
         system.computeGlyphFeatures(compound);
 
-        // Check if a clef appears in the top evaluations
+        // Check if a time sig appears in the top evaluations
         Evaluation vote = GlyphNetwork.getInstance()
                                       .topRawVote(
             compound,
@@ -275,7 +284,6 @@ public class TimeSignatureRetriever
 
         if (vote != null) {
             // We now have a time sig!
-            // Look around for an even better result...
             if (logger.isFineEnabled()) {
                 logger.fine(
                     vote.shape + " built from " + Glyphs.toString(glyphs));
@@ -283,11 +291,6 @@ public class TimeSignatureRetriever
 
             compound = system.addGlyph(compound);
             compound.setShape(vote.shape, Evaluation.ALGORITHM);
-
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    vote.shape + " rebuilt as glyph#" + compound.getId());
-            }
 
             return true;
         } else {

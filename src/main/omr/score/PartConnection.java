@@ -13,6 +13,7 @@ package omr.score;
 
 import omr.log.Logger;
 
+import omr.score.entity.Page;
 import omr.score.entity.ScorePart;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.SystemPart;
@@ -32,9 +33,18 @@ import java.util.Map.Entry;
  * across systems (and pages) so that a part always represents the same
  * instrument all along the score.
  *
- * <p>This work is done across the various systems of a page. It is done also
- * across the various pages of a score. The same strategy is used across systems
- * and across pages. It is based on the following assumptions:
+ * <p>This work is done across:
+ * <ul>
+ * <li>The various systems of a page using Audiveris ScoreSystem instances.</li>
+ * <li>The various pages of a score using Audiveris Page instances.</li>
+ * <li>The various pages of a score using Proxymusic ScorePartwise instances.</li>
+ * </ul>
+ * All together, this sums up to three different cases to handle, so we have
+ * taken a generic approach, abstracting the different types into Candidates and
+ * Results.</p>
+ *
+ * <p>The strategy used to build Results out of Candidates is based on the
+ * following assumptions:
  * <ul>
  * <li>For a  part of a system to be connected to a part of another system,
  * they must exhibit the same count of staves.</li>
@@ -44,7 +54,7 @@ import java.util.Map.Entry;
  * <li>Additional parts appear at the top of a system, rather than at the
  * bottom. So we process part connections bottom up.</li>
  * <li>When possible, we use the part names (or abbreviations) to help the
- * connection algorithm.
+ * connection algorithm. (not yet fully implemented).
  * </ul>
  *
  * @author Hervé Bitteur
@@ -61,11 +71,11 @@ public class PartConnection
     /** Input data */
     private final Set<List<Candidate>> sequences;
 
-    /** Record the sorted set of candidates per result */
-    private final SortedMap<Result, SortedSet<Candidate>> resultMap = new TreeMap<Result, SortedSet<Candidate>>();
+    /** Record the set of candidates per result */
+    private final SortedMap<Result, Set<Candidate>> resultMap = new TreeMap<Result, Set<Candidate>>();
 
     /** Record which result is mapped to which candidate */
-    private final SortedMap<Candidate, Result> candidateMap = new TreeMap<Candidate, Result>();
+    private final Map<Candidate, Result> candidateMap = new LinkedHashMap<Candidate, Result>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -74,8 +84,10 @@ public class PartConnection
     //----------------//
     /**
      * Creates a new PartConnection object.
-     * Not meant to be called directly, use static methods
-     * {@link #connectSystems} or {@link #connectPages} instead.
+     * Not meant to be called directly, use proper static methods instead:
+     * {@link #connectPageSystems},
+     * {@link #connectScorePages} or
+     * {@link #connectProxyPages}.
      * @param sequences a set of sequences of parts
      */
     private PartConnection (Set<List<Candidate>> sequences)
@@ -87,18 +99,48 @@ public class PartConnection
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------------//
-    // connectPages //
-    //--------------//
+    //--------------------//
+    // connectPageSystems //
+    //--------------------//
+    /**
+     * Convenient method to connect parts across systems of a page.
+     * This method is to be used when processing one page, and simply connecting
+     * the parts of the systems that appear on this page. Here we work with
+     * Audiveris ScoreSystem entities.
+     * @param page the containing page
+     */
+    public static PartConnection connectPageSystems (Page page)
+    {
+        // Build candidates (here, a candidate is a SystemPart)
+        Set<List<Candidate>> sequences = new LinkedHashSet<List<Candidate>>();
+
+        for (TreeNode sn : page.getSystems()) {
+            ScoreSystem     system = (ScoreSystem) sn;
+            List<Candidate> parts = new ArrayList<Candidate>();
+
+            for (TreeNode pn : system.getParts()) {
+                SystemPart systemPart = (SystemPart) pn;
+                parts.add(new SystemPartCandidate(systemPart));
+            }
+
+            sequences.add(parts);
+        }
+
+        return new PartConnection(sequences);
+    }
+
+    //-------------------//
+    // connectProxyPages //
+    //-------------------//
     /**
      * Convenient method to connect parts across pages.
      * This method is to be used when merging the results of several pages.
-     * Here we work with ProxyMusic entities, since we expect each page result
-     * to be provided via MusicXML.
+     * Here we work with ProxyMusic ScorePartwise entities, since we expect each
+     * page result to be provided via MusicXML.
      * @param pages the sequence of pages, as (proxymusic) ScorePartwise
      * instances
      */
-    public static PartConnection connectPages (SortedMap<Integer, ScorePartwise> pages)
+    public static PartConnection connectProxyPages (SortedMap<Integer, ScorePartwise> pages)
     {
         // Build candidates (here a candidate is a ScorePart)
         Set<List<Candidate>> sequences = new LinkedHashSet<List<Candidate>>();
@@ -123,82 +165,56 @@ public class PartConnection
         return new PartConnection(sequences);
     }
 
-    //----------------//
-    // connectSystems //
-    //----------------//
+    //-------------------//
+    // connectScorePages //
+    //-------------------//
     /**
-     * Convenient method to connect parts across systems of a score (1 page).
-     * This method is to be used when processing one page, and simply connecting
-     * the parts of the systems that appear on this page. Here we work with
-     * Audiveris entities.
-     * @param score the containing score
+     * Convenient method to connect parts across pages.
+     * This method is to be used when merging the results of several pages.
+     * Here we work directly with Audiveris Page entities
+     * @param pages the sequence of pages, as (audiveris) Page instances
      */
-    public static void connectSystems (Score score)
+    public static PartConnection connectScorePages (SortedMap<Integer, Page> pages)
     {
-        // Build candidates (a candidate is a SystemPart)
+        // Build candidates (here a candidate is a ScorePart)
         Set<List<Candidate>> sequences = new LinkedHashSet<List<Candidate>>();
 
-        for (TreeNode sn : score.getSystems()) {
-            ScoreSystem     system = (ScoreSystem) sn;
+        for (Entry<Integer, Page> entry : pages.entrySet()) {
+            Page            page = entry.getValue();
+            List<ScorePart> partList = page.getPartList();
             List<Candidate> parts = new ArrayList<Candidate>();
 
-            for (TreeNode pn : system.getParts()) {
-                SystemPart systemPart = (SystemPart) pn;
-                parts.add(new SystemPartCandidate(systemPart));
+            for (ScorePart scorePart : partList) {
+                parts.add(new ScorePartCandidate(scorePart, page));
             }
 
             sequences.add(parts);
         }
 
-        PartConnection  connector = new PartConnection(sequences);
-
-        // Build part list
-        List<ScorePart> scoreParts = new ArrayList<ScorePart>();
-
-        for (Result result : connector.getResultMap()
-                                      .keySet()) {
-            scoreParts.add((ScorePart) result.getUnderlyingObject());
-        }
-
-        score.setPartList(scoreParts);
-
-        // Make the connections
-        Map<Candidate, Result> candidateMap = connector.getCandidateMap();
-
-        if (logger.isFineEnabled()) {
-            logger.fine("Candidates:" + candidateMap.size());
-        }
-
-        for (Entry<Candidate, Result> entry : candidateMap.entrySet()) {
-            Candidate  candidate = entry.getKey();
-            SystemPart systemPart = (SystemPart) candidate.getUnderlyingObject();
-
-            Result     result = entry.getValue();
-            ScorePart  scorePart = (ScorePart) result.getUnderlyingObject();
-
-            systemPart.setScorePart(scorePart);
-            systemPart.setId(scorePart.getId());
-        }
+        return new PartConnection(sequences);
     }
 
     //-----------------//
     // getCandidateMap //
     //-----------------//
     /**
+     * Report an unmodifiable view of which resulting part has been assigned
+     * to any given candidate
      * @return the candidateMap (candidate -> assigned result)
      */
     public Map<Candidate, Result> getCandidateMap ()
     {
-        return candidateMap;
+        return Collections.unmodifiableMap(candidateMap);
     }
 
     //--------------//
     // getResultMap //
     //--------------//
     /**
-     * @return the resultMap ((sorted) result -> (sorted) set of candidates)
+     * Report which candidate parts have been mapped to any given result
+     * @return the resultMap ((sorted) result -> (unsorted) set of candidates)
      */
-    public SortedMap<Result, SortedSet<Candidate>> getResultMap ()
+    public SortedMap<Result, Set<Candidate>> getResultMap ()
     {
         return resultMap;
     }
@@ -216,8 +232,8 @@ public class PartConnection
         /** Resulting sequence of ScorePart's */
         final List<Result> results = new ArrayList<Result>();
 
-        /** Temporary map, to record the sorted set of candidates per result */
-        final Map<Result, SortedSet<Candidate>> rawMap = new HashMap<Result, SortedSet<Candidate>>();
+        /** Temporary map, to record the set of candidates per result */
+        final Map<Result, Set<Candidate>> rawMap = new HashMap<Result, Set<Candidate>>();
 
         // Process each sequence of parts in turn
         // (typically a sequence of parts is a system)
@@ -293,11 +309,14 @@ public class PartConnection
                         }
 
                         // We are compatible
+                        candidateMap.put(candidate, result);
+
                         if (logger.isFineEnabled()) {
-                            logger.fine("Compatible");
+                            logger.fine(
+                                "Compatible. Mapped candidate " + candidate +
+                                " to result " + result);
                         }
 
-                        candidateMap.put(candidate, result);
                         rawMap.get(result)
                               .add(candidate);
                     }
@@ -330,14 +349,21 @@ public class PartConnection
     //--------------//
     // createResult //
     //--------------//
-    private Result createResult (int                               resultIndex,
-                                 Candidate                         candidate,
-                                 List<Result>                      results,
-                                 Map<Result, SortedSet<Candidate>> rawMap)
+    private Result createResult (int                         resultIndex,
+                                 Candidate                   candidate,
+                                 List<Result>                results,
+                                 Map<Result, Set<Candidate>> rawMap)
     {
-        SortedSet<Candidate> candidates = new TreeSet<Candidate>();
-        Result               result = candidate.createResult();
+        Set<Candidate> candidates = new LinkedHashSet<Candidate>();
+        Result         result = candidate.createResult();
         candidateMap.put(candidate, result);
+
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                "Creation. Mapped candidate " + candidate + " to result " +
+                result);
+        }
+
         candidates.add(candidate);
         rawMap.put(result, candidates);
         results.add(resultIndex, result);
@@ -352,13 +378,17 @@ public class PartConnection
     //-----------//
     /**
      * Interface {@code Candidate} is used to process part candidates,
-     * regardless whether they are provided as Audiveris {@link
-     * omr.score.entity.SystemPart} instances (produced by the scanning of just
-     * one page) or as ProxyMusic {@link proxymusic.ScorePart} instances (used
-     * when merging MusicXML files).
+     * regardless whether they are provided:
+     * <ul>
+     * <li>as Audiveris {@link omr.score.entity.SystemPart} instances
+     * (produced by the scanning of just one page)</li>
+     * <li>as Audiveris {@link omr.score.entity.ScorePart}
+     * (when merging Audiveris pages)</li>
+     * <li>as ProxyMusic {@link proxymusic.ScorePart} instances
+     * (used when merging MusicXML files).</li>
+     * </ul>
      */
     public static interface Candidate
-        extends Comparable<Candidate>
     {
         //~ Methods ------------------------------------------------------------
 
@@ -394,41 +424,35 @@ public class PartConnection
     {
         //~ Methods ------------------------------------------------------------
 
+        /** Assign an abbreviation to the part */
         public void setAbbreviation (String abbreviation);
 
+        /** Report the part abbreviation, if any */
         public String getAbbreviation ();
 
         /** Report the candidate object used to build this result */
         public Candidate getCandidate ();
 
+        /** Assign an unique id to the part */
         public void setId (int id);
 
+        /** Report the part id */
         public int getId ();
 
+        /** Assign a name to the part */
         public void setName (String name);
 
+        /** Report the part name */
         public String getName ();
 
+        /** Report the number of staves in that part */
         public int getStaffCount ();
 
+        /** Report the actual underlying instance */
         public Object getUnderlyingObject ();
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
-    //-------------------//
-    // AbstractCandidate //
-    //-------------------//
-    private abstract static class AbstractCandidate
-        implements Candidate
-    {
-        //~ Methods ------------------------------------------------------------
-
-        public int compareTo (Candidate other)
-        {
-            return Integer.signum(getInputIndex() - other.getInputIndex());
-        }
-    }
 
     //----------------//
     // AbstractResult //
@@ -494,7 +518,7 @@ public class PartConnection
      * Wrapping class meant for a proxymusic ScorePart instance candidate
      */
     private static class PMScorePartCandidate
-        extends AbstractCandidate
+        implements Candidate
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -724,6 +748,96 @@ public class PartConnection
         }
     }
 
+    //--------------------//
+    // ScorePartCandidate //
+    //--------------------//
+    /**
+     * Wrapping class meant for a ScorePart instance candidate
+     */
+    private static class ScorePartCandidate
+        implements Candidate
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        private final ScorePart scorePart;
+        private final Page      page;
+
+        //~ Constructors -------------------------------------------------------
+
+        public ScorePartCandidate (ScorePart scorePart,
+                                   Page      page)
+        {
+            this.scorePart = scorePart;
+            this.page = page;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        public String getAbbreviation ()
+        {
+            return scorePart.getAbbreviation();
+        }
+
+        public int getInputIndex ()
+        {
+            return page.getIndex();
+        }
+
+        public String getName ()
+        {
+            return scorePart.getName();
+        }
+
+        public int getStaffCount ()
+        {
+            return scorePart.getStaffCount();
+        }
+
+        public Object getUnderlyingObject ()
+        {
+            return scorePart;
+        }
+
+        public ScorePartResult createResult ()
+        {
+            // Create a brand new score part for this candidate
+            // Id is irrelevant for the time being
+            ScorePartResult result = new ScorePartResult(
+                this,
+                new ScorePart(0, getStaffCount()));
+            result.setName(getName());
+            result.setAbbreviation(getAbbreviation());
+
+            if (logger.isFineEnabled()) {
+                logger.fine("Created " + result + " from " + this);
+            }
+
+            return result;
+        }
+
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder("{");
+
+            sb.append(getClass().getSimpleName());
+
+            sb.append(" page#")
+              .append(getInputIndex());
+
+            sb.append(" \"")
+              .append(getName())
+              .append("\"");
+
+            sb.append(" staffCount:")
+              .append(getStaffCount());
+
+            sb.append("}");
+
+            return sb.toString();
+        }
+    }
+
     //-----------------//
     // ScorePartResult //
     //-----------------//
@@ -796,7 +910,7 @@ public class PartConnection
      * Wrapping class meant for a SystemPart instance
      */
     private static class SystemPartCandidate
-        extends AbstractCandidate
+        implements Candidate
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -842,8 +956,9 @@ public class PartConnection
         {
             // Create a brand new score part for this candidate
             // Id is irrelevant for the time being
-            ScorePart       scorePart = new ScorePart(0, getStaffCount());
-            ScorePartResult result = new ScorePartResult(this, scorePart);
+            ScorePartResult result = new ScorePartResult(
+                this,
+                new ScorePart(0, getStaffCount()));
             result.setName(getName());
             result.setAbbreviation(getAbbreviation());
 
@@ -857,7 +972,7 @@ public class PartConnection
         @Override
         public String toString ()
         {
-            return systemPart.toString();
+            return "S" + getInputIndex() + "-" + systemPart.toString();
         }
     }
 }

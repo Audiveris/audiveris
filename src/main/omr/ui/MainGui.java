@@ -21,23 +21,24 @@ import omr.constant.*;
 
 import omr.log.Logger;
 
+import omr.score.Score;
 import omr.score.ScoreExporter;
+import omr.score.ScoresManager;
 import omr.score.midi.MidiAgent;
 import omr.score.ui.MusicFont;
-import omr.score.ui.ScoreController;
 
 import omr.selection.MouseMovement;
 import omr.selection.SheetEvent;
 
 import omr.sheet.Sheet;
-import omr.sheet.SheetsManager;
 import omr.sheet.ui.SheetActions.OpenTask;
 import omr.sheet.ui.SheetsController;
 
-import omr.step.Step;
 import omr.step.StepMenu;
+import omr.step.Stepping;
 
 import omr.ui.dnd.GhostGlassPane;
+import omr.ui.util.ModelessOptionPane;
 import omr.ui.util.Panel;
 import omr.ui.util.SeparableMenu;
 import omr.ui.util.UIUtilities;
@@ -83,8 +84,8 @@ public class MainGui
     /** Cache the application */
     private Application app;
 
-    /** User actions for scores */
-    public ScoreController scoreController;
+    /** Official name of the application */
+    private String appName;
 
     /** Sheet tabbed pane, which may contain several views */
     public SheetsController sheetsController;
@@ -224,6 +225,26 @@ public class MainGui
         logPane.clearLog();
     }
 
+    //---------------------//
+    // displayConfirmation //
+    //---------------------//
+    /**
+     * Allow to display a confirmation dialog with a message
+     *
+     * @param message the message asking for confirmation
+     * @return true if confirmed, false otherwise
+     */
+    public boolean displayConfirmation (String message)
+    {
+        int answer = JOptionPane.showConfirmDialog(
+            frame,
+            message,
+            "Confirm - " + appName,
+            JOptionPane.WARNING_MESSAGE);
+
+        return answer == JOptionPane.YES_OPTION;
+    }
+
     //--------------//
     // displayError //
     //--------------//
@@ -237,8 +258,7 @@ public class MainGui
         JOptionPane.showMessageDialog(
             frame,
             message,
-            "Error - " +
-            app.getContext().getResourceMap().getString("Application.name"),
+            "Error - " + appName,
             JOptionPane.ERROR_MESSAGE);
     }
 
@@ -257,8 +277,20 @@ public class MainGui
         JOptionPane.showMessageDialog(
             frame,
             htmlPane,
-            app.getContext().getResourceMap().getString("Application.name"),
+            appName,
             JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    //------------------------//
+    // displayModelessConfirm //
+    //------------------------//
+    public int displayModelessConfirm (String message)
+    {
+        return ModelessOptionPane.showModelessConfirmDialog(
+            frame,
+            message,
+            "Confirm - " + appName,
+            JOptionPane.YES_NO_OPTION);
     }
 
     //----------------//
@@ -274,8 +306,7 @@ public class MainGui
         JOptionPane.showMessageDialog(
             frame,
             message,
-            "Warning - " +
-            app.getContext().getResourceMap().getString("Application.name"),
+            "Warning - " + appName,
             JOptionPane.WARNING_MESSAGE);
     }
 
@@ -326,17 +357,9 @@ public class MainGui
                             final StringBuilder sb = new StringBuilder();
 
                             if (sheet != null) {
-                                // Frame title tells sheet name + step
-                                sb.append(sheet.getRadix());
-
-                                Step lastStep = sheet.getSheetSteps()
-                                                     .getLatestStep();
-
-                                if (lastStep != null) {
-                                    sb.append(" - ")
-                                      .append(lastStep)
-                                      .append(" -");
-                                }
+                                Score score = sheet.getScore();
+                                // Frame title tells score name (+ step?)
+                                sb.append(score.getImageFile().getName());
                             }
 
                             // Update frame title
@@ -434,6 +457,7 @@ public class MainGui
                 horiSplitPane.getDividerLocation() - 10);
         }
 
+        // Make the GUI instance available for the other classes
         Main.setGui(this);
 
         // Check MusicFont is loaded
@@ -442,11 +466,13 @@ public class MainGui
         // Just in case we already have messages pending
         notifyLog();
 
-        for (Callable<Void> task : Main.getSheetsTasks()) {
+        // Launch scores
+        for (Callable<Void> task : Main.getFilesTasks()) {
             OmrExecutors.getCachedLowExecutor()
                         .submit(task);
         }
 
+        // Launch scripts
         for (Callable<Void> task : Main.getScriptsTasks()) {
             OmrExecutors.getCachedLowExecutor()
                         .submit(task);
@@ -466,12 +492,12 @@ public class MainGui
 
         frame = getMainFrame();
 
-        sheetsController = SheetsController.getInstance();
-        SheetsManager.getInstance()
-                     .setController(sheetsController);
-        sheetsController.subscribe(this);
+        // Define frame icon TODO: Polish this!        
+        String name = WellKnowns.CONFIG_FOLDER_NAME + "/favicon.png";
+        frame.setIconImage(new ImageIcon(name).getImage());
 
-        scoreController = new ScoreController();
+        sheetsController = SheetsController.getInstance();
+        sheetsController.subscribe(this);
 
         defineMenus();
         defineLayout();
@@ -484,6 +510,9 @@ public class MainGui
 
         // Define an exit listener
         app = Application.getInstance();
+        appName = app.getContext()
+                     .getResourceMap()
+                     .getString("Application.name");
         app.addExitListener(new MaybeExit());
 
         show(frame);
@@ -544,7 +573,7 @@ public class MainGui
         JPanel toolKeyPanel = new JPanel();
         toolKeyPanel.setLayout(new BorderLayout());
         toolKeyPanel.add(
-            Step.createMonitor().getComponent(),
+            Stepping.createMonitor().getComponent(),
             BorderLayout.CENTER);
         toolKeyPanel.add(new MemoryMeter().getComponent(), BorderLayout.EAST);
 
@@ -577,7 +606,7 @@ public class MainGui
         JMenu     sheetMenu = new SeparableMenu();
 
         // Specific history sub-menu
-        JMenuItem historyMenu = SheetsManager.getInstance()
+        JMenuItem historyMenu = ScoresManager.getInstance()
                                              .getHistory()
                                              .menu(
             "Sheet History",
@@ -596,7 +625,7 @@ public class MainGui
 
         // For some specific top-level menus
         ActionManager mgr = ActionManager.getInstance();
-        mgr.injectMenu(Actions.Domain.SHEET.name(), sheetMenu);
+        mgr.injectMenu(Actions.Domain.FILE.name(), sheetMenu);
         mgr.injectMenu(Actions.Domain.STEP.name(), stepMenu);
 
         // All other commands
@@ -726,8 +755,8 @@ public class MainGui
     // HistoryListener //
     //-----------------//
     /**
-     * Class <code>HistoryListener</code> is used to reload a sheet file, when
-     * selected from the history of previous sheets.
+     * Class <code>HistoryListener</code> is used to reload an image file, when
+     * selected from the history of previous image files.
      */
     private static class HistoryListener
         implements ActionListener
@@ -766,8 +795,8 @@ public class MainGui
         public void willExit (EventObject e)
         {
             // Close all sheets, to record their bench data
-            SheetsManager.getInstance()
-                         .closeAllSheets();
+            ScoresManager.getInstance()
+                         .closeAllScores();
 
             // Store latest constant values on disk
             ConstantManager.getInstance()

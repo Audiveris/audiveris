@@ -29,7 +29,7 @@ public class BasicLine
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Line.class);
+    private static final Logger logger = Logger.getLogger(BasicLine.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -338,7 +338,7 @@ public class BasicLine
                 compute();
             }
 
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
 
             if (isRatherVertical) {
                 sb.append("{VLine ");

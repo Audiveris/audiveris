@@ -15,11 +15,15 @@ import omr.sheet.Sheet;
 
 import omr.step.Step;
 import omr.step.StepException;
+import omr.step.Stepping;
+import omr.step.Steps;
+
+import java.util.Collections;
 
 import javax.xml.bind.annotation.*;
 
 /**
- * Class {@code StepTask} performs a step on a sheet
+ * Class {@code StepTask} performs a step on a whole score
  *
  * @author Hervé Bitteur
  */
@@ -30,7 +34,6 @@ public class StepTask
     //~ Instance fields --------------------------------------------------------
 
     /** The step launched */
-    @XmlAttribute(name = "name")
     private Step step;
 
     //~ Constructors -----------------------------------------------------------
@@ -65,12 +68,7 @@ public class StepTask
     public void core (final Sheet sheet)
         throws StepException
     {
-        if (!sheet.getSheetSteps()
-                  .isDone(step)) {
-            step.performUntil(sheet);
-        } else if (logger.isFineEnabled()) {
-            logger.fine(this + " already done");
-        }
+        Stepping.processScore(Collections.singleton(step), sheet.getScore());
     }
 
     //-----------------//
@@ -94,5 +92,22 @@ public class StepTask
     boolean isRecordable ()
     {
         return false;
+    }
+
+    //---------//
+    // setStep //
+    //---------//
+    @XmlAttribute(name = "name")
+    private void setStep (String name)
+    {
+        step = Steps.valueOf(name.toUpperCase());
+    }
+
+    //---------//
+    // getStep //
+    //---------//
+    private String getStep ()
+    {
+        return step.getName();
     }
 }

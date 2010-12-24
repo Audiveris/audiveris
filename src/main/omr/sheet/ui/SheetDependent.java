@@ -39,6 +39,9 @@ public abstract class SheetDependent
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(SheetDependent.class);
 
+    /** Name of property linked to sheet availability */
+    public static final String SHEET_AVAILABLE = "sheetAvailable";
+
     //~ Instance fields --------------------------------------------------------
 
     /** Indicates whether there is a current sheet */
@@ -73,7 +76,7 @@ public abstract class SheetDependent
     {
         boolean oldValue = this.sheetAvailable;
         this.sheetAvailable = sheetAvailable;
-        firePropertyChange("sheetAvailable", oldValue, this.sheetAvailable);
+        firePropertyChange(SHEET_AVAILABLE, oldValue, this.sheetAvailable);
     }
 
     //------------------//

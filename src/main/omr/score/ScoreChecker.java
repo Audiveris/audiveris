@@ -59,6 +59,9 @@ import java.util.*;
  * <li>Enforce consistency of note heads within the same chord</li>
  * </ul>
  *
+ * TODO: Split this class into smaller modular classes, one per feature
+ * since the browing of the score by itself is very cheap (.15 ms for a page)
+ *
  * @author Hervé Bitteur
  */
 public class ScoreChecker
@@ -118,46 +121,54 @@ public class ScoreChecker
     @Override
     public boolean visit (Beam beam)
     {
-        if (!beam.isHook() ||
-            beam.getItems()
-                .first()
-                .getGlyph()
-                .isManualShape()) {
-            return true;
-        }
-
-        Glyph            glyph = beam.getItems()
-                                     .first()
-                                     .getGlyph();
-        SortedSet<Chord> chords = beam.getChords();
-
-        if (chords.size() > 1) {
-            beam.addError(glyph, "Beam hook connected to several chords");
-
-            return true;
-        }
-
-        if (chords.isEmpty()) {
-            beam.addError(glyph, "Beam hook connected to no chords");
-
-            return true;
-        }
-
-        // Check that there is at least one full beam on the same chord
-        for (Beam b : chords.first()
-                            .getBeams()) {
-            if (!b.isHook()) {
+        try {
+            if (!beam.isHook() ||
+                beam.getItems()
+                    .first()
+                    .getGlyph()
+                    .isManualShape()) {
                 return true;
             }
-        }
 
-        // No real beam found on the same chord, so let's discard the hook
-        if (logger.isFineEnabled()) {
-            logger.fine("Removing false beam hook glyph#" + glyph.getId());
-        }
+            Glyph            glyph = beam.getItems()
+                                         .first()
+                                         .getGlyph();
+            SortedSet<Chord> chords = beam.getChords();
 
-        glyph.setShape(null);
-        modified.set(true);
+            if (chords.size() > 1) {
+                beam.addError(glyph, "Beam hook connected to several chords");
+
+                return true;
+            }
+
+            if (chords.isEmpty()) {
+                beam.addError(glyph, "Beam hook connected to no chords");
+
+                return true;
+            }
+
+            // Check that there is at least one full beam on the same chord
+            for (Beam b : chords.first()
+                                .getBeams()) {
+                if (!b.isHook()) {
+                    return true;
+                }
+            }
+
+            // No real beam found on the same chord, so let's discard the hook
+            if (logger.isFineEnabled()) {
+                logger.fine("Removing false beam hook glyph#" + glyph.getId());
+            }
+
+            glyph.setShape(null);
+            modified.set(true);
+
+            return true;
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + beam,
+                ex);
+        }
 
         return true;
     }
@@ -168,11 +179,17 @@ public class ScoreChecker
     @Override
     public boolean visit (Chord chord)
     {
-        // Check note heads pitches
-        checkNotePitches(chord);
+        try {
+            // Check note heads pitches
+            checkNotePitches(chord);
 
-        // Check note heads consistency
-        checkNoteConsistency(chord);
+            // Check note heads consistency
+            checkNoteConsistency(chord);
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + chord,
+                ex);
+        }
 
         return true;
     }
@@ -188,7 +205,13 @@ public class ScoreChecker
     @Override
     public boolean visit (Dynamics dynamics)
     {
-        dynamics.getShape();
+        try {
+            dynamics.getShape();
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + dynamics,
+                ex);
+        }
 
         return true;
     }
@@ -205,31 +228,36 @@ public class ScoreChecker
     @Override
     public boolean visit (Measure measure)
     {
-        ///logger.info("Checking " + measure);
-        final Scale       scale = measure.getScale();
-        final int         xMargin = scale.toPixels(constants.stemXMargin);
-        final int         yMargin = scale.toPixels(constants.stemYMargin);
-        final ScoreSystem system = measure.getSystem();
-        final SystemInfo  systemInfo = system.getInfo();
+        try {
+            final Scale       scale = measure.getScale();
+            final int         xMargin = scale.toPixels(constants.stemXMargin);
+            final int         yMargin = scale.toPixels(constants.stemYMargin);
+            final ScoreSystem system = measure.getSystem();
+            final SystemInfo  systemInfo = system.getInfo();
 
-        // Check the beam groups for non-recognized hooks
-        for (BeamGroup group : measure.getBeamGroups()) {
-            SortedSet<Chord> chords = group.getChords();
+            // Check the beam groups for non-recognized hooks
+            for (BeamGroup group : measure.getBeamGroups()) {
+                SortedSet<Chord> chords = group.getChords();
 
-            for (Chord chord : chords) {
-                Glyph stem = chord.getStem();
+                for (Chord chord : chords) {
+                    Glyph stem = chord.getStem();
 
-                if (stem != null) { // We could have rests w/o stem!
+                    if (stem != null) { // We could have rests w/o stem!
 
-                    final PixelRectangle box = stem.getContourBox();
-                    box.grow(xMargin, yMargin);
+                        final PixelRectangle box = stem.getContourBox();
+                        box.grow(xMargin, yMargin);
 
-                    final Collection<Glyph> glyphs = systemInfo.lookupIntersectedGlyphs(
-                        box,
-                        stem);
-                    searchHooks(chord, glyphs);
+                        final Collection<Glyph> glyphs = systemInfo.lookupIntersectedGlyphs(
+                            box,
+                            stem);
+                        searchHooks(chord, glyphs);
+                    }
                 }
             }
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + measure,
+                ex);
         }
 
         return true;
@@ -246,11 +274,17 @@ public class ScoreChecker
     @Override
     public boolean visit (Score score)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Checking score ...");
-        }
+        try {
+            if (logger.isFineEnabled()) {
+                logger.fine("Checking score ...");
+            }
 
-        score.acceptChildren(this);
+            score.acceptChildren(this);
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + score,
+                ex);
+        }
 
         return false;
     }
@@ -267,13 +301,13 @@ public class ScoreChecker
     @Override
     public boolean visit (TimeSignature timeSignature)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                timeSignature.getContextString() + " Checking " +
-                timeSignature);
-        }
-
         try {
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    timeSignature.getContextString() + " Checking " +
+                    timeSignature);
+            }
+
             // Trigger computation of Num & Den if not already done
             Shape shape = timeSignature.getShape();
 
@@ -306,9 +340,11 @@ public class ScoreChecker
                     checkTimeSig(timeSignature);
                 }
             }
-        } catch (InvalidTimeSignature its) {
-            // Error already posted in the errors window????
-            logger.warning("visit. InvalidTimeSignature", its);
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " +
+                timeSignature,
+                ex);
         }
 
         return true;

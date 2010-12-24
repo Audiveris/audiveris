@@ -20,7 +20,10 @@ import omr.lag.RunsBuilder;
 
 import omr.log.Logger;
 
+import omr.score.Score;
+
 import omr.sheet.picture.Picture;
+import omr.sheet.ui.SheetsController;
 
 import omr.step.StepException;
 
@@ -36,12 +39,26 @@ import org.jfree.ui.RefineryUtilities;
 
 import java.awt.Rectangle;
 
+import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
 
 /**
  * Class <code>ScaleBuilder</code> encapsulates the computation of a sheet
- * scale. This is kept separate from the simple <code>Scale</code> class, to
- * save the loading of this when computation is not required.
+ * scale, by adding the most frequent foreground run length to the most frequent
+ * background run length, since this gives the average interline value.
+ *
+ * <p>If we have been unable to retrieve the main run length for background
+ * or for foreground, then we suspect a wrong image format. In that case,
+ * the safe action is to stop the processing, by throwing a StepException</p>
+ *
+ * <p>Otherwise, if the main interline value is below a certain threshold
+ * (see constants.minInterline), then we suspect that the picture is not
+ * a music sheet (it may rather be an image, a page of text, ...). In that
+ * case and if the sheet at hand is part of a multi-page score, we propose to
+ * simply discard this sheet.</p>
+ *
+ * <p>This class is a companion of {@link Scale} class. It is kept separate
+ * to save the loading of this class when computation is not required.</p>
  *
  * @see omr.sheet.Scale
  *
@@ -65,15 +82,11 @@ public class ScaleBuilder
     /** Related sheet */
     private Sheet sheet;
 
-    /** Most frequent background vertical run */
-    private int mainBack = -1;
+    /** Most frequent length of background runs found in the sheet picture */
+    private Integer mainBack;
 
-    /**
-     * Most frequent run lengths for foreground & background runs as read from
-     * the sheet picture. They are initialized to -1, so as to detect if they
-     * have been computed or not.
-     */
-    private int mainFore = -1;
+    /** Most frequent length of foreground runs found in the sheet picture */
+    private Integer mainFore;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -92,6 +105,59 @@ public class ScaleBuilder
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //----------------//
+    // checkInterline //
+    //----------------//
+    /**
+     * Check global interline value, to detect pictures with too low
+     * resolution or pictures which do not represent music staves
+     * @param interline the retrieved interline value
+     */
+    void checkInterline (int interline)
+        throws StepException
+    {
+        if (interline < constants.minInterline.getValue()) {
+            Score score = sheet.getScore();
+
+            if (score.isMultiPage()) {
+                String msg = sheet.getId() + "\nMain interline value is " +
+                             interline + " pixels" +
+                             "\nThis sheet does not seem to contain staff lines";
+                logger.warning(msg);
+
+                if (Main.getGui() != null) {
+                    // Ask user for confirmation
+                    SheetsController.getInstance()
+                                    .showAssembly(sheet);
+
+                    if (Main.getGui()
+                            .displayModelessConfirm(
+                        msg + "\nOK for discarding this sheet?") == JOptionPane.OK_OPTION) {
+                        sheet.remove();
+                        logger.info("Removed sheet " + sheet.getId());
+                        throw new StepException("Sheet removed");
+                    }
+                } else {
+                    // No user available, let's remove this page
+                    sheet.remove();
+                    logger.info("Removed sheet " + sheet.getId());
+                    throw new StepException("Sheet removed");
+                }
+            } else {
+                String msg = sheet.getId() + "\nWith only " + interline +
+                             " pixels between two staff lines," +
+                             " your picture resolution is too low!" +
+                             "\nPlease rescan at higher resolution (300dpi should be OK)";
+                logger.warning(msg);
+
+                if (Main.getGui() != null) {
+                    Main.getGui()
+                        .displayWarning(msg);
+                }
+            }
+        }
+    }
 
     //--------------//
     // displayChart //
@@ -116,16 +182,16 @@ public class ScaleBuilder
      * runs of pixels
      *
      * @return the main back length
-     * @throws StepException
+     * @throws StepException thrown if background runs could not be measured
      */
     int getMainBack ()
         throws StepException
     {
-        if (mainBack == -1) {
+        if (mainBack == null) {
             retrieveScale();
         }
 
-        if (mainBack == -1) {
+        if (mainBack == null) {
             logger.warning(
                 "Unable to retrieve white runs, check your image format");
             throw new StepException("Illegal background values");
@@ -142,16 +208,16 @@ public class ScaleBuilder
      * runs of pixels
      *
      * @return the main fore length
-     * @throws StepException
+     * @throws StepException thrown if foreground runs could not be measured
      */
     int getMainFore ()
         throws StepException
     {
-        if (mainFore == -1) {
+        if (mainFore == null) {
             retrieveScale();
         }
 
-        if (mainFore == -1) {
+        if (mainFore == null) {
             logger.warning(
                 "Unable to retrieve black runs, check your image format");
             throw new StepException("Illegal foreground values");
@@ -164,9 +230,10 @@ public class ScaleBuilder
     // retrieveScale //
     //---------------//
     /**
-     * Create a scale entity, by processing the provided sheet picture.
+     * Retrieve the global scale values by processing the provided picture runs
      */
     private void retrieveScale ()
+        throws StepException
     {
         Picture picture = sheet.getPicture();
         adapter = new Adapter(sheet, picture.getHeight() - 1);
@@ -176,24 +243,19 @@ public class ScaleBuilder
         runsBuilder.createRuns(
             new Rectangle(0, 0, picture.getHeight(), picture.getWidth()));
 
-        logger.info(
-            "Scale black is " + mainFore + ", white is " + mainBack +
-            ", interline is " + (mainFore + mainBack));
+        // Report results to the user
+        StringBuilder sb = new StringBuilder(sheet.getLogPrefix());
+        sb.append("Scale black is ")
+          .append(mainFore);
+        sb.append(", white is ")
+          .append(mainBack);
 
-        // Check picture resolution
-        if ((mainFore + mainBack) < constants.minInterline.getValue()) {
-            String msg = "With only " + (mainFore + mainBack) +
-                         " pixels between two staff lines," +
-                         " your picture resolution is too low!" +
-                         "\nPlease rescan at higher resolution (300dpi should be OK)";
-
-            logger.warning(msg);
-
-            if (Main.getGui() != null) {
-                Main.getGui()
-                    .displayWarning(msg);
-            }
+        if ((mainFore != null) && (mainBack != null)) {
+            sb.append(", interline is ")
+              .append(mainFore + mainBack);
         }
+
+        logger.info(sb.toString());
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -221,9 +283,13 @@ public class ScaleBuilder
                         int   hMax)
         {
             this.sheet = sheet;
-            this.picture = sheet.getPicture();
+            picture = sheet.getPicture();
 
-            maxForeground = sheet.getMaxForeground();
+            if (picture.getMaxForeground() != -1) {
+                maxForeground = picture.getMaxForeground();
+            } else {
+                maxForeground = sheet.getMaxForeground();
+            }
 
             // Allocate histogram counters
             fore = new int[hMax + 2];
@@ -340,7 +406,7 @@ public class ScaleBuilder
 
             // Chart
             JFreeChart chart = ChartFactory.createXYLineChart(
-                sheet.getRadix() + " (Run Lengths)", // Title
+                sheet.getId() + " (Run Lengths)", // Title
                 "Lengths", // X-Axis label
                 "Numbers", // Y-Axis label
                 dataset, // Dataset
@@ -352,7 +418,7 @@ public class ScaleBuilder
 
             // Hosting frame
             ChartFrame frame = new ChartFrame(
-                sheet.getRadix() + " - Runs",
+                sheet.getId() + " - Runs",
                 chart,
                 true);
             frame.pack();
@@ -368,15 +434,15 @@ public class ScaleBuilder
     private static final class Constants
         extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Static fields/initializers -----------------------------------------
 
         /** Should we produce a chart on computed scale data ? */
-        Constant.Boolean plotting = new Constant.Boolean(
+        static final Constant.Boolean plotting = new Constant.Boolean(
             false,
             "Should we produce a chart on computed scale data ?");
 
         /** Minimum number of pixels per interline */
-        Constant.Integer minInterline = new Constant.Integer(
+        static final Constant.Integer minInterline = new Constant.Integer(
             "Pixels",
             15,
             "Minimum number of pixels per interline");

@@ -12,6 +12,7 @@
 package omr.score;
 
 import omr.score.entity.Measure;
+import omr.score.entity.Page;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.SystemPart;
 
@@ -40,6 +41,8 @@ public class MeasureRange
 
     /** Cached data */
     private boolean boundsComputed;
+    private Page        firstPage;
+    private Page        lastPage;
     private ScoreSystem firstSystem;
     private ScoreSystem lastSystem;
     private Measure     firstMeasure;
@@ -167,7 +170,7 @@ public class MeasureRange
     //-------------//
     // checkBounds //
     //-------------//
-    private final void checkBounds ()
+    private void checkBounds ()
     {
         if (!boundsComputed) {
             computeFirsts();
@@ -179,22 +182,30 @@ public class MeasureRange
     //---------------//
     // computeFirsts //
     //---------------//
+    /**
+     * Compute the first page/system/measure entities for measure firstId
+     */
     private void computeFirsts ()
     {
-        for (TreeNode sn : score.getSystems()) {
-            ScoreSystem system = (ScoreSystem) sn;
+        for (TreeNode pageNode : score.getPages()) {
+            Page page = (Page) pageNode;
 
-            for (TreeNode pn : system.getParts()) {
-                SystemPart part = (SystemPart) pn;
+            for (TreeNode sn : page.getSystems()) {
+                ScoreSystem system = (ScoreSystem) sn;
 
-                for (TreeNode mn : part.getMeasures()) {
-                    Measure measure = (Measure) mn;
+                for (TreeNode pn : system.getParts()) {
+                    SystemPart part = (SystemPart) pn;
 
-                    if (measure.getId() >= firstId) {
-                        firstSystem = system;
-                        firstMeasure = measure;
+                    for (TreeNode mn : part.getMeasures()) {
+                        Measure measure = (Measure) mn;
 
-                        return;
+                        if (measure.getId() >= firstId) {
+                            firstPage = page;
+                            firstSystem = system;
+                            firstMeasure = measure;
+
+                            return;
+                        }
                     }
                 }
             }
@@ -204,28 +215,38 @@ public class MeasureRange
     //--------------//
     // computeLasts //
     //--------------//
+    /**
+     * Compute the last page/system/measure entities for measure lastId
+     */
     private void computeLasts ()
     {
-        for (ListIterator sit = score.getSystems()
-                                     .listIterator(score.getSystems().size());
-             sit.hasPrevious();) {
-            ScoreSystem system = (ScoreSystem) sit.previous();
+        for (ListIterator pageIt = score.getPages()
+                                        .listIterator(score.getPages().size());
+             pageIt.hasPrevious();) {
+            Page page = (Page) pageIt.previous();
 
-            for (ListIterator pit = system.getParts()
-                                          .listIterator(
-                system.getParts().size()); pit.hasPrevious();) {
-                SystemPart part = (SystemPart) pit.previous();
+            for (ListIterator sit = page.getSystems()
+                                        .listIterator(page.getSystems().size());
+                 sit.hasPrevious();) {
+                ScoreSystem system = (ScoreSystem) sit.previous();
 
-                for (ListIterator mit = part.getMeasures()
-                                            .listIterator(
-                    part.getMeasures().size()); mit.hasPrevious();) {
-                    Measure measure = (Measure) mit.previous();
+                for (ListIterator pit = system.getParts()
+                                              .listIterator(
+                    system.getParts().size()); pit.hasPrevious();) {
+                    SystemPart part = (SystemPart) pit.previous();
 
-                    if (measure.getId() <= lastId) {
-                        lastSystem = system;
-                        lastMeasure = measure;
+                    for (ListIterator mit = part.getMeasures()
+                                                .listIterator(
+                        part.getMeasures().size()); mit.hasPrevious();) {
+                        Measure measure = (Measure) mit.previous();
 
-                        return;
+                        if (measure.getId() <= lastId) {
+                            lastPage = page;
+                            lastSystem = system;
+                            lastMeasure = measure;
+
+                            return;
+                        }
                     }
                 }
             }

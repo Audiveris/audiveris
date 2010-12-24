@@ -209,6 +209,12 @@ public class ShapeRange
         F_CLEF_OTTAVA_ALTA,
         F_CLEF_OTTAVA_BASSA);
 
+    /** All sorts of G clefs */
+    public static final EnumSet<Shape> TrebleClefs = EnumSet.of(
+        G_CLEF,
+        G_CLEF_OTTAVA_ALTA,
+        G_CLEF_OTTAVA_BASSA);
+
     /** All SHARP-based keys */
     public static final EnumSet<Shape> SharpKeys = EnumSet.of(
         KEY_SHARP_1,

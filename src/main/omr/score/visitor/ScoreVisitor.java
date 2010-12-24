@@ -28,6 +28,7 @@ import omr.score.entity.MeasureElement;
 import omr.score.entity.MeasureNode;
 import omr.score.entity.Note;
 import omr.score.entity.Ornament;
+import omr.score.entity.Page;
 import omr.score.entity.PartNode;
 import omr.score.entity.Pedal;
 import omr.score.entity.ScoreNode;
@@ -45,12 +46,14 @@ import omr.score.entity.Wedge;
 /**
  * Interface <code>ScoreVisitor</code> is meant to visit any node of the Score
  * hierarchy.
- * <p>All the polymorphic visit(node) methods return a boolean which
+ *
+ * <p>The hierarchy is meant to be browsed "depth-first".
+ * All the polymorphic visit(node) methods return a boolean which
  * tells whether the visit shall continue to the children of this class.
  * It is true by default (the whole visitable hierarchy is meant to be visited).
  * Returning false avoids the automatic visit of the children of the class
  * for the specific visitor, it is then up to the caller to potentially handle
- * the children by another way if any.
+ * the children by another way.</p
  *
  * @author Hervé Bitteur
  */
@@ -89,6 +92,8 @@ public interface ScoreVisitor
     boolean visit (Note node);
 
     boolean visit (Ornament node);
+
+    boolean visit (Page node);
 
     boolean visit (PartNode node);
 

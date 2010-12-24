@@ -28,6 +28,7 @@ import omr.score.entity.MeasureElement;
 import omr.score.entity.MeasureNode;
 import omr.score.entity.Note;
 import omr.score.entity.Ornament;
+import omr.score.entity.Page;
 import omr.score.entity.PartNode;
 import omr.score.entity.Pedal;
 import omr.score.entity.ScoreNode;
@@ -190,6 +191,14 @@ public class AbstractScoreVisitor
     // visit Ornament //
     //----------------//
     public boolean visit (Ornament ornament)
+    {
+        return true;
+    }
+
+    //------------//
+    // visit Page //
+    //------------//
+    public boolean visit (Page page)
     {
         return true;
     }

@@ -19,9 +19,11 @@ import omr.util.BasicTask;
 
 import org.jdesktop.application.Task;
 
+import javax.xml.bind.annotation.XmlAttribute;
+
 /**
- * Class {@code Task} is the root class of all possible tasks within a score
- * script.
+ * Class {@code ScriptTask} is the root class of all possible tasks within a
+ * score script.
  *
  * <p>The processing of any task is defined by its {@link #core} method. In
  * order to factorize pre and post processing, a subclass may also redefine the
@@ -33,7 +35,7 @@ import org.jdesktop.application.Task;
  * UI module should do.</p>
  *
  * <p>Running a task has the side-effect of writing this task in the current
- * sheet script, unless the task is defined as not recordable. This is the case
+ * score script, unless the task is defined as not recordable. This is the case
  * of the {@link PlayTask}.</p>
  *
  * @author Hervé Bitteur
@@ -73,7 +75,7 @@ public abstract class ScriptTask
     //--------//
     /**
      * Epilog if any, to be called after the run() method
-     * @param sheet the sheet to run this epilog against
+     * @param sheet the sheet to run this task against
      */
     public void epilog (Sheet sheet)
     {
@@ -87,7 +89,7 @@ public abstract class ScriptTask
      * Launch this task asynchronously (prolog + core + epilog).
      * This is meant to be called by UI code, for maximum responsiveness of the
      * user interface.
-     * @param sheet the related sheet
+     * @param sheet the sheet to run this task against
      * @return the launched SAF task
      */
     public Task launch (final Sheet sheet)
@@ -112,7 +114,7 @@ public abstract class ScriptTask
     //--------//
     /**
      * Prolog if any, to be called before the run() method
-     * @param sheet the sheet to run this prolog against
+     * @param sheet the sheet to run this task against
      */
     public void prolog (Sheet sheet)
     {
@@ -141,7 +143,8 @@ public abstract class ScriptTask
 
         // Record the task instance in the current script?
         if (isRecordable()) {
-            sheet.getScript()
+            sheet.getScore()
+                 .getScript()
                  .addTask(this);
         }
     }

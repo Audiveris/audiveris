@@ -15,17 +15,15 @@ import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
-import omr.score.common.ScoreLocation;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.entity.Measure;
 import omr.score.entity.MeasureNode;
-import omr.score.entity.ScoreSystem;
 import omr.score.entity.SystemNode;
 
 import omr.selection.GlyphEvent;
-import omr.selection.ScoreLocationEvent;
 import omr.selection.SelectionHint;
+import omr.selection.SheetLocationEvent;
 
 import omr.sheet.Sheet;
 
@@ -219,11 +217,7 @@ public class ErrorsEditor
      */
     private Step getCurrentStep (SystemNode node)
     {
-        return node.getSystem()
-                   .getInfo()
-                   .getSheet()
-                   .getSheetSteps()
-                   .getCurrentStep();
+        return sheet.getCurrentStep();
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -275,7 +269,8 @@ public class ErrorsEditor
             sb.append(" [");
 
             if (glyph != null) {
-                sb.append("Glyph #" + glyph.getId());
+                sb.append("Glyph #")
+                  .append(glyph.getId());
             }
 
             sb.append("]");
@@ -322,36 +317,33 @@ public class ErrorsEditor
                                 null,
                                 record.glyph));
                     } else {
-                        // Otherwise use system node location as possible
+                        // Otherwise use node location as possible
                         try {
-                            ScoreSystem system = record.node.getSystem();
-                            PixelPoint sysPt = null;
+                            PixelPoint pixPt = null;
 
                             try {
-                                sysPt = record.node.getCenter();
+                                pixPt = record.node.getCenter();
                             } catch (Exception ex) {
                             }
 
-                            if (sysPt == null) {
+                            if (pixPt == null) {
                                 if (record.node instanceof MeasureNode) {
                                     MeasureNode mn = (MeasureNode) record.node;
                                     Measure     measure = mn.getMeasure();
 
                                     if (measure != null) {
-                                        sysPt = measure.getCenter();
+                                        pixPt = measure.getCenter();
                                     }
                                 }
                             }
 
                             sheet.getSelectionService()
                                  .publish(
-                                new ScoreLocationEvent(
+                                new SheetLocationEvent(
                                     ErrorsEditor.this,
                                     SelectionHint.LOCATION_INIT,
                                     null,
-                                    new ScoreLocation(
-                                        system.getId(),
-                                        new PixelRectangle(sysPt))));
+                                    new PixelRectangle(pixPt)));
                         } catch (Exception ex) {
                             logger.warning(
                                 "Failed pointing to " + record.node,

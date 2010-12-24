@@ -229,7 +229,7 @@ public class OmrExecutors
 
             if (logger.isFineEnabled()) {
                 logger.fine(
-                    "Closing pool: " + getName() +
+                    "Closing pool " + getName() +
                     (immediately ? " immediately" : ""));
             }
 

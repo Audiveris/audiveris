@@ -14,10 +14,10 @@ package omr;
 import omr.log.Logger;
 
 import omr.step.Step;
+import omr.step.Steps;
 
 import java.io.*;
 import java.util.*;
-import java.util.EnumSet;
 
 /**
  * Class <code>CLI</code> handles the parameters of the command line interface
@@ -37,7 +37,7 @@ public class CLI
     private static enum Status {
         //~ Enumeration constant initializers ----------------------------------
 
-        STEP,OPTION, SHEET,
+        STEP,OPTION, FILE,
         SCRIPT;
     }
 
@@ -192,7 +192,7 @@ public class CLI
     {
         // Status of the finite state machine
         boolean      paramNeeded = false; // Are we expecting a param?
-        Status       status = Status.SHEET; // By default
+        Status       status = Status.FILE; // By default
         String       currentCommand = null;
         Parameters   params = new Parameters();
         List<String> optionPairs = new ArrayList<String>();
@@ -230,8 +230,8 @@ public class CLI
                 } else if (token.equalsIgnoreCase("-option")) {
                     status = Status.OPTION;
                     paramNeeded = true;
-                } else if (token.equalsIgnoreCase("-sheet")) {
-                    status = Status.SHEET;
+                } else if (token.equalsIgnoreCase("-file")) {
+                    status = Status.FILE;
                     paramNeeded = true;
                 } else if (token.equalsIgnoreCase("-script")) {
                     status = Status.SCRIPT;
@@ -260,7 +260,7 @@ public class CLI
 
                     break;
 
-                case SHEET :
+                case FILE :
                     addItem(token, params.sheetNames);
                     paramNeeded = false;
 
@@ -295,7 +295,8 @@ public class CLI
         for (String stepString : stepStrings) {
             try {
                 // Read a step name
-                params.targetSteps.add(Step.valueOf(stepString.toUpperCase()));
+                params.desiredSteps.add(
+                    Steps.valueOf(stepString.toUpperCase()));
             } catch (Exception ex) {
                 printCommandLine();
                 stopUsage(
@@ -306,8 +307,8 @@ public class CLI
         }
 
         // At least first step
-        if (params.targetSteps.isEmpty()) {
-            params.targetSteps.add(Step.LOAD);
+        if (params.desiredSteps.isEmpty()) {
+            params.desiredSteps.add(Steps.first);
         }
 
         // Results
@@ -357,19 +358,19 @@ public class CLI
            .append("\n [-bench]")
            .append("\n [-step (STEPNAME|@STEPLIST)+]")
            .append("\n [-option (KEY=VALUE|@OPTIONLIST)+]")
-           .append("\n [-sheet (SHEETNAME|@SHEETLIST)+]")
+           .append("\n [-file (FILENAME|@FILELIST)+]")
            .append("\n [-script (SCRIPTNAME|@SCRIPTLIST)+]");
 
         // Print all allowed step names
         buf.append("\n\nKnown step names are in order")
            .append(" (non case-sensitive):");
 
-        for (Step step : Step.values()) {
+        for (Step step : Steps.values()) {
             buf.append(
                 String.format(
                     "%n%-11s : %s",
                     step.toString().toUpperCase(),
-                    step.description));
+                    step.getDescription()));
         }
 
         logger.info(buf.toString());
@@ -395,7 +396,7 @@ public class CLI
         boolean benchFlag = false;
 
         /** The set of desired steps (option: -step stepName) */
-        final EnumSet<Step> targetSteps = EnumSet.noneOf(Step.class);
+        final Set<Step> desiredSteps = new LinkedHashSet<Step>();
 
         /** The map of constants */
         Properties constants = null;
@@ -422,8 +423,8 @@ public class CLI
               .append(batchMode);
             sb.append("\nbenchFlag=")
               .append(benchFlag);
-            sb.append("\ntargetSteps=")
-              .append(targetSteps);
+            sb.append("\ndesiredSteps=")
+              .append(desiredSteps);
             sb.append("\noptions=")
               .append(constants);
             sb.append("\nsheetNames=")

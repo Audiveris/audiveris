@@ -15,10 +15,13 @@ import omr.log.Logger;
 
 import omr.score.entity.Chord;
 import omr.score.entity.Measure;
+import omr.score.entity.Page;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Slot;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
 import omr.score.visitor.AbstractScoreVisitor;
+
+import omr.util.TreeNode;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -65,15 +68,16 @@ public class ScoreTimeFixer
     @Override
     public boolean visit (Measure measure)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "Visiting Part#" + measure.getPart().getId() + " " + measure);
-        }
-
-        measure.resetStartTime();
-        measure.getStartTime(); // Value is cached
-
         try {
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "Visiting Part#" + measure.getPart().getId() + " " +
+                    measure);
+            }
+
+            measure.resetStartTime();
+            measure.getStartTime(); // Value is cached
+
             int measureDur = 0;
 
             // Whole/multi rests are handled outside of slots
@@ -114,27 +118,66 @@ public class ScoreTimeFixer
                 }
             }
         } catch (InvalidTimeSignature ex) {
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + measure,
+                ex);
         }
 
         return false; // Dead end, we don't go lower than measures
+    }
+
+    //------------//
+    // visit Page //
+    //------------//
+    /**
+     * Page hierarchy entry point
+     *
+     * @param page the page to export
+     * @return false, since no further processing is required after this node
+     */
+    @Override
+    public boolean visit (Page page)
+    {
+        try {
+            // Delegate to children
+            page.acceptChildren(this);
+
+            page.recomputeActualDuration();
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + page,
+                ex);
+        }
+
+        return false; // No default browsing this way
     }
 
     //-------------//
     // visit Score //
     //-------------//
     /**
-     * Score hierarchy entry point
+     * Score hierarchy entry point. Determine the startTime of each page,
+     * assuming that page internal duration is already available
      *
-     * @param score visit the score to export
+     * @param score the score to process
      * @return false, since no further processing is required after this node
      */
     @Override
     public boolean visit (Score score)
     {
-        // Delegate to children
-        score.acceptChildren(this);
+        try {
+            for (TreeNode pn : score.getPages()) {
+                Page page = (Page) pn;
+                page.recomputeStartTime();
+            }
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + score,
+                ex);
+        }
 
-        return false; // That's all
+        return false; // No browsing
     }
 
     //--------------//
@@ -150,29 +193,35 @@ public class ScoreTimeFixer
     @Override
     public boolean visit (ScoreSystem system)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Visiting " + system);
-        }
-
-        // 2 passes are needed, to get the actual duration of whole notes
-        // Since the measure duration may be specified in another system part
-        for (pass = 1; pass <= 2; pass++) {
+        try {
             if (logger.isFineEnabled()) {
-                logger.fine("Pass #" + pass);
+                logger.fine("Visiting " + system);
             }
 
-            // System time
-            system.recomputeStartTime();
+            // 2 passes are needed, to get the actual duration of whole notes
+            // Since the measure duration may be specified in another system part
+            for (pass = 1; pass <= 2; pass++) {
+                if (logger.isFineEnabled()) {
+                    logger.fine("Pass #" + pass);
+                }
 
-            // Browse the (SystemParts and the) Measures
-            system.acceptChildren(this);
+                // System time
+                system.recomputeStartTime();
 
-            // System duration
-            system.recomputeActualDuration();
+                // Browse the (SystemParts and the) Measures
+                system.acceptChildren(this);
 
-            if (logger.isFineEnabled()) {
-                logger.fine("Durations:" + measureDurations);
+                // System duration
+                system.recomputeActualDuration();
+
+                if (logger.isFineEnabled()) {
+                    logger.fine("Durations:" + measureDurations);
+                }
             }
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + system,
+                ex);
         }
 
         return false; // No default browsing this way

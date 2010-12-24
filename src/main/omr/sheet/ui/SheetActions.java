@@ -20,12 +20,14 @@ import omr.glyph.ui.GlyphRepository;
 
 import omr.log.Logger;
 
-import omr.sheet.LinesBuilder;
-import omr.sheet.Sheet;
-import omr.sheet.SheetsManager;
-import omr.sheet.StavesBuilder;
+import omr.score.Score;
+import omr.score.ScoresManager;
+import omr.score.ui.ScoreController;
 
-import omr.step.Step;
+import omr.script.RemoveTask;
+
+import omr.sheet.Sheet;
+import omr.sheet.StavesBuilder;
 
 import omr.ui.util.OmrFileFilter;
 import omr.ui.util.UIUtilities;
@@ -92,39 +94,39 @@ public class SheetActions
     }
 
     //------------//
-    // closeSheet //
+    // closeScore //
     //------------//
     /**
-     * Action that handles the closing of the currently selected sheet.
+     * Action that handles the closing of the currently selected score.
      * @param e the event that triggered this action
      */
-    @Action(enabledProperty = "sheetAvailable")
-    public void closeSheet (ActionEvent e)
+    @Action(enabledProperty = SHEET_AVAILABLE)
+    public void closeScore (ActionEvent e)
     {
-        Sheet sheet = SheetsController.selectedSheet();
+        Score score = ScoreController.getCurrentScore();
 
-        if (sheet != null) {
-            sheet.close();
+        if (score != null) {
+            score.close();
         }
     }
 
-    //-----------//
-    // openSheet //
-    //-----------//
+    //---------------//
+    // openImageFile //
+    //---------------//
     /**
-     * Action that let the user select a sheet file interactively.
+     * Action that let the user select a image file interactively.
      * @param e the event that triggered this action
      * @return the asynchronous task, or null
      */
     @Action
-    public Task openSheet (ActionEvent e)
+    public Task openImageFile (ActionEvent e)
     {
         String suffixes = constants.validImageFiles.getValue();
         String allSuffixes = suffixes + " " + suffixes.toUpperCase();
         File   file = UIUtilities.fileChooser(
             false,
             Main.getGui().getFrame(),
-            new File(SheetsManager.getInstance().getDefaultSheetDirectory()),
+            new File(ScoresManager.getInstance().getDefaultImageDirectory()),
             new OmrFileFilter(
                 "Major image files" + " (" + suffixes + ")",
                 allSuffixes.split("\\s")));
@@ -147,10 +149,10 @@ public class SheetActions
      * Action that allows to display the plot of Line Builder.
      * @param e the event that triggered this action
      */
-    @Action(enabledProperty = "sheetAvailable")
+    @Action(enabledProperty = SHEET_AVAILABLE)
     public void plotLine (ActionEvent e)
     {
-        Sheet sheet = SheetsController.selectedSheet();
+        Sheet sheet = SheetsController.getCurrentSheet();
 
         if (sheet != null) {
             StavesBuilder builder = sheet.getStavesBuilder();
@@ -170,10 +172,10 @@ public class SheetActions
      * Action that allows to display the plot of Scale Builder.
      * @param e the event that triggered this action
      */
-    @Action(enabledProperty = "sheetAvailable")
+    @Action(enabledProperty = SHEET_AVAILABLE)
     public void plotScale (ActionEvent e)
     {
-        Sheet sheet = SheetsController.selectedSheet();
+        Sheet sheet = SheetsController.getCurrentSheet();
 
         if (sheet != null) {
             sheet.getScale()
@@ -188,10 +190,10 @@ public class SheetActions
      * Action that allows to display the plot of Skew Builder
      * @param e the event that triggered this action
      */
-    @Action(enabledProperty = "sheetAvailable")
+    @Action(enabledProperty = SHEET_AVAILABLE)
     public void plotSkew (ActionEvent e)
     {
-        Sheet sheet = SheetsController.selectedSheet();
+        Sheet sheet = SheetsController.getCurrentSheet();
 
         if (sheet != null) {
             if (sheet.getSkewBuilder() != null) {
@@ -206,7 +208,7 @@ public class SheetActions
     //--------------//
     // recordGlyphs //
     //--------------//
-    @Action(enabledProperty = "sheetAvailable")
+    @Action(enabledProperty = SHEET_AVAILABLE)
     public Task recordGlyphs ()
     {
         int answer = JOptionPane.showConfirmDialog(
@@ -220,6 +222,30 @@ public class SheetActions
         }
     }
 
+    //-------------//
+    // removeSheet //
+    //-------------//
+    /**
+     * Action that handles the removal of the currently selected sheet.
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = SHEET_AVAILABLE)
+    public void removeSheet (ActionEvent e)
+    {
+        Sheet sheet = SheetsController.getCurrentSheet();
+
+        if (sheet != null) {
+            int answer = JOptionPane.showConfirmDialog(
+                null,
+                "Do you confirm the removal of this sheet" +
+                " from its containing score ?");
+
+            if (answer == JOptionPane.YES_OPTION) {
+                new RemoveTask(sheet).launch(sheet);
+            }
+        }
+    }
+
     //------------//
     // zoomHeight //
     //------------//
@@ -228,10 +254,10 @@ public class SheetActions
      * shown.
      * @param e the event that triggered this action
      */
-    @Action(enabledProperty = "sheetAvailable")
+    @Action(enabledProperty = SHEET_AVAILABLE)
     public void zoomHeight (ActionEvent e)
     {
-        Sheet sheet = SheetsController.selectedSheet();
+        Sheet sheet = SheetsController.getCurrentSheet();
 
         if (sheet == null) {
             return;
@@ -255,10 +281,10 @@ public class SheetActions
      * shown.
      * @param e the event that triggered this action
      */
-    @Action(enabledProperty = "sheetAvailable")
+    @Action(enabledProperty = SHEET_AVAILABLE)
     public void zoomWidth (ActionEvent e)
     {
-        Sheet sheet = SheetsController.selectedSheet();
+        Sheet sheet = SheetsController.getCurrentSheet();
 
         if (sheet == null) {
             return;
@@ -299,9 +325,9 @@ public class SheetActions
         protected Void doInBackground ()
             throws InterruptedException
         {
-            // Actually load the sheet picture
-            Sheet sheet = new Sheet(file);
-            Step.LOAD.performUntil(sheet);
+            // Actually load the image file
+            Score score = new Score(file);
+            score.createPages();
 
             return null;
         }
@@ -314,6 +340,11 @@ public class SheetActions
         extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
+
+        /** Default directory for selection of image files */
+        Constant.String defaultImageDirectory = new Constant.String(
+            System.getProperty("user.home"),
+            "Default directory for selection of input image files");
 
         /** Valid extensions for image files */
         Constant.String validImageFiles = new Constant.String(
@@ -333,7 +364,7 @@ public class SheetActions
         protected Void doInBackground ()
             throws InterruptedException
         {
-            Sheet sheet = SheetsController.selectedSheet();
+            Sheet sheet = SheetsController.getCurrentSheet();
             GlyphRepository.getInstance()
                            .recordSheetGlyphs(
                 sheet, /* emptyStructures => */

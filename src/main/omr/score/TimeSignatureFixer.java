@@ -16,6 +16,7 @@ import omr.log.Logger;
 import omr.math.Rational;
 
 import omr.score.entity.Measure;
+import omr.score.entity.Page;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
@@ -56,7 +57,7 @@ public class TimeSignatureFixer
 
     //~ Instance fields --------------------------------------------------------
 
-    /** To flag a score modification */
+    /** To flag a page modification */
     private final WrappedBoolean modified;
 
     //~ Constructors -----------------------------------------------------------
@@ -75,58 +76,64 @@ public class TimeSignatureFixer
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------------//
-    // visit Score //
-    //-------------//
+    //------------//
+    // visit Page //
+    //------------//
     /**
-     * Score hierarchy entry point
+     * Page hierarchy entry point
      *
-     * @param score visit the score to export
-     * @return false, since no further processing is required after this node
+     * @param page the page to export
+     * @return false
      */
     @Override
-    public boolean visit (Score score)
+    public boolean visit (Page page)
     {
-        // We cannot rely on standard browsing part by part, since we need to 
-        // address all measures (of same Id) in a row, regardless of their 
-        // containing part
-        ScoreSystem    system = score.getFirstSystem();
-        SystemPart     part = system.getFirstPart();
-        Measure        measure = part.getFirstMeasure();
+        try {
+            // We cannot rely on standard browsing part by part, since we need to 
+            // address all vertical measures (of same Id), regardless of their
+            // containing part
+            ScoreSystem    system = page.getFirstSystem();
+            SystemPart     part = system.getFirstPart();
+            Measure        measure = part.getFirstMeasure();
 
-        // Measure that starts a range of measures with an explicit time sig
-        Measure        startMeasure = null;
+            // Measure that starts a range of measures with an explicit time sig
+            Measure        startMeasure = null;
 
-        // Is this starting time sig a manual one?
-        boolean        startManual = false;
+            // Is this starting time sig a manual one?
+            boolean        startManual = false;
 
-        // Measure that ends the range
-        // Right before another time sig, or last measure of the score
-        Measure        stopMeasure = null;
+            // Measure that ends the range
+            // Right before another time sig, or last measure of the score
+            Measure        stopMeasure = null;
 
-        // Remember if current signature is manual
-        // And thus should not be updated
-        WrappedBoolean isManual = new WrappedBoolean(false);
+            // Remember if current signature is manual
+            // And thus should not be updated
+            WrappedBoolean isManual = new WrappedBoolean(false);
 
-        while (measure != null) {
-            if (hasTimeSig(measure, isManual)) {
-                if ((startMeasure != null) && !startManual) {
-                    // Complete the ongoing time sig analysis
-                    checkTimeSigs(startMeasure, stopMeasure);
+            while (measure != null) {
+                if (hasTimeSig(measure, isManual)) {
+                    if ((startMeasure != null) && !startManual) {
+                        // Complete the ongoing time sig analysis
+                        checkTimeSigs(startMeasure, stopMeasure);
+                    }
+
+                    // Start a new analysis
+                    startMeasure = measure;
+                    startManual = isManual.isSet();
                 }
 
-                // Start a new analysis
-                startMeasure = measure;
-                startManual = isManual.isSet();
+                stopMeasure = measure;
+                measure = measure.getFollowing();
             }
 
-            stopMeasure = measure;
-            measure = measure.getFollowing();
-        }
-
-        if ((startMeasure != null) && !startManual) {
-            // Complete the ongoing time sig analysis
-            checkTimeSigs(startMeasure, stopMeasure);
+            if ((startMeasure != null) && !startManual) {
+                // Complete the ongoing time sig analysis
+                checkTimeSigs(startMeasure, stopMeasure);
+            }
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + page,
+                ex);
         }
 
         // Don't go the standard way (part per part)
@@ -162,10 +169,19 @@ public class TimeSignatureFixer
         if (!bestSigs.isEmpty()) {
             Rational bestRational = bestSigs.get(bestSigs.firstKey());
 
+            if (!TimeSignature.isAcceptable(bestRational)) {
+                if (logger.isFineEnabled()) {
+                    logger.fine("Time sig too uncommon: " + bestRational);
+                }
+
+                return;
+            }
+
             if (logger.isFineEnabled()) {
                 logger.fine("Best sig: " + bestRational);
             }
 
+            // Loop on every staff in the vertical startMeasure
             for (Staff.SystemIterator sit = new Staff.SystemIterator(
                 startMeasure); sit.hasNext();) {
                 Staff         staff = sit.next();
@@ -173,22 +189,27 @@ public class TimeSignatureFixer
                 TimeSignature sig = measure.getTimeSignature(staff);
 
                 if (sig != null) {
-                    Rational rational = sig.getRational();
+                    try {
+                        Rational rational = sig.getRational();
 
-                    if (!rational.equals(bestRational)) {
-                        logger.info(
-                            "Measure#" + measure.getId() + " " +
-                            staff.getContextString() + "T" + staff.getId() +
-                            " " + rational + "->" + bestRational);
-                        sig.modify(null, bestRational);
-                        modified.set(true);
+                        if (!rational.equals(bestRational)) {
+                            logger.info(
+                                "Measure#" + measure.getId() + " " +
+                                staff.getContextString() + "T" + staff.getId() +
+                                " " + rational + "->" + bestRational);
+
+                            sig.modify(null, bestRational);
+                            modified.set(true);
+                        }
+                    } catch (Exception ex) {
+                        sig.addError(
+                            sig.getGlyphs().iterator().next(),
+                            "Could not check time signature " + ex);
                     }
                 }
             }
-        } else {
-            if (logger.isFineEnabled()) {
-                logger.fine("No best sig!");
-            }
+        } else if (logger.isFineEnabled()) {
+            logger.fine("No best sig!");
         }
     }
 

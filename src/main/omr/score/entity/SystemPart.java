@@ -651,7 +651,6 @@ public class SystemPart
             Measure dummyMeasure = new Measure(dummyPart);
             dummyMeasure.setDummy(true);
             dummyMeasure.setId(measure.getId());
-            dummyMeasure.setPartial(measure.isPartial());
 
             // Loop on staves
             int staffIndex = -1;

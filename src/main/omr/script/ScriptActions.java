@@ -19,6 +19,7 @@ import omr.constant.ConstantSet;
 import omr.log.Logger;
 
 import omr.score.Score;
+import omr.score.ui.ScoreController;
 
 import omr.sheet.Sheet;
 import omr.sheet.ui.SheetActions;
@@ -128,7 +129,7 @@ public class ScriptActions
         if (script.isModified() && isConfirmOnClose()) {
             int answer = JOptionPane.showConfirmDialog(
                 null,
-                "Save script for sheet " + script.getSheet().getRadix() + "?");
+                "Save script for score " + script.getScore().getRadix() + "?");
 
             if (answer == JOptionPane.YES_OPTION) {
                 Task task = getInstance()
@@ -175,20 +176,19 @@ public class ScriptActions
     //-------------//
     // storeScript //
     //-------------//
-    @Action(enabledProperty = "sheetAvailable")
+    @Action(enabledProperty = SHEET_AVAILABLE)
     public Task storeScript (ActionEvent e)
     {
-        final Sheet sheet = SheetsController.selectedSheet();
+        final Score score = ScoreController.getCurrentScore();
 
-        if (sheet == null) {
+        if (score == null) {
             return null;
         }
 
-        final File scriptFile = sheet.getScore()
-                                     .getScriptFile();
+        final File scriptFile = score.getScriptFile();
 
         if (scriptFile != null) {
-            return new StoreScriptTask(sheet.getScript(), scriptFile);
+            return new StoreScriptTask(score.getScript(), scriptFile);
         } else {
             return storeScriptAs(e);
         }
@@ -197,12 +197,12 @@ public class ScriptActions
     //---------------//
     // storeScriptAs //
     //---------------//
-    @Action(enabledProperty = "sheetAvailable")
+    @Action(enabledProperty = SHEET_AVAILABLE)
     public Task storeScriptAs (ActionEvent e)
     {
-        final Sheet sheet = SheetsController.selectedSheet();
+        final Score score = ScoreController.getCurrentScore();
 
-        if (sheet == null) {
+        if (score == null) {
             return null;
         }
 
@@ -210,13 +210,13 @@ public class ScriptActions
         File scriptFile = UIUtilities.fileChooser(
             true,
             Main.getGui().getFrame(),
-            getDefaultScriptFile(sheet.getScore()),
+            getDefaultScriptFile(score),
             new OmrFileFilter(
                 "Script files",
                 new String[] { ScriptManager.SCRIPT_EXTENSION }));
 
         if (scriptFile != null) {
-            return new StoreScriptTask(sheet.getScript(), scriptFile);
+            return new StoreScriptTask(score.getScript(), scriptFile);
         } else {
             return null;
         }
@@ -235,7 +235,7 @@ public class ScriptActions
         return (score.getScriptFile() != null) ? score.getScriptFile()
                : new File(
             constants.defaultScriptDirectory.getValue(),
-            score.getSheet().getRadix() + ScriptManager.SCRIPT_EXTENSION);
+            score.getRadix() + ScriptManager.SCRIPT_EXTENSION);
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -282,8 +282,8 @@ public class ScriptActions
         protected Void doInBackground ()
             throws InterruptedException
         {
-            // Actually load the script
-            logger.info("Loading script file " + file + " ...");
+            // Actually run the script
+            logger.info("Running script file " + file + " ...");
 
             try {
                 final Script script = ScriptManager.getInstance()
@@ -345,8 +345,7 @@ public class ScriptActions
                                         .store(script, fos);
                 logger.info("Script stored as " + file);
                 constants.defaultScriptDirectory.setValue(file.getParent());
-                script.getSheet()
-                      .getScore()
+                script.getScore()
                       .setScriptFile(file);
             } catch (FileNotFoundException ex) {
                 logger.warning("Cannot find script file " + file, ex);

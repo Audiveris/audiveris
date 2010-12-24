@@ -45,6 +45,7 @@ import omr.sheet.ui.PixelBoard;
 
 import omr.step.Step;
 import omr.step.StepException;
+import omr.step.Steps;
 
 import omr.stick.StickSection;
 
@@ -117,7 +118,7 @@ public class StavesFuzzyBuilder
                 "hLag",
                 StickSection.class,
                 new HorizontalOrientation()),
-            Step.LINES);
+            Steps.valueOf(Steps.LINES));
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -272,7 +273,7 @@ public class StavesFuzzyBuilder
         GlyphsController controller = new GlyphsController(this);
         lagView = new MyView(lag, members, controller);
 
-        final String  unit = sheet.getRadix() + ":StavesFuzzyBuilder";
+        final String  unit = sheet.getId() + ":StavesFuzzyBuilder";
         BoardsPane    boardsPane = new BoardsPane(
             sheet,
             lagView,
@@ -284,7 +285,7 @@ public class StavesFuzzyBuilder
         // Create a hosting frame for the view
         ScrollLagView slv = new ScrollLagView(lagView);
         sheet.getAssembly()
-             .addViewTab(Step.LINES, slv, boardsPane);
+             .addViewTab(Step.LINES_TAB, slv, boardsPane);
     }
 
     //~ Inner Classes ----------------------------------------------------------

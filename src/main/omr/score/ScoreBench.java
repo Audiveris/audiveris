@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                            S h e e t B e n c h                             //
+//                            S c o r e B e n c h                             //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -9,25 +9,22 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.sheet;
+package omr.score;
 
 import omr.Main;
 
 import omr.log.Logger;
 
-import omr.score.Score;
-import omr.score.ScoreManager;
+import omr.sheet.Bench;
 
 import omr.step.Step;
-
-import omr.util.FileUtil;
 
 import java.io.*;
 import java.util.*;
 
 /**
- * Class {@code SheetBench} is in charge of recording all important information
- * related to the processing of a music sheet, and producing an output formatted
+ * Class {@code ScoreBench} is in charge of recording all important information
+ * related to the processing of a music score, and producing an output formatted
  * as "key = value" lines of text.
  *
  * <p>In order to cope with possible multiple recordings with the same radix, we
@@ -62,32 +59,24 @@ import java.util.*;
  *
  * @author Hervé Bitteur
  */
-public class SheetBench
+public class ScoreBench
+    extends Bench
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(SheetBench.class);
+    private static final Logger logger = Logger.getLogger(ScoreBench.class);
 
     /** Special key which indicates that an interruption has occurred */
     private static final String INTERRUPTION_KEY = "whole.interrupted";
 
     //~ Instance fields --------------------------------------------------------
 
-    /** The internal set of properties */
-    private final Properties props = new Properties();
-
-    /** The related sheet */
-    private final Sheet sheet;
-
-    /** Local sheet radix */
-    private final String radix;
+    /** The related score */
+    private final Score score;
 
     /** Time stamp when this instance was created */
     private final long startTime = System.currentTimeMillis();
-
-    /** Time when we started current step */
-    private long stepStartTime = startTime;
 
     /** Starting date */
     private final Date date = new Date(startTime);
@@ -95,15 +84,15 @@ public class SheetBench
     //~ Constructors -----------------------------------------------------------
 
     //------------//
-    // SheetBench //
+    // ScoreBench //
     //------------//
     /**
-     * Creates a new SheetBench object.
-     * @param sheet the related sheet
+     * Creates a new ScoreBench object.
+     * @param score the related score
      */
-    public SheetBench (Sheet  sheet)
+    public ScoreBench (Score score)
     {
-        this.sheet = sheet;
+        this.score = score;
 
         // To be later removed, but only at normal completion point
         addProp(INTERRUPTION_KEY, "true");
@@ -112,9 +101,7 @@ public class SheetBench
         addProp("program", Main.getToolName());
         addProp("version", Main.getToolVersion());
         addProp("revision", Main.getToolBuild());
-        addProp("image", sheet.getPath());
-
-        radix = sheet.getRadix();
+        addProp("image", score.getImagePath());
 
         flushBench();
     }
@@ -122,92 +109,46 @@ public class SheetBench
     //~ Methods ----------------------------------------------------------------
 
     //----------//
-    // getRadix //
-    //----------//
-    public String getRadix ()
-    {
-        return radix;
-    }
-
-    //----------//
     // getScore //
     //----------//
+    /**
+     * @return the score
+     */
     public Score getScore ()
     {
-        return sheet.getScore();
+        return score;
+    }
+
+    //------------//
+    // flushBench //
+    //------------//
+    /**
+     * Flush the current content of bench to disk
+     */
+    public final synchronized void flushBench ()
+    {
+        ScoresManager.getInstance()
+                     .storeBench(this, null, false);
     }
 
     //--------------------//
     // recordCancellation //
     //--------------------//
-    public void recordCancellation ()
+    public synchronized void recordCancellation ()
     {
         addProp("whole.cancelled", "true");
-    }
-
-    //----------------------//
-    // recordImageDimension //
-    //----------------------//
-    public void recordImageDimension (int width,
-                                      int height)
-    {
-        addProp("image.width", "" + width);
-        addProp("image.height", "" + height);
-    }
-
-    //-----------------//
-    // recordPartCount //
-    //-----------------//
-    public void recordPartCount (int partCount)
-    {
-        addProp("parts", "" + partCount);
-    }
-
-    //-------------//
-    // recordScale //
-    //-------------//
-    public void recordScale (Scale scale)
-    {
-        addProp("scale.mainBack", "" + scale.mainBack());
-        addProp("scale.mainFore", "" + scale.mainFore());
-        addProp("scale.interline", "" + scale.interline());
-    }
-
-    //------------//
-    // recordSkew //
-    //------------//
-    public void recordSkew (double skew)
-    {
-        addProp("skew", "" + skew);
-    }
-
-    //------------------//
-    // recordStaveCount //
-    //------------------//
-    public void recordStaveCount (int staveCount)
-    {
-        addProp("staves", "" + staveCount);
     }
 
     //------------//
     // recordStep //
     //------------//
-    public void recordStep (Step step)
+    public synchronized void recordStep (Step step,
+                                         long duration)
     {
-        long now = System.currentTimeMillis();
         addProp(
-            "step." + step.label.toLowerCase() + ".duration",
-            "" + (now - stepStartTime));
-        stepStartTime = now;
+            "step." + step.getName().toLowerCase() + ".duration",
+            "" + duration);
         flushBench();
-    }
-
-    //-------------------//
-    // recordSystemCount //
-    //-------------------//
-    public void recordSystemCount (int systemCount)
-    {
-        addProp("systems", "" + systemCount);
     }
 
     //-------//
@@ -220,8 +161,8 @@ public class SheetBench
      * @param complete true if bench data must be finalized
      * @throws IOException
      */
-    public void store (OutputStream output,
-                       boolean      complete)
+    public synchronized void store (OutputStream output,
+                                    boolean      complete)
         throws IOException
     {
         // Build external properties
@@ -236,7 +177,8 @@ public class SheetBench
 
         // Finalize this bench?
         if (complete) {
-            externals.remove(INTERRUPTION_KEY);
+            Object obj = externals.remove(INTERRUPTION_KEY);
+            logger.warning("obj=" + obj);
         }
 
         // Sort and store to file
@@ -256,32 +198,6 @@ public class SheetBench
         writer.flush();
     }
 
-    //---------//
-    // addProp //
-    //---------//
-    /**
-     * This is a specific setProperty functionality, that creates unique keys by
-     * appending numbered suffixes
-     * @param radix the provided radix (to which proper suffix will be appended)
-     * @param value the property value
-     */
-    private void addProp (String radix,
-                          String value)
-    {
-        if ((value == null) || (value.length() == 0)) {
-            return;
-        }
-
-        String key = null;
-        int    index = 0;
-
-        do {
-            key = keyOf(radix, ++index);
-        } while (props.containsKey(key));
-
-        props.setProperty(key, value);
-    }
-
     //--------------//
     // cleanupProps //
     //--------------//
@@ -298,7 +214,7 @@ public class SheetBench
 
         for (Object obj : props.keySet()) {
             String key = (String) obj;
-            int    dot = key.lastIndexOf(".");
+            int    dot = key.lastIndexOf('.');
             String radix = key.substring(0, dot);
             radices.add(radix);
         }
@@ -345,26 +261,5 @@ public class SheetBench
         }
 
         return externals;
-    }
-
-    //------------//
-    // flushBench //
-    //------------//
-    /**
-     * Flush the current content of bench to disk
-     */
-    private void flushBench ()
-    {
-        ScoreManager.getInstance()
-                    .storeBench(this, null, false);
-    }
-
-    //-------//
-    // keyOf //
-    //-------//
-    private String keyOf (String radix,
-                          int    index)
-    {
-        return String.format("%s.%02d", radix, index);
     }
 }

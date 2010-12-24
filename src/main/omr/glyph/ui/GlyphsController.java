@@ -202,12 +202,14 @@ public class GlyphsController
             }
         }
 
-        if (ShapeRange.Barlines.contains(shape) || Glyphs.containsBarline(glyphs)) {
+        if (ShapeRange.Barlines.contains(shape) ||
+            Glyphs.containsBarline(glyphs)) {
             // Special case for barlines
-            return new BarlineTask(shape, compound, glyphs).launch(sheet);
+            return new BarlineTask(sheet, shape, compound, glyphs).launch(sheet);
         } else {
             // Normal symbol processing
             return new AssignTask(
+                sheet,
                 shape,
                 compound,
                 glyphs,
@@ -235,7 +237,8 @@ public class GlyphsController
     //--------------------------//
     public Task asyncDeleteVirtualGlyphs (Collection<Glyph> glyphs)
     {
-        return new DeleteTask(getLag().getOrientation(), glyphs).launch(sheet);
+        return new DeleteTask(sheet, getLag().getOrientation(), glyphs).launch(
+            sheet);
     }
 
     //------------//

@@ -14,9 +14,12 @@ package omr.score.ui;
 import omr.log.Logger;
 
 import omr.score.Score;
-import omr.score.ScoreManager;
+import omr.score.ScoresManager;
+import omr.score.entity.Page;
 
 import omr.sheet.Sheet;
+
+import omr.util.TreeNode;
 
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Rectangle;
@@ -33,20 +36,24 @@ import java.io.FileOutputStream;
  * Class {@code SheetPdfOutput} defines a specific ScoreView meant to produce
  * a physical PDF output of a score
  *
+ * <p>TODO: Implement a PDF with multiple output oages
+ *
  * @author Hervé Bitteur
  */
 public class SheetPdfOutput
-    extends ScoreView
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ScoreManager.class);
+    private static final Logger logger = Logger.getLogger(ScoresManager.class);
 
     //~ Instance fields --------------------------------------------------------
 
+    /** The related score */
+    private final Score score;
+
     /** The file to print to */
-    private File file;
+    private final File file;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -59,10 +66,7 @@ public class SheetPdfOutput
     public SheetPdfOutput (Score score,
                            File  file)
     {
-        super(
-            score,
-            score.getLayout(ScoreOrientation.VERTICAL),
-            PaintingParameters.getInstance());
+        this.score = score;
         this.file = file;
     }
 
@@ -71,37 +75,50 @@ public class SheetPdfOutput
     public void write ()
         throws Exception
     {
-        Document document = null;
+        FileOutputStream fos = new FileOutputStream(file);
+        Document         document = null;
+        PdfWriter        writer = null;
 
         try {
-            Sheet     sheet = score.getSheet();
-            Dimension dim = sheet.getPicture()
-                                 .getDimension();
-            document = new Document(new Rectangle(dim.width, dim.height));
+            for (TreeNode pn : score.getPages()) {
+                Page      page = (Page) pn;
+                Sheet     sheet = page.getSheet();
+                Dimension dim = sheet.getPicture()
+                                     .getDimension();
 
-            FileOutputStream fos = new FileOutputStream(file);
-            PdfWriter        writer = PdfWriter.getInstance(document, fos);
-            document.open();
+                if (document == null) {
+                    document = new Document(
+                        new Rectangle(dim.width, dim.height));
+                    writer = PdfWriter.getInstance(document, fos);
+                    document.open();
+                } else {
+                    document.setPageSize(new Rectangle(dim.width, dim.height));
+                    document.newPage();
+                }
 
-            PdfContentByte cb = writer.getDirectContent();
-            Graphics2D     g2 = cb.createGraphics(dim.width, dim.height);
-            g2.scale(1, 1);
+                PdfContentByte cb = writer.getDirectContent();
+                Graphics2D     g2 = cb.createGraphics(dim.width, dim.height);
+                g2.scale(1, 1);
 
-            // Painting
-            ScorePhysicalPainter painter = new ScorePhysicalPainter(
-                g2,
-                Color.BLACK);
-            score.accept(painter);
+                // Painting
+                ScorePhysicalPainter painter = new ScorePhysicalPainter(
+                    g2,
+                    Color.BLACK, // Foreground color
+                    false); // No annotations
+                page.accept(painter);
 
-            // This is the end...
-            g2.dispose();
+                // This is the end...
+                g2.dispose();
+            }
         } catch (Exception ex) {
-            logger.warning("Error printing " + file, ex);
+            logger.warning("Error printing " + score.getRadix(), ex);
             throw ex;
         } finally {
             if (document != null) {
                 document.close();
             }
         }
+
+        fos.close();
     }
 }

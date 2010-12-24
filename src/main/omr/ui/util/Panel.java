@@ -237,7 +237,7 @@ public class Panel
         final String fieldInterline = Panel.getFieldInterline();
 
         // Columns
-        StringBuffer sbc = new StringBuffer();
+        StringBuilder sbc = new StringBuilder();
 
         for (int i = cols - 1; i >= 0; i--) {
             sbc.append(labelAlignment)
@@ -255,7 +255,7 @@ public class Panel
         }
 
         // Rows
-        StringBuffer sbr = new StringBuffer();
+        StringBuilder sbr = new StringBuilder();
 
         for (int i = rows - 1; i >= 0; i--) {
             sbr.append("pref");

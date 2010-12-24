@@ -15,7 +15,8 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemBoundary;
 import omr.sheet.SystemInfo;
 
-import omr.step.Step;
+import omr.step.Stepping;
+import omr.step.Steps;
 
 import omr.util.BrokenLine;
 
@@ -32,7 +33,7 @@ import javax.xml.bind.annotation.*;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class BoundaryTask
-    extends ScriptTask
+    extends SheetTask
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -61,6 +62,8 @@ public class BoundaryTask
                          SystemBoundary.Side side,
                          BrokenLine          line)
     {
+        super(system.getSheet());
+
         systemId = system.getId();
         this.side = side;
 
@@ -116,8 +119,11 @@ public class BoundaryTask
     @Override
     public void epilog (Sheet sheet)
     {
-        sheet.getSheetSteps()
-             .rebuildFrom(Step.SYMBOLS, sheet.getSystems(), false);
+        Stepping.reprocessSheet(
+            Steps.valueOf(Steps.SYMBOLS),
+            sheet,
+            sheet.getSystems(),
+            false);
     }
 
     //-----------------//

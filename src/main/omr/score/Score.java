@@ -20,44 +20,34 @@ import omr.glyph.text.Language;
 
 import omr.log.Logger;
 
-import omr.score.common.PixelDimension;
-import omr.score.common.PixelPoint;
+import omr.score.entity.Page;
 import omr.score.entity.ScoreNode;
 import omr.score.entity.ScorePart;
-import omr.score.entity.ScoreSystem;
-import omr.score.entity.SlotPolicy;
-import omr.score.entity.SystemPart;
-import omr.score.ui.ScoreEditor;
-import omr.score.ui.ScoreLayout;
-import omr.score.ui.ScoreOrientation;
 import omr.score.ui.ScoreTree;
-import omr.score.ui.ScoreView;
 import omr.score.visitor.ScoreVisitor;
 
-import omr.selection.ScoreLocationEvent;
+import omr.script.Script;
 
-import omr.sheet.Scale;
-import omr.sheet.Scale.InterlineFraction;
 import omr.sheet.Sheet;
+import omr.sheet.picture.PictureLoader;
+import omr.sheet.ui.SheetsController;
 
+import omr.step.StepException;
+
+import omr.util.FileUtil;
 import omr.util.TreeNode;
 
+import java.awt.image.RenderedImage;
 import java.io.File;
-import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.util.*;
+import java.util.Map.Entry;
+import java.util.logging.Level;
 
 import javax.swing.JFrame;
 
 /**
  * Class <code>Score</code> handles a score hierarchy, composed of one or
- * several systems of staves.
- *
- * <p>There is no more notion of pages, since all sheet parts are supposed to
- * have been deskewed and concatenated beforehand in one single picture and thus
- * one single score.
- *
- * <p>All distances and coordinates are assumed to be expressed in Units
+ * several pages.
  *
  * @author Hervé Bitteur
  */
@@ -77,23 +67,17 @@ public class Score
 
     //~ Instance fields --------------------------------------------------------
 
-    /** File of the related sheet image */
-    private File imageFile;
-
-    /** Link with image */
-    private Sheet sheet;
+    /** Input file of the related image(s) */
+    private final File imageFile;
 
     /** The related file radix (name w/o extension) */
-    private String radix;
+    private final String radix;
 
-    /** Sheet dimension in units */
-    private PixelDimension dimension;
+    /** True if the score contains several pages */
+    private boolean multiPage;
 
-    /** Sheet skew angle in radians */
-    private double skewAngle;
-
-    /** Sheet global scale */
-    private Scale scale;
+    /** The recording of key processing data */
+    private ScoreBench bench;
 
     /** Dominant text language */
     private String language;
@@ -102,10 +86,7 @@ public class Score
     private Integer durationDivisor;
 
     /** ScorePart list for the whole score */
-    private List<ScorePart> partList = new ArrayList<ScorePart>();
-
-    /** The sequence of views on this score */
-    private List<ScoreView> views = new ArrayList<ScoreView>();
+    private List<ScorePart> partList;
 
     /** The specified tempo, if any */
     private Integer tempo;
@@ -119,21 +100,6 @@ public class Score
     /** Browser tree on this score */
     private ScoreTree scoreTree;
 
-    /** The most recent system pointed at */
-    private WeakReference<ScoreSystem> recentSystemRef = null;
-
-    /** The highest system top */
-    private int highestSystemTop;
-
-    /** Preferred orientation for system layout */
-    private ScoreOrientation orientation;
-
-    /** The score slot policy */
-    private SlotPolicy slotPolicy;
-
-    /** The score slot horizontal margin, expressed in interline fraction */
-    private InterlineFraction slotMargin;
-
     /** Where the MusicXML output is to be stored */
     private File exportFile;
 
@@ -146,18 +112,8 @@ public class Score
     /** Where the sheet PDF data is to be stored */
     private File sheetPdfFile;
 
-    /** Where the score PDF data is to be stored */
-    private File scorePdfFile;
-
-    /** Global score and systems layouts per orientation*/
-    private final EnumMap<ScoreOrientation, ScoreLayout> layouts = new EnumMap<ScoreOrientation, ScoreLayout>(
-        ScoreOrientation.class);
-
-    /** Specific score editor view */
-    private ScoreEditor editor;
-
-    /** Average beam thickness, if known */
-    private Integer beamThickness;
+    /** The script of user actions on this score */
+    private Script script;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -165,50 +121,37 @@ public class Score
     // Score //
     //-------//
     /**
-     * Create a Score, with the specified parameters
+     * Create a Score with a path to an input image file.
      *
-     * @param imagePath full name of the original sheet file
+     * @param imageFile the input image file (which may contain several images)
      */
-    public Score (String imagePath)
+    public Score (File imageFile)
     {
         super(null); // No container
 
-        setImagePath(imagePath);
+        this.imageFile = imageFile;
+        radix = FileUtil.getNameSansExtension(imageFile);
 
-        createLayouts();
+        // Related bench
+        bench = new ScoreBench(this);
+
+        // Register this scpre instance
+        ScoresManager.getInstance()
+                     .addInstance(this);
     }
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------------------//
-    // getActualDuration //
-    //-------------------//
+    //----------//
+    // getBench //
+    //----------//
     /**
-     * Report the total score duration
-     *
-     * @return the number of divisions in the score
+     * Report the related sheet bench
+     * @return the related bench
      */
-    public int getActualDuration ()
+    public ScoreBench getBench ()
     {
-        ScoreSystem lastSystem = getLastSystem();
-
-        return lastSystem.getStartTime() + lastSystem.getActualDuration();
-    }
-
-    //------------------//
-    // setBeamThickness //
-    //------------------//
-    public void setBeamThickness (int beamThickness)
-    {
-        this.beamThickness = beamThickness;
-    }
-
-    //------------------//
-    // getBeamThickness //
-    //------------------//
-    public Integer getBeamThickness ()
-    {
-        return beamThickness;
+        return bench;
     }
 
     //-----------------//
@@ -227,54 +170,6 @@ public class Score
         }
 
         return scoreTree.getFrame();
-    }
-
-    //----------------------//
-    // setDefaultSlotMargin //
-    //----------------------//
-    /**
-     * Assign the default slot margin
-     * @param fraction the horizontal margin, expressed in interline fraction
-     */
-    public static void setDefaultSlotMargin (double fraction)
-    {
-        constants.defaultSlotMargin.setValue(fraction);
-    }
-
-    //----------------------//
-    // getDefaultSlotMargin //
-    //----------------------//
-    /**
-     * Report the default horizontal Slot margin
-     * @return the slotMargin (in interline fraction)
-     */
-    public static InterlineFraction getDefaultSlotMargin ()
-    {
-        return constants.defaultSlotMargin.getWrappedValue();
-    }
-
-    //----------------------//
-    // setDefaultSlotPolicy //
-    //----------------------//
-    /**
-     * Assign the default slot policy
-     * @param slotPolicy the slot policy
-     */
-    public static void setDefaultSlotPolicy (SlotPolicy slotPolicy)
-    {
-        constants.defaultSlotPolicy.setValue(slotPolicy);
-    }
-
-    //----------------------//
-    // getDefaultSlotPolicy //
-    //----------------------//
-    /**
-     * Report the default policy to be used for retrieval of time slots
-     * @return the default time slot policy
-     */
-    public static SlotPolicy getDefaultSlotPolicy ()
-    {
-        return constants.defaultSlotPolicy.getValue();
     }
 
     //-----------------//
@@ -329,43 +224,6 @@ public class Score
         return constants.defaultVolume.getValue();
     }
 
-    //-------------------//
-    // getMinSlotSpacing //
-    //-------------------//
-    /**
-     * Report the minimum acceptable spacing between slots
-     * @return the minimum spacing (in interline fraction)
-     */
-    public static InterlineFraction getMinSlotSpacing ()
-    {
-        return constants.minSlotSpacing.getWrappedValue();
-    }
-
-    //--------------//
-    // setDimension //
-    //--------------//
-    /**
-     * Assign score dimension
-     * @param dimension the score dimension, expressed in units
-     */
-    public void setDimension (PixelDimension dimension)
-    {
-        this.dimension = dimension;
-    }
-
-    //--------------//
-    // getDimension //
-    //--------------//
-    /**
-     * Report the dimension of the sheet/score
-     *
-     * @return the score/sheet dimension in units
-     */
-    public PixelDimension getDimension ()
-    {
-        return dimension;
-    }
-
     //--------------------//
     // setDurationDivisor //
     //--------------------//
@@ -398,36 +256,6 @@ public class Score
         return durationDivisor;
     }
 
-    //-----------//
-    // setEditor //
-    //-----------//
-    /**
-     * @param editor the editor to set
-     */
-    public void setEditor (ScoreEditor editor)
-    {
-        if (this.editor != null) {
-            views.remove(this.editor);
-        }
-
-        this.editor = editor;
-
-        if (editor != null) {
-            addView(editor);
-        }
-    }
-
-    //-----------//
-    // setEditor //
-    //-----------//
-    /**
-     * @return the editor
-     */
-    public ScoreEditor getEditor ()
-    {
-        return editor;
-    }
-
     //---------------//
     // setExportFile //
     //---------------//
@@ -452,45 +280,34 @@ public class Score
         return exportFile;
     }
 
-    //----------------//
-    // getFirstSystem //
-    //----------------//
-    /**
-     * Report the first system in the score
-     *
-     * @return the first system
-     */
-    public ScoreSystem getFirstSystem ()
+    //--------------//
+    // getFirstPage //
+    //--------------//
+    public Page getFirstPage ()
     {
         if (children.isEmpty()) {
             return null;
         } else {
-            return (ScoreSystem) children.get(0);
+            return (Page) children.get(0);
         }
     }
 
     //--------------//
-    // setImagePath //
+    // getImageFile //
     //--------------//
     /**
-     * Assign the (canonical) file name of the score image.
-     *
-     * @param path the file name
+     * @return the imageFile
      */
-    public void setImagePath (String path)
+    public File getImageFile ()
     {
-        try {
-            imageFile = new File(path).getCanonicalFile();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
+        return imageFile;
     }
 
     //--------------//
     // getImagePath //
     //--------------//
     /**
-     * Report the (canonical) file name of the score image.
+     * Report the (canonical) file name of the score image(s).
      *
      * @return the file name
      */
@@ -528,103 +345,16 @@ public class Score
         return language;
     }
 
-    //------------------//
-    // getLastSoundTime //
-    //------------------//
-    /**
-     * Report the time, counted from beginning of the score, when sound stops,
-     * which means that ending rests are not counted.
-     *
-     * @param measureId a potential constraint on id of final measure,
-     * null for no constraint
-     * @return the time of last Midi "note off"
-     */
-    public int getLastSoundTime (Integer measureId)
-    {
-        // Browse systems backwards
-        for (ListIterator it = getSystems()
-                                   .listIterator(getSystems().size());
-             it.hasPrevious();) {
-            ScoreSystem system = (ScoreSystem) it.previous();
-            int         time = system.getLastSoundTime(measureId);
-
-            if (time > 0) {
-                return system.getStartTime() + time;
-            }
-        }
-
-        return 0;
-    }
-
-    //---------------//
-    // getLastSystem //
-    //---------------//
-    /**
-     * Report the last system in the score
-     *
-     * @return the last system
-     */
-    public ScoreSystem getLastSystem ()
+    //-------------//
+    // getLastPage //
+    //-------------//
+    public Page getLastPage ()
     {
         if (children.isEmpty()) {
             return null;
         } else {
-            return (ScoreSystem) children.get(children.size() - 1);
+            return (Page) children.get(children.size() - 1);
         }
-    }
-
-    //-----------//
-    // getLayout //
-    //-----------//
-    /**
-     * Report the proper layout for the provided score orientation
-     * @param orientation the desired score orientation
-     * @return the corresponding layout
-     */
-    public ScoreLayout getLayout (ScoreOrientation orientation)
-    {
-        return layouts.get(orientation);
-    }
-
-    //-------------------//
-    // getMaxStaffNumber //
-    //-------------------//
-    /**
-     * Report the maximum number of staves per system
-     *
-     * @return the maximum number of staves per system
-     */
-    public int getMaxStaffNumber ()
-    {
-        int nb = 0;
-
-        for (TreeNode node : children) {
-            ScoreSystem system = (ScoreSystem) node;
-            int         sn = 0;
-
-            for (TreeNode n : system.getParts()) {
-                SystemPart part = (SystemPart) n;
-                sn += part.getStaves()
-                          .size();
-            }
-
-            nb = Math.max(nb, sn);
-        }
-
-        return nb;
-    }
-
-    //--------------------//
-    // getMeanStaffHeight //
-    //--------------------//
-    /**
-     * Report the mean staff height based on score interline. This should be
-     * refined per system, if not per staff
-     * @return the score-based average value of staff heights
-     */
-    public int getMeanStaffHeight ()
-    {
-        return (Score.LINE_NB - 1) * scale.interline();
     }
 
     //-----------------//
@@ -677,16 +407,49 @@ public class Score
         return midiFile;
     }
 
-    //----------------//
-    // setOrientation //
-    //----------------//
-    public void setOrientation (ScoreOrientation orientation)
+    //-------------//
+    // isMultiPage //
+    //-------------//
+    /**
+     * @return the multiPage
+     */
+    public boolean isMultiPage ()
     {
-        ScoreLayout layout = getLayout(orientation);
+        return multiPage;
+    }
 
-        for (ScoreView view : views) {
-            view.setLayout(layout);
+    //---------//
+    // getPage //
+    //---------//
+    /**
+     * Report the page with provided page-index
+     * @param pageIndex the desired value for page index
+     * @return the proper page, or null if not found
+     */
+    public Page getPage (int pageIndex)
+    {
+        for (TreeNode pn : getPages()) {
+            Page page = (Page) pn;
+
+            if (page.getIndex() == pageIndex) {
+                return page;
+            }
         }
+
+        return null;
+    }
+
+    //----------//
+    // getPages //
+    //----------//
+    /**
+     * Report the collection of pages in that score
+     *
+     * @return the pages
+     */
+    public List<TreeNode> getPages ()
+    {
+        return getChildren();
     }
 
     //-------------//
@@ -716,87 +479,29 @@ public class Score
     }
 
     //----------//
-    // setRadix //
-    //----------//
-    /**
-     * Set the radix name for this score
-     *
-     * @param radix (name w/o extension)
-     */
-    public void setRadix (String radix)
-    {
-        this.radix = radix;
-    }
-
-    //----------//
     // getRadix //
     //----------//
     /**
      * Report the radix of the file that corresponds to the score. It is based
-     * on the name of the sheet of this score, with no extension.
+     * on the simple file name of the score, with no path and no extension.
      *
-     * @return the score file radix
+     * @return the score input file radix
      */
     public String getRadix ()
     {
-        if (radix == null) {
-            if (getSheet() != null) {
-                radix = getSheet()
-                            .getRadix();
-            }
-        }
-
         return radix;
     }
 
-    //----------//
-    // setScale //
-    //----------//
-    /**
-     * Assign proper scale for this score
-     * @param scale the general scale for the score
-     */
-    public void setScale (Scale scale)
+    //-----------//
+    // getScript //
+    //-----------//
+    public Script getScript ()
     {
-        this.scale = scale;
-    }
+        if (script == null) {
+            script = new Script(this);
+        }
 
-    //----------//
-    // getScale //
-    //----------//
-    /**
-     * Report the scale the score
-     *
-     * @return the score scale (basically: number of pixels for main interline)
-     */
-    @Override
-    public Scale getScale ()
-    {
-        return scale;
-    }
-
-    //-----------------//
-    // setScorePdfFile //
-    //-----------------//
-    /**
-     * Remember to which file the score PDF data is to be exported
-     * @param scorePdfFile the score PDF file
-     */
-    public void setScorePdfFile (File scorePdfFile)
-    {
-        this.scorePdfFile = scorePdfFile;
-    }
-
-    //-----------------//
-    // getScorePdfFile //
-    //-----------------//
-    /**
-     * Report to which file, if any, the score PDF data is to be written
-     * @return the score PDF file, or null
-     */
-    public File getScorePdfFile ()
-    {
-        return scorePdfFile;
+        return script;
     }
 
     //---------------//
@@ -823,33 +528,6 @@ public class Score
         return scriptFile;
     }
 
-    //----------//
-    // setSheet //
-    //----------//
-
-    /**
-     * Register the name of the corresponding sheet entity
-     *
-     * @param sheet the related sheet entity
-     */
-    public void setSheet (Sheet sheet)
-    {
-        this.sheet = sheet;
-    }
-
-    //----------//
-    // getSheet //
-    //----------//
-    /**
-     * Report the related sheet entity
-     *
-     * @return the related sheet, or null if none
-     */
-    public Sheet getSheet ()
-    {
-        return sheet;
-    }
-
     //-----------------//
     // setSheetPdfFile //
     //-----------------//
@@ -872,111 +550,6 @@ public class Score
     public File getSheetPdfFile ()
     {
         return sheetPdfFile;
-    }
-
-    //--------------//
-    // setSkewAngle //
-    //--------------//
-    /**
-     * Assign score global skew angle
-     * @param skewAngle the detected skew angle, in radians, clockwise
-     */
-    public void setSkewAngle (double skewAngle)
-    {
-        this.skewAngle = skewAngle;
-    }
-
-    //--------------//
-    // getSkewAngle //
-    //--------------//
-    /**
-     * Report the score skew angle
-     *
-     * @return skew angle, in radians, clock-wise
-     */
-    public double getSkewAngle ()
-    {
-        return skewAngle;
-    }
-
-    //---------------//
-    // setSlotMargin //
-    //---------------//
-    /**
-     * Assign the slot margin for this score
-     * @param fraction the horizontal margin, expressed in interline fraction
-     */
-    public void setSlotMargin (InterlineFraction fraction)
-    {
-        this.slotMargin = new InterlineFraction(fraction.doubleValue());
-    }
-
-    //---------------//
-    // getSlotMargin //
-    //---------------//
-    /**
-     * Report the current horizontal Slot margin
-     * If the value is not yet set, it is set to the default value and returned.
-     * @return the slotMargin (in interline fraction)
-     */
-    public InterlineFraction getSlotMargin ()
-    {
-        if (!hasSlotMargin()) {
-            slotMargin = getDefaultSlotMargin();
-        }
-
-        return slotMargin;
-    }
-
-    //---------------//
-    // setSlotPolicy //
-    //---------------//
-    /**
-     * Assign the slot policy for this score
-     * @param slotPolicy the policy for determining slots
-     */
-    public void setSlotPolicy (SlotPolicy slotPolicy)
-    {
-        this.slotPolicy = slotPolicy;
-    }
-
-    //---------------//
-    // getSlotPolicy //
-    //---------------//
-    /**
-     * Report the policy used for retrieval of time slots in this score
-     * @return the score time slot policy
-     */
-    public SlotPolicy getSlotPolicy ()
-    {
-        return slotPolicy;
-    }
-
-    //---------------//
-    // getSystemById //
-    //---------------//
-    /**
-     * Report the system for which id is provided
-     * @param id id of desired system
-     * @return the desired system
-     */
-    public ScoreSystem getSystemById (int id)
-    {
-        return (ScoreSystem) getSystems()
-                                 .get(id - 1);
-    }
-
-    //------------//
-    // getSystems //
-    //------------//
-    /**
-     * Report the collection of systems in that score
-     *
-     * @return the systems
-     */
-    public List<TreeNode> getSystems ()
-    {
-        return getChildren();
     }
 
     //----------//
@@ -1007,19 +580,6 @@ public class Score
         }
 
         return tempo;
-    }
-
-    //--------------//
-    // getViewIndex //
-    //--------------//
-    /**
-     * Report the index of the provided view in the sequence of all views
-     * @param view the view to look up
-     * @return the sequence index, or -1 if not found
-     */
-    public int getViewIndex (ScoreView view)
-    {
-        return views.indexOf(view);
     }
 
     //-----------//
@@ -1061,24 +621,6 @@ public class Score
         return visitor.visit(this);
     }
 
-    //---------//
-    // addView //
-    //---------//
-    /**
-     * Define the related UI view
-     *
-     * @param view the dedicated ScoreView
-     */
-    public void addView (ScoreView view)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("addView view=" + view);
-        }
-
-        views.remove(view);
-        views.add(view);
-    }
-
     //-------//
     // close //
     //-------//
@@ -1087,9 +629,15 @@ public class Score
      */
     public void close ()
     {
-        // Close related views if any
-        for (ScoreView view : views) {
-            view.close();
+        if (logger.isFineEnabled()) {
+            logger.fine("Closing " + this);
+        }
+
+        // Close contained sheets (and pages)
+        for (TreeNode pn : new ArrayList<TreeNode>(getPages())) {
+            Page  page = (Page) pn;
+            Sheet sheet = page.getSheet();
+            sheet.remove();
         }
 
         // Close tree if any
@@ -1097,14 +645,72 @@ public class Score
             scoreTree.close();
         }
 
-        // Complete and Store score bench
-        ScoreManager.getInstance()
-                    .storeBench(getSheet().getBench(), null, true);
-
         // Close Midi interface if needed
         if (Main.getGui() != null) {
-            ScoreManager.getInstance()
-                        .midiClose(this);
+            ScoresManager.getInstance()
+                         .midiClose(this);
+        }
+
+        // Complete and store all bench data
+        ScoresManager.getInstance()
+                     .storeBench(bench, null, true);
+
+        // Remove from score instances
+        ScoresManager.getInstance()
+                     .removeInstance(this);
+    }
+
+    //-------------//
+    // createPages //
+    //-------------//
+    /**
+     * Create as many pages (and related sheets) as there are images in the
+     * input image file
+     */
+    public void createPages ()
+    {
+        SortedMap<Integer, RenderedImage> images = PictureLoader.loadImages(
+            imageFile,
+            null);
+
+        if (images != null) {
+            Page firstPage = null;
+            setMultiPage(images.size() > 1); // Several images in the file
+
+            for (Entry<Integer, RenderedImage> entry : images.entrySet()) {
+                int           index = entry.getKey();
+                RenderedImage image = entry.getValue();
+                Page          page = null;
+
+                try {
+                    page = new Page(this, index, image);
+
+                    if (firstPage == null) {
+                        firstPage = page;
+
+                        // Let the UI focus on first page
+                        if (Main.getGui() != null) {
+                            SheetsController.getInstance()
+                                            .showAssembly(firstPage.getSheet());
+                        }
+                    }
+                } catch (StepException ex) {
+                    // Remove page from score, if already included
+                    if ((page != null) && getPages()
+                                              .remove(page)) {
+                        logger.info("Page #" + index + " removed");
+                    }
+                }
+            }
+
+            // Remember (even across runs) the parent directory
+            ScoresManager.getInstance()
+                         .setDefaultImageDirectory(getImageFile().getParent());
+
+            // Insert in sheet history
+            ScoresManager.getInstance()
+                         .getHistory()
+                         .add(getImagePath());
         }
     }
 
@@ -1127,35 +733,6 @@ public class Score
             "----------------------------------------------------------------");
     }
 
-    //-------------------//
-    // dumpMeasureCounts //
-    //-------------------//
-    /**
-     * Print out the detailed number of measures inthe score
-     * @param title an optional title, or null
-     */
-    public void dumpMeasureCounts (String title)
-    {
-        StringBuilder sb = new StringBuilder();
-
-        if (title != null) {
-            sb.append("(")
-              .append(title)
-              .append(") ");
-        }
-
-        sb.append("Measure counts:");
-
-        for (TreeNode node : getSystems()) {
-            ScoreSystem sys = (ScoreSystem) node;
-            SystemPart  part = sys.getLastPart();
-            sb.append(
-                " System#" + sys.getId() + "=" + part.getMeasures().size());
-        }
-
-        logger.info(sb.toString());
-    }
-
     //-------------//
     // hasLanguage //
     //-------------//
@@ -1166,26 +743,6 @@ public class Score
     public boolean hasLanguage ()
     {
         return language != null;
-    }
-
-    //---------------//
-    // hasSlotMargin //
-    //---------------//
-    /**
-     * Check whether slotMargin is defined for this score
-     * @return true if slotMargin is defined
-     */
-    public boolean hasSlotMargin ()
-    {
-        return slotMargin != null;
-    }
-
-    //---------------//
-    // hasSlotPolicy //
-    //---------------//
-    public boolean hasSlotPolicy ()
-    {
-        return slotPolicy != null;
     }
 
     //----------//
@@ -1212,49 +769,16 @@ public class Score
         return volume != null;
     }
 
-    //------------------//
-    // pageLocateSystem //
-    //------------------//
+    //--------//
+    // remove //
+    //--------//
     /**
-     * Retrieve the system 'pagPt' is pointing to.
-     *
-     * @param pagPt the point, in score units, in the <b>SHEET</b> display
-     *
-     * @return the nearest system.
+     * Remove a page
      */
-    public ScoreSystem pageLocateSystem (PixelPoint pagPt)
+    public void remove (Page page)
     {
-        return getSheet()
-                   .getSystemOf(pagPt)
-                   .getScoreSystem();
-    }
-
-    //--------------//
-    // resetSystems //
-    //--------------//
-    /**
-     * Reset the systems collection of a score entity
-     */
-    public void resetSystems ()
-    {
-        // Reset views on systems
-        for (ScoreLayout layout : layouts.values()) {
-            layout.reset();
-        }
-
-        // Discard systems
-        getSystems()
-            .clear();
-
-        // Discard cached recent system
-        recentSystemRef = null;
-
-        // Discard current score location event (which contains a system id)
-        if (Main.getGui() != null) {
-            getSheet()
-                .getSelectionService()
-                .publish(new ScoreLocationEvent(this, null, null, null));
-        }
+        getPages()
+            .remove(page);
     }
 
     //------------------//
@@ -1291,33 +815,15 @@ public class Score
         }
     }
 
-    //-------------//
-    // updateViews //
-    //-------------//
+    //--------------//
+    // setMultiPage //
+    //--------------//
     /**
-     * Update all views for this score
+     * @param multiPage the multiPage to set
      */
-    public void updateViews ()
+    private void setMultiPage (boolean multiPage)
     {
-        // Refresh the score layouts
-        for (ScoreLayout layout : layouts.values()) {
-            layout.computeLayout();
-        }
-
-        // Update the score views accordingly
-        for (ScoreView view : views) {
-            view.update();
-        }
-    }
-
-    //---------------//
-    // createLayouts //
-    //---------------//
-    private void createLayouts ()
-    {
-        for (ScoreOrientation orientation : ScoreOrientation.values()) {
-            layouts.put(orientation, new ScoreLayout(this, orientation));
-        }
+        this.multiPage = multiPage;
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -1331,32 +837,15 @@ public class Score
         //~ Instance fields ----------------------------------------------------
 
         // Default Tempo
-        Constant.Integer             defaultTempo = new Constant.Integer(
+        Constant.Integer defaultTempo = new Constant.Integer(
             "QuartersPerMn",
             100,
             "Default tempo, stated in number of quarters per minute");
 
         // Default Velocity
-        Constant.Integer             defaultVolume = new Constant.Integer(
+        Constant.Integer defaultVolume = new Constant.Integer(
             "Volume",
             25,
             "Default Volume in 0..127 range");
-
-        /** Default slot policy */
-        SlotPolicy.Constant defaultSlotPolicy = new SlotPolicy.Constant(
-            SlotPolicy.HEAD_BASED,
-            "Default policy for determining time slots (HEAD_BASED or SLOT_BASED)");
-
-        /**
-         * Default horizontal margin between a slot and a glyph candidate
-         */
-        Scale.Fraction defaultSlotMargin = new Scale.Fraction(
-            0.5,
-            "Default horizontal margin between a slot and a glyph candidate");
-
-        /** Minimum spacing between slots before alerting user */
-        private final Scale.Fraction minSlotSpacing = new Scale.Fraction(
-            1.1d,
-            "Minimum spacing between slots before alerting user");
     }
 }

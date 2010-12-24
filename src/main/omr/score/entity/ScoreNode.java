@@ -81,20 +81,6 @@ public abstract class ScoreNode
     }
 
     //----------//
-    // getScale //
-    //----------//
-    /**
-     * Report the global scale of this score (and sheet)
-     *
-     * @return the global scale
-     */
-    public Scale getScale ()
-    {
-        return getScore()
-                   .getScale();
-    }
-
-    //----------//
     // getScore //
     //----------//
     /**

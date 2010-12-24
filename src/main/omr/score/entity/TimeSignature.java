@@ -50,7 +50,8 @@ public class TimeSignature
     private static final Logger logger = Logger.getLogger(TimeSignature.class);
 
     /** Rational value of each (full) time sig shape */
-    private static Map<Shape, Rational> rationals = new HashMap<Shape, Rational>();
+    private static final Map<Shape, Rational> rationals = new EnumMap<Shape, Rational>(
+        Shape.class);
 
     static {
         for (Shape s : ShapeRange.FullTimes) {
@@ -64,6 +65,23 @@ public class TimeSignature
                 }
             }
         }
+    }
+
+    /** Set of acceptable N/D values for programmatic recognition */
+    private static final Set<Rational> acceptables = new HashSet<Rational>();
+
+    static {
+        // Predefined
+        for (Shape s : ShapeRange.FullTimes) {
+            Rational nd = rationals.get(s);
+
+            if (nd != null) {
+                acceptables.add(nd);
+            }
+        }
+
+        // A few others
+        acceptables.add(new Rational(5, 4));
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -152,6 +170,19 @@ public class TimeSignature
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //--------------//
+    // isAcceptable //
+    //--------------//
+    public static boolean isAcceptable (Rational rational)
+    {
+        if (predefinedShape(rational) != null) {
+            return true;
+        }
+
+        // Check other acceptable rational values
+        return acceptables.contains(rational);
+    }
 
     //----------------//
     // getDenominator //
@@ -316,6 +347,25 @@ public class TimeSignature
         return visitor.visit(this);
     }
 
+    //------//
+    // copy //
+    //------//
+    /**
+     * Replaces in situ this time signature by the logical information
+     * of 'newSig'.
+     * @param newSig the correct sig to assign in lieu of this one
+     */
+    public void copy (TimeSignature newSig)
+    {
+        try {
+            modify(
+                newSig.getShape(),
+                new Rational(newSig.getNumerator(), newSig.getDenominator()));
+        } catch (InvalidTimeSignature ex) {
+            logger.warning("Invalid time signature", ex);
+        }
+    }
+
     //-----------------//
     // createDummyCopy //
     //-----------------//
@@ -408,25 +458,6 @@ public class TimeSignature
         }
     }
 
-    //------//
-    // copy //
-    //------//
-    /**
-     * Replaces in situ this time signature by the logical information
-     * of 'newSig'.
-     * @param newSig the correct sig to assign in lieu of this one
-     */
-    public void copy (TimeSignature newSig)
-    {
-        try {
-            modify(
-                newSig.getShape(),
-                new Rational(newSig.getNumerator(), newSig.getDenominator()));
-        } catch (InvalidTimeSignature ex) {
-            logger.warning("Invalid time signature", ex);
-        }
-    }
-
     //--------//
     // modify //
     //--------//
@@ -445,7 +476,7 @@ public class TimeSignature
                 shape = predefinedShape(rational);
 
                 if (shape == null) {
-                    logger.warning("TimeSig: " + rational + " shape: " + shape);
+                    shape = Shape.CUSTOM_TIME_SIGNATURE;
                 }
             }
 

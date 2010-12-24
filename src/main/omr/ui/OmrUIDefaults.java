@@ -97,7 +97,7 @@ public class OmrUIDefaults
         throws FileNotFoundException, IOException
     {
         String       path = file.getPath();
-        StringBuffer b = new StringBuffer(path);
+        StringBuilder b = new StringBuilder(path);
         Locale       locale = Locale.getDefault();
         String       language = locale.getLanguage();
 

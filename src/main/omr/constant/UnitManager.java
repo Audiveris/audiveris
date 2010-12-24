@@ -18,6 +18,7 @@ import net.jcip.annotations.ThreadSafe;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.regex.Pattern;
 
 /**
  * Class <code>UnitManager</code> manages all units (aka classes), for which we
@@ -100,7 +101,7 @@ public class UnitManager
     /**
      * Retrieves a node object, knowing its path name
      *
-     * @param path fully qyalified node name
+     * @param path fully qualified node name
      *
      * @return the node object, or null if not found
      */
@@ -318,6 +319,45 @@ public class UnitManager
         //log("all units have been pre-loaded from " + main);
     }
 
+    //-------------//
+    // searchUnits //
+    //-------------//
+    /**
+     * Search for all the units for which the provided string is found in the
+     * unit name or the unit description.
+     * @param string the string to search for
+     * @return the set (perhaps empty) of the matching units
+     */
+    public Set<Constant> searchUnits (String string)
+    {
+        String        str = string.toLowerCase();
+        Set<Constant> found = new LinkedHashSet<Constant>();
+
+        for (Node node : mapOfNodes.values()) {
+            if (node instanceof UnitNode) {
+                UnitNode    unit = (UnitNode) node;
+                ConstantSet set = unit.getConstantSet();
+
+                if (set != null) {
+                    for (int i = 0; i < set.size(); i++) {
+                        Constant constant = set.getConstant(i);
+
+                        if (constant.getName()
+                                    .toLowerCase()
+                                    .contains(str) ||
+                            constant.getDescription()
+                                    .toLowerCase()
+                                    .contains(str)) {
+                            found.add(constant);
+                        }
+                    }
+                }
+            }
+        }
+
+        return found;
+    }
+
     //---------//
     // addUnit //
     //---------//
@@ -417,7 +457,7 @@ public class UnitManager
         //log("storing units");
 
         // Update the constant 'units' according to current units content
-        StringBuffer buf = new StringBuffer(1024);
+        StringBuilder buf = new StringBuilder(1024);
 
         for (String name : mapOfNodes.keySet()) {
             Node node = getNode(name);

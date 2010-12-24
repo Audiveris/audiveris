@@ -382,7 +382,7 @@ public class GlyphRepository
                                    boolean emptyStructures)
     {
         // Prepare target directory
-        File sheetDir = new File(getSheetsFolder(), sheet.getRadix());
+        File sheetDir = new File(getSheetsFolder(), sheet.getId());
 
         // Make sure related directory chain exists
         if (sheetDir.mkdirs()) {
@@ -394,7 +394,7 @@ public class GlyphRepository
         // Prepare structures directory
         File structuresDir = new File(
             getSheetsFolder(),
-            sheet.getRadix() + STRUCTURES_NAME);
+            sheet.getId() + STRUCTURES_NAME);
 
         // Make sure related structure subdirectory exists
         if (structuresDir.mkdirs()) {
@@ -422,7 +422,7 @@ public class GlyphRepository
                                 logger.fine("Storing " + glyph);
                             }
 
-                            StringBuffer sb = new StringBuffer();
+                            StringBuilder sb = new StringBuilder();
                             sb.append(shape);
                             sb.append(".");
                             sb.append(String.format("%04d", glyph.getId()));
@@ -464,7 +464,7 @@ public class GlyphRepository
         refreshBases();
 
         logger.info(
-            glyphNb + " glyphs stored from " + sheet.getRadix() +
+            glyphNb + " glyphs stored from " + sheet.getId() +
             ((structuresNb == 0) ? ""
              : (" (including " + structuresNb + " structures)")));
     }

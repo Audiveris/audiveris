@@ -32,7 +32,6 @@ import omr.score.entity.Beam;
 import omr.score.entity.Chord;
 import omr.score.entity.Clef;
 import omr.score.entity.Coda;
-import omr.score.entity.DirectionStatement;
 import omr.score.entity.Dynamics;
 import omr.score.entity.Fermata;
 import omr.score.entity.KeySignature;
@@ -66,6 +65,7 @@ import java.awt.font.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ConcurrentModificationException;
 
 /**
  * Class <code>ScorePainter</code> is an abstract class that defines common
@@ -73,7 +73,7 @@ import java.awt.geom.Rectangle2D;
  * <p>It is specialized by: <ul>
  * <li>{@link ScorePhysicalPainter} for the presentation of  score
  * entities over the sheet glyphs</li>
- * <li>{@link ScoreLogicalPainter} for the "ideal" score view</li>
+ * <li>We used to have a ScoreLogicalPainter for the "ideal" score view</li>
  *
  * @author Hervé Bitteur
  */
@@ -119,19 +119,22 @@ public abstract class ScorePainter
 
     //~ Instance fields --------------------------------------------------------
 
-    // Graphic context 
+    // Graphic context
     protected final Graphics2D g;
 
-    // Related score 
+    // Should we draw annotations?
+    protected final boolean annotated;
+
+    // Related score
     protected Score       score;
 
-    // Specific font for music symbols 
+    // Specific font for music symbols
     protected Font        musicFont;
 
     // Global scale
     protected Scale       scale;
 
-    // For staff lines 
+    // For staff lines
     protected int         lineThickness;
     protected Stroke      lineStroke;
 
@@ -160,15 +163,21 @@ public abstract class ScorePainter
      * Creates a new ScorePainter object.
      *
      * @param graphics Graphic context
+     * @param annotated true if annotations are to be drawn
      */
-    public ScorePainter (Graphics graphics)
+    public ScorePainter (Graphics graphics,
+                         boolean  annotated)
     {
         g = (Graphics2D) graphics.create();
+        this.annotated = annotated;
 
         // Anti-aliasing
         g.setRenderingHint(
             RenderingHints.KEY_ANTIALIASING,
             RenderingHints.VALUE_ANTIALIAS_ON);
+
+        // Default font for annotations
+        g.setFont(basicFont);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -179,38 +188,51 @@ public abstract class ScorePainter
     @Override
     public boolean visit (Arpeggiate arpeggiate)
     {
-        // Draw an arpeggiate symbol with proper height
-        // Using half-height of arpeggiate character as the elementary unit
-        // We need clipping to draw half characters
-        final Rectangle      oldClip = g.getClipBounds();
-        final PixelRectangle box = arpeggiate.getBox();
+        try {
+            // Draw an arpeggiate symbol with proper height
+            // Using half-height of arpeggiate character as the elementary unit
+            // We need clipping to draw half characters
+            final Rectangle      oldClip = g.getClipBounds();
+            final PixelRectangle box = arpeggiate.getBox();
+            box.height -= 2; // Gives better results
 
-        // How many half arpeggiate symbols do we need?
-        final TextLayout  layout = layout(ARPEGGIATO);
-        final Rectangle2D rect = layout.getBounds();
-        final int         count = (int) Math.rint(
-            (2 * box.height) / rect.getHeight());
-        final Point       start = new Point(box.x, box.y + box.height);
-        final int         width = (int) Math.rint(rect.getWidth());
-        final int         halfHeight = (int) Math.rint(rect.getHeight() / 2);
+            // How many half arpeggiate symbols do we need?
+            final int        halfHeight = scale.interline();
+            final int        count = (int) Math.rint(
+                (double) box.height / halfHeight);
+            final TextLayout layout = layout(ARPEGGIATO);
+            final Point      start = new Point(box.x, box.y + box.height);
 
-        // Draw count * half symbols, bottom up
-        for (int i = 0; i < count; i++) {
-            final Rectangle clip = oldClip.intersection(
-                new Rectangle(start.x, start.y - halfHeight, width, halfHeight));
+            // Draw count * half symbols, bottom up
+            for (int i = 0; i < count; i++) {
+                // Define a clipping area
+                final Rectangle area = new Rectangle(
+                    start.x,
+                    start.y - halfHeight,
+                    box.width,
+                    halfHeight);
+                area.grow(6, 6); // Add some margin to avoid gaps
 
-            // Anything to draw?
-            if ((clip.width > 0) && (clip.height > 0)) {
-                g.setClip(clip);
-                layout.draw(g, start.x, start.y);
+                final Rectangle clip = oldClip.intersection(area);
+
+                // Anything to draw in the clipping area?
+                if ((clip.width > 0) && (clip.height > 0)) {
+                    g.setClip(clip);
+                    layout.draw(g, start.x, start.y);
+                }
+
+                // Move up half height
+                start.y -= halfHeight;
             }
 
-            // Move up half height (-1 pixel to avoid any gap)
-            start.y -= (halfHeight - 1);
+            // Restore clip
+            g.setClip(oldClip);
+        } catch (ConcurrentModificationException ignored) {
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + arpeggiate,
+                ex);
         }
-
-        // Restore clip
-        g.setClip(oldClip);
 
         return true;
     }
@@ -230,44 +252,50 @@ public abstract class ScorePainter
     @Override
     public boolean visit (Beam beam)
     {
-        final PixelPoint left = new PixelPoint(beam.getLeftPoint());
-        final PixelPoint right = new PixelPoint(beam.getRightPoint());
-        final int        dx = (int) Math.rint(stemHalfThickness);
-        final int        dy = (int) Math.rint(beamHalfThickness);
+        try {
+            final PixelPoint left = new PixelPoint(beam.getLeftPoint());
+            final PixelPoint right = new PixelPoint(beam.getRightPoint());
+            final int        dx = (int) Math.rint(stemHalfThickness);
+            final int        dy = (int) Math.rint(beamHalfThickness);
 
-        // Compute precise abscissae values
-        if (beam.isHook()) {
-            // Just a hook stuck to a stem on one side
-            if (!beam.getChords()
-                     .isEmpty()) {
-                Chord chord = beam.getChords()
-                                  .first();
+            // Compute precise abscissae values
+            if (beam.isHook()) {
+                // Just a hook stuck to a stem on one side
+                if (!beam.getChords()
+                         .isEmpty()) {
+                    Chord chord = beam.getChords()
+                                      .first();
 
-                if (chord.getCenter().x < beam.getCenter().x) {
-                    left.x -= dx;
+                    if (chord.getCenter().x < beam.getCenter().x) {
+                        left.x -= dx;
+                    } else {
+                        right.x += dx;
+                    }
                 } else {
-                    right.x += dx;
+                    //                beam.addError(
+                    //                    beam.getGlyphs().iterator().next(),
+                    //                    "Beam hook with no related chord");
+                    return false;
                 }
             } else {
-                beam.addError(
-                    beam.getGlyphs().iterator().next(),
-                    "Beam hook with no related chord");
-
-                return false;
+                // Standard beam stuck to 2 stems, one on either side
+                left.x -= dx;
+                right.x += dx;
             }
-        } else {
-            // Standard beam stuck to 2 stems, one on either side
-            left.x -= dx;
-            right.x += dx;
-        }
 
-        // Use a filled polygon to paint the beam
-        final Polygon polygon = new Polygon();
-        polygon.addPoint(left.x, left.y - dy);
-        polygon.addPoint(left.x, left.y + dy);
-        polygon.addPoint(right.x, right.y + dy);
-        polygon.addPoint(right.x, right.y - dy);
-        g.fill(polygon);
+            // Use a filled polygon to paint the beam
+            final Polygon polygon = new Polygon();
+            polygon.addPoint(left.x, left.y - dy);
+            polygon.addPoint(left.x, left.y + dy);
+            polygon.addPoint(right.x, right.y + dy);
+            polygon.addPoint(right.x, right.y - dy);
+            g.fill(polygon);
+        } catch (ConcurrentModificationException ignored) {
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + beam,
+                ex);
+        }
 
         return true;
     }
@@ -278,56 +306,71 @@ public abstract class ScorePainter
     @Override
     public boolean visit (Chord chord)
     {
-        if (chord.getStem() == null) {
-            return true;
-        }
-
-        final PixelPoint tail = chord.getTailLocation();
-        final PixelPoint head = chord.getHeadLocation();
-
-        if ((tail == null) || (head == null)) {
-            chord.addError("No head - tail defined for chord");
-
-            return false;
-        }
-
-        // Flags ?
-        final int fn = chord.getFlagsNumber();
-
-        if (fn == 0) {
-            return true;
-        }
-
-        final PixelPoint loc = location(tail, chord);
-
-        if (tail.y < head.y) {
-            // Flags down
-            final TextLayout flag1 = layout(COMBINING_FLAG_1);
-            final TextLayout flag2 = layout(COMBINING_FLAG_2);
-            final Alignment  align = leftTop;
-
-            for (int i = 0; i < (fn / 2); i++) {
-                paint(flag2, loc, align);
-                loc.y += FLAG_2_DY;
+        try {
+            if (chord.getStem() == null) {
+                return true;
             }
 
-            if ((fn % 2) != 0) {
-                paint(flag1, loc, align);
-            }
-        } else {
-            // Flags up
-            final TextLayout flag1up = layout(COMBINING_FLAG_1_UP);
-            final TextLayout flag2up = layout(COMBINING_FLAG_2_UP);
-            final Alignment  align = leftBottom;
+            final PixelPoint tail = chord.getTailLocation();
+            final PixelPoint head = chord.getHeadLocation();
 
-            for (int i = 0; i < (fn / 2); i++) {
-                paint(flag2up, loc, align);
-                loc.y -= FLAG_2_DY;
+            if ((tail == null) || (head == null)) {
+                chord.addError("No head - tail defined for chord");
+
+                return false;
             }
 
-            if ((fn % 2) != 0) {
-                paint(flag1up, loc, align);
+            // Flags ?
+            final int fn = chord.getFlagsNumber();
+
+            if (fn > 0) {
+                final PixelPoint loc = location(tail, chord);
+
+                // Slight fix of tail ordinate (for Maestro)
+                final int yFix = ((fn > 1) && MusicFont.useMaestro)
+                                 ? (FLAG_2_DY / 6) // Approximate value
+                                 : 0;
+
+                // We draw from tail to head, doubles then single if needed
+                if (tail.y < head.y) {
+                    // Flags down
+                    loc.y -= yFix;
+
+                    final TextLayout flag1 = layout(COMBINING_FLAG_1);
+                    final TextLayout flag2 = layout(COMBINING_FLAG_2);
+                    final Alignment  align = leftTop;
+
+                    for (int i = 0; i < (fn / 2); i++) {
+                        paint(flag2, loc, align);
+                        loc.y += FLAG_2_DY;
+                    }
+
+                    if ((fn % 2) != 0) {
+                        paint(flag1, loc, align);
+                    }
+                } else {
+                    // Flags up
+                    loc.y += yFix;
+
+                    final TextLayout flag1up = layout(COMBINING_FLAG_1_UP);
+                    final TextLayout flag2up = layout(COMBINING_FLAG_2_UP);
+                    final Alignment  align = leftBottom;
+
+                    for (int i = 0; i < (fn / 2); i++) {
+                        paint(flag2up, loc, align);
+                        loc.y -= FLAG_2_DY;
+                    }
+
+                    if ((fn % 2) != 0) {
+                        paint(flag1up, loc, align);
+                    }
+                }
             }
+        } catch (ConcurrentModificationException ignored) {
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + chord,
+                ex);
         }
 
         return true;
@@ -339,70 +382,120 @@ public abstract class ScorePainter
     @Override
     public boolean visit (Clef clef)
     {
-        final Staff             staff = clef.getStaff();
-        final Shape             shape = clef.getShape();
-        final String            str = MusicFont.getCharDesc(shape)
-                                               .getString();
-        final PixelRectangle    box = clef.getBox();
-        final FontRenderContext frc = g.getFontRenderContext();
-        TextLayout              layout = new TextLayout(str, musicFont, frc);
-        TextLayout              ottava = null; // The '8' glyph to be drawn
+        try {
+            final Staff             staff = clef.getStaff();
+            final Shape             shape = clef.getShape();
+            final String            str = MusicFont.getCharDesc(shape)
+                                                   .getString();
+            final PixelRectangle    box = clef.getBox();
+            final FontRenderContext frc = g.getFontRenderContext();
+            TextLayout              layout = new TextLayout(
+                str,
+                musicFont,
+                frc);
+            final Rectangle2D       bounds = layout.getBounds();
 
-        // Adjust ratio so that the symbol fits the underlying glyph
-        final Rectangle2D bounds = layout.getBounds();
+            // The remaining code depends heavily on the precise MusicFont
+            if (MusicFont.useMaestro) {
+                // Adjust ratio so that the symbol fits the underlying glyph
+                // Use scaling based only of height ratio (except for percussion clef)
+                final AffineTransform at = AffineTransform.getScaleInstance(
+                    (shape == PERCUSSION_CLEF) ? (box.width / bounds.getWidth())
+                                        : (box.height / bounds.getHeight()),
+                    box.height / bounds.getHeight());
+                layout = layout(str, at);
 
-        if (ShapeRange.OttavaClefs.contains(shape)) {
-            // Add height of Alta/Bassa ottava
-            ottava = layout(MusicFont.ALTA_BASSA_DESC.getString());
-            bounds.setRect(
-                bounds.getX(),
-                bounds.getY(),
-                bounds.getWidth(),
-                bounds.getHeight() + ottava.getBounds().getHeight());
-        }
+                if (shape == PERCUSSION_CLEF) {
+                    // Baseline is center
+                    paint(layout, location(clef.getCenter()));
+                } else if (ShapeRange.BassClefs.contains(shape)) {
+                    // Baseline is always on the "F" step line (= -2)
+                    PixelPoint baseCenter = location(
+                        clef.getCenter(),
+                        staff,
+                        -2);
+                    paint(layout, baseCenter, new Alignment(CENTER, BASELINE));
+                } else {
+                    if (ShapeRange.TrebleClefs.contains(shape)) {
+                        // Baseline is always on the "G"step line (= 2)
+                        paint(
+                            layout,
+                            location(clef.getCenter(), staff, 2),
+                            new Alignment(CENTER, BASELINE));
+                    } else if (shape == C_CLEF) {
+                        // Baseline is middle for C clef, but step line may vary
+                        int stepLine = clef.getPitchPosition();
+                        paint(
+                            layout,
+                            location(clef.getCenter(), staff, stepLine),
+                            new Alignment(CENTER, BASELINE));
+                    }
+                }
+            } else if (MusicFont.useStoccata) {
+                // The '8' glyph to be drawn
+                TextLayout ottava = null;
 
-        // Use scaling based only of height ratio (except for percussion clef)
-        final AffineTransform at = AffineTransform.getScaleInstance(
-            (shape == PERCUSSION_CLEF) ? (box.width / bounds.getWidth())
-                        : (box.height / bounds.getHeight()),
-            box.height / bounds.getHeight());
-        layout = layout(str, at);
+                if (ShapeRange.OttavaClefs.contains(shape)) {
+                    // Add height of Alta/Bassa ottava
+                    ottava = layout(MusicFont.ALTA_BASSA_DESC.getString());
+                    bounds.setRect(
+                        bounds.getX(),
+                        bounds.getY(),
+                        bounds.getWidth(),
+                        bounds.getHeight() + ottava.getBounds().getHeight());
+                }
 
-        Rectangle rect = null;
+                // Adjust ratio so that the symbol fits the underlying glyph
+                // Use scaling based only of height ratio (except for percussion clef)
+                final AffineTransform at = AffineTransform.getScaleInstance(
+                    (shape == PERCUSSION_CLEF) ? (box.width / bounds.getWidth())
+                                        : (box.height / bounds.getHeight()),
+                    box.height / bounds.getHeight());
+                layout = layout(str, at);
 
-        if (shape == PERCUSSION_CLEF) {
-            // Baseline is center
-            rect = paint(layout, location(clef.getCenter()));
-        } else if (shape == F_CLEF) {
-            //            // Either use contour of the underlying glyph
-            //            PixelPoint topCenter = system.toPixelPoint(
-            //                new PixelPoint(clef.getCenter().x, clef.getBox().y));
+                // Needed to add alta/bassa drawing at the end
+                Rectangle rect = null;
 
-            // Or fit the two points of F_CLEF around pitch: -2
-            PixelPoint topCenter = location(clef.getCenter(), staff, -2);
-            topCenter.y -= (layout.getBounds()
-                                  .getHeight() / 3.3);
-            rect = paint(layout, topCenter, new Alignment(CENTER, TOP));
-        } else {
-            // Baseline is end of staff
-            rect = paint(
-                layout,
-                location(clef.getCenter(), staff, 4),
-                new Alignment(CENTER, BASELINE));
-        }
+                if (shape == PERCUSSION_CLEF) {
+                    // Baseline is center
+                    rect = paint(layout, location(clef.getCenter()));
+                } else if (ShapeRange.BassClefs.contains(shape)) {
+                    // Fit the two points of F_CLEF around pitch: -2
+                    PixelPoint topCenter = location(
+                        clef.getCenter(),
+                        staff,
+                        -2);
+                    topCenter.y -= (layout.getBounds()
+                                          .getHeight() / 3.3);
+                    rect = paint(layout, topCenter, new Alignment(CENTER, TOP));
+                } else {
+                    // Baseline is end of staff
+                    rect = paint(
+                        layout,
+                        location(clef.getCenter(), staff, 4),
+                        new Alignment(CENTER, BASELINE));
+                }
 
-        // Alta / Bassa to be drawn?
-        if ((shape == G_CLEF_OTTAVA_ALTA) || (shape == F_CLEF_OTTAVA_ALTA)) {
-            PixelPoint topCenter = new PixelPoint(
-                rect.x + (rect.width / 2),
-                rect.y);
-            paint(ottava, topCenter, leftBottom);
-        } else if ((shape == G_CLEF_OTTAVA_BASSA) ||
-                   (shape == F_CLEF_OTTAVA_BASSA)) {
-            PixelPoint bottomCenter = new PixelPoint(
-                rect.x + (rect.width / 2),
-                rect.y + rect.height);
-            paint(ottava, bottomCenter, leftTop);
+                // Add Alta/Bassa drawing?
+                if ((shape == G_CLEF_OTTAVA_ALTA) ||
+                    (shape == F_CLEF_OTTAVA_ALTA)) {
+                    PixelPoint topCenter = new PixelPoint(
+                        rect.x + (rect.width / 2),
+                        rect.y);
+                    paint(ottava, topCenter, leftBottom);
+                } else if ((shape == G_CLEF_OTTAVA_BASSA) ||
+                           (shape == F_CLEF_OTTAVA_BASSA)) {
+                    PixelPoint bottomCenter = new PixelPoint(
+                        rect.x + (rect.width / 2),
+                        rect.y + rect.height);
+                    paint(ottava, bottomCenter, leftTop);
+                }
+            }
+        } catch (ConcurrentModificationException ignored) {
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + clef,
+                ex);
         }
 
         return true;
@@ -441,40 +534,48 @@ public abstract class ScorePainter
     @Override
     public boolean visit (KeySignature keySignature)
     {
-        final Staff          staff = keySignature.getStaff();
-        final Shape          clefKind = keySignature.getClefKind();
-        final int            key = keySignature.getKey();
-        final int            sign = Integer.signum(key);
-        final Shape          shape = (key < 0) ? FLAT : SHARP;
-        final TextLayout     layout = layout(shape);
-        final PixelRectangle box = keySignature.getBox();
-        final int            unitDx = getKeySigItemDx();
+        try {
+            final Staff          staff = keySignature.getStaff();
+            final Shape          clefKind = keySignature.getClefKind();
+            final int            key = keySignature.getKey();
+            final int            sign = Integer.signum(key);
+            final Shape          shape = (key < 0) ? FLAT : SHARP;
+            final TextLayout     layout = layout(shape);
+            final PixelRectangle box = keySignature.getBox();
+            final int            unitDx = getKeySigItemDx();
 
-        if (box == null) {
-            logger.warning("Null box for " + keySignature);
+            if (box == null) {
+                ///logger.warning("Null box for " + keySignature);
+                keySignature.addError("Null box for " + keySignature);
 
-            return false;
-        }
-
-        // Flats : use vertical stick on left
-        // Sharps : use center of the two vertical sticks
-        final Alignment alignment = new Alignment(
-            (key < 0) ? LEFT : CENTER,
-            BASELINE);
-        PixelPoint      point = new PixelPoint(box.x, 0);
-
-        for (int i = 1; i <= (key * sign); i++) {
-            int     n = i * sign;
-            double  pitch = KeySignature.getItemPosition(n, clefKind);
-            Integer ref = keySignature.getItemPixelAbscissa(n);
-
-            if (ref != null) {
-                ///logger.info(n + ":" + ref + " for " + keySignature);
-                point = new PixelPoint(ref, 0);
+                return false;
             }
 
-            paint(layout, location(point, staff, pitch), alignment);
-            point.x += unitDx; // Fall-back if ref is not known
+            // Flats : use vertical stick on left
+            // Sharps : use center of the two vertical sticks
+            final Alignment alignment = new Alignment(
+                (key < 0) ? LEFT : CENTER,
+                BASELINE);
+            PixelPoint      point = new PixelPoint(box.x, 0);
+
+            for (int i = 1; i <= (key * sign); i++) {
+                int     n = i * sign;
+                double  pitch = KeySignature.getItemPosition(n, clefKind);
+                Integer ref = keySignature.getItemPixelAbscissa(n);
+
+                if (ref != null) {
+                    ///logger.info(n + ":" + ref + " for " + keySignature);
+                    point = new PixelPoint(ref, 0);
+                }
+
+                paint(layout, location(point, staff, pitch), alignment);
+                point.x += unitDx; // Fall-back if ref is not known
+            }
+        } catch (ConcurrentModificationException ignored) {
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + keySignature,
+                ex);
         }
 
         return true;
@@ -486,14 +587,25 @@ public abstract class ScorePainter
     @Override
     public boolean visit (MeasureElement measureElement)
     {
-        if (measureElement.getShape() != null) {
-            try {
-                paint(
-                    layout(measureElement.getShape(), measureElement.getBox()),
-                    location(measureElement.getReferencePoint()));
-            } catch (Exception ex) {
-                logger.warning("Cannot paint " + measureElement, ex);
+        try {
+            if (measureElement.getShape() != null) {
+                try {
+                    paint(
+                        layout(
+                            measureElement.getShape(),
+                            measureElement.getBox()),
+                        location(measureElement.getReferencePoint()));
+                } catch (ConcurrentModificationException ignored) {
+                } catch (Exception ex) {
+                    logger.warning("Cannot paint " + measureElement, ex);
+                }
             }
+        } catch (ConcurrentModificationException ignored) {
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " +
+                measureElement,
+                ex);
         }
 
         return true;
@@ -505,41 +617,48 @@ public abstract class ScorePainter
     @Override
     public boolean visit (Note note)
     {
-        final Chord      chord = note.getChord();
-        final Glyph      stem = chord.getStem();
-        final Shape      shape = note.getShape();
-        final PixelPoint center = note.getCenter();
-        Shape            displayShape; // What is really displayed
+        try {
+            final Chord      chord = note.getChord();
+            final Glyph      stem = chord.getStem();
+            final Shape      shape = note.getShape();
+            final PixelPoint center = note.getCenter();
+            Shape            displayShape; // What is really displayed
 
-        // Note head
-        if (stem != null) {
-            // Note is attached to a stem, link the note display to the stem one
-            if (ShapeRange.HeadAndFlags.contains(shape)) {
-                displayShape = NOTEHEAD_BLACK;
+            // Note head
+            if (stem != null) {
+                // Note is attached to a stem, link the note display to the stem one
+                if (ShapeRange.HeadAndFlags.contains(shape)) {
+                    displayShape = NOTEHEAD_BLACK;
+                } else {
+                    displayShape = shape;
+                }
+
+                paint(
+                    layout(displayShape),
+                    noteLocation(note),
+                    new Alignment(
+                        (center.x < chord.getTailLocation().x) ? RIGHT : LEFT,
+                        MIDDLE));
             } else {
-                displayShape = shape;
+                // Use special display icons for some shapes
+                displayShape = shape.getPhysicalShape();
+                paint(layout(displayShape), noteLocation(note));
             }
 
-            paint(
-                layout(displayShape),
-                noteLocation(note),
-                new Alignment(
-                    (center.x < chord.getTailLocation().x) ? RIGHT : LEFT,
-                    MIDDLE));
-        } else {
-            // Use special display icons for some shapes
-            displayShape = shape.getPhysicalShape();
-            paint(layout(displayShape), noteLocation(note));
-        }
+            // Accidental ?
+            final Glyph accid = note.getAccidental();
 
-        // Accidental ?
-        final Glyph accid = note.getAccidental();
-
-        if (accid != null) {
-            paint(
-                layout(accid.getShape()),
-                accidentalLocation(note, accid),
-                new Alignment(CENTER, BASELINE));
+            if (accid != null) {
+                paint(
+                    layout(accid.getShape()),
+                    accidentalLocation(note, accid),
+                    new Alignment(CENTER, BASELINE));
+            }
+        } catch (ConcurrentModificationException ignored) {
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + note,
+                ex);
         }
 
         return true;
@@ -578,7 +697,14 @@ public abstract class ScorePainter
     @Override
     public boolean visit (Slur slur)
     {
-        g.draw(slur.getCurve());
+        try {
+            g.draw(slur.getCurve());
+        } catch (ConcurrentModificationException ignored) {
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + slur,
+                ex);
+        }
 
         return true;
     }
@@ -589,33 +715,39 @@ public abstract class ScorePainter
     @Override
     public boolean visit (SystemPart part)
     {
-        // Should we draw dummy parts?
-        if (part.isDummy() &&
-            !PaintingParameters.getInstance()
-                               .isDummyPainting()) {
-            return false;
-        }
+        try {
+            // We don't draw dummy parts?
+            if (part.isDummy()) {
+                return false;
+            }
 
-        // Draw a brace?
-        if (part.getBrace() != null) {
-            final String            str = "{";
-            final FontRenderContext frc = g.getFontRenderContext();
-            Font                    font = TextFont.basicFont.deriveFont(100f);
-            TextLayout              layout = new TextLayout(str, font, frc);
-            final Rectangle2D       rect = layout.getBounds();
-            final PixelRectangle    braceBox = braceBox(part);
-            final AffineTransform   fat = AffineTransform.getScaleInstance(
-                braceBox.width / rect.getWidth(),
-                braceBox.height / rect.getHeight());
-            font = font.deriveFont(fat);
-            layout = new TextLayout(str, font, frc);
-            paint(layout, braceBox.getCenter());
-        }
+            // Draw a brace?
+            if (part.getBrace() != null) {
+                final String            str = "{";
+                final FontRenderContext frc = g.getFontRenderContext();
+                Font                    font = TextFont.basicFont.deriveFont(
+                    100f);
+                TextLayout              layout = new TextLayout(str, font, frc);
+                final Rectangle2D       rect = layout.getBounds();
+                final PixelRectangle    braceBox = braceBox(part);
+                final AffineTransform   fat = AffineTransform.getScaleInstance(
+                    braceBox.width / rect.getWidth(),
+                    braceBox.height / rect.getHeight());
+                font = font.deriveFont(fat);
+                layout = new TextLayout(str, font, frc);
+                paint(layout, braceBox.getCenter());
+            }
 
-        // Render the part starting barline, if any
-        if (part.getStartingBarline() != null) {
-            part.getStartingBarline()
-                .accept(this);
+            // Render the part starting barline, if any
+            if (part.getStartingBarline() != null) {
+                part.getStartingBarline()
+                    .accept(this);
+            }
+        } catch (ConcurrentModificationException ignored) {
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + part,
+                ex);
         }
 
         return true;
@@ -636,38 +768,45 @@ public abstract class ScorePainter
     @Override
     public boolean visit (Text text)
     {
-        // Force y alignment for items of the same sentence
-        final Sentence          sentence = text.getSentence();
-        final PixelPoint        location = sentence.getLocation();
-        final PixelPoint        refPoint = text.getReferencePoint();
-        final String            str = text.getContent();
-        final FontRenderContext frc = g.getFontRenderContext();
-        Font                    font = text.getFont();
-        TextLayout              layout = new TextLayout(str, font, frc);
-        //        final Rectangle2D       rect = layout.getBounds();
-        //        final PixelRectangle    box = text.getBox();
-        //        final double            xRatio = box.width / rect.getWidth();
-        //        final double            yRatio = box.height / rect.getHeight();
-        //
-        //        if (logger.isFineEnabled()) {
-        //            logger.fine(
-        //                "xRatio:" + (float) xRatio + " yRatio:" + (float) yRatio + " " +
-        //                text);
-        //        }
-        //
-        //        //        // Sign of something wrong
-        //        //        if (yRatio > 1.3) {
-        //        //            yRatio = 1;
-        //        //        }
-        //        final AffineTransform fat = AffineTransform.getScaleInstance(
-        //            xRatio,
-        //            yRatio);
-        //        font = font.deriveFont(fat);
-        //        layout = new TextLayout(str, font, frc);
-        paint(
-            layout,
-            new PixelPoint(refPoint.x, location.y),
-            new Alignment(LEFT, BASELINE));
+        try {
+            // Force y alignment for items of the same sentence
+            final Sentence          sentence = text.getSentence();
+            final PixelPoint        location = sentence.getLocation();
+            final PixelPoint        refPoint = text.getReferencePoint();
+            final String            str = text.getContent();
+            final FontRenderContext frc = g.getFontRenderContext();
+            Font                    font = text.getFont();
+            TextLayout              layout = new TextLayout(str, font, frc);
+            //        final Rectangle2D       rect = layout.getBounds();
+            //        final PixelRectangle    box = text.getBox();
+            //        final double            xRatio = box.width / rect.getWidth();
+            //        final double            yRatio = box.height / rect.getHeight();
+            //
+            //        if (logger.isFineEnabled()) {
+            //            logger.fine(
+            //                "xRatio:" + (float) xRatio + " yRatio:" + (float) yRatio + " " +
+            //                text);
+            //        }
+            //
+            //        //        // Sign of something wrong
+            //        //        if (yRatio > 1.3) {
+            //        //            yRatio = 1;
+            //        //        }
+            //        final AffineTransform fat = AffineTransform.getScaleInstance(
+            //            xRatio,
+            //            yRatio);
+            //        font = font.deriveFont(fat);
+            //        layout = new TextLayout(str, font, frc);
+            paint(
+                layout,
+                new PixelPoint(refPoint.x, location.y),
+                new Alignment(LEFT, BASELINE));
+        } catch (ConcurrentModificationException ignored) {
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + text,
+                ex);
+        }
 
         return true;
     }
@@ -706,6 +845,11 @@ public abstract class ScorePainter
             }
         } catch (InvalidTimeSignature ex) {
             logger.warning("Invalid time signature", ex);
+        } catch (ConcurrentModificationException ignored) {
+        } catch (Exception ex) {
+            timeSignature.addError(
+                timeSignature.getGlyphs().iterator().next(),
+                "Error painting timeSignature " + ex);
         }
 
         return true;
@@ -717,28 +861,35 @@ public abstract class ScorePainter
     @Override
     public boolean visit (Wedge wedge)
     {
-        if (wedge.isStart()) {
-            final PixelRectangle box = wedge.getGlyph()
-                                            .getContourBox();
+        try {
+            if (wedge.isStart()) {
+                final PixelRectangle box = wedge.getGlyph()
+                                                .getContourBox();
 
-            PixelPoint           single;
-            PixelPoint           top;
-            PixelPoint           bot;
+                PixelPoint           single;
+                PixelPoint           top;
+                PixelPoint           bot;
 
-            if (wedge.getShape() == Shape.CRESCENDO) {
-                single = new PixelPoint(box.x, box.y + (box.height / 2));
-                top = new PixelPoint(box.x + box.width, box.y);
-                bot = new PixelPoint(box.x + box.width, box.y + box.height);
-            } else {
-                single = new PixelPoint(
-                    box.x + box.width,
-                    box.y + (box.height / 2));
-                top = new PixelPoint(box.x, box.y);
-                bot = new PixelPoint(box.x, box.y + box.height);
+                if (wedge.getShape() == Shape.CRESCENDO) {
+                    single = new PixelPoint(box.x, box.y + (box.height / 2));
+                    top = new PixelPoint(box.x + box.width, box.y);
+                    bot = new PixelPoint(box.x + box.width, box.y + box.height);
+                } else {
+                    single = new PixelPoint(
+                        box.x + box.width,
+                        box.y + (box.height / 2));
+                    top = new PixelPoint(box.x, box.y);
+                    bot = new PixelPoint(box.x, box.y + box.height);
+                }
+
+                paintLine(single, top);
+                paintLine(single, bot);
             }
-
-            paintLine(single, top);
-            paintLine(single, bot);
+        } catch (ConcurrentModificationException ignored) {
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error visiting " + wedge,
+                ex);
         }
 
         return true;
@@ -807,18 +958,12 @@ public abstract class ScorePainter
             BasicStroke.JOIN_ROUND);
 
         // Determine stems parameters
-        stemThickness = scale.mainFore() / 2;
+        stemThickness = scale.mainFore();
         stemHalfThickness = stemThickness / 2;
         stemStroke = new BasicStroke(
             stemThickness,
             BasicStroke.CAP_ROUND,
             BasicStroke.JOIN_ROUND);
-
-        // Determine beams parameters
-        if (score.getBeamThickness() != null) {
-            beamThickness = score.getBeamThickness();
-            beamHalfThickness = beamThickness / 2;
-        }
 
         // Set stroke for lines
         g.setStroke(lineStroke);
@@ -828,7 +973,7 @@ public abstract class ScorePainter
     // layout //
     //--------//
     /**
-     * Build a TextLayout from a String of SToccata characters (transformed by
+     * Build a TextLayout from a String of MusicFont characters (transformed by
      * the provided AffineTransform if any)
      * @param str the string of proper codes
      * @param fat potential affine transformation
@@ -848,7 +993,7 @@ public abstract class ScorePainter
     // layout //
     //--------//
     /**
-     * Build a TextLayout from a String of SToccata characters
+     * Build a TextLayout from a String of MusicFont characters
      * @param str the string of proper codes
      * @return the TextLayout ready to be drawn
      */
@@ -861,9 +1006,9 @@ public abstract class ScorePainter
     // layout //
     //--------//
     /**
-     * Build a TextLayout from a Shape, using its related String of SToccata
+     * Build a TextLayout from a Shape, using its related String of MusicFont
      * characters, and potentially sized by an AffineTransform
-     * @param shape the shape to be drawn with SToccata chars
+     * @param shape the shape to be drawn with MusicFont chars
      * @param fat potential affine transformation
      * @return the (sized) TextLayout ready to be drawn
      */
@@ -873,7 +1018,7 @@ public abstract class ScorePainter
         CharDesc desc = MusicFont.getCharDesc(shape);
 
         if (desc == null) {
-            logger.warning("No SToccata desc for " + shape);
+            logger.warning("No MusicFont desc for " + shape);
 
             return null;
         }
@@ -894,9 +1039,9 @@ public abstract class ScorePainter
     // layout //
     //--------//
     /**
-     * Build a TextLayout from a Shape, using its related String of SToccata
+     * Build a TextLayout from a Shape, using its related String of MusicFont
      * characters, and properly sized to fit the box of the underlying glyph
-     * @param shape the shape to be drawn with SToccata chars
+     * @param shape the shape to be drawn with MusicFont chars
      * @param glyphBox the glyph box to fit as much as possible
      * @return the adjusted TextLayout ready to be drawn
      */
@@ -926,9 +1071,9 @@ public abstract class ScorePainter
     // layout //
     //--------//
     /**
-     * Build a TextLayout from a Shape, using its related String of SToccata
+     * Build a TextLayout from a Shape, using its related String of MusicFont
      * characters
-     * @param shape the shape to be drawn with SToccata chars
+     * @param shape the shape to be drawn with MusicFont chars
      * @return the TextLayout ready to be drawn
      */
     protected TextLayout layout (Shape shape)
@@ -1044,6 +1189,8 @@ public abstract class ScorePainter
                 (int) Math.rint(bounds.getY() + origin.getY()),
                 (int) Math.rint(bounds.getWidth()),
                 (int) Math.rint(bounds.getHeight()));
+        } catch (ConcurrentModificationException ignored) {
+            return null;
         } catch (Exception ex) {
             logger.warning("Cannot paint at " + location, ex);
 
@@ -1156,7 +1303,7 @@ public abstract class ScorePainter
     {
         // Compute symbol abscissa according to chord stem
         int    stemX = chord.getTailLocation().x;
-        double dx = stemHalfThickness - 1; // Added -1
+        double dx = stemHalfThickness -2d; // slight adjustment
 
         if (sysPoint.x < stemX) {
             // Symbol is on left side of stem
@@ -1180,7 +1327,7 @@ public abstract class ScorePainter
         /** Font for annotations */
         Constant.Integer basicFontSize = new Constant.Integer(
             "points",
-            20,
+            30,
             "Standard font size for annotations");
 
         /** Alpha parameter for slot axis transparency (0 .. 255) */

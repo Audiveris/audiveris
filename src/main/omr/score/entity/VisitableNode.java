@@ -74,7 +74,7 @@ public abstract class VisitableNode
     //----------------//
     /**
      * Pattern to traverse the children of this node, and recursively the
-     * grand-children, etc...
+     * grand-children, etc... in a "depth-first" mode.
      *
      * @param visitor concrete visitor object to define the actual processing
      */

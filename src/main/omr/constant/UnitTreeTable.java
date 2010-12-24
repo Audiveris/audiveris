@@ -17,6 +17,10 @@ import omr.ui.treetable.JTreeTable;
 import omr.ui.treetable.TreeTableModelAdapter;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 
 import javax.swing.*;
@@ -25,7 +29,7 @@ import javax.swing.tree.TreePath;
 
 /**
  * Class <code>UnitTreeTable</code> is a user interface that combines a tree to
- * display the hierarchy of Units, that containt ConstantSets and/or Loggers,
+ * display the hierarchy of Units, that contains ConstantSets and/or Loggers,
  * and a table to display and edit the various Constants in each ConstantSet as
  * well as the logger level of units.
  *
@@ -194,6 +198,82 @@ public class UnitTreeTable
         default :
             return getDefaultRenderer(getColumnClass(col));
         }
+    }
+
+    //-----------------------//
+    // setConstantsSelection //
+    //-----------------------//
+    /**
+     * Select the rows that correspond to the provided constants
+     * @param constants the constants to select
+     * @return the relevant rows
+     */
+    public int[] setConstantsSelection (Collection<Constant> constants)
+    {
+        List<TreePath> paths = new ArrayList<TreePath>();
+
+        for (Constant constant : constants) {
+            TreePath path = getPath(constant);
+            paths.add(path);
+        }
+
+        tree.setSelectionPaths(paths.toArray(new TreePath[0]));
+
+        int[] rows = tree.getSelectionRows();
+
+        if (rows != null) {
+            Arrays.sort(rows);
+        }
+
+        return rows;
+    }
+
+    //---------//
+    // getPath //
+    //---------//
+    public TreePath getPath (Constant constant)
+    {
+        UnitManager  unitManager = UnitManager.getInstance();
+        String       fullName = constant.getQualifiedName();
+        List<Object> objects = new ArrayList<Object>();
+        objects.add(unitManager.getRoot());
+
+        int dotPos = -1;
+
+        while ((dotPos = fullName.indexOf('.', dotPos + 1)) != -1) {
+            String path = fullName.substring(0, dotPos);
+            objects.add(unitManager.getNode(path));
+        }
+
+        objects.add(constant);
+
+        if (logger.isFineEnabled()) {
+            logger.fine("constant:" + fullName + " objects:" + objects);
+        }
+
+        return new TreePath(objects.toArray());
+    }
+
+    //--------------------//
+    // scrollRowToVisible //
+    //--------------------//
+    /**
+     * Scroll so that the provided row gets visible
+     * @param row the provided row
+     */
+    public void scrollRowToVisible (int row)
+    {
+        final int height = tree.getRowHeight();
+        Rectangle rect = new Rectangle(0, row * height, 0, 0);
+
+        if (getParent() instanceof JComponent) {
+            JComponent comp = (JComponent) getParent();
+            rect.grow(0, comp.getHeight() / 2);
+        } else {
+            rect.grow(0, height);
+        }
+
+        scrollRectToVisible(rect);
     }
 
     //---------------//

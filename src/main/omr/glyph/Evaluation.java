@@ -75,7 +75,7 @@ public class Evaluation
     @Override
     public String toString ()
     {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(shape);
         sb.append("(");
 

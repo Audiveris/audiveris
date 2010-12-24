@@ -152,7 +152,7 @@ public class Run
     @Override
     public String toString ()
     {
-        StringBuffer sb = new StringBuffer(80);
+        StringBuilder sb = new StringBuilder(80);
         sb.append("{Run ");
         sb.append(start)
           .append("/")

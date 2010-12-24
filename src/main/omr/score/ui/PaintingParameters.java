@@ -14,6 +14,8 @@ package omr.score.ui;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.log.Logger;
+
 import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.Action;
 
@@ -33,6 +35,13 @@ public class PaintingParameters
     /** Specific application parameters */
     private static final Constants constants = new Constants();
 
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(
+        PaintingParameters.class);
+
+    /** Should the annotations be painted */
+    public static final String ANNOTATION_PAINTING = "annotationPainting";
+
     /** Should the marks be painted */
     public static final String MARK_PAINTING = "markPainting";
 
@@ -42,11 +51,8 @@ public class PaintingParameters
     /** Should the voices be painted */
     public static final String VOICE_PAINTING = "voicePainting";
 
-    /** Should the dummy parts be painted */
-    public static final String DUMMY_PAINTING = "dummyPainting";
-
-    /** Should the score entities be painted */
-    public static final String ENTITY_PAINTING = "entityPainting";
+    /** A global property name for layers */
+    public static final String LAYER_PAINTING = "layerPainting";
 
     //~ Methods ----------------------------------------------------------------
 
@@ -58,46 +64,34 @@ public class PaintingParameters
         return Holder.INSTANCE;
     }
 
-    //------------------//
-    // setDummyPainting //
-    //------------------//
-    public void setDummyPainting (boolean value)
+    //-----------------------//
+    // setAnnotationPainting //
+    //-----------------------//
+    public void setAnnotationPainting (boolean value)
     {
-        boolean oldValue = constants.dummyPainting.getValue();
-        constants.dummyPainting.setValue(value);
+        boolean oldValue = constants.annotationPainting.getValue();
+        constants.annotationPainting.setValue(value);
         firePropertyChange(
-            DUMMY_PAINTING,
+            ANNOTATION_PAINTING,
             oldValue,
-            constants.dummyPainting.getValue());
+            constants.annotationPainting.getValue());
+    }
+
+    //----------------------//
+    // isAnnotationPainting //
+    //----------------------//
+    public boolean isAnnotationPainting ()
+    {
+        return constants.annotationPainting.getValue();
     }
 
     //-----------------//
-    // isDummyPainting //
+    // isInputPainting //
     //-----------------//
-    public boolean isDummyPainting ()
+    public boolean isInputPainting ()
     {
-        return constants.dummyPainting.getValue();
-    }
-
-    //-------------------//
-    // setEntityPainting //
-    //-------------------//
-    public void setEntityPainting (boolean value)
-    {
-        boolean oldValue = constants.entityPainting.getValue();
-        constants.entityPainting.setValue(value);
-        firePropertyChange(
-            ENTITY_PAINTING,
-            oldValue,
-            constants.entityPainting.getValue());
-    }
-
-    //------------------//
-    // isEntityPainting //
-    //------------------//
-    public boolean isEntityPainting ()
-    {
-        return constants.entityPainting.getValue();
+        return (getPaintingLayer() == PaintingLayer.INPUT) ||
+               (getPaintingLayer() == PaintingLayer.INPUT_OUTPUT);
     }
 
     //-----------------//
@@ -119,6 +113,33 @@ public class PaintingParameters
     public boolean isMarkPainting ()
     {
         return constants.markPainting.getValue();
+    }
+
+    //------------------//
+    // isOutputPainting //
+    //------------------//
+    public boolean isOutputPainting ()
+    {
+        return (getPaintingLayer() == PaintingLayer.OUTPUT) ||
+               (getPaintingLayer() == PaintingLayer.INPUT_OUTPUT);
+    }
+
+    //------------------//
+    // setPaintingLayer //
+    //------------------//
+    public void setPaintingLayer (PaintingLayer value)
+    {
+        PaintingLayer oldValue = getPaintingLayer();
+        constants.paintingLayer.setValue(value);
+        firePropertyChange(LAYER_PAINTING, oldValue, getPaintingLayer());
+    }
+
+    //------------------//
+    // getPaintingLayer //
+    //------------------//
+    public PaintingLayer getPaintingLayer ()
+    {
+        return constants.paintingLayer.getValue();
     }
 
     //-----------------//
@@ -163,28 +184,32 @@ public class PaintingParameters
         return constants.voicePainting.getValue();
     }
 
-    //---------------//
-    // toggleDummies //
-    //---------------//
+    //-------------------//
+    // toggleAnnotations //
+    //-------------------//
     /**
-     * Action that toggles the display of dummy system parts
+     * Action that toggles the display of annotations in the score
      * @param e the event that triggered this action
      */
-    @Action(selectedProperty = DUMMY_PAINTING)
-    public void toggleDummies (ActionEvent e)
+    @Action(selectedProperty = ANNOTATION_PAINTING)
+    public void toggleAnnotations (ActionEvent e)
     {
     }
 
-    //----------------//
-    // toggleEntities //
-    //----------------//
+    //--------------//
+    // switchLayers //
+    //--------------//
     /**
-     * Action that toggles the display of score entities
+     * Action that swiches among layer combinations
      * @param e the event that triggered this action
      */
-    @Action(selectedProperty = ENTITY_PAINTING)
-    public void toggleEntities (ActionEvent e)
+    @Action
+    public void switchLayers (ActionEvent e)
     {
+        int oldOrd = getPaintingLayer()
+                         .ordinal();
+        int ord = (oldOrd + 1) % PaintingLayer.values().length;
+        setPaintingLayer(PaintingLayer.values()[ord]);
     }
 
     //-------------//
@@ -233,6 +258,11 @@ public class PaintingParameters
     {
         //~ Instance fields ----------------------------------------------------
 
+        /** Should the annotations be painted */
+        final Constant.Boolean annotationPainting = new Constant.Boolean(
+            true,
+            "Should the annotations be painted");
+
         /** Should the slots be painted */
         final Constant.Boolean slotPainting = new Constant.Boolean(
             true,
@@ -253,10 +283,10 @@ public class PaintingParameters
             true,
             "Should the dummy parts be painted");
 
-        /** Should the score entities be painted */
-        final Constant.Boolean entityPainting = new Constant.Boolean(
-            true,
-            "Should the score entities be painted");
+        /** Which layers should be painted */
+        final PaintingLayer.Constant paintingLayer = new PaintingLayer.Constant(
+            PaintingLayer.INPUT_OUTPUT,
+            "Which layers should be painted");
     }
 
     //--------//

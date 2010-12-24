@@ -427,7 +427,7 @@ public class GlyphLag
     @Override
     protected String internalsString ()
     {
-        StringBuffer sb = new StringBuffer(super.internalsString());
+        StringBuilder sb = new StringBuilder(super.internalsString());
 
         // Active/All glyphs
         sb.append(" glyphs=")

@@ -13,6 +13,8 @@ package omr.step;
 
 import omr.log.Logger;
 
+import omr.script.StepTask;
+
 import omr.sheet.Sheet;
 import omr.sheet.ui.SheetsController;
 
@@ -63,9 +65,9 @@ public class StepMenu
         Step prevStep = null;
 
         // List of Steps classes in proper order
-        for (Step step : Step.values()) {
+        for (Step step : Steps.values()) {
             if ((prevStep != null) &&
-                (prevStep.isMandatory != step.isMandatory)) {
+                (prevStep.isMandatory() != step.isMandatory())) {
                 menu.addSeparator();
             }
 
@@ -116,7 +118,7 @@ public class StepMenu
         {
             super(step.toString());
             this.step = step;
-            putValue(SHORT_DESCRIPTION, step.description);
+            putValue(SHORT_DESCRIPTION, step.getDescription());
         }
 
         //~ Methods ------------------------------------------------------------
@@ -124,19 +126,21 @@ public class StepMenu
         @Implement(AbstractAction.class)
         public void actionPerformed (ActionEvent e)
         {
-            final Sheet      sheet = SheetsController.selectedSheet();
-            final SheetSteps steps = sheet.getSheetSteps();
+            final Sheet sheet = SheetsController.getCurrentSheet();
             new BasicTask() {
                     @Override
                     protected Void doInBackground ()
                         throws Exception
                     {
-                        Step sofar = steps.getLatestMandatoryStep();
+                        Step sofar = Stepping.getLatestMandatoryStep(sheet);
 
-                        if ((sofar == null) || (sofar.compareTo(step) <= 0)) {
-                            step.performUntil(sheet);
+                        if ((sofar == null) ||
+                            (Steps.compare(sofar, step) <= 0)) {
+                            // Here we progress on all sheets of the score
+                            new StepTask(step).run(sheet);
                         } else {
-                            steps.rebuildFrom(step, null, true);
+                            // There we rebuild just the current sheet
+                            Stepping.reprocessSheet(step, sheet, null, true);
                         }
 
                         return null;
@@ -148,7 +152,8 @@ public class StepMenu
                         // Select the assembly tab related to the target step
                         if (sheet != null) {
                             sheet.getAssembly()
-                                 .selectTab(steps.getLatestMandatoryStep());
+                                 .selectTab(
+                                Stepping.getLatestMandatoryStep(sheet));
                         }
                     }
                 }.execute();
@@ -182,13 +187,12 @@ public class StepMenu
                 setState(false);
                 action.setEnabled(false);
             } else {
-                if (action.step.isMandatory) {
-                    final boolean done = sheet.getSheetSteps()
-                                              .isDone(action.step);
+                if (action.step.isMandatory()) {
+                    final boolean done = action.step.isDone(sheet);
 
                     setState(done);
 
-                    if (action.step.isRedoable) {
+                    if (action.step.isRedoable()) {
                         action.setEnabled(true);
                     } else {
                         action.setEnabled(!done);
@@ -228,7 +232,7 @@ public class StepMenu
         @Implement(MenuListener.class)
         public void menuSelected (MenuEvent e)
         {
-            Sheet sheet = SheetsController.selectedSheet();
+            Sheet sheet = SheetsController.getCurrentSheet();
 
             for (int i = 0; i < menu.getItemCount(); i++) {
                 JMenuItem menuItem = menu.getItem(i);

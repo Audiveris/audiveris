@@ -39,6 +39,7 @@ import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.SheetPainter;
 
 import omr.step.Step;
+import omr.step.Steps;
 
 import omr.ui.BoardsPane;
 
@@ -89,7 +90,11 @@ public class VerticalsController
     public VerticalsController (Sheet sheet)
     {
         // We work with the sheet vertical lag
-        super(new GlyphsModel(sheet, sheet.getVerticalLag(), Step.VERTICALS));
+        super(
+            new GlyphsModel(
+                sheet,
+                sheet.getVerticalLag(),
+                Steps.valueOf(Steps.VERTICALS)));
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -120,11 +125,11 @@ public class VerticalsController
         view = new MyView(lag);
 
         // Create a hosting frame for the view
-        final String unit = sheet.getRadix() + ":VerticalsBuilder";
+        final String unit = sheet.getId() + ":VerticalsBuilder";
 
         sheet.getAssembly()
              .addViewTab(
-            Step.VERTICALS,
+            Step.VERTICALS_TAB,
             new ScrollLagView(view),
             new BoardsPane(
                 sheet,
@@ -247,7 +252,7 @@ public class VerticalsController
         public void renderItems (Graphics2D g)
         {
             // Render all physical info known so far
-            sheet.getScore()
+            sheet.getPage()
                  .accept(new SheetPainter(g, false));
 
             super.renderItems(g);

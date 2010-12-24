@@ -85,7 +85,7 @@ public class Dumper
     /**
      * The string buffer used as output
      */
-    protected final StringBuffer sb;
+    protected final StringBuilder sb;
 
     /**
      * Can we use HTML directives?
@@ -114,7 +114,7 @@ public class Dumper
         this.relevance = relevance;
 
         // (re)Allocate the string buffer
-        sb = new StringBuffer(1024);
+        sb = new StringBuilder(1024);
 
         // Cache the object & the related class
         this.object = object;
@@ -300,7 +300,7 @@ public class Dumper
         //~ Instance fields ----------------------------------------------------
 
         private final String       title;
-        private final StringBuffer prefix;
+        private final StringBuilder prefix;
 
         //~ Constructors -------------------------------------------------------
 
@@ -319,7 +319,7 @@ public class Dumper
             }
 
             // Prepare indent prefix
-            prefix = new StringBuffer(level * INDENT_GAP.length());
+            prefix = new StringBuilder(level * INDENT_GAP.length());
 
             for (int i = level; i > 0; i--) {
                 prefix.append(INDENT_GAP);

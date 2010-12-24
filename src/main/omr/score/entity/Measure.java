@@ -48,14 +48,14 @@ public class Measure
     /** To flag dummy barline instances */
     private boolean dummy;
 
-    /** To flag a temporary measure */
+    /** To flag a temporary measure (for playback) */
     private boolean temporary;
 
-    /** Flag for implicit (introduction) measure */
+    /** Flag for implicit (pickup or repeat last half) measure */
     private boolean implicit;
 
-    /** Flag for partial (short) measure */
-    private boolean partial;
+    /** Child: Left-inside bar line, if any */
+    private Barline insideBarline;
 
     /** Child: Ending bar line, if any */
     private Barline barline;
@@ -1090,29 +1090,6 @@ public class Measure
                 }
             }
         }
-
-        setPartial(true);
-    }
-
-    //------------//
-    // setPartial //
-    //------------//
-    public void setPartial (boolean partial)
-    {
-        this.partial = partial;
-    }
-
-    //-----------//
-    // isPartial //
-    //-----------//
-    /**
-     * Report whether this measure is partial
-     *
-     * @return true if measure is partial
-     */
-    public boolean isPartial ()
-    {
-        return partial;
     }
 
     //--------------//
@@ -1458,74 +1435,6 @@ public class Measure
         }
     }
 
-    //----------------------//
-    // checkPartialMeasures //
-    //----------------------//
-    /**
-     * Check for measures for which all voices are shorter than the expected
-     * duration, and for the same duration, across all parts of the system
-     *
-     * @param system the system to inspect
-     */
-    public static void checkPartialMeasures (ScoreSystem system)
-    {
-        // Use a loop on measures, across system parts
-        final int imMax = system.getFirstRealPart()
-                                .getMeasures()
-                                .size();
-
-        for (int im = 0; im < imMax; im++) {
-            Integer measureFinal = null;
-            partLoop: 
-            for (TreeNode node : system.getParts()) {
-                SystemPart part = (SystemPart) node;
-
-                if (part.isDummy()) {
-                    continue;
-                }
-
-                Measure measure = (Measure) part.getMeasures()
-                                                .get(im);
-
-                for (Voice voice : measure.getVoices()) {
-                    Integer voiceFinal = voice.getFinalDuration();
-
-                    if (voiceFinal != null) {
-                        if (measureFinal == null) {
-                            measureFinal = voiceFinal;
-                        } else if (!voiceFinal.equals(measureFinal)) {
-                            if (logger.isFineEnabled()) {
-                                logger.fine("No partial measure");
-                            }
-
-                            measureFinal = null;
-
-                            break partLoop;
-                        }
-                    }
-                }
-            }
-
-            if ((measureFinal != null) && (measureFinal < 0)) {
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        system.getContextString() + "M" + im +
-                        " Found a partial measure for -" +
-                        Note.quarterValueOf(-measureFinal));
-                }
-
-                // Flag these measures as partial, and get rid of their final
-                // forward marks if any
-                for (TreeNode node : system.getParts()) {
-                    SystemPart part = (SystemPart) node;
-                    Measure    measure = (Measure) part.getMeasures()
-                                                       .get(im);
-                    measure.setPartial(measureFinal);
-                }
-            }
-        }
-    }
-
     //-----------------//
     // checkTiedChords //
     //-----------------//
@@ -1549,6 +1458,9 @@ public class Measure
      */
     public void cleanupNode ()
     {
+        //        logger.warning(
+        //            "cleanupNode " + this + " @" + Integer.toHexString(hashCode()));
+
         // Remove all direct children except barlines
         for (Iterator it = children.iterator(); it.hasNext();) {
             VisitableNode node = (VisitableNode) it.next();
@@ -1563,7 +1475,7 @@ public class Measure
         expectedDuration = null;
         excess = null;
         implicit = false;
-        setPartial(false);
+        id = 0;
 
         // (Re)Allocate specific children lists
         clefs = new Container(this, "Clefs");
@@ -1642,6 +1554,37 @@ public class Measure
         }
 
         return dummyMeasure;
+    }
+
+    //----------------//
+    // mergeWithRight //
+    //----------------//
+    /**
+     * Merge this measure with the content of the following measure on the right
+     * @param right the following measure
+     */
+    public void mergeWithRight (Measure right)
+    {
+        clefs.getChildren()
+             .addAll(right.clefs.getChildren());
+        keysigs.getChildren()
+               .addAll(right.keysigs.getChildren());
+        timesigs.getChildren()
+                .addAll(right.timesigs.getChildren());
+        chords.getChildren()
+              .addAll(right.chords.getChildren());
+        beams.getChildren()
+             .addAll(right.beams.getChildren());
+
+        slots.addAll(right.slots);
+        beamGroups.addAll(right.beamGroups);
+        wholeChords.addAll(right.wholeChords);
+        voices.addAll(right.voices);
+
+        setBox(getBox().union(right.getBox()));
+
+        insideBarline = barline;
+        addChild(right.barline);
     }
 
     //-------------//
@@ -1801,17 +1744,18 @@ public class Measure
             rightX = barline.getCenter().x;
         } else {
             // Last measure of a part/system with no ending barline
-            rightX = getSystem()
-                         .getDimension().width;
+            ScoreSystem system = getSystem();
+            rightX = system.getTopLeft().x + system.getDimension().width;
         }
 
-        SystemPart part = this.getPart();
+        PixelRectangle partBox = getPart()
+                                     .getBox();
         setBox(
             new PixelRectangle(
                 leftX,
-                part.getBox().y,
+                partBox.y,
                 rightX - leftX,
-                part.getBox().height));
+                partBox.height));
     }
 
     //---------------//

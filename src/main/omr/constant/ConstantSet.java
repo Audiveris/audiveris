@@ -205,7 +205,7 @@ public abstract class ConstantSet
     @Override
     public String toString ()
     {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
 
         //sb.append("<html><b>");
         int dot = unit.lastIndexOf('.');

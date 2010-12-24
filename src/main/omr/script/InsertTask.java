@@ -65,16 +65,18 @@ public class InsertTask
     /**
      * Create an glyph insertion task
      *
+     * @param sheet the sheet impacted
      * @param shape the inserted shape
      * @param locations the locations for insertion
      * @param orientation the orientation of the containing lag
      * @throws IllegalArgumentException if any of the arguments is not valid
      */
-    public InsertTask (Shape                  shape,
+    public InsertTask (Sheet                  sheet,
+                       Shape                  shape,
                        Collection<PixelPoint> locations,
                        LagOrientation         orientation)
     {
-        super(orientation);
+        super(sheet, orientation);
 
         // Check parameters
         if (shape == null) {
@@ -154,7 +156,7 @@ public class InsertTask
     @Override
     protected String internalsString ()
     {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(super.internalsString());
         sb.append(" insert");
 
         sb.append(" ")
@@ -176,7 +178,7 @@ public class InsertTask
             sb.append(" no-locations");
         }
 
-        return sb + super.internalsString();
+        return sb.toString();
     }
 
     //-----------------------//

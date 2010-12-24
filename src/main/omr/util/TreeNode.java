@@ -216,7 +216,7 @@ public abstract class TreeNode
     public synchronized void addChild (TreeNode node)
     {
         if (logger.isFineEnabled()) {
-            logger.fine("addChild node=" + node + " for " + this);
+            logger.fine("addChild " + node + " for " + this);
         }
 
         children.add(node);

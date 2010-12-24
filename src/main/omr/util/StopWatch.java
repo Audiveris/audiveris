@@ -79,7 +79,7 @@ public class StopWatch
                     String.format(
                         format,
                         t.elapsed,
-                        (100 * t.elapsed) / total,
+                        (total != 0) ? ((100 * t.elapsed) / total) : 100,
                         t.label));
             }
         }

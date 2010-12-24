@@ -13,6 +13,9 @@ package omr.script;
 
 import omr.log.Logger;
 
+import omr.score.Score;
+import omr.score.entity.Page;
+
 import omr.sheet.Sheet;
 
 import omr.step.ProcessingCancellationException;
@@ -24,10 +27,10 @@ import java.util.List;
 import javax.xml.bind.annotation.*;
 
 /**
- * Class {@code Script} handles a complete script applied to a sheet.
+ * Class {@code Script} handles a complete script applied to a score.
  *
  * <p>A script is a sequence of {@link ScriptTask} instances tasks that are
- * recorded as the user interacts with the sheet data.
+ * recorded as the user interacts with the score data.
  *
  * <p>A script can be stored and reloaded/replayed.
  *
@@ -44,12 +47,12 @@ public class Script
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Sheet to which the script is applied */
-    private Sheet sheet;
+    /** Score to which the script is applied */
+    private Score score;
 
-    /** Full path to the Sheet file name */
-    @XmlAttribute(name = "sheet")
-    private final String sheetPath;
+    /** Full path to the Score image file */
+    @XmlAttribute(name = "file")
+    private final String scorePath;
 
     /** Sequence of tasks that compose the script */
     @XmlElements({@XmlElement(name = "assign", type = AssignTask.class)
@@ -63,6 +66,7 @@ public class Script
         , @XmlElement(name = "play", type = PlayTask.class)
         , @XmlElement(name = "print", type = PrintTask.class)
         , @XmlElement(name = "rational", type = RationalTask.class)
+        , @XmlElement(name = "remove", type = RemoveTask.class)
         , @XmlElement(name = "segment", type = SegmentTask.class)
         , @XmlElement(name = "slur", type = SlurTask.class)
         , @XmlElement(name = "step", type = StepTask.class)
@@ -81,12 +85,12 @@ public class Script
     /**
      * Create a script
      *
-     * @param sheet the related sheet
+     * @param score the related score
      */
-    public Script (Sheet sheet)
+    public Script (Score score)
     {
-        this.sheet = sheet;
-        sheetPath = sheet.getPath();
+        this.score = score;
+        scorePath = score.getImagePath();
     }
 
     //--------//
@@ -95,7 +99,7 @@ public class Script
     /** No-arg constructor for JAXB */
     private Script ()
     {
-        sheetPath = null;
+        scorePath = null;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -113,16 +117,16 @@ public class Script
     }
 
     //----------//
-    // getSheet //
+    // getScore //
     //----------//
     /**
-     * Report the sheet this script is linked to
+     * Report the score this script is linked to
      *
-     * @return the sheet concerned
+     * @return the score concerned
      */
-    public Sheet getSheet ()
+    public Score getScore ()
     {
-        return sheet;
+        return score;
     }
 
     //---------//
@@ -133,7 +137,7 @@ public class Script
      *
      * @param task the task to add at the end of the current sequence
      */
-    public void addTask (ScriptTask task)
+    public synchronized void addTask (ScriptTask task)
     {
         tasks.add(task);
         setModified(true);
@@ -171,26 +175,44 @@ public class Script
         if (logger.isFineEnabled()) {
             logger.fine(
                 "Running " + this +
-                ((sheet != null) ? (" on sheet " + sheet.getRadix()) : ""));
+                ((score != null) ? (" on score " + score.getRadix()) : ""));
         }
 
-        // Make sheet concrete
-        if (sheet == null) {
-            if (sheetPath == null) {
-                logger.warning("No sheet defined in script");
+        // Make score concrete (with its pages/sheets)
+        if (score == null) {
+            if (scorePath == null) {
+                logger.warning("No score defined in script");
 
                 return;
             }
 
-            sheet = new Sheet(new File(sheetPath));
+            score = new Score(new File(scorePath));
+            score.createPages();
         }
 
         // Run the tasks in sequence
         try {
             for (ScriptTask task : tasks) {
+                Page page = null;
+
+                if (task instanceof SheetTask) {
+                    Integer pageIndex = ((SheetTask) task).getPageIndex();
+                    page = score.getPage(pageIndex);
+
+                    if (page == null) {
+                        logger.warning(
+                            "Script error. No page for index " + pageIndex);
+
+                        continue;
+                    }
+                } else {
+                    page = score.getFirstPage();
+                }
+
+                Sheet sheet = page.getSheet();
+
                 if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "Running " + task + " on sheet " + sheet.getRadix());
+                    logger.fine("Running " + task + " on " + sheet);
                 }
 
                 try {
@@ -205,7 +227,7 @@ public class Script
             }
 
             if (logger.isFineEnabled()) {
-                logger.fine("All tasks run on sheet " + sheet.getRadix());
+                logger.fine("All tasks run on " + score);
             }
         } catch (ProcessingCancellationException pce) {
             throw pce;
@@ -213,7 +235,7 @@ public class Script
             logger.warning("Script aborted", ex);
         } finally {
             // Flag the (active) script as up-to-date
-            sheet.getScript()
+            score.getScript()
                  .setModified(false);
         }
     }
@@ -231,12 +253,12 @@ public class Script
             sb.append(" modified");
         }
 
-        if (sheetPath != null) {
+        if (scorePath != null) {
             sb.append(" ")
-              .append(sheetPath);
-        } else if (sheet != null) {
+              .append(scorePath);
+        } else if (score != null) {
             sb.append(" ")
-              .append(sheet.getRadix());
+              .append(score.getRadix());
         }
 
         if (tasks != null) {

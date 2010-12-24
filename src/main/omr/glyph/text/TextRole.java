@@ -19,7 +19,6 @@ import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
-import omr.score.common.PixelRectangle;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.ScoreSystem.StaffPosition;
 import omr.score.entity.Staff;
@@ -38,7 +37,7 @@ import omr.sheet.SystemInfo;
  */
 public enum TextRole {
     /** No role known */
-    Unknown,
+    UnknownRole,
     /** (Part of) lyrics */
     Lyrics, 
     /** Title of the opus */
@@ -185,7 +184,7 @@ public enum TextRole {
         case ABOVE_STAVES : // Title, Number, Creator, Direction (Accord)
 
             if (tinySentence) {
-                return new RoleInfo(TextRole.Unknown);
+                return new RoleInfo(TextRole.UnknownRole);
             }
 
             if (leftOfStaves) {
@@ -222,7 +221,7 @@ public enum TextRole {
         case BELOW_STAVES : // Copyright
 
             if (tinySentence) {
-                return new RoleInfo(TextRole.Unknown);
+                return new RoleInfo(TextRole.UnknownRole);
             }
 
             if (pageCentered && shortSentence && lastSystem) {
@@ -231,7 +230,7 @@ public enum TextRole {
         }
 
         // Default
-        return new RoleInfo(TextRole.Unknown);
+        return new RoleInfo(TextRole.UnknownRole);
     }
 
     //-----------//

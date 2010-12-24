@@ -59,8 +59,8 @@
         description="Modify token of every source file">
         
         <replace encoding="utf8" dir="${src.dir}">
-            <replacetoken>PageRectangle</replacetoken>
-            <replacevalue>PixelRectangle</replacevalue>
+            <replacetoken>StringBuffer</replacetoken>
+            <replacevalue>StringBuilder</replacevalue>
             <include name="**/*.java"/>
         </replace>
 
