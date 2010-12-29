@@ -171,7 +171,7 @@ public class GlyphInspector
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.getShape() == null) {
                 // Get vote
-                Evaluation vote = evaluator.vote(glyph, maxDoubt);
+                Evaluation vote = evaluator.vote(glyph, maxDoubt, system);
 
                 if ((vote != null) && !glyph.isShapeForbidden(vote.shape)) {
                     glyph.setShape(vote.shape, vote.doubt);
@@ -279,7 +279,7 @@ public class GlyphInspector
         public boolean isCompoundValid (Glyph compound)
         {
             Evaluation eval = GlyphNetwork.getInstance()
-                                          .vote(compound, maxDoubt);
+                                          .vote(compound, maxDoubt, system);
 
             if ((eval != null) &&
                 eval.shape.isWellKnown() &&

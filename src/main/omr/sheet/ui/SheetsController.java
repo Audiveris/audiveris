@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.sheet.ui;
 
-import java.awt.Component;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -33,6 +32,7 @@ import org.bushe.swing.event.EventSubscriber;
 
 import org.jdesktop.application.Action;
 
+import java.awt.Component;
 import java.util.ArrayList;
 
 import javax.swing.JComponent;
@@ -165,26 +165,6 @@ public class SheetsController
             SheetEvent.class);
 
         return (sheetEvent != null) ? sheetEvent.getData() : null;
-    }
-
-    //---------------------//
-    // areAllScriptsStored //
-    //---------------------//
-    /**
-     * Report whether all the sheet scripts have been stored
-     * @return true if OK
-     */
-    public synchronized boolean areAllScriptsStored ()
-    {
-        for (SheetAssembly assembly : assemblies) {
-            Sheet sheet = assembly.getSheet();
-
-            if (!ScriptActions.checkStored(sheet.getScore().getScript())) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     //----------------//
@@ -324,7 +304,6 @@ public class SheetsController
                     firstSheet.getAssembly().getComponent());
                 tabbedPane.setTitleAt(firstIndex, defineTitleFor(firstSheet));
             }
-            
         }
 
         return true;

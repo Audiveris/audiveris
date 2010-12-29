@@ -15,24 +15,11 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
 import omr.glyph.Shape;
-import static omr.glyph.Shape.*;
 import omr.glyph.ShapeRange;
-import static omr.glyph.ShapeRange.*;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
-import omr.score.entity.Clef;
-import omr.score.entity.Measure;
-import omr.score.entity.ScoreSystem;
-import omr.score.entity.Staff;
-import omr.score.entity.SystemPart;
-
-import omr.sheet.Ledger;
-import omr.sheet.Scale;
-import omr.sheet.StaffInfo;
 import omr.sheet.SystemInfo;
 
 import omr.util.Implement;
@@ -124,127 +111,28 @@ public class ShapePattern
     //---------------------//
     private void registerShapeChecks ()
     {
-        new ShapeChecker(BRACKET, BRACE) {
-                public boolean check (Shape shape,
-                                      Glyph glyph)
-                {
-                    // Make sure at least a staff interval is embraced
-                    PixelRectangle box = glyph.getContourBox();
-                    boolean        embraced = false;
-                    int            intervalTop = Integer.MIN_VALUE;
-
-                    for (StaffInfo staff : system.getStaves()) {
-                        if (intervalTop != Integer.MIN_VALUE) {
-                            int intervalBottom = staff.getFirstLine()
-                                                      .yAt(box.x);
-
-                            if ((intervalTop >= box.y) &&
-                                (intervalBottom <= (box.y + box.height))) {
-                                embraced = true; // Ok for this one
-
-                                break;
-                            }
-                        }
-
-                        intervalTop = staff.getLastLine()
-                                           .yAt(box.x);
-                    }
-
-                    if (!embraced) {
-                        if (logger.isFineEnabled()) {
-                            logger.fine(
-                                "Deassigned " + shape + " glyph #" +
-                                glyph.getId());
-                        }
-
-                        return false;
-                    } else {
-                        return true;
-                    }
-                }
-            };
-
-        new ShapeChecker(allSymbols) {
-                public boolean check (Shape shape,
-                                      Glyph glyph)
-                {
-                    // They must be within the abscissa bounds of the system
-                    // Except a few shapes
-                    if ((shape == BRACKET) ||
-                        (shape == BRACE) ||
-                        (shape == TEXT) ||
-                        (shape == CHARACTER)) {
-                        return true;
-                    }
-
-                    PixelRectangle glyphBox = glyph.getContourBox();
-
-                    if (((glyphBox.x + glyphBox.width) < system.getLeft()) ||
-                        (glyphBox.x > system.getRight())) {
-                        return false;
-                    }
-
-                    return true;
-                }
-            };
-
-        new ShapeChecker(Keys.getShapes()) {
-                public boolean check (Shape shape,
-                                      Glyph glyph)
-                {
-                    // They must be rather close to the left side of the measure
-                    ScoreSystem    scoreSystem = system.getScoreSystem();
-                    Scale          scale = scoreSystem.getScale();
-                    double         maxKeyXOffset = scale.toPixels(
-                        constants.maxKeyXOffset);
-                    PixelRectangle box = glyph.getContourBox();
-                    PixelPoint     point = box.getLocation();
-                    SystemPart     part = scoreSystem.getPartAt(point);
-                    Measure        measure = part.getMeasureAt(point);
-                    Staff          staff = part.getStaffAt(point);
-                    Clef           clef = measure.getFirstMeasureClef(
-                        staff.getId());
-                    int            start = (clef != null)
-                                           ? (clef.getBox().x +
-                                           clef.getBox().width)
-                                           : measure.getLeftX();
-
-                    if ((point.x - start) > maxKeyXOffset) {
-                        if (logger.isFineEnabled()) {
-                            logger.fine(
-                                "Glyph#" + glyph.getId() +
-                                " Key too far on right");
-                        }
-
-                        return false;
-                    }
-
-                    return true;
-                }
-            };
-
-        new ShapeChecker(Shape.WHOLE_NOTE) {
-                @Override
-                public boolean check (Shape shape,
-                                      Glyph glyph)
-                {
-                    // Check that whole notes are not too far from staves 
-                    // without ledgers
-                    PixelPoint point = glyph.getAreaCenter();
-                    StaffInfo  staff = system.getStaffAtY(point.y);
-                    double     pitch = staff.pitchPositionOf(point);
-
-                    if (Math.abs(pitch) <= 6) {
-                        return true;
-                    }
-
-                    Set<Ledger> ledgers = staff.getLedgersToStaff(
-                        point,
-                        system);
-
-                    return !ledgers.isEmpty();
-                }
-            };
+        //        new ShapeChecker(Shape.WHOLE_NOTE) {
+        //                @Override
+        //                public boolean check (Shape shape,
+        //                                      Glyph glyph)
+        //                {
+        //                    // Check that whole notes are not too far from staves 
+        //                    // without ledgers
+        //                    PixelPoint point = glyph.getAreaCenter();
+        //                    StaffInfo  staff = system.getStaffAtY(point.y);
+        //                    double     pitch = staff.pitchPositionOf(point);
+        //
+        //                    if (Math.abs(pitch) <= 6) {
+        //                        return true;
+        //                    }
+        //
+        //                    Set<Ledger> ledgers = staff.getLedgersToStaff(
+        //                        point,
+        //                        system);
+        //
+        //                    return !ledgers.isEmpty();
+        //                }
+        //            };
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -315,10 +203,5 @@ public class ShapePattern
     private static final class Constants
         extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
-
-        Scale.Fraction maxKeyXOffset = new Scale.Fraction(
-            2,
-            "Maximum horizontal offset for a key since clef or measure start");
     }
 }

@@ -76,6 +76,9 @@ public class LinearEvaluator
     @XmlElement(name = "categories")
     private final SortedMap<String, Category> categories;
 
+    /** Flag to indicate that some data has changed since unmarshalling */
+    private boolean dataModified = true;
+
     //~ Constructors -----------------------------------------------------------
 
     //-----------------//
@@ -120,78 +123,6 @@ public class LinearEvaluator
         return parameters.length;
     }
 
-    //------------//
-    // setMaximum //
-    //------------//
-    /**
-     * Set the constraint test on maximum for a parameter of the provided
-     * category
-     * @param paramIndex the impacted parameter
-     * @param categoryId the targeted category
-     * @param val the new maximum value (null for disabling the test)
-     */
-    public void setMaximum (int    paramIndex,
-                            String categoryId,
-                            Double val)
-    {
-        CategoryParam catParam = checkCategoryParam(paramIndex, categoryId);
-        catParam.max = val;
-    }
-
-    //------------//
-    // getMaximum //
-    //------------//
-    /**
-     * Get the constraint test on maximum for a parameter of the provided
-     * category
-     * @param paramIndex the impacted parameter
-     * @param categoryId the targeted category
-     * @return the current maximum value (null if test is disabled)
-     */
-    public Double getMaximum (int    paramIndex,
-                              String categoryId)
-    {
-        CategoryParam catParam = checkCategoryParam(paramIndex, categoryId);
-
-        return catParam.max;
-    }
-
-    //------------//
-    // setMinimum //
-    //------------//
-    /**
-     * Set the constraint test on minimum for a parameter of the provided
-     * category
-     * @param paramIndex the impacted parameter
-     * @param categoryId the targeted category
-     * @param val the new minimum value (null for disabling the test)
-     */
-    public void setMinimum (int    paramIndex,
-                            String categoryId,
-                            Double val)
-    {
-        CategoryParam catParam = checkCategoryParam(paramIndex, categoryId);
-        catParam.min = val;
-    }
-
-    //------------//
-    // getMinimum //
-    //------------//
-    /**
-     * Get the constraint test on minimum for a parameter of the provided
-     * category
-     * @param paramIndex the impacted parameter
-     * @param categoryId the targeted category
-     * @return the current minimum value (null if test is disabled)
-     */
-    public Double getMinimum (int    paramIndex,
-                              String categoryId)
-    {
-        CategoryParam catParam = checkCategoryParam(paramIndex, categoryId);
-
-        return catParam.min;
-    }
-
     //------------------//
     // categoryDistance //
     //------------------//
@@ -208,24 +139,6 @@ public class LinearEvaluator
     {
         return checkArguments(pattern, categoryId)
                    .distance(pattern, parameters);
-    }
-
-    //-------------------------//
-    // categoryFirstMisMatched //
-    //-------------------------//
-    /**
-     * Perform a basic check on max / min bounds, if any, for each parameter
-     * value of the provided pattern
-     * @param pattern the collection of parameters to check with respect to
-     * targeted category
-     * @param categoryId the targeted category
-     * @return the name of the first failing check, null otherwise
-     */
-    public String categoryFirstMisMatched (double[] pattern,
-                                           String   categoryId)
-    {
-        return checkArguments(pattern, categoryId)
-                   .firstMisMatched(pattern, parameters);
     }
 
     //------//
@@ -352,7 +265,7 @@ public class LinearEvaluator
                 categories.put(sample.category, category);
             }
 
-            category.include(sample.pattern);
+            category.include(sample.pattern, true);
 
             if (logger.isFineEnabled()) {
                 logger.fine(
@@ -375,24 +288,22 @@ public class LinearEvaluator
         // Compute default weight for each parameter
         // (using the sample populations of all categories)
         for (int p = 0; p < parameters.length; p++) {
-            Population sample = new Population();
+            Population paramPop = new Population();
 
             for (Category category : categories.values()) {
                 CategoryParam param = category.params[p];
 
                 if (param.training != CategoryParam.TrainingStatus.NONE) {
-                    sample.includePopulation(param.population);
+                    paramPop.includePopulation(param.population);
                 }
             }
 
-            if (sample.getCardinality() > 1) {
-                double var = sample.getVariance();
+            if (paramPop.getCardinality() > 1) {
+                double var = paramPop.getVariance();
 
                 if (var >= EPSILON) {
                     parameters[p].defaultWeight = 1 / var;
-                } else {
                 }
-            } else {
             }
         }
     }
@@ -424,15 +335,78 @@ public class LinearEvaluator
         return evaluator;
     }
 
+    //----------------//
+    // isDataModified //
+    //----------------//
+    /**
+     * @return true if some data has been modified since unmarshalling
+     */
+    public boolean isDataModified ()
+    {
+        return dataModified;
+    }
+
+    //------------//
+    // getMaximum //
+    //------------//
+    /**
+     * Get the constraint test on maximum for a parameter of the provided
+     * category
+     * @param paramIndex the impacted parameter
+     * @param categoryId the targeted category
+     * @return the current maximum value (null if test is disabled)
+     */
+    public Double getMaximum (int    paramIndex,
+                              String categoryId)
+    {
+        return getCategoryParam(paramIndex, categoryId).max;
+    }
+
+    //------------//
+    // getMinimum //
+    //------------//
+    /**
+     * Get the constraint test on minimum for a parameter of the provided
+     * category
+     * @param paramIndex the impacted parameter
+     * @param categoryId the targeted category
+     * @return the current minimum value (null if test is disabled)
+     */
+    public Double getMinimum (int    paramIndex,
+                              String categoryId)
+    {
+        return getCategoryParam(paramIndex, categoryId).min;
+    }
+
     //---------------//
-    // getParameters //
+    // includeSample //
     //---------------//
     /**
-     * @return the parameters
+     * Include a new sample (on top of unmarshalled data). For the time being,
+     * this is used only to perhaps widen the min/max constraints, but not to
+     * increase the population.
+     * @param params the parameters
+     * @param categoryId the targeted category
+     * @return true if some min/max bound has changed
      */
-    public Parameter[] getParameters ()
+    public boolean includeSample (double[] params,
+                                  String   categoryId)
     {
-        return parameters;
+        // Check category label
+        Category category = categories.get(categoryId);
+
+        if (category == null) {
+            throw new IllegalArgumentException(
+                "Unknown category: " + categoryId);
+        }
+
+        boolean modified = category.include(params, false);
+
+        if (modified) {
+            dataModified = true;
+        }
+
+        return modified;
     }
 
     //----------------//
@@ -447,6 +421,23 @@ public class LinearEvaluator
         }
 
         return jaxbContext;
+    }
+
+    //------------------//
+    // getCategoryParam //
+    //------------------//
+    private CategoryParam getCategoryParam (int    paramIndex,
+                                            String categoryId)
+    {
+        // Check category label
+        Category category = categories.get(categoryId);
+
+        if (category == null) {
+            throw new IllegalArgumentException(
+                "Unknown category: " + categoryId);
+        }
+
+        return category.params[paramIndex];
     }
 
     //----------------//
@@ -470,23 +461,6 @@ public class LinearEvaluator
         }
 
         return category;
-    }
-
-    //--------------------//
-    // checkCategoryParam //
-    //--------------------//
-    private CategoryParam checkCategoryParam (int    paramIndex,
-                                              String categoryId)
-    {
-        // Check category label
-        Category category = categories.get(categoryId);
-
-        if (category == null) {
-            throw new IllegalArgumentException(
-                "Unknown category: " + categoryId);
-        }
-
-        return category.params[paramIndex];
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -697,8 +671,8 @@ public class LinearEvaluator
             }
         }
 
-        public double distance (double[]    pattern,
-                                Parameter[] parameters)
+        public synchronized double distance (double[]    pattern,
+                                             Parameter[] parameters)
         {
             double dist = 0;
 
@@ -713,7 +687,7 @@ public class LinearEvaluator
             return dist;
         }
 
-        public void dump ()
+        public synchronized void dump ()
         {
             System.out.println(
                 "\ncategory:" + id + " cardinality:" + getCardinality());
@@ -723,8 +697,8 @@ public class LinearEvaluator
             }
         }
 
-        public double dumpDistance (double[]    pattern,
-                                    Parameter[] parameters)
+        public synchronized double dumpDistance (double[]    pattern,
+                                                 Parameter[] parameters)
         {
             if ((pattern == null) || (pattern.length != params.length)) {
                 throw new IllegalArgumentException(
@@ -756,52 +730,24 @@ public class LinearEvaluator
             }
         }
 
-        public String firstMisMatched (double[]    pattern,
-                                       Parameter[] parameters)
-        {
-            for (int p = 0; p < params.length; p++) {
-                double        val = pattern[p];
-                CategoryParam catParam = params[p];
-                Double        min = catParam.min;
-
-                if ((min != null) && (val < min)) {
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            "Category " + id + " failed on minimum for " +
-                            parameters[p].name + " " + val + " < " + min);
-                    }
-
-                    return parameters[p].name + ".min";
-                }
-
-                Double max = catParam.max;
-
-                if ((max != null) && (val > max)) {
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            "Category " + id + " failed on maximum for " +
-                            parameters[p].name + " " + val + " > " + max);
-                    }
-
-                    return parameters[p].name + ".max";
-                }
-            }
-
-            // Everything is OK
-            return null;
-        }
-
         /** Include data from the provided pattern into category descriptor */
-        public void include (double[] pattern)
+        public synchronized boolean include (double[] pattern,
+                                             boolean  populate)
         {
+            boolean extended = false;
+
             if ((pattern == null) || (pattern.length != params.length)) {
                 throw new IllegalArgumentException(
                     "include. Pattern array is null or non compatible in length ");
             }
 
             for (int p = 0; p < params.length; p++) {
-                params[p].includeValue(pattern[p]);
+                if (params[p].includeValue(pattern[p], populate)) {
+                    extended = true;
+                }
             }
+
+            return extended;
         }
     }
 
@@ -898,7 +844,8 @@ public class LinearEvaluator
         //~ Instance fields ----------------------------------------------------
 
         /** Population to compute mean value & std deviation */
-        private Population population = new Population();
+        @XmlElement(name = "population")
+        private Population population;
 
         /** Maximum value for this parameter */
         @XmlAttribute(name = "max")
@@ -930,6 +877,7 @@ public class LinearEvaluator
         public CategoryParam (Parameter parameter)
         {
             this.parameter = parameter;
+            population = new Population();
         }
 
         /**
@@ -994,24 +942,45 @@ public class LinearEvaluator
             System.out.println(sb);
         }
 
-        public void includeValue (double val)
+        /**
+         * Include a new value for this category parameter
+         * @param val the new value
+         * @param populate true if population must include the data
+         * @return true if any of the min/max bounds has changed
+         */
+        public boolean includeValue (double  val,
+                                     boolean populate)
         {
-            // Cumulate into Population 
-            population.includeValue(val);
+            boolean extended = false;
+
+            // Cumulate into Population?
+            if (populate) {
+                population.includeValue(val);
+            }
 
             // Handle min value
             if (min != null) {
-                min = Math.min(min, val);
+                if (val < min) {
+                    min = val;
+                    extended = true;
+                }
             } else {
                 min = val;
+                extended = true;
             }
 
             // Handle max value
             if (max != null) {
-                max = Math.max(max, val);
+                if (val > max) {
+                    max = val;
+                    extended = true;
+                }
             } else {
                 max = val;
+                extended = true;
             }
+
+            return extended;
         }
 
         public void reset ()

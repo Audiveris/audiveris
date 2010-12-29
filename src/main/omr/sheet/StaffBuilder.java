@@ -46,7 +46,7 @@ public class StaffBuilder
     // StaffBuilder //
     //--------------//
     /**
-     * Create a staff retriever, based on an underlying horizontal lag..
+     * Create a staff retriever, based on an underlying horizontal lag.
      *
      * @param sheet the sheet we are analyzing
      * @param hLag  the horizontal lag
@@ -61,7 +61,7 @@ public class StaffBuilder
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * Create a staff info, using the staffCandidate that correspond to the
+     * Create a staff info, using the staffCandidate that corresponds to the
      * staff lines.
      *
      * @param candidate the staff candidate (sequence of peaks)
@@ -95,7 +95,7 @@ public class StaffBuilder
 
         // Retrieve left and right abscissa for the staff lines of the set We
         // use a kind of vote here, since one or two lines can be read as longer
-        // than real, so we use the abscissa of the median.
+        // than real, so we use the abscissa of the second widest.
         List<Integer> lefts = new ArrayList<Integer>();
         List<Integer> rights = new ArrayList<Integer>();
 
@@ -107,8 +107,8 @@ public class StaffBuilder
         Collections.sort(lefts);
         Collections.sort(rights);
 
-        int left = lefts.get(2);
-        int right = rights.get(2);
+        int left = lefts.get(1);
+        int right = rights.get(3);
 
         if (logger.isFineEnabled()) {
             logger.fine("End of Staff #" + candidate.id);

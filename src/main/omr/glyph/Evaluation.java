@@ -14,9 +14,8 @@ package omr.glyph;
 import omr.constant.Constant;
 
 /**
- * Class <code>Evaluation</code> gathers a pair composed of a glyph shape and
- * its doubt.
- *
+ * Class <code>Evaluation</code> gathers a glyph shape, its doubt and, if any,
+ * details about its failure (name of the check that failed)
  *
  * @author Hervé Bitteur
  */

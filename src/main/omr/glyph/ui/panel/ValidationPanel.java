@@ -269,7 +269,7 @@ class ValidationPanel
             Glyph glyph = repository.getGlyph(gName, selectionPanel);
 
             if (glyph != null) {
-                Evaluation vote = evaluator.vote(glyph, maxDoubt);
+                Evaluation vote = evaluator.topRawVote(glyph, maxDoubt, null);
 
                 if (vote == null) {
                     negatives.add(gName);

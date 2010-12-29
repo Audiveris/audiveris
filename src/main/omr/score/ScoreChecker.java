@@ -453,6 +453,8 @@ public class ScoreChecker
                 }
             };
 
+            ScoreSystem system = chord.getSystem();
+
             for (Shape shape : shapes.keySet()) {
                 if (shape == bestShape) {
                     continue;
@@ -462,9 +464,10 @@ public class ScoreChecker
 
                 for (Note note : notes) {
                     for (Glyph glyph : note.getGlyphs()) {
-                        Evaluation vote = evaluator.topRawVote(
+                        Evaluation vote = evaluator.topVote(
                             glyph,
                             maxDoubt,
+                            system.getInfo(),
                             predicate);
 
                         if (vote != null) {
@@ -717,7 +720,8 @@ public class ScoreChecker
             Evaluation vote = GlyphNetwork.getInstance()
                                           .vote(
                 compound,
-                constants.maxNoteDoubt.getValue());
+                constants.maxNoteDoubt.getValue(),
+                first.getSystem().getInfo());
 
             if (vote != null) {
                 compound = system.addGlyph(compound);
@@ -771,6 +775,7 @@ public class ScoreChecker
             Evaluation vote = network.topVote(
                 glyph,
                 hookMaxDoubt,
+                system.getInfo(),
                 hookPredicate);
 
             if (vote != null) {

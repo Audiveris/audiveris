@@ -178,7 +178,6 @@ public class ScoreBench
         // Finalize this bench?
         if (complete) {
             Object obj = externals.remove(INTERRUPTION_KEY);
-            logger.warning("obj=" + obj);
         }
 
         // Sort and store to file

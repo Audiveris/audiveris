@@ -85,15 +85,15 @@ public class Options
     private final AbstractAction backSearch = new AbstractAction() {
         public void actionPerformed (ActionEvent e)
         {
-            if (isNewSearch()) {
-                if (rows != null) {
-                    rowIndex = rows.length - 1;
-                }
-            } else if ((rowIndex != null) && (rowIndex > 0)) {
-                rowIndex--;
-            }
+            setSelection();
 
             if (rows != null) {
+                if ((rowIndex != null) && (rowIndex > 0)) {
+                    rowIndex--;
+                } else {
+                    rowIndex = rows.length - 1;
+                }
+
                 unitTreeTable.scrollRowToVisible(rows[rowIndex]);
             }
         }
@@ -103,15 +103,15 @@ public class Options
     private final AbstractAction forwardSearch = new AbstractAction() {
         public void actionPerformed (ActionEvent e)
         {
-            if (isNewSearch()) {
-                if (rows != null) {
-                    rowIndex = 0;
-                }
-            } else if ((rowIndex != null) && (rowIndex < (rows.length - 1))) {
-                rowIndex++;
-            }
+            setSelection();
 
             if (rows != null) {
+                if ((rowIndex != null) && (rowIndex < (rows.length - 1))) {
+                    rowIndex++;
+                } else {
+                    rowIndex = 0;
+                }
+
                 unitTreeTable.scrollRowToVisible(rows[rowIndex]);
             }
         }
@@ -199,32 +199,23 @@ public class Options
         return frame;
     }
 
-    //-------------//
-    // isNewSearch //
-    //-------------//
+    //--------------//
+    // setSelection //
+    //--------------//
     /**
-     * Check whether a new string has been entered in the search field, and if
-     * so pre-select the matching rows of the table
-     * @return true if we are processing a new search string
+     * Pre-select the matching rows of the table, if any
      */
-    private boolean isNewSearch ()
+    private void setSelection ()
     {
-        if (!searchString.equals(searchField.getText())) {
-            // Remember the user-provided string
-            searchString = searchField.getText();
+        searchString = searchField.getText()
+                                  .trim();
 
-            Set<Constant> constants = UnitManager.getInstance()
-                                                 .searchUnits(searchString);
-            rows = unitTreeTable.setConstantsSelection(constants);
+        Set<Constant> constants = UnitManager.getInstance()
+                                             .searchUnits(searchString);
+        rows = unitTreeTable.setConstantsSelection(constants);
 
-            if (rows == null) {
-                rowIndex = null;
-            }
-
-            return true;
+        if (rows == null) {
+            rowIndex = null;
         }
-
-        // Don't change anything
-        return false;
     }
 }

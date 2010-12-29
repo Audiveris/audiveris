@@ -173,9 +173,10 @@ public class ClefPattern
 
         // Check if a clef appears in the top evaluations
         Evaluation vote = GlyphNetwork.getInstance()
-                                      .topRawVote(
+                                      .topVote(
             compound,
             constants.clefMaxDoubt.getValue(),
+            system,
             clefPredicate);
 
         if (vote != null) {
@@ -214,9 +215,10 @@ public class ClefPattern
                 system.computeGlyphFeatures(newCompound);
 
                 final Evaluation newVote = GlyphNetwork.getInstance()
-                                                       .topRawVote(
+                                                       .topVote(
                     newCompound,
                     constants.clefMaxDoubt.getValue(),
+                    system,
                     clefPredicate);
 
                 if ((newVote != null) && (newVote.doubt < vote.doubt)) {

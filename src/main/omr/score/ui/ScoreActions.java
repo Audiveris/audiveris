@@ -58,6 +58,9 @@ public class ScoreActions
     /** Should we rebuild the score on each user action */
     private static final String REBUILD_ALLOWED = "rebuildAllowed";
 
+    /** Should we persist any manual assignment (for later training) */
+    private static final String MANUAL_PERSISTED = "manualPersisted";
+
     /** Singleton */
     private static ScoreActions INSTANCE;
 
@@ -65,6 +68,9 @@ public class ScoreActions
 
     /** Flag to allow automatic score rebuild on every user edition action */
     private boolean rebuildAllowed = true;
+
+    /** Flag to indicate that manual assignments must be persisted */
+    private boolean manualPersisted = false;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -114,6 +120,24 @@ public class ScoreActions
         } else {
             return fillParametersWithDefaults(score);
         }
+    }
+
+    //--------------------//
+    // setManualPersisted //
+    //--------------------//
+    public void setManualPersisted (boolean value)
+    {
+        boolean oldValue = this.manualPersisted;
+        this.manualPersisted = value;
+        firePropertyChange(MANUAL_PERSISTED, oldValue, value);
+    }
+
+    //-------------------//
+    // isManualPersisted //
+    //-------------------//
+    public boolean isManualPersisted ()
+    {
+        return manualPersisted;
     }
 
     //-------------------//
@@ -260,6 +284,20 @@ public class ScoreActions
         } else {
             return null;
         }
+    }
+
+    //---------------//
+    // togglePersist //
+    //---------------//
+    /**
+     * Action that toggles the persistenc of manual assignments
+     * @param e the event that triggered this action
+     */
+    @Action(selectedProperty = MANUAL_PERSISTED)
+    public void togglePersist (ActionEvent e)
+    {
+        logger.info(
+            "Persistency mode is " + (isManualPersisted() ? "on" : "off"));
     }
 
     //---------------//

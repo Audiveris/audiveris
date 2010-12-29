@@ -30,6 +30,7 @@ import omr.selection.SelectionHint;
 import omr.selection.UserEvent;
 
 import omr.sheet.Sheet;
+import omr.sheet.SystemInfo;
 
 import omr.ui.Board;
 import omr.ui.util.Panel;
@@ -51,7 +52,8 @@ import javax.swing.*;
 
 /**
  * Class <code>EvaluationBoard</code> is a board dedicated to the display of
- * evaluation results performed by an evaluator.
+ * evaluation results performed by an evaluator. It also provides through
+ * buttons the ability to assign a shape to the glyph at hand.
  *
  * @author Hervé Bitteur
  * @author Brenton Partridge
@@ -105,6 +107,9 @@ class EvaluationBoard
     /** Percentage result of whole sheet test */
     private JLabel testResult;
 
+    /** Do we use GlyphChecker annotations? */
+    private boolean useAnnotations;
+
     //~ Constructors -----------------------------------------------------------
 
     //-----------------//
@@ -120,6 +125,7 @@ class EvaluationBoard
                             GlyphsController glyphModel)
     {
         this(name, glyphModel, null, null);
+        useAnnotations = false;
     }
 
     //-----------------//
@@ -151,6 +157,7 @@ class EvaluationBoard
 
         selector = new Selector();
         defineLayout();
+        useAnnotations = true;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -159,8 +166,8 @@ class EvaluationBoard
     // evaluate //
     //----------//
     /**
-     * Evaluate the glyph at hand, and display the result from each evaluator in
-     * its dedicated area
+     * Evaluate the glyph at hand, and display the result in the evaluator
+     * dedicated area
      *
      * @param glyph the glyph at hand
      */
@@ -172,7 +179,14 @@ class EvaluationBoard
             // Blank the output
             selector.setEvals(null, null);
         } else {
-            selector.setEvals(evaluator.getCheckedEvaluations(glyph), glyph);
+            if (useAnnotations) {
+                SystemInfo system = sheet.getSystemOf(glyph);
+                selector.setEvals(
+                    evaluator.getAnnotatedEvaluations(glyph, system),
+                    glyph);
+            } else {
+                selector.setEvals(evaluator.getRawEvaluations(glyph), glyph);
+            }
         }
     }
 
@@ -215,7 +229,6 @@ class EvaluationBoard
     {
         final String buttonWidth = Panel.getButtonWidth();
         final String fieldInterval = Panel.getFieldInterval();
-        final String fieldInterline = Panel.getFieldInterline();
 
         FormLayout   layout = new FormLayout(
             buttonWidth + "," + fieldInterval + "," + buttonWidth + "," +
@@ -352,7 +365,6 @@ class EvaluationBoard
 
                 comp.setVisible(true);
 
-                ///if (eval.doubt <= GlyphInspector.getSymbolMaxDoubt()) {
                 if (failure == null) {
                     comp.setForeground(EVAL_GOOD_COLOR);
                 } else {
@@ -501,7 +513,8 @@ class EvaluationBoard
                     (glyph.getShape() != Shape.COMBINING_STEM)) {
                     total++;
 
-                    Evaluation guess = evaluator.vote(glyph, maxDoubt);
+                    SystemInfo system = sheet.getSystemOf(glyph);
+                    Evaluation guess = evaluator.vote(glyph, maxDoubt, system);
 
                     if ((guess != null) && (glyph.getShape() == guess.shape)) {
                         ok++;

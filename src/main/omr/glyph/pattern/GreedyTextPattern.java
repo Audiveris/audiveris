@@ -123,7 +123,7 @@ public class GreedyTextPattern
 
                 // Check whether this series could be a text
                 Glyph      compound = system.buildTransientCompound(neighbors);
-                Evaluation vote = evaluator.vote(compound, maxDoubt);
+                Evaluation vote = evaluator.vote(compound, maxDoubt, system);
                 logger.fine(
                     "Checking " + vote + Glyphs.toString(" ", neighbors));
 

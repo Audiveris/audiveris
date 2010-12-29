@@ -445,7 +445,8 @@ public class TextArea
         GlyphEvaluator evaluator = GlyphNetwork.getInstance();
         Evaluation     vote = evaluator.vote(
             glyph,
-            GlyphInspector.getTextMaxDoubt());
+            GlyphInspector.getTextMaxDoubt(),
+            system);
 
         if (vote != null) {
             if (logger.isFineEnabled()) {

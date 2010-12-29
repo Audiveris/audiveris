@@ -63,7 +63,7 @@ interface GlyphRecognition
     //---------------//
     /**
      * Assign an evaluation
-     * @param evaluation the evaluation pair, perhaps null
+     * @param evaluation the evaluation structure, perhaps null
      */
     void setEvaluation (Evaluation evaluation);
 
@@ -72,7 +72,7 @@ interface GlyphRecognition
     //---------------//
     /**
      * Report the evaluation, if any
-     * @return the evaluation pair (shape + doubt)
+     * @return the evaluation structure (shape + doubt + failure if any)
      */
     Evaluation getEvaluation ();
 

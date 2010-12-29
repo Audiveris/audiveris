@@ -58,8 +58,9 @@ public class PatternsChecker
         //
         new TextRegionPattern(system),
                        
-        new ShapePattern(system),
-                       
+
+        ///new ShapePattern(system),
+        //
         new BassPattern(system),
                        
         new ClefPattern(system),

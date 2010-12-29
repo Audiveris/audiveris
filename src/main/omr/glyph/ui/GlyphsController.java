@@ -205,7 +205,8 @@ public class GlyphsController
         if (ShapeRange.Barlines.contains(shape) ||
             Glyphs.containsBarline(glyphs)) {
             // Special case for barlines
-            return new BarlineTask(sheet, shape, compound, glyphs).launch(sheet);
+            return new BarlineTask(sheet, shape, compound, glyphs).launch(
+                sheet);
         } else {
             // Normal symbol processing
             return new AssignTask(
@@ -268,6 +269,7 @@ public class GlyphsController
         Set<Glyph> glyphs = context.getInitialGlyphs();
 
         if (shape != null) { // Assignment
+                             // Persistent?
             model.assignGlyphs(
                 glyphs,
                 context.getAssignedShape(),

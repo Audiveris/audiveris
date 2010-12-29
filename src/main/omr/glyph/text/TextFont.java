@@ -124,7 +124,7 @@ public class TextFont
             10,
             "Standard font point size for texts");
         Constant.String  basicFontName = new Constant.String(
-            "Serif", //"Serif" or "Sans Serif",
+            "Times New Roman", //"Serif" or "Sans Serif",
             "Standard font name for texts");
     }
 }

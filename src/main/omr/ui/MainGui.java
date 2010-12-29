@@ -81,9 +81,6 @@ public class MainGui
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Cache the application */
-    private Application app;
-
     /** Official name of the application */
     private String appName;
 
@@ -365,7 +362,7 @@ public class MainGui
                             // Update frame title
                             sb.append(" ")
                               .append(
-                                app.getContext().getResourceMap().getString(
+                                MainGui.this.getContext().getResourceMap().getString(
                                     "mainFrame.title"));
                             frame.setTitle(sb.toString());
                         }
@@ -508,12 +505,26 @@ public class MainGui
         // Handle ghost drop from shape palette
         frame.setGlassPane(glassPane);
 
+        // Use the defined application name
+        appName = getContext()
+                      .getResourceMap()
+                      .getString("Application.name");
+
         // Define an exit listener
-        app = Application.getInstance();
-        appName = app.getContext()
-                     .getResourceMap()
-                     .getString("Application.name");
-        app.addExitListener(new MaybeExit());
+        addExitListener(
+            new ExitListener() {
+                    public boolean canExit (EventObject e)
+                    {
+                        return true;
+                    }
+
+                    public void willExit (EventObject e)
+                    {
+                        // Store latest constant values on disk
+                        ConstantManager.getInstance()
+                                       .storeResource();
+                    }
+                });
 
         show(frame);
     }
@@ -768,39 +779,6 @@ public class MainGui
         {
             File file = new File(e.getActionCommand());
             new OpenTask(file).execute();
-        }
-    }
-
-    //-----------//
-    // MaybeExit //
-    //-----------//
-    private static class MaybeExit
-        implements Application.ExitListener
-    {
-        //~ Methods ------------------------------------------------------------
-
-        public boolean canExit (EventObject e)
-        {
-            // Make sure all scripts are stored (or explicitly ignored)
-            MainGui gui = Main.getGui();
-
-            if (gui != null) {
-                return SheetsController.getInstance()
-                                       .areAllScriptsStored();
-            } else {
-                return true;
-            }
-        }
-
-        public void willExit (EventObject e)
-        {
-            // Close all sheets, to record their bench data
-            ScoresManager.getInstance()
-                         .closeAllScores();
-
-            // Store latest constant values on disk
-            ConstantManager.getInstance()
-                           .storeResource();
         }
     }
 }

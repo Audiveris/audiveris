@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.XmlAttribute;
  * Class {@code AssignTask} assigns (or deassign) a shape to a collection of
  * glyphs.
  *
- * <p>Il the compound flag is set, a compound glyph may is composed from the
+ * <p>Il the compound flag is set, a compound glyph is composed from the
  * provided glyphs and assigned the shape. Otherwise, each provided glyph is
  * assigned the shape.</p>
  *

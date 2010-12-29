@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="F_CLEF" interline="23" id="3419">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-2.2127659574468086</pitch-position>
+    <section first-pos="2001" id="6790">
+        <run start="2092" level="0" length="7"/>
+    </section>
+    <section first-pos="2001" id="6791">
+        <run start="2101" level="0" length="1"/>
+    </section>
+    <section first-pos="2001" id="6792">
+        <run start="2127" level="0" length="1"/>
+        <run start="2126" level="0" length="2"/>
+        <run start="2125" level="0" length="3"/>
+        <run start="2125" level="0" length="3"/>
+        <run start="2124" level="0" length="4"/>
+        <run start="2124" level="0" length="4"/>
+        <run start="2123" level="0" length="5"/>
+        <run start="2123" level="0" length="5"/>
+        <run start="2123" level="0" length="5"/>
+        <run start="2122" level="0" length="6"/>
+        <run start="2121" level="0" length="7"/>
+        <run start="2120" level="0" length="8"/>
+        <run start="2119" level="0" length="8"/>
+        <run start="2117" level="0" length="9"/>
+        <run start="2115" level="0" length="10"/>
+    </section>
+    <section first-pos="2002" id="6794">
+        <run start="2090" level="0" length="12"/>
+        <run start="2089" level="0" length="14"/>
+        <run start="2087" level="0" length="18"/>
+        <run start="2087" level="0" length="18"/>
+        <run start="2086" level="0" length="19"/>
+    </section>
+    <section first-pos="2007" id="6797">
+        <run start="2086" level="0" length="4"/>
+        <run start="2085" level="0" length="4"/>
+        <run start="2085" level="0" length="4"/>
+        <run start="2084" level="0" length="4"/>
+        <run start="2080" level="0" length="8"/>
+        <run start="2080" level="0" length="8"/>
+        <run start="2080" level="0" length="8"/>
+        <run start="2080" level="0" length="8"/>
+        <run start="2080" level="0" length="8"/>
+        <run start="2084" level="0" length="5"/>
+        <run start="2084" level="0" length="6"/>
+        <run start="2084" level="0" length="7"/>
+        <run start="2085" level="0" length="12"/>
+    </section>
+    <section first-pos="2007" id="6798">
+        <run start="2095" level="0" length="10"/>
+        <run start="2095" level="0" length="10"/>
+        <run start="2096" level="0" length="9"/>
+        <run start="2096" level="0" length="9"/>
+        <run start="2096" level="0" length="9"/>
+        <run start="2097" level="0" length="8"/>
+        <run start="2098" level="0" length="7"/>
+        <run start="2102" level="0" length="3"/>
+        <run start="2102" level="0" length="3"/>
+        <run start="2103" level="0" length="2"/>
+    </section>
+    <section first-pos="2016" id="6854">
+        <run start="2114" level="0" length="9"/>
+        <run start="2111" level="0" length="11"/>
+    </section>
+    <section first-pos="2016" id="6855">
+        <run start="2124" level="0" length="1"/>
+    </section>
+    <section first-pos="2017" id="6862">
+        <run start="2106" level="0" length="1"/>
+    </section>
+    <section first-pos="2018" id="6866">
+        <run start="2101" level="0" length="20"/>
+        <run start="2098" level="0" length="22"/>
+    </section>
+    <section first-pos="2020" id="6895">
+        <run start="2086" level="0" length="33"/>
+        <run start="2086" level="0" length="32"/>
+        <run start="2088" level="0" length="29"/>
+        <run start="2089" level="0" length="26"/>
+        <run start="2091" level="0" length="23"/>
+        <run start="2091" level="0" length="21"/>
+        <run start="2093" level="0" length="17"/>
+    </section>
+    <section first-pos="2027" id="6967">
+        <run start="2099" level="0" length="8"/>
+    </section>
+    <section first-pos="2028" id="6982">
+        <run start="2104" level="0" length="2"/>
+    </section>
+    <section first-pos="2032" id="6996">
+        <run start="2092" level="0" length="4"/>
+        <run start="2091" level="0" length="6"/>
+        <run start="2090" level="0" length="7"/>
+        <run start="2090" level="0" length="7"/>
+        <run start="2090" level="0" length="7"/>
+        <run start="2091" level="0" length="5"/>
+        <run start="2092" level="0" length="3"/>
+    </section>
+    <section first-pos="2032" id="6997">
+        <run start="2103" level="0" length="5"/>
+        <run start="2103" level="0" length="7"/>
+        <run start="2103" level="0" length="8"/>
+        <run start="2103" level="0" length="8"/>
+        <run start="2103" level="0" length="9"/>
+        <run start="2103" level="0" length="9"/>
+        <run start="2103" level="0" length="8"/>
+        <run start="2103" level="0" length="8"/>
+        <run start="2103" level="0" length="6"/>
+    </section>
+</glyph>

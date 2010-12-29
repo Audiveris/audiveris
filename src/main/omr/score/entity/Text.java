@@ -337,8 +337,10 @@ public abstract class Text
           .append(sentence.getTextRole())
           .append(internalsString());
 
-        sb.append(" font:")
-          .append(font.getSize());
+        if (font != null) {
+            sb.append(" font:")
+              .append(font.getSize());
+        }
 
         if (getContent() != null) {
             sb.append(" \"")

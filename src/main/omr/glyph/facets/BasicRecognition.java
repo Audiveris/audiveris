@@ -16,6 +16,8 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeRange;
 import omr.glyph.text.TextInfo;
 
+import omr.log.Logger;
+
 import omr.math.Rational;
 
 import java.util.*;
@@ -30,6 +32,12 @@ class BasicRecognition
     extends BasicFacet
     implements GlyphRecognition
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(
+        BasicRecognition.class);
+
     //~ Instance fields --------------------------------------------------------
 
     /** Current evaluation (shape + doubt), if any */
@@ -163,9 +171,11 @@ class BasicRecognition
 
         if (shape == null) {
             // Set the part shape to null as well (rather than GLYPH_PART)
-            for (Glyph part : glyph.getParts()) {
-                part.setShape(null, doubt);
-            }
+            setNullRecursively(glyph, doubt);
+
+            //            for (Glyph part : glyph.getParts()) {
+            //                part.setShape(null, doubt);
+            //            }
         } else {
             // Remove the new shape from the blacklist if any
             allowShape(shape);
@@ -274,5 +284,18 @@ class BasicRecognition
         }
 
         forbiddenShapes.add(shape);
+    }
+
+    //--------------------//
+    // setNullRecursively //
+    //--------------------//
+    private void setNullRecursively (Glyph  glyph,
+                                     double doubt)
+    {
+        for (Glyph part : glyph.getParts()) {
+            part.setShape(null, doubt);
+            // Recursively
+            setNullRecursively(part, doubt);
+        }
     }
 }

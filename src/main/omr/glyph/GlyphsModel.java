@@ -11,10 +11,14 @@
 // </editor-fold>
 package omr.glyph;
 
+import omr.Main;
+
 import omr.glyph.facets.BasicStick;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
+
+import omr.score.ui.ScoreActions;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
@@ -296,16 +300,30 @@ public class GlyphsModel
 
             boolean isTransient = glyph.isTransient();
 
-            logger.info(
-                "Assign " + (isTransient ? "compound " : "") + "glyph#" +
-                glyph.getId() + " to " + shape);
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "Assign " + (isTransient ? "compound " : "") + "glyph#" +
+                    glyph.getId() + " to " + shape);
+            }
 
             // Remember the latest shape assigned
             setLatestShape(shape);
         }
 
-        // Do a manual assignment of the shape to the glyph
+        // Do the assignment of the shape to the glyph
         glyph.setShape(shape, doubt);
+
+        // Should we persist the assigned glyph?
+        if ((shape != null) &&
+            (doubt == Evaluation.MANUAL) &&
+            (Main.getGui() != null) &&
+            ScoreActions.getInstance()
+                        .isManualPersisted()) {
+            // TODO: We should also record the glyph into the training data for
+            // this sheet, in order not to lose this information.
+            GlyphChecker.getInstance()
+                        .relax(shape, glyph, GlyphEvaluator.feedInput(glyph));
+        }
 
         return glyph;
     }

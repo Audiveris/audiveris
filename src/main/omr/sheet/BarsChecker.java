@@ -354,8 +354,8 @@ public class BarsChecker
             super("Bar", constants.minCheckResult.getValue());
 
             // Be very careful with check order, because of side-effects
-            add(1, new TopCheck());
-            add(1, new BottomCheck());
+            add(1, new TopCheck()); // Side-effect: may set topIdx
+            add(1, new BottomCheck()); // Side-effect: may set botIdx
             add(1, new HeightDiffCheck());
             add(1, new AnchorCheck());
             add(1, new LeftCheck());

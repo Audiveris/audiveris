@@ -23,10 +23,15 @@ import omr.score.midi.MidiAgent;
 import omr.score.ui.ScoreActions;
 import omr.score.ui.SheetPdfOutput;
 
+import omr.script.ScriptActions;
+
 import omr.util.NameSet;
+
+import org.jdesktop.application.Application.ExitListener;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.EventObject;
 import java.util.Iterator;
 import java.util.List;
 
@@ -76,6 +81,30 @@ public class ScoresManager
      */
     private ScoresManager ()
     {
+        if (Main.getGui() != null) {
+            Main.getGui()
+                .addExitListener(
+                new ExitListener() {
+                        public boolean canExit (EventObject e)
+                        {
+                            // Are all scripts stored (or explicitly ignored)?
+                            for (Score score : instances) {
+                                if (!ScriptActions.checkStored(
+                                    score.getScript())) {
+                                    return false;
+                                }
+                            }
+
+                            return true;
+                        }
+
+                        public void willExit (EventObject e)
+                        {
+                            // Close all sheets, to record their bench data
+                            closeAllScores();
+                        }
+                    });
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -249,27 +278,6 @@ public class ScoresManager
 
         // Insert new score instance
         instances.add(score);
-    }
-
-    //----------------//
-    // closeAllScores //
-    //----------------//
-    /**
-     * Close all score instances
-     */
-    public void closeAllScores ()
-    {
-        int count = 0;
-
-        // NB: Use a COPY of instances, to avoid concurrent modification
-        for (Score score : new ArrayList<Score>(instances)) {
-            score.close();
-            count++;
-        }
-
-        if (logger.isFineEnabled()) {
-            logger.fine(count + " score(s) closed");
-        }
     }
 
     //--------//
@@ -503,6 +511,27 @@ public class ScoresManager
         }
 
         return targetFile;
+    }
+
+    //----------------//
+    // closeAllScores //
+    //----------------//
+    /**
+     * Close all score instances
+     */
+    private void closeAllScores ()
+    {
+        int count = 0;
+
+        // NB: Use a COPY of instances, to avoid concurrent modification
+        for (Score score : new ArrayList<Score>(instances)) {
+            score.close();
+            count++;
+        }
+
+        if (logger.isFineEnabled()) {
+            logger.fine(count + " score(s) closed");
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------

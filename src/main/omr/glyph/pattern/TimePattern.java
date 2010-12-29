@@ -138,9 +138,10 @@ public class TimePattern
 
         // Check if a time appears in the top evaluations
         final Evaluation vote = GlyphNetwork.getInstance()
-                                            .topRawVote(
+                                            .topVote(
             compound,
             constants.timeMaxDoubt.getValue(),
+            system,
             timePredicate);
 
         if (vote != null) {

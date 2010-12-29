@@ -736,13 +736,6 @@ public class TextInfo
     {
         //~ Instance fields ----------------------------------------------------
 
-        Constant.Integer basicFontSize = new Constant.Integer(
-            "points",
-            10,
-            "Standard font point size for texts");
-        Constant.String  basicFontName = new Constant.String(
-            "Sans Serif", //"Serif" or "Sans Serif",
-            "Standard font name for texts");
         Constant.Ratio   minExtensionAspect = new Constant.Ratio(
             10d,
             "Minimum width/height ratio for an extension character");

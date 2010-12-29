@@ -1185,7 +1185,10 @@ public class Sentence
 
             GlyphEvaluator evaluator = GlyphNetwork.getInstance();
 
-            vote = evaluator.vote(compound, GlyphInspector.getTextMaxDoubt());
+            vote = evaluator.vote(
+                compound,
+                GlyphInspector.getTextMaxDoubt(),
+                systemInfo);
 
             return (vote != null) && vote.shape.isText();
         }

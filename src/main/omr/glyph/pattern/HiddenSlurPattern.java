@@ -97,7 +97,7 @@ public class HiddenSlurPattern
 
                 Glyph      compound = system.buildTransientGlyph(
                     Collections.singleton(section));
-                Evaluation vote = evaluator.vote(compound, maxDoubt);
+                Evaluation vote = evaluator.vote(compound, maxDoubt, system);
 
                 if ((vote != null) && (vote.shape == Shape.SLUR)) {
                     compound.setShape(vote.shape, vote.doubt);

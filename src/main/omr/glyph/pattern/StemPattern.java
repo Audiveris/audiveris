@@ -135,7 +135,7 @@ public class StemPattern
 
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.getShape() == null) {
-                Evaluation vote = evaluator.vote(glyph, maxDoubt);
+                Evaluation vote = evaluator.vote(glyph, maxDoubt, system);
 
                 if (vote != null) {
                     glyph.setShape(vote.shape, vote.doubt);

@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.math;
 
+import javax.xml.bind.annotation.*;
 
 /**
  * Class <code>Population</code> is used to cumulate measurements, and compute
@@ -18,17 +19,22 @@ package omr.math;
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "population")
 public class Population
 {
     //~ Instance fields --------------------------------------------------------
 
     /** Sum of measured values */
+    @XmlAttribute(name = "sum")
     private double s = 0d;
 
     /** Sum of squared measured values */
+    @XmlAttribute(name = "squares-sum")
     private double s2 = 0d;
 
     /** Number of measurements */
+    @XmlAttribute(name = "count")
     private int n = 0;
 
     //~ Constructors -----------------------------------------------------------
@@ -124,6 +130,20 @@ public class Population
         s2 -= (val * val);
     }
 
+    //-------------------//
+    // includePopulation //
+    //-------------------//
+    /**
+     * Add a whole population to this one
+     * @param other the other population to include
+     */
+    public void includePopulation (Population other)
+    {
+        n += other.n;
+        s += other.s;
+        s2 += other.s2;
+    }
+
     //--------------//
     // includeValue //
     //--------------//
@@ -137,20 +157,6 @@ public class Population
         n += 1;
         s += val;
         s2 += (val * val);
-    }
-
-    //-------------------//
-    // includePopulation //
-    //-------------------//
-    /**
-     * Add a whole population to this one
-     * @param other the other population to include
-     */
-    public void includePopulation (Population other)
-    {
-        n += other.n;
-        s += other.s;
-        s2 += other.s2;
     }
 
     //-------//

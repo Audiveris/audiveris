@@ -17,6 +17,8 @@ import omr.glyph.GlyphInspector;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
+import omr.sheet.SystemInfo;
+
 import java.awt.event.*;
 import java.util.*;
 
@@ -193,7 +195,7 @@ public class SymbolMenu
         {
             putValue(NAME, "Cleanup large Slur");
 
-            if (glyphNb > 0 && noVirtuals) {
+            if ((glyphNb > 0) && noVirtuals) {
                 setEnabled(true);
                 putValue(SHORT_DESCRIPTION, "Extract slur from large glyph");
             } else {
@@ -240,9 +242,11 @@ public class SymbolMenu
             Glyph glyph = glyphLag.getSelectedGlyph();
 
             if ((glyphNb > 0) && (glyph != null) && (glyph.getId() == 0)) {
+                SystemInfo system = sheet.getSystemOf(glyph);
                 Evaluation vote = evaluator.vote(
                     glyph,
-                    GlyphInspector.getSymbolMaxDoubt());
+                    GlyphInspector.getSymbolMaxDoubt(),
+                    system);
 
                 if (vote != null) {
                     proposedGlyph = glyph;
@@ -341,7 +345,7 @@ public class SymbolMenu
         {
             putValue(NAME, "Look for short verticals");
 
-            if (glyphNb > 0 && noVirtuals) {
+            if ((glyphNb > 0) && noVirtuals) {
                 setEnabled(true);
                 putValue(SHORT_DESCRIPTION, "Extract short stems and leaves");
             } else {
@@ -430,7 +434,7 @@ public class SymbolMenu
         {
             putValue(NAME, "Look for verticals");
 
-            if (glyphNb > 0 && noVirtuals) {
+            if ((glyphNb > 0) && noVirtuals) {
                 setEnabled(true);
                 putValue(SHORT_DESCRIPTION, "Extract stems and leaves");
             } else {

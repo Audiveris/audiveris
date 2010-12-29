@@ -23,6 +23,7 @@ import omr.math.Moments;
 import omr.math.NeuralNetwork;
 
 import omr.sheet.Scale;
+import omr.sheet.SystemInfo;
 
 import omr.util.ClassUtil;
 import omr.util.Predicate;
@@ -36,6 +37,8 @@ import javax.xml.bind.JAXBException;
  * Class <code>GlyphEvaluator</code> is an abstract class that gathers data and
  * processing common to any evaluator working on glyph characteristics to infer
  * glyph shape.
+ *
+ * <p> <img src="doc-files/GlyphEvaluator.jpg" />
  *
  * @author Hervé Bitteur
  */
@@ -53,8 +56,8 @@ public abstract class GlyphEvaluator
     public static final int inMoments = 10;
 
     /**
-     * Number of useful input parameters : nb of moments +
-     * stemNumber, isWithLedger, pitchPosition = {@value}
+     * Number of useful input parameters : nb of useful moments +
+     * stemNumber, isWithLedger = {@value}
      */
     public static final int paramCount = inMoments + 2;
 
@@ -106,7 +109,7 @@ public abstract class GlyphEvaluator
     //~ Instance fields --------------------------------------------------------
 
     /** The glyph checker for additional specific checks */
-    private GlyphChecker glyphChecker = GlyphChecker.getInstance();
+    protected GlyphChecker glyphChecker = GlyphChecker.getInstance();
 
     //~ Methods ----------------------------------------------------------------
 
@@ -153,27 +156,7 @@ public abstract class GlyphEvaluator
      */
     public static int getParameterIndex (String label)
     {
-        for (int i = 0; i < LabelsHolder.labels.length; i++) {
-            if (LabelsHolder.labels[i].equals(label)) {
-                return i;
-            }
-        }
-
-        throw new IllegalArgumentException("Invalid parameter label: " + label);
-    }
-
-    //-------------------//
-    // getParameterLabel //
-    //-------------------//
-    /**
-     * Report the label assigned to a given parameter
-     *
-     * @param index the paarameter index
-     * @return the assigned label
-     */
-    public static String getParameterLabel (int index)
-    {
-        return LabelsHolder.labels[index];
+        return LabelsHolder.indices.get(label);
     }
 
     //--------------------//
@@ -240,7 +223,7 @@ public abstract class GlyphEvaluator
     // getAllowedEvaluations //
     //-----------------------//
     /**
-     * Run the evaluator with the specified glyph as well as speciic checks,
+     * Run the evaluator with the specified glyph as well as specific checks,
      * and return only the shapes that are not flagged as forbidden for this
      * glyph.
      *
@@ -248,11 +231,12 @@ public abstract class GlyphEvaluator
      *
      * @return the ordered best checked and allowed evaluations
      */
-    public Evaluation[] getAllowedEvaluations (Glyph glyph)
+    public Evaluation[] getAllowedEvaluations (Glyph      glyph,
+                                               SystemInfo system)
     {
         List<Evaluation> kept = new ArrayList<Evaluation>();
 
-        for (Evaluation eval : getFilteredEvaluations(glyph)) {
+        for (Evaluation eval : getSuccessfulEvaluations(glyph, system)) {
             if (!glyph.isShapeForbidden(eval.shape)) {
                 kept.add(eval);
             }
@@ -261,53 +245,54 @@ public abstract class GlyphEvaluator
         return kept.toArray(new Evaluation[kept.size()]);
     }
 
-    //-----------------------//
-    // getCheckedEvaluations //
-    //-----------------------//
+    //-------------------------//
+    // getAnnotatedEvaluations //
+    //-------------------------//
     /**
-     * Use specific checks  to annotate the raw evaluations produced by the
+     * Use specific checks to annotate the raw evaluations produced by the
      * evaluator
      *
      * @param glyph the glyph to be examined
      *
      * @return the ordered annotated evaluations
      */
-    public Evaluation[] getCheckedEvaluations (Glyph glyph)
+    public Evaluation[] getAnnotatedEvaluations (Glyph      glyph,
+                                                 SystemInfo system)
     {
         double[]     ins = feedInput(glyph);
         Evaluation[] evals = getRawEvaluations(glyph);
 
         for (Evaluation eval : evals) {
-            glyphChecker.specificCheck(eval, glyph, ins);
+            glyphChecker.annotate(system, eval, glyph, ins);
         }
 
         return evals;
     }
 
-    //--------------------------//
-    // getRawAllowedEvaluations //
-    //--------------------------//
-    /**
-     * Run the evaluator with the specified glyph,
-     * and return only the shapes that are not flagged as forbidden for this
-     * glyph.
-     *
-     * @param glyph the glyph to be examined
-     *
-     * @return the ordered best allowed evaluations
-     */
-    public Evaluation[] getRawAllowedEvaluations (Glyph glyph)
-    {
-        List<Evaluation> kept = new ArrayList<Evaluation>();
-
-        for (Evaluation eval : getRawEvaluations(glyph)) {
-            if (!glyph.isShapeForbidden(eval.shape)) {
-                kept.add(eval);
-            }
-        }
-
-        return kept.toArray(new Evaluation[kept.size()]);
-    }
+    //    //--------------------------//
+    //    // getRawAllowedEvaluations //
+    //    //--------------------------//
+    //    /**
+    //     * Run the evaluator with the specified glyph,
+    //     * and return only the shapes that are not flagged as forbidden for this
+    //     * glyph.
+    //     *
+    //     * @param glyph the glyph to be examined
+    //     *
+    //     * @return the ordered best allowed evaluations
+    //     */
+    //    public Evaluation[] getRawAllowedEvaluations (Glyph glyph)
+    //    {
+    //        List<Evaluation> kept = new ArrayList<Evaluation>();
+    //
+    //        for (Evaluation eval : getRawEvaluations(glyph)) {
+    //            if (!glyph.isShapeForbidden(eval.shape)) {
+    //                kept.add(eval);
+    //            }
+    //        }
+    //
+    //        return kept.toArray(new Evaluation[kept.size()]);
+    //    }
 
     //---------//
     // marshal //
@@ -365,21 +350,22 @@ public abstract class GlyphEvaluator
                                 Monitor           monitor,
                                 StartingMode      mode);
 
-    //------------------------//
-    // getFilteredEvaluations //
-    //------------------------//
+    //--------------------------//
+    // getSuccessfulEvaluations //
+    //--------------------------//
     /**
-     * Return the checked & filtered evaluations, from best to worst
+     * Return the annotated & non-failed evaluations, from best to worst
      *
      * @param glyph the glyph to be examined
      *
      * @return the ordered best filtered evaluations
      */
-    public Evaluation[] getFilteredEvaluations (Glyph glyph)
+    public Evaluation[] getSuccessfulEvaluations (Glyph      glyph,
+                                                  SystemInfo system)
     {
         List<Evaluation> kept = new ArrayList<Evaluation>();
 
-        for (Evaluation eval : getCheckedEvaluations(glyph)) {
+        for (Evaluation eval : getAnnotatedEvaluations(glyph, system)) {
             if (eval.failure == null) {
                 kept.add(eval);
             }
@@ -388,9 +374,9 @@ public abstract class GlyphEvaluator
         return kept.toArray(new Evaluation[kept.size()]);
     }
 
-    //---------//
-    // topVote //
-    //---------//
+    //------------//
+    // topRawVote //
+    //------------//
     /**
      * Report the best evaluation for the provided glyph, below a maximum doubt
      * value, among the shapes (non checked, but allowed) that match
@@ -404,7 +390,7 @@ public abstract class GlyphEvaluator
                                   double           maxDoubt,
                                   Predicate<Shape> predicate)
     {
-        return bestOf(getRawAllowedEvaluations(glyph), maxDoubt, predicate);
+        return bestOf(getRawEvaluations(glyph), maxDoubt, predicate);
     }
 
     //---------//
@@ -420,9 +406,13 @@ public abstract class GlyphEvaluator
      */
     public Evaluation topVote (Glyph            glyph,
                                double           maxDoubt,
+                               SystemInfo       system,
                                Predicate<Shape> predicate)
     {
-        return bestOf(getAllowedEvaluations(glyph), maxDoubt, predicate);
+        return bestOf(
+            getAllowedEvaluations(glyph, system),
+            maxDoubt,
+            predicate);
     }
 
     //------//
@@ -435,10 +425,11 @@ public abstract class GlyphEvaluator
      * @param maxDoubt the maximum doubt to be accepted
      * @return the best acceptable evaluation, or null
      */
-    public Evaluation vote (Glyph  glyph,
-                            double maxDoubt)
+    public Evaluation vote (Glyph      glyph,
+                            double     maxDoubt,
+                            SystemInfo system)
     {
-        Evaluation[] evaluations = getAllowedEvaluations(glyph);
+        Evaluation[] evaluations = getAllowedEvaluations(glyph, system);
 
         if ((evaluations.length > 0) && (evaluations[0].doubt <= maxDoubt)) {
             return evaluations[0];
@@ -533,7 +524,7 @@ public abstract class GlyphEvaluator
                 break;
             }
 
-            if (predicate.check(evaluation.shape)) {
+            if ((predicate == null) || predicate.check(evaluation.shape)) {
                 return evaluation;
             }
         }
@@ -624,7 +615,8 @@ public abstract class GlyphEvaluator
     {
         //~ Static fields/initializers -----------------------------------------
 
-        public static final String[] labels = new String[paramCount];
+        public static final Map<String, Integer> indices = new HashMap<String, Integer>();
+        public static final String[]             labels = new String[paramCount];
 
         static {
             // We take all the first moments
@@ -638,6 +630,9 @@ public abstract class GlyphEvaluator
             /* 11 */ labels[i++] = "stemNb";
 
             ////* 12 */ labels[i++] = "pitch";
+            for (int j = 0; j < labels.length; j++) {
+                indices.put(labels[j], j);
+            }
         }
     }
 }

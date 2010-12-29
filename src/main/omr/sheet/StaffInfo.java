@@ -462,11 +462,14 @@ public class StaffInfo
                 line.render(g, left, right);
             }
 
+            BasicStroke stroke = (BasicStroke) g.getStroke();
+            int         dx = (int) Math.rint(stroke.getLineWidth() / 2);
+
             // Draw the left vertical line
-            g.drawLine(left, yTopLeft, left, yBottomLeft);
+            g.drawLine(left + dx, yTopLeft, left + dx, yBottomLeft);
 
             // Draw the right vertical line
-            g.drawLine(right, yTopRight, right, yBottomRight);
+            g.drawLine(right - dx, yTopRight, right - dx, yBottomRight);
 
             return true;
         } else {

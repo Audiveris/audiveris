@@ -277,9 +277,10 @@ public class TimeSignatureRetriever
 
         // Check if a time sig appears in the top evaluations
         Evaluation vote = GlyphNetwork.getInstance()
-                                      .topRawVote(
+                                      .topVote(
             compound,
             constants.timeSigMaxDoubt.getValue(),
+            system,
             timePredicate);
 
         if (vote != null) {

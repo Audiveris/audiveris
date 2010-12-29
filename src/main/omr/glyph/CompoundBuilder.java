@@ -312,6 +312,7 @@ public class CompoundBuilder
                                                 .topVote(
                 compound,
                 maxDoubt,
+                system,
                 predicate);
 
             if (vote != null) {

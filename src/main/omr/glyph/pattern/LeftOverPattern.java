@@ -79,7 +79,7 @@ public class LeftOverPattern
                 continue;
             }
 
-            Evaluation vote = evaluator.vote(glyph, maxDoubt);
+            Evaluation vote = evaluator.vote(glyph, maxDoubt, system);
 
             if (vote != null) {
                 if (logger.isFineEnabled()) {
