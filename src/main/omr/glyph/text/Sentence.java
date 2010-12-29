@@ -657,17 +657,20 @@ public class Sentence
             if ((original != null) && original.isShapeForbidden(Shape.TEXT)) {
                 toRemove.add(this);
 
+                if (logger.isFineEnabled()) {
+                    logger.fine("toRemove: " + this);
+                }
+
                 return;
             }
 
             glyph = systemInfo.addGlyph(compound);
             glyph.setShape(Shape.TEXT, Evaluation.ALGORITHM);
             items.clear();
+            addItem(glyph);
         } else {
             glyph = systemInfo.addGlyph(items.first());
         }
-
-        addItem(glyph);
 
         TextInfo info = glyph.getTextInfo();
         getTextRole();
@@ -738,6 +741,15 @@ public class Sentence
                             if (logger.isFineEnabled()) {
                                 logger.fine("toRemove: " + this);
                                 logger.fine("toAdd   : " + sentence);
+                            }
+
+                            // Free all the glyphs pointed by sections left over
+                            for (GlyphSection section : allSections) {
+                                Glyph g = section.getGlyph();
+
+                                if ((g != null) && (g.getShape() != null)) {
+                                    g.setShape(null);
+                                }
                             }
                         }
                     }
@@ -1076,7 +1088,7 @@ public class Sentence
                         if (logger.isFineEnabled()) {
                             logger.fine(
                                 "Candidate #" + alien.getId() +
-                                " solved from #" + first.getId() + " to " +
+                                " solved from #" + first.getId() + " to #" +
                                 last.getId() + " as #" +
                                 merge.compound.getId());
                         }
