@@ -124,7 +124,9 @@ public class TimeSignatureRetriever
                 constants.timeSigWidth);
 
             if (roi.width < timeSigWidth) {
-                logger.info("No room for time sig: " + roi.width);
+                if (logger.isFineEnabled()) {
+                    logger.fine("No room for time sig: " + roi.width);
+                }
 
                 return false;
             }
