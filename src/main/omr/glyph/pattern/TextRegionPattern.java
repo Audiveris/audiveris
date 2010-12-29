@@ -72,6 +72,10 @@ public class TextRegionPattern
 
     //~ Instance fields --------------------------------------------------------
 
+    /** The system contour box (just the union of staves) */
+    private PixelRectangle systemBox;
+
+    // Scale dependent constants
     private int glyphMinHeight;
     private int maxFontSize;
     private int smallXMargin;
@@ -98,11 +102,18 @@ public class TextRegionPattern
     @Implement(GlyphPattern.class)
     public int runPattern ()
     {
+        // System contour box
+        systemBox = new PixelRectangle(
+            system.getLeft(),
+            system.getTop(),
+            system.getWidth(),
+            system.getBottom() - system.getTop());
+
         int   successNb = 0;
         Scale scale = system.getScoreSystem()
                             .getScale();
         Sheet sheet = system.getSheet();
-        ///blobXMargin = scale.toPixels(constants.blobXMargin);
+
         glyphMinHeight = scale.toPixels(constants.glyphMinHeight);
         maxFontSize = scale.toPixels(constants.maxFontSize);
         smallXMargin = scale.toPixels(constants.smallXMargin);
@@ -417,6 +428,31 @@ public class TextRegionPattern
         }
     }
 
+    //------------------//
+    // filterCandidates //
+    //------------------//
+    private void filterCandidates (Set<Glyph> candidates)
+    {
+        // We remove candidates that are stuck to a stem that goes into a staff
+        // Because these glyphs are not likely to be text items
+        for (Iterator<Glyph> it = candidates.iterator(); it.hasNext();) {
+            Glyph   glyph = it.next();
+            Glyph[] stems = new Glyph[] {
+                                glyph.getLeftStem(), glyph.getRightStem()
+                            };
+
+            for (Glyph stem : stems) {
+                if ((stem != null) &&
+                    stem.getContourBox()
+                        .intersects(systemBox)) {
+                    it.remove();
+
+                    break;
+                }
+            }
+        }
+    }
+
     //-------------------//
     // insertSmallGlyphs //
     //-------------------//
@@ -455,7 +491,8 @@ public class TextRegionPattern
     private void processRegion (String  region,
                                 Polygon polygon)
     {
-        // Retrieve all system glyphs contained by the polygon
+        // Retrieve all system glyphs contained by the polygon, except those
+        // stuck to a stem that goes into the staff.
         // Use glyph height to filter out glyphs too tall or too small
         // Sort them by abscissa
         // Organize them into blobs (line candidates)
@@ -465,6 +502,9 @@ public class TextRegionPattern
         // And make text glyphs out of these sections
         SortedSet<Glyph> glyphs = new TreeSet<Glyph>(Glyph.globalComparator);
         glyphs.addAll(Glyphs.lookupGlyphs(system.getGlyphs(), polygon));
+
+        // Remove non candidates
+        filterCandidates(glyphs);
 
         if (logger.isFineEnabled()) {
             logger.fine(
