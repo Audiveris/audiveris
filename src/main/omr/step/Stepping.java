@@ -166,11 +166,11 @@ public class Stepping
                     });
         }
 
-            final long stopTime = System.currentTimeMillis();
-            final long duration = stopTime - startTime;
+        final long stopTime = System.currentTimeMillis();
+        final long duration = stopTime - startTime;
+
         if (logger.isFineEnabled()) {
-            logger.fine(
-                step + " completed in " + duration + " ms");
+            logger.fine(step + " completed in " + duration + " ms");
         }
 
         // Record this in bench
@@ -515,6 +515,9 @@ public class Stepping
     private static void scheduleScoreStepSet (final SortedSet<Step> stepSet,
                                               final Score           score)
     {
+        // Safer
+        stepSet.remove(Steps.valueOf(Steps.LOAD));
+
         if (stepSet.isEmpty()) {
             return;
         }

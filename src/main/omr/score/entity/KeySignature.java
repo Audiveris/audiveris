@@ -353,7 +353,7 @@ public class KeySignature
 
             if (logger.isFineEnabled()) {
                 for (Histogram.Pair<Integer> pair : pairs) {
-                    logger.info(pair.toString());
+                    logger.fine(pair.toString());
                 }
             }
 
@@ -643,173 +643,6 @@ public class KeySignature
         return sb.toString();
     }
 
-    //------------------//
-    // verifySystemKeys //
-    //------------------//
-    /**
-     * Perform verifications (and corrections when possible) when all keysigs
-     * have been generated for the system: The key signature must be the same
-     * (in terms of fifths) for the same measure index in all parts and staves.
-     *
-     * @param system the system to be verified
-     */
-    @SuppressWarnings("unchecked")
-    public static void verifySystemKeys (ScoreSystem system)
-    {
-        ///logger.info("verifySystemKeys for " + system);
-
-        // Total number of staves in the system
-        final int staffNb = system.getInfo()
-                                  .getStaves()
-                                  .size();
-
-        // Number of measures in the system
-        final int measureNb = system.getFirstPart()
-                                    .getMeasures()
-                                    .size();
-
-        // Verify each measure index on turn
-        for (int im = 0; im < measureNb; im++) {
-            ///logger.info("measure index =" + im);
-
-            // Retrieve the key list for this measure in each staff
-            List[] keyMatrix = new List[staffNb];
-            int    staffOffset = 0;
-
-            for (int is = 0; is < staffNb; is++) {
-                keyMatrix[is] = new ArrayList<TreeNode>();
-            }
-
-            for (TreeNode node : system.getParts()) {
-                SystemPart part = (SystemPart) node;
-                Measure    measure = (Measure) part.getMeasures()
-                                                   .get(im);
-
-                for (TreeNode ksnode : measure.getKeySignatures()) {
-                    KeySignature ks = (KeySignature) ksnode;
-
-                    keyMatrix[ks.getStaff()
-                                .getId() - 1 + staffOffset].add(ks);
-                }
-
-                staffOffset += part.getStaves()
-                                   .size();
-            }
-
-            // Same number of keys in each measure/staff ?
-            int maxKeyNb = -1;
-
-            for (List<TreeNode> list : keyMatrix) {
-                maxKeyNb = Math.max(maxKeyNb, list.size());
-            }
-
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    system.getContextString() + "M" + im + " maxKeyNb = " +
-                    maxKeyNb);
-            }
-
-            for (int iStaff = 0; iStaff < keyMatrix.length; iStaff++) {
-                List keyList = keyMatrix[iStaff];
-
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        getContextString(system, im, iStaff) + " keyNb=" +
-                        keyList.size());
-                }
-
-                if (keyList.size() < maxKeyNb) {
-                    // Determine the containing measure
-                    getMeasureOf(system, iStaff, im)
-                        .addError("Missing key signature");
-
-                    // Need to add a key here
-                    staffOffset = 0;
-
-                    for (TreeNode node : system.getParts()) {
-                        SystemPart part = (SystemPart) node;
-                        int        partStaffNb = part.getStaves()
-                                                     .size();
-                        staffOffset += partStaffNb;
-
-                        if (iStaff < staffOffset) {
-                            KeySignature ks = new KeySignature(
-                                (Measure) part.getMeasures().get(im),
-                                (Staff) part.getStaves().get(
-                                    (partStaffNb + iStaff) - staffOffset));
-                            ks.key = 0; // Specific compatible dummy value
-                            keyList.add(ks);
-
-                            break;
-                        }
-                    }
-                }
-            }
-
-            // Compatible keys ?
-            for (int ik = 0; ik < maxKeyNb; ik++) {
-                // Browse all staves for sharp/flat compatibility
-                // If not, give up
-                // If compatible, adjust all keysigs to the longest
-                boolean      compatible = true;
-                boolean      adjustment = false;
-                KeySignature keysig = null;
-
-                for (List<TreeNode> list : keyMatrix) {
-                    KeySignature ks = (KeySignature) list.get(ik);
-
-                    if (keysig == null) {
-                        keysig = ks;
-                    } else if (!keysig.getKey()
-                                      .equals(ks.getKey())) {
-                        if (logger.isFineEnabled()) {
-                            logger.fine("Key signatures will need adjustment");
-                        }
-
-                        adjustment = true;
-
-                        if ((ks.getKey() * keysig.getKey()) < 0) {
-                            if (logger.isFineEnabled()) {
-                                logger.fine("Non compatible key signatures");
-                            }
-
-                            compatible = false;
-
-                            break;
-                        } else if (Math.abs(keysig.getKey()) < Math.abs(
-                            ks.getKey())) {
-                            // Keep longest key
-                            keysig = ks;
-                        }
-                    }
-                }
-
-                // Force key signatures to this value, if compatible
-                if (compatible && adjustment) {
-                    for (List<TreeNode> list : keyMatrix) {
-                        KeySignature ks = (KeySignature) list.get(ik);
-
-                        if (!keysig.getKey()
-                                   .equals(ks.getKey())) {
-                            logger.fine(
-                                ks.getContextString() +
-                                " Forcing key signature to " + keysig.getKey());
-
-                            try {
-                                ks.copyKey(keysig);
-                            } catch (Exception ex) {
-                                logger.warning("Cannot copy key", ex);
-                                ks.addError("Cannot copy key");
-                            }
-
-                            // TODO deassign glyphs that do not contribute to the key ?
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     //-------//
     // reset //
     //-------//
@@ -863,43 +696,6 @@ public class KeySignature
         default :
             return null;
         }
-    }
-
-    //------------------//
-    // getContextString //
-    //------------------//
-    private static String getContextString (ScoreSystem system,
-                                            int         measureIndex,
-                                            int         systemStaffIndex)
-    {
-        return system.getContextString() + "M" + (measureIndex + 1) + "F" +
-               staffOf(system, systemStaffIndex)
-                   .getId();
-    }
-
-    //--------------//
-    // getMeasureOf //
-    //--------------//
-    private static Measure getMeasureOf (ScoreSystem system,
-                                         int         staffIndex,
-                                         int         measureIndex)
-    {
-        int staffOffset = 0;
-
-        for (TreeNode node : system.getParts()) {
-            SystemPart part = (SystemPart) node;
-            staffOffset += part.getStaves()
-                               .size();
-
-            if (staffIndex < staffOffset) {
-                return (Measure) part.getMeasures()
-                                     .get(measureIndex);
-            }
-        }
-
-        logger.severe("Illegal systemStaffIndex: " + staffIndex);
-
-        return null;
     }
 
     //---------------//
@@ -1033,32 +829,6 @@ public class KeySignature
     private static int newId ()
     {
         return globalId.incrementAndGet();
-    }
-
-    //---------//
-    // staffOf //
-    //---------//
-    private static Staff staffOf (ScoreSystem system,
-                                  int         systemStaffIndex)
-    {
-        int staffOffset = 0;
-
-        for (TreeNode node : system.getParts()) {
-            SystemPart part = (SystemPart) node;
-            int        partStaffNb = part.getStaves()
-                                         .size();
-            staffOffset += partStaffNb;
-
-            if (systemStaffIndex < staffOffset) {
-                return (Staff) part.getStaves()
-                                   .get(
-                    (partStaffNb + systemStaffIndex) - staffOffset);
-            }
-        }
-
-        logger.severe("Illegal systemStaffIndex: " + systemStaffIndex);
-
-        return null;
     }
 
     //-------------//
@@ -1252,6 +1022,7 @@ public class KeySignature
         key = ks.getKey();
 
         // Beware of different clef kinds. What if we ignore a clef?
+        // TODO: we should use clefKind of the keysig, directly
         Measure measure = getMeasure();
         Clef    clef = measure.getClefBefore(ks.getCenter(), getStaff());
         Shape   kind = (clef != null) ? getClefKind(clef.getShape())
@@ -1267,7 +1038,7 @@ public class KeySignature
         setCenter(
             new PixelPoint(
                 ks.getCenter().x,
-                ks.getCenter().y + ks.getStaff().pitchToPixels(delta)));
+                ks.getCenter().y + ks.getStaff().pitchToPixels(delta))); // ERROR!
 
         // pitchPosition
         pitchPosition = ks.getPitchPosition() + delta;

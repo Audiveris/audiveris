@@ -1095,7 +1095,8 @@ public class ScoreExporter
                           .add(current.pmMeasure);
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + measure,
+                getClass().getSimpleName() + " Error visiting " + measure +
+                " in " + current.page,
                 ex);
         }
 

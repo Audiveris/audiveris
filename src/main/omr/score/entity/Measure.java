@@ -816,6 +816,17 @@ public class Measure
         return implicit;
     }
 
+    //------------------//
+    // getInsideBarline //
+    //------------------//
+    /**
+     * @return the insideBarline, if any
+     */
+    public Barline getInsideBarline ()
+    {
+        return insideBarline;
+    }
+
     //--------------//
     // getKeyBefore //
     //--------------//

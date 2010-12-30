@@ -141,7 +141,7 @@ public class TimeSignatureRetriever
                     continue;
                 }
 
-                // Define the inner box to intersect clef glyph(s)
+                // Define the inner box to intersect time glyph(s)
                 int            center = roi.x + (roi.width / 2);
                 StaffInfo      staffInfo = staff.getInfo();
                 PixelRectangle inner = new PixelRectangle(

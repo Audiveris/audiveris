@@ -25,6 +25,7 @@ import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
+import omr.score.entity.Barline;
 import omr.score.entity.Clef;
 import omr.score.entity.Measure;
 import omr.score.entity.ScoreSystem;
@@ -306,7 +307,7 @@ public class GlyphChecker
                 }
             };
 
-        new Checker("TooFarFromMeasureStart", Keys) {
+        new Checker("TooFarFromLeftBar", Keys) {
                 public boolean check (SystemInfo system,
                                       Evaluation eval,
                                       Glyph      glyph,
@@ -321,13 +322,16 @@ public class GlyphChecker
                     PixelPoint     point = box.getLocation();
                     SystemPart     part = scoreSystem.getPartAt(point);
                     Measure        measure = part.getMeasureAt(point);
+                    Barline        insideBar = measure.getInsideBarline();
                     Staff          staff = part.getStaffAt(point);
                     Clef           clef = measure.getFirstMeasureClef(
                         staff.getId());
                     int            start = (clef != null)
                                            ? (clef.getBox().x +
                                            clef.getBox().width)
-                                           : measure.getLeftX();
+                                           : ((insideBar != null)
+                                              ? insideBar.getLeftX()
+                                              : measure.getLeftX());
 
                     return (point.x - start) <= maxKeyXOffset;
                 }

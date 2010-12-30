@@ -18,10 +18,8 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
-import omr.score.BeamReader;
 import omr.score.ScoreChecker;
 import omr.score.ScoreCleaner;
-import omr.score.entity.Measure;
 import omr.score.entity.ScoreSystem;
 
 import omr.sheet.Sheet;
@@ -85,7 +83,7 @@ public class PagesStep
     public void doSystem (SystemInfo system)
         throws StepException
     {
-        final int            iterMax = constants.maxScoreIterations.getValue();
+        final int            iterMax = constants.maxPageIterations.getValue();
         final ScoreSystem    scoreSystem = system.getScoreSystem();
         final WrappedBoolean modified = new WrappedBoolean(true);
 
@@ -149,7 +147,7 @@ public class PagesStep
     {
         //~ Instance fields ----------------------------------------------------
 
-        private final Constant.Integer maxScoreIterations = new Constant.Integer(
+        private final Constant.Integer maxPageIterations = new Constant.Integer(
             "count",
             2,
             "Maximum number of iterations for SCORE task");

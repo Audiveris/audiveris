@@ -917,7 +917,7 @@ public class SystemTranslator
         public void completeSystem ()
         {
             try {
-                KeySignature.verifySystemKeys(system);
+                new KeySignatureVerifier(system).verifyKeys();
             } catch (Exception ex) {
                 logger.warning("Error verifying keys for " + system, ex);
             }

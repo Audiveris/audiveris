@@ -474,13 +474,25 @@ public class GlyphLagView
                 }
             }
 
-            // Draw attachments, if any
+            // Draw attachments, if any, with their key name
             if (ViewParameters.getInstance()
-                              .isAttachmentPainting()) {
-                for (java.awt.Shape attach : glyph.getAttachments()
-                                                  .values()) {
-                    g.draw(attach);
+                              .isAttachmentPainting() &&
+                !glyph.getAttachments()
+                      .isEmpty()) {
+                Font oldFont = g.getFont();
+                g.setFont(oldFont.deriveFont(10f));
+
+                for (Map.Entry<String, java.awt.Shape> entry : glyph.getAttachments()
+                                                                    .entrySet()) {
+                    java.awt.Shape shape = entry.getValue();
+                    g.draw(shape);
+
+                    String    key = entry.getKey();
+                    Rectangle rect = shape.getBounds();
+                    g.drawString(key, rect.x, rect.y - 4);
                 }
+
+                g.setFont(oldFont);
             }
         }
 
