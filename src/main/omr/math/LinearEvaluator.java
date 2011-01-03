@@ -77,7 +77,7 @@ public class LinearEvaluator
     private final SortedMap<String, Category> categories;
 
     /** Flag to indicate that some data has changed since unmarshalling */
-    private boolean dataModified = true;
+    private boolean dataModified = false;
 
     //~ Constructors -----------------------------------------------------------
 

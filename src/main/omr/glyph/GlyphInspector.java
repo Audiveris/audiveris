@@ -217,15 +217,16 @@ public class GlyphInspector
         List<Glyph> glyphs = new ArrayList<Glyph>(system.getGlyphs());
         Collections.sort(glyphs, Glyph.reverseWeightComparator);
 
-        // Now process each seed in turn, by looking at smaller ones
-        BasicAdapter adapter = new BasicAdapter(system, maxDoubt);
-
         for (int index = 0; index < glyphs.size(); index++) {
-            Glyph seed = glyphs.get(index);
+            Glyph        seed = glyphs.get(index);
+
+            // Now process this seed, by looking at smaller ones
+            // Do not cross a stem if any is found
+            BasicAdapter adapter = new BasicAdapter(system, maxDoubt, seed);
 
             if (adapter.isCandidateSuitable(seed)) {
-                Glyph compound = system.getCompoundBuilder()
-                                       .buildCompound(
+                system.getCompoundBuilder()
+                      .buildCompound(
                     seed,
                     glyphs.subList(index + 1, glyphs.size()),
                     adapter);
@@ -245,6 +246,12 @@ public class GlyphInspector
     private class BasicAdapter
         extends CompoundBuilder.AbstractAdapter
     {
+        //~ Instance fields ----------------------------------------------------
+
+        Glyph stem = null;
+        int   stemX;
+        int   stemToSeed;
+
         //~ Constructors -------------------------------------------------------
 
         /**
@@ -253,9 +260,22 @@ public class GlyphInspector
          * @param maxDoubt maximum acceptable doubt
          */
         public BasicAdapter (SystemInfo system,
-                             double     maxDoubt)
+                             double     maxDoubt,
+                             Glyph      seed)
         {
             super(system, maxDoubt);
+
+            if (seed.getStemNumber() > 0) {
+                // Remember this stem as a border
+                if (seed.getLeftStem() != null) {
+                    stem = seed.getLeftStem();
+                } else {
+                    stem = seed.getRightStem();
+                }
+
+                stemX = stem.getCentroid().x;
+                stemToSeed = seed.getCentroid().x - stemX;
+            }
         }
 
         //~ Methods ------------------------------------------------------------
@@ -263,16 +283,27 @@ public class GlyphInspector
         @Implement(CompoundAdapter.class)
         public boolean isCandidateSuitable (Glyph glyph)
         {
-            return glyph.isActive() &&
-                   (!glyph.isKnown() ||
-                   (!glyph.isManualShape() &&
-                   ((glyph.getShape() == Shape.DOT) ||
-                   (glyph.getShape() == Shape.SLUR) ||
-                   (glyph.getShape() == Shape.CLUTTER) ||
-                   (glyph.getShape() == Shape.VOID_NOTEHEAD) ||
-                   (glyph.getShape() == Shape.VOID_NOTEHEAD_2) ||
-                   (glyph.getShape() == Shape.VOID_NOTEHEAD_3) ||
-                   (glyph.getDoubt() >= GlyphInspector.getMinCompoundPartDoubt()))));
+            Shape   shape = glyph.getShape();
+            boolean ok = glyph.isActive() &&
+                         (!glyph.isKnown() ||
+                         (!glyph.isManualShape() &&
+                         ((shape == Shape.DOT) || (shape == Shape.SLUR) ||
+                         (shape == Shape.CLUTTER) ||
+                         (shape == Shape.VOID_NOTEHEAD) ||
+                         (shape == Shape.VOID_NOTEHEAD_2) ||
+                         (shape == Shape.VOID_NOTEHEAD_3) ||
+                         (glyph.getDoubt() >= GlyphInspector.getMinCompoundPartDoubt()))));
+
+            if (!ok) {
+                return false;
+            }
+
+            // Stay on same side of the stem if any
+            if ((stem != null)) {
+                ok = ((glyph.getCentroid().x - stemX) * stemToSeed) > 0;
+            }
+
+            return ok;
         }
 
         @Implement(CompoundAdapter.class)

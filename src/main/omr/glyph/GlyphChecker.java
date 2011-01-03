@@ -296,7 +296,7 @@ public class GlyphChecker
                 }
             };
 
-        new Checker("ClefNotWithinStaffHeight", Clefs) {
+        new Checker("NotWithinStaffHeight", Clefs) {
                 public boolean check (SystemInfo system,
                                       Evaluation eval,
                                       Glyph      glyph,
@@ -304,6 +304,17 @@ public class GlyphChecker
                 {
                     // Must be within staff height
                     return Math.abs(glyph.getPitchPosition()) < 4;
+                }
+            };
+
+        new Checker("WithinStaffHeight", Dynamics) {
+                public boolean check (SystemInfo system,
+                                      Evaluation eval,
+                                      Glyph      glyph,
+                                      double[]   features)
+                {
+                    // Must be outside staff height
+                    return Math.abs(glyph.getPitchPosition()) > 4;
                 }
             };
 

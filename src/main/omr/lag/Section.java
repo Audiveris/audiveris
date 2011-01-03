@@ -247,8 +247,8 @@ public class Section<L extends Lag, S extends Section<L, S>>
     // getContourBox //
     //---------------//
     /**
-     * Return the bounding box of the display polygon. Useful to quickly check
-     * if the section needs to be repainted.
+     * Return a COPY of the bounding box of the display polygon.
+     * Useful to quickly check if the section needs to be repainted.
      *
      * @return the bounding contour rectangle box
      */

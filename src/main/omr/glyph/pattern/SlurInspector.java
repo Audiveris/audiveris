@@ -33,6 +33,7 @@ import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
 import omr.util.Implement;
+import omr.util.Wrapper;
 
 import java.util.*;
 
@@ -58,11 +59,18 @@ public class SlurInspector
     /** Related compound builder */
     private final CompoundBuilder compoundBuilder;
 
+    // Cached system-dependent constants
+    final int    interline;
+    final int    minChunkWeight;
+    final int    slurBoxDx;
+    final int    slurBoxDy;
+    final double maxCircleDistance;
+
     //~ Constructors -----------------------------------------------------------
 
-    //-------------//
+    //---------------//
     // SlurInspector //
-    //-------------//
+    //---------------//
     /**
      * Creates a new SlurInspector object.
      *
@@ -72,22 +80,18 @@ public class SlurInspector
     {
         super("Slur", system);
         compoundBuilder = new CompoundBuilder(system);
+
+        // Compute parameters
+        Scale scale = system.getSheet()
+                            .getScale();
+        interline = scale.interline();
+        minChunkWeight = scale.toPixels(constants.minChunkWeight);
+        slurBoxDx = scale.toPixels(constants.slurBoxDx);
+        slurBoxDy = scale.toPixels(constants.slurBoxDy);
+        maxCircleDistance = constants.maxCircleDistance.getValue();
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //----------------------//
-    // getMaxCircleDistance //
-    //----------------------//
-    /**
-     * Report the maximum distance to approximating circle that is acceptable
-     * for a slur
-     * @return the maximum circle distance, expressed as interline fraction
-     */
-    public static double getMaxCircleDistance ()
-    {
-        return constants.maxCircleDistance.getValue();
-    }
 
     //---------------//
     // computeCircle //
@@ -164,40 +168,14 @@ public class SlurInspector
             logger.fine("fixing Large Slur for glyph #" + oldSlur.getId());
         }
 
-        final int          interline = system.getSheet()
-                                             .getInterline();
-        final int          minChunkWeight = system.getScoreSystem()
-                                                  .getScale()
-                                                  .toPixels(
-            constants.minChunkWeight);
-
-        // Get a COPY of the member list */
+        // Get a COPY of the member list, sorted by decreasing weight */
         List<GlyphSection> members = new ArrayList<GlyphSection>(
             oldSlur.getMembers());
-
-        // Sort by decreasing weight
         Collections.sort(members, GlyphSection.reverseWeightComparator);
 
-        // Find the suitable seed, which is chosen as the section with best
-        // circle distance among the sections whose weight is significant
-        GlyphSection seedSection = null;
-        double       seedDist = Double.MAX_VALUE;
-
-        for (GlyphSection seed : members) {
-            if (seed.getWeight() >= minChunkWeight) {
-                Circle circle = computeCircle(Arrays.asList(seed));
-                double dist = circle.getDistance();
-
-                if (dist < seedDist) {
-                    seedDist = dist;
-                    seedSection = seed;
-                }
-            }
-        }
-
-        if (logger.isFineEnabled()) {
-            logger.fine("Seed section is " + seedSection);
-        }
+        // Find the suitable seed
+        Wrapper<Double> seedDist = new Wrapper<Double>();
+        GlyphSection    seedSection = findSeedSection(members, seedDist);
 
         // If no significant section has been found, just give up
         if (seedSection == null) {
@@ -207,109 +185,13 @@ public class SlurInspector
         List<GlyphSection> kept = new ArrayList<GlyphSection>();
         List<GlyphSection> left = new ArrayList<GlyphSection>();
 
-        List<GlyphSection> tried = new ArrayList<GlyphSection>();
-        double             distThreshold = constants.maxCircleDistance.getValue();
-        double             bestDistance = distThreshold;
-
-        // We impose the seed
-        kept.add(seedSection);
-
-        for (GlyphSection section : members) {
-            if (section == seedSection) {
-                continue;
-            }
-
-            // Make the policy more strict when dealing with small sections
-            if (section.getWeight() < minChunkWeight) {
-                distThreshold = bestDistance;
-            }
-
-            if (logger.isFineEnabled()) {
-                logger.fine("Trying " + section);
-            }
-
-            // Try a circle
-            tried.clear();
-            tried.addAll(kept);
-            tried.add(section);
-
-            try {
-                Circle circle = computeCircle(tried);
-                double distance = circle.getDistance();
-
-                if (logger.isFineEnabled()) {
-                    logger.fine("dist=" + distance);
-                }
-
-                if (distance <= distThreshold) {
-                    kept.add(section);
-                    bestDistance = distance;
-
-                    if (logger.isFineEnabled()) {
-                        logger.fine("Keep " + section);
-                    }
-                } else {
-                    left.add(section);
-
-                    if (logger.isFineEnabled()) {
-                        logger.fine("Discard " + section);
-                    }
-                }
-            } catch (Exception ex) {
-                left.add(section);
-
-                if (logger.isFineEnabled()) {
-                    logger.fine(ex.getMessage() + " w/ " + section);
-                }
-            }
-        }
+        findSectionsOnCircle(members, seedSection, seedDist.value, kept, left);
+        removeIsolatedSections(seedSection, kept, left);
 
         if (!kept.isEmpty()) {
-            // Make sure we do have a suitable slur
             try {
-                Circle circle = computeCircle(kept);
-                double distance = circle.getDistance();
-
-                if (logger.isFineEnabled()) {
-                    logger.fine("Final dist=" + distance);
-                }
-
-                if (distance <= distThreshold) {
-                    // Build new slur glyph with sections kept
-                    Glyph newGlyph = new BasicStick(interline);
-
-                    for (GlyphSection section : kept) {
-                        newGlyph.addSection(section, Glyph.Linking.LINK_BACK);
-                    }
-
-                    newGlyph.setShape(Shape.SLUR);
-
-                    // Beware, the newGlyph may now belong to a different system
-                    SystemInfo newSystem = system.getSheet()
-                                                 .getSystemOf(newGlyph);
-                    newGlyph = newSystem.addGlyph(newGlyph);
-
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            "Built slur #" + newGlyph.getId() + " distance=" +
-                            (float) distance + " sections=" +
-                            Section.toString(kept));
-
-                        logger.fine(
-                            "Fixed large slur #" + oldSlur.getId() +
-                            " as smaller #" + newGlyph.getId());
-                    }
-
-                    return newGlyph;
-                } else {
-                    if (logger.isFineEnabled()) {
-                        logger.fine("Giving up slur w/ " + kept);
-                    }
-
-                    left.addAll(kept);
-
-                    return null;
-                }
+                // Make sure we do have a suitable slur
+                return buildFinalSlur(oldSlur, kept, left);
             } catch (Exception ex) {
                 left.addAll(kept);
 
@@ -357,7 +239,7 @@ public class SlurInspector
     // runPattern //
     //------------//
     /**
-     * Process all the oldSlur glyphs in the given system, and try to correct the
+     * Process all the slur glyphs in the given system, and try to correct the
      * spurious ones if any
      * @return the number of slurs fixed
      */
@@ -385,7 +267,7 @@ public class SlurInspector
                 }
 
                 if (!computeCircle(seed)
-                         .isValid(getMaxCircleDistance())) {
+                         .isValid(maxCircleDistance)) {
                     try {
                         Glyph newSlur = fixSpuriousSlur(seed);
 
@@ -404,6 +286,164 @@ public class SlurInspector
         }
 
         return modifs;
+    }
+
+    //----------------//
+    // buildFinalSlur //
+    //----------------//
+    private Glyph buildFinalSlur (Glyph              oldSlur,
+                                  List<GlyphSection> kept,
+                                  List<GlyphSection> left)
+    {
+        Circle circle = computeCircle(kept);
+        double distance = circle.getDistance();
+
+        if (logger.isFineEnabled()) {
+            logger.fine("Final dist=" + distance);
+        }
+
+        if (distance <= maxCircleDistance) {
+            // Build new slur glyph with sections kept
+            Glyph newGlyph = new BasicStick(interline);
+
+            for (GlyphSection section : kept) {
+                newGlyph.addSection(section, Glyph.Linking.LINK_BACK);
+            }
+
+            newGlyph.setShape(Shape.SLUR);
+
+            // Beware, the newGlyph may now belong to a different system
+            SystemInfo newSystem = system.getSheet()
+                                         .getSystemOf(newGlyph);
+            newGlyph = newSystem.addGlyph(newGlyph);
+
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "Built slur #" + newGlyph.getId() + " distance=" +
+                    (float) distance + " sections=" + Section.toString(kept));
+
+                logger.fine(
+                    "Fixed large slur #" + oldSlur.getId() + " as smaller #" +
+                    newGlyph.getId());
+            }
+
+            return newGlyph;
+        } else {
+            if (logger.isFineEnabled()) {
+                logger.fine("Giving up slur w/ " + kept);
+            }
+
+            left.addAll(kept);
+
+            return null;
+        }
+    }
+
+    //----------------------//
+    // findSectionsOnCircle //
+    //----------------------//
+    /**
+     * From the provided members, find all sections which are well located
+     * on the slur circle
+     * @param members
+     * @param seedSection
+     * @param seedDist
+     * @param kept
+     * @param left
+     */
+    private void findSectionsOnCircle (List<GlyphSection> members,
+                                       GlyphSection       seedSection,
+                                       double             seedDist,
+                                       List<GlyphSection> kept,
+                                       List<GlyphSection> left)
+    {
+        // We impose the seed
+        kept.add(seedSection);
+
+        List<GlyphSection> tried = new ArrayList<GlyphSection>();
+        double             distThreshold = seedDist;
+        double             bestDistance = distThreshold;
+
+        for (GlyphSection section : members) {
+            if (section == seedSection) {
+                continue;
+            }
+
+            distThreshold = bestDistance;
+
+            if (logger.isFineEnabled()) {
+                logger.fine("Trying " + section);
+            }
+
+            // Try a circle
+            tried.clear();
+            tried.addAll(kept);
+            tried.add(section);
+
+            try {
+                Circle circle = computeCircle(tried);
+                double distance = circle.getDistance();
+
+                if (logger.isFineEnabled()) {
+                    logger.fine("dist=" + distance);
+                }
+
+                if (distance <= distThreshold) {
+                    kept.add(section);
+                    bestDistance = distance;
+
+                    if (logger.isFineEnabled()) {
+                        logger.fine("Keep " + section);
+                    }
+                } else {
+                    left.add(section);
+
+                    if (logger.isFineEnabled()) {
+                        logger.fine("Discard " + section);
+                    }
+                }
+            } catch (Exception ex) {
+                left.add(section);
+
+                if (logger.isFineEnabled()) {
+                    logger.fine(ex.getMessage() + " w/ " + section);
+                }
+            }
+        }
+    }
+
+    //-----------------//
+    // findSeedSection //
+    //-----------------//
+    /**
+     *  Find the suitable seed, which is chosen as the section with best circle
+     * distance among the sections whose weight is significant
+     * @param sortedMembers the candidate sections, by decreasing weight
+     * @return the suitable seed, perhaps null
+     */
+    private GlyphSection findSeedSection (List<GlyphSection> sortedMembers,
+                                          Wrapper<Double>    seedDist)
+    {
+        GlyphSection seedSection = null;
+        seedDist.value = Double.MAX_VALUE;
+
+        for (GlyphSection seed : sortedMembers) {
+            if (seed.getWeight() >= minChunkWeight) {
+                Circle circle = computeCircle(Arrays.asList(seed));
+                double dist = circle.getDistance();
+
+                if (dist < seedDist.value) {
+                    seedDist.value = dist;
+                    seedSection = seed;
+                }
+            }
+        }
+
+        if (logger.isFineEnabled()) {
+            logger.fine("Seed section is " + seedSection + " dist:" + seedDist);
+        }
+
+        return seedSection;
     }
 
     //--------------//
@@ -460,6 +500,47 @@ public class SlurInspector
         }
     }
 
+    //------------------------//
+    // removeIsolatedSections //
+    //------------------------//
+    /**
+     * Remove any section which is too far from the other ones
+     * @param seedSection
+     * @param kept
+     * @param left
+     */
+    private void removeIsolatedSections (GlyphSection       seedSection,
+                                         List<GlyphSection> kept,
+                                         List<GlyphSection> left)
+    {
+        PixelRectangle     slurBox = seedSection.getContourBox();
+        List<GlyphSection> toCheck = new ArrayList<GlyphSection>(kept);
+        toCheck.remove(seedSection);
+        kept.clear();
+        kept.add(seedSection);
+
+        boolean makingProgress;
+
+        do {
+            makingProgress = false;
+
+            for (Iterator<GlyphSection> it = toCheck.iterator(); it.hasNext();) {
+                GlyphSection   section = it.next();
+                PixelRectangle sectBox = section.getContourBox();
+                sectBox.grow(slurBoxDx, slurBoxDy);
+
+                if (sectBox.intersects(slurBox)) {
+                    slurBox.add(sectBox);
+                    it.remove();
+                    kept.add(section);
+                    makingProgress = true;
+                }
+            }
+        } while (makingProgress);
+
+        left.addAll(toCheck);
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
     //-----------//
@@ -472,7 +553,7 @@ public class SlurInspector
 
         /** Maximum distance to approximating circle for a slur */
         Scale.Fraction maxCircleDistance = new Scale.Fraction(
-            0.16,
+            0.1,
             "Maximum distance to approximating circle" + " for a slur");
 
         /** Normalized weight threshold between small and large spurious slurs */
@@ -531,7 +612,7 @@ public class SlurInspector
                 try {
                     Circle circle = SlurInspector.computeCircle(glyph);
 
-                    return !circle.isValid(getMaxCircleDistance());
+                    return !circle.isValid(maxCircleDistance);
                 } catch (Exception ex) {
                     logger.warning(
                         "Cannot compute circle for slur #" + glyph.getId(),
@@ -552,7 +633,7 @@ public class SlurInspector
             // Look for a circle
             Circle circle = computeCircle(compound);
 
-            if (circle.isValid(getMaxCircleDistance())) {
+            if (circle.isValid(maxCircleDistance)) {
                 chosenEvaluation = new Evaluation(
                     Shape.SLUR,
                     Evaluation.ALGORITHM);
@@ -566,12 +647,8 @@ public class SlurInspector
         @Implement(CompoundBuilder.CompoundAdapter.class)
         public PixelRectangle getIntersectionBox ()
         {
-            Scale          scale = system.getScoreSystem()
-                                         .getScale();
             PixelRectangle box = new PixelRectangle(seed.getContourBox());
-            box.grow(
-                scale.toPixels(constants.slurBoxDx),
-                scale.toPixels(constants.slurBoxDy));
+            box.grow(slurBoxDx, slurBoxDy);
 
             return box;
         }

@@ -131,24 +131,20 @@ public class PatternsStep
         throws StepException
     {
         // For the very first time, we reperform the VERTICALS step
-        // The other times will be triggered by glyph deassignments which
-        // reperform from VERTICALS.
-        // TODO: This is wrong, VERTICALS is not triggered by programmatic
-        // deassignments...
-        //        if (firstTime) {
-        //            firstTime = false;
-        //
-        //            // Reperform verticals once
-        //            try {
-        //                Steps.rebuildFrom(
-        //                    Steps.stepOf("VERTICALS"),
-        //                    sheet,
-        //                    systems,
-        //                    true);
-        //            } catch (Exception ex) {
-        //                logger.warning("Error in re-processing from " + this, ex);
-        //            }
-        //        }
+        if (!sheet.isDone(this)) {
+            sheet.done(this);
+
+            // Reperform verticals once
+            try {
+                Stepping.reprocessSheet(
+                    Steps.valueOf("VERTICALS"),
+                    sheet,
+                    systems,
+                    true);
+            } catch (Exception ex) {
+                logger.warning("Error in re-processing from " + this, ex);
+            }
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------
