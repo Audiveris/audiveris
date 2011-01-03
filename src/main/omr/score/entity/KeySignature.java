@@ -38,7 +38,6 @@ import omr.sheet.SystemInfo;
 import omr.util.TreeNode;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Class <code>KeySignature</code> encapsulates a key signature, which may be
@@ -107,13 +106,7 @@ public class KeySignature
                                                      B, E, A, D, G, C, F
                                                  };
 
-    /** Unique Id (for debugging). Having a static variable is stupid !!! TODO */
-    private static AtomicInteger globalId = new AtomicInteger(0);
-
     //~ Instance fields --------------------------------------------------------
-
-    /** Unique Id (debugging) */
-    private final int id;
 
     /** Precise key signature. 0 for none, +n for n sharps, -n for n flats */
     private Integer key;
@@ -149,7 +142,6 @@ public class KeySignature
     {
         super(measure);
         setStaff(staff);
-        id = newId();
 
         if (logger.isFineEnabled()) {
             logger.fine(getContextString() + " KeySignature created: " + this);
@@ -172,7 +164,6 @@ public class KeySignature
     {
         super(measure);
         setStaff(staff);
-        id = newId();
         key = other.getKey();
         pitchPosition = other.getPitchPosition();
         shape = other.getShape();
@@ -620,8 +611,7 @@ public class KeySignature
     public String toString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("{KeySignature#")
-          .append(id);
+        sb.append("{KeySignature");
 
         try {
             sb.append(" key=")
@@ -821,14 +811,6 @@ public class KeySignature
         default :
             return null;
         }
-    }
-
-    //-------//
-    // newId //
-    //-------//
-    private static int newId ()
-    {
-        return globalId.incrementAndGet();
     }
 
     //-------------//

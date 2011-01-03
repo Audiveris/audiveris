@@ -77,6 +77,9 @@ public class ScoreSystem
     /** Duration of this system */
     private Integer actualDuration;
 
+    /** Used to assign a unique ID to key signature */
+    private int sentenceCount = 0;
+
     //~ Constructors -----------------------------------------------------------
 
     //-------------//
