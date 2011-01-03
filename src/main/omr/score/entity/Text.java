@@ -100,7 +100,7 @@ public abstract class Text
             font = TextFont.basicFont.deriveFont(
                 (float) sentence.getFontSize());
         } else {
-            logger.warning("Text with no sentence font size at " + location);
+            addError("Text with no sentence font size at " + location);
             font = TextFont.basicFont;
         }
 
