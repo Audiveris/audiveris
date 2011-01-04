@@ -29,8 +29,7 @@ import javax.swing.*;
  * dedicated boards, as well as a general-purpose Filter board and a custom
  * board.
  *
- * <p>There is one single BoardsPane for all views of the same sheet, while
- * the visibility of some of its boards may vary with the view at hand.
+ * <p>There is one BoardsPane instance for each view of the same sheet.
  *
  * @author Hervé Bitteur
  */
@@ -76,7 +75,7 @@ public class BoardsPane
         component.setNoInsets();
 
         // Prepare layout elements
-        final String panelInterline = Panel.getPanelInterline();
+        final String  panelInterline = Panel.getPanelInterline();
         StringBuilder sbr = new StringBuilder();
 
         for (int n = 0; n <= boards.length; n++) {

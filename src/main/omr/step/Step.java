@@ -36,7 +36,7 @@ public interface Step
     public static final String LINES_TAB = "Lines";
     public static final String HORIZONTALS_TAB = "Horizontals";
     public static final String SYSTEMS_TAB = "Systems";
-    public static final String GLYPHS_TAB = "Glyphs";
+    public static final String SYMBOLS_TAB = "Symbols";
     public static final String VERTICALS_TAB = "Verticals";
 
     //~ Enumerations -----------------------------------------------------------

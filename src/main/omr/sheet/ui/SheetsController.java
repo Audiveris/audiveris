@@ -32,13 +32,10 @@ import org.bushe.swing.event.EventSubscriber;
 
 import org.jdesktop.application.Action;
 
-import java.awt.Component;
 import java.util.ArrayList;
 
-import javax.swing.JComponent;
-import javax.swing.JTabbedPane;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import javax.swing.*;
+import javax.swing.event.*;
 
 /**
  * Class <code>SheetsController</code> is the UI Controller in charge of user

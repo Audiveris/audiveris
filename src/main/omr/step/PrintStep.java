@@ -48,7 +48,7 @@ public class PrintStep
             Level.SCORE_LEVEL,
             Mandatory.OPTIONAL,
             Redoable.REDOABLE,
-            GLYPHS_TAB,
+            SYMBOLS_TAB,
             "Write the output PDF file");
     }
 

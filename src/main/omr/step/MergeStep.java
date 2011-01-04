@@ -49,7 +49,7 @@ public class MergeStep
             Level.SCORE_LEVEL,
             Mandatory.MANDATORY,
             Redoable.REDOABLE,
-            GLYPHS_TAB,
+            SYMBOLS_TAB,
             "Merges all pages into one score");
     }
 

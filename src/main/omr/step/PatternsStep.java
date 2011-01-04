@@ -61,7 +61,7 @@ public class PatternsStep
             Level.SHEET_LEVEL,
             Mandatory.MANDATORY,
             Redoable.REDOABLE,
-            GLYPHS_TAB,
+            SYMBOLS_TAB,
             "Specific sheet glyph patterns");
     }
 

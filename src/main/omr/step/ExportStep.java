@@ -48,7 +48,7 @@ public class ExportStep
             Level.SCORE_LEVEL,
             Mandatory.OPTIONAL,
             Redoable.REDOABLE,
-            GLYPHS_TAB,
+            SYMBOLS_TAB,
             "Export the score to MusicXML file");
     }
 

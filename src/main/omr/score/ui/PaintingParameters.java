@@ -54,6 +54,11 @@ public class PaintingParameters
     /** A global property name for layers */
     public static final String LAYER_PAINTING = "layerPainting";
 
+    //~ Instance fields --------------------------------------------------------
+
+    /** Layer painting is chosen to be not persistent */
+    private PaintingLayer paintingLayer = PaintingLayer.INPUT_OUTPUT;
+
     //~ Methods ----------------------------------------------------------------
 
     //-------------//
@@ -130,7 +135,8 @@ public class PaintingParameters
     public void setPaintingLayer (PaintingLayer value)
     {
         PaintingLayer oldValue = getPaintingLayer();
-        constants.paintingLayer.setValue(value);
+        /// constants.paintingLayer.setValue(value);
+        paintingLayer = value;
         firePropertyChange(LAYER_PAINTING, oldValue, getPaintingLayer());
     }
 
@@ -139,7 +145,8 @@ public class PaintingParameters
     //------------------//
     public PaintingLayer getPaintingLayer ()
     {
-        return constants.paintingLayer.getValue();
+        /// return constants.paintingLayer.getValue();
+        return paintingLayer;
     }
 
     //-----------------//
@@ -184,18 +191,6 @@ public class PaintingParameters
         return constants.voicePainting.getValue();
     }
 
-    //-------------------//
-    // toggleAnnotations //
-    //-------------------//
-    /**
-     * Action that toggles the display of annotations in the score
-     * @param e the event that triggered this action
-     */
-    @Action(selectedProperty = ANNOTATION_PAINTING)
-    public void toggleAnnotations (ActionEvent e)
-    {
-    }
-
     //--------------//
     // switchLayers //
     //--------------//
@@ -210,6 +205,18 @@ public class PaintingParameters
                          .ordinal();
         int ord = (oldOrd + 1) % PaintingLayer.values().length;
         setPaintingLayer(PaintingLayer.values()[ord]);
+    }
+
+    //-------------------//
+    // toggleAnnotations //
+    //-------------------//
+    /**
+     * Action that toggles the display of annotations in the score
+     * @param e the event that triggered this action
+     */
+    @Action(selectedProperty = ANNOTATION_PAINTING)
+    public void toggleAnnotations (ActionEvent e)
+    {
     }
 
     //-------------//
@@ -283,10 +290,10 @@ public class PaintingParameters
             true,
             "Should the dummy parts be painted");
 
-        /** Which layers should be painted */
-        final PaintingLayer.Constant paintingLayer = new PaintingLayer.Constant(
-            PaintingLayer.INPUT_OUTPUT,
-            "Which layers should be painted");
+        //        /** Which layers should be painted */
+        //        final PaintingLayer.Constant paintingLayer = new PaintingLayer.Constant(
+        //            PaintingLayer.INPUT_OUTPUT,
+        //            "Which layers should be painted");
     }
 
     //--------//

@@ -156,7 +156,7 @@ public class SymbolsEditor
         // Create a hosting pane for the view
         ScrollLagView slv = new ScrollLagView(view);
         sheet.getAssembly()
-             .addViewTab(Step.GLYPHS_TAB, slv, boardsPane);
+             .addViewTab(Step.SYMBOLS_TAB, slv, boardsPane);
 
         // Listen to painting parameters
         PaintingParameters.getInstance()
