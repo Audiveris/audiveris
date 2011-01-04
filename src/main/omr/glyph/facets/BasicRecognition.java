@@ -165,17 +165,17 @@ class BasicRecognition
         // Blacklist the old shape if any
         Shape oldShape = getShape();
 
-        if ((oldShape != null) && (shape != Shape.GLYPH_PART)) {
+        if ((oldShape != null) && (oldShape != Shape.GLYPH_PART)) {
             forbidShape(oldShape);
         }
 
         if (shape == null) {
             // Set the part shape to null as well (rather than GLYPH_PART)
-            setNullRecursively(glyph, doubt);
-
-            //            for (Glyph part : glyph.getParts()) {
-            //                part.setShape(null, doubt);
-            //            }
+            for (Glyph part : glyph.getParts()) {
+                if (part.getShape() != null) {
+                    part.setShape(null, doubt);
+                }
+            }
         } else {
             // Remove the new shape from the blacklist if any
             allowShape(shape);
@@ -284,18 +284,5 @@ class BasicRecognition
         }
 
         forbiddenShapes.add(shape);
-    }
-
-    //--------------------//
-    // setNullRecursively //
-    //--------------------//
-    private void setNullRecursively (Glyph  glyph,
-                                     double doubt)
-    {
-        for (Glyph part : glyph.getParts()) {
-            part.setShape(null, doubt);
-            // Recursively
-            setNullRecursively(part, doubt);
-        }
     }
 }

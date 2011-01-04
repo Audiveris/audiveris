@@ -99,6 +99,10 @@ public class PatternsChecker
         system.inspectGlyphs(GlyphInspector.getLeafMaxDoubt());
 
         for (GlyphPattern pattern : patterns) {
+            if (logger.isFineEnabled()) {
+                logger.finest("Starting pattern " + pattern);
+            }
+
             try {
                 int modifs = pattern.runPattern();
 

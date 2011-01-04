@@ -24,6 +24,7 @@ import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
 import omr.lag.HorizontalOrientation;
+import omr.lag.Sections;
 
 import omr.log.Logger;
 
@@ -755,11 +756,6 @@ public class Sentence
                     }
                 } else {
                     logger.fine("No OCR line for glyph #" + glyph.getId());
-                }
-
-                // Clean up what has been left over from OCR
-                for (GlyphSection section : allSections) {
-                    section.setGlyph(null);
                 }
             }
         }
