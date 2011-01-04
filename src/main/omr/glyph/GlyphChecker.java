@@ -537,37 +537,19 @@ public class GlyphChecker
                 }
             };
 
-        new Checker("Dynamics", Dynamics) {
+        new Checker(
+            "StaffDist",
+            Notes,
+            NoteHeads,
+            Rests,
+            HeadAndFlags,
+            Dynamics) {
                 public boolean check (SystemInfo system,
                                       Evaluation eval,
                                       Glyph      glyph,
                                       double[]   features)
                 {
-                    // Check distance from closest staff
-                    if (Math.abs(glyph.getPitchPosition()) >= 15) {
-                        eval.failure = new Evaluation.Failure("pitch");
-
-                        return false;
-                    }
-
-                    // Limit width
-                    if (glyph.getNormalizedWidth() >= 12) {
-                        eval.failure = new Evaluation.Failure("tooWide");
-
-                        return false;
-                    }
-
-                    return true;
-                }
-            };
-
-        new Checker("StaffDist", Notes, NoteHeads, Rests, HeadAndFlags) {
-                public boolean check (SystemInfo system,
-                                      Evaluation eval,
-                                      Glyph      glyph,
-                                      double[]   features)
-                {
-                    // A note / rest cannot be too far from a staff
+                    // A note / rest / dynamic cannot be too far from a staff
                     return Math.abs(glyph.getPitchPosition()) < 15;
                 }
             };
