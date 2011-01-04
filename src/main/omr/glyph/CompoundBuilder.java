@@ -275,10 +275,10 @@ public class CompoundBuilder
         //~ Instance fields ----------------------------------------------------
 
         /** Collection of desired shapes for a valid compound */
-        private final EnumSet<Shape> desiredShapes;
+        protected final EnumSet<Shape> desiredShapes;
 
         /** Specific predicate for desired shapes*/
-        private final Predicate<Shape> predicate = new Predicate<Shape>() {
+        protected final Predicate<Shape> predicate = new Predicate<Shape>() {
             public boolean check (Shape shape)
             {
                 return desiredShapes.contains(shape);

@@ -336,8 +336,8 @@ class EvaluationBoard
             if (eval != null) {
                 Evaluation.Failure failure = eval.failure;
                 String             text = eval.shape.toString();
-                String             tip = (failure != null)
-                                         ? (failure + " failed") : null;
+                String             tip = (failure != null) ? failure.toString()
+                                         : null;
 
                 if (sheet != null) {
                     button.setEnabled(enabled);
