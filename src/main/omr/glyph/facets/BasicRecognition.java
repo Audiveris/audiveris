@@ -172,7 +172,8 @@ class BasicRecognition
         if (shape == null) {
             // Set the part shape to null as well (rather than GLYPH_PART)
             for (Glyph part : glyph.getParts()) {
-                if (part.getShape() != null) {
+                if ((part.getPartOf() == glyph) &&
+                    (part.getShape() == Shape.GLYPH_PART)) {
                     part.setShape(null, doubt);
                 }
             }

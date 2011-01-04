@@ -34,7 +34,7 @@ public class CompoundBuilder
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(GlyphInspector.class);
+    private static final Logger logger = Logger.getLogger(CompoundBuilder.class);
 
     //~ Instance fields --------------------------------------------------------
 

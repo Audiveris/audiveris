@@ -352,7 +352,7 @@ public class GlyphInspector
         //~ Instance fields ----------------------------------------------------
 
         Scale.Fraction   boxWiden = new Scale.Fraction(
-            0.3,
+            0.25,
             "Box widening to check intersection with compound");
         Evaluation.Doubt patternsMaxDoubt = new Evaluation.Doubt(
             1.5,

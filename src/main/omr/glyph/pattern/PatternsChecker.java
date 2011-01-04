@@ -69,8 +69,6 @@ public class PatternsChecker
                        
         new AlterPattern(system),
                        
-        new StemPattern(system),
-                       
         new HiddenSlurPattern(system),
                        
         system.getSlurInspector(),
@@ -80,7 +78,8 @@ public class PatternsChecker
         new GreedyTextPattern(system),
                        
         new LeftOverPattern(system)
-                   };
+                   //,new StemPattern(system)
+        };
     }
 
     //~ Methods ----------------------------------------------------------------

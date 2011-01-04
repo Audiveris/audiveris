@@ -494,7 +494,7 @@ public class BarsChecker
             4.0,
             "High Maximum vertical distance between a bar edge and the staff line");
         Scale.Fraction maxStaffShiftDyLow = new Scale.Fraction(
-            0.2,
+            0.27,
             "Low Maximum vertical distance between a bar edge and the staff line");
         Scale.Fraction maxStaffDHeightHigh = new Scale.Fraction(
             0.4,
@@ -547,7 +547,7 @@ public class BarsChecker
                 false,
                 redResult);
 
-            // Adjust chunk window according to system scale 
+            // Adjust chunk window according to system scale
             nWidth = scale.toPixels(constants.chunkWidth);
             nHeight = scale.toPixels(constants.chunkHalfHeight);
         }

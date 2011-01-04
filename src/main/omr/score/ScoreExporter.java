@@ -426,8 +426,12 @@ public class ScoreExporter
                     }
 
                     // Default: use style inferred from shape
+                    // TODO: improve error handling here !!!!!!!!!
                     if (barStyleColor.getValue() == null) {
-                        barStyleColor.setValue(barStyleOf(barline.getShape()));
+                        if (barline.getShape() != null) {
+                            barStyleColor.setValue(
+                                barStyleOf(barline.getShape()));
+                        }
                     }
 
                     // Everything is now OK
@@ -1501,8 +1505,10 @@ public class ScoreExporter
                 soft += (" " + Main.getToolVersion());
             }
 
-            encoding.getEncodingDateOrEncoderOrSoftware()
-                    .add(factory.createEncodingSoftware(soft));
+            if ((soft != null) && (soft.length() > 0)) {
+                encoding.getEncodingDateOrEncoderOrSoftware()
+                        .add(factory.createEncodingSoftware(soft));
+            }
 
             // [Encoding]/EncodingDate
             // Let the Marshalling class handle it
@@ -1904,7 +1910,9 @@ public class ScoreExporter
 
             // Credits
             Credit pmCredit = factory.createCredit();
-            pmCredit.setPage(new BigInteger("" + current.page.getIndex()));
+            // For MusicXML, page # is counted from 1, whatever the pageIndex
+            pmCredit.setPage(
+                new BigInteger("" + (1 + current.page.getChildIndex())));
 
             FormattedText creditWords = factory.createFormattedText();
             creditWords.setValue(text.getContent());

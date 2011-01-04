@@ -77,6 +77,23 @@ public abstract class TreeNode
 
     //~ Methods ----------------------------------------------------------------
 
+    //---------------//
+    // getChildIndex //
+    //---------------//
+    /**
+     * Report the index (counted from 0) of this node within the children
+     * sequence of its parent
+     * @return the child index (or -1 if there is no parent)
+     */
+    public int getChildIndex ()
+    {
+        if (parent != null) {
+            return parent.children.indexOf(this);
+        } else {
+            return -1;
+        }
+    }
+
     //-------------//
     // getChildren //
     //-------------//

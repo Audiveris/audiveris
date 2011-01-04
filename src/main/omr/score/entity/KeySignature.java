@@ -1181,7 +1181,7 @@ public class KeySignature
             0.25d,
             "Margin when checking vertical position of single-glyph key");
         Constant.Ratio heightRatio = new Constant.Ratio(
-            0.75d,
+            0.5d,
             "Histogram ratio for detection of sharp/flat sticks ");
     }
 }

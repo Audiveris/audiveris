@@ -333,12 +333,12 @@ public class SlurInspector
                 newGlyph.addSection(section, Glyph.Linking.LINK_BACK);
             }
 
-            newGlyph.setShape(Shape.SLUR);
 
             // Beware, the newGlyph may now belong to a different system
             SystemInfo newSystem = system.getSheet()
                                          .getSystemOf(newGlyph);
             newGlyph = newSystem.addGlyph(newGlyph);
+            newGlyph.setShape(Shape.SLUR);
 
             if (logger.isFineEnabled()) {
                 logger.fine(
@@ -580,7 +580,7 @@ public class SlurInspector
 
         /** Maximum distance to approximating circle for a slur */
         Scale.Fraction maxCircleDistance = new Scale.Fraction(
-            0.16,
+            0.1,
             "Maximum distance to approximating circle" + " for a slur");
 
         /** Normalized weight threshold between small and large spurious slurs */
@@ -596,12 +596,12 @@ public class SlurInspector
 
         /** Extension abscissa when looking for oldSlur compound */
         Scale.Fraction slurBoxDx = new Scale.Fraction(
-            0.3,
+            0.7,
             "Extension abscissa when looking for slur compound");
 
         /** Extension ordinate when looking for oldSlur compound */
         Scale.Fraction slurBoxDy = new Scale.Fraction(
-            0.2,
+            0.4,
             "Extension ordinate when looking for slur compound");
     }
 

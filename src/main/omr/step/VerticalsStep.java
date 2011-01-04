@@ -35,9 +35,9 @@ public class VerticalsStep
 
     //~ Constructors -----------------------------------------------------------
 
-    //--------------//
+    //---------------//
     // VerticalsStep //
-    //--------------//
+    //---------------//
     /**
      * Creates a new VerticalsStep object.
      */
