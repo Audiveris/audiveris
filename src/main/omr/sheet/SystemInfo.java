@@ -339,6 +339,21 @@ public class SystemInfo
         return left;
     }
 
+    //--------------//
+    // getLogPrefix //
+    //--------------//
+    /**
+     * Report the proper prefix to use when logging a message
+     * @return the proper prefix
+     */
+    public String getLogPrefix ()
+    {
+        StringBuilder sb = new StringBuilder(sheet.getLogPrefix());
+        sb.insert(sb.length() - 1, "S" + id);
+
+        return sb.toString();
+    }
+
     //-------------------//
     // getMaxLedgerWidth //
     //-------------------//
@@ -703,6 +718,24 @@ public class SystemInfo
     public void buildMeasures ()
     {
         measuresBuilder.buildMeasures();
+    }
+
+    //------------------------//
+    // buildTransientCompound //
+    //------------------------//
+    /**
+     * Make a new glyph out of a collection of (sub) glyphs, by merging all
+     * their member sections. This compound is transient, since until it is
+     * properly inserted by use of {@link #addGlyph}, this building has no
+     * impact on either the containing lag, the containing system, nor the
+     * contained sections themselves.
+     *
+     * @param parts the collection of (sub) glyphs
+     * @return the brand new (compound) glyph
+     */
+    public Glyph buildTransientCompound (Collection<Glyph> parts)
+    {
+        return glyphsBuilder.buildTransientCompound(parts);
     }
 
     //---------------------//
@@ -1208,24 +1241,6 @@ public class SystemInfo
     public Sheet getSheet ()
     {
         return sheet;
-    }
-
-    //------------------------//
-    // buildTransientCompound //
-    //------------------------//
-    /**
-     * Make a new glyph out of a collection of (sub) glyphs, by merging all
-     * their member sections. This compound is transient, since until it is
-     * properly inserted by use of {@link #addGlyph}, this building has no
-     * impact on either the containing lag, the containing system, nor the
-     * contained sections themselves.
-     *
-     * @param parts the collection of (sub) glyphs
-     * @return the brand new (compound) glyph
-     */
-    public Glyph buildTransientCompound (Collection<Glyph> parts)
-    {
-        return glyphsBuilder.buildTransientCompound(parts);
     }
 
     //----------------//

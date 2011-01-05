@@ -93,7 +93,7 @@ public class TextAreaBrowser
             null,
             null,
             sheet.getVerticalLag().createAbsoluteRoi(
-                new Rectangle(0, 0, sheet.getWidth(), sheet.getHeight())),
+                new Rectangle(sheet.getDimension())),
             new HorizontalOrientation());
         // subdivide
         area.subdivide();

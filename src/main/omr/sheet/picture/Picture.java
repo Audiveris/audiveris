@@ -18,6 +18,8 @@ import omr.lag.PixelSource;
 
 import omr.log.Logger;
 
+import omr.score.common.PixelDimension;
+
 import omr.selection.MouseMovement;
 import omr.selection.PixelLevelEvent;
 import omr.selection.SelectionService;
@@ -91,7 +93,7 @@ public class Picture
     //~ Instance fields --------------------------------------------------------
 
     /** Dimension of current image */
-    private Dimension dimension;
+    private PixelDimension dimension;
 
     /** Current image */
     private PlanarImage image;
@@ -144,13 +146,13 @@ public class Picture
     // getDimension //
     //--------------//
     /**
-     * Report the dimension in pixels of the current image
+     * Report (a copy of) the dimension in pixels of the current image
      *
      * @return the image dimension
      */
-    public Dimension getDimension ()
+    public PixelDimension getDimension ()
     {
-        return new Dimension(dimension);
+        return new PixelDimension(dimension.width, dimension.height);
     }
 
     //-----------//
@@ -691,7 +693,7 @@ public class Picture
         checkImageFormat();
 
         // Cache dimensions
-        dimension = new java.awt.Dimension(image.getWidth(), image.getHeight());
+        dimension = new PixelDimension(image.getWidth(), image.getHeight());
         raster = Raster.createWritableRaster(
             image.getData().getSampleModel(),
             image.getData().getDataBuffer(),

@@ -184,12 +184,13 @@ public class LinesBuilder
 
             // User feedback
             if (staves.size() > 1) {
-                logger.info(staves.size() + " staves");
+                logger.info(sheet.getLogPrefix() + staves.size() + " staves");
             } else if (!staves.isEmpty()) {
-                logger.info(staves.size() + " staff");
+                logger.info(sheet.getLogPrefix() + staves.size() + " staff");
             } else {
                 logger.warning(
-                    "No staff found." + " Check Line plot." +
+                    sheet.getLogPrefix() + "No staff found." +
+                    " Check Line plot." +
                     " Check Staff Lines ratio in score parameters.");
             }
 

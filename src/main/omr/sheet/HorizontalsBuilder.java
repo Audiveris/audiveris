@@ -557,9 +557,9 @@ public class HorizontalsBuilder
             }
 
             if ((nl + ne) > 0) {
-                logger.info(sb.toString());
+                logger.info(sheet.getLogPrefix() + sb.toString());
             } else if (logger.isFineEnabled()) {
-                logger.fine(sb.toString());
+                logger.fine(sheet.getLogPrefix() + sb.toString());
             }
         }
     }

@@ -197,7 +197,7 @@ public class Stepping
         long startTime = 0;
 
         if (logger.isFineEnabled()) {
-            logger.fine(step + " Starting");
+            logger.fine(sheet.getLogPrefix() + step + " Starting");
             startTime = System.currentTimeMillis();
         }
 
@@ -221,7 +221,8 @@ public class Stepping
         if (logger.isFineEnabled()) {
             final long stopTime = System.currentTimeMillis();
             logger.fine(
-                step + " completed in " + (stopTime - startTime) + " ms");
+                sheet.getLogPrefix() + step + " completed in " +
+                (stopTime - startTime) + " ms");
         }
 
         // Record this in bench
@@ -236,7 +237,7 @@ public class Stepping
      * At score level, perform the desired steps (as well as all needed
      * intermediate steps).
      * <p>This method is used from the CLI, from a script or from the Step menu
-     * (when moving forward)
+     * (via the StepTask), and from the drag&drop handler.
      * @param desiredSteps the desired steps
      * @param score the processed score (and its sheets)
      */
@@ -291,11 +292,11 @@ public class Stepping
                 }
             }
 
-            // Remove the LOAD step 
+            // Remove the LOAD step (unless it is explicitly desired)
             // LOAD step may appear only in reprocessSheet()
             Step loadStep = Steps.valueOf(Steps.LOAD);
 
-            if (desiredSteps.contains(loadStep)) {
+            if (!desiredSteps.contains(loadStep)) {
                 orderedSteps.remove(loadStep);
             }
 
@@ -333,6 +334,10 @@ public class Stepping
                                        Collection<SystemInfo> impactedSystems,
                                        boolean                imposed)
     {
+        if (logger.isFineEnabled()) {
+            logger.fine("reprocessSheet " + step + " on " + sheet);
+        }
+
         // Sanity checks
         if (SwingUtilities.isEventDispatchThread()) {
             logger.severe("Method rebuildFrom should not run on EDT!");
@@ -350,7 +355,7 @@ public class Stepping
 
         // A null set of systems means all of them
         if (impactedSystems == null) {
-            impactedSystems = new TreeSet<SystemInfo>(sheet.getSystems());
+            impactedSystems = sheet.getSystems();
         }
 
         if (logger.isFineEnabled()) {
@@ -368,7 +373,7 @@ public class Stepping
 
             // "Activate" the progress bar?
             if (monitor != null) {
-                monitor.animate(true);
+                monitor.displayAnimation(true);
             }
 
             try {
@@ -377,12 +382,12 @@ public class Stepping
                 throw pce;
             } catch (Exception ex) {
                 logger.warning("Error in re-processing from " + step, ex);
-            }
-
-            // Reset the progress bar?
-            if (monitor != null) {
-                notifyMsg("");
-                monitor.animate(false);
+            } finally {
+                // Reset the progress bar?
+                if (monitor != null) {
+                    notifyMsg("");
+                    monitor.displayAnimation(false);
+                }
             }
         }
     }
@@ -515,9 +520,6 @@ public class Stepping
     private static void scheduleScoreStepSet (final SortedSet<Step> stepSet,
                                               final Score           score)
     {
-        // Safer
-        stepSet.remove(Steps.valueOf(Steps.LOAD));
-
         if (stepSet.isEmpty()) {
             return;
         }
@@ -528,45 +530,47 @@ public class Stepping
 
         // "Activate" the progress bar?
         if (monitor != null) {
-            monitor.animate(true);
+            monitor.displayAnimation(true);
         }
 
-        // SCALE step, if present, is always the first step
-        // We performed this step on all sheets, to allow early filtering
-        Step scaleStep = Steps.valueOf(Steps.SCALE);
+        try {
+            // SCALE step, if present, is always the first step
+            // We performed this step on all sheets, to allow early filtering
+            Step scaleStep = Steps.valueOf(Steps.SCALE);
 
-        if (stepSet.contains(scaleStep)) {
-            SortedSet<Step> single = new TreeSet<Step>(comparator);
-            single.add(scaleStep);
-            stepSet.remove(scaleStep);
-            doScoreStepSet(single, score);
-        }
-
-        // Perform the remaining steps at sheet level
-        SortedSet<Step> sheetSet = new TreeSet<Step>(comparator);
-
-        for (Step step : stepSet) {
-            if (!step.isScoreLevel()) {
-                sheetSet.add(step);
+            if (stepSet.contains(scaleStep)) {
+                SortedSet<Step> single = new TreeSet<Step>(comparator);
+                single.add(scaleStep);
+                stepSet.remove(scaleStep);
+                doScoreStepSet(single, score);
             }
-        }
 
-        stepSet.removeAll(sheetSet);
-        doScoreStepSet(sheetSet, score);
+            // Perform the remaining steps at sheet level
+            SortedSet<Step> sheetSet = new TreeSet<Step>(comparator);
 
-        // Finally, perform steps at score level if any
-        for (Step step : stepSet) {
-            try {
-                doOneScoreStep(step, score);
-            } catch (Exception ex) {
-                logger.warning("Error on step " + step, ex);
+            for (Step step : stepSet) {
+                if (!step.isScoreLevel()) {
+                    sheetSet.add(step);
+                }
             }
-        }
 
-        // Reset the progress bar?
-        if (monitor != null) {
-            notifyMsg("");
-            monitor.animate(false);
+            stepSet.removeAll(sheetSet);
+            doScoreStepSet(sheetSet, score);
+
+            // Finally, perform steps at score level if any
+            for (Step step : stepSet) {
+                try {
+                    doOneScoreStep(step, score);
+                } catch (Exception ex) {
+                    logger.warning("Error on step " + step, ex);
+                }
+            }
+        } finally {
+            // Reset the progress bar?
+            if (monitor != null) {
+                notifyMsg("");
+                monitor.displayAnimation(false);
+            }
         }
 
         if (logger.isFineEnabled()) {

@@ -37,7 +37,7 @@ import net.jcip.annotations.NotThreadSafe;
 import java.util.*;
 
 /**
- * Class <code>MeasuresBuilder</code> is in charge, at a system level, of
+ * Class <code>MeasuresBuilder</code> is in charge, at system info level, of
  * building measures from the bar sticks found. At this moment, the only glyphs
  * in the system collection are the barline candidates.
  *

@@ -1469,9 +1469,6 @@ public class Measure
      */
     public void cleanupNode ()
     {
-        //        logger.warning(
-        //            "cleanupNode " + this + " @" + Integer.toHexString(hashCode()));
-
         // Remove all direct children except barlines
         for (Iterator it = children.iterator(); it.hasNext();) {
             VisitableNode node = (VisitableNode) it.next();

@@ -82,9 +82,7 @@ public class SheetPdfOutput
         try {
             for (TreeNode pn : score.getPages()) {
                 Page      page = (Page) pn;
-                Sheet     sheet = page.getSheet();
-                Dimension dim = sheet.getPicture()
-                                     .getDimension();
+                Dimension dim = page.getDimension();
 
                 if (document == null) {
                     document = new Document(

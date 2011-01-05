@@ -268,7 +268,7 @@ public class SheetAssembly
         // Set the model size
         if (sheet.getPicture() != null) {
             sv.getView()
-              .setModelSize(sheet.getPicture().getDimension());
+              .setModelSize(sheet.getDimension());
         }
 
         // Force scroll bar computations

@@ -64,7 +64,7 @@ public abstract class PageNode
     public String getContextString ()
     {
         StringBuilder sb = new StringBuilder(super.getContextString());
-        sb.append("G")
+        sb.append("#")
           .append(page.getIndex());
 
         return sb.toString();

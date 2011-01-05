@@ -34,9 +34,6 @@ public abstract class AbstractStep
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(AbstractStep.class);
 
-    /** Related UI when used in interactive mode */
-    private static volatile StepMonitor monitor;
-
     //~ Instance fields --------------------------------------------------------
 
     /** Step name */
@@ -119,18 +116,6 @@ public abstract class AbstractStep
         return mandatory == Step.Mandatory.MANDATORY;
     }
 
-    //------------//
-    // getMonitor //
-    //------------//
-    /**
-     * Give access to a related UI monitor
-     * @return the related step monitor, or null
-     */
-    public static StepMonitor getMonitor ()
-    {
-        return monitor;
-    }
-
     //---------//
     // getName //
     //---------//
@@ -176,20 +161,6 @@ public abstract class AbstractStep
         return label;
     }
 
-    //---------------//
-    // createMonitor //
-    //---------------//
-    /**
-     * Allows to couple the steps with a UI.
-     * @return the monitor to deal with steps
-     */
-    public static StepMonitor createMonitor ()
-    {
-        monitor = new StepMonitor();
-
-        return monitor;
-    }
-
     //-----------//
     // displayUI //
     //-----------//
@@ -233,24 +204,6 @@ public abstract class AbstractStep
     public void done (Sheet sheet)
     {
         sheet.done(this);
-    }
-
-    //-----------//
-    // notifyMsg //
-    //-----------//
-    /**
-     * Notify a simple message, which may be not related to any step.
-     *
-     * @param msg the message to display on the UI window, or to write in the
-     *            log if there is no UI.
-     */
-    public static void notifyMsg (String msg)
-    {
-        if (monitor != null) {
-            monitor.notifyMsg(msg);
-        } else {
-            logger.info(msg);
-        }
     }
 
     //---------//

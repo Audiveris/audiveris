@@ -24,7 +24,6 @@ import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
 import omr.lag.HorizontalOrientation;
-import omr.lag.Sections;
 
 import omr.log.Logger;
 
@@ -732,8 +731,9 @@ public class Sentence
                                 systemInfo.getNewSentenceId());
                             ti.setSentence(sentence);
                             logger.info(
-                                "Glyph#" + lineGlyph.getId() + " (" + language +
-                                ")->\"" + ocrLine.value + "\"" + " font:" +
+                                systemInfo.getLogPrefix() + "Glyph#" +
+                                lineGlyph.getId() + " (" + language + ")->\"" +
+                                ocrLine.value + "\"" + " font:" +
                                 ocrLine.fontSize);
 
                             toRemove.add(this);

@@ -170,7 +170,9 @@ public class SkewBuilder
             displayChart();
         }
 
-        logger.info("Skew angle is " + (float) angle + " radians");
+        logger.info(
+            sheet.getLogPrefix() + "Skew angle is " + (float) angle +
+            " radians");
 
         // Display the resulting lag
         if (constants.displayFrame.getValue() && (Main.getGui() != null)) {

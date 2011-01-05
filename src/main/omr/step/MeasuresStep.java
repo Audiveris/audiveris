@@ -13,6 +13,8 @@ package omr.step;
 
 import omr.Main;
 
+import omr.log.Logger;
+
 import omr.score.MeasureBasicNumberer;
 
 import omr.sheet.Sheet;
@@ -28,6 +30,11 @@ import java.util.Collection;
 public class MeasuresStep
     extends AbstractSystemStep
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(MeasuresStep.class);
+
     //~ Constructors -----------------------------------------------------------
 
     //--------------//

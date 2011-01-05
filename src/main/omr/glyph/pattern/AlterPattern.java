@@ -177,7 +177,8 @@ public class AlterPattern
                 if (compound != null) {
                     successNb++;
                     logger.info(
-                        "Compound #" + compound.getId() + " rebuilt as " +
+                        system.getLogPrefix() + "Compound #" +
+                        compound.getId() + " rebuilt as " +
                         compound.getShape());
                 } else {
                     // Restore stem shapes

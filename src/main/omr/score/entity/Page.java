@@ -60,9 +60,6 @@ public class Page
     /** Link with image */
     private Sheet sheet;
 
-    /** Sheet dimension in pixels */
-    private PixelDimension dimension;
-
     /** Sheet global scale */
     private Scale scale;
 
@@ -198,18 +195,6 @@ public class Page
     }
 
     //--------------//
-    // setDimension //
-    //--------------//
-    /**
-     * Assign page dimension
-     * @param dimension the score dimension, expressed in pixels
-     */
-    public void setDimension (PixelDimension dimension)
-    {
-        this.dimension = dimension;
-    }
-
-    //--------------//
     // getDimension //
     //--------------//
     /**
@@ -219,7 +204,7 @@ public class Page
      */
     public PixelDimension getDimension ()
     {
-        return dimension;
+        return sheet.getDimension();
     }
 
     //-------//
@@ -557,7 +542,7 @@ public class Page
               .append(sb)
               .append("]");
 
-        logger.info(prefix.toString());
+        logger.info(sheet.getLogPrefix() + prefix.toString());
     }
 
     //---------------//
@@ -612,14 +597,14 @@ public class Page
      */
     public void resetSystems ()
     {
-        //        // Reset views on systems
-        //        for (ScoreLayout layout : layouts.values()) {
-        //            layout.reset();
-        //        }
-
         // Discard systems
         getSystems()
             .clear();
+
+        // Discard partlists
+        if (partList != null) {
+            partList.clear();
+        }
 
         //        // Discard cached recent system
         //        recentSystemRef = null;

@@ -48,6 +48,9 @@ public class StepMonitor
     /** Progress bar for actions performed on sheet */
     private final JProgressBar bar = new MyJProgressBar();
 
+    /** Total active demands */
+    private int actives = 0;
+
     //~ Constructors -----------------------------------------------------------
 
     //-------------//
@@ -67,7 +70,7 @@ public class StepMonitor
 
         bar.setToolTipText("On going Step activity");
         bar.setStringPainted(true);
-        animate(false);
+        displayAnimation(false);
         bar.setString("");
     }
 
@@ -113,6 +116,7 @@ public class StepMonitor
      * Sets the progress bar to show a percentage a certain amount above
      * the previous percentage value (or above 0 if the bar had been
      * indeterminate).
+     * This method is called on every message logged (see LogStepMonitorHandler)
      */
     void animate ()
     {
@@ -134,28 +138,39 @@ public class StepMonitor
                 });
     }
 
-    //---------//
-    // animate //
-    //---------//
+    //------------------//
+    // displayAnimation //
+    //------------------//
     /**
-     *
+     * Switch on or off the display of the progress bar
      * @param animating If false, deactivates all animation of the progress
      *                  bar.  If true, activates an indeterminate or
      *                  pseudo-indeterminate animation.
      */
-    void animate (final boolean animating)
+    final synchronized void displayAnimation (final boolean animating)
     {
-        animate(animating ? constants.ratio.getValue() : 0);
+        if (animating) {
+            actives++;
+            setBar(constants.ratio.getValue());
+        } else {
+            if (actives > 0) {
+                actives--;
+            }
+
+            if (actives <= 0) {
+                setBar(0);
+            }
+        }
     }
 
-    //---------//
-    // animate //
-    //---------//
+    //--------//
+    // setBar //
+    //--------//
     /**
      * Sets the progress bar to show a percentage.
      * @param amount percentage, in decimal form, from 0.0 to 1.0
      */
-    private void animate (final double amount)
+    private void setBar (final double amount)
     {
         SwingUtilities.invokeLater(
             new Runnable() {
@@ -187,7 +202,7 @@ public class StepMonitor
             1000,
             "Number of divisions (amount of precision) of step monitor, minimum 10");
         Ratio            ratio = new Ratio(
-            1.0 / 10.0,
+            0.1,
             "Amount by which to increase step monitor percentage per animation, between 0 and 1");
     }
 

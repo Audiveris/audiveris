@@ -90,6 +90,17 @@ public class Sheet
     /** The recording of key processing data */
     private SheetBench bench;
 
+    /** Related assembly instance */
+    private SheetAssembly assembly;
+
+    /** Related errors editor */
+    private ErrorsEditor errorsEditor;
+
+    /** Retrieved systems (populated by SYSTEMS/SystemsBuilder) */
+    private final List<SystemInfo> systems = new ArrayList<SystemInfo>();
+
+    //-- resettable members ----------------------------------------------------
+
     /** The related picture */
     private Picture picture;
 
@@ -111,15 +122,6 @@ public class Sheet
     /** Vertical lag (built by SYSTEMS/BarsBuilder) */
     private GlyphLag vLag;
 
-    /** Sheet height in pixels */
-    private int height = -1;
-
-    /** Sheet width in pixels */
-    private int width = -1;
-
-    /** Retrieved systems. Set by SYSTEMS. */
-    private final List<SystemInfo> systems = new ArrayList<SystemInfo>();
-
     /**
      * Non-lag related selections for this sheet
      * (SheetLocation, ScoreLocation and PixelLevel)
@@ -127,9 +129,6 @@ public class Sheet
     private SelectionService selectionService = new SelectionService();
 
     // Companion processors
-
-    /** Related assembly instance */
-    private volatile SheetAssembly assembly;
 
     /** Dedicated skew builder */
     private volatile SkewBuilder skewBuilder;
@@ -151,9 +150,6 @@ public class Sheet
 
     /** Related symbols editor */
     private SymbolsEditor editor;
-
-    /** Related errors editor */
-    private volatile ErrorsEditor errorsEditor;
 
     /** The current maximum value for foreground pixels */
     private Integer maxForeground;
@@ -314,6 +310,19 @@ public class Sheet
         currentStep = step;
     }
 
+    //--------------//
+    // getDimension //
+    //--------------//
+    /**
+     * Report the dimension of the sheet/page
+     *
+     * @return the page/sheet dimension in pixels
+     */
+    public PixelDimension getDimension ()
+    {
+        return picture.getDimension();
+    }
+
     //--------//
     // isDone //
     //--------//
@@ -345,7 +354,7 @@ public class Sheet
      */
     public int getHeight ()
     {
-        return height;
+        return picture.getHeight();
     }
 
     //---------------//
@@ -470,6 +479,9 @@ public class Sheet
     public final void setImage (RenderedImage image)
         throws StepException
     {
+        // Reset most of all members
+        reset();
+
         try {
             picture = new Picture(image);
 
@@ -602,14 +614,6 @@ public class Sheet
         this.scale = scale;
         page.setScale(scale);
 
-        // Remember current sheet dimensions in pixels
-        width = getPicture()
-                    .getWidth();
-        height = getPicture()
-                     .getHeight();
-
-        page.setDimension(new PixelDimension(width, height));
-
         // Check we've got something usable
         if (scale.mainFore() == 0) {
             logger.warning(
@@ -700,12 +704,6 @@ public class Sheet
             assembly.getComponent()
                     .repaint();
         }
-
-        // Remember final sheet dimensions in pixels
-        width = getPicture()
-                    .getWidth();
-        height = getPicture()
-                     .getHeight();
     }
 
     //---------//
@@ -1144,7 +1142,7 @@ public class Sheet
      */
     public int getWidth ()
     {
-        return width;
+        return picture.getWidth();
     }
 
     //----------//
@@ -1537,6 +1535,36 @@ public class Sheet
                     pictureView.getView(),
                     new PixelBoard(page.getIndex() + ":Picture", Sheet.this)));
         }
+    }
+
+    //-------//
+    // reset //
+    //-------//
+    /**
+     * Reinitialize all sheet members
+     */
+    private void reset ()
+    {
+        picture = null;
+        scale = null;
+        skew = null;
+        staves = null;
+        horizontals = null;
+        hLag = null;
+        vLag = null;
+        systems.clear();
+        selectionService = new SelectionService();
+        skewBuilder = null;
+        stavesBuilder = null;
+        horizontalsBuilder = null;
+        systemsBuilder = null;
+        symbolsController = null;
+        verticalsController = null;
+        editor = null;
+        maxForeground = null;
+        histoRatio = null;
+        currentStep = null;
+        doneSteps = new HashSet<Step>();
     }
 
     //~ Inner Classes ----------------------------------------------------------

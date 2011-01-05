@@ -36,8 +36,6 @@ import omr.lag.ui.SectionBoard;
 
 import omr.log.Logger;
 
-import omr.score.MeasureFixer;
-
 import omr.script.BoundaryTask;
 
 import omr.selection.GlyphEvent;
@@ -474,7 +472,7 @@ public class SystemsBuilder
         sheet.getBench()
              .recordSystemCount(sysNb);
 
-        logger.info(sb.toString());
+        logger.info(sheet.getLogPrefix() + sb.toString());
     }
 
     //---------------------//
@@ -493,7 +491,7 @@ public class SystemsBuilder
         modified.addAll(sheet.splitBarSticks(lag.getAllGlyphs()));
 
         if (!modified.isEmpty()) {
-            logger.info("Systems impact: " + modified);
+            logger.info(sheet.getLogPrefix() + "Systems impact: " + modified);
         }
 
         return modified;
