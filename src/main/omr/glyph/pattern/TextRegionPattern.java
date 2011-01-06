@@ -42,6 +42,8 @@ import omr.sheet.SystemInfo;
 
 import omr.util.BrokenLine;
 import omr.util.Implement;
+import omr.util.WrappedBoolean;
+import omr.util.XmlUtilities;
 
 import java.awt.Point;
 import java.awt.Polygon;
@@ -408,12 +410,22 @@ public class TextRegionPattern
                 return false;
             }
 
-            // OK
-            if (original == null) {
-                compound = system.addGlyph(compound);
-                system.computeGlyphFeatures(compound);
+            // Check for abnormal characters
+            WrappedBoolean stripped = new WrappedBoolean(false);
+            XmlUtilities.stripNonValidXMLCharacters(ocrLine.value, stripped);
+
+            if (stripped.isSet()) {
+                system.getScoreSystem()
+                      .addError(
+                    blob.glyphs.get(0),
+                    "Illegal character found in " + ocrLine.value);
+
+                return false;
             }
 
+            // OK
+            compound = system.addGlyph(compound);
+            system.computeGlyphFeatures(compound);
             compound.setShape(Shape.TEXT, Evaluation.ALGORITHM);
 
             if (logger.isFineEnabled()) {

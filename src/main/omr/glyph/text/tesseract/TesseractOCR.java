@@ -22,6 +22,8 @@ import omr.score.common.PixelRectangle;
 import omr.util.ClassUtil;
 import omr.util.Implement;
 import omr.util.OmrExecutors;
+import omr.util.WrappedBoolean;
+import omr.util.XmlUtilities;
 
 import net.gencsoy.tesjeract.EANYCodeChar;
 import net.gencsoy.tesjeract.Tesjeract;
@@ -270,6 +272,18 @@ public class TesseractOCR
             }
 
             str = new String(Arrays.copyOf(bytes, byteCount), "UTF8");
+
+            // Check for abnormal characters (from XML point of view)
+            WrappedBoolean stripped = new WrappedBoolean(false);
+            String         newStr = XmlUtilities.stripNonValidXMLCharacters(
+                str,
+                stripped);
+
+            if (stripped.isSet()) {
+                logger.warning("Illegal character found in " + str);
+            }
+
+            str = newStr;
         }
 
         return new OcrChar(str, box, ch.point_size, ch.blanks);
