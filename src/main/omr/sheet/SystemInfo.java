@@ -349,7 +349,14 @@ public class SystemInfo
     public String getLogPrefix ()
     {
         StringBuilder sb = new StringBuilder(sheet.getLogPrefix());
-        sb.insert(sb.length() - 1, "S" + id);
+
+        if (sb.length() > 1) {
+            sb.insert(sb.length() - 1, "S" + id);
+        } else {
+            sb.append("S")
+              .append(id)
+              .append(" ");
+        }
 
         return sb.toString();
     }
