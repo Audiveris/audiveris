@@ -24,6 +24,7 @@ import omr.script.StepTask;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+import omr.sheet.ui.SheetsController;
 import static omr.step.Steps.*;
 
 import omr.util.OmrExecutors;
@@ -37,7 +38,8 @@ import javax.swing.SwingUtilities;
 
 /**
  * Class {@code Stepping} handles the scheduling of step(s) on a score or a
- * sheet
+ * sheet, with notification to the user interface when running in interactive
+ * mode.
  *
  * @author Hervé Bitteur
  */
@@ -102,18 +104,6 @@ public class Stepping
         return null;
     }
 
-    //------------//
-    // getMonitor //
-    //------------//
-    /**
-     * Give access to a related UI monitor
-     * @return the related step monitor, or null
-     */
-    public static StepMonitor getMonitor ()
-    {
-        return monitor;
-    }
-
     //---------------//
     // createMonitor //
     //---------------//
@@ -124,58 +114,6 @@ public class Stepping
     public static StepMonitor createMonitor ()
     {
         return monitor = new StepMonitor();
-    }
-
-    //----------------//
-    // doOneScoreStep //
-    //----------------//
-    /**
-     * At score level, do just one specified step, synchronously, with display
-     * of related UI and recording of the step into the script
-     *
-     * @param step the step to perform
-     * @param score the score to be processed
-     * @throws StepException
-     */
-    public static void doOneScoreStep (final Step step,
-                                       Score      score)
-        throws StepException
-    {
-        long startTime = 0;
-
-        if (logger.isFineEnabled()) {
-            logger.fine(step + " Starting");
-            startTime = System.currentTimeMillis();
-        }
-
-        // Standard processing (using first sheet)
-        final Sheet finalSheet = score.getFirstPage()
-                                      .getSheet();
-        step.doStep(null, finalSheet);
-
-        // Update user interface ?
-        if (monitor != null) {
-            SwingUtilities.invokeLater(
-                new Runnable() {
-                        public void run ()
-                        {
-                            step.displayUI(finalSheet);
-                            finalSheet.getAssembly()
-                                      .selectTab(step);
-                        }
-                    });
-        }
-
-        final long stopTime = System.currentTimeMillis();
-        final long duration = stopTime - startTime;
-
-        if (logger.isFineEnabled()) {
-            logger.fine(step + " completed in " + duration + " ms");
-        }
-
-        // Record this in bench
-        score.getBench()
-             .recordStep(step, duration);
     }
 
     //----------------//
@@ -194,40 +132,73 @@ public class Stepping
                                        Collection<SystemInfo> systems)
         throws StepException
     {
-        long startTime = 0;
+        long startTime = System.currentTimeMillis();
 
         if (logger.isFineEnabled()) {
             logger.fine(sheet.getLogPrefix() + step + " Starting");
-            startTime = System.currentTimeMillis();
         }
 
         // Standard processing on an existing sheet
         step.doStep(systems, sheet);
 
-        // Update user interface ?
+        // Update user interface if any
+        notifyFinalStep(sheet, step);
+
+        final long stopTime = System.currentTimeMillis();
+        final long duration = stopTime - startTime;
+
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                sheet.getLogPrefix() + step + " completed in " + duration +
+                " ms");
+        }
+
+        // Record this in sheet->score bench
+        sheet.getBench()
+             .recordStep(step, duration);
+    }
+
+    //-----------------//
+    // notifyFinalStep //
+    //-----------------//
+    /**
+     * Notify the UI part that we have reached the provided step in the
+     * provided sheet
+     * @param sheet the sheet concerned
+     * @param step the step just done
+     */
+    public static void notifyFinalStep (final Sheet sheet,
+                                        final Step  step)
+    {
         if (monitor != null) {
-            final Sheet finalSheet = sheet;
             SwingUtilities.invokeLater(
                 new Runnable() {
                         public void run ()
                         {
-                            step.displayUI(finalSheet);
-                            finalSheet.getAssembly()
-                                      .selectTab(step);
+                            // Update sheet view for this step
+                            step.displayUI(sheet);
+                            sheet.getAssembly()
+                                 .selectTab(step);
+
+                            // Call attention to this sheet
+                            SheetsController.getInstance()
+                                            .callAboutSheet(sheet);
                         }
                     });
         }
+    }
 
-        if (logger.isFineEnabled()) {
-            final long stopTime = System.currentTimeMillis();
-            logger.fine(
-                sheet.getLogPrefix() + step + " completed in " +
-                (stopTime - startTime) + " ms");
+    //----------------//
+    // notifyProgress //
+    //----------------//
+    /**
+     * When running interactively, move slightly the progress bar animation
+     */
+    public static void notifyProgress ()
+    {
+        if (monitor != null) {
+            monitor.animate();
         }
-
-        // Record this in bench
-        sheet.getBench()
-             .recordStep(step);
     }
 
     //--------------//
@@ -340,7 +311,7 @@ public class Stepping
 
         // Sanity checks
         if (SwingUtilities.isEventDispatchThread()) {
-            logger.severe("Method rebuildFrom should not run on EDT!");
+            logger.severe("Method reprocessSheet should not run on EDT!");
         }
 
         if (step == null) {
@@ -371,10 +342,7 @@ public class Stepping
             // The range of steps to re-perform
             SortedSet<Step> stepRange = range(step, latest);
 
-            // "Activate" the progress bar?
-            if (monitor != null) {
-                monitor.displayAnimation(true);
-            }
+            notifyStart();
 
             try {
                 doSheetStepSet(stepRange, sheet, impactedSystems);
@@ -383,11 +351,7 @@ public class Stepping
             } catch (Exception ex) {
                 logger.warning("Error in re-processing from " + step, ex);
             } finally {
-                // Reset the progress bar?
-                if (monitor != null) {
-                    notifyMsg("");
-                    monitor.displayAnimation(false);
-                }
+                notifyStop();
             }
         }
     }
@@ -406,6 +370,47 @@ public class Stepping
         Step latest = getLatestMandatoryStep(sheet);
 
         return (latest == null) || (compare(latest, from) >= 0);
+    }
+
+    //----------------//
+    // doOneScoreStep //
+    //----------------//
+    /**
+     * At score level, do just one specified step, synchronously, with display
+     * of related UI and recording of the step into the script
+     *
+     * @param step the step to perform
+     * @param score the score to be processed
+     * @throws StepException
+     */
+    private static void doOneScoreStep (final Step step,
+                                        Score      score)
+        throws StepException
+    {
+        long startTime = System.currentTimeMillis();
+
+        if (logger.isFineEnabled()) {
+            logger.fine(step + " Starting");
+        }
+
+        // Standard processing (using first sheet)
+        Sheet sheet = score.getFirstPage()
+                           .getSheet();
+        step.doStep(null, sheet);
+
+        // Update user interface if any
+        notifyFinalStep(sheet, step);
+
+        final long stopTime = System.currentTimeMillis();
+        final long duration = stopTime - startTime;
+
+        if (logger.isFineEnabled()) {
+            logger.fine(step + " completed in " + duration + " ms");
+        }
+
+        // Record this in score bench
+        score.getBench()
+             .recordStep(step, duration);
     }
 
     //----------------//
@@ -507,6 +512,35 @@ public class Stepping
         }
     }
 
+    //-------------//
+    // notifyStart //
+    //-------------//
+    /**
+     * When running interactively, start the progress bar animation
+     */
+    private static void notifyStart ()
+    {
+        // "Activate" the progress bar
+        if (monitor != null) {
+            monitor.displayAnimation(true);
+        }
+    }
+
+    //------------//
+    // notifyStop //
+    //------------//
+    /**
+     * When running interactively, stop the progress bar animation
+     */
+    private static void notifyStop ()
+    {
+        // Reset the progress bar?
+        if (monitor != null) {
+            notifyMsg("");
+            monitor.displayAnimation(false);
+        }
+    }
+
     //----------------------//
     // scheduleScoreStepSet //
     //----------------------//
@@ -527,11 +561,7 @@ public class Stepping
         logger.info("Scheduling " + stepSet + " on " + score.getRadix());
 
         long startTime = System.currentTimeMillis();
-
-        // "Activate" the progress bar?
-        if (monitor != null) {
-            monitor.displayAnimation(true);
-        }
+        notifyStart();
 
         try {
             // SCALE step, if present, is always the first step
@@ -566,11 +596,7 @@ public class Stepping
                 }
             }
         } finally {
-            // Reset the progress bar?
-            if (monitor != null) {
-                notifyMsg("");
-                monitor.displayAnimation(false);
-            }
+            notifyStop();
         }
 
         if (logger.isFineEnabled()) {

@@ -53,9 +53,6 @@ public class SheetBench
     /** Time stamp when this instance was created */
     private final long startTime = System.currentTimeMillis();
 
-    /** Time when we started current step */
-    private long stepStartTime = startTime;
-
     /** Starting date */
     private final Date date = new Date(startTime);
 
@@ -150,13 +147,12 @@ public class SheetBench
     //------------//
     // recordStep //
     //------------//
-    public void recordStep (Step step)
+    public void recordStep (Step step,
+                            long duration)
     {
-        long now = System.currentTimeMillis();
         addProp(
             "step." + step.getName().toLowerCase() + ".duration",
-            "" + (now - stepStartTime));
-        stepStartTime = now;
+            "" + duration);
         flushBench();
     }
 

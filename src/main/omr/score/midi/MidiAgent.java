@@ -51,7 +51,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
  *
  * <p>This class now delegates to the Zong! player the actual play / pause /
  * stop actions with a few other Midi-related actions. The purpose of the
- * {@link #play} method is just to lauch the player on the current score.
+ * {@link #play} method is just to launch the player on the current score.
  *
  * @author Hervé Bitteur
  */

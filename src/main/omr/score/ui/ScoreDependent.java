@@ -70,7 +70,7 @@ public abstract class ScoreDependent
     {
         boolean oldValue = this.scoreAvailable;
         this.scoreAvailable = scoreAvailable;
-        firePropertyChange("scoreAvailable", oldValue, this.scoreAvailable);
+        firePropertyChange(SCORE_AVAILABLE, oldValue, this.scoreAvailable);
     }
 
     //------------------//

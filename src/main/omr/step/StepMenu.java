@@ -151,9 +151,7 @@ public class StepMenu
                     {
                         // Select the assembly tab related to the target step
                         if (sheet != null) {
-                            sheet.getAssembly()
-                                 .selectTab(
-                                Stepping.getLatestMandatoryStep(sheet));
+                            Stepping.notifyFinalStep(sheet, step);
                         }
                     }
                 }.execute();

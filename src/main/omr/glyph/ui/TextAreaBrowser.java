@@ -112,7 +112,7 @@ public class TextAreaBrowser
      * the current sheet
      * @return the asynchronous task to execute
      */
-    @Action(enabledProperty = "scoreAvailable")
+    @Action(enabledProperty = SCORE_AVAILABLE)
     public Task retrieveTextAreas ()
     {
         return new TextAreasTask();

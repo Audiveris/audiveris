@@ -76,11 +76,7 @@ public class LogStepMonitorHandler
     public void publish (final LogRecord record)
     {
         if (isLoggable(record)) {
-            StepMonitor monitor = Stepping.getMonitor();
-
-            if (monitor != null) {
-                monitor.animate();
-            }
+            Stepping.notifyProgress();
         }
     }
 }

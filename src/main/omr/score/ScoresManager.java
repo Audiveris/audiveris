@@ -30,10 +30,7 @@ import omr.util.NameSet;
 import org.jdesktop.application.Application.ExitListener;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.EventObject;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Class {@code ScoresManager} is a singleton which provides administrative

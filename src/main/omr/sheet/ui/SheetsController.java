@@ -165,6 +165,19 @@ public class SheetsController
     }
 
     //----------------//
+    // callAboutSheet //
+    //----------------//
+    /**
+     * Call the attention about the provided sheet, by publishing it on the
+     * proper event service
+     * @param sheet the provided sheet, which may be null
+     */
+    public void callAboutSheet (Sheet sheet)
+    {
+        sheetSetService.publish(new SheetEvent(this, sheet));
+    }
+
+    //----------------//
     // createAssembly //
     //----------------//
     /**
@@ -279,7 +292,7 @@ public class SheetsController
 
             // Let others know (if this closing sheet was the current one)
             if (sheet == getSelectedSheet()) {
-                sheetSetService.publish(new SheetEvent(this, null));
+                callAboutSheet(null);
             }
 
             // Remove from assemblies
@@ -340,8 +353,8 @@ public class SheetsController
     //--------------//
     /**
      * This method is called whenever the sheet selection is modified, whether
-     * it's programmatically (by means of setSheetView) of by user action
-     * (manual selection of the sheet tab).
+     * it's programmatically (by means of {@link #showAssembly}) of by user
+     * action (manual selection of the sheet tab).
      *
      * <p> Set the state (enabled or disabled) of all menu items that depend on
      * status of current sheet.
@@ -420,7 +433,7 @@ public class SheetsController
         Sheet         sheet = assembly.getSheet();
 
         // Tell everyone about the new selected sheet
-        sheetSetService.publish(new SheetEvent(this, sheet));
+        callAboutSheet(sheet);
 
         // Tell the selected assembly that it now has the focus...
         assembly.assemblySelected();
