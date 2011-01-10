@@ -95,6 +95,14 @@ public class MeasureFixer
 
         page.acceptChildren(this);
 
+        // Remember the number of measures in this page
+        page.computeMeasureCount();
+
+        // Remember the delta of measure ids in this page
+        page.setDeltaMeasureId(
+            Math.abs(
+                page.getLastSystem().getLastPart().getLastMeasure().getId()));
+
         return false;
     }
 
@@ -118,7 +126,7 @@ public class MeasureFixer
     //--------------//
     /**
      * Here, we work sequentially on "vertical" measures in this system.
-     * Such vertical measure is the collection of measures, across all parts
+     * Such a vertical measure is the collection of measures, across all parts
      * of the system, one below the other. They share the same id and the
      * same status (such as implicit).
      * @return false
@@ -145,7 +153,7 @@ public class MeasureFixer
 
             verticals = verticalsOf(system, im);
 
-            // Check all voices in all parts exhibit the same termination
+            // Check if all voices in all parts exhibit the same termination
             measureFinal = getMeasureFinal();
 
             if (isEmpty()) {
@@ -237,7 +245,7 @@ public class MeasureFixer
             measure.setId(id);
         }
 
-        // Side effect, remember the last id
+        // Side effect, remember the positive value of last id
         lastId = Math.abs(id);
     }
 

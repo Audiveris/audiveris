@@ -689,15 +689,14 @@ public class SystemInfo
 
             // Allocate the staves in this part
             for (StaffInfo staffInfo : partInfo.getStaves()) {
-                LineInfo line = staffInfo.getFirstLine();
+                LineInfo firstLine = staffInfo.getFirstLine();
+                LineInfo lastLine = staffInfo.getLastLine();
                 new Staff(
                     staffInfo,
                     part,
-                    new PixelPoint(
-                        staffInfo.getLeft(),
-                        line.yAt(line.getLeft())),
-                    staffInfo.getRight() - staffInfo.getLeft(),
-                    64); // Staff vertical size in units);
+                    new PixelPoint(left, firstLine.yAt(left)),
+                    staffInfo.getRight() - left,
+                    lastLine.yAt(left) - firstLine.yAt(left));
             }
         }
     }

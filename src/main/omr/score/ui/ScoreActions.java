@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.score.ui;
 
+import omr.Main;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -32,12 +34,19 @@ import omr.ui.util.OmrFileFilter;
 import omr.ui.util.UIUtilities;
 
 import omr.util.BasicTask;
+import omr.util.Implement;
+import omr.util.WrappedBoolean;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
 
 import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
+
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 
 /**
  * Class <code>ScoreActions</code> gathers user actions related to scores
@@ -417,63 +426,62 @@ public class ScoreActions
      */
     private static boolean parametersAreConfirmed (final Score score)
     {
-        throw new RuntimeException("Not yet implemented");
+        final WrappedBoolean  apply = new WrappedBoolean(false);
+        final ScoreParameters scoreBoard = new ScoreParameters(score);
+        final JOptionPane     optionPane = new JOptionPane(
+            scoreBoard.getComponent(),
+            JOptionPane.QUESTION_MESSAGE,
+            JOptionPane.OK_CANCEL_OPTION);
+        final String          frameTitle = (score != null)
+                                           ? (score.getRadix() + " parameters")
+                                           : "Score parameters";
+        final JDialog         dialog = new JDialog(
+            Main.getGui().getFrame(),
+            frameTitle,
+            true); // Modal flag
+        dialog.setContentPane(optionPane);
+        dialog.setName("scoreBoard");
 
-        //        final WrappedBoolean  apply = new WrappedBoolean(false);
-        //        final ScoreParameters scoreBoard = new ScoreParameters(score);
-        //        final JOptionPane     optionPane = new JOptionPane(
-        //            scoreBoard.getComponent(),
-        //            JOptionPane.QUESTION_MESSAGE,
-        //            JOptionPane.OK_CANCEL_OPTION);
-        //        final String          frameTitle = (score != null)
-        //                                           ? (score.getRadix() + " parameters")
-        //                                           : "Score parameters";
-        //        final JDialog         dialog = new JDialog(
-        //            Main.getGui().getFrame(),
-        //            frameTitle,
-        //            true); // Modal flag
-        //        dialog.setContentPane(optionPane);
-        //        dialog.setName("scoreBoard");
-        //
-        //        optionPane.addPropertyChangeListener(
-        //            new PropertyChangeListener() {
-        //                    @Implement(PropertyChangeListener.class)
-        //                    public void propertyChange (PropertyChangeEvent e)
-        //                    {
-        //                        String prop = e.getPropertyName();
-        //
-        //                        if (dialog.isVisible() &&
-        //                            (e.getSource() == optionPane) &&
-        //                            (prop.equals(JOptionPane.VALUE_PROPERTY))) {
-        //                            Object obj = optionPane.getValue();
-        //                            int    value = ((Integer) obj).intValue();
-        //                            apply.set(value == JOptionPane.OK_OPTION);
-        //
-        //                            Sheet sheet = (score != null) ? score.getSheet()
-        //                                          : null;
-        //
-        //                            // Exit only if user gives up or enters correct data
-        //                            if (!apply.isSet() || scoreBoard.commit(sheet)) {
-        //                                dialog.setVisible(false);
-        //                                dialog.dispose();
-        //                            } else {
-        //                                // Incorrect data, so don't exit yet
-        //                                try {
-        //                                    // TODO: Is there a more civilized way?
-        //                                    optionPane.setValue(
-        //                                        JOptionPane.UNINITIALIZED_VALUE);
-        //                                } catch (Exception ignored) {
-        //                                }
-        //                            }
-        //                        }
-        //                    }
-        //                });
-        //
-        //        dialog.pack();
-        //        MainGui.getInstance()
-        //               .show(dialog);
-        //
-        //        return apply.value;
+        optionPane.addPropertyChangeListener(
+            new PropertyChangeListener() {
+                    @Implement(PropertyChangeListener.class)
+                    public void propertyChange (PropertyChangeEvent e)
+                    {
+                        String prop = e.getPropertyName();
+
+                        if (dialog.isVisible() &&
+                            (e.getSource() == optionPane) &&
+                            (prop.equals(JOptionPane.VALUE_PROPERTY))) {
+                            Object obj = optionPane.getValue();
+                            int    value = ((Integer) obj).intValue();
+                            apply.set(value == JOptionPane.OK_OPTION);
+
+                            Sheet sheet = (score != null)
+                                          ? score.getFirstPage()
+                                                 .getSheet() : null;
+
+                            // Exit only if user gives up or enters correct data
+                            if (!apply.isSet() || scoreBoard.commit(sheet)) {
+                                dialog.setVisible(false);
+                                dialog.dispose();
+                            } else {
+                                // Incorrect data, so don't exit yet
+                                try {
+                                    // TODO: Is there a more civilized way?
+                                    optionPane.setValue(
+                                        JOptionPane.UNINITIALIZED_VALUE);
+                                } catch (Exception ignored) {
+                                }
+                            }
+                        }
+                    }
+                });
+
+        dialog.pack();
+        MainGui.getInstance()
+               .show(dialog);
+
+        return apply.value;
     }
 
     //~ Inner Classes ----------------------------------------------------------

@@ -29,9 +29,15 @@ import java.util.*;
  * entities within the same measure time frame, for all staves that compose the
  * system part.
  *
- * <p>As a ScoreNode, the children of a Measure are : Barline, list of
+ * <p>As a ScoreNode, the children of a Measure are : ending Barline, list of
  * TimeSignature(s), list of Clef(s), list of KeySignature(s), list of Chord(s)
- * and list of Beam(s).
+ * and list of Beam(s).</p>
+ *
+ * <p>Measure Ids: A measure Id is unique within the page, typically starting
+ * at 1, but implicit measures are assigned special ids:<ul>
+ * <li>A starting pickup measure has 0 as Id</li>
+ * <li>The id of the second half of a repeat measure is assigned the negative
+ * value of the id of the first half</li></ul>
  *
  * @author Hervé Bitteur
  */
@@ -1108,9 +1114,9 @@ public class Measure
     //--------------//
     /**
      * Report the preceding measure of this one, either in this system / part,
-     * or in the preceding system /part.
+     * or in the preceding system /part, but still in the same page.
      *
-     * @return the preceding measure, or null if none
+     * @return the preceding measure, or null if not found in the page
      */
     public Measure getPreceding ()
     {

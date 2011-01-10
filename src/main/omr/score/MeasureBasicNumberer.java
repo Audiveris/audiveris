@@ -19,7 +19,8 @@ import omr.score.visitor.AbstractScoreVisitor;
 
 /**
  * Class <code>MeasureBasicNumberer</code> visits a page hierarchy to assign
- * very basic measures ids
+ * very basic measures ids. These Ids are very basic (and temporary), ranging
+ * from 1 for the first measure in the page.
  *
  * @author Hervé Bitteur
  */
@@ -79,6 +80,9 @@ public class MeasureBasicNumberer
     public boolean visit (Page page)
     {
         page.acceptChildren(this);
+
+        // Temporary value
+        page.setDeltaMeasureId(0);
 
         return false;
     }

@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.glyph.ui;
 
+import omr.constant.ConstantSet;
+
 import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphNetwork;
@@ -25,9 +27,14 @@ import omr.lag.ui.SectionBoard;
 
 import omr.log.Logger;
 
+import omr.score.common.PixelDimension;
+import omr.score.common.PixelRectangle;
+import omr.score.entity.Measure;
+import omr.score.entity.ScoreSystem;
+import omr.score.entity.Slot;
+import omr.score.ui.PagePainter;
+import omr.score.ui.PagePhysicalPainter;
 import omr.score.ui.PaintingParameters;
-import omr.score.ui.ScorePainter;
-import omr.score.ui.ScorePhysicalPainter;
 
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphSetEvent;
@@ -45,6 +52,7 @@ import omr.sheet.ui.SheetPainter;
 import omr.step.Step;
 
 import omr.ui.BoardsPane;
+import omr.ui.PixelCount;
 
 import omr.util.Implement;
 import omr.util.WeakPropertyChangeListener;
@@ -55,9 +63,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Set;
 
+import javax.swing.SwingUtilities;
+
 /**
- * Class <code>SymbolsEditor</code> defines a UI pane from which all symbol
- * processing actions can be launched and their results checked.
+ * Class <code>SymbolsEditor</code> defines, for a given sheet, a UI pane from
+ * which all symbol processing actions can be launched and their results checked
  *
  * @author Hervé Bitteur
  */
@@ -65,6 +75,9 @@ public class SymbolsEditor
     implements PropertyChangeListener
 {
     //~ Static fields/initializers ---------------------------------------------
+
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(SymbolsEditor.class);
@@ -84,7 +97,7 @@ public class SymbolsEditor
     private final GlyphEvaluator evaluator = GlyphNetwork.getInstance();
 
     /** Related Lag view */
-    private final GlyphLagView view;
+    private final MyView view;
 
     /** Popup menu related to glyph selection */
     private SymbolMenu glyphMenu;
@@ -167,6 +180,27 @@ public class SymbolsEditor
 
     //~ Methods ----------------------------------------------------------------
 
+    //-----------//
+    // highLight //
+    //-----------//
+    /**
+     * Highlight the corresponding slot within the score display, using the
+     * values of measure and slot.
+     * @param measure the measure that contains the highlighted slot
+     * @param slot the slot to highlight
+     */
+    public void highLight (final Measure measure,
+                           final Slot    slot)
+    {
+        SwingUtilities.invokeLater(
+            new Runnable() {
+                    public void run ()
+                    {
+                        view.highLight(measure, slot);
+                    }
+                });
+    }
+
     //----------------//
     // propertyChange //
     //----------------//
@@ -190,12 +224,31 @@ public class SymbolsEditor
 
     //~ Inner Classes ----------------------------------------------------------
 
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        PixelCount measureMargin = new PixelCount(
+            10,
+            "Number of pixels as margin when highlighting a measure");
+    }
+
     //--------//
     // MyView //
     //--------//
     private class MyView
         extends GlyphLagView
     {
+        //~ Instance fields ----------------------------------------------------
+
+        // Currently highlighted slot & measure, if any
+        private Slot    highlightedSlot;
+        private Measure highlightedMeasure;
+
         //~ Constructors -------------------------------------------------------
 
         private MyView (GlyphLag lag)
@@ -305,6 +358,46 @@ public class SymbolsEditor
             }
         }
 
+        //-----------//
+        // highLight //
+        //-----------//
+        /**
+         * Make the provided slot stand out
+         * @param measure the current measure
+         * @param slot the current slot
+         */
+        public void highLight (Measure measure,
+                               Slot    slot)
+        {
+            this.highlightedMeasure = measure;
+            this.highlightedSlot = slot;
+
+            // Safer
+            if ((measure == null) || (slot == null)) {
+                repaint(); // To erase previous highlight
+
+                return;
+            }
+
+            ScoreSystem    system = measure.getSystem();
+            PixelDimension dimension = system.getDimension();
+            PixelRectangle systemBox = new PixelRectangle(
+                system.getTopLeft().x,
+                system.getTopLeft().y,
+                dimension.width,
+                dimension.height +
+                system.getLastPart().getLastStaff().getHeight());
+
+            // Make the measure rectangle visible
+            PixelRectangle rect = measure.getBox();
+            int            margin = constants.measureMargin.getValue();
+            // Actually, use the whole system height
+            rect.y = systemBox.y;
+            rect.height = systemBox.height;
+            rect.grow(margin, margin);
+            showFocusLocation(rect, false);
+        }
+
         //---------//
         // onEvent //
         //---------//
@@ -375,12 +468,21 @@ public class SymbolsEditor
 
             if (painting.isOutputPainting()) {
                 // Render the recognized score entities
+                PagePhysicalPainter painter = new PagePhysicalPainter(
+                    g,
+                    PagePainter.musicColor,
+                    painting.isAnnotationPainting());
                 sheet.getPage()
-                     .accept(
-                    new ScorePhysicalPainter(
-                        g,
-                        ScorePainter.musicColor,
-                        painting.isAnnotationPainting()));
+                     .accept(painter);
+
+                // The slot being played, if any
+                if (highlightedSlot != null) {
+                    painter.drawSlot(
+                        true,
+                        highlightedMeasure,
+                        highlightedSlot,
+                        Color.MAGENTA);
+                }
             }
         }
 

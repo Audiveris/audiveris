@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                          S c o r e P a i n t e r                           //
+//                           P a g e P a i n t e r                            //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -68,16 +68,16 @@ import java.awt.geom.Rectangle2D;
 import java.util.ConcurrentModificationException;
 
 /**
- * Class <code>ScorePainter</code> is an abstract class that defines common
- * features of a score painter.
+ * Class <code>PagePainter</code> is an abstract class that defines common
+ * features of a page painter.
  * <p>It is specialized by: <ul>
- * <li>{@link ScorePhysicalPainter} for the presentation of  score
+ * <li>{@link ScorePagePhysicalPainter} for the presentation of  score
  * entities over the sheet glyphs</li>
- * <li>We used to have a ScoreLogicalPainter for the "ideal" score view</li>
+ * <li>We used to also have a PageLogicalPainter for the "ideal" score view</li>
  *
  * @author Hervé Bitteur
  */
-public abstract class ScorePainter
+public abstract class PagePainter
     extends AbstractScoreVisitor
 {
     //~ Static fields/initializers ---------------------------------------------
@@ -86,7 +86,7 @@ public abstract class ScorePainter
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ScorePainter.class);
+    private static final Logger logger = Logger.getLogger(PagePainter.class);
 
     /** The alignment used by default */
     protected static final Alignment defaultAlignment = new Alignment(
@@ -154,19 +154,22 @@ public abstract class ScorePainter
     // Delta ordinate that corresponds to FLAG_2
     protected int FLAG_2_DY;
 
+    // Offset for measure ids in this page
+    protected int measureIdOffset = 0;
+
     //~ Constructors -----------------------------------------------------------
 
     //--------------//
-    // ScorePainter //
+    // PagePainter //
     //--------------//
     /**
-     * Creates a new ScorePainter object.
+     * Creates a new PagePainter object.
      *
      * @param graphics Graphic context
      * @param annotated true if annotations are to be drawn
      */
-    public ScorePainter (Graphics graphics,
-                         boolean  annotated)
+    public PagePainter (Graphics graphics,
+                        boolean  annotated)
     {
         g = (Graphics2D) graphics.create();
         this.annotated = annotated;
@@ -1303,7 +1306,7 @@ public abstract class ScorePainter
     {
         // Compute symbol abscissa according to chord stem
         int    stemX = chord.getTailLocation().x;
-        double dx = stemHalfThickness -2d; // slight adjustment
+        double dx = stemHalfThickness - 2d; // slight adjustment
 
         if (sysPoint.x < stemX) {
             // Symbol is on left side of stem

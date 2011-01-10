@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                  S c o r e P h y s i c a l P a i n t e r                   //
+//                   P a g e P h y s i c a l P a i n t e r                    //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -21,6 +21,7 @@ import omr.glyph.facets.Stick;
 
 import omr.log.Logger;
 
+import omr.score.common.PixelDimension;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.entity.Barline;
@@ -29,6 +30,7 @@ import omr.score.entity.Measure;
 import omr.score.entity.Note;
 import omr.score.entity.Page;
 import omr.score.entity.ScoreSystem;
+import omr.score.entity.Slot;
 import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
 
@@ -38,11 +40,13 @@ import omr.sheet.Sheet;
 import omr.sheet.StaffInfo;
 import omr.sheet.SystemInfo;
 
+import omr.ui.util.UIUtilities;
+
 import java.awt.*;
 import java.util.ConcurrentModificationException;
 
 /**
- * Class <code>ScorePhysicalPainter</code> paints the recognized score
+ * Class <code>PagePhysicalPainter</code> paints the recognized page
  * entities at the location of their image counterpart, so that discrepancies
  * between them can be easily seen.
  *
@@ -51,8 +55,8 @@ import java.util.ConcurrentModificationException;
  *
  * @author Hervé Bitteur
  */
-public class ScorePhysicalPainter
-    extends ScorePainter
+public class PagePhysicalPainter
+    extends PagePainter
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -61,32 +65,32 @@ public class ScorePhysicalPainter
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
-        ScorePhysicalPainter.class);
+        PagePhysicalPainter.class);
 
     //~ Instance fields --------------------------------------------------------
 
     /** Color for slot axis */
     private final Color slotColor = new Color(
-        0,
-        255,
-        0,
+        192,
+        192,
+        192,
         constants.slotAlpha.getValue());
 
     //~ Constructors -----------------------------------------------------------
 
-    //----------------------//
-    // ScorePhysicalPainter //
-    //----------------------//
+    //---------------------//
+    // PagePhysicalPainter //
+    //---------------------//
     /**
-     * Creates a new ScorePhysicalPainter object.
+     * Creates a new PagePhysicalPainter object.
      *
      * @param graphics Graphic context
      * @param color the color to be used for foreground
      * @param annotated true if annotations are to be drawn
      */
-    public ScorePhysicalPainter (Graphics graphics,
-                                 Color    color,
-                                 boolean  annotated)
+    public PagePhysicalPainter (Graphics graphics,
+                                Color    color,
+                                boolean  annotated)
     {
         super(graphics, annotated);
 
@@ -95,6 +99,55 @@ public class ScorePhysicalPainter
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //----------//
+    // drawSlot //
+    //----------//
+    /**
+     * Draw a time slot in the score display.
+     *
+     * @param wholeSystem if true, the slot will embrace the whole system,
+     * otherwise only the part is embraced
+     * @param measure the containing measure
+     * @param slot the slot to draw
+     * @param color the color to use in drawing
+     */
+    public void drawSlot (boolean wholeSystem,
+                          Measure measure,
+                          Slot    slot,
+                          Color   color)
+    {
+        final Color oldColor = g.getColor();
+        g.setColor(color);
+
+        final Stroke oldStroke = UIUtilities.setAbsoluteStroke(g, 1);
+        final int    x = slot.getX();
+
+        if (wholeSystem) {
+            // Draw for the whole system height
+            system = measure.getSystem();
+            final PixelDimension systemDimension = system.getDimension();
+            g.drawLine(
+                x,
+                system.getTopLeft().y,
+                x,
+                system.getTopLeft().y + systemDimension.height +
+                system.getLastPart().getLastStaff().getHeight());
+        } else {
+            // Draw for just the part height
+            SystemPart part = measure.getPart();
+            Staff      firstStaff = part.getFirstStaff();
+            Staff      lastStaff = part.getLastStaff();
+            g.drawLine(
+                x,
+                firstStaff.getTopLeft().y,
+                x,
+                lastStaff.getTopLeft().y + lastStaff.getHeight());
+        }
+
+        g.setStroke(oldStroke);
+        g.setColor(oldColor);
+    }
 
     //---------------//
     // visit Barline //
@@ -187,26 +240,30 @@ public class ScorePhysicalPainter
             final Color      oldColor = g.getColor();
 
             if (!measure.isDummy()) {
-                // Write the measure id, on first real part only
+                // Write the score-based measure id, on first real part only
                 if (part == measure.getSystem()
                                    .getFirstRealPart()) {
+                    int id = (measure.getId() >= 0)
+                             ? (measureIdOffset + measure.getId())
+                             : (-(measureIdOffset - measure.getId()));
+
                     g.setColor(Color.lightGray);
 
                     g.drawString(
-                        Integer.toString(measure.getId()),
+                        Integer.toString(id),
                         measure.getLeftX() - 5,
                         measure.getPart().getFirstStaff().getTopLeft().y - 15);
                 }
 
-                //            // Draw slot vertical lines ?
-                //            if (PaintingParameters.getInstance()
-                //                                  .isSlotPainting() &&
-                //                (measure.getSlots() != null)) {
-                //                for (Slot slot : measure.getSlots()) {
-                //                    drawSlot(false, measure, slot, slotColor);
-                //                }
-                //            }
-                //
+                // Draw slot vertical lines ?
+                if (PaintingParameters.getInstance()
+                                      .isSlotPainting() &&
+                    (measure.getSlots() != null)) {
+                    for (Slot slot : measure.getSlots()) {
+                        drawSlot(false, measure, slot, slotColor);
+                    }
+                }
+
                 //            // Flag for measure excess duration?
                 //            if (measure.getExcess() != null) {
                 //                g.setColor(Color.red);
@@ -279,6 +336,9 @@ public class ScorePhysicalPainter
                 beamThickness = page.getBeamThickness();
                 beamHalfThickness = beamThickness / 2;
             }
+
+            // Determine offset of measure ids for this page
+            measureIdOffset = score.getMeasureIdOffset(page);
 
             if (!page.getSystems()
                      .isEmpty()) {

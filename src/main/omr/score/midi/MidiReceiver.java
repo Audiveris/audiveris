@@ -17,9 +17,15 @@ import omr.score.MeasureRange;
 import omr.score.Score;
 import omr.score.entity.Measure;
 import omr.score.entity.Note;
+import omr.score.entity.Page;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Slot;
 import omr.score.entity.SystemPart;
+
+import omr.sheet.Sheet;
+import omr.sheet.ui.SheetsController;
+
+import omr.step.Steps;
 
 import omr.util.Implement;
 import omr.util.TreeNode;
@@ -47,17 +53,8 @@ public class MidiReceiver
     /** The Midi agent has information about sequence being played */
     private final MidiAgent agent;
 
-    /** The current system */
-    private ScoreSystem currentSystem;
-
-    /** The current measure id */
-    private int currentMeasureId;
-
-    /** The current measure */
-    private Measure currentMeasure;
-
-    /** The current time slot */
-    private Slot currentSlot;
+    /** The position WRT current score */
+    private Current current;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -86,8 +83,11 @@ public class MidiReceiver
     public void playbackAtEnd ()
     {
         if (logger.isFineEnabled()) {
-            logger.fine("playbackAtEnd");
+            logger.info("playbackAtEnd");
         }
+
+        reset();
+        showSlot();
     }
 
     //--------------//
@@ -97,7 +97,7 @@ public class MidiReceiver
     public void playbackAtMP (MP position)
     {
         if (logger.isFineEnabled()) {
-            logger.fine("playbackAtMP");
+            logger.info("playbackAtMP");
         }
 
         showPosition(position);
@@ -112,8 +112,6 @@ public class MidiReceiver
         if (logger.isFineEnabled()) {
             logger.info("playbackStopped");
         }
-
-        showPosition(position);
     }
 
     //-------//
@@ -123,20 +121,102 @@ public class MidiReceiver
      * Reinitialize the cached data of this entity (mainly the current position
      * within the score sequence)
      */
-    void reset ()
+    final void reset ()
     {
         if (logger.isFineEnabled()) {
             logger.fine("MidiReceiver reset");
         }
 
-        // Set to default values
-        currentSystem = null;
-        currentMeasureId = -1;
-        currentMeasure = null;
-        currentSlot = null;
+        // Flush cached data
+        current = new Current();
+    }
 
-        // Erase current slot position in the score display
-        showSlot();
+    //------------------------//
+    // retrieveMeasureAndSlot //
+    //------------------------//
+    /**
+     * Assuming we are in the right system, retrieve the measure that
+     * corresponds to the provided score-based measure index, and which contains
+     * the desired slot.
+     * @param measureIndex the score-based index of desired measure
+     * @return true if measure & slot found, false otherwise
+     */
+    private boolean retrieveMeasureAndSlot (int measureIndex,
+                                            int targetTick)
+    {
+        final Score score = agent.getScore();
+        final int   pageOffset = score.getMeasureOffset(current.page);
+        int         systemMeasureIndex = measureIndex - pageOffset;
+
+        for (TreeNode sn : current.page.getSystems()) {
+            ScoreSystem system = (ScoreSystem) sn;
+
+            if (system != current.system) {
+                systemMeasureIndex -= system.getFirstPart()
+                                            .getMeasures()
+                                            .size();
+            } else {
+                for (TreeNode partNode : current.system.getParts()) {
+                    SystemPart part = (SystemPart) partNode;
+                    logger.fine("part=" + part.getId());
+
+                    Measure measure = (Measure) part.getMeasures()
+                                                    .get(systemMeasureIndex);
+                    logger.fine("Slots nb=" + measure.getSlots().size());
+                    slotLoop: 
+                    for (Slot slot : measure.getSlots()) {
+                        int slotTick = slot.getStartTime();
+
+                        if (slotTick == targetTick) {
+                            // Let's remember measure & slot
+                            current.index = measureIndex;
+                            current.measure = measure;
+                            current.slot = slot;
+
+                            if (logger.isFineEnabled()) {
+                                logger.fine("Slot retrieved " + current.slot);
+                            }
+
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+    //--------------//
+    // retrievePage //
+    //--------------//
+    /**
+     * Assign current.page with the page that contains the provided score-based
+     * measure index
+     * @param measureIndex the score-based index of desired measure
+     * @return true if page found
+     */
+    private boolean retrievePage (int measureIndex)
+    {
+        final Score score = agent.getScore();
+        int         offset = 0;
+
+        for (TreeNode pn : score.getPages()) {
+            current.page = (Page) pn;
+            offset += current.page.getMeasureCount();
+
+            if (measureIndex < offset) {
+                if (logger.isFineEnabled()) {
+                    logger.fine("Page retrieved " + current.page);
+                }
+
+                return true;
+            }
+        }
+
+        return false;
     }
 
     //--------------//
@@ -145,11 +225,11 @@ public class MidiReceiver
     /**
      * Retrieve the slot that corresponds to the measure and beat values, while
      * setting the containing system
-     * @param measureId measure id
+     * @param measureIndex measure score-based index
      * @param beat beat within the measure
      * @return the retrieved slot, or null if not found
      */
-    private boolean retrieveSlot (int      measureId,
+    private boolean retrieveSlot (int      measureIndex,
                                   Fraction beat)
     {
         // Translate beat to tick
@@ -157,75 +237,68 @@ public class MidiReceiver
 
         if (logger.isFineEnabled()) {
             logger.fine(
-                "Measure: " + measureId + " beat: " + beat + " tick: " +
+                "Measure: " + measureIndex + " beat: " + beat + " tick: " +
                 targetTick);
         }
 
-        // Make sure that current system is the right one
-        if (measureId != currentMeasureId) {
-            if (currentSystem == null) {
-                currentSystem = agent.getScore()
-                                     .getFirstPage()
-                                     .getFirstSystem();
+        if ((current.index == null) || (measureIndex != current.index)) {
+            current.index = measureIndex;
+
+            if (!retrievePage(measureIndex)) {
+                logger.warning(
+                    "No page retrieved for measure index " + measureIndex);
+
+                return false;
             }
 
-            // Should we move to another system?
-            while (measureId < currentSystem.getFirstPart()
-                                            .getFirstMeasure()
-                                            .getId()) {
-                ///logger.fine("Moving to previous system");
-                currentSystem = (ScoreSystem) currentSystem.getPreviousSibling();
-            }
+            if (!retrieveSystem(measureIndex)) {
+                logger.warning(
+                    "No system retrieved for measure index " + measureIndex);
 
-            while (measureId > currentSystem.getFirstPart()
-                                            .getLastMeasure()
-                                            .getId()) {
-                ///logger.fine("Moving to next system");
-                currentSystem = (ScoreSystem) currentSystem.getNextSibling();
+                return false;
             }
         }
 
-        int newTick = -1;
+        if (!retrieveMeasureAndSlot(measureIndex, targetTick)) {
+            logger.warning(
+                "No measure/slot retrieved for measure index " + measureIndex +
+                " beat " + beat);
 
-        // Check all measures with the required id, whatever the part
-        for (TreeNode partNode : currentSystem.getParts()) {
-            SystemPart part = (SystemPart) partNode;
+            return false;
+        }
 
-            ///logger.fine("part=" + part.getId());
-            Measure measure = (Measure) part.getMeasures()
-                                            .get(
-                measureId - part.getFirstMeasure().getId());
+        return true;
+    }
 
-            ///logger.fine("Slots nb=" + measure.getSlots().size());
-            slotLoop: 
-            for (Slot slot : measure.getSlots()) {
-                int slotTick = slot.getStartTime();
+    //----------------//
+    // retrieveSystem //
+    //----------------//
+    /**
+     * Assuming we are in the right page, retrieve the system that contains the
+     * provided score-based measure index
+     * @param measureIndex the score-based index of desired measure
+     * @return true if system found
+     */
+    private boolean retrieveSystem (int measureIndex)
+    {
+        final Score score = agent.getScore();
+        final int   pageOffset = score.getMeasureOffset(current.page);
+        final int   pageMeasureIndex = measureIndex - pageOffset;
+        int         pageMeasureCount = 0;
 
-                if (slotTick == targetTick) {
-                    // Let's remember this slot & midiTick
-                    currentMeasure = measure;
-                    currentSlot = slot;
-                    newTick = slotTick;
+        for (TreeNode sn : current.page.getSystems()) {
+            current.system = (ScoreSystem) sn;
+            pageMeasureCount += current.system.getLastPart()
+                                              .getMeasures()
+                                              .size();
 
-                    break slotLoop;
-                }
-            }
-
-            // Found a suitable slot?
-            if (newTick != -1) {
-                currentMeasureId = measureId;
-
+            if (pageMeasureIndex < pageMeasureCount) {
                 if (logger.isFineEnabled()) {
-                    logger.fine("Slot retrieved " + currentSlot);
+                    logger.fine("System retrieved " + current.system);
                 }
 
                 return true;
             }
-        }
-
-        // Not found
-        if (logger.isFineEnabled()) {
-            logger.fine("No slot retrieved");
         }
 
         return false;
@@ -248,17 +321,26 @@ public class MidiReceiver
             return;
         }
 
-        int          measureId = 1 + position.getMeasure();
-        MeasureRange range = agent.getMeasureRange();
+        int measureIndex = position.getMeasure();
 
-        if (range != null) {
-            measureId += (range.getFirstId() - 1);
+        // Perhaps we are just playing a range of measures?
+        if (agent.getMeasureRange() != null) {
+            measureIndex += agent.getMeasureRange()
+                                 .getFirstIndex();
         }
 
         Fraction beat = position.getBeat();
 
-        if (retrieveSlot(measureId, beat)) {
-            showSlot(); // Update the score display accordingly
+        try {
+            if (retrieveSlot(measureIndex, beat)) {
+                if (logger.isFineEnabled()) {
+                    logger.fine("beat:" + beat + " " + current);
+                }
+
+                showSlot(); // Update the score display accordingly
+            }
+        } catch (Exception ex) {
+            logger.warning("Error retrieving slot", ex);
         }
     }
 
@@ -271,11 +353,105 @@ public class MidiReceiver
      */
     private void showSlot ()
     {
-        //        Score score = agent.getScore();
-        //
-        //        if (score != null) {
-        //            score.getEditor()
-        //                 .highLight(currentMeasure, currentSlot);
-        //        }
+        Score score = agent.getScore();
+
+        if (score != null) {
+            // Special case at the end (current.measure == null)
+            // Reset the display of every sheet
+            if (current.measure == null) {
+                for (TreeNode pn : score.getPages()) {
+                    Page  page = (Page) pn;
+                    Sheet sheet = page.getSheet();
+                    sheet.getSymbolsEditor()
+                         .highLight(null, null);
+                }
+            } else {
+                // Retrieve page/sheet display & update slot
+                Sheet sheet = current.page.getSheet();
+
+                // Switch page?
+                if (current.page != current.prevPage) {
+                    sheet.getAssembly()
+                         .selectTab(Steps.valueOf(Steps.SYMBOLS));
+                    SheetsController.getInstance()
+                                    .showAssembly(sheet);
+                    current.prevPage = current.page;
+                }
+
+                sheet.getSymbolsEditor()
+                     .highLight(current.measure, current.slot);
+            }
+        }
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //---------//
+    // Current //
+    //---------//
+    /**
+     * Remember position data about score being played
+     */
+    private static class Current
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** The current measure index */
+        private Integer index;
+
+        /** To detect page switches */
+        private Page prevPage;
+
+        /** The current page */
+        private Page page;
+
+        /** The current system */
+        private ScoreSystem system;
+
+        /** The current measure */
+        private Measure measure;
+
+        /** The current time slot */
+        private Slot slot;
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder("{Current");
+
+            sb.append(" index:")
+              .append(index);
+
+            if (prevPage != null) {
+                sb.append(" prevPage#")
+                  .append(prevPage.getIndex());
+            }
+
+            if (page != null) {
+                sb.append(" page#")
+                  .append(page.getIndex());
+            }
+
+            if (system != null) {
+                sb.append(" system#")
+                  .append(system.getId());
+            }
+
+            if (measure != null) {
+                sb.append(" ")
+                  .append(measure);
+            }
+
+            if (slot != null) {
+                sb.append(" ")
+                  .append(slot);
+            }
+
+            sb.append("}");
+
+            return sb.toString();
+        }
     }
 }

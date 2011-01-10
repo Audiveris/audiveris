@@ -21,8 +21,8 @@ import omr.util.TreeNode;
 import java.util.ListIterator;
 
 /**
- * Class <code>MeasureRange</code> encapsulates a range of measures, to ease the
- * playing or the exporting of just a range of measures
+ * Class {@code MeasureRange} encapsulates a range of measures, to ease the
+ * playing or the exporting of just a range of measures.
  *
  * @author Hervé Bitteur
  */
@@ -33,19 +33,19 @@ public class MeasureRange
     /** Related score */
     private final Score score;
 
-    /** Id of first measure of the range */
-    private final int firstId;
+    /** Score-based index of first measure of the range */
+    private final int firstIndex;
 
-    /** Id of last measure of the range */
-    private final int lastId;
+    /** Score-based index of last measure of the range */
+    private final int lastIndex;
 
     /** Cached data */
-    private boolean boundsComputed;
+    private boolean boundsComputed = false;
     private Page        firstPage;
-    private Page        lastPage;
     private ScoreSystem firstSystem;
-    private ScoreSystem lastSystem;
     private Measure     firstMeasure;
+    private Page        lastPage;
+    private ScoreSystem lastSystem;
     private Measure     lastMeasure;
 
     //~ Constructors -----------------------------------------------------------
@@ -57,31 +57,32 @@ public class MeasureRange
      * Creates a new MeasureRange object.
      *
      * @param score the related score instance
-     * @param firstId id of first measure
-     * @param lastId id of last measure, which cannot be less than firstId
+     * @param firstIndex score-based index of first measure
+     * @param lastIndex score-based index of last measure, cannot be less than
+     * firstIndex
      */
     public MeasureRange (Score score,
-                         int   firstId,
-                         int   lastId)
+                         int   firstIndex,
+                         int   lastIndex)
     {
         this.score = score;
-        this.firstId = firstId;
-        this.lastId = lastId;
+        this.firstIndex = firstIndex;
+        this.lastIndex = lastIndex;
     }
 
     //~ Methods ----------------------------------------------------------------
 
-    //------------//
-    // getFirstId //
-    //------------//
+    //---------------//
+    // getFirstIndex //
+    //---------------//
     /**
-     * Report the id of first measure
+     * Report the index of first measure
      *
-     * @return id of first measure
+     * @return score-based index of first measure
      */
-    public int getFirstId ()
+    public int getFirstIndex ()
     {
-        return firstId;
+        return firstIndex;
     }
 
     //-----------------//
@@ -104,17 +105,17 @@ public class MeasureRange
         return firstSystem;
     }
 
-    //-----------//
-    // getLastId //
-    //-----------//
+    //--------------//
+    // getLastIndex //
+    //--------------//
     /**
-     * Report the id of last measure
+     * Report the index of last measure
      *
-     * @return id of last measure
+     * @return score-based index of last measure
      */
-    public int getLastId ()
+    public int getLastIndex ()
     {
-        return lastId;
+        return lastIndex;
     }
 
     //----------------//
@@ -141,14 +142,14 @@ public class MeasureRange
     // contains //
     //----------//
     /**
-     * Checks whether the provided id is within the range of measure ids
+     * Checks whether the provided index is within the range of measure indices
      *
-     * @param id the measure id to check
-     * @return true if id is within the range, false otherwise
+     * @param index the measure index to check
+     * @return true if index is within the range, false otherwise
      */
-    public boolean contains (int id)
+    public boolean contains (int index)
     {
-        return (id >= firstId) && (id <= lastId);
+        return (index >= firstIndex) && (index <= lastIndex);
     }
 
     //----------//
@@ -159,9 +160,9 @@ public class MeasureRange
     {
         StringBuilder sb = new StringBuilder();
         sb.append("measures[")
-          .append(firstId)
+          .append(firstIndex)
           .append("..")
-          .append(lastId)
+          .append(lastIndex)
           .append("]");
 
         return sb.toString();
@@ -183,30 +184,30 @@ public class MeasureRange
     // computeFirsts //
     //---------------//
     /**
-     * Compute the first page/system/measure entities for measure firstId
+     * Compute the first page/system/measure entities for firstIndex
      */
     private void computeFirsts ()
     {
         for (TreeNode pageNode : score.getPages()) {
             Page page = (Page) pageNode;
+            int  offset = score.getMeasureOffset(page);
 
             for (TreeNode sn : page.getSystems()) {
                 ScoreSystem system = (ScoreSystem) sn;
+                SystemPart  part = system.getFirstPart();
+                int         measureCount = part.getMeasures()
+                                               .size();
 
-                for (TreeNode pn : system.getParts()) {
-                    SystemPart part = (SystemPart) pn;
+                if (firstIndex < (offset + measureCount)) {
+                    Measure measure = (Measure) part.getMeasures()
+                                                    .get(firstIndex - offset);
+                    firstPage = page;
+                    firstSystem = system;
+                    firstMeasure = measure;
 
-                    for (TreeNode mn : part.getMeasures()) {
-                        Measure measure = (Measure) mn;
-
-                        if (measure.getId() >= firstId) {
-                            firstPage = page;
-                            firstSystem = system;
-                            firstMeasure = measure;
-
-                            return;
-                        }
-                    }
+                    return;
+                } else {
+                    offset += measureCount;
                 }
             }
         }
@@ -216,7 +217,7 @@ public class MeasureRange
     // computeLasts //
     //--------------//
     /**
-     * Compute the last page/system/measure entities for measure lastId
+     * Compute the last page/system/measure entities for lastIndex
      */
     private void computeLasts ()
     {
@@ -240,7 +241,7 @@ public class MeasureRange
                         part.getMeasures().size()); mit.hasPrevious();) {
                         Measure measure = (Measure) mit.previous();
 
-                        if (measure.getId() <= lastId) {
+                        if (Math.abs(measure.getId()) <= lastIndex) {
                             lastPage = page;
                             lastSystem = system;
                             lastMeasure = measure;

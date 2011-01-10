@@ -99,7 +99,7 @@ public class SheetPdfOutput
                 g2.scale(1, 1);
 
                 // Painting
-                ScorePhysicalPainter painter = new ScorePhysicalPainter(
+                PagePhysicalPainter painter = new PagePhysicalPainter(
                     g2,
                     Color.BLACK, // Foreground color
                     false); // No annotations

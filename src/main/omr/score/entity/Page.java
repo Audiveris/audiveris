@@ -60,16 +60,16 @@ public class Page
     /** Link with image */
     private Sheet sheet;
 
-    /** Sheet global scale */
+    /** Page global scale */
     private Scale scale;
 
     /** Sheet skew angle in radians */
     private double skewAngle;
 
-    /** The score slot policy */
+    /** The page slot policy */
     private SlotPolicy slotPolicy;
 
-    /** The score slot horizontal margin, expressed in interline fraction */
+    /** The page slot horizontal margin, expressed in interline fraction */
     private InterlineFraction slotMargin;
 
     /** Average beam thickness, if known */
@@ -83,6 +83,12 @@ public class Page
 
     /** Duration of this page */
     private Integer actualDuration;
+
+    /** Number of measures in this page */
+    private Integer measureCount;
+
+    /** Progression of measure id within this page */
+    private Integer deltaMeasureId;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -194,12 +200,35 @@ public class Page
         return constants.defaultSlotPolicy.getValue();
     }
 
+    //-------------------//
+    // setDeltaMeasureId //
+    //-------------------//
+    /**
+     * Assign the progression of measure IDs within this page
+     * @param deltaMeasureId the deltaMeasureId to set
+     */
+    public void setDeltaMeasureId (Integer deltaMeasureId)
+    {
+        this.deltaMeasureId = deltaMeasureId;
+    }
+
+    //-------------------//
+    // getDeltaMeasureId //
+    //-------------------//
+    /**
+     * Report the progression of measure IDs within this page
+     * @return the deltaMeasureId
+     */
+    public Integer getDeltaMeasureId ()
+    {
+        return deltaMeasureId;
+    }
+
     //--------------//
     // getDimension //
     //--------------//
     /**
      * Report the dimension of the sheet/page
-     *
      * @return the page/sheet dimension in pixels
      */
     public PixelDimension getDimension ()
@@ -240,6 +269,18 @@ public class Page
     public int getMeanStaffHeight ()
     {
         return (Score.LINE_NB - 1) * scale.interline();
+    }
+
+    //-----------------//
+    // getMeasureCount //
+    //-----------------//
+    /**
+     * Report the number of (vertical) measures in this page
+     * @return the number of page measures
+     */
+    public int getMeasureCount ()
+    {
+        return measureCount;
     }
 
     //-------------------//
@@ -502,6 +543,26 @@ public class Page
     public boolean accept (ScoreVisitor visitor)
     {
         return visitor.visit(this);
+    }
+
+    //---------------------//
+    // computeMeasureCount //
+    //---------------------//
+    /**
+     * Compute the number of (vertical) measures in the page
+     */
+    public void computeMeasureCount ()
+    {
+        int count = 0;
+
+        for (TreeNode sn : getSystems()) {
+            ScoreSystem system = (ScoreSystem) sn;
+            count += system.getFirstPart()
+                           .getMeasures()
+                           .size();
+        }
+
+        measureCount = count;
     }
 
     //-------------------//

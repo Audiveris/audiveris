@@ -859,7 +859,7 @@ public class ScoreExporter
             // Do we need to create & export a dummy initial measure?
             if (((measureRange != null) && !measure.isTemporary() &&
                 (measure.getId() > 1)) &&
-                (measure.getId() == measureRange.getFirstId())) {
+                (measure.getId() == measureRange.getFirstIndex())) {
                 insertCurrentContext(measure);
             }
 
@@ -930,35 +930,35 @@ public class ScoreExporter
                             toTenths(current.system.getTopLeft().y));
 
                         // Tempo? Volume?
-                        //                    if (score.hasTempo() || score.hasVolume()) {
-                        //                        Direction direction = factory.createDirection();
-                        //                        current.pmMeasure.getNoteOrBackupOrForward()
-                        //                                         .add(direction);
-                        //
-                        //                        DirectionType directionType = factory.createDirectionType();
-                        //                        direction.getDirectionType()
-                        //                                 .add(directionType);
-                        //
-                        //                        // Use a dummy words
-                        //                        FormattedText pmWords = factory.createFormattedText();
-                        //                        directionType.getWords()
-                        //                                     .add(pmWords);
-                        //                        pmWords.setValue("");
-                        //
-                        //                        Sound sound = factory.createSound();
-                        //
-                        //                        // Tempo?
-                        //                        if (score.hasTempo()) {
-                        //                            sound.setTempo(createDecimal(score.getTempo()));
-                        //                        }
-                        //
-                        //                        // Volume?
-                        //                        if (score.hasVolume()) {
-                        //                            sound.setDynamics(createDecimal(score.getVolume()));
-                        //                        }
-                        //
-                        //                        direction.setSound(sound);
-                        //                    }
+                                            if (score.hasTempo() || score.hasVolume()) {
+                                                Direction direction = factory.createDirection();
+                                                current.pmMeasure.getNoteOrBackupOrForward()
+                                                                 .add(direction);
+                        
+                                                DirectionType directionType = factory.createDirectionType();
+                                                direction.getDirectionType()
+                                                         .add(directionType);
+                        
+                                                // Use a dummy words
+                                                FormattedText pmWords = factory.createFormattedText();
+                                                directionType.getWords()
+                                                             .add(pmWords);
+                                                pmWords.setValue("");
+                        
+                                                Sound sound = factory.createSound();
+                        
+                                                // Tempo?
+                                                if (score.hasTempo()) {
+                                                    sound.setTempo(createDecimal(score.getTempo()));
+                                                }
+                        
+                                                // Volume?
+                                                if (score.hasVolume()) {
+                                                    sound.setDynamics(createDecimal(score.getVolume()));
+                                                }
+                        
+                                                direction.setSound(sound);
+                                            }
                     } else {
                         // SystemDistance
                         ScoreSystem prevSystem = (ScoreSystem) current.system.getPreviousSibling();

@@ -19,8 +19,6 @@ import omr.util.BasicTask;
 
 import org.jdesktop.application.Task;
 
-import javax.xml.bind.annotation.XmlAttribute;
-
 /**
  * Class {@code ScriptTask} is the root class of all possible tasks within a
  * score script.

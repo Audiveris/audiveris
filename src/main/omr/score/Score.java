@@ -41,7 +41,6 @@ import java.awt.image.RenderedImage;
 import java.io.File;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.logging.Level;
 
 import javax.swing.JFrame;
 
@@ -355,6 +354,58 @@ public class Score
         } else {
             return (Page) children.get(children.size() - 1);
         }
+    }
+
+    //--------------------//
+    // getMeasureIdOffset //
+    //--------------------//
+    /**
+     * Report the offset to add to page-based measure ids of the provided page
+     * to get absolute (score-based) ids
+     * @param page the provided page
+     * @return the measure id offset for the page
+     */
+    public int getMeasureIdOffset (Page page)
+    {
+        int offset = 0;
+
+        for (TreeNode pn : getPages()) {
+            Page p = (Page) pn;
+
+            if (p == page) {
+                return offset;
+            } else {
+                offset += p.getDeltaMeasureId();
+            }
+        }
+
+        throw new IllegalArgumentException(page + " not found in score");
+    }
+
+    //------------------//
+    // getMeasureOffset //
+    //------------------//
+    /**
+     * Report the offset to add to page-based measure index of the provided page
+     * to get absolute (score-based) indices
+     * @param page the provided page
+     * @return the measure index offset for the page
+     */
+    public int getMeasureOffset (Page page)
+    {
+        int offset = 0;
+
+        for (TreeNode pn : getPages()) {
+            Page p = (Page) pn;
+
+            if (p == page) {
+                return offset;
+            } else {
+                offset += p.getMeasureCount();
+            }
+        }
+
+        throw new IllegalArgumentException(page + " not found in score");
     }
 
     //-----------------//
