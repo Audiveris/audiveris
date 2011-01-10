@@ -126,6 +126,7 @@ public class PagePhysicalPainter
         if (wholeSystem) {
             // Draw for the whole system height
             system = measure.getSystem();
+
             final PixelDimension systemDimension = system.getDimension();
             g.drawLine(
                 x,
@@ -491,8 +492,23 @@ public class PagePhysicalPainter
     @Override
     protected PixelRectangle braceBox (SystemPart part)
     {
-        return part.getBrace()
-                   .getContourBox();
+        PixelRectangle braceBox = part.getBrace()
+                                      .getContourBox();
+
+        // Cheat a little, so that top and bottom are aligned with part extrema
+        int leftX = braceBox.x + braceBox.width;
+        int top = part.getFirstStaff()
+                      .getInfo()
+                      .getFirstLine()
+                      .yAt(leftX);
+        int bot = part.getLastStaff()
+                      .getInfo()
+                      .getLastLine()
+                      .yAt(leftX);
+        braceBox.y = top;
+        braceBox.height = bot - top + 1;
+
+        return braceBox;
     }
 
     //--------------//

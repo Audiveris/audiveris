@@ -434,7 +434,7 @@ public abstract class PagePainter
                             new Alignment(CENTER, BASELINE));
                     }
                 }
-            } else if (MusicFont.useStoccata) {
+            } else if (MusicFont.useStandard) {
                 // The '8' glyph to be drawn
                 TextLayout ottava = null;
 
@@ -726,19 +726,39 @@ public abstract class PagePainter
 
             // Draw a brace?
             if (part.getBrace() != null) {
-                final String            str = "{";
-                final FontRenderContext frc = g.getFontRenderContext();
-                Font                    font = TextFont.basicFont.deriveFont(
-                    100f);
-                TextLayout              layout = new TextLayout(str, font, frc);
-                final Rectangle2D       rect = layout.getBounds();
-                final PixelRectangle    braceBox = braceBox(part);
-                final AffineTransform   fat = AffineTransform.getScaleInstance(
-                    braceBox.width / rect.getWidth(),
-                    braceBox.height / rect.getHeight());
-                font = font.deriveFont(fat);
-                layout = new TextLayout(str, font, frc);
-                paint(layout, braceBox.getCenter());
+                if (MusicFont.useMusical) {
+                    // We have nice half braces in MusicalSymbols font
+                    final String         upperStr = MusicFont.BRACE_UPPER_HALF.getString();
+                    final String         lowerStr = MusicFont.BRACE_LOWER_HALF.getString();
+                    final TextLayout     upperLayout = layout(upperStr);
+                    final PixelRectangle braceBox = braceBox(part);
+                    paint(
+                        upperLayout,
+                        braceBox.getCenter(),
+                        new Alignment(Horizontal.CENTER, Vertical.BOTTOM));
+                    paint(
+                        layout(lowerStr, null),
+                        braceBox.getCenter(),
+                        new Alignment(Horizontal.CENTER, Vertical.TOP));
+                } else {
+                    // We have to fallback to using text font ...
+                    final String            str = "{";
+                    final FontRenderContext frc = g.getFontRenderContext();
+                    Font                    font = TextFont.basicFont.deriveFont(
+                        100f);
+                    TextLayout              layout = new TextLayout(
+                        str,
+                        font,
+                        frc);
+                    final Rectangle2D       rect = layout.getBounds();
+                    final PixelRectangle    braceBox = braceBox(part);
+                    final AffineTransform   fat = AffineTransform.getScaleInstance(
+                        braceBox.width / rect.getWidth(),
+                        braceBox.height / rect.getHeight());
+                    font = font.deriveFont(fat);
+                    layout = new TextLayout(str, font, frc);
+                    paint(layout, braceBox.getCenter());
+                }
             }
 
             // Render the part starting barline, if any

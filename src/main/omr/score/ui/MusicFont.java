@@ -36,10 +36,10 @@ import java.util.Map.Entry;
  * Class <code>MusicFont</code> is meant to simplify the use of the underlying
  * music font when rendering picture or score views.
  *
- * <p>The underlying font is either Maestro or SToccata, and we define a map
- * between each shape and the corresponding point code (or sequence of point
- * codes) in this font. The chosen font name is defined by the public member
- * {@link #fontName}.</p>
+ * <p>The underlying font is either Maestro, SToccata or MusicalSymbols.
+ * We define a map between each shape and the corresponding point code
+ * (or sequence of point codes) in this font.
+ * The chosen font name is defined by the public member {@link #fontName}.</p>
  *
  * <p>For Maestro:
  * See http://www.fontyukle.net/en/</p>
@@ -47,6 +47,9 @@ import java.util.Map.Entry;
  * <p>for SToccata:
  * Download from http://fonts.goldenweb.it/download2.php?d2=Freeware_fonts&c=s&file2=SToccata.ttf
  * See http://fonts.goldenweb.it/pan_file/l/en/font2/SToccata.ttf/d2/Freeware_fonts/c/s/default.html</p>
+ *
+ * <p>for MusicalSymbols:
+ * Download from http://simplythebest.net/fonts/fonts/musical_symbols.html</p>
  *
  * @author Hervé Bitteur
  */
@@ -60,11 +63,14 @@ public class MusicFont
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(MusicFont.class);
 
-    /** First possible music font names */
+    /** First possible music font name (non-standard) */
     private static final String maestro = "Maestro";
 
-    /** Second possible music font names */
+    /** Second possible music font name (standard) */
     private static final String stoccata = "SToccata";
+
+    /** Third possible music font name (standard) */
+    private static final String musical = "MusicalSymbols";
 
     /** Name of the chosen underlying music font */
     private static final String fontName = constants.musicFontName.getValue();
@@ -79,11 +85,25 @@ public class MusicFont
                                                       .contains(
         stoccata.toLowerCase());
 
+    /** Convenient boolean for tests */
+    public static final boolean useMusical = fontName.toLowerCase()
+                                                     .contains(
+        musical.toLowerCase());
+
+    /** Convenient boolean for tests */
+    public static final boolean useStandard = useStoccata || useMusical;
+
     /** Underlying music font, initialized with some size */
     public static final Font genericFont = new Font(fontName, Font.PLAIN, 100);
 
-    /** Descriptor of '8' char for alta & bassa */
+    /** Descriptor of '8' char for alta & bassa (for standard)*/
     public static final CharDesc ALTA_BASSA_DESC = new CharDesc(165);
+
+    /** Descriptor for upper part of brace (MusicalSymbols) */
+    public static final CharDesc BRACE_UPPER_HALF = new CharDesc(167);
+
+    /** Descriptor for lower part of brace (MusicalSymbols) */
+    public static final CharDesc BRACE_LOWER_HALF = new CharDesc(234);
 
     /** Descriptor for a user mark */
     public static final CharDesc MARK_DESC = new CharDesc(205);
@@ -105,8 +125,8 @@ public class MusicFont
         Shape.class);
 
     static {
-        map(ACCENT, Vertical.BOTTOM, 62);
-        map(ARPEGGIATO, Vertical.BOTTOM, 103);
+        map(ACCENT, 62);
+        map(ARPEGGIATO, 103);
         //        map(BACK_TO_BACK_REPEAT_SIGN);
         //        map(BEAM);
         //        map(BEAM_2);
@@ -115,17 +135,17 @@ public class MusicFont
         //        map(BRACE);
         //        map(BRACKET);
         map(BREATH_MARK, 44);
-        map(BREVE, Vertical.MIDDLE, 87);
-        map(BREVE_REST, Vertical.MIDDLE, 208);
+        map(BREVE, 87);
+        map(BREVE_REST, 208);
         //        map(CAESURA);
         //        map(CHARACTER);
         //        map(CLUTTER);
-        map(CODA, Vertical.BOTTOM, 222);
+        map(CODA, 222);
         //        map(COMBINING_AUGMENTATION_DOT);
-        map(COMBINING_FLAG_1, Vertical.BOTTOM, 106);
-        map(COMBINING_FLAG_1_UP, Vertical.TOP, 74);
-        map(COMBINING_FLAG_2, Vertical.BOTTOM, useMaestro ? 144 : 107);
-        map(COMBINING_FLAG_2_UP, Vertical.TOP, useMaestro ? 146 : 75);
+        map(COMBINING_FLAG_1, 106);
+        map(COMBINING_FLAG_1_UP, 74);
+        map(COMBINING_FLAG_2, useMaestro ? 144 : 107);
+        map(COMBINING_FLAG_2_UP, useMaestro ? 146 : 75);
         //        map(COMBINING_FLAG_3);
         //        map(COMBINING_FLAG_3_UP);
         //        map(COMBINING_FLAG_4);
@@ -133,22 +153,22 @@ public class MusicFont
         //        map(COMBINING_FLAG_5);
         //        map(COMBINING_FLAG_5_UP);
         //        map(COMBINING_STEM);
-        map(COMMON_TIME, Vertical.MIDDLE, 99);
+        map(COMMON_TIME, 99);
         //        map(CRESCENDO);
         //        map(CUSTOM_TIME_SIGNATURE);
-        map(CUT_TIME, Vertical.MIDDLE, 67);
-        map(C_CLEF, Vertical.BOTTOM, 66);
+        map(CUT_TIME, 67);
+        map(C_CLEF, 66);
 
-        if (useStoccata) {
-            map(DAL_SEGNO, 100); // SToccata only
-            map(DA_CAPO, 68); // SToccata only
+        if (useStandard) {
+            map(DAL_SEGNO, 100);
+            map(DA_CAPO, 68);
         }
 
         //        map(DECRESCENDO);
-        map(DOT, Vertical.MIDDLE, 46);
+        map(DOT, 46);
         //        map(DOUBLE_BARLINE);
         map(DOUBLE_FLAT, 186);
-        map(DOUBLE_SHARP, Vertical.MIDDLE, 220);
+        map(DOUBLE_SHARP, 220);
         map(DYNAMICS_CHAR_M, 189);
         map(DYNAMICS_CHAR_R, useMaestro ? 142 : 243);
         map(DYNAMICS_CHAR_S, 115);
@@ -186,10 +206,10 @@ public class MusicFont
         //        map(ENDING);
         //        map(ENDING_HORIZONTAL);
         //        map(ENDING_VERTICAL);
-        map(FERMATA, Vertical.BOTTOM, 85);
-        map(FERMATA_BELOW, Vertical.TOP, 117);
+        map(FERMATA, 85);
+        map(FERMATA_BELOW, 117);
 
-        if (useStoccata) {
+        if (useStandard) {
             map(FINAL_BARLINE, 211);
         }
 
@@ -218,7 +238,7 @@ public class MusicFont
         map(INVERTED_MORDENT, 77);
 
         if (useStoccata) {
-            map(INVERTED_TURN, Vertical.MIDDLE, 249);
+            map(INVERTED_TURN, 249); // Specific to SToccata
         }
 
         //        map(KEY_FLAT_1);
@@ -236,91 +256,91 @@ public class MusicFont
         //        map(KEY_SHARP_6);
         //        map(KEY_SHARP_7);
         //        map(LEDGER);
-        if (useStoccata) {
+        if (useStandard) {
             map(LEFT_REPEAT_SIGN, 93);
         }
 
-        map(LONG_REST, Vertical.MIDDLE, 227);
+        map(LONG_REST, 227);
         map(MORDENT, 109);
         map(NATURAL, 110);
         //        map(NOISE);
         //        map(NON_DRAGGABLE);
-        map(NOTEHEAD_BLACK, Vertical.MIDDLE, 207);
+        map(NOTEHEAD_BLACK, 207);
         //        map(NOTEHEAD_BLACK_2);
         //        map(NOTEHEAD_BLACK_3);
         //        map(NO_LEGAL_TIME);
         map(OLD_QUARTER_REST, 228); // To be flipped horizontally
 
-        if (useMaestro) {
+        if (useMaestro || useMusical) {
             map(ONE_HUNDRED_TWENTY_EIGHTH_REST, 229);
         }
 
-        map(OTTAVA_ALTA, Vertical.BOTTOM, 195);
-        map(OTTAVA_BASSA, Vertical.BOTTOM, 215);
+        map(OTTAVA_ALTA, 195);
+        map(OTTAVA_BASSA, 215);
         //        map(PART_DEFINING_BARLINE);
         map(PEDAL_MARK, 161);
         map(PEDAL_UP_MARK, 42);
-        map(PERCUSSION_CLEF, Vertical.BOTTOM, useMaestro ? 139 : 47);
-        map(QUARTER_REST, Vertical.MIDDLE, 206);
+        map(PERCUSSION_CLEF, useMaestro ? 139 : 47);
+        map(QUARTER_REST, 206);
 
-        if (useStoccata) {
+        if (useStandard) {
             map(REPEAT_DOTS, 123);
         }
 
-        if (useStoccata) {
+        if (useStandard) {
             map(REVERSE_FINAL_BARLINE, 210);
             map(RIGHT_REPEAT_SIGN, 125);
         }
 
-        map(SEGNO, Vertical.BOTTOM, 37);
-        map(SHARP, Vertical.MIDDLE, 35);
+        map(SEGNO, 37);
+        map(SHARP, 35);
         map(SIXTEENTH_REST, 197);
         map(SIXTY_FOURTH_REST, 244);
         //        map(SLUR);
-        map(STACCATISSIMO, useMaestro ? 171 : 137);
-        map(STACCATO, Vertical.MIDDLE, 46);
+        map(STACCATISSIMO, useMaestro ? 171 : (useStoccata ? 137 : 174));
+        map(STACCATO, 46);
         //        map(STAFF_LINE);
         map(STRONG_ACCENT, 94);
         //        map(STRUCTURE);
-        map(TENUTO, Vertical.MIDDLE, 45);
+        map(TENUTO, 45);
 
         //        map(TEXT);
-        if (useStoccata) {
+        if (useStandard) {
             map(THICK_BARLINE, 91);
         }
 
         map(THIN_BARLINE, useMaestro ? 92 : 108);
         map(THIRTY_SECOND_REST, 168);
-        map(TIME_EIGHT, Vertical.MIDDLE, 56);
-        map(TIME_FIVE, Vertical.MIDDLE, 53);
-        map(TIME_FOUR, Vertical.MIDDLE, 52);
+        map(TIME_EIGHT, 56);
+        map(TIME_FIVE, 53);
+        map(TIME_FOUR, 52);
         //        map(TIME_FOUR_FOUR);
-        map(TIME_NINE, Vertical.MIDDLE, 57);
-        map(TIME_ONE, Vertical.MIDDLE, 49);
-        map(TIME_SEVEN, Vertical.MIDDLE, 55);
-        map(TIME_SIX, Vertical.MIDDLE, 54);
-        map(TIME_SIXTEEN, Vertical.MIDDLE, 49, 54);
+        map(TIME_NINE, 57);
+        map(TIME_ONE, 49);
+        map(TIME_SEVEN, 55);
+        map(TIME_SIX, 54);
+        map(TIME_SIXTEEN, 49, 54);
         //        map(TIME_SIX_EIGHT);
-        map(TIME_THREE, Vertical.MIDDLE, 51);
+        map(TIME_THREE, 51);
         //        map(TIME_THREE_FOUR);
-        map(TIME_TWELVE, Vertical.MIDDLE, 49, 50);
-        map(TIME_TWO, Vertical.MIDDLE, 50);
+        map(TIME_TWELVE, 49, 50);
+        map(TIME_TWO, 50);
         //        map(TIME_TWO_FOUR);
         //        map(TIME_TWO_TWO);
-        map(TIME_ZERO, Vertical.MIDDLE, 48);
+        map(TIME_ZERO, 48);
         map(TR, useMaestro ? 217 : 96);
         map(TUPLET_SIX, 164);
         map(TUPLET_THREE, 163);
-        map(TURN, Vertical.MIDDLE, 84);
+        map(TURN, 84);
         //        map(TURN_SLASH);
         //        map(TURN_UP);
-        map(VOID_NOTEHEAD, Vertical.MIDDLE, 250);
+        map(VOID_NOTEHEAD, 250);
         //        map(VOID_NOTEHEAD_2);
         //        map(VOID_NOTEHEAD_3);
-        map(WHOLE_NOTE, Vertical.MIDDLE, 119);
+        map(WHOLE_NOTE, 119);
         //        map(WHOLE_NOTE_2);
         //        map(WHOLE_NOTE_3);
-        map(WHOLE_OR_HALF_REST, Vertical.BOTTOM, 238);
+        map(WHOLE_OR_HALF_REST, 238);
 
         //        map(WHOLE_REST);
     }
@@ -401,7 +421,7 @@ public class MusicFont
         Font font = sizeMap.get(staffHeight);
 
         if (font == null) {
-            font = determineMusicFont(staffHeight);
+            font = determineSizedMusicFont(staffHeight);
             sizeMap.put(staffHeight, font);
         }
 
@@ -451,30 +471,16 @@ public class MusicFont
             dyToOrigin(alignment.vertical, bounds));
     }
 
-    //---------------//
-    // actualCodesOf //
-    //---------------//
-    private static int[] actualCodesOf (int... codes)
-    {
-        int[] values = new int[codes.length];
-
-        for (int i = 0; i < codes.length; i++) {
-            values[i] = codes[i] + 0xf000;
-        }
-
-        return values;
-    }
-
-    //--------------------//
-    // determineMusicFont //
-    //--------------------//
+    //-------------------------//
+    // determineSizedMusicFont //
+    //-------------------------//
     /**
      * Determine the music font with best size. This is based on the
      * C_CLEF symbol which must match the staff height as exactly as possible.
      * @param scale the global sheet scale
      * @return the font ready to use
      */
-    private static Font determineMusicFont (int staffHeight)
+    private static Font determineSizedMusicFont (int staffHeight)
     {
         int[]       codes = getCodes(C_CLEF);
         String      str = new String(codes, 0, codes.length);
@@ -538,27 +544,17 @@ public class MusicFont
     //-----//
     // map //
     //-----//
-    private static void map (Shape  shape,
-                             int... codes)
-    {
-        map(shape, Vertical.BASELINE, codes);
-    }
-
-    //-----//
-    // map //
-    //-----//
     /**
      *
      * @param shape the shape symbol
      * @param vAlign where the (vertical) reference point is WRT the shape
      * @param codes the sequence of codes (perhaps specific to a font)
      */
-    private static void map (Shape    shape,
-                             Vertical vAlign,
+    private static void map (Shape  shape,
                              int... codes)
     {
         if ((codes != null) && (codes.length > 0)) {
-            descMap.put(shape, new CharDesc(vAlign, actualCodesOf(codes)));
+            descMap.put(shape, new CharDesc(codes));
         }
     }
 
@@ -619,24 +615,14 @@ public class MusicFont
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** Vertical reference */
-        public final Vertical vertical;
-
         /** Sequence of point codes */
         public final int[] codes;
 
         //~ Constructors -------------------------------------------------------
 
-        public CharDesc (Vertical vertical,
-                         int... codes)
-        {
-            this.vertical = vertical;
-            this.codes = codes;
-        }
-
         public CharDesc (int... codes)
         {
-            this(Vertical.BASELINE, actualCodesOf(codes));
+            this.codes = shiftedCodesOf(codes);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -644,6 +630,17 @@ public class MusicFont
         public String getString ()
         {
             return new String(codes, 0, codes.length);
+        }
+
+        private int[] shiftedCodesOf (int... codes)
+        {
+            int[] values = new int[codes.length];
+
+            for (int i = 0; i < codes.length; i++) {
+                values[i] = codes[i] + 0xf000;
+            }
+
+            return values;
         }
     }
 
@@ -657,6 +654,6 @@ public class MusicFont
 
         Constant.String musicFontName = new Constant.String(
             "Maestro",
-            "Name of font for music symbols (Maestro/SToccata)");
+            "Name of font for music symbols (Maestro/SToccata/MusicalSymbols)");
     }
 }
