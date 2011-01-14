@@ -17,6 +17,7 @@ import omr.log.Logger;
 
 import omr.score.entity.Barline;
 import omr.score.entity.Measure;
+import omr.score.entity.Note;
 import omr.score.entity.Page;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.SystemPart;
@@ -57,6 +58,7 @@ public class MeasureFixer
     private int           im; // Current measure index in system
     private List<Measure> verticals = null; // Current vertical measures
     private Integer       measureFinal = null; // Current termination
+    private ScoreSystem   system; // Current system
 
     // Information to remember from previous vertical measure
     private List<Measure> prevVerticals = null; // Previous vertical measures
@@ -138,6 +140,8 @@ public class MeasureFixer
             logger.fine(getClass().getSimpleName() + " Visiting " + system);
         }
 
+        this.system = system;
+
         // Measure indices to remove
         List<Integer> toRemove = new ArrayList<Integer>();
 
@@ -155,6 +159,13 @@ public class MeasureFixer
 
             // Check if all voices in all parts exhibit the same termination
             measureFinal = getMeasureFinal();
+
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "measureFinal:" + measureFinal +
+                    ((measureFinal != null)
+                     ? ("=" + Note.quarterValueOf(measureFinal)) : ""));
+            }
 
             if (isEmpty()) {
                 if (logger.isFineEnabled()) {
@@ -300,7 +311,8 @@ public class MeasureFixer
      */
     private boolean isPickup ()
     {
-        return (im == 0) && (measureFinal != null) && (measureFinal < 0);
+        return (system.getChildIndex() == 0) && (im == 0) &&
+               (measureFinal != null) && (measureFinal < 0);
     }
 
     //-------------//
