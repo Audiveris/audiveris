@@ -589,7 +589,7 @@ public class ScoreExporter
             direction.setSound(sound);
             sound.setCoda("" + current.measure.getId());
             sound.setDivisions(
-                createDecimal(
+                new BigDecimal(
                     score.simpleDurationOf(
                         omr.score.entity.Note.QUARTER_DURATION)));
 
@@ -881,7 +881,7 @@ public class ScoreExporter
                     try {
                         getMeasureAttributes()
                             .setDivisions(
-                            createDecimal(
+                            new BigDecimal(
                                 score.simpleDurationOf(
                                     omr.score.entity.Note.QUARTER_DURATION)));
                     } catch (Exception ex) {
@@ -929,36 +929,26 @@ public class ScoreExporter
                         systemLayout.setTopSystemDistance(
                             toTenths(current.system.getTopLeft().y));
 
-                        // Tempo? Volume?
-                                            if (score.hasTempo() || score.hasVolume()) {
-                                                Direction direction = factory.createDirection();
-                                                current.pmMeasure.getNoteOrBackupOrForward()
-                                                                 .add(direction);
-                        
-                                                DirectionType directionType = factory.createDirectionType();
-                                                direction.getDirectionType()
-                                                         .add(directionType);
-                        
-                                                // Use a dummy words
-                                                FormattedText pmWords = factory.createFormattedText();
-                                                directionType.getWords()
-                                                             .add(pmWords);
-                                                pmWords.setValue("");
-                        
-                                                Sound sound = factory.createSound();
-                        
-                                                // Tempo?
-                                                if (score.hasTempo()) {
-                                                    sound.setTempo(createDecimal(score.getTempo()));
-                                                }
-                        
-                                                // Volume?
-                                                if (score.hasVolume()) {
-                                                    sound.setDynamics(createDecimal(score.getVolume()));
-                                                }
-                        
-                                                direction.setSound(sound);
-                                            }
+                        // Tempo? 
+                        if (score.hasTempo()) {
+                            Direction direction = factory.createDirection();
+                            current.pmMeasure.getNoteOrBackupOrForward()
+                                             .add(direction);
+
+                            DirectionType directionType = factory.createDirectionType();
+                            direction.getDirectionType()
+                                     .add(directionType);
+
+                            // Use a dummy words element
+                            FormattedText pmWords = factory.createFormattedText();
+                            directionType.getWords()
+                                         .add(pmWords);
+                            pmWords.setValue("");
+
+                            Sound sound = factory.createSound();
+                            sound.setTempo(new BigDecimal(score.getTempo()));
+                            direction.setSound(sound);
+                        }
                     } else {
                         // SystemDistance
                         ScoreSystem prevSystem = (ScoreSystem) current.system.getPreviousSibling();
@@ -1169,7 +1159,7 @@ public class ScoreExporter
                 pitch.setOctave(note.getOctave());
 
                 if (note.getAlter() != 0) {
-                    pitch.setAlter(createDecimal(note.getAlter()));
+                    pitch.setAlter(new BigDecimal(note.getAlter()));
                 }
 
                 current.pmNote.setPitch(pitch);
@@ -1206,7 +1196,7 @@ public class ScoreExporter
                 }
 
                 current.pmNote.setDuration(
-                    createDecimal(score.simpleDurationOf(dur)));
+                    new BigDecimal(score.simpleDurationOf(dur)));
             } catch (Exception ex) {
                 if (score.getDurationDivisor() != null) {
                     logger.warning("Not able to get duration of note", ex);
@@ -1527,8 +1517,9 @@ public class ScoreExporter
             Scaling scaling = factory.createScaling();
             defaults.setScaling(scaling);
             scaling.setMillimeters(
-                createDecimal((current.scale.interline() * 25.4 * 4) / 300)); // Assuming 300 DPI
-            scaling.setTenths(new BigDecimal("40"));
+                new BigDecimal(
+                    "" + ((current.scale.interline() * 25.4 * 4) / 300))); // Assuming 300 DPI
+            scaling.setTenths(new BigDecimal(40));
 
             // [Defaults]/PageLayout (using first page)
             if (firstPage.getDimension() != null) {
@@ -1663,7 +1654,7 @@ public class ScoreExporter
             Sound sound = factory.createSound();
             sound.setSegno("" + current.measure.getId());
             sound.setDivisions(
-                createDecimal(
+                new BigDecimal(
                     score.simpleDurationOf(
                         omr.score.entity.Note.QUARTER_DURATION)));
 
@@ -2283,6 +2274,7 @@ public class ScoreExporter
         midiInstrument.setId(scoreInstrument);
         midiInstrument.setMidiChannel(scorePart.getId());
         midiInstrument.setMidiProgram(midiProgram);
+        midiInstrument.setVolume(new BigDecimal(score.getVolume()));
 
         // ScorePart in scorePartwise
         current.pmPart = factory.createScorePartwisePart();
@@ -2467,7 +2459,7 @@ public class ScoreExporter
     {
         try {
             Backup backup = factory.createBackup();
-            backup.setDuration(createDecimal(score.simpleDurationOf(delta)));
+            backup.setDuration(new BigDecimal(score.simpleDurationOf(delta)));
             current.pmMeasure.getNoteOrBackupOrForward()
                              .add(backup);
         } catch (Exception ex) {
@@ -2524,7 +2516,7 @@ public class ScoreExporter
     {
         try {
             Forward forward = factory.createForward();
-            forward.setDuration(createDecimal(score.simpleDurationOf(delta)));
+            forward.setDuration(new BigDecimal(score.simpleDurationOf(delta)));
             forward.setVoice("" + current.voice.getId());
             current.pmMeasure.getNoteOrBackupOrForward()
                              .add(forward);

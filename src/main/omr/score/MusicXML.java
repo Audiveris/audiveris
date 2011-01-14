@@ -305,14 +305,6 @@ public class MusicXML
         return BarStyle.NONE; // TO BE CHECKED ???
     }
 
-    //---------------//
-    // createDecimal //
-    //---------------//
-    public static BigDecimal createDecimal (double val)
-    {
-        return new BigDecimal("" + val);
-    }
-
     //--------//
     // stepOf //
     //--------//
