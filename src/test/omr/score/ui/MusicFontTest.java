@@ -75,7 +75,6 @@ public class MusicFontTest
 
         Shape    shape = Shape.F_CLEF;
         CharDesc result = MusicFont.getCharDesc(shape);
-        assertEquals(Vertical.BASELINE, result.vertical);
         assertEquals(1, result.codes.length);
         assertEquals(63 + 0xf000, result.codes[0]);
     }
