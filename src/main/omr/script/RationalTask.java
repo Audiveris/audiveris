@@ -14,7 +14,7 @@ package omr.script;
 import omr.glyph.Evaluation;
 import omr.glyph.facets.Glyph;
 
-import omr.math.Rational;
+import omr.score.entity.TimeRational;
 
 import omr.sheet.Sheet;
 
@@ -23,8 +23,8 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlElement;
 
 /**
- * Class {@code RationalTask} records the assignment of a rational value to a
- * collection of glyphs
+ * Class {@code RationalTask} records the assignment of a time rational value
+ * to a collection of glyphs
  *
  * @author Hervé Bitteur
  */
@@ -35,7 +35,7 @@ public class RationalTask
 
     /** Type of the rational glyph */
     @XmlElement
-    private final Rational rational;
+    private final TimeRational timeRational;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -46,15 +46,15 @@ public class RationalTask
      * Creates a new RationalTask object.
      *
      * @param sheet the sheet impacted
-     * @param rational the custom time sig rational value
+     * @param timeRational the custom time sig rational value
      * @param glyphs the impacted glyph(s)
      */
     public RationalTask (Sheet             sheet,
-                         Rational          rational,
+                         TimeRational      timeRational,
                          Collection<Glyph> glyphs)
     {
         super(sheet, glyphs);
-        this.rational = rational;
+        this.timeRational = timeRational;
     }
 
     //--------------//
@@ -63,7 +63,7 @@ public class RationalTask
     /** No-arg constructor needed by JAXB */
     private RationalTask ()
     {
-        rational = null;
+        timeRational = null;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -77,7 +77,10 @@ public class RationalTask
     {
         sheet.getSymbolsController()
              .getModel()
-             .assignRational(getInitialGlyphs(), rational, Evaluation.MANUAL);
+             .assignTimeRational(
+            getInitialGlyphs(),
+            timeRational,
+            Evaluation.MANUAL);
     }
 
     //-----------------//
@@ -89,9 +92,9 @@ public class RationalTask
         StringBuilder sb = new StringBuilder(super.internalsString());
         sb.append(" rational");
 
-        if (rational != null) {
+        if (timeRational != null) {
             sb.append(" ")
-              .append(rational);
+              .append(timeRational);
         }
 
         return sb.toString();

@@ -16,6 +16,8 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
+import omr.math.Rational;
+
 import omr.score.common.PixelPoint;
 
 import omr.util.Navigable;
@@ -120,9 +122,9 @@ public class BeamGroup
      * Report the total duration of the sequence of chords within this group
      * @return the total group duration, perhaps null
      */
-    public Integer getDuration ()
+    public Rational getDuration ()
     {
-        Integer          duration = null;
+        Rational         duration = null;
         SortedSet<Chord> chords = new TreeSet<Chord>();
 
         for (Beam beam : beams) {
@@ -132,11 +134,11 @@ public class BeamGroup
         }
 
         for (Chord chord : chords) {
-            Integer dur = chord.getDuration();
+            Rational dur = chord.getDuration();
 
             if (dur != null) {
                 if (duration != null) {
-                    duration += dur;
+                    duration = duration.plus(dur);
                 } else {
                     duration = dur;
                 }
@@ -438,8 +440,8 @@ public class BeamGroup
             for (Beam beam : beams) {
                 PixelPoint left = beam.getLeftPoint();
                 PixelPoint right = beam.getRightPoint();
-                double      yMid = (left.y + right.y) / 2d;
-                double      dy = (right.x - left.x) * slope;
+                double     yMid = (left.y + right.y) / 2d;
+                double     dy = (right.x - left.x) * slope;
                 left.y = (int) Math.rint(yMid - (dy / 2));
                 right.y = (int) Math.rint(yMid + (dy / 2));
             }

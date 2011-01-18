@@ -15,6 +15,8 @@ import omr.glyph.text.TextRole;
 
 import omr.log.Logger;
 
+import omr.math.Rational;
+
 import omr.score.common.PixelDimension;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -72,10 +74,10 @@ public class ScoreSystem
     private final SystemInfo info;
 
     /** Start time of this system since beginning of the page */
-    private Integer startTime;
+    private Rational startTime;
 
     /** Duration of this system */
-    private Integer actualDuration;
+    private Rational actualDuration;
 
     /** Used to assign a unique ID to key signature */
     private int sentenceCount = 0;
@@ -124,15 +126,16 @@ public class ScoreSystem
     //-------------------//
     // getActualDuration //
     //-------------------//
-    public int getActualDuration ()
+    public Rational getActualDuration ()
     {
         if (actualDuration == null) {
             SystemPart part = getFirstPart();
-            actualDuration = 0;
+            actualDuration = Rational.ZERO;
 
             for (TreeNode m : part.getMeasures()) {
                 Measure measure = (Measure) m;
-                actualDuration += measure.getActualDuration();
+                actualDuration = actualDuration.plus(
+                    measure.getActualDuration());
             }
         }
 
@@ -244,34 +247,6 @@ public class ScoreSystem
     {
         return (SystemPart) getParts()
                                 .get(getParts().size() - 1);
-    }
-
-    //------------------//
-    // getLastSoundTime //
-    //------------------//
-    /**
-     * Report the time, counted from beginning of this system, when sound stops,
-     * which means that ending rests are not counted.
-     *
-     * @param measureId potential constraint on measure id,
-     * null for no constraint
-     * @return the relative time of last Midi "note off" in this part
-     */
-    public int getLastSoundTime (Integer measureId)
-    {
-        int lastTime = 0;
-
-        // Take the latest sound among all parts
-        for (TreeNode node : getParts()) {
-            SystemPart part = (SystemPart) node;
-            int        time = part.getLastSoundTime(measureId);
-
-            if (time > lastTime) {
-                lastTime = time;
-            }
-        }
-
-        return lastTime;
     }
 
     //----------------//
@@ -435,16 +410,16 @@ public class ScoreSystem
      * the page.
      * @return the system start time
      */
-    public int getStartTime ()
+    public Rational getStartTime ()
     {
         if (startTime == null) {
             ScoreSystem prevSystem = (ScoreSystem) getPreviousSibling();
 
             if (prevSystem == null) {
-                startTime = 0;
+                startTime = Rational.ZERO;
             } else {
-                startTime = prevSystem.getStartTime() +
-                            prevSystem.getActualDuration();
+                startTime = prevSystem.getStartTime()
+                                      .plus(prevSystem.getActualDuration());
             }
         }
 

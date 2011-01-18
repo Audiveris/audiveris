@@ -16,6 +16,8 @@ import static omr.glyph.Shape.*;
 
 import omr.log.Logger;
 
+import omr.math.Rational;
+
 import omr.score.common.PixelPoint;
 import omr.score.entity.LyricsItem;
 import omr.score.entity.Note;
@@ -208,8 +210,11 @@ public class MusicXML
     public static String getNoteTypeName (Note note)
     {
         // Since quarter is at index 6 in noteTypeNames, use 2**6 = 64
-        int dur = (64 * note.getNoteDuration()) / Note.QUARTER_DURATION;
-        int index = (int) Math.rint(Math.log(dur) / Math.log(2));
+        ///int dur = (64 * note.getNoteDuration()) / Note.QUARTER_DURATION;
+        double dur = 64 * note.getNoteDuration()
+                              .divides(Note.QUARTER_DURATION)
+                              .toDouble();
+        int    index = (int) Math.rint(Math.log(dur) / Math.log(2));
 
         return noteTypeNames[index];
     }

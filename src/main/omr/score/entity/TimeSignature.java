@@ -50,13 +50,13 @@ public class TimeSignature
     private static final Logger logger = Logger.getLogger(TimeSignature.class);
 
     /** Rational value of each (full) time sig shape */
-    private static final Map<Shape, Rational> rationals = new EnumMap<Shape, Rational>(
+    private static final Map<Shape, TimeRational> rationals = new EnumMap<Shape, TimeRational>(
         Shape.class);
 
     static {
         for (Shape s : ShapeRange.FullTimes) {
             if (s != CUSTOM_TIME_SIGNATURE) {
-                Rational nd = rationalOf(s);
+                TimeRational nd = rationalOf(s);
 
                 if (nd == null) {
                     logger.severe("Rational for '" + s + "' is not defined");
@@ -68,12 +68,12 @@ public class TimeSignature
     }
 
     /** Set of acceptable N/D values for programmatic recognition */
-    private static final Set<Rational> acceptables = new HashSet<Rational>();
+    private static final Set<TimeRational> acceptables = new HashSet<TimeRational>();
 
     static {
         // Predefined
         for (Shape s : ShapeRange.FullTimes) {
-            Rational nd = rationals.get(s);
+            TimeRational nd = rationals.get(s);
 
             if (nd != null) {
                 acceptables.add(nd);
@@ -81,7 +81,7 @@ public class TimeSignature
         }
 
         // A few others
-        acceptables.add(new Rational(5, 4));
+        acceptables.add(new TimeRational(5, 4));
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -100,11 +100,8 @@ public class TimeSignature
      */
     private Shape shape;
 
-    /** Rational component : numerator */
-    private Integer numerator;
-
-    /** Rational component : denominator */
-    private Integer denominator;
+    /** Actual TimeRational components */
+    private TimeRational timeRational;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -149,8 +146,7 @@ public class TimeSignature
         setStaff(staff);
 
         try {
-            numerator = other.getNumerator();
-            denominator = other.getDenominator();
+            timeRational = other.timeRational;
             shape = other.getShape();
 
             if (!staff.isDummy()) {
@@ -174,14 +170,19 @@ public class TimeSignature
     //--------------//
     // isAcceptable //
     //--------------//
-    public static boolean isAcceptable (Rational rational)
+    /**
+     * Check whether the provided value is a rather common time signature
+     * @param timeRational
+     * @return
+     */
+    public static boolean isAcceptable (TimeRational timeRational)
     {
-        if (predefinedShape(rational) != null) {
+        if (predefinedShape(timeRational) != null) {
             return true;
         }
 
         // Check other acceptable rational values
-        return acceptables.contains(rational);
+        return acceptables.contains(timeRational);
     }
 
     //----------------//
@@ -196,15 +197,15 @@ public class TimeSignature
     public Integer getDenominator ()
         throws InvalidTimeSignature
     {
-        if (denominator == null) {
+        if (timeRational == null) {
             if (shape == NO_LEGAL_TIME) {
                 throw new InvalidTimeSignature();
             } else {
-                computeRational();
+                computeTimeRational();
             }
         }
 
-        return denominator;
+        return timeRational.den;
     }
 
     //----------------------//
@@ -259,15 +260,15 @@ public class TimeSignature
     public Integer getNumerator ()
         throws InvalidTimeSignature
     {
-        if (numerator == null) {
+        if (timeRational == null) {
             if (shape == NO_LEGAL_TIME) {
                 throw new InvalidTimeSignature();
             } else {
-                computeRational();
+                computeTimeRational();
             }
         }
 
-        return numerator;
+        return timeRational.num;
     }
 
     //--------------------//
@@ -287,36 +288,16 @@ public class TimeSignature
     }
 
     //-------------//
-    // setRational //
+    // setTimeRational //
     //-------------//
     /**
      * Force this time signature to align to the provided rational value
-     * @param rational the forced value
+     * @param timeRational the forced value
      */
-    public void setRational (Rational rational)
+    public void setRational (TimeRational timeRational)
     {
-        numerator = rational.num;
-        denominator = rational.den;
+        this.timeRational = timeRational;
         shape = predefinedShape();
-    }
-
-    //-------------//
-    // getRational //
-    //-------------//
-    /**
-     * Report the time signature as a rational
-     * @return the num/den rational, or null
-     */
-    public Rational getRational ()
-    {
-        try {
-            int num = getNumerator();
-            int den = getDenominator();
-
-            return new Rational(num, den);
-        } catch (InvalidTimeSignature its) {
-            return null;
-        }
     }
 
     //----------//
@@ -332,10 +313,27 @@ public class TimeSignature
         throws InvalidTimeSignature
     {
         if (shape == null) {
-            computeRational();
+            computeTimeRational();
         }
 
         return shape;
+    }
+
+    //-----------------//
+    // getTimeRational //
+    //-----------------//
+    /**
+     * Report the time signature as a rational
+     * @return the num/den time rational, or null
+     */
+    public TimeRational getTimeRational ()
+        throws InvalidTimeSignature
+    {
+        if (timeRational == null) {
+            computeTimeRational();
+        }
+
+        return timeRational;
     }
 
     //--------//
@@ -358,9 +356,7 @@ public class TimeSignature
     public void copy (TimeSignature newSig)
     {
         try {
-            modify(
-                newSig.getShape(),
-                new Rational(newSig.getNumerator(), newSig.getDenominator()));
+            modify(newSig.getShape(), newSig.timeRational);
         } catch (InvalidTimeSignature ex) {
             logger.warning("Invalid time signature", ex);
         }
@@ -375,8 +371,7 @@ public class TimeSignature
         TimeSignature dummy = new TimeSignature(measure, null);
         dummy.setCenter(center);
 
-        dummy.numerator = numerator;
-        dummy.denominator = denominator;
+        dummy.timeRational = timeRational;
         dummy.shape = shape;
 
         return dummy;
@@ -433,25 +428,25 @@ public class TimeSignature
      * @param shape the queried shape
      * @return the related num/den or null
      */
-    public static Rational rationalOf (Shape shape)
+    public static TimeRational rationalOf (Shape shape)
     {
         switch (shape) {
         case COMMON_TIME :
         case TIME_FOUR_FOUR :
-            return new Rational(4, 4);
+            return new TimeRational(4, 4);
 
         case CUT_TIME :
         case TIME_TWO_TWO :
-            return new Rational(2, 2);
+            return new TimeRational(2, 2);
 
         case TIME_TWO_FOUR :
-            return new Rational(2, 4);
+            return new TimeRational(2, 4);
 
         case TIME_THREE_FOUR :
-            return new Rational(3, 4);
+            return new TimeRational(3, 4);
 
         case TIME_SIX_EIGHT :
-            return new Rational(6, 8);
+            return new TimeRational(6, 8);
 
         default :
             return null;
@@ -466,14 +461,14 @@ public class TimeSignature
      * rational. We use the intersected glyphs of the old sig as the glyphs
      * for the newly built signature.
      * @param shape the shape (perhaps null) of correct signature
-     * @param rational the new sig rational value
+     * @param timeRational the new sig rational value
      */
-    public void modify (Shape    shape,
-                        Rational rational)
+    public void modify (Shape        shape,
+                        TimeRational timeRational)
     {
         if (!isDummy()) {
             if (shape == null) {
-                shape = predefinedShape(rational);
+                shape = predefinedShape(timeRational);
 
                 if (shape == null) {
                     shape = Shape.CUSTOM_TIME_SIGNATURE;
@@ -490,7 +485,7 @@ public class TimeSignature
             compound.setShape(shape, Evaluation.ALGORITHM);
 
             if (shape == Shape.CUSTOM_TIME_SIGNATURE) {
-                compound.setRational(new Rational(rational));
+                compound.setTimeRational(timeRational);
             }
 
             if (logger.isFineEnabled()) {
@@ -498,7 +493,7 @@ public class TimeSignature
             }
         }
 
-        setRational(rational);
+        setRational(timeRational);
     }
 
     //-------//
@@ -513,8 +508,7 @@ public class TimeSignature
         super.reset();
 
         shape = null;
-        numerator = null;
-        denominator = null;
+        timeRational = null;
     }
 
     //----------//
@@ -684,10 +678,14 @@ public class TimeSignature
         return shapes;
     }
 
-    //-----------------//
-    // computeRational //
-    //-----------------//
-    private void computeRational ()
+    //---------------------//
+    // computeTimeRational //
+    //---------------------//
+    /**
+     * Compute the actual members of time rational
+     * @throws InvalidTimeSignature
+     */
+    private void computeTimeRational ()
         throws InvalidTimeSignature
     {
         if (glyphs == null) {
@@ -702,14 +700,13 @@ public class TimeSignature
 
                 if (theShape != null) {
                     if (ShapeRange.FullTimes.contains(theShape)) {
-                        Rational rational = (theShape == CUSTOM_TIME_SIGNATURE)
-                                            ? theGlyph.getRational()
-                                            : rationalOf(theShape);
+                        TimeRational theRational = (theShape == CUSTOM_TIME_SIGNATURE)
+                                                   ? theGlyph.getTimeRational()
+                                                   : rationalOf(theShape);
 
-                        if (rational != null) {
+                        if (theRational != null) {
                             shape = theShape;
-                            numerator = rational.num;
-                            denominator = rational.den;
+                            this.timeRational = theRational;
                         }
 
                         return;
@@ -722,7 +719,10 @@ public class TimeSignature
             } else {
                 // Several symbols
                 // Dispatch symbols on top and bottom parts
-                numerator = denominator = null;
+                timeRational = null;
+
+                int numerator = 0;
+                int denominator = 0;
 
                 for (Glyph glyph : glyphs) {
                     int     pitch = (int) Math.rint(
@@ -737,16 +737,8 @@ public class TimeSignature
 
                     if (value != null) {
                         if (pitch < 0) {
-                            if (numerator == null) {
-                                numerator = 0;
-                            }
-
                             numerator = (10 * numerator) + value;
                         } else if (pitch > 0) {
-                            if (denominator == null) {
-                                denominator = 0;
-                            }
-
                             denominator = (10 * denominator) + value;
                         } else {
                             addError(
@@ -761,13 +753,16 @@ public class TimeSignature
                     }
                 }
 
+                if ((numerator != 0) && (denominator != 0)) {
+                    timeRational = new TimeRational(numerator, denominator);
+                }
+
                 // Try to assign a predefined shape
                 shape = predefinedShape();
             }
 
             if (logger.isFineEnabled()) {
-                logger.fine(
-                    "numerator=" + numerator + " denominator=" + denominator);
+                logger.fine("time rational: " + timeRational);
             }
         }
     }
@@ -868,10 +863,10 @@ public class TimeSignature
      */
     private Shape predefinedShape ()
     {
-        if ((numerator == null) || (denominator == null)) {
+        if (timeRational == null) {
             return null; // Safer
         } else {
-            return predefinedShape(new Rational(numerator, denominator));
+            return predefinedShape(timeRational);
         }
     }
 
@@ -883,16 +878,16 @@ public class TimeSignature
      * num and den values of this time sig
      * @return the shape found or null
      */
-    private static Shape predefinedShape (Rational rational)
+    private static Shape predefinedShape (TimeRational timeRational)
     {
-        if (rational == null) {
+        if (timeRational == null) {
             return null; // Safer
         }
 
         for (Shape s : ShapeRange.FullTimes) {
-            Rational nd = rationals.get(s);
+            TimeRational nd = rationals.get(s);
 
-            if ((nd != null) && nd.equals(rational)) {
+            if (timeRational.equals(nd)) {
                 return s;
             }
         }

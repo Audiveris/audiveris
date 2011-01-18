@@ -103,4 +103,45 @@ public class GCD
 
         return s;
     }
+
+    //-----//
+    // lcm //
+    //-----//
+    /**
+     * Report the Least Common Multiple of 2 values, assumed to be positive
+     * or zero
+     * @param m
+     * @param n
+     * @return  lcm(|m|, |n|)
+     */
+    public static int lcm (int m,
+                           int n)
+    {
+        if (m < 0) {
+            m = -m;
+        }
+
+        if (n < 0) {
+            n = -n;
+        }
+
+        return m * (n / gcd(m, n));
+    }
+
+    //-----//
+    // lcm //
+    //-----//
+    /**
+     * Report the Least Common Multiple of n values
+     */
+    public static int lcm (int... vals)
+    {
+        int s = vals[0];
+
+        for (int val : vals) {
+            s = lcm(s, val);
+        }
+
+        return s;
+    }
 }

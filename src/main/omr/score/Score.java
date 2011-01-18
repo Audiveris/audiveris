@@ -20,6 +20,8 @@ import omr.glyph.text.Language;
 
 import omr.log.Logger;
 
+import omr.math.Rational;
+
 import omr.score.entity.Page;
 import omr.score.entity.ScoreNode;
 import omr.score.entity.ScorePart;
@@ -843,9 +845,9 @@ public class Score
      * @return the simple duration expression, in the context of proper
      * divisions
      */
-    public int simpleDurationOf (int value)
+    public int simpleDurationOf (Rational value)
     {
-        return value / getDurationDivisor();
+        return value.num * (getDurationDivisor() / value.den);
     }
 
     //----------//

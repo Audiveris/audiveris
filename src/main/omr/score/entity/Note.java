@@ -21,7 +21,6 @@ import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
-import omr.math.GCD;
 import omr.math.Rational;
 
 import omr.score.common.PixelPoint;
@@ -52,12 +51,8 @@ public class Note
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Note.class);
 
-    /**
-     * A quarter duration value chosen to fit all cases for internal
-     * computations. This will be simplified when the score is exported to XML,
-     * using the greatest common divisor found in the score.
-     */
-    public static final int QUARTER_DURATION = 96;
+    /** The quarter duration value */
+    public static final Rational QUARTER_DURATION = new Rational(1, 4);
 
     //~ Enumerations -----------------------------------------------------------
 
@@ -497,23 +492,23 @@ public class Note
      * @param shape the shape of the note head
      * @return the corresponding duration
      */
-    public static int getTypeDuration (Shape shape)
+    public static Rational getTypeDuration (Shape shape)
     {
         switch (baseShapeOf(shape)) {
         case LONG_REST : // 4 measures
-            return 16 * QUARTER_DURATION;
+            return new Rational(4);
 
         case BREVE_REST : // 2 measures
         case BREVE :
-            return 8 * QUARTER_DURATION;
+            return new Rational(2);
 
         case WHOLE_REST : // 1 measure
         case WHOLE_NOTE :
-            return 4 * QUARTER_DURATION;
+            return Rational.ONE;
 
         case HALF_REST :
         case VOID_NOTEHEAD :
-            return 2 * QUARTER_DURATION;
+            return new Rational(1 / 2);
 
         case QUARTER_REST :
         case OLD_QUARTER_REST :
@@ -521,25 +516,25 @@ public class Note
             return QUARTER_DURATION;
 
         case EIGHTH_REST :
-            return QUARTER_DURATION / 2;
+            return new Rational(1, 8);
 
         case SIXTEENTH_REST :
-            return QUARTER_DURATION / 4;
+            return new Rational(1, 16);
 
         case THIRTY_SECOND_REST :
-            return QUARTER_DURATION / 8;
+            return new Rational(1, 32);
 
         case SIXTY_FOURTH_REST :
-            return QUARTER_DURATION / 16;
+            return new Rational(1, 64);
 
         case ONE_HUNDRED_TWENTY_EIGHTH_REST :
-            return QUARTER_DURATION / 32;
+            return new Rational(1, 128);
 
         default :
             // Error
             logger.severe("Illegal note type " + shape);
 
-            return 0;
+            return Rational.ZERO;
         }
     }
 
@@ -803,9 +798,9 @@ public class Note
      *
      * @return the intrinsic note duration
      */
-    public int getNoteDuration ()
+    public Rational getNoteDuration ()
     {
-        int dur = getTypeDuration(shape);
+        Rational dur = getTypeDuration(shape);
 
         // Apply fraction if any (not for rests) due to beams or flags
         if (!isRest()) {
@@ -815,7 +810,7 @@ public class Note
                                                   .size();
 
             for (int i = 0; i < fbn; i++) {
-                dur /= 2;
+                dur = dur.divides(2);
             }
         }
 
@@ -943,62 +938,6 @@ public class Note
                     glyph.getShape() + " at " + bestNote.getCenter());
             }
         }
-    }
-
-    //----------------//
-    // quarterValueOf //
-    //----------------//
-    /**
-     * Report a easy-to-read string, where a duration is expressed in quarters
-     *
-     * @param val a duration value
-     * @return a string such as "3Q/4" or "Q"
-     */
-    public static String quarterValueOf (int val)
-    {
-        final StringBuilder sb = new StringBuilder();
-
-        if (val < 0) {
-            sb.append("-");
-            val = -val;
-        }
-
-        final int gcd = GCD.gcd(val, QUARTER_DURATION);
-        final int num = val / gcd;
-        final int den = QUARTER_DURATION / gcd;
-
-        if (num == 0) {
-            return "0";
-        } else if (num != 1) {
-            sb.append(num);
-        }
-
-        sb.append("Q");
-
-        if (den != 1) {
-            sb.append("/")
-              .append(den);
-        }
-
-        return sb.toString();
-    }
-
-    //-----------------//
-    // rationalValueOf //
-    //-----------------//
-    /**
-     * Report the rational equivalent to provided duration
-     *
-     * @param val a duration value
-     * @return a rational such as 1/4, 3/4, ...
-     */
-    public static Rational rationalValueOf (int val)
-    {
-        final int gcd = GCD.gcd(val, QUARTER_DURATION);
-        final int num = val / gcd;
-        final int den = (4 * QUARTER_DURATION) / gcd;
-
-        return new Rational(num, den);
     }
 
     //----------//

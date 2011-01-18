@@ -139,8 +139,6 @@ public class SystemTranslator
             sheet.getSystems().size());
 
         // All actions for completed systems
-        WrappedBoolean modified = new WrappedBoolean(false);
-
         for (SystemInfo info : systems) {
             ScoreSystem syst = info.getScoreSystem();
             syst.fillMissingParts();
@@ -148,67 +146,23 @@ public class SystemTranslator
             syst.refineLyricSyllables();
         }
 
-        // All actions for completed page
-        page.accept(new ScoreTimeFixer());
+        // Finally, all actions for completed page (in proper order)
 
-        page.accept(new TimeSignatureRetriever(modified));
+        // Compute mean beam thickness at page level
+        page.accept(new BeamReader());
 
-        if (logger.isFineEnabled()) {
-            logger.fine("TimeSignatureRetriever modified:" + modified.isSet());
-        }
+        // 1/ Look carefully for time signatures
+        page.accept(new TimeSignatureRetriever());
 
-        if (!modified.isSet()) {
-            page.accept(new TimeSignatureFixer(modified));
+        // 2/ Adapt time sigs according to intrinsic measure & chord durations
+        page.accept(new TimeSignatureFixer());
 
-            if (logger.isFineEnabled()) {
-                logger.fine("TimeSignatureFixer modified:" + modified.isSet());
-            }
-        }
+        // 3/ Retrieve measures & systems start times & actual durations
+        page.accept(new DurationRetriever());
 
-        if (!modified.isSet()) {
-            page.accept(new MeasureFixer(modified));
-
-            if (logger.isFineEnabled()) {
-                logger.fine("MeasureFixer modified:" + modified.isSet());
-            }
-        }
-
-        if (!modified.isSet()) {
-            page.accept(new BeamReader());
-        }
-
-        // Should we re-run this step? (on this sheet only) 
-        // There is a risk of ENDLESS LOOP...
-        if (modified.isSet()) {
-            logger.info("Restarting step " + Steps.PAGES);
-
-            try {
-                Stepping.doOneSheetStep(
-                    Steps.valueOf(Steps.PAGES),
-                    sheet,
-                    systems);
-            } catch (ProcessingCancellationException pce) {
-                throw pce;
-            } catch (StepException ex) {
-                logger.warning("Error redoing PAGES step", ex);
-            }
-        }
-
-        if (Main.getGui() != null) {
-            try {
-                // Invalidate score data within MidiAgent, if needed
-                if (MidiAgent.getInstance()
-                             .getScore() == system.getScore()) {
-                    MidiAgent.getInstance()
-                             .reset();
-                }
-            } catch (Exception ex) {
-                logger.warning("Cannot access Midi agent", ex);
-            }
-        }
-
-        // Update score views if any
-        //TODO score.updateViews();
+        // 4/ Check all voices timing, assign forward items if needed.
+        // 5/ Detect special measures and assign proper measure ids
+        page.accept(new MeasureFixer());
     }
 
     //-----------------//
@@ -961,8 +915,6 @@ public class SystemTranslator
             measure.checkTiedChords();
             // Determine the voices within this measure
             measure.buildVoices();
-            // Check duration sanity in this measure
-            measure.checkDuration();
 
             // Make sure all barline glyphs point to it
             Barline barline = measure.getBarline();

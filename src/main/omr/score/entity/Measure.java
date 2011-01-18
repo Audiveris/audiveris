@@ -15,6 +15,8 @@ import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
+import omr.math.Rational;
+
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
@@ -60,6 +62,9 @@ public class Measure
     /** Flag for implicit (pickup or repeat last half) measure */
     private boolean implicit;
 
+    /** Flag for firstHalf measure */
+    private boolean firstHalf;
+
     /** Child: Left-inside bar line, if any */
     private Barline insideBarline;
 
@@ -93,17 +98,14 @@ public class Measure
     /** Groups of beams in this measure */
     private List<BeamGroup> beamGroups;
 
-    /** Start time of this measure since beginning of the system */
-    private Integer startTime;
+    /** Theoretical measure duration, based on current time signature */
+    private Rational expectedDuration;
 
-    /** Theoretical measure duration */
-    private Integer expectedDuration;
-
-    /** Actual measure duration */
-    private Integer actualDuration;
+    /** Actual measure duration, based on durations of contained chords */
+    private Rational actualDuration;
 
     /** Flag to indicate a excess duration */
-    private Integer excess;
+    private Rational excess;
 
     /** Voices within this measure, sorted by increasing voice id */
     private List<Voice> voices;
@@ -146,7 +148,7 @@ public class Measure
      *
      * @param actualDuration the duration value
      */
-    public void setActualDuration (int actualDuration)
+    public void setActualDuration (Rational actualDuration)
     {
         this.actualDuration = actualDuration;
     }
@@ -161,13 +163,13 @@ public class Measure
      * @return the (actual) measure duration, or 0 if no rest / note exist in
      * this measure
      */
-    public Integer getActualDuration ()
+    public Rational getActualDuration ()
     {
         if (actualDuration != null) {
             return actualDuration;
         } else {
             ///logger.warning(getContextString() + " no actual duration");
-            return 0;
+            return Rational.ZERO;
         }
     }
 
@@ -642,7 +644,7 @@ public class Measure
      *
      * @param excess the duration in excess
      */
-    public void setExcess (Integer excess)
+    public void setExcess (Rational excess)
     {
         this.excess = excess;
     }
@@ -655,9 +657,17 @@ public class Measure
      *
      * @return the duration in excess, or null
      */
-    public Integer getExcess ()
+    public Rational getExcess ()
     {
         return excess;
+    }
+
+    //---------------------//
+    // setExpectedDuration //
+    //---------------------//
+    public void setExpectedDuration (Rational expectedDuration)
+    {
+        this.expectedDuration = expectedDuration;
     }
 
     //---------------------//
@@ -670,7 +680,7 @@ public class Measure
      * @return the expected measure duration
      * @throws InvalidTimeSignature
      */
-    public int getExpectedDuration ()
+    public Rational getExpectedDuration ()
         throws InvalidTimeSignature
     {
         try {
@@ -687,13 +697,35 @@ public class Measure
                     denominator = 4;
                 }
 
-                expectedDuration = (4 * Note.QUARTER_DURATION * numerator) / denominator;
+                expectedDuration = new Rational(numerator, denominator);
             }
 
             return expectedDuration;
         } catch (NullPointerException npe) {
             throw new InvalidTimeSignature();
         }
+    }
+
+    //--------------//
+    // setFirstHalf //
+    //--------------//
+    /**
+     * @param firstHalf the firstHalf to set
+     */
+    public void setFirstHalf (boolean firstHalf)
+    {
+        this.firstHalf = firstHalf;
+    }
+
+    //-------------//
+    // isFirstHalf //
+    //-------------//
+    /**
+     * @return the firstHalf
+     */
+    public boolean isFirstHalf ()
+    {
+        return firstHalf;
     }
 
     //---------------------//
@@ -971,17 +1003,18 @@ public class Measure
      *
      * @return the relative time of last Midi "note off" in this measure
      */
-    public int getLastSoundTime ()
+    public Rational getLastSoundTime ()
     {
-        int lastTime = 0;
+        Rational lastTime = Rational.ZERO;
 
         for (TreeNode chordNode : getChords()) {
             Chord chord = (Chord) chordNode;
 
             if (!chord.isAllRests()) {
-                int time = chord.getStartTime() + chord.getDuration();
+                Rational time = chord.getStartTime()
+                                     .plus(chord.getDuration());
 
-                if (time > lastTime) {
+                if (time.compareTo(lastTime) > 0) {
                     lastTime = time;
                 }
             }
@@ -1046,67 +1079,6 @@ public class Measure
         }
 
         return null; // No clef previously defined
-    }
-
-    //------------//
-    // setPartial //
-    //------------//
-    /**
-     * Flag this measure as partial (shorter than expected duration)
-     *
-     * @param shortening how much the measure duration is to be reduced
-     */
-    public void setPartial (int shortening)
-    {
-        // Remove any final forward mark consistent with the shortening
-        for (Voice voice : voices) {
-            Integer duration = voice.getFinalDuration();
-
-            if (duration != null) {
-                if (duration == shortening) {
-                    if (!voice.isWhole()) {
-                        Chord chord = voice.getLastChord();
-
-                        if (chord != null) {
-                            int nbMarks = chord.getMarks()
-                                               .size();
-
-                            if (nbMarks > 0) {
-                                Mark mark = chord.getMarks()
-                                                 .get(nbMarks - 1);
-
-                                if (logger.isFineEnabled()) {
-                                    logger.fine(
-                                        getContextString() +
-                                        " Removing final forward: " +
-                                        Note.quarterValueOf(
-                                            (Integer) mark.getData()));
-                                }
-
-                                chord.getMarks()
-                                     .remove(mark);
-                            } else {
-                                chord.addError(
-                                    "No final mark to remove in a partial measure");
-
-                                return;
-                            }
-                        } else {
-                            addError("No final chord in " + voice);
-
-                            return;
-                        }
-                    }
-                } else {
-                    addError(
-                        "Non consistent partial measure shortening:" +
-                        Note.quarterValueOf(-shortening) + " " + voice + ": " +
-                        Note.quarterValueOf(-duration));
-
-                    return;
-                }
-            }
-        }
     }
 
     //--------------//
@@ -1179,37 +1151,6 @@ public class Measure
                : getPart()
                      .getStaffAt(point)
                      .getId();
-    }
-
-    //--------------//
-    // getStartTime //
-    //--------------//
-    /**
-     * Report the start time of the measure, relative to system/part beginning
-     *
-     * @return part-based start time of the measure
-     */
-    public Integer getStartTime ()
-    {
-        if (startTime == null) {
-            // Start of this measure is the end of the previous one
-            Measure prevMeasure = (Measure) getPreviousSibling();
-
-            if (prevMeasure == null) { // Very first measure in the part
-                startTime = 0;
-            } else {
-                startTime = prevMeasure.getStartTime() +
-                            prevMeasure.getActualDuration();
-            }
-
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    getContextString() + " id=" + this.getId() + " startTime=" +
-                    startTime);
-            }
-        }
-
-        return startTime;
     }
 
     //--------------//
@@ -1416,7 +1357,7 @@ public class Measure
 
         // Create voices for whole chords
         for (Chord chord : activeChords) {
-            chord.setStartTime(0);
+            chord.setStartTime(Rational.ZERO);
             Voice.createWholeVoice(chord);
         }
 
@@ -1485,11 +1426,11 @@ public class Measure
         }
 
         // Invalidate data
-        startTime = null;
         expectedDuration = null;
         excess = null;
         implicit = false;
-        id = 0;
+        setFirstHalf(false);
+        /// = 0;
 
         // (Re)Allocate specific children lists
         clefs = new Container(this, "Clefs");
@@ -1681,10 +1622,7 @@ public class Measure
             for (Slot slot : slots) {
                 if (slot.getStartTime() != null) {
                     sb.append("|")
-                      .append(
-                        String.format(
-                            "%-5s",
-                            Note.quarterValueOf(slot.getStartTime())));
+                      .append(String.format("%-5s", slot.getStartTime()));
                 }
             }
 
@@ -1716,12 +1654,65 @@ public class Measure
         }
     }
 
-    //----------------//
-    // resetStartTime //
-    //----------------//
-    public void resetStartTime ()
+    //---------//
+    // shorten //
+    //---------//
+    /**
+     * Flag this measure as partial (shorter than expected duration)
+     *
+     * @param shortening how much the measure duration is to be reduced
+     */
+    public void shorten (Rational shortening)
     {
-        startTime = null;
+        // Remove any final forward mark consistent with the shortening
+        for (Voice voice : voices) {
+            Rational duration = voice.getFinalDuration();
+
+            if (duration != null) {
+                if (duration == shortening) {
+                    if (!voice.isWhole()) {
+                        // Remove the related mark
+                        Chord chord = voice.getLastChord();
+
+                        if (chord != null) {
+                            int nbMarks = chord.getMarks()
+                                               .size();
+
+                            if (nbMarks > 0) {
+                                Mark mark = chord.getMarks()
+                                                 .get(nbMarks - 1);
+
+                                if (logger.isFineEnabled()) {
+                                    logger.fine(
+                                        getContextString() +
+                                        " Removing final forward: " +
+                                        (Rational) mark.getData());
+                                }
+
+                                chord.getMarks()
+                                     .remove(mark);
+                            } else {
+                                chord.addError(
+                                    "No final mark to remove in a partial measure");
+
+                                return;
+                            }
+                        } else {
+                            addError("No final chord in " + voice);
+
+                            return;
+                        }
+                    }
+                } else {
+                    addError(
+                        "Non consistent partial measure shortening:" +
+                        shortening.opposite() + " " + voice + ": " +
+                        duration.opposite());
+
+                    return;
+                }
+            }
+        }
     }
 
     //----------//
@@ -1822,23 +1813,26 @@ public class Measure
     //--------------------//
     private String getCurrentDuration ()
     {
-        int measureDur = 0;
+        Rational measureDur = Rational.ZERO;
 
         for (Slot slot : getSlots()) {
             if (slot.getStartTime() != null) {
                 for (Chord chord : slot.getChords()) {
-                    measureDur = Math.max(
-                        measureDur,
-                        slot.getStartTime() + chord.getDuration());
+                    Rational chordEnd = slot.getStartTime()
+                                            .plus(chord.getDuration());
+
+                    if (chordEnd.compareTo(measureDur) > 0) {
+                        measureDur = chordEnd;
+                    }
                 }
             }
         }
 
-        if ((measureDur == 0) && !getWholeChords()
-                                      .isEmpty()) {
+        if (measureDur.equals(Rational.ZERO) && !getWholeChords()
+                                                     .isEmpty()) {
             return "W";
         }
 
-        return String.format("%-5s", Note.quarterValueOf(measureDur));
+        return String.format("%-5s", measureDur.toString());
     }
 }

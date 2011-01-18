@@ -15,7 +15,7 @@ import omr.glyph.Evaluation;
 import omr.glyph.Shape;
 import omr.glyph.text.TextInfo;
 
-import omr.math.Rational;
+import omr.score.entity.TimeRational;
 
 /**
  * Interface {@code GlyphRecognition} defines a facet that deals with the shape
@@ -99,24 +99,6 @@ interface GlyphRecognition
      */
     boolean isManualShape ();
 
-    //-------------//
-    // setRational //
-    //-------------//
-    /**
-     * Set the glyph timesig rational value
-     * @param rational the rational to set
-     */
-    void setRational (Rational rational);
-
-    //-------------//
-    // getRational //
-    //-------------//
-    /**
-     * Report the related timesig rational if any
-     * @return the rational
-     */
-    Rational getRational ();
-
     //----------//
     // setShape //
     //----------//
@@ -188,6 +170,24 @@ interface GlyphRecognition
      * @return the glyph textual info, or null if none
      */
     TextInfo getTextInfo ();
+
+    //-----------------//
+    // setTimeRational //
+    //-----------------//
+    /**
+     * Set the glyph timesig rational value
+     * @param timeRational the time rational to set
+     */
+    void setTimeRational (TimeRational timeRational);
+
+    //-----------------//
+    // getTimeRational //
+    //-----------------//
+    /**
+     * Report the related timesig rational if any
+     * @return the time rational
+     */
+    TimeRational getTimeRational ();
 
     //-------------//
     // isWellKnown //

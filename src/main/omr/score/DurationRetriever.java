@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                        S c o r e T i m e F i x e r                         //
+//                     D u r a t i o n R e t r i e v e r                      //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -13,6 +13,8 @@ package omr.score;
 
 import omr.log.Logger;
 
+import omr.math.Rational;
+
 import omr.score.entity.Chord;
 import omr.score.entity.Measure;
 import omr.score.entity.Page;
@@ -21,42 +23,41 @@ import omr.score.entity.Slot;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
 import omr.score.visitor.AbstractScoreVisitor;
 
-import omr.util.TreeNode;
-
 import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Class <code>ScoreTimeFixer</code> can visit the score hierarchy to compute
+ * Class <code>DurationRetriever</code> can visit a page hierarchy to compute
  * all measure and system start times and durations.
  *
  * @author Hervé Bitteur
  */
-public class ScoreTimeFixer
+public class DurationRetriever
     extends AbstractScoreVisitor
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ScoreTimeFixer.class);
+    private static final Logger logger = Logger.getLogger(
+        DurationRetriever.class);
 
     //~ Instance fields --------------------------------------------------------
 
     /** Map of Measure id -> Measure duration, whatever the containing part */
-    private final Map<Integer, Integer> measureDurations = new TreeMap<Integer, Integer>();
+    private final Map<Integer, Rational> measureDurations = new TreeMap<Integer, Rational>();
 
-    /** Pass number, since we need 2 passes */
+    /** Pass number, since we need 2 passes per system */
     private int pass = 1;
 
     //~ Constructors -----------------------------------------------------------
 
-    //----------------//
-    // ScoreTimeFixer //
-    //----------------//
+    //-------------------//
+    // DurationRetriever //
+    //-------------------//
     /**
-     * Creates a new ScoreTimeFixer object.
+     * Creates a new DurationRetriever object.
      */
-    public ScoreTimeFixer ()
+    public DurationRetriever ()
     {
     }
 
@@ -75,25 +76,25 @@ public class ScoreTimeFixer
                     measure);
             }
 
-            measure.resetStartTime();
-            measure.getStartTime(); // Value is cached
-
-            int measureDur = 0;
+            Rational measureDur = Rational.ZERO;
 
             // Whole/multi rests are handled outside of slots
             for (Slot slot : measure.getSlots()) {
                 if (slot.getStartTime() != null) {
                     for (Chord chord : slot.getChords()) {
-                        measureDur = Math.max(
-                            measureDur,
-                            slot.getStartTime() + chord.getDuration());
+                        Rational chordEnd = slot.getStartTime()
+                                                .plus(chord.getDuration());
+
+                        if (chordEnd.compareTo(measureDur) > 0) {
+                            measureDur = chordEnd;
+                        }
                     }
                 }
             }
 
-            if (measureDur != 0) {
-                // Make sure the measure duration is not bigger than limit (?)
-                if (measureDur <= measure.getExpectedDuration()) {
+            if (!measureDur.equals(Rational.ZERO)) {
+                // Make sure the measure duration is not bigger than limit
+                if (measureDur.compareTo(measure.getExpectedDuration()) <= 0) {
                     measure.setActualDuration(measureDur);
                 } else {
                     measure.setActualDuration(measure.getExpectedDuration());
@@ -107,7 +108,7 @@ public class ScoreTimeFixer
             } else if (!measure.getWholeChords()
                                .isEmpty()) {
                 if (pass > 1) {
-                    Integer dur = measureDurations.get(measure.getId());
+                    Rational dur = measureDurations.get(measure.getId());
 
                     if (dur != null) {
                         measure.setActualDuration(dur);
@@ -124,7 +125,7 @@ public class ScoreTimeFixer
                 ex);
         }
 
-        return false; // Dead end, we don't go lower than measures
+        return false; // Dead end, we don't go deeper than measure level
     }
 
     //------------//
@@ -153,32 +154,32 @@ public class ScoreTimeFixer
         return false; // No default browsing this way
     }
 
-    //-------------//
-    // visit Score //
-    //-------------//
-    /**
-     * Score hierarchy entry point. Determine the startTime of each page,
-     * assuming that page internal duration is already available
-     *
-     * @param score the score to process
-     * @return false, since no further processing is required after this node
-     */
-    @Override
-    public boolean visit (Score score)
-    {
-        try {
-            for (TreeNode pn : score.getPages()) {
-                Page page = (Page) pn;
-                page.recomputeStartTime();
-            }
-        } catch (Exception ex) {
-            logger.warning(
-                getClass().getSimpleName() + " Error visiting " + score,
-                ex);
-        }
-
-        return false; // No browsing
-    }
+    //    //-------------//
+    //    // visit Score //
+    //    //-------------//
+    //    /**
+    //     * Score hierarchy entry point. Determine the startTime of each page,
+    //     * assuming that page internal duration is already available
+    //     *
+    //     * @param score the score to process
+    //     * @return false, since no further processing is required after this node
+    //     */
+    //    @Override
+    //    public boolean visit (Score score)
+    //    {
+    //        try {
+    //            for (TreeNode pn : score.getPages()) {
+    //                Page page = (Page) pn;
+    //                page.recomputeStartTime();
+    //            }
+    //        } catch (Exception ex) {
+    //            logger.warning(
+    //                getClass().getSimpleName() + " Error visiting " + score,
+    //                ex);
+    //        }
+    //
+    //        return false; // No browsing
+    //    }
 
     //--------------//
     // visit System //

@@ -16,6 +16,7 @@ import omr.glyph.facets.Glyph;
 import omr.log.Logger;
 
 import omr.math.InjectionSolver;
+import omr.math.Rational;
 
 import omr.score.common.PixelPoint;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
@@ -106,7 +107,7 @@ public abstract class Slot
     private List<Chord> chords = new ArrayList<Chord>();
 
     /** Time offset since measure start */
-    private Integer startTime;
+    private Rational startTime;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -179,19 +180,19 @@ public abstract class Slot
      *
      * @return the duration of the chord with shortest duration
      */
-    public int getShortestDuration ()
+    public Rational getShortestDuration ()
     {
-        int best = Integer.MAX_VALUE;
+        Rational best = new Rational(Integer.MAX_VALUE);
 
         for (Chord chord : getChords()) {
             try {
-                Integer chordDur = chord.getDuration();
+                Rational chordDur = chord.getDuration();
 
                 if (chord.isWholeDuration()) {
                     chordDur = measure.getExpectedDuration();
                 }
 
-                if (chordDur < best) {
+                if (chordDur.compareTo(best) < 0) {
                     best = chordDur;
                 }
             } catch (InvalidTimeSignature ex) {
@@ -206,19 +207,17 @@ public abstract class Slot
     // setStartTime //
     //--------------//
     /**
-     * Assign the time startTime, since the beginning of the measure, for all
+     * Assign the time startTime since the beginning of the measure, for all
      * chords in this time slot
      *
-     * @param startTime time startTime using
-     * {@link omr.score.entity.Note#QUARTER_DURATION} value
+     * @param startTime time offset since measure start
      */
-    public void setStartTime (int startTime)
+    public void setStartTime (Rational startTime)
     {
         if (this.startTime == null) {
             if (logger.isFineEnabled()) {
                 logger.fine(
-                    "setStartTime " + Note.quarterValueOf(startTime) +
-                    " for Slot #" + getId());
+                    "setStartTime " + startTime + " for Slot #" + getId());
             }
 
             this.startTime = startTime;
@@ -246,9 +245,8 @@ public abstract class Slot
                 getChords()
                     .get(0)
                     .addError(
-                    "Reassigning startTime from " +
-                    Note.quarterValueOf(this.startTime) + " to " +
-                    Note.quarterValueOf(startTime) + " in " + this);
+                    "Reassigning startTime from " + this.startTime + " to " +
+                    startTime + " in " + this);
             }
         }
     }
@@ -261,7 +259,7 @@ public abstract class Slot
      *
      * @return the time offset of this time slot.
      */
-    public Integer getStartTime ()
+    public Rational getStartTime ()
     {
         return startTime;
     }
@@ -537,6 +535,11 @@ public abstract class Slot
             }
 
             slot.addGlyph(glyph);
+
+            if (logger.isFineEnabled()) {
+                logger.fine(measure + " Adding slot " + slot);
+            }
+
             measure.getSlots()
                    .add(slot);
         }
@@ -574,7 +577,8 @@ public abstract class Slot
             // Look for chord that finishes at the slot at hand
             // Make sure voice is really available
             if (!chord.isWholeDuration()) {
-                if ((chord.getEndTime() <= startTime)) {
+                if ((chord.getEndTime()
+                          .compareTo(startTime) <= 0)) {
                     BeamGroup group = chord.getBeamGroup();
 
                     if ((group == null) || (chord == group.getChords()
@@ -648,8 +652,7 @@ public abstract class Slot
 
         if (getStartTime() != null) {
             sb.append(" start=")
-              .append(
-                String.format("%5s", Note.quarterValueOf(getStartTime())));
+              .append(String.format("%5s", getStartTime()));
         }
 
         sb.append(" [");
@@ -685,7 +688,7 @@ public abstract class Slot
 
         if (startTime != null) {
             sb.append(" start=")
-              .append(Note.quarterValueOf(startTime));
+              .append(startTime);
         }
 
         sb.append(" glyphs=[");
@@ -713,7 +716,7 @@ public abstract class Slot
         sb.append("slot#")
           .append(getId())
           .append(" start=")
-          .append(String.format("%5s", Note.quarterValueOf(getStartTime())))
+          .append(String.format("%5s", getStartTime()))
           .append(" [");
 
         SortedMap<Integer, Chord> voiceChords = new TreeMap<Integer, Chord>();
@@ -742,10 +745,7 @@ public abstract class Slot
                 sb.append(" St")
                   .append(chord.getStaff().getId());
                 sb.append(" Dur=")
-                  .append(
-                    String.format(
-                        "%5s",
-                        Note.quarterValueOf(chord.getDuration())));
+                  .append(String.format("%5s", chord.getDuration()));
             } else {
                 sb.append("----------------------");
             }
@@ -820,29 +820,32 @@ public abstract class Slot
     //------------------//
     // computeStartTime //
     //------------------//
+    /**
+     * Based on the active chords before this slot, determine the next
+     * expiration time, which governs this slot
+     * @param activeChords
+     */
     private void computeStartTime (Collection<Chord> activeChords)
     {
-        // Based on the active chords before this slot,
-        // Determine the next expiration time, which governs this slot
-        int slotTime = Integer.MAX_VALUE;
+        Rational slotTime = Rational.MAX_VALUE;
 
         for (Chord chord : activeChords) {
             if (!chord.isWholeDuration()) { // Skip the "whole" chords
 
-                Integer endTime = chord.getEndTime();
+                Rational endTime = chord.getEndTime();
 
-                if (endTime < slotTime) {
+                if (endTime.compareTo(slotTime) < 0) {
                     slotTime = endTime;
                 }
             }
         }
 
-        if (slotTime == Integer.MAX_VALUE) {
-            slotTime = 0;
+        if (slotTime.equals(Rational.MAX_VALUE)) {
+            slotTime = Rational.ZERO;
         }
 
         if (logger.isFineEnabled()) {
-            logger.fine("slotTime=" + Note.quarterValueOf(slotTime));
+            logger.fine("slotTime=" + slotTime);
         }
 
         setStartTime(slotTime);

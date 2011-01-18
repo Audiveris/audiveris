@@ -15,9 +15,10 @@ import omr.glyph.Shape;
 
 import omr.log.Logger;
 
+import omr.math.Rational;
+
 import omr.score.entity.Barline;
 import omr.score.entity.Measure;
-import omr.score.entity.Note;
 import omr.score.entity.Page;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.SystemPart;
@@ -26,7 +27,6 @@ import omr.score.entity.Voice;
 import omr.score.visitor.AbstractScoreVisitor;
 
 import omr.util.TreeNode;
-import omr.util.WrappedBoolean;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -53,16 +53,14 @@ public class MeasureFixer
 
     //~ Instance fields --------------------------------------------------------
 
-    /** To flag a score modification */
-    private final WrappedBoolean modified;
     private int           im; // Current measure index in system
     private List<Measure> verticals = null; // Current vertical measures
-    private Integer       measureFinal = null; // Current termination
+    private Rational      measureFinal = null; // Current termination
     private ScoreSystem   system; // Current system
 
     // Information to remember from previous vertical measure
     private List<Measure> prevVerticals = null; // Previous vertical measures
-    private Integer       prevMeasureFinal = null; // Previous termination
+    private Rational      prevMeasureFinal = null; // Previous termination
 
     /** The latest id assigned to a measure (in the previous system) */
     private Integer prevSystemLastId = null;
@@ -78,9 +76,8 @@ public class MeasureFixer
     /**
      * Creates a new MeasureFixer object.
      */
-    public MeasureFixer (WrappedBoolean modified)
+    public MeasureFixer ()
     {
-        this.modified = modified;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -142,6 +139,9 @@ public class MeasureFixer
 
         this.system = system;
 
+        // First, compute voices terminations
+        system.acceptChildren(this);
+
         // Measure indices to remove
         List<Integer> toRemove = new ArrayList<Integer>();
 
@@ -163,8 +163,7 @@ public class MeasureFixer
             if (logger.isFineEnabled()) {
                 logger.fine(
                     "measureFinal:" + measureFinal +
-                    ((measureFinal != null)
-                     ? ("=" + Note.quarterValueOf(measureFinal)) : ""));
+                    ((measureFinal != null) ? ("=" + measureFinal) : ""));
             }
 
             if (isEmpty()) {
@@ -194,6 +193,9 @@ public class MeasureFixer
                 if (logger.isFineEnabled()) {
                     logger.fine("secondHalf");
                 }
+
+                // Shorten actual duration for (non-implicit) previous measure
+                shortenFirstHalf();
 
                 setImplicit();
                 setId(-lastId);
@@ -230,6 +232,19 @@ public class MeasureFixer
         return false; // Dead end
     }
 
+    //---------------//
+    // visit Measure //
+    //---------------//
+    @Override
+    public boolean visit (Measure measure)
+    {
+        // Check duration sanity in this measure
+        // Record forward items in voices when needed
+        measure.checkDuration();
+
+        return false;
+    }
+
     //---------//
     // isEmpty //
     //---------//
@@ -240,7 +255,8 @@ public class MeasureFixer
     private boolean isEmpty ()
     {
         return verticals.get(0)
-                        .getActualDuration() == 0;
+                        .getActualDuration()
+                        .equals(Rational.ZERO);
     }
 
     //-------//
@@ -273,9 +289,9 @@ public class MeasureFixer
     //-----------------//
     // getMeasureFinal //
     //-----------------//
-    private Integer getMeasureFinal ()
+    private Rational getMeasureFinal ()
     {
-        Integer termination = null;
+        Rational termination = null;
 
         for (Measure measure : verticals) {
             if (measure.isDummy()) {
@@ -283,7 +299,7 @@ public class MeasureFixer
             }
 
             for (Voice voice : measure.getVoices()) {
-                Integer voiceFinal = voice.getFinalDuration();
+                Rational voiceFinal = voice.getFinalDuration();
 
                 if (voiceFinal != null) {
                     if (termination == null) {
@@ -312,7 +328,8 @@ public class MeasureFixer
     private boolean isPickup ()
     {
         return (system.getChildIndex() == 0) && (im == 0) &&
-               (measureFinal != null) && (measureFinal < 0);
+               (measureFinal != null) &&
+               (measureFinal.compareTo(Rational.ZERO) < 0);
     }
 
     //-------------//
@@ -325,8 +342,8 @@ public class MeasureFixer
      */
     private boolean isRealStart ()
     {
-        return (im == 1) && (prevVerticals.get(0)
-                                          .getActualDuration() == 0) &&
+        return (im == 1) &&
+               (prevVerticals.get(0).getActualDuration().equals(Rational.ZERO)) &&
                (measureFinal != null);
     }
 
@@ -340,12 +357,14 @@ public class MeasureFixer
     private boolean isSecondRepeatHalf ()
     {
         // Check for partial first half
-        if ((prevMeasureFinal == null) || (prevMeasureFinal >= 0)) {
+        if ((prevMeasureFinal == null) ||
+            (prevMeasureFinal.compareTo(Rational.ZERO) >= 0)) {
             return false;
         }
 
         // Check for partial second half
-        if ((measureFinal == null) || (measureFinal >= 0)) {
+        if ((measureFinal == null) ||
+            (measureFinal.compareTo(Rational.ZERO) >= 0)) {
             return false;
         }
 
@@ -361,7 +380,9 @@ public class MeasureFixer
 
         // Check for an exact duration sum (TODO: is this too strict?)
         try {
-            return Math.abs(prevMeasureFinal + measureFinal) == prevMeasure.getExpectedDuration();
+            return prevMeasureFinal.plus(measureFinal)
+                                   .abs()
+                                   .equals(prevMeasure.getExpectedDuration());
         } catch (InvalidTimeSignature its) {
             return false;
         }
@@ -398,8 +419,6 @@ public class MeasureFixer
             return;
         }
 
-        modified.set(true);
-
         for (TreeNode pn : system.getParts()) {
             SystemPart part = (SystemPart) pn;
 
@@ -414,6 +433,17 @@ public class MeasureFixer
                     it.remove();
                 }
             }
+        }
+    }
+
+    //------------------//
+    // shortenFirstHalf //
+    //------------------//
+    private void shortenFirstHalf ()
+    {
+        for (Measure measure : prevVerticals) {
+            measure.shorten(prevMeasureFinal);
+            measure.setFirstHalf(true);
         }
     }
 

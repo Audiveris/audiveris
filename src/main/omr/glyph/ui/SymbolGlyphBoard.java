@@ -20,9 +20,9 @@ import omr.glyph.text.TextRole;
 import omr.log.Logger;
 
 import omr.math.Moments;
-import omr.math.Rational;
 
 import omr.score.entity.Text.CreatorText.CreatorType;
+import omr.score.entity.TimeRational;
 import omr.score.entity.TimeSignature;
 
 import omr.selection.GlyphEvent;
@@ -324,13 +324,14 @@ class SymbolGlyphBoard
                         timeDen.setEnabled(
                             shape == Shape.CUSTOM_TIME_SIGNATURE);
 
-                        Rational rational = (shape == Shape.CUSTOM_TIME_SIGNATURE)
-                                            ? glyph.getRational()
-                                            : TimeSignature.rationalOf(shape);
+                        TimeRational timeRational = (shape == Shape.CUSTOM_TIME_SIGNATURE)
+                                                    ? glyph.getTimeRational()
+                                                    : TimeSignature.rationalOf(
+                            shape);
 
-                        if (rational != null) {
-                            timeNum.setValue(rational.num);
-                            timeDen.setValue(rational.den);
+                        if (timeRational != null) {
+                            timeNum.setValue(timeRational.num);
+                            timeDen.setValue(timeRational.den);
                         } else {
                             timeNum.setText("");
                             timeDen.setText("");
@@ -492,7 +493,7 @@ class SymbolGlyphBoard
                                         .getSymbolsController()
                                         .asyncAssignRationals(
                             glyphs,
-                            new Rational(num, den));
+                            new TimeRational(num, den));
                     } else {
                         logger.warning("Invalid time signature parameters");
                     }

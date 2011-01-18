@@ -16,6 +16,8 @@ import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
+import omr.math.Rational;
+
 import omr.score.common.DurationFactor;
 import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
@@ -57,11 +59,11 @@ public class Tuplet
      * @param lastChord the last embraced chord
      * @param glyph the underlying glyph
      */
-    public Tuplet (Measure     measure,
+    public Tuplet (Measure    measure,
                    PixelPoint point,
-                   Chord       firstChord,
-                   Chord       lastChord,
-                   Glyph       glyph)
+                   Chord      firstChord,
+                   Chord      lastChord,
+                   Glyph      glyph)
     {
         super(measure, point, firstChord, glyph);
 
@@ -94,8 +96,8 @@ public class Tuplet
      * @param measure containing measure
      * @param point location for the sign
      */
-    public static void populate (Glyph       glyph,
-                                 Measure     measure,
+    public static void populate (Glyph      glyph,
+                                 Measure    measure,
                                  PixelPoint point)
     {
         if (logger.isFineEnabled()) {
@@ -167,7 +169,7 @@ public class Tuplet
      */
     private static SortedSet<Chord> getEmbracedChords (Glyph            glyph,
                                                        Measure          measure,
-                                                       PixelPoint      point,
+                                                       PixelPoint       point,
                                                        SortedSet<Chord> candidates,
                                                        Staff            requiredStaff)
     {
@@ -406,13 +408,13 @@ public class Tuplet
         private final SortedSet<Chord> chords;
 
         /** The base duration as identified so far */
-        private int base = Integer.MAX_VALUE;
+        private Rational base = Rational.MAX_VALUE;
 
         /** The total duration expected (using the known base) */
-        private int expectedTotal = Integer.MAX_VALUE;
+        private Rational expectedTotal = Rational.MAX_VALUE;
 
         /** The total duration so far */
-        private int total;
+        private Rational total = Rational.ZERO;
 
         /** Current status */
         private Status status = Status.TOO_SHORT;
@@ -446,8 +448,7 @@ public class Tuplet
             }
 
             return status.label + " sequence in " + glyph.getShape() + " " +
-                   Note.quarterValueOf(total) + " vs " +
-                   Note.quarterValueOf(expectedTotal);
+                   total + " vs " + expectedTotal;
         }
 
         public boolean isTooLong ()
@@ -455,7 +456,7 @@ public class Tuplet
             return status == Status.TOO_LONG;
         }
 
-        public int getTotal ()
+        public Rational getTotal ()
         {
             return total;
         }
@@ -473,13 +474,13 @@ public class Tuplet
               .append(status);
 
             sb.append(" Base:")
-              .append(Note.quarterValueOf(base));
+              .append(base);
 
             sb.append(" ExpectedTotal:")
-              .append(Note.quarterValueOf(expectedTotal));
+              .append(expectedTotal);
 
             sb.append(" Total:")
-              .append(Note.quarterValueOf(total));
+              .append(total);
 
             for (Chord chord : chords) {
                 sb.append("\n")
@@ -493,19 +494,19 @@ public class Tuplet
         public void include (Chord chord)
         {
             if (chords.add(chord)) {
-                int duration = chord.getRawDuration();
-                total += duration;
+                Rational duration = chord.getRawDuration();
+                total = total.plus(duration);
 
                 // If this is a shorter chord, let's update the base
-                if (duration < base) {
+                if (duration.compareTo(base) < 0) {
                     base = duration;
-                    expectedTotal = base * expectedCount;
+                    expectedTotal = base.times(expectedCount);
                 }
 
                 // Update status
-                if (total == expectedTotal) {
+                if (total.equals(expectedTotal)) {
                     status = Status.OK;
-                } else if (total > expectedTotal) {
+                } else if (total.compareTo(expectedTotal) > 0) {
                     status = Status.TOO_LONG;
                 }
             }

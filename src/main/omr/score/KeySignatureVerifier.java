@@ -92,8 +92,6 @@ public class KeySignatureVerifier
      * Perform verifications (and corrections when possible) when all keysigs
      * have been generated for the system: The key signature must be the same
      * (in terms of fifths) for the same measure index in all parts and staves.
-     *
-     * @param system the system to be verified
      */
     public void verifyKeys ()
     {

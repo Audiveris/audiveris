@@ -18,7 +18,7 @@ import omr.glyph.text.TextInfo;
 
 import omr.log.Logger;
 
-import omr.math.Rational;
+import omr.score.entity.TimeRational;
 
 import java.util.*;
 
@@ -50,7 +50,7 @@ class BasicRecognition
     private TextInfo textInfo;
 
     /** Related time sig rational information, if any */
-    private Rational rational;
+    private TimeRational timeRational;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -130,22 +130,6 @@ class BasicRecognition
     public boolean isManualShape ()
     {
         return getDoubt() == Evaluation.MANUAL;
-    }
-
-    //-------------//
-    // setRational //
-    //-------------//
-    public void setRational (Rational rational)
-    {
-        this.rational = rational;
-    }
-
-    //-------------//
-    // getRational //
-    //-------------//
-    public Rational getRational ()
-    {
-        return rational;
     }
 
     //----------//
@@ -236,6 +220,22 @@ class BasicRecognition
         return textInfo;
     }
 
+    //-----------------//
+    // setTimeRational //
+    //-----------------//
+    public void setTimeRational (TimeRational timeRational)
+    {
+        this.timeRational = timeRational;
+    }
+
+    //-----------------//
+    // getTimeRational //
+    //-----------------//
+    public TimeRational getTimeRational ()
+    {
+        return timeRational;
+    }
+
     //-------------//
     // isWellKnown //
     //-------------//
@@ -272,7 +272,7 @@ class BasicRecognition
             ((getShape() != null) ? getShape().getPhysicalShape() : null));
         System.out.println("   forbiddenShapes=" + forbiddenShapes);
         System.out.println("   textInfo=" + textInfo);
-        System.out.println("   rational=" + rational);
+        System.out.println("   rational=" + timeRational);
     }
 
     //-------------//

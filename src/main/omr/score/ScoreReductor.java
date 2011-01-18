@@ -13,15 +13,13 @@ package omr.score;
 
 import omr.log.Logger;
 
-import omr.math.GCD;
+import omr.math.Rational;
 
 import omr.score.entity.Chord;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
 import omr.score.visitor.AbstractScoreVisitor;
 
-import java.util.Arrays;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Class <code>ScoreReductor</code> can visit the score hierarchy to simplify
@@ -40,7 +38,7 @@ public class ScoreReductor
     //~ Instance fields --------------------------------------------------------
 
     /** Set of all different duration values */
-    private final SortedSet<Integer> durations = new TreeSet<Integer>();
+    private final SortedSet<Rational> durations = new TreeSet<Rational>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -62,7 +60,7 @@ public class ScoreReductor
     @Override
     public boolean visit (Chord chord)
     {
-        Integer duration;
+        Rational duration;
 
         try {
             // Special case for whole chords
@@ -113,9 +111,9 @@ public class ScoreReductor
     //------------------------//
     private int computeDurationDivisor ()
     {
-        Integer[] durationArray = durations.toArray(
-            new Integer[durations.size()]);
-        int       divisor = GCD.gcd(durationArray);
+        Rational[] durationArray = durations.toArray(
+            new Rational[durations.size()]);
+        Rational   divisor = Rational.gcd(durationArray);
 
         if (logger.isFineEnabled()) {
             logger.fine(
@@ -123,6 +121,6 @@ public class ScoreReductor
                 " divisor=" + divisor);
         }
 
-        return divisor;
+        return divisor.den;
     }
 }

@@ -21,6 +21,7 @@ import omr.log.Logger;
 import omr.score.ScoreChecker;
 import omr.score.ScoreCleaner;
 import omr.score.entity.ScoreSystem;
+import omr.score.midi.MidiAgent;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
@@ -134,6 +135,19 @@ public class PagesStep
             systems.iterator()
                    .next()
                    .translateFinal();
+
+            if (Main.getGui() != null) {
+                try {
+                    // Invalidate score data within MidiAgent, if so needed
+                    MidiAgent agent = MidiAgent.getInstance();
+
+                    if (agent.getScore() == sheet.getScore()) {
+                        agent.reset();
+                    }
+                } catch (Exception ex) {
+                    logger.warning("Cannot access Midi agent", ex);
+                }
+            }
         }
     }
 

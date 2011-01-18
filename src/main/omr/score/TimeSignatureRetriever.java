@@ -42,7 +42,6 @@ import omr.sheet.SystemInfo;
 
 import omr.util.Predicate;
 import omr.util.TreeNode;
-import omr.util.WrappedBoolean;
 
 import java.util.Collection;
 
@@ -73,11 +72,6 @@ public class TimeSignatureRetriever
     };
 
 
-    //~ Instance fields --------------------------------------------------------
-
-    /** To flag a page modification */
-    private final WrappedBoolean modified;
-
     //~ Constructors -----------------------------------------------------------
 
     //------------------------//
@@ -85,11 +79,9 @@ public class TimeSignatureRetriever
     //------------------------//
     /**
      * Creates a new TimeSignatureRetriever object.
-     * @param modified the output to set in case of modification
      */
-    public TimeSignatureRetriever (WrappedBoolean modified)
+    public TimeSignatureRetriever ()
     {
-        this.modified = modified;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -176,9 +168,7 @@ public class TimeSignatureRetriever
                                                  .lookupIntersectedGlyphs(
                     inner);
 
-                if (checkTimeSig(glyphs, system)) {
-                    modified.set(true);
-                }
+                checkTimeSig(glyphs, system);
             }
         } catch (Exception ex) {
             logger.warning(

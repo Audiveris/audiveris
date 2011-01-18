@@ -13,13 +13,12 @@ package omr.score;
 
 import omr.log.Logger;
 
-import omr.math.Rational;
-
 import omr.score.entity.Measure;
 import omr.score.entity.Page;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
+import omr.score.entity.TimeRational;
 import omr.score.entity.TimeSignature;
 import omr.score.entity.Voice;
 import omr.score.visitor.AbstractScoreVisitor;
@@ -55,11 +54,6 @@ public class TimeSignatureFixer
     };
 
 
-    //~ Instance fields --------------------------------------------------------
-
-    /** To flag a page modification */
-    private final WrappedBoolean modified;
-
     //~ Constructors -----------------------------------------------------------
 
     //--------------------//
@@ -67,11 +61,9 @@ public class TimeSignatureFixer
     //--------------------//
     /**
      * Creates a new TimeSignatureFixer object.
-     * @param modified An output boolean to signal a modification has occurred
      */
-    public TimeSignatureFixer (WrappedBoolean modified)
+    public TimeSignatureFixer ()
     {
-        this.modified = modified;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -141,6 +133,17 @@ public class TimeSignatureFixer
     }
 
     //---------------//
+    // visit Measure //
+    //---------------//
+    @Override
+    public boolean visit (Measure measure)
+    {
+        measure.setExpectedDuration(null);
+
+        return false;
+    }
+
+    //---------------//
     // checkTimeSigs //
     //---------------//
     /**
@@ -162,12 +165,12 @@ public class TimeSignatureFixer
         }
 
         // Retrieve the best possible time signature(s)
-        SortedMap<Integer, Rational> bestSigs = retrieveBestSigs(
+        SortedMap<Integer, TimeRational> bestSigs = retrieveBestSigs(
             startMeasure,
             stopMeasure);
 
         if (!bestSigs.isEmpty()) {
-            Rational bestRational = bestSigs.get(bestSigs.firstKey());
+            TimeRational bestRational = bestSigs.get(bestSigs.firstKey());
 
             if (!TimeSignature.isAcceptable(bestRational)) {
                 if (logger.isFineEnabled()) {
@@ -190,16 +193,15 @@ public class TimeSignatureFixer
 
                 if (sig != null) {
                     try {
-                        Rational rational = sig.getRational();
+                        TimeRational timeRational = sig.getTimeRational();
 
-                        if (!rational.equals(bestRational)) {
+                        if (!timeRational.equals(bestRational)) {
                             logger.info(
                                 "Measure#" + measure.getId() + " " +
                                 staff.getContextString() + "T" + staff.getId() +
-                                " " + rational + "->" + bestRational);
+                                " " + timeRational + "->" + bestRational);
 
                             sig.modify(null, bestRational);
-                            modified.set(true);
                         }
                     } catch (Exception ex) {
                         sig.addError(
@@ -267,21 +269,23 @@ public class TimeSignatureFixer
      * @param stopMeasure end of the measure range
      * @return a map, sorted by decreasing count, of possible time signatures
      */
-    private SortedMap<Integer, Rational> retrieveBestSigs (Measure startMeasure,
-                                                           Measure stopMeasure)
+    private SortedMap<Integer, TimeRational> retrieveBestSigs (Measure startMeasure,
+                                                               Measure stopMeasure)
     {
         // Retrieve the significant measure informations
-        Map<Rational, Integer> sigs = new LinkedHashMap<Rational, Integer>();
-        Measure                m = startMeasure;
-        int                    mIndex = m.getParent()
-                                         .getChildren()
-                                         .indexOf(m);
+        Map<TimeRational, Integer> sigs = new LinkedHashMap<TimeRational, Integer>();
+        Measure                    m = startMeasure;
+        int                        mIndex = m.getParent()
+                                             .getChildren()
+                                             .indexOf(m);
 
         // Loop on measure range
         while (true) {
             // Retrieve info
             if (logger.isFineEnabled()) {
-                logger.fine("Checking measure#" + m.getId());
+                logger.fine(
+                    "Checking measure#" + m.getId() + " idx:" +
+                    m.getChildIndex());
             }
 
             ScoreSystem system = m.getSystem();
@@ -291,16 +295,21 @@ public class TimeSignatureFixer
                 Measure    measure = (Measure) part.getMeasures()
                                                    .get(mIndex);
 
+                if (logger.isFineEnabled()) {
+                    measure.printVoices(null);
+                }
+
                 for (Voice voice : measure.getVoices()) {
-                    Rational rational = voice.getInferredTimeSignature();
+                    TimeRational timeRational = voice.getInferredTimeSignature();
 
                     if (logger.isFineEnabled()) {
-                        logger.fine("Voice#" + voice.getId() + ": " + rational);
+                        logger.fine(
+                            "Voice#" + voice.getId() + ": " + timeRational);
                     }
 
-                    if (rational != null) {
+                    if (timeRational != null) {
                         // Update histogram
-                        Integer sum = sigs.get(rational);
+                        Integer sum = sigs.get(timeRational);
 
                         if (sum == null) {
                             sum = 1;
@@ -308,7 +317,7 @@ public class TimeSignatureFixer
                             sum += 1;
                         }
 
-                        sigs.put(rational, sum);
+                        sigs.put(timeRational, sum);
                     }
                 }
             }
@@ -326,10 +335,10 @@ public class TimeSignatureFixer
         }
 
         // Sort info by decreasing counts
-        SortedMap<Integer, Rational> bestSigs = new TreeMap<Integer, Rational>(
+        SortedMap<Integer, TimeRational> bestSigs = new TreeMap<Integer, TimeRational>(
             reverseIntComparator);
 
-        for (Map.Entry<Rational, Integer> entry : sigs.entrySet()) {
+        for (Map.Entry<TimeRational, Integer> entry : sigs.entrySet()) {
             bestSigs.put(entry.getValue(), entry.getKey());
         }
 

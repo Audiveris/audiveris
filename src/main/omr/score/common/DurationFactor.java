@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.score.common;
 
+import omr.math.Rational;
 
 /**
  * Class <code>DurationFactor</code> handles a rational representation of
@@ -19,15 +20,8 @@ package omr.score.common;
  * @author Hervé Bitteur
  */
 public class DurationFactor
+    extends Rational
 {
-    //~ Instance fields --------------------------------------------------------
-
-    /** Numerator */
-    private final int num;
-
-    /** Denominator */
-    private final int den;
-
     //~ Constructors -----------------------------------------------------------
 
     //----------------//
@@ -42,44 +36,6 @@ public class DurationFactor
     public DurationFactor (int num,
                            int den)
     {
-        this.num = num;
-        this.den = den;
-    }
-
-    //~ Methods ----------------------------------------------------------------
-
-    //----------------//
-    // getDenominator //
-    //----------------//
-    /**
-     * Report the integer denominator of the factor
-     *
-     * @return the denominator
-     */
-    public int getDenominator ()
-    {
-        return den;
-    }
-
-    //--------------//
-    // getNumerator //
-    //--------------//
-    /**
-     * Report the integer numerator of the factor
-     *
-     * @return the numerator
-     */
-    public int getNumerator ()
-    {
-        return num;
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        return num + "/" + den;
+        super(num, den);
     }
 }

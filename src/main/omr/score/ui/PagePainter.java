@@ -71,8 +71,8 @@ import java.util.ConcurrentModificationException;
  * Class <code>PagePainter</code> is an abstract class that defines common
  * features of a page painter.
  * <p>It is specialized by: <ul>
- * <li>{@link ScorePagePhysicalPainter} for the presentation of  score
- * entities over the sheet glyphs</li>
+ * <li>{@link PagePhysicalPainter} for the presentation of page entities over
+ * the sheet glyphs</li>
  * <li>We used to also have a PageLogicalPainter for the "ideal" score view</li>
  *
  * @author Hervé Bitteur

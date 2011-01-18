@@ -15,6 +15,8 @@ import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
+import omr.math.Rational;
+
 import omr.score.common.DurationFactor;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -110,7 +112,7 @@ public class Chord
     private DurationFactor tupletFactor;
 
     /** Start time since beginning of the containing measure */
-    private Integer startTime;
+    private Rational startTime;
 
     /** Voice this chord belongs to */
     private Voice voice;
@@ -252,20 +254,17 @@ public class Chord
      * @return The real chord/note rawDuration, or null for a whole rest chord
      * @see #getRawDuration
      */
-    public Integer getDuration ()
+    public Rational getDuration ()
     {
         if (this.isWholeDuration()) {
             return null;
         } else {
-            Integer raw = getRawDuration();
+            Rational raw = getRawDuration();
 
             if (tupletFactor == null) {
                 return raw;
             } else {
-                final int num = tupletFactor.getNumerator();
-                final int den = tupletFactor.getDenominator();
-
-                return (raw * num) / den;
+                return raw.times(tupletFactor);
             }
         }
     }
@@ -304,18 +303,18 @@ public class Chord
      *
      * @return chord ending time, since beginning of the measure
      */
-    public Integer getEndTime ()
+    public Rational getEndTime ()
     {
         if (isWholeDuration()) {
             return null;
         }
 
-        Integer chordDur = getDuration();
+        Rational chordDur = getDuration();
 
         if (chordDur == null) {
             return null;
         } else {
-            return startTime + chordDur;
+            return startTime.plus(chordDur);
         }
     }
 
@@ -473,7 +472,7 @@ public class Chord
      *
      * @param startTime chord starting time (counted within the measure)
      */
-    public void setStartTime (int startTime)
+    public void setStartTime (Rational startTime)
     {
         // Already done?
         if (this.startTime == null) {
@@ -491,9 +490,8 @@ public class Chord
         } else {
             if (!this.startTime.equals(startTime)) {
                 addError(
-                    "Reassigning startTime from " +
-                    Note.quarterValueOf(this.startTime) + " to " +
-                    Note.quarterValueOf(startTime) + " in " + this);
+                    "Reassigning startTime from " + this.startTime + " to " +
+                    startTime + " in " + this);
             }
         }
     }
@@ -506,7 +504,7 @@ public class Chord
      *
      * @return startTime chord starting time (counted within the measure)
      */
-    public Integer getStartTime ()
+    public Rational getStartTime ()
     {
         return startTime;
     }
@@ -928,11 +926,7 @@ public class Chord
             new Note(clone, note);
         }
 
-        if (tupletFactor != null) {
-            clone.tupletFactor = new DurationFactor(
-                tupletFactor.getNumerator(),
-                tupletFactor.getDenominator());
-        }
+        clone.tupletFactor = tupletFactor;
 
         clone.dotsNumber = dotsNumber;
         clone.flagsNumber = flagsNumber; // Not sure TODO
@@ -1107,9 +1101,9 @@ public class Chord
      * @return the intrinsic chord duration
      * @see #getDuration
      */
-    public Integer getRawDuration ()
+    public Rational getRawDuration ()
     {
-        Integer rawDuration = null;
+        Rational rawDuration = null;
 
         if (!getNotes()
                  .isEmpty()) {
@@ -1127,15 +1121,15 @@ public class Chord
                                                      .size();
 
                     for (int i = 0; i < fbn; i++) {
-                        rawDuration /= 2;
+                        rawDuration = rawDuration.divides(2);
                     }
                 }
 
                 // Apply augmentation (applies to rests as well)
                 if (dotsNumber == 1) {
-                    rawDuration += (rawDuration / 2);
+                    rawDuration = rawDuration.times(new Rational(3, 2));
                 } else if (dotsNumber == 2) {
-                    rawDuration += ((rawDuration * 3) / 4);
+                    rawDuration = rawDuration.times(new Rational(7, 4));
                 }
             }
         }
@@ -1234,10 +1228,10 @@ public class Chord
         if (isWholeDuration()) {
             sb.append("W");
         } else {
-            Integer chordDur = getDuration();
+            Rational chordDur = getDuration();
 
             if (chordDur != null) {
-                sb.append(Note.quarterValueOf(chordDur));
+                sb.append(chordDur);
             } else {
                 sb.append("none");
             }
@@ -1280,7 +1274,7 @@ public class Chord
 
             if (startTime != null) {
                 sb.append(" start=")
-                  .append(Note.quarterValueOf(startTime));
+                  .append(startTime);
             }
 
             sb.append(" dur=");
@@ -1288,10 +1282,10 @@ public class Chord
             if (isWholeDuration()) {
                 sb.append("W");
             } else {
-                Integer chordDur = getDuration();
+                Rational chordDur = getDuration();
 
                 if (chordDur != null) {
-                    sb.append(Note.quarterValueOf(chordDur));
+                    sb.append(chordDur);
                 } else {
                     sb.append("none");
                 }
@@ -1589,11 +1583,7 @@ public class Chord
         alien.stem = stem;
 
         // Tuplet factor, if any, is copied
-        if (tupletFactor != null) {
-            alien.tupletFactor = new DurationFactor(
-                tupletFactor.getNumerator(),
-                tupletFactor.getDenominator());
-        }
+        alien.tupletFactor = tupletFactor;
 
         // Augmentation dots as well
         alien.dotsNumber = dotsNumber;

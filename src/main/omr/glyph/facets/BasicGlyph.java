@@ -24,10 +24,10 @@ import omr.glyph.text.TextInfo;
 import omr.lag.Lag;
 
 import omr.math.Moments;
-import omr.math.Rational;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
+import omr.score.entity.TimeRational;
 
 import omr.sheet.SystemInfo;
 
@@ -300,16 +300,6 @@ public class BasicGlyph
         return environment.getPitchPosition();
     }
 
-    public void setRational (Rational rational)
-    {
-        recognition.setRational(rational);
-    }
-
-    public Rational getRational ()
-    {
-        return recognition.getRational();
-    }
-
     public void setResult (Result result)
     {
         composition.setResult(result);
@@ -398,6 +388,16 @@ public class BasicGlyph
     public TextInfo getTextInfo ()
     {
         return recognition.getTextInfo();
+    }
+
+    public void setTimeRational (TimeRational timeRational)
+    {
+        recognition.setTimeRational(timeRational);
+    }
+
+    public TimeRational getTimeRational ()
+    {
+        return recognition.getTimeRational();
     }
 
     public boolean isTransient ()

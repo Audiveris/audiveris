@@ -17,7 +17,6 @@ import omr.glyph.text.TextRole;
 
 import omr.log.Logger;
 
-import omr.math.Rational;
 
 import omr.score.entity.Note;
 import omr.score.entity.Text.CreatorText.CreatorType;
@@ -31,6 +30,7 @@ import org.jdesktop.application.Task;
 
 import java.awt.*;
 import java.util.*;
+import omr.score.entity.TimeRational;
 
 /**
  * Class <code>SymbolsController</code> is a GlyphsController specifically
@@ -89,13 +89,13 @@ public class SymbolsController
      * CUSTOM_TIME_SIGNATURE shape
      *
      * @param glyphs the impacted glyphs
-     * @param rational the time sig rational value
+     * @param timeRational the time sig rational value
      * @return the task that carries out the processing
      */
     public Task asyncAssignRationals (Collection<Glyph> glyphs,
-                                      final Rational    rational)
+                                      final TimeRational    timeRational)
     {
-        return new RationalTask(sheet, rational, glyphs).launch(sheet);
+        return new RationalTask(sheet, timeRational, glyphs).launch(sheet);
     }
 
     //------------------//

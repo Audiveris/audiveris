@@ -18,6 +18,8 @@ import static omr.glyph.Shape.*;
 import omr.glyph.text.TextFont;
 
 import omr.log.Logger;
+
+import omr.math.Rational;
 import static omr.score.MusicXML.*;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -1031,15 +1033,15 @@ public class ScoreExporter
                    .acceptChildren(this);
 
             // Now voice per voice
-            int timeCounter = 0;
+            Rational timeCounter = Rational.ZERO;
 
             for (Voice voice : measure.getVoices()) {
                 current.voice = voice;
 
                 // Need a backup ?
-                if (timeCounter != 0) {
+                if (!timeCounter.equals(Rational.ZERO)) {
                     insertBackup(timeCounter);
-                    timeCounter = 0;
+                    timeCounter = Rational.ZERO;
                 }
 
                 if (voice.isWhole()) {
@@ -1054,32 +1056,35 @@ public class ScoreExporter
                         if (info != null) { // Skip free slots
 
                             if (info.getStatus() == Voice.Status.BEGIN) {
-                                Chord chord = info.getChord();
+                                Chord    chord = info.getChord();
 
                                 // Need a forward before this chord ?
-                                int startTime = chord.getStartTime();
+                                Rational startTime = chord.getStartTime();
 
-                                if (timeCounter < startTime) {
+                                if (timeCounter.compareTo(startTime) < 0) {
                                     insertForward(
-                                        startTime - timeCounter,
+                                        startTime.minus(timeCounter),
                                         chord);
                                     timeCounter = startTime;
                                 }
 
                                 // Delegate to the chord children directly
                                 chord.acceptChildren(this);
-                                timeCounter += chord.getDuration();
+                                timeCounter = timeCounter.plus(
+                                    chord.getDuration());
                             }
                         }
                     }
 
                     // Need an ending forward ?
-                    if (!measure.isImplicit() &&
-                        (timeCounter < measure.getExpectedDuration())) {
-                        insertForward(
-                            measure.getExpectedDuration() - timeCounter,
-                            voice.getLastChord());
-                        timeCounter = measure.getExpectedDuration();
+                    if (!measure.isImplicit() && !measure.isFirstHalf()) {
+                        if (voice.getFinalDuration()
+                                 .compareTo(Rational.ZERO) < 0) {
+                            Rational delta = voice.getFinalDuration()
+                                                  .opposite();
+                            insertForward(delta, voice.getLastChord());
+                            timeCounter = timeCounter.plus(delta);
+                        }
                     }
                 }
             }
@@ -1177,16 +1182,15 @@ public class ScoreExporter
             if (chord.getTupletFactor() != null) {
                 TimeModification timeModification = factory.createTimeModification();
                 timeModification.setActualNotes(
-                    new BigInteger(
-                        "" + chord.getTupletFactor().getDenominator()));
+                    new BigInteger("" + chord.getTupletFactor().den));
                 timeModification.setNormalNotes(
-                    new BigInteger("" + chord.getTupletFactor().getNumerator()));
+                    new BigInteger("" + chord.getTupletFactor().num));
                 current.pmNote.setTimeModification(timeModification);
             }
 
             // Duration
             try {
-                Integer dur;
+                Rational dur;
 
                 if (chord.isWholeDuration()) {
                     dur = chord.getMeasure()
@@ -2455,7 +2459,7 @@ public class ScoreExporter
     //--------------//
     // insertBackup //
     //--------------//
-    private void insertBackup (int delta)
+    private void insertBackup (Rational delta)
     {
         try {
             Backup backup = factory.createBackup();
@@ -2511,8 +2515,8 @@ public class ScoreExporter
     //---------------//
     // insertForward //
     //---------------//
-    private void insertForward (int   delta,
-                                Chord chord)
+    private void insertForward (Rational delta,
+                                Chord    chord)
     {
         try {
             Forward forward = factory.createForward();

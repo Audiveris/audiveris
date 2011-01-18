@@ -13,7 +13,8 @@ package omr.score.midi;
 
 import omr.log.Logger;
 
-import omr.score.MeasureRange;
+import omr.math.Rational;
+
 import omr.score.Score;
 import omr.score.entity.Measure;
 import omr.score.entity.Note;
@@ -141,8 +142,8 @@ public class MidiReceiver
      * @param measureIndex the score-based index of desired measure
      * @return true if measure & slot found, false otherwise
      */
-    private boolean retrieveMeasureAndSlot (int measureIndex,
-                                            int targetTick)
+    private boolean retrieveMeasureAndSlot (int      measureIndex,
+                                            Rational targetTick)
     {
         final Score score = agent.getScore();
         final int   pageOffset = score.getMeasureOffset(current.page);
@@ -165,9 +166,9 @@ public class MidiReceiver
                     logger.fine("Slots nb=" + measure.getSlots().size());
                     slotLoop: 
                     for (Slot slot : measure.getSlots()) {
-                        int slotTick = slot.getStartTime();
+                        Rational slotTick = slot.getStartTime();
 
-                        if (slotTick == targetTick) {
+                        if (slotTick.equals(targetTick)) {
                             // Let's remember measure & slot
                             current.index = measureIndex;
                             current.measure = measure;
@@ -233,7 +234,10 @@ public class MidiReceiver
                                   Fraction beat)
     {
         // Translate beat to tick
-        int targetTick = (4 * Note.QUARTER_DURATION * beat.getNumerator()) / beat.getDenominator();
+        ///(4 * Note.QUARTER_DURATION * beat.getNumerator()) / beat.getDenominator();
+        Rational targetTick = new Rational(
+            beat.getNumerator(),
+            beat.getDenominator());
 
         if (logger.isFineEnabled()) {
             logger.fine(

@@ -67,7 +67,7 @@ public class Voice
     private final int id;
 
     /**
-     * Related chord information for each slot.
+     * Map (SlotId -> ChordInfo) to store chord information for each slot.
      * If the voice/slot combination is empty, the voice is free for this slot
      * Otherwise, the active chord is referenced with a status flag to make a
      * difference between a slot where the chord starts, and the potential
@@ -76,13 +76,13 @@ public class Voice
     private final SortedMap<Integer, ChordInfo> slotTable = new TreeMap<Integer, ChordInfo>();
 
     /** Final duration of the voice */
-    private Integer finalDuration;
+    private Rational finalDuration;
 
     /** Whole chord of the voice, if any */
     private Chord wholeChord;
 
     /** Inferred time signature based on this voice content */
-    private Rational inferredTimeSig;
+    private TimeRational inferredTimeSig;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -96,8 +96,8 @@ public class Voice
      */
     public Voice (Chord chord)
     {
-        this.measure = chord.getMeasure();
-        this.id = measure.getVoicesNumber() + 1;
+        measure = chord.getMeasure();
+        id = measure.getVoicesNumber() + 1;
         measure.addVoice(this);
         chord.setVoice(this);
 
@@ -116,7 +116,7 @@ public class Voice
      *
      * @return 0=perfect, -n=too_short, +n=overlast, null=whole_rest/multi_rest
      */
-    public Integer getFinalDuration ()
+    public Rational getFinalDuration ()
     {
         return finalDuration;
     }
@@ -159,13 +159,13 @@ public class Voice
      * @return the "intrinsic" time signature rational value for this voice,
      * or null
      */
-    public Rational getInferredTimeSignature ()
+    public TimeRational getInferredTimeSignature ()
     {
         if (inferredTimeSig == null) {
             // TODO: update for the use of tuplets
 
             // Sequence of group (beamed or isolated chords) durations
-            List<Integer> durations = new ArrayList<Integer>();
+            List<Rational> durations = new ArrayList<Rational>();
 
             // Current beam group, if any
             BeamGroup currentGroup = null;
@@ -193,9 +193,9 @@ public class Voice
             if (logger.isFineEnabled()) {
                 StringBuilder sb = new StringBuilder("[");
                 boolean       started = false;
-                Integer       total = null;
+                Rational      total = null;
 
-                for (Integer dur : durations) {
+                for (Rational dur : durations) {
                     if (started) {
                         sb.append(",");
                     }
@@ -205,12 +205,12 @@ public class Voice
                     if (dur == null) {
                         sb.append("null");
                     } else {
-                        sb.append(Note.quarterValueOf(dur));
+                        sb.append(dur);
 
                         if (total == null) {
                             total = dur;
                         } else {
-                            total += dur;
+                            total = total.plus(dur);
                         }
                     }
                 }
@@ -218,7 +218,7 @@ public class Voice
                 sb.append("] total:");
 
                 if (total != null) {
-                    sb.append(Note.quarterValueOf(total));
+                    sb.append(total);
                 } else {
                     sb.append("null");
                 }
@@ -227,10 +227,10 @@ public class Voice
             }
 
             // Do we have a regular pattern?
-            int     count = 0;
-            Integer common = null;
+            int      count = 0;
+            Rational common = null;
 
-            for (Integer dur : durations) {
+            for (Rational dur : durations) {
                 if (common == null) {
                     common = dur;
                 } else if (!common.equals(dur)) {
@@ -397,7 +397,7 @@ public class Voice
             if (isWhole()) {
                 setFinalDuration(null); // we can't tell anything
             } else {
-                int timeCounter = 0;
+                Rational timeCounter = Rational.ZERO;
 
                 for (ChordInfo info : slotTable.values()) {
                     if (info.getStatus() == Status.BEGIN) {
@@ -405,30 +405,33 @@ public class Voice
                         Slot  slot = chord.getSlot();
 
                         // Need a forward before this chord ?
-                        if (timeCounter < slot.getStartTime()) {
+                        if (timeCounter.compareTo(slot.getStartTime()) < 0) {
                             insertForward(
-                                slot.getStartTime() - timeCounter,
+                                slot.getStartTime().minus(timeCounter),
                                 Mark.Position.BEFORE,
                                 chord);
                             timeCounter = slot.getStartTime();
                         }
 
-                        timeCounter += chord.getDuration();
+                        timeCounter = timeCounter.plus(chord.getDuration());
                     }
                 }
 
                 // Need an ending forward ?
-                int delta = timeCounter - measure.getExpectedDuration();
+                Rational delta = timeCounter.minus(
+                    measure.getExpectedDuration());
                 setFinalDuration(delta);
 
-                if (delta < 0) {
+                if (delta.compareTo(Rational.ZERO) < 0) {
                     // Insert a forward mark
-                    insertForward(-delta, Mark.Position.AFTER, getLastChord());
-                } else if (delta > 0) {
+                    insertForward(
+                        delta.opposite(),
+                        Mark.Position.AFTER,
+                        getLastChord());
+                } else if (delta.compareTo(Rational.ZERO) > 0) {
                     // Flag the measure as too long
                     measure.addError(
-                        "Voice #" + getId() + " too long for " +
-                        Note.quarterValueOf(delta));
+                        "Voice #" + getId() + " too long for " + delta);
                     measure.setExcess(delta);
                 }
             }
@@ -521,7 +524,8 @@ public class Voice
 
                 if (info == null) {
                     if ((lastChord != null) &&
-                        (lastChord.getEndTime() > slot.getStartTime())) {
+                        (lastChord.getEndTime()
+                                  .compareTo(slot.getStartTime()) > 0)) {
                         setSlotInfo(
                             slot,
                             new ChordInfo(lastChord, Status.CONTINUE));
@@ -536,7 +540,7 @@ public class Voice
     //------------------//
     // setFinalDuration //
     //------------------//
-    private void setFinalDuration (Integer finalDuration)
+    private void setFinalDuration (Rational finalDuration)
     {
         this.finalDuration = finalDuration;
     }
@@ -544,7 +548,7 @@ public class Voice
     //---------------//
     // insertForward //
     //---------------//
-    private void insertForward (int           duration,
+    private void insertForward (Rational      duration,
                                 Mark.Position position,
                                 Chord         chord)
     {
@@ -571,28 +575,35 @@ public class Voice
     //-----------//
     // timeSigOf //
     //-----------//
-    private Rational timeSigOf (int count,
-                                int common)
+    /**
+     * Based on the number of common groups, derive the proper time rational
+     * @param count the number of groups
+     * @param common the common time duration of each group
+     * @return the inferred time rational
+     */
+    private TimeRational timeSigOf (int      count,
+                                    Rational common)
     {
-        // Determine the rational value of measure total duration
-        int      total = count * common;
-        Rational r = Note.rationalValueOf(total);
-        int      g = GCD.gcd(r.num, r.den);
-        Rational rational = new Rational(r.num / g, r.den / g);
+        // Determine the time rational value of measure total duration
+        TimeRational timeRational = new TimeRational(
+            count * common.num,
+            common.den);
 
-        int      gcd = GCD.gcd(count, rational.num);
+        int          gcd = GCD.gcd(count, timeRational.num);
 
         // Make sure num is a multiple of count
-        Rational rat = new Rational(
-            (count / gcd) * rational.num,
-            (count / gcd) * rational.den);
+        timeRational = new TimeRational(
+            (count / gcd) * timeRational.num,
+            (count / gcd) * timeRational.den);
 
         // No 1 as num
-        if (rat.num == 1) {
-            rat = new Rational(2 * rat.num, 2 * rat.den);
+        if (timeRational.num == 1) {
+            timeRational = new TimeRational(
+                2 * timeRational.num,
+                2 * timeRational.den);
         }
 
-        return rat;
+        return timeRational;
     }
 
     //~ Inner Classes ----------------------------------------------------------

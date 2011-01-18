@@ -15,6 +15,8 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
+import omr.math.Rational;
+
 import omr.score.Score;
 import omr.score.common.PixelDimension;
 import omr.score.common.PixelPoint;
@@ -79,10 +81,10 @@ public class Page
     private List<ScorePart> partList;
 
     /** Start time of this page since beginning of the score */
-    private Integer startTime;
+    private Rational startTime;
 
     /** Duration of this page */
-    private Integer actualDuration;
+    private Rational actualDuration;
 
     /** Number of measures in this page */
     private Integer measureCount;
@@ -122,14 +124,15 @@ public class Page
     //-------------------//
     // getActualDuration //
     //-------------------//
-    public int getActualDuration ()
+    public Rational getActualDuration ()
     {
         if (actualDuration == null) {
-            actualDuration = 0;
+            actualDuration = Rational.ZERO;
 
             for (TreeNode sn : getSystems()) {
                 ScoreSystem system = (ScoreSystem) sn;
-                actualDuration += system.getActualDuration();
+                actualDuration = actualDuration.plus(
+                    system.getActualDuration());
             }
         }
 
@@ -493,16 +496,16 @@ public class Page
      * Report the start time of this page, WRT the beginning of the score.
      * @return the page start time
      */
-    public int getStartTime ()
+    public Rational getStartTime ()
     {
         if (startTime == null) {
             Page prevPage = (Page) getPreviousSibling();
 
             if (prevPage == null) {
-                startTime = 0;
+                startTime = Rational.ZERO;
             } else {
-                startTime = prevPage.getStartTime() +
-                            prevPage.getActualDuration();
+                startTime = prevPage.getStartTime()
+                                    .plus(prevPage.getActualDuration());
             }
         }
 
