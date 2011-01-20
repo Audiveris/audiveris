@@ -58,11 +58,11 @@ public class MeasureBasicNumberer
             Measure precedingMeasure = measure.getPreceding();
 
             if (precedingMeasure != null) {
-                int precedingId = Math.abs(precedingMeasure.getId());
-                measure.setId(precedingId + 1);
+                int precedingId = precedingMeasure.getIdValue();
+                measure.setIdValue(precedingId + 1, false);
             } else {
                 // Very first measure (in this page)
-                measure.setId(1);
+                measure.setIdValue(1, false);
             }
         } catch (Exception ex) {
             logger.warning(

@@ -131,7 +131,6 @@ public class ScoreReduction
         // Map (page) ScorePart -> (score) ScorePart data
         /////partData = new HashMap<ScorePart, Part>();
         List<ScorePart> partList = new ArrayList<ScorePart>();
-        score.setPartList(partList);
 
         for (Result result : connection.getResultMap()
                                        .keySet()) {
@@ -183,6 +182,8 @@ public class ScoreReduction
                 }
             }
         }
+
+        score.setPartList(partList);
     }
 
     //-------------------//

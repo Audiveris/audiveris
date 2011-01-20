@@ -15,8 +15,6 @@ import omr.glyph.text.TextRole;
 
 import omr.log.Logger;
 
-import omr.math.Rational;
-
 import omr.score.common.PixelDimension;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -73,15 +71,6 @@ public class ScoreSystem
     /** Related info from sheet analysis */
     private final SystemInfo info;
 
-    /** Start time of this system since beginning of the page */
-    private Rational startTime;
-
-    /** Duration of this system */
-    private Rational actualDuration;
-
-    /** Used to assign a unique ID to key signature */
-    private int sentenceCount = 0;
-
     //~ Constructors -----------------------------------------------------------
 
     //-------------//
@@ -92,7 +81,7 @@ public class ScoreSystem
      *
      * @param info the physical information retrieved from the sheet
      * @param page the containing page
-     * @param topLeft the coordinate of the upper left point of the system in
+     * @param topLeft the coordinates of the upper left point of the system in
      * its containing page
      * @param dimension the dimension of the system
      */
@@ -106,6 +95,8 @@ public class ScoreSystem
         this.info = info;
         this.topLeft = topLeft;
 
+        id = 1 + getChildIndex();
+
         setBox(
             new PixelRectangle(
                 topLeft.x,
@@ -113,34 +104,9 @@ public class ScoreSystem
                 dimension.width,
                 dimension.height));
         getCenter();
-
-        id = getParent()
-                 .getChildren()
-                 .indexOf(this) + 1;
-
-        cleanupNode();
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //-------------------//
-    // getActualDuration //
-    //-------------------//
-    public Rational getActualDuration ()
-    {
-        if (actualDuration == null) {
-            SystemPart part = getFirstPart();
-            actualDuration = Rational.ZERO;
-
-            for (TreeNode m : part.getMeasures()) {
-                Measure measure = (Measure) m;
-                actualDuration = actualDuration.plus(
-                    measure.getActualDuration());
-            }
-        }
-
-        return actualDuration;
-    }
 
     //--------------//
     // getDimension //
@@ -403,30 +369,6 @@ public class ScoreSystem
     }
 
     //--------------//
-    // getStartTime //
-    //--------------//
-    /**
-     * Report the start time of this system, with respect to the beginning of
-     * the page.
-     * @return the system start time
-     */
-    public Rational getStartTime ()
-    {
-        if (startTime == null) {
-            ScoreSystem prevSystem = (ScoreSystem) getPreviousSibling();
-
-            if (prevSystem == null) {
-                startTime = Rational.ZERO;
-            } else {
-                startTime = prevSystem.getStartTime()
-                                      .plus(prevSystem.getActualDuration());
-            }
-        }
-
-        return startTime;
-    }
-
-    //--------------//
     // getTextStaff //
     //--------------//
     /**
@@ -496,15 +438,6 @@ public class ScoreSystem
         return visitor.visit(this);
     }
 
-    //-------------//
-    // cleanupNode //
-    //-------------//
-    public void cleanupNode ()
-    {
-        actualDuration = null;
-        startTime = null;
-    }
-
     //------------------//
     // fillMissingParts //
     //------------------//
@@ -523,30 +456,6 @@ public class ScoreSystem
                 Collections.sort(getParts(), SystemPart.idComparator);
             }
         }
-    }
-
-    //-------------------------//
-    // recomputeActualDuration //
-    //-------------------------//
-    /**
-     * Force recomputation of the system cached actual duration
-     */
-    public void recomputeActualDuration ()
-    {
-        actualDuration = null;
-        getActualDuration();
-    }
-
-    //--------------------//
-    // recomputeStartTime //
-    //--------------------//
-    /**
-     * Force recomputation of the system cached start time
-     */
-    public void recomputeStartTime ()
-    {
-        startTime = null;
-        getStartTime();
     }
 
     //----------------------//
@@ -578,77 +487,6 @@ public class ScoreSystem
         }
     }
 
-    //    //-------------//
-    //    // toPixelPoint //
-    //    //-------------//
-    //    /**
-    //     * Compute the pagepoint that correspond to a given systempoint, which is
-    //     * basically a translation using the coordinates of the system topLeft
-    //     * corner.
-    //     *
-    //     * @param sysPt the point in the system
-    //     * @return the page point
-    //     */
-    //    public PixelPoint toPixelPoint (PixelPoint sysPt)
-    //    {
-    //        return new PixelPoint(sysPt.x + topLeft.x, sysPt.y + topLeft.y);
-    //    }
-    //
-    //    //-----------------//
-    //    // toPixelRectangle //
-    //    //-----------------//
-    //    /**
-    //     * Compute the page rectangle that corresonds to a given page rectangle,
-    //     * which boils down to a simple translation using the coordinates of the
-    //     * ystem topLeft corner.
-    //     * @param sysRect the rectangle in the system
-    //     * @return the page rectangle
-    //     */
-    //    public PixelRectangle toPixelRectangle (PixelRectangle sysRect)
-    //    {
-    //        return new PixelRectangle(
-    //            sysRect.x + topLeft.x,
-    //            sysRect.y + topLeft.y,
-    //            sysRect.width,
-    //            sysRect.height);
-    //    }
-    //
-    //    //--------------//
-    //    // toPixelPoint //
-    //    //--------------//
-    //    /**
-    //     * Compute the pixel point that correspond to a given system point, which is
-    //     * basically a translation using the coordinates of the system topLeft
-    //     * corner, then a scaling.
-    //     *
-    //     * @param sysPt the point in the system
-    //     * @return the pixel point
-    //     */
-    //    public PixelPoint toPixelPoint (PixelPoint sysPt)
-    //    {
-    //        return getScale()
-    //                   .toPixelPoint(toPixelPoint(sysPt));
-    //    }
-    //
-    //    //------------------//
-    //    // toPixelRectangle //
-    //    //------------------//
-    //    /**
-    //     * XXXXXXXXXXXXXXXXXXXXXXXXXXxCompute the system rectangle that correspond to a given pixel rectangle,
-    //     * which is basically a scaling plus a translation using the coordinates of
-    //     * the system topLeft corner.
-    //     *
-    //     * @param pixRect the rectangle in the sheet
-    //     * @return the system rectangle
-    //     */
-    //    public PixelRectangle toPixelRectangle (PixelRectangle sysRect)
-    //    {
-    //        PixelRectangle pagRect = toPixelRectangle(sysRect);
-    //
-    //        return getScale()
-    //                   .toPixels(pagRect);
-    //    }
-
     //----------//
     // toString //
     //----------//
@@ -675,90 +513,5 @@ public class ScoreSystem
         sb.append("}");
 
         return sb.toString();
-    }
-
-    //    //---------------//
-    //    // toPixelPoint //
-    //    //---------------//
-    //    /**
-    //     * Compute the system point that correspond to a given page point, which is
-    //     * basically a translation using the coordinates of the system topLeft
-    //     * corner.
-    //     *
-    //     * @param pagPt the point in the sheet
-    //     * @return the system point
-    //     */
-    //    public PixelPoint toPixelPoint (PixelPoint pagPt)
-    //    {
-    //        return new PixelPoint(pagPt.x - topLeft.x, pagPt.y - topLeft.y);
-    //    }
-    //
-    //    //---------------//
-    //    // toPixelPoint //
-    //    //---------------//
-    //    /**
-    //     * Compute the system point that correspond to a given pixel point, which is
-    //     * basically a scaling plus a translation using the coordinates of the
-    //     * system topLeft corner.
-    //     *
-    //     * @param pixPt the point in the sheet
-    //     * @return the system point
-    //     */
-    //    public PixelPoint toPixelPoint (PixelPoint pixPt)
-    //    {
-    //        PixelPoint pagPt = getScale()
-    //                              .toPixelPoint(pixPt);
-    //
-    //        return new PixelPoint(pagPt.x - topLeft.x, pagPt.y - topLeft.y);
-    //    }
-    //
-    //    //-------------------//
-    //    // toPixelRectangle //
-    //    //-------------------//
-    //    /**
-    //     * Compute the system rectangle that correspond to a given pixel rectangle,
-    //     * which is basically a scaling plus a translation using the coordinates of
-    //     * the system topLeft corner.
-    //     *
-    //     * @param pixRect the rectangle in the sheet
-    //     * @return the system rectangle
-    //     */
-    //    public PixelRectangle toPixelRectangle (PixelRectangle pixRect)
-    //    {
-    //        PixelRectangle pagRect = getScale()
-    //                                    .toUnits(pixRect);
-    //
-    //        return toPixelRectangle(pagRect);
-    //    }
-    //
-    //    //-------------------//
-    //    // toPixelRectangle //
-    //    //-------------------//
-    //    /**
-    //     * Compute the system rectangle that correspond to a given page rectangle,
-    //     * which is basically a translation using the coordinates of the system
-    //     * topLeft corner.
-    //     *
-    //     * @param pagRect the rectangle in the page
-    //     * @return the system rectangle
-    //     */
-    //    public PixelRectangle toPixelRectangle (PixelRectangle pagRect)
-    //    {
-    //        return new PixelRectangle(
-    //            pagRect.x - topLeft.x,
-    //            pagRect.y - topLeft.y,
-    //            pagRect.width,
-    //            pagRect.height);
-    //    }
-
-    //-------//
-    // reset //
-    //-------//
-    @Override
-    protected void reset ()
-    {
-        super.reset();
-
-        cleanupNode();
     }
 }

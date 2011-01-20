@@ -88,9 +88,7 @@ public class Staff
         }
 
         // Assign id
-        id = getParent()
-                 .getChildren()
-                 .indexOf(this) + 1;
+        id = 1 + getChildIndex();
     }
 
     //~ Methods ----------------------------------------------------------------

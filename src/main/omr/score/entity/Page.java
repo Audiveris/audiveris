@@ -15,8 +15,6 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
-import omr.math.Rational;
-
 import omr.score.Score;
 import omr.score.common.PixelDimension;
 import omr.score.common.PixelPoint;
@@ -80,12 +78,6 @@ public class Page
     /** ScorePart list for the page */
     private List<ScorePart> partList;
 
-    /** Start time of this page since beginning of the score */
-    private Rational startTime;
-
-    /** Duration of this page */
-    private Rational actualDuration;
-
     /** Number of measures in this page */
     private Integer measureCount;
 
@@ -120,24 +112,6 @@ public class Page
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //-------------------//
-    // getActualDuration //
-    //-------------------//
-    public Rational getActualDuration ()
-    {
-        if (actualDuration == null) {
-            actualDuration = Rational.ZERO;
-
-            for (TreeNode sn : getSystems()) {
-                ScoreSystem system = (ScoreSystem) sn;
-                actualDuration = actualDuration.plus(
-                    system.getActualDuration());
-            }
-        }
-
-        return actualDuration;
-    }
 
     //------------------//
     // setBeamThickness //
@@ -489,29 +463,6 @@ public class Page
         return slotPolicy;
     }
 
-    //--------------//
-    // getStartTime //
-    //--------------//
-    /**
-     * Report the start time of this page, WRT the beginning of the score.
-     * @return the page start time
-     */
-    public Rational getStartTime ()
-    {
-        if (startTime == null) {
-            Page prevPage = (Page) getPreviousSibling();
-
-            if (prevPage == null) {
-                startTime = Rational.ZERO;
-            } else {
-                startTime = prevPage.getStartTime()
-                                    .plus(prevPage.getActualDuration());
-            }
-        }
-
-        return startTime;
-    }
-
     //---------------//
     // getSystemById //
     //---------------//
@@ -627,30 +578,6 @@ public class Page
     public boolean hasSlotPolicy ()
     {
         return slotPolicy != null;
-    }
-
-    //-------------------------//
-    // recomputeActualDuration //
-    //-------------------------//
-    /**
-     * Force recomputation of the page cached actual duration
-     */
-    public void recomputeActualDuration ()
-    {
-        actualDuration = null;
-        getActualDuration();
-    }
-
-    //--------------------//
-    // recomputeStartTime //
-    //--------------------//
-    /**
-     * Force recomputation of the page cached start time
-     */
-    public void recomputeStartTime ()
-    {
-        startTime = null;
-        getStartTime();
     }
 
     //--------------//

@@ -23,12 +23,14 @@ import omr.score.entity.Slot;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
 import omr.score.visitor.AbstractScoreVisitor;
 
+import omr.util.TreeNode;
+
 import java.util.Map;
 import java.util.TreeMap;
 
 /**
  * Class <code>DurationRetriever</code> can visit a page hierarchy to compute
- * all measure and system start times and durations.
+ * the actual duration of every measure
  *
  * @author Hervé Bitteur
  */
@@ -44,7 +46,7 @@ public class DurationRetriever
     //~ Instance fields --------------------------------------------------------
 
     /** Map of Measure id -> Measure duration, whatever the containing part */
-    private final Map<Integer, Rational> measureDurations = new TreeMap<Integer, Rational>();
+    private final Map<String, Rational> measureDurations = new TreeMap<String, Rational>();
 
     /** Pass number, since we need 2 passes per system */
     private int pass = 1;
@@ -134,52 +136,37 @@ public class DurationRetriever
     /**
      * Page hierarchy entry point
      *
-     * @param page the page to export
+     * @param page the page for which measure durations are to be computed
      * @return false, since no further processing is required after this node
      */
     @Override
     public boolean visit (Page page)
     {
-        try {
-            // Delegate to children
-            page.acceptChildren(this);
-
-            page.recomputeActualDuration();
-        } catch (Exception ex) {
-            logger.warning(
-                getClass().getSimpleName() + " Error visiting " + page,
-                ex);
-        }
+        // Delegate to children
+        page.acceptChildren(this);
 
         return false; // No default browsing this way
     }
 
-    //    //-------------//
-    //    // visit Score //
-    //    //-------------//
-    //    /**
-    //     * Score hierarchy entry point. Determine the startTime of each page,
-    //     * assuming that page internal duration is already available
-    //     *
-    //     * @param score the score to process
-    //     * @return false, since no further processing is required after this node
-    //     */
-    //    @Override
-    //    public boolean visit (Score score)
-    //    {
-    //        try {
-    //            for (TreeNode pn : score.getPages()) {
-    //                Page page = (Page) pn;
-    //                page.recomputeStartTime();
-    //            }
-    //        } catch (Exception ex) {
-    //            logger.warning(
-    //                getClass().getSimpleName() + " Error visiting " + score,
-    //                ex);
-    //        }
-    //
-    //        return false; // No browsing
-    //    }
+    //-------------//
+    // visit Score //
+    //-------------//
+    /**
+     * Score hierarchy entry point, to delegate to all pages
+     *
+     * @param score the score to process
+     * @return false, since no further processing is required after this node
+     */
+    @Override
+    public boolean visit (Score score)
+    {
+        for (TreeNode pn : score.getPages()) {
+            Page page = (Page) pn;
+            page.accept(this);
+        }
+
+        return false; // No browsing
+    }
 
     //--------------//
     // visit System //
@@ -194,35 +181,23 @@ public class DurationRetriever
     @Override
     public boolean visit (ScoreSystem system)
     {
-        try {
+        if (logger.isFineEnabled()) {
+            logger.fine("Visiting " + system);
+        }
+
+        // 2 passes are needed, to get the actual duration of whole notes
+        // Since the measure duration may be specified in another system part
+        for (pass = 1; pass <= 2; pass++) {
             if (logger.isFineEnabled()) {
-                logger.fine("Visiting " + system);
+                logger.fine("Pass #" + pass);
             }
 
-            // 2 passes are needed, to get the actual duration of whole notes
-            // Since the measure duration may be specified in another system part
-            for (pass = 1; pass <= 2; pass++) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("Pass #" + pass);
-                }
+            // Browse the (SystemParts and the) Measures
+            system.acceptChildren(this);
 
-                // System time
-                system.recomputeStartTime();
-
-                // Browse the (SystemParts and the) Measures
-                system.acceptChildren(this);
-
-                // System duration
-                system.recomputeActualDuration();
-
-                if (logger.isFineEnabled()) {
-                    logger.fine("Durations:" + measureDurations);
-                }
+            if (logger.isFineEnabled()) {
+                logger.fine("Durations:" + measureDurations);
             }
-        } catch (Exception ex) {
-            logger.warning(
-                getClass().getSimpleName() + " Error visiting " + system,
-                ex);
         }
 
         return false; // No default browsing this way

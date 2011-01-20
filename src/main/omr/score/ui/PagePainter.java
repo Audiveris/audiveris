@@ -155,7 +155,7 @@ public abstract class PagePainter
     protected int FLAG_2_DY;
 
     // Offset for measure ids in this page
-    protected int measureIdOffset = 0;
+    protected int pageMeasureIdOffset = 0;
 
     //~ Constructors -----------------------------------------------------------
 

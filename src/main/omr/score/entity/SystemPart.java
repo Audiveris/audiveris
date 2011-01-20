@@ -619,7 +619,7 @@ public class SystemPart
             Measure measure = (Measure) mn;
             Measure dummyMeasure = new Measure(dummyPart);
             dummyMeasure.setDummy(true);
-            dummyMeasure.setId(measure.getId());
+            dummyMeasure.setIdValue(measure.getIdValue(), false);
 
             // Loop on staves
             int staffIndex = -1;

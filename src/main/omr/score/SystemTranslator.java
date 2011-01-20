@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.score;
 
-import omr.Main;
-
 import omr.glyph.Shape;
 import static omr.glyph.ShapeRange.*;
 import omr.glyph.facets.Glyph;
@@ -49,19 +47,12 @@ import omr.score.entity.Text;
 import omr.score.entity.TimeSignature;
 import omr.score.entity.Tuplet;
 import omr.score.entity.Wedge;
-import omr.score.midi.MidiAgent;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
-import omr.step.ProcessingCancellationException;
-import omr.step.StepException;
-import omr.step.Stepping;
-import omr.step.Steps;
-
 import omr.util.TreeNode;
-import omr.util.WrappedBoolean;
 
 import java.util.*;
 
@@ -145,24 +136,6 @@ public class SystemTranslator
             syst.retrieveSlurConnections();
             syst.refineLyricSyllables();
         }
-
-        // Finally, all actions for completed page (in proper order)
-
-        // Compute mean beam thickness at page level
-        page.accept(new BeamReader());
-
-        // 1/ Look carefully for time signatures
-        page.accept(new TimeSignatureRetriever());
-
-        // 2/ Adapt time sigs according to intrinsic measure & chord durations
-        page.accept(new TimeSignatureFixer());
-
-        // 3/ Retrieve measures & systems start times & actual durations
-        page.accept(new DurationRetriever());
-
-        // 4/ Check all voices timing, assign forward items if needed.
-        // 5/ Detect special measures and assign proper measure ids
-        page.accept(new MeasureFixer());
     }
 
     //-----------------//

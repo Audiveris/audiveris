@@ -836,7 +836,7 @@ public class ScoreExporter
             // Allocate Measure
             current.pmMeasure = factory.createScorePartwisePartMeasure();
             current.pmMeasure.setNumber(
-                "" + (measure.getId() + current.pageOffset));
+                measure.getScoreId(current.pageMeasureIdOffset));
 
             if (measure.getWidth() != null) {
                 current.pmMeasure.setWidth(toTenths(measure.getWidth()));
@@ -860,8 +860,8 @@ public class ScoreExporter
 
             // Do we need to create & export a dummy initial measure?
             if (((measureRange != null) && !measure.isTemporary() &&
-                (measure.getId() > 1)) &&
-                (measure.getId() == measureRange.getFirstIndex())) {
+                (measure.getIdValue() > 1)) &&
+                (measure.getIdValue() == measureRange.getFirstIndex())) {
                 insertCurrentContext(measure);
             }
 
@@ -1078,9 +1078,9 @@ public class ScoreExporter
 
                     // Need an ending forward ?
                     if (!measure.isImplicit() && !measure.isFirstHalf()) {
-                        if (voice.getFinalDuration()
+                        if (voice.getTermination()
                                  .compareTo(Rational.ZERO) < 0) {
-                            Rational delta = voice.getFinalDuration()
+                            Rational delta = voice.getTermination()
                                                   .opposite();
                             insertForward(delta, voice.getLastChord());
                             timeCounter = timeCounter.plus(delta);
@@ -1382,12 +1382,9 @@ public class ScoreExporter
             current.page = page;
 
             Page prevPage = (Page) page.getPreviousSibling();
-            current.pageOffset = (prevPage == null) ? 0
-                                 : (current.pageOffset +
-                                 prevPage.getLastSystem()
-                                         .getLastPart()
-                                         .getLastMeasure()
-                                         .getId());
+            current.pageMeasureIdOffset = (prevPage == null) ? 0
+                                          : (current.pageMeasureIdOffset +
+                                          prevPage.getDeltaMeasureId());
             current.scale = page.getScale();
         } catch (Exception ex) {
             logger.warning(
@@ -2229,7 +2226,8 @@ public class ScoreExporter
     {
         return (measureRange == null) || // No range : take all of them
                (measure.isTemporary()) || // A temporary measure for export
-               measureRange.contains(measure.getId()); // Part of the range
+               measureRange.contains(
+            measure.getIdValue() + score.getMeasureIdOffset(current.page)); // Part of the range
     }
 
     //--------------//
@@ -2580,7 +2578,7 @@ public class ScoreExporter
 
         // Page dependent
         Page                                  page;
-        int                                   pageOffset = 0;
+        int                                   pageMeasureIdOffset = 0;
         Scale                                 scale;
 
         // System dependent

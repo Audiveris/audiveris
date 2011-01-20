@@ -85,8 +85,8 @@ public class Beam
     public Beam (Measure measure)
     {
         super(measure);
-        id = measure.getBeams()
-                    .indexOf(this) + 1;
+        
+        id = 1 + getChildIndex();
     }
 
     //~ Methods ----------------------------------------------------------------

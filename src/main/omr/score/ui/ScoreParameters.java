@@ -118,7 +118,7 @@ public class ScoreParameters
         panes.add(new VolumePane());
         panes.add(new TempoPane());
 
-        if (score != null) {
+        if ((score != null) && (score.getPartList() != null)) {
             // Part by part information
             panes.add(new ScorePane());
 
@@ -719,9 +719,10 @@ public class ScoreParameters
 
                 try {
                     firstId.setValue(
-                        score.getFirstPage().getFirstSystem().getFirstPart().getFirstMeasure().getId());
+                        score.getFirstPage().getFirstSystem().getFirstPart().getFirstMeasure().getIdValue());
                     lastId.setValue(
-                        score.getLastPage().getLastSystem().getLastPart().getLastMeasure().getId());
+                        score.getMeasureIdOffset(score.getLastPage()) +
+                        score.getLastPage().getLastSystem().getLastPart().getLastMeasure().getIdValue());
                 } catch (Exception ex) {
                     logger.warning("Error on score measure range", ex);
                     rangeBox.setEnabled(false); // Safer
@@ -738,28 +739,56 @@ public class ScoreParameters
             if (rangeBox.isSelected() &&
                 (score.getLastPage()
                       .getLastSystem() != null)) {
-                // First Measure
-                int maxMeasureId = score.getLastPage()
+                int minMeasureId = score.getFirstPage()
+                                        .getFirstSystem()
+                                        .getFirstPart()
+                                        .getFirstMeasure()
+                                        .getIdValue();
+                int maxMeasureId = score.getMeasureIdOffset(
+                    score.getLastPage()) +
+                                   score.getLastPage()
                                         .getLastSystem()
                                         .getLastPart()
                                         .getLastMeasure()
-                                        .getId();
+                                        .getIdValue();
 
-                if ((firstId.getValue() < 1) ||
-                    (firstId.getValue() > maxMeasureId)) {
+                // Check values are numbers
+                int first = 0;
+
+                try {
+                    first = firstId.getValue();
+                } catch (NumberFormatException nfe) {
                     logger.warning(
-                        "First measure Id is not within [1.." + maxMeasureId +
-                        "]: " + firstId.getValue());
+                        "Illegal number format: " + firstId.getText());
+
+                    return false;
+                }
+
+                int last = 0;
+
+                try {
+                    last = lastId.getValue();
+                } catch (NumberFormatException nfe) {
+                    logger.warning(
+                        "Illegal number format: " + lastId.getText());
+
+                    return false;
+                }
+
+                // First Measure
+                if ((first < minMeasureId) || (first > maxMeasureId)) {
+                    logger.warning(
+                        "First measure Id is not within [" + minMeasureId +
+                        ".." + maxMeasureId + "]: " + first);
 
                     return false;
                 }
 
                 // Last Measure
-                if ((lastId.getValue() < 1) ||
-                    (lastId.getValue() > maxMeasureId)) {
+                if ((last < minMeasureId) || (last > maxMeasureId)) {
                     logger.warning(
-                        "Last measure Id is not within [1.." + maxMeasureId +
-                        "]: " + lastId.getValue());
+                        "Last measure Id is not within [" + minMeasureId +
+                        ".." + maxMeasureId + "]: " + last);
 
                     return false;
                 }
@@ -767,7 +796,8 @@ public class ScoreParameters
                 // First & last consistency
                 if (firstId.getValue() > lastId.getValue()) {
                     logger.warning(
-                        "First measure Id is greater than last measure Id");
+                        "First measure Id " + first +
+                        " is greater than last measure Id " + last);
 
                     return false;
                 }

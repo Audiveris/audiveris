@@ -244,14 +244,9 @@ public class PagePhysicalPainter
                 // Write the score-based measure id, on first real part only
                 if (part == measure.getSystem()
                                    .getFirstRealPart()) {
-                    int id = (measure.getId() >= 0)
-                             ? (measureIdOffset + measure.getId())
-                             : (-(measureIdOffset - measure.getId()));
-
                     g.setColor(Color.lightGray);
-
                     g.drawString(
-                        Integer.toString(id),
+                        measure.getScoreId(pageMeasureIdOffset),
                         measure.getLeftX() - 5,
                         measure.getPart().getFirstStaff().getTopLeft().y - 15);
                 }
@@ -339,7 +334,7 @@ public class PagePhysicalPainter
             }
 
             // Determine offset of measure ids for this page
-            measureIdOffset = score.getMeasureIdOffset(page);
+            pageMeasureIdOffset = score.getMeasureIdOffset(page);
 
             if (!page.getSystems()
                      .isEmpty()) {

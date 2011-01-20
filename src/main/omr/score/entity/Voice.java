@@ -75,8 +75,8 @@ public class Voice
      */
     private final SortedMap<Integer, ChordInfo> slotTable = new TreeMap<Integer, ChordInfo>();
 
-    /** Final duration of the voice */
-    private Rational finalDuration;
+    /** Abnormal termination of the voice, if any */
+    private Rational termination;
 
     /** Whole chord of the voice, if any */
     private Chord wholeChord;
@@ -107,19 +107,6 @@ public class Voice
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //------------------//
-    // getFinalDuration //
-    //------------------//
-    /**
-     * Report how this voice finishes
-     *
-     * @return 0=perfect, -n=too_short, +n=overlast, null=whole_rest/multi_rest
-     */
-    public Rational getFinalDuration ()
-    {
-        return finalDuration;
-    }
 
     //--------//
     // isFree //
@@ -341,6 +328,19 @@ public class Voice
         return slotTable.get(slot.getId());
     }
 
+    //----------------//
+    // getTermination //
+    //----------------//
+    /**
+     * Report how this voice finishes
+     *
+     * @return 0=perfect, -n=too_short, +n=overlast, null=whole_rest/multi_rest
+     */
+    public Rational getTermination ()
+    {
+        return termination;
+    }
+
     //---------//
     // isWhole //
     //---------//
@@ -388,14 +388,14 @@ public class Voice
     // checkDuration //
     //---------------//
     /**
-     * Check the duration of the voice, compared to measure theoretical duration
+     * Check the duration of the voice, compared to measure expected duration
      */
     public void checkDuration ()
     {
         // Make all forward stuff explicit & visible
         try {
             if (isWhole()) {
-                setFinalDuration(null); // we can't tell anything
+                setTermination(null); // we can't tell anything
             } else {
                 Rational timeCounter = Rational.ZERO;
 
@@ -420,7 +420,7 @@ public class Voice
                 // Need an ending forward ?
                 Rational delta = timeCounter.minus(
                     measure.getExpectedDuration());
-                setFinalDuration(delta);
+                setTermination(delta);
 
                 if (delta.compareTo(Rational.ZERO) < 0) {
                     // Insert a forward mark
@@ -537,12 +537,12 @@ public class Voice
         }
     }
 
-    //------------------//
-    // setFinalDuration //
-    //------------------//
-    private void setFinalDuration (Rational finalDuration)
+    //----------------//
+    // setTermination //
+    //----------------//
+    private void setTermination (Rational termination)
     {
-        this.finalDuration = finalDuration;
+        this.termination = termination;
     }
 
     //---------------//

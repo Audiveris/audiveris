@@ -225,6 +225,7 @@ public class MeasureRange
                                         .listIterator(score.getPages().size());
              pageIt.hasPrevious();) {
             Page page = (Page) pageIt.previous();
+            int  offset = score.getMeasureOffset(page);
 
             for (ListIterator sit = page.getSystems()
                                         .listIterator(page.getSystems().size());
@@ -241,7 +242,7 @@ public class MeasureRange
                         part.getMeasures().size()); mit.hasPrevious();) {
                         Measure measure = (Measure) mit.previous();
 
-                        if (Math.abs(measure.getId()) <= lastIndex) {
+                        if (measure.getIdValue() <= (lastIndex - offset)) {
                             lastPage = page;
                             lastSystem = system;
                             lastMeasure = measure;

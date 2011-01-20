@@ -36,6 +36,7 @@ import java.util.List;
  * Class <code>MeasureFixer</code> visits the score hierarchy to fix measures:
  * <ul>
  * <li>Detect implicit measures (as pickup measures)</li>
+ * <li>Detect first half repeat measures</li>
  * <li>Detect implicit measures (as second half repeats)</li>
  * <li>Detect inside barlines (empty measures) </li>
  * <li>Assign final page-based Measure ids</li>
@@ -55,12 +56,12 @@ public class MeasureFixer
 
     private int           im; // Current measure index in system
     private List<Measure> verticals = null; // Current vertical measures
-    private Rational      measureFinal = null; // Current termination
+    private Rational      measureTermination = null; // Current termination
     private ScoreSystem   system; // Current system
 
     // Information to remember from previous vertical measure
     private List<Measure> prevVerticals = null; // Previous vertical measures
-    private Rational      prevMeasureFinal = null; // Previous termination
+    private Rational      prevMeasureTermination = null; // Previous termination
 
     /** The latest id assigned to a measure (in the previous system) */
     private Integer prevSystemLastId = null;
@@ -99,8 +100,7 @@ public class MeasureFixer
 
         // Remember the delta of measure ids in this page
         page.setDeltaMeasureId(
-            Math.abs(
-                page.getLastSystem().getLastPart().getLastMeasure().getId()));
+            page.getLastSystem().getLastPart().getLastMeasure().getIdValue());
 
         return false;
     }
@@ -158,12 +158,13 @@ public class MeasureFixer
             verticals = verticalsOf(system, im);
 
             // Check if all voices in all parts exhibit the same termination
-            measureFinal = getMeasureFinal();
+            measureTermination = getMeasureTermination();
 
             if (logger.isFineEnabled()) {
                 logger.fine(
-                    "measureFinal:" + measureFinal +
-                    ((measureFinal != null) ? ("=" + measureFinal) : ""));
+                    "measureFinal:" + measureTermination +
+                    ((measureTermination != null) ? ("=" + measureTermination)
+                     : ""));
             }
 
             if (isEmpty()) {
@@ -177,7 +178,8 @@ public class MeasureFixer
                     setId(
                         (lastId != null) ? (lastId + 1)
                                                 : ((prevSystemLastId != null)
-                                                   ? (prevSystemLastId + 1) : 1));
+                                                   ? (prevSystemLastId + 1) : 1),
+                        false);
                 }
             } else if (isPickup()) {
                 if (logger.isFineEnabled()) {
@@ -188,7 +190,8 @@ public class MeasureFixer
                 setId(
                     (lastId != null) ? (-lastId)
                                         : ((prevSystemLastId != null)
-                                           ? (-prevSystemLastId) : 0));
+                                           ? (-prevSystemLastId) : 0),
+                    false);
             } else if (isSecondRepeatHalf()) {
                 if (logger.isFineEnabled()) {
                     logger.fine("secondHalf");
@@ -198,7 +201,7 @@ public class MeasureFixer
                 shortenFirstHalf();
 
                 setImplicit();
-                setId(-lastId);
+                setId(lastId, true);
             } else if (isRealStart()) {
                 if (logger.isFineEnabled()) {
                     logger.fine("realStart");
@@ -215,12 +218,13 @@ public class MeasureFixer
                 setId(
                     (lastId != null) ? (lastId + 1)
                                         : ((prevSystemLastId != null)
-                                           ? (prevSystemLastId + 1) : 1));
+                                           ? (prevSystemLastId + 1) : 1),
+                    false);
             }
 
             // For next measure
             prevVerticals = verticals;
-            prevMeasureFinal = measureFinal;
+            prevMeasureTermination = measureTermination;
         }
 
         removeMeasures(toRemove, system); // Remove measures if any
@@ -262,18 +266,19 @@ public class MeasureFixer
     //-------//
     // setId //
     //-------//
-    private void setId (int id)
+    private void setId (int     id,
+                        boolean isSecondHalf)
     {
         if (logger.isFineEnabled()) {
-            logger.fine("-> id=" + id);
+            logger.fine("-> id=" + id + (isSecondHalf ? " SH" : ""));
         }
 
         for (Measure measure : verticals) {
-            measure.setId(id);
+            measure.setIdValue(id, isSecondHalf);
         }
 
-        // Side effect, remember the positive value of last id
-        lastId = Math.abs(id);
+        // Side effect: remember the numeric value as last id
+        lastId = id;
     }
 
     //-------------//
@@ -286,10 +291,10 @@ public class MeasureFixer
         }
     }
 
-    //-----------------//
-    // getMeasureFinal //
-    //-----------------//
-    private Rational getMeasureFinal ()
+    //-----------------------//
+    // getMeasureTermination //
+    //-----------------------//
+    private Rational getMeasureTermination ()
     {
         Rational termination = null;
 
@@ -299,14 +304,14 @@ public class MeasureFixer
             }
 
             for (Voice voice : measure.getVoices()) {
-                Rational voiceFinal = voice.getFinalDuration();
+                Rational voiceTermination = voice.getTermination();
 
-                if (voiceFinal != null) {
+                if (voiceTermination != null) {
                     if (termination == null) {
-                        termination = voiceFinal;
-                    } else if (!voiceFinal.equals(termination)) {
+                        termination = voiceTermination;
+                    } else if (!voiceTermination.equals(termination)) {
                         if (logger.isFineEnabled()) {
-                            logger.fine("Non-consistent durations");
+                            logger.fine("Non-consistent voices terminations");
                         }
 
                         return null;
@@ -328,8 +333,8 @@ public class MeasureFixer
     private boolean isPickup ()
     {
         return (system.getChildIndex() == 0) && (im == 0) &&
-               (measureFinal != null) &&
-               (measureFinal.compareTo(Rational.ZERO) < 0);
+               (measureTermination != null) &&
+               (measureTermination.compareTo(Rational.ZERO) < 0);
     }
 
     //-------------//
@@ -344,7 +349,7 @@ public class MeasureFixer
     {
         return (im == 1) &&
                (prevVerticals.get(0).getActualDuration().equals(Rational.ZERO)) &&
-               (measureFinal != null);
+               (measureTermination != null);
     }
 
     //--------------------//
@@ -357,14 +362,14 @@ public class MeasureFixer
     private boolean isSecondRepeatHalf ()
     {
         // Check for partial first half
-        if ((prevMeasureFinal == null) ||
-            (prevMeasureFinal.compareTo(Rational.ZERO) >= 0)) {
+        if ((prevMeasureTermination == null) ||
+            (prevMeasureTermination.compareTo(Rational.ZERO) >= 0)) {
             return false;
         }
 
         // Check for partial second half
-        if ((measureFinal == null) ||
-            (measureFinal.compareTo(Rational.ZERO) >= 0)) {
+        if ((measureTermination == null) ||
+            (measureTermination.compareTo(Rational.ZERO) >= 0)) {
             return false;
         }
 
@@ -380,9 +385,10 @@ public class MeasureFixer
 
         // Check for an exact duration sum (TODO: is this too strict?)
         try {
-            return prevMeasureFinal.plus(measureFinal)
-                                   .abs()
-                                   .equals(prevMeasure.getExpectedDuration());
+            return prevMeasureTermination.plus(measureTermination)
+                                         .abs()
+                                         .equals(
+                prevMeasure.getExpectedDuration());
         } catch (InvalidTimeSignature its) {
             return false;
         }
@@ -442,7 +448,7 @@ public class MeasureFixer
     private void shortenFirstHalf ()
     {
         for (Measure measure : prevVerticals) {
-            measure.shorten(prevMeasureFinal);
+            measure.shorten(prevMeasureTermination);
             measure.setFirstHalf(true);
         }
     }

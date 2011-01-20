@@ -87,7 +87,7 @@ public class Measure
     private Container beams;
 
     /** Measure Id */
-    private int id;
+    private Id id;
 
     /** Identified time slots within the measure */
     private SortedSet<Slot> slots;
@@ -123,18 +123,6 @@ public class Measure
     public Measure (SystemPart part)
     {
         super(part);
-        cleanupNode();
-    }
-
-    //---------//
-    // Measure //
-    //---------//
-    /**
-     * Default constructor
-     */
-    private Measure ()
-    {
-        super(null);
         cleanupNode();
     }
 
@@ -805,29 +793,44 @@ public class Measure
     }
 
     //-------//
-    // setId //
+    // getId //
     //-------//
+    /**
+     * Report the page-based measure id
+     *
+     * @return the page-based measure id
+     */
+    public String getId ()
+    {
+        return (id == null) ? "null" : id.toPage();
+    }
+
+    //------------//
+    // setIdValue //
+    //------------//
     /**
      * Assign the proper id to this measure
      *
      * @param id the proper measure id
+     * @param secondHalf true if the measure is the second half of a repeat
      */
-    public void setId (int id)
+    public void setIdValue (int     id,
+                            boolean secondHalf)
     {
-        this.id = id;
+        this.id = new Id(id, secondHalf);
     }
 
-    //-------//
-    // getId //
-    //-------//
+    //------------//
+    // getIdValue //
+    //------------//
     /**
-     * Report the measure id
+     * Report the numeric value of the measure id
      *
-     * @return the measure id
+     * @return the numeric value of measure id
      */
-    public int getId ()
+    public int getIdValue ()
     {
-        return id;
+        return (id == null) ? 0 : id.value;
     }
 
     //-------------//
@@ -1120,6 +1123,19 @@ public class Measure
     public Integer getRightX ()
     {
         return getBox().x + getBox().width;
+    }
+
+    //------------//
+    // getScoreId //
+    //------------//
+    /**
+     * Report the score-based measure id
+     *
+     * @return the score-based measure id
+     */
+    public String getScoreId (int pageMeasureIdOffset)
+    {
+        return (id == null) ? "null" : id.toScore(pageMeasureIdOffset);
     }
 
     //----------//
@@ -1461,7 +1477,7 @@ public class Measure
      */
     public Measure createTemporaryBefore ()
     {
-        Measure dummyMeasure = new Measure();
+        Measure dummyMeasure = new Measure(null);
         dummyMeasure.setTemporary(true);
         dummyMeasure.setDummy(true);
 
@@ -1666,7 +1682,7 @@ public class Measure
     {
         // Remove any final forward mark consistent with the shortening
         for (Voice voice : voices) {
-            Rational duration = voice.getFinalDuration();
+            Rational duration = voice.getTermination();
 
             if (duration != null) {
                 if (duration == shortening) {
@@ -1834,5 +1850,68 @@ public class Measure
         }
 
         return String.format("%-5s", measureDur.toString());
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //----//
+    // Id //
+    //----//
+    /**
+     * Non-mutable class to handle the specificities of a measure id:<ol>
+     * <li>Initial ids assigned are page-based and start from 1</li>
+     * <li>Final ids, assigned by {@link MeasureFixer}, are page-based,
+     * start from 1 (or 0 for a pickup measure), and have a special value for
+     * second half repeats.</li>
+     * <li>Ids, as displayed in score view or exported in MusicXML, combine
+     * the page-based ids to provide score-based ids.</li>
+     * </ol>
+     */
+    private class Id
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Underlying numeric value */
+        private final int value;
+
+        /** Flag for second half */
+        private final boolean secondHalf;
+
+        //~ Constructors -------------------------------------------------------
+
+        public Id (int     value,
+                   boolean secondHalf)
+        {
+            this.value = value;
+            this.secondHalf = secondHalf;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        /**
+         * Label for a page-based id
+         */
+        public String toPage ()
+        {
+            if (secondHalf) {
+                return "X" + value;
+            } else {
+                return Integer.toString(value);
+            }
+        }
+
+        /**
+         * Label for a score-based id
+         * @param pageMeasureIdOffset the offset to add to all measure ids of
+         * the containing page
+         */
+        public String toScore (int pageMeasureIdOffset)
+        {
+            if (secondHalf) {
+                return "X" + (pageMeasureIdOffset + value);
+            } else {
+                return Integer.toString(pageMeasureIdOffset + value);
+            }
+        }
     }
 }

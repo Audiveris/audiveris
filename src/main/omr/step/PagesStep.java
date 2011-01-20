@@ -18,8 +18,14 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
+import omr.score.BeamReader;
+import omr.score.DurationRetriever;
+import omr.score.MeasureFixer;
 import omr.score.ScoreChecker;
 import omr.score.ScoreCleaner;
+import omr.score.TimeSignatureFixer;
+import omr.score.TimeSignatureRetriever;
+import omr.score.entity.Page;
 import omr.score.entity.ScoreSystem;
 import omr.score.midi.MidiAgent;
 
@@ -31,7 +37,7 @@ import omr.util.WrappedBoolean;
 import java.util.Collection;
 
 /**
- * Class {@code PagesStep} translates glyphs into score entities for all pages
+ * Class {@code PagesStep} translates glyphs into score entities for a page.
  *
  * @author Hervé Bitteur
  */
@@ -135,6 +141,25 @@ public class PagesStep
             systems.iterator()
                    .next()
                    .translateFinal();
+
+            // Finally, all actions for completed page (in proper order)
+            Page page = sheet.getPage();
+
+            // Compute mean beam thickness at page level
+            page.accept(new BeamReader());
+
+            // 1/ Look carefully for time signatures
+            page.accept(new TimeSignatureRetriever());
+
+            // 2/ Adapt time sigs to intrinsic measure & chord durations
+            page.accept(new TimeSignatureFixer());
+
+            // 3/ Retrieve the actual duration of every measure
+            page.accept(new DurationRetriever());
+
+            // 4/ Check all voices timing, assign forward items if needed.
+            // 5/ Detect special measures and assign proper measure ids
+            page.accept(new MeasureFixer());
 
             if (Main.getGui() != null) {
                 try {

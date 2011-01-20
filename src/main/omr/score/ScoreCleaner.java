@@ -66,7 +66,6 @@ public class ScoreCleaner
             }
 
             system.acceptChildren(this);
-            system.cleanupNode();
         } catch (Exception ex) {
             logger.warning(
                 getClass().getSimpleName() + " Error visiting " + system,

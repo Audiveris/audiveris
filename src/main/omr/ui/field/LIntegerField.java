@@ -75,20 +75,21 @@ public class LIntegerField
     // getValue //
     //----------//
     /**
-     * Extract the current integer value form the text field (TODO: better
-     * handling of exceptions)
+     * Extract the current integer value form the text field
      *
-     * @return current integer value
+     * @return current integer value (a blank field is assumed to mean 0)
+     * @throws NumberFormatException if the field syntax is incorrect
      */
     public int getValue ()
     {
-        int val = 0;
+        String str = getField()
+                         .getText()
+                         .trim();
 
-        try {
-            val = Integer.parseInt(getField().getText());
-        } catch (NumberFormatException ex) {
+        if (str.length() == 0) {
+            return 0;
+        } else {
+            return Integer.parseInt(str);
         }
-
-        return val;
     }
 }
