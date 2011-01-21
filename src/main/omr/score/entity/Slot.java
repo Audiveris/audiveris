@@ -182,7 +182,7 @@ public abstract class Slot
      */
     public Rational getShortestDuration ()
     {
-        Rational best = new Rational(Integer.MAX_VALUE);
+        Rational best = Rational.MAX_VALUE;
 
         for (Chord chord : getChords()) {
             try {

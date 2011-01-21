@@ -300,7 +300,7 @@ public class RationalTest
         String   result = instance.toString();
         assertEquals(expResult, result);
 
-        instance = new Rational(2);
+        instance = new Rational(2, 1);
         expResult = "2";
         result = instance.toString();
         assertEquals(expResult, result);

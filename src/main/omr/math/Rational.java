@@ -44,7 +44,7 @@ public class Rational
     public static final Rational ONE = new Rational(1, 1);
 
     /** Max rational value */
-    public static final Rational MAX_VALUE = new Rational(Integer.MAX_VALUE);
+    public static final Rational MAX_VALUE = new Rational(Integer.MAX_VALUE, 1);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -89,19 +89,6 @@ public class Rational
         // Record final values
         this.num = num;
         this.den = den;
-    }
-
-    //----------//
-    // Rational //
-    //----------//
-    /**
-     * Creates a new Rational object, from just the numerator value
-     *
-     * @param num the numerator value
-     */
-    public Rational (int num)
-    {
-        this(num, 1);
     }
 
     //----------//
@@ -327,7 +314,7 @@ public class Rational
      */
     public Rational plus (int that)
     {
-        return plus(new Rational(that));
+        return plus(new Rational(that, 1));
     }
 
     //-------//

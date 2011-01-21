@@ -496,11 +496,11 @@ public class Note
     {
         switch (baseShapeOf(shape)) {
         case LONG_REST : // 4 measures
-            return new Rational(4);
+            return new Rational(4, 1);
 
         case BREVE_REST : // 2 measures
         case BREVE :
-            return new Rational(2);
+            return new Rational(2, 1);
 
         case WHOLE_REST : // 1 measure
         case WHOLE_NOTE :
@@ -508,7 +508,7 @@ public class Note
 
         case HALF_REST :
         case VOID_NOTEHEAD :
-            return new Rational(1 / 2);
+            return new Rational(1, 2);
 
         case QUARTER_REST :
         case OLD_QUARTER_REST :

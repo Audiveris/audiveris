@@ -16,17 +16,12 @@ import static omr.glyph.Shape.*;
 
 import omr.log.Logger;
 
-import omr.math.Rational;
-
-import omr.score.common.PixelPoint;
 import omr.score.entity.LyricsItem;
 import omr.score.entity.Note;
-import omr.score.entity.Staff;
 
 import proxymusic.*;
 
 import java.lang.String; // Do not remove this line!
-import java.math.BigDecimal;
 
 import javax.xml.bind.JAXBElement;
 
