@@ -15,9 +15,6 @@ import omr.log.Logger;
 
 import omr.score.Score;
 
-import omr.sheet.Scale;
-
-import omr.util.Navigable;
 import omr.util.TreeNode;
 
 /**
@@ -34,12 +31,6 @@ public abstract class ScoreNode
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScoreNode.class);
 
-    //~ Instance fields --------------------------------------------------------
-
-    /** The containing score */
-    @Navigable(false)
-    private Score score;
-
     //~ Constructors -----------------------------------------------------------
 
     //-----------//
@@ -53,15 +44,6 @@ public abstract class ScoreNode
     public ScoreNode (VisitableNode container)
     {
         super(container);
-
-        // Set the score link
-        for (TreeNode c = this; c != null; c = c.getParent()) {
-            if (c instanceof Score) {
-                score = (Score) c;
-
-                break;
-            }
-        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -90,6 +72,12 @@ public abstract class ScoreNode
      */
     public Score getScore ()
     {
-        return score;
+        for (TreeNode c = this; c != null; c = c.getParent()) {
+            if (c instanceof Score) {
+                return (Score) c;
+            }
+        }
+
+        return null;
     }
 }

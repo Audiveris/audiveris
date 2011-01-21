@@ -173,7 +173,7 @@ public class TimeSignature
     /**
      * Check whether the provided value is a rather common time signature
      * @param timeRational
-     * @return
+     * @return true if the provided sig is acceptable
      */
     public static boolean isAcceptable (TimeRational timeRational)
     {

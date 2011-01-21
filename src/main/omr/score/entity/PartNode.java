@@ -17,7 +17,6 @@ import omr.glyph.facets.Glyph;
 import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
 
-import omr.util.Navigable;
 import omr.util.TreeNode;
 
 import java.util.*;
@@ -41,10 +40,6 @@ public abstract class PartNode
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** Containing part */
-    @Navigable(false)
-    private final SystemPart part;
-
     /** The glyph(s) that compose this element, sorted by abscissa */
     protected final SortedSet<Glyph> glyphs = Glyphs.sortedSet();
 
@@ -67,18 +62,6 @@ public abstract class PartNode
     public PartNode (SystemNode container)
     {
         super(container);
-
-        // Set the part link
-        for (TreeNode c = this; c != null; c = c.getParent()) {
-            if (c instanceof SystemPart) {
-                part = (SystemPart) c;
-
-                return;
-            }
-        }
-
-        ///throw new RuntimeException("Creating a PartNode with no SystemPart");
-        part = null;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -91,7 +74,7 @@ public abstract class PartNode
     {
         StringBuilder sb = new StringBuilder(super.getContextString());
         sb.append("P")
-          .append(part.getId());
+          .append(getPart().getId());
 
         return sb.toString();
     }
@@ -119,7 +102,13 @@ public abstract class PartNode
      */
     public SystemPart getPart ()
     {
-        return part;
+        for (TreeNode c = this; c != null; c = c.getParent()) {
+            if (c instanceof SystemPart) {
+                return (SystemPart) c;
+            }
+        }
+
+        return null;
     }
 
     //-------------------//

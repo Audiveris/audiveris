@@ -13,7 +13,6 @@ package omr.score.entity;
 
 import omr.sheet.Scale;
 
-import omr.util.Navigable;
 import omr.util.TreeNode;
 
 /**
@@ -25,12 +24,6 @@ import omr.util.TreeNode;
 public abstract class PageNode
     extends ScoreNode
 {
-    //~ Instance fields --------------------------------------------------------
-
-    /** The containing page */
-    @Navigable(false)
-    private Page page;
-
     //~ Constructors -----------------------------------------------------------
 
     //----------//
@@ -44,15 +37,6 @@ public abstract class PageNode
     public PageNode (ScoreNode container)
     {
         super(container);
-
-        // Set the score link
-        for (TreeNode c = this; c != null; c = c.getParent()) {
-            if (c instanceof Page) {
-                page = (Page) c;
-
-                break;
-            }
-        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -65,7 +49,7 @@ public abstract class PageNode
     {
         StringBuilder sb = new StringBuilder(super.getContextString());
         sb.append("#")
-          .append(page.getIndex());
+          .append(getPage().getIndex());
 
         return sb.toString();
     }
@@ -80,7 +64,13 @@ public abstract class PageNode
      */
     public Page getPage ()
     {
-        return page;
+        for (TreeNode c = this; c != null; c = c.getParent()) {
+            if (c instanceof Page) {
+                return (Page) c;
+            }
+        }
+
+        return null;
     }
 
     //----------//

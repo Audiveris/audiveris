@@ -13,7 +13,6 @@ package omr.score.entity;
 
 import omr.score.visitor.ScoreVisitor;
 
-import omr.util.Navigable;
 import omr.util.TreeNode;
 
 import java.util.Comparator;
@@ -55,12 +54,6 @@ public abstract class MeasureNode
     };
 
 
-    //~ Instance fields --------------------------------------------------------
-
-    /** Containing measure */
-    @Navigable(false)
-    private Measure measure;
-
     //~ Constructors -----------------------------------------------------------
 
     //-------------//
@@ -74,15 +67,6 @@ public abstract class MeasureNode
     public MeasureNode (PartNode container)
     {
         super(container);
-
-        // Set the measure link
-        for (TreeNode c = this; c != null; c = c.getParent()) {
-            if (c instanceof Measure) {
-                measure = (Measure) c;
-
-                break;
-            }
-        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -115,7 +99,13 @@ public abstract class MeasureNode
      */
     public Measure getMeasure ()
     {
-        return measure;
+        for (TreeNode c = this; c != null; c = c.getParent()) {
+            if (c instanceof Measure) {
+                return (Measure) c;
+            }
+        }
+
+        return null;
     }
 
     //--------//
