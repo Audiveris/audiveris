@@ -20,17 +20,13 @@ import omr.score.Score;
 import omr.script.Script;
 import omr.script.ScriptManager;
 
-import omr.sheet.Sheet;
-
-import omr.step.Step;
-
 import omr.util.Implement;
-
-import org.jdesktop.swingworker.SwingWorker;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.lang.reflect.*;
+
+import javax.swing.SwingWorker;
 
 /**
  * Class <code>MacApplication</code> provides dynamic hooks into the

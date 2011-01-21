@@ -489,10 +489,6 @@ public class MainGui
 
         frame = getMainFrame();
 
-        // Define frame icon TODO: Polish this!        
-        String name = WellKnowns.CONFIG_FOLDER_NAME + "/favicon.png";
-        frame.setIconImage(new ImageIcon(name).getImage());
-
         sheetsController = SheetsController.getInstance();
         sheetsController.subscribe(this);
 

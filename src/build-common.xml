@@ -378,7 +378,7 @@
         <echo file="${basedir}/${name}.bat" append="false">@ECHO OFF
 REM ${name}.bat
 setlocal
-java -Xmx256M -jar dist/${full.name}.jar %1 %2 %3 %4 %5 %6 %7 %8 %9
+java -Xms512M -Xmx512M -splash:config/splash.png -jar dist/${full.name}.jar %1 %2 %3 %4 %5 %6 %7 %8 %9
 endlocal
         </echo>
         
