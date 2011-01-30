@@ -21,7 +21,6 @@ import omr.log.Logger;
 import omr.math.Circle;
 
 import omr.score.common.PixelPoint;
-import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.visitor.ScoreVisitor;
 
@@ -830,7 +829,7 @@ public class Slur
 
         /** Ordinate extension when looking for embraced notes */
         Scale.Fraction areaDy = new Scale.Fraction(
-            6,
+            5,
             "Ordinate extension when looking for embraced notes");
 
         /** Maximum difference in vertical position between connecting slurs */

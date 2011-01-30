@@ -205,7 +205,11 @@ public class TimeSignature
             }
         }
 
-        return timeRational.den;
+        if (timeRational != null) {
+            return timeRational.den;
+        } else {
+            return null;
+        }
     }
 
     //----------------------//
@@ -268,7 +272,11 @@ public class TimeSignature
             }
         }
 
-        return timeRational.num;
+        if (timeRational != null) {
+            return timeRational.num;
+        } else {
+            return null;
+        }
     }
 
     //--------------------//

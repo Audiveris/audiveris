@@ -368,7 +368,7 @@ public class Score
      * @param page the provided page
      * @return the measure id offset for the page
      */
-    public int getMeasureIdOffset (Page page)
+    public Integer getMeasureIdOffset (Page page)
     {
         int offset = 0;
 
@@ -378,7 +378,14 @@ public class Score
             if (p == page) {
                 return offset;
             } else {
-                offset += p.getDeltaMeasureId();
+                Integer delta = p.getDeltaMeasureId();
+
+                if (delta != null) {
+                    offset += delta;
+                } else {
+                    // This page has no measures yet, so ...
+                    return null;
+                }
             }
         }
 
@@ -899,7 +906,7 @@ public class Score
         // Default Velocity
         Constant.Integer defaultVolume = new Constant.Integer(
             "Volume",
-            25,
+            64,
             "Default Volume in 0..127 range");
     }
 }

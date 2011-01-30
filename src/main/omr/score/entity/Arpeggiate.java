@@ -96,9 +96,13 @@ public class Arpeggiate
         PixelPoint     shiftedPoint = new PixelPoint(point.x + dx, point.y);
         Slot           slot = measure.getClosestSlot(shiftedPoint);
 
+        if (slot == null) {
+            measure.addError(glyph, "Suspicious arpeggiate without slots");
+            return;
+        }
+
         // We look for ALL embraced chord notes
         PixelRectangle box = glyph.getContourBox();
-        ScoreSystem    system = measure.getSystem();
         PixelPoint     top = new PixelPoint(box.x + (box.width / 2), box.y);
         PixelPoint     bottom = new PixelPoint(
             box.x + (box.width / 2),

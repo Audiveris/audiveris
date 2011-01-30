@@ -48,7 +48,6 @@ import omr.sheet.SystemInfo;
 import omr.ui.util.UIUtilities;
 
 import java.awt.*;
-import java.awt.geom.AffineTransform;
 import java.util.ConcurrentModificationException;
 
 /**
@@ -360,9 +359,6 @@ public class PagePhysicalPainter
                 beamThickness = page.getBeamThickness();
                 beamHalfThickness = beamThickness / 2;
             }
-
-            // Determine offset of measure ids for this page
-            pageMeasureIdOffset = score.getMeasureIdOffset(page);
 
             if (!page.getSystems()
                      .isEmpty()) {

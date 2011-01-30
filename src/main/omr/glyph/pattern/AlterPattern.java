@@ -266,7 +266,7 @@ public class AlterPattern
         //~ Instance fields ----------------------------------------------------
 
         Evaluation.Doubt alterMaxDoubt = new Evaluation.Doubt(
-            100,
+            Double.MAX_VALUE,
             "Maximum doubt for alteration sign verification");
         Scale.Fraction   maxCloseStemDx = new Scale.Fraction(
             0.7d,

@@ -162,9 +162,6 @@ public abstract class PagePainter
     // Delta ordinate that corresponds to FLAG_2
     protected int FLAG_2_DY;
 
-    // Offset for measure ids in this page
-    protected int pageMeasureIdOffset = 0;
-
     //~ Constructors -----------------------------------------------------------
 
     //--------------//

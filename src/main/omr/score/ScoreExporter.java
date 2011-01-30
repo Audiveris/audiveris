@@ -1078,10 +1078,11 @@ public class ScoreExporter
 
                     // Need an ending forward ?
                     if (!measure.isImplicit() && !measure.isFirstHalf()) {
-                        if (voice.getTermination()
-                                 .compareTo(Rational.ZERO) < 0) {
-                            Rational delta = voice.getTermination()
-                                                  .opposite();
+                        Rational termination = voice.getTermination();
+
+                        if ((termination != null) &&
+                            (termination.compareTo(Rational.ZERO) < 0)) {
+                            Rational delta = termination.opposite();
                             insertForward(delta, voice.getLastChord());
                             timeCounter = timeCounter.plus(delta);
                         }
