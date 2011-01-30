@@ -13,9 +13,9 @@ package omr.score.midi;
 
 import omr.log.Logger;
 
-import omr.score.MeasureRange;
 import omr.score.Score;
 import omr.score.ScoresManager;
+import omr.score.entity.MeasureId.MeasureRange;
 import omr.score.ui.ScoreActions;
 import omr.score.ui.ScoreDependent;
 
@@ -238,22 +238,6 @@ public class MidiActions
         }
     }
 
-    //----------//
-    // getAgent //
-    //----------//
-    private MidiAgent getAgent ()
-    {
-        if (agent == null) {
-            try {
-                agent = MidiAgent.getInstance();
-            } catch (Exception ex) {
-                logger.severe("Cannot get MidiAgent", ex);
-            }
-        }
-
-        return agent;
-    }
-
     //-----------------//
     // getCurrentScore //
     //-----------------//
@@ -285,8 +269,8 @@ public class MidiActions
     {
         //~ Instance fields ----------------------------------------------------
 
-        private final Score  score;
-        private MeasureRange measureRange;
+        private final Score score;
+        private MeasureRange  measureRange;
 
         //~ Constructors -------------------------------------------------------
 
@@ -296,7 +280,7 @@ public class MidiActions
          * @param measureRange a specific range of measures, or (if null) the
          * default measure range as stored in the score
          */
-        public PlayTask (Score        score,
+        public PlayTask (Score      score,
                          MeasureRange measureRange)
         {
             this.score = score;

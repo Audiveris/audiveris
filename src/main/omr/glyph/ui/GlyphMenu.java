@@ -23,7 +23,7 @@ import omr.selection.SelectionHint;
 
 import omr.sheet.Sheet;
 
-import omr.ui.util.SeparablePopupMenu;
+import omr.ui.util.SeparableMenu;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -33,10 +33,16 @@ import java.util.Map.Entry;
 import javax.swing.*;
 
 /**
- * Class <code>GlyphMenu</code> is the base for all glyph-based popup menus
+ * Abstract class {@code GlyphMenu} is the base for all glyph-based menus
  * such as {@link DashMenu}, {@link BarMenu} and {@link SymbolMenu}.
  * It also provides implementation for basic actions: copy, paste, assign,
  * compound, deassign and dump.
+ *
+ * <p>In a menu, actions are physically grouped by semantic tag and separators
+ * are inserted between such groups.</p>
+ *
+ * <p>Actions are also organized according to their target menu level, to
+ * allow actions to be dispatched into a hierarchy of menus.</p>
  *
  * @author Hervé Bitteur
  */
@@ -49,6 +55,15 @@ public abstract class GlyphMenu
 
     //~ Instance fields --------------------------------------------------------
 
+    /** Map action -> tag to update according to context */
+    private final Map<DynAction, Integer> dynActions = new LinkedHashMap<DynAction, Integer>();
+
+    /** Map action -> menu level */
+    private final Map<DynAction, Integer> levels = new LinkedHashMap<DynAction, Integer>();
+
+    /** Concrete menu */
+    private final SeparableMenu menu = new SeparableMenu();
+
     /** The controller in charge of user gesture */
     protected final GlyphsController controller;
 
@@ -57,12 +72,6 @@ public abstract class GlyphMenu
 
     /** Related glyph lag */
     protected final GlyphLag glyphLag;
-
-    /** Map of actions/tag to update menu according to selected glyphs */
-    protected final Map<DynAction, Integer> dynActions = new LinkedHashMap<DynAction, Integer>();
-
-    /** Concrete popup menu */
-    protected final SeparablePopupMenu popup = new SeparablePopupMenu();
 
     /** Current number of selected glyphs */
     protected int glyphNb;
@@ -92,33 +101,33 @@ public abstract class GlyphMenu
     public GlyphMenu (GlyphsController controller)
     {
         this.controller = controller;
-        this.sheet = controller.sheet;
 
-        this.glyphLag = controller.getLag();
+        sheet = controller.sheet;
+        glyphLag = controller.getLag();
 
         buildMenu();
     }
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------//
-    // getPopup //
-    //----------//
+    //---------//
+    // getMenu //
+    //---------//
     /**
-     * Report the concrete popup menu
+     * Report the concrete menu
      *
-     * @return the popup menu
+     * @return the menu
      */
-    public JPopupMenu getPopup ()
+    public JMenu getMenu ()
     {
-        return popup;
+        return menu;
     }
 
     //------------//
     // updateMenu //
     //------------//
     /**
-     * Update the popup menu according to the currently selected glyphs
+     * Update the menu according to the currently selected glyphs
      */
     public void updateMenu ()
     {
@@ -150,43 +159,99 @@ public abstract class GlyphMenu
         for (DynAction action : dynActions.keySet()) {
             action.update();
         }
+
+        // Update the menu root item
+        menu.setEnabled(glyphNb > 0);
+
+        if (glyphNb > 0) {
+            menu.setText("Glyphs ...");
+        } else {
+            menu.setText("no glyph");
+        }
     }
 
     //-----------------//
-    // allocateActions //
+    // registerActions //
     //-----------------//
     /**
-     * Allocate all actions to be used in the menu
+     * Register all actions to be used in the menu
      */
-    protected abstract void allocateActions ();
+    protected abstract void registerActions ();
+
+    //----------//
+    // register //
+    //----------//
+    /**
+     * Register this action instance in the set of dynamic actions
+     * @param menuLevel which menu should host the action item
+     * @param action the action to register
+     */
+    protected void register (int       menuLevel,
+                             DynAction action)
+    {
+        levels.put(action, menuLevel);
+        dynActions.put(action, action.tag);
+    }
 
     //-----------//
     // buildMenu //
     //-----------//
     /**
-     * Build the popup menu instance, grouping the actions with the same tag
-     * and separating them from other tags.
+     * Build the menu instance, grouping the actions with the same tag
+     * and separating them from other tags, and organize actions into their
+     * target menu level.
      */
     private void buildMenu ()
     {
-        // Allocate and register actions
-        allocateActions();
+        // Register actions
+        registerActions();
 
         // Sort actions on their tag
         SortedSet<Integer> tags = new TreeSet<Integer>(dynActions.values());
 
-        for (Integer tag : tags) {
-            for (Entry<DynAction, Integer> entry : dynActions.entrySet()) {
-                if (entry.getValue()
-                         .equals(tag)) {
-                    popup.add(entry.getKey().getMenuItem());
-                }
-            }
+        // Retrieve the highest menu level
+        int maxLevel = 0;
 
-            popup.addSeparator();
+        for (Integer level : levels.values()) {
+            maxLevel = Math.max(maxLevel, level);
         }
 
-        popup.purgeSeparator();
+        // Initially update all the action items
+        for (DynAction action : dynActions.keySet()) {
+            action.update();
+        }
+
+        // Generate the hierarchy of menus
+        SeparableMenu prevMenu = menu;
+
+        for (int level = 0; level <= maxLevel; level++) {
+            SeparableMenu currentMenu = (level == 0) ? menu
+                                        : new SeparableMenu("Continued ...");
+
+            for (Integer tag : tags) {
+                for (Entry<DynAction, Integer> entry : dynActions.entrySet()) {
+                    if (entry.getValue()
+                             .equals(tag)) {
+                        DynAction action = entry.getKey();
+
+                        if (levels.get(action) == level) {
+                            currentMenu.add(action.getMenuItem());
+                        }
+                    }
+                }
+
+                currentMenu.addSeparator();
+            }
+
+            currentMenu.trimSeparator();
+
+            if ((level > 0) && (currentMenu.getMenuComponentCount() > 0)) {
+                // Insert this menu as a submenu of the previous one
+                prevMenu.addSeparator();
+                prevMenu.add(currentMenu);
+                prevMenu = currentMenu;
+            }
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -340,21 +405,29 @@ public abstract class GlyphMenu
     protected abstract class DynAction
         extends AbstractAction
     {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Semantic tag */
+        protected final int tag;
+
         //~ Constructors -------------------------------------------------------
 
         public DynAction (int tag)
         {
-            // Record the instance
-            dynActions.put(this, tag);
-
-            // Initially update the action items
-            update();
+            this.tag = tag;
         }
 
         //~ Methods ------------------------------------------------------------
 
+        /**
+         * Method to update the action according to the current context
+         */
         public abstract void update ();
 
+        /**
+         * Report which item class should be used to the related menu item
+         * @return the precise menu item class
+         */
         public JMenuItem getMenuItem ()
         {
             return new JMenuItem(this);

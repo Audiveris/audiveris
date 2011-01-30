@@ -23,7 +23,7 @@ import java.awt.event.*;
 import java.util.*;
 
 /**
- * Class <code>SymbolMenu</code> defines the popup menu which is linked to the
+ * Class <code>SymbolMenu</code> defines the menu menu which is linked to the
  * current selection of either one or several glyphs
  *
  * @author Hervé Bitteur
@@ -49,7 +49,7 @@ public class SymbolMenu
     // SymbolMenu //
     //------------//
     /**
-     * Create the Symbol popup menu
+     * Create the Symbol menu
      *
      * @param symbolsController the top companion
      * @param evaluator the glyph evaluator
@@ -67,50 +67,50 @@ public class SymbolMenu
     //~ Methods ----------------------------------------------------------------
 
     //-----------------//
-    // allocateActions //
+    // registerActions //
     //-----------------//
     @Override
-    protected void allocateActions ()
+    protected void registerActions ()
     {
         // Copy & Paste actions
-        new PasteAction();
-        new CopyAction();
+        register(0, new PasteAction());
+        register(0, new CopyAction());
 
         // Deassign selected glyph(s)
-        new DeassignAction();
+        register(0, new DeassignAction());
 
         // Manually assign a shape
-        new AssignAction();
+        register(0, new AssignAction());
 
         // Build a compound, with menu for shape selection
-        new CompoundAction();
-
-        // Dump current glyph
-        new DumpAction();
+        register(0, new CompoundAction());
 
         // Segment the glyph into stems & leaves
-        new StemSegmentAction();
+        register(0, new StemSegmentAction());
 
         // Segment the glyph into short stems & leaves
-        new ShortStemSegmentAction();
+        register(0, new ShortStemSegmentAction());
 
         // Build a compound, with proposed shape
-        new ProposedAction();
+        register(0, new ProposedAction());
 
-        // Cleanup large slur glyphs
-        new LargeSlurAction();
+        // Trim large slur glyphs
+        register(0, new LargeSlurAction());
+
+        // Dump current glyph
+        register(1, new DumpAction());
 
         // Dump current glyph text info
-        new DumpTextAction();
+        register(1, new DumpTextAction());
 
         // Display score counterpart
-        new TranslationAction();
+        register(1, new TranslationAction());
 
         // Display all glyphs of the same shape
-        new ShapeAction();
+        register(1, new ShapeAction());
 
         // Display all glyphs similar to the curent glyph
-        new SimilarAction();
+        register(1, new SimilarAction());
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -193,7 +193,7 @@ public class SymbolMenu
 
         public void update ()
         {
-            putValue(NAME, "Cleanup large Slur");
+            putValue(NAME, "Trim large Slur");
 
             if ((glyphNb > 0) && noVirtuals) {
                 setEnabled(true);

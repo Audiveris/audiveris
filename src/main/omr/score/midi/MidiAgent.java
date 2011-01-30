@@ -15,9 +15,9 @@ import omr.Main;
 
 import omr.log.Logger;
 
-import omr.score.MeasureRange;
 import omr.score.Score;
 import omr.score.ScoreExporter;
+import omr.score.entity.MeasureId.MeasureRange;
 import omr.score.ui.ScoreActions;
 
 import omr.util.OmrExecutors;
@@ -279,7 +279,7 @@ public class MidiAgent
 
             if (!controller.isPlaying() ||
                 (document == null) ||
-                (this.measureRange != measureRange)) {
+                (!this.measureRange.equals(measureRange))) {
                 this.measureRange = measureRange;
 
                 // Make sure the document (and the Midi sequence) is available
@@ -371,9 +371,9 @@ public class MidiAgent
         /*
          *
          * So here are the functions you need for Audiveris:
-                               1) call com.xenoage.zong.musicxml.MusicXMLDocument.read(org.w3c.dom.Document doc)
+                                         1) call com.xenoage.zong.musicxml.MusicXMLDocument.read(org.w3c.dom.Document doc)
          * to get an instance of a MusicXMLDocument out of your DOM document
-                               2) handle this document to
+                                         2) handle this document to
          * com.xenoage.zong.player.gui.Controller.loadScore(MxlScorePartwise doc, boolean ignoreErrors)
          * (set ignoreErrors to true, of course)
          */

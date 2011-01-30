@@ -53,24 +53,24 @@ public class SeparablePopupMenu
     @Override
     public void addSeparator ()
     {
-        int count = super.getComponentCount();
+        int count = getComponentCount();
 
         if ((count > 0) && !(getComponent(count - 1) instanceof JSeparator)) {
             super.addSeparator();
         }
     }
 
-    //----------------//
-    // purgeSeparator //
-    //----------------//
+    //---------------//
+    // trimSeparator //
+    //---------------//
     /**
      * Remove any potential orphan separator at the end of the menu
      */
-    public void purgeSeparator ()
+    public void trimSeparator ()
     {
         int count = getComponentCount();
 
-        if (getComponent(count - 1) instanceof JSeparator) {
+        if ((count > 0) && getComponent(count - 1) instanceof JSeparator) {
             remove(count - 1);
         }
     }

@@ -17,6 +17,7 @@ import omr.math.Rational;
 
 import omr.score.entity.Chord;
 import omr.score.entity.Measure;
+import omr.score.entity.MeasureId.PageBased;
 import omr.score.entity.Page;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Slot;
@@ -25,8 +26,7 @@ import omr.score.visitor.AbstractScoreVisitor;
 
 import omr.util.TreeNode;
 
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Class <code>DurationRetriever</code> can visit a page hierarchy to compute
@@ -46,7 +46,7 @@ public class DurationRetriever
     //~ Instance fields --------------------------------------------------------
 
     /** Map of Measure id -> Measure duration, whatever the containing part */
-    private final Map<String, Rational> measureDurations = new TreeMap<String, Rational>();
+    private final Map<PageBased, Rational> measureDurations = new HashMap<PageBased, Rational>();
 
     /** Pass number, since we need 2 passes per system */
     private int pass = 1;
@@ -102,15 +102,15 @@ public class DurationRetriever
                     measure.setActualDuration(measure.getExpectedDuration());
                 }
 
-                measureDurations.put(measure.getId(), measureDur);
+                measureDurations.put(measure.getPageId(), measureDur);
 
                 if (logger.isFineEnabled()) {
-                    logger.fine(measure.getId() + ": " + measureDur);
+                    logger.fine(measure.getPageId() + ": " + measureDur);
                 }
             } else if (!measure.getWholeChords()
                                .isEmpty()) {
                 if (pass > 1) {
-                    Rational dur = measureDurations.get(measure.getId());
+                    Rational dur = measureDurations.get(measure.getPageId());
 
                     if (dur != null) {
                         measure.setActualDuration(dur);

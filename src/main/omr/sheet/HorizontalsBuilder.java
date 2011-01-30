@@ -1126,7 +1126,8 @@ public class HorizontalsBuilder
                 dashMenu.updateMenu();
 
                 // Show the popup menu
-                dashMenu.getPopup()
+                dashMenu.getMenu()
+                        .getPopupMenu()
                         .show(
                     this,
                     getZoom().scaled(pt.x),

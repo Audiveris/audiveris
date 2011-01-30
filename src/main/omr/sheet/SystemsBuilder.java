@@ -707,7 +707,8 @@ public class SystemsBuilder
                 barMenu.updateMenu();
 
                 // Show the popup menu
-                barMenu.getPopup()
+                barMenu.getMenu()
+                       .getPopupMenu()
                        .show(
                     this,
                     getZoom().scaled(pt.x),

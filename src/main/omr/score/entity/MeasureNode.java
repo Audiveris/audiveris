@@ -79,7 +79,7 @@ public abstract class MeasureNode
     {
         StringBuilder sb = new StringBuilder(super.getContextString());
         sb.append("M")
-          .append(getMeasure().getId());
+          .append(getMeasure().getPageId());
 
         if (getStaff() != null) {
             sb.append("F")

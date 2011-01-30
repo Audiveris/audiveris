@@ -51,26 +51,26 @@ public class DashMenu
     //~ Methods ----------------------------------------------------------------
 
     //-----------------//
-    // allocateActions //
+    // registerActions //
     //-----------------//
     @Override
-    protected void allocateActions ()
+    protected void registerActions ()
     {
         // Copy & Paste actions
-        new PasteAction();
-        new CopyAction();
+        register(0, new PasteAction());
+        register(0, new CopyAction());
 
         // Deassign selected glyph(s)
-        new DeassignAction();
+        register(0, new DeassignAction());
 
         // Manually assign a shape
-        new AssignAction();
+        register(0, new AssignAction());
 
         // Build a compound, with menu for shape selection
-        new CompoundAction();
+        register(0, new CompoundAction());
 
         // Dump current glyph
-        new DumpAction();
+        register(0, new DumpAction());
     }
 
     //~ Inner Classes ----------------------------------------------------------

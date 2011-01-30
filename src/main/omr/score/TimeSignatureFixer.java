@@ -160,8 +160,8 @@ public class TimeSignatureFixer
     {
         if (logger.isFineEnabled()) {
             logger.fine(
-                "checkTimeSigs on measure range " + startMeasure.getId() +
-                ".." + stopMeasure.getId());
+                "checkTimeSigs on measure range " + startMeasure.getPageId() +
+                ".." + stopMeasure.getPageId());
         }
 
         // Retrieve the best possible time signature(s)
@@ -197,7 +197,7 @@ public class TimeSignatureFixer
 
                         if (!timeRational.equals(bestRational)) {
                             logger.info(
-                                "Measure#" + measure.getId() + " " +
+                                "Measure#" + measure.getPageId() + " " +
                                 staff.getContextString() + "T" + staff.getId() +
                                 " " + timeRational + "->" + bestRational);
 
@@ -242,7 +242,7 @@ public class TimeSignatureFixer
             if (sig != null) {
                 if (logger.isFineEnabled()) {
                     logger.fine(
-                        "Measure#" + measure.getId() + " " +
+                        "Measure#" + measure.getPageId() + " " +
                         staff.getContextString() + "T" + staff.getId() + " " +
                         sig);
                 }
@@ -284,7 +284,7 @@ public class TimeSignatureFixer
             // Retrieve info
             if (logger.isFineEnabled()) {
                 logger.fine(
-                    "Checking measure#" + m.getId() + " idx:" +
+                    "Checking measure#" + m.getPageId() + " idx:" +
                     m.getChildIndex());
             }
 

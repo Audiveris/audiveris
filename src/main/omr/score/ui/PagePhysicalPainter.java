@@ -21,6 +21,8 @@ import omr.glyph.facets.Stick;
 
 import omr.log.Logger;
 
+import omr.math.Rational;
+
 import omr.score.common.PixelDimension;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -33,6 +35,9 @@ import omr.score.entity.ScoreSystem;
 import omr.score.entity.Slot;
 import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
+import omr.score.ui.MusicFont.Alignment;
+import omr.score.ui.MusicFont.Alignment.Horizontal;
+import omr.score.ui.MusicFont.Alignment.Vertical;
 
 import omr.sheet.Ending;
 import omr.sheet.Ledger;
@@ -43,6 +48,7 @@ import omr.sheet.SystemInfo;
 import omr.ui.util.UIUtilities;
 
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.util.ConcurrentModificationException;
 
 /**
@@ -121,29 +127,48 @@ public class PagePhysicalPainter
         g.setColor(color);
 
         final Stroke oldStroke = UIUtilities.setAbsoluteStroke(g, 1);
-        final int    x = slot.getX();
 
-        if (wholeSystem) {
-            // Draw for the whole system height
-            system = measure.getSystem();
+        try {
+            final int x = slot.getX();
 
-            final PixelDimension systemDimension = system.getDimension();
-            g.drawLine(
-                x,
-                system.getTopLeft().y,
-                x,
-                system.getTopLeft().y + systemDimension.height +
-                system.getLastPart().getLastStaff().getHeight());
-        } else {
-            // Draw for just the part height
-            SystemPart part = measure.getPart();
-            Staff      firstStaff = part.getFirstStaff();
-            Staff      lastStaff = part.getLastStaff();
-            g.drawLine(
-                x,
-                firstStaff.getTopLeft().y,
-                x,
-                lastStaff.getTopLeft().y + lastStaff.getHeight());
+            if (wholeSystem) {
+                // Draw for the whole system height
+                system = measure.getSystem();
+
+                final PixelDimension systemDimension = system.getDimension();
+                g.drawLine(
+                    x,
+                    system.getTopLeft().y,
+                    x,
+                    system.getTopLeft().y + systemDimension.height +
+                    system.getLastPart().getLastStaff().getHeight());
+            } else {
+                // Draw for just the part height
+                SystemPart part = measure.getPart();
+                Staff      firstStaff = part.getFirstStaff();
+                Staff      lastStaff = part.getLastStaff();
+                g.drawLine(
+                    x,
+                    firstStaff.getTopLeft().y,
+                    x,
+                    lastStaff.getTopLeft().y + lastStaff.getHeight());
+
+                // Draw slot start time
+                Rational slotStartTime = slot.getStartTime();
+
+                if (slotStartTime != null) {
+                    paint(
+                        basicLayout(slotStartTime.toString(), halfAT),
+                        new PixelPoint(
+                            x,
+                            firstStaff.getTopLeft().y - annotationDy),
+                        new Alignment(Horizontal.CENTER, Vertical.BOTTOM));
+                }
+            }
+        } catch (Exception ex) {
+            logger.warning(
+                getClass().getSimpleName() + " Error drawing " + slot,
+                ex);
         }
 
         g.setStroke(oldStroke);
@@ -245,10 +270,13 @@ public class PagePhysicalPainter
                 if (part == measure.getSystem()
                                    .getFirstRealPart()) {
                     g.setColor(Color.lightGray);
-                    g.drawString(
-                        measure.getScoreId(pageMeasureIdOffset),
-                        measure.getLeftX() - 5,
-                        measure.getPart().getFirstStaff().getTopLeft().y - 15);
+                    paint(
+                        basicLayout(measure.getScoreId(), null),
+                        new PixelPoint(
+                            measure.getLeftX(),
+                            measure.getPart().getFirstStaff().getTopLeft().y -
+                            annotationDy),
+                        new Alignment(Horizontal.CENTER, Vertical.BOTTOM));
                 }
 
                 // Draw slot vertical lines ?

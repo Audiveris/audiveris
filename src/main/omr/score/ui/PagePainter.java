@@ -108,6 +108,11 @@ public abstract class PagePainter
         0,
         0);
 
+    /** A transformation to half scale (used for slot time annotation) */
+    protected static final AffineTransform halfAT = AffineTransform.getScaleInstance(
+        0.5,
+        0.5);
+
     /** Font for annotations */
     protected static final Font basicFont = new Font(
         "Sans Serif",
@@ -116,6 +121,9 @@ public abstract class PagePainter
 
     /** Color for music symbols */
     public static Color musicColor = constants.musicColor.getValue();
+
+    /** Ordinate offset, in pixels, for annotation above staff */
+    protected static int annotationDy = 15;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -962,6 +970,26 @@ public abstract class PagePainter
     protected int getKeySigItemDx ()
     {
         return scale.toPixels(constants.keySigItemDx);
+    }
+
+    //-------------//
+    // basicLayout //
+    //-------------//
+    /**
+     * Build a TextLayout from a String of BasicFont characters (transformed by
+     * the provided AffineTransform if any)
+     * @param str the string of proper codes
+     * @param fat potential affine transformation
+     * @return the (sized) TextLayout ready to be drawn
+     */
+    protected TextLayout basicLayout (String          str,
+                                      AffineTransform fat)
+    {
+        FontRenderContext frc = g.getFontRenderContext();
+        Font              font = (fat == null) ? basicFont
+                                 : basicFont.deriveFont(fat);
+
+        return new TextLayout(str, font, frc);
     }
 
     //----------------//

@@ -255,14 +255,14 @@ public class ScoreSystem
     // getPartAt //
     //-----------//
     /**
-     * Determine the part which contains the given system point
+     * Determine the part which contains the given point
      *
-     * @param sysPt the given system point
+     * @param point the given point
      * @return the containing part
      */
-    public SystemPart getPartAt (PixelPoint sysPt)
+    public SystemPart getPartAt (PixelPoint point)
     {
-        return getStaffAt(sysPt)
+        return getStaffAt(point)
                    .getPart();
     }
 

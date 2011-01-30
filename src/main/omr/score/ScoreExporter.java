@@ -36,6 +36,7 @@ import omr.score.entity.Fermata;
 import omr.score.entity.KeySignature;
 import omr.score.entity.LyricsItem;
 import omr.score.entity.Measure;
+import omr.score.entity.MeasureId.MeasureRange;
 import omr.score.entity.Notation;
 import omr.score.entity.Ornament;
 import omr.score.entity.Page;
@@ -589,7 +590,7 @@ public class ScoreExporter
             // Need also a Sound element
             Sound sound = factory.createSound();
             direction.setSound(sound);
-            sound.setCoda("" + current.measure.getId());
+            sound.setCoda("" + current.measure.getScoreId());
             sound.setDivisions(
                 new BigDecimal(
                     score.simpleDurationOf(
@@ -835,8 +836,7 @@ public class ScoreExporter
 
             // Allocate Measure
             current.pmMeasure = factory.createScorePartwisePartMeasure();
-            current.pmMeasure.setNumber(
-                measure.getScoreId(current.pageMeasureIdOffset));
+            current.pmMeasure.setNumber(measure.getScoreId());
 
             if (measure.getWidth() != null) {
                 current.pmMeasure.setWidth(toTenths(measure.getWidth()));
@@ -861,7 +861,7 @@ public class ScoreExporter
             // Do we need to create & export a dummy initial measure?
             if (((measureRange != null) && !measure.isTemporary() &&
                 (measure.getIdValue() > 1)) &&
-                (measure.getIdValue() == measureRange.getFirstIndex())) {
+                (measure.getScoreId().equals(measureRange.getFirstId()))) {
                 insertCurrentContext(measure);
             }
 
@@ -1653,7 +1653,7 @@ public class ScoreExporter
 
             // Need also a Sound element (TODO: We don't do anything with sound!)
             Sound sound = factory.createSound();
-            sound.setSegno("" + current.measure.getId());
+            sound.setSegno("" + current.measure.getScoreId());
             sound.setDivisions(
                 new BigDecimal(
                     score.simpleDurationOf(
@@ -2226,8 +2226,7 @@ public class ScoreExporter
     {
         return (measureRange == null) || // No range : take all of them
                (measure.isTemporary()) || // A temporary measure for export
-               measureRange.contains(
-            measure.getIdValue() + score.getMeasureIdOffset(current.page)); // Part of the range
+               measureRange.contains(measure.getPageId()); // Part of the range
     }
 
     //--------------//

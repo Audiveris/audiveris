@@ -274,7 +274,7 @@ public class MeasureFixer
         }
 
         for (Measure measure : verticals) {
-            measure.setIdValue(id, isSecondHalf);
+            measure.setPageId(id, isSecondHalf);
         }
 
         // Side effect: remember the numeric value as last id

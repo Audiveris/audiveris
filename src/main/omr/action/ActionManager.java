@@ -304,7 +304,7 @@ public class ActionManager
                     menuBar.add(Box.createHorizontalStrut(50));
                 }
 
-                SeparableMenu.purgeSeparator(menu); // No orphan at end
+                SeparableMenu.trimSeparator(menu); // No orphan at end
                 menuBar.add(menu);
             }
         }

@@ -75,7 +75,7 @@ public class SeparableMenu
     @Override
     public void addSeparator ()
     {
-        int count = super.getMenuComponentCount();
+        int count = getMenuComponentCount();
 
         if ((count > 0) &&
             !(getMenuComponent(count - 1) instanceof JSeparator)) {
@@ -83,18 +83,33 @@ public class SeparableMenu
         }
     }
 
-    //----------------//
-    // purgeSeparator //
-    //----------------//
+    //---------------//
+    // trimSeparator //
+    //---------------//
+    /**
+     * Remove any potential orphan separator at the end of the menu
+     */
+    public void trimSeparator ()
+    {
+        int count = getMenuComponentCount();
+
+        if ((count > 0) && getMenuComponent(count - 1) instanceof JSeparator) {
+            remove(count - 1);
+        }
+    }
+
+    //---------------//
+    // trimSeparator //
+    //---------------//
     /**
      * Remove any potential orphan separator at the end of the menu
      * @param menu the menu to purge
      */
-    public static void purgeSeparator (JMenu menu)
+    public static void trimSeparator (JMenu menu)
     {
         int count = menu.getMenuComponentCount();
 
-        if (menu.getMenuComponent(count - 1) instanceof JSeparator) {
+        if ((count > 0) && menu.getMenuComponent(count - 1) instanceof JSeparator) {
             menu.remove(count - 1);
         }
     }

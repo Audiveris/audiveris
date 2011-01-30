@@ -22,6 +22,7 @@ import omr.log.Logger;
 
 import omr.math.Rational;
 
+import omr.score.entity.MeasureId.MeasureRange;
 import omr.score.entity.Page;
 import omr.score.entity.ScoreNode;
 import omr.score.entity.ScorePart;

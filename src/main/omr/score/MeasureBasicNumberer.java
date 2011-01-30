@@ -59,10 +59,10 @@ public class MeasureBasicNumberer
 
             if (precedingMeasure != null) {
                 int precedingId = precedingMeasure.getIdValue();
-                measure.setIdValue(precedingId + 1, false);
+                measure.setPageId(precedingId + 1, false);
             } else {
                 // Very first measure (in this page)
-                measure.setIdValue(1, false);
+                measure.setPageId(1, false);
             }
         } catch (Exception ex) {
             logger.warning(

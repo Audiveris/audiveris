@@ -275,10 +275,10 @@ public class SystemPart
      * Report the measure that contains a given point (assumed to be in the
      * containing system part)
      *
-     * @param systemPoint system-based coordinates of the given point
+     * @param point page-based coordinates of the given point
      * @return the containing measure
      */
-    public Measure getMeasureAt (PixelPoint systemPoint)
+    public Measure getMeasureAt (PixelPoint point)
     {
         Measure measure = null;
 
@@ -287,7 +287,7 @@ public class SystemPart
 
             Barline barline = measure.getBarline();
 
-            if ((barline == null) || (systemPoint.x <= barline.getRightX())) {
+            if ((barline == null) || (point.x <= barline.getRightX())) {
                 return measure;
             }
         }
@@ -619,7 +619,7 @@ public class SystemPart
             Measure measure = (Measure) mn;
             Measure dummyMeasure = new Measure(dummyPart);
             dummyMeasure.setDummy(true);
-            dummyMeasure.setIdValue(measure.getIdValue(), false);
+            dummyMeasure.setPageId(measure.getPageId());
 
             // Loop on staves
             int staffIndex = -1;

@@ -23,7 +23,6 @@ import omr.lag.LagOrientation;
 import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
-import omr.score.common.ScorePoint;
 
 import omr.script.InsertTask;
 

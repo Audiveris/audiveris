@@ -17,7 +17,6 @@ import omr.math.Rational;
 
 import omr.score.Score;
 import omr.score.entity.Measure;
-import omr.score.entity.Note;
 import omr.score.entity.Page;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Slot;
@@ -325,6 +324,7 @@ public class MidiReceiver
             return;
         }
 
+        // Score-based measure index
         int measureIndex = position.getMeasure();
 
         // Perhaps we are just playing a range of measures?

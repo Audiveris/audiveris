@@ -17,8 +17,10 @@ import omr.glyph.text.Language;
 
 import omr.log.Logger;
 
-import omr.score.MeasureRange;
 import omr.score.Score;
+import omr.score.entity.MeasureId;
+import omr.score.entity.MeasureId.MeasureRange;
+import omr.score.entity.MeasureId.ScoreBased;
 import omr.score.entity.Page;
 import omr.score.entity.ScorePart;
 import omr.score.entity.SlotPolicy;
@@ -683,12 +685,14 @@ public class ScoreParameters
         final JCheckBox rangeBox = new JCheckBox();
 
         /** First measure Id */
-        final LIntegerField firstId = new LIntegerField(
+        final LTextField firstId = new LTextField(
+            true,
             "first Id",
             "First measure id of measure range");
 
         /** Last measure Id */
-        final LIntegerField lastId = new LIntegerField(
+        final LTextField lastId = new LTextField(
+            true,
             "last Id",
             "Last measure id of measure range");
 
@@ -704,25 +708,24 @@ public class ScoreParameters
             rangeBox.addItemListener(this);
 
             // Default measure range bounds
-            MeasureRange range = score.getMeasureRange();
+            MeasureId.MeasureRange range = score.getMeasureRange();
 
             if (range != null) {
                 rangeBox.setSelected(true);
                 firstId.setEnabled(true);
-                firstId.setValue(range.getFirstIndex());
+                firstId.setText(range.getFirstId().toString());
                 lastId.setEnabled(true);
-                lastId.setValue(range.getLastIndex());
+                lastId.setText(range.getLastId().toString());
             } else {
                 rangeBox.setSelected(false);
                 firstId.setEnabled(false);
                 lastId.setEnabled(false);
 
                 try {
-                    firstId.setValue(
-                        score.getFirstPage().getFirstSystem().getFirstPart().getFirstMeasure().getIdValue());
-                    lastId.setValue(
-                        score.getMeasureIdOffset(score.getLastPage()) +
-                        score.getLastPage().getLastSystem().getLastPart().getLastMeasure().getIdValue());
+                    firstId.setText(
+                        score.getFirstPage().getFirstSystem().getFirstPart().getFirstMeasure().getScoreId());
+                    lastId.setText(
+                        score.getLastPage().getLastSystem().getLastPart().getLastMeasure().getScoreId());
                 } catch (Exception ex) {
                     logger.warning("Error on score measure range", ex);
                     rangeBox.setEnabled(false); // Safer
@@ -739,62 +742,60 @@ public class ScoreParameters
             if (rangeBox.isSelected() &&
                 (score.getLastPage()
                       .getLastSystem() != null)) {
-                int minMeasureId = score.getFirstPage()
-                                        .getFirstSystem()
-                                        .getFirstPart()
-                                        .getFirstMeasure()
-                                        .getIdValue();
-                int maxMeasureId = score.getMeasureIdOffset(
-                    score.getLastPage()) +
-                                   score.getLastPage()
-                                        .getLastSystem()
-                                        .getLastPart()
-                                        .getLastMeasure()
-                                        .getIdValue();
+                ScoreBased minId = new ScoreBased(
+                    score.getFirstPage().getFirstSystem().getFirstPart().getFirstMeasure().getPageId());
+                ScoreBased maxId = new ScoreBased(
+                    score.getLastPage().getLastSystem().getLastPart().getLastMeasure().getPageId());
 
-                // Check values are numbers
-                int first = 0;
+                // Check values are valid
+                ScoreBased first = null;
 
                 try {
-                    first = firstId.getValue();
-                } catch (NumberFormatException nfe) {
+                    first = MeasureId.createScoreBased(
+                        score,
+                        firstId.getText());
+                } catch (Exception ex) {
                     logger.warning(
-                        "Illegal number format: " + firstId.getText());
+                        "Illegal first measure id: '" + firstId.getText() +
+                        "'",
+                        ex);
 
                     return false;
                 }
 
-                int last = 0;
+                ScoreBased last = null;
 
                 try {
-                    last = lastId.getValue();
-                } catch (NumberFormatException nfe) {
+                    last = MeasureId.createScoreBased(score, lastId.getText());
+                } catch (NumberFormatException ex) {
                     logger.warning(
-                        "Illegal number format: " + lastId.getText());
+                        "Illegal last measure id: '" + lastId.getText() + "'",
+                        ex);
 
                     return false;
                 }
 
                 // First Measure
-                if ((first < minMeasureId) || (first > maxMeasureId)) {
+                if ((first.compareTo(minId) < 0) ||
+                    (first.compareTo(maxId) > 0)) {
                     logger.warning(
-                        "First measure Id is not within [" + minMeasureId +
-                        ".." + maxMeasureId + "]: " + first);
+                        "First measure Id is not within [" + minId + ".." +
+                        maxId + "]: " + first);
 
                     return false;
                 }
 
                 // Last Measure
-                if ((last < minMeasureId) || (last > maxMeasureId)) {
+                if ((last.compareTo(minId) < 0) || (last.compareTo(maxId) > 0)) {
                     logger.warning(
-                        "Last measure Id is not within [" + minMeasureId +
-                        ".." + maxMeasureId + "]: " + last);
+                        "Last measure Id is not within [" + minId + ".." +
+                        maxId + "]: " + last);
 
                     return false;
                 }
 
                 // First & last consistency
-                if (firstId.getValue() > lastId.getValue()) {
+                if (first.compareTo(last) > 0) {
                     logger.warning(
                         "First measure Id " + first +
                         " is greater than last measure Id " + last);
@@ -814,8 +815,8 @@ public class ScoreParameters
                 score.setMeasureRange(
                     new MeasureRange(
                         score,
-                        firstId.getValue(),
-                        lastId.getValue()));
+                        firstId.getText().trim(),
+                        lastId.getText().trim()));
             } else {
                 score.setMeasureRange(null);
             }

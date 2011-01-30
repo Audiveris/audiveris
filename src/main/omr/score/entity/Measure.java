@@ -35,11 +35,8 @@ import java.util.*;
  * TimeSignature(s), list of Clef(s), list of KeySignature(s), list of Chord(s)
  * and list of Beam(s).</p>
  *
- * <p>Measure Ids: A measure Id is unique within the page, typically starting
- * at 1, but implicit measures are assigned special ids:<ul>
- * <li>A starting pickup measure has 0 as Id</li>
- * <li>The id of the second half of a repeat measure is assigned the negative
- * value of the id of the first half</li></ul>
+ * <p>Measure Ids are stored with respect to their containing page only, they
+ * are page-based ids. Displayed to the user are score-based ids.</p>
  *
  * @author Hervé Bitteur
  */
@@ -87,7 +84,7 @@ public class Measure
     private Container beams;
 
     /** Measure Id */
-    private Id id;
+    private MeasureId.PageBased id;
 
     /** Identified time slots within the measure */
     private SortedSet<Slot> slots;
@@ -792,34 +789,6 @@ public class Measure
         }
     }
 
-    //-------//
-    // getId //
-    //-------//
-    /**
-     * Report the page-based measure id
-     *
-     * @return the page-based measure id
-     */
-    public String getId ()
-    {
-        return (id == null) ? "null" : id.toPage();
-    }
-
-    //------------//
-    // setIdValue //
-    //------------//
-    /**
-     * Assign the proper id to this measure
-     *
-     * @param id the proper measure id
-     * @param secondHalf true if the measure is the second half of a repeat
-     */
-    public void setIdValue (int     id,
-                            boolean secondHalf)
-    {
-        this.id = new Id(id, secondHalf);
-    }
-
     //------------//
     // getIdValue //
     //------------//
@@ -1084,6 +1053,47 @@ public class Measure
         return null; // No clef previously defined
     }
 
+    //-----------//
+    // setPageId //
+    //-----------//
+    /**
+     * Assign the proper page-based id to this measure
+     *
+     * @param id the proper page-based measure id value
+     * @param secondHalf true if the measure is the second half of a repeat
+     */
+    public void setPageId (int     id,
+                           boolean secondHalf)
+    {
+        this.id = new MeasureId.PageBased(this, id, secondHalf);
+    }
+
+    //-----------//
+    // setPageId //
+    //-----------//
+    /**
+     * Assign the proper page-based id to this measure
+     *
+     * @param pageId the page-based id
+     */
+    public void setPageId (MeasureId.PageBased pageId)
+    {
+        this.id = new MeasureId.PageBased(this, pageId);
+    }
+
+    //-----------//
+    // getPageId //
+    //-----------//
+    /**
+     * Report the page-based measure id
+     *
+     * @return the page-based measure id
+     */
+    public MeasureId.PageBased getPageId ()
+    {
+        return id;
+    }
+
     //--------------//
     // getPreceding //
     //--------------//
@@ -1129,13 +1139,13 @@ public class Measure
     // getScoreId //
     //------------//
     /**
-     * Report the score-based measure id
+     * Report the image of the score-based measure id
      *
-     * @return the score-based measure id
+     * @return the score-based measure id string
      */
-    public String getScoreId (int pageMeasureIdOffset)
+    public String getScoreId ()
     {
-        return (id == null) ? "null" : id.toScore(pageMeasureIdOffset);
+        return id.toScoreString();
     }
 
     //----------//
@@ -1384,7 +1394,7 @@ public class Measure
             }
         } catch (Exception ex) {
             logger.warning(
-                "Error building voices in measure " + this.getId(),
+                "Error building voices in measure " + getPageId(),
                 ex);
         }
 
@@ -1850,68 +1860,5 @@ public class Measure
         }
 
         return String.format("%-5s", measureDur.toString());
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
-
-    //----//
-    // Id //
-    //----//
-    /**
-     * Non-mutable class to handle the specificities of a measure id:<ol>
-     * <li>Initial ids assigned are page-based and start from 1</li>
-     * <li>Final ids, assigned by {@link MeasureFixer}, are page-based,
-     * start from 1 (or 0 for a pickup measure), and have a special value for
-     * second half repeats.</li>
-     * <li>Ids, as displayed in score view or exported in MusicXML, combine
-     * the page-based ids to provide score-based ids.</li>
-     * </ol>
-     */
-    private class Id
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /** Underlying numeric value */
-        private final int value;
-
-        /** Flag for second half */
-        private final boolean secondHalf;
-
-        //~ Constructors -------------------------------------------------------
-
-        public Id (int     value,
-                   boolean secondHalf)
-        {
-            this.value = value;
-            this.secondHalf = secondHalf;
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        /**
-         * Label for a page-based id
-         */
-        public String toPage ()
-        {
-            if (secondHalf) {
-                return "X" + value;
-            } else {
-                return Integer.toString(value);
-            }
-        }
-
-        /**
-         * Label for a score-based id
-         * @param pageMeasureIdOffset the offset to add to all measure ids of
-         * the containing page
-         */
-        public String toScore (int pageMeasureIdOffset)
-        {
-            if (secondHalf) {
-                return "X" + (pageMeasureIdOffset + value);
-            } else {
-                return Integer.toString(pageMeasureIdOffset + value);
-            }
-        }
     }
 }

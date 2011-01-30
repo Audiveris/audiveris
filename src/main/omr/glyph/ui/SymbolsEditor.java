@@ -28,10 +28,12 @@ import omr.lag.ui.SectionBoard;
 import omr.log.Logger;
 
 import omr.score.common.PixelDimension;
+import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.entity.Measure;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Slot;
+import omr.score.ui.PageMenu;
 import omr.score.ui.PagePainter;
 import omr.score.ui.PagePhysicalPainter;
 import omr.score.ui.PaintingParameters;
@@ -99,8 +101,8 @@ public class SymbolsEditor
     /** Related Lag view */
     private final MyView view;
 
-    /** Popup menu related to glyph selection */
-    private SymbolMenu glyphMenu;
+    /** Popup menu related to page selection */
+    private PageMenu pageMenu;
 
     /** The entity used for display focus */
     private ShapeFocusBoard focus;
@@ -141,7 +143,9 @@ public class SymbolsEditor
                     }
                 });
 
-        glyphMenu = new SymbolMenu(symbolsController, evaluator, focus);
+        pageMenu = new PageMenu(
+            sheet.getPage(),
+            new SymbolMenu(symbolsController, evaluator, focus));
 
         final String  unit = sheet.getId() + ":SymbolsEditor";
 
@@ -318,7 +322,7 @@ public class SymbolsEditor
 
                 if (movement == MouseMovement.RELEASING) {
                     if ((glyphs != null) && !glyphs.isEmpty()) {
-                        showPopup(pt);
+                        showPagePopup(pt);
                     }
                 }
             }
@@ -332,30 +336,12 @@ public class SymbolsEditor
                                      MouseMovement movement)
         {
             // Section selection?
-            if (ViewParameters.getInstance()
-                              .isSectionSelectionEnabled()) {
-                // Retrieve the selected sections
-                Set<GlyphSection> sections = sheet.getVerticalLag()
-                                                  .getSelectedSectionSet();
-
-                if ((sections != null) && !sections.isEmpty()) {
-                    showPopup(pt);
-                }
-            } else {
-                // Retrieve the selected glyphs
-                Set<Glyph> glyphs = sheet.getVerticalLag()
-                                         .getSelectedGlyphSet();
-
-                if (movement == MouseMovement.RELEASING) {
-                    if ((glyphs != null) && !glyphs.isEmpty()) {
-                        showPopup(pt);
-                    }
-                } else {
-                    if ((glyphs == null) || (glyphs.size() <= 1)) {
-                        pointSelected(pt, movement);
-                    }
-                }
+            if (!ViewParameters.getInstance()
+                               .isSectionSelectionEnabled()) {
+                pointSelected(pt, movement);
             }
+
+            showPagePopup(pt);
         }
 
         //-----------//
@@ -586,17 +572,14 @@ public class SymbolsEditor
             }
         }
 
-        //-----------//
-        // showPopup //
-        //-----------//
-        private void showPopup (Point pt)
+        //---------------//
+        // showPagePopup //
+        //---------------//
+        private void showPagePopup (Point pt)
         {
-            // Update the popup menu according to selected glyphs
-            glyphMenu.updateMenu();
-
-            // Show the popup menu
-            glyphMenu.getPopup()
-                     .show(
+            pageMenu.updateMenu(new PixelPoint(pt.x, pt.y));
+            pageMenu.getPopup()
+                    .show(
                 this,
                 getZoom().scaled(pt.x) + 20,
                 getZoom().scaled(pt.y) + 30);
