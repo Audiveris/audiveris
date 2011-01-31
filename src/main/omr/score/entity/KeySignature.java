@@ -983,49 +983,6 @@ public class KeySignature
         }
     }
 
-    //---------//
-    // copyKey //
-    //---------//
-    /**
-     * Force parameters (key, center, pitchPosition) of this key signature, by
-     * deriving parameters of another keysig (from another staff)
-     *
-     * @param ks the key signature to replicate here
-     */
-    private void copyKey (KeySignature ks)
-    {
-        //        if (logger.isFineEnabled()) {
-        //            logger.fine("Copying " + ks + " to " + this);
-        //        }
-
-        // Nota: We don't touch to contour, nor centroid
-
-        // key
-        key = ks.getKey();
-
-        // Beware of different clef kinds. What if we ignore a clef?
-        // TODO: we should use clefKind of the keysig, directly
-        Measure measure = getMeasure();
-        Clef    clef = measure.getClefBefore(ks.getCenter(), getStaff());
-        Shape   kind = (clef != null) ? getClefKind(clef.getShape())
-                       : Shape.G_CLEF;
-
-        Measure ms = ks.getMeasure();
-        Clef    c = ms.getClefBefore(ks.getCenter());
-        Shape   k = (c != null) ? getClefKind(c.getShape()) : Shape.G_CLEF;
-
-        int     delta = clefToDelta(kind) - clefToDelta(k);
-
-        // center
-        setCenter(
-            new PixelPoint(
-                ks.getCenter().x,
-                ks.getCenter().y + ks.getStaff().pitchToPixels(delta))); // ERROR!
-
-        // pitchPosition
-        pitchPosition = ks.getPitchPosition() + delta;
-    }
-
     //-------------//
     // deltaToClef //
     //-------------//

@@ -114,9 +114,6 @@ public class ScoreReduction
         if (logger.isFineEnabled()) {
             dumpResultMapping();
         }
-
-        // Handle cross-page slurs
-        // TBD
     }
 
     //-------------//

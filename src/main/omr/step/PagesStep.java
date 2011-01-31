@@ -19,8 +19,6 @@ import omr.constant.ConstantSet;
 import omr.log.Logger;
 
 import omr.score.BeamReader;
-import omr.score.DurationRetriever;
-import omr.score.MeasureFixer;
 import omr.score.ScoreChecker;
 import omr.score.ScoreCleaner;
 import omr.score.TimeSignatureFixer;
@@ -153,13 +151,6 @@ public class PagesStep
 
             // 2/ Adapt time sigs to intrinsic measure & chord durations
             page.accept(new TimeSignatureFixer());
-
-            // 3/ Retrieve the actual duration of every measure
-            page.accept(new DurationRetriever());
-
-            // 4/ Check all voices timing, assign forward items if needed.
-            // 5/ Detect special measures and assign proper measure ids
-            page.accept(new MeasureFixer());
 
             if (Main.getGui() != null) {
                 try {

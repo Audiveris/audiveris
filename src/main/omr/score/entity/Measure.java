@@ -344,7 +344,7 @@ public class Measure
         // Look in all preceding measures, with the same staff id
         Measure measure = this;
 
-        while ((measure = measure.getPreceding()) != null) {
+        while ((measure = measure.getPrecedingInPage()) != null) {
             clef = measure.getLastMeasureClef(staffId);
 
             if (clef != null) {
@@ -524,27 +524,40 @@ public class Measure
     /**
      * Report the time signature which applies in this measure, whether a time
      * signature actually starts this measure in whatever staff, or whether a
-     * time signature was found in a previous measure.
+     * time signature was found in a previous measure, even in preceding pages.
      *
-     * @return the current time signature, or null if not found
+     * <p><b>NOTA</b>This method looks up for time sig in preceding pages
+     * as well</p>
+     *
+     * @return the current time signature, or null if not found at all
      */
     public TimeSignature getCurrentTimeSignature ()
     {
-        // Look in this measure
-        TimeSignature ts = getTimeSignature();
-
-        if (ts != null) {
-            return ts;
-        }
-
-        // Look in preceding measures in this system/part and before
+        // Backward from this measure to the beginning of the score
         Measure measure = this;
+        Page    page = getPage();
 
-        while ((measure = measure.getPreceding()) != null) {
-            ts = measure.getTimeSignature();
+        while (measure != null) {
+            // Check in the measure
+            TimeSignature ts = measure.getTimeSignature();
 
             if (ts != null) {
                 return ts;
+            }
+
+            // Move to preceding measure (same part)
+            measure = measure.getPrecedingInPage();
+
+            if (measure == null) {
+                page = page.getPrecedingInScore();
+
+                if (page == null) {
+                    return null;
+                } else {
+                    measure = page.getLastSystem()
+                                  .getLastPart()
+                                  .getLastMeasure();
+                }
             }
         }
 
@@ -875,7 +888,7 @@ public class Measure
         // Look in previous measures in the system part and the preceding ones
         Measure measure = this;
 
-        while ((measure = measure.getPreceding()) != null) {
+        while ((measure = measure.getPrecedingInPage()) != null) {
             ks = measure.getLastMeasureKey(staffId);
 
             if (ks != null) {
@@ -883,7 +896,7 @@ public class Measure
             }
         }
 
-        return null; // Not found !!!
+        return null; // Not found (in this page)
     }
 
     //---------------//
@@ -1094,16 +1107,16 @@ public class Measure
         return id;
     }
 
-    //--------------//
-    // getPreceding //
-    //--------------//
+    //--------------------//
+    // getPrecedingInPage //
+    //--------------------//
     /**
      * Report the preceding measure of this one, either in this system / part,
      * or in the preceding system /part, but still in the same page.
      *
      * @return the preceding measure, or null if not found in the page
      */
-    public Measure getPreceding ()
+    public Measure getPrecedingInPage ()
     {
         Measure prevMeasure = (Measure) getPreviousSibling();
 
@@ -1112,7 +1125,7 @@ public class Measure
         }
 
         SystemPart precedingPart = getPart()
-                                       .getPreceding();
+                                       .getPrecedingInPage();
 
         if (precedingPart != null) {
             return precedingPart.getLastMeasure();

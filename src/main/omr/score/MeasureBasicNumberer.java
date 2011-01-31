@@ -55,7 +55,7 @@ public class MeasureBasicNumberer
     {
         try {
             // Set measure id, based on a preceding measure, whatever the part
-            Measure precedingMeasure = measure.getPreceding();
+            Measure precedingMeasure = measure.getPrecedingInPage();
 
             if (precedingMeasure != null) {
                 int precedingId = precedingMeasure.getIdValue();

@@ -248,6 +248,8 @@ public class ScoreSystem
             }
         }
 
+        logger.info(getContextString() + " No part " + id + " found");
+
         return null;
     }
 
@@ -438,6 +440,66 @@ public class ScoreSystem
         return visitor.visit(this);
     }
 
+    //-------------------------//
+    // connectPageInitialSlurs //
+    //-------------------------//
+    /**
+     * For this system, retrieve the connections between the (orphan) slurs at
+     * the beginning of this page and the (orphan) slurs at the end of the
+     * previous page.
+     */
+    public void connectPageInitialSlurs ()
+    {
+        // Safer: check we are the very first system in page
+        if (getChildIndex() != 0) {
+            throw new IllegalArgumentException(
+                "connectSlursAcrossPages called for non-first system");
+        }
+
+        // If very first page, we are done
+        if (getPage()
+                .getChildIndex() == 0) {
+            return;
+        }
+
+        ScoreSystem precedingSystem = getPage()
+                                          .getPrecedingInScore()
+                                          .getLastSystem();
+
+        if (precedingSystem != null) {
+            // Examine every part in sequence
+            for (TreeNode pNode : getParts()) {
+                SystemPart part = (SystemPart) pNode;
+
+                // Find out the proper preceding part (across pages)
+                SystemPart precedingPart = precedingSystem.getPart(
+                    part.getId());
+
+                // Ending orphans in preceding system/part (if such part exists)
+                part.connectSlursWith(precedingPart);
+            }
+        }
+    }
+
+    //---------------------------//
+    // connectSystemInitialSlurs //
+    //---------------------------//
+    /**
+     * Retrieve the connections between the (orphan) slurs at the beginning of
+     * this system and the (orphan) slurs at the end of the previous system
+     */
+    public void connectSystemInitialSlurs ()
+    {
+        if (getPreviousSibling() != null) {
+            // Examine every part in sequence
+            for (TreeNode pNode : getParts()) {
+                SystemPart part = (SystemPart) pNode;
+                // Ending orphans in preceding system/part (if such part exists)
+                part.connectSlursWith(part.getPrecedingInPage());
+            }
+        }
+    }
+
     //------------------//
     // fillMissingParts //
     //------------------//
@@ -466,24 +528,6 @@ public class ScoreSystem
         for (TreeNode node : getParts()) {
             SystemPart part = (SystemPart) node;
             part.refineLyricSyllables();
-        }
-    }
-
-    //-------------------------//
-    // retrieveSlurConnections //
-    //-------------------------//
-    /**
-     * Retrieve the connections between the (orphan) slurs at the beginning of
-     * this system and the (orphan) slurs at the end of the previous system
-     */
-    public void retrieveSlurConnections ()
-    {
-        if (getPreviousSibling() != null) {
-            // Examine every part in sequence
-            for (TreeNode pNode : getParts()) {
-                SystemPart part = (SystemPart) pNode;
-                part.retrieveSlurConnections();
-            }
         }
     }
 

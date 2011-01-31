@@ -332,6 +332,19 @@ public class Page
         return partList;
     }
 
+    //---------------------//
+    // getPrecedingInScore //
+    //---------------------//
+    /**
+     * Report the preceding page of this one within the score.
+     *
+     * @return the preceding page, or null if none
+     */
+    public Page getPrecedingInScore ()
+    {
+        return (Page) getPreviousSibling();
+    }
+
     //----------//
     // setScale //
     //----------//

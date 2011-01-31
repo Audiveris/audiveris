@@ -34,7 +34,7 @@ import java.util.TreeMap;
  * defined as the wholeChord of this voice, and the slot table is left empty.
  * Otherwise, the status is defined by the slot table (empty => free, or filled
  * either by the beginning of a chord, or by a chord whose sound is still active
- * during the specified slot.
+ * during the specified slot).
  *
  * @author Hervé Bitteur
  */
@@ -75,7 +75,7 @@ public class Voice
      */
     private final SortedMap<Integer, ChordInfo> slotTable = new TreeMap<Integer, ChordInfo>();
 
-    /** Abnormal termination of the voice, if any */
+    /** How the voice finishes (WRT the measure end) */
     private Rational termination;
 
     /** Whole chord of the voice, if any */

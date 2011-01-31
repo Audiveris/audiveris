@@ -170,39 +170,6 @@ public abstract class Slot
         }
     }
 
-    //---------------------//
-    // getShortestDuration //
-    //---------------------//
-    /**
-     * Since there may be several chords aligned (starting) in this slot, this
-     * method reports the shortest duration among all chords of this slot. This
-     * in turn defines the time offset of the following slot.
-     *
-     * @return the duration of the chord with shortest duration
-     */
-    public Rational getShortestDuration ()
-    {
-        Rational best = Rational.MAX_VALUE;
-
-        for (Chord chord : getChords()) {
-            try {
-                Rational chordDur = chord.getDuration();
-
-                if (chord.isWholeDuration()) {
-                    chordDur = measure.getExpectedDuration();
-                }
-
-                if (chordDur.compareTo(best) < 0) {
-                    best = chordDur;
-                }
-            } catch (InvalidTimeSignature ex) {
-                // Ignore
-            }
-        }
-
-        return best;
-    }
-
     //--------------//
     // setStartTime //
     //--------------//

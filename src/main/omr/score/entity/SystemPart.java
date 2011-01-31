@@ -330,16 +330,16 @@ public class SystemPart
         return name;
     }
 
-    //--------------//
-    // getPreceding //
-    //--------------//
+    //--------------------//
+    // getPrecedingInPage //
+    //--------------------//
     /**
      * Report the corresponding part (if any) in the previous system. Even if
      * there is a previous system, there may be no part that corresponds to this
      * one.
      * @return the corresponding part, or null
      */
-    public SystemPart getPreceding ()
+    public SystemPart getPrecedingInPage ()
     {
         ScoreSystem prevSystem = (ScoreSystem) getSystem()
                                                    .getPreviousSibling();
@@ -561,6 +561,51 @@ public class SystemPart
             .clear();
     }
 
+    //------------------//
+    // connectSlursWith //
+    //------------------//
+    /**
+     * Try to connect the orphan slurs at the beginning of this part with the
+     * orphan slurs at the en of the provided preceding part
+     * @param precedingPart the part to connect to, either in the preceding
+     * system, or in the last system of the preceding page
+     */
+    public void connectSlursWith (SystemPart precedingPart)
+    {
+        if (precedingPart != null) {
+            // Orphans slurs at the beginning of the current system part
+            List<Slur> orphans = getSlurs(Slur.isBeginningOrphan);
+            Collections.sort(orphans, Slur.verticalComparator);
+
+            List<Slur> precedingOrphans = precedingPart.getSlurs(
+                Slur.isEndingOrphan);
+            Collections.sort(precedingOrphans, Slur.verticalComparator);
+
+            // Connect the orphans as much as possible
+            SlurLoop: 
+            for (Slur slur : orphans) {
+                for (Slur prevSlur : precedingOrphans) {
+                    if (slur.canExtend(prevSlur)) {
+                        slur.connectTo(prevSlur);
+
+                        continue SlurLoop;
+                    }
+                }
+
+                // No connection for this orphan
+                slur.addError(" Could not left-connect slur #" + slur.getId());
+            }
+
+            // Check previous orphans
+            for (Slur prevSlur : precedingOrphans) {
+                if (prevSlur.getRightExtension() == null) {
+                    prevSlur.addError(
+                        " Could not right-connect slur #" + prevSlur.getId());
+                }
+            }
+        }
+    }
+
     //-----------------//
     // createDummyPart //
     //-----------------//
@@ -762,41 +807,9 @@ public class SystemPart
      */
     public void retrieveSlurConnections ()
     {
-        // Orphans slurs at the beginning of the current system
-        List<Slur> orphans = getSlurs(Slur.isBeginningOrphan);
-        Collections.sort(orphans, Slur.verticalComparator);
-
         // Ending orphans in preceding system/part (if such part exists)
-        SystemPart precedingPart = getPreceding();
-
-        if (precedingPart != null) {
-            List<Slur> precedingOrphans = precedingPart.getSlurs(
-                Slur.isEndingOrphan);
-            Collections.sort(precedingOrphans, Slur.verticalComparator);
-
-            // Connect the orphans as much as possible
-            SlurLoop: 
-            for (Slur slur : orphans) {
-                for (Slur prevSlur : precedingOrphans) {
-                    if (slur.canExtend(prevSlur)) {
-                        slur.connectTo(prevSlur);
-
-                        continue SlurLoop;
-                    }
-                }
-
-                // No connection for this orphan
-                slur.addError(" Could not left-connect slur #" + slur.getId());
-            }
-
-            // Check previous orphans
-            for (Slur prevSlur : precedingOrphans) {
-                if (prevSlur.getRightExtension() == null) {
-                    prevSlur.addError(
-                        " Could not right-connect slur #" + prevSlur.getId());
-                }
-            }
-        }
+        SystemPart precedingPart = getPrecedingInPage();
+        connectSlursWith(precedingPart);
     }
 
     //----------//

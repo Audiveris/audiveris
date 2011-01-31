@@ -133,7 +133,7 @@ public class SystemTranslator
         for (SystemInfo info : systems) {
             ScoreSystem syst = info.getScoreSystem();
             syst.fillMissingParts();
-            syst.retrieveSlurConnections();
+            syst.connectSystemInitialSlurs();
             syst.refineLyricSyllables();
         }
     }

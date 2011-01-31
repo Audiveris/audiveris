@@ -13,11 +13,16 @@ package omr.step;
 
 import omr.log.Logger;
 
+import omr.score.DurationRetriever;
+import omr.score.MeasureFixer;
 import omr.score.Score;
 import omr.score.ScoreReduction;
+import omr.score.entity.Page;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+
+import omr.util.TreeNode;
 
 import java.util.Collection;
 
@@ -74,7 +79,27 @@ public class MergeStep
         throws StepException
     {
         Score          score = sheet.getScore();
+
+        // Merge the pages
         ScoreReduction reduction = new ScoreReduction(score);
         reduction.reduce();
+
+        // This work needs to know which time sig governs any measure, and this
+        // time sig may be inherited from a previous page, therefore it cannot
+        // be performed on every page in isolation.
+        for (TreeNode pn : score.getPages()) {
+            Page page = (Page) pn;
+
+            // - Retrieve the actual duration of every measure
+            page.accept(new DurationRetriever());
+
+            // - Check all voices timing, assign forward items if needed.
+            // - Detect special measures and assign proper measure ids
+            page.accept(new MeasureFixer());
+
+            // Connect slurs across pages
+            page.getFirstSystem()
+                .connectPageInitialSlurs();
+        }
     }
 }
