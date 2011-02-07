@@ -37,6 +37,9 @@ public class TimeRational
 
     //~ Constructors -----------------------------------------------------------
 
+    //--------------//
+    // TimeRational //
+    //--------------//
     /**
      * Creates a new TimeRational object.
      *
@@ -48,6 +51,15 @@ public class TimeRational
     {
         this.num = num;
         this.den = den;
+    }
+
+    //--------------//
+    // TimeRational //
+    //--------------//
+    /** To please JAXB */
+    private TimeRational ()
+    {
+        den = num = 0;
     }
 
     //~ Methods ----------------------------------------------------------------
