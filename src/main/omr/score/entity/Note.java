@@ -467,7 +467,7 @@ public class Note
     {
         if (step == null) {
             step = Clef.noteStepOf(
-                getMeasure().getClefBefore(getCenter()),
+                getMeasure().getClefBefore(getCenter(), getStaff()),
                 (int) Math.rint(getPitchPosition()));
         }
 
@@ -701,7 +701,7 @@ public class Note
 
             // Finally, use the current key signature
             KeySignature ks = getMeasure()
-                                  .getKeyBefore(getCenter());
+                                  .getKeyBefore(getCenter(), getStaff());
 
             if (ks != null) {
                 return alter = ks.getAlterFor(getStep());
@@ -830,7 +830,7 @@ public class Note
     {
         if (octave == null) {
             octave = Clef.octaveOf(
-                getMeasure().getClefBefore(getCenter()),
+                getMeasure().getClefBefore(getCenter(), getStaff()),
                 (int) Math.rint(getPitchPosition()));
         }
 

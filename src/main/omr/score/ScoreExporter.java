@@ -2356,7 +2356,8 @@ public class ScoreExporter
 
         // Perhaps another clef before this one ?
         Clef previousClef = current.measure.getClefBefore(
-            new PixelPoint(clef.getCenter().x - 1, clef.getCenter().y));
+            new PixelPoint(clef.getCenter().x - 1, clef.getCenter().y),
+            clef.getStaff());
 
         if (previousClef != null) {
             return previousClef.getShape() != clef.getShape();
@@ -2383,7 +2384,8 @@ public class ScoreExporter
 
         // Perhaps another key before this one ?
         KeySignature previousKey = current.measure.getKeyBefore(
-            key.getCenter());
+            key.getCenter(),
+            key.getStaff());
 
         if (previousKey != null) {
             return !previousKey.getKey()
@@ -2488,14 +2490,14 @@ public class ScoreExporter
             PixelPoint staffPoint = new PixelPoint(right, midY);
 
             // Clef?
-            Clef clef = measure.getClefBefore(staffPoint);
+            Clef clef = measure.getClefBefore(staffPoint, staff);
 
             if (clef != null) {
                 visit(clef);
             }
 
             // Key?
-            KeySignature key = measure.getKeyBefore(staffPoint);
+            KeySignature key = measure.getKeyBefore(staffPoint, staff);
 
             if (key != null) {
                 visit(key);

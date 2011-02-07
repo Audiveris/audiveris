@@ -306,22 +306,6 @@ public class Measure
     // getClefBefore //
     //---------------//
     /**
-     * Report the latest clef, if any, defined before this measure point
-     * (looking in beginning of the measure, then in previous measures, then in
-     * previous systems) while staying in the same logical staff
-     *
-     * @param point the point before which to look
-     * @return the latest clef defined, or null
-     */
-    public Clef getClefBefore (PixelPoint point)
-    {
-        return getClefBefore(point, null);
-    }
-
-    //---------------//
-    // getClefBefore //
-    //---------------//
-    /**
      * Same functionally than the other method, but with a staff provided
      *
      * @param point the point before which to look
@@ -859,18 +843,18 @@ public class Measure
      * key signature was found in a previous measure, for the same staff.
      *
      * @param point the point before which to look
+     * @param staff the containing staff (cannot be null)
      * @return the current key signature, or null if not found
      */
-    public KeySignature getKeyBefore (PixelPoint point)
+    public KeySignature getKeyBefore (PixelPoint point,
+                                      Staff      staff)
     {
         if (point == null) {
             throw new NullPointerException();
         }
 
         KeySignature ks;
-        int          staffId = getPart()
-                                   .getStaffAt(point)
-                                   .getId();
+        int          staffId = staff.getId();
 
         // Look in this measure, with same staff, going backwards
         for (int ik = getKeySignatures()
@@ -1516,7 +1500,7 @@ public class Measure
             PixelPoint staffPoint = new PixelPoint(right, midY);
 
             // Clef?
-            Clef clef = getClefBefore(staffPoint);
+            Clef clef = getClefBefore(staffPoint, staff);
 
             if (clef != null) {
                 new Clef(
@@ -1529,7 +1513,7 @@ public class Measure
             }
 
             // Key?
-            KeySignature key = getKeyBefore(staffPoint);
+            KeySignature key = getKeyBefore(staffPoint, staff);
 
             if (key != null) {
                 key.createDummyCopy(

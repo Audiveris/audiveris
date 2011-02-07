@@ -572,7 +572,8 @@ public class KeySignature
         if (!found) {
             // Check pitch position
             Clef clef = measure.getClefBefore(
-                measure.computeGlyphCenter(glyph));
+                measure.computeGlyphCenter(glyph),
+                staff);
 
             if (!checkPitchPosition(glyph, center, staff, clef)) {
                 if (logger.isFineEnabled()) {
