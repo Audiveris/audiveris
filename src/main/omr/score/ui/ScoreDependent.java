@@ -19,6 +19,8 @@ import omr.selection.SheetEvent;
 import omr.sheet.Sheet;
 import omr.sheet.ui.SheetDependent;
 
+import omr.step.Steps;
+
 import omr.util.Implement;
 
 import org.bushe.swing.event.EventSubscriber;
@@ -40,10 +42,16 @@ public abstract class ScoreDependent
     /** Is a Score available */
     protected static final String SCORE_AVAILABLE = "scoreAvailable";
 
+    /** Is a Score merged (and ready for export, play, midi, etc) */
+    protected static final String SCORE_MERGED = "scoreMerged";
+
     //~ Instance fields --------------------------------------------------------
 
     /** Indicates whether there is a current score */
     protected boolean scoreAvailable = false;
+
+    /** Indicates whether the current score has been merged */
+    protected boolean scoreMerged = false;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -85,6 +93,32 @@ public abstract class ScoreDependent
         return scoreAvailable;
     }
 
+    //----------------//
+    // setScoreMerged //
+    //----------------//
+    /**
+     * Setter for scoreMerged property
+     * @param scoreMerged the new property value
+     */
+    public void setScoreMerged (boolean scoreMerged)
+    {
+        boolean oldValue = this.scoreMerged;
+        this.scoreMerged = scoreMerged;
+        firePropertyChange(SCORE_MERGED, oldValue, this.scoreMerged);
+    }
+
+    //---------------//
+    // isScoreMerged //
+    //---------------//
+    /**
+     * Getter for scoreMerged property
+     * @return the current property value
+     */
+    public boolean isScoreMerged ()
+    {
+        return scoreMerged;
+    }
+
     //---------//
     // onEvent //
     //---------//
@@ -107,6 +141,8 @@ public abstract class ScoreDependent
 
             Sheet sheet = event.getData();
             setScoreAvailable((sheet != null) && (sheet.getScore() != null));
+            setScoreMerged(
+                (sheet != null) && sheet.isDone(Steps.valueOf(Steps.MERGE)));
         } catch (Exception ex) {
             logger.warning(getClass().getName() + " onEvent error", ex);
         }

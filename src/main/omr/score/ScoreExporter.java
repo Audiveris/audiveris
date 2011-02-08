@@ -1516,30 +1516,32 @@ public class ScoreExporter
                 current.scale = firstPage.getScale();
             }
 
-            Scaling scaling = factory.createScaling();
-            defaults.setScaling(scaling);
-            scaling.setMillimeters(
-                new BigDecimal(
-                    "" + ((current.scale.interline() * 25.4 * 4) / 300))); // Assuming 300 DPI
-            scaling.setTenths(new BigDecimal(40));
+            if (current.scale != null) {
+                Scaling scaling = factory.createScaling();
+                defaults.setScaling(scaling);
+                scaling.setMillimeters(
+                    new BigDecimal(
+                        "" + ((current.scale.interline() * 25.4 * 4) / 300))); // Assuming 300 DPI
+                scaling.setTenths(new BigDecimal(40));
 
-            // [Defaults]/PageLayout (using first page)
-            if (firstPage.getDimension() != null) {
-                PageLayout pageLayout = factory.createPageLayout();
-                defaults.setPageLayout(pageLayout);
-                pageLayout.setPageHeight(
-                    toTenths(firstPage.getDimension().height));
-                pageLayout.setPageWidth(
-                    toTenths(firstPage.getDimension().width));
+                // [Defaults]/PageLayout (using first page)
+                if (firstPage.getDimension() != null) {
+                    PageLayout pageLayout = factory.createPageLayout();
+                    defaults.setPageLayout(pageLayout);
+                    pageLayout.setPageHeight(
+                        toTenths(firstPage.getDimension().height));
+                    pageLayout.setPageWidth(
+                        toTenths(firstPage.getDimension().width));
 
-                PageMargins pageMargins = factory.createPageMargins();
-                pageMargins.setType(MarginType.BOTH);
-                pageMargins.setLeftMargin(BigDecimal.ZERO);
-                pageMargins.setRightMargin(BigDecimal.ZERO);
-                pageMargins.setTopMargin(BigDecimal.ZERO);
-                pageMargins.setBottomMargin(BigDecimal.ZERO);
-                pageLayout.getPageMargins()
-                          .add(pageMargins);
+                    PageMargins pageMargins = factory.createPageMargins();
+                    pageMargins.setType(MarginType.BOTH);
+                    pageMargins.setLeftMargin(BigDecimal.ZERO);
+                    pageMargins.setRightMargin(BigDecimal.ZERO);
+                    pageMargins.setTopMargin(BigDecimal.ZERO);
+                    pageMargins.setBottomMargin(BigDecimal.ZERO);
+                    pageLayout.getPageMargins()
+                              .add(pageMargins);
+                }
             }
 
             // [Defaults]/LyricFont
@@ -1556,16 +1558,18 @@ public class ScoreExporter
             scorePartwise.setDefaults(defaults);
 
             // PartList & sequence of parts
-            PartList partList = factory.createPartList();
-            scorePartwise.setPartList(partList);
+            if (score.getPartList() != null) {
+                PartList partList = factory.createPartList();
+                scorePartwise.setPartList(partList);
 
-            // Here we browse the score hierarchy once for each score scorePart
-            isFirst.scorePart = true;
+                // Here we browse the score hierarchy once for each score scorePart
+                isFirst.scorePart = true;
 
-            for (ScorePart p : score.getPartList()) {
-                partList.getPartGroupOrScorePart()
-                        .add(getScorePart(p));
-                isFirst.scorePart = false;
+                for (ScorePart p : score.getPartList()) {
+                    partList.getPartGroupOrScorePart()
+                            .add(getScorePart(p));
+                    isFirst.scorePart = false;
+                }
             }
         } catch (Exception ex) {
             logger.warning(

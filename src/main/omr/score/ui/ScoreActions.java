@@ -243,7 +243,7 @@ public class ScoreActions
      * @param e the event that triggered this action
      * @return the task to launch in background
      */
-    @Action(enabledProperty = SCORE_AVAILABLE)
+    @Action(enabledProperty = SCORE_MERGED)
     public Task storeScore (ActionEvent e)
     {
         final Score score = ScoreController.getCurrentScore();
@@ -270,7 +270,7 @@ public class ScoreActions
      * @param e the event that triggered this action
      * @return the task to launch in background
      */
-    @Action(enabledProperty = SCORE_AVAILABLE)
+    @Action(enabledProperty = SCORE_MERGED)
     public Task storeScoreAs (ActionEvent e)
     {
         final Score score = ScoreController.getCurrentScore();
@@ -299,7 +299,7 @@ public class ScoreActions
     // togglePersist //
     //---------------//
     /**
-     * Action that toggles the persistenc of manual assignments
+     * Action that toggles the persistency of manual assignments
      * @param e the event that triggered this action
      */
     @Action(selectedProperty = MANUAL_PERSISTED)
@@ -321,9 +321,9 @@ public class ScoreActions
     {
     }
 
-    //---------------//
+    //------------------//
     // writePhysicalPdf //
-    //---------------//
+    //------------------//
     /**
      * Write the currently selected score, as a PDF file
      * @param e the event that triggered this action
@@ -390,15 +390,17 @@ public class ScoreActions
      */
     private static boolean fillParametersWithDefaults (Score score)
     {
-        for (ScorePart scorePart : score.getPartList()) {
-            // Part name
-            if (scorePart.getName() == null) {
-                scorePart.setName(scorePart.getDefaultName());
-            }
+        if (score.getPartList() != null) {
+            for (ScorePart scorePart : score.getPartList()) {
+                // Part name
+                if (scorePart.getName() == null) {
+                    scorePart.setName(scorePart.getDefaultName());
+                }
 
-            // Part midi program
-            if (scorePart.getMidiProgram() == null) {
-                scorePart.setMidiProgram(scorePart.getDefaultProgram());
+                // Part midi program
+                if (scorePart.getMidiProgram() == null) {
+                    scorePart.setMidiProgram(scorePart.getDefaultProgram());
+                }
             }
         }
 
