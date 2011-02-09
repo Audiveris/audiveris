@@ -36,10 +36,11 @@ public class OcrTextVerifier
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------//
-    // check //
-    //-------//
-    public static boolean check (Glyph   glyph, OcrLine ocrLine)
+    //---------//
+    // isValid //
+    //---------//
+    public static boolean isValid (Glyph   glyph,
+                                 OcrLine ocrLine)
     {
         // Check this is not a tuplet
         if (ocrLine.value.equals("3") &&
@@ -68,6 +69,7 @@ public class OcrTextVerifier
             return false;
         }
 
+        // OK
         return true;
     }
 }

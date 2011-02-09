@@ -19,6 +19,7 @@ import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 import omr.glyph.text.Language;
 import omr.glyph.text.OcrLine;
+import omr.glyph.text.OcrTextVerifier;
 import omr.glyph.text.TextBlob;
 import omr.glyph.text.TextInfo;
 import omr.glyph.text.TextLine;
@@ -363,37 +364,7 @@ public class TextBorderPattern
                                       .getOcrLine();
                 }
 
-                // Check this is not a tuplet
-                if (ocrLine.value.equals("3") &&
-                    (compound.getShape() == Shape.TUPLET_THREE)) {
-                    if (logger.isFineEnabled()) {
-                        logger.fine("This text is a tuplet 3");
-                    }
-
-                    return false;
-                }
-
-                if (ocrLine.value.equals("6") &&
-                    (compound.getShape() == Shape.TUPLET_SIX)) {
-                    if (logger.isFineEnabled()) {
-                        logger.fine("This text is a tuplet 6");
-                    }
-
-                    return false;
-                }
-
-                // Check for abnormal characters
-                WrappedBoolean stripped = new WrappedBoolean(false);
-                XmlUtilities.stripNonValidXMLCharacters(
-                    ocrLine.value,
-                    stripped);
-
-                if (stripped.isSet()) {
-                    system.getScoreSystem()
-                          .addError(
-                        blob.getGlyphs().get(0),
-                        "Illegal character found in " + ocrLine.value);
-
+                if (!OcrTextVerifier.isValid(compound, ocrLine)) {
                     return false;
                 }
 
@@ -402,12 +373,12 @@ public class TextBorderPattern
                 system.computeGlyphFeatures(compound);
                 compound.setShape(Shape.TEXT, Evaluation.ALGORITHM);
 
-                ///if (logger.isFineEnabled()) {
-                logger.warning(
-                    "Border Glyph#" + compound.getId() + "=>\"" +
-                    ocrLine.value + "\"");
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "Border Glyph#" + compound.getId() + "=>\"" +
+                        ocrLine.value + "\"");
+                }
 
-                ///}
                 return true;
             } else {
                 return true; // By default (with no OCR call...)

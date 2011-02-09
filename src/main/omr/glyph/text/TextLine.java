@@ -389,7 +389,7 @@ public class TextLine
     /**
      * Check whether the provided glyph is close to this text line (and could
      * thus be part of it)
-     * @param glyph the provided glyph to check wrt this text line
+     * @param glyph the provided glyph to isValid wrt this text line
      * @return true if close enough vertically and horizontally
      */
     public boolean isCloseTo (Glyph glyph)
@@ -829,9 +829,6 @@ public class TextLine
                     glyph.getContourBox().x,
                     glyph.getContourBox().y);
 
-                // Validate ocr content
-                // TODO!!!! TODO!!!! TODO!!!! TODO!!!! TODO!!!! TODO!!!!
-
                 // Isolate proper line glyph from its enclosed sections
                 SortedSet<GlyphSection> sections = textInfo.retrieveSectionsFrom(
                     ocrLine.getChars());
@@ -840,23 +837,29 @@ public class TextLine
                     allSections.removeAll(sections);
 
                     Glyph lineGlyph = system.buildGlyph(sections);
-                    lineGlyph = system.addGlyph(lineGlyph);
-                    lineGlyph.setShape(Shape.TEXT);
 
-                    // Build the TextInfo for this glyph
-                    TextInfo ti = lineGlyph.getTextInfo();
-                    ti.setOcrInfo(language, ocrLine);
+                    // Validate ocr content
+                    if (OcrTextVerifier.isValid(lineGlyph, ocrLine)) {
+                        lineGlyph = system.addGlyph(lineGlyph);
+                        lineGlyph.setShape(Shape.TEXT);
 
-                    // Allocate a text line for this glyph
-                    sentences.add(createSentence(lineGlyph));
+                        // Build the TextInfo for this glyph
+                        TextInfo ti = lineGlyph.getTextInfo();
+                        ti.setOcrInfo(language, ocrLine);
 
-                    // Free all the glyphs pointed by sections left over
-                    for (GlyphSection section : allSections) {
-                        Glyph g = section.getGlyph();
+                        // Allocate a text line for this glyph
+                        sentences.add(createSentence(lineGlyph));
 
-                        if ((g != null) && (g.getShape() != null)) {
-                            g.setShape(null);
+                        // Free all the glyphs pointed by sections left over
+                        for (GlyphSection section : allSections) {
+                            Glyph g = section.getGlyph();
+
+                            if ((g != null) && (g.getShape() != null)) {
+                                g.setShape(null);
+                            }
                         }
+                    } else {
+                        logger.warning("Invalid Ocr " + ocrLine);
                     }
                 }
             }
