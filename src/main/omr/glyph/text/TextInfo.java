@@ -268,16 +268,7 @@ public class TextInfo
         this.ocrLanguage = ocrLanguage;
         this.ocrLine = ocrLine;
 
-        //        if (ocrLine.isFontSizeValid()) {
-        //            fontSize = ocrLine.fontSize;
-        //        } else {
         fontSize = null;
-
-        //        }
-        //        StackTraceElement el = ClassUtil.getCallingFrame(new Class[0]);
-        //        logger.warning(
-        //            "BINGO " + el.getMethodName() + " glyph#" + glyph.getId() + " ocr:'" +
-        //            ocrLine.value + "'");
     }
 
     //----------------//

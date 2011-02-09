@@ -319,7 +319,7 @@ public class SheetAssembly
             }
 
             Main.getGui()
-                .hideErrorsPane();
+                .hideErrorsPane(null);
         }
     }
 
@@ -340,7 +340,7 @@ public class SheetAssembly
 
         MainGui gui = Main.getGui();
         gui.removeBoardsPane(); // Disconnect boards pane
-        ///gui.hideErrorsPane(); // Disconnect errors pane (USEFUL??? TODO)
+                                ///gui.hideErrorsPane(); // Disconnect errors pane (USEFUL??? TODO)
 
         // Disconnect all keyboard bindings from PixelBoard's (as a workaround
         // for a Swing memory leak)
@@ -358,6 +358,10 @@ public class SheetAssembly
         }
 
         tabs.clear(); // Useful ???
+
+        // Remove the error pane (for this sheet)
+        Main.getGui()
+            .hideErrorsPane(sheet.getErrorsEditor().getComponent());
     }
 
     //----------------//

@@ -37,8 +37,6 @@ import omr.sheet.SystemBoundary.Side;
 import omr.sheet.SystemInfo;
 
 import omr.util.BrokenLine;
-import omr.util.WrappedBoolean;
-import omr.util.XmlUtilities;
 
 import java.awt.Polygon;
 import java.util.*;
@@ -365,6 +363,10 @@ public class TextBorderPattern
                 }
 
                 if (!OcrTextVerifier.isValid(compound, ocrLine)) {
+                    if (logger.isFineEnabled()) {
+                        logger.fine("Invalid blob " + ocrLine + " " + compound);
+                    }
+
                     return false;
                 }
 

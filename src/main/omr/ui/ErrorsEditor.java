@@ -71,11 +71,11 @@ public class ErrorsEditor
 
     //~ Constructors -----------------------------------------------------------
 
-    //-------------//
-    // ErrorEditor //
-    //-------------//
+    //--------------//
+    // ErrorsEditor //
+    //--------------//
     /**
-     * Create an instance of ErrorEditor (one per sheet / score)
+     * Create an instance of ErrorsEditor (one per sheet / score)
      *
      * @param sheet the related sheet
      */

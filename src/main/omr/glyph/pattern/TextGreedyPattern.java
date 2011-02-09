@@ -141,7 +141,7 @@ public class TextGreedyPattern
                         Glyphs.toString(" ", neighbors));
                 }
 
-                logger.warning("Greedy text#" + compound.getId());
+                ///logger.warning("Greedy text#" + compound.getId());
 
                 return true;
             } else {

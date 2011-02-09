@@ -311,11 +311,12 @@ public class MainGui
     // hideErrorsPane //
     //----------------//
     /**
-     * Hide the errors pane
+     * Remove the specific component the errors pane
+     * @param the specific component to remove (or null if we don't care)
      */
-    public void hideErrorsPane ()
+    public void hideErrorsPane (JComponent component)
     {
-        bottomPane.removeErrors();
+        bottomPane.removeErrors(component);
     }
 
     //-----------//
@@ -715,7 +716,7 @@ public class MainGui
 
         public void addErrors (JComponent errorsPane)
         {
-            removeErrors();
+            removeErrors(null);
             setRightComponent(errorsPane);
 
             if (dividerLocation == -1) {
@@ -727,14 +728,17 @@ public class MainGui
             repaint();
         }
 
-        public void removeErrors ()
+        public void removeErrors (JComponent component)
         {
-            if (dividerLocation != -1) {
-                dividerLocation = getDividerLocation();
-            }
+            // Check that we remove the desired component
+            if ((component == null) || (component == getRightComponent())) {
+                if (dividerLocation != -1) {
+                    dividerLocation = getDividerLocation();
+                }
 
-            setRightComponent(null);
-            dividerLocation = -1;
+                setRightComponent(null);
+                dividerLocation = -1;
+            }
         }
     }
 

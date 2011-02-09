@@ -837,6 +837,13 @@ public class TextLine
                     allSections.removeAll(sections);
 
                     Glyph lineGlyph = system.buildGlyph(sections);
+                    Glyph original = system.getSheet()
+                                           .getVerticalLag()
+                                           .getOriginal(glyph);
+
+                    if (original != null) {
+                        lineGlyph = original;
+                    }
 
                     // Validate ocr content
                     if (OcrTextVerifier.isValid(lineGlyph, ocrLine)) {
@@ -859,12 +866,23 @@ public class TextLine
                             }
                         }
                     } else {
-                        logger.warning("Invalid Ocr " + ocrLine);
+                        if (logger.isFineEnabled()) {
+                            logger.fine(
+                                "Invalid line " + ocrLine + " " + glyph);
+                        }
+
+                        glyph.setShape(null);
+                        glyph.forbidShape(Shape.TEXT);
+                        sentences.clear();
+
+                        return sentences;
                     }
                 }
             }
         } else {
             logger.fine("No OCR line for glyph #" + glyph.getId());
+            glyph.setShape(null);
+            glyph.forbidShape(Shape.TEXT);
         }
 
         return sentences;

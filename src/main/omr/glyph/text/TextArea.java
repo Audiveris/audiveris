@@ -572,8 +572,6 @@ public class TextArea
                 logger.fine("Glyph#" + glyph.getId() + " TEXT recognized");
             }
 
-            logger.warning("BINGO Area text#" + glyph.getId());
-
             return true;
         }
     }
