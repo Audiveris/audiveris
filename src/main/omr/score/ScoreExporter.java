@@ -113,6 +113,11 @@ public class ScoreExporter
                 }
             });
 
+    /** Default page horizontal margin */
+    private static final BigDecimal pageHorizontalMargin = new BigDecimal(50);
+
+    /** Default page vertical margin */
+    private static final BigDecimal pageVerticalMargin = new BigDecimal(50);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -1535,10 +1540,10 @@ public class ScoreExporter
 
                     PageMargins pageMargins = factory.createPageMargins();
                     pageMargins.setType(MarginType.BOTH);
-                    pageMargins.setLeftMargin(BigDecimal.ZERO);
-                    pageMargins.setRightMargin(BigDecimal.ZERO);
-                    pageMargins.setTopMargin(BigDecimal.ZERO);
-                    pageMargins.setBottomMargin(BigDecimal.ZERO);
+                    pageMargins.setLeftMargin(pageHorizontalMargin);
+                    pageMargins.setRightMargin(pageHorizontalMargin);
+                    pageMargins.setTopMargin(pageVerticalMargin);
+                    pageMargins.setBottomMargin(pageVerticalMargin);
                     pageLayout.getPageMargins()
                               .add(pageMargins);
                 }
