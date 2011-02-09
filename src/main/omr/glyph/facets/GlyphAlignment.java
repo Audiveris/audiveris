@@ -260,6 +260,16 @@ interface GlyphAlignment
      */
     Line getLine ();
 
+    //-----------------//
+    // getAbsoluteLine //
+    //-----------------//
+    /**
+     * Return the approximating line computed on the stick, as an absolute line
+     *
+     * @return The absolute line
+     */
+    Line getAbsoluteLine ();
+
     //-----------//
     // getMidPos //
     //-----------//

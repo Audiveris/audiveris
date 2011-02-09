@@ -73,8 +73,6 @@ public class AlterPattern
     public int runPattern ()
     {
         CompoundBuilder        compoundBuilder = system.getCompoundBuilder();
-        Scale                  scale = system.getScoreSystem()
-                                             .getScale();
 
         // Constants for alter verification
         final int              maxCloseStemDx = scale.toPixels(

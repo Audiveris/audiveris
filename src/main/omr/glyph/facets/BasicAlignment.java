@@ -64,6 +64,15 @@ class BasicAlignment
 
     //~ Methods ----------------------------------------------------------------
 
+    //-----------------//
+    // getAbsoluteLine //
+    //-----------------//
+    public Line getAbsoluteLine ()
+    {
+        return glyph.getLag()
+                    .switchRef(getLine());
+    }
+
     //------------------//
     // getAlienPixelsIn //
     //------------------//

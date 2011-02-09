@@ -16,6 +16,7 @@ import omr.graph.Digraph;
 import omr.log.Logger;
 
 import omr.math.Histogram;
+import omr.math.Line;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -463,6 +464,23 @@ public class Lag<L extends Lag<L, S>, S extends Section>
                                      PixelRectangle xywh)
     {
         return orientation.switchRef(cplt, xywh);
+    }
+
+    //-----------//
+    // switchRef //
+    //-----------//
+    /**
+     * Given an oriented line, return the corresponding absolute line, or vice
+     * versa.
+     *
+     * @param relLine the oriented line
+     *
+     * @return the corresponding absolute line.
+     */
+    @Implement(Oriented.class)
+    public Line switchRef (Line relLine)
+    {
+        return orientation.switchRef(relLine);
     }
 
     //-----------------//

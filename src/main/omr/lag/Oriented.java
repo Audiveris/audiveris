@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.lag;
 
+import omr.math.Line;
+
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
@@ -77,4 +79,17 @@ public interface Oriented
      */
     PixelRectangle switchRef (Rectangle      cplt,
                               PixelRectangle xywh);
+
+    //-----------//
+    // switchRef //
+    //-----------//
+    /**
+     * Given an oriented line, return the corresponding absolute line, or vice
+     * versa.
+     *
+     * @param relLine the oriented line
+     *
+     * @return the corresponding absolute line.
+     */
+    Line switchRef (Line relLine);
 }

@@ -82,8 +82,6 @@ public class SlurInspector
         compoundBuilder = new CompoundBuilder(system);
 
         // Compute parameters
-        Scale scale = system.getSheet()
-                            .getScale();
         interline = scale.interline();
         minChunkWeight = scale.toPixels(constants.minChunkWeight);
         slurBoxDx = scale.toPixels(constants.slurBoxDx);
@@ -332,7 +330,6 @@ public class SlurInspector
             for (GlyphSection section : kept) {
                 newGlyph.addSection(section, Glyph.Linking.LINK_BACK);
             }
-
 
             // Beware, the newGlyph may now belong to a different system
             SystemInfo newSystem = system.getSheet()

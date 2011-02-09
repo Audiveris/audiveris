@@ -11,10 +11,12 @@
 // </editor-fold>
 package omr.glyph.pattern;
 
+import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
 /**
- * Class <code>GlyphPattern</code> describes a specific pattern applied on glyphs
+ * Class <code>GlyphPattern</code> describes a specific pattern applied on
+ * glyphs of a given system.
  *
  * @author Hervé Bitteur
  */
@@ -28,6 +30,9 @@ public abstract class GlyphPattern
     /** Related system */
     protected final SystemInfo system;
 
+    /** System scale */
+    protected final Scale scale;
+
     //~ Constructors -----------------------------------------------------------
 
     //--------------//
@@ -40,10 +45,13 @@ public abstract class GlyphPattern
      * @param system the related system
      */
     public GlyphPattern (String     name,
-                    SystemInfo system)
+                         SystemInfo system)
     {
         this.name = name;
         this.system = system;
+
+        scale = system.getSheet()
+                      .getScale();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -52,7 +60,7 @@ public abstract class GlyphPattern
     // runPattern //
     //------------//
     /**
-     * This method runs the pattern and report the number of modified glyphs
+     * This method runs the pattern and reports the number of modified glyphs
      * @return the number of modified glyphs
      */
     public abstract int runPattern ();

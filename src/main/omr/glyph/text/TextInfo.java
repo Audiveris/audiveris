@@ -28,6 +28,8 @@ import omr.score.entity.Text.CreatorText.CreatorType;
 
 import omr.sheet.SystemInfo;
 
+import omr.util.ClassUtil;
+
 import java.awt.*;
 import java.util.*;
 import java.util.List;
@@ -272,6 +274,10 @@ public class TextInfo
         fontSize = null;
 
         //        }
+        //        StackTraceElement el = ClassUtil.getCallingFrame(new Class[0]);
+        //        logger.warning(
+        //            "BINGO " + el.getMethodName() + " glyph#" + glyph.getId() + " ocr:'" +
+        //            ocrLine.value + "'");
     }
 
     //----------------//
@@ -509,7 +515,6 @@ public class TextInfo
         }
 
         // Parse the content string, to extract words
-        SystemInfo    system = sentence.getSystem();
         List<OcrChar> glyphChars = ocrLine.getChars();
         WordScanner   scanner = new OcrScanner(glyphChars);
         List<Word>    words = new ArrayList<Word>();
@@ -736,7 +741,7 @@ public class TextInfo
     {
         //~ Instance fields ----------------------------------------------------
 
-        Constant.Ratio   minExtensionAspect = new Constant.Ratio(
+        Constant.Ratio minExtensionAspect = new Constant.Ratio(
             10d,
             "Minimum width/height ratio for an extension character");
     }

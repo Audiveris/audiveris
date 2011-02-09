@@ -72,8 +72,6 @@ public class HiddenSlurPattern
     {
         int                  successNb = 0;
         final double         minGlyphWeight = constants.minGlyphWeight.getValue();
-        final Scale          scale = system.getScoreSystem()
-                                           .getScale();
         final int            minSectionWeight = scale.toPixels(
             constants.minSectionWeight);
         final double         maxDoubt = constants.maxDoubt.getValue();

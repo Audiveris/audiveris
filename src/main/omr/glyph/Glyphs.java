@@ -237,6 +237,33 @@ public class Glyphs
     }
 
     //--------------//
+    // lookupGlyphs //
+    //--------------//
+    /**
+     * Look up in a collection of glyphs for <b>all</b> glyphs compatible with
+     * a provided predicate
+     *
+     * @param collection the collection of glyphs to be browsed
+     * @param predicate the predicate to apply to each candidate (a null
+     * predicate will accept all candidates)
+     *
+     * @return the glyphs found, which may be an empty list
+     */
+    public static Set<Glyph> lookupGlyphs (Collection<?extends Glyph> collection,
+                                           Predicate<Glyph>           predicate)
+    {
+        Set<Glyph> set = new LinkedHashSet<Glyph>();
+
+        for (Glyph glyph : collection) {
+            if ((predicate == null) || predicate.check(glyph)) {
+                set.add(glyph);
+            }
+        }
+
+        return set;
+    }
+
+    //--------------//
     // purgeManuals //
     //--------------//
     /**
@@ -285,7 +312,7 @@ public class Glyphs
      */
     public static Set<Shape> shapesOf (Collection<Glyph> glyphs)
     {
-        Set<Shape> shapes = new HashSet<Shape>();
+        EnumSet<Shape> shapes = EnumSet.noneOf(Shape.class);
 
         if (glyphs != null) {
             for (Glyph glyph : glyphs) {
@@ -309,10 +336,7 @@ public class Glyphs
     public static SortedSet<Glyph> sortedSet (Glyph... glyphs)
     {
         SortedSet<Glyph> set = new TreeSet<Glyph>(Glyph.globalComparator);
-
-        for (Glyph glyph : glyphs) {
-            set.add(glyph);
-        }
+        set.addAll(Arrays.asList(glyphs));
 
         return set;
     }

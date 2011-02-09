@@ -31,6 +31,8 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
+import omr.util.Navigable;
+
 import java.awt.Rectangle;
 import java.util.*;
 
@@ -53,9 +55,11 @@ public class TextArea
     //~ Instance fields --------------------------------------------------------
 
     /** The containing system */
+    @Navigable(false)
     private final SystemInfo system;
 
     /** The containing sheet, if any */
+    @Navigable(false)
     private final Sheet sheet;
 
     /** The parent area, if any */
@@ -460,88 +464,6 @@ public class TextArea
             }
         }
 
-        //        // Second, use the OCR engine
-        //        String        language = system.getScoreSystem()
-        //                                       .getScore()
-        //                                       .getLanguage();
-        //        List<OcrLine> lines = Language.getOcr()
-        //                                      .recognize(
-        //            glyph.getImage(),
-        //            language,
-        //            "g" + glyph.getId() + ".");
-        //
-        //        final Scale   scale = sheet.getScale();
-        //        final int     maxFontSize = scale.toPixels(constants.maxFontSize);
-        //
-        //        ///logger.info("maxFontSize=" + maxFontSize);
-        //
-        //        // Debug
-        //        if (logger.isFineEnabled()) {
-        //            int i = 0;
-        //
-        //            for (OcrLine ocrLine : lines) {
-        //                i++;
-        //
-        //                String         value = ocrLine.value;
-        //                float          fontSize = ocrLine.fontSize;
-        //                PixelRectangle box = ocrLine.getContourBox();
-        //
-        //                if (logger.isFineEnabled()) {
-        //                    logger.fine(
-        //                        i + " " + box + " " + ocrLine.toString() + " w:" +
-        //                        (box.width / (fontSize * value.length())) + " h:" +
-        //                        (box.height / fontSize) + " aspect:" +
-        //                        (((float) box.height * value.length()) / box.width));
-        //                }
-        //            }
-        //        }
-        //
-        //        // Tests on OCR results
-        //        if (lines.size() < 1) {
-        //            logger.warning("No line found");
-        //
-        //            return false;
-        //        }
-        //
-        //        if (lines.size() > 1) {
-        //            logger.warning("More than 1 line found");
-        //
-        //            return false;
-        //        }
-        //
-        //        OcrLine        ocrLine = lines.get(0);
-        //        String         value = ocrLine.value;
-        //        float          fontSize = ocrLine.fontSize;
-        //        PixelRectangle box = ocrLine.getContourBox();
-        //
-        //        if (box.height == 0) {
-        //            logger.warning("No OCR");
-        //
-        //            return false;
-        //        }
-        //
-        //        if (fontSize > maxFontSize) {
-        //            logger.warning(
-        //                "Font size " + fontSize + " exceeds maximum " + maxFontSize);
-        //
-        //            return false;
-        //        }
-        //
-        //        float        aspect = ((float) box.height * value.length()) / box.width;
-        //
-        //        final double maxAspect = constants.maxAspect.getValue();
-        //
-        //        if (aspect > maxAspect) {
-        //            logger.warning(
-        //                "Char aspect " + aspect + " exceeds maximum " + maxAspect);
-        //
-        //            return false;
-        //        }
-        //
-        //        // OK
-        //        return createText(
-        //            glyph,
-        //            new Evaluation(Shape.TEXT, Evaluation.ALGORITHM));
         return false;
     }
 
@@ -640,11 +562,8 @@ public class TextArea
         if ((original != null) && original.isShapeForbidden(Shape.TEXT)) {
             return false;
         } else {
-            if (glyph.getId() == 0) {
-                glyph = system.addGlyph(glyph);
-            }
-
             system.computeGlyphFeatures(glyph);
+            glyph = system.addGlyph(glyph);
 
             // No! glyph.setTextArea(this);
             glyph.setShape(eval.shape, eval.doubt);
@@ -652,6 +571,8 @@ public class TextArea
             if (logger.isFineEnabled()) {
                 logger.fine("Glyph#" + glyph.getId() + " TEXT recognized");
             }
+
+            logger.warning("BINGO Area text#" + glyph.getId());
 
             return true;
         }

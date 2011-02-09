@@ -73,8 +73,6 @@ public class BassPattern
     public int runPattern ()
     {
         int             successNb = 0;
-        Scale           scale = system.getSheet()
-                                      .getScale();
 
         // Constants for clef verification
         final double    clefMaxDoubt = constants.clefMaxDoubt.getValue();
@@ -166,8 +164,6 @@ public class BassPattern
                     "Compound seed has not been set");
             }
 
-            Scale          scale = system.getScoreSystem()
-                                         .getScale();
             PixelRectangle pixRect = new PixelRectangle(seed.getCentroid());
             pixRect.add(
                 new PixelPoint(

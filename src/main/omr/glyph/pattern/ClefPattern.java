@@ -97,7 +97,6 @@ public class ClefPattern
         int         successNb = 0;
 
         ScoreSystem scoreSystem = system.getScoreSystem();
-        Scale       scale = scoreSystem.getScale();
         clefWidth = scale.toPixels(constants.clefWidth);
         xOffset = scale.toPixels(constants.xOffset);
         yOffset = scale.toPixels(constants.yOffset);

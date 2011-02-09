@@ -164,6 +164,15 @@ public interface Line
      */
     void reset ();
 
+    //--------------------//
+    // swappedCoordinates //
+    //--------------------//
+    /**
+     * Return a new line whose coordinates are swapped with respect to this one
+     * @return a new X/Y swapped line
+     */
+    Line swappedCoordinates ();
+
     //-----//
     // xAt //
     //-----//

@@ -12,6 +12,7 @@
 package omr.glyph.pattern;
 
 import omr.glyph.GlyphInspector;
+import omr.glyph.text.SentencePattern;
 
 import omr.log.Logger;
 
@@ -55,12 +56,16 @@ public class PatternsChecker
         this.system = system;
         patterns = new GlyphPattern[] {
                        
-        //
-        new TextRegionPattern(system),
+        // Text patterns
+        new TextBorderPattern(system), // Glyphs -> Text
+        new TextGreedyPattern(system), // Glyphs -> Text
+        new TextAreaPattern(system), //   Glyphs -> Text
+        new SentencePattern(system), // Text -> sentences
+                                     //
+        new HiddenSlurPattern(system),
                        
-
-        ///new ShapePattern(system),
-        //
+        system.getSlurInspector(),
+                       
         new BassPattern(system),
                        
         new ClefPattern(system),
@@ -69,16 +74,8 @@ public class PatternsChecker
                        
         new AlterPattern(system),
                        
-        new HiddenSlurPattern(system),
-                       
-        system.getSlurInspector(),
-                       
-        system.getTextInspector(),
-                       
-        new GreedyTextPattern(system),
-                       
         new LeftOverPattern(system)
-                   //,new StemPattern(system)
+                   //,new StemPattern(system) // TO BE REMOVED???
         };
     }
 
@@ -95,12 +92,13 @@ public class PatternsChecker
     {
         int           totalModifs = 0;
         StringBuilder sb = new StringBuilder();
-        system.inspectGlyphs(GlyphInspector.getLeafMaxDoubt());
 
         for (GlyphPattern pattern : patterns) {
             if (logger.isFineEnabled()) {
                 logger.finest("Starting pattern " + pattern);
             }
+
+            system.inspectGlyphs(GlyphInspector.getLeafMaxDoubt());
 
             try {
                 int modifs = pattern.runPattern();

@@ -23,7 +23,7 @@ import omr.glyph.facets.Stick;
 import omr.glyph.pattern.PatternsChecker;
 import omr.glyph.pattern.SlurInspector;
 import omr.glyph.text.Sentence;
-import omr.glyph.text.TextInspector;
+import omr.glyph.text.SentencePattern;
 
 import omr.log.Logger;
 
@@ -50,7 +50,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
  * <p>Many processing tasks are actually handled by companion classes, but
  * this SystemInfo is the interface of choice, with delegation to the proper
  * companion (such as {@link GlyphsBuilder}, {@link GlyphInspector},
- * {@link SlurInspector}, {@link TextInspector}, {@link SystemTranslator}, etc)
+ * {@link SlurInspector}, {@link SentencePattern}, {@link SystemTranslator}, etc)
  *
  * <p>Nota: All measurements are assumed in pixels.
  *
@@ -87,14 +87,8 @@ public class SystemInfo
     /** Dedicated slur inspector */
     private final SlurInspector slurInspector;
 
-    /** Dedicated text inspector */
-    private final TextInspector textInspector;
-
     /** Dedicated system translator */
     private final SystemTranslator translator;
-
-    /** Dedicated glyph patterns checker */
-    private final PatternsChecker patternsChecker;
 
     /** Staves of this system */
     private final List<StaffInfo> staves = new ArrayList<StaffInfo>();
@@ -132,6 +126,9 @@ public class SystemInfo
 
     /** Set of sentences made of text glyphs */
     private Set<Sentence> sentences = new LinkedHashSet<Sentence>();
+
+    /** Used to assign a unique ID to system sentences */
+    private int sentenceCount = 0;
 
     ////////////////////////////////////////////////////////////////////////////
 
@@ -190,9 +187,7 @@ public class SystemInfo
         verticalsBuilder = new VerticalsBuilder(this);
         glyphInspector = new GlyphInspector(this);
         slurInspector = new SlurInspector(this);
-        textInspector = new TextInspector(this);
         translator = new SystemTranslator(this);
-        patternsChecker = new PatternsChecker(this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -405,7 +400,7 @@ public class SystemInfo
      */
     public int getNewSentenceId ()
     {
-        return textInspector.getNewSentenceId();
+        return ++sentenceCount;
     }
 
     //----------//
@@ -525,14 +520,6 @@ public class SystemInfo
     public int getStopIdx ()
     {
         return stopIdx;
-    }
-
-    //------------------//
-    // getTextInspector //
-    //------------------//
-    public TextInspector getTextInspector ()
-    {
-        return textInspector;
     }
 
     //--------//
@@ -1078,6 +1065,15 @@ public class SystemInfo
     }
 
     //----------------//
+    // resetSentences //
+    //----------------//
+    public void resetSentences ()
+    {
+        sentences.clear();
+        sentenceCount = 0;
+    }
+
+    //----------------//
     // retrieveGlyphs //
     //----------------//
     /**
@@ -1087,17 +1083,6 @@ public class SystemInfo
     public void retrieveGlyphs ()
     {
         glyphsBuilder.retrieveGlyphs(true);
-    }
-
-    //-------------------//
-    // retrieveSentences //
-    //-------------------//
-    /**
-     * Align the various text glyphs in horizontal text lines
-     */
-    public void retrieveSentences ()
-    {
-        textInspector.retrieveSentences();
     }
 
     //-------------------//
@@ -1123,7 +1108,7 @@ public class SystemInfo
      */
     public boolean runPatterns ()
     {
-        return patternsChecker.runPatterns();
+        return new PatternsChecker(this).runPatterns();
     }
 
     //---------------------//

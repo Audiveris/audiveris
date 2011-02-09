@@ -327,6 +327,27 @@ public class BasicLine
         dirty = false;
     }
 
+    //--------------------//
+    // swappedCoordinates //
+    //--------------------//
+    /**
+     * Return a new line whose coordinates are swapped with respect to this one
+     * @return a new X/Y swapped line
+     */
+    public Line swappedCoordinates ()
+    {
+        BasicLine that = new BasicLine();
+
+        that.n = n;
+        that.sx = sy;
+        that.sy = sx;
+        that.sx2 = sy2;
+        that.sy2 = sx2;
+        that.sxy = sxy;
+
+        return that;
+    }
+
     //----------//
     // toString //
     //----------//

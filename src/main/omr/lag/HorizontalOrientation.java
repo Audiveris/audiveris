@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.lag;
 
+import omr.math.BasicLine;
+import omr.math.Line;
+
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
@@ -120,5 +123,29 @@ public class HorizontalOrientation
         xywh.height = cplt.height;
 
         return xywh;
+    }
+
+    //-----------//
+    // switchRef //
+    //-----------//
+    /**
+     * Given an oriented line, return the corresponding absolute line, or vice
+     * versa. Based on current lag implementation, this method is a pass-through.
+     *
+     * @param relLine the oriented line
+     *
+     * @return the corresponding absolute line.
+     */
+    @Implement(Oriented.class)
+    public Line switchRef (Line relLine)
+    {
+        if (relLine == null) {
+            return null;
+        }
+
+        Line absLine = new BasicLine();
+        absLine.includeLine(relLine);
+
+        return absLine;
     }
 }

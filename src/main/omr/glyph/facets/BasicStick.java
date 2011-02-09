@@ -14,7 +14,6 @@ package omr.glyph.facets;
 import omr.math.Line;
 
 import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 
 import omr.stick.StickSection;
 
@@ -54,6 +53,11 @@ public class BasicStick
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    public Line getAbsoluteLine ()
+    {
+        return alignment.getAbsoluteLine();
+    }
 
     public int getAlienPixelsIn (Rectangle area)
     {

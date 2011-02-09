@@ -124,7 +124,7 @@ public abstract class Text
         String str = sentence.getTextContent();
 
         if (str == null) {
-            str = sentence.getContentFromItems();
+            str = sentence.getContentFromGlyphs();
         }
 
         return str;

@@ -19,7 +19,7 @@ import omr.glyph.facets.Glyph;
 import omr.glyph.facets.Stick;
 import omr.glyph.text.Language;
 import omr.glyph.text.OcrLine;
-import omr.glyph.text.Sentence;
+import omr.glyph.text.TextLine;
 
 import omr.log.Logger;
 
@@ -579,7 +579,7 @@ public class GlyphChecker
                     }
 
                     // Simply check the tuplet character via OCR, if available
-                    if (Sentence.useOCR()) {
+                    if (TextLine.useOCR()) {
                         List<OcrLine> lines = Language.getOcr()
                                                       .recognize(
                             glyph.getImage(),

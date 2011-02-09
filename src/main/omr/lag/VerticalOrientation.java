@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.lag;
 
+import omr.math.Line;
+
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
@@ -122,5 +124,27 @@ public class VerticalOrientation
         xywh.height = cplt.width;
 
         return xywh;
+    }
+
+    //-----------//
+    // switchRef //
+    //-----------//
+    /**
+     * Given an oriented line, return the corresponding absolute line, or vice
+     * versa. Based on current lag implementation, this method implies to switch
+     * coordinates values
+     *
+     * @param relLine the oriented line
+     *
+     * @return the corresponding absolute line.
+     */
+    @Implement(Oriented.class)
+    public Line switchRef (Line relLine)
+    {
+        if (relLine == null) {
+            return null;
+        } else {
+            return relLine.swappedCoordinates();
+        }
     }
 }
