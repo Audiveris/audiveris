@@ -19,6 +19,8 @@ import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
+import omr.math.Rational;
+
 import omr.score.common.PixelPoint;
 
 import omr.sheet.Scale;
@@ -283,12 +285,12 @@ public class DotTranslation
                         Measure    measure,
                         PixelPoint dotCenter)
         {
-            Scale                            scale = measure.getScale();
-            final int                        maxDx = scale.toPixels(
+            Scale                   scale = measure.getScale();
+            final int               maxDx = scale.toPixels(
                 constants.maxAugmentationDotDx);
-            final int                        maxDy = scale.toPixels(
+            final int               maxDy = scale.toPixels(
                 constants.maxAugmentationDotDy);
-            SortedMap<Double, ChordNotePair> distances = new TreeMap<Double, ChordNotePair>();
+            SortedMap<Double, Note> distances = new TreeMap<Double, Note>();
 
             // Check for a note/rest nearby:
             // - on the left w/ same even pitch (note w/ even pitch)
@@ -315,9 +317,7 @@ public class DotTranslation
                             glyph.isManualShape()) ||
                             ((toDot.x > 0) && (toDot.x <= maxDx) &&
                             (Math.abs(toDot.y) <= maxDy))) {
-                            distances.put(
-                                toDot.distanceSq(0, 0),
-                                new ChordNotePair(chord, note));
+                            distances.put(toDot.distanceSq(0, 0), note);
                         } else if (toDot.x < (-2 * maxDx)) {
                             break ChordLoop; // Speed up
                         }
@@ -327,10 +327,20 @@ public class DotTranslation
 
             if (!distances.isEmpty()) {
                 Double firstKey = distances.firstKey();
+                Note   note = distances.get(firstKey);
 
-                return new AugmentationResult(
-                    distances.get(firstKey),
-                    firstKey);
+                // Beware of mirrored notes
+                // Choose the one with longest duration
+                Note mirror = note.getMirroredNote();
+
+                if ((mirror == null) ||
+                    (note.getChord()
+                         .getDuration()
+                         .compareTo(mirror.getChord().getDuration()) > 0)) {
+                    return new AugmentationResult(note, firstKey);
+                } else {
+                    return new AugmentationResult(mirror, firstKey);
+                }
             } else {
                 return null;
             }
@@ -343,15 +353,15 @@ public class DotTranslation
         {
             //~ Instance fields ------------------------------------------------
 
-            final ChordNotePair pair;
+            final Note note;
 
             //~ Constructors ---------------------------------------------------
 
-            public AugmentationResult (ChordNotePair pair,
-                                       double        dist)
+            public AugmentationResult (Note   note,
+                                       double dist)
             {
                 super(dist);
-                this.pair = pair;
+                this.note = note;
             }
 
             //~ Methods --------------------------------------------------------
@@ -363,21 +373,22 @@ public class DotTranslation
             {
                 // Is there a second dot on the right?
                 Glyph second = secondDot(glyph, measure, dotCenter);
-                pair.note.setDots(glyph, second);
-                glyph.setTranslation(pair.note);
-                pair.chord.setDotsNumber((second != null) ? 2 : 1);
+                note.setDots(glyph, second);
+                glyph.setTranslation(note);
+                note.getChord()
+                    .setDotsNumber((second != null) ? 2 : 1);
 
                 if (logger.isFineEnabled()) {
                     logger.fine(
-                        pair.note.getContextString() + " dot#" + glyph.getId() +
-                        " Augmented " + pair.note);
+                        note.getContextString() + " dot#" + glyph.getId() +
+                        " Augmented " + note);
                 }
             }
 
             @Override
             protected String internals ()
             {
-                return "chord:" + pair.chord + " note:" + pair.note;
+                return "note:" + note;
             }
 
             private Glyph secondDot (Glyph      glyph,
@@ -423,7 +434,7 @@ public class DotTranslation
                                 logger.fine("Double dot with " + g);
                             }
 
-                            g.setTranslation(pair.note);
+                            g.setTranslation(note);
 
                             // Assign proper glyph shape (and thus color)
                             if (g.getShape() != targetShape) {
@@ -436,23 +447,6 @@ public class DotTranslation
                 }
 
                 return null;
-            }
-        }
-
-        private static class ChordNotePair
-        {
-            //~ Instance fields ------------------------------------------------
-
-            final Chord chord;
-            final Note  note;
-
-            //~ Constructors ---------------------------------------------------
-
-            public ChordNotePair (Chord chord,
-                                  Note  note)
-            {
-                this.chord = chord;
-                this.note = note;
             }
         }
     }

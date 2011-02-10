@@ -624,7 +624,7 @@
             </parameter>
         </item>
         <item id="COMBINING_FLAG_1_UP">
-            <parameter name="weight" training="NOMINAL" weight="188.85649180865317" min="0.5069252077562327" mean="0.6459534295212908" max="0.7871900826446281">
+            <parameter name="weight" training="NOMINAL" weight="188.85649180865317" min="0.39814814814814814" mean="0.6459534295212908" max="0.7871900826446281">
                 <population count="38" squares-sum="16.051637613453405" sum="24.54623032180905"/>
             </parameter>
             <parameter name="width" training="NOMINAL" weight="139.7013519831089" min="0.8181818181818182" mean="0.975098731677679" max="1.25">

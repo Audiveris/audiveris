@@ -373,6 +373,39 @@ public class Note
         return firstDot;
     }
 
+    //-----------------//
+    // getMirroredNote //
+    //-----------------//
+    /**
+     * If any, report the note that is the mirror of this one. This happens when
+     * the same note head is "shared" by 2 chords (because the note head is
+     * shared by 2 stems or by 1 stem leading to 2 beam groups).
+     * @return the mirrored note, or null if none.
+     */
+    public Note getMirroredNote ()
+    {
+        // We use the underlying glyph which keeps the link to translated notes
+        Glyph glyph = getGlyphs()
+                          .iterator()
+                          .next();
+
+        if (glyph == null) {
+            return null;
+        }
+
+        for (Object obj : glyph.getTranslations()) {
+            if ((obj != this) && obj instanceof Note) {
+                Note that = (Note) obj;
+
+                if (that.getPitchPosition() == this.getPitchPosition()) {
+                    return that;
+                }
+            }
+        }
+
+        return null;
+    }
+
     //--------------------//
     // getPackCardinality //
     //--------------------//
@@ -878,7 +911,7 @@ public class Note
         final int       maxDy = scale.toPixels(constants.maxAccidDy);
         final Set<Note> candidates = new HashSet<Note>();
 
-        // An accidental impacts the note right after (even if duplicated)
+        // An accidental impacts the note right after (even if mirrored)
         ChordLoop: 
         for (TreeNode node : measure.getChords()) {
             final Chord chord = (Chord) node;
@@ -914,7 +947,6 @@ public class Note
         }
 
         // Select the best note candidate, the one whose ordinate is closest
-        // TODO: Bug here? what if the note is duplicated ("shared" by 2 chords)?
         if (!candidates.isEmpty()) {
             int  bestDy = Integer.MAX_VALUE;
             Note bestNote = null;
@@ -936,6 +968,21 @@ public class Note
                 logger.fine(
                     bestNote.getContextString() + " accidental " +
                     glyph.getShape() + " at " + bestNote.getCenter());
+            }
+
+            // Apply also to mirrored note if any
+            Note mirrored = bestNote.getMirroredNote();
+
+            if (mirrored != null) {
+                mirrored.accidental = glyph;
+                glyph.addTranslation(mirrored);
+
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        mirrored.getContextString() + " accidental " +
+                        glyph.getShape() + " at " + mirrored.getCenter() +
+                        " (mirrored)");
+                }
             }
         }
     }
