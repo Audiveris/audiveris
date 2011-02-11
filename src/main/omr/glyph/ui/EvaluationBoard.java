@@ -149,7 +149,8 @@ class EvaluationBoard
             name,
             "Neural",
             glyphController.getLag().getSelectionService(),
-            eventClasses);
+            eventClasses,
+            true);
 
         this.glyphsController = glyphController;
         this.sheet = sheet;

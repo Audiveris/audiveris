@@ -643,7 +643,7 @@ class GlyphBrowser
         //-----------//
         Navigator ()
         {
-            super("Glyph-Navigator", "Navigator", null, null);
+            super("Glyph-Navigator", "Navigator", null, null, true);
 
             defineLayout();
 
@@ -801,9 +801,7 @@ class GlyphBrowser
         {
             CellConstraints cst = new CellConstraints();
             FormLayout      layout = Panel.makeFormLayout(4, 3);
-            PanelBuilder    builder = new PanelBuilder(
-                layout,
-                super.getBody());
+            PanelBuilder    builder = new PanelBuilder(layout, super.getBody());
             builder.setDefaultDialogBorder();
 
             int r = 1; // --------------------------------

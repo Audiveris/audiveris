@@ -91,7 +91,8 @@ public class RunBoard
             unitName + "-RunBoard",
             "Run",
             lag.getSelectionService(),
-            eventClasses);
+            eventClasses,
+            false);
         defineLayout();
     }
 
@@ -146,7 +147,7 @@ public class RunBoard
 
         CellConstraints cst = new CellConstraints();
         int             r = 1; // --------------------------------
-      
+
         builder.add(rStart.getLabel(), cst.xy(1, r));
         builder.add(rStart.getField(), cst.xy(3, r));
 

@@ -111,7 +111,8 @@ public class PixelBoard
             unitName + "-PixelBoard",
             "Pixel",
             sheet.getSelectionService(),
-            eventClasses);
+            eventClasses,
+            true);
 
         // Needed to process user input when RETURN/ENTER is pressed
         getComponent()

@@ -131,7 +131,8 @@ public class ShapeFocusBoard
             sheet.getId() + "-ShapeFocusBoard",
             "Focus",
             controller.getLag().getSelectionService(),
-            eventClasses);
+            eventClasses,
+            false);
 
         this.sheet = sheet;
 

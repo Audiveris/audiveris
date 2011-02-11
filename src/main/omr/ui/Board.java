@@ -36,15 +36,15 @@ import javax.swing.*;
  * Class <code>Board</code> defines the common properties of any user board
  * such as PixelBoard, SectionBoard, and the like.
  *
- * <p>Each board has a standard header composed of a "groom" button to open and
- * close the board, a title, and a horizontal separator. The board body is
- * handled by the subclass.
+ * <p>Each board has a standard header composed of a "groom" button to expand
+ * and collapse the board, a title, and a horizontal separator. The board body
+ * is handled by the subclass.
  *
  * <p>By default, any board can have a related SelectionService, used for
  * subscribe (input) and publish (output). When {@link #connect} is called, the
  * board instance is subscribed to its SelectionService for a specific
  * collection of event classes. Similarly, {@link #disconnect} unsubscribes the
- * Board instance from the same event classes..
+ * Board instance from the same event classes.
  *
  * <p>This is still an abstract class, since the onEvent() method must be
  * provided by every subclass.
@@ -80,7 +80,7 @@ public abstract class Board
     protected String name;
 
     /** The groom for expand/collapse actions */
-    private Groom groom = new Groom();
+    private final Groom groom;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -94,34 +94,25 @@ public abstract class Board
      * @param title the string to appear as the board title
      * @param selectionService the related selection service (for input & output)
      * @param eventList the collection of event classes to observe
+     * @param expanded true to pre-expand the board, false to pre-collapse
      */
     public Board (String                                name,
                   String                                title,
                   SelectionService                      selectionService,
-                  Collection<Class<?extends UserEvent>> eventList)
+                  Collection<Class<?extends UserEvent>> eventList,
+                  boolean                               expanded)
     {
         this.name = name;
         this.selectionService = selectionService;
         this.eventList = eventList;
+
+        groom = new Groom(expanded);
 
         // Layout header and body parts
         defineBoardLayout(title);
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //----------//
-    // collapse //
-    //----------//
-    /**
-     * Programmatically collapse this board
-     */
-    public void collapse ()
-    {
-        if (!groom.collapsed) {
-            groom.actionPerformed(null);
-        }
-    }
 
     //-------------//
     // emptyFields //
@@ -206,7 +197,7 @@ public abstract class Board
      */
     public void expand ()
     {
-        if (groom.collapsed) {
+        if (groom.expanded) {
             groom.actionPerformed(null);
         }
     }
@@ -253,38 +244,50 @@ public abstract class Board
     //-------//
     /**
      * The groom is in charge of expanding / collapsing the board body panel
+     *
+     * TODO: For the time being, we can't (de)connect at close/open events,
+     * because some boards (indirectly) take their input from other boards
+     * (example: glyph needs run or section)
      */
     private class Groom
         extends AbstractAction
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** Is the body panel collapsed? */
-        private boolean collapsed = true;
+        /** Is the body panel expanded (or collapsed)? */
+        private boolean expanded;
 
         //~ Constructors -------------------------------------------------------
 
-        public Groom ()
+        public Groom (boolean expanded)
         {
-            // Initialize the action properties, switching to expanded
+            this.expanded = !expanded; // Just for first call to actionPerformed
+
+            // Initialize the action properties
             actionPerformed(null);
         }
 
         //~ Methods ------------------------------------------------------------
 
-        public void actionPerformed (ActionEvent e)
+        public final void actionPerformed (ActionEvent e)
         {
-            collapsed = !collapsed;
+            expanded = !expanded;
 
-            if (collapsed) {
-                putValue(Action.NAME, "+");
-                putValue(Action.SHORT_DESCRIPTION, "Expand");
-            } else {
+            if (expanded) {
                 putValue(Action.NAME, "X");
                 putValue(Action.SHORT_DESCRIPTION, "Collapse");
+
+                // Connect the input
+                ///connect();
+            } else {
+                putValue(Action.NAME, "+");
+                putValue(Action.SHORT_DESCRIPTION, "Expand");
+
+                // Disconnect the input
+                ///disconnect();
             }
 
-            body.setVisible(!collapsed);
+            body.setVisible(expanded);
             component.invalidate();
         }
     }

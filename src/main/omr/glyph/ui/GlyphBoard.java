@@ -207,7 +207,8 @@ public class GlyphBoard
             name,
             "Glyph",
             controller.getLag().getSelectionService(),
-            eventClasses);
+            eventClasses,
+            true);
 
         this.controller = controller;
 

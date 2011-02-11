@@ -63,7 +63,7 @@ public class CheckBoard<C extends Checkable>
                        SelectionService                      selectionService,
                        Collection<Class<?extends UserEvent>> eventList)
     {
-        super(name + "-CheckBoard", "Check", selectionService, eventList);
+        super(name + "-CheckBoard", "Check", selectionService, eventList, true);
         checkPanel = new CheckPanel<C>(suite);
 
         if (suite != null) {

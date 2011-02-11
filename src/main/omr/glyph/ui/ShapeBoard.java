@@ -224,7 +224,7 @@ public class ShapeBoard
     public ShapeBoard (SymbolsController symbolsController,
                        Sheet             sheet)
     {
-        super("Palette", "Shapes", null, null);
+        super("Palette", "Shapes", null, null, false);
         this.symbolsController = symbolsController;
         this.sheet = sheet;
 

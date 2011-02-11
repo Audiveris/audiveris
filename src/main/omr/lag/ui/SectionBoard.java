@@ -164,9 +164,11 @@ public class SectionBoard
                          final Lag lag)
     {
         super(
-            unitName + "-SectionBoard", "Section", 
+            unitName + "-SectionBoard",
+            "Section",
             lag.getSelectionService(),
-            eventClasses);
+            eventClasses,
+            false);
 
         // Dump button
         dump.setToolTipText("Dump this section");
