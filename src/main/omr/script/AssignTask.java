@@ -127,7 +127,7 @@ public class AssignTask
     //------------//
     // AssignTask //
     //------------//
-    /** No-arg constructor needed for JAXB */
+    /** No-arg constructor for JAXB only */
     protected AssignTask ()
     {
         shape = null;

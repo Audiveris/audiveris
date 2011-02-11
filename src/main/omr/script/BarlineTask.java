@@ -73,7 +73,7 @@ public class BarlineTask
     //-------------//
     // BarlineTask //
     //-------------//
-    /** No-arg constructor needed for JAXB */
+    /** No-arg constructor for JAXB only */
     protected BarlineTask ()
     {
     }

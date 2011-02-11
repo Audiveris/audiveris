@@ -254,9 +254,10 @@ public class Main
                             logger.info("Loading script file " + file + " ...");
 
                             try {
+                                FileInputStream fis = new FileInputStream(file);
                                 script = ScriptManager.getInstance()
-                                                      .load(
-                                    new FileInputStream(file));
+                                                      .load(fis);
+                                fis.close();
                                 script.run();
 
                                 long stop = System.currentTimeMillis();

@@ -51,7 +51,7 @@ public class SegmentTask
     //-------------//
     // SegmentTask //
     //-------------//
-    /** No-arg constructor needed by JAXB */
+    /** No-arg constructor for JAXB only */
     private SegmentTask ()
     {
         isShort = false; // Dummy value

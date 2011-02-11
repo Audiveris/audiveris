@@ -80,7 +80,7 @@ public class BoundaryTask
     //--------------//
     // BoundaryTask //
     //--------------//
-    /** No-arg constructor needed by JAXB */
+    /** No-arg constructor for JAXB only */
     private BoundaryTask ()
     {
     }

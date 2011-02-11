@@ -91,9 +91,7 @@ public abstract class GlyphUpdateTask
     //-----------------//
     // GlyphUpdateTask //
     //-----------------//
-    /**
-     * Constructor needed by no-arg constructors of subclasses (for JAXB)
-     */
+    /** No-arg constructor for JAXB only */
     protected GlyphUpdateTask ()
     {
         sectionSets = null; // Dummy value

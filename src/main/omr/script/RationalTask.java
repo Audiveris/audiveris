@@ -60,7 +60,7 @@ public class RationalTask
     //--------------//
     // RationalTask //
     //--------------//
-    /** No-arg constructor needed by JAXB */
+    /** No-arg constructor for JAXB only */
     private RationalTask ()
     {
         timeRational = null;

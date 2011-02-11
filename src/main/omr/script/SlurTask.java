@@ -47,7 +47,7 @@ public class SlurTask
     //----------//
     // SlurTask //
     //----------//
-    /** No-arg constructor needed by JAXB */
+    /** No-arg constructor for JAXB only */
     private SlurTask ()
     {
     }

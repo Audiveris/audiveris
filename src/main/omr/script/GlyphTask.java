@@ -70,6 +70,8 @@ public abstract class GlyphTask
                          LagOrientation    orientation,
                          Collection<Glyph> glyphs)
     {
+        super(sheet);
+        
         // Check parameters
         if (orientation == null) {
             throw new IllegalArgumentException(
@@ -126,9 +128,7 @@ public abstract class GlyphTask
     //-----------//
     // GlyphTask //
     //-----------//
-    /**
-     * Constructor needed by no-arg constructors of subclasses (for JAXB)
-     */
+    /** No-arg constructor for JAXB only */
     protected GlyphTask ()
     {
         orientation = null;

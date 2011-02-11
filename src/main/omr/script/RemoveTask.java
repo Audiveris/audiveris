@@ -42,7 +42,7 @@ public class RemoveTask
     //------------//
     // RemoveTask //
     //------------//
-    /** No-arg constructor needed by JAXB */
+    /** No-arg constructor for JAXB only */
     private RemoveTask ()
     {
     }

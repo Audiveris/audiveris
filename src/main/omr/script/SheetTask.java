@@ -50,9 +50,7 @@ public abstract class SheetTask
     //-----------//
     // SheetTask //
     //-----------//
-    /**
-     * Creates a new SheetTask object. Needed by JAXB
-     */
+    /** No-arg constructor for JAXB only */
     protected SheetTask ()
     {
     }

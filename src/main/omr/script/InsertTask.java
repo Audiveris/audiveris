@@ -96,7 +96,7 @@ public class InsertTask
     //------------//
     // InsertTask //
     //------------//
-    /** No-arg constructor needed for JAXB */
+    /** No-arg constructor for JAXB only */
     private InsertTask ()
     {
         shape = null; // Dummy value

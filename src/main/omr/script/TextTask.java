@@ -75,7 +75,7 @@ public class TextTask
     //----------//
     // TextTask //
     //----------//
-    /** No-arg constructor needed by JAXB */
+    /** No-arg constructor for JAXB only */
     private TextTask ()
     {
         type = null;
