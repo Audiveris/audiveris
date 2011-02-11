@@ -1224,6 +1224,24 @@ public class ScoreExporter
                 current.pmNote.setType(noteType);
             }
 
+            // For specific mirrored note
+            if (note.getMirroredNote() != null) {
+                int fbn = note.getChord()
+                              .getFlagsNumber() +
+                          note.getChord()
+                              .getBeams()
+                              .size();
+
+                if ((fbn > 0) && (note.getShape() == VOID_NOTEHEAD)) {
+                    // Indicate that the head should not be filled
+                    //   <notehead filled="no">normal</notehead>
+                    Notehead notehead = factory.createNotehead();
+                    notehead.setFilled(YesNo.NO);
+                    notehead.setValue(NoteheadValue.NORMAL);
+                    current.pmNote.setNotehead(notehead);
+                }
+            }
+
             // Stem ?
             if (chord.getStem() != null) {
                 Stem       pmStem = factory.createStem();

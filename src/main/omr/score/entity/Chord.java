@@ -251,7 +251,7 @@ public class Chord
      * Report the real duration computed for this chord, including the tuplet
      * impact if any, with null value for whole/multi rest.
      *
-     * @return The real chord/note rawDuration, or null for a whole rest chord
+     * @return The real chord/note duration, or null for a whole rest chord
      * @see #getRawDuration
      */
     public Rational getDuration ()
@@ -1089,14 +1089,14 @@ public class Chord
     //---------------//
     /**
      * Report the intrinsic duration of this chord, taking flag/beams and dots
-     * into account, but not the tuplet impact if any
-     * Duration (assumed to be the same for all notes of this chord, otherwise
-     * the chord must be split.
+     * into account, but not the tuplet impact if any.
+     * The duration is assumed to be the same for all notes of this chord,
+     * otherwise the chord must be split.
      * This includes the local information (flags, dots) but not the tuplet
      * impact if any.
      * A specific value (WHOLE_DURATION) indicates the whole/multi rest chord.
      *
-     * Nota: this value is not cached, but computed at every time
+     * Nota: this value is not cached, but computed at every call
      *
      * @return the intrinsic chord duration
      * @see #getDuration
@@ -1113,17 +1113,8 @@ public class Chord
 
             if (!note.getShape()
                      .isMeasureRest()) {
-                rawDuration = Note.getTypeDuration(note.getShape());
-
-                // Apply fraction (for non-rests only)
-                if (!note.isRest()) {
-                    int fbn = getFlagsNumber() + getBeams()
-                                                     .size();
-
-                    for (int i = 0; i < fbn; i++) {
-                        rawDuration = rawDuration.divides(2);
-                    }
-                }
+                // Duration (with flags/beams applied for non-rests)
+                rawDuration = note.getNoteDuration();
 
                 // Apply augmentation (applies to rests as well)
                 if (dotsNumber == 1) {

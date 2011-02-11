@@ -842,8 +842,22 @@ public class Note
                                                   .getBeams()
                                                   .size();
 
-            for (int i = 0; i < fbn; i++) {
-                dur = dur.divides(2);
+            if (fbn > 0) {
+                /**
+                 * Beware, some mirrored notes exhibit a void note head because
+                 * the same head is shared by a half-note and at the same time
+                 * by a beam group.
+                 * In the case of the beam/flag side of the mirror, strictly
+                 * speaking, the note head should be considered as black.
+                 **/
+                if ((shape == VOID_NOTEHEAD) && (getMirroredNote() != null)) {
+                    dur = getTypeDuration(NOTEHEAD_BLACK);
+                }
+
+                // Apply the divisions
+                for (int i = 0; i < fbn; i++) {
+                    dur = dur.divides(2);
+                }
             }
         }
 
