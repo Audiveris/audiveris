@@ -15,6 +15,7 @@ import omr.check.Result;
 import omr.check.SuccessResult;
 
 import omr.glyph.GlyphSection;
+import omr.glyph.Shape;
 
 import omr.score.common.PixelPoint;
 
@@ -75,6 +76,10 @@ class BasicComposition
     //----------//
     public boolean isActive ()
     {
+        if (glyph.getShape() == Shape.GLYPH_PART) {
+            return false;
+        }
+
         for (GlyphSection section : members) {
             if (section.getGlyph() != glyph) {
                 return false;

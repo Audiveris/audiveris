@@ -43,9 +43,12 @@ import omr.sheet.Ending;
 import omr.sheet.Ledger;
 import omr.sheet.Sheet;
 import omr.sheet.StaffInfo;
+import omr.sheet.SystemBoundary.Side;
 import omr.sheet.SystemInfo;
 
 import omr.ui.util.UIUtilities;
+
+import omr.util.BrokenLine;
 
 import java.awt.*;
 import java.util.ConcurrentModificationException;
@@ -415,6 +418,21 @@ public class PagePhysicalPainter
 
         if (!visit(systemInfo)) {
             return false;
+        }
+
+        // System id annotation
+        if (annotated) {
+            Color oldColor = g.getColor();
+            g.setColor(Color.lightGray);
+
+            Point ul = systemInfo.getBoundary()
+                                 .getLimit(Side.NORTH)
+                                 .getPoint(0);
+            paint(
+                basicLayout("S" + system.getId(), null),
+                new PixelPoint(ul.x + annotationDx, ul.y + annotationDy),
+                new Alignment(Horizontal.LEFT, Vertical.TOP));
+            g.setColor(oldColor);
         }
 
         return true;

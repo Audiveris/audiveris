@@ -299,7 +299,11 @@ public class TextLine
             glyphs.clear();
             addGlyph(glyph);
         } else {
-            glyph = system.addGlyph(glyphs.first());
+            glyph = glyphs.first();
+
+            if (!glyph.isActive()) {
+                glyph = system.addGlyph(glyph);
+            }
         }
 
         TextInfo textInfo = glyph.getTextInfo();
@@ -433,9 +437,16 @@ public class TextLine
         // Pre-insert all candidates in proper place in the glyphs sequence
         glyphs.addAll(aliens);
 
+        // It is safer to use an upper limit to the following loop
+        int   aliensCount = aliens.size();
+
         Glyph alien;
 
-        while ((alien = getFirstAlien()) != null) {
+        while (((alien = getFirstAlien()) != null) && (--aliensCount >= -1)) {
+            if (aliensCount < 0) {
+                logger.severe("includeAliens: endless loop for " + this);
+            }
+
             if (!resolveAlien(alien)) {
                 removeItem(alien);
             }
@@ -549,8 +560,9 @@ public class TextLine
         for (Glyph glyph : system.getGlyphs()) {
             Shape shape = glyph.getShape();
 
-            // Do not reassign non-text as text
-            if (glyph.isShapeForbidden(Shape.TEXT)) {
+            if ((shape == Shape.GLYPH_PART) ||
+                glyphs.contains(glyph) ||
+                glyph.isShapeForbidden(Shape.TEXT)) {
                 continue;
             }
 
@@ -1075,6 +1087,15 @@ public class TextLine
             } else {
                 compound = null;
 
+                return false;
+            }
+
+            // Text allowed?
+            Glyph original = system.getSheet()
+                                   .getVerticalLag()
+                                   .getOriginal(compound);
+
+            if ((original != null) && original.isShapeForbidden(Shape.TEXT)) {
                 return false;
             }
 

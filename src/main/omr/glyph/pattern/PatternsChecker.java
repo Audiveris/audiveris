@@ -95,7 +95,7 @@ public class PatternsChecker
 
         for (GlyphPattern pattern : patterns) {
             if (logger.isFineEnabled()) {
-                logger.finest("Starting pattern " + pattern);
+                logger.finest("Starting " + pattern);
             }
 
             system.inspectGlyphs(GlyphInspector.getLeafMaxDoubt());

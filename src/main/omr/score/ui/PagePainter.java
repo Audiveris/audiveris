@@ -122,7 +122,10 @@ public abstract class PagePainter
     /** Color for music symbols */
     public static Color musicColor = constants.musicColor.getValue();
 
-    /** Ordinate offset, in pixels, for annotation above staff */
+    /** Abscissa offset, in pixels, for annotation near system */
+    protected static int annotationDx = 15;
+
+    /** Ordinate offset, in pixels, for annotation near staff or system */
     protected static int annotationDy = 15;
 
     //~ Instance fields --------------------------------------------------------

@@ -223,51 +223,6 @@ public class PixelBoard
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //
-    //    private class Groom
-    //    {
-    //        //~ Instance fields ----------------------------------------------------
-    //
-    //        boolean     collapsed = false;
-    //        GroomAction action = new GroomAction();
-    //        JButton     button = new JButton("Essai");
-    //
-    //        //~ Methods ------------------------------------------------------------
-    //
-    //        JButton getButton ()
-    //        {
-    //            return button;
-    //        }
-    //    }
-    //
-    //    private class GroomAction
-    //        extends AbstractAction
-    //    {
-    //        //~ Constructors -------------------------------------------------------
-    //
-    //        public GroomAction ()
-    //        {
-    //            super("-");
-    //            putValue(Action.SHORT_DESCRIPTION, "Collapse");
-    //        }
-    //
-    //        //~ Methods ------------------------------------------------------------
-    //
-    //        public void actionPerformed (ActionEvent e)
-    //        {
-    //            logger.info("Groom action");
-    //            groom.collapsed = !groom.collapsed;
-    //
-    //            if (groom.collapsed) {
-    //                putValue(Action.NAME, "+");
-    //                putValue(Action.SHORT_DESCRIPTION, "Expand");
-    //            } else {
-    //                putValue(Action.NAME, "-");
-    //                putValue(Action.SHORT_DESCRIPTION, "Collapse");
-    //            }
-    //        }
-    //    }
-
     //-------------//
     // ParamAction //
     //-------------//

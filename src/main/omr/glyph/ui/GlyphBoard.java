@@ -312,7 +312,14 @@ public class GlyphBoard
                 Shape shape = (glyph != null) ? glyph.getShape() : null;
 
                 if (shape != null) {
-                    shapeField.setText(shape.toString());
+                    if ((shape == Shape.GLYPH_PART) &&
+                        (glyph.getPartOf() != null)) {
+                        shapeField.setText(
+                            shape + " of #" + glyph.getPartOf().getId());
+                    } else {
+                        shapeField.setText(shape.toString());
+                    }
+
                     shapeIcon.setIcon(shape.getDecoratedSymbol());
                 } else {
                     shapeField.setText("");
