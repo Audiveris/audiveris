@@ -345,6 +345,8 @@ public class BasicLine
         that.sy2 = sx2;
         that.sxy = sxy;
 
+        that.dirty = true;
+
         return that;
     }
 
@@ -448,7 +450,7 @@ public class BasicLine
     /**
      * Make sure the line parameters are usable.
      */
-    private final void checkLineParameters ()
+    private void checkLineParameters ()
     {
         // Recompute parameters based on points if so needed
         if (dirty) {

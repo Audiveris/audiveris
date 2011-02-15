@@ -380,8 +380,8 @@ public class GlyphChecker
                 {
                     try {
                         Stick          stick = (Stick) glyph;
-                        double         slope = stick.getLine()
-                                                    .getInvertedSlope(); // vertical lag!
+                        double         slope = stick.getAbsoluteLine()
+                                                    .getSlope();
 
                         PixelRectangle box = glyph.getContourBox();
                         double         maxSlope = (double) box.height / (double) box.width;

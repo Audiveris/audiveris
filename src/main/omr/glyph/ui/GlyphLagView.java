@@ -545,25 +545,24 @@ public class GlyphLagView
                                 Graphics2D g)
     {
         try {
-            Line           line = stick.getLine();
+            Line           absoluteLine = stick.getAbsoluteLine();
             PixelRectangle box = stick.getContourBox();
             int            ext = constants.lineExtension.getValue();
             PixelPoint     a = new PixelPoint();
             PixelPoint     b = new PixelPoint();
 
-            // Beware, these are vertical glyphs
-            if (Math.abs(line.getInvertedSlope()) <= (Math.PI / 4)) {
+            if (Math.abs(absoluteLine.getSlope()) <= (Math.PI / 4)) {
                 // Rather horizontal
                 a.x = box.x - ext;
-                a.y = line.xAt(a.x);
+                a.y = absoluteLine.yAt(a.x);
                 b.x = box.x + box.width + ext;
-                b.y = line.xAt(b.x);
+                b.y = absoluteLine.yAt(b.x);
             } else {
                 // Rather vertical
                 a.y = box.y - ext;
-                a.x = line.yAt(a.y);
+                a.x = absoluteLine.xAt(a.y);
                 b.y = box.y + box.height + ext;
-                b.x = line.yAt(b.y);
+                b.x = absoluteLine.xAt(b.y);
             }
 
             g.drawLine(a.x, a.y, b.x, b.y);

@@ -268,7 +268,7 @@ public class LineBuilder
         line = new BasicLine();
 
         for (Stick stick : sticks) {
-            line.includeLine(stick.getLine());
+            line.includeLine(stick.getOrientedLine());
         }
     }
 
@@ -483,7 +483,7 @@ public class LineBuilder
                 holeLeft,
                 holeRight,
                 line.yAt((double) holeLeft),
-                rightStick.getLine().yAt((double) holeRight));
+                rightStick.getOrientedLine().yAt((double) holeRight));
         }
     }
 
@@ -504,7 +504,7 @@ public class LineBuilder
             scanRect(
                 holeLeft,
                 holeRight,
-                leftStick.getLine().yAt((double) holeLeft),
+                leftStick.getOrientedLine().yAt((double) holeLeft),
                 line.yAt((double) holeRight));
         }
     }
@@ -527,8 +527,8 @@ public class LineBuilder
             scanRect(
                 holeLeft,
                 holeRight,
-                leftStick.getLine().yAt((double) holeLeft),
-                rightStick.getLine().yAt((double) holeRight));
+                leftStick.getOrientedLine().yAt((double) holeLeft),
+                rightStick.getOrientedLine().yAt((double) holeRight));
         }
     }
 

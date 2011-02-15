@@ -94,10 +94,9 @@ public class Barline
 
         for (Glyph glyph : getGlyphs()) {
             if (linePredicate.check(glyph)) {
-                // Beware : Vertical sticks using Horizontal line equation
                 Stick stick = (Stick) glyph;
-                int   x = stick.getLine()
-                               .yAt(topLeft.y);
+                int   x = stick.getAbsoluteLine()
+                               .xAt(topLeft.y);
 
                 return x;
             }
@@ -125,10 +124,9 @@ public class Barline
 
         for (Glyph glyph : getGlyphs()) {
             if (glyph.isBar()) {
-                // Beware : Vertical sticks using Horizontal line equation
                 Stick stick = (Stick) glyph;
-                int   x = stick.getLine()
-                               .yAt(topLeft.y);
+                int   x = stick.getAbsoluteLine()
+                               .xAt(topLeft.y);
 
                 if (x > right) {
                     right = x;
@@ -390,7 +388,7 @@ public class Barline
             final StringBuilder sb = new StringBuilder();
             final Staff         staffRef = measure.getPart()
                                                   .getFirstStaff();
-            final int           topStaff = staffRef.getTopLeft().y ;
+            final int           topStaff = staffRef.getTopLeft().y;
             final int           botStaff = topStaff + staffRef.getHeight();
             String              last = null; // Last stick
 

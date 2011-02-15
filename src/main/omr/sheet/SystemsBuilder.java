@@ -608,7 +608,7 @@ public class SystemsBuilder
                         Stick stick = (Stick) entity;
 
                         // Make sure this is a rather vertical stick
-                        if (Math.abs(stick.getLine().getSlope()) <= constants.maxCoTangentForCheck.getValue()) {
+                        if (Math.abs(stick.getOrientedLine().getSlope()) <= constants.maxCoTangentForCheck.getValue()) {
                             // To get a fresh suite
                             setSuite(barsChecker.new BarCheckSuite());
                             context = new BarsChecker.GlyphContext(stick);

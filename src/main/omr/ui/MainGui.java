@@ -312,7 +312,7 @@ public class MainGui
     //----------------//
     /**
      * Remove the specific component the errors pane
-     * @param the specific component to remove (or null if we don't care)
+     * @param component the component to remove (or null if we don't care)
      */
     public void hideErrorsPane (JComponent component)
     {

@@ -227,7 +227,7 @@ public class SkewBuilder
                     stick.dump();
                 }
 
-                double slope = stick.getLine()
+                double slope = stick.getOrientedLine()
                                     .getSlope();
                 int    length = stick.getLength();
                 int    index = (int) (slope * RESOLUTION) + (MAX_INDEX / 2);
@@ -373,7 +373,7 @@ public class SkewBuilder
             Stick           longest = it.next();
             lengthThreshold = (int) (longest.getLength() * constants.sizeRatio.getValue());
 
-            double slopeSum = longest.getLine()
+            double slopeSum = longest.getOrientedLine()
                                      .getSlope() * longest.getLength();
             double slopeNb = longest.getLength();
 
@@ -382,7 +382,7 @@ public class SkewBuilder
                 stick = it.next();
 
                 if (stick.getLength() >= lengthThreshold) {
-                    slopeSum += (stick.getLine()
+                    slopeSum += (stick.getOrientedLine()
                                       .getSlope() * stick.getLength());
                     slopeNb += stick.getLength();
                 } else {

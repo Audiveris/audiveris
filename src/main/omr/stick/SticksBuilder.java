@@ -315,7 +315,7 @@ public class SticksBuilder
 
             // Stick slope must be relevant (at least 3 points), and close to 0
             if ((stick.getWeight() < 3) ||
-                (Math.abs(stick.getLine().getSlope()) > maxSlope)) {
+                (Math.abs(stick.getOrientedLine().getSlope()) > maxSlope)) {
                 // This is not a stick
                 stick.setResult(NOT_STRAIGHT);
 

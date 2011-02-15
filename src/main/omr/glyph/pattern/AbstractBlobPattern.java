@@ -258,7 +258,7 @@ public abstract class AbstractBlobPattern
         //----------------//
         /**
          * Retrieve among the system glyphs, the ones that belong to this region
-         * @param additional predicate to filter the glyphs candidate
+         * @param filter predicate to filter the glyphs candidate
          * @return the set of system glyphs within the region
          */
         public SortedSet<Glyph> retrieveGlyphs (final Predicate filter)

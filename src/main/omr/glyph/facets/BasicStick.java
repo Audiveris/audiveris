@@ -142,9 +142,9 @@ public class BasicStick
         return alignment.getLength();
     }
 
-    public Line getLine ()
+    public Line getOrientedLine ()
     {
-        return alignment.getLine();
+        return alignment.getOrientedLine();
     }
 
     public int getMidPos ()
@@ -202,7 +202,7 @@ public class BasicStick
         super.addSection(section, link);
 
         // Include the section points
-        getLine()
+        getOrientedLine()
             .includeLine(section.getLine());
     }
 

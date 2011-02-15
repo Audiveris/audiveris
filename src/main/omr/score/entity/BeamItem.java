@@ -114,10 +114,10 @@ public class BeamItem
         // Location of left and right points
         Stick          stick = (Stick) glyph;
         PixelRectangle box = stick.getContourBox();
-        double         yMidLeft = stick.getLine()
-                                       .xAt((double) box.x); // Vertical stick
-        double         yMidRight = stick.getLine()
-                                        .xAt((double) (box.x + box.width));
+        Line           absoluteLine = stick.getAbsoluteLine();
+        double         yMidLeft = absoluteLine.yAt((double) box.x);
+        double         yMidRight = absoluteLine.yAt(
+            (double) (box.x + box.width));
         double         deltaMid1 = Math.min(yMidLeft, yMidRight) - box.y;
         double         deltaMid2 = (box.y + box.height) -
                                    Math.max(yMidLeft, yMidRight);
@@ -127,7 +127,7 @@ public class BeamItem
             if (logger.isFineEnabled()) {
                 logger.fine(
                     "Strange beam item at glyph#" + glyph.getId() + " slope=" +
-                    stick.getLine().getInvertedSlope());
+                    stick.getAbsoluteLine().getSlope());
             }
 
             // Make a simple horizontal beam item

@@ -63,7 +63,7 @@ public abstract class Dash
     public Dash (Stick stick)
     {
         this.stick = stick;
-        line = stick.getLine();
+        line = stick.getOrientedLine();
         box = stick.getContourBox();
     }
 
@@ -108,7 +108,7 @@ public abstract class Dash
     {
         if (line == null) {
             if (stick != null) {
-                line = stick.getLine();
+                line = stick.getOrientedLine();
             }
         }
 

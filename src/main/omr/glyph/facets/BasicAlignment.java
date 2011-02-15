@@ -70,7 +70,7 @@ class BasicAlignment
     public Line getAbsoluteLine ()
     {
         return glyph.getLag()
-                    .switchRef(getLine());
+                    .switchRef(getOrientedLine());
     }
 
     //------------------//
@@ -215,13 +215,15 @@ class BasicAlignment
             (Math.abs(other.getStop() - getStart()) <= maxDeltaCoord)) {
             // Check that a pair of positions is compatible
             if ((Math.abs(
-                other.getLine().yAt(other.getStart()) -
-                getLine().yAt(other.getStop())) <= maxDeltaPos) ||
+                other.getOrientedLine().yAt(other.getStart()) -
+                getOrientedLine().yAt(other.getStop())) <= maxDeltaPos) ||
                 (Math.abs(
-                other.getLine().yAt(other.getStop()) -
-                getLine().yAt(other.getStart())) <= maxDeltaPos)) {
+                other.getOrientedLine().yAt(other.getStop()) -
+                getOrientedLine().yAt(other.getStart())) <= maxDeltaPos)) {
                 // Check that slopes are compatible (a useless test ?)
-                if (Math.abs(other.getLine().getSlope() - getLine().getSlope()) <= maxDeltaSlope) {
+                if (Math.abs(
+                    other.getOrientedLine().getSlope() -
+                    getOrientedLine().getSlope()) <= maxDeltaSlope) {
                     return true;
                 } else if (logger.isFineEnabled()) {
                     logger.fine("isExtensionOf:  Incompatible slopes");
@@ -300,31 +302,31 @@ class BasicAlignment
         return glyph.getBounds().width;
     }
 
-    //---------//
-    // getLine //
-    //---------//
-    public Line getLine ()
+    //-----------//
+    // getMidPos //
+    //-----------//
+    public int getMidPos ()
+    {
+        if (getOrientedLine()
+                .isVertical()) {
+            // Fall back value
+            return (int) Math.rint((getFirstPos() + getLastPos()) / 2.0);
+        } else {
+            return (int) Math.rint(
+                getOrientedLine().yAt((getStart() + getStop()) / 2.0));
+        }
+    }
+
+    //-----------------//
+    // getOrientedLine //
+    //-----------------//
+    public Line getOrientedLine ()
     {
         if (line == null) {
             computeLine();
         }
 
         return line;
-    }
-
-    //-----------//
-    // getMidPos //
-    //-----------//
-    public int getMidPos ()
-    {
-        if (getLine()
-                .isVertical()) {
-            // Fall back value
-            return (int) Math.rint((getFirstPos() + getLastPos()) / 2.0);
-        } else {
-            return (int) Math.rint(
-                getLine().yAt((getStart() + getStop()) / 2.0));
-        }
     }
 
     //----------//
@@ -353,9 +355,9 @@ class BasicAlignment
     //----------------//
     public int getStartingPos ()
     {
-        if ((getThickness() >= 2) && !getLine()
+        if ((getThickness() >= 2) && !getOrientedLine()
                                           .isVertical()) {
-            return getLine()
+            return getOrientedLine()
                        .yAt(getStart());
         } else {
             return getFirstPos() + (getThickness() / 2);
@@ -388,9 +390,9 @@ class BasicAlignment
     //----------------//
     public int getStoppingPos ()
     {
-        if ((getThickness() >= 2) && !getLine()
+        if ((getThickness() >= 2) && !getOrientedLine()
                                           .isVertical()) {
-            return getLine()
+            return getOrientedLine()
                        .yAt(getStop());
         } else {
             return getFirstPos() + (getThickness() / 2);
@@ -434,7 +436,7 @@ class BasicAlignment
     public void dump ()
     {
         super.dump();
-        System.out.println("   line=" + getLine());
+        System.out.println("   line=" + getOrientedLine());
     }
 
     //--------------//
@@ -454,7 +456,7 @@ class BasicAlignment
     {
         if (glyph.getContourBox()
                  .intersects(g.getClipBounds())) {
-            getLine(); // To make sure the line has been computed
+            getOrientedLine(); // To make sure the line has been computed
 
             int    halfLine = 0;
             Stroke stroke = g.getStroke();

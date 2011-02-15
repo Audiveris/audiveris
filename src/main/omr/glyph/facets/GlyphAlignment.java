@@ -35,6 +35,18 @@ interface GlyphAlignment
 {
     //~ Methods ----------------------------------------------------------------
 
+    //-----------------//
+    // getAbsoluteLine //
+    //-----------------//
+    /**
+     * Return the approximating line computed on the stick, as an
+     * <b>absolute</b> line, with x for horizontal axis and y for vertical axis
+     *
+     * @return The absolute line
+     * @see #getOrientedLine()
+     */
+    Line getAbsoluteLine ();
+
     //------------------//
     // getAlienPixelsIn //
     //------------------//
@@ -250,26 +262,6 @@ interface GlyphAlignment
      */
     int getLength ();
 
-    //---------//
-    // getLine //
-    //---------//
-    /**
-     * Return the approximating line computed on the stick.
-     *
-     * @return The line
-     */
-    Line getLine ();
-
-    //-----------------//
-    // getAbsoluteLine //
-    //-----------------//
-    /**
-     * Return the approximating line computed on the stick, as an absolute line
-     *
-     * @return The absolute line
-     */
-    Line getAbsoluteLine ();
-
     //-----------//
     // getMidPos //
     //-----------//
@@ -280,6 +272,25 @@ interface GlyphAlignment
      * @return the position of the middle of the stick
      */
     int getMidPos ();
+
+    //-----------------//
+    // getOrientedLine //
+    //-----------------//
+    /**
+     * Return the approximating line computed on the stick, as a line
+     * <b>oriented</b> according to the orientation of the containing lag,
+     * with x for coordinate (along runs) and y for position (across runs)
+     * <ul>
+     * <li>For a horizontal glyph, {@link #getOrientedLine} and {@link
+     * #getAbsoluteLine} are the same</li>
+     * <li>For a vertical glyph, {@link #getOrientedLine} and {@link
+     * #getAbsoluteLine} are orthogonal</li>
+     * </ul>
+     *
+     * @return The oriented line
+     * @see #getAbsoluteLine()
+     */
+    Line getOrientedLine ();
 
     //----------//
     // getStart //
