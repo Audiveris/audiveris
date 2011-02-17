@@ -43,37 +43,117 @@ public class BoardsPane
     //~ Instance fields --------------------------------------------------------
 
     /** The concrete UI component */
-    private Panel component;
+    private final Panel component;
+
+    /** Collection of boards */
+    private final Board[] boards;
 
     /** Unique (application-wide) name for this pane. */
     private String name;
 
-    /** Collection of boards */
-    private Board[] boards;
-
     //~ Constructors -----------------------------------------------------------
 
+    //------------//
+    // BoardsPane //
+    //------------//
     /**
      * Create a BoardsPane, with selected boards
      *
-     * @param sheet the related sheet
-     * @param view the related view
      * @param boards a varying number of boards
      */
-    public BoardsPane (Sheet       sheet,
-                       RubberPanel view,
-                       Board... boards)
+    public BoardsPane (Board... boards)
     {
-        // View
-        if (view == null) {
-            logger.severe("BoardsPane needs a non-null view");
-        }
-
         this.boards = boards;
 
         component = new Panel();
         component.setNoInsets();
+        component.add(defineLayout());
+    }
 
+    //~ Methods ----------------------------------------------------------------
+
+    //--------------//
+    // getComponent //
+    //--------------//
+    /**
+     * Report the UI component
+     *
+     * @return the concrete component
+     */
+    public JComponent getComponent ()
+    {
+        return component;
+    }
+
+    //---------//
+    // setName //
+    //---------//
+    /**
+     * Assign the unique name for this boards pane
+     *
+     * @param name the assigned name
+     */
+    public void setName (String name)
+    {
+        this.name = name;
+        component.setName(name);
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * Report the unique name for this boards pane
+     *
+     * @return the declared name
+     */
+    public String getName ()
+    {
+        return name;
+    }
+
+    //---------//
+    // connect //
+    //---------//
+    /**
+     * Invoked when the boardsPane has been selected
+     */
+    public void connect ()
+    {
+        ///logger.info("+BoardPane " + name + " connect");
+        for (Board board : boards) {
+            board.connect();
+        }
+    }
+
+    //------------//
+    // disconnect //
+    //------------//
+    /**
+     * Invoked when the boardsPane has been made deselected
+     */
+    public void disconnect ()
+    {
+        ///logger.info("-BoardPane " + name + " disconnect");
+        for (Board board : boards) {
+            board.disconnect();
+        }
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return "{BoardsPane " + name + "}";
+    }
+
+    //--------------//
+    // defineLayout //
+    //--------------//
+    private JPanel defineLayout ()
+    {
         // Prepare layout elements
         final String  panelInterline = Panel.getPanelInterline();
         StringBuilder sbr = new StringBuilder();
@@ -106,84 +186,6 @@ public class BoardsPane
             r += 2;
         }
 
-        component.add(builder.getPanel());
-    }
-
-    //~ Methods ----------------------------------------------------------------
-
-    //--------------//
-    // getComponent //
-    //--------------//
-    /**
-     * Report the UI component
-     *
-     * @return the concrete component
-     */
-    public JComponent getComponent ()
-    {
-        return component;
-    }
-
-    //---------//
-    // setName //
-    //---------//
-    /**
-     * Assign the unique name for this boards pane
-     *
-     * @param name the assigned name
-     */
-    public void setName (String name)
-    {
-        this.name = name;
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * Report the unique name for this boards pane
-     *
-     * @return the declared name
-     */
-    public String getName ()
-    {
-        return name;
-    }
-
-    //--------//
-    // hidden //
-    //--------//
-    /**
-     * Invoked when the boardsPane has been made deselected
-     */
-    public void hidden ()
-    {
-        ///logger.info("-BoardPane " + name + " Hidden");
-        for (Board board : boards) {
-            board.disconnect();
-        }
-    }
-
-    //-------//
-    // shown //
-    //-------//
-    /**
-     * Invoked when the boardsPane has been selected
-     */
-    public void shown ()
-    {
-        ///logger.info("+BoardPane " + name + " Shown");
-        for (Board board : boards) {
-            board.connect();
-        }
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        return "{BoardsPane " + name + "}";
+        return builder.getPanel();
     }
 }

@@ -286,7 +286,7 @@ class GlyphBrowser
             GlyphSection.class,
             new VerticalOrientation());
 
-        locationService = new SelectionService();
+        locationService = new SelectionService("GlyphBrowser");
         controller = new BasicController(tLag, locationService);
 
         // Reset left panel

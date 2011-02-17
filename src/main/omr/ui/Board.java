@@ -197,7 +197,7 @@ public abstract class Board
      */
     public void expand ()
     {
-        if (groom.expanded) {
+        if (!groom.expanded) {
             groom.actionPerformed(null);
         }
     }

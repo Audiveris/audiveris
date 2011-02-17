@@ -407,8 +407,6 @@ public class SkewBuilder
         final String  unit = sheet.getId() + ":SkewBuilder";
         ScrollLagView slv = new ScrollLagView(view);
         BoardsPane    boards = new BoardsPane(
-            sheet,
-            view,
             new PixelBoard(unit, sheet),
             new RunBoard(unit, sLag),
             new SectionBoard(unit, sLag.getLastVertexId(), sLag));

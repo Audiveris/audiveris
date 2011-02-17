@@ -126,7 +126,7 @@ public class Sheet
      * Non-lag related selections for this sheet
      * (SheetLocation, ScoreLocation and PixelLevel)
      */
-    private SelectionService selectionService = new SelectionService();
+    private final SelectionService selectionService;
 
     // Companion processors
 
@@ -180,6 +180,8 @@ public class Sheet
     {
         this.page = page;
         this.score = page.getScore();
+
+        selectionService = new SelectionService("sheet " + page.getId());
 
         // Related bench at sheet level
         bench = new SheetBench(this);
@@ -1515,7 +1517,7 @@ public class Sheet
      *
      * @param picture the related picture
      */
-    private final void setPicture (Picture picture)
+    private void setPicture (Picture picture)
     {
         this.picture = picture;
 
@@ -1531,8 +1533,6 @@ public class Sheet
                 Step.PICTURE_TAB,
                 pictureView,
                 new BoardsPane(
-                    Sheet.this,
-                    pictureView.getView(),
                     new PixelBoard(page.getIndex() + ":Picture", Sheet.this)));
         }
     }
@@ -1553,7 +1553,6 @@ public class Sheet
         hLag = null;
         vLag = null;
         systems.clear();
-        selectionService = new SelectionService();
         skewBuilder = null;
         stavesBuilder = null;
         horizontalsBuilder = null;

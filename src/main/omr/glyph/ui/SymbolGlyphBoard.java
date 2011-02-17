@@ -406,15 +406,18 @@ class SymbolGlyphBoard
         if (textField != null) {
             builder.add(textField.getLabel(), cst.xyw(1, r, 1));
             builder.add(textField.getField(), cst.xyw(3, r, 9));
+            textField.setVisible(false);
         }
 
         // or time signature parameters
         if (timeNum != null) {
             builder.add(timeNum.getLabel(), cst.xy(5, r));
             builder.add(timeNum.getField(), cst.xy(7, r));
+            timeNum.setVisible(false);
 
             builder.add(timeDen.getLabel(), cst.xy(9, r));
             builder.add(timeDen.getField(), cst.xy(11, r));
+            timeDen.setVisible(false);
         }
 
         r += 2; // --------------------------------
@@ -423,9 +426,11 @@ class SymbolGlyphBoard
         if (roleCombo != null) {
             builder.add(roleCombo.getLabel(), cst.xyw(1, r, 1));
             builder.add(roleCombo.getField(), cst.xyw(3, r, 3));
+            roleCombo.setVisible(false);
 
             builder.add(typeCombo.getLabel(), cst.xyw(7, r, 1));
             builder.add(typeCombo.getField(), cst.xyw(9, r, 3));
+            typeCombo.setVisible(false);
         }
     }
 

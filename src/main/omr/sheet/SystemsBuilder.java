@@ -390,8 +390,6 @@ public class SystemsBuilder
 
         final String  unit = sheet.getId() + ":BarsBuilder";
         BoardsPane    boardsPane = new BoardsPane(
-            sheet,
-            lagView,
             new PixelBoard(unit, sheet),
             new RunBoard(unit, lag),
             new SectionBoard(unit, lag.getLastVertexId(), lag),

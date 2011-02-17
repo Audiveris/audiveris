@@ -150,8 +150,6 @@ public class SymbolsEditor
         final String  unit = sheet.getId() + ":SymbolsEditor";
 
         BoardsPane    boardsPane = new BoardsPane(
-            sheet,
-            view,
             new PixelBoard(unit, sheet),
             new RunBoard(unit, lag),
             new SectionBoard(

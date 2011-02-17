@@ -14,7 +14,6 @@ package omr.selection;
 import omr.log.Logger;
 
 import org.bushe.swing.event.EventService;
-import org.bushe.swing.event.EventSubscriber;
 import org.bushe.swing.event.ThreadSafeEventService;
 
 import java.util.ArrayList;
@@ -55,6 +54,11 @@ public class SelectionService
     private static final Logger logger = Logger.getLogger(
         SelectionService.class);
 
+    //~ Instance fields --------------------------------------------------------
+
+    /** (Debug) name of this service */
+    private final String name;
+
     //~ Constructors -----------------------------------------------------------
 
     //------------------//
@@ -62,9 +66,12 @@ public class SelectionService
     //------------------//
     /**
      * Creates a new SelectionService object.
+     * @param name a name for this service (meant for debug)
      */
-    public SelectionService ()
+    public SelectionService (String name)
     {
+        this.name = name;
+
         // This cache is needed to be able to retrieve the last instance of
         // any event class
         setDefaultCacheSizePerClassOrTopic(1);
@@ -129,5 +136,20 @@ public class SelectionService
     {
         return getSubscribers(classe)
                    .size();
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder("{");
+        sb.append(getClass().getSimpleName());
+        sb.append(" ")
+          .append(name);
+        sb.append("}");
+
+        return sb.toString();
     }
 }

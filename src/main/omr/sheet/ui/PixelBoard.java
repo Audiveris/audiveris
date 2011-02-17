@@ -109,7 +109,7 @@ public class PixelBoard
     {
         super(
             unitName + "-PixelBoard",
-            "Pixel",
+            "Pixel", // + "-" + sheet.getPage().getIndex(), // If desired
             sheet.getSelectionService(),
             eventClasses,
             true);

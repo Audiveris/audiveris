@@ -80,7 +80,8 @@ public class SheetsController
      * The global event service dedicated to publication of the currently
      * selected sheet.
      */
-    private final SelectionService sheetSetService;
+    private final SelectionService sheetSetService = new SelectionService(
+        getClass().getSimpleName());
 
     //~ Constructors -----------------------------------------------------------
 
@@ -97,9 +98,6 @@ public class SheetsController
 
         // Listener on sheet tab operations
         tabbedPane.addChangeListener(this);
-
-        // We need a cache of at least one sheet for the sheet set service
-        sheetSetService = new SelectionService();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -191,33 +189,29 @@ public class SheetsController
             logger.fine("createAssembly " + sheet.getId());
         }
 
-        if (sheet != null) {
-            // Create the assembly on this sheet
-            SheetAssembly assembly = new SheetAssembly(sheet);
+        // Create the assembly on this sheet
+        SheetAssembly assembly = new SheetAssembly(sheet);
 
-            // Initial zoom ratio
-            assembly.setZoomRatio(constants.initialZoomRatio.getValue());
+        // Initial zoom ratio
+        assembly.setZoomRatio(constants.initialZoomRatio.getValue());
 
-            // Make sure the assembly is part of the tabbed pane
-            int sheetIndex = tabbedPane.indexOfComponent(
-                assembly.getComponent());
+        // Make sure the assembly is part of the tabbed pane
+        int sheetIndex = tabbedPane.indexOfComponent(assembly.getComponent());
 
-            if (sheetIndex == -1) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("Adding assembly for sheet " + sheet.getId());
-                }
-
-                // Insert in tabbed pane
-                assemblies.add(assembly);
-
-                tabbedPane.addTab(
-                    defineTitleFor(sheet),
-                    null,
-                    assembly.getComponent(),
-                    sheet.getScore().getImagePath());
-                sheetIndex = tabbedPane.indexOfComponent(
-                    assembly.getComponent());
+        if (sheetIndex == -1) {
+            if (logger.isFineEnabled()) {
+                logger.fine("Adding assembly for sheet " + sheet.getId());
             }
+
+            // Insert in tabbed pane
+            assemblies.add(assembly);
+
+            tabbedPane.addTab(
+                defineTitleFor(sheet),
+                null,
+                assembly.getComponent(),
+                sheet.getScore().getImagePath());
+            sheetIndex = tabbedPane.indexOfComponent(assembly.getComponent());
         }
     }
 
@@ -362,9 +356,7 @@ public class SheetsController
     @Implement(ChangeListener.class)
     public synchronized void stateChanged (ChangeEvent e)
     {
-        final Object source = e.getSource();
-
-        if (source == tabbedPane) {
+        if (e.getSource() == tabbedPane) {
             final int sheetIndex = tabbedPane.getSelectedIndex();
 
             // User has selected a new sheet tab?

@@ -78,7 +78,7 @@ public class Lag<L extends Lag<L, S>, S extends Section>
      * Hosted event service for UI events related to this lag
      * (Run, Section, SectionSet and more)
      */
-    protected SelectionService lagSelectionService;
+    protected final SelectionService lagSelectionService;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -97,6 +97,7 @@ public class Lag<L extends Lag<L, S>, S extends Section>
     {
         super(name, sectionClass);
         this.orientation = orientation;
+        lagSelectionService = new SelectionService(name);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -228,15 +229,11 @@ public class Lag<L extends Lag<L, S>, S extends Section>
     // getSelectionService //
     //---------------------//
     /**
-     * Report the lag selection service, lazily created
+     * Report the lag selection service
      * @return the lag selection service
      */
     public SelectionService getSelectionService ()
     {
-        if (lagSelectionService == null) {
-            lagSelectionService = new SelectionService();
-        }
-
         return lagSelectionService;
     }
 

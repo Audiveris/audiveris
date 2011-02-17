@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.selection;
 
+import omr.log.Logger;
+
 import omr.score.common.PixelRectangle;
 
 import java.awt.Rectangle;
@@ -32,6 +34,12 @@ import java.awt.Rectangle;
 public class SheetLocationEvent
     extends LocationEvent
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(
+        SheetLocationEvent.class);
+
     //~ Instance fields --------------------------------------------------------
 
     /**

@@ -178,7 +178,7 @@ public class Stepping
                             // Update sheet view for this step
                             step.displayUI(sheet);
                             sheet.getAssembly()
-                                 .selectTab(step);
+                                 .selectViewTab(step);
 
                             // Call attention to this sheet
                             SheetsController.getInstance()

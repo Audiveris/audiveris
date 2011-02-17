@@ -275,8 +275,6 @@ public class StavesFuzzyBuilder
 
         final String  unit = sheet.getId() + ":StavesFuzzyBuilder";
         BoardsPane    boardsPane = new BoardsPane(
-            sheet,
-            lagView,
             new PixelBoard(unit, sheet),
             new RunBoard(unit, lag),
             new SectionBoard(unit, lag.getLastVertexId(), lag),

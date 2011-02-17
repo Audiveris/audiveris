@@ -132,8 +132,6 @@ public class VerticalsController
             Step.VERTICALS_TAB,
             new ScrollLagView(view),
             new BoardsPane(
-                sheet,
-                view,
                 new PixelBoard(unit, sheet),
                 new RunBoard(unit, lag),
                 new SectionBoard(unit, lag.getLastVertexId(), lag),
