@@ -179,6 +179,15 @@ public class Stepping
                             step.displayUI(sheet);
                             sheet.getAssembly()
                                  .selectViewTab(step);
+
+                            // Call attention to this sheet (only if displayed), 
+                            // so that score-dependent actions can get enabled.
+                            SheetsController ctrl = SheetsController.getInstance();
+                            Sheet            currentSheet = ctrl.getSelectedSheet();
+
+                            if (currentSheet == sheet) {
+                                ctrl.callAboutSheet(sheet);
+                            }
                         }
                     });
         }
