@@ -70,6 +70,27 @@ public class MergeStep
              .displayUI(sheet);
     }
 
+    //--------//
+    // doStep //
+    //--------//
+    /**
+     * Notify the completion to ALL sheets of the merge & not just the first one
+     */
+    @Override
+    public void doStep (Collection<SystemInfo> systems,
+                        Sheet                  sheet)
+        throws StepException
+    {
+        super.doStep(systems, sheet);
+
+        // Set completion for all sheets of the score
+        for (TreeNode pn : sheet.getScore()
+                                .getPages()) {
+            Page page = (Page) pn;
+            done(page.getSheet());
+        }
+    }
+
     //------//
     // doit //
     //------//

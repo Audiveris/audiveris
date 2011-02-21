@@ -179,10 +179,6 @@ public class Stepping
                             step.displayUI(sheet);
                             sheet.getAssembly()
                                  .selectViewTab(step);
-
-                            // Call attention to this sheet
-                            SheetsController.getInstance()
-                                            .callAboutSheet(sheet);
                         }
                     });
         }

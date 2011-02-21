@@ -389,10 +389,6 @@ public class SheetAssembly
     @Implement(ChangeListener.class)
     public void stateChanged (ChangeEvent e)
     {
-        //        if (!component.isVisible()) {
-        //            logger.warning("BINGO: stateChanged but not visible");
-        //            return;
-        //        }
         ViewTab currentTab = getCurrentViewTab();
 
         if (currentTab != previousTab) {
