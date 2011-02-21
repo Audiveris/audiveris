@@ -488,33 +488,27 @@ public class SymbolsEditor
             Set<Glyph>    glyphs = glyphSetEvent.getData();
             Glyph         compound = null;
 
-            if (glyphs != null) {
-                if (glyphs.size() > 1) {
-                    try {
-                        SystemInfo system = sheet.getSystemOf(glyphs);
+            if ((glyphs != null) && (glyphs.size() > 1)) {
+                try {
+                    SystemInfo system = sheet.getSystemOf(glyphs);
 
-                        if (system != null) {
-                            compound = system.buildTransientCompound(glyphs);
-                        }
-                    } catch (IllegalArgumentException ex) {
-                        // All glyphs do not belong to the same system
-                        // No compound is allowed and displayed
-                        logger.warning(
-                            "Glyphs from different systems " +
-                            Glyphs.toString(glyphs));
+                    if (system != null) {
+                        compound = system.buildTransientCompound(glyphs);
+                        publish(
+                            new GlyphEvent(
+                                this,
+                                SelectionHint.GLYPH_TRANSIENT,
+                                movement,
+                                compound));
                     }
-                } else if (glyphs.size() == 1) {
-                    compound = glyphs.iterator()
-                                     .next();
+                } catch (IllegalArgumentException ex) {
+                    // All glyphs do not belong to the same system
+                    // No compound is allowed and displayed
+                    logger.warning(
+                        "Glyphs from different systems " +
+                        Glyphs.toString(glyphs));
                 }
             }
-
-            publish(
-                new GlyphEvent(
-                    this,
-                    SelectionHint.GLYPH_TRANSIENT,
-                    movement,
-                    compound));
         }
 
         //-------------//

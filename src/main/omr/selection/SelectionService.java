@@ -137,6 +137,11 @@ public class SelectionService
             logger.fine(this + " published: " + obj);
         }
 
+        //
+        //        if (obj instanceof GlyphSetEvent) {
+        //            new Throwable("GlyphSetEvent").printStackTrace();
+        //        }
+        //
         super.publish(obj);
     }
 

@@ -604,14 +604,17 @@ public class GlyphLagView
                 // Look for enclosed glyphs
                 Set<Glyph> glyphsFound = lookupGlyphs(rect);
 
-                // Publish Glyph
+                // Publish Glyph (and the related 1-glyph GlyphSet)
                 Glyph glyph = glyphsFound.isEmpty() ? null
                               : glyphsFound.iterator()
                                            .next();
                 publish(new GlyphEvent(this, hint, movement, glyph));
 
-                // Publish GlyphSet
-                publish(new GlyphSetEvent(this, hint, movement, glyphsFound));
+                // Publish GlyphSet (if more than just one glyph)
+                if (glyphsFound.size() > 1) {
+                    publish(
+                        new GlyphSetEvent(this, hint, movement, glyphsFound));
+                }
             }
         } else {
             // This is just a point
