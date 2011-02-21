@@ -268,25 +268,26 @@ public class MidiAgent
     public void play (MeasureRange measureRange)
     {
         if (ScoreActions.checkParameters(score)) {
-            logger.info(
-                "Playing " + score.getRadix() +
-                ((measureRange != null) ? (" " + measureRange) : "") +
-                " tempo:" + score.getTempo() + " ...");
-
             if (measureRange == null) {
                 measureRange = score.getMeasureRange();
             }
 
-            if (!controller.isPlaying() ||
-                (document == null) ||
-                (!this.measureRange.equals(measureRange))) {
+            // Do we have a different range of measures?
+            boolean rangesDiffer = (this.measureRange != measureRange) &&
+                                   ((this.measureRange == null) ||
+                                   !(this.measureRange.equals(measureRange)));
+
+            if (!controller.isPlaying() || (document == null) || rangesDiffer) {
                 this.measureRange = measureRange;
+                logger.info(
+                    "Playing " + score.getRadix() +
+                    ((measureRange != null) ? (" " + measureRange) : "") +
+                    " tempo:" + score.getTempo() + " ...");
 
                 // Make sure the document (and the Midi sequence) is available
                 retrieveMusic(measureRange);
+                controller.play();
             }
-
-            controller.play();
         }
     }
 
@@ -371,9 +372,9 @@ public class MidiAgent
         /*
          *
          * So here are the functions you need for Audiveris:
-                                         1) call com.xenoage.zong.musicxml.MusicXMLDocument.read(org.w3c.dom.Document doc)
+                                                   1) call com.xenoage.zong.musicxml.MusicXMLDocument.read(org.w3c.dom.Document doc)
          * to get an instance of a MusicXMLDocument out of your DOM document
-                                         2) handle this document to
+                                                   2) handle this document to
          * com.xenoage.zong.player.gui.Controller.loadScore(MxlScorePartwise doc, boolean ignoreErrors)
          * (set ignoreErrors to true, of course)
          */
