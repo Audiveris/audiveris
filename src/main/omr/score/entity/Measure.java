@@ -214,19 +214,22 @@ public class Measure
     // getChordsAbove //
     //----------------//
     /**
-     * Report the collection of chords whose head is located above the provided
-     * point
+     * Report the collection of chords whose head is located in the staff above
+     * the provided point
      * @param point the provided point
      * @return the (perhaps empty) collection of chords
      */
     public Collection<Chord> getChordsAbove (PixelPoint point)
     {
+        Staff             desiredStaff = getSystem()
+                                             .getStaffAbove(point);
         Collection<Chord> found = new ArrayList<Chord>();
 
         for (TreeNode node : getChords()) {
             Chord chord = (Chord) node;
 
-            if (chord.getHeadLocation().y < point.y) {
+            if ((chord.getStaff() == desiredStaff) &&
+                (chord.getHeadLocation().y < point.y)) {
                 found.add(chord);
             }
         }
@@ -238,19 +241,22 @@ public class Measure
     // getChordsBelow //
     //----------------//
     /**
-     * Report the collection of chords whose head is located below the provided
-     * point
+     * Report the collection of chords whose head is located in the staff below
+     * the provided point
      * @param point the provided point
      * @return the (perhaps empty) collection of chords
      */
     public Collection<Chord> getChordsBelow (PixelPoint point)
     {
+        Staff             desiredStaff = getSystem()
+                                             .getStaffBelow(point);
         Collection<Chord> found = new ArrayList<Chord>();
 
         for (TreeNode node : getChords()) {
             Chord chord = (Chord) node;
 
-            if (chord.getHeadLocation().y > point.y) {
+            if ((chord.getStaff() == desiredStaff) &&
+                (chord.getHeadLocation().y > point.y)) {
                 found.add(chord);
             }
         }

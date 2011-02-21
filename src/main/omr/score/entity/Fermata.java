@@ -45,10 +45,10 @@ public class Fermata
      * @param chord the chord related to the mark
      * @param glyph the underlying glyph
      */
-    public Fermata (Measure     measure,
+    public Fermata (Measure    measure,
                     PixelPoint point,
-                    Chord       chord,
-                    Glyph       glyph)
+                    Chord      chord,
+                    Glyph      glyph)
     {
         super(measure, point, chord, glyph);
     }
@@ -74,8 +74,8 @@ public class Fermata
      * @param measure measure where the mark is located
      * @param point location for the mark
      */
-    public static void populate (Glyph       glyph,
-                                 Measure     measure,
+    public static void populate (Glyph      glyph,
+                                 Measure    measure,
                                  PixelPoint point)
     {
         // A Fermata relates to the note on the same time slot
@@ -88,14 +88,10 @@ public class Fermata
 
         if (glyph.getShape() == Shape.FERMATA) {
             // Look for a chord below
-            chord = measure.getClosestChord(
-                measure.getChordsBelow(point),
-                point);
+            chord = measure.getClosestChordBelow(point);
         } else {
             // Look for a chord above
-            chord = measure.getClosestChord(
-                measure.getChordsAbove(point),
-                point);
+            chord = measure.getClosestChordAbove(point);
         }
 
         if (chord != null) {

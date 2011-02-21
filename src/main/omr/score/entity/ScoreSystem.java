@@ -342,6 +342,32 @@ public class ScoreSystem
         return best;
     }
 
+    //---------------//
+    // getStaffBelow //
+    //---------------//
+    /**
+     * Determine the staff which is just below the given system point
+     *
+     * @param sysPt the given system point
+     * @return the staff below
+     */
+    public Staff getStaffBelow (PixelPoint sysPt)
+    {
+        for (TreeNode node : getParts()) {
+            SystemPart part = (SystemPart) node;
+
+            for (TreeNode n : part.getStaves()) {
+                Staff staff = (Staff) n;
+
+                if (staff.getCenter().y > sysPt.y) {
+                    return staff;
+                }
+            }
+        }
+
+        return null;
+    }
+
     //------------------//
     // getStaffPosition //
     //------------------//
