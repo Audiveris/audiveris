@@ -21,6 +21,7 @@ import omr.lag.*;
 
 import omr.log.Logger;
 
+import omr.selection.GlyphEvent;
 import omr.selection.MouseMovement;
 import omr.selection.RunEvent;
 import omr.selection.SectionEvent;
@@ -674,7 +675,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
      */
     private void handleEvent (SheetLocationEvent sheetLocationEvent)
     {
-        ///logger.info("LagView. sheetLocation:" + sheetLocationEvent);
+        logger.info("LagView. sheetLocation:" + sheetLocationEvent);
 
         // Lookup for Run/Section pointed by this pixel location
         // Search and forward run & section info
@@ -687,13 +688,13 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         SelectionHint hint = sheetLocationEvent.hint;
         MouseMovement movement = sheetLocationEvent.movement;
 
-        // Optimization : do the lookup only if observers other
-        // than this controller are present
-        if ((subscribersCount(RunEvent.class) == 0) &&
-            (subscribersCount(SectionEvent.class) <= 1)) {
-            return;
-        }
-
+        //        // Optimization : do the lookup only if observers other
+        //        // than this controller are present
+        //        if ((subscribersCount(RunEvent.class) == 0) &&
+        //            (subscribersCount(SectionEvent.class) <= 1) &&
+        //            (subscribersCount(GlyphEvent.class) == 0)) {
+        //            return;
+        //        }
         if ((hint != SelectionHint.LOCATION_ADD) &&
             (hint != SelectionHint.LOCATION_INIT)) {
             return;
@@ -759,7 +760,6 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
             // Publish Run information
             Point apt = lag.switchRef(pt, null);
             Run   run = (section != null) ? section.getRunAt(apt.y) : null;
-
             publish(new RunEvent(this, hint, movement, run));
 
             // Publish Section information
@@ -773,7 +773,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     //------------------//
     // renderCollection //
     //------------------//
-    private void renderCollection (Graphics2D      g,
+    private void renderCollection (Graphics2D    g,
                                    Collection<S> collection,
                                    int           index,
                                    boolean       drawBorders)

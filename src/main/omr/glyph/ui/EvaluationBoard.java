@@ -219,7 +219,7 @@ class EvaluationBoard
                 evaluate(glyph);
             }
         } catch (Exception ex) {
-            logger.warning(getClass().getName() + " onEvent error", ex);
+            logger.warning(getClass().getName() + " output error", ex);
         }
     }
 

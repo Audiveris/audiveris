@@ -238,7 +238,6 @@ class SymbolGlyphBoard
     @Override
     public void onEvent (UserEvent event)
     {
-        ///logger.info("SymbolGlyphBoard event:" + event);
         try {
             // Ignore RELEASING
             if (event.movement == MouseMovement.RELEASING) {

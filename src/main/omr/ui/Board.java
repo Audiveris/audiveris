@@ -166,9 +166,21 @@ public abstract class Board
      */
     public void connect ()
     {
-        if (eventList != null) {
+        if ((eventList != null) && groom.expanded) {
+            ///logger.warning("connect " + this + " on " + selectionService);
+
             for (Class eventClass : eventList) {
                 selectionService.subscribeStrongly(eventClass, this);
+
+                // Refresh with latest data for this event class
+                UserEvent event = (UserEvent) selectionService.getLastEvent(
+                    eventClass);
+                ///logger.warning("reading (" + eventClass.getSimpleName() + ") " + event);
+
+                if (event != null) {
+                    event.movement = null;
+                    output(event);
+                }
             }
         }
     }
@@ -182,7 +194,9 @@ public abstract class Board
      */
     public void disconnect ()
     {
-        if (eventList != null) {
+        if ((eventList != null) && groom.expanded) {
+            ///logger.warning("disconnect " + this + " from " + selectionService);
+
             for (Class eventClass : eventList) {
                 selectionService.unsubscribe(eventClass, this);
             }
@@ -200,6 +214,18 @@ public abstract class Board
         if (!groom.expanded) {
             groom.actionPerformed(null);
         }
+    }
+
+    //--------//
+    // output //
+    //--------//
+    /**
+     * Used to simply fill the board output fields with the current event
+     * @param event the event whose information is to be displayed
+     */
+    public void output (UserEvent event)
+    {
+        onEvent(event); // By default
     }
 
     //----------//
@@ -261,10 +287,10 @@ public abstract class Board
 
         public Groom (boolean expanded)
         {
-            this.expanded = !expanded; // Just for first call to actionPerformed
+            this.expanded = expanded;
 
-            // Initialize the action properties
-            actionPerformed(null);
+            // Initialize the board
+            display();
         }
 
         //~ Methods ------------------------------------------------------------
@@ -272,23 +298,36 @@ public abstract class Board
         public final void actionPerformed (ActionEvent e)
         {
             expanded = !expanded;
+            display();
+            handleConnection();
+        }
 
+        private void display ()
+        {
             if (expanded) {
                 putValue(Action.NAME, "X");
                 putValue(Action.SHORT_DESCRIPTION, "Collapse");
-
-                // Connect the input
-                ///connect();
             } else {
                 putValue(Action.NAME, "+");
                 putValue(Action.SHORT_DESCRIPTION, "Expand");
-
-                // Disconnect the input
-                ///disconnect();
             }
 
             body.setVisible(expanded);
             component.invalidate();
+        }
+
+        private void handleConnection ()
+        {
+            if (expanded) {
+                // Connect the input
+                connect();
+            } else {
+                // Disconnect the input
+                // Trick: disconnect() method is a no-op if not expanded, so...
+                expanded = true;
+                disconnect();
+                expanded = false;
+            }
         }
     }
 

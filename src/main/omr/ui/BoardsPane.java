@@ -130,7 +130,7 @@ public class BoardsPane
     // disconnect //
     //------------//
     /**
-     * Invoked when the boardsPane has been made deselected
+     * Invoked when the boardsPane has been deselected
      */
     public void disconnect ()
     {

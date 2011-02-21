@@ -75,10 +75,10 @@ public class SheetAssembly
     private final Sheet sheet;
 
     /** Service of sheetlocation */
-    private EventService locationService;
+    private final EventService locationService;
 
     /*
-     * component:                                       boardsPane1:
+     *  component:                                      boardsPane1:
      * +---+------------------------------------+      +----------+
      * | s | viewsPane:                         |      | board A  |boardsPane2:
      * | l |tab1\tab2\_________________________ |      |          |--+
@@ -389,6 +389,10 @@ public class SheetAssembly
     @Implement(ChangeListener.class)
     public void stateChanged (ChangeEvent e)
     {
+        //        if (!component.isVisible()) {
+        //            logger.warning("BINGO: stateChanged but not visible");
+        //            return;
+        //        }
         ViewTab currentTab = getCurrentViewTab();
 
         if (currentTab != previousTab) {
@@ -519,7 +523,7 @@ public class SheetAssembly
             if (logger.isFineEnabled()) {
                 logger.fine(
                     "SheetAssembly: " + sheet.getId() +
-                    " viewTabDeselected for " + title);
+                    " viewTabDeselected for " + this);
             }
 
             // Disconnection of events
@@ -527,7 +531,7 @@ public class SheetAssembly
             rubberPanel.unsubscribe();
 
             // Disconnection of related boards, if any
-            if (boardsPane != null) {
+            if ((boardsPane != null) && component.isVisible()) {
                 boardsPane.disconnect();
             }
         }
@@ -547,7 +551,7 @@ public class SheetAssembly
             tabs.remove(scrollPane);
 
             if (logger.isFineEnabled()) {
-                logger.fine("Removed tab: " + title);
+                logger.fine("Removed tab: " + this);
             }
         }
 
@@ -560,7 +564,7 @@ public class SheetAssembly
             if (logger.isFineEnabled()) {
                 logger.fine(
                     "SheetAssembly: " + sheet.getId() +
-                    " viewTabSelected for " + title);
+                    " viewTabSelected for " + this);
             }
 
             // Link rubber with proper view
@@ -572,25 +576,27 @@ public class SheetAssembly
             rubberPanel.subscribe();
 
             // Restore display of proper context
+            if (logger.isFineEnabled()) {
+                logger.fine(this + " visible:" + component.isVisible());
+            }
+
             if (component.isVisible()) {
                 displayBoards();
             }
 
-            // Force update (this is just a hack, limited to sheet location)
+            // Force update of SheetLocationEvent
             SheetLocationEvent locationEvent = (SheetLocationEvent) locationService.getLastEvent(
                 SheetLocationEvent.class);
             PixelRectangle     location = (locationEvent != null)
                                           ? locationEvent.getData() : null;
 
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "SheetAssembly selected location:" + location + " from " +
-                    locationService);
-            }
-
             if (location != null) {
                 locationService.publish(
-                    new SheetLocationEvent(this, null, null, location));
+                    new SheetLocationEvent(
+                        this,
+                        locationEvent.hint,
+                        null,
+                        location));
             }
 
             // Keep the same scroll bar positions as with previous tab
@@ -614,6 +620,21 @@ public class SheetAssembly
             }
         }
 
+        //----------//
+        // toString //
+        //----------//
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder("{");
+            sb.append(getClass().getSimpleName());
+            sb.append(" ")
+              .append(title);
+            sb.append("}");
+
+            return sb.toString();
+        }
+
         //--------------------//
         // disconnectKeyboard //
         //--------------------//
@@ -635,11 +656,7 @@ public class SheetAssembly
         private void displayBoards ()
         {
             if (boardsPane != null) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("displaying " + boardsPane);
-                }
-
-                // (Re)connect the boards to their selection inputs
+                // (Re)connect the boards to their selection inputs if needed
                 boardsPane.connect();
 
                 // Display the boards pane related to the selected view

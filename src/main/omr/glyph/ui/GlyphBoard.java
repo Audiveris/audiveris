@@ -269,7 +269,6 @@ public class GlyphBoard
     @Override
     public void onEvent (UserEvent event)
     {
-        ///logger.info("GlyphBoard event:" + event);
         try {
             // Ignore RELEASING
             if (event.movement == MouseMovement.RELEASING) {

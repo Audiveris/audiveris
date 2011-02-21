@@ -65,7 +65,7 @@ public abstract class UserEvent
     public final SelectionHint hint;
 
     /** Precise user mouse action (can be null) */
-    public final MouseMovement movement;
+    public MouseMovement movement;
 
     //~ Constructors -----------------------------------------------------------
 
