@@ -675,7 +675,9 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
      */
     private void handleEvent (SheetLocationEvent sheetLocationEvent)
     {
-        logger.info("LagView. sheetLocation:" + sheetLocationEvent);
+        if (logger.isFineEnabled()) {
+            logger.fine("LagView. sheetLocation:" + sheetLocationEvent);
+        }
 
         // Lookup for Run/Section pointed by this pixel location
         // Search and forward run & section info

@@ -123,6 +123,23 @@ public class SelectionService
         }
     }
 
+    //---------//
+    // publish //
+    //---------//
+    /**
+     * This method is overridden just to be able to trace every publication
+     * @param obj the published event
+     */
+    @Override
+    public void publish (Object obj)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine(this + " published: " + obj);
+        }
+
+        super.publish(obj);
+    }
+
     //------------------//
     // subscribersCount //
     //------------------//
