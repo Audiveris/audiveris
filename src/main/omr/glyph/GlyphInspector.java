@@ -287,8 +287,7 @@ public class GlyphInspector
             boolean ok = glyph.isActive() &&
                          (!glyph.isKnown() ||
                          (!glyph.isManualShape() &&
-                         ((shape == Shape.DOT) || (shape == Shape.SLUR) ||
-                         (shape == Shape.CLUTTER) ||
+                         ((shape == Shape.DOT) || (shape == Shape.CLUTTER) ||
                          (shape == Shape.VOID_NOTEHEAD) ||
                          (shape == Shape.VOID_NOTEHEAD_2) ||
                          (shape == Shape.VOID_NOTEHEAD_3) ||
