@@ -264,7 +264,7 @@ public class RubberPanel
     public void setZoom (final Zoom zoom)
     {
         // Clean up if needed
-        unsetZoom(zoom);
+        unsetZoom(this.zoom);
 
         this.zoom = zoom;
 
@@ -613,24 +613,26 @@ public class RubberPanel
         super.paintComponent(initialGraphics);
 
         // Adjust graphics context to desired zoom ratio
-        Graphics2D g = (Graphics2D) initialGraphics.create();
-        g.scale(zoom.getRatio(), zoom.getRatio());
+        if (zoom != null) {
+            Graphics2D g = (Graphics2D) initialGraphics.create();
+            g.scale(zoom.getRatio(), zoom.getRatio());
 
-        try {
-            // Then, drawing specific to the view (to be provided in subclass)
-            render(g);
-        } catch (ConcurrentModificationException ex) {
-            // It's hard to avoid concurrent modifs since the GUI may need to
-            // repaint a view, while some processing is taking place ...
-            logger.warning("RubberPanel paintComponent failed", ex);
-            repaint(); // To trigger another painting later ...
-        } finally {
-            // Finally the rubber, now that everything else has been drawn
-            if (rubber != null) {
-                rubber.render(initialGraphics);
+            try {
+                // Then, drawing specific to the view (to be provided in subclass)
+                render(g);
+            } catch (ConcurrentModificationException ex) {
+                // It's hard to avoid concurrent modifs since the GUI may need to
+                // repaint a view, while some processing is taking place ...
+                logger.warning("RubberPanel paintComponent failed", ex);
+                repaint(); // To trigger another painting later ...
+            } finally {
+                // Finally the rubber, now that everything else has been drawn
+                if (rubber != null) {
+                    rubber.render(initialGraphics);
+                }
+
+                g.dispose();
             }
-
-            g.dispose();
         }
     }
 
