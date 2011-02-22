@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.score.entity;
 
+import omr.constant.ConstantSet;
+
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -22,6 +24,8 @@ import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.entity.Voice.ChordInfo;
 import omr.score.visitor.ScoreVisitor;
+
+import omr.sheet.Scale;
 
 import omr.util.Implement;
 import omr.util.TreeNode;
@@ -41,6 +45,9 @@ public class Chord
     implements Comparable<Chord>
 {
     //~ Static fields/initializers ---------------------------------------------
+
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Chord.class);
@@ -1358,7 +1365,7 @@ public class Chord
      * terms of notes
      */
     @Override
-    protected void reset ()
+    protected final void reset ()
     {
         super.reset();
 
@@ -1438,7 +1445,7 @@ public class Chord
     // checkTies //
     //-----------//
     /**
-     * For this chord, check either the incoming of the outgoing ties according
+     * For this chord, check either the incoming or the outgoing ties according
      * to the TieRelation information. For true ties (slurs linking notes with
      * same pitch) we make sure there is no more than one distant chord. If not,
      * we split the chord in two, so that each (sub)chord has only consistent
@@ -1602,7 +1609,17 @@ public class Chord
         // Locations of the old and the new chord
         alien.tailLocation = this.tailLocation;
         alien.headLocation = getHeadLocation(order.alienNote);
-        this.tailLocation = alien.headLocation;
+
+        // Should we split the stem as well?
+        // Use a test on length of resulting stem fragment
+        int stemFragmentLength = Math.abs(
+            alien.headLocation.y - this.headLocation.y);
+
+        if (stemFragmentLength >= getScale()
+                                      .toPixels(
+            constants.minStemFragmentLength)) {
+            this.tailLocation = alien.headLocation;
+        }
 
         // Include the new chord in its slot
         slot.getChords()
@@ -1688,5 +1705,21 @@ public class Chord
         {
             return slur.isTie() && (getLocalNote(slur) == note);
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /**
+         * Minimum length for stem fragment in split
+         */
+        Scale.Fraction minStemFragmentLength = new Scale.Fraction(
+            2d,
+            "Minimum length for stem fragment in split");
     }
 }

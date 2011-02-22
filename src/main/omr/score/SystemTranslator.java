@@ -886,6 +886,7 @@ public class SystemTranslator
         {
             // Check that a chord is not tied to different slots
             measure.checkTiedChords();
+
             // Determine the voices within this measure
             measure.buildVoices();
 

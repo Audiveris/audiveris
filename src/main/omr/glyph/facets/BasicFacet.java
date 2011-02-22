@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.glyph.facets;
 
+import omr.util.Navigable;
 
 /**
  * Class {@code BasicFacet} is the root for implementation on any glyph facet
@@ -23,6 +24,7 @@ class BasicFacet
     //~ Instance fields --------------------------------------------------------
 
     /** Our glyph */
+    @Navigable(false)
     protected final Glyph glyph;
 
     //~ Constructors -----------------------------------------------------------
