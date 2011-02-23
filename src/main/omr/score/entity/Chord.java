@@ -13,6 +13,8 @@ package omr.score.entity;
 
 import omr.constant.ConstantSet;
 
+import omr.glyph.Shape;
+import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -1085,12 +1087,6 @@ public class Chord
         }
     }
 
-    @Override
-    public PixelPoint getCenter ()
-    {
-        return super.getCenter();
-    }
-
     //----------------//
     // getRawDuration //
     //---------------//
@@ -1558,6 +1554,36 @@ public class Chord
         }
     }
 
+    //---------------//
+    // retrieveFlags //
+    //---------------//
+    /**
+     * Report the set of flags for this chord.
+     * Nota: This is not an efficient implementation. A better one would require
+     * to record a link from chord to flag glyphs.
+     * @return the set of flags, perhaps empty but not null
+     */
+    private Set<Glyph> retrieveFlags ()
+    {
+        Set<Glyph> foundFlags = new HashSet<Glyph>();
+
+        for (Glyph glyph : getSystem()
+                               .getInfo()
+                               .getGlyphs()) {
+            Shape shape = glyph.getShape();
+
+            if ((ShapeRange.Flags.contains(shape) ||
+                ShapeRange.HeadAndFlags.contains(shape))) {
+                if (glyph.getTranslations()
+                         .contains(this)) {
+                    foundFlags.add(glyph);
+                }
+            }
+        }
+
+        return foundFlags;
+    }
+
     //-------//
     // split //
     //-------//
@@ -1577,8 +1603,11 @@ public class Chord
         // Same measure & slot
         Chord alien = new Chord(getMeasure(), slot);
 
-        // Same stem?
-        alien.stem = stem;
+        // Same stem
+        if (stem != null) {
+            alien.stem = stem;
+            stem.addTranslation(alien);
+        }
 
         // Tuplet factor, if any, is copied
         alien.tupletFactor = tupletFactor;
@@ -1586,8 +1615,14 @@ public class Chord
         // Augmentation dots as well
         alien.dotsNumber = dotsNumber;
 
-        // Beams are not copied
-        alien.flagsNumber = flagsNumber; // Not sure TODO
+        // Beams are not copied, but flags are
+        if (flagsNumber > 0) {
+            alien.flagsNumber = flagsNumber;
+
+            for (Glyph flag : retrieveFlags()) {
+                flag.addTranslation(alien);
+            }
+        }
 
         // Notes, sorted from head
         Collections.sort(getNotes(), noteHeadComparator);

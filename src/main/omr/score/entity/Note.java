@@ -900,7 +900,11 @@ public class Note
         chord.addChild(this);
 
         for (Glyph glyph : getGlyphs()) {
-            glyph.setTranslation(this);
+            if (packCard > 1) {
+                glyph.addTranslation(this);
+            } else {
+                glyph.setTranslation(this);
+            }
         }
     }
 
