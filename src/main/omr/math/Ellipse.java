@@ -15,7 +15,6 @@ import Jama.*;
 
 import java.awt.geom.Point2D;
 import static java.lang.Math.*;
-import java.text.NumberFormat;
 
 /**
  * Class <code>Ellipse</code> implements the direct algorithm of Fitzgibbon et

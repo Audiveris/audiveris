@@ -804,7 +804,7 @@ public class Rubber
             "Should we display just a cross for rubber (or whole lines)");
         Constant.Integer crossLegLength = new Constant.Integer(
             "pixels",
-            40,
+            100,
             "Length for each leg of the rubber cross");
     }
 }

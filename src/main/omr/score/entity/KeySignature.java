@@ -439,6 +439,36 @@ public class KeySignature
         return shape;
     }
 
+    //---------------------//
+    // getStandardPosition //
+    //---------------------//
+    /**
+     * Compute the standard mean pitch position of the provided key
+     *
+     * @param k the provided key value
+     * @return the corresponding standard mean pitch position
+     */
+    public static double getStandardPosition (int k)
+    {
+        if (k == 0) {
+            return 0;
+        }
+
+        double sum = 0;
+
+        if (k > 0) {
+            for (int i = 0; i < k; i++) {
+                sum += sharpItemPositions[i];
+            }
+        } else {
+            for (int i = 0; i > k; i--) {
+                sum -= flatItemPositions[-i];
+            }
+        }
+
+        return sum / k;
+    }
+
     //--------//
     // accept //
     //--------//
@@ -689,6 +719,66 @@ public class KeySignature
         }
     }
 
+    //--------------------//
+    // checkPitchPosition //
+    //--------------------//
+    /**
+     * Check that the glyph is at the correct pitch position, knowing its index
+     * in the signature, its shape (sharp or flat) and the current clef kind at
+     * this location
+     *
+     * @param glyph the glyph to check
+     * @param center the (flat-corrected) glyph center
+     * @param the containing staff
+     * @param clef clef at this location, if known
+     * @return true if OK, false otherwise
+     */
+    private static boolean checkPitchPosition (Glyph      glyph,
+                                               PixelPoint center,
+                                               Staff      staff,
+                                               Clef       clef)
+    {
+        Shape glyphShape = glyph.getShape();
+
+        if (glyphShape == SHARP) {
+            return checkPosition(
+                glyph,
+                center,
+                staff,
+                sharpItemPositions,
+                0,
+                clef);
+        } else if (glyphShape.isSharpBased()) {
+            return checkPosition(
+                glyph,
+                center,
+                staff,
+                sharpKeyPositions,
+                keyOf(glyphShape),
+                clef);
+        }
+
+        if (glyphShape == FLAT) {
+            return checkPosition(
+                glyph,
+                center,
+                staff,
+                flatItemPositions,
+                0,
+                clef);
+        } else if (glyphShape.isFlatBased()) {
+            return checkPosition(
+                glyph,
+                center,
+                staff,
+                flatKeyPositions,
+                -keyOf(glyphShape),
+                clef);
+        }
+
+        return false;
+    }
+
     //---------------//
     // checkPosition //
     //---------------//
@@ -734,6 +824,38 @@ public class KeySignature
         }
 
         return false;
+    }
+
+    //------------//
+    // clefKindOf //
+    //------------//
+    /**
+     * Report the kind of the provided clef
+     * @param clef the provided clef
+     * @return the kind of the clef
+     */
+    private static Shape clefKindOf (Shape clef)
+    {
+        switch (clef) {
+        case G_CLEF :
+        case G_CLEF_OTTAVA_ALTA :
+        case G_CLEF_OTTAVA_BASSA :
+            return G_CLEF;
+
+        case C_CLEF :
+            return C_CLEF;
+
+        case F_CLEF :
+        case F_CLEF_OTTAVA_ALTA :
+        case F_CLEF_OTTAVA_BASSA :
+            return F_CLEF;
+
+        case PERCUSSION_CLEF :
+            return null;
+
+        default :
+            return null;
+        }
     }
 
     //-------------//
@@ -842,146 +964,6 @@ public class KeySignature
         }
 
         return centroid;
-    }
-
-    //---------------------//
-    // getStandardPosition //
-    //---------------------//
-    /**
-     * Compute the standard mean pitch position of the provided key
-     *
-     * @param k the provided key value
-     * @return the corresponding standard mean pitch position
-     */
-    private static double getStandardPosition (int k)
-    {
-        if (k == 0) {
-            return 0;
-        }
-
-        double sum = 0;
-
-        if (k > 0) {
-            for (int i = 0; i < k; i++) {
-                sum += sharpItemPositions[i];
-            }
-        } else {
-            for (int i = 0; i > k; i--) {
-                sum -= flatItemPositions[-i];
-            }
-        }
-
-        return sum / k;
-    }
-
-    //---------------------//
-    // getStandardPosition //
-    //---------------------//
-    /**
-     * Return the standard (assuming G clef) mean pitch position, based on known
-     * key value
-     *
-     * @return the standard mean pitch position
-     */
-    private double getStandardPosition ()
-    {
-        if (getKey() >= 0) {
-            return sharpKeyPositions[key];
-        } else {
-            return flatKeyPositions[key];
-        }
-    }
-
-    //--------------------//
-    // checkPitchPosition //
-    //--------------------//
-    /**
-     * Check that the glyph is at the correct pitch position, knowing its index
-     * in the signature, its shape (sharp or flat) and the current clef kind at
-     * this location
-     *
-     * @param glyph the glyph to check
-     * @param center the (flat-corrected) glyph center
-     * @param the containing staff
-     * @param clef clef at this location, if known
-     * @return true if OK, false otherwise
-     */
-    private static boolean checkPitchPosition (Glyph      glyph,
-                                               PixelPoint center,
-                                               Staff      staff,
-                                               Clef       clef)
-    {
-        Shape glyphShape = glyph.getShape();
-
-        if (glyphShape == SHARP) {
-            return checkPosition(
-                glyph,
-                center,
-                staff,
-                sharpItemPositions,
-                0,
-                clef);
-        } else if (glyphShape.isSharpBased()) {
-            return checkPosition(
-                glyph,
-                center,
-                staff,
-                sharpKeyPositions,
-                keyOf(glyphShape),
-                clef);
-        }
-
-        if (glyphShape == FLAT) {
-            return checkPosition(
-                glyph,
-                center,
-                staff,
-                flatItemPositions,
-                0,
-                clef);
-        } else if (glyphShape.isFlatBased()) {
-            return checkPosition(
-                glyph,
-                center,
-                staff,
-                flatKeyPositions,
-                -keyOf(glyphShape),
-                clef);
-        }
-
-        return false;
-    }
-
-    //------------//
-    // clefKindOf //
-    //------------//
-    /**
-     * Report the kind of the provided clef
-     * @param clef the provided clef
-     * @return the kind of the clef
-     */
-    private static Shape clefKindOf (Shape clef)
-    {
-        switch (clef) {
-        case G_CLEF :
-        case G_CLEF_OTTAVA_ALTA :
-        case G_CLEF_OTTAVA_BASSA :
-            return G_CLEF;
-
-        case C_CLEF :
-            return C_CLEF;
-
-        case F_CLEF :
-        case F_CLEF_OTTAVA_ALTA :
-        case F_CLEF_OTTAVA_BASSA :
-            return F_CLEF;
-
-        case PERCUSSION_CLEF :
-            return null;
-
-        default :
-            return null;
-        }
     }
 
     //-------------//

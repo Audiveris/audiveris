@@ -11,13 +11,11 @@
 // </editor-fold>
 package omr.ui.symbol;
 
-import omr.glyph.Shape;
-import omr.glyph.ShapeRange;
-
 import omr.log.Logger;
 
 import omr.ui.MainGui;
 import omr.ui.field.IntegerListSpinner;
+import omr.ui.field.LDoubleField;
 import omr.ui.field.LIntegerSpinner;
 import omr.ui.field.LSpinner;
 import omr.ui.field.LTextField;
@@ -29,9 +27,10 @@ import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
 
 import java.awt.*;
-import java.awt.event.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
+import java.awt.font.TextLayout;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.*;
 
 import javax.swing.*;
@@ -101,13 +100,32 @@ public class SymbolRipper
         }
     };
 
+    // Panel where the icon is drawn
+    private JPanel             drawing;
+
+    // String used to draw the symbol
+    private String             string;
+
     // Current music font
     private Font               musicFont;
 
+    // Font name
+    private LSpinner           fontName = new LSpinner(
+        "Font",
+        "Name of the font");
+
     // Font base
     private IntegerListSpinner fontBase = new IntegerListSpinner();
-    private JButton            shapeButton;
-    private JPopupMenu         menu = new JPopupMenu();
+
+    // Font size
+    private LIntegerSpinner fontSize = new LIntegerSpinner(
+        "Size",
+        "Font size in picas");
+
+    // Point code
+    private LIntegerSpinner pointCode = new LIntegerSpinner(
+        "Code",
+        "Point code");
 
     // Hexa representation
     private LTextField      hexaCode = new LTextField(
@@ -115,86 +133,38 @@ public class SymbolRipper
         "Hexa",
         "Hexa value of the point code");
 
-    // File name for output
-    private LTextField      output = new LTextField(
-        "File",
-        "Name of the output file");
-
-    // Font size
-    private LIntegerSpinner fontSize = new LIntegerSpinner(
-        "Size",
-        "Font size in picas");
-
-    // Height
-    private LIntegerSpinner height = new LIntegerSpinner(
-        "Height",
-        "Drawing Height");
-
-    // Point code
-    private LIntegerSpinner pointCode = new LIntegerSpinner(
-        "Code",
-        "Point code");
-
-    // Scale
-    private LIntegerSpinner scale = new LIntegerSpinner(
-        "Scale",
-        "Scaling ratio");
+    // X Offset
+    private LIntegerSpinner xOffset = new LIntegerSpinner(
+        "xOffset",
+        "X offset");
 
     // Width
     private LIntegerSpinner width = new LIntegerSpinner(
         "Width",
         "Drawing Width");
 
-    // X Offset
-    private LIntegerSpinner xOffset = new LIntegerSpinner(
-        "xOffset",
-        "X offset");
-
     // Y Offset
     private LIntegerSpinner yOffset = new LIntegerSpinner(
         "yOffset",
         "Y offset");
 
-    // Interline
-    private LIntegerSpinner interline = new LIntegerSpinner(
-        "Interline",
-        "Related interline value");
+    // Height
+    private LIntegerSpinner height = new LIntegerSpinner(
+        "Height",
+        "Drawing Height");
 
-    // Font name
-    private LSpinner       fontName = new LSpinner("Font", "Name of the font");
+    // x symbol
+    private final String f = "%.3f";
+    private LDoubleField xSym = new LDoubleField(false, "xSym", "x symbol", f);
 
-    // Button for reloading the shape icons
-    private ReloadAction   reloadAction = new ReloadAction();
-    private JButton        reloadButton = new JButton(reloadAction);
+    // w symbol
+    private LDoubleField wSym = new LDoubleField(false, "wSym", "w symbol", f);
 
-    // Related shape
-    private ShapeAction    shapeAction = new ShapeAction();
+    // y symbol
+    private LDoubleField ySym = new LDoubleField(false, "ySym", "y symbol", f);
 
-    // Button for storing the result
-    private StoreAction    storeAction = new StoreAction();
-
-    //---------------//
-    // shapeListener //
-    //---------------//
-    private ActionListener shapeListener = new ActionListener() {
-        // Called when a shape has been selected
-        public void actionPerformed (ActionEvent e)
-        {
-            JMenuItem source = (JMenuItem) e.getSource();
-            Shape     current = Shape.valueOf(source.getText());
-            shapeButton.setText(current.toString());
-            output.setText(current.toString());
-            storeAction.setEnabled(true);
-        }
-    };
-
-    private JButton storeButton = new JButton(storeAction);
-
-    // Panel where the icon is drawn
-    private JPanel drawing;
-
-    // String used to draw the symbol
-    private String string;
+    // y symbol
+    private LDoubleField hSym = new LDoubleField(false, "hSym", "h symbol", f);
 
     //~ Constructors -----------------------------------------------------------
 
@@ -206,8 +176,6 @@ public class SymbolRipper
         // Related frame
         frame = new JFrame();
         frame.setTitle("Symbol Ripper");
-
-        shapeButton = new JButton(shapeAction);
 
         // Actors
         drawing = new Drawing();
@@ -222,16 +190,14 @@ public class SymbolRipper
 
         // Initial values
         fontName.getSpinner()
-                .setValue("SToccata");
+                .setValue("MusicalSymbols");
         fontBase.setValue(0xf000);
-        fontSize.setValue(500);
+        fontSize.setValue(200);
         pointCode.setModel(new SpinnerNumberModel(38, 0, 255, 1));
         width.setValue(300);
         height.setValue(500);
         xOffset.setValue(30);
         yOffset.setValue(300);
-        scale.setValue(1);
-        interline.setValue(16);
         changeCode();
         defineFont();
 
@@ -240,16 +206,10 @@ public class SymbolRipper
         fontBase.addChangeListener(paramListener);
         fontSize.addChangeListener(paramListener);
         pointCode.addChangeListener(paramListener);
-        scale.addChangeListener(paramListener);
         xOffset.addChangeListener(paramListener);
         yOffset.addChangeListener(paramListener);
         width.addChangeListener(paramListener);
         height.addChangeListener(paramListener);
-
-        storeAction.setEnabled(false);
-
-        // Populate with defined symbols
-        reloadAction.actionPerformed(null);
 
         // Global layout
         defineLayout();
@@ -327,9 +287,6 @@ public class SymbolRipper
         r += 2; // --------------------------------
         builder.addSeparator("Drawing", cst.xyw(1, r, 7));
 
-        //        r += 2; // --------------------------------
-        //        builder.add(scale.getLabel(), cst.xy(5, r));
-        //        builder.add(scale.getSpinner(), cst.xy(7, r));
         r += 2; // --------------------------------
         builder.add(xOffset.getLabel(), cst.xy(1, r));
         builder.add(xOffset.getSpinner(), cst.xy(3, r));
@@ -345,22 +302,21 @@ public class SymbolRipper
         builder.add(height.getSpinner(), cst.xy(7, r));
 
         r += 2; // --------------------------------
-        builder.addSeparator("Output", cst.xyw(1, r, 7));
+        builder.addSeparator("Symbol", cst.xyw(1, r, 7));
 
         r += 2; // --------------------------------
-        builder.add(shapeButton, cst.xyw(3, r, 5));
+        builder.add(xSym.getLabel(), cst.xy(1, r));
+        builder.add(xSym.getField(), cst.xy(3, r));
+
+        builder.add(wSym.getLabel(), cst.xy(5, r));
+        builder.add(wSym.getField(), cst.xy(7, r));
 
         r += 2; // --------------------------------
-        builder.add(interline.getLabel(), cst.xyw(3, r, 3));
-        builder.add(interline.getSpinner(), cst.xy(7, r));
+        builder.add(ySym.getLabel(), cst.xy(1, r));
+        builder.add(ySym.getField(), cst.xy(3, r));
 
-        r += 2; // --------------------------------
-        builder.add(output.getLabel(), cst.xy(1, r));
-        builder.add(output.getField(), cst.xyw(3, r, 5));
-
-        r += 2; // --------------------------------
-        builder.add(reloadButton, cst.xy(3, r));
-        builder.add(storeButton, cst.xy(7, r));
+        builder.add(hSym.getLabel(), cst.xy(5, r));
+        builder.add(hSym.getField(), cst.xy(7, r));
 
         return builder.getPanel();
     }
@@ -370,11 +326,11 @@ public class SymbolRipper
     //------------//
     private BufferedImage buildImage ()
     {
-        BufferedImage image = (BufferedImage) drawing.createImage(
+        BufferedImage img = (BufferedImage) drawing.createImage(
             width.getValue(),
             height.getValue());
 
-        Graphics2D    g2 = image.createGraphics();
+        Graphics2D    g2 = img.createGraphics();
         g2.setBackground(Color.white);
         g2.setColor(Color.white);
         g2.fillRect(0, 0, width.getValue(), height.getValue());
@@ -386,7 +342,15 @@ public class SymbolRipper
         g2.setFont(musicFont);
         g2.drawString(string, xOffset.getValue(), yOffset.getValue());
 
-        return image;
+        FontRenderContext frc = g2.getFontRenderContext();
+        TextLayout        layout = new TextLayout(string, musicFont, frc);
+        Rectangle2D       rect = layout.getBounds();
+        xSym.setValue(rect.getX());
+        ySym.setValue(rect.getY());
+        wSym.setValue(rect.getWidth());
+        hSym.setValue(rect.getHeight());
+
+        return img;
     }
 
     //------------//
@@ -399,7 +363,6 @@ public class SymbolRipper
                                       .getValue();
         hexaCode.setText(Integer.toString(base + code, 16));
         string = new String(Character.toChars(base + code));
-        disableStore();
     }
 
     //------------//
@@ -411,8 +374,6 @@ public class SymbolRipper
                                        .getValue();
         int    val = fontSize.getValue();
         musicFont = new Font(name, Font.PLAIN, val);
-
-        ///musicFont = new Font(name, Font.ITALIC, val);
     }
 
     //--------------//
@@ -431,25 +392,13 @@ public class SymbolRipper
         pane.add(scrollPane, BorderLayout.CENTER);
     }
 
-    //--------------//
-    // disableStore //
-    //--------------//
-    private void disableStore ()
-    {
-        output.setText(""); // Safer
-        shapeButton.setText("Shape");
-        storeAction.setEnabled(false);
-    }
-
     //---------------//
     // resizeDrawing //
     //---------------//
     private void resizeDrawing ()
     {
         drawing.setPreferredSize(
-            new Dimension(
-                width.getValue() * scale.getValue(),
-                height.getValue() * scale.getValue()));
+            new Dimension(width.getValue(), height.getValue()));
         drawing.revalidate();
     }
 
@@ -473,8 +422,8 @@ public class SymbolRipper
             if (image != null) {
                 Graphics2D g2 = (Graphics2D) g;
 
-                //g2.drawImage(image, scaleXform, this);
                 g2.drawImage(image, 1, 1, this);
+
                 g.setColor(Color.BLUE);
                 g.drawLine(
                     0,
@@ -486,12 +435,9 @@ public class SymbolRipper
                     0,
                     xOffset.getValue(),
                     height.getValue());
+
                 g.setColor(Color.ORANGE);
-                g.drawRect(
-                    0,
-                    0,
-                    width.getValue() * scale.getValue(),
-                    height.getValue() * scale.getValue());
+                g.drawRect(0, 0, width.getValue(), height.getValue());
 
                 FontRenderContext frc = g2.getFontRenderContext();
                 GlyphVector       glyphVector = musicFont.createGlyphVector(
@@ -504,107 +450,6 @@ public class SymbolRipper
                     yOffset.getValue());
                 g.setColor(Color.RED);
                 g2.draw(rect);
-            }
-        }
-    }
-
-    //--------------//
-    // ReloadAction //
-    //--------------//
-    private class ReloadAction
-        extends AbstractAction
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public ReloadAction ()
-        {
-            super("Reload");
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        public void actionPerformed (ActionEvent e)
-        {
-            // Populate with defined symbols
-            for (Shape shape : Shape.values()) {
-                shape.setSymbol(
-                    SymbolManager.getInstance().loadSymbol(shape.toString()));
-            }
-
-            // Update the shape menu accordingly
-            menu.removeAll();
-            ShapeRange.addShapeItems(menu, shapeListener);
-        }
-    }
-
-    //-------------//
-    // ShapeAction //
-    //-------------//
-    private class ShapeAction
-        extends AbstractAction
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public ShapeAction ()
-        {
-            super("Shape");
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        public void actionPerformed (ActionEvent e)
-        {
-            JButton button = (JButton) e.getSource();
-            menu.show(button, 0, 0);
-        }
-    }
-
-    //-------------//
-    // StoreAction //
-    //-------------//
-    private class StoreAction
-        extends AbstractAction
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public StoreAction ()
-        {
-            super("Store");
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        public void actionPerformed (ActionEvent e)
-        {
-            if (!output.getText()
-                       .equals("")) {
-                // Store the new icon definition
-                ShapeSymbol symbol = new ShapeSymbol(
-                    image,
-                    interline.getValue());
-                symbol.setName(output.getText());
-                SymbolManager.getInstance()
-                             .storeSymbol(symbol);
-
-                // Try to load this new icon definition as a shape icon
-                try {
-                    // This may fail
-                    Shape shape = Shape.valueOf(output.getText());
-                    shape.setSymbol(
-                        SymbolManager.getInstance().loadSymbol(
-                            shape.toString()));
-
-                    // Update the shape menu accordingly
-                    menu.removeAll();
-                    ShapeRange.addShapeItems(menu, shapeListener);
-                } catch (Exception ex) {
-                    logger.info("Symbol just stored is not a known shape");
-                }
-
-                // Disable new storing
-                disableStore();
-            } else {
-                logger.warning("No name defined for symbol output");
             }
         }
     }

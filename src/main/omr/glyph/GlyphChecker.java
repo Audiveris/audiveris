@@ -361,36 +361,36 @@ public class GlyphChecker
                         return false;
                     }
 
-                    if (!validBeamHookSlope(glyph)) {
-                        eval.failure = new Evaluation.Failure("slope");
-
-                        return false;
-                    }
-
+                    // Hook slope is not reliable, so this test is disabled
+                    //                    if (!validBeamHookSlope(glyph)) {
+                    //                        eval.failure = new Evaluation.Failure("slope");
+                    //
+                    //                        return false;
+                    //                    }
                     return true;
                 }
 
-                /**
-                 * Check if the candidate glyph can be a beam hook with a
-                 * reasonable slope
-                 * @param glyph the candidate
-                 * @return true if glyph slope is reasonable
-                 */
-                private boolean validBeamHookSlope (Glyph glyph)
-                {
-                    try {
-                        Stick          stick = (Stick) glyph;
-                        double         slope = stick.getAbsoluteLine()
-                                                    .getSlope();
-
-                        PixelRectangle box = glyph.getContourBox();
-                        double         maxSlope = (double) box.height / (double) box.width;
-
-                        return Math.abs(slope) <= maxSlope;
-                    } catch (Exception ignored) {
-                        return false;
-                    }
-                }
+                //                /**
+                //                 * Check if the candidate glyph can be a beam hook with a
+                //                 * reasonable slope
+                //                 * @param glyph the candidate
+                //                 * @return true if glyph slope is reasonable
+                //                 */
+                //                private boolean validBeamHookSlope (Glyph glyph)
+                //                {
+                //                    try {
+                //                        Stick          stick = (Stick) glyph;
+                //                        double         slope = stick.getAbsoluteLine()
+                //                                                    .getSlope();
+                //
+                //                        PixelRectangle box = glyph.getContourBox();
+                //                        double         maxSlope = (double) box.height / (double) box.width;
+                //
+                //                        return Math.abs(slope) <= maxSlope;
+                //                    } catch (Exception ignored) {
+                //                        return false;
+                //                    }
+                //                }
             };
 
         // Shapes that require a stem on the left side

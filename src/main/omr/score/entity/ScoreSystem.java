@@ -118,28 +118,12 @@ public class ScoreSystem
      * top (and not bottom) of last staff.
      * Nota: It does not count the height of the last staff
      *
-     * @return the system dimension, in units
+     * @return the system dimension
      */
+    @Override
     public PixelDimension getDimension ()
     {
-        return new PixelDimension(getBox().width, getBox().height);
-    }
-
-    //----------------//
-    // getDummyOffset //
-    //----------------//
-    /**
-     * Report the vertical offset of the first part wrt the system, which is 0
-     * for a standard system, and a positive value when the system begins with
-     * a dummy part.
-     * @return the positive vertical offset (in unit) of the dummy part, or 0
-     * if none
-     */
-    public int getDummyOffset ()
-    {
-        return getTopLeft().y - getFirstPart()
-                                    .getFirstStaff()
-                                    .getTopLeft().y;
+        return super.getDimension();
     }
 
     //--------------//

@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.step;
 
+import omr.Main;
+
 import omr.log.Logger;
 
 import omr.score.DurationRetriever;
@@ -99,7 +101,13 @@ public class MergeStep
                          Sheet                  sheet)
         throws StepException
     {
-        Score          score = sheet.getScore();
+        Score score = sheet.getScore();
+
+        // Clear errors for this step
+        if (Main.getGui() != null) {
+            sheet.getErrorsEditor()
+                 .clearStep(this);
+        }
 
         // Merge the pages
         ScoreReduction reduction = new ScoreReduction(score);

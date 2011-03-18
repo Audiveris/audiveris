@@ -14,7 +14,7 @@ package omr.glyph;
 import omr.constant.Constant;
 
 import omr.ui.symbol.ShapeSymbol;
-import omr.ui.symbol.SymbolManager;
+import omr.ui.symbol.Symbols;
 
 import java.awt.Color;
 
@@ -217,11 +217,12 @@ public enum Shape {
     /** Same shape for whole or half Rest */
     WHOLE_OR_HALF_REST("Same shape for whole or half Rest"), 
 
+    /** Rest for a 1/4 (old) =  flipped 1/8 */
+    OLD_QUARTER_REST("(old) Rest for a 1/4"), 
     /** Rest for a 1/4 */
-    OLD_QUARTER_REST("(old) Rest for a 1/4"), QUARTER_REST("Rest for a 1/4"), 
-
+    QUARTER_REST("Rest for a 1/4"), 
     /** Rest for a 1/8 */
-    EIGHTH_REST("Rest for a 1/8"),
+    EIGHTH_REST("Rest for a 1/8"), 
     /** Rest for a 1/16 */
     SIXTEENTH_REST("Rest for a 1/16"), 
     /** Rest for a 1/32 */
@@ -867,7 +868,7 @@ public enum Shape {
         }
 
         if (symbol == null) {
-            setSymbol(SymbolManager.getInstance().loadSymbol(toString()));
+            symbol = Symbols.getSymbol(this);
 
             if (symbol == null) {
                 hasNoSymbol = true;
@@ -899,14 +900,14 @@ public enum Shape {
      */
     public ShapeSymbol getDecoratedSymbol ()
     {
+        // Avoid a new search, just use the undecorated symbol instead
         if (hasNoDecoratedSymbol) {
             return getSymbol();
         }
 
+        // Try to build / load a decorated symbol
         if (decoratedSymbol == null) {
-            setDecoratedSymbol(
-                SymbolManager.getInstance().loadSymbol(
-                    toString() + ".DECORATED"));
+            setDecoratedSymbol(Symbols.getSymbol(this, true));
 
             if (decoratedSymbol == null) {
                 hasNoDecoratedSymbol = true;
@@ -915,6 +916,7 @@ public enum Shape {
             }
         }
 
+        // Simply return the cached decorated symbol
         return decoratedSymbol;
     }
 
@@ -945,5 +947,18 @@ public enum Shape {
         } else {
             return this;
         }
+    }
+
+    //-------------//
+    // isDraggable //
+    //-------------//
+    /**
+     * Report whether this shape can be dragged (in a DnD gesture)
+     * @return true if draggable
+     */
+    public boolean isDraggable ()
+    {
+        return getPhysicalShape()
+                   .getSymbol() != null;
     }
 }

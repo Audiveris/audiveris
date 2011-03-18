@@ -435,7 +435,6 @@ class BasicAlignment
     @Override
     public void dump ()
     {
-        super.dump();
         System.out.println("   line=" + getOrientedLine());
     }
 

@@ -18,8 +18,8 @@ import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
-import omr.score.common.PixelRectangle;
 import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 import omr.score.entity.Staff;
 
 import omr.sheet.Dash;
@@ -251,9 +251,11 @@ public class GlyphsBuilder
     public void computeGlyphFeatures (Glyph glyph)
     {
         // Mass center (which makes sure moments are available)
-        PixelPoint centroid = glyph.getCentroid();
-        Staff       staff = system.getScoreSystem()
-                                  .getStaffAt(centroid);
+        glyph.getCentroid();
+
+        PixelPoint center = glyph.getAreaCenter();
+        Staff      staff = system.getScoreSystem()
+                                 .getStaffAt(center);
 
         // Connected stems
         glyph.setLeftStem(null);
@@ -281,7 +283,7 @@ public class GlyphsBuilder
                 ledgerBox(glyph.getContourBox())));
 
         // Vertical position wrt staff
-        glyph.setPitchPosition(staff.pitchPositionOf(centroid));
+        glyph.setPitchPosition(staff.pitchPositionOf(center));
     }
 
     //-------------//

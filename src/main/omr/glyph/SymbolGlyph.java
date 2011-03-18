@@ -22,8 +22,12 @@ import omr.log.Logger;
 
 import omr.stick.StickSection;
 
+import omr.ui.symbol.MusicFont;
 import omr.ui.symbol.ShapeSymbol;
 import omr.ui.symbol.SymbolPicture;
+import omr.ui.symbol.Symbols;
+
+import java.awt.image.BufferedImage;
 
 /**
  * Class <code>SymbolGlyph</code> is an articial glyph, built from a symbol.
@@ -40,6 +44,14 @@ public class SymbolGlyph
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(SymbolGlyph.class);
 
+    //~ Instance fields --------------------------------------------------------
+
+    /** The underlying symbol, with generic size */
+    private final ShapeSymbol symbol;
+
+    /** The underlying image, properly sized */
+    private final BufferedImage image;
+
     //~ Constructors -----------------------------------------------------------
 
     //-------------//
@@ -50,83 +62,63 @@ public class SymbolGlyph
      * meant to populate and train on glyph shapes for which we have no real
      * instance yet.
      *
-     * @param symbol the appearance of the glyph
      * @param shape the corresponding shape
-     * @param interline The related interline scaling value
-     */
-    public SymbolGlyph (ShapeSymbol symbol,
-                        Shape       shape,
-                        int         interline)
-    {
-        super(interline);
-
-        try {
-            /** Build a dedicated SymbolPicture */
-            SymbolPicture picture = new SymbolPicture(symbol, interline);
-
-            /** Build related vertical lag */
-            GlyphLag vLag = new GlyphLag(
-                "iLag",
-                StickSection.class,
-                new VerticalOrientation());
-            SectionsBuilder<GlyphLag, GlyphSection> lagBuilder;
-            lagBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
-                vLag,
-                new JunctionAllPolicy()); // catch all
-            lagBuilder.createSections(picture, 0); // minRunLength
-
-            // Retrieve the whole glyph made of all sections
-            setLag(vLag);
-
-            for (GlyphSection section : vLag.getSections()) {
-                addSection(section, Glyph.Linking.LINK_BACK);
-            }
-
-            // Glyph features
-            setShape(shape, Evaluation.MANUAL);
-
-            // Ordinate (approximate value)
-            getContourBox();
-
-            // Mass center
-            getCentroid();
-
-            // Number of connected stems
-            if (symbol.getStemNumber() != null) {
-                setStemNumber(symbol.getStemNumber());
-            }
-
-            // Has a related ledger ?
-            if (symbol.isWithLedger() != null) {
-                setWithLedger(symbol.isWithLedger());
-            }
-
-            // Vertical position wrt staff
-            if (symbol.getPitchPosition() != null) {
-                setPitchPosition(symbol.getPitchPosition());
-            }
-
-            if (logger.isFineEnabled()) {
-                dump();
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    //-------------//
-    // SymbolGlyph //
-    //-------------//
-    /**
-     * Create a new SymbolGlyph object, using the symbol related to the provided
-     * shape
-     *
-     * @param shape The related shape
-     * @param interline The related interline scaling value
+     * @param interline the related interline scaling value
      */
     public SymbolGlyph (Shape shape,
                         int   interline)
     {
-        this(shape.getPhysicalShape().getSymbol(), shape, interline);
+        super(interline);
+
+        symbol = Symbols.getSymbol(shape);
+        image = symbol.buildImage(MusicFont.getFont(interline));
+
+        /** Build a dedicated SymbolPicture */
+        SymbolPicture picture = new SymbolPicture(image);
+
+        /** Build related vertical lag */
+        GlyphLag vLag = new GlyphLag(
+            "iLag",
+            StickSection.class,
+            new VerticalOrientation());
+        SectionsBuilder<GlyphLag, GlyphSection> lagBuilder;
+        lagBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
+            vLag,
+            new JunctionAllPolicy()); // catch all
+        lagBuilder.createSections(picture, 0); // minRunLength
+
+        // Retrieve the whole glyph made of all sections
+        setLag(vLag);
+
+        for (GlyphSection section : vLag.getSections()) {
+            addSection(section, Glyph.Linking.LINK_BACK);
+        }
+
+        // Glyph features
+        setShape(shape, Evaluation.MANUAL);
+
+//        // Ordinate (approximate value)
+//        getContourBox();
+//
+//        // Mass center
+//        getCentroid();
+
+        //            // Number of connected stems
+        //            if (symbol.getStemNumber() != null) {
+        //                setStemNumber(symbol.getStemNumber());
+        //            }
+        //
+        //            // Has a related ledger ?
+        //            if (symbol.isWithLedger() != null) {
+        //                setWithLedger(symbol.isWithLedger());
+        //            }
+        //
+        //            // Vertical position wrt staff
+        //            if (symbol.getPitchPosition() != null) {
+        //                setPitchPosition(symbol.getPitchPosition());
+        //            }
+        if (logger.isFineEnabled()) {
+            dump();
+        }
     }
 }

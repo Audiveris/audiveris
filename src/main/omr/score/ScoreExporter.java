@@ -15,7 +15,7 @@ import omr.Main;
 
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
-import omr.glyph.text.TextFont;
+import omr.ui.symbol.TextFont;
 
 import omr.log.Logger;
 

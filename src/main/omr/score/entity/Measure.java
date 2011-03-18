@@ -1698,7 +1698,7 @@ public class Measure
             Rational duration = voice.getTermination();
 
             if (duration != null) {
-                if (duration == shortening) {
+                if (duration.equals(shortening)) {
                     if (!voice.isWhole()) {
                         // Remove the related mark
                         Chord chord = voice.getLastChord();

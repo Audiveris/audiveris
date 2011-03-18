@@ -271,22 +271,6 @@ public class GlyphRegression
         }
     }
 
-    //    //--------------------//
-    //    // constraintsMatched //
-    //    //--------------------//
-    //    /**
-    //     * Check that all the (non-disabled) constraints matched between a given
-    //     * glyph and a shape
-    //     * @param glyph the glyph at hand
-    //     * @param eval the evaluation context
-    //     * @return true if matched, false otherwise
-    //     */
-    //    public boolean constraintsMatched (Glyph      glyph,
-    //                                       Evaluation eval)
-    //    {
-    //        return constraintsMatched(feedInput(glyph), eval);
-    //    }
-
     //--------------------//
     // constraintsMatched //
     //--------------------//

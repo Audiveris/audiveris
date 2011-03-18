@@ -13,7 +13,7 @@ package omr.score.entity;
 
 import omr.glyph.facets.Glyph;
 import omr.glyph.text.Sentence;
-import omr.glyph.text.TextFont;
+import omr.ui.symbol.TextFont;
 import omr.glyph.text.TextRole;
 
 import omr.log.Logger;
@@ -97,11 +97,11 @@ public abstract class Text
 
         // Proper font ?
         if (sentence.getFontSize() != null) {
-            font = TextFont.basicFont.deriveFont(
+            font = TextFont.baseTextFont.deriveFont(
                 (float) sentence.getFontSize());
         } else {
             addError("Text with no sentence font size at " + location);
-            font = TextFont.basicFont;
+            font = TextFont.baseTextFont;
         }
 
         ///determineFontSize();
@@ -140,7 +140,7 @@ public abstract class Text
      */
     public static int getLyricsFontSize ()
     {
-        return TextFont.basicFont.getSize();
+        return TextFont.baseTextFont.getSize();
     }
 
     //-------------//
@@ -165,7 +165,7 @@ public abstract class Text
      */
     public static Font getLyricsFont ()
     {
-        return TextFont.basicFont;
+        return TextFont.baseTextFont;
     }
 
     //-------------//

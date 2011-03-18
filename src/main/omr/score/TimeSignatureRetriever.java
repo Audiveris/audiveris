@@ -224,14 +224,16 @@ public class TimeSignatureRetriever
             // After: alteration? + chord?
             Chord chord = measure.getClosestChord(new PixelPoint(0, 0));
 
-            for (TreeNode tn : chord.getNotes()) {
-                Note  note = (Note) tn;
-                Glyph accid = note.getAccidental();
+            if (chord != null) {
+                for (TreeNode tn : chord.getNotes()) {
+                    Note  note = (Note) tn;
+                    Glyph accid = note.getAccidental();
 
-                if (accid != null) {
-                    right = Math.min(right, accid.getContourBox().x);
-                } else {
-                    right = Math.min(right, note.getBox().x);
+                    if (accid != null) {
+                        right = Math.min(right, accid.getContourBox().x);
+                    } else {
+                        right = Math.min(right, note.getBox().x);
+                    }
                 }
             }
 

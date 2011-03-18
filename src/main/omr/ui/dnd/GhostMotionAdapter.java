@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.ui.dnd;
 
+import omr.log.Logger;
+
+import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 
@@ -23,6 +26,12 @@ import java.awt.event.MouseMotionAdapter;
 public class GhostMotionAdapter
     extends MouseMotionAdapter
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(
+        GhostMotionAdapter.class);
+
     //~ Instance fields --------------------------------------------------------
 
     /** The related glasspane */
@@ -48,14 +57,15 @@ public class GhostMotionAdapter
     //--------------//
     // mouseDragged //
     //--------------//
+    /**
+     * In this default implementation, we don't modify the current image, we
+     * simply tell the glassPane where to redraw the image
+     * @param e the mouse event
+     */
     @Override
     public void mouseDragged (MouseEvent e)
     {
-        // Determine proper glasspane-based location of the mouse
-        ScreenPoint screenPoint = new ScreenPoint(
-            e.getComponent(),
-            e.getPoint());
-        glassPane.setPoint(screenPoint.getLocalPoint(glassPane));
-        glassPane.repaint();
+        Point absPt = e.getLocationOnScreen();
+        glassPane.setPoint(new ScreenPoint(absPt.x, absPt.y));
     }
 }

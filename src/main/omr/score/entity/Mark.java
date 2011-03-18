@@ -11,10 +11,9 @@
 // </editor-fold>
 package omr.score.entity;
 
-import omr.glyph.Shape;
-
 import omr.score.common.PixelPoint;
-import omr.score.ui.MusicFont.CharDesc;
+
+import omr.ui.symbol.Symbol;
 
 import omr.util.Navigable;
 
@@ -51,8 +50,8 @@ public class Mark
     /** Position of the mark symbol with respect to the mark location */
     private final Position position;
 
-    /** The CharDesc of the mark in the MusicFont */
-    private final CharDesc charDesc;
+    /** The symbol of the mark in the MusicFont */
+    private final Symbol symbol;
 
     /** Additional data, perhaps depending on shape for example */
     private final Object data;
@@ -67,36 +66,23 @@ public class Mark
      * @param system containing system
      * @param location precise locatrion wrt the containing system
      * @param position relative symbol position wrt location
-     * @param charDesc MusicFont descriptor to be used
+     * @param symbol MusicFont descriptor to be used
      * @param data related data or null
      */
     public Mark (ScoreSystem system,
                  PixelPoint  location,
                  Position    position,
-                 CharDesc    charDesc,
+                 Symbol      symbol,
                  Object      data)
     {
         this.system = system;
         this.location = location;
         this.position = position;
-        this.charDesc = charDesc;
+        this.symbol = symbol;
         this.data = data;
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //-------------//
-    // getCharDesc //
-    //-------------//
-    /**
-     * Report the descriptor of the symbol to be displayed
-     *
-     * @return the MusicFont symbol descriptor
-     */
-    public CharDesc getCharDesc ()
-    {
-        return charDesc;
-    }
 
     //---------//
     // getData //
@@ -135,6 +121,19 @@ public class Mark
     public Position getPosition ()
     {
         return position;
+    }
+
+    //-----------//
+    // getSymbol //
+    //-----------//
+    /**
+     * Report the descriptor of the symbol to be displayed
+     *
+     * @return the MusicFont symbol descriptor
+     */
+    public Symbol getSymbol ()
+    {
+        return symbol;
     }
 
     //-----------//

@@ -24,7 +24,7 @@ public class GhostDropEvent<A>
     //~ Instance fields --------------------------------------------------------
 
     /** The drop location with respect to screen */
-    private ScreenPoint point;
+    private ScreenPoint screenPoint;
 
     /** The action carried by the drop event */
     private A action;
@@ -38,13 +38,13 @@ public class GhostDropEvent<A>
      * Create a new GhostDropEvent object
      *
      * @param action the action carried by the drop
-     * @param point the screen-based location of the drop
+     * @param screenPoint the screen-based location of the drop
      */
     public GhostDropEvent (A           action,
-                           ScreenPoint point)
+                           ScreenPoint screenPoint)
     {
         this.action = action;
-        this.point = point;
+        this.screenPoint = screenPoint;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -70,6 +70,6 @@ public class GhostDropEvent<A>
      */
     public ScreenPoint getDropLocation ()
     {
-        return point;
+        return screenPoint;
     }
 }

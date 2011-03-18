@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.glyph.text;
 
+import omr.ui.symbol.TextFont;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -109,7 +110,7 @@ public class OcrTextVerifier
         if (ocrLine.value.length() <= constants.maxCharCountForAspectCheck.getValue()) {
             PixelRectangle box = ocrLine.getContourBox();
             String         str = ocrLine.value;
-            Font           font = TextFont.basicFont;
+            Font           font = TextFont.baseTextFont;
             TextLayout     layout = new TextLayout(str, font, frc);
             Rectangle2D    rect = layout.getBounds();
             double         xRatio = box.width / rect.getWidth();

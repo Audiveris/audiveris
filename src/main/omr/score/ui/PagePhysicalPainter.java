@@ -35,9 +35,6 @@ import omr.score.entity.ScoreSystem;
 import omr.score.entity.Slot;
 import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
-import omr.score.ui.MusicFont.Alignment;
-import omr.score.ui.MusicFont.Alignment.Horizontal;
-import omr.score.ui.MusicFont.Alignment.Vertical;
 
 import omr.sheet.Ending;
 import omr.sheet.Ledger;
@@ -45,10 +42,10 @@ import omr.sheet.Sheet;
 import omr.sheet.StaffInfo;
 import omr.sheet.SystemBoundary.Side;
 import omr.sheet.SystemInfo;
-
+import static omr.ui.symbol.Alignment.*;
+import static omr.ui.symbol.Alignment.Vertical.*;
+import omr.ui.symbol.MusicFont;
 import omr.ui.util.UIUtilities;
-
-import omr.util.BrokenLine;
 
 import java.awt.*;
 import java.util.ConcurrentModificationException;
@@ -164,7 +161,7 @@ public class PagePhysicalPainter
                         new PixelPoint(
                             x,
                             firstStaff.getTopLeft().y - annotationDy),
-                        new Alignment(Horizontal.CENTER, Vertical.BOTTOM));
+                        BOTTOM_CENTER);
                 }
             }
         } catch (Exception ex) {
@@ -196,7 +193,7 @@ public class PagePhysicalPainter
                     g.setStroke(new BasicStroke(thickness));
                     stick.renderLine(g);
                 } else if ((shape == REPEAT_DOTS) || (shape == DOT)) {
-                    paint(layout(DOT), location(glyph.getCentroid()));
+                    paint(DOT, glyph.getCentroid());
                 } else {
                     // ???
                 }
@@ -278,7 +275,7 @@ public class PagePhysicalPainter
                             measure.getLeftX(),
                             measure.getPart().getFirstStaff().getTopLeft().y -
                             annotationDy),
-                        new Alignment(Horizontal.CENTER, Vertical.BOTTOM));
+                        BOTTOM_CENTER);
                 }
 
                 // Draw slot vertical lines ?
@@ -318,15 +315,11 @@ public class PagePhysicalPainter
 
             // Augmentation dots ?
             if (note.getFirstDot() != null) {
-                paint(
-                    layout(DOT),
-                    location(note.getFirstDot().getAreaCenter()));
+                paint(DOT, note.getFirstDot().getAreaCenter());
             }
 
             if (note.getSecondDot() != null) {
-                paint(
-                    layout(DOT),
-                    location(note.getSecondDot().getAreaCenter()));
+                paint(DOT, note.getSecondDot().getAreaCenter());
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
@@ -431,7 +424,7 @@ public class PagePhysicalPainter
             paint(
                 basicLayout("S" + system.getId(), null),
                 new PixelPoint(ul.x + annotationDx, ul.y + annotationDy),
-                new Alignment(Horizontal.LEFT, Vertical.TOP));
+                TOP_LEFT);
             g.setColor(oldColor);
         }
 
@@ -480,19 +473,10 @@ public class PagePhysicalPainter
                 return false;
             }
 
-            // Determine proper font size for the system, based on staff height
-            StaffInfo firstStaff = systemInfo.getStaves()
-                                             .get(0);
-            int       staffHeight = firstStaff.getHeight();
-            musicFont = MusicFont.getFont(staffHeight + scale.mainFore());
-
-            // Compute delta y for FLAG_2 & FLAG_2_UP
-            FLAG_2_DY = (int) Math.rint(
-                layout(COMBINING_FLAG_2).getBounds().getHeight() * 0.5);
+            // Determine proper font size for the system
+            musicFont = MusicFont.getFont(scale.interline());
 
             g.setStroke(lineStroke);
-
-            ///g.setColor(lineColor);
 
             // Ledgers
             for (Ledger ledger : systemInfo.getLedgers()) {
@@ -560,62 +544,11 @@ public class PagePhysicalPainter
         if (stem != null) {
             return location(center, chord);
         } else {
-            return location(center);
+            return center;
         }
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
-    //    //----------//
-    //    // drawSlot //
-    //    //----------//
-    //    /**
-    //     * Draw a time slot in the score display, using the current graphics assumed
-    //     * to be translated to the system origin.
-    //     *
-    //     * @param wholeSystem if true, the slot will embrace the whole system,
-    //     * otherwise only the part is embraced
-    //     * @param measure the containing measure
-    //     * @param slot the slot to draw
-    //     * @param color the color to use in drawing
-    //     */
-    //    private void drawSlot (boolean wholeSystem,
-    //                           Measure measure,
-    //                           Slot    slot,
-    //                           Color   color)
-    //    {
-    //        final Color oldColor = g.getColor();
-    //        g.setColor(color);
-    //
-    //        final Stroke         oldStroke = UIUtilities.setAbsoluteStroke(g, 1);
-    //        final int            x = slot.getX();
-    //        final PixelDimension systemDimension = measure.getSystem()
-    //                                                      .getDimension();
-    //
-    //        if (wholeSystem) {
-    //            // Draw for the system height
-    //            g.drawLine(
-    //                x,
-    //                measure.getSystem()
-    //                       .getTopLeft().y,
-    //                x,
-    //                measure.getSystem().getTopLeft().y + systemDimension.height +
-    //                score.getMeanStaffHeight());
-    //        } else {
-    //            // Draw for the part height
-    //            g.drawLine(
-    //                x,
-    //                measure.getPart()
-    //                       .getFirstStaff()
-    //                       .getTopLeft().y,
-    //                x,
-    //                measure.getPart().getLastStaff().getTopLeft().y +
-    //                score.getMeanStaffHeight());
-    //        }
-    //
-    //        g.setStroke(oldStroke);
-    //        g.setColor(oldColor);
-    //    }
 
     //-----------//
     // Constants //

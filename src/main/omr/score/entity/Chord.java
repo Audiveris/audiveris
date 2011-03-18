@@ -14,6 +14,7 @@ package omr.score.entity;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Shape;
+import static omr.glyph.Shape.*;
 import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
 
@@ -1078,7 +1079,7 @@ public class Chord
 
             if (!sideChords.isEmpty()) {
                 for (Chord chord : sideChords) {
-                    chord.flagsNumber += getFlagValue(glyph);
+                    chord.flagsNumber += getFlagValue(glyph.getShape());
                     glyph.addTranslation(chord);
                 }
             } else {
@@ -1371,17 +1372,45 @@ public class Chord
     }
 
     //--------------//
+    // getFlagShape //
+    //--------------//
+    public static Shape getFlagShape (int     fn,
+                                       boolean up)
+    {
+        switch (fn) {
+        case 1 :
+            return up ? COMBINING_FLAG_1_UP : COMBINING_FLAG_1;
+
+        case 2 :
+            return up ? COMBINING_FLAG_2_UP : COMBINING_FLAG_2;
+
+        case 3 :
+            return up ? COMBINING_FLAG_3_UP : COMBINING_FLAG_3;
+
+        case 4 :
+            return up ? COMBINING_FLAG_4_UP : COMBINING_FLAG_4;
+
+        case 5 :
+            return up ? COMBINING_FLAG_5_UP : COMBINING_FLAG_5;
+        }
+
+        logger.severe("Illegal flag number: " + fn);
+
+        return null;
+    }
+
+    //--------------//
     // getFlagValue //
     //--------------//
     /**
      * Report the number of flags that corresponds to the flag glyph
      *
-     * @param glyph the given flag glyph
+     * @param shape the given flag glyph shape
      * @return the number of flags
      */
-    private static int getFlagValue (Glyph glyph)
+    private static int getFlagValue (Shape shape)
     {
-        switch (glyph.getShape()) {
+        switch (shape) {
         case COMBINING_FLAG_1 :
         case COMBINING_FLAG_1_UP :
         case HEAD_AND_FLAG_1 :
@@ -1413,7 +1442,7 @@ public class Chord
             return 5;
         }
 
-        logger.severe("Illegal flag shape: " + glyph.getShape());
+        logger.severe("Illegal flag shape: " + shape);
 
         return 0;
     }

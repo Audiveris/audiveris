@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.glyph.text;
 
+import omr.ui.symbol.TextFont;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 

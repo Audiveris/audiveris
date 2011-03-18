@@ -922,10 +922,14 @@ public class Sheet
      */
     public SystemInfo getSystemOf (Glyph glyph)
     {
-        ///return getSystemOf(glyph.getAreaCenter());
-        return glyph.getMembers()
-                    .first()
-                    .getSystem();
+        if (glyph.isVirtual() || glyph.getMembers()
+                                      .isEmpty()) {
+            return getSystemOf(glyph.getAreaCenter());
+        } else {
+            return glyph.getMembers()
+                        .first()
+                        .getSystem();
+        }
     }
 
     //-------------//

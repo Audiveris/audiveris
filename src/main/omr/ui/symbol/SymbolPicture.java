@@ -17,6 +17,7 @@ import omr.log.Logger;
 
 import omr.util.Implement;
 
+import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 
 /**
@@ -35,17 +36,8 @@ public class SymbolPicture
 
     //~ Instance fields --------------------------------------------------------
 
-    /** The related symbol */
-    private final ShapeSymbol symbol;
-
     /** Image data buffer */
     private final DataBuffer dataBuffer;
-
-    /** Scaling factor to apply to the symbol before extracting pixels */
-    private final double factor;
-
-    /** Actual image width */
-    private final int actualWidth;
 
     /** Cached scaled width */
     private final int width;
@@ -63,23 +55,15 @@ public class SymbolPicture
     //~ Constructors -----------------------------------------------------------
 
     /** Creates a new instance of SymbolPicture
-     * @param symbol the underlying symbol
-     * @param interline the related interline scaling value
+     * @param image the underlying image
      */
-    public SymbolPicture (ShapeSymbol symbol,
-                          int         interline)
+    public SymbolPicture (BufferedImage image)
     {
-        this.symbol = symbol;
+        dataBuffer = image.getData()
+                          .getDataBuffer();
 
-        factor = (double) interline / symbol.getInterline();
-        dataBuffer = symbol.getUnderlyingImage()
-                           .getData()
-                           .getDataBuffer();
-        actualWidth = symbol.getUnderlyingImage()
-                            .getWidth();
-        width = (int) Math.rint(factor * actualWidth);
-        height = (int) Math.rint(
-            factor * symbol.getUnderlyingImage().getHeight());
+        width = image.getWidth();
+        height = image.getHeight();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -109,7 +93,7 @@ public class SymbolPicture
     public final int getPixel (int x,
                                int y)
     {
-        int index = (int) Math.rint((x + (y * actualWidth)) / factor);
+        int index = x + (y * width);
         int elem = dataBuffer.getElem(index);
 
         // ShapeSymbol instances use alpha channel as the pixel level

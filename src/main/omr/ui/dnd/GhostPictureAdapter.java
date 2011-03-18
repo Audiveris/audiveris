@@ -48,7 +48,7 @@ public class GhostPictureAdapter<A>
         super(glassPane, action);
 
         try {
-            this.image = ImageIO.read(
+            image = ImageIO.read(
                 new BufferedInputStream(
                     GhostPictureAdapter.class.getResourceAsStream(picture)));
         } catch (MalformedURLException mue) {

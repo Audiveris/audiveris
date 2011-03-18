@@ -65,12 +65,12 @@ public class ScreenPoint
      * Creates a new ScreenPoint object, using a local component-based point
      *
      * @param component the component to use as the base
-     * @param point the component-based point
+     * @param localPoint the component-based point
      */
     public ScreenPoint (Component component,
-                        Point     point)
+                        Point     localPoint)
     {
-        this(point.x, point.y);
+        this(localPoint.x, localPoint.y);
         SwingUtilities.convertPointToScreen(this, component);
     }
 
@@ -106,9 +106,9 @@ public class ScreenPoint
      */
     public Point getLocalPoint (Component component)
     {
-        Point point = new Point(x, y);
-        SwingUtilities.convertPointFromScreen(point, component);
+        Point localPoint = new Point(x, y);
+        SwingUtilities.convertPointFromScreen(localPoint, component);
 
-        return point;
+        return localPoint;
     }
 }

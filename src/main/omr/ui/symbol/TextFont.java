@@ -9,7 +9,7 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.glyph.text;
+package omr.ui.symbol;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -17,7 +17,6 @@ import omr.constant.ConstantSet;
 import omr.log.Logger;
 
 import java.awt.Font;
-import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.Rectangle2D;
 
@@ -28,6 +27,7 @@ import java.awt.geom.Rectangle2D;
  * @author Hervé Bitteur
  */
 public class TextFont
+    extends OmrFont
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -37,23 +37,30 @@ public class TextFont
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(TextFont.class);
 
-    /** Needed for font size computation */
-    private static final FontRenderContext frc = new FontRenderContext(
-        null,
-        true,
-        true);
+    /** Name of the chosen underlying text font */
+    private static final String fontName = constants.textFontName.getValue();
 
-    /** The basic font used for text entities */
-    public static final Font basicFont = new Font(
-        constants.basicFontName.getValue(),
-        Font.PLAIN,
-        constants.basicFontSize.getValue());
+    /** The base font used for text entities */
+    public static final TextFont baseTextFont = new TextFont(
+        constants.textFontSize.getValue());
 
     /** (So far empirical) ratio between width and point values */
     public static final float FONT_WIDTH_POINT_RATIO = 4.4f;
 
     /** Ratio from a 300 DPI scan to font point-size (72 pt/inch) */
     public static final float TO_POINT = 72f / 300f;
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new TextFont object.
+     *
+     * @param sizePts DOCUMENT ME!
+     */
+    public TextFont (int sizePts)
+    {
+        super(fontName, Font.PLAIN, sizePts);
+    }
 
     //~ Methods ----------------------------------------------------------------
 
@@ -73,13 +80,13 @@ public class TextFont
             return null;
         }
 
-        GlyphVector glyphVector = basicFont.createGlyphVector(frc, content);
+        GlyphVector glyphVector = baseTextFont.createGlyphVector(frc, content);
         Rectangle2D basicRect = glyphVector.getVisualBounds();
 
-        return basicFont.getSize2D() * (width / (float) basicRect.getWidth()); // * TO_POINT;
+        return baseTextFont.getSize2D() * (width / (float) basicRect.getWidth()); // * TO_POINT;
 
-        //        Font        font = basicFont.deriveFont(
-        //            basicFont.getSize2D() * (width / (float) basicRect.getWidth()));
+        //        Font        font = baseTextFont.deriveFont(
+        //            baseTextFont.getSize2D() * (width / (float) basicRect.getWidth()));
         //
         //        if (logger.isFineEnabled()) {
         //            GlyphVector newVector = font.createGlyphVector(frc, content);
@@ -119,12 +126,12 @@ public class TextFont
     {
         //~ Instance fields ----------------------------------------------------
 
-        Constant.Integer basicFontSize = new Constant.Integer(
+        Constant.String  textFontName = new Constant.String(
+            "Times New Roman", //"Serif" or "Sans Serif",
+            "Standard font name for texts");
+        Constant.Integer textFontSize = new Constant.Integer(
             "points",
             10,
             "Standard font point size for texts");
-        Constant.String  basicFontName = new Constant.String(
-            "Times New Roman", //"Serif" or "Sans Serif",
-            "Standard font name for texts");
     }
 }

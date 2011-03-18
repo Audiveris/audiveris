@@ -56,13 +56,13 @@ public abstract class AbstractGhostDropListener<A>
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------------//
-    // ghostDropped //
-    //--------------//
+    //---------//
+    // dropped //
+    //---------//
     /*
      * Default (void) implementation of the processing of a drop event
      */
-    public void ghostDropped (GhostDropEvent<A> e)
+    public void dropped (GhostDropEvent<A> e)
     {
         // Empty by default
     }
@@ -73,10 +73,10 @@ public abstract class AbstractGhostDropListener<A>
     /**
      * Check whether the provided local point lies within the component
      * bounds
-     * @param point the local point (component-based)
+     * @param localPoint the local point (component-based)
      * @return true if point is over the component, false otherwise
      */
-    protected boolean isInTarget (Point point)
+    protected boolean isInTarget (Point localPoint)
     {
         Rectangle bounds = new Rectangle(
             0,
@@ -84,7 +84,7 @@ public abstract class AbstractGhostDropListener<A>
             component.getWidth(),
             component.getHeight());
 
-        return bounds.contains(point);
+        return bounds.contains(localPoint);
     }
 
     //---------------//

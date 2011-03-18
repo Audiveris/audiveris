@@ -17,7 +17,8 @@ import omr.math.GCD;
 import omr.math.Rational;
 
 import omr.score.common.PixelPoint;
-import omr.score.ui.MusicFont;
+
+import omr.ui.symbol.Symbols;
 
 import omr.util.Navigable;
 
@@ -566,7 +567,7 @@ public class Voice
             chord.getSystem(),
             point,
             position,
-            MusicFont.MARK_DESC,
+            Symbols.SYMBOL_MARK,
             duration);
 
         chord.addMark(mark);

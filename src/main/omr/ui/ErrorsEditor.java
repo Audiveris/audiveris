@@ -168,6 +168,39 @@ public class ErrorsEditor
                 });
     }
 
+    //-----------//
+    // clearStep //
+    //-----------//
+    /**
+     * Clear all messages related to the provided step
+     * @param step the step we are interested in
+     */
+    public void clearStep (final Step step)
+    {
+        SwingUtilities.invokeLater(
+            new Runnable() {
+                    // This part is run on swing thread
+                    public void run ()
+                    {
+                        for (Iterator<Record> it = recordSet.iterator();
+                             it.hasNext();) {
+                            Record record = it.next();
+
+                            if (record.step == step) {
+                                it.remove();
+                            }
+                        }
+
+                        // Update the model
+                        model.removeAllElements();
+
+                        for (Record record : recordSet) {
+                            model.addElement(record);
+                        }
+                    }
+                });
+    }
+
     //-------------//
     // clearSystem //
     //-------------//

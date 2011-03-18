@@ -25,7 +25,7 @@ import omr.score.Score;
 import omr.score.ScoreExporter;
 import omr.score.ScoresManager;
 import omr.score.midi.MidiAgent;
-import omr.score.ui.MusicFont;
+import omr.ui.symbol.MusicFont;
 
 import omr.selection.MouseMovement;
 import omr.selection.SheetEvent;
@@ -173,18 +173,6 @@ public class MainGui
     public JFrame getFrame ()
     {
         return frame;
-    }
-
-    //------------------------//
-    // getMaxDoubleClickDelay //
-    //------------------------//
-    /**
-     * Report the maximum delay between two clicks for a double-click
-     * @return the maximum delay in ms.
-     */
-    public long getMaxDoubleClickDelay ()
-    {
-        return constants.maxDoubleClickDelay.getValue();
     }
 
     //---------//
@@ -754,12 +742,6 @@ public class MainGui
         private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
             true,
             "Should we preload costly packages in the background?");
-
-        /** Use to detect a double-click */
-        private final Constant.Integer maxDoubleClickDelay = new Constant.Integer(
-            "MilliSeconds",
-            500,
-            "Maximum delay for a double-click");
     }
 
     //-----------------//

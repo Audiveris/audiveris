@@ -96,8 +96,8 @@ public class ShapeRange
             BREVE_REST,
             WHOLE_REST,
             HALF_REST,
-            QUARTER_REST,
             OLD_QUARTER_REST,
+            QUARTER_REST,
             EIGHTH_REST,
             SIXTEENTH_REST,
             THIRTY_SECOND_REST,
@@ -110,19 +110,19 @@ public class ShapeRange
     /** A bag of miscellaneous shapes */
     public static final ShapeRange Others = new ShapeRange(
         PEDAL_MARK,
-        EnumSet.of(
-            SLUR,
+        shapesOf(
             OTTAVA_ALTA,
             OTTAVA_BASSA,
             PEDAL_MARK,
             PEDAL_UP_MARK,
             TUPLET_THREE,
-            TUPLET_SIX));
+            TUPLET_SIX,
+            SLUR));
 
     //
     public static final ShapeRange Physicals = new ShapeRange(
         TEXT,
-        EnumSet.range(CLUTTER, TEXT));
+        shapesOf(TEXT, CHARACTER, CLUTTER, DOT));
     public static final ShapeRange Logicals = new ShapeRange(
         REPEAT_DOTS,
         EnumSet.range(REPEAT_DOTS, ENDING));
@@ -458,7 +458,7 @@ public class ShapeRange
                                       ActionListener listener)
     {
         // All shapes in the given range
-        for (Shape shape : range.shapes) {
+        for (Shape shape : range.getSortedShapes()) {
             JMenuItem menuItem = new JMenuItem(
                 shape.toString(),
                 shape.getDecoratedSymbol());

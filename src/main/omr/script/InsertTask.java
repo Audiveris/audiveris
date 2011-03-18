@@ -219,8 +219,10 @@ public class InsertTask
         glyphs = new LinkedHashSet<Glyph>();
 
         for (PixelPoint location : locations) {
-            Glyph glyph = new VirtualGlyph(shape, sheet.getScale().interline());
-            glyph.translate(new PixelPoint(glyph.getAreaCenter().to(location)));
+            Glyph glyph = new VirtualGlyph(
+                shape,
+                sheet.getScale().interline(),
+                location);
 
             if (orientation == LagOrientation.VERTICAL) {
                 SystemInfo system = sheet.getSystemOf(glyph.getAreaCenter());
@@ -230,6 +232,8 @@ public class InsertTask
                 sheet.getHorizontalLag()
                      .addGlyph(glyph);
             }
+
+            glyph.dump();
 
             glyphs.add(glyph);
         }

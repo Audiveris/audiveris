@@ -17,8 +17,6 @@ import omr.score.Score;
 import omr.score.ScoresManager;
 import omr.score.entity.Page;
 
-import omr.sheet.Sheet;
-
 import omr.util.TreeNode;
 
 import com.itextpdf.text.Document;

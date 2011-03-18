@@ -25,8 +25,9 @@ import omr.log.Logger;
 
 import omr.sheet.Sheet;
 
+import omr.ui.symbol.MusicFont;
 import omr.ui.symbol.ShapeSymbol;
-import omr.ui.symbol.SymbolManager;
+import omr.ui.symbol.Symbols;
 
 import omr.util.BlackList;
 import omr.util.FileUtil;
@@ -702,15 +703,12 @@ public class GlyphRepository
             logger.fine("Loading icon " + gName);
         }
 
+        Shape       shape = Shape.valueOf(gName);
         Glyph       glyph = null;
-        ShapeSymbol symbol = SymbolManager.getInstance()
-                                          .loadSymbol(fileNameOf(gName));
+        ShapeSymbol symbol = Symbols.getSymbol(shape);
 
         if (symbol != null) {
-            glyph = new SymbolGlyph(
-                symbol,
-                shapeOf(gName),
-                symbol.getInterline());
+            /////////////////////////////:glyph = new SymbolGlyph(symbol, shape, MusicFont.DEFAULT_INTERLINE);
         }
 
         return glyph;

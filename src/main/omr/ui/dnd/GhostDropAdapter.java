@@ -11,12 +11,9 @@
 // </editor-fold>
 package omr.ui.dnd;
 
-import java.awt.Component;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Class {@code GhostDropAdapter} is a MouseAdapter specifically meant for
@@ -31,16 +28,16 @@ public abstract class GhostDropAdapter<A>
     //~ Instance fields --------------------------------------------------------
 
     /** The related glasspane */
-    protected GhostGlassPane glassPane;
+    protected final GhostGlassPane glassPane;
+
+    /** The registered listeners */
+    private final Set<GhostDropListener<A>> listeners = new HashSet<GhostDropListener<A>>();
 
     /** The event-carried action */
     protected A action;
 
     /** The image to be displayed on the glasspane */
     protected BufferedImage image;
-
-    /** The registered listeners */
-    private List<GhostDropListener<A>> listeners;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -58,19 +55,26 @@ public abstract class GhostDropAdapter<A>
     {
         this.glassPane = glassPane;
         this.action = action;
-        this.listeners = new ArrayList<GhostDropListener<A>>();
     }
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------------------//
-    // addGhostDropListener //
-    //----------------------//
+    //----------//
+    // getImage //
+    //----------//
+    public BufferedImage getImage ()
+    {
+        return image;
+    }
+
+    //-----------------//
+    // addDropListener //
+    //-----------------//
     /**
      * Register a drop listener
      * @param listener the listener to registrate
      */
-    public void addGhostDropListener (GhostDropListener<A> listener)
+    public void addDropListener (GhostDropListener<A> listener)
     {
         if (listener != null) {
             listeners.add(listener);
@@ -83,15 +87,14 @@ public abstract class GhostDropAdapter<A>
     @Override
     public void mousePressed (MouseEvent e)
     {
-        Component c = e.getComponent();
-
         glassPane.setVisible(true);
 
-        // Determine the proper location (glasspane-based)
-        ScreenPoint screenPoint = new ScreenPoint(c, e.getPoint());
-        glassPane.setPoint(screenPoint.getLocalPoint(glassPane));
+        ScreenPoint screenPoint = new ScreenPoint(
+            e.getXOnScreen(),
+            e.getYOnScreen());
+
         glassPane.setImage(image);
-        glassPane.repaint();
+        glassPane.setPoint(screenPoint);
     }
 
     //---------------//
@@ -100,42 +103,41 @@ public abstract class GhostDropAdapter<A>
     @Override
     public void mouseReleased (MouseEvent e)
     {
-        ScreenPoint eventPoint = new ScreenPoint(
-            e.getComponent(),
-            e.getPoint());
+        ScreenPoint screenPoint = new ScreenPoint(
+            e.getXOnScreen(),
+            e.getYOnScreen());
 
-        glassPane.setPoint(eventPoint.getLocalPoint(glassPane));
         glassPane.setVisible(false);
         glassPane.setImage(null);
 
-        fireGhostDropEvent(new GhostDropEvent<A>(action, eventPoint));
+        fireDropEvent(new GhostDropEvent<A>(action, screenPoint));
     }
 
-    //-------------------------//
-    // removeGhostDropListener //
-    //-------------------------//
+    //--------------------//
+    // removeDropListener //
+    //--------------------//
     /**
      * Unregister a drop listener
      * @param listener the listener to remove
      */
-    public void removeGhostDropListener (GhostDropListener listener)
+    public void removeDropListener (GhostDropListener listener)
     {
         if (listener != null) {
             listeners.remove(listener);
         }
     }
 
-    //--------------------//
-    // fireGhostDropEvent //
-    //--------------------//
+    //---------------//
+    // fireDropEvent //
+    //---------------//
     /**
      * Forward the provided drop event to all registered listeners
      * @param event the drop event to forward
      */
-    protected void fireGhostDropEvent (GhostDropEvent<A> event)
+    protected void fireDropEvent (GhostDropEvent<A> event)
     {
         for (GhostDropListener<A> listener : listeners) {
-            listener.ghostDropped(event);
+            listener.dropped(event);
         }
     }
 }

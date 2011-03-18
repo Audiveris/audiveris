@@ -26,7 +26,6 @@ import omr.score.common.PixelRectangle;
 
 import omr.ui.symbol.ShapeSymbol;
 
-import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
@@ -103,7 +102,7 @@ class BasicGeometry
     public PixelPoint getAreaCenter ()
     {
         if (center == null) {
-            PixelRectangle box = getContourBox();
+            PixelRectangle box = glyph.getContourBox();
             center = new PixelPoint(
                 box.x + (box.width / 2),
                 box.y + (box.height / 2));
@@ -206,20 +205,11 @@ class BasicGeometry
                         .getTextStart();
         }
 
-        // Other shape: check with the related icon if any
+        // Other shape: check with the related symbol if any
         ShapeSymbol symbol = shape.getSymbol();
 
         if (symbol != null) {
-            Point refPoint = symbol.getRefPoint();
-
-            if (refPoint != null) {
-                double         refRatio = (double) refPoint.y / symbol.getHeight();
-                PixelRectangle box = getContourBox();
-
-                return new PixelPoint(
-                    getAreaCenter().x,
-                    (int) Math.rint(box.y + (box.height * refRatio)));
-            }
+            return symbol.getRefPoint(getContourBox());
         }
 
         // Default: use area center

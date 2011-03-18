@@ -19,11 +19,11 @@ import static omr.glyph.Shape.*;
 import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
 import omr.glyph.text.Sentence;
-import omr.glyph.text.TextFont;
 
 import omr.log.Logger;
 
 import omr.score.Score;
+import omr.score.common.PixelDimension;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.entity.Arpeggiate;
@@ -49,22 +49,24 @@ import omr.score.entity.TimeSignature;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
 import omr.score.entity.Tuplet;
 import omr.score.entity.Wedge;
-import omr.score.ui.MusicFont.Alignment;
-import omr.score.ui.MusicFont.Alignment.Horizontal;
-import static omr.score.ui.MusicFont.Alignment.Horizontal.*;
-import omr.score.ui.MusicFont.Alignment.Vertical;
-import static omr.score.ui.MusicFont.Alignment.Vertical.*;
-import omr.score.ui.MusicFont.CharDesc;
 import omr.score.visitor.AbstractScoreVisitor;
 
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
+import omr.ui.symbol.Alignment;
+import static omr.ui.symbol.Alignment.*;
+import static omr.ui.symbol.Alignment.Horizontal.*;
+import static omr.ui.symbol.Alignment.Vertical.*;
+import omr.ui.symbol.MusicFont;
+import omr.ui.symbol.OmrFont;
+import omr.ui.symbol.ShapeSymbol;
+import omr.ui.symbol.Symbols;
+import static omr.ui.symbol.Symbols.*;
+
 import java.awt.*;
 import java.awt.font.*;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
+import java.awt.geom.*;
 import java.util.ConcurrentModificationException;
 
 /**
@@ -89,24 +91,7 @@ public abstract class PagePainter
     private static final Logger logger = Logger.getLogger(PagePainter.class);
 
     /** The alignment used by default */
-    protected static final Alignment defaultAlignment = new Alignment(
-        Horizontal.CENTER,
-        Vertical.MIDDLE);
-    protected static final Alignment       leftTop = new Alignment(
-        Horizontal.LEFT,
-        Vertical.TOP);
-    protected static final Alignment       leftBottom = new Alignment(
-        Horizontal.LEFT,
-        Vertical.BOTTOM);
-
-    /** A transformation to flip horizontally  (x' = -x) */
-    protected static final AffineTransform horizontalFlip = new AffineTransform(
-        -1,
-        0,
-        0,
-        1,
-        0,
-        0);
+    protected static final Alignment defaultAlignment = AREA_CENTER;
 
     /** A transformation to half scale (used for slot time annotation) */
     protected static final AffineTransform halfAT = AffineTransform.getScaleInstance(
@@ -140,7 +125,7 @@ public abstract class PagePainter
     protected Score       score;
 
     // Specific font for music symbols
-    protected Font        musicFont;
+    protected MusicFont   musicFont;
 
     // Global scale
     protected Scale       scale;
@@ -161,9 +146,6 @@ public abstract class PagePainter
     // The system being currently painted
     protected ScoreSystem system;
     protected SystemInfo  systemInfo;
-
-    // Delta ordinate that corresponds to FLAG_2
-    protected int FLAG_2_DY;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -211,7 +193,7 @@ public abstract class PagePainter
             final int        halfHeight = scale.interline();
             final int        count = (int) Math.rint(
                 (double) box.height / halfHeight);
-            final TextLayout layout = layout(ARPEGGIATO);
+            final TextLayout layout = musicFont.layout(ARPEGGIATO);
             final Point      start = new Point(box.x, box.y + box.height);
 
             // Draw count * half symbols, bottom up
@@ -335,47 +317,13 @@ public abstract class PagePainter
             final int fn = chord.getFlagsNumber();
 
             if (fn > 0) {
-                final PixelPoint loc = location(tail, chord);
-
-                // Slight fix of tail ordinate (for Maestro)
-                final int yFix = ((fn > 1) && MusicFont.useMaestro)
-                                 ? (FLAG_2_DY / 6) // Approximate value
-                                 : 0;
-
-                // We draw from tail to head, doubles then single if needed
-                if (tail.y < head.y) {
-                    // Flags down
-                    loc.y -= yFix;
-
-                    final TextLayout flag1 = layout(COMBINING_FLAG_1);
-                    final TextLayout flag2 = layout(COMBINING_FLAG_2);
-                    final Alignment  align = leftTop;
-
-                    for (int i = 0; i < (fn / 2); i++) {
-                        paint(flag2, loc, align);
-                        loc.y += FLAG_2_DY;
-                    }
-
-                    if ((fn % 2) != 0) {
-                        paint(flag1, loc, align);
-                    }
-                } else {
-                    // Flags up
-                    loc.y += yFix;
-
-                    final TextLayout flag1up = layout(COMBINING_FLAG_1_UP);
-                    final TextLayout flag2up = layout(COMBINING_FLAG_2_UP);
-                    final Alignment  align = leftBottom;
-
-                    for (int i = 0; i < (fn / 2); i++) {
-                        paint(flag2up, loc, align);
-                        loc.y -= FLAG_2_DY;
-                    }
-
-                    if ((fn % 2) != 0) {
-                        paint(flag1up, loc, align);
-                    }
-                }
+                // We draw from tail
+                boolean    goesUp = head.y < tail.y;
+                PixelPoint loc = location(tail, chord);
+                paint(
+                    Chord.getFlagShape(fn, goesUp),
+                    location(tail, chord),
+                    goesUp ? BOTTOM_LEFT : TOP_LEFT);
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
@@ -394,114 +342,7 @@ public abstract class PagePainter
     public boolean visit (Clef clef)
     {
         try {
-            final Staff             staff = clef.getStaff();
-            final Shape             shape = clef.getShape();
-            final String            str = MusicFont.getCharDesc(shape)
-                                                   .getString();
-            final PixelRectangle    box = clef.getBox();
-            final FontRenderContext frc = g.getFontRenderContext();
-            TextLayout              layout = new TextLayout(
-                str,
-                musicFont,
-                frc);
-            final Rectangle2D       bounds = layout.getBounds();
-
-            // The remaining code depends heavily on the precise MusicFont
-            if (MusicFont.useMaestro) {
-                // Adjust ratio so that the symbol fits the underlying glyph
-                // Use scaling based only of height ratio (except for percussion clef)
-                final AffineTransform at = AffineTransform.getScaleInstance(
-                    (shape == PERCUSSION_CLEF) ? (box.width / bounds.getWidth())
-                                        : (box.height / bounds.getHeight()),
-                    box.height / bounds.getHeight());
-                layout = layout(str, at);
-
-                if (shape == PERCUSSION_CLEF) {
-                    // Baseline is center
-                    paint(layout, location(clef.getCenter()));
-                } else if (ShapeRange.BassClefs.contains(shape)) {
-                    // Baseline is always on the "F" step line (= -2)
-                    PixelPoint baseCenter = location(
-                        clef.getCenter(),
-                        staff,
-                        -2);
-                    paint(layout, baseCenter, new Alignment(CENTER, BASELINE));
-                } else {
-                    if (ShapeRange.TrebleClefs.contains(shape)) {
-                        // Baseline is always on the "G"step line (= 2)
-                        paint(
-                            layout,
-                            location(clef.getCenter(), staff, 2),
-                            new Alignment(CENTER, BASELINE));
-                    } else if (shape == C_CLEF) {
-                        // Baseline is middle for C clef, but step line may vary
-                        int stepLine = clef.getPitchPosition();
-                        paint(
-                            layout,
-                            location(clef.getCenter(), staff, stepLine),
-                            new Alignment(CENTER, BASELINE));
-                    }
-                }
-            } else if (MusicFont.useStandard) {
-                // The '8' glyph to be drawn
-                TextLayout ottava = null;
-
-                if (ShapeRange.OttavaClefs.contains(shape)) {
-                    // Add height of Alta/Bassa ottava
-                    ottava = layout(MusicFont.ALTA_BASSA_DESC.getString());
-                    bounds.setRect(
-                        bounds.getX(),
-                        bounds.getY(),
-                        bounds.getWidth(),
-                        bounds.getHeight() + ottava.getBounds().getHeight());
-                }
-
-                // Adjust ratio so that the symbol fits the underlying glyph
-                // Use scaling based only of height ratio (except for percussion clef)
-                final AffineTransform at = AffineTransform.getScaleInstance(
-                    (shape == PERCUSSION_CLEF) ? (box.width / bounds.getWidth())
-                                        : (box.height / bounds.getHeight()),
-                    box.height / bounds.getHeight());
-                layout = layout(str, at);
-
-                // Needed to add alta/bassa drawing at the end
-                Rectangle rect = null;
-
-                if (shape == PERCUSSION_CLEF) {
-                    // Baseline is center
-                    rect = paint(layout, location(clef.getCenter()));
-                } else if (ShapeRange.BassClefs.contains(shape)) {
-                    // Fit the two points of F_CLEF around pitch: -2
-                    PixelPoint topCenter = location(
-                        clef.getCenter(),
-                        staff,
-                        -2);
-                    topCenter.y -= (layout.getBounds()
-                                          .getHeight() / 3.3);
-                    rect = paint(layout, topCenter, new Alignment(CENTER, TOP));
-                } else {
-                    // Baseline is end of staff
-                    rect = paint(
-                        layout,
-                        location(clef.getCenter(), staff, 4),
-                        new Alignment(CENTER, BASELINE));
-                }
-
-                // Add Alta/Bassa drawing?
-                if ((shape == G_CLEF_OTTAVA_ALTA) ||
-                    (shape == F_CLEF_OTTAVA_ALTA)) {
-                    PixelPoint topCenter = new PixelPoint(
-                        rect.x + (rect.width / 2),
-                        rect.y);
-                    paint(ottava, topCenter, leftBottom);
-                } else if ((shape == G_CLEF_OTTAVA_BASSA) ||
-                           (shape == F_CLEF_OTTAVA_BASSA)) {
-                    PixelPoint bottomCenter = new PixelPoint(
-                        rect.x + (rect.width / 2),
-                        rect.y + rect.height);
-                    paint(ottava, bottomCenter, leftTop);
-                }
-            }
+            paint(clef.getShape(), clef.getReferencePoint());
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warning(
@@ -551,7 +392,7 @@ public abstract class PagePainter
             final int            key = keySignature.getKey();
             final int            sign = Integer.signum(key);
             final Shape          shape = (key < 0) ? FLAT : SHARP;
-            final TextLayout     layout = layout(shape);
+            final TextLayout     layout = musicFont.layout(shape);
             final PixelRectangle box = keySignature.getBox();
             final int            unitDx = getKeySigItemDx();
 
@@ -565,8 +406,8 @@ public abstract class PagePainter
             // Flats : use vertical stick on left
             // Sharps : use center of the two vertical sticks
             final Alignment alignment = new Alignment(
-                (key < 0) ? LEFT : CENTER,
-                BASELINE);
+                BASELINE,
+                (key < 0) ? LEFT : CENTER);
             PixelPoint      point = new PixelPoint(box.x, 0);
 
             for (int i = 1; i <= (key * sign); i++) {
@@ -602,10 +443,10 @@ public abstract class PagePainter
             if (measureElement.getShape() != null) {
                 try {
                     paint(
-                        layout(
+                        musicFont.layout(
                             measureElement.getShape(),
-                            measureElement.getBox()),
-                        location(measureElement.getReferencePoint()));
+                            measureElement.getDimension()),
+                        measureElement.getReferencePoint());
                 } catch (ConcurrentModificationException ignored) {
                 } catch (Exception ex) {
                     logger.warning("Cannot paint " + measureElement, ex);
@@ -633,27 +474,19 @@ public abstract class PagePainter
             final Glyph      stem = chord.getStem();
             final Shape      shape = note.getShape();
             final PixelPoint center = note.getCenter();
-            Shape            displayShape; // What is really displayed
 
             // Note head
             if (stem != null) {
-                // Note is attached to a stem, link the note display to the stem one
-                if (ShapeRange.HeadAndFlags.contains(shape)) {
-                    displayShape = NOTEHEAD_BLACK;
-                } else {
-                    displayShape = shape;
-                }
-
+                // Note is attached to a stem, link note display to the stem
                 paint(
-                    layout(displayShape),
+                    ShapeRange.HeadAndFlags.contains(shape) ? NOTEHEAD_BLACK
+                                        : shape,
                     noteLocation(note),
-                    new Alignment(
-                        (center.x < chord.getTailLocation().x) ? RIGHT : LEFT,
-                        MIDDLE));
+                    (center.x < chord.getTailLocation().x) ? MIDDLE_RIGHT
+                                        : MIDDLE_LEFT);
             } else {
-                // Use special display icons for some shapes
-                displayShape = shape.getPhysicalShape();
-                paint(layout(displayShape), noteLocation(note));
+                // Standard display
+                paint(shape.getPhysicalShape(), noteLocation(note));
             }
 
             // Accidental ?
@@ -661,9 +494,9 @@ public abstract class PagePainter
 
             if (accid != null) {
                 paint(
-                    layout(accid.getShape()),
+                    accid.getShape(),
                     accidentalLocation(note, accid),
-                    new Alignment(CENTER, BASELINE));
+                    BASELINE_CENTER);
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
@@ -734,39 +567,20 @@ public abstract class PagePainter
 
             // Draw a brace?
             if (part.getBrace() != null) {
-                if (MusicFont.useMusical) {
-                    // We have nice half braces in MusicalSymbols font
-                    final String         upperStr = MusicFont.BRACE_UPPER_HALF.getString();
-                    final String         lowerStr = MusicFont.BRACE_LOWER_HALF.getString();
-                    final TextLayout     upperLayout = layout(upperStr);
-                    final PixelRectangle braceBox = braceBox(part);
-                    paint(
-                        upperLayout,
-                        braceBox.getCenter(),
-                        new Alignment(Horizontal.CENTER, Vertical.BOTTOM));
-                    paint(
-                        layout(lowerStr, null),
-                        braceBox.getCenter(),
-                        new Alignment(Horizontal.CENTER, Vertical.TOP));
-                } else {
-                    // We have to fallback to using text font ...
-                    final String            str = "{";
-                    final FontRenderContext frc = g.getFontRenderContext();
-                    Font                    font = TextFont.basicFont.deriveFont(
-                        100f);
-                    TextLayout              layout = new TextLayout(
-                        str,
-                        font,
-                        frc);
-                    final Rectangle2D       rect = layout.getBounds();
-                    final PixelRectangle    braceBox = braceBox(part);
-                    final AffineTransform   fat = AffineTransform.getScaleInstance(
-                        braceBox.width / rect.getWidth(),
-                        braceBox.height / rect.getHeight());
-                    font = font.deriveFont(fat);
-                    layout = new TextLayout(str, font, frc);
-                    paint(layout, braceBox.getCenter());
-                }
+                // We have nice half braces in MusicalSymbols font
+                final PixelRectangle box = braceBox(part);
+                final PixelPoint     center = box.getCenter();
+                final PixelDimension halfDim = new PixelDimension(
+                    box.width,
+                    box.height / 2);
+                paint(
+                    musicFont.layout(SYMBOL_BRACE_UPPER_HALF, halfDim),
+                    center,
+                    BOTTOM_CENTER);
+                paint(
+                    musicFont.layout(SYMBOL_BRACE_LOWER_HALF, halfDim),
+                    center,
+                    TOP_CENTER);
             }
 
             // Render the part starting barline, if any
@@ -808,30 +622,11 @@ public abstract class PagePainter
             final FontRenderContext frc = g.getFontRenderContext();
             Font                    font = text.getFont();
             TextLayout              layout = new TextLayout(str, font, frc);
-            //        final Rectangle2D       rect = layout.getBounds();
-            //        final PixelRectangle    box = text.getBox();
-            //        final double            xRatio = box.width / rect.getWidth();
-            //        final double            yRatio = box.height / rect.getHeight();
-            //
-            //        if (logger.isFineEnabled()) {
-            //            logger.fine(
-            //                "xRatio:" + (float) xRatio + " yRatio:" + (float) yRatio + " " +
-            //                text);
-            //        }
-            //
-            //        //        // Sign of something wrong
-            //        //        if (yRatio > 1.3) {
-            //        //            yRatio = 1;
-            //        //        }
-            //        final AffineTransform fat = AffineTransform.getScaleInstance(
-            //            xRatio,
-            //            yRatio);
-            //        font = font.deriveFont(fat);
-            //        layout = new TextLayout(str, font, frc);
+
             paint(
                 layout,
                 new PixelPoint(refPoint.x, location.y),
-                new Alignment(LEFT, BASELINE));
+                BASELINE_LEFT);
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warning(
@@ -862,7 +657,7 @@ public abstract class PagePainter
 
             // Special symbol?
             if ((shape == COMMON_TIME) || (shape == CUT_TIME)) {
-                paint(layout(shape), location(center));
+                paint(shape, center);
             } else {
                 // Paint numerator
                 paintTimeNumber(
@@ -1020,132 +815,6 @@ public abstract class PagePainter
         g.setStroke(lineStroke);
     }
 
-    //--------//
-    // layout //
-    //--------//
-    /**
-     * Build a TextLayout from a String of MusicFont characters (transformed by
-     * the provided AffineTransform if any)
-     * @param str the string of proper codes
-     * @param fat potential affine transformation
-     * @return the (sized) TextLayout ready to be drawn
-     */
-    protected TextLayout layout (String          str,
-                                 AffineTransform fat)
-    {
-        FontRenderContext frc = g.getFontRenderContext();
-        Font              font = (fat == null) ? musicFont
-                                 : musicFont.deriveFont(fat);
-
-        return new TextLayout(str, font, frc);
-    }
-
-    //--------//
-    // layout //
-    //--------//
-    /**
-     * Build a TextLayout from a String of MusicFont characters
-     * @param str the string of proper codes
-     * @return the TextLayout ready to be drawn
-     */
-    protected TextLayout layout (String str)
-    {
-        return layout(str, null);
-    }
-
-    //--------//
-    // layout //
-    //--------//
-    /**
-     * Build a TextLayout from a Shape, using its related String of MusicFont
-     * characters, and potentially sized by an AffineTransform
-     * @param shape the shape to be drawn with MusicFont chars
-     * @param fat potential affine transformation
-     * @return the (sized) TextLayout ready to be drawn
-     */
-    protected TextLayout layout (Shape           shape,
-                                 AffineTransform fat)
-    {
-        CharDesc desc = MusicFont.getCharDesc(shape);
-
-        if (desc == null) {
-            logger.warning("No MusicFont desc for " + shape);
-
-            return null;
-        }
-
-        //Hack for OLD_QUARTER_REST, use a flipped (EIGHTH_REST) shape
-        if (shape == OLD_QUARTER_REST) {
-            if (fat != null) {
-                fat.concatenate(horizontalFlip);
-            } else {
-                fat = horizontalFlip;
-            }
-        }
-
-        return layout(desc.getString(), fat);
-    }
-
-    //--------//
-    // layout //
-    //--------//
-    /**
-     * Build a TextLayout from a Shape, using its related String of MusicFont
-     * characters, and properly sized to fit the box of the underlying glyph
-     * @param shape the shape to be drawn with MusicFont chars
-     * @param glyphBox the glyph box to fit as much as possible
-     * @return the adjusted TextLayout ready to be drawn
-     */
-    protected TextLayout layout (Shape          shape,
-                                 PixelRectangle glyphBox)
-    {
-        CharDesc desc = MusicFont.getCharDesc(shape);
-
-        if (desc == null) {
-            return null;
-        }
-
-        String            str = desc.getString();
-        FontRenderContext frc = g.getFontRenderContext();
-        TextLayout        layout = new TextLayout(str, musicFont, frc);
-
-        // Compute proper affine transformation
-        Rectangle2D     rect = layout.getBounds();
-        AffineTransform fat = AffineTransform.getScaleInstance(
-            glyphBox.width / rect.getWidth(),
-            glyphBox.height / rect.getHeight());
-
-        return layout(str, fat);
-    }
-
-    //--------//
-    // layout //
-    //--------//
-    /**
-     * Build a TextLayout from a Shape, using its related String of MusicFont
-     * characters
-     * @param shape the shape to be drawn with MusicFont chars
-     * @return the TextLayout ready to be drawn
-     */
-    protected TextLayout layout (Shape shape)
-    {
-        return layout(shape, (AffineTransform) null);
-    }
-
-    //----------//
-    // location //
-    //----------//
-    /**
-     * Build the desired absolute drawing point corresponding to a provided
-     * system-based point
-     * @param sysPoint the system-based drawing point
-     * @return the proper PixelPoint
-     */
-    protected PixelPoint location (PixelPoint sysPoint)
-    {
-        return sysPoint;
-    }
-
     //----------//
     // location //
     //----------//
@@ -1164,10 +833,9 @@ public abstract class PagePainter
                                    Staff      staff,
                                    double     pitch)
     {
-        return location(
-            new PixelPoint(
-                preciseAbscissa(sysPoint, chord),
-                staff.getTopLeft().y + staff.pitchToPixels(pitch)));
+        return new PixelPoint(
+            preciseAbscissa(sysPoint, chord),
+            staff.getTopLeft().y + staff.pitchToPixels(pitch));
     }
 
     //----------//
@@ -1183,8 +851,7 @@ public abstract class PagePainter
     protected PixelPoint location (PixelPoint sysPoint,
                                    Chord      chord)
     {
-        return location(
-            new PixelPoint(preciseAbscissa(sysPoint, chord), sysPoint.y));
+        return new PixelPoint(preciseAbscissa(sysPoint, chord), sysPoint.y);
     }
 
     //----------//
@@ -1202,10 +869,9 @@ public abstract class PagePainter
                                    Staff      staff,
                                    double     pitch)
     {
-        return location(
-            new PixelPoint(
-                sysPoint.x,
-                staff.getTopLeft().y + staff.pitchToPixels(pitch)));
+        return new PixelPoint(
+            sysPoint.x,
+            staff.getTopLeft().y + staff.pitchToPixels(pitch));
     }
 
     //-------//
@@ -1217,36 +883,12 @@ public abstract class PagePainter
      * @param layout what: the symbol, perhaps transformed
      * @param location where: the precise location in the display
      * @param alignment how: the way the symbol is aligned wrt the location
-     * @return the rectangular bounds of the painting done
      */
-    protected Rectangle paint (TextLayout layout,
-                               PixelPoint location,
-                               Alignment  alignment)
+    protected void paint (TextLayout layout,
+                          PixelPoint location,
+                          Alignment  alignment)
     {
-        try {
-            // Compute symbol origin
-            Rectangle2D bounds = layout.getBounds();
-            Point2D     toOrigin = MusicFont.toOrigin(bounds, alignment);
-            Point2D     origin = new Point2D.Double(
-                location.x + toOrigin.getX(),
-                location.y + toOrigin.getY());
-
-            // Draw the symbol
-            layout.draw(g, (float) origin.getX(), (float) origin.getY());
-
-            // Report the actual drawn symbol rectangle in user space
-            return new Rectangle(
-                (int) Math.rint(bounds.getX() + origin.getX()),
-                (int) Math.rint(bounds.getY() + origin.getY()),
-                (int) Math.rint(bounds.getWidth()),
-                (int) Math.rint(bounds.getHeight()));
-        } catch (ConcurrentModificationException ignored) {
-            return null;
-        } catch (Exception ex) {
-            logger.warning("Cannot paint at " + location, ex);
-
-            return null;
-        }
+        OmrFont.paint(g, layout, location, alignment);
     }
 
     //-------//
@@ -1256,38 +898,45 @@ public abstract class PagePainter
      * A convenient painting method, using default alignment (CENTER + MIDDLE)
      * @param layout what: the symbol, perhaps transformed
      * @param location where: the precise location in the display
-     * @return the rectangular bounds of the painting done
      */
-    protected Rectangle paint (TextLayout layout,
-                               PixelPoint location)
+    protected void paint (TextLayout layout,
+                          PixelPoint location)
     {
-        return paint(layout, location, defaultAlignment);
+        paint(layout, location, defaultAlignment);
     }
 
-    //------------//
-    // paintBrace //
-    //------------//
-    protected void paintBrace (PixelPoint top,
-                               int        height)
+    //-------//
+    // paint //
+    //-------//
+    /**
+     * Paint a symbol
+     * @param shape the symbol shape
+     * @param location the precise location
+     * @param alignment alignment wrt the symbol
+     */
+    protected void paint (Shape      shape,
+                          PixelPoint location,
+                          Alignment  alignment)
     {
-        Font                  font = TextFont.basicFont.deriveFont(100f);
-        TextLayout            layout = new TextLayout(
-            "{",
-            font,
-            g.getFontRenderContext());
-        Rectangle2D           rect = layout.getBounds();
+        ShapeSymbol symbol = Symbols.getSymbol(shape);
 
-        final AffineTransform at = AffineTransform.getScaleInstance(
-            1f,
-            height / rect.getHeight());
-        font = font.deriveFont(at);
-        layout = new TextLayout("{", font, g.getFontRenderContext());
-        rect = layout.getBounds();
+        if (symbol != null) {
+            symbol.paintSymbol(g, musicFont, location, alignment);
+        }
+    }
 
-        PixelPoint pt = new PixelPoint(
-            top.x - (int) rect.getX() - (int) rect.getWidth(),
-            top.y - (int) rect.getY());
-        layout.draw(g, pt.x, pt.y);
+    //-------//
+    // paint //
+    //-------//
+    /**
+     * Paint a symbol with default alignment
+     * @param shape the symbol shape
+     * @param location the precise location
+     */
+    protected void paint (Shape      shape,
+                          PixelPoint location)
+    {
+        paint(shape, location, defaultAlignment);
     }
 
     //-----------//
@@ -1322,21 +971,9 @@ public abstract class PagePainter
     protected void paintTimeNumber (int        number,
                                     PixelPoint center)
     {
-        int   base = MusicFont.getCodes(TIME_ZERO)[0];
-        int[] codes = (number > 9) ? new int[2] : new int[1];
-        int   index = 0;
-
-        if (number > 9) {
-            codes[index++] = base + (number / 10);
-        }
-
-        codes[index] = base + (number % 10);
-
+        int[]  codes = ShapeSymbol.numberCodes(number);
         String str = new String(codes, 0, codes.length);
-        paint(
-            layout(str),
-            location(center),
-            new Alignment(Horizontal.CENTER, Vertical.MIDDLE));
+        MusicFont.paint(g, musicFont.layout(str), center, AREA_CENTER);
     }
 
     //-----------------//

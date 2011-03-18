@@ -13,6 +13,7 @@ package omr.score.entity;
 
 import omr.glyph.facets.Glyph;
 
+import omr.score.common.PixelDimension;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.visitor.ScoreVisitor;
@@ -123,6 +124,26 @@ public abstract class SystemNode
           .append(system.getId());
 
         return sb.toString();
+    }
+
+    //--------------//
+    // getDimension //
+    //--------------//
+    /**
+     * Report the dimension of the entity
+     * @return the entity dimension
+     */
+    public PixelDimension getDimension ()
+    {
+        if (box == null) {
+            computeBox();
+        }
+
+        if (box != null) {
+            return new PixelDimension(box.width, box.height);
+        } else {
+            return null;
+        }
     }
 
     //-----------//

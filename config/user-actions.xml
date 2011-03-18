@@ -35,7 +35,7 @@
     <!--<action domain="DEBUG" section="50" class="omr.sheet.SheetsManager"  method="dumpAllSheets"/>-->
     <!--<action domain="DEBUG" section="50" class="omr.sheet.ui.SheetsController"  method="dumpAllAssemblies"/>-->
     
-    <!--<action domain="DEBUG" section="60" class="MyClass"  method="launchSymbolRipper"/>-->
+    <action domain="DEBUG" section="60" class="MyClass"  method="launchSymbolRipper"/>
     <!--<action domain="DEBUG" section="70" class="MyClass"  method="launchScoreComputations"/>-->
 
 </actions>

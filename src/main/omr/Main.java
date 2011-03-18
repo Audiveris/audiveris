@@ -20,7 +20,7 @@ import omr.constant.ConstantSet;
 import omr.log.Logger;
 
 import omr.score.Score;
-import omr.score.ui.MusicFont;
+import omr.ui.symbol.MusicFont;
 
 import omr.script.Script;
 import omr.script.ScriptManager;

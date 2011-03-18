@@ -13,13 +13,15 @@ package omr.glyph;
 
 import omr.lag.Lag;
 
+import omr.score.common.PixelPoint;
+
 import java.awt.Color;
 import java.util.Collection;
 
 /**
- * Class {@code VirtualGlyph} is an artificial glyph, not backed up by sections,
- * but specifically allocated to carry a shape and a location just like a
- * standard glyph would.
+ * Class {@code VirtualGlyph} is an artificial glyph specifically build from
+ * a MusicFont-based symbol, to carry a shape and features just like a standard
+ * glyph would.
  *
  * @author Hervé Bitteur
  */
@@ -36,11 +38,17 @@ public class VirtualGlyph
      *
      * @param shape the assigned shape
      * @param interline the related interline scaling value
+     * @param center where the glyph area center will be located
      */
-    public VirtualGlyph (Shape shape,
-                         int   interline)
+    public VirtualGlyph (Shape      shape,
+                         int        interline,
+                         PixelPoint center)
     {
+        // Build a glyph of proper size
         super(shape, interline);
+
+        // Translation from generic center to actual center
+        translate(getAreaCenter().to(center));
     }
 
     //~ Methods ----------------------------------------------------------------

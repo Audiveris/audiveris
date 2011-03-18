@@ -23,12 +23,12 @@ public interface GhostDropListener<A>
 {
     //~ Methods ----------------------------------------------------------------
 
-    //--------------//
-    // ghostDropped //
-    //--------------//
+    //---------//
+    // dropped //
+    //---------//
     /**
-     * Call-back function to received the drop event
+     * Call-back function to receive the drop event
      * @param e the handed event
      */
-    public void ghostDropped (GhostDropEvent<A> e);
+    public void dropped (GhostDropEvent<A> e);
 }

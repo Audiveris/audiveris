@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.glyph.text;
 
+import omr.ui.symbol.TextFont;
 import omr.score.common.PixelRectangle;
 
 import java.awt.Font;
@@ -166,7 +167,7 @@ public class OcrLine
     private String computeValue ()
     {
         // Font used for space computation only
-        Font          font = TextFont.basicFont.deriveFont((float) fontSize);
+        Font          font = TextFont.baseTextFont.deriveFont((float) fontSize);
 
         // Retrieve half standard space width with this font
         double        halfSpace = TextFont.computeWidth(" ", font); // / 2;

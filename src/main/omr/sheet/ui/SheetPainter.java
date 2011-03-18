@@ -16,6 +16,7 @@ import omr.glyph.facets.Stick;
 
 import omr.log.Logger;
 
+import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.entity.Measure;
 import omr.score.entity.Page;
@@ -29,7 +30,10 @@ import omr.sheet.Sheet;
 import omr.sheet.StaffInfo;
 import omr.sheet.SystemInfo;
 
+import omr.ui.symbol.Alignment;
+import omr.ui.symbol.MusicFont;
 import omr.ui.symbol.ShapeSymbol;
+import omr.ui.symbol.Symbols;
 import omr.ui.util.UIUtilities;
 
 import java.awt.*;
@@ -62,6 +66,9 @@ public class SheetPainter
 
     /** Are we drawing editable boundaries? */
     private final boolean editableBoundaries;
+
+    /** Music font properly scaled */
+    private MusicFont musicFont;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -115,6 +122,9 @@ public class SheetPainter
     {
         try {
             Sheet sheet = page.getSheet();
+
+            // Determine proper font
+            musicFont = MusicFont.getFont(sheet.getInterline());
 
             // Use specific color
             g.setColor(Color.lightGray);
@@ -273,35 +283,16 @@ public class SheetPainter
      */
     private void paintVirtualGlyphs (SystemInfo systemInfo)
     {
-        int interline = systemInfo.getSheet()
-                                  .getScale()
-                                  .interline();
+        g.setColor(Color.LIGHT_GRAY);
 
         for (Glyph glyph : systemInfo.getGlyphs()) {
             if (glyph.isVirtual()) {
-                try {
-                    ShapeSymbol symbol = glyph.getShape()
-                                              .getPhysicalShape()
-                                              .getSymbol();
-
-                    if (symbol != null) {
-                        ScoreSystem scoreSystem = systemInfo.getScoreSystem();
-
-                        if (scoreSystem != null) {
-                            Point center = glyph.getAreaCenter();
-                            Point topLeft = new Point(
-                                (int) Math.rint(
-                                    center.x - (symbol.getWidth() / 2)),
-                                (int) Math.rint(
-                                    center.y - (symbol.getHeight() / 2)));
-                            symbol.draw(g, topLeft, interline);
-                        }
-                    }
-                } catch (Exception ex) {
-                    logger.warning(
-                        "Error drawing virtual glyph#" + glyph.getId(),
-                        ex);
-                }
+                ShapeSymbol symbol = Symbols.getSymbol(glyph.getShape());
+                symbol.paintSymbol(
+                    g,
+                    musicFont,
+                    glyph.getAreaCenter(),
+                    Alignment.AREA_CENTER);
             }
         }
     }
