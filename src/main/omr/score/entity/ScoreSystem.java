@@ -413,11 +413,7 @@ public class ScoreSystem
     /**
      * Report the coordinates of the upper left corner of this system in its
      * containing score (not counting preceding dummy staves if any).
-     * To point to the upper left corner, including dummy staves, use
-     * getTopLeft() + getDummyOffset();
-     *
      * @return the top left corner
-     * @see #getDummyOffset
      */
     public PixelPoint getTopLeft ()
     {

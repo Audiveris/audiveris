@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.lag;
 
+import omr.run.Run;
+import omr.run.Oriented;
+import omr.run.Orientation;
 import omr.math.Histogram;
 
 import omr.score.common.PixelPoint;
@@ -23,6 +26,7 @@ import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.util.*;
+import omr.run.RunsTable;
 
 /**
  * Class <code>LagTest</code> gathers some basic tests to exercise unitary
@@ -279,7 +283,7 @@ public class LagTest
     //---------------//
     public void testTranslate ()
     {
-        List<List<Run>> runs = new ArrayList<List<Run>>();
+        RunsTable runs = new RunsTable();
         vLag.setRuns(runs);
 
         MySection s1 = vLag.createSection(1, createRun(runs, 1, 2, 5));
@@ -320,11 +324,10 @@ public class LagTest
 
         MyLag.Roi          roi = vLag.createAbsoluteRoi(
             new Rectangle(0, 0, 6, 7));
-        Histogram<Integer> histoV = roi.getHistogram(new VerticalOrientation());
+        Histogram<Integer> histoV = roi.getHistogram(Orientation.VERTICAL);
         histoV.print(System.out);
 
-        Histogram<Integer> histoH = roi.getHistogram(
-            new HorizontalOrientation());
+        Histogram<Integer> histoH = roi.getHistogram(Orientation.HORIZONTAL);
         histoH.print(System.out);
     }
 
@@ -370,8 +373,8 @@ public class LagTest
     @Override
     protected void setUp ()
     {
-        vLag = new MyLag("My Vertical Lag", new VerticalOrientation());
-        hLag = new MyLag("My Horizontal Lag", new HorizontalOrientation());
+        vLag = new MyLag("My Vertical Lag", Orientation.VERTICAL);
+        hLag = new MyLag("My Horizontal Lag", Orientation.HORIZONTAL);
     }
 
     //------------------//

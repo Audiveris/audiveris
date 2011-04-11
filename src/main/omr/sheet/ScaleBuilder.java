@@ -16,9 +16,10 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.lag.RunsBuilder;
-
 import omr.log.Logger;
+
+import omr.run.Orientation;
+import omr.run.RunsRetriever;
 
 import omr.score.Score;
 
@@ -106,59 +107,6 @@ public class ScaleBuilder
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------------//
-    // checkInterline //
-    //----------------//
-    /**
-     * Check global interline value, to detect pictures with too low
-     * resolution or pictures which do not represent music staves
-     * @param interline the retrieved interline value
-     */
-    void checkInterline (int interline)
-        throws StepException
-    {
-        if (interline < constants.minInterline.getValue()) {
-            Score score = sheet.getScore();
-
-            if (score.isMultiPage()) {
-                String msg = sheet.getId() + "\nMain interline value is " +
-                             interline + " pixels" +
-                             "\nThis sheet does not seem to contain staff lines";
-                logger.warning(msg);
-
-                if (Main.getGui() != null) {
-                    // Ask user for confirmation
-                    SheetsController.getInstance()
-                                    .showAssembly(sheet);
-
-                    if (Main.getGui()
-                            .displayModelessConfirm(
-                        msg + "\nOK for discarding this sheet?") == JOptionPane.OK_OPTION) {
-                        sheet.remove();
-                        logger.info("Removed sheet " + sheet.getId());
-                        throw new StepException("Sheet removed");
-                    }
-                } else {
-                    // No user available, let's remove this page
-                    sheet.remove();
-                    logger.info("Removed sheet " + sheet.getId());
-                    throw new StepException("Sheet removed");
-                }
-            } else {
-                String msg = sheet.getId() + "\nWith only " + interline +
-                             " pixels between two staff lines," +
-                             " your picture resolution is too low!" +
-                             "\nPlease rescan at higher resolution (300dpi should be OK)";
-                logger.warning(msg);
-
-                if (Main.getGui() != null) {
-                    Main.getGui()
-                        .displayWarning(msg);
-                }
-            }
-        }
-    }
-
     //--------------//
     // displayChart //
     //--------------//
@@ -226,6 +174,59 @@ public class ScaleBuilder
         return mainFore;
     }
 
+    //----------------//
+    // checkInterline //
+    //----------------//
+    /**
+     * Check global interline value, to detect pictures with too low
+     * resolution or pictures which do not represent music staves
+     * @param interline the retrieved interline value
+     */
+    void checkInterline (int interline)
+        throws StepException
+    {
+        if (interline < constants.minInterline.getValue()) {
+            Score score = sheet.getScore();
+
+            if (score.isMultiPage()) {
+                String msg = sheet.getId() + "\nMain interline value is " +
+                             interline + " pixels" +
+                             "\nThis sheet does not seem to contain staff lines";
+                logger.warning(msg);
+
+                if (Main.getGui() != null) {
+                    // Ask user for confirmation
+                    SheetsController.getInstance()
+                                    .showAssembly(sheet);
+
+                    if (Main.getGui()
+                            .displayModelessConfirm(
+                        msg + "\nOK for discarding this sheet?") == JOptionPane.OK_OPTION) {
+                        sheet.remove();
+                        logger.info("Removed sheet " + sheet.getId());
+                        throw new StepException("Sheet removed");
+                    }
+                } else {
+                    // No user available, let's remove this page
+                    sheet.remove();
+                    logger.info("Removed sheet " + sheet.getId());
+                    throw new StepException("Sheet removed");
+                }
+            } else {
+                String msg = sheet.getId() + "\nWith only " + interline +
+                             " pixels between two staff lines," +
+                             " your picture resolution is too low!" +
+                             "\nPlease rescan at higher resolution (300dpi should be OK)";
+                logger.warning(msg);
+
+                if (Main.getGui() != null) {
+                    Main.getGui()
+                        .displayWarning(msg);
+                }
+            }
+        }
+    }
+
     //---------------//
     // retrieveScale //
     //---------------//
@@ -239,9 +240,11 @@ public class ScaleBuilder
         adapter = new Adapter(sheet, picture.getHeight() - 1);
 
         // Read the picture runs
-        RunsBuilder runsBuilder = new RunsBuilder(adapter);
-        runsBuilder.createRuns(
-            new Rectangle(0, 0, picture.getHeight(), picture.getWidth()));
+        RunsRetriever runsBuilder = new RunsRetriever(
+            Orientation.VERTICAL,
+            adapter);
+        runsBuilder.retrieveRuns(
+            new Rectangle(0, 0, picture.getWidth(), picture.getHeight()));
 
         // Report results to the user
         StringBuilder sb = new StringBuilder(sheet.getLogPrefix());
@@ -261,10 +264,10 @@ public class ScaleBuilder
     //~ Inner Classes ----------------------------------------------------------
 
     //---------//
-    // Adapter //          Needed for createRuns
+    // Adapter //          Needed for retrieveRuns
     //---------//
     private class Adapter
-        implements RunsBuilder.Reader
+        implements RunsRetriever.Adapter
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -306,7 +309,7 @@ public class ScaleBuilder
         //--------//
         // isFore //
         //--------//
-        @Implement(RunsBuilder.Reader.class)
+        @Implement(RunsRetriever.Adapter.class)
         public boolean isFore (int level)
         {
             // Assuming black=0, white=255
@@ -316,7 +319,7 @@ public class ScaleBuilder
         //----------//
         // getLevel //
         //----------//
-        @Implement(RunsBuilder.Reader.class)
+        @Implement(RunsRetriever.Adapter.class)
         public int getLevel (int coord,
                              int pos)
         {
@@ -326,7 +329,7 @@ public class ScaleBuilder
         //---------//
         // backRun //
         //---------//
-        @Implement(RunsBuilder.Reader.class)
+        @Implement(RunsRetriever.Adapter.class)
         public void backRun (int w,
                              int h,
                              int length)
@@ -337,7 +340,7 @@ public class ScaleBuilder
         //---------//
         // foreRun //
         //---------//
-        @Implement(RunsBuilder.Reader.class)
+        @Implement(RunsRetriever.Adapter.class)
         public void foreRun (int w,
                              int h,
                              int length,
@@ -349,7 +352,7 @@ public class ScaleBuilder
         //-----------//
         // terminate //
         //-----------//
-        @Implement(RunsBuilder.Reader.class)
+        @Implement(RunsRetriever.Adapter.class)
         public void terminate ()
         {
             // Determine the biggest buckets

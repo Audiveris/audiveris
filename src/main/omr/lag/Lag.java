@@ -18,6 +18,11 @@ import omr.log.Logger;
 import omr.math.Histogram;
 import omr.math.Line;
 
+import omr.run.Orientation;
+import omr.run.Oriented;
+import omr.run.Run;
+import omr.run.RunsTable;
+
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
@@ -65,11 +70,8 @@ public class Lag<L extends Lag<L, S>, S extends Section>
     /** Orientation of the lag */
     private final Oriented orientation;
 
-    /**
-     * List of Runs found in each column. So this is a list of lists of Runs.
-     * It will be allocated in the adapter
-     */
-    private List<List<Run>> runs;
+    /** Underlying runs table */
+    private RunsTable runsTable;
 
     /** Cache of last section found through a lookup action */
     private S cachedSection;
@@ -121,12 +123,12 @@ public class Lag<L extends Lag<L, S>, S extends Section>
                                 int posMin,
                                 int posMax)
     {
-        Run             best = null;
+        Run best = null;
 
         // Relevant portion of runs
-        List<List<Run>> subList = runs.subList(posMin, posMax + 1);
+        for (int pos = posMin; pos <= posMax; pos++) {
+            List<Run> runList = runsTable.getSequence(pos);
 
-        for (List<Run> runList : subList) {
             for (Run run : runList) {
                 if (run.getStart() > coordMax) {
                     break; // Over for this column
@@ -165,7 +167,7 @@ public class Lag<L extends Lag<L, S>, S extends Section>
     // getOrientation //
     //----------------//
     @Implement(Oriented.class)
-    public LagOrientation getOrientation ()
+    public Orientation getOrientation ()
     {
         return orientation.getOrientation();
     }
@@ -502,14 +504,14 @@ public class Lag<L extends Lag<L, S>, S extends Section>
     // setRuns //
     //---------//
     /**
-     * Assign the populated runs to the lag. Package private access is provided
-     * for SectionsBuilder
+     * Assign the populated runs table to the lag. Package private access is
+     * provided for SectionsBuilder
      *
      * @param runs the populated runs
      */
-    void setRuns (List<List<Run>> runs)
+    void setRuns (RunsTable runs)
     {
-        this.runs = runs;
+        this.runsTable = runs;
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -561,17 +563,18 @@ public class Lag<L extends Lag<L, S>, S extends Section>
             // Build the sequences of runs & positions
             final List<Run>     runList = new ArrayList<Run>();
             final List<Integer> posList = new ArrayList<Integer>();
-            int                 pos = contour.y;
 
-            for (List<Run> alignedRuns : runs.subList(
-                contour.y,
-                contour.y + contour.height)) {
+            //            for (List<Run> alignedRuns : runs.subList(
+            //                contour.y,
+            //                contour.y + contour.height)) {
+            for (int pos = contour.y; pos < (contour.y + contour.height);
+                 pos++) {
+                List<Run> alignedRuns = runsTable.getSequence(pos);
+
                 for (Run run : alignedRuns) {
                     runList.add(run);
                     posList.add(pos);
                 }
-
-                pos++;
             }
 
             return getHistogram(

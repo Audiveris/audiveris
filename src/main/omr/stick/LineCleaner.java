@@ -24,13 +24,15 @@ import omr.glyph.ui.GlyphLagView;
 
 import omr.graph.DigraphView;
 
-import omr.lag.Run;
+import omr.lag.PixelSource;
 import omr.lag.Section;
 
 import omr.log.Logger;
 
 import omr.math.BasicLine;
 import omr.math.Line;
+
+import omr.run.Run;
 
 import omr.sheet.Sheet;
 import omr.sheet.picture.Picture;
@@ -253,7 +255,7 @@ public class LineCleaner
             }
 
             // Erase pixels from line sections
-            write(lineStick.getMembers(), Picture.BACKGROUND);
+            write(lineStick.getMembers(), PixelSource.BACKGROUND);
 
             // But write patches to the picture
             write(patches, sheet.getMaxForeground());
@@ -271,7 +273,7 @@ public class LineCleaner
         {
             // Erase patches
             for (GlyphSection patch : patches) {
-                patch.write(picture, Picture.BACKGROUND);
+                patch.write(picture, PixelSource.BACKGROUND);
                 patch.delete();
             }
 
@@ -476,37 +478,36 @@ public class LineCleaner
                         for (int y = yBegin; y != yPast; y += direction) {
                             int start = -1;
 
-//                            if (tangents.startTg != null) {
-//                                start = tangents.startTg.xAt(y);
-//                                runLength = tangents.stopTg.xAt(y) - start + 1;
-//
-//                                if (logger.isFineEnabled()) {
-//                                    logger.fine(
-//                                        "y=" + y + " start=" + start +
-//                                        " length=" + runLength);
-//                                }
-//
-//                                if (runLength <= 0) { // We have decreased to nothing
-//
-//                                    if (logger.isFineEnabled()) {
-//                                        logger.fine("* length is zero *");
-//                                    }
-//
-//                                    break;
-//                                }
-//                            } else {
-                                if (tangents.axis != null) {
-                                    xAxis = tangents.axis.xAt(y);
+                            //                            if (tangents.startTg != null) {
+                            //                                start = tangents.startTg.xAt(y);
+                            //                                runLength = tangents.stopTg.xAt(y) - start + 1;
+                            //
+                            //                                if (logger.isFineEnabled()) {
+                            //                                    logger.fine(
+                            //                                        "y=" + y + " start=" + start +
+                            //                                        " length=" + runLength);
+                            //                                }
+                            //
+                            //                                if (runLength <= 0) { // We have decreased to nothing
+                            //
+                            //                                    if (logger.isFineEnabled()) {
+                            //                                        logger.fine("* length is zero *");
+                            //                                    }
+                            //
+                            //                                    break;
+                            //                                }
+                            //                            } else {
+                            if (tangents.axis != null) {
+                                xAxis = tangents.axis.xAt(y);
 
-                                    if (logger.isFineEnabled()) {
-                                        logger.fine("x=" + xAxis);
-                                    }
+                                if (logger.isFineEnabled()) {
+                                    logger.fine("x=" + xAxis);
                                 }
+                            }
 
-                                start = (int) ((0.5d + xAxis) -
-                                        (runLength / 2.0));
-//                            }
+                            start = (int) ((0.5d + xAxis) - (runLength / 2.0));
 
+                            //                            }
                             if (logger.isFineEnabled()) {
                                 logger.fine(
                                     "y=" + y + ", start=" + start +

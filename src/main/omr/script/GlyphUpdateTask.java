@@ -16,7 +16,7 @@ import omr.glyph.GlyphsBuilder;
 import omr.glyph.SectionSets;
 import omr.glyph.facets.Glyph;
 
-import omr.lag.LagOrientation;
+import omr.run.Orientation;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
@@ -66,7 +66,7 @@ public abstract class GlyphUpdateTask
      * @param glyphs the collection of glyphs concerned by this task
      */
     public GlyphUpdateTask (Sheet             sheet,
-                            LagOrientation    orientation,
+                            Orientation    orientation,
                             Collection<Glyph> glyphs)
     {
         super(sheet, orientation, glyphs);
@@ -85,7 +85,7 @@ public abstract class GlyphUpdateTask
     public GlyphUpdateTask (Sheet             sheet,
                             Collection<Glyph> glyphs)
     {
-        this(sheet, LagOrientation.VERTICAL, glyphs);
+        this(sheet, Orientation.VERTICAL, glyphs);
     }
 
     //-----------------//
@@ -112,7 +112,7 @@ public abstract class GlyphUpdateTask
             orientation)) {
             Glyph glyph = null;
 
-            if (orientation == LagOrientation.VERTICAL) {
+            if (orientation == Orientation.VERTICAL) {
                 SystemInfo system = set.iterator()
                                        .next()
                                        .getSystem();

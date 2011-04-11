@@ -17,6 +17,11 @@ import omr.lag.ui.LagView;
 
 import omr.log.Logger;
 
+import omr.math.Barycenter;
+import omr.math.PointsCollector;
+
+import omr.run.Run;
+
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
@@ -92,6 +97,12 @@ public class Section<L extends Lag, S extends Section<L, S>>
 
     /** Display contour points, which do not depend on orientation */
     private PixelRectangle contourBox;
+
+    /** Approximate starting point */
+    private Point startPoint;
+
+    /** Approximate stopping point */
+    private Point stopPoint;
 
     /** Contribution to the foreground */
     private int foreWeight;
@@ -260,7 +271,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
             contourBox = new PixelRectangle(box);
         }
 
-        return contourBox;
+        return new PixelRectangle(contourBox);
     }
 
     //-------------------//
@@ -534,6 +545,27 @@ public class Section<L extends Lag, S extends Section<L, S>>
         return getBounds().x;
     }
 
+    //---------------//
+    // getStartPoint //
+    //---------------//
+    /**
+     * Return the approximate point which starts the section (left point for
+     * horizontal section, top point for vertical section)
+     * @return the approximate starting point
+     */
+    public PixelPoint getStartPoint ()
+    {
+        if (startPoint == null) {
+            Rectangle roi = new Rectangle(getBounds());
+            roi.width = 3;
+
+            Point pt = getRectangleCentroid(roi);
+            startPoint = new Point(getStart(), pt.y);
+        }
+
+        return graph.switchRef(startPoint, null);
+    }
+
     //---------//
     // getStop //
     //---------//
@@ -549,6 +581,28 @@ public class Section<L extends Lag, S extends Section<L, S>>
     }
 
     //--------------//
+    // getStopPoint //
+    //--------------//
+    /**
+     * Return the approximate point which stops the section (right point for
+     * horizontal section, bottom point for vertical section)
+     * @return the approximate stopping point
+     */
+    public PixelPoint getStopPoint ()
+    {
+        if (stopPoint == null) {
+            Rectangle roi = new Rectangle(getBounds());
+            roi.x += (roi.width - 3);
+            roi.width = 3;
+
+            Point pt = getRectangleCentroid(roi);
+            stopPoint = new Point(getStop(), pt.y);
+        }
+
+        return graph.switchRef(stopPoint, null);
+    }
+
+    //--------------//
     // getThickness //
     //--------------//
     /**
@@ -559,6 +613,49 @@ public class Section<L extends Lag, S extends Section<L, S>>
     public int getThickness ()
     {
         return getBounds().height;
+    }
+
+    //----------------//
+    // getThicknessAt //
+    //----------------//
+    /**
+     * Return the thickness of the section at the provided coord value
+     * @param coord the coordinate (x for horizontal, y for vertical) around
+     * which the thickness is to be measured
+     * @param probeWidth the width of the probe to use
+     * @return the thickness around this location
+     */
+    public int getThicknessAt (int coord,
+                               int probeWidth)
+    {
+        getBounds();
+
+        PixelRectangle roi = new PixelRectangle(
+            coord,
+            bounds.y,
+            0,
+            bounds.height);
+        roi.grow(probeWidth / 2, 0);
+
+        // Use a large-enough collector
+        PointsCollector collector = new PointsCollector(roi);
+        cumulate(collector);
+
+        int count = collector.getCount();
+
+        if (count == 0) {
+            return 0;
+        } else {
+            // Find out min and max ordinates
+            int[] yy = new int[count];
+            System.arraycopy(collector.getYValues(), 0, yy, 0, count);
+            Arrays.sort(yy);
+
+            int yMin = yy[0];
+            int yMax = yy[count - 1];
+
+            return yMax - yMin + 1;
+        }
     }
 
     //-----------//
@@ -598,60 +695,6 @@ public class Section<L extends Lag, S extends Section<L, S>>
         }
 
         return table;
-    }
-
-    //----------------------//
-    // getRectangleCentroid //
-    //----------------------//
-    /**
-     * Report the mass center of the section runs intersected by the provided
-     * rectangle
-     * @param roi the rectangle of interest (roi)
-     * @return the centroid of the intersected points, or null
-     * @throws IllegalArgumentException if provided roi is null
-     */
-    public Point getRectangleCentroid (Rectangle roi)
-    {
-        if (roi == null) {
-            throw new IllegalArgumentException("Rectangle of Interest is null");
-        }
-
-        int   roiWeight = 0;
-        Point roiCentroid = new Point(0, 0);
-        int   y = firstPos - 1;
-        int   yMax = Math.min(firstPos + runs.size(), roi.y + roi.height) - 1;
-        int   xMax = (roi.x + roi.width) - 1;
-
-        for (Run run : runs) {
-            y++;
-
-            if (y < roi.y) {
-                continue;
-            }
-
-            if (y > yMax) {
-                break;
-            }
-
-            final int roiStart = Math.max(run.getStart(), roi.x);
-            final int roiStop = Math.min(run.getStop(), xMax);
-            final int length = roiStop - roiStart + 1;
-
-            if (length > 0) {
-                roiWeight += length;
-                roiCentroid.y += (length * (2 * y));
-                roiCentroid.x += (length * ((2 * roiStart) + length));
-            }
-        }
-
-        if (roiWeight > 0) {
-            roiCentroid.x /= (2 * roiWeight);
-            roiCentroid.y /= (2 * roiWeight);
-
-            return roiCentroid;
-        } else {
-            return null;
-        }
     }
 
     //----------------------//
@@ -762,6 +805,119 @@ public class Section<L extends Lag, S extends Section<L, S>>
         return (run.getStart() <= coord) && (run.getStop() >= coord);
     }
 
+    //----------//
+    // cumulate //
+    //----------//
+    /**
+     * Cumulate in the provided Barycenter the section pixels that are contained
+     * in the provided roi Rectangle. If the roi is null, all pixels are
+     * cumulated into the barycenter.
+     * @param barycenter
+     * @param roi
+     */
+    public void cumulate (Barycenter barycenter,
+                          Rectangle  roi)
+    {
+        if (barycenter == null) {
+            throw new IllegalArgumentException("Barycenter is null");
+        }
+
+        if (roi == null) {
+            // Take all run pixels
+            int y = firstPos - 1;
+
+            for (Run run : runs) {
+                y++;
+                barycenter.include(
+                    run.getLength(),
+                    run.getStart() + (run.getLength() / 2d),
+                    y);
+            }
+        } else {
+            // Take only the pixels contained by the roi
+            int y = firstPos - 1;
+            int yMax = Math.min(firstPos + runs.size(), roi.y + roi.height) -
+                       1;
+            int xMax = (roi.x + roi.width) - 1;
+
+            for (Run run : runs) {
+                y++;
+
+                if (y < roi.y) {
+                    continue;
+                }
+
+                if (y > yMax) {
+                    break;
+                }
+
+                final int roiStart = Math.max(run.getStart(), roi.x);
+                final int roiStop = Math.min(run.getStop(), xMax);
+                final int length = roiStop - roiStart + 1;
+
+                if (length > 0) {
+                    barycenter.include(length, roiStart + (length / 2d), y);
+                }
+            }
+        }
+    }
+
+    //----------//
+    // cumulate //
+    //----------//
+    /**
+     * Cumulate all points that compose the runs of the section, into the
+     * provided collector.
+     *
+     * @param collector the points collector to populate
+     */
+    public void cumulate (PointsCollector collector)
+    {
+        Rectangle roi = collector.getRoi();
+
+        if (roi == null) {
+            int p = firstPos;
+
+            for (Run run : runs) {
+                final int start = run.getStart();
+
+                for (int ic = run.getLength() - 1; ic >= 0; ic--) {
+                    collector.include(start + ic, p);
+                }
+
+                p++;
+            }
+        } else {
+            // Take only the pixels contained by the roi
+            int y = firstPos - 1;
+            int yMax = -1 +
+                       Math.min(firstPos + runs.size(), roi.y + roi.height);
+            int xMax = (roi.x + roi.width) - 1;
+
+            for (Run run : runs) {
+                y++;
+
+                if (y < roi.y) {
+                    continue;
+                }
+
+                if (y > yMax) {
+                    break;
+                }
+
+                final int roiStart = Math.max(run.getStart(), roi.x);
+                final int roiStop = Math.min(run.getStop(), xMax);
+                final int length = roiStop - roiStart + 1;
+
+                if (length > 0) {
+                    for (int x = roiStart; x <= roiStop; x++) {
+                        collector.include(x, y);
+                    }
+                }
+            }
+        }
+    }
+
     //----------------//
     // cumulatePoints //
     //----------------//
@@ -775,27 +931,6 @@ public class Section<L extends Lag, S extends Section<L, S>>
      *
      * @return final index
      */
-    public int cumulatePoints (int[] coord,
-                               int[] pos,
-                               int   nb)
-    {
-        int p = firstPos;
-
-        for (Run run : runs) {
-            final int start = run.getStart();
-
-            for (int ic = run.getLength() - 1; ic >= 0; ic--) {
-                coord[nb] = start + ic;
-                pos[nb] = p;
-                nb++;
-            }
-
-            p++;
-        }
-
-        return nb;
-    }
-
     public int cumulatePoints (double[] coord,
                                double[] pos,
                                int      nb)
@@ -1267,6 +1402,36 @@ public class Section<L extends Lag, S extends Section<L, S>>
         centroid = null;
         contour = null;
         contourBox = null;
+        startPoint = null;
+        stopPoint = null;
+    }
+
+    //----------------------//
+    // getRectangleCentroid //
+    //----------------------//
+    /**
+     * Report the mass center of the section runs intersected by the provided
+     * rectangle
+     * @param roi the rectangle of interest (roi)
+     * @return the centroid of the intersected points, or null
+     * @throws IllegalArgumentException if provided roi is null
+     */
+    private Point getRectangleCentroid (Rectangle roi)
+    {
+        if (roi == null) {
+            throw new IllegalArgumentException("Rectangle of Interest is null");
+        }
+
+        Barycenter barycenter = new Barycenter();
+        cumulate(barycenter, roi);
+
+        if (barycenter.getWeight() != 0) {
+            return new Point(
+                (int) Math.rint(barycenter.getX()),
+                (int) Math.rint(barycenter.getY()));
+        } else {
+            return null;
+        }
     }
 
     //--------//

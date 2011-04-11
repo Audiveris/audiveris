@@ -13,7 +13,7 @@ package omr.glyph.facets;
 
 import omr.glyph.GlyphSection;
 
-import omr.lag.Run;
+import omr.run.Run;
 
 import omr.log.Logger;
 

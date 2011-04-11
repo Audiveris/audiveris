@@ -183,7 +183,7 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
             }
         }
 
-        // Take the first color avaliable
+        // Take the first color available
         Set<Color> availableColors = new HashSet<Color>(Arrays.asList(palette));
         availableColors.removeAll(usedColors);
 
@@ -192,10 +192,11 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
         if (availableColors.isEmpty()) {
             logger.severe("Color collision for section " + section.getId());
             defaultColor = palette[0]; // We need a color!
+        } else {
+            defaultColor = availableColors.iterator()
+                                          .next();
         }
 
-        defaultColor = availableColors.iterator()
-                                      .next();
         resetColor();
     }
 

@@ -19,7 +19,7 @@ import omr.glyph.GlyphSection;
 import omr.glyph.Shape;
 import omr.glyph.facets.Stick;
 
-import omr.lag.Run;
+import omr.run.Run;
 
 import omr.log.Logger;
 

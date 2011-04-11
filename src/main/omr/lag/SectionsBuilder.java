@@ -13,18 +13,19 @@ package omr.lag;
 
 import omr.log.Logger;
 
-import java.awt.*;
+import omr.run.Run;
+import omr.run.RunsTable;
+import omr.run.RunsTableFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class <code>SectionsBuilder</code> populates a full lag, by ripping a
- * picture.  Using a proper oriented {@link LagReader}, it first retrieves the
- * runs structure out of the given picture, and then builds the lag sections and
- * junctions.
- *
+ * Class <code>SectionsBuilder</code> populates a full lag, by building the
+ * lag sections and junctions, out of a provided {@link RunsTable} instance.
  *
  * @author Hervé Bitteur
+ *
  * @param <L> precise lag type
  * @param <S> the precise subtype of Section to be created
  */
@@ -58,9 +59,6 @@ public class SectionsBuilder<L extends Lag<L, S>, S extends Section<L, S>>
      */
     private List<S> prevActives = new ArrayList<S>();
 
-    /** The section runs */
-    private List<List<Run>> runs;
-
     //~ Constructors -----------------------------------------------------------
 
     //-----------------//
@@ -68,7 +66,6 @@ public class SectionsBuilder<L extends Lag<L, S>, S extends Section<L, S>>
     //-----------------//
     /**
      * Create an instance of SectionsBuilder.
-     *
      *
      * @param lag            the lag to populate
      * @param junctionPolicy the policy to detect junctions
@@ -86,69 +83,19 @@ public class SectionsBuilder<L extends Lag<L, S>, S extends Section<L, S>>
     // createSections //
     //----------------//
     /**
-     * Populate a lag with sections created by ripping a picture
-     *
-     * @param source         the source to read pixels from
-     * @param minRunLength   minimum length to consider a run
+     * Populate a lag by creating sections out of the provided table of runs
+     * @param runsTable the table of runs
      */
-    public void createSections (PixelSource source,
-                                int         minRunLength)
-    {
-        // Retrieve the properly oriented picture dimension
-        Rectangle rect = lag.switchRef(
-            new Rectangle(0, 0, source.getWidth(), source.getHeight()),
-            null);
-
-        // Prepare the collections of runs, one collection per pos value
-        runs = new ArrayList<List<Run>>(rect.height);
-
-        for (int i = 0; i < rect.height; i++) {
-            runs.add(new ArrayList<Run>());
-        }
-
-        // Populate the runs.
-        RunsBuilder runsBuilder = new RunsBuilder(
-            new LagReader(lag, runs, source, minRunLength));
-        long        start = System.currentTimeMillis();
-        runsBuilder.createRuns(rect);
-
-        if (logger.isFineEnabled()) {
-            long stop = System.currentTimeMillis();
-            logger.fine(
-                "Lag " + lag.getName() + " built in " + (stop - start) + "ms");
-        }
-
-        // Organize the runs into sections
-        buildSections();
-
-        // Store the runs into the lag
-        lag.setRuns(runs);
-    }
-
-    //------------//
-    // isFinished //
-    //------------//
-    private boolean isFinished (S section)
-    {
-        return section.getId() < 0;
-    }
-
-    //---------------//
-    // buildSections //
-    //---------------//
-    private void buildSections ()
+    public void createSections (RunsTable runsTable)
     {
         // All runs (if any) in first column start each their own section
-        for (Run run : runs.get(0)) {
+        for (Run run : runsTable.getSequence(0)) {
             nextActives.add(lag.createSection(0, run));
         }
 
         // Now scan each pair of columns, starting at 2nd column
-        List<List<Run>> subList = runs.subList(1, runs.size());
-        int             col = 0;
-
-        for (List<Run> runList : subList) {
-            col++;
+        for (int col = 1; col < runsTable.getSize(); col++) {
+            List<Run> runList = runsTable.getSequence(col);
 
             // If we have runs in this column
             if (!runList.isEmpty()) {
@@ -197,6 +144,43 @@ public class SectionsBuilder<L extends Lag<L, S>, S extends Section<L, S>>
             // Register the section with its signature
             section.setSignature();
         }
+
+        // Store the runs table into the lag
+        lag.setRuns(runsTable);
+    }
+
+    //----------------//
+    // createSections //
+    //----------------//
+    /**
+     * Populate a lag by creating sections directly out of a pixel source
+     *
+     * @param name a name assigned to the runs table
+     * @param source the source to read pixels from
+     * @param minRunLength minimum length to consider a run
+     */
+    public void createSections (String      name,
+                                PixelSource source,
+                                int         minRunLength)
+    {
+        // Create the runs table
+        RunsTableFactory factory = new RunsTableFactory(
+            lag.getOrientation(),
+            source,
+            source.getMaxForeground(),
+            minRunLength);
+        RunsTable        table = factory.createTable(name);
+
+        // Now proceed to section extraction
+        createSections(table);
+    }
+
+    //------------//
+    // isFinished //
+    //------------//
+    private boolean isFinished (S section)
+    {
+        return section.getId() < 0;
     }
 
     //-----------------//

@@ -86,6 +86,9 @@ public class GlyphSection
     /** Is this section a patch? */
     private boolean patch = false;
 
+    /** To flag sections too thick for staff line  (null = don't know)*/
+    private Boolean fat = null;
+
     //~ Constructors -----------------------------------------------------------
 
     //--------------//
@@ -99,6 +102,28 @@ public class GlyphSection
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //--------//
+    // setFat //
+    //--------//
+    /**
+     * @param fat the fat flag
+     */
+    public void setFat (boolean fat)
+    {
+        this.fat = fat;
+    }
+
+    //-------//
+    // isFat //
+    //-------//
+    /**
+     * @return the fat flag, if any
+     */
+    public Boolean isFat ()
+    {
+        return fat;
+    }
 
     //----------//
     // setGlyph //
@@ -211,8 +236,8 @@ public class GlyphSection
     // compareTo //
     //-----------//
     /**
-     * Needed to implement Comparable, sorting sections first by position, then
-     * by coordinate.
+     * Needed to implement Comparable, sorting sections first by coordinate,
+     * then by position.
      *
      * @param other the other section to compare to
      * @return the result of ordering

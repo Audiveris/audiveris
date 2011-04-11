@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.glyph.text;
 
-import omr.ui.symbol.TextFont;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -20,7 +19,7 @@ import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 import omr.glyph.text.TextRole.RoleInfo;
 
-import omr.lag.HorizontalOrientation;
+import omr.run.Orientation;
 
 import omr.log.Logger;
 
@@ -29,7 +28,7 @@ import omr.score.entity.Text.CreatorText.CreatorType;
 
 import omr.sheet.SystemInfo;
 
-import omr.util.ClassUtil;
+import omr.ui.symbol.TextFont;
 
 import java.awt.*;
 import java.util.*;
@@ -371,7 +370,7 @@ public class TextInfo
                     null, // TODO: NO SYSTEM
                     null,
                     glyph.getLag().createAbsoluteRoi(glyph.getContourBox()),
-                    new HorizontalOrientation());
+                    Orientation.HORIZONTAL);
             } catch (Exception ex) {
                 logger.warning("Cannot create TextArea for glyph " + this);
             }

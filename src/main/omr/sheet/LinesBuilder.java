@@ -23,9 +23,7 @@ import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphLagView;
 import omr.glyph.ui.GlyphsController;
 
-import omr.lag.HorizontalOrientation;
 import omr.lag.JunctionDeltaPolicy;
-import omr.lag.Run;
 import omr.lag.SectionsBuilder;
 import omr.lag.ui.RunBoard;
 import omr.lag.ui.ScrollLagView;
@@ -34,6 +32,9 @@ import omr.lag.ui.SectionBoard;
 import omr.log.Logger;
 
 import omr.math.Population;
+
+import omr.run.Orientation;
+import omr.run.Run;
 
 import omr.sheet.ui.PixelBoard;
 
@@ -118,10 +119,7 @@ public class LinesBuilder
     {
         super(
             sheet,
-            new GlyphLag(
-                "hLag",
-                StickSection.class,
-                new HorizontalOrientation()),
+            new GlyphLag("hLag", StickSection.class, Orientation.HORIZONTAL),
             Steps.valueOf(Steps.LINES));
     }
 
@@ -159,7 +157,7 @@ public class LinesBuilder
         lagBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
             lag,
             new JunctionDeltaPolicy(scale.toPixels(constants.maxDeltaLength)));
-        lagBuilder.createSections(sheet.getPicture(), 0); // 0 = minRunLength
+        lagBuilder.createSections(lag.getName(), sheet.getPicture(), 0); // 0 = minRunLength
         sheet.setHorizontalLag(lag);
 
         // This is the heart of staff lines detection ...
@@ -316,6 +314,7 @@ public class LinesBuilder
         GlyphsController controller = new GlyphsController(this);
         lagView = new MyView(lag, specifics, controller);
 
+        // Boards
         final String  unit = sheet.getId() + ":LinesBuilder";
         BoardsPane    boardsPane = new BoardsPane(
             new PixelBoard(unit, sheet),

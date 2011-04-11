@@ -23,7 +23,7 @@ import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.lag.HorizontalOrientation;
+import omr.run.Orientation;
 
 import omr.log.Logger;
 
@@ -713,7 +713,7 @@ public class TextLine
                 null,
                 system.getSheet().getVerticalLag().createAbsoluteRoi(
                     getContourBox()),
-                new HorizontalOrientation());
+                Orientation.HORIZONTAL);
         }
 
         return textArea;

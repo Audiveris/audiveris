@@ -473,6 +473,14 @@ endlocal
                      includes="*.xml"/>
         </copy>
 
+        <!-- Copy icon files into the classes dir -->
+        <copy
+            verbose="${verbose}"
+            todir="${build.classes.dir}">
+            <fileset dir="${src.dir}"
+                     includes="**/icon*.png"/>
+        </copy>
+	
         <!-- Purge build/classes folder from documentation items -->
         <delete
             verbose="${verbose}"

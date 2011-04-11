@@ -13,13 +13,14 @@ package omr.sheet.picture;
 
 import omr.log.Logger;
 
-import omr.score.ui.PaintingParameters;
 import omr.score.ui.PagePainter;
 import omr.score.ui.PagePhysicalPainter;
+import omr.score.ui.PaintingParameters;
 
 import omr.selection.SheetLocationEvent;
 
 import omr.sheet.*;
+import omr.sheet.staff.LineCluster;
 
 import omr.ui.view.RubberPanel;
 import omr.ui.view.ScrollView;
@@ -30,6 +31,7 @@ import omr.util.WeakPropertyChangeListener;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collection;
 
 /**
  * Class <code>PictureView</code> defines the view dedicated to the display of
@@ -120,8 +122,9 @@ public class PictureView
                 // Use a white background
                 Color oldColor = g.getColor();
                 g.setColor(Color.WHITE);
+
                 Rectangle rect = g.getClipBounds();
-                
+
                 g.fill(rect);
                 g.setColor(oldColor);
             }
@@ -131,6 +134,16 @@ public class PictureView
                 Color color = PagePainter.musicColor;
                 sheet.getPage()
                      .accept(new PagePhysicalPainter(g, color, false));
+
+                Collection<LineCluster> clusters = sheet.getClusters();
+
+                if (clusters != null) {
+                    g.setColor(PagePainter.musicColor);
+
+                    for (LineCluster cluster : clusters) {
+                        cluster.render(g);
+                    }
+                }
             }
         }
     }

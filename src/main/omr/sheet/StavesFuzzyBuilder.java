@@ -24,7 +24,6 @@ import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphLagView;
 import omr.glyph.ui.GlyphsController;
 
-import omr.lag.HorizontalOrientation;
 import omr.lag.JunctionRatioPolicy;
 import omr.lag.SectionsBuilder;
 import omr.lag.ui.RunBoard;
@@ -35,6 +34,8 @@ import omr.lag.ui.SectionView;
 import omr.log.Logger;
 
 import omr.math.NaturalSpline;
+
+import omr.run.Orientation;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -114,10 +115,7 @@ public class StavesFuzzyBuilder
     {
         super(
             sheet,
-            new GlyphLag(
-                "hLag",
-                StickSection.class,
-                new HorizontalOrientation()),
+            new GlyphLag("hLag", StickSection.class, Orientation.HORIZONTAL),
             Steps.valueOf(Steps.LINES));
     }
 
@@ -151,6 +149,7 @@ public class StavesFuzzyBuilder
             getLag(),
             new JunctionRatioPolicy(constants.maxLengthRatio.getValue()));
         lagBuilder.createSections(
+            "fuzzy",
             picture,
             scale.toPixels(constants.minRunLength));
 

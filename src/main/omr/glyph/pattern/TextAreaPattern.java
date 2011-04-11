@@ -13,7 +13,7 @@ package omr.glyph.pattern;
 
 import omr.glyph.text.TextArea;
 
-import omr.lag.HorizontalOrientation;
+import omr.run.Orientation;
 
 import omr.log.Logger;
 
@@ -70,7 +70,7 @@ public class TextAreaPattern
             null,
             system.getSheet().getVerticalLag().createAbsoluteRoi(
                 system.getBounds()),
-            new HorizontalOrientation());
+            Orientation.HORIZONTAL);
 
         // Find and build additional text glyphs (words most likely)
         area.subdivide();

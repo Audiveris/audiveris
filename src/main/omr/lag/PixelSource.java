@@ -21,6 +21,11 @@ package omr.lag;
  */
 public interface PixelSource
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Default value for background pixel */
+    public static final int BACKGROUND = 255;
+
     //~ Methods ----------------------------------------------------------------
 
     //-----------//

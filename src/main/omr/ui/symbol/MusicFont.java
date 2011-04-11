@@ -18,7 +18,6 @@ import omr.glyph.Shape;
 import omr.log.Logger;
 
 import omr.score.common.PixelDimension;
-import omr.score.common.PixelRectangle;
 
 import java.awt.*;
 import java.awt.font.*;

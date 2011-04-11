@@ -14,7 +14,7 @@ package omr.script;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.lag.LagOrientation;
+import omr.run.Orientation;
 
 import omr.sheet.Sheet;
 
@@ -67,7 +67,7 @@ public class AssignTask
                        Shape             shape,
                        boolean           compound,
                        Collection<Glyph> glyphs,
-                       LagOrientation    orientation)
+                       Orientation    orientation)
     {
         super(sheet, orientation, glyphs);
         this.shape = shape;
@@ -91,7 +91,7 @@ public class AssignTask
                        boolean           compound,
                        Collection<Glyph> glyphs)
     {
-        this(sheet, shape, compound, glyphs, LagOrientation.VERTICAL);
+        this(sheet, shape, compound, glyphs, Orientation.VERTICAL);
     }
 
     //------------//
@@ -105,7 +105,7 @@ public class AssignTask
      */
     public AssignTask (Sheet             sheet,
                        Collection<Glyph> glyphs,
-                       LagOrientation    orientation)
+                       Orientation    orientation)
     {
         this(sheet, null, false, glyphs, orientation);
     }
@@ -121,7 +121,7 @@ public class AssignTask
     public AssignTask (Sheet             sheet,
                        Collection<Glyph> glyphs)
     {
-        this(sheet, null, false, glyphs, LagOrientation.VERTICAL);
+        this(sheet, null, false, glyphs, Orientation.VERTICAL);
     }
 
     //------------//

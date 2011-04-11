@@ -164,6 +164,56 @@ public class NaturalSpline
         }
     }
 
+    //--------------//
+    // derivativeAt //
+    //--------------//
+    public double derivativeAt (double x)
+    {
+        double[]       buffer = new double[6];
+        Point2D.Double p1 = new Point2D.Double();
+        Point2D.Double p2 = new Point2D.Double();
+        final int      currentSegment = getSegment(x, buffer, p1, p2);
+
+        double         y1 = p1.y;
+        double         x1 = p1.x;
+        double         y2 = p2.y;
+        double         x2 = p2.x;
+
+        // Compute y value
+        double deltaX = x2 - x1;
+        double t = (x - x1) / deltaX;
+        double u = 1 - t;
+
+        // dy/dx = dy/dt * dt/dx
+        // dt/dx = 1/(x2-x1)  
+        switch (currentSegment) {
+        case PathIterator.SEG_LINETO :
+
+            //return y1 + (t * (y2 - y1));
+            return (y2 - y1) / deltaX;
+
+        case PathIterator.SEG_QUADTO : {
+            double cpy = buffer[1];
+
+            //return (y1 * u * u) + (2 * cpy * t * u) + (y2 * t * t);
+            return ((-2 * y1 * u) + (2 * cpy * (1 - (2 * t))) + (2 * y2 * t)) / deltaX;
+        }
+
+        case PathIterator.SEG_CUBICTO : {
+            double cpy1 = buffer[1];
+            double cpy2 = buffer[3];
+
+            //return (y1 * u * u * u) + (3 * cpy1 * t * u * u) + (3 * cpy2 * t * t * u) + (y2 * t * t * t);
+            return ((-3 * y1 * u * u) + (3 * cpy1 * ((u * u) - (2 * u * t))) +
+                   (3 * cpy2 * ((2 * t * u) - (t * t))) + (3 * y2 * t * t)) / deltaX;
+        }
+
+        default :
+        }
+
+        throw new RuntimeException("Illegal currentSegment " + currentSegment);
+    }
+
     //----------//
     // toString //
     //----------//
@@ -208,6 +258,68 @@ public class NaturalSpline
         return sb.toString();
     }
 
+    //    //-----//
+    //    // yAt //
+    //    //-----//
+    //    /**
+    //     * Report the ordinate of the spline at abscissa x (assuming true function)
+    //     * @param x the given abscissa
+    //     * @return the corresponding ordinate
+    //     */
+    //    public double yAt (double x)
+    //    {
+    //        double[]     buffer = new double[6];
+    //        PathIterator it = getPathIterator(null);
+    //        double       x1 = 0;
+    //        double       y1 = 0;
+    //
+    //        while (!it.isDone()) {
+    //            final int    currentSegment = it.currentSegment(buffer);
+    //            final int    coords = coordCount(currentSegment);
+    //            final double x2 = buffer[coords - 2];
+    //            final double y2 = buffer[coords - 1];
+    //
+    //            if ((currentSegment == PathIterator.SEG_MOVETO) ||
+    //                (currentSegment == PathIterator.SEG_CLOSE) ||
+    //                (x > x2)) {
+    //                // Move to next segment
+    //                x1 = x2;
+    //                y1 = y2;
+    //                it.next();
+    //
+    //                continue;
+    //            }
+    //
+    //            // Compute y value
+    //            double t = (x - x1) / (x2 - x1);
+    //            double u = 1 - t;
+    //
+    //            switch (currentSegment) {
+    //            case PathIterator.SEG_LINETO : //
+    //                return y1 + (t * (y2 - y1));
+    //
+    //            case PathIterator.SEG_QUADTO : {
+    //                double cpy = buffer[1];
+    //
+    //                return (y1 * u * u) + (2 * cpy * t * u) + (y2 * t * t);
+    //            }
+    //
+    //            case PathIterator.SEG_CUBICTO : {
+    //                double cpy1 = buffer[1];
+    //                double cpy2 = buffer[3];
+    //
+    //                return (y1 * u * u * u) + (3 * cpy1 * t * u * u) +
+    //                       (3 * cpy2 * t * t * u) + (y2 * t * t * t);
+    //            }
+    //
+    //            default :
+    //            }
+    //        }
+    //
+    //        // Not found
+    //        throw new RuntimeException("Abscissa not in spline range: " + x);
+    //    }
+
     //-----//
     // yAt //
     //-----//
@@ -218,56 +330,42 @@ public class NaturalSpline
      */
     public double yAt (double x)
     {
-        double[]     buffer = new double[6];
-        PathIterator it = getPathIterator(null);
-        double       x1 = 0;
-        double       y1 = 0;
+        double[]       buffer = new double[6];
+        Point2D.Double p1 = new Point2D.Double();
+        Point2D.Double p2 = new Point2D.Double();
+        final int      currentSegment = getSegment(x, buffer, p1, p2);
 
-        while (!it.isDone()) {
-            final int    currentSegment = it.currentSegment(buffer);
-            final int    coords = coordCount(currentSegment);
-            final double x2 = buffer[coords - 2];
-            final double y2 = buffer[coords - 1];
+        double         y1 = p1.y;
+        double         x1 = p1.x;
+        double         y2 = p2.y;
+        double         x2 = p2.x;
 
-            if ((currentSegment == PathIterator.SEG_MOVETO) ||
-                (currentSegment == PathIterator.SEG_CLOSE) ||
-                (x > x2)) {
-                // Move to next segment
-                x1 = x2;
-                y1 = y2;
-                it.next();
+        // Compute y value
+        double t = (x - x1) / (x2 - x1);
+        double u = 1 - t;
 
-                continue;
-            }
+        switch (currentSegment) {
+        case PathIterator.SEG_LINETO : //
+            return y1 + (t * (y2 - y1));
 
-            // Compute y value
-            double t = (x - x1) / (x2 - x1);
-            double u = 1 - t;
+        case PathIterator.SEG_QUADTO : {
+            double cpy = buffer[1];
 
-            switch (currentSegment) {
-            case PathIterator.SEG_LINETO : //
-                return y1 + (t * (y2 - y1));
-
-            case PathIterator.SEG_QUADTO : {
-                double cpy = buffer[1];
-
-                return (y1 * u * u) + (2 * cpy * t * u) + (y2 * t * t);
-            }
-
-            case PathIterator.SEG_CUBICTO : {
-                double cpy1 = buffer[1];
-                double cpy2 = buffer[3];
-
-                return (y1 * u * u * u) + (3 * cpy1 * t * u * u) +
-                       (3 * cpy2 * t * t * u) + (y2 * t * t * t);
-            }
-
-            default :
-            }
+            return (y1 * u * u) + (2 * cpy * t * u) + (y2 * t * t);
         }
 
-        // Not found
-        throw new RuntimeException("Abscissa not in spline range: " + x);
+        case PathIterator.SEG_CUBICTO : {
+            double cpy1 = buffer[1];
+            double cpy2 = buffer[3];
+
+            return (y1 * u * u * u) + (3 * cpy1 * t * u * u) +
+                   (3 * cpy2 * t * t * u) + (y2 * t * t * t);
+        }
+
+        default :
+        }
+
+        throw new RuntimeException("Illegal currentSegment " + currentSegment);
     }
 
     //------------//
@@ -348,5 +446,54 @@ public class NaturalSpline
         }
 
         return D;
+    }
+
+    //------------//
+    // getSegment //
+    //------------//
+    /**
+     * Retrieve the segment of the curve that contains the provided abscissa
+     * @param x the provided abscissa
+     * @param buffer output
+     * @param p1 output: start of segment
+     * @param p2 output: end of segment
+     * @return the segment type
+     */
+    private int getSegment (double         x,
+                            double[]       buffer,
+                            Point2D.Double p1,
+                            Point2D.Double p2)
+    {
+        PathIterator it = getPathIterator(null);
+        double       x1 = 0;
+        double       y1 = 0;
+
+        while (!it.isDone()) {
+            final int    currentSegment = it.currentSegment(buffer);
+            final int    coords = coordCount(currentSegment);
+            final double x2 = buffer[coords - 2];
+            final double y2 = buffer[coords - 1];
+
+            if ((currentSegment == PathIterator.SEG_MOVETO) ||
+                (currentSegment == PathIterator.SEG_CLOSE) ||
+                (x > x2)) {
+                // Move to next segment
+                x1 = x2;
+                y1 = y2;
+                it.next();
+
+                continue;
+            }
+
+            p1.x = x1;
+            p1.y = y1;
+            p2.x = x2;
+            p2.y = y2;
+
+            return currentSegment;
+        }
+
+        // Not found
+        throw new RuntimeException("Abscissa not in spline range: " + x);
     }
 }

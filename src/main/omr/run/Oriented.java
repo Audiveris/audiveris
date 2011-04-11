@@ -9,7 +9,7 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.lag;
+package omr.run;
 
 import omr.math.Line;
 
@@ -35,7 +35,7 @@ public interface Oriented
      * Report the orientation constant
      * @return HORIZONTAL or VERTICAL
      */
-    LagOrientation getOrientation ();
+    Orientation getOrientation ();
 
     //------------//
     // isVertical //

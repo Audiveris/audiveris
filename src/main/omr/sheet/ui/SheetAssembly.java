@@ -636,11 +636,13 @@ public class SheetAssembly
         //--------------------//
         private void disconnectKeyboard ()
         {
-            for (Component topComp : boardsPane.getComponent()
-                                               .getComponents()) {
-                for (Component comp : ((Container) topComp).getComponents()) {
-                    if (comp instanceof JComponent) {
-                        ((JComponent) comp).resetKeyboardActions();
+            if (boardsPane != null) {
+                for (Component topComp : boardsPane.getComponent()
+                                                   .getComponents()) {
+                    for (Component comp : ((Container) topComp).getComponents()) {
+                        if (comp instanceof JComponent) {
+                            ((JComponent) comp).resetKeyboardActions();
+                        }
                     }
                 }
             }

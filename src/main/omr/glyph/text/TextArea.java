@@ -17,9 +17,8 @@ import omr.constant.ConstantSet;
 import omr.glyph.*;
 import omr.glyph.facets.Glyph;
 
-import omr.lag.HorizontalOrientation;
-import omr.lag.Oriented;
-import omr.lag.VerticalOrientation;
+import omr.run.Orientation;
+import omr.run.Oriented;
 
 import omr.log.Logger;
 
@@ -476,7 +475,7 @@ public class TextArea
     private void computeLines ()
     {
         // Get a horizontal histogram
-        Histogram<Integer> histo = getHistogram(new HorizontalOrientation());
+        Histogram<Integer> histo = getHistogram(Orientation.HORIZONTAL);
 
         // Retrieve max histogram value, and take threshold at half
         maxValue = histo.getMaxCount();
@@ -534,7 +533,7 @@ public class TextArea
                         contour.y,
                         gapStart - packetStart,
                         contour.height)),
-                new HorizontalOrientation());
+                Orientation.HORIZONTAL);
         } else {
             return new TextArea(
                 system,
@@ -545,7 +544,7 @@ public class TextArea
                         contour.y + packetStart,
                         contour.width,
                         gapStart - packetStart)),
-                new VerticalOrientation());
+                Orientation.VERTICAL);
         }
     }
 

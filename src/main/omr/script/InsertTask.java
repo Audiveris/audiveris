@@ -16,7 +16,7 @@ import omr.glyph.Shape;
 import omr.glyph.VirtualGlyph;
 import omr.glyph.facets.Glyph;
 
-import omr.lag.LagOrientation;
+import omr.run.Orientation;
 
 import omr.score.common.PixelPoint;
 
@@ -74,7 +74,7 @@ public class InsertTask
     public InsertTask (Sheet                  sheet,
                        Shape                  shape,
                        Collection<PixelPoint> locations,
-                       LagOrientation         orientation)
+                       Orientation         orientation)
     {
         super(sheet, orientation);
 
@@ -139,7 +139,7 @@ public class InsertTask
         }
 
         // Take inserted glyph(s) as selected glyph(s)
-        GlyphLag lag = (orientation == LagOrientation.VERTICAL)
+        GlyphLag lag = (orientation == Orientation.VERTICAL)
                        ? sheet.getVerticalLag() : sheet.getHorizontalLag();
         lag.getSelectionService()
            .publish(
@@ -224,7 +224,7 @@ public class InsertTask
                 sheet.getScale().interline(),
                 location);
 
-            if (orientation == LagOrientation.VERTICAL) {
+            if (orientation == Orientation.VERTICAL) {
                 SystemInfo system = sheet.getSystemOf(glyph.getAreaCenter());
                 glyph = system.addGlyph(glyph);
                 system.computeGlyphFeatures(glyph);

@@ -17,7 +17,7 @@ import omr.glyph.facets.Glyph;
 import omr.glyph.facets.Stick;
 
 import omr.lag.Lag;
-import omr.lag.Oriented;
+import omr.run.Oriented;
 import omr.lag.Section;
 
 import omr.log.Logger;

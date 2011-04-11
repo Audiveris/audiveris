@@ -9,7 +9,7 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.lag;
+package omr.run;
 
 import javax.xml.bind.annotation.*;
 
@@ -86,6 +86,20 @@ public class Run
         return stopCommon - startCommon + 1;
     }
 
+    //-------------//
+    // isIdentical //
+    //-------------//
+    /**
+     * Field by field comparison
+     * @param that the other Run to compare with
+     * @return true if identical
+     */
+    public boolean isIdentical (Run that)
+    {
+        return (this.start == that.start) && (this.length == that.length) &&
+               (this.level == that.level);
+    }
+
     //-----------//
     // getLength //
     //-----------//
@@ -94,7 +108,7 @@ public class Run
      *
      * @return this length
      */
-    public int getLength ()
+    public final int getLength ()
     {
         return length;
     }
@@ -107,7 +121,7 @@ public class Run
      *
      * @return the average value of gray level along this run
      */
-    public int getLevel ()
+    public final int getLevel ()
     {
         return level;
     }
@@ -121,7 +135,7 @@ public class Run
      *
      * @return the start coordinate
      */
-    public int getStart ()
+    public final int getStart ()
     {
         return start;
     }
@@ -135,7 +149,7 @@ public class Run
      *
      * @return the stop coordinate
      */
-    public int getStop ()
+    public final int getStop ()
     {
         return (start + length) - 1;
     }
@@ -171,7 +185,7 @@ public class Run
      * Apply a delta-coordinate translation to this run
      * @param dc the (coordinate) translation
      */
-    public void translate (int dc)
+    public final void translate (int dc)
     {
         start += dc;
     }

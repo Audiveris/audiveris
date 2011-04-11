@@ -29,7 +29,7 @@ import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphLagView;
 import omr.glyph.ui.GlyphsController;
 
-import omr.lag.VerticalOrientation;
+import omr.run.Orientation;
 import omr.lag.ui.RunBoard;
 import omr.lag.ui.ScrollLagView;
 import omr.lag.ui.SectionBoard;
@@ -141,7 +141,7 @@ public class SystemsBuilder
     {
         super(
             sheet,
-            new GlyphLag("vLag", StickSection.class, new VerticalOrientation()),
+            new GlyphLag("vLag", StickSection.class, Orientation.VERTICAL),
             Steps.valueOf(Steps.SYSTEMS));
 
         systems = sheet.getSystems();

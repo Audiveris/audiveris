@@ -247,6 +247,10 @@ public class RubberPanel
      */
     public Rectangle getSelectedRectangle ()
     {
+        if (locationService == null) {
+            return null;
+        }
+
         LocationEvent locationEvent = (LocationEvent) locationService.getLastEvent(
             locationClass);
 
@@ -497,7 +501,9 @@ public class RubberPanel
         }
 
         // Subscribe to location events
-        locationService.subscribeStrongly(locationClass, this);
+        if (locationService != null) {
+            locationService.subscribeStrongly(locationClass, this);
+        }
     }
 
     //----------//
@@ -553,7 +559,9 @@ public class RubberPanel
         }
 
         // Unsubscribe to location events
-        locationService.unsubscribe(locationClass, this);
+        if (locationService != null) {
+            locationService.unsubscribe(locationClass, this);
+        }
     }
 
     //-------------------//
@@ -623,7 +631,7 @@ public class RubberPanel
             } catch (ConcurrentModificationException ex) {
                 // It's hard to avoid concurrent modifs since the GUI may need to
                 // repaint a view, while some processing is taking place ...
-                logger.warning("RubberPanel paintComponent failed", ex);
+                ///logger.warning("RubberPanel paintComponent failed", ex);
                 repaint(); // To trigger another painting later ...
             } finally {
                 // Finally the rubber, now that everything else has been drawn

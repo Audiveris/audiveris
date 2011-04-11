@@ -21,7 +21,7 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
 
-import omr.lag.LagOrientation;
+import omr.run.Orientation;
 
 import omr.log.Logger;
 
@@ -468,7 +468,7 @@ public class ShapeBoard
                         shape,
                         Collections.singleton(
                             new PixelPoint(localPt.x, localPt.y)),
-                        LagOrientation.VERTICAL).launch(sheet);
+                        Orientation.VERTICAL).launch(sheet);
                 }
             }
         }

@@ -65,7 +65,7 @@ import javax.media.jai.RenderedImageAdapter;
  * @author Hervé Bitteur
  * @author Brenton Partridge
  *
- * TODO: work on grayFactor, BACKGROUND, etc...
+ * TODO: work on grayFactor
  */
 public class Picture
     implements PixelSource, EventSubscriber<SheetLocationEvent>
@@ -77,11 +77,6 @@ public class Picture
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Picture.class);
-
-    /**
-     * Constant color of the picture background (generally white).
-     */
-    public static final int BACKGROUND = 255;
 
     static {
         JaiLoader.ensureLoaded();

@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.lag.ui;
 
+import omr.run.Run;
 import omr.constant.Constant;
 
 import omr.glyph.ui.ViewParameters;
@@ -21,7 +22,6 @@ import omr.lag.*;
 
 import omr.log.Logger;
 
-import omr.selection.GlyphEvent;
 import omr.selection.MouseMovement;
 import omr.selection.RunEvent;
 import omr.selection.SectionEvent;
@@ -380,7 +380,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         // Paint additional items, such as recognized items, etc...
         renderItems(g);
 
-        // Restore stoke
+        // Restore stroke
         g.setStroke(oldStroke);
     }
 
@@ -539,7 +539,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
      * @param section the section to colorize
      * @param viewIndex the index of this view in the lag list of views
      */
-    private void colorizeSection (S   section,
+    protected void colorizeSection (S   section,
                                   int viewIndex)
     {
         SectionView view = (SectionView) section.getView(viewIndex);
@@ -775,7 +775,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     //------------------//
     // renderCollection //
     //------------------//
-    private void renderCollection (Graphics2D    g,
+    protected void renderCollection (Graphics2D    g,
                                    Collection<S> collection,
                                    int           index,
                                    boolean       drawBorders)

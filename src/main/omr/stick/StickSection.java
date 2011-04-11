@@ -13,7 +13,7 @@ package omr.stick;
 
 import omr.glyph.GlyphSection;
 
-import omr.lag.Run;
+import omr.run.Run;
 
 import omr.math.BasicLine;
 import omr.math.Line;

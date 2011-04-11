@@ -42,6 +42,7 @@ import omr.selection.SheetLocationEvent;
 import omr.sheet.picture.ImageFormatException;
 import omr.sheet.picture.Picture;
 import omr.sheet.picture.PictureView;
+import omr.sheet.staff.LineCluster;
 import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.ScoreColorizer;
 import omr.sheet.ui.SheetAssembly;
@@ -112,6 +113,9 @@ public class Sheet
 
     /** Retrieved staves */
     private List<StaffInfo> staves;
+
+    /** Draft: list of staff lines clusters */
+    private Collection<LineCluster> clusters;
 
     /** Horizontal entities */
     private Horizontals horizontals;
@@ -250,6 +254,28 @@ public class Sheet
     public SheetBench getBench ()
     {
         return bench;
+    }
+
+    //-------------//
+    // setClusters //
+    //-------------//
+    /**
+     * @param clusters the clusters to set
+     */
+    public void setClusters (Collection<LineCluster> clusters)
+    {
+        this.clusters = clusters;
+    }
+
+    //-------------//
+    // getClusters //
+    //-------------//
+    /**
+     * @return the clusters
+     */
+    public Collection<LineCluster> getClusters ()
+    {
+        return clusters;
     }
 
     //----------------//

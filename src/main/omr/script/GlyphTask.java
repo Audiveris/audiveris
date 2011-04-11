@@ -15,7 +15,7 @@ import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.lag.LagOrientation;
+import omr.run.Orientation;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
@@ -46,7 +46,7 @@ public abstract class GlyphTask
 
     /** Lag orientation */
     @XmlAttribute
-    protected final LagOrientation orientation;
+    protected final Orientation orientation;
 
     /** The collection of glyphs which are concerned by this task */
     protected Set<Glyph> glyphs;
@@ -67,7 +67,7 @@ public abstract class GlyphTask
      * @param glyphs the collection of glyphs concerned by this task
      */
     protected GlyphTask (Sheet             sheet,
-                         LagOrientation    orientation,
+                         Orientation    orientation,
                          Collection<Glyph> glyphs)
     {
         super(sheet);
@@ -101,7 +101,7 @@ public abstract class GlyphTask
     protected GlyphTask (Sheet             sheet,
                          Collection<Glyph> glyphs)
     {
-        this(sheet, LagOrientation.VERTICAL, glyphs);
+        this(sheet, Orientation.VERTICAL, glyphs);
     }
 
     //-----------//
@@ -113,7 +113,7 @@ public abstract class GlyphTask
      * @param orientation the specified lag orientation
      */
     protected GlyphTask (Sheet          sheet,
-                         LagOrientation orientation)
+                         Orientation orientation)
     {
         super(sheet);
 

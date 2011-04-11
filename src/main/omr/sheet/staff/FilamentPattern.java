@@ -1,0 +1,178 @@
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                       F i l a m e n t P a t t e r n                        //
+//                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
+//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  This software is released under the GNU General Public License.           //
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
+//----------------------------------------------------------------------------//
+// </editor-fold>
+package omr.sheet.staff;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Class {@code FilamentPattern} describe a series of y values corresponding to
+ * horizontal filaments rather regularly separated
+ *
+ * @author Hervé Bitteur
+ */
+public class FilamentPattern
+{
+    //~ Instance fields --------------------------------------------------------
+
+    /** Column index where sample was taken */
+    private final int col;
+
+    /** Series of filaments involved */
+    private final List<Filament> filaments;
+
+    /** Ordinate value for each filament */
+    private final List<Integer> ys;
+
+    /** To save processing */
+    private boolean processed = false;
+
+    //~ Constructors -----------------------------------------------------------
+
+    //-----------------//
+    // FilamentPattern //
+    //-----------------//
+    /**
+     * Creates a new FilamentPattern object.
+     * @param col the column index
+     */
+    public FilamentPattern (int col)
+    {
+        this.col = col;
+
+        filaments = new ArrayList<Filament>();
+        ys = new ArrayList<Integer>();
+    }
+
+    //~ Methods ----------------------------------------------------------------
+
+    //----------//
+    // getCount //
+    //----------//
+    /**
+     * Report the number of filaments in this series
+     * @return the count
+     */
+    public int getCount ()
+    {
+        return filaments.size();
+    }
+
+    //-------------//
+    // getFilament //
+    //-------------//
+    public Filament getFilament (int index)
+    {
+        return filaments.get(index);
+    }
+
+    //--------------//
+    // getFilaments //
+    //--------------//
+    public List<Filament> getFilaments ()
+    {
+        return filaments;
+    }
+
+    //----------//
+    // getIndex //
+    //----------//
+    public int getIndex (Filament filament)
+    {
+        Filament ancestor = filament.getAncestor();
+
+        for (int index = 0; index < filaments.size(); index++) {
+            Filament fil = filaments.get(index);
+
+            if (fil.getAncestor() == ancestor) {
+                return index;
+            }
+        }
+
+        return -1;
+    }
+
+    //--------------//
+    // setProcessed //
+    //--------------//
+    /**
+     * @param processed the processed to set
+     */
+    public void setProcessed (boolean processed)
+    {
+        this.processed = processed;
+    }
+
+    //-------------//
+    // isProcessed //
+    //-------------//
+    /**
+     * @return the processed
+     */
+    public boolean isProcessed ()
+    {
+        return processed;
+    }
+
+    //------//
+    // getY //
+    //------//
+    public int getY (int index)
+    {
+        return ys.get(index);
+    }
+
+    //--------//
+    // append //
+    //--------//
+    /**
+     * Append a filament to the series
+     * @param filament the filament to append
+     * @param y the filament ordinate at x abscissa
+     */
+    public void append (Filament filament,
+                        int      y)
+    {
+        filaments.add(filament);
+        ys.add(y);
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder("{");
+        sb.append("Pattern");
+
+        sb.append(" col:")
+          .append(col);
+
+        sb.append(" ")
+          .append(filaments.size());
+
+        for (int i = 0; i < filaments.size(); i++) {
+            Filament fil = filaments.get(i)
+                                    .getAncestor();
+            int      y = ys.get(i);
+            sb.append(" F#")
+              .append(fil.getId())
+              .append("@")
+              .append(y);
+        }
+
+        sb.append("}");
+
+        return sb.toString();
+    }
+}

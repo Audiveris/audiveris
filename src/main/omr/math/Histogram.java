@@ -80,6 +80,28 @@ public class Histogram<K>
         }
     }
 
+    //--------------//
+    // getMaxBucket //
+    //--------------//
+    /**
+     * Report the bucket with highest count
+     * @return the most popular bucket
+     */
+    public K getMaxBucket ()
+    {
+        int max = Integer.MIN_VALUE;
+        K   bucket = null;
+
+        for (Map.Entry<K, Integer> entry : map.entrySet()) {
+            if (entry.getValue() > max) {
+                max = entry.getValue();
+                bucket = entry.getKey();
+            }
+        }
+
+        return bucket;
+    }
+
     //-------------//
     // getMaxCount //
     //-------------//

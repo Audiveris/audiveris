@@ -20,6 +20,7 @@ import omr.lag.Section;
 import omr.log.Logger;
 
 import omr.math.Moments;
+import omr.math.PointsCollector;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -299,16 +300,21 @@ class BasicGeometry
         // First cumulate point from member sections
         weight = getWeight();
 
-        int[] coord = new int[weight];
-        int[] pos = new int[weight];
+        PointsCollector collector = new PointsCollector(null, weight);
 
-        // Append recursively all points
-        cumulatePoints(coord, pos, 0);
+        // Append all points, section per section
+        for (Section section : glyph.getMembers()) {
+            section.cumulate(collector);
+        }
 
         // Then compute the moments, swapping pos & coord since the lag is
         // vertical
         try {
-            moments = new Moments(pos, coord, weight, getInterline());
+            moments = new Moments(
+                collector.getYValues(),
+                collector.getXValues(),
+                collector.getCount(),
+                getInterline());
         } catch (Exception ex) {
             logger.warning(
                 "Glyph #" + glyph.getId() +
@@ -375,19 +381,5 @@ class BasicGeometry
         }
 
         glyph.invalidateCache();
-    }
-
-    //----------------//
-    // cumulatePoints //
-    //----------------//
-    private int cumulatePoints (int[] coord,
-                                int[] pos,
-                                int   nb)
-    {
-        for (Section section : glyph.getMembers()) {
-            nb = section.cumulatePoints(coord, pos, nb);
-        }
-
-        return nb;
     }
 }

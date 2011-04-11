@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.lag;
 
+import omr.run.Run;
+
 
 /**
  * Class <code>JunctionDeltaPolicy</code> defined a junction policy based on the

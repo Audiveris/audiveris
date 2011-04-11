@@ -13,7 +13,7 @@ package omr.glyph;
 
 import omr.glyph.facets.Glyph;
 
-import omr.lag.LagOrientation;
+import omr.run.Orientation;
 import omr.lag.Sections;
 
 import omr.log.Logger;
@@ -122,12 +122,12 @@ public class SectionSets
      * @return the collection of section sets
      */
     public Collection<Collection<GlyphSection>> getSets (Sheet          sheet,
-                                                         LagOrientation orientation)
+                                                         Orientation orientation)
     {
         if (sets == null) {
             sets = new ArrayList<Collection<GlyphSection>>();
 
-            GlyphLag lag = (orientation == LagOrientation.VERTICAL)
+            GlyphLag lag = (orientation == Orientation.VERTICAL)
                            ? sheet.getVerticalLag() : sheet.getHorizontalLag();
 
             for (SectionIdSet idSet : idSets) {

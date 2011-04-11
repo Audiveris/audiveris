@@ -21,7 +21,7 @@ import omr.glyph.GlyphSection;
 import omr.glyph.GlyphsModel;
 import omr.glyph.facets.Glyph;
 
-import omr.lag.VerticalOrientation;
+import omr.run.Orientation;
 import omr.lag.ui.ScrollLagView;
 
 import omr.log.Logger;
@@ -281,10 +281,7 @@ class GlyphBrowser
     private void resetBrowser ()
     {
         // Reset model
-        tLag = new GlyphLag(
-            "tLag",
-            GlyphSection.class,
-            new VerticalOrientation());
+        tLag = new GlyphLag("tLag", GlyphSection.class, Orientation.VERTICAL);
 
         locationService = new SelectionService("GlyphBrowser");
         controller = new BasicController(tLag, locationService);

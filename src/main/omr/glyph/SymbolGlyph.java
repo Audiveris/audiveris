@@ -16,9 +16,10 @@ import omr.glyph.facets.Glyph;
 
 import omr.lag.JunctionAllPolicy;
 import omr.lag.SectionsBuilder;
-import omr.lag.VerticalOrientation;
 
 import omr.log.Logger;
+
+import omr.run.Orientation;
 
 import omr.stick.StickSection;
 
@@ -80,12 +81,12 @@ public class SymbolGlyph
         GlyphLag vLag = new GlyphLag(
             "iLag",
             StickSection.class,
-            new VerticalOrientation());
+            Orientation.VERTICAL);
         SectionsBuilder<GlyphLag, GlyphSection> lagBuilder;
         lagBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
             vLag,
             new JunctionAllPolicy()); // catch all
-        lagBuilder.createSections(picture, 0); // minRunLength
+        lagBuilder.createSections("symbol", picture, 0); // minRunLength
 
         // Retrieve the whole glyph made of all sections
         setLag(vLag);
@@ -97,11 +98,11 @@ public class SymbolGlyph
         // Glyph features
         setShape(shape, Evaluation.MANUAL);
 
-//        // Ordinate (approximate value)
-//        getContourBox();
-//
-//        // Mass center
-//        getCentroid();
+        //        // Ordinate (approximate value)
+        //        getContourBox();
+        //
+        //        // Mass center
+        //        getCentroid();
 
         //            // Number of connected stems
         //            if (symbol.getStemNumber() != null) {

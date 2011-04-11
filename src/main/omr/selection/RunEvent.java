@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.selection;
 
-import omr.lag.Run;
+import omr.run.Run;
 
 /**
  * Class <code>RunEvent</code> represents a Run selection

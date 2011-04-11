@@ -615,18 +615,21 @@ public abstract class PagePainter
     {
         try {
             // Force y alignment for items of the same sentence
-            final Sentence          sentence = text.getSentence();
-            final PixelPoint        location = sentence.getLocation();
-            final PixelPoint        refPoint = text.getReferencePoint();
-            final String            str = text.getContent();
-            final FontRenderContext frc = g.getFontRenderContext();
-            Font                    font = text.getFont();
-            TextLayout              layout = new TextLayout(str, font, frc);
+            final Sentence   sentence = text.getSentence();
+            final PixelPoint location = sentence.getLocation();
+            final PixelPoint refPoint = text.getReferencePoint();
+            final String     str = text.getContent();
+            final Font       font = text.getFont();
 
-            paint(
-                layout,
-                new PixelPoint(refPoint.x, location.y),
-                BASELINE_LEFT);
+            if ((str != null) && (font != null)) {
+                final FontRenderContext frc = g.getFontRenderContext();
+                TextLayout              layout = new TextLayout(str, font, frc);
+
+                paint(
+                    layout,
+                    new PixelPoint(refPoint.x, location.y),
+                    BASELINE_LEFT);
+            }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warning(

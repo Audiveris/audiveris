@@ -14,7 +14,7 @@ package omr.script;
 import omr.glyph.Glyphs;
 import omr.glyph.facets.Glyph;
 
-import omr.lag.LagOrientation;
+import omr.run.Orientation;
 
 import omr.score.common.PixelPoint;
 
@@ -61,7 +61,7 @@ public class DeleteTask
      * @throws IllegalArgumentException if any of the arguments is not valid
      */
     public DeleteTask (Sheet             sheet,
-                       LagOrientation    orientation,
+                       Orientation    orientation,
                        Collection<Glyph> glyphs)
     {
         super(sheet, orientation, glyphs);
@@ -183,7 +183,7 @@ public class DeleteTask
         for (PixelPoint location : locations) {
             Glyph glyph = null;
 
-            if (orientation == LagOrientation.VERTICAL) {
+            if (orientation == Orientation.VERTICAL) {
                 glyph = sheet.getVerticalLag()
                              .lookupVirtualGlyph(location);
 

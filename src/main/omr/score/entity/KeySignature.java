@@ -20,7 +20,7 @@ import static omr.glyph.Shape.*;
 import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
 
-import omr.lag.VerticalOrientation;
+import omr.run.Orientation;
 
 import omr.log.Logger;
 
@@ -331,7 +331,7 @@ public class KeySignature
                                            .getSheet()
                                            .getVerticalLag()
                                            .getHistogram(
-                new VerticalOrientation(),
+                Orientation.VERTICAL,
                 getGlyphs());
 
             if (logger.isFineEnabled()) {

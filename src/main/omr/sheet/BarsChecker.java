@@ -155,7 +155,7 @@ public class BarsChecker
         lagBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
             lag,
             new JunctionDeltaPolicy(scale.toPixels(constants.maxDeltaLength)));
-        lagBuilder.createSections(sheet.getPicture(), 0); // 0 = minRunLength
+        lagBuilder.createSections("bars", sheet.getPicture(), 0); // 0 = minRunLength
 
         // Retrieve (vertical) sticks
         VerticalArea barsArea = new VerticalArea(

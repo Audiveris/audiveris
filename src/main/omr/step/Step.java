@@ -32,6 +32,7 @@ public interface Step
 
     /** Labels for view in tabbed panel */
     public static final String PICTURE_TAB = "Picture";
+    public static final String FRAMES_TAB = "Frames"; // Temporary
     public static final String SKEW_TAB = "Skew";
     public static final String LINES_TAB = "Lines";
     public static final String HORIZONTALS_TAB = "Horizontals";
