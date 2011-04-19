@@ -561,20 +561,24 @@ public class GlyphRegression
 
         for (String label : Arrays.asList("weight", "width", "height")) {
             int    p = GlyphEvaluator.getParameterIndex(label);
-            double val = getMinimum(p, shape);
+            Double val = getMinimum(p, shape);
 
-            if (val > 0) {
-                setMinimum(p, shape, val * minFactor);
-            } else {
-                setMinimum(p, shape, val * maxFactor);
+            if (val != null) {
+                if (val > 0) {
+                    setMinimum(p, shape, val * minFactor);
+                } else {
+                    setMinimum(p, shape, val * maxFactor);
+                }
             }
 
             val = getMaximum(p, shape);
 
-            if (val > 0) {
-                setMaximum(p, shape, val * maxFactor);
-            } else {
-                setMaximum(p, shape, val * minFactor);
+            if (val != null) {
+                if (val > 0) {
+                    setMaximum(p, shape, val * maxFactor);
+                } else {
+                    setMaximum(p, shape, val * minFactor);
+                }
             }
         }
 

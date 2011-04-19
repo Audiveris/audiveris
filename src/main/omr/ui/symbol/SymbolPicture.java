@@ -17,6 +17,7 @@ import omr.log.Logger;
 
 import omr.util.Implement;
 
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 
@@ -47,10 +48,10 @@ public class SymbolPicture
 
     /**
      * Current max foreground pixel value.
-     * Exactly 255 is the background (white) value, so anything else up to
-     * 254 included is foreground (black)
+     * Anything from 0 (black) up to 192 included (light gray) is considered as black
+     * Anything brighter than gray is considered as white (background)
      */
-    private int maxForeground = 254;
+    private int maxForeground = 216; // Was Color.LIGHT_GRAY.getRed();
 
     //~ Constructors -----------------------------------------------------------
 

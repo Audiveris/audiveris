@@ -171,6 +171,7 @@ public class Symbols
         dec.put(LONG_REST, new LongRestSymbol(true));
         dec.put(NON_DRAGGABLE, new NonDraggableSymbol(192));
         dec.put(SLUR, new SlurSymbol());
+        dec.put(STRUCTURE, new StructureSymbol());
         dec.put(TEXT, new TextSymbol(TEXT, "txt"));
         dec.put(WHOLE_REST, new RestSymbol(WHOLE_REST, true, 183));
     }
@@ -185,6 +186,11 @@ public class Symbols
     private static void assignSymbols ()
     {
         // Instances to be defined first, because others depend on them
+        map(DYNAMICS_F, 102);
+        map(DYNAMICS_FF, 196);
+        map(DYNAMICS_FFF, 236);
+        map(DYNAMICS_FZ, 90);
+        map(DYNAMICS_SF, 83);
         map(NOTEHEAD_BLACK, 207);
         map(TIME_ZERO, 48);
         map(EIGHTH_REST, 228);
@@ -230,33 +236,27 @@ public class Symbols
         map(DYNAMICS_CHAR_R, 243);
         map(DYNAMICS_CHAR_S, 115);
         map(DYNAMICS_CHAR_Z, 122);
-        map(DYNAMICS_F, 102);
-        map(DYNAMICS_FF, 196);
-        map(DYNAMICS_FFF, 236);
-        map(DYNAMICS_FFFF, 236, 102);
-        map(DYNAMICS_FFFFF, 236, 196);
-        map(DYNAMICS_FFFFFF, 236, 236);
-        map(DYNAMICS_FP, 102, 112);
-        map(DYNAMICS_FZ, 90);
+        slanted(DYNAMICS_FFFF, 236, 102);
+        slanted(DYNAMICS_FFFFF, 236, 196);
+        slanted(DYNAMICS_FFFFFF, 236, 236);
+        slanted(DYNAMICS_FP, 102, 112);
         map(DYNAMICS_MF, 70);
         map(DYNAMICS_MP, 80);
         map(DYNAMICS_P, 112);
         map(DYNAMICS_PP, 185);
         map(DYNAMICS_PPP, 184);
-        map(DYNAMICS_PPPP, 184, 112); // Not very nice
-        map(DYNAMICS_PPPPP, 184, 185); // Not very nice
-        map(DYNAMICS_PPPPPP, 184, 184); // Not very nice
-        map(DYNAMICS_RF, 243, 102); // Not very nice
-        map(DYNAMICS_RFZ, 243, 102, 122); // Not very nice
-        map(DYNAMICS_SF, 83);
-        map(DYNAMICS_SFFZ, 83, 90); // Not very nice
-        map(DYNAMICS_SFP, 83, 112); // Not very nice
-        map(DYNAMICS_SFPP, 83, 185); // Not very nice
-        map(DYNAMICS_SFZ, 83, 122); // Not very nice
-                                    //        map(ENDING);
-                                    //        map(ENDING_HORIZONTAL);
-                                    //        map(ENDING_VERTICAL);
+        slanted(DYNAMICS_PPPP, 184, 112);
+        slanted(DYNAMICS_PPPPP, 184, 185);
+        slanted(DYNAMICS_PPPPPP, 184, 184);
+        slanted(DYNAMICS_RF, 243, 102);
+        slanted(DYNAMICS_RFZ, 243, 102, 122);
+        slanted(DYNAMICS_SFFZ, 83, 90);
+        slanted(DYNAMICS_SFP, 83, 112);
+        slanted(DYNAMICS_SFPP, 83, 185);
+        slanted(DYNAMICS_SFZ, 83, 122);
 
+        //        map(ENDING_HORIZONTAL);
+        //        map(ENDING_VERTICAL);
         map(FERMATA, 85);
         map(FERMATA_BELOW, 117);
         map(FINAL_BARLINE, 211);
@@ -467,5 +467,14 @@ public class Symbols
                                   Shape shape)
     {
         sym.put(shape, new KeySharpSymbol(key, false, shape));
+    }
+
+    //---------//
+    // slanted //
+    //---------//
+    private static void slanted (Shape  shape,
+                                 int... codes)
+    {
+        sym.put(shape, new SlantedSymbol(shape, codes));
     }
 }

@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.glyph.ui;
 
-import omr.WellKnowns;
-
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -21,10 +19,11 @@ import omr.glyph.GlyphSection;
 import omr.glyph.GlyphsModel;
 import omr.glyph.facets.Glyph;
 
-import omr.run.Orientation;
 import omr.lag.ui.ScrollLagView;
 
 import omr.log.Logger;
+
+import omr.run.Orientation;
 
 import omr.selection.GlyphEvent;
 import omr.selection.MouseMovement;
@@ -256,7 +255,7 @@ class GlyphBrowser
 
             // Perform file deletion
             if (repository.isIcon(gName)) {
-                new BlackList(WellKnowns.SYMBOLS_FOLDER).add(new File(gName));
+                new SymbolsBlackList().add(new File(gName));
             } else {
                 File file = new File(repository.getSheetsFolder(), gName);
                 new BlackList(file.getParentFile()).add(new File(gName));
@@ -745,11 +744,14 @@ class GlyphBrowser
             Glyph glyph = null;
 
             if (index >= 0) {
+                nameIndex = index;
+
                 String gName = names.get(index);
                 nameField.setText(gName);
 
                 // Special case for icon : if we point to an icon, we have to
                 // get rid of all other icons (standard glyphs can be kept)
+                // Otherwise, they would all be displayed on top of the other
                 if (repository.isIcon(gName)) {
                     repository.unloadIconsFrom(names);
                 }
@@ -777,7 +779,6 @@ class GlyphBrowser
 
             tLag.getSelectionService()
                 .publish(new GlyphEvent(this, hint, null, glyph));
-            nameIndex = index;
 
             // Enable buttons according to glyph selection
             all.setEnabled(!names.isEmpty());

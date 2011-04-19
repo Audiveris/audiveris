@@ -668,7 +668,7 @@ public class Filament
 
             // Interpolate the best spline through the provided points
             curve = NaturalSpline.interpolate(
-                points.toArray(new PixelPoint[0]));
+                points.toArray(new PixelPoint[points.size()]));
             addAttachment("SPLINE", curve); // Just for fun...
         } catch (Exception ex) {
             logger.warning("Cannot getCurve", ex);

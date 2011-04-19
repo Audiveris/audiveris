@@ -15,6 +15,8 @@ import omr.lag.Lag;
 
 import omr.score.common.PixelPoint;
 
+import omr.ui.symbol.Symbols;
+
 import java.awt.Color;
 import java.util.Collection;
 
@@ -45,7 +47,7 @@ public class VirtualGlyph
                          PixelPoint center)
     {
         // Build a glyph of proper size
-        super(shape, interline);
+        super(shape, Symbols.getSymbol(shape), interline, null);
 
         // Translation from generic center to actual center
         translate(getAreaCenter().to(center));

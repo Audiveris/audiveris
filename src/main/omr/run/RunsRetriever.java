@@ -113,7 +113,7 @@ public class RunsRetriever
         for (int c = cMin; c <= cMax; c++) {
             final int level = adapter.getLevel(c, p);
 
-            ///System.out.println("p:" + p + " c:" + c + " level:" + level);
+            ///logger.info("p:" + p + " c:" + c + " level:" + level);
             if (adapter.isFore(level)) {
                 // We are on a foreground pixel
                 if (isFore) {
@@ -168,7 +168,7 @@ public class RunsRetriever
                                     final int cMin,
                                     final int cMax)
     {
-        if (false) {
+        if (true) {
             // Sequential
             for (int p = pMin; p <= pMax; p++) {
                 final int pp = p;

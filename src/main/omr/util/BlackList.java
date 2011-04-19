@@ -32,24 +32,22 @@ public class BlackList
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(BlackList.class);
 
-    /**
-     * Name of the specific file where blacklist is kept.
-     */
-    private static final String BLACK_LIST_NAME = ".glyphignore";
+    /** Name of the specific file where blacklist is kept */
+    protected static final String BLACK_LIST_NAME = ".glyphignore";
 
     //~ Instance fields --------------------------------------------------------
 
     /** Set of black listed file names */
-    private final SortedSet<String> bl = new TreeSet<String>();
+    protected final SortedSet<String> bl = new TreeSet<String>();
 
     /** Containing directory */
-    private final File dir;
+    protected final File dir;
 
     /** Specific blacklist file */
-    private final File blackFile;
+    protected final File blackFile;
 
     /** Specific filter for blacklist */
-    private final FileFilter blackFilter = new FileFilter() {
+    protected final FileFilter blackFilter = new FileFilter() {
         public boolean accept (File file)
         {
             return isLegal(file);

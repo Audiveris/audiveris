@@ -587,9 +587,6 @@ public enum Shape {
     /** Color for glyphs tested as OK (color used temporarily) */
     public static final Color okColor = Color.green;
 
-    /** Empty array returned when no point codes are defined for this shape */
-    private static final int[] NO_CODES = new int[0];
-
     //--------------------------------------------------------------------------
 
     /** Explanation of the glyph shape */
@@ -742,7 +739,7 @@ public enum Shape {
     public boolean isWellKnown ()
     {
         return (this != NO_LEGAL_TIME) && (this != GLYPH_PART) &&
-               ((this != STRUCTURE) && (this != NOISE));
+               (this != STRUCTURE) && (this != NOISE);
     }
 
     //----------------//

@@ -16,6 +16,7 @@ import omr.WellKnowns;
 import omr.glyph.GlyphSection;
 import omr.glyph.Shape;
 import omr.glyph.SymbolGlyph;
+import omr.glyph.SymbolGlyphDescriptor;
 import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
 import omr.glyph.facets.GlyphValue;
@@ -71,6 +72,9 @@ public class GlyphRepository
     /** Extension for training files */
     private static final String FILE_EXTENSION = ".xml";
 
+    /** Extension for place-holder symbol files */
+    public static final String SYMBOL_EXTENSION = ".symbol";
+
     /** Name of Structures sub-directory */
     private static final String STRUCTURES_NAME = ".structures";
 
@@ -91,9 +95,10 @@ public class GlyphRepository
     private static final FileFilter glyphFilter = new FileFilter() {
         public boolean accept (File file)
         {
-            return file.isDirectory() ||
-                   FileUtil.getExtension(file)
-                           .equals(FILE_EXTENSION);
+            String ext = FileUtil.getExtension(file);
+
+            return file.isDirectory() || ext.equals(FILE_EXTENSION) ||
+                   ext.equals(SYMBOL_EXTENSION);
         }
     };
 
@@ -192,7 +197,7 @@ public class GlyphRepository
         if (glyph == null) {
             // If failed, actually load the glyph from XML backup file.
             if (isIcon(gName)) {
-                glyph = buildIconGlyph(gName);
+                glyph = buildSymbolGlyph(gName);
             } else {
                 File file = new File(coreFolder, gName);
 
@@ -541,9 +546,10 @@ public class GlyphRepository
         int copyNb = 0;
 
         for (String gName : coreBase) {
-            File source;
+            File    source;
+            boolean isIcon = isIcon(gName);
 
-            if (isIcon(gName)) {
+            if (isIcon) {
                 source = new File(
                     WellKnowns.SYMBOLS_FOLDER.getParentFile(),
                     gName);
@@ -563,7 +569,12 @@ public class GlyphRepository
             }
 
             try {
-                FileUtil.copy(source, target);
+                if (isIcon) {
+                    target.createNewFile();
+                } else {
+                    FileUtil.copy(source, target);
+                }
+
                 copyNb++;
             } catch (IOException ex) {
                 logger.warning("Cannot copy " + source + " to " + target);
@@ -694,21 +705,61 @@ public class GlyphRepository
         return glyph;
     }
 
-    //----------------//
-    // buildIconGlyph //
-    //----------------//
-    private Glyph buildIconGlyph (String gName)
+    //------------------//
+    // buildSymbolGlyph //
+    //------------------//
+    /**
+     * Build an artificial glyph from a symbol descriptor, in order to train an
+     * evaluator even when we have no ground-truth glyph.
+     *
+     * @param gName path to the symbol descriptor on disk
+     * @return the glyph built, or null if failed
+     */
+    private Glyph buildSymbolGlyph (String gName)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Loading icon " + gName);
-        }
-
-        Shape       shape = Shape.valueOf(gName);
+        Shape       shape = shapeOf(gName);
         Glyph       glyph = null;
+
+        // Make sure we have the drawing available for this shape
         ShapeSymbol symbol = Symbols.getSymbol(shape);
 
+        // If no plain symbol, use the decorated symbol as plan B
+        if (symbol == null) {
+            symbol = Symbols.getSymbol(shape, true);
+        }
+
         if (symbol != null) {
-            /////////////////////////////:glyph = new SymbolGlyph(symbol, shape, MusicFont.DEFAULT_INTERLINE);
+            if (logger.isFineEnabled()) {
+                logger.fine("Building symbol glyph " + gName);
+            }
+
+            File file = new File(gName);
+
+            if (file.exists()) {
+                try {
+                    InputStream           is = new FileInputStream(file);
+                    SymbolGlyphDescriptor desc = SymbolGlyphDescriptor.loadFromXmlStream(
+                        is);
+                    is.close();
+
+                    if (logger.isFineEnabled()) {
+                        logger.fine("Descriptor " + desc);
+                    }
+
+                    glyph = new SymbolGlyph(
+                        shape,
+                        symbol,
+                        MusicFont.DEFAULT_INTERLINE,
+                        desc);
+                } catch (Exception ex) {
+                    logger.warning("Cannot process " + file, ex);
+                }
+            }
+        } else {
+            //if (logger.isFineEnabled()) {
+            logger.warning("No symbol for " + gName);
+
+            //}
         }
 
         return glyph;
@@ -779,7 +830,11 @@ public class GlyphRepository
     //----------------//
     private File[] listLegalFiles (File dir)
     {
-        return new BlackList(dir).listFiles(glyphFilter);
+        if (isIconsFolder(dir.getName())) {
+            return new SymbolsBlackList().listFiles(glyphFilter);
+        } else {
+            return new BlackList(dir).listFiles(glyphFilter);
+        }
     }
 
     //----------//
@@ -812,15 +867,12 @@ public class GlyphRepository
 
         for (File file : files) {
             base.add(glyphNameOf(file));
-
-            //            Glyph glyph = getGlyph(gName);
-            //
-            //            if (monitor != null) {
-            //                monitor.loadedGlyph(glyph);
-            //            }
         }
 
-        ///logger.info(files.size() + " glyphs names collected");
+        if (logger.isFineEnabled()) {
+            logger.fine(files.size() + " glyphs names collected");
+        }
+
         return base;
     }
 

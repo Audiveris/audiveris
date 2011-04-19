@@ -16,7 +16,7 @@ import omr.glyph.Shape;
 import omr.score.common.PixelPoint;
 import static omr.ui.symbol.Alignment.*;
 
-import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Polygon;
@@ -144,13 +144,15 @@ public class BeamSymbol
             g.fill(polygon);
         }
 
-        // Decorations
-        Color oldColor = g.getColor();
-        g.setColor(Color.LIGHT_GRAY);
+        // Decorations (using composite)
+        Composite oldComposite = g.getComposite();
+        g.setComposite(decoComposite);
+
         MusicFont.paint(g, p.layout, loc, TOP_RIGHT);
         loc.translate(-p.quarterDx, p.quarterDy);
         MusicFont.paint(g, p.layout, loc, TOP_RIGHT);
-        g.setColor(oldColor);
+
+        g.setComposite(oldComposite);
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -164,6 +166,7 @@ public class BeamSymbol
         //~ Instance fields ----------------------------------------------------
 
         // layout for just quarter layout
+
         // rect for global image 
 
         // Between the 2 quarters

@@ -16,17 +16,10 @@ import omr.log.Logger;
 import omr.score.common.PixelDimension;
 import omr.score.common.PixelPoint;
 import static omr.ui.symbol.Alignment.*;
-import static omr.ui.symbol.OmrFont.*;
 
 import omr.util.Implement;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
+import java.awt.*;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
@@ -200,9 +193,9 @@ public class BasicSymbol
     //------------//
     /**
      * Build the image that represents the related shape, using the specified
-     * font and scaling factor. The main difficulty is to determine upfront the
-     * size of the image to allocate.
-     * @param font properly-scaled font (for interline & zoom)
+     * font. The main difficulty is to determine upfront the size of the image
+     * to allocate.
+     * @param font properly scaled font (for interline & zoom)
      * @return the image built, or null if failed
      */
     public SymbolImage buildImage (MusicFont font)

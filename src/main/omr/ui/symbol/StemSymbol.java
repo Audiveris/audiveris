@@ -16,7 +16,7 @@ import omr.glyph.Shape;
 import omr.score.common.PixelPoint;
 import static omr.ui.symbol.Alignment.*;
 
-import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.font.TextLayout;
@@ -110,11 +110,11 @@ public class StemSymbol
 
         PixelPoint loc = alignment.translatedPoint(TOP_RIGHT, p.rect, location);
 
-        // Decoration
-        Color oldColor = g.getColor();
-        g.setColor(Color.LIGHT_GRAY);
+        // Decorations (using composite)
+        Composite oldComposite = g.getComposite();
+        g.setComposite(decoComposite);
         MusicFont.paint(g, p.layout, loc, TOP_RIGHT);
-        g.setColor(oldColor);
+        g.setComposite(oldComposite);
 
         // Stem
         MusicFont.paint(g, p.stemLayout, loc, TOP_RIGHT);
@@ -131,6 +131,7 @@ public class StemSymbol
         //~ Instance fields ----------------------------------------------------
 
         // layout for quarter layout
+
         // rect for global image 
 
         // layout for stem

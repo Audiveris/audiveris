@@ -13,10 +13,10 @@ package omr.ui.symbol;
 
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
-import omr.glyph.SymbolGlyph;
 
 import omr.util.Implement;
 
+import java.awt.AlphaComposite;
 import java.awt.datatransfer.*;
 import java.io.IOException;
 
@@ -44,6 +44,11 @@ public class ShapeSymbol
     public static DataFlavor DATA_FLAVOR = new DataFlavor(
         Symbol.class,
         "shape-symbol");
+
+    /** Composite used for decoration */
+    protected static AlphaComposite decoComposite = AlphaComposite.getInstance(
+        AlphaComposite.SRC_OVER,
+        0.15f);
 
     //~ Instance fields --------------------------------------------------------
 

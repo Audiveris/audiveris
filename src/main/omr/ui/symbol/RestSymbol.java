@@ -16,7 +16,7 @@ import omr.glyph.Shape;
 import omr.score.common.PixelPoint;
 import static omr.ui.symbol.Alignment.*;
 
-import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -147,10 +147,11 @@ public class RestSymbol
             location);
 
         if (decorated) {
-            Color oldColor = g.getColor();
-            g.setColor(Color.LIGHT_GRAY);
+            Composite oldComposite = g.getComposite();
+            g.setComposite(decoComposite);
             MusicFont.paint(g, p.linesLayout, loc, AREA_CENTER);
-            g.setColor(oldColor);
+            g.setComposite(oldComposite);
+            
             MusicFont.paint(g, p.layout, loc, BASELINE_CENTER);
         } else {
             MusicFont.paint(g, p.layout, loc, AREA_CENTER);

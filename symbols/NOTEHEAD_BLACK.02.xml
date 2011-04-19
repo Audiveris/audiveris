@@ -1,14 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<symbol name="NOTEHEAD_BLACK" interline="8">
-    <stem-number>1</stem-number>
-    <bitmap>
-        <row>---+*###0--</row>
-        <row>--*######$-</row>
-        <row>-$########.</row>
-        <row>0#########.</row>
-        <row>#########*-</row>
-        <row>#########.-</row>
-        <row>0######$.--</row>
-        <row>-o$##*+----</row>
-    </bitmap>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<symbol name="NOTEHEAD_BLACK" interline="16">
+    <stem-number>2</stem-number>
 </symbol>

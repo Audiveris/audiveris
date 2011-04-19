@@ -450,6 +450,12 @@ public class SymbolRipper
                     yOffset.getValue());
                 g.setColor(Color.RED);
                 g2.draw(rect);
+
+                // Debug
+                TextLayout layout = new TextLayout(string, musicFont, frc);
+                logger.info(
+                    "getAdvance(): " + layout.getAdvance() +
+                    " getVisibleAdvance(): " + layout.getVisibleAdvance());
             }
         }
     }

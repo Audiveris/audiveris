@@ -122,10 +122,10 @@ public class ShapeRange
     //
     public static final ShapeRange Physicals = new ShapeRange(
         TEXT,
-        shapesOf(TEXT, CHARACTER, CLUTTER, DOT));
+        shapesOf(TEXT, CHARACTER, CLUTTER, DOT, STRUCTURE));
     public static final ShapeRange Logicals = new ShapeRange(
         REPEAT_DOTS,
-        EnumSet.range(REPEAT_DOTS, ENDING));
+        shapesOf(REPEAT_DOTS, COMBINING_AUGMENTATION_DOT, ENDING));
 
     static {
         for (Field field : ShapeRange.class.getDeclaredFields()) {

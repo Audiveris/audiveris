@@ -106,7 +106,7 @@ public class PointsCollector
      */
     public final int[] getYValues ()
     {
-        return xx;
+        return yy;
     }
 
     //---------//

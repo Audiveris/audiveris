@@ -170,6 +170,8 @@ public class SectionsBuilder<L extends Lag<L, S>, S extends Section<L, S>>
             source.getMaxForeground(),
             minRunLength);
         RunsTable        table = factory.createTable(name);
+        
+        ///table.dump(System.out) ; // BINGO
 
         // Now proceed to section extraction
         createSections(table);

@@ -26,9 +26,12 @@ import omr.stick.StickSection;
 import omr.ui.symbol.MusicFont;
 import omr.ui.symbol.ShapeSymbol;
 import omr.ui.symbol.SymbolPicture;
-import omr.ui.symbol.Symbols;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
 
 /**
  * Class <code>SymbolGlyph</code> is an articial glyph, built from a symbol.
@@ -64,14 +67,17 @@ public class SymbolGlyph
      * instance yet.
      *
      * @param shape the corresponding shape
+     * @param symbol the related drawing
      * @param interline the related interline scaling value
+     * @param descriptor additional features, if any
      */
-    public SymbolGlyph (Shape shape,
-                        int   interline)
+    public SymbolGlyph (Shape                 shape,
+                        ShapeSymbol           symbol,
+                        int                   interline,
+                        SymbolGlyphDescriptor descriptor)
     {
         super(interline);
-
-        symbol = Symbols.getSymbol(shape);
+        this.symbol = symbol;
         image = symbol.buildImage(MusicFont.getFont(interline));
 
         /** Build a dedicated SymbolPicture */
@@ -98,26 +104,24 @@ public class SymbolGlyph
         // Glyph features
         setShape(shape, Evaluation.MANUAL);
 
-        //        // Ordinate (approximate value)
-        //        getContourBox();
-        //
-        //        // Mass center
-        //        getCentroid();
+        // Use descriptor if any is provided
+        if (descriptor != null) {
+            // Number of connected stems
+            if (descriptor.getStemNumber() != null) {
+                setStemNumber(descriptor.getStemNumber());
+            }
 
-        //            // Number of connected stems
-        //            if (symbol.getStemNumber() != null) {
-        //                setStemNumber(symbol.getStemNumber());
-        //            }
-        //
-        //            // Has a related ledger ?
-        //            if (symbol.isWithLedger() != null) {
-        //                setWithLedger(symbol.isWithLedger());
-        //            }
-        //
-        //            // Vertical position wrt staff
-        //            if (symbol.getPitchPosition() != null) {
-        //                setPitchPosition(symbol.getPitchPosition());
-        //            }
+            // Has a related ledger ?
+            if (descriptor.isWithLedger() != null) {
+                setWithLedger(descriptor.isWithLedger());
+            }
+
+            // Vertical position wrt staff
+            if (descriptor.getPitchPosition() != null) {
+                setPitchPosition(descriptor.getPitchPosition());
+            }
+        }
+
         if (logger.isFineEnabled()) {
             dump();
         }
