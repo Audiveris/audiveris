@@ -13,8 +13,6 @@ package omr.sheet;
 
 import omr.step.StepException;
 
-import java.util.List;
-
 /**
  * Class {@code StavesBuilder} defines the interface for the retrieval of all
  * stave lines.
@@ -29,15 +27,15 @@ public interface StavesBuilder
 {
     //~ Methods ----------------------------------------------------------------
 
-    //-----------//
-    // getStaves //
-    //-----------//
-    /**
-     * Report the list of staves found in the sheet
-     *
-     * @return the collection of staves found
-     */
-    List<StaffInfo> getStaves ();
+    //    //-----------//
+    //    // getStaves //
+    //    //-----------//
+    //    /**
+    //     * Report the list of staves found in the sheet
+    //     *
+    //     * @return the collection of staves found
+    //     */
+    //    List<StaffInfo> getStaves ();
 
     //-----------//
     // buildInfo //

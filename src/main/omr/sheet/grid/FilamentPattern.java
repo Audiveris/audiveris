@@ -9,7 +9,7 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.sheet.staff;
+package omr.sheet.grid;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -144,6 +144,7 @@ public class FilamentPattern
     {
         filaments.add(filament);
         ys.add(y);
+        filament.addPattern(col, this); // Link back Fil -> Pattern
     }
 
     //----------//

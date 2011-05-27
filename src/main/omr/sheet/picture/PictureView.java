@@ -20,7 +20,6 @@ import omr.score.ui.PaintingParameters;
 import omr.selection.SheetLocationEvent;
 
 import omr.sheet.*;
-import omr.sheet.staff.LineCluster;
 
 import omr.ui.view.RubberPanel;
 import omr.ui.view.ScrollView;
@@ -29,9 +28,9 @@ import omr.util.Implement;
 import omr.util.WeakPropertyChangeListener;
 
 import java.awt.*;
+import java.awt.geom.Point2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Collection;
 
 /**
  * Class <code>PictureView</code> defines the view dedicated to the display of
@@ -135,14 +134,12 @@ public class PictureView
                 sheet.getPage()
                      .accept(new PagePhysicalPainter(g, color, false));
 
-                Collection<LineCluster> clusters = sheet.getClusters();
-
-                if (clusters != null) {
-                    g.setColor(PagePainter.musicColor);
-
-                    for (LineCluster cluster : clusters) {
-                        cluster.render(g);
-                    }
+                sheet.getStaffManager()
+                     .render(g);
+            } else {
+                if (sheet.getTargetBuilder() != null) {
+                    sheet.getTargetBuilder()
+                         .renderDewarpGrid(g, true);
                 }
             }
         }

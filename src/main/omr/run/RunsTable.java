@@ -127,6 +127,17 @@ public class RunsTable
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * @return the name
+     */
+    public String getName ()
+    {
+        return name;
+    }
+
     //----------------//
     // getOrientation //
     //----------------//
@@ -179,7 +190,6 @@ public class RunsTable
         case HORIZONTAL :
 
             for (int row = 0; row < getSize(); row++) {
-                ///char[]    line = buffer[row];
                 List<Run> seq = getSequence(row);
 
                 for (Run run : seq) {
@@ -314,6 +324,19 @@ public class RunsTable
     @Override
     public RunsTable clone ()
     {
+        return clone(name);
+    }
+
+    //-------//
+    // clone //
+    //-------//
+    /**
+     * Make a copy of the table, but sharing the run instances
+     * @param name a new name for the clone
+     * @return another table on the same run instances
+     */
+    public RunsTable clone (String name)
+    {
         RunsTable clone = new RunsTable(name, orientation, dimension);
 
         for (int i = 0; i < getSize(); i++) {
@@ -381,6 +404,22 @@ public class RunsTable
      */
     public RunsTable purge (Predicate<Run> predicate)
     {
+        return purge(predicate, null);
+    }
+
+    //-------//
+    // purge //
+    //-------//
+    /**
+     * Purge a runs table of all runs that match the provided predicate, and
+     * populate the provided 'removed' table with the removed runs.
+     * @param predicate the filter to detect runs to remove
+     * @param removed a table to be filled, if not null, with purged runs
+     * @return this runs table, to allow easy chaining
+     */
+    public RunsTable purge (Predicate<Run> predicate,
+                            RunsTable      removed)
+    {
         for (int i = 0; i < getSize(); i++) {
             List<Run> seq = getSequence(i);
 
@@ -389,6 +428,11 @@ public class RunsTable
 
                 if (predicate.check(run)) {
                     it.remove();
+
+                    if (removed != null) {
+                        removed.getSequence(i)
+                               .add(run);
+                    }
                 }
             }
         }

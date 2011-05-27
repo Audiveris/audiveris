@@ -159,10 +159,12 @@ public class GlyphBoard
      * @param unitName name of the owning unit
      * @param controller the underlying GlyphsController
      * @param specificGlyphs additional collection of glyphs, or null
+     * @param useKnownSpinner true if a spinner is to be used for known glyphs
      */
     public GlyphBoard (String                     unitName,
                        GlyphsController           controller,
-                       Collection<?extends Glyph> specificGlyphs)
+                       Collection<?extends Glyph> specificGlyphs,
+                       boolean                    useKnownSpinner)
     {
         this(unitName, controller);
 
@@ -174,21 +176,29 @@ public class GlyphBoard
         globalSpinner.setName("globalSpinner");
         globalSpinner.setToolTipText("General spinner for any glyph id");
 
-        // Model for knownSpinner
-        knownSpinner = makeGlyphSpinner(
-            controller.getLag(),
-            specificGlyphs,
-            knownPredicate);
-        knownSpinner.setName("knownSpinner");
-        knownSpinner.setToolTipText("Specific spinner for known glyphs");
+        // Model for knownSpinner?
+        if (useKnownSpinner) {
+            knownSpinner = makeGlyphSpinner(
+                controller.getLag(),
+                specificGlyphs,
+                knownPredicate);
+            knownSpinner.setName("knownSpinner");
+            knownSpinner.setToolTipText("Specific spinner for known glyphs");
+        }
 
         // Layout
         int r = 3; // --------------------------------
-        builder.addLabel("Id", cst.xy(1, r));
+
+        if (globalSpinner != null) {
+            builder.addLabel("Id", cst.xy(1, r));
+        }
+
         builder.add(globalSpinner, cst.xy(3, r));
 
-        builder.addLabel("Known", cst.xy(5, r));
-        builder.add(knownSpinner, cst.xy(7, r));
+        if (knownSpinner != null) {
+            builder.addLabel("Known", cst.xy(5, r));
+            builder.add(knownSpinner, cst.xy(7, r));
+        }
     }
 
     //------------//

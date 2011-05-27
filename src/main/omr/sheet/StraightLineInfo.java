@@ -16,6 +16,10 @@ import omr.glyph.facets.Stick;
 
 import omr.math.Line;
 
+import omr.score.common.PixelPoint;
+
+import omr.sheet.grid.LineInfo;
+
 import omr.util.Implement;
 
 import java.awt.Graphics2D;
@@ -46,6 +50,8 @@ public class StraightLineInfo
 
     /** Abscissa of right edge */
     private final int right;
+    private final PixelPoint leftPoint;
+    private final PixelPoint rightPoint;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -72,6 +78,9 @@ public class StraightLineInfo
         this.right = right;
         this.builder = builder;
         this.line = line;
+
+        leftPoint = new PixelPoint(left, line.yAt(left));
+        rightPoint = new PixelPoint(right, line.yAt(right));
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -89,22 +98,20 @@ public class StraightLineInfo
         return id;
     }
 
-    //---------//
-    // getLeft //
-    //---------//
-    @Implement(LineInfo.class)
-    public int getLeft ()
+    //--------------//
+    // getLeftPoint //
+    //--------------//
+    public PixelPoint getLeftPoint ()
     {
-        return left;
+        return leftPoint;
     }
 
-    //----------//
-    // getRight //
-    //----------//
-    @Implement(LineInfo.class)
-    public int getRight ()
+    //---------------//
+    // getRightPoint //
+    //---------------//
+    public PixelPoint getRightPoint ()
     {
-        return right;
+        return rightPoint;
     }
 
     //-------------//
@@ -139,9 +146,7 @@ public class StraightLineInfo
     // render //
     //--------//
     @Implement(LineInfo.class)
-    public void render (Graphics2D g,
-                        int        left,
-                        int        right)
+    public void render (Graphics2D g)
     {
         // Paint the computed line
         if (line != null) {

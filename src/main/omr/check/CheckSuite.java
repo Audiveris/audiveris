@@ -250,13 +250,15 @@ public class CheckSuite<C extends Checkable>
      */
     public double pass (C object)
     {
-        double       grade = 0.0d;
-        CheckResult  result = new CheckResult();
+        double        grade = 0.0d;
+        CheckResult   result = new CheckResult();
         StringBuilder sb = null;
 
         if (logger.isFineEnabled()) {
             sb = new StringBuilder(512);
             sb.append(name)
+              .append(" ")
+              .append(object)
               .append(" ");
         }
 

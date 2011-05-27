@@ -11,10 +11,12 @@
 // </editor-fold>
 package omr.lag;
 
-import omr.run.Run;
-import omr.run.Oriented;
-import omr.run.Orientation;
 import omr.math.Histogram;
+
+import omr.run.Orientation;
+import omr.run.Oriented;
+import omr.run.Run;
+import omr.run.RunsTable;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -22,11 +24,11 @@ import omr.score.common.PixelRectangle;
 import omr.util.BaseTestCase;
 import static junit.framework.Assert.*;
 
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.util.*;
-import omr.run.RunsTable;
 
 /**
  * Class <code>LagTest</code> gathers some basic tests to exercise unitary
@@ -61,7 +63,7 @@ public class LagTest
     {
         MySection s2 = hLag.createSection(180, new Run(100, 10, 127));
 
-        Rectangle roi = new PixelRectangle(0, 0, 20, 20);
+        PixelRectangle roi = new PixelRectangle(0, 0, 20, 20);
         Point     pt = null;
 
         pt = s2.getRectangleCentroid(roi);
@@ -120,7 +122,7 @@ public class LagTest
         pt = s2.getRectangleCentroid(roi);
         System.out.println("roi=" + roi + " pt=" + pt);
 
-        PixelPoint expected = new PixelPoint(181, 103);
+        PixelPoint expected = new PixelPoint(181, 104);
         assertEquals("Wrong pt", expected, pt);
     }
 
@@ -283,14 +285,17 @@ public class LagTest
     //---------------//
     public void testTranslate ()
     {
-        RunsTable runs = new RunsTable();
-        vLag.setRuns(runs);
+        RunsTable table = new RunsTable(
+            "Vertical",
+            Orientation.VERTICAL,
+            new Dimension(20, 20));
+        vLag.setRuns(table);
 
-        MySection s1 = vLag.createSection(1, createRun(runs, 1, 2, 5));
-        s1.append(createRun(runs, 2, 0, 3));
-        s1.append(createRun(runs, 3, 1, 2));
-        s1.append(createRun(runs, 4, 1, 1));
-        s1.append(createRun(runs, 5, 1, 6));
+        MySection s1 = vLag.createSection(1, createRun(table, 1, 2, 5));
+        s1.append(createRun(table, 2, 0, 3));
+        s1.append(createRun(table, 3, 1, 2));
+        s1.append(createRun(table, 4, 1, 1));
+        s1.append(createRun(table, 5, 1, 6));
         dump("Before translation", s1);
 
         PixelPoint vector = new PixelPoint(10, 2);
@@ -312,14 +317,17 @@ public class LagTest
     //---------------//
     public void testVLagHisto ()
     {
-        List<List<Run>> runs = new ArrayList<List<Run>>();
-        vLag.setRuns(runs);
+        RunsTable table = new RunsTable(
+            "Vertical",
+            Orientation.VERTICAL,
+            new Dimension(20, 20));
+        vLag.setRuns(table);
 
-        MySection s1 = vLag.createSection(1, createRun(runs, 1, 2, 5));
-        s1.append(createRun(runs, 2, 0, 3));
-        s1.append(createRun(runs, 3, 1, 2));
-        s1.append(createRun(runs, 4, 1, 1));
-        s1.append(createRun(runs, 5, 1, 6));
+        MySection s1 = vLag.createSection(1, createRun(table, 1, 2, 5));
+        s1.append(createRun(table, 2, 0, 3));
+        s1.append(createRun(table, 3, 1, 2));
+        s1.append(createRun(table, 4, 1, 1));
+        s1.append(createRun(table, 5, 1, 6));
         s1.drawAscii();
 
         MyLag.Roi          roi = vLag.createAbsoluteRoi(
@@ -405,18 +413,14 @@ public class LagTest
     //-----------//
     // createRun //
     //-----------//
-    private Run createRun (List<List<Run>> runs,
-                           int             alignment,
-                           int             start,
-                           int             length)
+    private Run createRun (RunsTable table,
+                           int       alignment,
+                           int       start,
+                           int       length)
     {
         Run run = new Run(start, length, 127);
 
-        for (int ali = runs.size(); ali <= alignment; ali++) {
-            runs.add(new ArrayList<Run>());
-        }
-
-        runs.get(alignment)
+        table.getSequence(alignment)
             .add(run);
 
         return run;

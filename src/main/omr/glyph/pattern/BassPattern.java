@@ -28,8 +28,8 @@ import omr.score.common.PixelRectangle;
 
 import omr.sheet.Scale;
 import omr.sheet.Scale.InterlineFraction;
-import omr.sheet.StaffInfo;
 import omr.sheet.SystemInfo;
+import omr.sheet.grid.StaffInfo;
 
 import omr.util.Implement;
 
@@ -90,7 +90,7 @@ public class BassPattern
             }
 
             int       topX = top.getCentroid().x;
-            StaffInfo topStaff = system.getStaffAtY(top.getCentroid().y);
+            StaffInfo topStaff = system.getStaffAt(top.getCentroid());
 
             // Look for bottom dot right underneath, and in the same staff
             for (Glyph bot : system.getGlyphs()) {
@@ -103,7 +103,7 @@ public class BassPattern
                     continue;
                 }
 
-                if (system.getStaffAtY(bot.getCentroid().y) != topStaff) {
+                if (system.getStaffAt(bot.getCentroid()) != topStaff) {
                     continue;
                 }
 

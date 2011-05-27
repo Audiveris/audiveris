@@ -76,7 +76,7 @@ public class HorizontalArea
             constants.maxAdjacency.getValue(), // maxAdjacency
             maxThickness, // maxThickness
             constants.maxSlope.getValue(), // maxSlope
-            false); // longAlignment);
+            false); // longAlignment
 
         if (logger.isFineEnabled()) {
             logger.fine("maxThickness=" + maxThickness);

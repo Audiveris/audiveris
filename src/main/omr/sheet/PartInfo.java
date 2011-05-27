@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.sheet;
 
+import omr.sheet.grid.StaffInfo;
 import java.util.ArrayList;
 import java.util.List;
 

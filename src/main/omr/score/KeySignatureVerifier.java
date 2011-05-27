@@ -17,7 +17,6 @@ import omr.glyph.Evaluation;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
-import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -31,7 +30,7 @@ import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
 
 import omr.sheet.Scale;
-import omr.sheet.StaffInfo;
+import omr.sheet.grid.StaffInfo;
 import omr.sheet.SystemInfo;
 
 import omr.util.Predicate;

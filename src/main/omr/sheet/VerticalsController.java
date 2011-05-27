@@ -135,7 +135,7 @@ public class VerticalsController
                 new PixelBoard(unit, sheet),
                 new RunBoard(unit, lag),
                 new SectionBoard(unit, lag.getLastVertexId(), lag),
-                new GlyphBoard(unit, this, null),
+                new GlyphBoard(unit, this, null, true),
                 new MyCheckBoard(unit, lag.getSelectionService(), eventClasses)));
     }
 
@@ -207,7 +207,7 @@ public class VerticalsController
     //--------//
     // MyView //
     //--------//
-    private class MyView
+    private final class MyView
         extends GlyphLagView
     {
         //~ Constructors -------------------------------------------------------

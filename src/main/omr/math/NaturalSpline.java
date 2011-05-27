@@ -11,40 +11,35 @@
 // </editor-fold>
 package omr.math;
 
-import java.awt.Point;
 import java.awt.Shape;
 import java.awt.geom.*;
+import static java.awt.geom.PathIterator.*;
 
 /**
  * Class {@code NaturalSpline} defines a natural (cubic) spline interpolated
  * on a sequence of knots.
- * Internally the spline is composed of a sequence of curves, one
+ *
+ * <p>Internally the spline is composed of a sequence of curves, one
  * curve between two consecutive knots.
  * Each curve is a bezier curve defined by the 2 related knots separated by 2
- * control points (or just a quadratic or straight line).
- * <p>Cf http://www.cse.unsw.edu.au/~lambert/splines/
+ * control points.</p>
+ *
+ * <p>At each knot, continuity in ensured up to the second derivative.
+ * The second derivative is set to zero at first and last knots of the whole
+ * spline.</p>
+ *
+ * <p>Degenerated cases: When the sequence of knots contains only 3 or 2 points,
+ * the spline degenerates to a quadratic or a straight line respectively.
+ * If less than two points are provided, the spline cannot be created.</p>
+ *
+ * <p>Cf <a href="http://www.cse.unsw.edu.au/~lambert/splines/">
+ * http://www.cse.unsw.edu.au/~lambert/splines/</a></p>
  *
  * @author Hervé Bitteur
  */
 public class NaturalSpline
-    extends Path2D.Double
+    extends GeoPath
 {
-    //~ Static fields/initializers ---------------------------------------------
-
-    /** Stolen from Path2D internals (sorry...)
-       0: SEG_MOVETO;
-       1: SEG_LINETO;
-       2: SEG_QUADTO;
-       3: SEG_CUBICTO;
-       4: SEG_CLOSE;
-     */
-    private static final int[] curvecoords = { 2, 2, 4, 6, 0 };
-    private static final String[] curveLabels = {
-                                                    "SEG_MOVETO", "SEG_LINETO",
-                                                    "SEG_QUADTO", "SEG_CUBICTO",
-                                                    "SEG_CLOSE"
-                                                };
-
     //~ Constructors -----------------------------------------------------------
 
     //---------------//
@@ -52,7 +47,6 @@ public class NaturalSpline
     //---------------//
     /**
      * Creates a new NaturalSpline object from a sequence of connected shapes
-     *
      * @param curves the smooth sequence of shapes (cubic curves expected)
      */
     private NaturalSpline (Shape... curves)
@@ -68,11 +62,11 @@ public class NaturalSpline
     // interpolate //
     //-------------//
     /**
-     * Computes the natural cubic spline that interpolates the provided knots
+     * Create the natural spline that interpolates the provided knots
      * @param points the provided points
      * @return the resulting spline curve
      */
-    public static NaturalSpline interpolate (Point... points)
+    public static NaturalSpline interpolate (Point2D... points)
     {
         // Check parameters
         if (points == null) {
@@ -84,9 +78,9 @@ public class NaturalSpline
         double[] yy = new double[points.length];
 
         for (int i = 0; i < points.length; i++) {
-            Point pt = points[i];
-            xx[i] = pt.x + 0.5;
-            yy[i] = pt.y + 0.5;
+            Point2D pt = points[i];
+            xx[i] = pt.getX();
+            yy[i] = pt.getY();
         }
 
         return interpolate(xx, yy);
@@ -96,7 +90,7 @@ public class NaturalSpline
     // interpolate //
     //-------------//
     /**
-     * Computes the natural cubic spline that interpolates the provided knots
+     * Create the natural spline that interpolates the provided knots
      * @param xx the abscissae of the provided points
      * @param yy the ordinates of the provided points
      * @return the resulting spline curve
@@ -167,231 +161,87 @@ public class NaturalSpline
     //--------------//
     // derivativeAt //
     //--------------//
+    /**
+     * Report the derivative value of the spline at provided abscissa
+     * (assuming true function)
+     * @param x the provided abscissa
+     * @return the derivative value at this abscissa
+     */
     public double derivativeAt (double x)
     {
-        double[]       buffer = new double[6];
-        Point2D.Double p1 = new Point2D.Double();
-        Point2D.Double p2 = new Point2D.Double();
-        final int      currentSegment = getSegment(x, buffer, p1, p2);
-
-        double         y1 = p1.y;
-        double         x1 = p1.x;
-        double         y2 = p2.y;
-        double         x2 = p2.x;
-
-        // Compute y value
-        double deltaX = x2 - x1;
-        double t = (x - x1) / deltaX;
-        double u = 1 - t;
+        final double[]       buffer = new double[6];
+        final Point2D.Double p1 = new Point2D.Double();
+        final Point2D.Double p2 = new Point2D.Double();
+        final int            segmentKind = getSegment(x, buffer, p1, p2);
+        final double         deltaX = p2.x - p1.x;
+        final double         t = (x - p1.x) / deltaX;
+        final double         u = 1 - t;
 
         // dy/dx = dy/dt * dt/dx
-        // dt/dx = 1/(x2-x1)  
-        switch (currentSegment) {
-        case PathIterator.SEG_LINETO :
+        // dt/dx = 1/deltaX
+        switch (segmentKind) {
+        case SEG_LINETO :
+            return (p2.y - p1.y) / deltaX;
 
-            //return y1 + (t * (y2 - y1));
-            return (y2 - y1) / deltaX;
-
-        case PathIterator.SEG_QUADTO : {
+        case SEG_QUADTO : {
             double cpy = buffer[1];
 
-            //return (y1 * u * u) + (2 * cpy * t * u) + (y2 * t * t);
-            return ((-2 * y1 * u) + (2 * cpy * (1 - (2 * t))) + (2 * y2 * t)) / deltaX;
+            return ((-2 * p1.y * u) + (2 * cpy * (1 - (2 * t))) +
+                   (2 * p2.y * t)) / deltaX;
         }
 
-        case PathIterator.SEG_CUBICTO : {
+        case SEG_CUBICTO : {
             double cpy1 = buffer[1];
             double cpy2 = buffer[3];
 
-            //return (y1 * u * u * u) + (3 * cpy1 * t * u * u) + (3 * cpy2 * t * t * u) + (y2 * t * t * t);
-            return ((-3 * y1 * u * u) + (3 * cpy1 * ((u * u) - (2 * u * t))) +
-                   (3 * cpy2 * ((2 * t * u) - (t * t))) + (3 * y2 * t * t)) / deltaX;
+            return ((-3 * p1.y * u * u) + (3 * cpy1 * ((u * u) - (2 * u * t))) +
+                   (3 * cpy2 * ((2 * t * u) - (t * t))) + (3 * p2.y * t * t)) / deltaX;
         }
 
         default :
+            throw new RuntimeException("Illegal currentSegment " + segmentKind);
         }
-
-        throw new RuntimeException("Illegal currentSegment " + currentSegment);
     }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        StringBuilder sb = new StringBuilder("{");
-        sb.append(getClass().getSimpleName());
-
-        double[] buffer = new double[6];
-
-        for (PathIterator it = getPathIterator(null); !it.isDone();
-             it.next()) {
-            int currentSegment = it.currentSegment(buffer);
-
-            sb.append(" ")
-              .append(curveLabel(currentSegment))
-              .append("(");
-
-            int     coords = coordCount(currentSegment);
-
-            boolean firstCoord = true;
-
-            for (int ic = 0; ic < (coords - 1); ic += 2) {
-                if (!firstCoord) {
-                    sb.append(",");
-                    firstCoord = false;
-                }
-
-                sb.append("[")
-                  .append((float) buffer[ic])
-                  .append(",")
-                  .append((float) buffer[ic + 1])
-                  .append("]");
-            }
-
-            sb.append(")");
-        }
-
-        sb.append("}");
-
-        return sb.toString();
-    }
-
-    //    //-----//
-    //    // yAt //
-    //    //-----//
-    //    /**
-    //     * Report the ordinate of the spline at abscissa x (assuming true function)
-    //     * @param x the given abscissa
-    //     * @return the corresponding ordinate
-    //     */
-    //    public double yAt (double x)
-    //    {
-    //        double[]     buffer = new double[6];
-    //        PathIterator it = getPathIterator(null);
-    //        double       x1 = 0;
-    //        double       y1 = 0;
-    //
-    //        while (!it.isDone()) {
-    //            final int    currentSegment = it.currentSegment(buffer);
-    //            final int    coords = coordCount(currentSegment);
-    //            final double x2 = buffer[coords - 2];
-    //            final double y2 = buffer[coords - 1];
-    //
-    //            if ((currentSegment == PathIterator.SEG_MOVETO) ||
-    //                (currentSegment == PathIterator.SEG_CLOSE) ||
-    //                (x > x2)) {
-    //                // Move to next segment
-    //                x1 = x2;
-    //                y1 = y2;
-    //                it.next();
-    //
-    //                continue;
-    //            }
-    //
-    //            // Compute y value
-    //            double t = (x - x1) / (x2 - x1);
-    //            double u = 1 - t;
-    //
-    //            switch (currentSegment) {
-    //            case PathIterator.SEG_LINETO : //
-    //                return y1 + (t * (y2 - y1));
-    //
-    //            case PathIterator.SEG_QUADTO : {
-    //                double cpy = buffer[1];
-    //
-    //                return (y1 * u * u) + (2 * cpy * t * u) + (y2 * t * t);
-    //            }
-    //
-    //            case PathIterator.SEG_CUBICTO : {
-    //                double cpy1 = buffer[1];
-    //                double cpy2 = buffer[3];
-    //
-    //                return (y1 * u * u * u) + (3 * cpy1 * t * u * u) +
-    //                       (3 * cpy2 * t * t * u) + (y2 * t * t * t);
-    //            }
-    //
-    //            default :
-    //            }
-    //        }
-    //
-    //        // Not found
-    //        throw new RuntimeException("Abscissa not in spline range: " + x);
-    //    }
 
     //-----//
     // yAt //
     //-----//
     /**
-     * Report the ordinate of the spline at abscissa x (assuming true function)
-     * @param x the given abscissa
-     * @return the corresponding ordinate
+     * Report the ordinate value of the spline at provided abscissa
+     * (assuming true function)
+     * @param x the provided abscissa
+     * @return the ordinate value at this abscissa
      */
     public double yAt (double x)
     {
-        double[]       buffer = new double[6];
-        Point2D.Double p1 = new Point2D.Double();
-        Point2D.Double p2 = new Point2D.Double();
-        final int      currentSegment = getSegment(x, buffer, p1, p2);
+        final double[]       buffer = new double[6];
+        final Point2D.Double p1 = new Point2D.Double();
+        final Point2D.Double p2 = new Point2D.Double();
+        final int            segmentKind = getSegment(x, buffer, p1, p2);
+        final double         t = (x - p1.x) / (p2.x - p1.x);
+        final double         u = 1 - t;
 
-        double         y1 = p1.y;
-        double         x1 = p1.x;
-        double         y2 = p2.y;
-        double         x2 = p2.x;
+        switch (segmentKind) {
+        case SEG_LINETO :
+            return p1.y + (t * (p2.y - p1.y));
 
-        // Compute y value
-        double t = (x - x1) / (x2 - x1);
-        double u = 1 - t;
-
-        switch (currentSegment) {
-        case PathIterator.SEG_LINETO : //
-            return y1 + (t * (y2 - y1));
-
-        case PathIterator.SEG_QUADTO : {
+        case SEG_QUADTO : {
             double cpy = buffer[1];
 
-            return (y1 * u * u) + (2 * cpy * t * u) + (y2 * t * t);
+            return (p1.y * u * u) + (2 * cpy * t * u) + (p2.y * t * t);
         }
 
-        case PathIterator.SEG_CUBICTO : {
+        case SEG_CUBICTO : {
             double cpy1 = buffer[1];
             double cpy2 = buffer[3];
 
-            return (y1 * u * u * u) + (3 * cpy1 * t * u * u) +
-                   (3 * cpy2 * t * t * u) + (y2 * t * t * t);
+            return (p1.y * u * u * u) + (3 * cpy1 * t * u * u) +
+                   (3 * cpy2 * t * t * u) + (p2.y * t * t * t);
         }
 
         default :
+            throw new RuntimeException("Illegal segmentKind " + segmentKind);
         }
-
-        throw new RuntimeException("Illegal currentSegment " + currentSegment);
-    }
-
-    //------------//
-    // coordCount //
-    //------------//
-    /**
-     * Dirty hack to know how many coordinate values a path segment contains
-     * @param curveKind the int-based segment kind
-     * @return the number of coordinates values
-     */
-    static int coordCount (int curveKind)
-    {
-        return curvecoords[curveKind];
-    }
-
-    //------------//
-    // curveLabel //
-    //------------//
-    /**
-     * Dirty hack to report the kind of a curve
-     * @param curveKind the int-based segment kind
-     * @return the label for the curve
-     */
-    static String curveLabel (int curveKind)
-    {
-        return curveLabels[curveKind];
     }
 
     //---------------------//
@@ -408,7 +258,7 @@ public class NaturalSpline
         // Number of segments
         final int n = x.length - 1;
 
-        // First compute the derivative at each provided knot
+        // Compute the derivative at each provided knot
         double[] D = new double[n + 1];
 
         /* Equation to solve:
@@ -447,17 +297,17 @@ public class NaturalSpline
 
         return D;
     }
-
     //------------//
     // getSegment //
     //------------//
     /**
-     * Retrieve the segment of the curve that contains the provided abscissa
+     * Retrieve the first segment of the curve that contains the provided
+     * abscissa
      * @param x the provided abscissa
      * @param buffer output
      * @param p1 output: start of segment
      * @param p2 output: end of segment
-     * @return the segment type
+     * @return the segment kind
      */
     private int getSegment (double         x,
                             double[]       buffer,
@@ -469,28 +319,26 @@ public class NaturalSpline
         double       y1 = 0;
 
         while (!it.isDone()) {
-            final int    currentSegment = it.currentSegment(buffer);
-            final int    coords = coordCount(currentSegment);
-            final double x2 = buffer[coords - 2];
-            final double y2 = buffer[coords - 1];
+            final int    segmentKind = it.currentSegment(buffer);
+            final int    count = countOf(segmentKind);
+            final double x2 = buffer[count - 2];
+            final double y2 = buffer[count - 1];
 
-            if ((currentSegment == PathIterator.SEG_MOVETO) ||
-                (currentSegment == PathIterator.SEG_CLOSE) ||
+            if ((segmentKind == SEG_MOVETO) ||
+                (segmentKind == SEG_CLOSE) ||
                 (x > x2)) {
                 // Move to next segment
                 x1 = x2;
                 y1 = y2;
                 it.next();
+            } else {
+                p1.x = x1;
+                p1.y = y1;
+                p2.x = x2;
+                p2.y = y2;
 
-                continue;
+                return segmentKind;
             }
-
-            p1.x = x1;
-            p1.y = y1;
-            p2.x = x2;
-            p2.y = y2;
-
-            return currentSegment;
         }
 
         // Not found

@@ -242,7 +242,7 @@ public class SymbolsEditor
     //--------//
     // MyView //
     //--------//
-    private class MyView
+    private final class MyView
         extends GlyphLagView
     {
         //~ Instance fields ----------------------------------------------------
@@ -257,6 +257,7 @@ public class SymbolsEditor
         {
             super(lag, null, null, symbolsBuilder, null);
             setName("SymbolsEditor-MyView");
+            colorizeAllSections();
 
             // Use light gray color for past successful entities
             int viewIndex = lag.viewIndexOf(this);

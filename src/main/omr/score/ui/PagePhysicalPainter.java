@@ -39,7 +39,7 @@ import omr.score.entity.SystemPart;
 import omr.sheet.Ending;
 import omr.sheet.Ledger;
 import omr.sheet.Sheet;
-import omr.sheet.StaffInfo;
+import omr.sheet.grid.StaffInfo;
 import omr.sheet.SystemBoundary.Side;
 import omr.sheet.SystemInfo;
 import static omr.ui.symbol.Alignment.*;
@@ -367,11 +367,8 @@ public class PagePhysicalPainter
                 ///g.setColor(lineColor);
 
                 // Staff lines
-                if (sheet.getStaves() != null) {
-                    for (StaffInfo staff : sheet.getStaves()) {
-                        staff.render(g);
-                    }
-                }
+                sheet.getStaffManager()
+                     .render(g);
 
                 if (sheet.getHorizontals() != null) {
                     // Horizontals

@@ -13,6 +13,7 @@ package omr.step;
 
 import omr.sheet.LinesBuilder;
 import omr.sheet.Sheet;
+import omr.sheet.StavesBuilder;
 import omr.sheet.SystemInfo;
 
 import java.util.Collection;
@@ -48,11 +49,8 @@ public class LinesStep
                       Sheet                  sheet)
         throws StepException
     {
-        //logger.info("*** Using StavesFuzzyBuilder ***");
-        sheet.setStavesBuilder(new LinesBuilder(sheet));
-        ///sheet.setStavesBuilder(new StavesFuzzyBuilder(sheet));
-        sheet.getStavesBuilder()
-             .buildInfo();
-        sheet.setStaves(sheet.getStavesBuilder().getStaves());
+        StavesBuilder builder = new LinesBuilder(sheet);
+        sheet.setStavesBuilder(builder);
+        builder.buildInfo();
     }
 }

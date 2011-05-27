@@ -471,7 +471,7 @@ class GlyphBrowser
     //--------//
     // MyView //
     //--------//
-    private class MyView
+    private final class MyView
         extends GlyphLagView
     {
         //~ Constructors -------------------------------------------------------
@@ -480,7 +480,7 @@ class GlyphBrowser
         {
             super(tLag, null, null, controller, null);
             setName("GlyphBrowser-View");
-
+            colorizeAllSections();
             subscribe();
         }
 

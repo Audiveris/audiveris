@@ -55,7 +55,8 @@ public class SystemBoundary
     private final SystemInfo system;
 
     /** The north and south limits */
-    private final Map<Side, BrokenLine> limits = new TreeMap<Side, BrokenLine>();
+    private final EnumMap<Side, BrokenLine> limits = new EnumMap<Side, BrokenLine>(
+        Side.class);
 
     /** Handling of the SystemBoundary is delegated to a Polygon */
     private final Polygon polygon = new Polygon();

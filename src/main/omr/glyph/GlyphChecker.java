@@ -34,8 +34,8 @@ import omr.score.entity.SystemPart;
 
 import omr.sheet.Ledger;
 import omr.sheet.Scale;
-import omr.sheet.StaffInfo;
 import omr.sheet.SystemInfo;
+import omr.sheet.grid.StaffInfo;
 
 import java.util.*;
 
@@ -701,7 +701,7 @@ public class GlyphChecker
                     // Check that whole notes are not too far from staves
                     // without ledgers
                     PixelPoint point = glyph.getAreaCenter();
-                    StaffInfo  staff = system.getStaffAtY(point.y);
+                    StaffInfo  staff = system.getStaffAt(point);
                     double     pitch = staff.pitchPositionOf(point);
 
                     if (Math.abs(pitch) <= 6) {

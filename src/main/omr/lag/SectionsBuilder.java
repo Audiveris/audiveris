@@ -105,8 +105,7 @@ public class SectionsBuilder<L extends Lag<L, S>, S extends Section<L, S>>
                 nextActives = new ArrayList<S>();
 
                 // Process all sections of previous column, then prevActives
-                // will contain only active sections (i.e. that may be
-                // continued)
+                // will contain only active sections (that may be continued)
                 if (logger.isFineEnabled()) {
                     logger.fine("Prev column");
                 }
@@ -163,15 +162,15 @@ public class SectionsBuilder<L extends Lag<L, S>, S extends Section<L, S>>
                                 PixelSource source,
                                 int         minRunLength)
     {
-        // Create the runs table
+        // Define a proper table factory
         RunsTableFactory factory = new RunsTableFactory(
             lag.getOrientation(),
             source,
             source.getMaxForeground(),
             minRunLength);
-        RunsTable        table = factory.createTable(name);
-        
-        ///table.dump(System.out) ; // BINGO
+
+        // Create the runs table
+        RunsTable table = factory.createTable(name);
 
         // Now proceed to section extraction
         createSections(table);

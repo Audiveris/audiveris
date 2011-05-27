@@ -122,7 +122,7 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
     //-------------//
     /**
      * Report whether a default color has been assigned
-     * @return trur if defaultColor is no longer null
+     * @return true if defaultColor is no longer null
      */
     public boolean isColorized ()
     {

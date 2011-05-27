@@ -9,7 +9,7 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.sheet.staff;
+package omr.sheet.grid;
 
 import omr.constant.ConstantSet;
 
@@ -27,13 +27,9 @@ import omr.score.common.PixelRectangle;
 
 import omr.sheet.Scale;
 
-import java.awt.Graphics2D;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.awt.*;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * Represents a candidate staff line, so it's a long glyph that can be far from
@@ -51,7 +47,7 @@ public class Filament
     private static final Logger logger = Logger.getLogger(Filament.class);
 
     /**
-     * For comparing Filament instances on position (y) then coordinate (x) of
+     * For comparing Filament instances on coordinate (x) then of position (y)
      * their starting point
      */
     public static final Comparator<Filament> startComparator = new Comparator<Filament>() {
@@ -62,53 +58,51 @@ public class Filament
                 return 0;
             }
 
-            // Sort on vertical position first
+            // Sort on horizontal coordinate first
+            int dStart = s1.getStartPoint().x - s2.getStartPoint().x;
+
+            if (dStart != 0) {
+                return dStart;
+            }
+
+            // Sort on vertical position second
             int dPos = s1.getStartPoint().y - s2.getStartPoint().y;
 
             if (dPos != 0) {
                 return dPos;
             }
 
-            // Sort on horizontal coordinate second
-            int dStart = s1.getStartPoint().x - s2.getStartPoint().x;
-
-            if (dStart != 0) {
-                return dStart;
-            } else {
-                throw new RuntimeException(
-                    "Overlapping filaments " + s1 + " & " + s2);
-            }
+            return -1;
         }
     };
 
     /**
-     * For comparing Filament instances on position (y) then coordinate (x) of
+     * For comparing Filament instances on coordinate (x) then of position (y)
      * their stopping point
      */
     public static final Comparator<Filament> stopComparator = new Comparator<Filament>() {
-        public int compare (Filament s1,
-                            Filament s2)
+        public int compare (Filament f1,
+                            Filament f2)
         {
-            if (s1 == s2) {
+            if (f1 == f2) {
                 return 0;
             }
 
-            // Sort on vertical position first
-            int dPos = s1.getStopPoint().y - s2.getStopPoint().y;
+            // Sort on horizontal coordinate first
+            int dStop = f1.getStopPoint().x - f2.getStopPoint().x;
+
+            if (dStop != 0) {
+                return dStop;
+            }
+
+            // Sort on vertical position second
+            int dPos = f1.getStopPoint().y - f2.getStopPoint().y;
 
             if (dPos != 0) {
                 return dPos;
             }
 
-            // Sort on horizontal coordinate second
-            int dStart = s1.getStopPoint().x - s2.getStopPoint().x;
-
-            if (dStart != 0) {
-                return dStart;
-            } else {
-                throw new RuntimeException(
-                    "Overlapping filaments " + s1 + " & " + s2);
-            }
+            return -1;
         }
     };
 
@@ -136,10 +130,9 @@ public class Filament
 
             if (dStart != 0) {
                 return dStart;
-            } else {
-                throw new RuntimeException(
-                    "Overlapping filaments " + s1 + " & " + s2);
             }
+
+            return -1;
         }
     };
 
@@ -158,17 +151,11 @@ public class Filament
     /** Ending point (right) */
     private PixelPoint pStop;
 
-    /** This filament has been logically removed */
-    private boolean discarded;
-
     /** Ref of the filament this one has been merged into */
     private Filament parent;
 
     /** Patterns where this filament appears. map (column -> pattern) */
-    private Map<Integer, FilamentPattern> patterns;
-
-    /** Most frequent line position in standard patterns */
-    private Integer linePosition;
+    private SortedMap<Integer, FilamentPattern> patterns;
 
     /** Distance from tilted top egde */
     private Integer topDist;
@@ -178,6 +165,9 @@ public class Filament
 
     /** Relative position in cluster */
     private int clusterPos;
+
+    /** Defining points */
+    private List<PixelPoint> points;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -222,7 +212,7 @@ public class Filament
     /**
      * Assign this filament to a line cluster
      * @param cluster the containing cluster
-     * @param pos  the relative line position within the cluster
+     * @param pos the relative line position within the cluster
      */
     public void setCluster (LineCluster cluster,
                             int         pos)
@@ -266,28 +256,6 @@ public class Filament
         return curve;
     }
 
-    //-----------------//
-    // setLinePosition //
-    //-----------------//
-    /**
-     * @param linePosition the linePosition to set
-     */
-    public void setLinePosition (int linePosition)
-    {
-        this.linePosition = linePosition;
-    }
-
-    //-----------------//
-    // getLinePosition //
-    //-----------------//
-    /**
-     * @return the linePosition
-     */
-    public Integer getLinePosition ()
-    {
-        return linePosition;
-    }
-
     //-----------//
     // getParent //
     //-----------//
@@ -308,26 +276,16 @@ public class Filament
         return constants.probeWidth;
     }
 
-    //--------------//
-    // setDiscarded //
-    //--------------//
-    /**
-     * @param discarded the boolean to set
-     */
-    public void setDiscarded (boolean discarded)
+    //-----------------//
+    // setEndingPoints //
+    //-----------------//
+    public void setEndingPoints (PixelPoint pStart,
+                                 PixelPoint pStop)
     {
-        this.discarded = discarded;
-    }
-
-    //------------//
-    // isDiscarded //
-    //-------------//
-    /**
-     * @return the discarded flag
-     */
-    public boolean isDiscarded ()
-    {
-        return discarded;
+        invalidateCache();
+        this.pStart = pStart;
+        this.pStop = pStop;
+        computeData();
     }
 
     //-------------//
@@ -336,12 +294,12 @@ public class Filament
     /**
      * @return the patterns
      */
-    public Map<Integer, FilamentPattern> getPatterns ()
+    public SortedMap<Integer, FilamentPattern> getPatterns ()
     {
         if (patterns != null) {
             return patterns;
         } else {
-            return Collections.EMPTY_MAP;
+            return new TreeMap<Integer, FilamentPattern>();
         }
     }
 
@@ -442,22 +400,6 @@ public class Filament
             }
 
             return thickness;
-
-            //            // Find out precise min and max ordinates
-            //            int[] yy = new int[count];
-            //            System.arraycopy(collector.getYValues(), 0, yy, 0, count);
-            //            Arrays.sort(yy);
-            //
-            //            int yMin = yy[0];
-            //            int yMax = yy[count - 1];
-            //
-            //            if (logger.isFineEnabled()) {
-            //                logger.fine(
-            //                    "Thickness " + this + " x:" + x + " yMax:" + yMax +
-            //                    " yMin:" + yMin);
-            //            }
-            //
-            //            return yMax - yMin + 1;
         }
     }
 
@@ -505,6 +447,8 @@ public class Filament
         System.out.println("   start=" + getStartPoint());
         System.out.println("   stop=" + getStopPoint());
         System.out.println("   curve=" + getCurve());
+        System.out.println("   cluster=" + cluster);
+        System.out.println("   clusterPos=" + clusterPos);
     }
 
     //---------//
@@ -542,6 +486,8 @@ public class Filament
 
         curve = null;
         pStart = pStop = null;
+        topDist = null;
+        points = null;
     }
 
     //------------//
@@ -550,7 +496,23 @@ public class Filament
     @Override
     public void renderLine (Graphics2D g)
     {
-        NaturalSpline curve = getCurve();
+        // Draw the defining points
+        Color oldColor = g.getColor();
+        g.setColor(Color.YELLOW);
+
+        // Radius
+        int r = (int) Math.rint(scale.interline() * 0.1);
+
+        if (points != null) {
+            for (PixelPoint p : points) {
+                g.drawOval(p.x - r, p.y - r, 2 * r, 2 * r);
+            }
+        }
+
+        g.setColor(oldColor);
+
+        // Then the curve itself
+        getCurve(); // Make sure it has been computed
 
         if (curve != null) {
             g.draw(curve);
@@ -594,11 +556,6 @@ public class Filament
               .append(getAncestor());
         }
 
-        if (linePosition != null) {
-            sb.append(" stdPos:")
-              .append(linePosition);
-        }
-
         if (topDist != null) {
             sb.append(" topDist:")
               .append(topDist);
@@ -625,8 +582,6 @@ public class Filament
     private void computeData ()
     {
         try {
-            Scale          scale = new Scale(getInterline());
-
             /** Width of window to retrieve pixels */
             int probeWidth = scale.toPixels(constants.probeWidth);
 
@@ -634,23 +589,31 @@ public class Filament
             double typicalLength = scale.toPixels(constants.segmentLength);
 
             PixelRectangle box = getContourBox();
+            int            start = (pStart != null) ? pStart.x : box.x;
+            int            stop = (pStop != null) ? pStop.x
+                                  : (box.x + (box.width - 1));
+            int            width = stop - start + 1;
+
             PixelRectangle probe = new PixelRectangle(box);
+            probe.x = start;
             probe.width = probeWidth;
 
             // Determine the number of segments and their precise length
-            int              segCount = (int) Math.rint(
-                box.width / typicalLength);
-            double           segLength = (double) box.width / segCount;
+            int              segCount = (int) Math.rint(width / typicalLength);
+            double           segLength = (double) width / segCount;
             List<PixelPoint> points = new ArrayList<PixelPoint>(segCount + 1);
 
             // First point
-            pStart = getRectangleCentroid(probe);
-            pStart.x = box.x;
+            if (pStart == null) {
+                pStart = getRectangleCentroid(probe);
+                pStart.x = start;
+            }
+
             points.add(pStart);
 
             // Intermediate points (perhaps none)
             for (int i = 1; i < segCount; i++) {
-                probe.x = box.x + (int) Math.rint(i * segLength);
+                probe.x = start + (int) Math.rint(i * segLength);
 
                 PixelPoint pt = getRectangleCentroid(probe);
 
@@ -661,15 +624,21 @@ public class Filament
             }
 
             // Last point
-            probe.x = ((box.x + box.width) - 1) - probe.width;
-            pStop = getRectangleCentroid(probe);
-            pStop.x = (box.x + box.width) - 1;
+            if (pStop == null) {
+                probe.x = stop - probe.width;
+                pStop = getRectangleCentroid(probe);
+                pStop.x = stop;
+            }
+
             points.add(pStop);
 
             // Interpolate the best spline through the provided points
             curve = NaturalSpline.interpolate(
                 points.toArray(new PixelPoint[points.size()]));
             addAttachment("SPLINE", curve); // Just for fun...
+
+            // Remember points
+            this.points = points;
         } catch (Exception ex) {
             logger.warning("Cannot getCurve", ex);
         }

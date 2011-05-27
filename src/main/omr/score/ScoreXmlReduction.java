@@ -162,6 +162,11 @@ public class ScoreXmlReduction
     public static void main (String... args)
         throws FileNotFoundException, IOException, JAXBException
     {
+//        // BINGO QUICK & DIRTY HACK!!!!!!!!!!!!!!!!!!!!!!!!
+//        String[] args = new String[] {
+//                            "u:/soft/audi-bugs/multipage-bis/haffner", "p",
+//                            "^Smartscore-10.2.1.xml"
+//                        };
         watch = new StopWatch("Global measurement");
 
         // Checking parameters
@@ -195,9 +200,9 @@ public class ScoreXmlReduction
 
         logger.info("Output.length: " + output.length());
 
-        if (logger.isFineEnabled()) {
-            logger.fine("Output:\n" + output);
-        }
+//        if (logger.isFineEnabled()) {
+//            logger.fine("Output:\n" + output);
+//        }
 
         // For debugging
         watch.start("Writing output file");
@@ -466,6 +471,7 @@ public class ScoreXmlReduction
             for (Part part : page.getPart()) {
                 ScorePart oldScorePart = (ScorePart) part.getId();
                 ScorePart newScorePart = newParts.get(oldScorePart);
+                logger.info("page:" + entry.getKey() + " old:" + oldScorePart.getId() + " new:" + newScorePart.getId());
                 Part      globalPart = partData.get(newScorePart);
 
                 if (newScorePart != oldScorePart) {
@@ -945,12 +951,18 @@ public class ScoreXmlReduction
                 prefix.length(),
                 name.length() - suffix.length());
 
+            // Beware of leading zeros
+            while ((numStr.length() > 1) && numStr.startsWith("0")) {
+                numStr = numStr.substring(1);
+            }
+
             try {
                 return Integer.decode(numStr);
             } catch (Exception ex) {
                 logger.warning(
                     "Cannot decode number \"" + numStr + "\" in file name \"" +
-                    name + "\"");
+                    name + "\"",
+                    ex);
 
                 return null;
             }
@@ -959,6 +971,7 @@ public class ScoreXmlReduction
         public boolean accept (File   dir,
                                String name)
         {
+            ///logger.info("dir: " + dir + " name: " + name);
             if (!name.startsWith(prefix)) {
                 return false;
             }

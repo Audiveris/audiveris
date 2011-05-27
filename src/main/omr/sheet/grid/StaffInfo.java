@@ -9,23 +9,30 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.sheet;
+package omr.sheet.grid;
 
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
+import omr.math.GeoPath;
+import omr.math.ReversePathIterator;
+
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
+import omr.sheet.Ledger;
+import omr.sheet.Scale;
+import omr.sheet.SystemInfo;
+
 import java.awt.*;
-import java.util.HashSet;
+import java.awt.geom.Rectangle2D;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
 
 /**
- * Class <code>StaffInfo</code> handles the physical details of a staff with its
- * lines.
+ * Class {@code StaffInfo} handles the physical informations of a staff with
+ * its lines.
  *
  * @author Hervé Bitteur
  */
@@ -38,30 +45,38 @@ public class StaffInfo
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Lines of the set */
-    private List<LineInfo> lines;
+    /** Sequence of the staff lines, from top to bottom */
+    private final List<LineInfo> lines;
 
-    /** Scale specific to this staff, since staves in a page may exhibit
-       different scales. */
+    /**
+     * Scale specific to this staff, since different staves in a page may
+     * exhibit different scales.
+     */
     private Scale specificScale;
 
-    /** Global sheet scale, needed for many computations */
-    private Scale scale;
+    /** Top limit of staff related area (left to right) */
+    private GeoPath topLimit = null;
 
-    /** Bottom of staff related area */
-    private int areaBottom = -1;
-
-    /** Top of staff related area */
-    private int areaTop = -1;
+    /** Bottom limit of staff related area (left to right) */
+    private GeoPath bottomLimit = null;
 
     /** For debug only */
-    private int id;
+    private final int id;
+
+    /** Information about left bar line */
+    private BarInfo leftBar;
 
     /** Left extrema */
     private int left;
 
+    /** Information about right bar line */
+    private BarInfo rightBar;
+
     /** Right extrema */
     private int right;
+
+    /** The staff area */
+    private GeoPath area;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -75,76 +90,80 @@ public class StaffInfo
      * @param left abscissa of the left side
      * @param right abscissa of the right side
      * @param specificScale specific scale detected for this staff
-     * @param scale global sheet scale
-     * @param lines the collection of contained staff lines
+     * @param lines the sequence of contained staff lines
      */
     public StaffInfo (int            id,
                       int            left,
                       int            right,
                       Scale          specificScale,
-                      Scale          scale,
                       List<LineInfo> lines)
     {
         this.id = id;
         this.left = left;
         this.right = right;
         this.specificScale = specificScale;
-        this.scale = scale;
         this.lines = lines;
     }
 
     //~ Methods ----------------------------------------------------------------
 
-    //---------------//
-    // setAreaBottom //
-    //---------------//
+    //---------//
+    // getArea //
+    //---------//
     /**
-     * Define the ordinate of the bottom of the staff area
-     *
-     * @param val bottom ordinate
+     * Report the lazily computed area defined by the staff limits
+     * @return the whole staff area
      */
-    public void setAreaBottom (int val)
+    public GeoPath getArea ()
     {
-        areaBottom = val;
+        if (area == null) {
+            area = new GeoPath();
+            area.append(topLimit, false);
+            area.append(
+                ReversePathIterator.getReversePathIterator(bottomLimit),
+                true);
+        }
+
+        return area;
     }
 
     //---------------//
-    // getAreaBottom //
+    // getAreaBounds //
     //---------------//
+    /**
+     * Report the bounding box of the staff area
+     * @return the lazily computed bounding box
+     */
+    public Rectangle2D getAreaBounds ()
+    {
+        return getArea()
+                   .getBounds2D();
+    }
+
+    //----------------//
+    // setBottomLimit //
+    //----------------//
+    /**
+     * Define the limit at the bottom of the staff area
+     *
+     * @param limit bottom milit
+     */
+    public void setBottomLimit (GeoPath limit)
+    {
+        bottomLimit = limit;
+    }
+
+    //----------------//
+    // getBottomLimit //
+    //----------------//
     /**
      * Selector for bottom of area
      *
      * @return area bottom
      */
-    public int getAreaBottom ()
+    public GeoPath getBottomLimit ()
     {
-        return areaBottom;
-    }
-
-    //------------//
-    // setAreaTop //
-    //------------//
-    /**
-     * Define the ordinate for top of staff area
-     *
-     * @param val top ordinate
-     */
-    public void setAreaTop (int val)
-    {
-        areaTop = val;
-    }
-
-    //------------//
-    // getAreaTop //
-    //------------//
-    /**
-     * Selector for area top ordinate
-     *
-     * @return area top ordinate
-     */
-    public int getAreaTop ()
-    {
-        return areaTop;
+        return bottomLimit;
     }
 
     //--------------//
@@ -172,6 +191,17 @@ public class StaffInfo
     {
         return getSpecificScale()
                    .interline() * 4;
+    }
+
+    //-------//
+    // getId //
+    //-------//
+    /**
+     * @return the id
+     */
+    public int getId ()
+    {
+        return id;
     }
 
     //-------------//
@@ -246,17 +276,73 @@ public class StaffInfo
         return left;
     }
 
+    //------------//
+    // setLeftBar //
+    //------------//
+    /**
+     * @param leftBar the leftBar to set
+     */
+    public void setLeftBar (BarInfo leftBar)
+    {
+        this.leftBar = leftBar;
+    }
+
+    //------------//
+    // getLeftBar //
+    //------------//
+    /**
+     * @return the leftBar
+     */
+    public BarInfo getLeftBar ()
+    {
+        return leftBar;
+    }
+
     //----------//
     // getLines //
     //----------//
     /**
-     * Report the list of line areas
+     * Report the sequence of lines
      *
      * @return the list of lines in this staff
      */
     public List<LineInfo> getLines ()
     {
         return lines;
+    }
+
+    //------------------//
+    // getMeanLeftSlope //
+    //------------------//
+    /**
+     * Report the mean slope on left side of staff lines
+     */
+    public double getMeanLeftSlope ()
+    {
+        return getMeanSlope(
+            new SideSelector() {
+                    public double getSlope (FilamentLine line)
+                    {
+                        return line.getStartSlope();
+                    }
+                });
+    }
+
+    //-------------------//
+    // getMeanRightSlope //
+    //-------------------//
+    /**
+     * Report the mean slope on right side of staff lines
+     */
+    public double getMeanRightSlope ()
+    {
+        return getMeanSlope(
+            new SideSelector() {
+                    public double getSlope (FilamentLine line)
+                    {
+                        return line.getStopSlope();
+                    }
+                });
     }
 
     //----------//
@@ -272,17 +358,26 @@ public class StaffInfo
         return right;
     }
 
-    //----------//
-    // getScale //
-    //---------//
+    //-------------//
+    // setRightBar //
+    //-------------//
     /**
-     * Report the global sheet scale.
-     *
-     * @return the sheet global scale
+     * @param rightBar the rightBar to set
      */
-    public Scale getScale ()
+    public void setRightBar (BarInfo rightBar)
     {
-        return scale;
+        this.rightBar = rightBar;
+    }
+
+    //-------------//
+    // getRightBar //
+    //-------------//
+    /**
+     * @return the rightBar
+     */
+    public BarInfo getRightBar ()
+    {
+        return rightBar;
     }
 
     //------------------//
@@ -307,6 +402,32 @@ public class StaffInfo
         }
     }
 
+    //-------------//
+    // setTopLimit //
+    //-------------//
+    /**
+     * Define the limit for top of staff area
+     *
+     * @param limit top limit
+     */
+    public void setTopLimit (GeoPath limit)
+    {
+        topLimit = limit;
+    }
+
+    //-------------//
+    // getTopLimit //
+    //-------------//
+    /**
+     * Selector for area top limit
+     *
+     * @return area top
+     */
+    public GeoPath getTopLimit ()
+    {
+        return topLimit;
+    }
+
     //---------//
     // cleanup //
     //---------//
@@ -329,7 +450,7 @@ public class StaffInfo
     public void dump ()
     {
         System.out.println(
-            "StaffInfo" + id + " left=" + left + " right=" + right);
+            "StaffInfo" + getId() + " left=" + left + " right=" + right);
 
         int i = 0;
 
@@ -342,7 +463,8 @@ public class StaffInfo
     // pitchPositionOf //
     //-----------------//
     /**
-     * Compute the pitch position of a pixel point
+     * Compute an approximation of the pitch position of a pixel point, since it
+     * is based only on distance to staff, with no consideration for ledgers.
      *
      * @param pt the pixel point
      * @return the pitch position
@@ -437,38 +559,43 @@ public class StaffInfo
         LineInfo lastLine = getLastLine();
 
         if ((firstLine != null) && (lastLine != null)) {
-            // Check that top of staff is visible
-            final int yTopLeft = firstLine.yAt(left);
-            final int yTopRight = firstLine.yAt(right);
-
-            // Check with the clipping region
             Rectangle clip = g.getClipBounds();
 
-            if ((clip.y + clip.height) < Math.max(yTopLeft, yTopRight)) {
+            // Check that top of staff is visible
+            if ((clip.y + clip.height) < Math.min(
+                firstLine.getLeftPoint().y,
+                firstLine.getRightPoint().y)) {
                 return false;
             }
 
             // Check that bottom of staff is visible
-            final int yBottomLeft = lastLine.yAt(left);
-            final int yBottomRight = lastLine.yAt(right);
-
-            if (clip.y > Math.max(yBottomLeft, yBottomRight)) {
+            if (clip.y > Math.max(
+                lastLine.getLeftPoint().y,
+                lastLine.getRightPoint().y)) {
                 return false;
             }
 
             // Draw each horizontal line in the set
             for (LineInfo line : lines) {
-                line.render(g, left, right);
+                line.render(g);
             }
 
             BasicStroke stroke = (BasicStroke) g.getStroke();
-            int         dx = (int) Math.rint(stroke.getLineWidth() / 2);
+            int         dx = 0; /////////////////////////////////////////(int) Math.rint(stroke.getLineWidth() / 2);
 
             // Draw the left vertical line
-            g.drawLine(left + dx, yTopLeft, left + dx, yBottomLeft);
+            g.drawLine(
+                firstLine.getLeftPoint().x + dx,
+                firstLine.getLeftPoint().y,
+                lastLine.getLeftPoint().x + dx,
+                lastLine.getLeftPoint().y);
 
             // Draw the right vertical line
-            g.drawLine(right - dx, yTopRight, right - dx, yBottomRight);
+            g.drawLine(
+                firstLine.getRightPoint().x - dx,
+                firstLine.getRightPoint().y,
+                lastLine.getRightPoint().x - dx,
+                lastLine.getRightPoint().y);
 
             return true;
         } else {
@@ -490,7 +617,7 @@ public class StaffInfo
         StringBuilder sb = new StringBuilder();
         sb.append("{StaffInfo")
           .append(" id=")
-          .append(id)
+          .append(getId())
           .append(" left=")
           .append(left)
           .append(" right=")
@@ -504,5 +631,54 @@ public class StaffInfo
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //--------------//
+    // getMeanSlope //
+    //--------------//
+    /**
+     * Discard highest and lowest absolute slopes
+     * And return the average values for the remaining ones
+     * @param selector which side to select (left or right)
+     * @return a "mean" value
+     */
+    private double getMeanSlope (SideSelector selector)
+    {
+        List<Double> slopes = new ArrayList<Double>(lines.size());
+
+        for (LineInfo l : lines) {
+            FilamentLine line = (FilamentLine) l;
+            slopes.add(selector.getSlope(line));
+        }
+
+        Collections.sort(
+            slopes,
+            new Comparator<Double>() {
+                    public int compare (Double o1,
+                                        Double o2)
+                    {
+                        return Double.compare(Math.abs(o1), Math.abs(o2));
+                    }
+                });
+
+        double sum = 0;
+
+        for (Double slope : slopes.subList(1, slopes.size() - 1)) {
+            sum += slope;
+        }
+
+        return sum / (slopes.size() - 2);
+    }
+
+    //~ Inner Interfaces -------------------------------------------------------
+
+    //--------------//
+    // SideSelector //
+    //--------------//
+    private static interface SideSelector
+    {
+        //~ Methods ------------------------------------------------------------
+
+        public double getSlope (FilamentLine line);
     }
 }

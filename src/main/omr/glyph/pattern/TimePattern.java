@@ -27,8 +27,8 @@ import omr.score.common.PixelRectangle;
 import omr.score.entity.ScoreSystem;
 
 import omr.sheet.Scale;
-import omr.sheet.StaffInfo;
 import omr.sheet.SystemInfo;
+import omr.sheet.grid.StaffInfo;
 
 import omr.util.Implement;
 import omr.util.Predicate;
@@ -91,9 +91,6 @@ public class TimePattern
             }
 
             // Retrieve environment (staff)
-            PixelPoint        center = glyph.getAreaCenter();
-            final StaffInfo   staff = system.getStaffAtY(center.y);
-
             final ScoreSystem scoreSystem = system.getScoreSystem();
             final Scale       scale = scoreSystem.getScale();
             final int         xOffset = scale.toPixels(constants.xOffset);

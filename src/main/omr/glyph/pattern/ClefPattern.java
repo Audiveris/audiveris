@@ -28,7 +28,7 @@ import omr.score.entity.ScoreSystem;
 import omr.score.entity.SystemPart;
 
 import omr.sheet.Scale;
-import omr.sheet.StaffInfo;
+import omr.sheet.grid.StaffInfo;
 import omr.sheet.SystemInfo;
 
 import omr.util.Implement;

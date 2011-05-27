@@ -453,7 +453,7 @@ public class SkewBuilder
     //--------//
     // MyView //
     //--------//
-    private class MyView
+    private final class MyView
         extends LagView<GlyphLag, GlyphSection>
     {
         //~ Constructors -------------------------------------------------------
@@ -462,6 +462,7 @@ public class SkewBuilder
         {
             super(sLag, null, null, sheet.getSelectionService());
             setName("SkewBuilder-View");
+            colorizeAllSections();
         }
 
         //~ Methods ------------------------------------------------------------

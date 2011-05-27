@@ -136,16 +136,16 @@ public class VerticalArea
         }
 
         // Retrieve the stick(s)
+        Scale scale = sheet.getScale();
         createSticks(null);
 
         // Merge aligned verticals
-        Scale scale = sheet.getScale();
         merge(
             scale.toPixels(constants.maxDeltaCoord),
             scale.toPixels(constants.maxDeltaPos),
             constants.maxDeltaSlope.getValue());
 
-        // Sort sticks found (TODO: is this useful?)
+        // Sort sticks found
         Collections.sort(sticks, Glyph.idComparator);
 
         if (logger.isFineEnabled()) {
@@ -163,7 +163,7 @@ public class VerticalArea
         //~ Instance fields ----------------------------------------------------
 
         Scale.Fraction coreSectionLength = new Scale.Fraction(
-            2.0,
+            1.5, // 2.0
             "Minimum length of a section to be processed");
         Constant.Ratio maxAdjacency = new Constant.Ratio(
             0.8d,
@@ -173,7 +173,7 @@ public class VerticalArea
             "Maximum difference of ordinates when merging two sticks");
         Scale.Fraction maxDeltaPos = new Scale.Fraction(
             0.1,
-            "Maximum difference of abscissa (in units) when merging two sticks");
+            "Maximum difference of abscissa when merging two sticks");
         Constant.Angle maxDeltaSlope = new Constant.Angle(
             0.01d,
             "Maximum difference in slope (in radians) when merging two sticks");

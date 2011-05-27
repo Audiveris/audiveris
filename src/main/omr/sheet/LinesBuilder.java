@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.sheet;
 
+import omr.sheet.grid.LineInfo;
 import omr.Main;
 
 import omr.constant.Constant;
@@ -36,6 +37,8 @@ import omr.math.Population;
 import omr.run.Orientation;
 import omr.run.Run;
 
+import omr.sheet.grid.StaffInfo;
+import omr.sheet.grid.StaffManager;
 import omr.sheet.ui.PixelBoard;
 
 import omr.step.Step;
@@ -91,8 +94,8 @@ public class LinesBuilder
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Series of horizontal peaks that signal staff areas */
-    private final List<StaffInfo> staves = new ArrayList<StaffInfo>();
+    /** Where staves are managed */
+    private final StaffManager staffManager;
 
     /** Related scale */
     private Scale scale;
@@ -121,23 +124,11 @@ public class LinesBuilder
             sheet,
             new GlyphLag("hLag", StickSection.class, Orientation.HORIZONTAL),
             Steps.valueOf(Steps.LINES));
+
+        staffManager = sheet.getStaffManager();
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //-----------//
-    // getStaves //
-    //-----------//
-    /**
-     * Report the list of staves found in the sheet
-     *
-     * @return the collection of staves found
-     */
-    @Implement(StavesBuilder.class)
-    public List<StaffInfo> getStaves ()
-    {
-        return staves;
-    }
 
     //-----------//
     // buildInfo //
@@ -176,15 +167,16 @@ public class LinesBuilder
             cleanupStaves();
 
             // Determine limits in ordinate for each staff area
-            if (!staves.isEmpty()) {
-                computeStaffLimits();
-            }
+            staffManager.computeStaffLimits();
 
             // User feedback
-            if (staves.size() > 1) {
-                logger.info(sheet.getLogPrefix() + staves.size() + " staves");
-            } else if (!staves.isEmpty()) {
-                logger.info(sheet.getLogPrefix() + staves.size() + " staff");
+            int staffCount = staffManager.getStaves()
+                                         .size();
+
+            if (staffCount > 1) {
+                logger.info(sheet.getLogPrefix() + staffCount + " staves");
+            } else if (staffCount > 0) {
+                logger.info(sheet.getLogPrefix() + staffCount + " staff");
             } else {
                 logger.warning(
                     sheet.getLogPrefix() + "No staff found." +
@@ -194,7 +186,7 @@ public class LinesBuilder
 
             // Record step information
             sheet.getBench()
-                 .recordStaveCount(staves.size());
+                 .recordStaveCount(staffCount);
         } finally {
             // Display the resulting lag if so asked for
             if (constants.displayFrame.getValue() && (Main.getGui() != null)) {
@@ -202,7 +194,8 @@ public class LinesBuilder
             }
         }
 
-        if (staves.isEmpty()) {
+        if (staffManager.getStaves()
+                        .isEmpty()) {
             throw new StepException("Cannot proceed without staves");
         }
     }
@@ -232,10 +225,11 @@ public class LinesBuilder
     {
         // Use a new staff retriever
         StaffBuilder staffBuilder = new StaffBuilder(sheet, lag);
+        staffManager.reset();
 
         for (StaffCandidate candidate : staffCandidates) {
             StaffInfo info = staffBuilder.buildInfo(candidate);
-            staves.add(info);
+            staffManager.addStaff(info);
         }
     }
 
@@ -244,7 +238,7 @@ public class LinesBuilder
     //---------------//
     private void cleanupStaves ()
     {
-        for (StaffInfo staff : staves) {
+        for (StaffInfo staff : staffManager.getStaves()) {
             staff.cleanup();
         }
     }
@@ -257,37 +251,6 @@ public class LinesBuilder
     {
         return (double) ((to.getTop() + to.getBottom()) - from.getTop() -
                from.getBottom()) / 2;
-    }
-
-    //--------------------//
-    // computeStaffLimits //
-    //--------------------//
-    private void computeStaffLimits ()
-    {
-        StaffInfo prevStaff = null;
-
-        for (StaffInfo staff : staves) {
-            // Very first staff
-            if (prevStaff == null) {
-                staff.setAreaTop(0);
-            } else {
-                // Top of staff area, defined as middle ordinate between
-                // ordinate of last line of previous staff and ordinate of
-                // first line of current staff
-                int middle = (prevStaff.getLastLine()
-                                       .yAt(prevStaff.getLeft()) +
-                             staff.getFirstLine()
-                                  .yAt(staff.getLeft())) / 2;
-                prevStaff.setAreaBottom(middle);
-                staff.setAreaTop(middle);
-            }
-
-            // Remember this staff for next one
-            prevStaff = staff;
-        }
-
-        // Bottom of last staff
-        prevStaff.setAreaBottom(Integer.MAX_VALUE);
     }
 
     //--------------//
@@ -304,7 +267,7 @@ public class LinesBuilder
          */
 
         // Browse StaffInfos
-        for (StaffInfo staff : staves) {
+        for (StaffInfo staff : staffManager.getStaves()) {
             // Browse LineInfos
             for (LineInfo line : staff.getLines()) {
                 specifics.addAll(line.getSections());
@@ -320,7 +283,7 @@ public class LinesBuilder
             new PixelBoard(unit, sheet),
             new RunBoard(unit, lag),
             new SectionBoard(unit, lag.getLastVertexId(), lag),
-            new GlyphBoard(unit, controller, null));
+            new GlyphBoard(unit, controller, null, true));
 
         // Create a hosting frame for the view
         ScrollLagView slv = new ScrollLagView(lagView);
@@ -733,6 +696,7 @@ public class LinesBuilder
                 controller,
                 null);
             setName("LinesBuilder-View");
+            colorizeAllSections();
 
             // (Weakly) listening on LineParameters properties
             LinesParameters.getInstance()
@@ -751,7 +715,7 @@ public class LinesBuilder
             // Draw the line info, lineset by lineset
             g.setColor(Color.black);
 
-            for (StaffInfo staff : staves) {
+            for (StaffInfo staff : staffManager.getStaves()) {
                 staff.render(g);
             }
         }

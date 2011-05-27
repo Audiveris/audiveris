@@ -164,6 +164,11 @@ public class Picture
         return dimension.height;
     }
 
+    public RenderedImage getImage ()
+    {
+        return image;
+    }
+
     //-----------------------//
     // getImplicitForeground //
     //-----------------------//
@@ -371,6 +376,17 @@ public class Picture
         }
 
         System.out.println();
+    }
+
+    //--------//
+    // invert //
+    //--------//
+    public static PlanarImage invert (RenderedImage image)
+    {
+        return JAI.create(
+            "Invert",
+            new ParameterBlock().addSource(image).add(null),
+            null);
     }
 
     //--------//
@@ -655,18 +671,6 @@ public class Picture
                     "Unsupported sample model" + " numBands=" + numBands);
             }
         }
-    }
-
-    //--------//
-    // invert //
-    //--------//
-    private static PlanarImage invert (PlanarImage image)
-    {
-        return JAI.create(
-            "Invert",
-            new ParameterBlock().addSource(image).add(null).add(null).add(null).add(
-                null).add(null),
-            null);
     }
 
     //-------------//

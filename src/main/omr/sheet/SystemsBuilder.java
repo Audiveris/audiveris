@@ -20,6 +20,7 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
+import omr.glyph.GlyphSection;
 import omr.glyph.GlyphsModel;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
@@ -29,12 +30,15 @@ import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphLagView;
 import omr.glyph.ui.GlyphsController;
 
-import omr.run.Orientation;
+import omr.lag.JunctionDeltaPolicy;
+import omr.lag.SectionsBuilder;
 import omr.lag.ui.RunBoard;
 import omr.lag.ui.ScrollLagView;
 import omr.lag.ui.SectionBoard;
 
 import omr.log.Logger;
+
+import omr.run.Orientation;
 
 import omr.script.BoundaryTask;
 
@@ -47,6 +51,8 @@ import omr.selection.UserEvent;
 
 import omr.sheet.BarsChecker.BarCheckSuite;
 import omr.sheet.SystemsBuilder.BarsController;
+import omr.sheet.grid.StaffInfo;
+import omr.sheet.grid.StaffManager;
 import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.SheetPainter;
 
@@ -78,7 +84,7 @@ import java.util.List;
  * retrieved information.</p>
  *
  * <p>Systems define their own area, which may be more complex than a simple
- * ordinate range, in order to precisely define which glyph belongs to which
+ * ordinate getRange, in order to precisely define which glyph belongs to which
  * system. The user has the ability to interactively modify the broken line
  * that defines the limit between two adjacent systems.</p>
  *
@@ -118,6 +124,9 @@ public class SystemsBuilder
     /** Companion physical stick barsChecker */
     private final BarsChecker barsChecker;
 
+    /** Global scale */
+    private final Scale scale;
+
     /** Lag view on bars, if so desired */
     private GlyphLagView lagView;
 
@@ -141,13 +150,14 @@ public class SystemsBuilder
     {
         super(
             sheet,
-            new GlyphLag("vLag", StickSection.class, Orientation.VERTICAL),
+            new GlyphLag("oldvLag", StickSection.class, Orientation.VERTICAL),
             Steps.valueOf(Steps.SYSTEMS));
 
+        scale = sheet.getScale();
         systems = sheet.getSystems();
 
         // BarsChecker companion, in charge of purely physical tests
-        barsChecker = new BarsChecker(sheet, lag);
+        barsChecker = new BarsChecker(sheet, lag, false);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -175,7 +185,16 @@ public class SystemsBuilder
     {
         try {
             // Remember old vLag if any, while setting the new one
-            GlyphLag oldLag = sheet.setVerticalLag(lag);
+            GlyphLag                                oldLag = sheet.setVerticalLag(
+                lag);
+
+            // Feed lag with proper sections
+            SectionsBuilder<GlyphLag, GlyphSection> sectionsBuilder;
+            sectionsBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
+                lag,
+                new JunctionDeltaPolicy(
+                    scale.toPixels(constants.maxDeltaLength)));
+            sectionsBuilder.createSections("bars", sheet.getPicture(), 0); // 0 = minRunLength
 
             // Retrieve the initial collection of good barline candidates
             // Results are updated shapes in vLag glyphs
@@ -274,8 +293,8 @@ public class SystemsBuilder
     {
         systems.clear();
 
-        final int staffNb = sheet.getStaves()
-                                 .size();
+        final StaffManager staffManager = sheet.getStaffManager();
+        final int          staffNb = staffManager.getStaffCount();
 
         // A way to tell the containing System for each staff, by providing the
         // staff index of the starting staff of the containing system.
@@ -336,6 +355,8 @@ public class SystemsBuilder
                 continue;
             }
 
+            StaffInfo staff = staffManager.getStaff(i);
+
             // System break ?
             if (systemStarts[i] != sStart) {
                 system = new SystemInfo(++id, sheet);
@@ -343,7 +364,7 @@ public class SystemsBuilder
                 sStart = i;
             }
 
-            system.addStaff(i);
+            system.addStaff(staff);
 
             // Part break ?
             if (partStarts[i] != pStart) {
@@ -352,17 +373,18 @@ public class SystemsBuilder
                 pStart = i;
             }
 
-            part.addStaff(sheet.getStaves().get(i));
+            part.addStaff(staff);
         }
 
         // Specific degraded case, just one staff, no bar stick
         if (systems.isEmpty() && (staffNb == 1)) {
+            StaffInfo singleStaff = staffManager.getFirstStaff();
             system = new SystemInfo(++id, sheet);
             systems.add(system);
-            system.addStaff(0);
+            system.addStaff(singleStaff);
             part = new PartInfo();
             system.addPart(part);
-            part.addStaff(sheet.getStaves().get(0));
+            part.addStaff(singleStaff);
             logger.warning("Created one system, one part, one staff");
         }
 
@@ -386,14 +408,17 @@ public class SystemsBuilder
     {
         barsController = new BarsController();
         lagView = new MyView(lag, getSpecificGlyphs(), barsController);
-        lagView.colorizeAllGlyphs();
 
         final String  unit = sheet.getId() + ":BarsBuilder";
         BoardsPane    boardsPane = new BoardsPane(
             new PixelBoard(unit, sheet),
             new RunBoard(unit, lag),
             new SectionBoard(unit, lag.getLastVertexId(), lag),
-            new GlyphBoard(unit, lagView.getController(), lag.getAllGlyphs()),
+            new GlyphBoard(
+                unit,
+                lagView.getController(),
+                lag.getAllGlyphs(),
+                true),
             new MyCheckBoard(
                 unit,
                 barsChecker.getSuite(),
@@ -554,6 +579,9 @@ public class SystemsBuilder
         Constant.Boolean displayFrame = new Constant.Boolean(
             true,
             "Should we display a frame on the vertical sticks");
+        Scale.Fraction  maxDeltaLength = new Scale.Fraction(
+            0.2,
+            "Maximum difference in run length to be part of the same section");
 
         /** Windox enlarging ratio when dragging a boundary reference point */
         Constant.Ratio draggingRatio = new Constant.Ratio(
@@ -624,7 +652,7 @@ public class SystemsBuilder
     //--------//
     // MyView //
     //--------//
-    private class MyView
+    private final class MyView
         extends GlyphLagView
     {
         //~ Instance fields ----------------------------------------------------
@@ -650,14 +678,18 @@ public class SystemsBuilder
         {
             super(lag, null, null, barsController, specificGlyphs);
             setName("SystemsBuilder-View");
+
+            colorizeAllSections();
+            colorizeAllGlyphs();
+
             barMenu = new BarMenu(getController());
         }
 
         //~ Methods ------------------------------------------------------------
 
-        //----------//
-        // colorize //
-        //----------//
+        //-------------------//
+        // colorizeAllGlyphs //
+        //-------------------//
         @Override
         public void colorizeAllGlyphs ()
         {

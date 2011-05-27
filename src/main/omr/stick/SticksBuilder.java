@@ -46,7 +46,6 @@ import java.util.*;
  *
  * <li> <b>Vertical sticks</b> can be bar lines, or stems. </li> </ul> </p>
  *
- *
  * @author Hervé Bitteur
  */
 public class SticksBuilder
@@ -235,6 +234,7 @@ public class SticksBuilder
                 " maxThickness=" + maxThickness + " longAlignment=" +
                 longAlignment);
         }
+
         // Use a brand new glyph map
         visited = new HashMap<GlyphSection, Glyph>();
 
@@ -332,9 +332,9 @@ public class SticksBuilder
             }
         }
 
-        if (logger.isFineEnabled()) {
-            dump(true);
-        }
+        //        if (logger.isFineEnabled()) {
+        //            dump(true);
+        //        }
     }
 
     //------//
@@ -401,38 +401,51 @@ public class SticksBuilder
         for (Stick stick : sticks) {
             index++;
 
-            final int   maxPos = stick.getMidPos() + maxDeltaPos;
             List<Stick> tail = sticks.subList(index + 1, sticks.size());
+            boolean     merging = true;
 
-            for (Iterator<Stick> it = tail.iterator(); it.hasNext();) {
-                Stick other = it.next();
+            while (merging) {
+                final int maxPos = stick.getMidPos() + (20 * maxDeltaPos);
+                merging = false;
 
-                if (other.getMidPos() > maxPos) {
-                    break;
-                }
+                for (Iterator<Stick> it = tail.iterator(); it.hasNext();) {
+                    Stick other = it.next();
 
-                if (stick.isExtensionOf(
-                    other,
-                    maxDeltaCoord,
-                    maxDeltaPos,
-                    maxDeltaSlope)) {
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            "merging stick " + stick.getId() + " into stick " +
-                            other.getId());
+                    // Check other has not been removed yet
+                    if (removals.contains(other)) {
+                        continue;
                     }
 
-                    other.addGlyphSections(stick, Glyph.Linking.LINK_BACK);
-                    removals.add(stick);
+                    if (other.getMidPos() > maxPos) {
+                        break;
+                    }
 
-                    break;
+                    if (stick.isExtensionOf(
+                        other,
+                        maxDeltaCoord,
+                        maxDeltaPos,
+                        maxDeltaSlope)) {
+                        int oldId = stick.getId();
+
+                        stick.addGlyphSections(other, Glyph.Linking.LINK_BACK);
+                        lag.addGlyph(stick);
+
+                        if (logger.isFineEnabled() && (stick.getId() != oldId)) {
+                            logger.fine(
+                                "Merged sticks #" + oldId + " & #" +
+                                other.getId() + " => #" + stick.getId());
+                        }
+
+                        removals.add(other);
+                        merging = true;
+
+                        break;
+                    }
                 }
             }
         }
 
-        for (Stick stick : removals) {
-            sticks.remove(stick);
-        }
+        sticks.removeAll(removals);
 
         if (logger.isFineEnabled()) {
             logger.fine(

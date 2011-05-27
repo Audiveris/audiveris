@@ -26,11 +26,15 @@ public class Histogram<K>
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** Underlying map */
-    private final SortedMap<K, Integer> map = new TreeMap<K, Integer>();
+    /**
+     * Underlying map:
+     * - K for the type of entity to be accumulated
+     * - Integer for the cumulated number in each bucket
+     */
+    protected final SortedMap<K, Integer> map = new TreeMap<K, Integer>();
 
     /** Total count */
-    private int totalCount = 0;
+    protected int totalCount = 0;
 
     //~ Constructors -----------------------------------------------------------
 

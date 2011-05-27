@@ -21,7 +21,7 @@ import java.awt.*;
 
 /**
  * Class {@code RunsTableFactory} retrieves the runs structure out of a given
- * source and builds the related {@link RunsTable} structure.
+ * pixel source and builds the related {@link RunsTable} structure.
  *
  * @author Hervé Bitteur
  */

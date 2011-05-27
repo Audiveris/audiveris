@@ -17,12 +17,13 @@ import omr.glyph.facets.Glyph;
 import omr.glyph.facets.Stick;
 
 import omr.lag.Lag;
-import omr.run.Oriented;
 import omr.lag.Section;
 
 import omr.log.Logger;
 
 import omr.math.Histogram;
+
+import omr.run.Oriented;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -430,10 +431,14 @@ public class GlyphLag
         StringBuilder sb = new StringBuilder(super.internalsString());
 
         // Active/All glyphs
-        sb.append(" glyphs=")
-          .append(getActiveGlyphs().size())
-          .append("/")
-          .append(allGlyphs.size());
+        if (allGlyphs.size() > 1) {
+            sb.append(" glyphs=")
+              .append(getActiveGlyphs().size())
+              .append("/")
+              .append(allGlyphs.size());
+        } else {
+            sb.append(" noglyphs");
+        }
 
         return sb.toString();
     }

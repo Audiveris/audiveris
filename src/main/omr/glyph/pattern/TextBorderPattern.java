@@ -29,10 +29,10 @@ import omr.log.Logger;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
-import omr.sheet.LineInfo;
+import omr.sheet.grid.LineInfo;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
-import omr.sheet.StaffInfo;
+import omr.sheet.grid.StaffInfo;
 import omr.sheet.SystemBoundary.Side;
 import omr.sheet.SystemInfo;
 

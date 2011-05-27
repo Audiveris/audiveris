@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.sheet;
 
+import omr.sheet.grid.LineInfo;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 

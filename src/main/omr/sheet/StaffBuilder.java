@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.sheet;
 
+import omr.sheet.grid.LineInfo;
+import omr.sheet.grid.StaffInfo;
 import omr.glyph.GlyphLag;
 
 import omr.log.Logger;
@@ -100,8 +102,8 @@ public class StaffBuilder
         List<Integer> rights = new ArrayList<Integer>();
 
         for (LineInfo line : lines) {
-            lefts.add(line.getLeft());
-            rights.add(line.getRight());
+            lefts.add(line.getLeftPoint().x);
+            rights.add(line.getRightPoint().x);
         }
 
         Collections.sort(lefts);
@@ -115,12 +117,6 @@ public class StaffBuilder
         }
 
         // Allocate the staff info
-        return new StaffInfo(
-            candidate.id,
-            left,
-            right,
-            scale,
-            sheet.getScale(),
-            lines);
+        return new StaffInfo(candidate.id, left, right, scale, lines);
     }
 }

@@ -17,7 +17,7 @@ import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.visitor.ScoreVisitor;
 
-import omr.sheet.StaffInfo;
+import omr.sheet.grid.StaffInfo;
 
 import omr.util.TreeNode;
 
@@ -161,14 +161,14 @@ public class Staff
     /**
      * Set the staff width
      *
-     * @param unitWidth width in units of the staff
+     * @param width width of the staff
      */
-    public void setWidth (int unitWidth)
+    public void setWidth (int width)
     {
         PixelRectangle newBox = getBox();
         reset();
 
-        newBox.width = unitWidth;
+        newBox.width = width;
         setBox(newBox);
         getCenter();
     }

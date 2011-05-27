@@ -27,7 +27,7 @@ import omr.score.visitor.AbstractScoreVisitor;
 import omr.sheet.Ending;
 import omr.sheet.Ledger;
 import omr.sheet.Sheet;
-import omr.sheet.StaffInfo;
+import omr.sheet.grid.StaffInfo;
 import omr.sheet.SystemInfo;
 
 import omr.ui.symbol.Alignment;
@@ -135,11 +135,8 @@ public class SheetPainter
                 page.acceptChildren(this);
             } else {
                 // Render what we have got so far
-                if (sheet.getStaves() != null) {
-                    for (StaffInfo staff : sheet.getStaves()) {
-                        staff.render(g);
-                    }
-                }
+                sheet.getStaffManager()
+                     .render(g);
             }
 
             if (sheet.getSystems() != null) {

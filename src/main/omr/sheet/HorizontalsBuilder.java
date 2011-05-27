@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.sheet;
 
+import omr.sheet.grid.StaffInfo;
 import omr.Main;
 
 import omr.check.Check;
@@ -38,6 +39,8 @@ import omr.lag.ui.ScrollLagView;
 import omr.lag.ui.SectionBoard;
 
 import omr.log.Logger;
+
+import omr.score.common.PixelPoint;
 
 import omr.selection.GlyphEvent;
 import omr.selection.MouseMovement;
@@ -433,7 +436,7 @@ public class HorizontalsBuilder
             new PixelBoard(unit, sheet),
             new RunBoard(unit, lag),
             new SectionBoard(unit, lag.getLastVertexId(), lag),
-            new GlyphBoard(unit, getController(), null),
+            new GlyphBoard(unit, getController(), null, true),
             new CheckBoard<Stick>(
                 unit + "-Common",
                 commonSuite,
@@ -509,16 +512,16 @@ public class HorizontalsBuilder
         // Compute the (algebraic) distance from the stick to the nearest
         // staff. Distance is negative if the stick is within the staff,
         // positive outside.
-        final int y = stick.getMidPos();
-        final int x = (stick.getStart() + stick.getStop()) / 2;
-        final int idx = sheet.getStaffIndexAtY(y);
-        StaffInfo area = sheet.getStaves()
-                              .get(idx);
-        final int top = area.getFirstLine()
-                            .yAt(x);
-        final int bottom = area.getLastLine()
-                               .yAt(x);
-        final int dist = Math.max(top - y, y - bottom);
+        final PixelPoint mid = new PixelPoint(
+            (stick.getStart() + stick.getStop()) / 2,
+            stick.getMidPos());
+        final StaffInfo  staff = sheet.getStaffManager()
+                                     .getStaffAt(mid);
+        final int        top = staff.getFirstLine()
+                                   .yAt(mid.x);
+        final int        bottom = staff.getLastLine()
+                                      .yAt(mid.x);
+        final int        dist = Math.max(top - mid.y, mid.y - bottom);
 
         return sheet.getScale()
                     .pixelsToFrac(dist);
@@ -1051,7 +1054,7 @@ public class HorizontalsBuilder
     //--------//
     // MyView //
     //--------//
-    private class MyView
+    private final class MyView
         extends GlyphLagView
     {
         //~ Instance fields ----------------------------------------------------
@@ -1067,6 +1070,7 @@ public class HorizontalsBuilder
         {
             super(lag, members, constants.displayLedgerLines, controller, null);
             setName("HorizontalsBuilder-View");
+            colorizeAllSections();
 
             dashMenu = new DashMenu(controller);
 

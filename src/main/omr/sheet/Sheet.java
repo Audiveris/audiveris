@@ -39,10 +39,11 @@ import omr.score.entity.SystemNode;
 import omr.selection.SelectionService;
 import omr.selection.SheetLocationEvent;
 
+import omr.sheet.grid.StaffManager;
+import omr.sheet.grid.TargetBuilder;
 import omr.sheet.picture.ImageFormatException;
 import omr.sheet.picture.Picture;
 import omr.sheet.picture.PictureView;
-import omr.sheet.staff.LineCluster;
 import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.ScoreColorizer;
 import omr.sheet.ui.SheetAssembly;
@@ -111,12 +112,6 @@ public class Sheet
     /** Initial skew value */
     private Skew skew;
 
-    /** Retrieved staves */
-    private List<StaffInfo> staves;
-
-    /** Draft: list of staff lines clusters */
-    private Collection<LineCluster> clusters;
-
     /** Horizontal entities */
     private Horizontals horizontals;
 
@@ -128,11 +123,14 @@ public class Sheet
 
     /**
      * Non-lag related selections for this sheet
-     * (SheetLocation, ScoreLocation and PixelLevel)
+     * (SheetLocation and PixelLevel)
      */
     private final SelectionService selectionService;
 
     // Companion processors
+
+    /** Staves */
+    private final StaffManager staffManager;
 
     /** Dedicated skew builder */
     private volatile SkewBuilder skewBuilder;
@@ -166,6 +164,7 @@ public class Sheet
 
     /** All steps already done on this sheet */
     private Set<Step> doneSteps = new HashSet<Step>();
+    private TargetBuilder targetBuilder;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -186,6 +185,7 @@ public class Sheet
         this.score = page.getScore();
 
         selectionService = new SelectionService("sheet " + page.getId());
+        staffManager = new StaffManager(this);
 
         // Related bench at sheet level
         bench = new SheetBench(this);
@@ -254,28 +254,6 @@ public class Sheet
     public SheetBench getBench ()
     {
         return bench;
-    }
-
-    //-------------//
-    // setClusters //
-    //-------------//
-    /**
-     * @param clusters the clusters to set
-     */
-    public void setClusters (Collection<LineCluster> clusters)
-    {
-        this.clusters = clusters;
-    }
-
-    //-------------//
-    // getClusters //
-    //-------------//
-    /**
-     * @return the clusters
-     */
-    public Collection<LineCluster> getClusters ()
-    {
-        return clusters;
     }
 
     //----------------//
@@ -769,82 +747,15 @@ public class Sheet
         return skewBuilder;
     }
 
-    //------------------//
-    // getStaffIndexAtY //
-    //------------------//
+    //-----------------//
+    // getStaffManager //
+    //-----------------//
     /**
-     * Given the ordinate of a point, retrieve the index of the nearest staff
-     *
-     * @param y the point ordinate
-     *
-     * @return the index of the nearest staff
+     * @return the staffManager
      */
-    public int getStaffIndexAtY (int y)
+    public StaffManager getStaffManager ()
     {
-        int res = Collections.binarySearch(
-            getStaves(),
-            Integer.valueOf(y),
-            new Comparator<Object>() {
-                    public int compare (Object o1,
-                                        Object o2)
-                    {
-                        int y;
-
-                        if (o1 instanceof Integer) {
-                            y = ((Integer) o1).intValue();
-
-                            StaffInfo staff = (StaffInfo) o2;
-
-                            if (y < staff.getAreaTop()) {
-                                return -1;
-                            }
-
-                            if (y > staff.getAreaBottom()) {
-                                return +1;
-                            }
-
-                            return 0;
-                        } else {
-                            return -compare(o2, o1);
-                        }
-                    }
-                });
-
-        if (res >= 0) { // Found
-
-            return res;
-        } else {
-            // Should not happen!
-            logger.severe("getStaffIndexAtY. No nearest staff for y = " + y);
-
-            return -res - 1; // Not found
-        }
-    }
-
-    //-----------//
-    // setStaves //
-    //-----------//
-    /**
-     * Set the list of staves found in the sheet
-     *
-     * @param staves the collection of staves found
-     */
-    public void setStaves (List<StaffInfo> staves)
-    {
-        this.staves = staves;
-    }
-
-    //-----------//
-    // getStaves //
-    //-----------//
-    /**
-     * Report the list of staves found in the sheet
-     *
-     * @return the collection of staves found
-     */
-    public List<StaffInfo> getStaves ()
-    {
-        return staves;
+        return staffManager;
     }
 
     //------------------//
@@ -1124,6 +1035,28 @@ public class Sheet
                 });
 
         return neighbors;
+    }
+
+    //------------------//
+    // setTargetBuilder //
+    //------------------//
+    /**
+     * @param targetBuilder the targetBuilder to set
+     */
+    public void setTargetBuilder (TargetBuilder targetBuilder)
+    {
+        this.targetBuilder = targetBuilder;
+    }
+
+    //------------------//
+    // getTargetBuilder //
+    //------------------//
+    /**
+     * @return the targetBuilder
+     */
+    public TargetBuilder getTargetBuilder ()
+    {
+        return targetBuilder;
     }
 
     //----------------//
@@ -1578,7 +1511,6 @@ public class Sheet
         picture = null;
         scale = null;
         skew = null;
-        staves = null;
         horizontals = null;
         hLag = null;
         vLag = null;
@@ -1616,4 +1548,5 @@ public class Sheet
             0.5d,
             "Ratio of horizontal histogram to detect staves");
     }
+    
 }

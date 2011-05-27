@@ -22,17 +22,16 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
-import omr.glyph.GlyphSection;
 import omr.glyph.Shape;
 import omr.glyph.facets.Stick;
-
-import omr.lag.JunctionDeltaPolicy;
-import omr.lag.SectionsBuilder;
 
 import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
+
+import omr.sheet.grid.StaffInfo;
+import omr.sheet.grid.StaffManager;
 
 import omr.step.StepException;
 
@@ -98,6 +97,12 @@ public class BarsChecker
 
     //~ Instance fields --------------------------------------------------------
 
+    /**
+     * true for rough tests (when retrieving staff frames),
+     * false for precise tests (when retrieving measures)
+     */
+    private boolean rough;
+
     /** Related sheet */
     private final Sheet sheet;
 
@@ -106,6 +111,9 @@ public class BarsChecker
 
     /** Related vertical lag */
     private final GlyphLag lag;
+
+    /** Related staves */
+    private final StaffManager staffManager;
 
     /** Suite of checks to be performed */
     private final BarCheckSuite suite;
@@ -123,18 +131,59 @@ public class BarsChecker
      *
      * @param sheet the sheet to process
      * @param lag the sheet vertical lag
+     * @param rough true for rough tests (when retrieving staff frames),
+     * false for precise tests
      */
     public BarsChecker (Sheet    sheet,
-                        GlyphLag lag)
+                        GlyphLag lag,
+                        boolean  rough)
     {
         this.sheet = sheet;
         this.lag = lag;
+        this.rough = rough;
 
         scale = sheet.getScale();
         suite = new BarCheckSuite();
+        staffManager = sheet.getStaffManager();
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-----------------//
+    // getStaffAnchors //
+    //-----------------//
+    /**
+     * Report the staves at the top and at the bottom of the
+     * provided stick. (Used by package mate SystemsBuilder)
+     * @param stick the stick to lookup
+     * @return a pair of staves, top & bottom, or null if the stick is
+     * not known
+     */
+    public StaffAnchors getStaffAnchors (Stick stick)
+    {
+        GlyphContext context = contexts.get(stick);
+
+        if (context == null) {
+            context = new GlyphContext(stick);
+            suite.pass(context);
+            contexts.put(stick, context);
+        }
+
+        return new StaffAnchors(context.topStaff, context.botStaff);
+    }
+
+    //----------//
+    // getSuite //
+    //----------//
+    /**
+     * Report the suite currently defined (used by package mate SystemsBuilder)
+     *
+     * @return the check suite
+     */
+    public CheckSuite<GlyphContext> getSuite ()
+    {
+        return suite;
+    }
 
     //--------------------//
     // retrieveCandidates //
@@ -150,23 +199,22 @@ public class BarsChecker
     public void retrieveCandidates ()
         throws StepException
     {
-        // Populate the vertical lag of runs
-        SectionsBuilder<GlyphLag, GlyphSection> lagBuilder;
-        lagBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
-            lag,
-            new JunctionDeltaPolicy(scale.toPixels(constants.maxDeltaLength)));
-        lagBuilder.createSections("bars", sheet.getPicture(), 0); // 0 = minRunLength
-
         // Retrieve (vertical) sticks
         VerticalArea barsArea = new VerticalArea(
             sheet,
             lag,
             scale.toPixels(constants.maxBarThickness));
-
-        // Register these sticks as standard lag glyphs
-        for (Stick stick : barsArea.getSticks()) {
-            lag.addGlyph(stick);
-        }
+        //
+        //        // Register these sticks as standard lag glyphs
+        //        for (Stick stick : barsArea.getSticks()) {
+        //            int oldId = stick.getId();
+        //            lag.addGlyph(stick);
+        //
+        //            if (stick.getId() != oldId) {
+        //                logger.info(
+        //                    "Stick #" + oldId + " redefined as #" + stick.getId());
+        //            }
+        //        }
 
         // Sort bar candidates according to their abscissa
         Collections.sort(barsArea.getSticks(), Stick.midPosComparator);
@@ -191,7 +239,7 @@ public class BarsChecker
 
                 // Additional processing for Bars that define a system or a part
                 // (they start AND end with precise staves horizontal limits)
-                if ((context.topIdx != -1) && (context.botIdx != -1)) {
+                if ((context.topStaff != -1) && (context.botStaff != -1)) {
                     // Here, we have both part & system defining bars
                     // System bars occur first
                     // (since glyphs are sorted by increasing abscissa)
@@ -200,59 +248,23 @@ public class BarsChecker
                     if (logger.isFineEnabled()) {
                         logger.fine(
                             "Part-defining Bar line from staff " +
-                            context.topIdx + " to staff " + context.botIdx +
+                            context.topStaff + " to staff " + context.botStaff +
                             " " + stick);
                     }
                 } else {
                     if (logger.isFineEnabled()) {
                         logger.fine(
                             "Non-Part-defining Bar line " +
-                            ((context.topIdx != -1)
-                             ? (" topIdx=" + context.topIdx) : "") +
-                            ((context.botIdx != -1)
-                             ? (" botIdx=" + context.botIdx) : ""));
+                            ((context.topStaff != -1)
+                             ? (" topIdx=" + context.topStaff) : "") +
+                            ((context.botStaff != -1)
+                             ? (" botIdx=" + context.botStaff) : ""));
                     }
 
                     stick.setResult(BAR_NOT_PART_DEFINING);
                 }
             }
         }
-    }
-
-    //-----------------//
-    // getStaffAnchors //
-    //-----------------//
-    /**
-     * Report the indices of the staves at the top and at the bottom of the
-     * provided stick. (Used by package mate SystemsBuilder)
-     * @param stick the stick to lookup
-     * @return a pair of staff indices, top & bottom, or null if the stick is
-     * not known
-     */
-    StaffAnchors getStaffAnchors (Stick stick)
-    {
-        GlyphContext context = contexts.get(stick);
-
-        if (context == null) {
-            context = new GlyphContext(stick);
-            suite.pass(context);
-            contexts.put(stick, context);
-        }
-
-        return new StaffAnchors(context.topIdx, context.botIdx);
-    }
-
-    //----------//
-    // getSuite //
-    //----------//
-    /**
-     * Report the suite currently defined (used by package mate SystemsBuilder)
-     *
-     * @return the check suite
-     */
-    CheckSuite<GlyphContext> getSuite ()
-    {
-        return suite;
     }
 
     //------------//
@@ -282,6 +294,9 @@ public class BarsChecker
     //--------------//
     // StaffAnchors //
     //--------------//
+    /**
+     * Record which staves the top and the bottom of a stick are anchored to
+     */
     public static class StaffAnchors
     {
         //~ Instance fields ----------------------------------------------------
@@ -313,17 +328,17 @@ public class BarsChecker
         /** Indicates a thick bar stick */
         boolean isThick;
 
-        /** Staff area index for top of bar stick */
+        /** Nearest staff for top of bar stick */
         int topArea = -1;
 
-        /** Staff area index for bottom of bar stick */
+        /** Nearest staff for bottom of bar stick */
         int bottomArea = -1;
 
-        /** Precise staff index for top of bar stick, assigned when OK */
-        int topIdx = -1;
+        /** Precise staff for top of bar stick, assigned when OK */
+        int topStaff = -1;
 
-        /** Precise staff index for bottom of bar stick, assigned when OK */
-        int botIdx = -1;
+        /** Precise staff for bottom of bar stick, assigned when OK */
+        int botStaff = -1;
 
         //~ Constructors -------------------------------------------------------
 
@@ -338,6 +353,12 @@ public class BarsChecker
         public void setResult (Result result)
         {
             stick.setResult(result);
+        }
+
+        @Override
+        public String toString ()
+        {
+            return "stick#" + stick.getId();
         }
     }
 
@@ -354,16 +375,19 @@ public class BarsChecker
             super("Bar", constants.minCheckResult.getValue());
 
             // Be very careful with check order, because of side-effects
-            add(1, new TopCheck()); // Side-effect: may set topIdx
-            add(1, new BottomCheck()); // Side-effect: may set botIdx
+            add(1, new TopCheck()); // Side-effect: may set topStaff
+            add(1, new BottomCheck()); // Side-effect: may set botStaff
             add(1, new HeightDiffCheck());
-            add(1, new AnchorCheck());
             add(1, new LeftCheck());
             add(1, new RightCheck());
-            add(1, new TopLeftChunkCheck());
-            add(1, new TopRightChunkCheck());
-            add(1, new BottomLeftChunkCheck());
-            add(1, new BottomRightChunkCheck());
+
+            if (!rough) {
+                add(1, new AnchorCheck());
+                add(1, new TopLeftChunkCheck());
+                add(1, new TopRightChunkCheck());
+                add(1, new BottomLeftChunkCheck());
+                add(1, new BottomRightChunkCheck());
+            }
 
             if (logger.isFineEnabled()) {
                 dump();
@@ -401,11 +425,11 @@ public class BarsChecker
             context.isThick = isThickBar(stick);
 
             if (context.isThick) {
-                if ((context.topIdx != -1) && (context.botIdx != -1)) {
+                if ((context.topStaff != -1) && (context.botStaff != -1)) {
                     return 1;
                 }
             } else {
-                if ((context.topIdx != -1) || (context.botIdx != -1)) {
+                if ((context.topStaff != -1) || (context.botStaff != -1)) {
                     return 1;
                 }
             }
@@ -427,8 +451,10 @@ public class BarsChecker
             super(
                 "Bottom",
                 "Check that bottom of stick is close to bottom of staff",
-                constants.maxStaffShiftDyLow,
-                constants.maxStaffShiftDyHigh,
+                rough ? constants.maxStaffShiftDyLowRough
+                                : constants.maxStaffShiftDyLow,
+                rough ? constants.maxStaffShiftDyHighRough
+                                : constants.maxStaffShiftDyHigh,
                 false,
                 null);
         }
@@ -439,25 +465,24 @@ public class BarsChecker
         @Implement(Check.class)
         protected double getValue (GlyphContext context)
         {
-            Stick stick = context.stick;
-            int   stop = stick.getStop();
+            Stick      stick = context.stick;
+            PixelPoint stop = new PixelPoint(
+                stick.getMidPos(),
+                stick.getStop());
 
             // Which staff area contains the bottom of the stick?
-            context.bottomArea = sheet.getStaffIndexAtY(stop);
-
-            StaffInfo area = sheet.getStaves()
-                                  .get(context.bottomArea);
+            StaffInfo staff = staffManager.getStaffAt(stop);
+            context.bottomArea = staffManager.getIndexOf(staff);
 
             // How far are we from the stop of the staff?
-            int    staffBottom = area.getLastLine()
-                                     .yAt(stick.getMidPos());
-
+            int    staffBottom = staff.getLastLine()
+                                      .yAt(stop.x);
             double dy = sheet.getScale()
-                             .pixelsToFrac(Math.abs(staffBottom - stop));
+                             .pixelsToFrac(Math.abs(staffBottom - stop.y));
 
             // Side-effect
             if (dy <= getLow()) {
-                context.botIdx = context.bottomArea;
+                context.botStaff = context.bottomArea;
             }
 
             return dy;
@@ -475,9 +500,6 @@ public class BarsChecker
         Scale.Fraction maxBarThickness = new Scale.Fraction(
             1.0,
             "Maximum thickness of an interesting vertical stick");
-        Scale.Fraction maxDeltaLength = new Scale.Fraction(
-            0.2,
-            "Maximum difference in run length to be part of the same section");
         Scale.Fraction chunkWidth = new Scale.Fraction(
             0.3,
             "Width of box to look for chunks");
@@ -493,21 +515,39 @@ public class BarsChecker
         Scale.Fraction maxStaffShiftDyHigh = new Scale.Fraction(
             4.0,
             "High Maximum vertical distance between a bar edge and the staff line");
+        Scale.Fraction maxStaffShiftDyHighRough = new Scale.Fraction(
+            4.0,
+            "Rough high Maximum vertical distance between a bar edge and the staff line");
         Scale.Fraction maxStaffShiftDyLow = new Scale.Fraction(
             0.27,
             "Low Maximum vertical distance between a bar edge and the staff line");
+        Scale.Fraction maxStaffShiftDyLowRough = new Scale.Fraction(
+            2.0,
+            "Rough low Maximum vertical distance between a bar edge and the staff line");
         Scale.Fraction maxStaffDHeightHigh = new Scale.Fraction(
             0.4,
             "High Maximum difference between a bar length and min staff height");
+        Scale.Fraction maxStaffDHeightHighRough = new Scale.Fraction(
+            2,
+            "Rough high Maximum difference between a bar length and min staff height");
         Scale.Fraction maxStaffDHeightLow = new Scale.Fraction(
             0.2,
             "Low Maximum difference between a bar length and min staff height");
+        Scale.Fraction maxStaffDHeightLowRough = new Scale.Fraction(
+            1,
+            "Rough low Maximum difference between a bar length and min staff height");
         Scale.Fraction minStaffDxHigh = new Scale.Fraction(
             0,
             "High Minimum horizontal distance between a bar and a staff edge");
+        Scale.Fraction minStaffDxHighRough = new Scale.Fraction(
+            -2,
+            "Rough high Minimum horizontal distance between a bar and a staff edge");
         Scale.Fraction minStaffDxLow = new Scale.Fraction(
             0,
             "Low Minimum horizontal distance between a bar and a staff edge");
+        Scale.Fraction minStaffDxLowRough = new Scale.Fraction(
+            -4,
+            "Rough low Minimum horizontal distance between a bar and a staff edge");
         Scale.Fraction maxThinWidth = new Scale.Fraction(
             0.3,
             "Maximum width of a normal bar, versus a thick bar");
@@ -664,8 +704,10 @@ public class BarsChecker
             super(
                 "HeightDiff",
                 "Check that stick is as long as minimum staff height",
-                constants.maxStaffDHeightLow,
-                constants.maxStaffDHeightHigh,
+                rough ? constants.maxStaffDHeightLowRough
+                                : constants.maxStaffDHeightLow,
+                rough ? constants.maxStaffDHeightHighRough
+                                : constants.maxStaffDHeightHigh,
                 false,
                 TOO_SHORT_BAR);
         }
@@ -679,10 +721,9 @@ public class BarsChecker
             Stick stick = context.stick;
             int   height = Integer.MAX_VALUE;
 
-            // Check wrt every staff in the stick range
+            // Check wrt every staff in the stick getRange
             for (int i = context.topArea; i <= context.bottomArea; i++) {
-                StaffInfo area = sheet.getStaves()
-                                      .get(i);
+                StaffInfo area = staffManager.getStaff(i);
                 height = Math.min(height, area.getHeight());
             }
 
@@ -704,8 +745,8 @@ public class BarsChecker
             super(
                 "Left",
                 "Check that stick is on the right of staff beginning bar",
-                constants.minStaffDxLow,
-                constants.minStaffDxHigh,
+                rough ? constants.minStaffDxLowRough : constants.minStaffDxLow,
+                rough ? constants.minStaffDxHighRough : constants.minStaffDxHigh,
                 true,
                 OUTSIDE_STAFF_WIDTH);
         }
@@ -720,11 +761,10 @@ public class BarsChecker
             int   x = stick.getMidPos();
             int   dist = Integer.MAX_VALUE;
 
-            // Check wrt every staff in the stick range
+            // Check wrt every staff in the stick getRange
             for (int i = context.topArea; i <= context.bottomArea; i++) {
-                StaffInfo area = sheet.getStaves()
-                                      .get(i);
-                dist = Math.min(dist, x - area.getLeft());
+                StaffInfo staff = staffManager.getStaff(i);
+                dist = Math.min(dist, x - staff.getLeft());
             }
 
             return sheet.getScale()
@@ -745,8 +785,8 @@ public class BarsChecker
             super(
                 "Right",
                 "Check that stick is on the left of staff ending bar",
-                constants.minStaffDxLow,
-                constants.minStaffDxHigh,
+                rough ? constants.minStaffDxLowRough : constants.minStaffDxLow,
+                rough ? constants.minStaffDxHighRough : constants.minStaffDxHigh,
                 true,
                 OUTSIDE_STAFF_WIDTH);
         }
@@ -761,10 +801,9 @@ public class BarsChecker
             int   x = stick.getMidPos();
             int   dist = Integer.MAX_VALUE;
 
-            // Check wrt every staff in the stick range
+            // Check wrt every staff in the stick getRange
             for (int i = context.topArea; i <= context.bottomArea; i++) {
-                StaffInfo area = sheet.getStaves()
-                                      .get(i);
+                StaffInfo area = staffManager.getStaff(i);
                 dist = Math.min(dist, area.getRight() - x);
             }
 
@@ -786,8 +825,10 @@ public class BarsChecker
             super(
                 "Top",
                 "Check that top of stick is close to top of staff",
-                constants.maxStaffShiftDyLow,
-                constants.maxStaffShiftDyHigh,
+                rough ? constants.maxStaffShiftDyLowRough
+                                : constants.maxStaffShiftDyLow,
+                rough ? constants.maxStaffShiftDyHighRough
+                                : constants.maxStaffShiftDyHigh,
                 false,
                 null);
         }
@@ -798,25 +839,24 @@ public class BarsChecker
         @Implement(Check.class)
         protected double getValue (GlyphContext context)
         {
-            Stick stick = context.stick;
-            int   start = stick.getStart();
+            Stick      stick = context.stick;
+            PixelPoint start = new PixelPoint(
+                stick.getMidPos(),
+                stick.getStart());
 
             // Which staff area contains the top of the stick?
-            context.topArea = sheet.getStaffIndexAtY(start);
-
-            StaffInfo area = sheet.getStaves()
-                                  .get(context.topArea);
+            StaffInfo staff = staffManager.getStaffAt(start);
+            context.topArea = staffManager.getIndexOf(staff);
 
             // How far are we from the start of the staff?
-            int    staffTop = area.getFirstLine()
-                                  .yAt(stick.getMidPos());
-
+            int    staffTop = staff.getFirstLine()
+                                   .yAt(start.x);
             double dy = sheet.getScale()
-                             .pixelsToFrac(Math.abs(staffTop - start));
+                             .pixelsToFrac(Math.abs(staffTop - start.y));
 
             // Side-effect
             if (dy <= getLow()) {
-                context.topIdx = context.topArea;
+                context.topStaff = context.topArea;
             }
 
             return dy;

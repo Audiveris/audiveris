@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.step;
 
-import omr.sheet.staff.FramesBuilder;
+import omr.sheet.grid.GridBuilder;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
@@ -41,7 +41,7 @@ public class FramesStep
             Level.SHEET_LEVEL,
             Mandatory.MANDATORY,
             Redoable.NON_REDOABLE,
-            FRAMES_TAB,
+            "Dewarped",
             "Retrieve all systems frames");
     }
 
@@ -55,6 +55,6 @@ public class FramesStep
                       Sheet                  sheet)
         throws StepException
     {
-        new FramesBuilder(sheet).buildInfo();
+        new GridBuilder(sheet).buildInfo();
     }
 }

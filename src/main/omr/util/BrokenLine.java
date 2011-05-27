@@ -33,7 +33,6 @@ import javax.xml.bind.annotation.*;
  * "stickyDistance" constant which defines proximity margins.
  *
  * @author Hervé Bitteur
- * @version $Id $
  */
 @NotThreadSafe
 @XmlAccessorType(XmlAccessType.NONE)

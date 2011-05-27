@@ -39,6 +39,10 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RefineryUtilities;
 
 import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
@@ -48,9 +52,9 @@ import javax.swing.WindowConstants;
  * scale, by adding the most frequent foreground run length to the most frequent
  * background run length, since this gives the average interline value.
  *
- * <p>If we have been unable to retrieve the main run length for background
+ * <p>If we have not been able to retrieve the main run length for background
  * or for foreground, then we suspect a wrong image format. In that case,
- * the safe action is to stop the processing, by throwing a StepException</p>
+ * the safe action is to stop the processing, by throwing a StepException.</p>
  *
  * <p>Otherwise, if the main interline value is below a certain threshold
  * (see constants.minInterline), then we suspect that the picture is not
@@ -85,6 +89,9 @@ public class ScaleBuilder
 
     /** Most frequent length of background runs found in the sheet picture */
     private Integer mainBack;
+
+    /** Second frequent length of background runs found in the sheet picture */
+    private Integer secondBack;
 
     /** Most frequent length of foreground runs found in the sheet picture */
     private Integer mainFore;
@@ -174,6 +181,26 @@ public class ScaleBuilder
         return mainFore;
     }
 
+    //---------------//
+    // getSecondBack //
+    //---------------//
+    /**
+     * A (package private) lazy method to retrieve the second length of
+     * background runs of pixels
+     *
+     * @return the second back length (perhaps null)
+     * @throws StepException thrown if background runs could not be measured
+     */
+    Integer getSecondBack ()
+        throws StepException
+    {
+        if (mainBack == null) {
+            retrieveScale();
+        }
+
+        return secondBack;
+    }
+
     //----------------//
     // checkInterline //
     //----------------//
@@ -248,14 +275,25 @@ public class ScaleBuilder
 
         // Report results to the user
         StringBuilder sb = new StringBuilder(sheet.getLogPrefix());
-        sb.append("Scale black is ")
+        sb.append("Scale main black is ")
           .append(mainFore);
+
         sb.append(", white is ")
           .append(mainBack);
 
+        if (secondBack != null) {
+            sb.append(", second white is ")
+              .append(secondBack);
+        }
+
         if ((mainFore != null) && (mainBack != null)) {
-            sb.append(", interline is ")
+            sb.append(", main interline is ")
               .append(mainFore + mainBack);
+
+            if (secondBack != null) {
+                sb.append(", second interline is ")
+                  .append(mainFore + secondBack);
+            }
         }
 
         logger.info(sb.toString());
@@ -298,10 +336,9 @@ public class ScaleBuilder
             fore = new int[hMax + 2];
             back = new int[hMax + 2];
 
-            for (int i = fore.length - 1; i >= 0; i--) {
-                fore[i] = 0;
-                back[i] = 0;
-            }
+            // Useful? 
+            Arrays.fill(fore, 0);
+            Arrays.fill(back, 0);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -355,20 +392,24 @@ public class ScaleBuilder
         @Implement(RunsRetriever.Adapter.class)
         public void terminate ()
         {
-            // Determine the biggest buckets
-            int maxFore = 0;
-            int maxBack = 0;
+            List<ValueIndex> foreList = getExtremas(fore);
 
-            for (int i = fore.length - 1; i >= 0; i--) {
-                if (fore[i] > maxFore) {
-                    maxFore = fore[i];
-                    mainFore = i;
-                }
+            if (logger.isFineEnabled()) {
+                logger.fine("Foreground peaks: " + foreList);
+            }
 
-                if (back[i] > maxBack) {
-                    maxBack = back[i];
-                    mainBack = i;
-                }
+            List<ValueIndex> backList = getExtremas(back);
+
+            if (logger.isFineEnabled()) {
+                logger.fine("Background peaks: " + backList);
+            }
+
+            // Remember the biggest buckets
+            mainFore = foreList.get(0).index;
+            mainBack = backList.get(0).index;
+
+            if (backList.size() > 1) {
+                secondBack = backList.get(1).index;
             }
 
             // Print plot if needed
@@ -429,6 +470,55 @@ public class ScaleBuilder
             RefineryUtilities.centerFrameOnScreen(frame);
             frame.setVisible(true);
         }
+
+        //-------------//
+        // getExtremas //
+        //-------------//
+        private List<ValueIndex> getExtremas (int[] vals)
+        {
+            int[] ders = new int[vals.length];
+            Arrays.fill(ders, 0);
+
+            // Compute derivatives approximation
+            for (int i = ders.length - 2; i >= 1; i--) {
+                ders[i] = (vals[i + 1] - vals[i - 1]) / 2;
+            }
+
+            // Total number of values
+            int total = 0;
+
+            for (int i = vals.length - 1; i >= 0; i--) {
+                total += vals[i];
+            }
+
+            // Lookup extrema at changes of derivative sign
+            List<ValueIndex> extremas = new ArrayList<ValueIndex>();
+            int              minVal = (int) Math.rint(
+                total * constants.minExtremaRatio.getValue());
+
+            for (int i = ders.length - 2; i >= 1; i--) {
+                if ((ders[i] * ders[i - 1]) < 0) {
+                    int val;
+                    int idx;
+
+                    if (vals[i] > vals[i - 1]) {
+                        val = vals[i];
+                        idx = i;
+                    } else {
+                        val = vals[i - 1];
+                        idx = i - 1;
+                    }
+
+                    if (val >= minVal) {
+                        extremas.add(new ValueIndex(val, idx));
+                    }
+                }
+            }
+
+            Collections.sort(extremas);
+
+            return extremas;
+        }
     }
 
     //-----------//
@@ -437,17 +527,57 @@ public class ScaleBuilder
     private static final class Constants
         extends ConstantSet
     {
-        //~ Static fields/initializers -----------------------------------------
+        //~ Instance fields ----------------------------------------------------
 
         /** Should we produce a chart on computed scale data ? */
-        static final Constant.Boolean plotting = new Constant.Boolean(
+        final Constant.Boolean plotting = new Constant.Boolean(
             false,
             "Should we produce a chart on computed scale data ?");
 
         /** Minimum number of pixels per interline */
-        static final Constant.Integer minInterline = new Constant.Integer(
+        final Constant.Integer minInterline = new Constant.Integer(
             "Pixels",
             13,
             "Minimum number of pixels per interline");
+
+        /** Minimum ratio of pixels for extrema acceptance */
+        final Constant.Ratio minExtremaRatio = new Constant.Ratio(
+            0.1,
+            "Minimum ratio of pixels for extrema acceptance ");
+    }
+
+    //------------//
+    // ValueIndex //
+    //------------//
+    private static class ValueIndex
+        implements Comparable<ValueIndex>
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final int value;
+        final int index;
+
+        //~ Constructors -------------------------------------------------------
+
+        public ValueIndex (int value,
+                           int index)
+        {
+            this.value = value;
+            this.index = index;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        public int compareTo (ValueIndex that)
+        {
+            // Put largest value first!
+            return Integer.signum(that.value - this.value);
+        }
+
+        @Override
+        public String toString ()
+        {
+            return value + "@" + index;
+        }
     }
 }

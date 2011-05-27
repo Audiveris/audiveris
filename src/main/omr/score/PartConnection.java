@@ -575,7 +575,7 @@ public class PartConnection
                 staffCount = 1; // Default value
 
                 String id = scorePart.getId();
-                logger.fine("scorePart id:" + id);
+                ///logger.fine("scorePart id:" + id);
 
                 for (ScorePartwise.Part part : scorePartwise.getPart()) {
                     if (part.getId() != scorePart) {

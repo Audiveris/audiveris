@@ -230,6 +230,18 @@ public class ScoresManager
             score.getRadix() + BENCH_EXTENSION);
     }
 
+    //---------------------------//
+    // getDefaultDewarpDirectory //
+    //---------------------------//
+    /**
+     * Report the directory to which dewarped images would be saved by default
+     * @return the default file
+     */
+    public File getDefaultDewarpDirectory ()
+    {
+        return new File(constants.defaultDewarpDirectory.getValue());
+    }
+
     //--------------//
     // isMultiScore //
     //--------------//
@@ -580,5 +592,10 @@ public class ScoresManager
         Constant.String defaultImageDirectory = new Constant.String(
             System.getProperty("user.home"),
             "Default directory for selection of image files");
+
+        /** Default directory for saved dewarped images */
+        Constant.String defaultDewarpDirectory = new Constant.String(
+            System.getProperty("user.home"),
+            "Default directory for saved dewarped images");
     }
 }

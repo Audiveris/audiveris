@@ -11,14 +11,15 @@
 // </editor-fold>
 package omr.glyph.facets;
 
+import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
-
-import omr.run.Run;
 
 import omr.log.Logger;
 
 import omr.math.BasicLine;
 import omr.math.Line;
+
+import omr.run.Run;
 
 import omr.score.common.PixelPoint;
 
@@ -205,34 +206,29 @@ class BasicAlignment
     //---------------//
     // isExtensionOf //
     //---------------//
-    public boolean isExtensionOf (Stick  other,
+    public boolean isExtensionOf (Stick  that,
                                   int    maxDeltaCoord,
                                   int    maxDeltaPos,
                                   double maxDeltaSlope)
     {
-        // Check that a pair of start/stop is compatible
-        if ((Math.abs(other.getStart() - getStop()) <= maxDeltaCoord) ||
-            (Math.abs(other.getStop() - getStart()) <= maxDeltaCoord)) {
-            // Check that a pair of positions is compatible
-            if ((Math.abs(
-                other.getOrientedLine().yAt(other.getStart()) -
-                getOrientedLine().yAt(other.getStop())) <= maxDeltaPos) ||
-                (Math.abs(
-                other.getOrientedLine().yAt(other.getStop()) -
-                getOrientedLine().yAt(other.getStart())) <= maxDeltaPos)) {
-                // Check that slopes are compatible (a useless test ?)
-                if (Math.abs(
-                    other.getOrientedLine().getSlope() -
-                    getOrientedLine().getSlope()) <= maxDeltaSlope) {
-                    return true;
-                } else if (logger.isFineEnabled()) {
-                    logger.fine("isExtensionOf:  Incompatible slopes");
-                }
-            } else if (logger.isFineEnabled()) {
-                logger.fine("isExtensionOf:  Incompatible positions");
+        GlyphLag   lag = glyph.getLag();
+        PixelPoint thisStart = lag.switchRef(this.getStartPoint(), null);
+        PixelPoint thisStop = lag.switchRef(this.getStopPoint(), null);
+        PixelPoint thatStart = lag.switchRef(that.getStartPoint(), null);
+        PixelPoint thatStop = lag.switchRef(that.getStopPoint(), null);
+
+        if (Math.abs(thisStop.x - thatStart.x) <= maxDeltaCoord) {
+            // Case: this ... that
+            if (Math.abs(thatStart.y - thisStop.y) <= maxDeltaPos) {
+                return true;
             }
-        } else if (logger.isFineEnabled()) {
-            logger.fine("isExtensionOf:  Incompatible coordinates");
+        }
+
+        if (Math.abs(thatStop.x - thisStart.x) <= maxDeltaCoord) {
+            // Case: that ... this
+            if (Math.abs(thatStop.y - thisStart.y) <= maxDeltaPos) {
+                return true;
+            }
         }
 
         return false;

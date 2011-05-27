@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.sheet;
 
+import omr.sheet.grid.LineInfo;
 import omr.check.CheckSuite;
 
 import omr.glyph.CompoundBuilder;
@@ -34,6 +35,8 @@ import omr.score.common.PixelRectangle;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
+
+import omr.sheet.grid.StaffInfo;
 
 import omr.step.StepException;
 
@@ -151,12 +154,11 @@ public class SystemInfo
     /** Width of widest Ledger in this system */
     private int maxLedgerWidth = -1;
 
-    /** Index of first staff of the system, counted from 0 within all staves of
-       the score */
-    private int startIdx = -1;
+    /** First staff of the system */
+    private StaffInfo startStaff = null;
 
-    /** Index of last staff of the system, also counted from 0. */
-    private int stopIdx;
+    /** Last staff of the system */
+    private StaffInfo stopStaff;
 
     /** Ordinate of top of first staff of the system. */
     private int top = -1;
@@ -449,51 +451,19 @@ public class SystemInfo
         return slurInspector;
     }
 
-    //-------------//
-    // getStaffAtY //
-    //-------------//
+    //------------//
+    // getStaffAt //
+    //------------//
     /**
-     * Given an ordinate value, retrieve the closest staff within the system
+     * Given a point, retrieve the closest staff within the system
      *
-     * @param y the ordinate value
+     * @param point the provided point
      * @return the "containing" staff
      */
-    public StaffInfo getStaffAtY (int y)
+    public StaffInfo getStaffAt (PixelPoint point)
     {
-        for (StaffInfo staff : staves) {
-            if (y <= staff.getAreaBottom()) {
-                return staff;
-            }
-        }
-
-        // Return the last staff
-        return staves.get(staves.size() - 1);
-    }
-
-    //-------------//
-    // setStartIdx //
-    //-------------//
-    /**
-     * Set the index of the starting staff of this system
-     *
-     * @param startIdx the staff index, counted from 0
-     */
-    public void setStartIdx (int startIdx)
-    {
-        this.startIdx = startIdx;
-    }
-
-    //-------------//
-    // getStartIdx //
-    //-------------//
-    /**
-     * Report the index of the starting staff of this system
-     *
-     * @return the staff index, counted from 0
-     */
-    public int getStartIdx ()
-    {
-        return startIdx;
+        return sheet.getStaffManager()
+                    .getStaffAt(point);
     }
 
     //-----------//
@@ -507,19 +477,6 @@ public class SystemInfo
     public List<StaffInfo> getStaves ()
     {
         return staves;
-    }
-
-    //------------//
-    // getStopIdx //
-    //------------//
-    /**
-     * Report the index of the terminating staff of this system
-     *
-     * @return the stopping staff index, counted from 0
-     */
-    public int getStopIdx ()
-    {
-        return stopIdx;
     }
 
     //--------//
@@ -600,14 +557,11 @@ public class SystemInfo
     //----------//
     /**
      * Add a staff into this system
-     * @param idx index (in the global staves collection at sheet level) of the
-     * staff to add
+     * @param staff the staff to add
      */
-    public void addStaff (int idx)
+    public void addStaff (StaffInfo staff)
     {
-        StaffInfo staff = sheet.getStaves()
-                               .get(idx);
-        LineInfo  firstLine = staff.getFirstLine();
+        LineInfo firstLine = staff.getFirstLine();
         staves.add(staff);
 
         // Remember left side
@@ -625,17 +579,17 @@ public class SystemInfo
         }
 
         // First staff ?
-        if (startIdx == -1) {
-            startIdx = idx;
-            top = firstLine.yAt(firstLine.getLeft());
+        if (startStaff == null) {
+            startStaff = staff;
+            top = firstLine.getLeftPoint().y;
         }
 
         // Last staff (so far)
-        stopIdx = idx;
-        deltaY = firstLine.yAt(firstLine.getLeft()) - top;
+        stopStaff = staff;
+        deltaY = firstLine.getLeftPoint().y - top;
 
         LineInfo lastLine = staff.getLastLine();
-        bottom = lastLine.yAt(lastLine.getLeft());
+        bottom = lastLine.getLeftPoint().y;
     }
 
     //-----------------------//
@@ -1169,11 +1123,11 @@ public class SystemInfo
         sb.append("{SystemInfo#")
           .append(id);
         sb.append(" T")
-          .append(startIdx + 1);
+          .append(startStaff.getId());
 
-        if (startIdx != stopIdx) {
+        if (startStaff != stopStaff) {
             sb.append("..T")
-              .append(stopIdx + 1);
+              .append(stopStaff.getId());
         }
 
         sb.append("}");

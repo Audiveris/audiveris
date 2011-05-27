@@ -9,9 +9,11 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.sheet;
+package omr.sheet.grid;
 
 import omr.glyph.GlyphSection;
+
+import omr.score.common.PixelPoint;
 
 import java.awt.Graphics2D;
 import java.util.Collection;
@@ -24,6 +26,42 @@ import java.util.Collection;
 public interface LineInfo
 {
     //~ Methods ----------------------------------------------------------------
+
+    //-------//
+    // getId //
+    //-------//
+    /**
+     * Report the id of this line
+     * @return the line id (debugging info)
+     */
+    public int getId ();
+
+    //--------------//
+    // getLeftPoint //
+    //--------------//
+    /**
+     * Selector for the left point of the line
+     * @return left point
+     */
+    public PixelPoint getLeftPoint ();
+
+    //---------------//
+    // getRightPoint //
+    //---------------//
+    /**
+     * Selector for the right point of the line
+     * @return right point
+     */
+    public PixelPoint getRightPoint ();
+
+    //-------------//
+    // getSections //
+    //-------------//
+    /**
+     * Report the lag sections that compose the staff line
+     * @return a collection of the line sections
+     */
+    public Collection<GlyphSection> getSections ();
 
     //---------//
     // cleanup //
@@ -39,44 +77,9 @@ public interface LineInfo
     //--------//
     /**
      * Paint the computed line on the provided environment.
-     *
      * @param g     the graphics context
-     * @param left  the imposed (for clean alignment) left abscissa
-     * @param right the imposed (for clean alignment) right abscissa
      */
-    public void render (Graphics2D g,
-                        int        left,
-                        int        right);
-
-    //---------//
-    // getLeft //
-    //---------//
-    /**
-     * Selector for the left abscissa of the line
-     *
-     * @return left abscissa, in pixels
-     */
-    int getLeft ();
-
-    //----------//
-    // getRight //
-    //----------//
-    /**
-     * Selector for the right abscissa of the line
-     *
-     * @return right abscissa, in pixels
-     */
-    int getRight ();
-
-    //-------------//
-    // getSections //
-    //-------------//
-    /**
-     * Report the lag sections that compose the staff line
-     *
-     * @return a collection of the line sections
-     */
-    Collection<GlyphSection> getSections ();
+    public void render (Graphics2D g);
 
     //-----//
     // yAt //
@@ -85,10 +88,9 @@ public interface LineInfo
      * Retrieve the staff line ordinate at given abscissa x, using int values
      *
      * @param x the given abscissa
-     *
      * @return the corresponding y value
      */
-    int yAt (int x);
+    public int yAt (int x);
 
     //-----//
     // yAt //
@@ -97,8 +99,7 @@ public interface LineInfo
      * Retrieve the staff line ordinate at given abscissa x, using double values
      *
      * @param x the given abscissa
-     *
      * @return the corresponding y value
      */
-    double yAt (double x);
+    public double yAt (double x);
 }

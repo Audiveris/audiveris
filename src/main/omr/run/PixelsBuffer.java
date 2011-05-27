@@ -32,11 +32,11 @@ public class PixelsBuffer
     /** Width of the table */
     private final int width;
 
-    /** Hheight of the table */
+    /** Height of the table */
     private final int height;
 
-    /** Buffer */
-    final char[] buffer;
+    /** Underlying buffer */
+    private final char[] buffer;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -53,6 +53,8 @@ public class PixelsBuffer
         width = dimension.width;
         height = dimension.height;
         buffer = new char[dimension.width * dimension.height];
+
+        // Initialize the whole buffer with background color value
         Arrays.fill(buffer, (char) BACKGROUND);
     }
 
@@ -67,11 +69,19 @@ public class PixelsBuffer
         return height;
     }
 
+    //------------------//
+    // setMaxForeground //
+    //------------------//
+    @Implement(PixelSource.class)
     public void setMaxForeground (int level)
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    //------------------//
+    // getMaxForeground //
+    //------------------//
+    @Implement(PixelSource.class)
     public int getMaxForeground ()
     {
         throw new UnsupportedOperationException("Not supported yet.");

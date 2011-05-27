@@ -56,7 +56,7 @@ public class Logger
     private static ArrayBlockingQueue<LogRecord> logMbx;
 
     /** Size of the mail box (cannot use a Constant) */
-    private static final int LOG_MBX_SIZE = 5000;
+    private static final int LOG_MBX_SIZE = 10000;
 
     //~ Constructors -----------------------------------------------------------
 

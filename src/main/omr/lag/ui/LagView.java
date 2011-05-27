@@ -144,9 +144,8 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
             addSectionView(section);
         }
 
-        // Colorize all sections of the lag
+        // Set background color
         setBackground(Color.white);
-        colorizeAllSections();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -229,11 +228,6 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     public void colorizeAllSections ()
     {
         int viewIndex = lag.viewIndexOf(this);
-
-        // Safety check DEBUG DEBUG
-        if (!Collections.disjoint(lag.getVertices(), specificSections)) {
-            logger.severe("The specific sections are not disjoint from lag");
-        }
 
         // Colorize (normal) vertices and transitively all the connected ones
         for (S section : lag.getVertices()) {

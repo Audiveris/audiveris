@@ -153,22 +153,41 @@ public class SectionBoard
     // SectionBoard //
     //--------------//
     /**
-     * Create a Section Board
+     * Create a Section Board, initially collapsed
      *
      * @param unitName name for the owning unit
      * @param maxSectionId the upper bound for section id
      * @param lag the related lag
      */
+    public SectionBoard (String unitName,
+                         int    maxSectionId,
+                         Lag    lag)
+    {
+        this(unitName, maxSectionId, lag, false);
+    }
+
+    //--------------//
+    // SectionBoard //
+    //--------------//
+    /**
+     * Create a Section Board
+     *
+     * @param unitName name for the owning unit
+     * @param maxSectionId the upper bound for section id
+     * @param lag the related lag
+     * @param expanded true for initially expanded, false for collapsed
+     */
     public SectionBoard (String    unitName,
                          int       maxSectionId,
-                         final Lag lag)
+                         final Lag lag,
+                         boolean   expanded)
     {
         super(
             unitName + "-SectionBoard",
             "Section",
             lag.getSelectionService(),
             eventClasses,
-            false);
+            expanded);
 
         // Dump button
         dump.setToolTipText("Dump this section");

@@ -11,10 +11,11 @@
 // </editor-fold>
 package omr.lag.ui;
 
-import omr.run.Run;
 import omr.lag.*;
 
 import omr.log.Logger;
+
+import omr.run.Run;
 
 import omr.selection.MouseMovement;
 import omr.selection.RunEvent;
@@ -81,19 +82,35 @@ public class RunBoard
     // RunBoard //
     //----------//
     /**
-     * Create a Run Board
+     * Create a Run Board, initially collapsed
      * @param unitName name of the owning unit
      * @param lag the related lag
      */
     public RunBoard (String unitName,
                      Lag    lag)
     {
+        this(unitName, lag, false);
+    }
+
+    //----------//
+    // RunBoard //
+    //----------//
+    /**
+     * Create a Run Board
+     * @param unitName name of the owning unit
+     * @param lag the related lag
+     * @param expanded true for expanded, false for collapsed
+     */
+    public RunBoard (String  unitName,
+                     Lag     lag,
+                     boolean expanded)
+    {
         super(
             unitName + "-RunBoard",
             "Run",
             lag.getSelectionService(),
             eventClasses,
-            false);
+            expanded);
         defineLayout();
     }
 

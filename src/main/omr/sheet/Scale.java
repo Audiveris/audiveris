@@ -28,7 +28,8 @@ import javax.xml.bind.annotation.*;
  * and the sum of both which represents the main interline value.
  *
  * <p>This class also provides methods for converting values based on what the
- * interline is actually worth. There are two different measurements :
+ * interline and the line thickness are actually worth.
+ * There are two different measurements, pixels and fractions :
  *
  * <dl> <dt> <b>pixel</b> </dt> <dd> This is simply an absolute number of
  * pixels, so generally an integer. One pixel is worth 1 pixel (sic) </dd>
@@ -36,6 +37,10 @@ import javax.xml.bind.annotation.*;
  * <dt> <b>(interline) fraction</b> </dt> <dd> This is a number of interlines,
  * so generally a fraction which is implemented as a double. One interline is
  * worth whatever the scale is, generally something around 20 pixels </dd>
+ *
+ * <dt> <b>line fraction</b> </dt> <dd> This is a number of line thickness,
+ * so generally a line fraction which is implemented as a double. One line is
+ * worth whatever the scale is, generally something around 4 pixels </dd>
  *
  * @author Hervé Bitteur
  */
@@ -57,11 +62,19 @@ public class Scale
     @XmlElement
     private int interline;
 
+    /** Second most frequent vertical distance in pixels from one line to the other*/
+    @XmlElement
+    private int secondInterline;
+
     /** Most frequent background height */
     @XmlElement
     private int mainBack;
 
-    /** Most frequent run lengths for foreground & background runs. */
+    /** Second frequent background height, if any */
+    @XmlElement
+    private Integer secondBack;
+
+    /** Most frequent foreground height */
     @XmlElement
     private int mainFore;
 
@@ -114,6 +127,7 @@ public class Scale
         builder = new ScaleBuilder(sheet);
         mainBack = builder.getMainBack();
         mainFore = builder.getMainFore();
+        secondBack = builder.getSecondBack();
 
         interline = mainFore + mainBack;
 
@@ -165,7 +179,7 @@ public class Scale
     // mainBack //
     //----------//
     /**
-     * Report the white space between two lines
+     * Report the most frequent white space between two lines
      *
      * @return the number of white pixels between two staff lines
      */
@@ -203,6 +217,33 @@ public class Scale
         return (double) pixels / (double) interline;
     }
 
+    //------------//
+    // secondBack //
+    //------------//
+    /**
+     * Report the second frequent white space between two lines, if any
+     *
+     * @return the number of white pixels between two staff lines (second one)
+     */
+    public Integer secondBack ()
+    {
+        return secondBack;
+    }
+
+    //-----------------//
+    // secondInterline //
+    //-----------------//
+    /**
+     * Report the second interline value this scale is based upon
+     *
+     * @return the second number if any of pixels (black + white) from one line
+     * to the other, otherwise null.
+     */
+    public Integer secondInterline ()
+    {
+        return secondInterline;
+    }
+
     //----------//
     // toPixels //
     //----------//
@@ -217,6 +258,22 @@ public class Scale
     public int toPixels (Fraction frac)
     {
         return (int) Math.rint(toPixelsDouble(frac));
+    }
+
+    //----------//
+    // toPixels //
+    //----------//
+    /**
+     * Compute the number of pixels that corresponds to the fraction of
+     * line thickness provided, according to the scale.
+     *
+     * @param lFrac a measure based on line thickness (1 = one line height)
+     *
+     * @return the actual number of pixels with the current scale
+     */
+    public int toPixels (LineFraction lFrac)
+    {
+        return (int) Math.rint(toPixelsDouble(lFrac));
     }
 
     //----------//
@@ -281,6 +338,23 @@ public class Scale
         return toPixelsDouble(frac.getWrappedValue());
     }
 
+    //----------------//
+    // toPixelsDouble //
+    //----------------//
+    /**
+     * Convenient method, working directly on a constant of line fraction.
+     * Same as toPixels, but the result is a double instead of a rounded int.
+     *
+     * @param lFrac the line fraction constant
+     * @return the equivalent in number of pixels
+     * @see #toPixels
+     */
+    public double toPixelsDouble (LineFraction lFrac)
+    {
+        return (double) mainFore * lFrac.getWrappedValue()
+                                        .doubleValue();
+    }
+
     //----------//
     // toString //
     //----------//
@@ -288,14 +362,22 @@ public class Scale
     public String toString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("{Scale")
-          .append(" interline=")
-          .append(interline)
-          .append(" mainBack=")
-          .append(mainBack)
-          .append(" mainFore=")
-          .append(mainFore)
-          .append("}");
+        sb.append("{Scale");
+        sb.append(" mainFore=")
+          .append(mainFore);
+        sb.append(" mainBack=")
+          .append(mainBack);
+        sb.append(" interline=")
+          .append(interline);
+
+        if (secondBack != null) {
+            sb.append(" secondBack=")
+              .append(secondBack);
+            sb.append(" secondInterline=")
+              .append(secondInterline);
+        }
+
+        sb.append("}");
 
         return sb.toString();
     }
@@ -333,7 +415,8 @@ public class Scale
     /**
      * A subclass of Constant.Double, meant to store a fraction of interline,
      * since many distances on a music sheet are expressed in fraction of staff
-     * interline.
+     * interline (as opposed to {@link Scale.LineFraction} which stores a
+     * fraction of line thickness)
      */
     public static class Fraction
         extends Constant.Double
@@ -412,12 +495,61 @@ public class Scale
             }
         }
 
+        //----------//
+        // hashCode //
+        //----------//
         @Override
         public int hashCode ()
         {
             int hash = 7;
 
             return hash;
+        }
+    }
+
+    //--------------//
+    // LineFraction //
+    //--------------//
+    /**
+     * A subclass of Constant.Double, meant to store a fraction of line
+     * thickness (as opposed to {@link Scale.Fraction} which stores a fraction
+     * of interline)
+     */
+    public static class LineFraction
+        extends Constant.Double
+    {
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Specific constructor, where 'unit' and 'name' are assigned later
+         *
+         * @param defaultValue the (double) default value
+         * @param description  the semantic of the constant
+         */
+        public LineFraction (double           defaultValue,
+                             java.lang.String description)
+        {
+            super("Line", defaultValue, description);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void setValue (double val)
+        {
+            setTuple(java.lang.Double.toString(val), new DoubleValue(val));
+        }
+
+        @Override
+        public DoubleValue getWrappedValue ()
+        {
+            return (DoubleValue) getCachedValue();
+        }
+
+        @Override
+        protected DoubleValue decode (java.lang.String str)
+        {
+            return new DoubleValue(java.lang.Double.valueOf(str));
         }
     }
 }

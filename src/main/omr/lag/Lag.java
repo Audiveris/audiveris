@@ -564,9 +564,6 @@ public class Lag<L extends Lag<L, S>, S extends Section>
             final List<Run>     runList = new ArrayList<Run>();
             final List<Integer> posList = new ArrayList<Integer>();
 
-            //            for (List<Run> alignedRuns : runs.subList(
-            //                contour.y,
-            //                contour.y + contour.height)) {
             for (int pos = contour.y; pos < (contour.y + contour.height);
                  pos++) {
                 List<Run> alignedRuns = runsTable.getSequence(pos);
