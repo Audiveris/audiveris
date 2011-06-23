@@ -13,6 +13,8 @@ package omr.sheet.grid;
 
 import omr.glyph.facets.Stick;
 
+import omr.util.HorizontalSide;
+
 import java.util.*;
 
 /**
@@ -46,28 +48,16 @@ public class BarInfo
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------------//
-    // getLeftStick //
-    //--------------//
-    /**
-     * Report the very first bar stick
-     * @return the very first bar stick
-     */
-    public Stick getLeftStick ()
+    //----------//
+    // getStick //
+    //----------//
+    public Stick getStick (HorizontalSide side)
     {
-        return sticks.get(0);
-    }
-
-    //---------------//
-    // getRightStick //
-    //---------------//
-    /**
-     * Report the very last bar stick
-     * @return the very last bar stick
-     */
-    public Stick getRightStick ()
-    {
-        return sticks.get(sticks.size() - 1);
+        if (side == HorizontalSide.LEFT) {
+            return sticks.get(0);
+        } else {
+            return sticks.get(sticks.size() - 1);
+        }
     }
 
     //-----------//

@@ -30,7 +30,7 @@ public class Steps
     // Predefined step names
     public static final String             LOAD = "LOAD";
     public static final String             SCALE = "SCALE";
-    public static final String             FRAMES = "FRAMES"; // Temporary
+    public static final String             GRID = "GRID";
     public static final String             SKEW = "SKEW";
     public static final String             LINES = "LINES";
     public static final String             HORIZONTALS = "HORIZONTALS";
@@ -56,7 +56,7 @@ public class Steps
         // Mandatory
         addStep(new LoadStep());
         addStep(new ScaleStep());
-        addStep(new FramesStep());
+        addStep(new GridStep()); // Can be commented out
         addStep(new SkewStep());
         addStep(new LinesStep());
         addStep(new HorizontalsStep());
@@ -124,7 +124,9 @@ public class Steps
         Step step = stepMap.get(str);
 
         if (step == null) {
-            logger.warning("Step not found: " + str);
+            String msg = "Step not found: " + str;
+            logger.warning(msg);
+            throw new IllegalArgumentException(msg);
         }
 
         return step;

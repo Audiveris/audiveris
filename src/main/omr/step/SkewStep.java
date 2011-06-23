@@ -39,7 +39,7 @@ public class SkewStep
             Mandatory.MANDATORY,
             Redoable.NON_REDOABLE,
             SKEW_TAB,
-            "Detect & remove all Staff Lines");
+            "Detect and correct global skew");
     }
 
     //~ Methods ----------------------------------------------------------------

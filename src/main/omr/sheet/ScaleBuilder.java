@@ -18,6 +18,8 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
+import omr.math.Histogram;
+
 import omr.run.Orientation;
 import omr.run.RunsRetriever;
 
@@ -39,10 +41,9 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RefineryUtilities;
 
 import java.awt.Rectangle;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map.Entry;
 
 import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
@@ -392,24 +393,37 @@ public class ScaleBuilder
         @Implement(RunsRetriever.Adapter.class)
         public void terminate ()
         {
-            List<ValueIndex> foreList = getExtremas(fore);
+            if (logger.isFineEnabled()) {
+                logger.info("fore: " + Arrays.toString(fore));
+                logger.info("back: " + Arrays.toString(back));
+            }
+
+            final double                  quorum = constants.minExtremaRatio.getValue();
+            Histogram<Integer>            foreHisto = createHistogram(fore);
+            List<Entry<Integer, Integer>> foreList = foreHisto.getMaxima(
+                quorum);
 
             if (logger.isFineEnabled()) {
                 logger.fine("Foreground peaks: " + foreList);
             }
 
-            List<ValueIndex> backList = getExtremas(back);
+            Histogram<Integer>            backHisto = createHistogram(back);
+            List<Entry<Integer, Integer>> backList = backHisto.getMaxima(
+                quorum);
 
             if (logger.isFineEnabled()) {
                 logger.fine("Background peaks: " + backList);
             }
 
             // Remember the biggest buckets
-            mainFore = foreList.get(0).index;
-            mainBack = backList.get(0).index;
+            mainFore = foreList.get(0)
+                               .getKey();
+            mainBack = backList.get(0)
+                               .getKey();
 
             if (backList.size() > 1) {
-                secondBack = backList.get(1).index;
+                secondBack = backList.get(1)
+                                     .getKey();
             }
 
             // Print plot if needed
@@ -440,7 +454,8 @@ public class ScaleBuilder
 
             // Background
             XYSeries backSeries = new XYSeries(
-                "Background" + " [" + mainBack + "]");
+                "Background" + " [" + mainBack +
+                ((secondBack != null) ? (" & " + secondBack) : "") + "]");
 
             for (int i = 0; i < upper; i++) {
                 backSeries.add(i, back[i]);
@@ -471,53 +486,18 @@ public class ScaleBuilder
             frame.setVisible(true);
         }
 
-        //-------------//
-        // getExtremas //
-        //-------------//
-        private List<ValueIndex> getExtremas (int[] vals)
+        //-----------------//
+        // createHistogram //
+        //-----------------//
+        private Histogram<Integer> createHistogram (int... vals)
         {
-            int[] ders = new int[vals.length];
-            Arrays.fill(ders, 0);
+            Histogram<Integer> histo = new Histogram<Integer>();
 
-            // Compute derivatives approximation
-            for (int i = ders.length - 2; i >= 1; i--) {
-                ders[i] = (vals[i + 1] - vals[i - 1]) / 2;
+            for (int i = 0; i < vals.length; i++) {
+                histo.increaseCount(i, vals[i]);
             }
 
-            // Total number of values
-            int total = 0;
-
-            for (int i = vals.length - 1; i >= 0; i--) {
-                total += vals[i];
-            }
-
-            // Lookup extrema at changes of derivative sign
-            List<ValueIndex> extremas = new ArrayList<ValueIndex>();
-            int              minVal = (int) Math.rint(
-                total * constants.minExtremaRatio.getValue());
-
-            for (int i = ders.length - 2; i >= 1; i--) {
-                if ((ders[i] * ders[i - 1]) < 0) {
-                    int val;
-                    int idx;
-
-                    if (vals[i] > vals[i - 1]) {
-                        val = vals[i];
-                        idx = i;
-                    } else {
-                        val = vals[i - 1];
-                        idx = i - 1;
-                    }
-
-                    if (val >= minVal) {
-                        extremas.add(new ValueIndex(val, idx));
-                    }
-                }
-            }
-
-            Collections.sort(extremas);
-
-            return extremas;
+            return histo;
         }
     }
 
@@ -544,40 +524,5 @@ public class ScaleBuilder
         final Constant.Ratio minExtremaRatio = new Constant.Ratio(
             0.1,
             "Minimum ratio of pixels for extrema acceptance ");
-    }
-
-    //------------//
-    // ValueIndex //
-    //------------//
-    private static class ValueIndex
-        implements Comparable<ValueIndex>
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        final int value;
-        final int index;
-
-        //~ Constructors -------------------------------------------------------
-
-        public ValueIndex (int value,
-                           int index)
-        {
-            this.value = value;
-            this.index = index;
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        public int compareTo (ValueIndex that)
-        {
-            // Put largest value first!
-            return Integer.signum(that.value - this.value);
-        }
-
-        @Override
-        public String toString ()
-        {
-            return value + "@" + index;
-        }
     }
 }

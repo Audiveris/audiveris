@@ -28,13 +28,12 @@ import omr.util.Implement;
 import omr.util.WeakPropertyChangeListener;
 
 import java.awt.*;
-import java.awt.geom.Point2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 /**
  * Class <code>PictureView</code> defines the view dedicated to the display of
- * the picture bitmap of a music sheet.
+ * the picture image of a music sheet.
  *
  * @author Hervé Bitteur
  */
@@ -68,6 +67,7 @@ public class PictureView
 
         view = new MyView();
         view.setName("Picture-View");
+        view.setPreferredSize(sheet.getDimension());
 
         // Inject dependency of pixel location
         view.setLocationService(
@@ -134,8 +134,8 @@ public class PictureView
                 sheet.getPage()
                      .accept(new PagePhysicalPainter(g, color, false));
 
-                sheet.getStaffManager()
-                     .render(g);
+                //                sheet.getStaffManager()
+                //                     .render(g);
             } else {
                 if (sheet.getTargetBuilder() != null) {
                     sheet.getTargetBuilder()

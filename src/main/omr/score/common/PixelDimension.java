@@ -14,11 +14,11 @@ package omr.score.common;
 
 /**
  * Class <code>PixelDimension</code> is a simple Dimension that is meant to
- * represent a dimension in a sheet, with its components (width and height)
- * specified in pixels, so the name.
+ * represent an absolute  dimension in a sheet, with its components (width and
+ * height) specified in pixels, so the name.
  *
  * <p> This specialization is used to take benefit of compiler checks, to
- * prevent the use of dimensions with incorrect meaning or units. </p>
+ * prevent the use of dimensions with incorrect meaning. </p>
  *
  * @author Hervé Bitteur
  */

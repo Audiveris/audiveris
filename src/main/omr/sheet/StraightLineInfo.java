@@ -20,6 +20,7 @@ import omr.score.common.PixelPoint;
 
 import omr.sheet.grid.LineInfo;
 
+import omr.util.HorizontalSide;
 import omr.util.Implement;
 
 import java.awt.Graphics2D;
@@ -84,6 +85,18 @@ public class StraightLineInfo
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-------------//
+    // getEndPoint //
+    //-------------//
+    public PixelPoint getEndPoint (HorizontalSide side)
+    {
+        if (side == HorizontalSide.LEFT) {
+            return leftPoint;
+        } else {
+            return rightPoint;
+        }
+    }
 
     //-------//
     // getId //

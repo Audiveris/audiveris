@@ -30,10 +30,7 @@ import static omr.run.Orientation.*;
 import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
 
-import omr.score.ScoresManager;
-
 import omr.sheet.Sheet;
-import omr.sheet.picture.Picture;
 import omr.sheet.ui.PixelBoard;
 
 import omr.step.Step;
@@ -41,23 +38,19 @@ import omr.step.StepException;
 import omr.step.Steps;
 
 import omr.ui.BoardsPane;
-import omr.ui.view.RubberPanel;
-import omr.ui.view.ScrollView;
 
-import java.awt.*;
-import java.awt.geom.AffineTransform;
-import java.awt.image.RenderedImage;
-import java.awt.image.renderable.ParameterBlock;
-import java.io.File;
-import java.io.IOException;
-
-import javax.imageio.ImageIO;
-import javax.media.jai.*;
+import omr.util.StopWatch;
 
 /**
  * Class <code>GridBuilder</code> computes the grid of systems of a sheet
  * picture, based on the retrieval of horizontal staff lines and of vertical
  * bar lines.
+ *
+ * <p>The actual processing is delegated to 3 companions:<ul>
+ * <li>{@link LinesRetriever} for retrieving all horizontal staff lines.</li>
+ * <li>{@link BarsRetriever} for retrieving main vertical bar lines.</li>
+ * <li>{@link TargetBuilder} for building the target grid.</li>
+ * </ul>
  *
  * @author Hervé Bitteur
  */
@@ -76,23 +69,20 @@ public class GridBuilder
     /** Related sheet */
     private final Sheet sheet;
 
-    /** The display if any */
-    private GridView view;
-
     /** Companion in charge of staff lines */
     private final LinesRetriever linesRetriever;
 
     /** Companion in charge of bar lines */
     private final BarsRetriever barsRetriever;
 
-    /** Companion in charge of target */
+    /** Companion in charge of target grid */
     private final TargetBuilder targetBuilder;
 
-    /** The dewarped image */
-    private RenderedImage dewarpedImage;
+    /** The grid display if any */
+    private GridView gridView;
 
-    /** Temp ???? */
-    private RunsTable wholeVertTable;
+    /** The bars display if any */
+    private BarsView barsView;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -126,49 +116,39 @@ public class GridBuilder
     public void buildInfo ()
         throws StepException
     {
-        // Build the vertical and horizontal lags
-        buildAllLags();
+        StopWatch watch = new StopWatch("GridBuilder");
 
-        // Display
-        if (constants.displayFrame.getValue() && (Main.getGui() != null)) {
-            displayFrame();
-        }
+        try {
+            // Build the vertical and horizontal lags
+            watch.start("buildAllLags");
+            buildAllLags();
 
-        // Retrieve the horizontal filaments
-        linesRetriever.buildInfo();
-        view.refresh();
-
-        // Retrieve the vertical barlines
-        barsRetriever.buildInfo();
-
-        // Update the display
-        if (view != null) {
-            final int viewIndex = linesRetriever.getLag()
-                                                .viewIndexOf(view);
-
-            for (Filament fil : linesRetriever.getGarbage()) {
-                view.colorizeGlyph(viewIndex, fil, Color.LIGHT_GRAY);
+            // Display
+            if (constants.displayFrame.getValue() && (Main.getGui() != null)) {
+                displayFrame();
+                displayBarsView();
             }
 
-            view.refresh();
-        }
+            // Retrieve the horizontal staff lines filaments
+            watch.start("linesRetriever");
+            linesRetriever.buildInfo();
 
-        // Define the destination frames
-        targetBuilder.buildInfo();
+            // Retrieve the vertical barlines
+            watch.start("barsRetriever");
+            barsRetriever.buildInfo(linesRetriever.getGlobalSlope());
 
-        // Dewarp the initial image
-        dewarpImage();
+            // Define the destination grid
+            watch.start("targetBuilder");
+            targetBuilder.buildInfo();
+        } catch (Exception ex) {
+            logger.warning("Error in GridBuilder", ex);
+        } finally {
+            if (gridView != null) {
+                // Update the display
+                gridView.refresh();
+            }
 
-        // Add a view on dewarped image
-        sheet.getAssembly()
-             .addViewTab(
-            "DeWarped",
-            new ScrollView(new DewarpedView(dewarpedImage)),
-            null);
-
-        // Store dewarped image on disk
-        if (constants.storeDewarp.getValue()) {
-            storeImage();
+            watch.print();
         }
     }
 
@@ -181,39 +161,66 @@ public class GridBuilder
      */
     private void buildAllLags ()
     {
-        // Retrieve all foreground pixels into vertical runs
-        wholeVertTable = new RunsTableFactory(
-            VERTICAL,
-            sheet.getPicture(),
-            sheet.getPicture().getMaxForeground(),
-            0).createTable("whole-vert");
-        // Note: from that point on, we could simply discard the sheet picture
-        // and save memory, since wholeVertTable contains all foreground pixels.
-        // For the time being, it is kept alive for display purpose
+        final boolean   showRuns = constants.showRuns.getValue();
+        final StopWatch watch = new StopWatch("buildAllLags");
 
-        // Add a view on runs table
-        sheet.getAssembly()
-             .addRunsTab(wholeVertTable);
+        try {
+            // Retrieve all foreground pixels into vertical runs
+            watch.start("wholeVertTable");
 
-        // vLag
-        barsRetriever.buildLag(wholeVertTable);
+            RunsTable wholeVertTable = new RunsTableFactory(
+                VERTICAL,
+                sheet.getPicture(),
+                sheet.getPicture().getMaxForeground(),
+                0).createTable("whole-vert");
 
-        // hLag
-        linesRetriever.buildLag(wholeVertTable);
+            // Note: from that point on, we could simply discard the sheet picture
+            // and save memory, since wholeVertTable contains all foreground pixels.
+            // For the time being, it is kept alive for display purpose, and to
+            // allow the dewarping of the initial picture.
+            if (showRuns) {
+                // Add a view on runs table
+                sheet.getAssembly()
+                     .addRunsTab(wholeVertTable);
+            }
+
+            // vLag
+            watch.start("barsRetriever.buildLag");
+            barsRetriever.buildLag(wholeVertTable, showRuns);
+
+            // hLag
+            watch.start("linesRetriever.buildLag");
+            linesRetriever.buildLag(wholeVertTable, showRuns);
+        } finally {
+            watch.print();
+        }
     }
 
-    //-------------//
-    // dewarpImage //
-    //-------------//
-    private void dewarpImage ()
+    //-----------------//
+    // displayBarsView //
+    //-----------------//
+    private void displayBarsView ()
     {
-        ParameterBlock pb = new ParameterBlock();
-        pb.addSource(Picture.invert(sheet.getPicture().getImage()));
-        pb.add(targetBuilder.getDewarpGrid());
-        pb.add(new InterpolationBilinear());
+        GlyphLag         vLag = barsRetriever.getLag();
+        GlyphsController controller = new GlyphsController(
+            new GlyphsModel(sheet, vLag, Steps.valueOf(Steps.GRID)));
 
-        dewarpedImage = Picture.invert(JAI.create("warp", pb));
-        ((PlanarImage) dewarpedImage).getTiles();
+        // Create a view
+        barsView = new BarsView(vLag, barsRetriever, null, controller);
+        barsView.colorizeAllSections();
+
+        // Boards
+        final String  unit = sheet.getId() + ":BarsBuilder";
+        BoardsPane    boardsPane = new BoardsPane(
+            new PixelBoard(unit, sheet),
+            new RunBoard(unit, vLag, true),
+            new SectionBoard(unit, vLag.getLastVertexId(), vLag, true),
+            new GlyphBoard(unit, controller, null, false));
+
+        // Create a hosting frame for the view
+        ScrollLagView slv = new ScrollLagView(barsView);
+        sheet.getAssembly()
+             .addViewTab("Bars", slv, boardsPane);
     }
 
     //--------------//
@@ -224,21 +231,20 @@ public class GridBuilder
         GlyphLag         hLag = linesRetriever.getLag();
         GlyphLag         vLag = barsRetriever.getLag();
         GlyphsController controller = new GlyphsController(
-            new GlyphsModel(sheet, hLag, Steps.valueOf(Steps.FRAMES)));
+            new GlyphsModel(sheet, hLag, Steps.valueOf(Steps.GRID)));
 
         // Create a view
-        view = new GridView(
-            sheet,
+        gridView = new GridView(
             linesRetriever,
             hLag,
             barsRetriever,
             vLag,
             null,
             controller);
-        view.colorizeAllSections();
+        gridView.colorizeAllSections();
 
         // Boards
-        final String  unit = sheet.getId() + ":FramesBuilder";
+        final String  unit = sheet.getId() + ":GridBuilder";
         BoardsPane    boardsPane = new BoardsPane(
             new PixelBoard(unit, sheet),
             new RunBoard(unit, hLag, true),
@@ -246,29 +252,9 @@ public class GridBuilder
             new GlyphBoard(unit, controller, null, false));
 
         // Create a hosting frame for the view
-        ScrollLagView slv = new ScrollLagView(view);
+        ScrollLagView slv = new ScrollLagView(gridView);
         sheet.getAssembly()
-             .addViewTab(Step.FRAMES_TAB, slv, boardsPane);
-    }
-
-    //------------//
-    // storeImage //
-    //------------//
-    private void storeImage ()
-    {
-        String pageId = sheet.getPage()
-                             .getId();
-        File   file = new File(
-            ScoresManager.getInstance().getDefaultDewarpDirectory(),
-            pageId + ".dewarped.png");
-
-        try {
-            String path = file.getCanonicalPath();
-            ImageIO.write(dewarpedImage, "png", file);
-            logger.info("Wrote " + path);
-        } catch (IOException ex) {
-            logger.warning("Could not write " + file);
-        }
+             .addViewTab(Step.GRID_TAB, slv, boardsPane);
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -284,39 +270,8 @@ public class GridBuilder
         Constant.Boolean displayFrame = new Constant.Boolean(
             true,
             "Should we display a frame?");
-        Constant.Boolean storeDewarp = new Constant.Boolean(
+        Constant.Boolean showRuns = new Constant.Boolean(
             false,
-            "Should we store the dewarped image on disk?");
-    }
-
-    //--------------//
-    // DewarpedView //
-    //--------------//
-    private class DewarpedView
-        extends RubberPanel
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        private final AffineTransform identity = new AffineTransform();
-        private final RenderedImage   image;
-
-        //~ Constructors -------------------------------------------------------
-
-        public DewarpedView (RenderedImage image)
-        {
-            this.image = image;
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public void render (Graphics2D g)
-        {
-            // Display the dewarped image
-            g.drawRenderedImage(image, identity);
-
-            // Display also the Destination Points
-            targetBuilder.renderDewarpGrid(g, false);
-        }
+            "Should we show view on runs?");
     }
 }

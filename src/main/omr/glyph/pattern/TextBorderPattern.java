@@ -29,14 +29,14 @@ import omr.log.Logger;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
-import omr.sheet.grid.LineInfo;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
-import omr.sheet.grid.StaffInfo;
-import omr.sheet.SystemBoundary.Side;
 import omr.sheet.SystemInfo;
+import omr.sheet.grid.LineInfo;
+import omr.sheet.grid.StaffInfo;
 
 import omr.util.BrokenLine;
+import omr.util.VerticalSide;
 
 import java.awt.Polygon;
 import java.util.*;
@@ -119,9 +119,9 @@ public class TextBorderPattern
         final int       left = system.getLeft();
         final int       right = system.getRight();
         BrokenLine      topLine = system.getBoundary()
-                                        .getLimit(Side.NORTH);
+                                        .getLimit(VerticalSide.TOP);
         BrokenLine      botLine = system.getBoundary()
-                                        .getLimit(Side.SOUTH);
+                                        .getLimit(VerticalSide.BOTTOM);
         List<StaffInfo> staves = system.getStaves();
 
         StaffInfo       firstStaff = staves.get(0);

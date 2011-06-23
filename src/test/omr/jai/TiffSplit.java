@@ -68,7 +68,6 @@ public class TiffSplit
             img.flush();
         }
 
-        watch.stop();
         watch.print();
     }
 }

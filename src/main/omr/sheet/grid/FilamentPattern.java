@@ -28,7 +28,7 @@ public class FilamentPattern
     private final int col;
 
     /** Series of filaments involved */
-    private final List<Filament> filaments;
+    private final List<LineFilament> filaments;
 
     /** Ordinate value for each filament */
     private final List<Integer> ys;
@@ -49,7 +49,7 @@ public class FilamentPattern
     {
         this.col = col;
 
-        filaments = new ArrayList<Filament>();
+        filaments = new ArrayList<LineFilament>();
         ys = new ArrayList<Integer>();
     }
 
@@ -70,7 +70,7 @@ public class FilamentPattern
     //-------------//
     // getFilament //
     //-------------//
-    public Filament getFilament (int index)
+    public LineFilament getFilament (int index)
     {
         return filaments.get(index);
     }
@@ -78,7 +78,7 @@ public class FilamentPattern
     //--------------//
     // getFilaments //
     //--------------//
-    public List<Filament> getFilaments ()
+    public List<LineFilament> getFilaments ()
     {
         return filaments;
     }
@@ -86,12 +86,12 @@ public class FilamentPattern
     //----------//
     // getIndex //
     //----------//
-    public int getIndex (Filament filament)
+    public int getIndex (LineFilament filament)
     {
-        Filament ancestor = filament.getAncestor();
+        LineFilament ancestor = filament.getAncestor();
 
         for (int index = 0; index < filaments.size(); index++) {
-            Filament fil = filaments.get(index);
+            LineFilament fil = filaments.get(index);
 
             if (fil.getAncestor() == ancestor) {
                 return index;
@@ -139,7 +139,7 @@ public class FilamentPattern
      * @param filament the filament to append
      * @param y the filament ordinate at x abscissa
      */
-    public void append (Filament filament,
+    public void append (LineFilament filament,
                         int      y)
     {
         filaments.add(filament);
@@ -163,7 +163,7 @@ public class FilamentPattern
           .append(filaments.size());
 
         for (int i = 0; i < filaments.size(); i++) {
-            Filament fil = filaments.get(i)
+            LineFilament fil = filaments.get(i)
                                     .getAncestor();
             int      y = ys.get(i);
             sb.append(" F#")

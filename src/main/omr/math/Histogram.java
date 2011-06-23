@@ -13,6 +13,7 @@ package omr.math;
 
 import java.io.PrintStream;
 import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * Class {@code Histogram} is an histogram implementation which handles integer
@@ -25,6 +26,16 @@ import java.util.*;
 public class Histogram<K>
 {
     //~ Instance fields --------------------------------------------------------
+
+    /** To sort entries by decreasing value */
+    public final Comparator<Entry<K, Integer>> reverseValueComparator = new Comparator<Entry<K, Integer>>() {
+        public int compare (Entry<K, Integer> e1,
+                            Entry<K, Integer> e2)
+        {
+            // Put largest value first!
+            return Integer.signum(e2.getValue() - e1.getValue());
+        }
+    };
 
     /**
      * Underlying map:
@@ -124,6 +135,66 @@ public class Histogram<K>
         return max;
     }
 
+    //-----------//
+    // getMaxima //
+    //-----------//
+    /**
+     * Report the list of detected maxima in this histogram
+     * @param quorum minimum value for significant maxima and minima,
+     * defined as ratio of total sum of values
+     * @return the sequence of maxima (key & value), sorted by decreasing value
+     */
+    public List<Entry<K, Integer>> getMaxima (double quorum)
+    {
+        final List<Entry<K, Integer>> maxima = new ArrayList<Entry<K, Integer>>();
+
+        // Compute min count
+        final int         minCount = (int) Math.rint(quorum * getTotalCount());
+
+        ///System.out.println("minCount: " + minCount); 
+
+        // Current status WRT min count threshold
+        boolean           isAbove = false;
+
+        // Current maximum
+        Entry<K, Integer> best = null;
+
+        for (Entry<K, Integer> entry : map.entrySet()) {
+            int value = entry.getValue();
+
+            if (value >= minCount) {
+                if (isAbove) {
+                    // Above -> Above
+                    if ((best == null) || (value > best.getValue())) {
+                        best = entry;
+                    }
+                } else {
+                    // Below -> Above
+                    best = entry;
+                    isAbove = true;
+                }
+            } else {
+                if (isAbove) {
+                    // Above -> Below
+                    maxima.add(best);
+                    best = null;
+                    isAbove = false;
+                } else {
+                    // Below -> Below
+                }
+            }
+        }
+
+        if (isAbove) {
+            maxima.add(best);
+        }
+
+        // Sort by decreasing count value
+        Collections.sort(maxima, reverseValueComparator);
+
+        return maxima;
+    }
+
     //----------//
     // getPeaks //
     //----------//
@@ -194,6 +265,30 @@ public class Histogram<K>
         totalCount = 0;
     }
 
+    //------------//
+    // dataString //
+    //------------//
+    public String dataString ()
+    {
+        StringBuilder sb = new StringBuilder("[");
+
+        boolean       first = true;
+
+        for (Map.Entry<K, Integer> entry : entrySet()) {
+            sb.append(
+                String.format(
+                    "%s%s:%d",
+                    first ? "" : " ",
+                    entry.getKey().toString(),
+                    entry.getValue()));
+            first = false;
+        }
+
+        sb.append("]");
+
+        return sb.toString();
+    }
+
     //----------//
     // entrySet //
     //----------//
@@ -240,20 +335,7 @@ public class Histogram<K>
     //-------//
     public void print (PrintStream stream)
     {
-        stream.print("[");
-
-        boolean first = true;
-
-        for (Map.Entry<K, Integer> entry : entrySet()) {
-            stream.format(
-                "%s%s:%d",
-                first ? "" : " ",
-                entry.getKey().toString(),
-                entry.getValue());
-            first = false;
-        }
-
-        stream.println("]");
+        stream.println(dataString());
     }
 
     //------//
@@ -283,6 +365,10 @@ public class Histogram<K>
                 (lastBucket() != null) ? lastBucket().toString() : ""));
         sb.append(" size:")
           .append(size());
+
+        sb.append(" ")
+          .append(dataString());
+
         sb.append("}");
 
         return sb.toString();

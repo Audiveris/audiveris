@@ -208,8 +208,7 @@ class BasicAlignment
     //---------------//
     public boolean isExtensionOf (Stick  that,
                                   int    maxDeltaCoord,
-                                  int    maxDeltaPos,
-                                  double maxDeltaSlope)
+                                  int    maxDeltaPos)
     {
         GlyphLag   lag = glyph.getLag();
         PixelPoint thisStart = lag.switchRef(this.getStartPoint(), null);
@@ -239,7 +238,7 @@ class BasicAlignment
     //-------------//
     public int getFirstPos ()
     {
-        return glyph.getBounds().y;
+        return glyph.getOrientedBounds().y;
     }
 
     //---------------//
@@ -295,7 +294,7 @@ class BasicAlignment
     //-----------//
     public int getLength ()
     {
-        return glyph.getBounds().width;
+        return glyph.getOrientedBounds().width;
     }
 
     //-----------//
@@ -330,7 +329,7 @@ class BasicAlignment
     //----------//
     public int getStart ()
     {
-        return glyph.getBounds().x;
+        return glyph.getOrientedBounds().x;
     }
 
     //---------------//
@@ -400,7 +399,7 @@ class BasicAlignment
     //--------------//
     public int getThickness ()
     {
-        return glyph.getBounds().height;
+        return glyph.getOrientedBounds().height;
     }
 
     //-------------//

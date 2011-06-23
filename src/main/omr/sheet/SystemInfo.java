@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.sheet.grid.LineInfo;
 import omr.check.CheckSuite;
 
 import omr.glyph.CompoundBuilder;
@@ -36,10 +35,11 @@ import omr.score.entity.ScoreSystem;
 import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
 
+import omr.sheet.grid.LineInfo;
 import omr.sheet.grid.StaffInfo;
 
 import omr.step.StepException;
-
+import static omr.util.HorizontalSide.*;
 import omr.util.Predicate;
 
 import java.util.*;
@@ -566,30 +566,30 @@ public class SystemInfo
 
         // Remember left side
         if (left == -1) {
-            left = staff.getLeft();
+            left = staff.getAbscissa(LEFT);
         } else {
-            left = Math.min(left, staff.getLeft());
+            left = Math.min(left, staff.getAbscissa(LEFT));
         }
 
         // Remember width
         if (width == -1) {
-            width = staff.getRight() - left + 1;
+            width = staff.getAbscissa(RIGHT) - left + 1;
         } else {
-            width = Math.max(width, staff.getRight() - left + 1);
+            width = Math.max(width, staff.getAbscissa(RIGHT) - left + 1);
         }
 
         // First staff ?
         if (startStaff == null) {
             startStaff = staff;
-            top = firstLine.getLeftPoint().y;
+            top = firstLine.getEndPoint(LEFT).y;
         }
 
         // Last staff (so far)
         stopStaff = staff;
-        deltaY = firstLine.getLeftPoint().y - top;
+        deltaY = firstLine.getEndPoint(LEFT).y - top;
 
         LineInfo lastLine = staff.getLastLine();
-        bottom = lastLine.getLeftPoint().y;
+        bottom = lastLine.getEndPoint(LEFT).y;
     }
 
     //-----------------------//
@@ -636,7 +636,7 @@ public class SystemInfo
                     staffInfo,
                     part,
                     new PixelPoint(left, firstLine.yAt(left)),
-                    staffInfo.getRight() - left,
+                    staffInfo.getAbscissa(RIGHT) - left,
                     lastLine.yAt(left) - firstLine.yAt(left));
             }
         }

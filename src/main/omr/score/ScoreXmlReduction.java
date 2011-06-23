@@ -213,7 +213,6 @@ public class ScoreXmlReduction
         fos.close();
         logger.info("Output written to " + file);
 
-        watch.stop();
         watch.print();
 
         // Final statuses

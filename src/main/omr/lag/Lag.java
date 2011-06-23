@@ -189,7 +189,7 @@ public class Lag<L extends Lag<L, S>, S extends Section>
 
         // Iterate on (all?) sections
         for (S section : getSections()) {
-            if (rect.intersects(section.getBounds())) {
+            if (rect.intersects(section.getOrientedBounds())) {
                 found.add(section);
             }
         }
@@ -359,7 +359,7 @@ public class Lag<L extends Lag<L, S>, S extends Section>
         Set<S>    found = new LinkedHashSet<S>();
 
         for (S section : getSections()) {
-            if (target.contains(section.getBounds())) {
+            if (target.contains(section.getOrientedBounds())) {
                 found.add(section);
             }
         }

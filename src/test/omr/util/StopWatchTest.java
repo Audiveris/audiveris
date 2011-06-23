@@ -55,8 +55,6 @@ public class StopWatchTest
         waste();
         waste();
         waste();
-        instance.stop();
-
         instance.print();
     }
 
@@ -76,8 +74,6 @@ public class StopWatchTest
         waste();
         waste();
         waste();
-        instance.stop();
-
         instance.print();
     }
 

@@ -201,14 +201,12 @@ interface GlyphAlignment
      * @param other           the other stick
      * @param maxDeltaCoord Max gap in coordinate (x for horizontal)
      * @param maxDeltaPos   Max gap in position (y for horizontal)
-     * @param maxDeltaSlope Max difference in slope
      *
      * @return The result of the test
      */
     boolean isExtensionOf (Stick  other,
                            int    maxDeltaCoord,
-                           int    maxDeltaPos,
-                           double maxDeltaSlope);
+                           int    maxDeltaPos);
 
     //-------------//
     // getFirstPos //

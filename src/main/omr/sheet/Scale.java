@@ -64,7 +64,7 @@ public class Scale
 
     /** Second most frequent vertical distance in pixels from one line to the other*/
     @XmlElement
-    private int secondInterline;
+    private Integer secondInterline;
 
     /** Most frequent background height */
     @XmlElement
@@ -130,6 +130,10 @@ public class Scale
         secondBack = builder.getSecondBack();
 
         interline = mainFore + mainBack;
+
+        if (secondBack != null) {
+            secondInterline = mainFore + secondBack;
+        }
 
         sheet.getBench()
              .recordScale(this);
@@ -212,7 +216,7 @@ public class Scale
      * @return the interline fraction
      * @see #toPixels
      */
-    public double pixelsToFrac (int pixels)
+    public double pixelsToFrac (double pixels)
     {
         return (double) pixels / (double) interline;
     }

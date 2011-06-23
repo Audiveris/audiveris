@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.sheet.grid.LineInfo;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -20,12 +19,14 @@ import omr.glyph.GlyphSection;
 import omr.glyph.Shape;
 import omr.glyph.facets.Stick;
 
-import omr.run.Run;
-
 import omr.log.Logger;
 
 import omr.math.BasicLine;
 import omr.math.Line;
+
+import omr.run.Run;
+
+import omr.sheet.grid.LineInfo;
 
 import omr.step.StepException;
 
@@ -59,7 +60,6 @@ import java.util.List;
  *
  * </ol>
  *
- *
  * @author Hervé Bitteur
  */
 public class LineBuilder
@@ -81,6 +81,9 @@ public class LineBuilder
     private static int          globalId = 0;
 
     //~ Instance fields --------------------------------------------------------
+
+    /** Related sheet */
+    private final Sheet sheet;
 
     /** Best line equation */
     private Line line = null;
@@ -124,18 +127,18 @@ public class LineBuilder
                         Scale    staffScale)
     {
         super(
-            sheet,
+            staffScale,
             hLag,
             new LineSource(
                 yTop - staffScale.toPixels(constants.yMargin),
                 yBottom + staffScale.toPixels(constants.yMargin),
                 hLag.getVertices()),
-            sheet.getScale().toPixels(constants.coreSectionLength), // minCoreLength
-            constants.maxAdjacency.getValue(), // maxAdjacency
-            staffScale.toPixels(constants.maxThickness),
-            constants.maxSlope.getValue(), // max stick slope
-            true); // closeTest
+            true);
 
+        setMinCoreLength(constants.coreSectionLength);
+        setMaxThickness(constants.maxThickness);
+
+        this.sheet = sheet;
         this.staffScale = staffScale;
 
         lineCleaner = new LineCleaner(
@@ -586,8 +589,8 @@ public class LineBuilder
 
             // Available? Not too thick? Within the limits?
             if (!section.isGlyphMember() &&
-                (section.getRunNb() <= maxThickness)) {
-                if (holeRect.contains(section.getBounds())) {
+                (section.getRunNb() <= params.maxThickness)) {
+                if (holeRect.contains(section.getOrientedBounds())) {
                     section.setParams(SectionRole.HOLE, 0, 0);
                     holeCandidates.add(section);
                 }
@@ -597,14 +600,13 @@ public class LineBuilder
         // Have we found anything ?
         if (!holeCandidates.isEmpty()) {
             SticksBuilder holeArea = new SticksBuilder(
-                sheet,
+                sheet.getScale(),
                 lag,
                 source,
-                0,
-                constants.maxAdjacency.getValue(), // maxAdjacency
-                maxThickness,
-                constants.maxSlope.getValue(), // max stick slope
                 true);
+            holeArea.setMinCoreLength(0);
+            holeArea.setMaxThickness(constants.maxThickness);
+            
             holeArea.createSticks(holeCandidates);
             holeAreas.add(holeArea);
         }
@@ -626,15 +628,9 @@ public class LineBuilder
         Scale.Fraction extensionMinLength = new Scale.Fraction(
             0.25d,
             "Minimum length to compute extension of crossing objects");
-        Constant.Ratio maxAdjacency = new Constant.Ratio(
-            0.5d,
-            "Maximum adjacency ratio to flag a section as peripheral to a staff line");
         Scale.Fraction maxGapWidth = new Scale.Fraction(
             1.0d,
             "Maximum value for horizontal gap between 2 sticks");
-        Constant.Angle maxSlope = new Constant.Angle(
-            0.04d,
-            "Maximum difference in slope to allow merging of two sticks");
         Scale.Fraction maxThickness = new Scale.Fraction(
             0.3d,
             "Maximum value for staff line thickness ");

@@ -1380,8 +1380,7 @@ public class Sheet
                                  .getLedgers()) {
             GlyphSection section = ledger.getStick()
                                          .getFirstSection();
-            SystemInfo   system = getSystemOf(
-                section.getGraph().switchRef(section.getCentroid(), null));
+            SystemInfo   system = getSystemOf(section.getCentroid());
 
             if (system != null) {
                 system.getLedgers()
@@ -1393,8 +1392,7 @@ public class Sheet
                                  .getEndings()) {
             GlyphSection section = ending.getStick()
                                          .getFirstSection();
-            SystemInfo   system = getSystemOf(
-                section.getGraph().switchRef(section.getCentroid(), null));
+            SystemInfo   system = getSystemOf(section.getCentroid());
 
             if (system != null) {
                 system.getEndings()
@@ -1436,8 +1434,7 @@ public class Sheet
 
         for (GlyphSection section : getVerticalLag()
                                         .getSections()) {
-            SystemInfo system = getSystemOf(
-                section.getGraph().switchRef(section.getCentroid(), null));
+            SystemInfo system = getSystemOf(section.getCentroid());
             // Link section -> system
             section.setSystem(system);
 
@@ -1548,5 +1545,4 @@ public class Sheet
             0.5d,
             "Ratio of horizontal histogram to detect staves");
     }
-    
 }

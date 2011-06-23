@@ -23,7 +23,7 @@ import java.awt.Rectangle;
 /**
  * Interface {@code GlyphGeometry} defines the facet which handles all the
  * geometrical characteristics of a glyph (scale, contour box, location, weight,
- * density, moments, etc)
+ * density, moments, etc).
  *
  * @author Hervé Bitteur
  */
@@ -42,23 +42,23 @@ interface GlyphGeometry
      */
     PixelPoint getAreaCenter ();
 
-    //-----------//
-    // getBounds //
-    //-----------//
+    //-------------------//
+    // getOrientedBounds //
+    //-------------------//
     /**
-     * Return the bounding rectangle of the glyph
+     * Return a COPY of the oriented bounding rectangle of the glyph
      *
-     * @return the bounds
+     * @return the oriented bounds
      */
-    Rectangle getBounds ();
+    Rectangle getOrientedBounds ();
 
     //-------------//
     // getCentroid //
     //-------------//
     /**
-     * Report the glyph centroid (mass center). The point is lazily evaluated.
+     * Report the glyph absolute centroid (mass center). The point is lazily evaluated.
      *
-     * @return the mass center point
+     * @return the absolute mass center point
      */
     PixelPoint getCentroid ();
 
@@ -66,7 +66,7 @@ interface GlyphGeometry
     // getContourBox //
     //---------------//
     /**
-     * Return a copy of the display bounding box of the display contour.
+     * Return a copy of the absolute display bounding box.
      * Useful to quickly check if the glyph needs to be repainted.
      *
      * @return a COPY of the bounding contour rectangle box
@@ -176,8 +176,8 @@ interface GlyphGeometry
     // intersects //
     //------------//
     /**
-     * Check whether the glyph intersect the provided rectangle
-     * @param rectangle the provided rectangle
+     * Check whether the glyph intersect the provided absolute rectangle
+     * @param rectangle the provided absolute rectangle
      * @return true if intersection is not empty, false otherwise
      */
     boolean intersects (PixelRectangle rectangle);

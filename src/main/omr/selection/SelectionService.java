@@ -136,12 +136,6 @@ public class SelectionService
         if (logger.isFineEnabled()) {
             logger.fine(this + " published: " + obj);
         }
-
-        //
-        //        if (obj instanceof GlyphSetEvent) {
-        //            new Throwable("GlyphSetEvent").printStackTrace();
-        //        }
-        //
         super.publish(obj);
     }
 

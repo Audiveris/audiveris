@@ -12,6 +12,7 @@
 package omr.sheet.grid;
 
 import omr.glyph.facets.Glyph;
+import omr.glyph.facets.Stick;
 
 import omr.log.Logger;
 
@@ -24,6 +25,11 @@ import omr.score.common.PixelRectangle;
 import omr.sheet.Ledger;
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
+
+import omr.util.HorizontalSide;
+import static omr.util.HorizontalSide.*;
+import omr.util.VerticalSide;
+import static omr.util.VerticalSide.*;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -107,6 +113,31 @@ public class StaffInfo
 
     //~ Methods ----------------------------------------------------------------
 
+    //-------------//
+    // setAbscissa //
+    //-------------//
+    public void setAbscissa (HorizontalSide side,
+                             int            val)
+    {
+        if (side == HorizontalSide.LEFT) {
+            left = val;
+        } else {
+            right = val;
+        }
+    }
+
+    //-------------//
+    // getAbscissa //
+    //-------------//
+    public int getAbscissa (HorizontalSide side)
+    {
+        if (side == HorizontalSide.LEFT) {
+            return left;
+        } else {
+            return right;
+        }
+    }
+
     //---------//
     // getArea //
     //---------//
@@ -140,30 +171,74 @@ public class StaffInfo
                    .getBounds2D();
     }
 
-    //----------------//
-    // setBottomLimit //
-    //----------------//
+    //--------//
+    // setBar //
+    //--------//
     /**
-     * Define the limit at the bottom of the staff area
-     *
-     * @param limit bottom milit
+     * @param side proper horizontal side
+     * @param bar the bar to set
      */
-    public void setBottomLimit (GeoPath limit)
+    public void setBar (HorizontalSide side,
+                        BarInfo        bar)
     {
-        bottomLimit = limit;
+        if (side == HorizontalSide.LEFT) {
+            this.leftBar = bar;
+        } else {
+            this.rightBar = bar;
+        }
+    }
+
+    //--------//
+    // getBar //
+    //--------//
+    /**
+     * @param side proper horizontal side
+     * @return the leftBar
+     */
+    public BarInfo getBar (HorizontalSide side)
+    {
+        if (side == HorizontalSide.LEFT) {
+            return leftBar;
+        } else {
+            return rightBar;
+        }
     }
 
     //----------------//
-    // getBottomLimit //
+    // getEndingSlope //
     //----------------//
     /**
-     * Selector for bottom of area
-     *
-     * @return area bottom
+     * Discard highest and lowest absolute slopes
+     * And return the average values for the remaining ones
+     * @param side which side to select (left or right)
+     * @return a "mean" value
      */
-    public GeoPath getBottomLimit ()
+    public double getEndingSlope (HorizontalSide side)
     {
-        return bottomLimit;
+        List<Double> slopes = new ArrayList<Double>(lines.size());
+
+        for (LineInfo l : lines) {
+            FilamentLine line = (FilamentLine) l;
+            slopes.add(line.getSlope(side));
+        }
+
+        Collections.sort(
+            slopes,
+            new Comparator<Double>() {
+                    public int compare (Double o1,
+                                        Double o2)
+                    {
+                        return Double.compare(Math.abs(o1), Math.abs(o2));
+                    }
+                });
+
+        double sum = 0;
+
+        for (Double slope : slopes.subList(1, slopes.size() - 1)) {
+            sum += slope;
+        }
+
+        return sum / (slopes.size() - 2);
     }
 
     //--------------//
@@ -190,7 +265,7 @@ public class StaffInfo
     public int getHeight ()
     {
         return getSpecificScale()
-                   .interline() * 4;
+                   .interline() * (lines.size() - 1);
     }
 
     //-------//
@@ -263,39 +338,23 @@ public class StaffInfo
         return ledgers;
     }
 
-    //---------//
-    // getLeft //
-    //---------//
+    //----------//
+    // setLimit //
+    //----------//
     /**
-     * Report the abscissa of the left side of the staff
+     * Define the limit at the bottom of the staff area
      *
-     * @return the left abscissa
+     * @param side proper vertical side
+     * @param limit assigned limit
      */
-    public int getLeft ()
+    public void setLimit (VerticalSide side,
+                          GeoPath      limit)
     {
-        return left;
-    }
-
-    //------------//
-    // setLeftBar //
-    //------------//
-    /**
-     * @param leftBar the leftBar to set
-     */
-    public void setLeftBar (BarInfo leftBar)
-    {
-        this.leftBar = leftBar;
-    }
-
-    //------------//
-    // getLeftBar //
-    //------------//
-    /**
-     * @return the leftBar
-     */
-    public BarInfo getLeftBar ()
-    {
-        return leftBar;
+        if (side == TOP) {
+            topLimit = limit;
+        } else {
+            bottomLimit = limit;
+        }
     }
 
     //----------//
@@ -311,73 +370,42 @@ public class StaffInfo
         return lines;
     }
 
-    //------------------//
-    // getMeanLeftSlope //
-    //------------------//
-    /**
-     * Report the mean slope on left side of staff lines
-     */
-    public double getMeanLeftSlope ()
-    {
-        return getMeanSlope(
-            new SideSelector() {
-                    public double getSlope (FilamentLine line)
-                    {
-                        return line.getStartSlope();
-                    }
-                });
-    }
-
-    //-------------------//
-    // getMeanRightSlope //
-    //-------------------//
-    /**
-     * Report the mean slope on right side of staff lines
-     */
-    public double getMeanRightSlope ()
-    {
-        return getMeanSlope(
-            new SideSelector() {
-                    public double getSlope (FilamentLine line)
-                    {
-                        return line.getStopSlope();
-                    }
-                });
-    }
-
-    //----------//
-    // getRight //
-    //----------//
-    /**
-     * Report the abscissa of the right side of the staff
-     *
-     * @return the right abscissa
-     */
-    public int getRight ()
-    {
-        return right;
-    }
-
     //-------------//
-    // setRightBar //
+    // getLinesEnd //
     //-------------//
     /**
-     * @param rightBar the rightBar to set
+     * Report the ending abscissa of the staff lines
+     * @param side desired horizontal side
+     * @return the abscissa corresponding to lines extrema
      */
-    public void setRightBar (BarInfo rightBar)
+    public int getLinesEnd (HorizontalSide side)
     {
-        this.rightBar = rightBar;
+        if (side == HorizontalSide.LEFT) {
+            int linesLeft = Integer.MAX_VALUE;
+
+            for (LineInfo line : lines) {
+                linesLeft = Math.min(linesLeft, line.getEndPoint(LEFT).x);
+            }
+
+            return linesLeft;
+        } else {
+            int linesRight = Integer.MIN_VALUE;
+
+            for (LineInfo line : lines) {
+                linesRight = Math.max(linesRight, line.getEndPoint(RIGHT).x);
+            }
+
+            return linesRight;
+        }
     }
 
-    //-------------//
-    // getRightBar //
-    //-------------//
-    /**
-     * @return the rightBar
-     */
-    public BarInfo getRightBar ()
+    //----------------//
+    // getMidOrdinate //
+    //----------------//
+    public int getMidOrdinate (HorizontalSide side)
     {
-        return rightBar;
+        return (getFirstLine().getEndPoint(side).y +
+               getLastLine().getEndPoint(side).y) / 2;
     }
 
     //------------------//
@@ -400,32 +428,6 @@ public class StaffInfo
 
             return null;
         }
-    }
-
-    //-------------//
-    // setTopLimit //
-    //-------------//
-    /**
-     * Define the limit for top of staff area
-     *
-     * @param limit top limit
-     */
-    public void setTopLimit (GeoPath limit)
-    {
-        topLimit = limit;
-    }
-
-    //-------------//
-    // getTopLimit //
-    //-------------//
-    /**
-     * Selector for area top limit
-     *
-     * @return area top
-     */
-    public GeoPath getTopLimit ()
-    {
-        return topLimit;
     }
 
     //---------//
@@ -457,6 +459,26 @@ public class StaffInfo
         for (LineInfo line : lines) {
             System.out.println(" LineInfo" + i++ + " " + line.toString());
         }
+    }
+
+    //--------------//
+    // intersection //
+    //--------------//
+    /**
+     * Report the approximate point where a provided vertical stick crosses this
+     * staff
+     * @param stick the rather vertical stick
+     * @return the crossing point
+     */
+    public PixelPoint intersection (Stick stick)
+    {
+        LineInfo midLine = lines.get(lines.size() / 2);
+
+        return PixelPoint.lineIntersection(
+            midLine.getEndPoint(LEFT),
+            midLine.getEndPoint(RIGHT),
+            stick.getStartPoint(),
+            stick.getStopPoint());
     }
 
     //-----------------//
@@ -563,15 +585,15 @@ public class StaffInfo
 
             // Check that top of staff is visible
             if ((clip.y + clip.height) < Math.min(
-                firstLine.getLeftPoint().y,
-                firstLine.getRightPoint().y)) {
+                firstLine.getEndPoint(LEFT).y,
+                firstLine.getEndPoint(RIGHT).y)) {
                 return false;
             }
 
             // Check that bottom of staff is visible
             if (clip.y > Math.max(
-                lastLine.getLeftPoint().y,
-                lastLine.getRightPoint().y)) {
+                lastLine.getEndPoint(LEFT).y,
+                lastLine.getEndPoint(RIGHT).y)) {
                 return false;
             }
 
@@ -580,22 +602,12 @@ public class StaffInfo
                 line.render(g);
             }
 
-            BasicStroke stroke = (BasicStroke) g.getStroke();
-            int         dx = 0; /////////////////////////////////////////(int) Math.rint(stroke.getLineWidth() / 2);
-
-            // Draw the left vertical line
-            g.drawLine(
-                firstLine.getLeftPoint().x + dx,
-                firstLine.getLeftPoint().y,
-                lastLine.getLeftPoint().x + dx,
-                lastLine.getLeftPoint().y);
-
-            // Draw the right vertical line
-            g.drawLine(
-                firstLine.getRightPoint().x - dx,
-                firstLine.getRightPoint().y,
-                lastLine.getRightPoint().x - dx,
-                lastLine.getRightPoint().y);
+            // Draw the left and right vertical lines
+            for (HorizontalSide side : HorizontalSide.values()) {
+                PixelPoint first = firstLine.getEndPoint(side);
+                PixelPoint last = lastLine.getEndPoint(side);
+                g.drawLine(first.x, first.y, last.x, last.y);
+            }
 
             return true;
         } else {
@@ -631,54 +643,5 @@ public class StaffInfo
         sb.append("}");
 
         return sb.toString();
-    }
-
-    //--------------//
-    // getMeanSlope //
-    //--------------//
-    /**
-     * Discard highest and lowest absolute slopes
-     * And return the average values for the remaining ones
-     * @param selector which side to select (left or right)
-     * @return a "mean" value
-     */
-    private double getMeanSlope (SideSelector selector)
-    {
-        List<Double> slopes = new ArrayList<Double>(lines.size());
-
-        for (LineInfo l : lines) {
-            FilamentLine line = (FilamentLine) l;
-            slopes.add(selector.getSlope(line));
-        }
-
-        Collections.sort(
-            slopes,
-            new Comparator<Double>() {
-                    public int compare (Double o1,
-                                        Double o2)
-                    {
-                        return Double.compare(Math.abs(o1), Math.abs(o2));
-                    }
-                });
-
-        double sum = 0;
-
-        for (Double slope : slopes.subList(1, slopes.size() - 1)) {
-            sum += slope;
-        }
-
-        return sum / (slopes.size() - 2);
-    }
-
-    //~ Inner Interfaces -------------------------------------------------------
-
-    //--------------//
-    // SideSelector //
-    //--------------//
-    private static interface SideSelector
-    {
-        //~ Methods ------------------------------------------------------------
-
-        public double getSlope (FilamentLine line);
     }
 }

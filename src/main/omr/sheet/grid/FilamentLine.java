@@ -16,6 +16,8 @@ import omr.glyph.GlyphSection;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
+import omr.util.HorizontalSide;
+
 import java.awt.Graphics2D;
 import java.util.*;
 
@@ -37,7 +39,7 @@ public class FilamentLine
     final int pos;
 
     /** Underlying filament */
-    Filament fil;
+    LineFilament fil;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -76,6 +78,18 @@ public class FilamentLine
     public PixelRectangle getContourBox ()
     {
         return fil.getContourBox();
+    }
+
+    //-------------//
+    // getEndPoint //
+    //-------------//
+    public PixelPoint getEndPoint (HorizontalSide side)
+    {
+        if (side == HorizontalSide.LEFT) {
+            return getStartPoint();
+        } else {
+            return getStopPoint();
+        }
     }
 
     //-----------------//
@@ -119,6 +133,16 @@ public class FilamentLine
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    //----------//
+    // getSlope //
+    //----------//
+    public double getSlope (HorizontalSide side)
+    {
+        PixelPoint pt = getEndPoint(side);
+
+        return fil.slopeAt(pt.x);
+    }
+
     //---------------//
     // getStartPoint //
     //---------------//
@@ -134,8 +158,7 @@ public class FilamentLine
     {
         PixelPoint pt = getStartPoint();
 
-        return fil.getCurve()
-                  .derivativeAt(pt.x);
+        return fil.slopeAt(pt.x);
     }
 
     //--------------//
@@ -153,8 +176,7 @@ public class FilamentLine
     {
         PixelPoint pt = getStopPoint();
 
-        return fil.getCurve()
-                  .derivativeAt(pt.x);
+        return fil.slopeAt(pt.x);
     }
 
     //---------------//
@@ -173,7 +195,7 @@ public class FilamentLine
     //-----//
     // add //
     //-----//
-    public void add (Filament fil)
+    public void add (LineFilament fil)
     {
         if (this.fil == null) {
             this.fil = fil;
@@ -232,6 +254,8 @@ public class FilamentLine
 
         sb.append("]");
 
+        sb.append(fil.trueLength());
+
         return sb.toString();
     }
 
@@ -248,13 +272,6 @@ public class FilamentLine
     //-----//
     public double yAt (double x)
     {
-        if (x < getStartPoint().x) {
-            x = getStartPoint().x;
-        } else if (x > getStopPoint().x) {
-            x = getStopPoint().x;
-        }
-
-        return fil.getCurve()
-                  .yAt(x);
+        return fil.positionAt(x);
     }
 }

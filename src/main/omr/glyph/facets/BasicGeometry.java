@@ -112,22 +112,23 @@ class BasicGeometry
         return center;
     }
 
-    //-----------//
-    // getBounds //
-    //-----------//
-    public Rectangle getBounds ()
+    //-------------------//
+    // getOrientedBounds //
+    //-------------------//
+    public Rectangle getOrientedBounds ()
     {
         if (bounds == null) {
             for (Section section : glyph.getMembers()) {
                 if (bounds == null) {
-                    bounds = new Rectangle(section.getBounds());
+                    bounds = new Rectangle(section.getOrientedBounds());
                 } else {
-                    bounds.add(section.getBounds());
+                    bounds.add(section.getOrientedBounds());
                 }
             }
         }
 
-        return bounds;
+        // Return a COPY
+        return new Rectangle(bounds);
     }
 
     //-------------//
@@ -174,7 +175,7 @@ class BasicGeometry
     //------------//
     public double getDensity ()
     {
-        Rectangle rect = getBounds();
+        Rectangle rect = getOrientedBounds();
         int       surface = (rect.width + 1) * (rect.height + 1);
 
         return (double) getWeight() / (double) surface;
@@ -328,7 +329,7 @@ class BasicGeometry
     @Override
     public void dump ()
     {
-        System.out.println("   bounds=" + getBounds());
+        System.out.println("   bounds=" + getOrientedBounds());
         System.out.println("   centroid=" + getCentroid());
         System.out.println("   contourBox=" + getContourBox());
         System.out.println("   interline=" + getInterline());

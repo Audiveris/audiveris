@@ -21,6 +21,8 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 
 import omr.util.Navigable;
+import omr.util.VerticalSide;
+import static omr.util.VerticalSide.*;
 
 import java.awt.Graphics2D;
 import java.awt.geom.*;
@@ -204,7 +206,8 @@ public class StaffManager
         for (StaffInfo staff : staves) {
             if (prevStaff == null) {
                 // Very first staff
-                staff.setTopLimit(
+                staff.setLimit(
+                    TOP,
                     new GeoPath(new Line2D.Double(0, 0, width, 0)));
             } else {
                 // Define a middle line between last line of previous staff 
@@ -224,8 +227,8 @@ public class StaffManager
                     }
                 }
 
-                prevStaff.setBottomLimit(middle);
-                staff.setTopLimit(middle);
+                prevStaff.setLimit(BOTTOM, middle);
+                staff.setLimit(TOP, middle);
             }
 
             // Remember this staff for next one
@@ -233,7 +236,8 @@ public class StaffManager
         }
 
         // Bottom of last staff
-        prevStaff.setBottomLimit(
+        prevStaff.setLimit(
+            BOTTOM,
             new GeoPath(new Line2D.Double(0, height, width, height)));
     }
 

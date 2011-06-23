@@ -66,6 +66,8 @@ public class StopWatch
     //-------//
     public void print (PrintStream out)
     {
+        stop();
+        
         final String format = "%5d %3d%% %s";
         final String dashes = "-----------------------------------";
         out.println(getClass().getSimpleName() + " \"" + name + "\"");

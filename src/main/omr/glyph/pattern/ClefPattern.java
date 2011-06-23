@@ -28,9 +28,10 @@ import omr.score.entity.ScoreSystem;
 import omr.score.entity.SystemPart;
 
 import omr.sheet.Scale;
-import omr.sheet.grid.StaffInfo;
 import omr.sheet.SystemInfo;
+import omr.sheet.grid.StaffInfo;
 
+import omr.util.HorizontalSide;
 import omr.util.Implement;
 import omr.util.Predicate;
 
@@ -109,7 +110,7 @@ public class ClefPattern
             staffId++;
 
             // Define the inner box to intersect clef glyph(s)
-            int            left = staff.getLeft();
+            int            left = staff.getAbscissa(HorizontalSide.LEFT);
             PixelRectangle inner = new PixelRectangle(
                 left + (2 * xOffset) + (clefWidth / 2),
                 staff.getFirstLine().yAt(left) + (staff.getHeight() / 2),

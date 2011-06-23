@@ -158,6 +158,8 @@ class BasicDisplay
     //-----------//
     public void drawAscii ()
     {
+        System.out.println(glyph.toString());
+        
         // Determine the bounding box
         Rectangle box = glyph.getContourBox();
 

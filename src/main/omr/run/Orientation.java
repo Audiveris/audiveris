@@ -19,6 +19,7 @@ import omr.score.common.PixelRectangle;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 
 /**
  * Class <code>Orientation</code> defines orientation as horizontal or
@@ -76,6 +77,29 @@ public enum Orientation
             xy.y = cp.x;
 
             return xy;
+        }
+    }
+
+    //-----------//
+    // switchRef //
+    //-----------//
+    public Point2D.Double switchRef (Point2D cp)
+    {
+        if (cp == null) {
+            return null;
+        }
+
+        switch (this) {
+        case HORIZONTAL :
+
+            // Identity
+            return new Point2D.Double(cp.getX(), cp.getY());
+
+        default :
+        case VERTICAL :
+
+            // Swap: coord->y, pos->x
+            return new Point2D.Double(cp.getY(), cp.getX());
         }
     }
 

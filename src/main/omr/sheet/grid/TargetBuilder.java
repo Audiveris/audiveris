@@ -16,20 +16,34 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
+import omr.score.ScoresManager;
 import omr.score.common.PixelPoint;
 
+import omr.selection.SheetLocationEvent;
+
 import omr.sheet.Sheet;
+import omr.sheet.picture.Picture;
+
+import omr.ui.view.RubberPanel;
+import omr.ui.view.ScrollView;
+import static omr.util.HorizontalSide.*;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.awt.image.RenderedImage;
+import java.awt.image.renderable.ParameterBlock;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.media.jai.Warp;
-import javax.media.jai.WarpGrid;
+import javax.imageio.ImageIO;
+import javax.media.jai.*;
 
 /**
  * Class {@code TargetBuilder} is in charge of building a perfect definition
@@ -74,14 +88,17 @@ public class TargetBuilder
     /** All target lines */
     private List<TargetLine> allTargetLines = new ArrayList<TargetLine>();
 
-    /** The dewarp grid */
-    private Warp dewarpGrid;
-
     /** Source points */
     private List<Point2D> srcPoints = new ArrayList<Point2D>();
 
     /** Destination points */
     private List<Point2D> dstPoints = new ArrayList<Point2D>();
+
+    /** The dewarp grid */
+    private Warp dewarpGrid;
+
+    /** The dewarped image */
+    private RenderedImage dewarpedImage;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -106,17 +123,6 @@ public class TargetBuilder
 
     //~ Methods ----------------------------------------------------------------
 
-    //---------------//
-    // getDewarpGrid //
-    //---------------//
-    /**
-     * @return the dewarpGrid
-     */
-    public Warp getDewarpGrid ()
-    {
-        return dewarpGrid;
-    }
-
     //-----------//
     // buildInfo //
     //-----------//
@@ -124,26 +130,22 @@ public class TargetBuilder
     {
         buildTarget();
         buildWarpGrid();
-    }
 
-    //    //--------//
-    //    // deskew //
-    //    //--------//
-    //    /**
-    //     * Apply rotation OPPOSITE to the measured global angle and use the new
-    //     * origin
-    //     *
-    //     * @param pt the initial (skewed) point
-    //     * @return the deskewed point
-    //     */
-    //    private PixelPoint deskew (Point2D pt)
-    //    {
-    //        Point2D p = at.transform(pt, null);
-    //
-    //        return new PixelPoint(
-    //            (int) Math.rint(p.getX()),
-    //            (int) Math.rint(p.getY()));
-    //    }
+        // Dewarp the initial image
+        dewarpImage();
+
+        // Add a view on dewarped image
+        sheet.getAssembly()
+             .addViewTab(
+            "DeWarped",
+            new ScrollView(new DewarpedView(dewarpedImage)),
+            null);
+
+        // Store dewarped image on disk
+        if (constants.storeDewarp.getValue()) {
+            storeImage();
+        }
+    }
 
     //------------------//
     // renderDewarpGrid //
@@ -184,44 +186,53 @@ public class TargetBuilder
      */
     private void buildTarget ()
     {
-        logger.info("Sheet " + sheet.getDimension());
-        logger.info("Global slope: " + linesRetriever.getGlobalSlope());
-
         // Set up rotation + origin translation
         computeDeskew();
 
         // Target page parameters
         targetPage = new TargetPage(targetWidth, targetHeight);
 
-        // Target systems parameters
-        TargetSystem prevTargetSystem = null;
+        TargetLine prevLine = null;
 
+        // Target system parameters
         for (SystemFrame system : barsRetriever.getSystems()) {
             StaffInfo  firstStaff = system.getFirstStaff();
             LineInfo   firstLine = firstStaff.getFirstLine();
-            PixelPoint rightPoint = firstLine.getRightPoint();
-            int        sysRight = rightPoint.x;
+            PixelPoint dskLeft = deskew(firstLine.getEndPoint(LEFT));
+            PixelPoint dskRight = deskew(firstLine.getEndPoint(RIGHT));
 
-            // Make sure right side of this new system is kept consistent
-            // with right side of end of the previous system if any
-            if (prevTargetSystem != null) {
-                sysRight += (prevTargetSystem.right -
-                            prevTargetSystem.info.getLastStaff().getLastLine().getRightPoint().x);
+            if (prevLine != null) {
+                // Preserve position relative to bottom right of previous system
+                PixelPoint   prevDskRight = deskew(
+                    prevLine.info.getEndPoint(RIGHT));
+                TargetSystem prevSystem = prevLine.staff.system;
+                int          dx = prevSystem.right - prevDskRight.x;
+                int          dy = prevLine.y - prevDskRight.y;
+                dskRight.translate(dx, dy);
+                dskLeft.translate(dx, dy);
             }
 
             TargetSystem targetSystem = new TargetSystem(
                 system,
-                firstLine.getLeftPoint().y,
-                sysRight - (rightPoint.x - firstLine.getLeftPoint().x),
-                sysRight);
+                dskRight.y,
+                dskLeft.x,
+                dskRight.x);
             targetPage.systems.add(targetSystem);
 
             // Target staff parameters
             for (StaffInfo staff : system.getStaves()) {
+                dskRight = deskew(staff.getFirstLine().getEndPoint(RIGHT));
+
+                if (prevLine != null) {
+                    // Preserve inter-staff vertical gap
+                    PixelPoint prevDskRight = deskew(
+                        prevLine.info.getEndPoint(RIGHT));
+                    dskRight.y += (prevLine.y - prevDskRight.y);
+                }
+
                 TargetStaff targetStaff = new TargetStaff(
                     staff,
-                    staff.getFirstLine()
-                         .getLeftPoint().y,
+                    dskRight.y,
                     targetSystem);
                 targetSystem.staves.add(targetStaff);
 
@@ -239,10 +250,9 @@ public class TargetBuilder
                         targetStaff);
                     allTargetLines.add(targetLine);
                     targetStaff.lines.add(targetLine);
+                    prevLine = targetLine;
                 }
             }
-
-            prevTargetSystem = targetSystem;
         }
     }
 
@@ -315,6 +325,39 @@ public class TargetBuilder
         at.translate(dx, dy);
     }
 
+    //--------//
+    // deskew //
+    //--------//
+    /**
+     * Apply rotation OPPOSITE to the measured global angle and use the new
+     * origin
+     *
+     * @param pt the initial (skewed) point
+     * @return the deskewed point
+     */
+    private PixelPoint deskew (Point2D pt)
+    {
+        Point2D p = at.transform(pt, null);
+
+        return new PixelPoint(
+            (int) Math.rint(p.getX()),
+            (int) Math.rint(p.getY()));
+    }
+
+    //-------------//
+    // dewarpImage //
+    //-------------//
+    private void dewarpImage ()
+    {
+        ParameterBlock pb = new ParameterBlock();
+        pb.addSource(Picture.invert(sheet.getPicture().getImage()));
+        pb.add(dewarpGrid);
+        pb.add(new InterpolationBilinear());
+
+        dewarpedImage = Picture.invert(JAI.create("warp", pb));
+        ((PlanarImage) dewarpedImage).getTiles();
+    }
+
     //----------//
     // sourceOf //
     //----------//
@@ -367,6 +410,26 @@ public class TargetBuilder
             ((1 - yRatio) * srcNorth.getY()) + (yRatio * srcSouth.getY()));
     }
 
+    //------------//
+    // storeImage //
+    //------------//
+    private void storeImage ()
+    {
+        String pageId = sheet.getPage()
+                             .getId();
+        File   file = new File(
+            ScoresManager.getInstance().getDefaultDewarpDirectory(),
+            pageId + ".dewarped.png");
+
+        try {
+            String path = file.getCanonicalPath();
+            ImageIO.write(dewarpedImage, "png", file);
+            logger.info("Wrote " + path);
+        } catch (IOException ex) {
+            logger.warning("Could not write " + file);
+        }
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
     //-----------//
@@ -380,5 +443,48 @@ public class TargetBuilder
         Constant.Boolean displayGrid = new Constant.Boolean(
             true,
             "Should we display the dewarp grid?");
+        Constant.Boolean storeDewarp = new Constant.Boolean(
+            false,
+            "Should we store the dewarped image on disk?");
+    }
+
+    //--------------//
+    // DewarpedView //
+    //--------------//
+    private class DewarpedView
+        extends RubberPanel
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        private final AffineTransform identity = new AffineTransform();
+        private final RenderedImage   image;
+
+        //~ Constructors -------------------------------------------------------
+
+        public DewarpedView (RenderedImage image)
+        {
+            this.image = image;
+
+            setModelSize(new Dimension(image.getWidth(), image.getHeight()));
+
+            // Location service
+            setLocationService(
+                sheet.getSelectionService(),
+                SheetLocationEvent.class);
+
+            setName("DewarpedView");
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void render (Graphics2D g)
+        {
+            // Display the dewarped image
+            g.drawRenderedImage(image, identity);
+
+            // Display also the Destination Points
+            renderDewarpGrid(g, false);
+        }
     }
 }

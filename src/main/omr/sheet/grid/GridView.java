@@ -26,13 +26,9 @@ import omr.lag.ui.SectionView;
 
 import omr.log.Logger;
 
-import omr.math.NaturalSpline;
-
 import omr.run.Run;
 
-import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
-import omr.score.ui.PagePainter;
 
 import omr.selection.GlyphEvent;
 import omr.selection.MouseMovement;
@@ -42,15 +38,11 @@ import omr.selection.SelectionHint;
 import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
 
-import omr.sheet.Sheet;
-
 import omr.ui.util.UIUtilities;
 
 import java.awt.*;
-import java.awt.geom.Line2D;
 import java.util.*;
 import java.util.List;
-import omr.sheet.Scale;
 
 /**
  * Class {@code GridView} is a special {@link GlyphLagView}, meant as a
@@ -65,7 +57,7 @@ import omr.sheet.Scale;
  *
  * @author Hervé Bitteur
  */
-class GridView
+public class GridView
     extends GlyphLagView
 {
     //~ Static fields/initializers ---------------------------------------------
@@ -76,12 +68,6 @@ class GridView
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(GridBuilder.class);
 
-    /** Stroke for drawing filaments curves */
-    private static final Stroke splineStroke = new BasicStroke(
-        (float) constants.splineThickness.getValue(),
-        BasicStroke.CAP_ROUND,
-        BasicStroke.JOIN_ROUND);
-
     //~ Instance fields --------------------------------------------------------
 
     // Companion for horizontals (staff lines)
@@ -90,17 +76,11 @@ class GridView
     // Companion for verticals (barlines)
     private final BarsRetriever    barsRetriever;
 
-    // Related sheet
-    private final Sheet            sheet;
-
     // Additional lag (Vertical)
     private final GlyphLag         vLag;
 
     /** Record precise max section length per lag */
     private Map<GlyphLag, Integer> maxLengths = new LinkedHashMap<GlyphLag, Integer>();
-
-    /** Used to determine section display color */
-    private final int minHorizontalSectionLength;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -111,27 +91,23 @@ class GridView
      * Creates a new GridView object.
      *
      * @param linesRetriever the related lines retriever
-     * @param sheet the related sheet
      * @param hLag horizontal lag
      * @param vLag vertical lag
      * @param specifics specific sections if any
      * @param controller glyphs controller
      */
-    public GridView (Sheet              sheet,
-                       LinesRetriever     linesRetriever,
-                       GlyphLag           hLag,
-                       BarsRetriever      barsRetriever,
-                       GlyphLag           vLag,
-                       List<GlyphSection> specifics,
-                       GlyphsController   controller)
+    public GridView (LinesRetriever     linesRetriever,
+                     GlyphLag           hLag,
+                     BarsRetriever      barsRetriever,
+                     GlyphLag           vLag,
+                     List<GlyphSection> specifics,
+                     GlyphsController   controller)
     {
         super(hLag, specifics, constants.displaySpecifics, controller, null);
 
-        setName("Frames-View");
-        this.sheet = sheet;
+        setName("Grid-View");
         this.linesRetriever = linesRetriever;
         this.barsRetriever = barsRetriever;
-        this.minHorizontalSectionLength = linesRetriever.getMinSectionLength();
 
         // Additional stuff for vLag
         this.vLag = vLag;
@@ -263,13 +239,9 @@ class GridView
             if (linesRetriever.isSectionFat(section)) {
                 color = Color.GRAY;
             } else {
-                if (section.getLength() < minHorizontalSectionLength) {
-                    color = Color.LIGHT_GRAY;
-                } else {
-                    int level = (int) Math.rint(
-                        200 * (1 - (length / (double) maxLength)));
-                    color = new Color(255, level, level); // Red Gradient
-                }
+                int level = (int) Math.rint(
+                    200 * (1 - (length / (double) maxLength)));
+                color = new Color(255, level, level); // Red Gradient
             }
         }
 
@@ -283,42 +255,7 @@ class GridView
     @Override
     protected void renderItems (Graphics2D g)
     {
-        // Draw curve for the remaining filaments
-        g.setColor(PagePainter.musicColor);
-
-        Stroke oldStroke = g.getStroke();
-        g.setStroke(splineStroke);
-
-        for (Filament filament : linesRetriever.getFilaments()) {
-            filament.renderLine(g);
-        }
-
-        // Draw tangent at each ending point
-        g.setColor(Color.BLACK);
-
-        double dx = sheet.getScale()
-                         .toPixels(constants.tangentDx);
-
-        for (Filament filament : linesRetriever.getFilaments()) {
-            NaturalSpline curve = filament.getCurve();
-
-            if (curve != null) {
-                PixelPoint p = filament.getStartPoint();
-                double     der = curve.derivativeAt(p.x);
-                g.draw(new Line2D.Double(p.x, p.y, p.x - dx, p.y - (der * dx)));
-                p = filament.getStopPoint();
-                der = curve.derivativeAt(p.x);
-                g.draw(new Line2D.Double(p.x, p.y, p.x + dx, p.y + (der * dx)));
-            }
-        }
-
-        g.setStroke(oldStroke);
-
-        // Clusters stuff
-        if (linesRetriever.getClustersRetriever() != null) {
-            linesRetriever.getClustersRetriever()
-                          .renderItems(g);
-        }
+        linesRetriever.renderItems(g);
     }
 
     //-------------//
@@ -408,7 +345,10 @@ class GridView
         }
 
         maxLengths.put(lag, maxLength);
-        logger.info(lag + " maxLength:" + maxLength);
+
+        if (logger.isFineEnabled()) {
+            logger.info(lag + " maxLength:" + maxLength);
+        }
 
         return maxLength;
     }
@@ -426,12 +366,5 @@ class GridView
         Constant.Boolean displaySpecifics = new Constant.Boolean(
             false,
             "Dummy stuff");
-        Constant.Double  splineThickness = new Constant.Double(
-            "thickness",
-            0.5,
-            "Stroke thickness to draw filaments curves");
-        Scale.Fraction   tangentDx = new Scale.Fraction(
-            4,
-            "Typical length to display tangents at ending points");
     }
 }

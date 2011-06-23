@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                            F r a m e s S t e p                             //
+//                              G r i d S t e p                               //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -18,31 +18,31 @@ import omr.sheet.SystemInfo;
 import java.util.Collection;
 
 /**
- * Class {@code FramesStep} determine the systems frames of the picture.
+ * Class {@code GridStep} determine the systems frames of the picture.
  * This is a temporary attempt, to be evaluated and refined is successful.
  *
  * @author Hervé Bitteur
  */
-public class FramesStep
+public class GridStep
     extends AbstractStep
 {
     //~ Constructors -----------------------------------------------------------
 
-    //------------//
-    // FramesStep //
-    //------------//
+    //----------//
+    // GridStep //
+    //----------//
     /**
-     * Creates a new FramesStep object.
+     * Creates a new GridStep object.
      */
-    public FramesStep ()
+    public GridStep ()
     {
         super(
-            Steps.FRAMES,
+            Steps.GRID,
             Level.SHEET_LEVEL,
             Mandatory.MANDATORY,
             Redoable.NON_REDOABLE,
             "Dewarped",
-            "Retrieve all systems frames");
+            "Retrieve the grid of all systems");
     }
 
     //~ Methods ----------------------------------------------------------------

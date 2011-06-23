@@ -355,11 +355,11 @@
             <packageset dir="${src.dir}" includes="*/**"/>
 
             <!-- Define a logical grouping of packages -->
-             <group packages="omr:omr.sheet:omr.score:omr.score.common:omr.score.entity:omr.score.midi:omr.score.visitor:omr.glyph:omr.glyph.facets:omr.glyph.pattern:omr.glyph.text:omr.glyph.text.tesseract:omr.step:omr.script"
+             <group packages="omr:omr.sheet:omr.sheet.grid:omr.score:omr.score.common:omr.score.entity:omr.score.midi:omr.score.visitor:omr.glyph:omr.glyph.facets:omr.glyph.pattern:omr.glyph.text:omr.glyph.text.tesseract:omr.step:omr.script"
                  title="Driving Packages"/>
              <group packages="omr.action:omr.glyph.ui:omr.lag.ui:omr.ui:omr.ui.*:omr.glyph.ui.*:omr.plugin:omr.score.ui:omr.sheet.ui"
                  title="User interface Packages"/>
-             <group packages="omr.graph:omr.lag*:omr.stick*:omr.sheet.picture"
+             <group packages="omr.run:omr.graph:omr.lag*:omr.stick*:omr.sheet.picture"
                  title="Geometry Packages"/>
              <group packages="omr.check:omr.constant:omr.log:omr.math:omr.selection:omr.util"
                  title="Utility Packages"/>

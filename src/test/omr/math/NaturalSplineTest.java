@@ -100,7 +100,7 @@ public class NaturalSplineTest
         System.out.println(spline.toString());
 
         for (double x = xx[0]; x <= xx[xx.length - 1]; x++) {
-            double y = spline.yAt(x);
+            double y = spline.yAtX(x);
             System.out.println("x=" + x + " y=" + (float) y);
         }
     }
@@ -117,7 +117,7 @@ public class NaturalSplineTest
         System.out.println(spline.toString());
 
         for (double x = xx[0]; x <= xx[xx.length - 1]; x++) {
-            double y = spline.yAt(x);
+            double y = spline.yAtX(x);
             System.out.println("x=" + x + " y=" + (float) y);
         }
     }
@@ -152,7 +152,7 @@ public class NaturalSplineTest
         System.out.println(spline.toString());
 
         for (double x = xx[0]; x <= xx[xx.length - 1]; x++) {
-            double y = spline.yAt(x);
+            double y = spline.yAtX(x);
             System.out.println("x=" + x + " y=" + (float) y);
         }
     }
@@ -169,7 +169,7 @@ public class NaturalSplineTest
         System.out.println(spline.toString());
 
         for (double x = xx[0]; x <= xx[xx.length - 1]; x++) {
-            double y = spline.yAt(x);
+            double y = spline.yAtX(x);
             System.out.println("x=" + x + " y=" + (float) y);
         }
     }
@@ -204,7 +204,7 @@ public class NaturalSplineTest
         System.out.println(spline.toString());
 
         for (double x = xx[0]; x <= xx[xx.length - 1]; x++) {
-            double y = spline.yAt(x);
+            double y = spline.yAtX(x);
             System.out.println("x=" + x + " y=" + (float) y);
         }
     }

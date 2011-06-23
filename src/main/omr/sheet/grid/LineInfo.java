@@ -15,6 +15,8 @@ import omr.glyph.GlyphSection;
 
 import omr.score.common.PixelPoint;
 
+import omr.util.HorizontalSide;
+
 import java.awt.Graphics2D;
 import java.util.Collection;
 
@@ -26,6 +28,16 @@ import java.util.Collection;
 public interface LineInfo
 {
     //~ Methods ----------------------------------------------------------------
+
+    //-------------//
+    // getEndPoint //
+    //-------------//
+    /**
+     * Selector for the left or right ending point of the line
+     * @param side proper horizontal side
+     * @return left point
+     */
+    public PixelPoint getEndPoint (HorizontalSide side);
 
     //-------//
     // getId //

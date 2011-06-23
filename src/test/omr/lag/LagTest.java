@@ -61,10 +61,10 @@ public class LagTest
 
     public void testGetRectangleCendroidEmpty ()
     {
-        MySection s2 = hLag.createSection(180, new Run(100, 10, 127));
+        MySection      s2 = hLag.createSection(180, new Run(100, 10, 127));
 
         PixelRectangle roi = new PixelRectangle(0, 0, 20, 20);
-        Point     pt = null;
+        Point          pt = null;
 
         pt = s2.getRectangleCentroid(roi);
         System.out.println("roi=" + roi + " pt=" + pt);
@@ -392,9 +392,12 @@ public class LagTest
     {
         assertEquals(
             "Bad Bounds",
-            s.getBounds(),
+            s.getOrientedBounds(),
             new Rectangle(100, 180, 21, 2));
-        assertEquals("Bad Centroid", s.getCentroid(), new Point(109, 180));
+        assertEquals(
+            "Bad Centroid",
+            s.getCentroid(),
+            s.getGraph().switchRef(new Point(109, 180), null));
         assertTrue("Bad Containment", s.contains(100, 180));
         assertFalse("Bad Containment", s.contains(100, 181));
         assertTrue("Bad Containment", s.contains(101, 181));
@@ -421,7 +424,7 @@ public class LagTest
         Run run = new Run(start, length, 127);
 
         table.getSequence(alignment)
-            .add(run);
+             .add(run);
 
         return run;
     }
@@ -440,7 +443,7 @@ public class LagTest
         System.out.println(section.toString());
 
         //        System.out.println ("getRunAt(0)=" + section.getRunAt(0));
-        System.out.println("getBounds=" + section.getBounds());
+        System.out.println("getOrientedBounds=" + section.getOrientedBounds());
         System.out.println("getCentroid=" + section.getCentroid());
         System.out.println("getContourBox=" + section.getContourBox());
         System.out.println("getFirstAdjacency=" + section.getFirstAdjacency());

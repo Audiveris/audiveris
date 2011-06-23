@@ -107,14 +107,12 @@ public class BasicStick
 
     public boolean isExtensionOf (Stick  other,
                                   int    maxDeltaCoord,
-                                  int    maxDeltaPos,
-                                  double maxDeltaSlope)
+                                  int    maxDeltaPos)
     {
         return alignment.isExtensionOf(
             other,
             maxDeltaCoord,
-            maxDeltaPos,
-            maxDeltaSlope);
+            maxDeltaPos);
     }
 
     public int getFirstPos ()

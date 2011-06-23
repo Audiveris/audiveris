@@ -14,6 +14,7 @@ package omr.sheet;
 import omr.log.Logger;
 
 import omr.util.BrokenLine;
+import omr.util.VerticalSide;
 
 import net.jcip.annotations.NotThreadSafe;
 
@@ -36,27 +37,14 @@ public class SystemBoundary
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(SystemBoundary.class);
 
-    //~ Enumerations -----------------------------------------------------------
-
-    /** Enum to specify the north or south side of the system boundary */
-    public static enum Side {
-        //~ Enumeration constant initializers ----------------------------------
-
-
-        /** North boundary */
-        NORTH,
-        /** South boundary */
-        SOUTH;
-    }
-
     //~ Instance fields --------------------------------------------------------
 
     /** Related system */
     private final SystemInfo system;
 
     /** The north and south limits */
-    private final EnumMap<Side, BrokenLine> limits = new EnumMap<Side, BrokenLine>(
-        Side.class);
+    private final EnumMap<VerticalSide, BrokenLine> limits = new EnumMap<VerticalSide, BrokenLine>(
+        VerticalSide.class);
 
     /** Handling of the SystemBoundary is delegated to a Polygon */
     private final Polygon polygon = new Polygon();
@@ -82,8 +70,8 @@ public class SystemBoundary
         }
 
         this.system = system;
-        limits.put(Side.NORTH, north);
-        limits.put(Side.SOUTH, south);
+        limits.put(VerticalSide.TOP, north);
+        limits.put(VerticalSide.BOTTOM, south);
 
         buildPolygon();
 
@@ -112,10 +100,10 @@ public class SystemBoundary
     //----------//
     /**
      * Report the broken line on provided side
-     * @param side the desired side (NORTH or SOUTH)
+     * @param side the desired side (TOP or BOTTOM)
      * @return the desired limit
      */
-    public BrokenLine getLimit (Side side)
+    public BrokenLine getLimit (VerticalSide side)
     {
         return limits.get(side);
     }
@@ -158,7 +146,7 @@ public class SystemBoundary
                         boolean  editable)
     {
         Graphics2D g2 = (Graphics2D) g;
-        int        radius = limits.get(Side.NORTH)
+        int        radius = limits.get(VerticalSide.TOP)
                                   .getStickyDistance();
 
         Color      oldColor = g.getColor();
@@ -191,8 +179,8 @@ public class SystemBoundary
     public String toString ()
     {
         return "{Boundary" + " system#" + system.getId() + " north:" +
-               limits.get(Side.NORTH) + " south:" + limits.get(Side.SOUTH) +
-               "}";
+               limits.get(VerticalSide.TOP) + " south:" +
+               limits.get(VerticalSide.BOTTOM) + "}";
     }
 
     //--------//
@@ -216,14 +204,14 @@ public class SystemBoundary
         polygon.reset();
 
         // North
-        for (Point point : limits.get(Side.NORTH)
+        for (Point point : limits.get(VerticalSide.TOP)
                                  .getPoints()) {
             polygon.addPoint(point.x, point.y);
         }
 
         // South (in reverse order)
         List<Point> reverse = new ArrayList<Point>(
-            limits.get(Side.SOUTH).getPoints());
+            limits.get(VerticalSide.BOTTOM).getPoints());
         Collections.reverse(reverse);
 
         for (Point point : reverse) {

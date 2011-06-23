@@ -11,11 +11,9 @@
 // </editor-fold>
 package omr.sheet.grid;
 
-import omr.glyph.facets.Stick;
-
 import omr.log.Logger;
 
-import omr.score.common.PixelPoint;
+import omr.util.HorizontalSide;
 
 import java.util.List;
 
@@ -109,7 +107,7 @@ public class SystemFrame
             BarInfo sysBar = null;
 
             for (StaffInfo staff : staves) {
-                BarInfo staffBar = staff.getLeftBar();
+                BarInfo staffBar = staff.getBar(HorizontalSide.LEFT);
 
                 if (sysBar == null) {
                     sysBar = staffBar;
@@ -146,68 +144,6 @@ public class SystemFrame
     public List<StaffInfo> getStaves ()
     {
         return staves;
-    }
-
-    //--------------//
-    // alignEndings //
-    //--------------//
-    /**
-     * Based on retrieved left barline, adjust start point of each staff line.
-     * We need a precise point in x (from barline) and in y (from staff line).
-     */
-    public void alignEndings ()
-    {
-//        if (leftBar == null) {
-//            return;
-//        }
-
-        Stick leftStick = leftBar.getRightStick();
-
-        for (StaffInfo staff : staves) {
-            double leftSlope = staff.getMeanLeftSlope();
-            int    staffLeftY = (staff.getFirstLine().getLeftPoint().y +
-                                staff.getLastLine().getLeftPoint().y) / 2;
-            int    staffLeftX = leftStick.getAbsoluteLine()
-                                         .xAt(staffLeftY);
-
-            Stick  rightStick = staff.getRightBar()
-                                     .getLeftStick();
-
-            double rightSlope = staff.getMeanRightSlope();
-            int    staffRightY = (staff.getFirstLine().getRightPoint().y +
-                                 staff.getLastLine().getRightPoint().y) / 2;
-            int    staffRightX = rightStick.getAbsoluteLine()
-                                           .xAt(staffLeftY);
-
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "staff#" + staff.getId() + " leftX:" + staffLeftX +
-                    " leftY:" + staffLeftY + " leftSlope: " +
-                    (float) leftSlope + " rightX:" + staffRightX + " rightY:" +
-                    staffRightY + " rightSlope: " + (float) rightSlope);
-            }
-
-            for (LineInfo l : staff.getLines()) {
-                FilamentLine line = (FilamentLine) l;
-                PixelPoint   leftPt = line.getLeftPoint();
-                double       leftY = leftPt.y -
-                                     ((leftPt.x - staffLeftX) * leftSlope);
-                double       leftX = leftStick.getAbsoluteLine()
-                                              .xAt(leftY);
-                PixelPoint   rightPt = line.getRightPoint();
-                double       rightY = rightPt.y -
-                                      ((rightPt.x - staffRightX) * rightSlope);
-                double       rightX = rightStick.getAbsoluteLine()
-                                                .xAt(rightY);
-                line.setEndingPoints(
-                    new PixelPoint(
-                        (int) Math.rint(leftX),
-                        (int) Math.rint(leftY)),
-                    new PixelPoint(
-                        (int) Math.rint(rightX),
-                        (int) Math.rint(rightY)));
-            }
-        }
     }
 
     //----------//

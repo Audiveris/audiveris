@@ -248,6 +248,7 @@ public class RubberPanel
     public Rectangle getSelectedRectangle ()
     {
         if (locationService == null) {
+            ///logger.warning("No locationService for " + this);
             return null;
         }
 
@@ -333,15 +334,8 @@ public class RubberPanel
             }
 
             if (event instanceof LocationEvent) {
-                LocationEvent   locationEvent = (LocationEvent) event;
-                final Rectangle rect = getEventRectangle(locationEvent);
-                SwingUtilities.invokeLater(
-                    new Runnable() {
-                            public void run ()
-                            {
-                                showFocusLocation(rect, false);
-                            }
-                        });
+                LocationEvent locationEvent = (LocationEvent) event;
+                showFocusLocation(getEventRectangle(locationEvent), false);
             }
         } catch (Exception ex) {
             logger.warning(getClass().getName() + " onEvent error", ex);
@@ -431,16 +425,13 @@ public class RubberPanel
     public void showFocusLocation (final Rectangle rect,
                                    final boolean   centered)
     {
-        // Modify the rubber accordingly
-        if (rubber != null) {
-            rubber.resetRectangle(rect);
-        }
-
-        updatePreferredSize();
-
-        Rectangle vr = getVisibleRect();
+        setPreferredSize(zoom.scaled(getModelSize()));
+        revalidate();
+        repaint();
 
         if (rect != null) {
+            rubber.resetRectangle(rect);
+
             // Check whether the rectangle is fully visible,
             // if not, scroll so as to make (most of) it visible
             Rectangle scaledRect = zoom.scaled(rect);
@@ -449,6 +440,7 @@ public class RubberPanel
                 scaledRect.y + (scaledRect.height / 2));
 
             if (centered) {
+                Rectangle vr = getVisibleRect();
                 scaledRect = new Rectangle(
                     center.x - (vr.width / 2),
                     center.y - (vr.height / 2),
@@ -457,9 +449,8 @@ public class RubberPanel
             } else {
                 int margin = constants.focusMargin.getValue();
 
-                // Workaround
                 if (margin == 0) {
-                    scaledRect.grow(1, 1);
+                    scaledRect.grow(1, 1); // Workaround
                 } else {
                     scaledRect.grow(margin, margin);
                 }
@@ -467,8 +458,6 @@ public class RubberPanel
 
             scrollRectToVisible(scaledRect);
         }
-
-        repaint();
     }
 
     //--------------//
@@ -482,8 +471,11 @@ public class RubberPanel
     @Implement(ChangeListener.class)
     public void stateChanged (ChangeEvent e)
     {
-        // Force a redisplay
+        // Force a redisplay?
+        //        if (isShowing()) {
         showFocusLocation(getSelectedRectangle(), true);
+
+        //        }
     }
 
     //-----------//
@@ -495,11 +487,6 @@ public class RubberPanel
      */
     public void subscribe ()
     {
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                getClass().getName() + " ZP subscribing to " + locationClass);
-        }
-
         // Subscribe to location events
         if (locationService != null) {
             locationService.subscribeStrongly(locationClass, this);
@@ -552,12 +539,6 @@ public class RubberPanel
      */
     public void unsubscribe ()
     {
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                getClass().getName() + " ZP unsubscribing from " +
-                locationClass);
-        }
-
         // Unsubscribe to location events
         if (locationService != null) {
             locationService.unsubscribe(locationClass, this);
@@ -633,6 +614,8 @@ public class RubberPanel
                 // repaint a view, while some processing is taking place ...
                 ///logger.warning("RubberPanel paintComponent failed", ex);
                 repaint(); // To trigger another painting later ...
+            } catch (Throwable ex) {
+                logger.warning("RubberPanel paintComponent ", ex);
             } finally {
                 // Finally the rubber, now that everything else has been drawn
                 if (rubber != null) {
@@ -657,15 +640,6 @@ public class RubberPanel
     protected void render (Graphics2D g)
     {
         // Empty by default
-    }
-
-    //---------------------//
-    // updatePreferredSize //
-    //---------------------//
-    private void updatePreferredSize ()
-    {
-        setPreferredSize(zoom.scaled(getModelSize()));
-        revalidate();
     }
 
     //~ Inner Classes ----------------------------------------------------------

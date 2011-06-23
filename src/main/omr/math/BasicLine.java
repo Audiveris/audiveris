@@ -407,7 +407,7 @@ public class BasicLine
         if (a != 0d) {
             return -((b * y) + c) / a;
         } else {
-            throw new RuntimeException("Line is horizontal");
+            throw new NonInvertibleLineException("Line is horizontal");
         }
     }
 
@@ -431,7 +431,7 @@ public class BasicLine
         if (b != 0d) {
             return ((-a * x) - c) / b;
         } else {
-            throw new RuntimeException("Line is vertical");
+            throw new NonInvertibleLineException("Line is vertical");
         }
     }
 

@@ -235,10 +235,12 @@ public class SheetAssembly
     //------------//
     public void addRunsTab (RunsTable table)
     {
-        addViewTab(
-            table.getName(),
-            new ScrollView(new RunsTableView(table)),
-            null);
+        RubberPanel view = new RunsTableView(
+            table,
+            sheet.getSelectionService());
+        view.setName(table.getName());
+        view.setPreferredSize(table.getDimension());
+        addViewTab(table.getName(), new ScrollView(view), null);
     }
 
     //------------//
@@ -273,11 +275,11 @@ public class SheetAssembly
             }
         }
 
+        // Register the component
+        tabs.put(sv.getComponent(), new ViewTab(label, boardsPane, sv));
+
         // Actually insert the related Swing tab
         viewsPane.addTab(label, sv.getComponent());
-
-        // Add a new one
-        tabs.put(sv.getComponent(), new ViewTab(label, boardsPane, sv));
 
         // Select this new tab
         viewsPane.setSelectedComponent(sv.getComponent());
@@ -405,6 +407,12 @@ public class SheetAssembly
     {
         ViewTab currentTab = getCurrentViewTab();
 
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                "SheetAssembly stateChanged previousTab:" + previousTab +
+                " currentTab:" + currentTab);
+        }
+
         if (currentTab != previousTab) {
             if (previousTab != null) {
                 previousTab.deselected();
@@ -422,7 +430,7 @@ public class SheetAssembly
     // getCurrentViewTab //
     //-------------------//
     /**
-     * Report the ViewTab currentrly selected, if any
+     * Report the ViewTab currently selected, if any
      * @return the current ViewTab, or null
      */
     private ViewTab getCurrentViewTab ()
@@ -533,7 +541,7 @@ public class SheetAssembly
             if (logger.isFineEnabled()) {
                 logger.fine(
                     "SheetAssembly: " + sheet.getId() +
-                    " viewTabDeselected for " + this);
+                    " viewTab.deselected for " + this);
             }
 
             // Disconnection of events
@@ -574,7 +582,8 @@ public class SheetAssembly
             if (logger.isFineEnabled()) {
                 logger.fine(
                     "SheetAssembly: " + sheet.getId() +
-                    " viewTabSelected for " + this);
+                    " viewTabSelected for " + this + " dim:" +
+                    scrollView.getView().getPreferredSize());
             }
 
             // Link rubber with proper view
@@ -587,10 +596,10 @@ public class SheetAssembly
 
             // Restore display of proper context
             if (logger.isFineEnabled()) {
-                logger.fine(this + " visible:" + component.isVisible());
+                logger.fine(this + " showing:" + component.isShowing());
             }
 
-            if (component.isVisible()) {
+            if (component.isShowing()) {
                 displayBoards();
             }
 
@@ -616,17 +625,11 @@ public class SheetAssembly
                                        .getValue();
                 final int   hori = prev.getHorizontalScrollBar()
                                        .getValue();
-                SwingUtilities.invokeLater(
-                    new Runnable() {
-                            public void run ()
-                            {
-                                JScrollPane scrollPane = scrollView.getComponent();
-                                scrollPane.getVerticalScrollBar()
-                                          .setValue(vert);
-                                scrollPane.getHorizontalScrollBar()
-                                          .setValue(hori);
-                            }
-                        });
+                JScrollPane scrollPane = scrollView.getComponent();
+                scrollPane.getVerticalScrollBar()
+                          .setValue(vert);
+                scrollPane.getHorizontalScrollBar()
+                          .setValue(hori);
             }
         }
 

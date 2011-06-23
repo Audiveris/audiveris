@@ -35,6 +35,8 @@ import omr.sheet.grid.StaffManager;
 
 import omr.step.StepException;
 
+import omr.stick.Filament;
+import static omr.util.HorizontalSide.*;
 import omr.util.Implement;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -42,9 +44,8 @@ import net.jcip.annotations.NotThreadSafe;
 import java.util.*;
 
 /**
- * Class <code>BarsChecker</code> is a (package private) companion of class
- * {@link SystemsBuilder}, dedicated to physical checks of vertical sticks that
- * are candidates for barlines.
+ * Class <code>BarsChecker</code> is dedicated to physical checks of vertical
+ * sticks that are candidates for barlines.
  *
  * @author Hervé Bitteur
  */
@@ -98,7 +99,7 @@ public class BarsChecker
     //~ Instance fields --------------------------------------------------------
 
     /**
-     * true for rough tests (when retrieving staff frames),
+     * true for rough tests (when retrieving staff grid),
      * false for precise tests (when retrieving measures)
      */
     private boolean rough;
@@ -111,6 +112,9 @@ public class BarsChecker
 
     /** Related vertical lag */
     private final GlyphLag lag;
+
+    /** Expected bars slope */
+    private final double expectedSlope;
 
     /** Related staves */
     private final StaffManager staffManager;
@@ -131,15 +135,18 @@ public class BarsChecker
      *
      * @param sheet the sheet to process
      * @param lag the sheet vertical lag
+     * @param expectedSlope expected slope for sticks
      * @param rough true for rough tests (when retrieving staff frames),
      * false for precise tests
      */
     public BarsChecker (Sheet    sheet,
                         GlyphLag lag,
+                        double   expectedSlope,
                         boolean  rough)
     {
         this.sheet = sheet;
         this.lag = lag;
+        this.expectedSlope = expectedSlope;
         this.rough = rough;
 
         scale = sheet.getScale();
@@ -194,38 +201,25 @@ public class BarsChecker
      * should be improved), to provide the initial collection of good barlines
      * candidates.
      *
+     * @param sticks the collection of candidate sticks
      * @throws StepException Raised when processing goes wrong
      */
-    public void retrieveCandidates ()
+    public void retrieveCandidates (Collection<?extends Stick> sticks)
         throws StepException
     {
-        // Retrieve (vertical) sticks
-        VerticalArea barsArea = new VerticalArea(
-            sheet,
-            lag,
-            scale.toPixels(constants.maxBarThickness));
-        //
-        //        // Register these sticks as standard lag glyphs
-        //        for (Stick stick : barsArea.getSticks()) {
-        //            int oldId = stick.getId();
-        //            lag.addGlyph(stick);
-        //
-        //            if (stick.getId() != oldId) {
-        //                logger.info(
-        //                    "Stick #" + oldId + " redefined as #" + stick.getId());
-        //            }
-        //        }
-
-        // Sort bar candidates according to their abscissa
-        Collections.sort(barsArea.getSticks(), Stick.midPosComparator);
+        // Sort candidates according to their abscissa
+        List<Stick> sortedSticks = new ArrayList<Stick>(sticks);
+        Collections.sort(sortedSticks, Stick.midPosComparator);
 
         double minResult = constants.minCheckResult.getValue();
 
         // Check each candidate stick in turn
-        for (Stick stick : barsArea.getSticks()) {
+        for (Stick stick : sortedSticks) {
             // Allocate the candidate context, and pass the whole check suite
             GlyphContext context = new GlyphContext(stick);
-            double       res = suite.pass(context);
+            initializeContext(context); // Initialization before any check
+
+            double res = suite.pass(context);
 
             if (logger.isFineEnabled()) {
                 logger.fine("suite => " + res + " for " + stick);
@@ -289,6 +283,26 @@ public class BarsChecker
         return meanWidth > maxThinWidth;
     }
 
+    //-------------------//
+    // initializeContext //
+    //-------------------//
+    private void initializeContext (GlyphContext context)
+    {
+        Stick     stick = context.stick;
+        StaffInfo startStaff = staffManager.getStaffAt(stick.getStartPoint());
+        StaffInfo stopStaff = staffManager.getStaffAt(stick.getStopPoint());
+
+        // Remember top & bottom areas
+        context.topArea = staffManager.getIndexOf(startStaff);
+        context.bottomArea = staffManager.getIndexOf(stopStaff);
+
+        // Check whether this stick embraces more than one staff
+        context.isPartDefining = context.topArea != context.bottomArea;
+
+        // Remember if this is a thick stick
+        context.isThick = isThickBar(stick);
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
     //--------------//
@@ -301,8 +315,8 @@ public class BarsChecker
     {
         //~ Instance fields ----------------------------------------------------
 
-        final int top;
-        final int bot;
+        public final int top;
+        public final int bot;
 
         //~ Constructors -------------------------------------------------------
 
@@ -324,6 +338,9 @@ public class BarsChecker
 
         /** The stick being checked */
         Stick stick;
+
+        /** Indicates a part-defining stick (embracing more than one staff) */
+        boolean isPartDefining;
 
         /** Indicates a thick bar stick */
         boolean isThick;
@@ -375,14 +392,15 @@ public class BarsChecker
             super("Bar", constants.minCheckResult.getValue());
 
             // Be very careful with check order, because of side-effects
-            add(1, new TopCheck()); // Side-effect: may set topStaff
-            add(1, new BottomCheck()); // Side-effect: may set botStaff
-            add(1, new HeightDiffCheck());
+            // topArea, bottomArea, isPartDefining, isThick are already set
+            add(1, new TopCheck()); // set topStaff?
+            add(1, new BottomCheck()); // set botStaff?
             add(1, new LeftCheck());
             add(1, new RightCheck());
+            add(1, new HeightDiffCheck());
+            add(1, new AnchorCheck());
 
             if (!rough) {
-                add(1, new AnchorCheck());
                 add(1, new TopLeftChunkCheck());
                 add(1, new TopRightChunkCheck());
                 add(1, new BottomLeftChunkCheck());
@@ -422,19 +440,30 @@ public class BarsChecker
         protected double getValue (GlyphContext context)
         {
             Stick stick = context.stick;
-            context.isThick = isThickBar(stick);
 
-            if (context.isThick) {
-                if ((context.topStaff != -1) && (context.botStaff != -1)) {
+            if (rough) {
+                if (context.isPartDefining) {
                     return 1;
+                } else {
+                    if ((context.topStaff != -1) && (context.botStaff != -1)) {
+                        return 1;
+                    }
                 }
+
+                return 0;
             } else {
-                if ((context.topStaff != -1) || (context.botStaff != -1)) {
-                    return 1;
+                if (context.isThick) {
+                    if ((context.topStaff != -1) && (context.botStaff != -1)) {
+                        return 1;
+                    }
+                } else {
+                    if ((context.topStaff != -1) || (context.botStaff != -1)) {
+                        return 1;
+                    }
                 }
-            }
 
-            return 0;
+                return 0;
+            }
         }
     }
 
@@ -451,10 +480,8 @@ public class BarsChecker
             super(
                 "Bottom",
                 "Check that bottom of stick is close to bottom of staff",
-                rough ? constants.maxStaffShiftDyLowRough
-                                : constants.maxStaffShiftDyLow,
-                rough ? constants.maxStaffShiftDyHighRough
-                                : constants.maxStaffShiftDyHigh,
+                constants.maxStaffShiftDyLow,
+                constants.maxStaffShiftDyHigh,
                 false,
                 null);
         }
@@ -466,19 +493,27 @@ public class BarsChecker
         protected double getValue (GlyphContext context)
         {
             Stick      stick = context.stick;
-            PixelPoint stop = new PixelPoint(
-                stick.getMidPos(),
-                stick.getStop());
+            PixelPoint stop = stick.getStopPoint();
 
             // Which staff area contains the bottom of the stick?
             StaffInfo staff = staffManager.getStaffAt(stop);
-            context.bottomArea = staffManager.getIndexOf(staff);
 
             // How far are we from the stop of the staff?
             int    staffBottom = staff.getLastLine()
                                       .yAt(stop.x);
             double dy = sheet.getScale()
                              .pixelsToFrac(Math.abs(staffBottom - stop.y));
+
+            // Change limits according to rough & partDefining
+            if (rough && context.isPartDefining) {
+                setLowHigh(
+                    constants.maxStaffShiftDyLowRough,
+                    constants.maxStaffShiftDyHighRough);
+            } else {
+                setLowHigh(
+                    constants.maxStaffShiftDyLow,
+                    constants.maxStaffShiftDyHigh);
+            }
 
             // Side-effect
             if (dy <= getLow()) {
@@ -497,9 +532,6 @@ public class BarsChecker
     {
         //~ Instance fields ----------------------------------------------------
 
-        Scale.Fraction maxBarThickness = new Scale.Fraction(
-            1.0,
-            "Maximum thickness of an interesting vertical stick");
         Scale.Fraction chunkWidth = new Scale.Fraction(
             0.3,
             "Width of box to look for chunks");
@@ -528,13 +560,13 @@ public class BarsChecker
             0.4,
             "High Maximum difference between a bar length and min staff height");
         Scale.Fraction maxStaffDHeightHighRough = new Scale.Fraction(
-            2,
+            1,
             "Rough high Maximum difference between a bar length and min staff height");
         Scale.Fraction maxStaffDHeightLow = new Scale.Fraction(
             0.2,
             "Low Maximum difference between a bar length and min staff height");
         Scale.Fraction maxStaffDHeightLowRough = new Scale.Fraction(
-            1,
+            0.5,
             "Rough low Maximum difference between a bar length and min staff height");
         Scale.Fraction minStaffDxHigh = new Scale.Fraction(
             0,
@@ -554,6 +586,9 @@ public class BarsChecker
         Check.Grade    minCheckResult = new Check.Grade(
             0.50,
             "Minimum result for suite of check");
+        Constant.Ratio minStaffCountForLongBar = new Constant.Ratio(
+            2,
+            "Minimum length for long bars, stated in number of staff heights");
         Constant.Ratio booleanThreshold = new Constant.Ratio(
             0.5,
             "* DO NOT EDIT * - switch between true & false for a boolean");
@@ -757,14 +792,22 @@ public class BarsChecker
         @Implement(Check.class)
         protected double getValue (GlyphContext context)
         {
-            Stick stick = context.stick;
-            int   x = stick.getMidPos();
-            int   dist = Integer.MAX_VALUE;
+            Stick  stick = context.stick;
+            double dist = Double.MAX_VALUE;
 
             // Check wrt every staff in the stick getRange
             for (int i = context.topArea; i <= context.bottomArea; i++) {
-                StaffInfo staff = staffManager.getStaff(i);
-                dist = Math.min(dist, x - staff.getLeft());
+                StaffInfo  staff = staffManager.getStaff(i);
+                PixelPoint top = staff.getFirstLine()
+                                      .getEndPoint(LEFT);
+                PixelPoint bot = staff.getLastLine()
+                                      .getEndPoint(LEFT);
+                int        y = (top.y + bot.y) / 2;
+                double     x = (stick instanceof Filament)
+                               ? ((Filament) stick).positionAt(y)
+                               : stick.getAbsoluteLine()
+                                      .xAt(y);
+                dist = Math.min(dist, x - staff.getAbscissa(LEFT));
             }
 
             return sheet.getScale()
@@ -797,14 +840,22 @@ public class BarsChecker
         @Implement(Check.class)
         protected double getValue (GlyphContext context)
         {
-            Stick stick = context.stick;
-            int   x = stick.getMidPos();
-            int   dist = Integer.MAX_VALUE;
+            Stick  stick = context.stick;
+            double dist = Double.MAX_VALUE;
 
             // Check wrt every staff in the stick getRange
             for (int i = context.topArea; i <= context.bottomArea; i++) {
-                StaffInfo area = staffManager.getStaff(i);
-                dist = Math.min(dist, area.getRight() - x);
+                StaffInfo  staff = staffManager.getStaff(i);
+                PixelPoint top = staff.getFirstLine()
+                                      .getEndPoint(RIGHT);
+                PixelPoint bot = staff.getLastLine()
+                                      .getEndPoint(RIGHT);
+                int        y = (top.y + bot.y) / 2;
+                double     x = (stick instanceof Filament)
+                               ? ((Filament) stick).positionAt(y)
+                               : stick.getAbsoluteLine()
+                                      .xAt(y);
+                dist = Math.min(dist, staff.getAbscissa(RIGHT) - x);
             }
 
             return sheet.getScale()
@@ -825,10 +876,8 @@ public class BarsChecker
             super(
                 "Top",
                 "Check that top of stick is close to top of staff",
-                rough ? constants.maxStaffShiftDyLowRough
-                                : constants.maxStaffShiftDyLow,
-                rough ? constants.maxStaffShiftDyHighRough
-                                : constants.maxStaffShiftDyHigh,
+                constants.maxStaffShiftDyLow,
+                constants.maxStaffShiftDyHigh,
                 false,
                 null);
         }
@@ -840,19 +889,27 @@ public class BarsChecker
         protected double getValue (GlyphContext context)
         {
             Stick      stick = context.stick;
-            PixelPoint start = new PixelPoint(
-                stick.getMidPos(),
-                stick.getStart());
+            PixelPoint start = stick.getStartPoint();
 
             // Which staff area contains the top of the stick?
             StaffInfo staff = staffManager.getStaffAt(start);
-            context.topArea = staffManager.getIndexOf(staff);
 
             // How far are we from the start of the staff?
             int    staffTop = staff.getFirstLine()
                                    .yAt(start.x);
             double dy = sheet.getScale()
                              .pixelsToFrac(Math.abs(staffTop - start.y));
+
+            // Change limits according to rough & partDefining
+            if (rough && context.isPartDefining) {
+                setLowHigh(
+                    constants.maxStaffShiftDyLowRough,
+                    constants.maxStaffShiftDyHighRough);
+            } else {
+                setLowHigh(
+                    constants.maxStaffShiftDyLow,
+                    constants.maxStaffShiftDyHigh);
+            }
 
             // Side-effect
             if (dy <= getLow()) {

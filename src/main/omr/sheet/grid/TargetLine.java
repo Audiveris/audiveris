@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.sheet.grid;
 
+import omr.score.common.PixelPoint;
+import static omr.util.HorizontalSide.*;
+
 import java.awt.geom.Point2D;
 
 /**
@@ -35,6 +38,12 @@ public class TargetLine
     /** Containing staff */
     public final TargetStaff staff;
 
+    /** Sine of raw line angle */
+    private final double sin;
+
+    /** Cosine of raw line angle */
+    private final double cos;
+
     //~ Constructors -----------------------------------------------------------
 
     //------------//
@@ -45,7 +54,7 @@ public class TargetLine
      *
      * @param info the physical information
      * @param y ordinate in containing pag
-     * @param the containing staff
+     * @param staff the containing staff
      */
     public TargetLine (LineInfo    info,
                        int         y,
@@ -56,6 +65,15 @@ public class TargetLine
         this.staff = staff;
 
         id = info.getId();
+
+        // Compute sin & cos values
+        PixelPoint left = info.getEndPoint(LEFT);
+        PixelPoint right = info.getEndPoint(RIGHT);
+        double     dx = right.x - left.x;
+        double     dy = right.y - left.y;
+        double     hypot = Math.hypot(dx, dy);
+        sin = dy / hypot;
+        cos = dx / hypot;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -71,10 +89,13 @@ public class TargetLine
      */
     public Point2D sourceOf (Point2D dst)
     {
-        // Use vertical translation
-        Point2D src = sourceOf(dst.getX());
+        // Use orthogonal projection to line
+        double  dist = dst.getY() - y;
+        Point2D projSrc = sourceOf(dst.getX());
+        double  dx = -dist * sin;
+        double  dy = dist * cos;
 
-        return new Point2D.Double(src.getX(), src.getY() - y + dst.getY());
+        return new Point2D.Double(projSrc.getX() + dx, projSrc.getY() + dy);
     }
 
     //----------//
@@ -91,8 +112,8 @@ public class TargetLine
         int    left = staff.system.left;
         int    right = staff.system.right;
         double xRatio = (dstX - left) / (right - left);
-        double srcX = ((1 - xRatio) * info.getLeftPoint().x) +
-                      (xRatio * info.getRightPoint().x);
+        double srcX = ((1 - xRatio) * info.getEndPoint(LEFT).x) +
+                      (xRatio * info.getEndPoint(RIGHT).x);
         double srcY = info.yAt(srcX);
 
         return new Point2D.Double(srcX, srcY);

@@ -22,6 +22,7 @@ import omr.glyph.facets.BasicStick;
 import omr.glyph.facets.Glyph;
 
 import omr.lag.Section;
+import omr.lag.Sections;
 
 import omr.log.Logger;
 
@@ -340,7 +341,7 @@ public class SlurInspector
             if (logger.isFineEnabled()) {
                 logger.fine(
                     "Built slur #" + newGlyph.getId() + " distance=" +
-                    (float) distance + " sections=" + Section.toString(kept));
+                    (float) distance + Sections.toString(" sections", kept));
 
                 logger.fine(
                     "Fixed large slur #" + oldSlur.getId() + " as smaller #" +

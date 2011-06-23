@@ -158,21 +158,148 @@ public class NaturalSpline
         }
     }
 
-    //--------------//
-    // derivativeAt //
-    //--------------//
+    //------//
+    // xAtY //
+    //------//
     /**
-     * Report the derivative value of the spline at provided abscissa
+     * Report the abscissa value of the spline at provided ordinate
      * (assuming true function)
-     * @param x the provided abscissa
-     * @return the derivative value at this abscissa
+     * @param y the provided ordinate
+     * @return the abscissa value at this ordinate
      */
-    public double derivativeAt (double x)
+    public double xAtY (double y)
     {
         final double[]       buffer = new double[6];
         final Point2D.Double p1 = new Point2D.Double();
         final Point2D.Double p2 = new Point2D.Double();
-        final int            segmentKind = getSegment(x, buffer, p1, p2);
+        final int            segmentKind = getYSegment(y, buffer, p1, p2);
+        final double         t = (y - p1.y) / (p2.y - p1.y);
+        final double         u = 1 - t;
+
+        switch (segmentKind) {
+        case SEG_LINETO :
+            return p1.x + (t * (p2.x - p1.x));
+
+        case SEG_QUADTO : {
+            double cpx = buffer[0];
+
+            return (p1.x * u * u) + (2 * cpx * t * u) + (p2.x * t * t);
+        }
+
+        case SEG_CUBICTO : {
+            double cpx1 = buffer[0];
+            double cpx2 = buffer[2];
+
+            return (p1.x * u * u * u) + (3 * cpx1 * t * u * u) +
+                   (3 * cpx2 * t * t * u) + (p2.x * t * t * t);
+        }
+
+        default :
+            throw new RuntimeException("Illegal segmentKind " + segmentKind);
+        }
+    }
+
+    //----------------//
+    // xDerivativeAtY //
+    //----------------//
+    /**
+     * Report the abscissa derivative value of the spline at provided ordinate
+     * (assuming true function)
+     * @param y the provided ordinate
+     * @return the x derivative value at this ordinate
+     */
+    public double xDerivativeAtY (double y)
+    {
+        final double[]       buffer = new double[6];
+        final Point2D.Double p1 = new Point2D.Double();
+        final Point2D.Double p2 = new Point2D.Double();
+        final int            segmentKind = getYSegment(y, buffer, p1, p2);
+        final double         deltaY = p2.y - p1.y;
+        final double         t = (y - p1.y) / deltaY;
+        final double         u = 1 - t;
+
+        // dx/dy = dx/dt * dt/dy
+        // dt/dy = 1/deltaY
+        switch (segmentKind) {
+        case SEG_LINETO :
+            return (p2.x - p1.x) / deltaY;
+
+        case SEG_QUADTO : {
+            double cpx = buffer[0];
+
+            return ((-2 * p1.x * u) + (2 * cpx * (1 - (2 * t))) +
+                   (2 * p2.x * t)) / deltaY;
+        }
+
+        case SEG_CUBICTO : {
+            double cpx1 = buffer[0];
+            double cpx2 = buffer[2];
+
+            return ((-3 * p1.x * u * u) + (3 * cpx1 * ((u * u) - (2 * u * t))) +
+                   (3 * cpx2 * ((2 * t * u) - (t * t))) + (3 * p2.x * t * t)) / deltaY;
+        }
+
+        default :
+            throw new RuntimeException("Illegal currentSegment " + segmentKind);
+        }
+    }
+
+    //------//
+    // yAtX //
+    //------//
+    /**
+     * Report the ordinate value of the spline at provided abscissa
+     * (assuming true function)
+     * @param x the provided abscissa
+     * @return the ordinate value at this abscissa
+     */
+    public double yAtX (double x)
+    {
+        final double[]       buffer = new double[6];
+        final Point2D.Double p1 = new Point2D.Double();
+        final Point2D.Double p2 = new Point2D.Double();
+        final int            segmentKind = getXSegment(x, buffer, p1, p2);
+        final double         t = (x - p1.x) / (p2.x - p1.x);
+        final double         u = 1 - t;
+
+        switch (segmentKind) {
+        case SEG_LINETO :
+            return p1.y + (t * (p2.y - p1.y));
+
+        case SEG_QUADTO : {
+            double cpy = buffer[1];
+
+            return (p1.y * u * u) + (2 * cpy * t * u) + (p2.y * t * t);
+        }
+
+        case SEG_CUBICTO : {
+            double cpy1 = buffer[1];
+            double cpy2 = buffer[3];
+
+            return (p1.y * u * u * u) + (3 * cpy1 * t * u * u) +
+                   (3 * cpy2 * t * t * u) + (p2.y * t * t * t);
+        }
+
+        default :
+            throw new RuntimeException("Illegal segmentKind " + segmentKind);
+        }
+    }
+
+    //----------------//
+    // yDerivativeAtX //
+    //----------------//
+    /**
+     * Report the ordinate derivative value of the spline at provided abscissa
+     * (assuming true function)
+     * @param x the provided abscissa
+     * @return the y derivative value at this abscissa
+     */
+    public double yDerivativeAtX (double x)
+    {
+        final double[]       buffer = new double[6];
+        final Point2D.Double p1 = new Point2D.Double();
+        final Point2D.Double p2 = new Point2D.Double();
+        final int            segmentKind = getXSegment(x, buffer, p1, p2);
         final double         deltaX = p2.x - p1.x;
         final double         t = (x - p1.x) / deltaX;
         final double         u = 1 - t;
@@ -203,71 +330,30 @@ public class NaturalSpline
         }
     }
 
-    //-----//
-    // yAt //
-    //-----//
-    /**
-     * Report the ordinate value of the spline at provided abscissa
-     * (assuming true function)
-     * @param x the provided abscissa
-     * @return the ordinate value at this abscissa
-     */
-    public double yAt (double x)
-    {
-        final double[]       buffer = new double[6];
-        final Point2D.Double p1 = new Point2D.Double();
-        final Point2D.Double p2 = new Point2D.Double();
-        final int            segmentKind = getSegment(x, buffer, p1, p2);
-        final double         t = (x - p1.x) / (p2.x - p1.x);
-        final double         u = 1 - t;
-
-        switch (segmentKind) {
-        case SEG_LINETO :
-            return p1.y + (t * (p2.y - p1.y));
-
-        case SEG_QUADTO : {
-            double cpy = buffer[1];
-
-            return (p1.y * u * u) + (2 * cpy * t * u) + (p2.y * t * t);
-        }
-
-        case SEG_CUBICTO : {
-            double cpy1 = buffer[1];
-            double cpy2 = buffer[3];
-
-            return (p1.y * u * u * u) + (3 * cpy1 * t * u * u) +
-                   (3 * cpy2 * t * t * u) + (p2.y * t * t * t);
-        }
-
-        default :
-            throw new RuntimeException("Illegal segmentKind " + segmentKind);
-        }
-    }
-
     //---------------------//
     // getCubicDerivatives //
     //---------------------//
     /**
      * Computes the derivatives of natural cubic spline that interpolates the
      * provided knots
-     * @param x the provided n knots
+     * @param z the provided n knots
      * @return the corresponding array of derivative values
      */
-    private static double[] getCubicDerivatives (double[] x)
+    private static double[] getCubicDerivatives (double[] z)
     {
         // Number of segments
-        final int n = x.length - 1;
+        final int n = z.length - 1;
 
         // Compute the derivative at each provided knot
         double[] D = new double[n + 1];
 
         /* Equation to solve:
-           [2 1       ] [D[0]]   [3(x[1] - x[0])  ]
-           |1 4 1     | |D[1]|   |3(x[2] - x[0])  |
+           [2 1       ] [D[0]]   [3(z[1] - z[0])  ]
+           |1 4 1     | |D[1]|   |3(z[2] - z[0])  |
            |  1 4 1   | | .  | = |      .         |
            |    ..... | | .  |   |      .         |
-           |     1 4 1| | .  |   |3(x[n] - x[n-2])|
-           [       1 2] [D[n]]   [3(x[n] - x[n-1])]
+           |     1 4 1| | .  |   |3(z[n] - z[n-2])|
+           [       1 2] [D[n]]   [3(z[n] - z[n-1])]
            by using row operations to convert the matrix to upper triangular
            and then back sustitution.
          */
@@ -281,13 +367,13 @@ public class NaturalSpline
         gamma[n] = 1 / (2 - gamma[n - 1]);
 
         double[] delta = new double[n + 1];
-        delta[0] = 3 * (x[1] - x[0]) * gamma[0];
+        delta[0] = 3 * (z[1] - z[0]) * gamma[0];
 
         for (int i = 1; i < n; i++) {
-            delta[i] = ((3 * (x[i + 1] - x[i - 1])) - delta[i - 1]) * gamma[i];
+            delta[i] = ((3 * (z[i + 1] - z[i - 1])) - delta[i - 1]) * gamma[i];
         }
 
-        delta[n] = ((3 * (x[n] - x[n - 1])) - delta[n - 1]) * gamma[n];
+        delta[n] = ((3 * (z[n] - z[n - 1])) - delta[n - 1]) * gamma[n];
 
         D[n] = delta[n];
 
@@ -297,9 +383,10 @@ public class NaturalSpline
 
         return D;
     }
-    //------------//
-    // getSegment //
-    //------------//
+
+    //-------------//
+    // getXSegment //
+    //-------------//
     /**
      * Retrieve the first segment of the curve that contains the provided
      * abscissa
@@ -309,10 +396,10 @@ public class NaturalSpline
      * @param p2 output: end of segment
      * @return the segment kind
      */
-    private int getSegment (double         x,
-                            double[]       buffer,
-                            Point2D.Double p1,
-                            Point2D.Double p2)
+    private int getXSegment (double         x,
+                             double[]       buffer,
+                             Point2D.Double p1,
+                             Point2D.Double p2)
     {
         PathIterator it = getPathIterator(null);
         double       x1 = 0;
@@ -343,5 +430,53 @@ public class NaturalSpline
 
         // Not found
         throw new RuntimeException("Abscissa not in spline range: " + x);
+    }
+
+    //-------------//
+    // getYSegment //
+    //-------------//
+    /**
+     * Retrieve the first segment of the curve that contains the provided
+     * ordinate
+     * @param y the provided ordinate
+     * @param buffer output
+     * @param p1 output: start of segment
+     * @param p2 output: end of segment
+     * @return the segment kind
+     */
+    private int getYSegment (double         y,
+                             double[]       buffer,
+                             Point2D.Double p1,
+                             Point2D.Double p2)
+    {
+        PathIterator it = getPathIterator(null);
+        double       x1 = 0;
+        double       y1 = 0;
+
+        while (!it.isDone()) {
+            final int    segmentKind = it.currentSegment(buffer);
+            final int    count = countOf(segmentKind);
+            final double x2 = buffer[count - 2];
+            final double y2 = buffer[count - 1];
+
+            if ((segmentKind == SEG_MOVETO) ||
+                (segmentKind == SEG_CLOSE) ||
+                (y > y2)) {
+                // Move to next segment
+                x1 = x2;
+                y1 = y2;
+                it.next();
+            } else {
+                p1.x = x1;
+                p1.y = y1;
+                p2.x = x2;
+                p2.y = y2;
+
+                return segmentKind;
+            }
+        }
+
+        // Not found
+        throw new RuntimeException("Ordinate not in spline range: " + y);
     }
 }

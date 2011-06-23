@@ -140,9 +140,9 @@ public class BasicGlyph
         return recognition.isBar();
     }
 
-    public Rectangle getBounds ()
+    public Rectangle getOrientedBounds ()
     {
-        return geometry.getBounds();
+        return geometry.getOrientedBounds();
     }
 
     public PixelPoint getCentroid ()

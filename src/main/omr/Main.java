@@ -20,7 +20,6 @@ import omr.constant.ConstantSet;
 import omr.log.Logger;
 
 import omr.score.Score;
-import omr.ui.symbol.MusicFont;
 
 import omr.script.Script;
 import omr.script.ScriptManager;
@@ -31,6 +30,7 @@ import omr.step.Stepping;
 import omr.step.Steps;
 
 import omr.ui.MainGui;
+import omr.ui.symbol.MusicFont;
 
 import omr.util.Clock;
 import omr.util.Dumping;
@@ -143,7 +143,11 @@ public class Main
      */
     public static Properties getCliConstants ()
     {
-        return parameters.constants;
+        if (parameters == null) {
+            return null;
+        } else {
+            return parameters.constants;
+        }
     }
 
     //---------------//

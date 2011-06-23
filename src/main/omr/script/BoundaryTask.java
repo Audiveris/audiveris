@@ -12,13 +12,13 @@
 package omr.script;
 
 import omr.sheet.Sheet;
-import omr.sheet.SystemBoundary;
 import omr.sheet.SystemInfo;
 
 import omr.step.Stepping;
 import omr.step.Steps;
 
 import omr.util.BrokenLine;
+import omr.util.VerticalSide;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ public class BoundaryTask
 
     /** The specific side of the system */
     @XmlAttribute(name = "side")
-    private SystemBoundary.Side side;
+    private VerticalSide side;
 
     /** The containing system id */
     @XmlAttribute(name = "system")
@@ -58,9 +58,9 @@ public class BoundaryTask
      * @param side The north or south side of system boundary
      * @param line The modified broken line
      */
-    public BoundaryTask (SystemInfo          system,
-                         SystemBoundary.Side side,
-                         BrokenLine          line)
+    public BoundaryTask (SystemInfo   system,
+                         VerticalSide side,
+                         BrokenLine   line)
     {
         super(system.getSheet());
 

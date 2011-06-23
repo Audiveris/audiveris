@@ -282,8 +282,8 @@ public class PictureLoader
                         images.put(i, img);
 
                         logger.info(
-                            "Loaded image #" + i + " (" + img.getWidth() +
-                            " x " + img.getHeight() + ")");
+                            imgFile.getName() + " Loaded image #" + i + " (" +
+                            img.getWidth() + " x " + img.getHeight() + ")");
                     }
                 }
 

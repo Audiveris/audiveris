@@ -18,6 +18,8 @@ import omr.log.Logger;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
+import omr.stick.Filament;
+
 import java.awt.Graphics2D;
 import java.util.*;
 import java.util.Map.Entry;
@@ -33,6 +35,9 @@ public class LineCluster
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    //    /** Specific application parameters */
+    //    private static final Constants constants = new Constants();
+
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(LineCluster.class);
 
@@ -40,6 +45,9 @@ public class LineCluster
 
     /** Id for debug */
     private final int id;
+
+    /** Interline for this cluster */
+    private final int interline;
 
     /** Ids for lines */
     private int lineId = 0;
@@ -63,13 +71,16 @@ public class LineCluster
      *
      * @param seed the first filament of the cluster
      */
-    public LineCluster (Filament seed)
+    public LineCluster (int          interline,
+                        LineFilament seed)
     {
         if (logger.isFineEnabled()) {
             logger.fine("Creating cluster with F" + seed.getId());
         }
 
+        this.interline = interline;
         this.id = seed.getId();
+
         lines = new TreeMap<Integer, FilamentLine>();
         include(seed, 0);
     }
@@ -153,6 +164,17 @@ public class LineCluster
     public int getId ()
     {
         return id;
+    }
+
+    //--------------//
+    // getInterline //
+    //--------------//
+    /**
+     * @return the interline
+     */
+    public int getInterline ()
+    {
+        return interline;
     }
 
     //-------------//
@@ -303,53 +325,31 @@ public class LineCluster
         return points;
     }
 
+    // containsSID ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    public boolean containsSID (int id)
+    {
+        for (FilamentLine line : lines.values()) {
+            if (line.fil.containsSID(id)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     //---------//
-    // cleanup //
+    // destroy //
     //---------//
     /**
-     * - Remove lines in excess
-     * - Renumber remaining lines counting from zero
-     * @param count the target line count
+     * Remove the link back from filaments to this cluster
      */
-    public void cleanup (int count)
+    public void destroy ()
     {
-        ///logger.info("Cleanup " + this);
-
-        // Pruning
-        while (lines.size() > count) {
-            // Remove the top or bottom line
-            FilamentLine top = lines.get(lines.firstKey());
-            int          topWL = top.fil.trueLength();
-            FilamentLine bot = lines.get(lines.lastKey());
-            int          botWL = bot.fil.trueLength();
-
-            if (topWL < botWL) {
-                lines.remove(lines.firstKey());
-            } else {
-                lines.remove(lines.lastKey());
-            }
+        for (FilamentLine line : lines.values()) {
+            line.fil.setCluster(null, 0);
+            line.fil.getPatterns()
+                    .clear();
         }
-
-        // Renumbering
-        int firstPos = lines.firstKey();
-
-        if (firstPos != 0) {
-            SortedMap<Integer, FilamentLine> newLines = new TreeMap<Integer, FilamentLine>();
-
-            for (Entry<Integer, FilamentLine> entry : lines.entrySet()) {
-                int          pos = entry.getKey();
-                FilamentLine line = entry.getValue();
-                FilamentLine newLine = new FilamentLine(
-                    line.getId(),
-                    pos - firstPos);
-                newLine.include(line);
-                newLines.put(pos - firstPos, newLine);
-            }
-
-            lines = newLines;
-        }
-
-        invalidateCache();
     }
 
     //------------------------//
@@ -363,8 +363,8 @@ public class LineCluster
      * @param index the zero-based line index
      * @return true if there was room for inclusion
      */
-    public boolean includeFilamentByIndex (Filament filament,
-                                           int      index)
+    public boolean includeFilamentByIndex (LineFilament filament,
+                                           int          index)
     {
         final PixelRectangle filBox = filament.getContourBox();
         int                  i = 0;
@@ -374,11 +374,14 @@ public class LineCluster
                 FilamentLine line = entry.getValue();
 
                 // Check for horizontal room
+                // TODO: Should check the resulting thickness !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 for (GlyphSection section : line.fil.getMembers()) {
                     if (section.getContourBox()
                                .intersects(filBox)) {
-                        logger.warning(
-                            "No room for " + filament + " in " + this);
+                        if (logger.isFineEnabled()) {
+                            logger.fine(
+                                "No room for " + filament + " in " + this);
+                        }
 
                         return false;
                     }
@@ -416,6 +419,36 @@ public class LineCluster
         }
     }
 
+    //---------------//
+    // renumberLines //
+    //---------------//
+    /**
+     * Renumber the remaining lines counting from zero
+     */
+    public void renumberLines ()
+    {
+        // Renumbering
+        int firstPos = lines.firstKey();
+
+        if (firstPos != 0) {
+            SortedMap<Integer, FilamentLine> newLines = new TreeMap<Integer, FilamentLine>();
+
+            for (Entry<Integer, FilamentLine> entry : lines.entrySet()) {
+                int          pos = entry.getKey();
+                FilamentLine line = entry.getValue();
+                FilamentLine newLine = new FilamentLine(
+                    line.getId(),
+                    pos - firstPos);
+                newLine.include(line);
+                newLines.put(pos - firstPos, newLine);
+            }
+
+            lines = newLines;
+        }
+
+        invalidateCache();
+    }
+
     //----------//
     // toString //
     //----------//
@@ -424,6 +457,9 @@ public class LineCluster
     {
         StringBuilder sb = new StringBuilder("{Cluster#");
         sb.append(getId());
+
+        sb.append(" interline:")
+          .append(getInterline());
 
         sb.append(" size:")
           .append(getSize());
@@ -436,6 +472,70 @@ public class LineCluster
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //------//
+    // trim //
+    //------//
+    /**
+     * Remove lines in excess
+     * @param count the target line count
+     */
+    public void trim (int count)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("Trim " + this);
+        }
+
+        //        // Determine max true line length in this cluster
+        //        int maxTrueLength = 0;
+        //
+        //        for (FilamentLine line : lines.values()) {
+        //            maxTrueLength = Math.max(maxTrueLength, line.fil.trueLength());
+        //        }
+        //
+        //        int minTrueLength = (int) Math.rint(
+        //            maxTrueLength * constants.minTrueLength.getValue());
+        //
+        //        // Pruning
+        //        for (Iterator<Integer> it = lines.keySet()
+        //                                         .iterator(); it.hasNext();) {
+        //            Integer      key = it.next();
+        //            FilamentLine line = lines.get(key);
+        //
+        //            if (line.fil.trueLength() < minTrueLength) {
+        //                it.remove();
+        //                line.fil.setCluster(null, 0);
+        //                line.fil.getPatterns()
+        //                        .clear();
+        //            }
+        //        }
+
+        // Pruning
+        while (lines.size() > count) {
+            // Remove the top or bottom line
+            FilamentLine top = lines.get(lines.firstKey());
+            int          topWL = top.fil.trueLength();
+            FilamentLine bot = lines.get(lines.lastKey());
+            int          botWL = bot.fil.trueLength();
+            FilamentLine line = null;
+
+            if (topWL < botWL) {
+                line = top;
+                lines.remove(lines.firstKey());
+            } else {
+                line = bot;
+                lines.remove(lines.lastKey());
+            }
+
+            // House keeping
+            line.fil.setCluster(null, 0);
+            line.fil.getPatterns()
+                    .clear();
+        }
+
+        renumberLines();
+        invalidateCache();
     }
 
     //---------//
@@ -458,17 +558,19 @@ public class LineCluster
     //---------//
     /**
      * Include a filament, with all its patterns.
-     * @param filament the filament to include
+     * @param pivot the filament to include
+     * @param pivotPos the imposed position within the cluster
      */
-    private void include (Filament pivot,
-                          int      pivotPos)
+    private void include (LineFilament pivot,
+                          int          pivotPos)
     {
         if (logger.isFineEnabled()) {
             logger.fine(
-                this + " include pivot:" + pivot.getId() + " pos:" + pivotPos);
+                this + " include pivot:" + pivot.getId() + " at pos:" +
+                pivotPos);
         }
 
-        Filament ancestor = pivot.getAncestor();
+        LineFilament ancestor = pivot.getAncestor();
 
         // Loop on all patterns that involve this filament
         for (FilamentPattern pattern : pivot.getPatterns()
@@ -487,9 +589,9 @@ public class LineCluster
 
             // Dispatch content of pattern to proper lines
             for (int i = 0; i < pattern.getCount(); i++) {
-                Filament    fil = pattern.getFilament(i)
-                                         .getAncestor();
-                LineCluster cluster = fil.getCluster();
+                LineFilament fil = pattern.getFilament(i)
+                                          .getAncestor();
+                LineCluster  cluster = fil.getCluster();
 
                 if (cluster == null) {
                     int          pos = i + deltaPos;
@@ -500,9 +602,9 @@ public class LineCluster
                     if (fil != ancestor) {
                         include(fil, pos); // Recursively
                     }
-                } else if (cluster.getAncestor() != this) {
+                } else if (cluster.getAncestor() != this.getAncestor()) {
                     // Need to merge the two clusters
-                    include(cluster, i - fil.getClusterPos() + deltaPos);
+                    include(cluster, (i + deltaPos) - fil.getClusterPos());
                 }
             }
         }
@@ -549,4 +651,17 @@ public class LineCluster
     {
         contourBox = null;
     }
+
+    //    //-----------//
+    //    // Constants //
+    //    //-----------//
+    //    private static final class Constants
+    //        extends ConstantSet
+    //    {
+    //        //~ Instance fields ----------------------------------------------------
+    //
+    //        final Constant.Ratio minTrueLength = new Constant.Ratio(
+    //            0.4,
+    //            "Minimum true length ratio to keep a line in a cluster");
+    //    }
 }

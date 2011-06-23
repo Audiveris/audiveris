@@ -228,6 +228,20 @@ public interface Line
     //~ Inner Classes ----------------------------------------------------------
 
     /**
+     * Specific exception raised when trying to invert a non-invertible line
+     */
+    static class NonInvertibleLineException
+        extends RuntimeException
+    {
+        //~ Constructors -------------------------------------------------------
+
+        NonInvertibleLineException (String message)
+        {
+            super(message);
+        }
+    }
+
+    /**
      * Specific exception raised when trying to use a line with undefined
      * parameters
      */

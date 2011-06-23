@@ -207,6 +207,10 @@ class BasicComposition
     public void addSection (GlyphSection section,
                             Linking      link)
     {
+        if (section == null) {
+            throw new IllegalArgumentException("Cannot add a null section");
+        }
+
         // Nota: We must include the section in the glyph members before
         // linking back the section to the containing glyph.
         // Otherwise, there is a risk of using the glyph box (which depends on

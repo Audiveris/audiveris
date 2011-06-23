@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.sheet.grid.StaffInfo;
 import omr.Main;
 
 import omr.check.Check;
@@ -46,6 +45,7 @@ import omr.selection.GlyphEvent;
 import omr.selection.MouseMovement;
 import omr.selection.UserEvent;
 
+import omr.sheet.grid.StaffInfo;
 import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.SheetPainter;
 
@@ -54,6 +54,8 @@ import omr.step.StepException;
 import omr.step.Steps;
 
 import omr.stick.LineCleaner;
+import omr.stick.SticksBuilder;
+import omr.stick.SticksSource;
 
 import omr.ui.BoardsPane;
 
@@ -142,7 +144,7 @@ public class HorizontalsBuilder
     private GlyphLagView lagView;
 
     /** Horizontals area, with retrieved horizontal sticks */
-    private HorizontalArea horizontalsArea;
+    private SticksBuilder horizontalsArea;
 
     /** The whole list of horizontals (ledgers, legato signs, endings) found */
     private final Horizontals info;
@@ -236,10 +238,13 @@ public class HorizontalsBuilder
         Scale scale = sheet.getScale();
 
         // Retrieve (horizontal) sticks
-        horizontalsArea = new HorizontalArea(
-            sheet,
+        horizontalsArea = new SticksBuilder(
+            sheet.getScale(),
             lag,
-            scale.toPixels(constants.maxThicknessHigh) - 1);
+            new SticksSource(lag.getVertices()),
+            false);
+        horizontalsArea.setMaxThickness(constants.maxThicknessHigh);
+        horizontalsArea.retrieveSticks();
 
         // Recognize horizontals -> ledgers, endings
         retrieveHorizontals();
@@ -516,11 +521,11 @@ public class HorizontalsBuilder
             (stick.getStart() + stick.getStop()) / 2,
             stick.getMidPos());
         final StaffInfo  staff = sheet.getStaffManager()
-                                     .getStaffAt(mid);
+                                      .getStaffAt(mid);
         final int        top = staff.getFirstLine()
-                                   .yAt(mid.x);
+                                    .yAt(mid.x);
         final int        bottom = staff.getLastLine()
-                                      .yAt(mid.x);
+                                       .yAt(mid.x);
         final int        dist = Math.max(top - mid.y, mid.y - bottom);
 
         return sheet.getScale()
@@ -956,7 +961,7 @@ public class HorizontalsBuilder
         // Retrieve the density
         protected double getValue (Stick stick)
         {
-            Rectangle rect = stick.getBounds();
+            Rectangle rect = stick.getOrientedBounds();
             double    area = rect.width * rect.height;
 
             return (double) stick.getWeight() / area;

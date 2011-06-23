@@ -36,12 +36,12 @@ import java.util.List;
 import javax.xml.bind.annotation.*;
 
 /**
- * Class <code>Section</code> is an class to handle a section of contiguous and
+ * Class <code>Section</code> handles a section of contiguous and
  * compatible instances of class {@link Run}.
  *
  * <p> A section does not carry orientation information, only the containing
  * {@link Lag} has this information.  Thus all runs of a given lag (and
- * consequently all sections made of these runs) have the same orientation.
+ * consequently all sections made of these runs) share the same orientation.
  *
  * <ol> <li> Positions increase in parallel with run numbers, so the thickness
  * of a section is defined as the delta between last and first positions, in
@@ -86,23 +86,17 @@ public class Section<L extends Lag, S extends Section<L, S>>
     @XmlElement(name = "run")
     private final List<Run> runs = new ArrayList<Run>();
 
-    /** Bounding rectangle (regardless of orientation) */
-    protected Rectangle bounds;
+    /** Oriented bounding rectangle */
+    protected Rectangle orientedBounds;
 
-    /** Mass center */
-    private Point centroid;
+    /** Absolute mass center */
+    private PixelPoint centroid;
 
-    /** Model contour points, which depend on orientation */
-    private Polygon contour;
+    /** Approximate absolute starting point */
+    private PixelPoint startPoint;
 
-    /** Display contour points, which do not depend on orientation */
-    private PixelRectangle contourBox;
-
-    /** Approximate starting point */
-    private Point startPoint;
-
-    /** Approximate stopping point */
-    private Point stopPoint;
+    /** Approximate absolute stopping point */
+    private PixelPoint stopPoint;
 
     /** Contribution to the foreground */
     private int foreWeight;
@@ -112,6 +106,12 @@ public class Section<L extends Lag, S extends Section<L, S>>
 
     /** Number of pixels, whatever the gray level */
     private int weight;
+
+    /** Absolute contour points */
+    private Polygon contour;
+
+    /** Absolute contour box */
+    private PixelRectangle contourBox;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -131,9 +131,9 @@ public class Section<L extends Lag, S extends Section<L, S>>
     // getAreaCenter //
     //---------------//
     /**
-     * Report the section area center.
+     * Report the section area absolute center.
      *
-     * @return the area center point
+     * @return the area absolute center
      */
     public PixelPoint getAreaCenter ()
     {
@@ -142,31 +142,6 @@ public class Section<L extends Lag, S extends Section<L, S>>
         return new PixelPoint(
             box.x + (box.width / 2),
             box.y + (box.height / 2));
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * Convenient method, to build a string with just the ids of the section
-     * collection
-     *
-     * @param sections the collection of sections
-     * @return the string built
-     */
-    public static String toString (Collection<?extends Section> sections)
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append("[");
-
-        for (Section section : sections) {
-            sb.append('#')
-              .append(section.getId());
-        }
-
-        sb.append("]");
-
-        return sb.toString();
     }
 
     //-----------//
@@ -182,49 +157,33 @@ public class Section<L extends Lag, S extends Section<L, S>>
         return (double) getLength() / (double) getThickness();
     }
 
-    //-----------//
-    // getBounds //
-    //-----------//
-    /**
-     * Return the section bounding rectangle, so please clone it if you want to
-     * modify it afterwards
-     *
-     * @return the section bounding rectangle
-     */
-    public Rectangle getBounds ()
-    {
-        if (bounds == null) {
-            bounds = new Rectangle(graph.switchRef(getContourBox(), null));
-        }
-
-        return bounds;
-    }
-
     //-------------//
     // getCentroid //
     //-------------//
     /**
-     * Return the point which is at the mass center of the section, with all
-     * pixels considered of equal weight.
+     * Return the absolute point which is at the mass center of the section,
+     * with all pixels considered of equal weight.
      *
-     * @return the mass center of the section, as a Point(coord,pos)
+     * @return the mass center of the section, as a absolute point
      */
-    public Point getCentroid ()
+    public PixelPoint getCentroid ()
     {
         if (centroid == null) {
-            centroid = new Point(0, 0);
-
-            int y = firstPos;
+            Point orientedPoint = new Point(0, 0);
+            int   y = firstPos;
 
             for (Run run : runs) {
                 final int length = run.getLength();
-                centroid.y += (length * (2 * y));
-                centroid.x += (length * ((2 * run.getStart()) + length));
+                orientedPoint.y += (length * (2 * y));
+                orientedPoint.x += (length * ((2 * run.getStart()) + length));
                 y++;
             }
 
-            centroid.x /= (2 * getWeight());
-            centroid.y /= (2 * getWeight());
+            orientedPoint.x /= (2 * getWeight());
+            orientedPoint.y /= (2 * getWeight());
+
+            centroid = getGraph()
+                           .switchRef(orientedPoint, null);
 
             if (logger.isFineEnabled()) {
                 logger.fine("Centroid of " + this + " is " + centroid);
@@ -238,17 +197,14 @@ public class Section<L extends Lag, S extends Section<L, S>>
     // getContour //
     //------------//
     /**
-     * Return the polygon that defines the display contour. Beware, this entity
-     * depends on the lag orientation.
+     * Return the absolute polygon that defines the display contour.
      *
-     * @return the perimeter contour
+     * @return the absolute perimeter contour
      */
     public Polygon getContour ()
     {
         if (contour == null) {
-            int pointNb = 4 * getRunNb();
-            contour = new Polygon(new int[pointNb], new int[pointNb], pointNb);
-            computeContour();
+            contour = computeContour();
         }
 
         return contour;
@@ -258,17 +214,15 @@ public class Section<L extends Lag, S extends Section<L, S>>
     // getContourBox //
     //---------------//
     /**
-     * Return a COPY of the bounding box of the display polygon.
+     * Return a COPY of the absolute bounding box.
      * Useful to quickly check if the section needs to be repainted.
      *
-     * @return the bounding contour rectangle box
+     * @return the absolute bounding box
      */
     public PixelRectangle getContourBox ()
     {
         if (contourBox == null) {
-            Rectangle box = getContour()
-                                .getBounds();
-            contourBox = new PixelRectangle(box);
+            contourBox = new PixelRectangle(getContour().getBounds());
         }
 
         return new PixelRectangle(contourBox);
@@ -448,7 +402,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
      */
     public int getLength ()
     {
-        return getBounds().width;
+        return getOrientedBounds().width;
     }
 
     //----------//
@@ -488,6 +442,25 @@ public class Section<L extends Lag, S extends Section<L, S>>
     public int getMeanRunLength ()
     {
         return weight / getRunNb();
+    }
+
+    //-------------------//
+    // getOrientedBounds //
+    //-------------------//
+    /**
+     * Return the section oriented bounding rectangle, so please clone it if you
+     * want to modify it afterwards
+     *
+     * @return the section bounding rectangle
+     */
+    public Rectangle getOrientedBounds ()
+    {
+        if (orientedBounds == null) {
+            orientedBounds = new Rectangle(
+                graph.switchRef(getContourBox(), null));
+        }
+
+        return orientedBounds;
     }
 
     //----------//
@@ -542,28 +515,28 @@ public class Section<L extends Lag, S extends Section<L, S>>
      */
     public int getStart ()
     {
-        return getBounds().x;
+        return getOrientedBounds().x;
     }
 
     //---------------//
     // getStartPoint //
     //---------------//
     /**
-     * Return the approximate point which starts the section (left point for
-     * horizontal section, top point for vertical section)
-     * @return the approximate starting point
+     * Return the approximate absolute point which starts the section
+     * (left point for horizontal section, top point for vertical section)
+     * @return the approximate absolute starting point
      */
     public PixelPoint getStartPoint ()
     {
         if (startPoint == null) {
-            Rectangle roi = new Rectangle(getBounds());
+            Rectangle roi = new Rectangle(getOrientedBounds());
             roi.width = 3;
 
             Point pt = getRectangleCentroid(roi);
-            startPoint = new Point(getStart(), pt.y);
+            startPoint = graph.switchRef(new Point(getStart(), pt.y), null);
         }
 
-        return graph.switchRef(startPoint, null);
+        return startPoint;
     }
 
     //---------//
@@ -584,22 +557,22 @@ public class Section<L extends Lag, S extends Section<L, S>>
     // getStopPoint //
     //--------------//
     /**
-     * Return the approximate point which stops the section (right point for
-     * horizontal section, bottom point for vertical section)
-     * @return the approximate stopping point
+     * Return the approximate absolute point which stops the section
+     * (right point for horizontal section, bottom point for vertical section)
+     * @return the approximate absolute stopping point
      */
     public PixelPoint getStopPoint ()
     {
         if (stopPoint == null) {
-            Rectangle roi = new Rectangle(getBounds());
+            Rectangle roi = new Rectangle(getOrientedBounds());
             roi.x += (roi.width - 3);
             roi.width = 3;
 
             Point pt = getRectangleCentroid(roi);
-            stopPoint = new Point(getStop(), pt.y);
+            stopPoint = graph.switchRef(new Point(getStop(), pt.y), null);
         }
 
-        return graph.switchRef(stopPoint, null);
+        return stopPoint;
     }
 
     //--------------//
@@ -612,7 +585,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
      */
     public int getThickness ()
     {
-        return getBounds().height;
+        return getOrientedBounds().height;
     }
 
     //----------------//
@@ -628,13 +601,13 @@ public class Section<L extends Lag, S extends Section<L, S>>
     public int getThicknessAt (int coord,
                                int probeWidth)
     {
-        getBounds();
+        getOrientedBounds();
 
         PixelRectangle roi = new PixelRectangle(
             coord,
-            bounds.y,
+            orientedBounds.y,
             0,
-            bounds.height);
+            orientedBounds.height);
         roi.grow(probeWidth / 2, 0);
 
         // Use a large-enough collector
@@ -700,6 +673,12 @@ public class Section<L extends Lag, S extends Section<L, S>>
     //----------------------//
     // getRectangleCentroid //
     //----------------------//
+    /**
+     * Report the absolute centroid of the section pixels found in the provided
+     * absolute region of interest
+     * @param roi the absolute rectangle that defines the region of interest
+     * @return the absolute centroid
+     */
     public PixelPoint getRectangleCentroid (PixelRectangle roi)
     {
         if (roi == null) {
@@ -794,7 +773,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
                              int pos)
     {
         // First check with the bounding rectangle
-        if (!getBounds()
+        if (!getOrientedBounds()
                  .contains(coord, pos)) {
             return false;
         }
@@ -812,8 +791,8 @@ public class Section<L extends Lag, S extends Section<L, S>>
      * Cumulate in the provided Barycenter the section pixels that are contained
      * in the provided roi Rectangle. If the roi is null, all pixels are
      * cumulated into the barycenter.
-     * @param barycenter
-     * @param roi
+     * @param barycenter the oriented point to populate
+     * @param roi the oriented rectangle of interest
      */
     public void cumulate (Barycenter barycenter,
                           Rectangle  roi)
@@ -960,7 +939,9 @@ public class Section<L extends Lag, S extends Section<L, S>>
      */
     public void drawAscii ()
     {
-        // Determine the bounds
+        System.out.println("Section#" + getId());
+        
+        // Determine the absolute bounds
         Rectangle box = getContourBox();
 
         char[][]  table = allocateTable(box);
@@ -980,8 +961,10 @@ public class Section<L extends Lag, S extends Section<L, S>>
     public static void drawTable (char[][]  table,
                                   Rectangle box)
     {
-        System.out.println("xMin=" + box.x + ", xMax=" + (box.x + box.width));
-        System.out.println("yMin=" + box.y + ", yMax=" + (box.y + box.height));
+        System.out.println(
+            "xMin=" + box.x + ", xMax=" + ((box.x + box.width) - 1));
+        System.out.println(
+            "yMin=" + box.y + ", yMax=" + ((box.y + box.height) - 1));
 
         for (int iy = 0; iy < table.length; iy++) {
             System.out.print((iy + box.y) + ": ");
@@ -1335,20 +1318,26 @@ public class Section<L extends Lag, S extends Section<L, S>>
     //----------------//
     /**
      * Compute the arrays of points needed to draw the section runs. This is
-     * dependent upon the section orientation.
+     * an absolute definition.
      */
-    protected void computeContour ()
+    protected Polygon computeContour ()
     {
-        Polygon p = getContour();
+        final int pointNb = 4 * getRunNb();
+        Polygon   polygon = new Polygon(
+            new int[pointNb],
+            new int[pointNb],
+            pointNb);
 
         // Here, we assume that a section with no graph is vertical
         // This trick is needed when JAXB unmarshalls the section since it needs
         // the contour in order to determine the section position in the set container
         if ((graph == null) || graph.isVertical()) {
-            computeContour(p.ypoints, p.xpoints);
+            computeContour(polygon.ypoints, polygon.xpoints);
         } else {
-            computeContour(p.xpoints, p.ypoints);
+            computeContour(polygon.xpoints, polygon.ypoints);
         }
+
+        return polygon;
     }
 
     //------------------//
@@ -1360,7 +1349,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
      */
     protected SectionSignature computeSignature ()
     {
-        return new SectionSignature(getWeight(), getBounds());
+        return new SectionSignature(getWeight(), getOrientedBounds());
     }
 
     //-----------------//
@@ -1398,7 +1387,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
     //-----------------//
     protected void invalidateCache ()
     {
-        bounds = null;
+        orientedBounds = null;
         centroid = null;
         contour = null;
         contourBox = null;
@@ -1410,10 +1399,10 @@ public class Section<L extends Lag, S extends Section<L, S>>
     // getRectangleCentroid //
     //----------------------//
     /**
-     * Report the mass center of the section runs intersected by the provided
-     * rectangle
-     * @param roi the rectangle of interest (roi)
-     * @return the centroid of the intersected points, or null
+     * Report the oriented mass center of the section runs intersected by the
+     * provided oriented rectangle
+     * @param roi the oriented rectangle of interest (roi)
+     * @return the oriented centroid of the intersected points, or null
      * @throws IllegalArgumentException if provided roi is null
      */
     private Point getRectangleCentroid (Rectangle roi)

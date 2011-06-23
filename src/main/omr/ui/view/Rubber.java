@@ -112,6 +112,8 @@ public class Rubber
     // The normalized unzoomed rubber rectangle, inside the component, with
     // x & y at the top left and positive width & height
     private Rectangle rect;
+
+    // To ease debugging
     private final int id;
 
     //~ Constructors -----------------------------------------------------------
@@ -515,9 +517,9 @@ public class Rubber
             rect = null;
         }
 
-//        if (component != null) {
-//            component.repaint();
-//        }
+        //        if (component != null) {
+        //            component.repaint();
+        //        }
     }
 
     //----------//

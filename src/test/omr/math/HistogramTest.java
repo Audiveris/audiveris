@@ -13,20 +13,19 @@ package omr.math;
 
 import omr.math.Histogram.Pair;
 
-import org.junit.After;
-import org.junit.AfterClass;
+import junit.framework.Assert;
 import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -38,9 +37,11 @@ public class HistogramTest
 {
     //~ Instance fields --------------------------------------------------------
 
-    private IntegerHistogram histo;
-    private Set<Integer>     keySet;
-    private Set<Integer>     valueSet;
+    private double                        quorum = 0.1;
+    private IntegerHistogram              histo;
+    private Set<Integer>                  keySet;
+    private Set<Integer>                  valueSet;
+    private List<Entry<Integer, Integer>> expMaxima = new ArrayList<Entry<Integer, Integer>>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -52,28 +53,6 @@ public class HistogramTest
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    @BeforeClass
-    public static void setUpClass ()
-        throws Exception
-    {
-    }
-
-    @AfterClass
-    public static void tearDownClass ()
-        throws Exception
-    {
-    }
-
-    @Before
-    public void setUp ()
-    {
-    }
-
-    @After
-    public void tearDown ()
-    {
-    }
 
     /**
      * Test of bucketSet method, of class Histogram.
@@ -100,6 +79,21 @@ public class HistogramTest
         Histogram<Integer> instance = createHistogram();
         instance.clear();
         assertEquals(0, instance.getTotalCount());
+    }
+
+    /**
+     * Test of dataString method, of class Histogram.
+     */
+    @Test
+    public void testDataString ()
+    {
+        //        System.out.println("dataString");
+        //
+        //        Histogram instance = new Histogram();
+        //        String    expResult = "";
+        //        String    result = instance.dataString();
+        //        assertEquals(expResult, result);
+        //        fail("The test case is a prototype.");
     }
 
     /**
@@ -151,6 +145,21 @@ public class HistogramTest
     }
 
     /**
+     * Test of getMaxBucket method, of class Histogram.
+     */
+    @Test
+    public void testGetMaxBucket ()
+    {
+        //        System.out.println("getMaxBucket");
+        //
+        //        Histogram instance = new Histogram();
+        //        Object    expResult = null;
+        //        Object    result = instance.getMaxBucket();
+        //        assertEquals(expResult, result);
+        //        fail("The test case is a prototype.");
+    }
+
+    /**
      * Test of getMaxCount method, of class Histogram.
      */
     @Test
@@ -162,6 +171,80 @@ public class HistogramTest
         int                expResult = 12;
         int                result = instance.getMaxCount();
         assertEquals(expResult, result);
+    }
+
+    /**
+     * Test of getMaxima method, of class Histogram.
+     */
+    @Test
+    public void testGetMaxima1 ()
+    {
+        System.out.println("getMaxima1");
+
+        Histogram instance = createHistogram(0, 17, 14, 2, 3, 1);
+        instance.print(System.out);
+        expMaxima.add(new MyEntry(1, 17));
+        myAssertEquals(expMaxima, instance.getMaxima(quorum));
+    }
+
+    /**
+     * Test of getMaxima method, of class Histogram.
+     */
+    @Test
+    public void testGetMaxima2 ()
+    {
+        System.out.println("getMaxima2");
+
+        Histogram instance = createHistogram(0, 17, 14, 2, 3, 14);
+        instance.print(System.out);
+        expMaxima.add(new MyEntry(1, 17));
+        expMaxima.add(new MyEntry(5, 14));
+        myAssertEquals(expMaxima, instance.getMaxima(quorum));
+    }
+
+    /**
+     * Test of getMaxima method, of class Histogram.
+     */
+    @Test
+    public void testGetMaxima3 ()
+    {
+        System.out.println("getMaxima3");
+
+        Histogram instance = createHistogram(0, 17, 14, 2, 3, 14, 1);
+        instance.print(System.out);
+        expMaxima.add(new MyEntry(1, 17));
+        expMaxima.add(new MyEntry(5, 14));
+        myAssertEquals(expMaxima, instance.getMaxima(quorum));
+    }
+
+    /**
+     * Test of getMaxima method, of class Histogram.
+     */
+    @Test
+    public void testGetMaxima4 ()
+    {
+        System.out.println("getMaxima4");
+
+        Histogram instance = createHistogram(0, 17, 15, 16, 14, 15, 13, 15, 18, 20);
+        instance.print(System.out);
+        expMaxima.add(new MyEntry(9, 20));
+        expMaxima.add(new MyEntry(1, 17));
+        myAssertEquals(expMaxima, instance.getMaxima(quorum));
+    }
+
+    /**
+     * Test of getMaxima method, of class Histogram.
+     */
+    @Test
+    public void testGetMaxima5 ()
+    {
+        System.out.println("getMaxima5");
+
+        Histogram instance = createHistogram( 0, 17, 14, 2, 14, 1 );
+        instance.print(System.out);
+        expMaxima.add(new MyEntry(1, 17));
+        expMaxima.add(new MyEntry(4, 14));
+        myAssertEquals(expMaxima, instance.getMaxima(quorum));
     }
 
     /**
@@ -266,6 +349,21 @@ public class HistogramTest
     }
 
     /**
+     * Test of toString method, of class Histogram.
+     */
+    @Test
+    public void testToString ()
+    {
+        //        System.out.println("toString");
+        //
+        //        Histogram instance = new Histogram();
+        //        String    expResult = "";
+        //        String    result = instance.toString();
+        //        assertEquals(expResult, result);
+        //        fail("The test case is a prototype.");
+    }
+
+    /**
      * Test of values method, of class Histogram.
      */
     @Test
@@ -286,6 +384,41 @@ public class HistogramTest
         }
     }
 
+    //- Asserts ----------------------------------------------------------------
+    private int assertAreSameLength (List   expecteds,
+                                     List   actuals,
+                                     String header)
+    {
+        if (expecteds == null) {
+            Assert.fail(header + "expected array was null");
+        }
+
+        if (actuals == null) {
+            Assert.fail(header + "actual array was null");
+        }
+
+        int actualsLength = actuals.size();
+        int expectedsLength = expecteds.size();
+
+        if (actualsLength != expectedsLength) {
+            Assert.fail(
+                header + "list lengths differed, expected.length=" +
+                expectedsLength + " actual.length=" + actualsLength);
+        }
+
+        return expectedsLength;
+    }
+
+    private void assertElementsEqual (Entry<Integer, Integer> expected,
+                                      Entry<Integer, Integer> actual)
+    {
+        if ((expected.getKey() != actual.getKey()) ||
+            (expected.getValue() != actual.getValue())) {
+            throw new AssertionError(
+                "Expected: " + expected + " Actual: " + actual);
+        }
+    }
+
     private Histogram<Integer> createHistogram ()
     {
         histo = new IntegerHistogram();
@@ -303,5 +436,73 @@ public class HistogramTest
         valueSet.addAll(Arrays.asList(2, 10, 12, 3, 6, 0));
 
         return histo;
+    }
+
+    private Histogram<Integer> createHistogram (int... vals)
+    {
+        Histogram histo = new Histogram();
+
+        for (int i = 0; i < vals.length; i++) {
+            histo.increaseCount(i, vals[i]);
+        }
+
+        return histo;
+    }
+
+    private void myAssertEquals (List<Entry<Integer, Integer>> expecteds,
+                                 List<Entry<Integer, Integer>> actuals)
+    {
+        if (expecteds == actuals) {
+            return;
+        }
+
+        int expectedsLength = assertAreSameLength(expecteds, actuals, "");
+
+        for (int i = 0; i < expectedsLength; i++) {
+            assertElementsEqual(expecteds.get(i), actuals.get(i));
+        }
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    private static class MyEntry
+        implements Entry<Integer, Integer>
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        private final Integer key;
+        private final Integer value;
+
+        //~ Constructors -------------------------------------------------------
+
+        public MyEntry (Integer key,
+                        Integer value)
+        {
+            this.key = key;
+            this.value = value;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        public Integer getKey ()
+        {
+            return key;
+        }
+
+        public Integer setValue (Integer value)
+        {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public Integer getValue ()
+        {
+            return value;
+        }
+
+        @Override
+        public String toString ()
+        {
+            return key + "=" + value;
+        }
     }
 }

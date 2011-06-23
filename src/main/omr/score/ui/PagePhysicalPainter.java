@@ -39,13 +39,12 @@ import omr.score.entity.SystemPart;
 import omr.sheet.Ending;
 import omr.sheet.Ledger;
 import omr.sheet.Sheet;
-import omr.sheet.grid.StaffInfo;
-import omr.sheet.SystemBoundary.Side;
 import omr.sheet.SystemInfo;
 import static omr.ui.symbol.Alignment.*;
-import static omr.ui.symbol.Alignment.Vertical.*;
 import omr.ui.symbol.MusicFont;
 import omr.ui.util.UIUtilities;
+
+import omr.util.VerticalSide;
 
 import java.awt.*;
 import java.util.ConcurrentModificationException;
@@ -416,7 +415,7 @@ public class PagePhysicalPainter
             g.setColor(Color.lightGray);
 
             Point ul = systemInfo.getBoundary()
-                                 .getLimit(Side.NORTH)
+                                 .getLimit(VerticalSide.TOP)
                                  .getPoint(0);
             paint(
                 basicLayout("S" + system.getId(), null),

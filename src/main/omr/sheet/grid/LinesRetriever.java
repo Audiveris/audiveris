@@ -18,14 +18,12 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
+import omr.glyph.facets.Glyph;
 
 import omr.lag.JunctionRatioPolicy;
 import omr.lag.SectionsBuilder;
 
 import omr.log.Logger;
-
-import omr.math.Line;
-import omr.math.PointsCollector;
 
 import omr.run.Orientation;
 import static omr.run.Orientation.*;
@@ -34,24 +32,27 @@ import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
 
 import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
+import omr.score.ui.PagePainter;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 
-import omr.step.StepException;
-
+import omr.stick.Filament;
+import omr.stick.FilamentsFactory;
 import omr.stick.StickSection;
-
+import omr.stick.SticksSource;
+import static omr.util.HorizontalSide.*;
 import omr.util.Predicate;
+import omr.util.StopWatch;
 
 import java.awt.*;
+import java.awt.geom.Line2D;
 import java.util.*;
 import java.util.List;
 
 /**
- * Class <code>LinesRetriever</code> computes the systems frames of a sheet
- * picture.
+ * Class <code>LinesRetriever</code> retrieves the horizontal filaments
+ * of the systems grid in a sheet.
  *
  * @author Hervé Bitteur
  */
@@ -65,25 +66,17 @@ public class LinesRetriever
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(LinesRetriever.class);
 
-    //~ Enumerations -----------------------------------------------------------
+    /** Stroke for drawing filaments curves */
+    private static final Stroke splineStroke = new BasicStroke(
+        (float) constants.splineThickness.getValue(),
+        BasicStroke.CAP_ROUND,
+        BasicStroke.JOIN_ROUND);
 
-    // Results from testMerge()
-    private enum MergeResult {
-        //~ Enumeration constant initializers ----------------------------------
+    /** Color for patterns of main interline */
+    private static final Color mainPatternColor = new Color(200, 255, 200);
 
-        GAP_WIDE,OVERLAP_FAR, OVERLAP_CLOSE,
-        GAP_FAR,
-        GAP_SLOPE,
-        TOO_THICK,
-        OK;
-    }
-
-    // Specific phase for mergeFilaments()
-    private enum Phase {
-        //~ Enumeration constant initializers ----------------------------------
-
-        AGGREGATION,PURGE, LINES;
-    }
+    /** Color for patterns of second interline */
+    private static final Color secondPatternColor = new Color(200, 200, 0);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -99,20 +92,26 @@ public class LinesRetriever
     /** Lag of horizontal runs */
     private GlyphLag hLag;
 
+    /** Filaments factory */
+    private FilamentsFactory factory;
+
+    /** Too short sections */
+    private List<GlyphSection> shortSections = new ArrayList<GlyphSection>();
+
     /** Long filaments found, non sorted */
-    private final Set<Filament> filaments = new HashSet<Filament>();
+    private final List<LineFilament> filaments = new ArrayList<LineFilament>();
 
-    /** Filaments flagged as garbage */
-    private Set<Filament> garbage = new HashSet<Filament>();
-
-    /** Sections sorted by their starting coordinate (x) */
-    private List<GlyphSection> sectionsStarts;
+    /** Second collection of filaments */
+    private List<LineFilament> secondFilaments;
 
     /** Global slope of the sheet */
     private double globalSlope;
 
-    /** Companion in charge of clusters of lines */
+    /** Companion in charge of clusters of main interline */
     private ClustersRetriever clustersRetriever;
+
+    /** Companion in charge of clusters of second interline, if any */
+    private ClustersRetriever secondClustersRetriever;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -134,19 +133,12 @@ public class LinesRetriever
 
     //~ Methods ----------------------------------------------------------------
 
-    //------------//
-    // getGarbage //
-    //------------//
-    public Set<Filament> getGarbage ()
-    {
-        return garbage;
-    }
-
     //----------------//
     // getGlobalSlope //
     //----------------//
     /**
-     * @return the globalSlope
+     * Report the measured global slope of the sheet
+     * @return the sheet global slope
      */
     public double getGlobalSlope ()
     {
@@ -156,52 +148,86 @@ public class LinesRetriever
     //--------//
     // getLag //
     //--------//
+    /**
+     * Report the horizontal lag
+     * @return horizontal lag
+     */
     public GlyphLag getLag ()
     {
         return hLag;
-    }
-
-    //---------------------//
-    // getMinSectionLength //
-    //---------------------//
-    public int getMinSectionLength ()
-    {
-        return params.minSectionLength;
     }
 
     //-----------//
     // buildInfo //
     //-----------//
     /**
-     * Compute and display the system frames of the sheet picture
      * Organize the long and thin horizontal sections into filaments (glyphs)
      * that will be good candidates for staff lines.
+     * <p>First, retrieve long horizontal sections and merge them into
+     * filaments.</p>
+     * <p>Second, detect patterns of filaments regularly spaced and aggregate
+     * them into clusters of lines (staff candidates). </p>
      */
     public void buildInfo ()
-        throws StepException
+        throws Exception
     {
-        // Create filaments out of long sections
-        createFilaments();
-        logger.info(filaments.size() + " filaments created.");
+        StopWatch watch = new StopWatch("LinesRetriever");
 
-        // Merge filaments (phase 1)
-        mergeFilaments(Phase.AGGREGATION);
-        logger.info(filaments.size() + " filaments after merge.");
+        try {
+            // Retrieve filaments out of merged long sections
+            watch.start("retrieveFilaments");
 
-        // Merge filaments (phase 2)
-        mergeFilaments(Phase.PURGE);
-        logger.info(filaments.size() + " filaments after purge.");
+            List<LineFilament> shortFilaments = new ArrayList<LineFilament>();
 
-        // Compute global slope out of longest filaments
-        globalSlope = retrieveGlobalSlope();
+            for (Filament fil : factory.retrieveFilaments(
+                new SticksSource(hLag.getSections()))) {
+                filaments.add((LineFilament) fil);
+            }
 
-        // Now retrieve regular patterns of filaments
-        clustersRetriever = new ClustersRetriever(
-            sheet,
-            filaments,
-            globalSlope);
-        clustersRetriever.buildInfo();
-        logger.info(filaments.size() + " filaments after connections.");
+            // Compute global slope out of longest filaments
+            watch.start("retrieveGlobalSlope");
+            globalSlope = retrieveGlobalSlope();
+            logger.info(
+                sheet.getLogPrefix() + "Global slope: " + (float) globalSlope);
+
+            // Retrieve regular patterns of filaments and pack them into clusters
+            clustersRetriever = new ClustersRetriever(
+                sheet,
+                filaments,
+                shortSections,
+                scale.interline(),
+                globalSlope,
+                mainPatternColor);
+            watch.start("clustersRetriever");
+
+            List<LineFilament> discarded = clustersRetriever.buildInfo();
+
+            // Check for a second interline
+            Integer secondInterline = scale.secondInterline();
+
+            if (secondInterline != null) {
+                secondFilaments = discarded;
+                Collections.sort(secondFilaments, Glyph.idComparator);
+                logger.info(
+                    "Searching clusters with secondInterline: " +
+                    secondInterline);
+                secondClustersRetriever = new ClustersRetriever(
+                    sheet,
+                    secondFilaments,
+                    shortSections,
+                    secondInterline,
+                    globalSlope,
+                    secondPatternColor);
+                watch.start("secondClustersRetriever");
+                secondClustersRetriever.buildInfo();
+            }
+
+            // Convert clusters into staves
+            watch.start("BuildStaves");
+            buildStaves();
+        } finally {
+            watch.print();
+        }
     }
 
     //----------//
@@ -210,18 +236,32 @@ public class LinesRetriever
     /**
      * Build the underlying lag, out of the provided runs table
      * @param wholeVertTable the provided runs table
+     * @param showRuns true to create views on runs
      */
-    public void buildLag (RunsTable wholeVertTable)
+    public void buildLag (RunsTable wholeVertTable,
+                          boolean   showRuns)
     {
         hLag = new GlyphLag("hLag", StickSection.class, Orientation.HORIZONTAL);
 
+        // Create filament factory
+        try {
+            factory = new FilamentsFactory(
+                scale,
+                hLag,
+                LineFilament.class,
+                shortSections);
+        } catch (Exception ex) {
+            logger.warning("Cannot create lines filament factory", ex);
+        }
+
         // To record the purged runs (debug)
-        RunsTable purgedVertTable = new RunsTable(
+        RunsTable purgedVertTable = showRuns
+                                    ? new RunsTable(
             "purged-vert",
             VERTICAL,
-            new Dimension(sheet.getWidth(), sheet.getHeight()));
+            new Dimension(sheet.getWidth(), sheet.getHeight())) : null;
 
-        // Remove runs whose height is much greater than line thickness
+        // Remove runs whose height is somewhat greater than line thickness
         RunsTable shortVertTable = wholeVertTable.clone("short-vert")
                                                  .purge(
             new Predicate<Run>() {
@@ -232,13 +272,15 @@ public class LinesRetriever
                 },
             purgedVertTable);
 
-        // Add a view on purged table (debug)
-        sheet.getAssembly()
-             .addRunsTab(purgedVertTable);
+        if (showRuns) {
+            // Add a view on purged table (debug)
+            sheet.getAssembly()
+                 .addRunsTab(purgedVertTable);
 
-        // Add a view on runs table (debug)
-        sheet.getAssembly()
-             .addRunsTab(shortVertTable);
+            // Add a view on runs table (debug)
+            sheet.getAssembly()
+                 .addRunsTab(shortVertTable);
+        }
 
         // Build table of long horizontal runs
         RunsTable wholeHoriTable = new RunsTableFactory(
@@ -256,9 +298,11 @@ public class LinesRetriever
                     }
                 });
 
-        // Add a view on runs table (debug)
-        sheet.getAssembly()
-             .addRunsTab(longHoriTable);
+        if (showRuns) {
+            // Add a view on runs table (debug)
+            sheet.getAssembly()
+                 .addRunsTab(longHoriTable);
+        }
 
         // Build the horizontal hLag
         SectionsBuilder sectionsBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
@@ -267,29 +311,14 @@ public class LinesRetriever
         sectionsBuilder.createSections(longHoriTable);
 
         // Purge hLag of too short sections
+        final int minSectionLength = factory.getMinSectionLength();
         hLag.purgeSections(
             new Predicate<GlyphSection>() {
                     public final boolean check (GlyphSection section)
                     {
-                        return section.getLength() < params.minSectionLength;
+                        return section.getLength() < minSectionLength;
                     }
                 });
-    }
-
-    //----------------------//
-    // getClustersRetriever //
-    //----------------------//
-    final ClustersRetriever getClustersRetriever ()
-    {
-        return clustersRetriever;
-    }
-
-    //--------------//
-    // getFilaments //
-    //--------------//
-    final Set<Filament> getFilaments ()
-    {
-        return filaments;
     }
 
     //--------------//
@@ -302,206 +331,112 @@ public class LinesRetriever
      */
     boolean isSectionFat (GlyphSection section)
     {
-        if (section.isFat() == null) {
-            // Measure mean thickness on each half
-            PixelRectangle box = section.getContourBox();
-
-            // Determine where to measure thickness
-            Line           line = ((StickSection) section).getLine();
-            int            xLeft = box.x + (box.width / 4);
-            int            yLeft = line.yAt(xLeft);
-            int            xRight = box.x + ((3 * box.width) / 4);
-            int            yRight = line.yAt(xRight);
-
-            // Left side
-            PixelRectangle roi = new PixelRectangle(xLeft, yLeft, 0, 0);
-            roi.grow(params.probeWidth / 2, params.maxSectionThickness);
-
-            PointsCollector collector = new PointsCollector(roi);
-            section.cumulate(collector);
-
-            int leftThickness = (int) Math.rint(
-                (double) collector.getCount() / roi.width);
-
-            // Right side
-            roi.x += (xRight - xLeft);
-            roi.y += (yRight - yLeft);
-            collector = new PointsCollector(roi);
-            section.cumulate(collector);
-
-            int rightThickness = (int) Math.rint(
-                (double) collector.getCount() / roi.width);
-
-            section.setFat(
-                (leftThickness > params.maxSectionThickness) ||
-                (rightThickness > params.maxSectionThickness));
-        }
-
-        return section.isFat();
+        return factory.isSectionFat(section);
     }
 
-    //--------------//
-    // isMajorChunk //
-    //--------------//
-    private boolean isMajorChunk (GlyphSection section)
-    {
-        // Check section length & thickness
-        return (section.getLength() >= params.minSectionLength) &&
-               !isSectionFat(section);
-    }
-
-    //--------------//
-    // getThickness //
-    //--------------//
+    //-------------//
+    // renderItems //
+    //-------------//
     /**
-     * Compute the mean thickness in the provided roi
-     * @param roi the region of interest
-     * @return the mean thickness
+     * Render the filaments, their ending tangents, their patterns
+     * @param g graphics context
      */
-    private int getThickness (Rectangle roi)
+    void renderItems (Graphics2D g)
     {
-        int             xMax = (roi.x + roi.width) - 1;
+        List<LineFilament> allFils = new ArrayList<LineFilament>(filaments);
 
-        // Collect data from intersected sections
-        PointsCollector collector = new PointsCollector(roi);
-
-        for (GlyphSection sec : sectionsStarts) {
-            PixelRectangle box = sec.getContourBox();
-
-            if (box.x > xMax) {
-                break;
-            }
-
-            if (box.intersects(roi)) {
-                sec.cumulate(collector);
-            }
+        if (secondFilaments != null) {
+            allFils.addAll(secondFilaments);
         }
 
-        // Mean total thickness
-        return (int) Math.rint((double) collector.getCount() / roi.width);
+        // Draw filaments
+        g.setColor(PagePainter.musicColor);
+
+        Stroke oldStroke = g.getStroke();
+        g.setStroke(splineStroke);
+
+        for (Filament filament : allFils) {
+            filament.renderLine(g);
+        }
+
+        // Draw tangent at each ending point
+        g.setColor(Color.BLACK);
+
+        double dx = sheet.getScale()
+                         .toPixels(constants.tangentLg);
+
+        for (Filament filament : allFils) {
+            PixelPoint p = filament.getStartPoint();
+            double     der = filament.slopeAt(p.x);
+            g.draw(new Line2D.Double(p.x, p.y, p.x - dx, p.y - (der * dx)));
+            p = filament.getStopPoint();
+            der = filament.slopeAt(p.x);
+            g.draw(new Line2D.Double(p.x, p.y, p.x + dx, p.y + (der * dx)));
+        }
+
+        g.setStroke(oldStroke);
+
+        // Patterns stuff        
+        if (clustersRetriever != null) {
+            clustersRetriever.renderItems(g);
+        }
+
+        if (secondClustersRetriever != null) {
+            secondClustersRetriever.renderItems(g);
+        }
     }
 
-    //-----------------//
-    // createFilaments //
-    //-----------------//
+    //-------------//
+    // buildStaves //
+    //-------------//
     /**
-     *   Aggregate long sections into initial filaments
+     * Register line clusters as staves
      */
-    private void createFilaments ()
+    private void buildStaves ()
     {
-        // Build a collection of sections to ease their retrieval by ROI
-        sectionsStarts = new ArrayList<GlyphSection>(hLag.getSections());
-        Collections.sort(sectionsStarts, GlyphSection.startComparator);
+        // Accumulate all clusters, and sort them by ordinate
+        List<LineCluster> allClusters = new ArrayList<LineCluster>();
+        allClusters.addAll(clustersRetriever.getClusters());
 
-        // Sort sections by decreasing length
-        List<GlyphSection> sections = new ArrayList<GlyphSection>(
-            hLag.getSections());
-        Collections.sort(sections, GlyphSection.reverseLengthComparator);
-
-        for (GlyphSection section : sections) {
-            // Limit to main sections for the time being
-            if (isMajorChunk(section)) {
-                // Create a filament with this section
-                Filament filament = new Filament(scale);
-                filament.include(section);
-                filament = (Filament) hLag.addGlyph(filament);
-                filaments.add(filament);
-
-                if (logger.isFineEnabled()) {
-                    logger.fine("Created " + filament + " with " + section);
-                }
-            }
-        }
-    }
-
-    //----------------//
-    // mergeFilaments //
-    //----------------//
-    private void mergeFilaments (Phase phase)
-    {
-        // List of filaments, sorted by decreasing length
-        List<Filament> list = new ArrayList<Filament>(filaments);
-        Collections.sort(list, Filament.reverseLengthComparator);
-
-        // Browse by decreasing filament length
-        for (Filament current : list) {
-            ///logger.info("Current: " + current + " length:" + current.getLength());
-            Filament candidate = current;
-
-            // Keep on working while we do have a candidate to check for merge
-            while (candidate != null) {
-                ///logger.info("Candidate: " + candidate);
-                // Check the candidate vs all filaments until current excluded
-                HeadsLoop: 
-                for (Filament head : list) {
-                    ///logger.info("Head: " + head);
-                    if (head == current) { // Actual end of sub list
-                        candidate = null;
-
-                        break HeadsLoop;
-                    }
-
-                    if ((head == candidate) || (head.getParent() != null)) {
-                        continue HeadsLoop;
-                    }
-
-                    // Check for a possible merge
-                    switch (testMerge(head, candidate, phase)) {
-                    case OK : {
-                        // We merge the shorter into the longer
-                        if (candidate.getLength() > head.getLength()) {
-                            Filament tempo = head;
-                            head = candidate;
-                            candidate = tempo;
-                        }
-
-                        if (logger.isFineEnabled()) {
-                            logger.info(
-                                "Merged " + candidate + " into " + head);
-                        }
-
-                        head.include(candidate);
-                        candidate = head; // This is a new candidate
-
-                        break HeadsLoop;
-                    }
-
-                    //                    case OVERLAP_CLOSE : {
-                    //                        // We burn the shorter
-                    //                        if (candidate.getLength() > head.getLength()) {
-                    //                            Filament tempo = head;
-                    //                            head = candidate;
-                    //                            candidate = tempo;
-                    //                        }
-                    //
-                    //                        //if (logger.isFineEnabled()) {
-                    //                            logger.info("Burnt " + candidate + " near " + head);
-                    //                        //}
-                    //
-                    //                        ///candidate.setDiscarded(true);
-                    //                        garbage.add(candidate);
-                    //                    }
-                    default :
-                    }
-                }
-            }
+        if (secondClustersRetriever != null) {
+            allClusters.addAll(secondClustersRetriever.getClusters());
         }
 
-        //        filaments.removeAll(garbage);
+        Collections.sort(allClusters, clustersRetriever.ordinateComparator);
 
-        // Discard the merged filaments
-        for (Iterator<Filament> it = filaments.iterator(); it.hasNext();) {
-            Filament f = it.next();
+        // Populate the staff manager
+        StaffManager staffManager = sheet.getStaffManager();
+        int          staffId = 0;
+        staffManager.reset();
 
-            if (f.getParent() != null) {
-                it.remove();
+        for (LineCluster cluster : allClusters) {
+            if (logger.isFineEnabled()) {
+                logger.fine(cluster.toString());
             }
+
+            List<LineInfo> lines = new ArrayList<LineInfo>(cluster.getLines());
+            int            left = Integer.MAX_VALUE;
+            int            right = Integer.MIN_VALUE;
+
+            for (LineInfo line : lines) {
+                left = Math.min(left, line.getEndPoint(LEFT).x);
+                right = Math.max(right, line.getEndPoint(RIGHT).x);
+            }
+
+            StaffInfo staff = new StaffInfo(
+                ++staffId,
+                left,
+                right,
+                new Scale(cluster.getInterline(), scale.mainFore()),
+                lines);
+            staffManager.addStaff(staff);
         }
 
-        if (logger.isFineEnabled()) {
-            for (Filament f : filaments) {
-                logger.info("Kept " + f);
-            }
+        staffManager.computeStaffLimits();
+
+        // Cache (not really needed)
+        for (StaffInfo staff : staffManager.getStaves()) {
+            staff.getArea();
         }
     }
 
@@ -510,173 +445,22 @@ public class LinesRetriever
     //---------------------//
     private double retrieveGlobalSlope ()
     {
-        // List of filaments, sorted by decreasing length
-        List<Filament> list = new ArrayList<Filament>(filaments);
-        Collections.sort(list, Filament.reverseLengthComparator);
-
-        // Use the top filaments to determine slope
-        double ratio = params.topRatioForSlope;
-        int    topCount = Math.max(1, (int) Math.rint(list.size() * ratio));
-        double slopes = 0;
+        // Use the top longest filaments to determine slope
+        final double ratio = params.topRatioForSlope;
+        final int    topCount = Math.max(
+            1,
+            (int) Math.rint(filaments.size() * ratio));
+        double       slopes = 0;
+        Collections.sort(filaments, LineFilament.reverseLengthComparator);
 
         for (int i = 0; i < topCount; i++) {
-            Filament fil = list.get(i);
+            Filament fil = filaments.get(i);
             Point    start = fil.getStartPoint();
             Point    stop = fil.getStopPoint();
             slopes += ((double) (stop.y - start.y) / (stop.x - start.x));
         }
 
         return slopes / topCount;
-    }
-
-    //-----------//
-    // testMerge //
-    //-----------//
-    /**
-     * Check whether the two provided filaments could be merged
-     * @param one a filament
-     * @param two another filament
-     * @return the detailed test result
-     */
-    private MergeResult testMerge (Filament one,
-                                   Filament two,
-                                   Phase    phase)
-    {
-        if (logger.isFineEnabled()) {
-            logger.info("testMerge " + one + " & " + two);
-        }
-
-        // Left & right points for each filament
-        PixelPoint oneLeft = one.getStartPoint();
-        PixelPoint oneRight = one.getStopPoint();
-        PixelPoint twoLeft = two.getStartPoint();
-        PixelPoint twoRight = two.getStopPoint();
-
-        // x gap?
-        int overlapLeft = Math.max(oneLeft.x, twoLeft.x);
-        int overlapRight = Math.min(oneRight.x, twoRight.x);
-        int gapDx = (overlapLeft - overlapRight) - 1;
-
-        if (gapDx > params.maxGapDx) {
-            if (logger.isFineEnabled()) {
-                logger.info(
-                    "Gap too wide: " + gapDx + " vs " + params.maxGapDx);
-            }
-
-            return MergeResult.GAP_WIDE;
-        }
-
-        // y gap?
-        if (gapDx < 0) {
-            // Overlap between the two filaments
-            // Measure dy at middle of overlap
-            int    xMid = (overlapLeft + overlapRight) / 2;
-            double oneY = one.getCurve()
-                             .yAt(xMid);
-            double twoY = two.getCurve()
-                             .yAt(xMid);
-            int    dy = Math.abs((int) Math.rint(oneY - twoY));
-
-            if (dy > params.maxOverlapDy) {
-                if ((phase == Phase.PURGE) && (dy < params.maxCloseDy)) {
-                    if (logger.isFineEnabled()) {
-                        logger.info("Close parallel: " + dy);
-                    }
-
-                    return MergeResult.OVERLAP_CLOSE;
-                } else {
-                    if (logger.isFineEnabled()) {
-                        logger.info(
-                            "Dy too high: " + dy + " vs " +
-                            params.maxOverlapDy);
-                    }
-
-                    return MergeResult.OVERLAP_FAR;
-                }
-            }
-
-            if (phase == Phase.PURGE) {
-                // Here, we are closely parallel but still not merged
-                if (logger.isFineEnabled()) {
-                    logger.info("Close parallel not merged");
-                }
-
-                return MergeResult.OVERLAP_CLOSE;
-            } else {
-                // Check resulting thickness at middle of overlap
-                // Only when at least one short filament is involved
-                int shortLength = Math.min(one.getLength(), two.getLength());
-
-                if ((phase != Phase.PURGE) &&
-                    (shortLength <= params.maxInvolvingLength)) {
-                    int            yMid = (int) Math.rint((oneY + twoY) / 2);
-                    PixelRectangle roi = new PixelRectangle(xMid, yMid, 0, 0);
-                    roi.grow(
-                        params.probeWidth / 2,
-                        params.maxFilamentThickness);
-
-                    int thickness = getThickness(roi);
-
-                    if (thickness > params.maxFilamentThickness) {
-                        if (logger.isFineEnabled()) {
-                            logger.info(
-                                "Too thick: " + thickness + " vs " +
-                                params.maxFilamentThickness + " " + one + " " +
-                                two);
-                        }
-
-                        return MergeResult.TOO_THICK;
-                    }
-                }
-            }
-        } else {
-            // No overlap, it's a true gap
-            PixelPoint left;
-            PixelPoint right;
-
-            if (oneLeft.x < twoLeft.x) {
-                // one - two
-                left = oneRight;
-                right = twoLeft;
-            } else {
-                // two - one
-                left = twoRight;
-                right = oneLeft;
-            }
-
-            int gapDy = Math.abs(right.y - left.y);
-
-            if (gapDy > params.maxGapDy) {
-                if (logger.isFineEnabled()) {
-                    logger.info(
-                        "Dy too high for gap: " + gapDy + " vs " +
-                        params.maxGapDy);
-                }
-
-                return MergeResult.GAP_FAR;
-            }
-
-            // Check slope (relevant only for significant dy)
-            if (gapDy > params.maxGapDyForSlope) {
-                double gapSlope = (double) gapDy / gapDx;
-
-                if (gapSlope > params.maxGapSlope) {
-                    if (logger.isFineEnabled()) {
-                        logger.info(
-                            "Slope too high for gap: " + (float) gapSlope +
-                            " vs " + params.maxGapSlope);
-                    }
-
-                    return MergeResult.GAP_SLOPE;
-                }
-            }
-        }
-
-        if (logger.isFineEnabled()) {
-            logger.info("Compatible!");
-        }
-
-        return MergeResult.OK;
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -692,52 +476,31 @@ public class LinesRetriever
         Constant.Ratio     maxLengthRatio = new Constant.Ratio(
             1.5,
             "Maximum ratio in length for a run to be combined with an existing section");
-        Constant.Double    maxGapSlope = new Constant.Double(
-            "tangent",
-            0.5,
-            "Maximum absolute slope for a gap");
 
         // Constants specified WRT mean line thickness
         // -------------------------------------------
         Scale.LineFraction maxVerticalRunLength = new Scale.LineFraction(
             1.75, // 2.0
             "Maximum vertical run length WRT mean line height");
-        Scale.LineFraction maxSectionThickness = new Scale.LineFraction(
-            1.5,
-            "Maximum horizontal section thickness WRT mean line height");
-        Scale.LineFraction maxFilamentThickness = new Scale.LineFraction(
-            1.5,
-            "Maximum filament thickness WRT mean line height");
 
         // Constants specified WRT mean interline
         // --------------------------------------
-        Scale.Fraction minRunLength = new Scale.Fraction(
+        Scale.Fraction  minRunLength = new Scale.Fraction(
             1.0,
             "Minimum length for a horizontal run to be considered");
-        Scale.Fraction minSectionLength = new Scale.Fraction(
-            1,
-            "Minimum length for a horizontal section to be considered in frames computation");
-        Scale.Fraction maxOverlapDy = new Scale.Fraction(
-            0.2,
-            "Maximum delta Y between two overlapping filaments");
-        Scale.Fraction maxGapDx = new Scale.Fraction(
-            1,
-            "Maximum delta X for a gap between filaments");
-        Scale.Fraction maxGapDy = new Scale.Fraction(
-            0.2,
-            "Maximum delta Y for a gap between filaments");
-        Scale.Fraction maxGapDyForSlope = new Scale.Fraction(
-            0.1,
-            "Maximum delta Y to check slope for a gap between filaments");
-        Scale.Fraction maxCloseDy = new Scale.Fraction(
-            0.5,
-            "Maximum delta Y to burn a candidate");
-        Scale.Fraction maxInvolvingLength = new Scale.Fraction(
-            6,
-            "Maximum filament length to apply thickness test");
-        Constant.Ratio topRatioForSlope = new Constant.Ratio(
+        Constant.Ratio  topRatioForSlope = new Constant.Ratio(
             0.1,
             "Percentage of top filaments used to retrieve global slope");
+
+        // Constants for display
+        //
+        Constant.Double splineThickness = new Constant.Double(
+            "thickness",
+            0.5,
+            "Stroke thickness to draw filaments curves");
+        Scale.Fraction  tangentLg = new Scale.Fraction(
+            1,
+            "Typical length to display tangents at ending points");
     }
 
     //------------//
@@ -750,9 +513,6 @@ public class LinesRetriever
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** Probe width */
-        final int probeWidth;
-
         /** Minimum run length for horizontal lag */
         final int minRunLength;
 
@@ -761,36 +521,6 @@ public class LinesRetriever
 
         /** Used for section junction policy */
         final double maxLengthRatio;
-
-        /** Maximum acceptable thickness for horizontal sections */
-        final int maxSectionThickness;
-
-        /** Maximum acceptable thickness for horizontal filaments */
-        final int maxFilamentThickness;
-
-        /** Minimum acceptable length for horizontal sections */
-        final int minSectionLength;
-
-        /** Maximum acceptable delta Y */
-        final int maxOverlapDy;
-
-        /** Maximum width for real gap */
-        final int maxGapDx;
-
-        /** Maximum dy for real gaps */
-        final int maxGapDy;
-
-        /** Maximum dy for slope check on real gap */
-        final int maxGapDyForSlope;
-
-        /** Maximum slope for real gaps */
-        final double maxGapSlope;
-
-        /** Maximum dy to "burn" a candidate */
-        final int maxCloseDy;
-
-        /** Maximum length to apply thickness test */
-        final int maxInvolvingLength;
 
         /** Percentage of top filaments used to retrieve global slope */
         final double topRatioForSlope;
@@ -808,18 +538,6 @@ public class LinesRetriever
             maxVerticalRunLength = scale.toPixels(
                 constants.maxVerticalRunLength);
             maxLengthRatio = constants.maxLengthRatio.getValue();
-            minSectionLength = scale.toPixels(constants.minSectionLength);
-            maxSectionThickness = scale.toPixels(constants.maxSectionThickness);
-            maxFilamentThickness = scale.toPixels(
-                constants.maxFilamentThickness);
-            maxOverlapDy = scale.toPixels(constants.maxOverlapDy);
-            maxGapDx = scale.toPixels(constants.maxGapDx);
-            maxGapDy = scale.toPixels(constants.maxGapDy);
-            maxGapDyForSlope = scale.toPixels(constants.maxGapDyForSlope);
-            maxGapSlope = constants.maxGapSlope.getValue();
-            maxCloseDy = scale.toPixels(constants.maxCloseDy);
-            maxInvolvingLength = scale.toPixels(constants.maxInvolvingLength);
-            probeWidth = scale.toPixels(Filament.getProbeWidth());
             topRatioForSlope = constants.topRatioForSlope.getValue();
 
             if (logger.isFineEnabled()) {

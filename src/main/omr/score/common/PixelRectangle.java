@@ -15,11 +15,14 @@ import java.awt.Rectangle;
 
 /**
  * Class <code>PixelRectangle</code> is a simple Rectangle that is meant to
- * represent a rectangle in a sheet, with its components specified in pixels, so
- * the name.
+ * represent an absolute rectangle in a sheet, with its components specified in
+ * pixels, so the name.
+ * 
+ * <p>Oriented rectangles (those which depend on orientation) should not use
+ * PixelRectangle but plain generic {@link Rectangle} class.</p>
  *
  * <p> This specialization is used to take benefit of compiler checks, to
- * prevent the use of rectangles with incorrect meaning or units. </p>
+ * prevent the use of rectangles with incorrect meaning. </p>
  *
  * @author Hervé Bitteur
  */

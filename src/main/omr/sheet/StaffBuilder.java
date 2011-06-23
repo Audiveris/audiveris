@@ -11,13 +11,16 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.sheet.grid.LineInfo;
-import omr.sheet.grid.StaffInfo;
 import omr.glyph.GlyphLag;
 
 import omr.log.Logger;
 
+import omr.sheet.grid.LineInfo;
+import omr.sheet.grid.StaffInfo;
+
 import omr.step.StepException;
+
+import omr.util.HorizontalSide;
 
 import java.util.*;
 
@@ -102,8 +105,8 @@ public class StaffBuilder
         List<Integer> rights = new ArrayList<Integer>();
 
         for (LineInfo line : lines) {
-            lefts.add(line.getLeftPoint().x);
-            rights.add(line.getRightPoint().x);
+            lefts.add(line.getEndPoint(HorizontalSide.LEFT).x);
+            rights.add(line.getEndPoint(HorizontalSide.RIGHT).x);
         }
 
         Collections.sort(lefts);

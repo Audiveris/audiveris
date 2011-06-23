@@ -443,7 +443,7 @@ public class SheetsController
 
         /** Initial zoom ratio for displayed sheet pictures */
         Constant.Ratio initialZoomRatio = new Constant.Ratio(
-            0.5d,
+            0.5,
             "Initial zoom ratio for displayed sheet pictures");
     }
 }

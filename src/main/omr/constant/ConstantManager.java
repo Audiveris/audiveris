@@ -274,8 +274,9 @@ public class ConstantManager
             if (cliValue != null) {
                 return cliValue;
             }
-        } else {
-            System.err.println("*** cliConstants are not yet available ***");
+
+            //        } else {
+            //            System.err.println("*** cliConstants are not yet available ***");
         }
 
         // Fallback on using default/user value

@@ -61,10 +61,14 @@ import omr.step.StepException;
 import omr.step.Steps;
 
 import omr.stick.StickSection;
+import omr.stick.SticksBuilder;
+import omr.stick.SticksSource;
+import omr.stick.UnknownSectionPredicate;
 
 import omr.ui.BoardsPane;
 
 import omr.util.BrokenLine;
+import omr.util.VerticalSide;
 
 import org.jdesktop.application.Task;
 
@@ -157,7 +161,7 @@ public class SystemsBuilder
         systems = sheet.getSystems();
 
         // BarsChecker companion, in charge of purely physical tests
-        barsChecker = new BarsChecker(sheet, lag, false);
+        barsChecker = new BarsChecker(sheet, lag, 0, false);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -198,7 +202,17 @@ public class SystemsBuilder
 
             // Retrieve the initial collection of good barline candidates
             // Results are updated shapes in vLag glyphs
-            barsChecker.retrieveCandidates();
+            // Retrieve (vertical) sticks
+            SticksBuilder barsArea = new SticksBuilder(
+                scale,
+                lag,
+                new SticksSource(
+                    lag.getVertices(),
+                    new UnknownSectionPredicate()),
+                false);
+            barsArea.setMaxThickness(constants.maxBarThickness);
+            //barsArea.setExpectedSlope(expectedSlope);
+            barsChecker.retrieveCandidates(barsArea.retrieveSticks());
 
             // Transfer manual glyphs from old lag if at all possible
             if (oldLag != null) {
@@ -554,7 +568,7 @@ public class SystemsBuilder
                 for (SystemInfo system : sheet.getSystems()) {
                     SystemBoundary boundary = system.getBoundary();
 
-                    for (SystemBoundary.Side side : SystemBoundary.Side.values()) {
+                    for (VerticalSide side : VerticalSide.values()) {
                         if (boundary.getLimit(side) == brokenLine) {
                             return new BoundaryTask(system, side, brokenLine).launch(
                                 sheet);
@@ -593,6 +607,9 @@ public class SystemsBuilder
             "cotangent",
             0.1,
             "Maximum cotangent for checking a barline candidate");
+        Scale.Fraction  maxBarThickness = new Scale.Fraction(
+            1.0,
+            "Maximum thickness of an interesting vertical stick");
     }
 
     //--------------//

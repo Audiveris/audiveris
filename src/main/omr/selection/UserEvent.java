@@ -23,8 +23,8 @@ import omr.log.Logger;
  * <li>SheetManager event service: a singleton which handles THE currently
  * selected sheet as {@link SheetEvent}
  *
- * <li>Sheet event service: each Sheet instance handles {@link
- * ScoreLocationEvent}, {@link SheetLocationEvent} and {@link PixelLevelEvent}
+ * <li>Sheet event service: each Sheet instance handles events of types
+ * {@link SheetLocationEvent} and {@link PixelLevelEvent}
  *
  * <li>Lag event service: each Lag instance handles {@link RunEvent}, {@link
  * SectionEvent} and {@link SectionIdEvent} (all are subclasses of {@link

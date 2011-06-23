@@ -17,7 +17,7 @@ import omr.glyph.facets.Glyph;
 import omr.glyph.facets.Stick;
 
 import omr.lag.Lag;
-import omr.lag.Section;
+import omr.lag.Sections;
 
 import omr.log.Logger;
 
@@ -239,19 +239,6 @@ public class GlyphLag
                                 .getSelection(GlyphSetEvent.class);
     }
 
-    //    //------------------//
-    //    // getVirtualGlyphs //
-    //    //------------------//
-    //    /**
-    //     * Export the unmodifiable collection of virtual glyphs of the lag.
-    //     *
-    //     * @return the collection of virtual glyphs
-    //     */
-    //    public synchronized Collection<Glyph> getVirtualGlyphs ()
-    //    {
-    //        return Collections.unmodifiableCollection(virtualGlyphs);
-    //    }
-
     //----------//
     // addGlyph //
     //----------//
@@ -272,9 +259,9 @@ public class GlyphLag
                 // Reuse the existing glyph
                 if (logger.isFineEnabled()) {
                     logger.fine(
-                        "new avatar of #" + original.getId() + " members=" +
-                        Section.toString(glyph.getMembers()) + " original=" +
-                        Section.toString(original.getMembers()));
+                        "new avatar of #" + original.getId() +
+                        Sections.toString(" members", glyph.getMembers()) +
+                        Sections.toString(" original", original.getMembers()));
                 }
 
                 glyph = original;
@@ -317,7 +304,7 @@ public class GlyphLag
     public void dump (String title)
     {
         // Normal dump of all sections
-        ///super.dump(title);
+        super.dump(title);
 
         // Dump of active glyphs
         System.out.println(

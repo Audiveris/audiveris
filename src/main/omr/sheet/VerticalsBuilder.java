@@ -26,7 +26,7 @@ import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 import omr.glyph.facets.Stick;
 
-import omr.lag.Section;
+import omr.lag.Sections;
 
 import omr.log.Logger;
 
@@ -34,6 +34,9 @@ import omr.selection.GlyphEvent;
 import omr.selection.UserEvent;
 
 import omr.step.StepException;
+
+import omr.stick.SticksBuilder;
+import omr.stick.SticksSource;
 
 import omr.util.Implement;
 import omr.util.Predicate;
@@ -150,14 +153,16 @@ public class VerticalsBuilder
 
         // We cannot reuse the sticks, since thick sticks are allowed for bars
         // but not for stems.
-        VerticalArea verticalsArea = new VerticalArea(
-            system.getVerticalSections(),
-            sheet,
+        SticksBuilder verticalsArea = new SticksBuilder(
+            scale,
             lag,
-            new MySectionPredicate(),
-            scale.toPixels(constants.maxStemThickness));
+            new SticksSource(
+                system.getVerticalSections(),
+                new MySectionPredicate()),
+            false);
+        verticalsArea.setMaxThickness(constants.maxStemThickness);
 
-        return retrieveVerticals(verticalsArea.getSticks(), true);
+        return retrieveVerticals(verticalsArea.retrieveSticks(), true);
     }
 
     //---------------------//
@@ -176,20 +181,20 @@ public class VerticalsBuilder
             glyph.getMembers());
 
         if (logger.isFineEnabled()) {
-            logger.fine("Sections browsed: " + Section.toString(sections));
+            logger.fine("Sections browsed: " + Sections.toString(sections));
         }
 
         // Retrieve vertical sticks as stem candidates
         try {
-            VerticalArea verticalsArea = new VerticalArea(
-                sections,
-                sheet,
+            SticksBuilder verticalsArea = new SticksBuilder(
+                scale,
                 lag,
-                new MySectionPredicate(),
-                scale.toPixels(constants.maxStemThickness));
+                new SticksSource(sections, new MySectionPredicate()),
+                false);
+            verticalsArea.setMaxThickness(constants.maxStemThickness);
 
             // Retrieve stems
-            int nb = retrieveVerticals(verticalsArea.getSticks(), isShort);
+            int nb = retrieveVerticals(verticalsArea.retrieveSticks(), isShort);
 
             if (logger.isFineEnabled()) {
                 if (nb > 0) {
@@ -497,7 +502,7 @@ public class VerticalsBuilder
         @Implement(Check.class)
         protected double getValue (Stick stick)
         {
-            Rectangle rect = stick.getBounds();
+            Rectangle rect = stick.getOrientedBounds();
             double    area = rect.width * rect.height;
 
             return (double) stick.getWeight() / area;

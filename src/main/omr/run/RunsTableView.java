@@ -6,10 +6,13 @@ package omr.run;
 
 import omr.log.Logger;
 
+import omr.selection.SelectionService;
+
 import omr.ui.view.RubberPanel;
 
 import java.awt.*;
 import java.util.List;
+import omr.selection.SheetLocationEvent;
 
 /**
  * Class {@code RunsTableView}
@@ -36,13 +39,16 @@ public class RunsTableView
      *
      * @param table the underlying table of runs
      */
-    public RunsTableView (RunsTable table)
+    public RunsTableView (RunsTable        table,
+                          SelectionService locationService)
     {
         this.table = table;
 
+        // Location service
+        setLocationService(locationService, SheetLocationEvent.class);
+        
         // Set background color
         setBackground(Color.white);
-        
     }
 
     //~ Methods ----------------------------------------------------------------
