@@ -173,14 +173,14 @@ public class BarsRetriever
             FilamentsFactory factory = new FilamentsFactory(
                 scale,
                 vLag,
-                Filament.class,
-                null);
+                Filament.class);
 
             // Factory parameters adjustment
             factory.setMaxSectionThickness(constants.maxSectionThickness);
             factory.setMaxFilamentThickness(constants.maxFilamentThickness);
             factory.setMaxCoordGap(constants.maxCoordGap);
-            factory.dump();
+
+            ///factory.dump();
 
             // Create filaments out of vertical sections
             for (Filament fil : factory.retrieveFilaments(
@@ -342,7 +342,7 @@ public class BarsRetriever
      * @return the computed ending point
      */
     private PixelPoint getLineEnding (StaffInfo      staff,
-                                      FilamentLine   line,
+                                      LineInfo       line,
                                       HorizontalSide side)
     {
         double     slope = staff.getEndingSlope(side);
@@ -473,6 +473,43 @@ public class BarsRetriever
         }
     }
 
+    //------------------//
+    // adjustStaffLines //
+    //------------------//
+    /**
+     * Staff by staff, align the lines endings with the staff endings, and
+     * check the intermediate line points
+     */
+    private void adjustStaffLines ()
+    {
+        for (StaffInfo staff : staffManager.getStaves()) {
+            if (logger.isFineEnabled()) {
+                logger.info(staff.toString());
+            }
+
+            // Adjust left and right endings of each line in the staff
+            for (LineInfo l : staff.getLines()) {
+                FilamentLine line = (FilamentLine) l;
+                line.setEndingPoints(
+                    getLineEnding(staff, line, LEFT),
+                    getLineEnding(staff, line, RIGHT));
+            }
+
+            // Check line intermediate points
+            List<LineFilament> fils = new ArrayList<LineFilament>();
+
+            for (LineInfo l : staff.getLines()) {
+                FilamentLine line = (FilamentLine) l;
+                fils.add(line.fil);
+            }
+
+            for (LineInfo l : staff.getLines()) {
+                FilamentLine line = (FilamentLine) l;
+                line.fil.fillHoles(fils);
+            }
+        }
+    }
+
     //---------------//
     // createSystems //
     //---------------//
@@ -483,7 +520,7 @@ public class BarsRetriever
      */
     private List<SystemFrame> createSystems (Integer[] tops)
     {
-        List<SystemFrame> systems = new ArrayList<SystemFrame>();
+        List<SystemFrame> newSystems = new ArrayList<SystemFrame>();
         Integer           staffTop = null;
         int               systemId = 0;
         SystemFrame       systemFrame = null;
@@ -499,19 +536,15 @@ public class BarsRetriever
                 systemFrame = new SystemFrame(
                     ++systemId,
                     staffManager.getRange(staff, staff));
-                systems.add(systemFrame);
+                newSystems.add(systemFrame);
             } else {
                 // Continuing current system
                 systemFrame.setStaves(
                     staffManager.getRange(systemFrame.getFirstStaff(), staff));
             }
-
-            if (logger.isFineEnabled()) {
-                logger.fine("i:" + i + " tops:" + tops[i]);
-            }
         }
 
-        return systems;
+        return newSystems;
     }
 
     //--------------//
@@ -539,6 +572,9 @@ public class BarsRetriever
         for (SystemFrame system : systems) {
             retrieveSystemSides(system);
         }
+
+        // Adjust staff lines
+        adjustStaffLines();
     }
 
     //-------------------//
@@ -704,26 +740,6 @@ public class BarsRetriever
 
         // Print out
         logger.info(sheet.getLogPrefix() + system);
-
-        for (StaffInfo staff : staves) {
-            if (logger.isFineEnabled()) {
-                logger.info(
-                    "staff#" + staff.getId() + " left:" +
-                    staff.getAbscissa(LEFT) + " leftBar:" + staff.getBar(LEFT) +
-                    " right:" + staff.getAbscissa(RIGHT) + " rightBar:" +
-                    staff.getBar(RIGHT));
-            }
-
-            // Adjust left and right endings of each line in the staff
-            for (LineInfo l : staff.getLines()) {
-                FilamentLine line = (FilamentLine) l;
-                line.setEndingPoints(
-                    getLineEnding(staff, line, LEFT),
-                    getLineEnding(staff, line, RIGHT));
-            }
-        }
-
-        system.getLeftBar();
     }
 
     //--------------------//
@@ -812,7 +828,7 @@ public class BarsRetriever
             8,
             "Minimum length for a long vertical bar");
         Scale.Fraction  maxDistanceFromStaffSide = new Scale.Fraction(
-            3, // 2
+            4,
             "Max abscissa delta when looking for left or right side bars");
         Scale.Fraction  maxLeftBarPackWidth = new Scale.Fraction(
             1.5,

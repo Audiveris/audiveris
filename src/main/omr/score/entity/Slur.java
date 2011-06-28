@@ -819,7 +819,7 @@ public class Slur
 
         /** Abscissa extension when looking for embraced notes */
         Scale.Fraction areaDx = new Scale.Fraction(
-            1,
+            1.5,
             "Abscissa extension when looking for embraced notes");
 
         /** Abscissa margin when looking for embraced notes */

@@ -27,6 +27,7 @@ import omr.run.Orientation;
 import omr.score.common.PixelPoint;
 
 import omr.sheet.Scale;
+import omr.sheet.grid.LineFilament;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
@@ -362,6 +363,84 @@ public class Filament
         System.out.println("   refDist=" + getRefDistance());
     }
 
+    //-----------//
+    // fillHoles //
+    //-----------//
+    /**
+     * Fill large holes (due to missing intermediate points) in this filament,
+     * by interpolating (or extrapolating) from the collection of rather
+     * parallel fils, this filament is part of (at provided pos index)
+     * @param pos the index of this filament in the provided collection
+     * @param fils the provided collection of parallel filaments
+     */
+    public void fillHoles (int                pos,
+                           List<LineFilament> fils)
+    {
+        int     maxHoleLength = scale.toPixels(constants.maxHoleLength);
+        int     virtualLength = scale.toPixels(constants.virtualSegmentLength);
+
+        // Look for long holes
+        Double  holeStart = null;
+        boolean modified = false;
+
+        for (int ip = 0; ip < points.size(); ip++) {
+            Point2D point = points.get(ip);
+
+            if (holeStart == null) {
+                holeStart = point.getX();
+            } else {
+                double holeStop = point.getX();
+                double holeLength = holeStop - holeStart;
+
+                if (holeLength > maxHoleLength) {
+                    // Try to insert artificial intermediate point(s)
+                    int insert = (int) Math.rint(holeLength / virtualLength) -
+                                 1;
+
+                    if (insert > 0) {
+                        if (logger.isFineEnabled()) {
+                            logger.fine(
+                                "Hole before ip: " + ip + " insert:" + insert +
+                                " for " + this);
+                        }
+
+                        double dx = (double) holeLength / (insert + 1);
+
+                        for (int i = 1; i <= insert; i++) {
+                            int     x = (int) Math.rint(holeStart + (i * dx));
+                            Point2D pt = new Filler(
+                                x,
+                                pos,
+                                fils,
+                                virtualLength / 2).findInsertion();
+
+                            if (pt != null) {
+                                if (logger.isFineEnabled()) {
+                                    logger.info("Inserted " + pt);
+                                }
+
+                                points.add(ip++, pt);
+                                modified = true;
+                            } else {
+                                if (logger.isFineEnabled()) {
+                                    logger.info("No insertion at x: " + x);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                holeStart = holeStop;
+            }
+        }
+
+        if (modified) {
+            // Regenerate the underlying curve
+            curve = NaturalSpline.interpolate(
+                points.toArray(new Point2D[points.size()]));
+        }
+    }
+
     //---------//
     // include //
     //---------//
@@ -440,9 +519,11 @@ public class Filament
         if (points != null) {
             double r = Math.max(1, scale.interline() * 0.1); // Point radius
             Color  oldColor = g.getColor();
-            g.setColor(Color.YELLOW);
 
             for (Point2D p : points) {
+                g.setColor(
+                    (p instanceof VirtualPoint) ? Color.RED : Color.YELLOW);
+
                 g.drawOval(
                     (int) Math.rint(p.getX() - r),
                     (int) Math.rint(p.getY() - r),
@@ -488,6 +569,27 @@ public class Filament
     public int trueLength ()
     {
         return (int) Math.rint((double) getWeight() / scale.mainFore());
+    }
+
+    //-----------//
+    // findPoint //
+    //-----------//
+    protected Point2D findPoint (int x,
+                                 int margin)
+    {
+        Point2D best = null;
+        int     bestDx = Integer.MAX_VALUE;
+
+        for (Point2D p : points) {
+            int dx = Math.abs((int) Math.rint(p.getX() - x));
+
+            if ((dx <= margin) && (dx < bestDx)) {
+                bestDx = dx;
+                best = p;
+            }
+        }
+
+        return best;
     }
 
     //-----------------//
@@ -604,7 +706,7 @@ public class Filament
             // Determine the number of segments and their precise length
             int           segCount = (int) Math.rint(length / typicalLength);
             double        segLength = (double) length / segCount;
-            List<Point2D> points = new ArrayList<Point2D>(segCount + 1);
+            List<Point2D> newPoints = new ArrayList<Point2D>(segCount + 1);
 
             // First point
             if (pStart == null) {
@@ -614,7 +716,7 @@ public class Filament
                     null);
             }
 
-            points.add(pStart);
+            newPoints.add(pStart);
 
             // Intermediate points (perhaps none)
             for (int i = 1; i < segCount; i++) {
@@ -624,7 +726,7 @@ public class Filament
 
                 // If, unfortunately, we are in a filament hole, just skip it
                 if (pt != null) {
-                    points.add(orientation.switchRef(pt));
+                    newPoints.add(orientation.switchRef(pt));
                 }
             }
 
@@ -638,15 +740,14 @@ public class Filament
                     null);
             }
 
-            points.add(pStop);
+            newPoints.add(pStop);
 
             // Interpolate the best spline through the provided points
             curve = NaturalSpline.interpolate(
-                points.toArray(new Point2D[points.size()]));
-            ///addAttachment("SPLINE", curve); // Just for fun...
+                newPoints.toArray(new Point2D[newPoints.size()]));
 
             // Remember points (atomically)
-            this.points = points;
+            this.points = newPoints;
         } catch (Exception ex) {
             logger.warning("Filament cannot computeData", ex);
         }
@@ -668,5 +769,136 @@ public class Filament
         final Scale.Fraction segmentLength = new Scale.Fraction(
             2,
             "Typical length between filament curve intermediate points");
+        final Scale.Fraction virtualSegmentLength = new Scale.Fraction(
+            6,
+            "Typical length used for virtual intermediate points");
+        final Scale.Fraction maxHoleLength = new Scale.Fraction(
+            8,
+            "Maximum length for holes without intermediate points");
+    }
+
+    //--------//
+    // Filler //
+    //--------//
+    /**
+     * A utility class to fill the filament holes with virtual points
+     */
+    private static class Filler
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final int                x; // Preferred abscissa for point insertion
+        final int                pos; // Relative position within fils collection
+        final List<LineFilament> fils; // Collection of fils this one is part of
+        final int                margin; // Margin on abscissa to lookup refs
+
+        //~ Constructors -------------------------------------------------------
+
+        public Filler (int                x,
+                       int                pos,
+                       List<LineFilament> fils,
+                       int                margin)
+        {
+            this.x = x;
+            this.pos = pos;
+            this.fils = fils;
+            this.margin = margin;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        //---------------//
+        // findInsertion //
+        //---------------//
+        /**
+         * Look for a suitable insertion point. A point is returned only if it
+         * can be computed by interpolation, which needs one reference above and
+         * one reference below. Extrapolation is not reliable enough, so no
+         * insertion point is returned if we lack reference above or below.
+         * @return the computed insertion point, or null
+         */
+        public Point2D findInsertion ()
+        {
+            // Check for a reference above
+            Neighbor one = findNeighbor(fils.subList(0, pos), -1);
+
+            if (one == null) {
+                return null;
+            }
+
+            // Check for a reference below
+            Neighbor two = findNeighbor(fils.subList(pos + 1, fils.size()), 1);
+
+            if (two == null) {
+                return null;
+            }
+
+            // Interpolate
+            double ratio = (double) (pos - one.pos) / (two.pos - one.pos);
+
+            return new VirtualPoint(
+                ((1 - ratio) * one.point.getX()) + (ratio * two.point.getX()),
+                ((1 - ratio) * one.point.getY()) + (ratio * two.point.getY()));
+        }
+
+        /**
+         * Browse the provided list in the desired direction to find a suitable
+         * point as a reference in a neighboring filament.
+         */
+        private Neighbor findNeighbor (List<LineFilament> subfils,
+                                       int                dir)
+        {
+            final int firstIdx = (dir > 0) ? 0 : (subfils.size() - 1);
+            final int breakIdx = (dir > 0) ? subfils.size() : (-1);
+
+            for (int i = firstIdx; i != breakIdx; i += dir) {
+                LineFilament fil = subfils.get(i);
+                Point2D      pt = fil.findPoint(x, margin);
+
+                if (pt != null) {
+                    return new Neighbor(fil.getClusterPos(), pt);
+                }
+            }
+
+            return null;
+        }
+
+        //~ Inner Classes ------------------------------------------------------
+
+        /** Convey a point together with its relative cluster position */
+        private class Neighbor
+        {
+            //~ Instance fields ------------------------------------------------
+
+            final int     pos;
+            final Point2D point;
+
+            //~ Constructors ---------------------------------------------------
+
+            public Neighbor (int     pos,
+                             Point2D point)
+            {
+                this.pos = pos;
+                this.point = point;
+            }
+        }
+    }
+
+    //--------------//
+    // VirtualPoint //
+    //--------------//
+    /**
+     * Used for artificial intermediate points
+     */
+    private static class VirtualPoint
+        extends Point2D.Double
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public VirtualPoint (double x,
+                             double y)
+        {
+            super(x, y);
+        }
     }
 }

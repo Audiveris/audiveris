@@ -49,9 +49,6 @@ public class LineCluster
     /** Interline for this cluster */
     private final int interline;
 
-    /** Ids for lines */
-    private int lineId = 0;
-
     /** Reference to cluster this one has been included into, if any */
     private LineCluster parent;
 
@@ -435,12 +432,10 @@ public class LineCluster
 
             for (Entry<Integer, FilamentLine> entry : lines.entrySet()) {
                 int          pos = entry.getKey();
+                int          newPos = pos - firstPos;
                 FilamentLine line = entry.getValue();
-                FilamentLine newLine = new FilamentLine(
-                    line.getId(),
-                    pos - firstPos);
-                newLine.include(line);
-                newLines.put(pos - firstPos, newLine);
+                line.fil.setCluster(this, newPos);
+                newLines.put(newPos, new FilamentLine(line.fil));
             }
 
             lines = newLines;
@@ -541,12 +536,13 @@ public class LineCluster
     //---------//
     // getLine //
     //---------//
-    private FilamentLine getLine (int pos)
+    private FilamentLine getLine (int          pos,
+                                  LineFilament fil)
     {
         FilamentLine line = lines.get(pos);
 
         if (line == null) {
-            line = new FilamentLine(++lineId, pos);
+            line = new FilamentLine(fil);
             lines.put(pos, line);
         }
 
@@ -595,7 +591,7 @@ public class LineCluster
 
                 if (cluster == null) {
                     int          pos = i + deltaPos;
-                    FilamentLine line = getLine(pos);
+                    FilamentLine line = getLine(pos, null);
                     line.add(fil);
                     fil.setCluster(this, pos);
 
@@ -630,7 +626,7 @@ public class LineCluster
         for (Entry<Integer, FilamentLine> entry : that.lines.entrySet()) {
             int          pos = entry.getKey() + deltaPos;
             FilamentLine line = entry.getValue();
-            getLine(pos)
+            getLine(pos, null)
                 .include(line);
         }
 

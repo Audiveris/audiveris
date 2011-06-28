@@ -32,12 +32,6 @@ public class FilamentLine
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** Unique id */
-    private int id;
-
-    /** Relative position within the cluster */
-    final int pos;
-
     /** Underlying filament */
     LineFilament fil;
 
@@ -48,15 +42,11 @@ public class FilamentLine
     //--------------//
     /**
      * Creates a new FilamentLine object.
-     *
-     * @param id the assigned id
-     * @param pos the relative position within the line cluster
+     * @param fil the initial filament to add
      */
-    public FilamentLine (int id,
-                         int pos)
+    public FilamentLine (LineFilament fil)
     {
-        this.id = id;
-        this.pos = pos;
+        add(fil);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -106,7 +96,7 @@ public class FilamentLine
     //-------//
     public int getId ()
     {
-        return id;
+        return fil.getId();
     }
 
     //--------------//
@@ -195,7 +185,7 @@ public class FilamentLine
     //-----//
     // add //
     //-----//
-    public void add (LineFilament fil)
+    public final void add (LineFilament fil)
     {
         if (this.fil == null) {
             this.fil = fil;
@@ -246,7 +236,7 @@ public class FilamentLine
     public String toString ()
     {
         StringBuilder sb = new StringBuilder("Line#");
-        sb.append(pos);
+        sb.append(fil.getClusterPos());
         sb.append("[");
 
         sb.append("F")

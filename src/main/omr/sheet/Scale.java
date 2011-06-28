@@ -218,7 +218,7 @@ public class Scale
      */
     public double pixelsToFrac (double pixels)
     {
-        return (double) pixels / (double) interline;
+        return pixels / interline;
     }
 
     //------------//

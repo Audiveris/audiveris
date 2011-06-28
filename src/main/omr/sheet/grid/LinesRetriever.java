@@ -95,9 +95,6 @@ public class LinesRetriever
     /** Filaments factory */
     private FilamentsFactory factory;
 
-    /** Too short sections */
-    private List<GlyphSection> shortSections = new ArrayList<GlyphSection>();
-
     /** Long filaments found, non sorted */
     private final List<LineFilament> filaments = new ArrayList<LineFilament>();
 
@@ -194,7 +191,6 @@ public class LinesRetriever
             clustersRetriever = new ClustersRetriever(
                 sheet,
                 filaments,
-                shortSections,
                 scale.interline(),
                 globalSlope,
                 mainPatternColor);
@@ -209,12 +205,12 @@ public class LinesRetriever
                 secondFilaments = discarded;
                 Collections.sort(secondFilaments, Glyph.idComparator);
                 logger.info(
+                    sheet.getLogPrefix() +
                     "Searching clusters with secondInterline: " +
                     secondInterline);
                 secondClustersRetriever = new ClustersRetriever(
                     sheet,
                     secondFilaments,
-                    shortSections,
                     secondInterline,
                     globalSlope,
                     secondPatternColor);
@@ -226,7 +222,7 @@ public class LinesRetriever
             watch.start("BuildStaves");
             buildStaves();
         } finally {
-            watch.print();
+            ///watch.print();
         }
     }
 
@@ -245,11 +241,7 @@ public class LinesRetriever
 
         // Create filament factory
         try {
-            factory = new FilamentsFactory(
-                scale,
-                hLag,
-                LineFilament.class,
-                shortSections);
+            factory = new FilamentsFactory(scale, hLag, LineFilament.class);
         } catch (Exception ex) {
             logger.warning("Cannot create lines filament factory", ex);
         }

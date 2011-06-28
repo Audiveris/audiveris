@@ -69,9 +69,6 @@ public class FilamentsFactory
     /** Scale-dependent constants for horizontal stuff */
     private final Parameters params;
 
-    /** Short sections found */
-    private List<GlyphSection> shortSections;
-
     /** Long filaments found, non sorted */
     private final List<Filament> filaments = new ArrayList<Filament>();
 
@@ -86,18 +83,15 @@ public class FilamentsFactory
      * @param scale the related scale
      * @param lag the containing lag
      * @param filamentClass precise Filament class to be use for creation
-     * @param shortSection (output) the too short sections
      * @throws Exception
      */
     public FilamentsFactory (Scale                    scale,
                              GlyphLag                 lag,
-                             Class<?extends Filament> filamentClass,
-                             List<GlyphSection>       shortSections)
+                             Class<?extends Filament> filamentClass)
         throws Exception
     {
         this.scale = scale;
         this.lag = lag;
-        this.shortSections = shortSections;
 
         scaleArgs = new Object[] { scale };
         filamentConstructor = filamentClass.getConstructor(
@@ -316,10 +310,10 @@ public class FilamentsFactory
         } catch (Exception ex) {
             logger.warning("FilamentsFactory cannot retrieveFilaments", ex);
         } finally {
-            watch.print();
-
-            return filaments;
+            ///watch.print();
         }
+
+        return filaments;
     }
 
     //----------//
@@ -489,11 +483,8 @@ public class FilamentsFactory
 
         for (GlyphSection section : sections) {
             // Limit to main sections for the time being
-            if (section.getLength() < params.minSectionLength) {
-                if (shortSections != null) {
-                    shortSections.add(section);
-                }
-            } else if (!isSectionFat(section)) {
+            if ((section.getLength() >= params.minSectionLength) &&
+                !isSectionFat(section)) {
                 Filament fil = createFilament(section);
                 filaments.add(fil);
 

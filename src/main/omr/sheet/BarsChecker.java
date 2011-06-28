@@ -545,13 +545,13 @@ public class BarsChecker
             1.0,
             "Low Minimum ratio of alien pixels to detect chunks");
         Scale.Fraction maxStaffShiftDyHigh = new Scale.Fraction(
-            4.0,
+            0.4,
             "High Maximum vertical distance between a bar edge and the staff line");
         Scale.Fraction maxStaffShiftDyHighRough = new Scale.Fraction(
             4.0,
             "Rough high Maximum vertical distance between a bar edge and the staff line");
         Scale.Fraction maxStaffShiftDyLow = new Scale.Fraction(
-            0.27,
+            0.2,
             "Low Maximum vertical distance between a bar edge and the staff line");
         Scale.Fraction maxStaffShiftDyLowRough = new Scale.Fraction(
             2.0,

@@ -197,7 +197,7 @@ public class Steps
             }
         }
 
-        SortedSet sorted = new TreeSet<Step>(comparator);
+        SortedSet<Step> sorted = new TreeSet<Step>(comparator);
         sorted.addAll(stepList);
 
         return sorted;

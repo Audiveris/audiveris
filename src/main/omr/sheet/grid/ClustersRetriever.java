@@ -14,8 +14,6 @@ package omr.sheet.grid;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.GlyphSection;
-
 import omr.log.Logger;
 
 import omr.math.Histogram;
@@ -83,9 +81,6 @@ public class ClustersRetriever
     /** Long filaments to process */
     private final List<LineFilament> filaments;
 
-    /** Short sections that might extend clusters */
-    private final List<GlyphSection> shortSections;
-
     /** Filaments discarded */
     private final List<LineFilament> discardedFilaments = new ArrayList<LineFilament>();
 
@@ -123,21 +118,18 @@ public class ClustersRetriever
      *
      * @param sheet the sheet to process
      * @param filaments the current collection of filaments
-     * @param shortSectionss a collection of short sections
      * @param interline the precise interline to be processed
      * @param globalSlope the global scope detected for the sheet
      * @param patternColor color to be used for patterns display
      */
     public ClustersRetriever (Sheet              sheet,
                               List<LineFilament> filaments,
-                              List<GlyphSection> shortSections,
                               int                interline,
                               double             globalSlope,
                               Color              patternColor)
     {
         this.sheet = sheet;
         this.filaments = filaments;
-        this.shortSections = shortSections;
         this.interline = interline;
         this.globalSlope = globalSlope;
         this.patternColor = patternColor;
@@ -881,7 +873,7 @@ public class ClustersRetriever
     private void retrievePopularLength ()
     {
         // Build histogram of patterns lengths
-        Histogram<Integer> histo = new Histogram();
+        Histogram<Integer> histo = new Histogram<Integer>();
 
         for (List<FilamentPattern> list : colPatterns.values()) {
             for (FilamentPattern pattern : list) {
@@ -892,9 +884,12 @@ public class ClustersRetriever
         // Use the most popular length
         // Should be 4 for bass tab, 5 for standard notation, 6 for guitar tab
         popLength = histo.getMaxBucket();
-        logger.info(
-            sheet.getLogPrefix() + "Popular line pattern: " + popLength +
-            " histo:" + histo.dataString());
+
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                sheet.getLogPrefix() + "Popular line pattern: " + popLength +
+                " histo:" + histo.dataString());
+        }
     }
 
     //--------------//
@@ -950,7 +945,7 @@ public class ClustersRetriever
             0.08,
             "Maximum slope of gap between filaments");
         Constant.Ratio   maxJitter = new Constant.Ratio(
-            0.05, //0.05,
+            0.075, //0.05,
             "Maximum gap from standard pattern dy");
         Constant.Integer minPatternLength = new Constant.Integer(
             "line-count",

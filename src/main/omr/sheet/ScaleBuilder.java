@@ -517,7 +517,7 @@ public class ScaleBuilder
         /** Minimum number of pixels per interline */
         final Constant.Integer minInterline = new Constant.Integer(
             "Pixels",
-            13,
+            11,
             "Minimum number of pixels per interline");
 
         /** Minimum ratio of pixels for extrema acceptance */

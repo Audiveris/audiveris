@@ -672,6 +672,8 @@ public class GlyphRegression
             disableMaximum(DECRESCENDO, "width");
             disableMaximum(DECRESCENDO, "height");
 
+            break;
+
         default :
         }
     }

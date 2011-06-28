@@ -223,6 +223,7 @@ public class TextBlob
             // Start with reasonable values & Fall through
             blobBox = new PixelRectangle(gBox);
 
+        // Fall through wanted
         case 2 :
             blobBox = blobBox.union(gBox);
             // Cumulate tops & bottoms

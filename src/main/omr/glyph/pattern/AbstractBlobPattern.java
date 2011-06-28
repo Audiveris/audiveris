@@ -261,7 +261,7 @@ public abstract class AbstractBlobPattern
          * @param filter predicate to filter the glyphs candidate
          * @return the set of system glyphs within the region
          */
-        public SortedSet<Glyph> retrieveGlyphs (final Predicate filter)
+        public SortedSet<Glyph> retrieveGlyphs (final Predicate<Glyph> filter)
         {
             SortedSet<Glyph> glyphs = new TreeSet<Glyph>(
                 Glyph.globalComparator);

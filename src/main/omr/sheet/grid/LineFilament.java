@@ -17,12 +17,13 @@ import omr.sheet.Scale;
 
 import omr.stick.Filament;
 
+import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * Class {@code LineFilament} is a {@link Filament} used as (part of) a
- * candidate staff line.
+ * Class {@code LineFilament} is a {@link Filament}, involved in line patterns,
+ * and thus used as (part of) a candidate staff line.
  */
 public class LineFilament
     extends Filament
@@ -51,6 +52,7 @@ public class LineFilament
     /**
      * Creates a new LineFilament object.
      *
+     * 
      * @param scale scaling data
      */
     public LineFilament (Scale scale)
@@ -161,6 +163,20 @@ public class LineFilament
         System.out.println("   patterns=" + patterns);
     }
 
+    //-----------//
+    // fillHoles //
+    //-----------//
+    /**
+     * Fill large holes (due to missing intermediate points) in this filament,
+     * by interpolating (or extrapolating) from the collection of rather
+     * parallel fils, this filament is part of (at provided clusterPos)
+     * @param fils the provided collection of parallel filaments
+     */
+    public void fillHoles (List<LineFilament> fils)
+    {
+        super.fillHoles(clusterPos, fils);
+    }
+
     //---------//
     // include //
     //---------//
@@ -182,7 +198,7 @@ public class LineFilament
     @Override
     protected String internalsString ()
     {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(super.internalsString());
 
         if (cluster != null) {
             sb.append(" cluster:")

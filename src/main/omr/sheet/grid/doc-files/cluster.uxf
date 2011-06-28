@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<diagram program="umlet" version="11.2">
+<diagram program="umlet" version="11.3">
   <zoom_level>10</zoom_level>
   <element>
     <type>com.umlet.element.Class</type>
@@ -37,8 +37,7 @@ lines</panel_attributes>
     </coordinates>
     <panel_attributes>*FilamentLine*
 bg=#ffff55
---
-pos</panel_attributes>
+--</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -278,12 +277,11 @@ curve</panel_attributes>
       <x>370</x>
       <y>340</y>
       <w>100</w>
-      <h>70</h>
+      <h>50</h>
     </coordinates>
     <panel_attributes>*LineFilament*
 bg=#ffff55
 --
-cluster
 clusterPos</panel_attributes>
     <additional_attributes/>
   </element>
@@ -297,5 +295,40 @@ clusterPos</panel_attributes>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;-</panel_attributes>
     <additional_attributes>30;30;30;80</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>30</x>
+      <y>360</y>
+      <w>414</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+r2=cluster</panel_attributes>
+    <additional_attributes>30;30;30;70;390;70;390;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>210</x>
+      <y>260</y>
+      <w>50</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>30;30;30;80</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>190</x>
+      <y>250</y>
+      <w>100</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+/LineInfo/</panel_attributes>
+    <additional_attributes/>
   </element>
 </diagram>

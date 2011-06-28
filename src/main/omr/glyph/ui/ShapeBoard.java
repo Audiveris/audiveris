@@ -21,9 +21,9 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
 
-import omr.run.Orientation;
-
 import omr.log.Logger;
+
+import omr.run.Orientation;
 
 import omr.score.common.PixelPoint;
 
@@ -487,7 +487,7 @@ public class ShapeBoard
         //~ Instance fields ----------------------------------------------------
 
         // Optimization: remember the latest component on target
-        private WeakReference prevComponent;
+        private WeakReference<Component> prevComponent;
 
         //~ Constructors -------------------------------------------------------
 
@@ -549,7 +549,7 @@ public class ShapeBoard
                         glassPane.setImage(image);
                     }
 
-                    prevComponent = new WeakReference(component);
+                    prevComponent = new WeakReference<Component>(component);
                 }
             } else if (prevComponent.get() != null) {
                 // No longer on a droppable target, reuse initial image & size
@@ -564,7 +564,7 @@ public class ShapeBoard
 
         public final void reset ()
         {
-            prevComponent = new WeakReference(null);
+            prevComponent = new WeakReference<Component>(null);
         }
     }
 }

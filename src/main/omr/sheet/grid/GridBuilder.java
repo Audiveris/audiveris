@@ -125,8 +125,8 @@ public class GridBuilder
 
             // Display
             if (constants.displayFrame.getValue() && (Main.getGui() != null)) {
-                displayFrame();
                 displayBarsView();
+                displayGridView();
             }
 
             // Retrieve the horizontal staff lines filaments
@@ -148,7 +148,7 @@ public class GridBuilder
                 gridView.refresh();
             }
 
-            watch.print();
+            ///watch.print();
         }
     }
 
@@ -192,7 +192,7 @@ public class GridBuilder
             watch.start("linesRetriever.buildLag");
             linesRetriever.buildLag(wholeVertTable, showRuns);
         } finally {
-            watch.print();
+            ///watch.print();
         }
     }
 
@@ -223,10 +223,10 @@ public class GridBuilder
              .addViewTab("Bars", slv, boardsPane);
     }
 
-    //--------------//
-    // displayFrame //
-    //--------------//
-    private void displayFrame ()
+    //-----------------//
+    // displayGridView //
+    //-----------------//
+    private void displayGridView ()
     {
         GlyphLag         hLag = linesRetriever.getLag();
         GlyphLag         vLag = barsRetriever.getLag();

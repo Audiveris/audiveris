@@ -37,9 +37,6 @@ public class SystemFrame
     /** Range of system staves */
     private List<StaffInfo> staves;
 
-    /** Bar line that defines the system left side */
-    private BarInfo leftBar;
-
     //~ Constructors -----------------------------------------------------------
 
     //-------------//
@@ -93,37 +90,6 @@ public class SystemFrame
         return staves.get(staves.size() - 1);
     }
 
-    //------------//
-    // getLeftBar //
-    //------------//
-    /**
-     * Determine the precise physical info about the barline that defines this
-     * system left side
-     */
-    public BarInfo getLeftBar ()
-    {
-        if (leftBar == null) {
-            // Use the common part(s) of the contained staves BarInfo's
-            BarInfo sysBar = null;
-
-            for (StaffInfo staff : staves) {
-                BarInfo staffBar = staff.getBar(HorizontalSide.LEFT);
-
-                if (sysBar == null) {
-                    sysBar = staffBar;
-                } else {
-                    // Keep only the common items
-                    sysBar.getSticks()
-                          .retainAll(staffBar.getSticks());
-                }
-            }
-
-            leftBar = sysBar;
-        }
-
-        return leftBar;
-    }
-
     //-----------//
     // setStaves //
     //-----------//
@@ -160,11 +126,6 @@ public class SystemFrame
           .append(getFirstStaff().getId());
         sb.append(" lastStaff:")
           .append(getLastStaff().getId());
-
-        if (leftBar != null) {
-            sb.append(" leftBar:")
-              .append(leftBar);
-        }
 
         sb.append("}");
 

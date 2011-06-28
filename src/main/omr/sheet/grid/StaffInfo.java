@@ -640,6 +640,16 @@ public class StaffInfo
               .append(specificScale.interline());
         }
 
+        if (leftBar != null) {
+            sb.append(" leftBar:")
+              .append(leftBar);
+        }
+
+        if (rightBar != null) {
+            sb.append(" rightBar:")
+              .append(rightBar);
+        }
+
         sb.append("}");
 
         return sb.toString();

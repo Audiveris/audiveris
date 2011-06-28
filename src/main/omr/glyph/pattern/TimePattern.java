@@ -22,13 +22,11 @@ import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
-import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.entity.ScoreSystem;
 
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
-import omr.sheet.grid.StaffInfo;
 
 import omr.util.Implement;
 import omr.util.Predicate;
@@ -104,7 +102,7 @@ public class TimePattern
             glyph.addAttachment("time", pixCore);
 
             // We must find a time out of these glyphs
-            Collection glyphs = system.lookupIntersectedGlyphs(pixCore);
+            Collection<Glyph> glyphs = system.lookupIntersectedGlyphs(pixCore);
 
             if (checkTime(glyphs)) {
                 successNb++;
