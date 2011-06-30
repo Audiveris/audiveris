@@ -26,19 +26,15 @@ import omr.sheet.picture.Picture;
 
 import omr.ui.view.RubberPanel;
 import omr.ui.view.ScrollView;
+
+import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
+import java.awt.*;
+import java.awt.geom.*;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -147,17 +143,51 @@ public class TargetBuilder
         }
     }
 
-    //------------------//
-    // renderDewarpGrid //
-    //------------------//
+    //---------------//
+    // renderSystems //
+    //---------------//
+    /**
+     * BINGO TODO: This should be done from a more central class
+     * @param g
+     */
+    public void renderSystems (Graphics2D g)
+    {
+        if ((barsRetriever == null) || (barsRetriever.getSystems() == null)) {
+            return;
+        }
+
+        Stroke systemStroke = new BasicStroke(
+            5,
+            BasicStroke.CAP_ROUND,
+            BasicStroke.JOIN_ROUND);
+
+        g.setStroke(systemStroke);
+        g.setColor(Color.YELLOW);
+
+        for (SystemFrame system : barsRetriever.getSystems()) {
+            for (HorizontalSide side : HorizontalSide.values()) {
+                PixelPoint top = system.getFirstStaff()
+                                       .getFirstLine()
+                                       .getEndPoint(side);
+                PixelPoint bot = system.getLastStaff()
+                                       .getLastLine()
+                                       .getEndPoint(side);
+                g.drawLine(top.x, top.y, bot.x, bot.y);
+            }
+        }
+    }
+
+    //----------------//
+    // renderWarpGrid //
+    //----------------//
     /**
      * Render the grid used to dewarp the sheet image
      * @param g the graphic context
      * @param useSource true to render the source grid, false to render the
      * destination grid
      */
-    public void renderDewarpGrid (Graphics g,
-                                  boolean  useSource)
+    public void renderWarpGrid (Graphics g,
+                                boolean  useSource)
     {
         if (!constants.displayGrid.getValue()) {
             return;
@@ -484,7 +514,7 @@ public class TargetBuilder
             g.drawRenderedImage(image, identity);
 
             // Display also the Destination Points
-            renderDewarpGrid(g, false);
+            renderWarpGrid(g, false);
         }
     }
 }

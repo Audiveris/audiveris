@@ -363,8 +363,6 @@ public class PagePhysicalPainter
                 // Render only what we have got so far...
                 g.setStroke(lineStroke);
 
-                ///g.setColor(lineColor);
-
                 // Staff lines
                 sheet.getStaffManager()
                      .render(g);

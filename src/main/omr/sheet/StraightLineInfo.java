@@ -17,6 +17,7 @@ import omr.glyph.facets.Stick;
 import omr.math.Line;
 
 import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 
 import omr.sheet.grid.LineInfo;
 
@@ -24,6 +25,7 @@ import omr.util.HorizontalSide;
 import omr.util.Implement;
 
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.util.*;
 
 /**
@@ -51,7 +53,11 @@ public class StraightLineInfo
 
     /** Abscissa of right edge */
     private final int right;
+
+    /** Left point */
     private final PixelPoint leftPoint;
+
+    /** Right point */
     private final PixelPoint rightPoint;
 
     //~ Constructors -----------------------------------------------------------
@@ -85,6 +91,23 @@ public class StraightLineInfo
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //---------------//
+    // getContourBox //
+    //---------------//
+    @Implement(LineInfo.class)
+    public PixelRectangle getContourBox ()
+    {
+        Rectangle rect = new Rectangle(leftPoint);
+        rect.add(rightPoint);
+
+        // Trick to avoid empty area, and allow use of standard intersection
+        if (rect.height < 1) {
+            rect.height = 1;
+        }
+
+        return new PixelRectangle(rect);
+    }
 
     //-------------//
     // getEndPoint //

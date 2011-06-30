@@ -134,12 +134,14 @@ public class PictureView
                 sheet.getPage()
                      .accept(new PagePhysicalPainter(g, color, false));
 
-                //                sheet.getStaffManager()
-                //                     .render(g);
+                if (sheet.getTargetBuilder() != null) {
+                    sheet.getTargetBuilder()
+                         .renderSystems(g); // TODO: Temporary 
+                }
             } else {
                 if (sheet.getTargetBuilder() != null) {
                     sheet.getTargetBuilder()
-                         .renderDewarpGrid(g, true);
+                         .renderWarpGrid(g, true);
                 }
             }
         }

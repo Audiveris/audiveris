@@ -31,6 +31,7 @@ import omr.log.Logger;
 import omr.run.Orientation;
 import omr.run.Run;
 import omr.run.RunsTable;
+import omr.run.RunsTableFactory;
 
 import omr.score.common.PixelPoint;
 import omr.score.ui.PagePainter;
@@ -98,17 +99,17 @@ public class BarsRetriever
     /** Global slope of the sheet */
     private double globalSlope;
 
-    /** Sequence of systems */
-    private List<SystemFrame> systems;
-
     /** Related staff manager */
     private final StaffManager staffManager;
 
-    /** Companion in charge of physical bar checking */
-    private BarsChecker barsChecker;
+    /** Candidate bar sticks */
+    private List<Stick> bars;
 
     /** Collection of bar sticks that intersect a staff */
-    private final Map<StaffInfo, List<StickX>> barSticks = new HashMap<StaffInfo, List<StickX>>();
+    private Map<StaffInfo, List<StickX>> barSticks;
+
+    /** Sequence of systems */
+    private List<SystemFrame> systems;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -169,31 +170,14 @@ public class BarsRetriever
         this.globalSlope = globalSlope;
 
         try {
-            // Filaments factory
-            FilamentsFactory factory = new FilamentsFactory(
-                scale,
-                vLag,
-                Filament.class);
+            // Retrieve initial barline candidates
+            retrieveBars();
 
-            // Factory parameters adjustment
-            factory.setMaxSectionThickness(constants.maxSectionThickness);
-            factory.setMaxFilamentThickness(constants.maxFilamentThickness);
-            factory.setMaxCoordGap(constants.maxCoordGap);
+            // Detect systems of staves aggregated via barlines
+            retrieveSystems();
 
-            ///factory.dump();
-
-            // Create filaments out of vertical sections
-            for (Filament fil : factory.retrieveFilaments(
-                new SticksSource(vLag.getVertices()))) {
-                filaments.add(fil);
-            }
-
-            // Retrieve barline candidates
-            barsChecker = new BarsChecker(sheet, vLag, -globalSlope, true); // Rough=true
-            barsChecker.retrieveCandidates(filaments);
-
-            // Connect bars and staves into systems
-            crossConnect();
+            // Adjust precise sides for systems, staves & lines
+            adjustSides();
         } catch (Exception ex) {
             logger.warning("BarsRetriever cannot buildInfo", ex);
         }
@@ -205,44 +189,18 @@ public class BarsRetriever
     /**
      * Build the underlying lag, out of the provided runs table.
      * This method must be called before building info.
-     * @param wholeVertTable the provided table of runs
+     * @param vertTable the provided table of vertical runs
      * @param showRuns true to create views on runs
      */
-    public void buildLag (RunsTable wholeVertTable,
+    public void buildLag (RunsTable vertTable,
                           boolean   showRuns)
     {
         vLag = new GlyphLag("vLag", StickSection.class, Orientation.VERTICAL);
 
-        RunsTable longVertTable = wholeVertTable.clone("long-vert")
-                                                .purge(
-            new Predicate<Run>() {
-                    public final boolean check (Run run)
-                    {
-                        return run.getLength() < params.minRunLength;
-                    }
-                });
-
-        if (showRuns) {
-            // Add a view on runs table
-            sheet.getAssembly()
-                 .addRunsTab(longVertTable);
-        }
-
         SectionsBuilder sectionsBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
             vLag,
             new JunctionRatioPolicy(params.maxLengthRatio));
-        sectionsBuilder.createSections(longVertTable);
-    }
-
-    //-----------------//
-    // staffHasLongBar //
-    //-----------------//
-    public boolean staffHasLongBar (StaffInfo      staff,
-                                    HorizontalSide side)
-    {
-        BarInfo bar = staff.getBar(side);
-
-        return (bar != null) && isLongBar(bar.getStick(RIGHT));
+        sectionsBuilder.createSections(vertTable);
     }
 
     //-----------//
@@ -272,11 +230,11 @@ public class BarsRetriever
             filament.renderLine(g);
         }
 
-        // Draw tangent at each ending point
+        // Draw tangent at each ending point (using max coord gap)
         g.setColor(Color.BLACK);
 
         double dy = sheet.getScale()
-                         .toPixels(constants.tangentLg);
+                         .toPixels(constants.maxCoordGap);
 
         for (Filament filament : filaments) {
             PixelPoint p = filament.getStartPoint();
@@ -288,25 +246,6 @@ public class BarsRetriever
         }
 
         g.setStroke(oldStroke);
-    }
-
-    //---------//
-    // getBars //
-    //---------//
-    private List<Stick> getBars ()
-    {
-        List<Stick> bars = new ArrayList<Stick>();
-
-        for (Glyph glyph : vLag.getActiveGlyphs()) {
-            Shape shape = glyph.getShape();
-
-            if ((shape == Shape.THICK_BARLINE) ||
-                (shape == Shape.THIN_BARLINE)) {
-                bars.add((Stick) glyph);
-            }
-        }
-
-        return bars;
     }
 
     //--------------//
@@ -356,6 +295,38 @@ public class BarsRetriever
                                                        .xAt(y);
 
         return new PixelPoint((int) Math.rint(x), (int) Math.rint(y));
+    }
+
+    //----------------------//
+    // adjustLineSystemSide //
+    //----------------------//
+    /**
+     * Adjust the precise side of a system, for which we align line endings
+     * @param system the system to process
+     * @param side the desired side
+     */
+    private void adjustLineSystemSide (SystemFrame    system,
+                                       HorizontalSide side)
+    {
+        // Compute theoretical bar line equation x = -y*slope + b;
+        double deltas = 0;
+
+        for (StaffInfo staff : system.getStaves()) {
+            int x = staff.getLinesEnd(side);
+            int y = staff.getMidOrdinate(side);
+            deltas += (x + (y * globalSlope));
+        }
+
+        double b = deltas / system.getStaves()
+                                  .size();
+
+        // Enforce this pseudo-vertical line
+        for (StaffInfo staff : system.getStaves()) {
+            int y = staff.getMidOrdinate(side);
+            int x = (int) Math.rint(b - (y * globalSlope));
+            staff.setBar(side, null);
+            staff.setAbscissa(side, x);
+        }
     }
 
     //----------------------//
@@ -440,7 +411,7 @@ public class BarsRetriever
     // adjustShortSystemSide //
     //-----------------------//
     /**
-     * Adjust the precise side of a system, for which we have some staves with
+     * Adjust the precise side of a system, for which we have all staves with
      * short (unreliable) bar
      * @param system the system to process
      * @param side the desired side
@@ -448,29 +419,47 @@ public class BarsRetriever
     private void adjustShortSystemSide (SystemFrame    system,
                                         HorizontalSide side)
     {
-        final int       dir = (side == LEFT) ? 1 : (-1);
-        List<StaffInfo> staves = system.getStaves();
+        //        final int       dir = (side == LEFT) ? 1 : (-1);
+        //        List<StaffInfo> staves = system.getStaves();
+        //
+        //        for (int idx = 0; idx < staves.size(); idx++) {
+        //            StaffInfo staff = staves.get(idx);
+        //
+        //            // Check that staff bar, if any, is not passed by lines
+        //            BarInfo bar = staff.getBar(side);
+        //
+        ////            if (bar != null) {
+        ////                int linesX = staff.getLinesEnd(side);
+        ////                int barX = staff.intersection(bar.getStick(RIGHT)).x;
+        ////
+        ////                if ((dir * (barX - linesX)) > params.maxLineExtension) {
+        ////                    staff.setBar(side, null);
+        ////                    staff.setAbscissa(side, linesX);
+        ////
+        ////                    if (logger.isFineEnabled()) {
+        ////                        logger.info(side + " extended " + staff);
+        ////                    }
+        ////                }
+        ////            }
+        //        }
+    }
 
-        for (int idx = 0; idx < staves.size(); idx++) {
-            StaffInfo staff = staves.get(idx);
-
-            // Check that staff bar, if any, is not passed by lines
-            BarInfo bar = staff.getBar(side);
-
-            if (bar != null) {
-                int linesX = staff.getLinesEnd(side);
-                int barX = staff.intersection(bar.getStick(RIGHT)).x;
-
-                if ((dir * (barX - linesX)) > params.maxLineExtension) {
-                    staff.setBar(side, null);
-                    staff.setAbscissa(side, linesX);
-
-                    if (logger.isFineEnabled()) {
-                        logger.info(side + " extended " + staff);
-                    }
-                }
-            }
+    //-------------//
+    // adjustSides //
+    //-------------//
+    /**
+     * Adjust precise sides for systems, staves & lines
+     */
+    private void adjustSides ()
+    {
+        // Systems
+        for (SystemFrame system : systems) {
+            retrieveSystemSides(system);
+            adjustSystemSides(system);
         }
+
+        // Staff lines
+        adjustStaffLines();
     }
 
     //------------------//
@@ -508,6 +497,125 @@ public class BarsRetriever
                 line.fil.fillHoles(fils);
             }
         }
+    }
+
+    //-------------------//
+    // adjustSystemSides //
+    //-------------------//
+    /**
+     * Adjust the precise abscissa of each side of the system staves.
+     *
+     * Retrieve the left and right side of each system (& staff),
+     * to adjust precise ending points of each staff line.
+     * We need a precise point in x (from barline) and in y (from staff line).
+     *
+     * <p>Nota: We have to make sure that all staves of a given system exhibit
+     * consistent sides, otherwise the dewarping will strongly degrade the
+     * image.</p>
+     * @param system the system to process
+     */
+    private void adjustSystemSides (SystemFrame system)
+    {
+        final List<StaffInfo> staves = system.getStaves();
+        final int             staffCount = staves.size();
+
+        for (HorizontalSide side : HorizontalSide.values()) {
+            int longs = 0;
+            int shorts = 0;
+
+            for (StaffInfo staff : staves) {
+                BarInfo bar = staff.getBar(side);
+
+                if (bar != null) {
+                    if (isLongBar(bar.getStick(RIGHT))) {
+                        longs++;
+                    } else {
+                        shorts++;
+                    }
+                }
+            }
+
+            // Check consistency of staves within the system
+            if (longs > 0) {
+                if (logger.isFineEnabled()) {
+                    logger.info(
+                        "System#" + system.getId() + " " + side +
+                        " long bars: " + longs + "/" + staffCount);
+                }
+
+                // Align on long bars
+                adjustLongSystemSide(system, side);
+            } else {
+                if (logger.isFineEnabled()) {
+                    logger.info(
+                        "System#" + system.getId() + " " + side +
+                        " short bars: " + shorts + "/" + staffCount);
+                }
+
+                // Double-check system consistency
+                if (shorts == staffCount) {
+                    // (Do nothing)
+                    adjustShortSystemSide(system, side);
+                } else {
+                    // Use line ends, adjusted for slope
+                    adjustLineSystemSide(system, side);
+                }
+            }
+        }
+    }
+
+    //-------------------//
+    // canConnectSystems //
+    //-------------------//
+    private boolean canConnectSystems (SystemFrame prevSystem,
+                                       SystemFrame nextSystem)
+    {
+        int maxBarPosGap = scale.toPixels(constants.maxBarPosGap);
+        int maxBarCoordGap = scale.toPixels(constants.maxBarCoordGap);
+
+        logger.info(
+            "Checking S#" + prevSystem.getId() + "(" +
+            prevSystem.getStaves().size() + ") - S#" + nextSystem.getId() +
+            "(" + nextSystem.getStaves().size() + ")");
+
+        StaffInfo prevStaff = prevSystem.getLastStaff();
+        BarInfo   prevBar = prevStaff.getBar(LEFT);
+        StaffInfo nextStaff = nextSystem.getFirstStaff();
+        BarInfo   nextBar = nextStaff.getBar(LEFT);
+
+        // Check vertical connections
+        for (Stick prevStick : prevBar.getSticks()) {
+            PixelPoint prevPoint = prevStick.getStopPoint();
+
+            for (Stick nextStick : nextBar.getSticks()) {
+                PixelPoint nextPoint = nextStick.getStartPoint();
+
+                // Check dx
+                int dx = Math.abs(nextPoint.x - prevPoint.x);
+
+                // Check dy
+                int dy = Math.abs(nextPoint.y - prevPoint.y);
+                logger.info(
+                    "F" + prevStick.getId() + "-F" + nextStick.getId() +
+                    " dx:" + dx + " dy:" + dy);
+
+                if ((dx <= maxBarPosGap) && (dy <= maxBarCoordGap)) {
+                    logger.warning(
+                        "Merging S#" + prevSystem.getId() + "(" +
+                        prevSystem.getStaves().size() + ") - S#" +
+                        nextSystem.getId() + "(" +
+                        nextSystem.getStaves().size() + ")");
+
+                    Filament pf = (Filament) prevStick;
+                    Filament nf = (Filament) nextStick;
+                    pf.include(nf);
+
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     //---------------//
@@ -548,33 +656,51 @@ public class BarsRetriever
     }
 
     //--------------//
-    // crossConnect //
+    // retrieveBars //
     //--------------//
     /**
-     * Connect bars and staves, using the skeletons of vertical glyphs (bars)
-     * and non-finished staves.
-     * - Candidate bars are available as vertical glyphs.
-     * - Staves are available through the StaffManager.
-     *
+     * Retrieve initial barline candidates
+     * @return the collection of candidates barlines
+     * @throws Exception
      */
-    private void crossConnect ()
+    private void retrieveBars ()
+        throws Exception
     {
-        // Each bar can connect several staves as a system (or just a part)
-        List<Stick> bars = getBars();
+        // Filaments factory
+        FilamentsFactory factory = new FilamentsFactory(
+            scale,
+            vLag,
+            Filament.class);
 
-        // Retrieve the staves that start systems
-        Integer[] tops = retrieveSystemTops(bars);
+        // Factory parameters adjustment
+        factory.setMaxSectionThickness(constants.maxSectionThickness);
+        factory.setMaxFilamentThickness(constants.maxFilamentThickness);
+        factory.setMaxCoordGap(constants.maxCoordGap);
 
-        // Create system frames
-        systems = createSystems(tops);
-
-        // Retrieve precise left and right sides of each system / staff
-        for (SystemFrame system : systems) {
-            retrieveSystemSides(system);
+        // Create filaments out of vertical sections
+        for (Filament fil : factory.retrieveFilaments(
+            new SticksSource(vLag.getVertices()))) {
+            filaments.add(fil);
         }
 
-        // Adjust staff lines
-        adjustStaffLines();
+        BarsChecker barsChecker = new BarsChecker(
+            sheet,
+            vLag,
+            -globalSlope,
+            true);
+        barsChecker.retrieveCandidates(filaments);
+
+        bars = new ArrayList<Stick>();
+
+        // Consider only sticks with a barline shape
+        for (Glyph glyph : vLag.getActiveGlyphs()) {
+            Shape shape = glyph.getShape();
+
+            if ((shape == Shape.THICK_BARLINE) ||
+                (shape == Shape.THIN_BARLINE)) {
+                bars.add((Stick) glyph);
+            }
+        }
     }
 
     //-------------------//
@@ -598,9 +724,12 @@ public class BarsRetriever
         final int    breakIdx = (dir > 0) ? staffSticks.size() : (-1);
 
         int          staffX = staff.getAbscissa(side);
+        final int    xBreak = staffX + (dir * params.maxDistanceFromStaffSide);
         BarInfo      bar = null;
         Integer      barX = null;
-        final int    xBreak = staffX + (dir * params.maxDistanceFromStaffSide);
+
+        // Reset
+        staff.setBar(side, null);
 
         // Browsing bar sticks using 'dir' direction
         for (int i = firstIdx; i != breakIdx; i += dir) {
@@ -611,11 +740,7 @@ public class BarsRetriever
                 break; // Speed up
             }
 
-            if (isLongBar(sx.stick)) {
-                // Very good
-            } else if (takeAllSticks) {
-                // Be very careful with short sticks
-            } else {
+            if (!(isLongBar(sx.stick) || takeAllSticks)) {
                 continue;
             }
 
@@ -654,7 +779,8 @@ public class BarsRetriever
         } else {
             if (logger.isFineEnabled()) {
                 logger.fine(
-                    side + " no  bar for staff#" + staff.getId() + " " +
+                    side + " no " + (takeAllSticks ? "" : "long") +
+                    " bar for staff#" + staff.getId() + " " +
                     Glyphs.toString(StickX.sticksOf(staffSticks)));
             }
         }
@@ -662,6 +788,38 @@ public class BarsRetriever
         staff.setAbscissa(side, staffX);
 
         return bar;
+    }
+
+    //-------------------//
+    // retrieveSystemBar //
+    //-------------------//
+    /**
+     * Retrieve the left side of each system (& staff)
+     * @param system the system to process
+     */
+    private void retrieveSystemBar (SystemFrame system)
+    {
+        // Sort staff-related sticks, using abscissa at staff intersection
+        for (StaffInfo staff : system.getStaves()) {
+            Collections.sort(barSticks.get(staff));
+        }
+
+        // 1st pass w/ long bars, 2nd pass w/ shorter bars if needed
+        for (boolean takeAllSticks : new boolean[] { false, true }) {
+            boolean hasLongBar = false;
+
+            for (StaffInfo staff : system.getStaves()) {
+                BarInfo bar = retrieveStaffSide(staff, LEFT, takeAllSticks);
+
+                if ((bar != null) && isLongBar(bar.getStick(RIGHT))) {
+                    hasLongBar = true;
+                }
+            }
+
+            if (hasLongBar) {
+                break;
+            }
+        }
     }
 
     //---------------------//
@@ -688,11 +846,9 @@ public class BarsRetriever
             Collections.sort(barSticks.get(staff));
         }
 
-        final boolean[] options = new boolean[] { false, true };
-
         for (HorizontalSide side : HorizontalSide.values()) {
             // 1st pass w/ long bars, 2nd pass w/ shorter bars if needed
-            for (boolean takeAllSticks : options) {
+            for (boolean takeAllSticks : new boolean[] { false, true }) {
                 int longs = 0;
                 int shorts = 0;
 
@@ -747,12 +903,12 @@ public class BarsRetriever
     //--------------------//
     /**
      * Retrieve for each staff the staff that starts its containing system
-     * @param bars (input) the collection of bar candidates
      * @return the (index of) system starting staff for each staff
      */
-    private Integer[] retrieveSystemTops (List<Stick> bars)
+    private Integer[] retrieveSystemTops ()
     {
         Collections.sort(bars, Stick.reverseLengthComparator);
+        barSticks = new HashMap<StaffInfo, List<StickX>>();
 
         Integer[] tops = new Integer[staffManager.getStaffCount()];
 
@@ -790,10 +946,75 @@ public class BarsRetriever
         }
 
         if (logger.isFineEnabled()) {
-            logger.info("tops:" + Arrays.toString(tops));
+            logger.info("top indices: " + Arrays.toString(tops));
         }
 
         return tops;
+    }
+
+    //-----------------//
+    // retrieveSystems //
+    //-----------------//
+    /**
+     * Detect systems of staves aggregated via connecting barlines.
+     * This method creates the 'systems' member.
+     */
+    private void retrieveSystems ()
+    {
+        do {
+            // Retrieve the staves that start systems
+            Integer[] tops = retrieveSystemTops();
+
+            // Create system frames using staves tops
+            systems = createSystems(tops);
+
+            // Retrieve left bar of each system
+            for (SystemFrame system : systems) {
+                retrieveSystemBar(system);
+            }
+
+            // Smart checking of systems
+            if (systemsModified()) {
+                logger.info("Systems modified, rebuilding...");
+            } else {
+                break;
+            }
+        } while (true);
+    }
+
+    //-----------------//
+    // staffHasLongBar //
+    //-----------------//
+    private boolean staffHasLongBar (StaffInfo      staff,
+                                     HorizontalSide side)
+    {
+        BarInfo bar = staff.getBar(side);
+
+        return (bar != null) && isLongBar(bar.getStick(RIGHT));
+    }
+
+    //-----------------//
+    // systemsModified //
+    //-----------------//
+    private boolean systemsModified ()
+    {
+        boolean modified = false;
+
+        // Consistency of system lengths
+        //        for (SystemFrame system : systems) {
+        //            logger.warning(
+        //                "System#" + system.getId() + " staves: " +
+        //                system.getStaves().size());
+        //        }
+
+        // Check connection of left bars across systems
+        for (int i = 1; i < systems.size(); i++) {
+            if (canConnectSystems(systems.get(i - 1), systems.get(i))) {
+                modified = true;
+            }
+        }
+
+        return modified;
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -821,8 +1042,14 @@ public class BarsRetriever
         Scale.Fraction  maxCoordGap = new Scale.Fraction(
             0.5,
             "Maximum delta coordinate for a gap between filaments");
+        Scale.Fraction  maxBarCoordGap = new Scale.Fraction(
+            2.5,
+            "Maximum delta coordinate for a vertical gap between bars");
+        Scale.Fraction  maxBarPosGap = new Scale.Fraction(
+            0.2,
+            "Maximum delta position for a vertical gap between bars");
         Scale.Fraction  minRunLength = new Scale.Fraction(
-            1.5, // 1.5,
+            1.5,
             "Minimum length for a vertical run to be considered");
         Scale.Fraction  minLongLength = new Scale.Fraction(
             8,
@@ -852,9 +1079,6 @@ public class BarsRetriever
             "thickness",
             0.5,
             "Stroke thickness to draw filaments curves");
-        Scale.Fraction  tangentLg = new Scale.Fraction(
-            1,
-            "Typical length to display tangents at ending points");
     }
 
     //------------//

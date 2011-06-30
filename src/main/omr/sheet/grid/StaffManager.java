@@ -13,6 +13,8 @@ package omr.sheet.grid;
 
 import omr.constant.ConstantSet;
 
+import omr.log.Logger;
+
 import omr.math.GeoPath;
 
 import omr.score.common.PixelPoint;
@@ -21,7 +23,6 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 
 import omr.util.Navigable;
-import omr.util.VerticalSide;
 import static omr.util.VerticalSide.*;
 
 import java.awt.Graphics2D;
@@ -40,6 +41,9 @@ public class StaffManager
 
     /** Specific application parameters */
     private static final Constants constants = new Constants();
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(StaffManager.class);
 
     //~ Instance fields --------------------------------------------------------
 

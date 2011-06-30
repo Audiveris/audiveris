@@ -174,8 +174,6 @@ public class LinesRetriever
             // Retrieve filaments out of merged long sections
             watch.start("retrieveFilaments");
 
-            List<LineFilament> shortFilaments = new ArrayList<LineFilament>();
-
             for (Filament fil : factory.retrieveFilaments(
                 new SticksSource(hLag.getSections()))) {
                 filaments.add((LineFilament) fil);
@@ -222,7 +220,9 @@ public class LinesRetriever
             watch.start("BuildStaves");
             buildStaves();
         } finally {
-            ///watch.print();
+            if (constants.printWatch.getValue()) {
+                watch.print();
+            }
         }
     }
 
@@ -234,8 +234,8 @@ public class LinesRetriever
      * @param wholeVertTable the provided runs table
      * @param showRuns true to create views on runs
      */
-    public void buildLag (RunsTable wholeVertTable,
-                          boolean   showRuns)
+    public RunsTable buildLag (RunsTable wholeVertTable,
+                               boolean   showRuns)
     {
         hLag = new GlyphLag("hLag", StickSection.class, Orientation.HORIZONTAL);
 
@@ -311,6 +311,8 @@ public class LinesRetriever
                         return section.getLength() < minSectionLength;
                     }
                 });
+
+        return purgedVertTable;
     }
 
     //--------------//
@@ -477,22 +479,25 @@ public class LinesRetriever
 
         // Constants specified WRT mean interline
         // --------------------------------------
-        Scale.Fraction  minRunLength = new Scale.Fraction(
+        Scale.Fraction   minRunLength = new Scale.Fraction(
             1.0,
             "Minimum length for a horizontal run to be considered");
-        Constant.Ratio  topRatioForSlope = new Constant.Ratio(
+        Constant.Ratio   topRatioForSlope = new Constant.Ratio(
             0.1,
             "Percentage of top filaments used to retrieve global slope");
 
         // Constants for display
         //
-        Constant.Double splineThickness = new Constant.Double(
+        Constant.Double  splineThickness = new Constant.Double(
             "thickness",
             0.5,
             "Stroke thickness to draw filaments curves");
-        Scale.Fraction  tangentLg = new Scale.Fraction(
+        Scale.Fraction   tangentLg = new Scale.Fraction(
             1,
             "Typical length to display tangents at ending points");
+        Constant.Boolean printWatch = new Constant.Boolean(
+            false,
+            "Should we print out the stop watch?");
     }
 
     //------------//

@@ -581,38 +581,25 @@ public class StaffInfo
         LineInfo lastLine = getLastLine();
 
         if ((firstLine != null) && (lastLine != null)) {
-            Rectangle clip = g.getClipBounds();
+            if (g.getClipBounds()
+                 .intersects(getAreaBounds())) {
+                // Draw each horizontal line in the set
+                for (LineInfo line : lines) {
+                    line.render(g);
+                }
 
-            // Check that top of staff is visible
-            if ((clip.y + clip.height) < Math.min(
-                firstLine.getEndPoint(LEFT).y,
-                firstLine.getEndPoint(RIGHT).y)) {
-                return false;
+                // Draw the left and right vertical lines
+                for (HorizontalSide side : HorizontalSide.values()) {
+                    PixelPoint first = firstLine.getEndPoint(side);
+                    PixelPoint last = lastLine.getEndPoint(side);
+                    g.drawLine(first.x, first.y, last.x, last.y);
+                }
+
+                return true;
             }
-
-            // Check that bottom of staff is visible
-            if (clip.y > Math.max(
-                lastLine.getEndPoint(LEFT).y,
-                lastLine.getEndPoint(RIGHT).y)) {
-                return false;
-            }
-
-            // Draw each horizontal line in the set
-            for (LineInfo line : lines) {
-                line.render(g);
-            }
-
-            // Draw the left and right vertical lines
-            for (HorizontalSide side : HorizontalSide.values()) {
-                PixelPoint first = firstLine.getEndPoint(side);
-                PixelPoint last = lastLine.getEndPoint(side);
-                g.drawLine(first.x, first.y, last.x, last.y);
-            }
-
-            return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     //----------//

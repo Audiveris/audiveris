@@ -13,8 +13,6 @@ package omr.sheet.grid;
 
 import omr.log.Logger;
 
-import omr.util.HorizontalSide;
-
 import java.util.List;
 
 /**

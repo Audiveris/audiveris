@@ -551,7 +551,7 @@ public class BarsChecker
             4.0,
             "Rough high Maximum vertical distance between a bar edge and the staff line");
         Scale.Fraction maxStaffShiftDyLow = new Scale.Fraction(
-            0.2,
+            0.3,
             "Low Maximum vertical distance between a bar edge and the staff line");
         Scale.Fraction maxStaffShiftDyLowRough = new Scale.Fraction(
             2.0,
@@ -572,13 +572,13 @@ public class BarsChecker
             0,
             "High Minimum horizontal distance between a bar and a staff edge");
         Scale.Fraction minStaffDxHighRough = new Scale.Fraction(
-            -2,
+            -3,
             "Rough high Minimum horizontal distance between a bar and a staff edge");
         Scale.Fraction minStaffDxLow = new Scale.Fraction(
             0,
             "Low Minimum horizontal distance between a bar and a staff edge");
         Scale.Fraction minStaffDxLowRough = new Scale.Fraction(
-            -4,
+            -5,
             "Rough low Minimum horizontal distance between a bar and a staff edge");
         Scale.Fraction maxThinWidth = new Scale.Fraction(
             0.3,

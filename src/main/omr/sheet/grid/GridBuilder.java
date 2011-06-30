@@ -148,7 +148,9 @@ public class GridBuilder
                 gridView.refresh();
             }
 
-            ///watch.print();
+            if (constants.printWatch.getValue()) {
+                watch.print();
+            }
         }
     }
 
@@ -184,15 +186,20 @@ public class GridBuilder
                      .addRunsTab(wholeVertTable);
             }
 
-            // vLag
-            watch.start("barsRetriever.buildLag");
-            barsRetriever.buildLag(wholeVertTable, showRuns);
-
             // hLag
             watch.start("linesRetriever.buildLag");
-            linesRetriever.buildLag(wholeVertTable, showRuns);
+
+            RunsTable purgedVertTable = linesRetriever.buildLag(
+                wholeVertTable,
+                showRuns);
+
+            // vLag
+            watch.start("barsRetriever.buildLag");
+            barsRetriever.buildLag(purgedVertTable, showRuns);
         } finally {
-            ///watch.print();
+            if (constants.printWatch.getValue()) {
+                watch.print();
+            }
         }
     }
 
@@ -273,5 +280,8 @@ public class GridBuilder
         Constant.Boolean showRuns = new Constant.Boolean(
             false,
             "Should we show view on runs?");
+        Constant.Boolean printWatch = new Constant.Boolean(
+            false,
+            "Should we print out the stop watch?");
     }
 }

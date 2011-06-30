@@ -14,6 +14,7 @@ package omr.sheet.grid;
 import omr.glyph.GlyphSection;
 
 import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 
 import omr.util.HorizontalSide;
 
@@ -28,6 +29,15 @@ import java.util.Collection;
 public interface LineInfo
 {
     //~ Methods ----------------------------------------------------------------
+
+    //---------------//
+    // getContourBox //
+    //---------------//
+    /**
+     * Report the absolute contour rectangle
+     * @return the contour box (with minimum height of 1)
+     */
+    public PixelRectangle getContourBox ();
 
     //-------------//
     // getEndPoint //

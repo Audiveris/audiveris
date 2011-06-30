@@ -354,7 +354,7 @@ public class FilamentsFactory
             return false;
         }
 
-        // y gap?
+        // pos gap?
         if (coordGap < 0) {
             // Overlap between the two filaments
             // Measure dy at middle of overlap
@@ -416,7 +416,12 @@ public class FilamentsFactory
                 stop = oneStart;
             }
 
-            int posGap = Math.abs(stop.y - start.y);
+            // Compute position gap, taking thickness into account
+            double oneThickness = one.getWeight() / one.getLength();
+            double twoThickness = two.getWeight() / two.getLength();
+            int    posMargin = (int) Math.rint(
+                Math.max(oneThickness, twoThickness) / 2);
+            int    posGap = Math.abs(stop.y - start.y) - posMargin;
 
             if (posGap > params.maxPosGap) {
                 if (logger.isFineEnabled()) {

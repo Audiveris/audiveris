@@ -524,16 +524,6 @@ public class ClustersRetriever
     private void expandClusters ()
     {
         List<LineFilament> startFils = new ArrayList<LineFilament>(filaments);
-
-        //        for (GlyphSection section : shortSections) {
-        //            if (section.getLength() > 2) {
-        //                LineFilament fil = new LineFilament(scale);
-        //                fil.addSection(section);
-        //                fil = (LineFilament) section.getGraph()
-        //                                            .addGlyph(fil);
-        //                startFils.add(fil);
-        //            }
-        //        }
         Collections.sort(startFils, LineFilament.startComparator);
 
         List<LineFilament> stopFils = new ArrayList<LineFilament>(startFils);
@@ -665,27 +655,6 @@ public class ClustersRetriever
     {
         return (int) Math.rint(getSheetTopEdge().ptLineDist(point));
     }
-
-    //
-    //    //------------//
-    //    // ordinateOf //
-    //    //------------//
-    //    /**
-    //     * Report the orthogonal distance of the filament mid-point
-    //     * to the sheet top edge tilted with global slope.
-    //     */
-    //    private int ordinateOf (LineFilament fil)
-    //    {
-    //        if (fil.getRefDistance() == null) {
-    //            PixelPoint start = fil.getStartPoint();
-    //            PixelPoint stop = fil.getStopPoint();
-    //            fil.setRefDistance(
-    //                ordinateOf(
-    //                    new Point((start.x + stop.x) / 2, (start.y + stop.y) / 2)));
-    //        }
-    //
-    //        return fil.getRefDistance();
-    //    }
 
     //------------//
     // ordinateOf //
