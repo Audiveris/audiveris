@@ -96,7 +96,7 @@ public class Barline
             if (linePredicate.check(glyph)) {
                 Stick stick = (Stick) glyph;
                 int   x = stick.getAbsoluteLine()
-                               .xAt(topLeft.y);
+                               .xAtY(topLeft.y);
 
                 return x;
             }
@@ -126,7 +126,7 @@ public class Barline
             if (glyph.isBar()) {
                 Stick stick = (Stick) glyph;
                 int   x = stick.getAbsoluteLine()
-                               .xAt(topLeft.y);
+                               .xAtY(topLeft.y);
 
                 if (x > right) {
                     right = x;

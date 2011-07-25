@@ -9,7 +9,7 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.stick;
+package omr.sheet.grid;
 
 import omr.Main;
 
@@ -18,6 +18,12 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
+import omr.glyph.facets.BasicStick;
+import omr.glyph.facets.Glyph;
+import omr.glyph.facets.GlyphComposition;
+import omr.glyph.facets.Stick;
+
+import omr.lag.Sections;
 
 import omr.log.Logger;
 
@@ -28,7 +34,8 @@ import omr.run.Orientation;
 
 import omr.sheet.Scale;
 
-import omr.step.StepException;
+import omr.stick.SectionsSource;
+import omr.stick.StickSection;
 
 import omr.util.StopWatch;
 
@@ -39,7 +46,7 @@ import java.util.List;
 
 /**
  * Class <code>FilamentsFactory</code> builds filaments out of sections
- * provided by a {@link SticksSource}.
+ * provided by a {@link SectionsSource}.
  *
  * @author Hervé Bitteur
  */
@@ -71,6 +78,9 @@ public class FilamentsFactory
 
     /** Long filaments found, non sorted */
     private final List<Filament> filaments = new ArrayList<Filament>();
+
+    /** (Debug) Collection of glyphs ids to be supervised, if any */
+    private Set<Integer> vipGlyphs;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -225,9 +235,9 @@ public class FilamentsFactory
                 // Determine where to measure thickness
                 Line      line = ((StickSection) section).getLine();
                 int       startCoord = bounds.x + (bounds.width / 4);
-                int       startPos = line.yAt(startCoord);
+                int       startPos = line.yAtX(startCoord);
                 int       stopCoord = bounds.x + ((3 * bounds.width) / 4);
-                int       stopPos = line.yAt(stopCoord);
+                int       stopPos = line.yAtX(stopCoord);
 
                 // Start side
                 Rectangle roi = new Rectangle(startCoord, startPos, 0, 0);
@@ -261,6 +271,19 @@ public class FilamentsFactory
         return section.isFat();
     }
 
+    //--------------//
+    // setVipGlyphs //
+    //--------------//
+    /**
+     * Debug method to flag certain glyphs as VIPs
+     * @param ids the VIP glyphs ids
+     */
+    public void setVipGlyphs (Integer... ids)
+    {
+        vipGlyphs = new HashSet<Integer>();
+        vipGlyphs.addAll(Arrays.asList(ids));
+    }
+
     //------//
     // dump //
     //------//
@@ -273,17 +296,14 @@ public class FilamentsFactory
     // retrieveFilaments //
     //-------------------//
     /**
-     * Organize the long and thin horizontal sections into filaments (glyphs)
-     * that will be good candidates for staff lines.
-     * <p>First phase consists in retrieving long horizontal sections and
-     * merging them in filaments.</p>
-     * <p>Second phase consists in detecting patterns of filaments regularly
-     * spaced and aggregating them into clusters of lines. </p>
+     * Aggregate the long and thin sections into filaments (glyphs)
      *
-     * @param source the section source for sticks
+     * @param source the section source for filaments
+     * @param useExpansion true to expand filaments with short sections
+     * @return the collection of retrieved filaments
      */
-    public List<Filament> retrieveFilaments (SticksSource source)
-        throws StepException
+    public List<Filament> retrieveFilaments (Collection<GlyphSection> source,
+                                             boolean                  useExpansion)
     {
         StopWatch watch = new StopWatch("FilamentsFactory");
 
@@ -302,18 +322,32 @@ public class FilamentsFactory
             watch.start("mergeFilaments");
             mergeFilaments();
 
-            if (logger.isFineEnabled()) {
-                logger.info(
-                    lag.getOrientation() + " " + filaments.size() +
-                    " filaments after merge.");
+            // Expand with short sections left over?
+            if (useExpansion) {
+                watch.start("expandFilaments");
+                expandFilaments(source);
+
+                // Merge into long filaments
+                watch.start("mergeFilaments #2");
+                mergeFilaments();
             }
         } catch (Exception ex) {
             logger.warning("FilamentsFactory cannot retrieveFilaments", ex);
         } finally {
-            ///watch.print();
+            if (constants.printWatch.getValue()) {
+                watch.print();
+            }
         }
 
         return filaments;
+    }
+
+    //-------//
+    // isVip //
+    //-------//
+    private boolean isVip (Glyph glyph)
+    {
+        return (vipGlyphs != null) && vipGlyphs.contains(glyph.getId());
     }
 
     //----------//
@@ -325,8 +359,8 @@ public class FilamentsFactory
      * @param two another filament
      * @return true if test is positive
      */
-    private boolean canMerge (Filament one,
-                              Filament two)
+    private boolean canMerge (Stick one,
+                              Stick two)
     {
         if (logger.isFineEnabled()) {
             logger.info("testMerge " + one + " & " + two);
@@ -334,126 +368,136 @@ public class FilamentsFactory
 
         Orientation orientation = lag.getOrientation();
 
-        // Start & Stop points for each filament
-        Point oneStart = orientation.switchRef(one.getStartPoint(), null);
-        Point oneStop = orientation.switchRef(one.getStopPoint(), null);
-        Point twoStart = orientation.switchRef(two.getStartPoint(), null);
-        Point twoStop = orientation.switchRef(two.getStopPoint(), null);
+        try {
+            // Start & Stop points for each filament
+            Point oneStart = orientation.oriented(one.getStartPoint());
+            Point oneStop = orientation.oriented(one.getStopPoint());
+            Point twoStart = orientation.oriented(two.getStartPoint());
+            Point twoStop = orientation.oriented(two.getStopPoint());
 
-        // coord gap?
-        int overlapStart = Math.max(oneStart.x, twoStart.x);
-        int overlapStop = Math.min(oneStop.x, twoStop.x);
-        int coordGap = (overlapStart - overlapStop) - 1;
+            // coord gap?
+            int overlapStart = Math.max(oneStart.x, twoStart.x);
+            int overlapStop = Math.min(oneStop.x, twoStop.x);
+            int coordGap = (overlapStart - overlapStop) - 1;
 
-        if (coordGap > params.maxCoordGap) {
-            if (logger.isFineEnabled()) {
-                logger.info(
-                    "Gap too long: " + coordGap + " vs " + params.maxCoordGap);
-            }
-
-            return false;
-        }
-
-        // pos gap?
-        if (coordGap < 0) {
-            // Overlap between the two filaments
-            // Measure dy at middle of overlap
-            int    midCoord = (overlapStart + overlapStop) / 2;
-            double onePos = one.positionAt(midCoord);
-            double twoPos = two.positionAt(midCoord);
-            double posGap = Math.abs(onePos - twoPos);
-
-            if (posGap > params.maxOverlapDeltaPos) {
+            if (coordGap > params.maxCoordGap) {
                 if (logger.isFineEnabled()) {
                     logger.info(
-                        "Delta pos too high for overlap: " + posGap + " vs " +
-                        params.maxOverlapDeltaPos);
+                        "Gap too long: " + coordGap + " vs " +
+                        params.maxCoordGap);
                 }
 
                 return false;
             }
 
-            // Check resulting thickness at middle of overlap
-            double oneThickness = one.getThicknessAt(midCoord);
-            double twoThickness = two.getThicknessAt(midCoord);
+            // pos gap?
+            if (coordGap < 0) {
+                // Overlap between the two filaments
+                // Measure thickness at various coord values of overlap
+                for (int iq = 1; iq < 4; iq++) {
+                    int    midCoord = overlapStart - ((iq * coordGap) / 4);
+                    double onePos = one.getPositionAt(midCoord);
+                    double twoPos = two.getPositionAt(midCoord);
+                    double posGap = Math.abs(onePos - twoPos);
 
-            double thickness = posGap + ((oneThickness + twoThickness) / 2);
+                    if (posGap > params.maxOverlapDeltaPos) {
+                        if (logger.isFineEnabled()) {
+                            logger.info(
+                                "Delta pos too high for overlap: " + posGap +
+                                " vs " + params.maxOverlapDeltaPos);
+                        }
 
-            if (thickness > params.maxFilamentThickness) {
-                if (logger.isFineEnabled()) {
-                    logger.info(
-                        "Too thick: " + (float) thickness + " vs " +
-                        params.maxFilamentThickness + " " + one + " " + two);
+                        return false;
+                    }
+
+                    // Check resulting thickness at middle of overlap
+                    double oneThickness = one.getThicknessAt(midCoord);
+                    double twoThickness = two.getThicknessAt(midCoord);
+                    double thickness = posGap +
+                                       ((oneThickness + twoThickness) / 2);
+
+                    if (thickness > params.maxFilamentThickness) {
+                        if (logger.isFineEnabled()) {
+                            logger.info(
+                                "Too thick: " + (float) thickness + " vs " +
+                                params.maxFilamentThickness + " " + one + " " +
+                                two);
+                        }
+
+                        return false;
+                    }
+
+                    // Check space between overlapped filaments
+                    double space = posGap -
+                                   ((oneThickness + twoThickness) / 2);
+
+                    if (space > params.maxSpace) {
+                        if (logger.isFineEnabled()) {
+                            logger.info(
+                                "Space too large: " + (float) space + " vs " +
+                                params.maxSpace + " " + one + " " + two);
+                        }
+
+                        return false;
+                    }
                 }
-
-                return false;
-            }
-
-            // Check space between overlapped filaments
-            double space = posGap - ((oneThickness + twoThickness) / 2);
-
-            if (space > params.maxSpace) {
-                if (logger.isFineEnabled()) {
-                    logger.info(
-                        "Space too large: " + (float) space + " vs " +
-                        params.maxSpace + " " + one + " " + two);
-                }
-
-                return false;
-            }
-        } else {
-            // No overlap, it's a true gap
-            Point start;
-            Point stop;
-
-            if (oneStart.x < twoStart.x) {
-                // one - two
-                start = oneStop;
-                stop = twoStart;
             } else {
-                // two - one
-                start = twoStop;
-                stop = oneStart;
-            }
+                // No overlap, it's a true gap
+                Point start;
+                Point stop;
 
-            // Compute position gap, taking thickness into account
-            double oneThickness = one.getWeight() / one.getLength();
-            double twoThickness = two.getWeight() / two.getLength();
-            int    posMargin = (int) Math.rint(
-                Math.max(oneThickness, twoThickness) / 2);
-            int    posGap = Math.abs(stop.y - start.y) - posMargin;
-
-            if (posGap > params.maxPosGap) {
-                if (logger.isFineEnabled()) {
-                    logger.info(
-                        "Delta pos too high for gap: " + posGap + " vs " +
-                        params.maxPosGap);
+                if (oneStart.x < twoStart.x) {
+                    // one - two
+                    start = oneStop;
+                    stop = twoStart;
+                } else {
+                    // two - one
+                    start = twoStop;
+                    stop = oneStart;
                 }
 
-                return false;
-            }
+                // Compute position gap, taking thickness into account
+                double oneThickness = one.getWeight() / one.getLength();
+                double twoThickness = two.getWeight() / two.getLength();
+                int    posMargin = (int) Math.rint(
+                    Math.max(oneThickness, twoThickness) / 2);
+                int    posGap = Math.abs(stop.y - start.y) - posMargin;
 
-            // Check slope (relevant only for significant dy)
-            if (posGap > params.maxPosGapForSlope) {
-                double gapSlope = (double) posGap / coordGap;
-
-                if (gapSlope > params.maxGapSlope) {
+                if (posGap > params.maxPosGap) {
                     if (logger.isFineEnabled()) {
                         logger.info(
-                            "Slope too high for gap: " + (float) gapSlope +
-                            " vs " + params.maxGapSlope);
+                            "Delta pos too high for gap: " + posGap + " vs " +
+                            params.maxPosGap);
                     }
 
                     return false;
                 }
+
+                // Check slope (relevant only for significant dy)
+                if (posGap > params.maxPosGapForSlope) {
+                    double gapSlope = (double) posGap / coordGap;
+
+                    if (gapSlope > params.maxGapSlope) {
+                        if (logger.isFineEnabled()) {
+                            logger.info(
+                                "Slope too high for gap: " + (float) gapSlope +
+                                " vs " + params.maxGapSlope);
+                        }
+
+                        return false;
+                    }
+                }
             }
-        }
 
-        if (logger.isFineEnabled()) {
-            logger.info("Compatible!");
-        }
+            if (logger.isFineEnabled()) {
+                logger.info("Compatible!");
+            }
 
-        return true;
+            return true;
+        } catch (Exception ex) {
+            // Generally a stick for which some parameters cannot be computed
+            return false;
+        }
     }
 
     //----------------//
@@ -474,30 +518,132 @@ public class FilamentsFactory
     /**
      *   Aggregate long sections into initial filaments
      */
-    private void createFilaments (SticksSource source)
+    private void createFilaments (Collection<GlyphSection> source)
         throws Exception
     {
         // Sort sections by decreasing length
-        List<GlyphSection> sections = new ArrayList<GlyphSection>();
-
-        while (source.hasNext()) {
-            sections.add(source.next());
-        }
-
+        List<GlyphSection> sections = new ArrayList<GlyphSection>(source);
         Collections.sort(sections, GlyphSection.reverseLengthComparator);
 
         for (GlyphSection section : sections) {
-            // Limit to main sections for the time being
+            // Limit to main sections
             if ((section.getLength() >= params.minSectionLength) &&
                 !isSectionFat(section)) {
                 Filament fil = createFilament(section);
                 filaments.add(fil);
 
-                if (logger.isFineEnabled()) {
-                    logger.fine("Created " + fil + " with " + section);
+                if (logger.isFineEnabled() || section.isVip() || isVip(fil)) {
+                    logger.info("Created " + fil + " with " + section);
+
+                    if (section.isVip() || isVip(fil)) {
+                        fil.setVip();
+                    }
                 }
             }
         }
+
+        if (logger.isFineEnabled()) {
+            logger.info(
+                "createFilaments: " + filaments.size() + "/" + source.size());
+        }
+    }
+
+    //-----------------//
+    // expandFilaments //
+    //-----------------//
+    /**
+     * Expand as much as possible the existing filaments with the provided
+     * sections
+     * @param source the source of available sections
+     * @return the collection of expanded filaments
+     */
+    private List<Filament> expandFilaments (Collection<GlyphSection> source)
+    {
+        try {
+            // Sort sections by first position 
+            List<GlyphSection> sections = new ArrayList<GlyphSection>();
+
+            for (GlyphSection section : source) {
+                if (!section.isGlyphMember()) {
+                    sections.add(section);
+                }
+            }
+
+            if (logger.isFineEnabled()) {
+                logger.info(
+                    "expandFilaments: " + sections.size() + "/" +
+                    source.size());
+            }
+
+            Collections.sort(sections, GlyphSection.posComparator);
+
+            List<Stick> sticks = new ArrayList<Stick>(sections.size());
+
+            for (GlyphSection section : sections) {
+                Stick stick = new BasicStick(scale.interline());
+                stick.addSection(
+                    section,
+                    GlyphComposition.Linking.NO_LINK_BACK);
+                lag.addGlyph(stick);
+                sticks.add(stick);
+
+                if (section.isVip() || isVip(stick)) {
+                    logger.info("VIP created " + stick + " from " + section);
+                    stick.setVip();
+                }
+            }
+
+            // List of filaments, sorted by decreasing length
+            Collections.sort(filaments, Filament.reverseLengthComparator);
+
+            // Process each filament on turn
+            for (Filament fil : filaments) {
+                // Build filament fat box
+                final Rectangle filBounds = fil.getOrientedBounds();
+                filBounds.grow(params.maxCoordGap, params.maxPosGap);
+
+                int     maxPos = filBounds.y + filBounds.height;
+                boolean expanding = true;
+
+                do {
+                    expanding = false;
+
+                    for (Iterator<Stick> it = sticks.iterator(); it.hasNext();) {
+                        Stick     stick = it.next();
+                        Rectangle stickBounds = stick.getOrientedBounds();
+
+                        if (filBounds.intersects(stickBounds)) {
+                            // Check more closely
+                            if (canMerge(fil, stick)) {
+                                if (logger.isFineEnabled() ||
+                                    fil.isVip() ||
+                                    stick.isVip()) {
+                                    logger.info(
+                                        "Merging " + fil + " w/ " +
+                                        Sections.toString(stick.getMembers()));
+
+                                    if (stick.isVip()) {
+                                        fil.setVip();
+                                    }
+                                }
+
+                                fil.include(stick);
+                                it.remove();
+                                expanding = true;
+
+                                break;
+                            }
+                        } else if (stickBounds.y > maxPos) {
+                            break; // Speedup
+                        }
+                    }
+                } while (expanding);
+            }
+        } catch (Exception ex) {
+            logger.warning("FilamentsFactory cannot expandFilaments", ex);
+        }
+
+        return filaments;
     }
 
     //----------------//
@@ -528,22 +674,40 @@ public class FilamentsFactory
                         break CandidateLoop; // Actual end of sub-list
                     }
 
-                    if ((head != candidate) && (head.getParent() == null)) {
+                    if ((head != candidate) && (head.getPartOf() == null)) {
                         Rectangle headBounds = head.getOrientedBounds();
 
                         if (headBounds.intersects(candidateBounds)) {
                             // Check for a possible merge
                             if (canMerge(head, candidate)) {
-                                if (logger.isFineEnabled()) {
+                                if (logger.isFineEnabled() ||
+                                    head.isVip() ||
+                                    candidate.isVip()) {
                                     logger.info(
                                         "Merged " + candidate + " into " +
                                         head);
+
+                                    if (candidate.isVip()) {
+                                        head.setVip();
+                                    }
                                 }
 
                                 head.include(candidate);
                                 candidate = head; // This is a new candidate
 
                                 break HeadsLoop;
+                            } else {
+                                if (head.isVip() || candidate.isVip()) {
+                                    logger.info(
+                                        "Could not merge " + candidate +
+                                        " into " + head);
+                                }
+                            }
+                        } else {
+                            if (head.isVip() && candidate.isVip()) {
+                                logger.info(
+                                    "No intersection between " + candidate +
+                                    " and " + head);
                             }
                         }
                     }
@@ -563,7 +727,7 @@ public class FilamentsFactory
         for (Iterator<Filament> it = filaments.iterator(); it.hasNext();) {
             Filament fil = it.next();
 
-            if (fil.getParent() != null) {
+            if (fil.getPartOf() != null) {
                 it.remove();
             }
         }
@@ -583,6 +747,9 @@ public class FilamentsFactory
             "tangent",
             0.5,
             "Maximum absolute slope for a gap");
+        Constant.Boolean   printWatch = new Constant.Boolean(
+            false,
+            "Should we print out the stop watch?");
 
         // Constants specified WRT mean line thickness
         // -------------------------------------------
@@ -680,7 +847,7 @@ public class FilamentsFactory
             setMaxOverlapDeltaPos(constants.maxOverlapDeltaPos);
             setMaxGapSlope(constants.maxGapSlope.getValue());
 
-            probeWidth = scale.toPixels(Filament.getProbeWidth());
+            probeWidth = scale.toPixels(FilamentAlignment.getProbeWidth());
 
             if (logger.isFineEnabled()) {
                 dump();

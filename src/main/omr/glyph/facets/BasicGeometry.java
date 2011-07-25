@@ -112,25 +112,6 @@ class BasicGeometry
         return center;
     }
 
-    //-------------------//
-    // getOrientedBounds //
-    //-------------------//
-    public Rectangle getOrientedBounds ()
-    {
-        if (bounds == null) {
-            for (Section section : glyph.getMembers()) {
-                if (bounds == null) {
-                    bounds = new Rectangle(section.getOrientedBounds());
-                } else {
-                    bounds.add(section.getOrientedBounds());
-                }
-            }
-        }
-
-        // Return a COPY
-        return new Rectangle(bounds);
-    }
-
     //-------------//
     // getCentroid //
     //-------------//
@@ -150,11 +131,11 @@ class BasicGeometry
     public PixelRectangle getContourBox ()
     {
         if (contourBox == null) {
-            Rectangle box = null;
+            PixelRectangle box = null;
 
             for (Section section : glyph.getMembers()) {
                 if (box == null) {
-                    box = new Rectangle(section.getContourBox());
+                    box = new PixelRectangle(section.getContourBox());
                 } else {
                     box.add(section.getContourBox());
                 }
@@ -164,7 +145,7 @@ class BasicGeometry
         }
 
         if (contourBox != null) {
-            return new PixelRectangle(contourBox);
+            return new PixelRectangle(contourBox); // Return a COPY
         } else {
             return null;
         }
@@ -255,6 +236,25 @@ class BasicGeometry
     {
         return getMoments()
                    .getWidth();
+    }
+
+    //-------------------//
+    // getOrientedBounds //
+    //-------------------//
+    public Rectangle getOrientedBounds ()
+    {
+        if (bounds == null) {
+            for (Section section : glyph.getMembers()) {
+                if (bounds == null) {
+                    bounds = new Rectangle(section.getOrientedBounds());
+                } else {
+                    bounds.add(section.getOrientedBounds());
+                }
+            }
+        }
+
+        // Return a COPY
+        return new Rectangle(bounds);
     }
 
     //--------------//

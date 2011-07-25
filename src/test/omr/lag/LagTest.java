@@ -202,16 +202,23 @@ public class LagTest
             new Rectangle(100, 180, 21, 2));
     }
 
-    //----------------//
-    // testHSwitchRef //
-    //----------------//
-    public void testHSwitchRef ()
+    //---------------//
+    // testHabsolute //
+    //---------------//
+    public void testHabsolute ()
     {
         Point      cp = new Point(12, 34);
-        PixelPoint xy = hLag.switchRef(cp, null);
+        PixelPoint xy = hLag.absolute(cp);
         assertEquals("Non expected switch.", cp, xy);
-        xy = new PixelPoint();
-        hLag.switchRef(cp, xy);
+    }
+
+    //---------------//
+    // testHoriented //
+    //---------------//
+    public void testHoriented ()
+    {
+        PixelPoint xy = new PixelPoint(12, 34);
+        Point      cp = hLag.oriented(xy);
         assertEquals("Non expected switch.", cp, xy);
     }
 
@@ -331,7 +338,7 @@ public class LagTest
         s1.drawAscii();
 
         MyLag.Roi          roi = vLag.createAbsoluteRoi(
-            new Rectangle(0, 0, 6, 7));
+            new PixelRectangle(0, 0, 6, 7));
         Histogram<Integer> histoV = roi.getHistogram(Orientation.VERTICAL);
         histoV.print(System.out);
 
@@ -362,16 +369,23 @@ public class LagTest
         MySection.addEdge(s2, s3);
     }
 
-    //----------------//
-    // testVSwitchRef //
-    //----------------//
-    public void testVSwitchRef ()
+    //---------------//
+    // testVabsolute //
+    //---------------//
+    public void testVabsolute ()
     {
         Point      cp = new Point(12, 34);
-        PixelPoint xy = vLag.switchRef(cp, null);
+        PixelPoint xy = vLag.absolute(cp);
         assertEquals("Expected switch.", new Point(cp.y, cp.x), xy);
-        xy = new PixelPoint();
-        vLag.switchRef(cp, xy);
+    }
+
+    //---------------//
+    // testVoriented //
+    //---------------//
+    public void testVoriented ()
+    {
+        PixelPoint xy = new PixelPoint(12, 34);
+        Point      cp = vLag.absolute(xy);
         assertEquals("Expected switch.", new Point(cp.y, cp.x), xy);
     }
 
@@ -397,7 +411,7 @@ public class LagTest
         assertEquals(
             "Bad Centroid",
             s.getCentroid(),
-            s.getGraph().switchRef(new Point(109, 180), null));
+            s.getGraph().absolute(new Point(109, 180)));
         assertTrue("Bad Containment", s.contains(100, 180));
         assertFalse("Bad Containment", s.contains(100, 181));
         assertTrue("Bad Containment", s.contains(101, 181));

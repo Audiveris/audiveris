@@ -479,8 +479,8 @@ public class LineCleaner
                             int start = -1;
 
                             //                            if (tangents.startTg != null) {
-                            //                                start = tangents.startTg.xAt(y);
-                            //                                runLength = tangents.stopTg.xAt(y) - start + 1;
+                            //                                start = tangents.startTg.xAtY(y);
+                            //                                runLength = tangents.stopTg.xAtY(y) - start + 1;
                             //
                             //                                if (logger.isFineEnabled()) {
                             //                                    logger.fine(
@@ -498,7 +498,7 @@ public class LineCleaner
                             //                                }
                             //                            } else {
                             if (tangents.axis != null) {
-                                xAxis = tangents.axis.xAt(y);
+                                xAxis = tangents.axis.xAtY(y);
 
                                 if (logger.isFineEnabled()) {
                                     logger.fine("x=" + xAxis);

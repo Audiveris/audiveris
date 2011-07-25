@@ -20,6 +20,7 @@ import omr.log.Logger;
 import omr.sheet.SystemInfo;
 
 import omr.util.Implement;
+import omr.util.Vip;
 
 import java.awt.Point;
 import java.util.Comparator;
@@ -36,7 +37,7 @@ import java.util.Comparator;
  */
 public class GlyphSection
     extends Section<GlyphLag, GlyphSection>
-    implements Comparable<GlyphSection>
+    implements Comparable<GlyphSection>, Vip
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -70,6 +71,15 @@ public class GlyphSection
         }
     };
 
+    /** For comparing GlyphSection instances on their pos value */
+    public static final Comparator<GlyphSection> posComparator = new Comparator<GlyphSection>() {
+        public int compare (GlyphSection s1,
+                            GlyphSection s2)
+        {
+            return s1.getFirstPos() - s2.getFirstPos();
+        }
+    };
+
 
     //~ Instance fields --------------------------------------------------------
 
@@ -88,6 +98,9 @@ public class GlyphSection
 
     /** To flag sections too thick for staff line  (null = don't know)*/
     private Boolean fat = null;
+
+    /** (Debug) flag this section as VIP */
+    private boolean vip;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -230,6 +243,22 @@ public class GlyphSection
     public SystemInfo getSystem ()
     {
         return system;
+    }
+
+    //--------//
+    // setVip //
+    //--------//
+    public void setVip ()
+    {
+        vip = true;
+    }
+
+    //-------//
+    // isVip //
+    //-------//
+    public boolean isVip ()
+    {
+        return vip;
     }
 
     //-----------//

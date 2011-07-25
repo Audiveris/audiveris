@@ -62,7 +62,18 @@ public class ClustersRetriever
         public int compare (LineCluster c1,
                             LineCluster c2)
         {
-            return Integer.signum(ordinateOf(c1) - ordinateOf(c2));
+            double o1 = ordinateOf(c1);
+            double o2 = ordinateOf(c2);
+
+            if (o1 < o2) {
+                return -1;
+            }
+
+            if (o1 > o2) {
+                return +1;
+            }
+
+            return 0;
         }
     };
 
@@ -263,8 +274,8 @@ public class ClustersRetriever
      * @param bestDelta output: best delta between the two sequences
      * @return the best distance found
      */
-    private double bestMatch (int[]            one,
-                              int[]            two,
+    private double bestMatch (double[]         one,
+                              double[]         two,
                               Wrapper<Integer> bestDelta)
     {
         final int deltaMax = one.length - 1;
@@ -336,10 +347,10 @@ public class ClustersRetriever
 
         if (gap <= 0) {
             // Overlap: use middle of common part
-            int mid = (maxLeft + minRight) / 2;
+            int xMid = (maxLeft + minRight) / 2;
             dist = bestMatch(
-                ordinatesOf(one.getPointsAt(mid, interline, globalSlope)),
-                ordinatesOf(two.getPointsAt(mid, interline, globalSlope)),
+                ordinatesOf(one.getPointsAt(xMid, interline, globalSlope)),
+                ordinatesOf(two.getPointsAt(xMid, interline, globalSlope)),
                 deltaPos);
         } else if (gap > maxMergeDx) {
             if (logger.isFineEnabled()) {
@@ -368,11 +379,7 @@ public class ClustersRetriever
                 "canMerge dist: " + dist + " one:" + one + " two:" + two);
         }
 
-        if (dist <= maxMergeDy) {
-            return true;
-        } else {
-            return false;
-        }
+        return dist <= maxMergeDy;
     }
 
     //------------------//
@@ -407,6 +414,8 @@ public class ClustersRetriever
         Collections.sort(filaments, LineFilament.reverseLengthComparator);
 
         for (LineFilament fil : filaments) {
+            fil = fil.getAncestor();
+
             if ((fil.getCluster() == null) && !fil.getPatterns()
                                                   .isEmpty()) {
                 LineCluster cluster = new LineCluster(interline, fil);
@@ -482,7 +491,7 @@ public class ClustersRetriever
             PixelRectangle filBox = fil.getContourBox();
             PixelPoint     middle = new PixelPoint();
             middle.x = filBox.x + (filBox.width / 2);
-            middle.y = (int) Math.rint(fil.positionAt(middle.x));
+            middle.y = (int) Math.rint(fil.getPositionAt(middle.x));
 
             if (clusterBox.contains(middle)) {
                 // Check if this filament matches a cluster line ordinate
@@ -620,10 +629,16 @@ public class ClustersRetriever
                     if (headBox.intersects(candidateBox)) {
                         // Try a merge
                         if (canMerge(head, candidate, deltaPos)) {
-                            if (logger.isFineEnabled()) {
+                            if (logger.isFineEnabled() ||
+                                head.isVip() ||
+                                candidate.isVip()) {
                                 logger.info(
-                                    "Merged " + candidate + " with " + head +
+                                    "Merging " + candidate + " with " + head +
                                     " delta:" + deltaPos.value);
+
+                                if (head.isVip()) {
+                                    candidate.setVip();
+                                }
                             }
 
                             // Do the merge
@@ -651,9 +666,10 @@ public class ClustersRetriever
      * Report the orthogonal distance of the provided point
      * to the sheet top edge tilted with global slope.
      */
-    private int ordinateOf (Point point)
+    private double ordinateOf (Point point)
     {
-        return (int) Math.rint(getSheetTopEdge().ptLineDist(point));
+        return getSheetTopEdge()
+                   .ptLineDist(point);
     }
 
     //------------//
@@ -663,7 +679,7 @@ public class ClustersRetriever
      * Report the orthogonal distance of the cluster center
      * to the sheet top edge tilted with global slope.
      */
-    private int ordinateOf (LineCluster cluster)
+    private double ordinateOf (LineCluster cluster)
     {
         return ordinateOf(cluster.getCenter());
     }
@@ -671,10 +687,10 @@ public class ClustersRetriever
     //-------------//
     // ordinatesOf //
     //-------------//
-    private int[] ordinatesOf (Collection<PixelPoint> points)
+    private double[] ordinatesOf (Collection<PixelPoint> points)
     {
-        int[] ys = new int[points.size()];
-        int   index = 0;
+        double[] ys = new double[points.size()];
+        int      index = 0;
 
         for (Point p : points) {
             ys[index++] = ordinateOf(p);
@@ -705,7 +721,7 @@ public class ClustersRetriever
         for (Iterator<LineFilament> it = filaments.iterator(); it.hasNext();) {
             LineFilament fil = it.next();
 
-            if (fil.getParent() != null) {
+            if (fil.getPartOf() != null) {
                 it.remove();
             }
         }
@@ -757,7 +773,7 @@ public class ClustersRetriever
 
         for (LineFilament fil : filaments) {
             if ((x >= fil.getStartPoint().x) && (x <= fil.getStopPoint().x)) {
-                list.add(new FilY(fil, (int) Math.rint(fil.positionAt(x))));
+                list.add(new FilY(fil, (int) Math.rint(fil.getPositionAt(x))));
             }
         }
 
@@ -818,10 +834,21 @@ public class ClustersRetriever
                             pattern = new FilamentPattern(col);
                             colList.add(pattern);
                             pattern.append(prevFily.filament, prevFily.y);
+
+                            if (prevFily.filament.isVip()) {
+                                logger.info(
+                                    "Created " + pattern + " with " +
+                                    prevFily.filament);
+                            }
                         }
 
                         // Extend pattern
                         pattern.append(fily.filament, fily.y);
+
+                        if (fily.filament.isVip()) {
+                            logger.info(
+                                "Appended " + fily.filament + " to " + pattern);
+                        }
                     } else {
                         // No pattern active
                         pattern = null;
@@ -914,7 +941,7 @@ public class ClustersRetriever
             0.08,
             "Maximum slope of gap between filaments");
         Constant.Ratio   maxJitter = new Constant.Ratio(
-            0.075, //0.05,
+            0.1,
             "Maximum gap from standard pattern dy");
         Constant.Integer minPatternLength = new Constant.Integer(
             "line-count",

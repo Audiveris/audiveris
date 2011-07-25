@@ -37,10 +37,7 @@ import omr.score.ui.PagePainter;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 
-import omr.stick.Filament;
-import omr.stick.FilamentsFactory;
 import omr.stick.StickSection;
-import omr.stick.SticksSource;
 import static omr.util.HorizontalSide.*;
 import omr.util.Predicate;
 import omr.util.StopWatch;
@@ -166,7 +163,6 @@ public class LinesRetriever
      * them into clusters of lines (staff candidates). </p>
      */
     public void buildInfo ()
-        throws Exception
     {
         StopWatch watch = new StopWatch("LinesRetriever");
 
@@ -175,7 +171,8 @@ public class LinesRetriever
             watch.start("retrieveFilaments");
 
             for (Filament fil : factory.retrieveFilaments(
-                new SticksSource(hLag.getSections()))) {
+                hLag.getSections(),
+                true)) {
                 filaments.add((LineFilament) fil);
             }
 
@@ -246,12 +243,11 @@ public class LinesRetriever
             logger.warning("Cannot create lines filament factory", ex);
         }
 
-        // To record the purged runs (debug)
-        RunsTable purgedVertTable = showRuns
-                                    ? new RunsTable(
+        // To record the purged runs
+        RunsTable purgedVertTable = new RunsTable(
             "purged-vert",
             VERTICAL,
-            new Dimension(sheet.getWidth(), sheet.getHeight())) : null;
+            new Dimension(sheet.getWidth(), sheet.getHeight()));
 
         // Remove runs whose height is somewhat greater than line thickness
         RunsTable shortVertTable = wholeVertTable.clone("short-vert")
@@ -302,16 +298,21 @@ public class LinesRetriever
             new JunctionRatioPolicy(params.maxLengthRatio));
         sectionsBuilder.createSections(longHoriTable);
 
-        // Purge hLag of too short sections
-        final int minSectionLength = factory.getMinSectionLength();
-        hLag.purgeSections(
-            new Predicate<GlyphSection>() {
-                    public final boolean check (GlyphSection section)
-                    {
-                        return section.getLength() < minSectionLength;
-                    }
-                });
+        // BINGO
+        //        hLag.getVertexById(337)
+        //            .setVip();
 
+        // Purge hLag of too short sections
+        //        final int minSectionLength = factory.getMinSectionLength();
+        //        hLag.purgeSections(
+        //            new Predicate<GlyphSection>() {
+        //                    public final boolean check (GlyphSection section)
+        //                    {
+        //                        return section.getLength() < minSectionLength;
+        //                    }
+        //                });
+
+        //
         return purgedVertTable;
     }
 

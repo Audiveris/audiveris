@@ -39,6 +39,7 @@ import static java.awt.geom.PathIterator.*;
  */
 public class NaturalSpline
     extends GeoPath
+    implements Line
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -478,5 +479,53 @@ public class NaturalSpline
 
         // Not found
         throw new RuntimeException("Ordinate not in spline range: " + y);
+    }
+
+    public boolean isHorizontal() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public double getInvertedSlope() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public double getMeanDistance() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public int getNumberOfPoints() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public double getSlope() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean isVertical() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public double distanceOf(double x, double y) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public Line includeLine(Line other) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void includePoint(double x, double y) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public Line swappedCoordinates() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public int xAtY(int y) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public int yAtX(int x) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

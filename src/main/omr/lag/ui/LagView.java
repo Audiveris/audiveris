@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.lag.ui;
 
-import omr.run.Run;
 import omr.constant.Constant;
 
 import omr.glyph.ui.ViewParameters;
@@ -21,6 +20,10 @@ import omr.graph.DigraphView;
 import omr.lag.*;
 
 import omr.log.Logger;
+
+import omr.run.Run;
+
+import omr.score.common.PixelRectangle;
 
 import omr.selection.MouseMovement;
 import omr.selection.RunEvent;
@@ -40,6 +43,7 @@ import org.bushe.swing.event.EventSubscriber;
 
 import java.awt.*;
 import java.util.*;
+import omr.score.common.PixelPoint;
 
 /**
  * Class <code>LagView</code> derives {@link omr.ui.view.RubberPanel} to
@@ -253,7 +257,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
      *
      * @return the (first) section found, or null otherwise
      */
-    public S lookupSection (Point pt)
+    public S lookupSection (PixelPoint pt)
     {
         if ((showingSpecifics != null) && showingSpecifics.getValue()) {
             // Look up in specifics first
@@ -278,7 +282,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
      *
      * @return the containing specific section, or null if not found
      */
-    public S lookupSpecificSection (Point pt)
+    public S lookupSpecificSection (PixelPoint pt)
     {
         return lag.lookupSection(specificSections, pt);
     }
@@ -454,6 +458,51 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         lagSelectionService.unsubscribe(eventClass, subscriber);
     }
 
+    //-----------------//
+    // colorizeSection //
+    //-----------------//
+    /**
+     * Colorize one section, with a color not already used by the adjacent
+     * sections
+     *
+     * @param section the section to colorize
+     * @param viewIndex the index of this view in the lag list of views
+     */
+    protected void colorizeSection (S   section,
+                                    int viewIndex)
+    {
+        SectionView view = (SectionView) section.getView(viewIndex);
+
+        // Determine suitable color for this section view
+        if (!view.isColorized()) {
+            view.determineDefaultColor(viewIndex);
+
+            // Recursive processing of Targets
+            for (S sct : section.getTargets()) {
+                colorizeSection(sct, viewIndex);
+            }
+
+            // Recursive processing of Sources
+            for (S sct : section.getSources()) {
+                colorizeSection(sct, viewIndex);
+            }
+        }
+    }
+
+    //------------------//
+    // renderCollection //
+    //------------------//
+    protected void renderCollection (Graphics2D    g,
+                                     Collection<S> collection,
+                                     int           index,
+                                     boolean       drawBorders)
+    {
+        for (S section : collection) {
+            SectionView view = (SectionView) section.getView(index);
+            view.render(g, drawBorders);
+        }
+    }
+
     //-------------//
     // renderItems //
     //-------------//
@@ -521,37 +570,6 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     protected int subscribersCount (Class<?extends UserEvent> classe)
     {
         return lagSelectionService.subscribersCount(classe);
-    }
-
-    //-----------------//
-    // colorizeSection //
-    //-----------------//
-    /**
-     * Colorize one section, with a color not already used by the adjacent
-     * sections
-     *
-     * @param section the section to colorize
-     * @param viewIndex the index of this view in the lag list of views
-     */
-    protected void colorizeSection (S   section,
-                                  int viewIndex)
-    {
-        SectionView view = (SectionView) section.getView(viewIndex);
-
-        // Determine suitable color for this section view
-        if (!view.isColorized()) {
-            view.determineDefaultColor(viewIndex);
-
-            // Recursive processing of Targets
-            for (S sct : section.getTargets()) {
-                colorizeSection(sct, viewIndex);
-            }
-
-            // Recursive processing of Sources
-            for (S sct : section.getSources()) {
-                colorizeSection(sct, viewIndex);
-            }
-        }
     }
 
     //-------------//
@@ -675,7 +693,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
 
         // Lookup for Run/Section pointed by this pixel location
         // Search and forward run & section info
-        Rectangle rect = sheetLocationEvent.getData();
+        PixelRectangle rect = sheetLocationEvent.getData();
 
         if (rect == null) {
             return;
@@ -724,13 +742,13 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
                 }
             } else {
                 // Just section addition / removal
-                Point pt = rect.getLocation();
+                PixelPoint pt = rect.getLocation();
 
                 // No specifics, look into lag
                 S     section = lag.lookupSection(lag.getVertices(), pt);
 
                 // Publish Run information
-                Point apt = lag.switchRef(pt, null);
+                Point apt = lag.oriented(pt);
                 Run   run = (section != null) ? section.getRunAt(apt.y) : null;
                 publish(new RunEvent(this, hint, movement, run));
 
@@ -739,7 +757,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
             }
         } else {
             // We are in glyph selection mode
-            Point pt = rect.getLocation();
+            PixelPoint pt = rect.getLocation();
             S     section = null;
 
             // Should we first look in specific sections?
@@ -754,7 +772,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
             }
 
             // Publish Run information
-            Point apt = lag.switchRef(pt, null);
+            Point apt = lag.oriented(pt);
             Run   run = (section != null) ? section.getRunAt(apt.y) : null;
             publish(new RunEvent(this, hint, movement, run));
 
@@ -763,20 +781,6 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
 
             // Publish no SectionSet
             publish(new SectionSetEvent<S>(this, hint, movement, null));
-        }
-    }
-
-    //------------------//
-    // renderCollection //
-    //------------------//
-    protected void renderCollection (Graphics2D    g,
-                                   Collection<S> collection,
-                                   int           index,
-                                   boolean       drawBorders)
-    {
-        for (S section : collection) {
-            SectionView view = (SectionView) section.getView(index);
-            view.render(g, drawBorders);
         }
     }
 }

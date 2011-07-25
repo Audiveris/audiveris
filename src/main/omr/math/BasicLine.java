@@ -151,39 +151,6 @@ public class BasicLine
 
     //~ Methods ----------------------------------------------------------------
 
-    //------//
-    // getA //
-    //------//
-    @Implement(Line.class)
-    public double getA ()
-    {
-        checkLineParameters();
-
-        return a;
-    }
-
-    //------//
-    // getB //
-    //------//
-    @Implement(Line.class)
-    public double getB ()
-    {
-        checkLineParameters();
-
-        return b;
-    }
-
-    //------//
-    // getC //
-    //------//
-    @Implement(Line.class)
-    public double getC ()
-    {
-        checkLineParameters();
-
-        return c;
-    }
-
     //--------------//
     // isHorizontal //
     //--------------//
@@ -396,11 +363,11 @@ public class BasicLine
         }
     }
 
-    //-----//
-    // xAt //
-    //-----//
+    //------//
+    // xAtY //
+    //------//
     @Implement(Line.class)
-    public double xAt (double y)
+    public double xAtY (double y)
     {
         checkLineParameters();
 
@@ -411,20 +378,20 @@ public class BasicLine
         }
     }
 
-    //-----//
-    // xAt //
-    //-----//
+    //------//
+    // xAtY //
+    //------//
     @Implement(Line.class)
-    public int xAt (int y)
+    public int xAtY (int y)
     {
-        return (int) rint(xAt((double) y));
+        return (int) rint(xAtY((double) y));
     }
 
-    //-----//
-    // yAt //
-    //-----//
+    //------//
+    // yAtX //
+    //------//
     @Implement(Line.class)
-    public double yAt (double x)
+    public double yAtX (double x)
     {
         checkLineParameters();
 
@@ -435,13 +402,43 @@ public class BasicLine
         }
     }
 
-    //-----//
-    // yAt //
-    //-----//
+    //------//
+    // yAtX //
+    //------//
     @Implement(Line.class)
-    public int yAt (int x)
+    public int yAtX (int x)
     {
-        return (int) rint(yAt((double) x));
+        return (int) rint(yAtX((double) x));
+    }
+
+    //------//
+    // getA // Meant for test
+    //------//
+    double getA ()
+    {
+        checkLineParameters();
+
+        return a;
+    }
+
+    //------//
+    // getB // Meant for test
+    //------//
+    double getB ()
+    {
+        checkLineParameters();
+
+        return b;
+    }
+
+    //------//
+    // getC // Meant for test
+    //------//
+    double getC ()
+    {
+        checkLineParameters();
+
+        return c;
     }
 
     //---------------------//

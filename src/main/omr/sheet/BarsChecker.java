@@ -12,6 +12,7 @@
 package omr.sheet;
 
 import omr.check.Check;
+import omr.check.CheckResult;
 import omr.check.CheckSuite;
 import omr.check.Checkable;
 import omr.check.FailureResult;
@@ -30,12 +31,11 @@ import omr.log.Logger;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
+import omr.sheet.grid.Filament;
 import omr.sheet.grid.StaffInfo;
 import omr.sheet.grid.StaffManager;
 
 import omr.step.StepException;
-
-import omr.stick.Filament;
 import static omr.util.HorizontalSide.*;
 import omr.util.Implement;
 
@@ -96,6 +96,14 @@ public class BarsChecker
     private static final FailureResult BOTTOM_RIGHT_CHUNK = new FailureResult(
         "Bar-BottomRightChunk");
 
+    /** Failure, since bar is too far from vertical */
+    private static final FailureResult NON_VERTICAL = new FailureResult(
+        "Bar-NonVertical");
+
+    /** Failure, since bar is too far from straight line */
+    private static final FailureResult NON_STRAIGHT = new FailureResult(
+        "Bar-NonStraight");
+
     //~ Instance fields --------------------------------------------------------
 
     /**
@@ -113,8 +121,8 @@ public class BarsChecker
     /** Related vertical lag */
     private final GlyphLag lag;
 
-    /** Expected bars slope */
-    private final double expectedSlope;
+    /** Global sheet  slope */
+    private final double globalSlope;
 
     /** Related staves */
     private final StaffManager staffManager;
@@ -135,18 +143,18 @@ public class BarsChecker
      *
      * @param sheet the sheet to process
      * @param lag the sheet vertical lag
-     * @param expectedSlope expected slope for sticks
+     * @param globalSlope global sheet slope
      * @param rough true for rough tests (when retrieving staff frames),
      * false for precise tests
      */
     public BarsChecker (Sheet    sheet,
                         GlyphLag lag,
-                        double   expectedSlope,
+                        double   globalSlope,
                         boolean  rough)
     {
         this.sheet = sheet;
         this.lag = lag;
-        this.expectedSlope = expectedSlope;
+        this.globalSlope = globalSlope;
         this.rough = rough;
 
         scale = sheet.getScale();
@@ -207,22 +215,21 @@ public class BarsChecker
     public void retrieveCandidates (Collection<?extends Stick> sticks)
         throws StepException
     {
-        // Sort candidates according to their abscissa
-        List<Stick> sortedSticks = new ArrayList<Stick>(sticks);
-        Collections.sort(sortedSticks, Stick.midPosComparator);
-
+        //        // Sort candidates according to their abscissa
+        //        List<Stick> sortedSticks = new ArrayList<Stick>(sticks);
+        //        Collections.sort(sortedSticks, Stick.midPosComparator);
         double minResult = constants.minCheckResult.getValue();
 
         // Check each candidate stick in turn
-        for (Stick stick : sortedSticks) {
+        for (Stick stick : sticks) {
             // Allocate the candidate context, and pass the whole check suite
             GlyphContext context = new GlyphContext(stick);
             initializeContext(context); // Initialization before any check
 
             double res = suite.pass(context);
 
-            if (logger.isFineEnabled()) {
-                logger.fine("suite => " + res + " for " + stick);
+            if (logger.isFineEnabled() || stick.isVip()) {
+                logger.info("suite => " + res + " for " + stick);
             }
 
             if (res >= minResult) {
@@ -372,6 +379,16 @@ public class BarsChecker
             stick.setResult(result);
         }
 
+        public void setVip ()
+        {
+            stick.setVip();
+        }
+
+        public boolean isVip ()
+        {
+            return stick.isVip();
+        }
+
         @Override
         public String toString ()
         {
@@ -395,10 +412,12 @@ public class BarsChecker
             // topArea, bottomArea, isPartDefining, isThick are already set
             add(1, new TopCheck()); // set topStaff?
             add(1, new BottomCheck()); // set botStaff?
+            add(1, new VerticalCheck());
             add(1, new LeftCheck());
             add(1, new RightCheck());
             add(1, new HeightDiffCheck());
             add(1, new AnchorCheck());
+            add(1, new StraightCheck());
 
             if (!rough) {
                 add(1, new TopLeftChunkCheck());
@@ -439,8 +458,6 @@ public class BarsChecker
         @Implement(Check.class)
         protected double getValue (GlyphContext context)
         {
-            Stick stick = context.stick;
-
             if (rough) {
                 if (context.isPartDefining) {
                     return 1;
@@ -471,7 +488,7 @@ public class BarsChecker
     // BottomCheck //
     //-------------//
     private class BottomCheck
-        extends Check<GlyphContext>
+        extends LongCheck
     {
         //~ Constructors -------------------------------------------------------
 
@@ -532,64 +549,78 @@ public class BarsChecker
     {
         //~ Instance fields ----------------------------------------------------
 
-        Scale.Fraction chunkWidth = new Scale.Fraction(
+        Scale.Fraction  chunkWidth = new Scale.Fraction(
             0.3,
             "Width of box to look for chunks");
-        Scale.Fraction chunkHalfHeight = new Scale.Fraction(
+        Scale.Fraction  chunkHalfHeight = new Scale.Fraction(
             0.5,
             "Half height of box to look for chunks");
-        Constant.Ratio chunkRatioHigh = new Constant.Ratio(
+        Constant.Ratio  chunkRatioHigh = new Constant.Ratio(
             1.8,
             "High Minimum ratio of alien pixels to detect chunks");
-        Constant.Ratio chunkRatioLow = new Constant.Ratio(
+        Constant.Ratio  chunkRatioLow = new Constant.Ratio(
             1.0,
             "Low Minimum ratio of alien pixels to detect chunks");
-        Scale.Fraction maxStaffShiftDyHigh = new Scale.Fraction(
+        Scale.Fraction  maxStaffShiftDyHigh = new Scale.Fraction(
             0.4,
             "High Maximum vertical distance between a bar edge and the staff line");
-        Scale.Fraction maxStaffShiftDyHighRough = new Scale.Fraction(
+        Scale.Fraction  maxStaffShiftDyHighRough = new Scale.Fraction(
             4.0,
             "Rough high Maximum vertical distance between a bar edge and the staff line");
-        Scale.Fraction maxStaffShiftDyLow = new Scale.Fraction(
-            0.3,
+        Scale.Fraction  maxStaffShiftDyLow = new Scale.Fraction(
+            0.2,
             "Low Maximum vertical distance between a bar edge and the staff line");
-        Scale.Fraction maxStaffShiftDyLowRough = new Scale.Fraction(
+        Scale.Fraction  maxStaffShiftDyLowRough = new Scale.Fraction(
             2.0,
             "Rough low Maximum vertical distance between a bar edge and the staff line");
-        Scale.Fraction maxStaffDHeightHigh = new Scale.Fraction(
+        Scale.Fraction  maxStaffDHeightHigh = new Scale.Fraction(
             0.4,
             "High Maximum difference between a bar length and min staff height");
-        Scale.Fraction maxStaffDHeightHighRough = new Scale.Fraction(
+        Scale.Fraction  maxStaffDHeightHighRough = new Scale.Fraction(
             1,
             "Rough high Maximum difference between a bar length and min staff height");
-        Scale.Fraction maxStaffDHeightLow = new Scale.Fraction(
+        Scale.Fraction  maxStaffDHeightLow = new Scale.Fraction(
             0.2,
             "Low Maximum difference between a bar length and min staff height");
-        Scale.Fraction maxStaffDHeightLowRough = new Scale.Fraction(
+        Scale.Fraction  maxStaffDHeightLowRough = new Scale.Fraction(
             0.5,
             "Rough low Maximum difference between a bar length and min staff height");
-        Scale.Fraction minStaffDxHigh = new Scale.Fraction(
+        Scale.Fraction  minStaffDxHigh = new Scale.Fraction(
             0,
             "High Minimum horizontal distance between a bar and a staff edge");
-        Scale.Fraction minStaffDxHighRough = new Scale.Fraction(
+        Scale.Fraction  minStaffDxHighRough = new Scale.Fraction(
             -3,
             "Rough high Minimum horizontal distance between a bar and a staff edge");
-        Scale.Fraction minStaffDxLow = new Scale.Fraction(
+        Scale.Fraction  minStaffDxLow = new Scale.Fraction(
             0,
             "Low Minimum horizontal distance between a bar and a staff edge");
-        Scale.Fraction minStaffDxLowRough = new Scale.Fraction(
+        Scale.Fraction  minStaffDxLowRough = new Scale.Fraction(
             -5,
             "Rough low Minimum horizontal distance between a bar and a staff edge");
-        Scale.Fraction maxThinWidth = new Scale.Fraction(
+        Constant.Double maxSlopeLow = new Constant.Double(
+            "slope",
+            0.1,
+            "Low maximum difference with global slope");
+        Constant.Double maxSlopeHigh = new Constant.Double(
+            "slope",
+            0.2,
+            "High maximum difference with global slope");
+        Constant.Ratio  maxStraightLow = new Constant.Ratio(
+            0.0006,
+            "Low maximum distance from straight line");
+        Constant.Ratio  maxStraightHigh = new Constant.Ratio(
+            0.0007,
+            "High maximum distance from straight line");
+        Scale.Fraction  maxThinWidth = new Scale.Fraction(
             0.3,
             "Maximum width of a normal bar, versus a thick bar");
-        Check.Grade    minCheckResult = new Check.Grade(
+        Check.Grade     minCheckResult = new Check.Grade(
             0.50,
             "Minimum result for suite of check");
-        Constant.Ratio minStaffCountForLongBar = new Constant.Ratio(
+        Constant.Ratio  minStaffCountForLongBar = new Constant.Ratio(
             2,
             "Minimum length for long bars, stated in number of staff heights");
-        Constant.Ratio booleanThreshold = new Constant.Ratio(
+        Constant.Ratio  booleanThreshold = new Constant.Ratio(
             0.5,
             "* DO NOT EDIT * - switch between true & false for a boolean");
     }
@@ -637,8 +668,7 @@ public class BarsChecker
             Stick          stick = context.stick;
             PixelRectangle box = getBox(stick);
 
-            int            aliens = stick.getAlienPixelsIn(
-                lag.switchRef(box, null));
+            int            aliens = stick.getAlienPixelsIn(lag.oriented(box));
             int            area = box.width * box.height;
 
             // Normalize the ratio with stick length
@@ -803,15 +833,54 @@ public class BarsChecker
                 PixelPoint bot = staff.getLastLine()
                                       .getEndPoint(LEFT);
                 int        y = (top.y + bot.y) / 2;
-                double     x = (stick instanceof Filament)
-                               ? ((Filament) stick).positionAt(y)
-                               : stick.getAbsoluteLine()
-                                      .xAt(y);
-                dist = Math.min(dist, x - staff.getAbscissa(LEFT));
+                double     x = stick.getPositionAt(y);
+                double     dx = x - staff.getAbscissa(LEFT);
+                dist = Math.min(dist, dx);
             }
 
             return sheet.getScale()
                         .pixelsToFrac(dist);
+        }
+    }
+
+    //-----------//
+    // LongCheck //
+    //-----------//
+    /**
+     * This kind of check allows to force the result in certain circumstances
+     */
+    private abstract class LongCheck
+        extends Check<GlyphContext>
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public LongCheck (String          name,
+                          String          description,
+                          Constant.Double low,
+                          Constant.Double high,
+                          boolean         covariant,
+                          FailureResult   redResult)
+        {
+            super(name, description, low, high, covariant, redResult);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public CheckResult pass (GlyphContext context,
+                                 CheckResult  result,
+                                 boolean      update)
+        {
+            if (rough && context.isPartDefining) {
+                // Since this stick is a long one, embracing several staves,
+                // this check is not relevant
+                result.value = getValue(context); // For possible side-effect
+                result.flag = GREEN;
+
+                return result;
+            } else {
+                return super.pass(context, result, update);
+            }
         }
     }
 
@@ -852,9 +921,9 @@ public class BarsChecker
                                       .getEndPoint(RIGHT);
                 int        y = (top.y + bot.y) / 2;
                 double     x = (stick instanceof Filament)
-                               ? ((Filament) stick).positionAt(y)
+                               ? ((Filament) stick).getPositionAt(y)
                                : stick.getAbsoluteLine()
-                                      .xAt(y);
+                                      .xAtY(y);
                 dist = Math.min(dist, staff.getAbscissa(RIGHT) - x);
             }
 
@@ -863,11 +932,43 @@ public class BarsChecker
         }
     }
 
+    //---------------//
+    // StraightCheck //
+    //---------------//
+    private class StraightCheck
+        extends Check<GlyphContext>
+    {
+        //~ Constructors -------------------------------------------------------
+
+        protected StraightCheck ()
+        {
+            super(
+                "Straight",
+                "Check that stick is close to a straight line",
+                constants.maxStraightLow,
+                constants.maxStraightHigh,
+                false,
+                NON_STRAIGHT);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        // Retrieve a measure of x variance
+        @Implement(Check.class)
+        protected double getValue (GlyphContext context)
+        {
+            Stick  stick = context.stick;
+            double meanDist = stick.getMeanDistance();
+
+            return (meanDist * meanDist) / (Math.sqrt(stick.getWeight()) * stick.getLength());
+        }
+    }
+
     //----------//
     // TopCheck //
     //----------//
     private class TopCheck
-        extends Check<GlyphContext>
+        extends LongCheck
     {
         //~ Constructors -------------------------------------------------------
 
@@ -989,6 +1090,43 @@ public class BarsChecker
             stick.addAttachment("TR", box);
 
             return box;
+        }
+    }
+
+    //---------------//
+    // VerticalCheck //
+    //---------------//
+    private class VerticalCheck
+        extends Check<GlyphContext>
+    {
+        //~ Constructors -------------------------------------------------------
+
+        protected VerticalCheck ()
+        {
+            super(
+                "Vertical",
+                "Check that stick is vertical, according to global slope",
+                constants.maxSlopeLow,
+                constants.maxSlopeHigh,
+                false,
+                NON_VERTICAL);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        // Retrieve the difference between stick slope and global slope
+        @Implement(Check.class)
+        protected double getValue (GlyphContext context)
+        {
+            Stick      stick = context.stick;
+            PixelPoint start = stick.getStartPoint();
+            PixelPoint stop = stick.getStopPoint();
+
+            // Beware of sign of stickSlope (it is opposite of globalSlope)
+            double stickSlope = -(double) (stop.x - start.x) / (stop.y -
+                                                               start.y);
+
+            return Math.abs(stickSlope - globalSlope);
         }
     }
 }

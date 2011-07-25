@@ -40,13 +40,13 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RefineryUtilities;
 
-import java.awt.Rectangle;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
 
 import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
+import omr.score.common.PixelRectangle;
 
 /**
  * Class <code>ScaleBuilder</code> encapsulates the computation of a sheet
@@ -272,7 +272,7 @@ public class ScaleBuilder
             Orientation.VERTICAL,
             adapter);
         runsBuilder.retrieveRuns(
-            new Rectangle(0, 0, picture.getWidth(), picture.getHeight()));
+            new PixelRectangle(0, 0, picture.getWidth(), picture.getHeight()));
 
         // Report results to the user
         StringBuilder sb = new StringBuilder(sheet.getLogPrefix());

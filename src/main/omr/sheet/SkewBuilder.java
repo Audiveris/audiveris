@@ -228,7 +228,6 @@ public class SkewBuilder
 
                 double slope = stick.getOrientedLine()
                                     .getSlope();
-                int    length = stick.getLength();
                 int    index = (int) (slope * RESOLUTION) + (MAX_INDEX / 2);
 
                 if ((index >= 0) && (index < MAX_INDEX)) {

@@ -17,6 +17,7 @@ import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
 import java.awt.*;
+import java.awt.geom.Point2D;
 
 /**
  * Interface <code>Oriented</code> defines the various methods linked to
@@ -48,37 +49,65 @@ public interface Oriented
      */
     boolean isVertical ();
 
-    //-----------//
-    // switchRef //
-    //-----------//
+    //----------//
+    // absolute //
+    //----------//
     /**
      * Given a (coord, pos) oriented point, return the point (x, y) in the
-     * absolute space taking the lag orientation into account. The same method
-     * can be used for the opposite computation, since the method is involutive.
+     * absolute space taking the lag orientation into account.
      *
      * @param cp the oriented (coord, pos) point
-     * @param xy output parameter, or null if not pre-allocated
-     *
      * @return the corresponding absolute (x, y) point
      */
-    PixelPoint switchRef (Point      cp,
-                          PixelPoint xy);
+    Point2D.Double absolute (Point2D cp);
 
-    //-----------//
-    // switchRef //
-    //-----------//
+    //----------//
+    // absolute //
+    //----------//
+    /**
+     * Given a (coord, pos) oriented point, return the point (x, y) in the
+     * absolute space taking the lag orientation into account.
+     *
+     * @param cp the oriented (coord, pos) point
+     * @return the corresponding absolute (x, y) point
+     */
+    PixelPoint absolute (Point cp);
+
+    //----------//
+    // absolute //
+    //----------//
     /**
      * Given a (coord, pos, length, thickness) oriented rectangle, return the
-     * corresponding absolute rectangle, or vice versa.
+     * corresponding absolute rectangle.
      *
      * @param cplt the oriented rectangle (coord, pos, length, thickness)
-     * @param xywh output parameter (x, y, width, height), or null if not
-     * pre-allocated
-     *
      * @return the corresponding absolute rectangle (x, y, width, height).
      */
-    PixelRectangle switchRef (Rectangle      cplt,
-                              PixelRectangle xywh);
+    PixelRectangle absolute (Rectangle cplt);
+
+    //-----------//
+    // oriented //
+    //-----------//
+    /**
+     * Given a point (x, y) in the absolute space, return the corresponding
+     * (coord, pos) oriented point taking the lag orientation into account.
+     *
+     * @param cp the oriented (coord, pos) point
+     * @return the corresponding absolute (x, y) point
+     */
+    Point oriented (PixelPoint cp);
+
+    //----------//
+    // oriented //
+    //----------//
+    /**
+     * Given an absolute rectangle (x, y, width, height) return the
+     * corresponding oriented rectangle (coord, pos, length, thickness).
+     *
+     * @param xywh absolute rectangle (x, y, width, height).
+     * @return the corresponding oriented rectangle (coord, pos, length, thickness)
+     */
+    Rectangle oriented (PixelRectangle xywh);
 
     //-----------//
     // switchRef //
@@ -88,7 +117,6 @@ public interface Oriented
      * versa.
      *
      * @param relLine the oriented line
-     *
      * @return the corresponding absolute line.
      */
     Line switchRef (Line relLine);

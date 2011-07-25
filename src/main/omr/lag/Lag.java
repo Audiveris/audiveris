@@ -34,6 +34,8 @@ import omr.util.Implement;
 import omr.util.Predicate;
 
 import java.awt.*;
+import java.awt.geom.Point2D;
+import java.awt.geom.Point2D.Double;
 import java.util.*;
 import java.util.List;
 
@@ -253,12 +255,63 @@ public class Lag<L extends Lag<L, S>, S extends Section>
         return orientation.isVertical();
     }
 
+    //-----------//
+    // absolute //
+    //-----------//
+    /**
+     * Retrieve absolute coordinates of a rectangle, based on lag orientation
+     *
+     * @param cplt the rectangle values (coordinate, position, length,
+     * thickness) relative to lag orientation
+     * @return the absolute rectangle values
+     */
+    @Implement(Oriented.class)
+    public PixelRectangle absolute (Rectangle cplt)
+    {
+        return orientation.absolute(cplt);
+    }
+
+    //----------//
+    // absolute //
+    //----------//
+    /**
+     * Retrieve absolute coordinates of a point, based on lag orientation
+     *
+     * @param cp the coordinate / position values (relative to lag orientation)
+     * @return the absolute abscissa and ordinate values
+     */
+    @Implement(Oriented.class)
+    public PixelPoint absolute (Point cp)
+    {
+        return orientation.absolute(cp);
+    }
+
+    //----------//
+    // absolute //
+    //----------//
+    /**
+     * Retrieve absolute coordinates of a point, based on lag orientation
+     *
+     * @param cp the coordinate / position values (relative to lag orientation)
+     * @return the absolute abscissa and ordinate values
+     */
+    @Implement(Oriented.class)
+    public Double absolute (Point2D cp)
+    {
+        return orientation.absolute(cp);
+    }
+
     //-------------------//
     // createAbsoluteRoi //
     //-------------------//
-    public Roi createAbsoluteRoi (Rectangle absoluteContour)
+    /**
+     * Create a ROI from a contour specified as an absolute PixelRectangle
+     * @param absoluteContour the absolute contour
+     * @return the ROI created
+     */
+    public Roi createAbsoluteRoi (PixelRectangle absoluteContour)
     {
-        return new Roi(orientation.switchRef(absoluteContour, null));
+        return new Roi(orientation.oriented(absoluteContour));
     }
 
     //---------------//
@@ -312,9 +365,9 @@ public class Lag<L extends Lag<L, S>, S extends Section>
      * @return the (first) section found, or null otherwise
      */
     public S lookupSection (Collection<S> collection,
-                            Point         pt)
+                            PixelPoint    pt)
     {
-        Point target = switchRef(pt, null); // Involutive!
+        Point target = oriented(pt);
 
         // Local copy (in case of concurrent accesses)
         S cached = cachedSection;
@@ -353,9 +406,9 @@ public class Lag<L extends Lag<L, S>, S extends Section>
      *
      * @return the set of sections found, which may be empty
      */
-    public Set<S> lookupSections (Rectangle rect)
+    public Set<S> lookupSections (PixelRectangle rect)
     {
-        Rectangle target = switchRef(rect, null);
+        Rectangle target = oriented(rect);
         Set<S>    found = new LinkedHashSet<S>();
 
         for (S section : getSections()) {
@@ -365,6 +418,30 @@ public class Lag<L extends Lag<L, S>, S extends Section>
         }
 
         return found;
+    }
+
+    //------------//
+    // oriented //
+    //------------//
+    /**
+     * Retrieve oriented coordinates of a rectangle, based on lag orientation
+     *
+     * @param xywh the absolute rectangle values (x, y, width, height)
+     * @return the oriented rectangle values relative to lag orientation
+     */
+    @Implement(Oriented.class)
+    public Rectangle oriented (PixelRectangle xywh)
+    {
+        return orientation.oriented(xywh);
+    }
+
+    //----------//
+    // oriented //
+    //----------//
+    @Implement(Oriented.class)
+    public Point oriented (PixelPoint cp)
+    {
+        return orientation.oriented(cp);
     }
 
     //---------------//
@@ -424,45 +501,6 @@ public class Lag<L extends Lag<L, S>, S extends Section>
                                (section.getOutDegree() == 0));
                     }
                 });
-    }
-
-    //-----------//
-    // switchRef //
-    //-----------//
-    /**
-     * Retrieve absolute coordinates of a point, based on lag orientation
-     *
-     * @param cp the coordinate / position values (relative to lag orientation)
-     * @param xy the output variable for absolute abscissa and ordinate values,
-     * or null if not yet allocated
-     *
-     * @return the absolute abscissa and ordinate values
-     */
-    @Implement(Oriented.class)
-    public PixelPoint switchRef (Point      cp,
-                                 PixelPoint xy)
-    {
-        return orientation.switchRef(cp, xy);
-    }
-
-    //-----------//
-    // switchRef //
-    //-----------//
-    /**
-     * Retrieve absolute coordinates of a rectangle, based on lag orientation
-     *
-     * @param cplt the rectangle values (coordinate, position, length,
-     * thickness) relative to lag orientation
-     * @param xywh the output variable for absolute rectangle values (abscissa,
-     * ordinate, width, height), or null if not yet allocated
-     *
-     * @return the absolute rectangle values
-     */
-    @Implement(Oriented.class)
-    public PixelRectangle switchRef (Rectangle      cplt,
-                                     PixelRectangle xywh)
-    {
-        return orientation.switchRef(cplt, xywh);
     }
 
     //-----------//
@@ -533,24 +571,33 @@ public class Lag<L extends Lag<L, S>, S extends Section>
 
         /**
          * Define a region of interest within the lag
-         * @param contour the contour of the region of interest, specified in
-         * the usual (coord, pos) form
+         * @param orientedContour the oriented contour of the region of interest,
+         * specified in the usual (coord, pos) form.
+         *
+         * @see Lag#createAbsoluteRoi(omr.score.common.PixelRectangle)
          */
-        public Roi (Rectangle contour)
+        public Roi (Rectangle orientedContour)
         {
-            this.contour = contour;
+            this.contour = orientedContour;
+        }
+
+        /**
+         * Define a region of interest within the lag
+         * @param absoluteContour the absolute contour of the region of interest,
+         * specified in the usual (x, y, width, height) form.
+         *
+         * @see Lag#createAbsoluteRoi(omr.score.common.PixelRectangle)
+         */
+        public Roi (PixelRectangle absoluteContour)
+        {
+            this.contour = orientation.oriented(absoluteContour);
         }
 
         //~ Methods ------------------------------------------------------------
 
         public PixelRectangle getAbsoluteContour ()
         {
-            return orientation.switchRef(contour, null);
-        }
-
-        public Rectangle getContour ()
-        {
-            return contour;
+            return orientation.absolute(contour);
         }
 
         /**
@@ -617,6 +664,11 @@ public class Lag<L extends Lag<L, S>, S extends Section>
         public Lag getLag ()
         {
             return Lag.this;
+        }
+
+        public Rectangle getOrientedContour ()
+        {
+            return contour;
         }
 
         @Override

@@ -31,6 +31,9 @@ class BasicAdministration
     /** Glyph instance identifier (Unique in the containing GlyphLag) */
     protected int id;
 
+    /** VIP flag */
+    protected boolean vip;
+
     //~ Constructors -----------------------------------------------------------
 
     //---------------------//
@@ -86,6 +89,22 @@ class BasicAdministration
     public boolean isTransient ()
     {
         return id == 0;
+    }
+
+    //--------//
+    // setVip //
+    //--------//
+    public void setVip ()
+    {
+        vip = true;
+    }
+
+    //-------//
+    // isVip //
+    //-------//
+    public boolean isVip ()
+    {
+        return vip;
     }
 
     //-----------//

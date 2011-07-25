@@ -48,42 +48,41 @@ public enum Orientation
         return this == VERTICAL;
     }
 
-    //-----------//
-    // switchRef //
-    //-----------//
-    public PixelPoint switchRef (Point      cp,
-                                 PixelPoint xy)
+    //----------//
+    // absolute //
+    //----------//
+    public Point oriented (PixelPoint xy)
+    {
+        return new Point(absolute(xy)); // Since involutive
+    }
+
+    //----------//
+    // absolute //
+    //----------//
+    public PixelPoint absolute (Point cp)
     {
         if (cp == null) {
             return null;
         }
 
-        if (xy == null) {
-            xy = new PixelPoint();
-        }
-
         switch (this) {
         case HORIZONTAL :
-            // coord->x, pos->y
-            xy.x = cp.x;
-            xy.y = cp.y;
 
-            return xy;
+            // Identity: coord->x, pos->y
+            return new PixelPoint(cp.x, cp.y);
 
         default :
         case VERTICAL :
-            // swap: coord->y, pos->x
-            xy.x = cp.y;
-            xy.y = cp.x;
 
-            return xy;
+            // swap: coord->y, pos->x
+            return new PixelPoint(cp.y, cp.x);
         }
     }
 
-    //-----------//
-    // switchRef //
-    //-----------//
-    public Point2D.Double switchRef (Point2D cp)
+    //----------//
+    // absolute //
+    //----------//
+    public Point2D.Double absolute (Point2D cp)
     {
         if (cp == null) {
             return null;
@@ -103,39 +102,26 @@ public enum Orientation
         }
     }
 
-    //-----------//
-    // switchRef //
-    //-----------//
-    public PixelRectangle switchRef (Rectangle      cplt,
-                                     PixelRectangle xywh)
+    //----------//
+    // absolute //
+    //----------//
+    public PixelRectangle absolute (Rectangle cplt)
     {
         if (cplt == null) {
             return null;
         }
 
-        if (xywh == null) {
-            xywh = new PixelRectangle();
-        }
-
         switch (this) {
         case HORIZONTAL :
-            // coord->x, pos->y, length->width, thickness->height
-            xywh.x = cplt.x;
-            xywh.y = cplt.y;
-            xywh.width = cplt.width;
-            xywh.height = cplt.height;
 
-            return xywh;
+            // coord->x, pos->y, length->width, thickness->height
+            return new PixelRectangle(cplt);
 
         default :
         case VERTICAL :
-            // coord->y, pos->x, length->height, thickness->width
-            xywh.x = cplt.y;
-            xywh.y = cplt.x;
-            xywh.width = cplt.height;
-            xywh.height = cplt.width;
 
-            return xywh;
+            // coord->y, pos->x, length->height, thickness->width
+            return new PixelRectangle(cplt.y, cplt.x, cplt.height, cplt.width);
         }
     }
 
@@ -160,5 +146,14 @@ public enum Orientation
         case VERTICAL :
             return relLine.swappedCoordinates();
         }
+    }
+
+    //----------//
+    // oriented //
+    //----------//
+    public Rectangle oriented (PixelRectangle xywh)
+    {
+        // Use the fact that 'absolute' is involutive
+        return new Rectangle(absolute(xywh));
     }
 }

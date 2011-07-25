@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.check;
 
+import omr.util.Vip;
 
 /**
  * Interface <code>Checkable</code> describes a class that may be checked and
@@ -19,6 +20,7 @@ package omr.check;
  * @author Hervé Bitteur
  */
 public interface Checkable
+    extends Vip
 {
     //~ Methods ----------------------------------------------------------------
 

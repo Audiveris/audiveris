@@ -142,6 +142,7 @@ public class GridBuilder
             targetBuilder.buildInfo();
         } catch (Exception ex) {
             logger.warning("Error in GridBuilder", ex);
+            ex.printStackTrace();
         } finally {
             if (gridView != null) {
                 // Update the display
@@ -281,7 +282,7 @@ public class GridBuilder
             false,
             "Should we show view on runs?");
         Constant.Boolean printWatch = new Constant.Boolean(
-            false,
+            true,
             "Should we print out the stop watch?");
     }
 }

@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                          S t i c k s S o u r c e                           //
+//                        S e c t i o n s S o u r c e                         //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -23,12 +23,15 @@ import java.util.*;
  *
  * @author Hervé Bitteur
  */
-public class SticksSource
+public class SectionsSource
 {
     //~ Instance fields --------------------------------------------------------
 
     /** the predicate to check whether section is to be processed */
     protected final Predicate<GlyphSection> predicate;
+
+    /** Underlying list */
+    protected ArrayList<GlyphSection> list;
 
     /** the section iterator for the source */
     protected ListIterator<GlyphSection> vi;
@@ -38,39 +41,38 @@ public class SticksSource
 
     //~ Constructors -----------------------------------------------------------
 
-    //--------------//
-    // SticksSource //
-    //--------------//
+    //----------------//
+    // SectionsSource //
+    //----------------//
     /**
-     * Create a SticksBuilder source on a given collection of glyph sections,
+     * Create a source on a given collection of glyph sections,
      * with default predicate
      *
      * @param collection the provided sections
      */
-    public SticksSource (Collection<GlyphSection> collection)
+    public SectionsSource (Collection<GlyphSection> collection)
     {
         this(collection, new UnknownSectionPredicate());
     }
 
-    //--------------//
-    // SticksSource //
-    //--------------//
+    //----------------//
+    // SectionsSource //
+    //----------------//
     /**
-     * Create a SticksBuilder source on a given collection of glyph sections,
+     * Create a source on a given collection of glyph sections,
      * with a specific predicate for section
      *
      * @param collection the provided sections
      * @param predicate the predicate to check for candidate sections
      */
-    public SticksSource (Collection<GlyphSection> collection,
-                         Predicate<GlyphSection>  predicate)
+    public SectionsSource (Collection<GlyphSection> collection,
+                           Predicate<GlyphSection>  predicate)
     {
         this.predicate = predicate;
 
         if (collection != null) {
-            ArrayList<GlyphSection> list = new ArrayList<GlyphSection>(
-                collection);
-            vi = list.listIterator();
+            list = new ArrayList<GlyphSection>(collection);
+            reset();
         }
     }
 
@@ -150,6 +152,6 @@ public class SticksSource
     //-------//
     public void reset ()
     {
-        // void
+        vi = list.listIterator();
     }
 }

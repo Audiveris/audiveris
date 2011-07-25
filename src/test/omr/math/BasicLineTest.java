@@ -12,40 +12,194 @@
 package omr.math;
 
 import omr.util.BaseTestCase;
-
 import static junit.framework.Assert.*;
-import junit.framework.*;
 
 /**
  * Class <code>BasicLineTest</code> performs unit tests on BasicLine class.
  *
  * @author Hervé Bitteur
- * @version $Id$
  */
 public class BasicLineTest
     extends BaseTestCase
 {
-    //~ Static variables/initializers -------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
-    protected static final double[] xx = new double[] {1d,  2d,  3d,  4d,  5d};
-    protected static final double[] yy = new double[] {4d,  9d, 14d, 19d, 24d};
+    protected static final double[] xx = new double[] { 1d, 2d, 3d, 4d, 5d };
+    protected static final double[] yy = new double[] { 4d, 9d, 14d, 19d, 24d };
 
-    //~ Instance variables ------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
-    Line l   = new BasicLine();
-    Line l2  = new BasicLine();
-    Line lxy = new BasicLine(xx, yy);
-    Line l3 = new BasicLine(-0.80343527d,
-                            -0.5953921d,
-                            385.66354d);
+    BasicLine l = new BasicLine();
+    BasicLine l2 = new BasicLine();
+    BasicLine lxy = new BasicLine(xx, yy);
+    BasicLine l3 = new BasicLine(-0.80343527d, -0.5953921d, 385.66354d);
 
-    //~ Constructors ------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
-    //~ Methods -----------------------------------------------------------
+    public void testDifferentPoints ()
+    {
+        double[] xx = new double[] { 1d, 2d };
+        double[] yy = new double[] { 4d, 9d, 14d };
+
+        try {
+            BasicLine l = new BasicLine(xx, yy);
+            print(l);
+            fail(
+                "Exception should be raised" +
+                " when arrays have different lengths");
+        } catch (Exception expected) {
+            checkException(expected);
+        }
+    }
+
+    public void testDistanceOf ()
+    {
+        BasicLineCheck.checkDistanceOf(lxy);
+    }
+
+    public void testGetMeanDistance ()
+    {
+        BasicLineCheck.checkGetMeanDistance(lxy);
+    }
+
+    public void testGetNoMeanDistance ()
+    {
+        BasicLineCheck.checkGetNoMeanDistance(new BasicLine(1.2, 3.4, 1));
+    }
+
+    public void testHorizontalPoints ()
+    {
+        BasicLineCheck.checkHorizontalPoints(l);
+    }
+
+    public void testHorizontalXAt ()
+    {
+        BasicLineCheck.checkHorizontalXAt(l);
+    }
+
+    public void testHorizontalYAt ()
+    {
+        BasicLineCheck.checkHorizontalYAt(l);
+    }
+
+    public void testInclude ()
+    {
+        BasicLineCheck.checkInclude(l);
+    }
+
+    public void testIncludeOther ()
+    {
+        BasicLineCheck.checkIncludeOther(l, l2);
+    }
+
+    public void testIncludeOther2 ()
+    {
+        BasicLineCheck.checkIncludeOther2(l, l2);
+    }
 
     public void testNoArgLine ()
     {
-        LineCheck.checkNoArgLine(l);
+        BasicLineCheck.checkNoArgLine(l);
+    }
+
+    public void testNoDistanceOf ()
+    {
+        BasicLineCheck.checkNoDistanceOf(l);
+    }
+
+    public void testNullPoints ()
+    {
+        try {
+            BasicLine l = new BasicLine(xx, null);
+            print(l);
+            fail("Exception should be raised" + " when one array is null");
+        } catch (Exception expected) {
+            checkException(expected);
+        }
+    }
+
+    public void testObliquePoints ()
+    {
+        BasicLineCheck.checkObliquePoints(l);
+    }
+
+    // --------------------------------------------------------------------
+    public void testPointsLineA ()
+    {
+        BasicLineCheck.checkPointsLineNb(lxy);
+    }
+
+    public void testPointsLineB ()
+    {
+        BasicLineCheck.checkPointsLineB(lxy);
+    }
+
+    public void testPointsLineC ()
+    {
+        BasicLineCheck.checkPointsLineC(lxy);
+    }
+
+    public void testPointsLineNb ()
+    {
+        BasicLineCheck.checkPointsLineNb(lxy);
+    }
+
+    public void testReset ()
+    {
+        BasicLineCheck.checkReset(l);
+    }
+
+    public void testShortPoints ()
+    {
+        double[] xx = new double[] { 1d };
+        double[] yy = new double[] { 4d };
+
+        try {
+            BasicLine l = new BasicLine(xx, yy);
+            print(l);
+            fail("Exception should be raised" + " when arrays are too short");
+        } catch (Exception expected) {
+            checkException(expected);
+        }
+    }
+
+    public void testSingleInclude ()
+    {
+        BasicLineCheck.checkSingleInclude(l);
+    }
+
+    public void testSingularMeanDistance ()
+    {
+        double[] xx = new double[] { 1d, 1d, 1d };
+        double[] yy = new double[] { 2d, 2d, 2d };
+
+        try {
+            BasicLine l = new BasicLine(xx, yy);
+            print(l);
+
+            double md = l.getMeanDistance();
+            fail(
+                "Exception should be raised" +
+                " when using a line not properly defined");
+        } catch (Exception expected) {
+            checkException(expected);
+        }
+    }
+
+    public void testSingularPoints ()
+    {
+        double[] xx = new double[] { 1d, 1d, 1d };
+        double[] yy = new double[] { 2d, 2d, 2d };
+
+        try {
+            BasicLine l = new BasicLine(xx, yy);
+            print(l);
+            fail(
+                "Exception should be raised" +
+                " when line is singularly defined");
+        } catch (Exception expected) {
+            checkException(expected);
+        }
     }
 
     public void testStandardLine ()
@@ -53,232 +207,78 @@ public class BasicLineTest
         double a = -2;
         double b = 1;
         double c = -5;
-        LineCheck.checkStandardLine(new BasicLine(a, b, c));
+        BasicLineCheck.checkStandardLine(new BasicLine(a, b, c));
     }
 
-    public void testNullPoints()
+    public void testTangent ()
     {
-        try {
-            Line l = new BasicLine(xx, null);
-            print(l);
-            fail("Exception should be raised"+
-                 " when one array is null");
-        } catch (Exception expected) {
-            checkException(expected);
-        }
+        BasicLineCheck.checkTangent(l3);
     }
 
-    public void testDifferentPoints()
+    public void testTangent1 ()
     {
-        double[] xx = new double[] {1d,  2d};
-        double[] yy = new double[] {4d,  9d, 14d};
-        try {
-            Line l = new BasicLine(xx, yy);
-            print(l);
-            fail("Exception should be raised"+
-                 " when arrays have different lengths");
-        } catch (Exception expected) {
-            checkException(expected);
-        }
+        BasicLineCheck.checkTangent1(l);
     }
 
-    public void testShortPoints()
+    public void testTangent10 ()
     {
-        double[] xx = new double[] {1d};
-        double[] yy = new double[] {4d};
-        try {
-            Line l = new BasicLine(xx, yy);
-            print(l);
-            fail("Exception should be raised"+
-                 " when arrays are too short");
-        } catch (Exception expected) {
-            checkException(expected);
-        }
+        BasicLineCheck.checkTangent10(l);
     }
 
-    public void testPointsLineNb ()
+    public void testTangent2 ()
     {
-        LineCheck.checkPointsLineNb(lxy);
+        BasicLineCheck.checkTangent2(l);
     }
 
-    public void testReset()
+    public void testTangent3 ()
     {
-        LineCheck.checkReset(l);
+        BasicLineCheck.checkTangent3(l);
     }
 
-    public void testSingularPoints()
-    {
-        double[] xx = new double[] {1d, 1d, 1d};
-        double[] yy = new double[] {2d, 2d, 2d};
-        try {
-            Line l = new BasicLine(xx, yy);
-            print(l);
-            fail("Exception should be raised"+
-                 " when line is singularly defined");
-        } catch (Exception expected) {
-            checkException(expected);
-        }
-    }
-
-    public void testSingularMeanDistance ()
-    {
-        double[] xx = new double[] {1d, 1d, 1d};
-        double[] yy = new double[] {2d, 2d, 2d};
-        try {
-            Line l = new BasicLine(xx, yy);
-            print(l);
-            double md = l.getMeanDistance();
-            fail("Exception should be raised"+
-                 " when using a line not properly defined");
-        } catch (Exception expected) {
-            checkException(expected);
-        }
-    }
-
-    public void testDistanceOf()
-    {
-        LineCheck.checkDistanceOf(lxy);
-    }
-
-    public void testNoDistanceOf()
-    {
-        LineCheck.checkNoDistanceOf(l);
-    }
-
-    public void testSingleInclude()
-    {
-        LineCheck.checkSingleInclude(l);
-    }
-
-    // --------------------------------------------------------------------
-
-    public void testPointsLineA ()
-    {
-        LineCheck.checkPointsLineNb(lxy);
-    }
-
-    public void testPointsLineB ()
-    {
-        LineCheck.checkPointsLineB(lxy);
-    }
-
-    public void testPointsLineC()
-    {
-        LineCheck.checkPointsLineC(lxy);
-    }
-
-    public void testObliquePoints()
-    {
-        LineCheck.checkObliquePoints(l);
-    }
-
-    public void testVerticalPoints()
+    public void testVerticalPoints ()
     {
         l.includePoint(1, 0);
-        l.includePoint(1,-2);
+        l.includePoint(1, -2);
         print(l);
     }
 
-    public void testHorizontalPoints()
+    public void testVerticalXAt ()
     {
-        LineCheck.checkHorizontalPoints(l);
+        BasicLineCheck.checkVerticalXAt(l);
     }
 
-    public void testGetMeanDistance()
-    {
-        LineCheck.checkGetMeanDistance(lxy);
-    }
-
-    public void testGetNoMeanDistance ()
-    {
-        LineCheck.checkGetNoMeanDistance(new BasicLine(1.2, 3.4, 1));
-    }
-
-    public void testInclude()
-    {
-        LineCheck.checkInclude(l);
-    }
-
-    public void testIncludeOther()
-    {
-        LineCheck.checkIncludeOther(l, l2);
-    }
-
-    public void testIncludeOther2()
-    {
-        LineCheck.checkIncludeOther2(l, l2);
-    }
-
-    public void testXAt()
-    {
-        LineCheck.checkXAt(l);
-    }
-
-    public void testYAt()
-    {
-        LineCheck.checkYAt(l);
-    }
-
-    public void testVerticalYAt()
+    public void testVerticalYAt ()
     {
         try {
             l.includePoint(0, 0);
             l.includePoint(0, 1);
-            double y = l.yAt(0d);
-            fail("Exception should be raised"+
-                 " when Yat is called on a vertical line");
+
+            double y = l.yAtX(0d);
+            fail(
+                "Exception should be raised" +
+                " when Yat is called on a vertical line");
         } catch (Exception expected) {
             checkException(expected);
         }
     }
 
-    public void testVerticalXAt()
+    public void testXAt ()
     {
-        LineCheck.checkVerticalXAt(l);
+        BasicLineCheck.checkXAt(l);
     }
 
-    public void testHorizontalXAt()
+    public void testXAtInt ()
     {
-        LineCheck.checkHorizontalXAt(l);
+        BasicLineCheck.checkXAtInt(l);
     }
 
-    public void testHorizontalYAt()
+    public void testYAt ()
     {
-        LineCheck.checkHorizontalYAt(l);
+        BasicLineCheck.checkYAt(l);
     }
 
-    public void testXAtInt()
+    public void testYAtInt ()
     {
-        LineCheck.checkXAtInt(l);
-    }
-
-    public void testYAtInt()
-    {
-        LineCheck.checkYAtInt(l);
-    }
-
-    public void testTangent()
-    {
-        LineCheck.checkTangent(l3);
-    }
-
-    public void testTangent1()
-    {
-        LineCheck.checkTangent1(l);
-    }
-
-    public void testTangent10()
-    {
-        LineCheck.checkTangent10(l);
-    }
-
-    public void testTangent2()
-    {
-        LineCheck.checkTangent2(l);
-    }
-
-    public void testTangent3()
-    {
-        LineCheck.checkTangent3(l);
+        BasicLineCheck.checkYAtInt(l);
     }
 }

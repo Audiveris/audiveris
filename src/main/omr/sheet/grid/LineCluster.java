@@ -18,7 +18,7 @@ import omr.log.Logger;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
-import omr.stick.Filament;
+import omr.util.Vip;
 
 import java.awt.Graphics2D;
 import java.util.*;
@@ -32,6 +32,7 @@ import java.util.Map.Entry;
  * @author Hervé Bitteur
  */
 public class LineCluster
+    implements Vip
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -58,6 +59,9 @@ public class LineCluster
     /** (Cached) bounding box of this cluster */
     private PixelRectangle contourBox;
 
+    /** For debugging */
+    private boolean vip = false;
+
     //~ Constructors -----------------------------------------------------------
 
     //-------------//
@@ -71,14 +75,19 @@ public class LineCluster
     public LineCluster (int          interline,
                         LineFilament seed)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Creating cluster with F" + seed.getId());
+        if (logger.isFineEnabled() || seed.isVip()) {
+            logger.info("Creating cluster with F" + seed.getId());
+
+            if (seed.isVip()) {
+                setVip();
+            }
         }
 
         this.interline = interline;
         this.id = seed.getId();
 
         lines = new TreeMap<Integer, FilamentLine>();
+
         include(seed, 0);
     }
 
@@ -239,6 +248,8 @@ public class LineCluster
                 if (pt != null) {
                     prevPos = p;
                     prevVal = pt.y;
+
+                    break;
                 }
             }
 
@@ -251,6 +262,8 @@ public class LineCluster
                 if (pt != null) {
                     nextPos = p;
                     nextVal = pt.y;
+
+                    break;
                 }
             }
 
@@ -263,21 +276,22 @@ public class LineCluster
                                                                prevPos));
             } else {
                 // Extrapolate
-                if (prevPos != null) {
-                    y = prevVal + ((pos - prevPos) * interline);
-                } else if (nextPos != null) {
-                    y = nextVal + ((pos - nextPos) * interline);
-                } else {
-                    // Here, we are beyond cluster left or right sides.
-                    // We assume the delta abscissa is small enough to allow
-                    // rather horizontal extrapolation
-                    FilamentLine line = lines.get(pos);
-                    PixelPoint   point = (x <= line.getStartPoint().x)
-                                         ? line.getStartPoint()
-                                         : line.getStopPoint();
-                    y = (int) Math.rint(
-                        point.y + ((x - point.x) * globalSlope));
-                }
+
+                //                if (prevPos != null) {
+                //                    y = prevVal + ((pos - prevPos) * interline);
+                //                } else if (nextPos != null) {
+                //                    y = nextVal + ((pos - nextPos) * interline);
+                //                } else {
+
+                // Here, we are beyond cluster left or right sides.
+                // We assume the delta abscissa is small enough to allow
+                // rather horizontal extrapolation
+                FilamentLine line = lines.get(pos);
+                PixelPoint   point = (x <= line.getStartPoint().x)
+                                     ? line.getStartPoint() : line.getStopPoint();
+                y = (int) Math.rint(point.y + ((x - point.x) * globalSlope));
+
+                //                }
             }
 
             points.put(pos, new PixelPoint(x, y));
@@ -322,16 +336,33 @@ public class LineCluster
         return points;
     }
 
-    // containsSID ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public boolean containsSID (int id)
-    {
-        for (FilamentLine line : lines.values()) {
-            if (line.fil.containsSID(id)) {
-                return true;
-            }
-        }
+    //    //-----------//
+    //    // Constants //
+    //    //-----------//
+    //    private static final class Constants
+    //        extends ConstantSet
+    //    {
+    //        //~ Instance fields ----------------------------------------------------
+    //
+    //        final Constant.Ratio minTrueLength = new Constant.Ratio(
+    //            0.4,
+    //            "Minimum true length ratio to keep a line in a cluster");
+    //    }
 
-        return false;
+    //--------//
+    // setVip //
+    //--------//
+    public void setVip ()
+    {
+        vip = true;
+    }
+
+    //-------//
+    // isVip //
+    //-------//
+    public boolean isVip ()
+    {
+        return vip;
     }
 
     //---------//
@@ -560,10 +591,14 @@ public class LineCluster
     private void include (LineFilament pivot,
                           int          pivotPos)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine(
+        if (logger.isFineEnabled() || pivot.isVip()) {
+            logger.info(
                 this + " include pivot:" + pivot.getId() + " at pos:" +
                 pivotPos);
+
+            if (pivot.isVip()) {
+                setVip();
+            }
         }
 
         LineFilament ancestor = pivot.getAncestor();
@@ -593,6 +628,13 @@ public class LineCluster
                     int          pos = i + deltaPos;
                     FilamentLine line = getLine(pos, null);
                     line.add(fil);
+
+                    if (fil.isVip()) {
+                        logger.info(
+                            "Adding " + fil + " to " + this + " at pos " + pos);
+                        setVip();
+                    }
+
                     fil.setCluster(this, pos);
 
                     if (fil != ancestor) {
@@ -647,17 +689,4 @@ public class LineCluster
     {
         contourBox = null;
     }
-
-    //    //-----------//
-    //    // Constants //
-    //    //-----------//
-    //    private static final class Constants
-    //        extends ConstantSet
-    //    {
-    //        //~ Instance fields ----------------------------------------------------
-    //
-    //        final Constant.Ratio minTrueLength = new Constant.Ratio(
-    //            0.4,
-    //            "Minimum true length ratio to keep a line in a cluster");
-    //    }
 }

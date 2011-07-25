@@ -147,8 +147,8 @@ public class TargetBuilder
     // renderSystems //
     //---------------//
     /**
-     * BINGO TODO: This should be done from a more central class
-     * @param g
+     * TODO: This should be done from a more central class
+     * @param g graphical context
      */
     public void renderSystems (Graphics2D g)
     {
@@ -157,7 +157,7 @@ public class TargetBuilder
         }
 
         Stroke systemStroke = new BasicStroke(
-            5,
+            2,
             BasicStroke.CAP_ROUND,
             BasicStroke.JOIN_ROUND);
 

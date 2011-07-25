@@ -86,8 +86,8 @@ public class StraightLineInfo
         this.builder = builder;
         this.line = line;
 
-        leftPoint = new PixelPoint(left, line.yAt(left));
-        rightPoint = new PixelPoint(right, line.yAt(right));
+        leftPoint = new PixelPoint(left, line.yAtX(left));
+        rightPoint = new PixelPoint(right, line.yAtX(right));
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -186,7 +186,7 @@ public class StraightLineInfo
     {
         // Paint the computed line
         if (line != null) {
-            g.drawLine(left, line.yAt(left), right, line.yAt(right));
+            g.drawLine(left, line.yAtX(left), right, line.yAtX(right));
         }
     }
 
@@ -206,7 +206,7 @@ public class StraightLineInfo
     }
 
     //-----//
-    // yAt //
+    // yAtX //
     //-----//
     @Implement(LineInfo.class)
     public int yAt (int x)
@@ -215,11 +215,11 @@ public class StraightLineInfo
             throw new RuntimeException("No line defined");
         }
 
-        return line.yAt(x);
+        return line.yAtX(x);
     }
 
     //-----//
-    // yAt //
+    // yAtX //
     //-----//
     @Implement(LineInfo.class)
     public double yAt (double x)
@@ -228,6 +228,6 @@ public class StraightLineInfo
             throw new RuntimeException("No line defined");
         }
 
-        return line.yAt(x);
+        return line.yAtX(x);
     }
 }

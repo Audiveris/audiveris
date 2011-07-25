@@ -25,4 +25,15 @@ public class Wrapper<T>
 
     /** The wrapped value */
     public T value;
+
+    //~ Methods ----------------------------------------------------------------
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return "wrapper(" + value + ")";
+    }
 }

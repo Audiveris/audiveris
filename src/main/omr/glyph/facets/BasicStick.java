@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.glyph.facets;
 
+import omr.log.Logger;
+
 import omr.math.Line;
 
 import omr.score.common.PixelPoint;
@@ -18,6 +20,7 @@ import omr.score.common.PixelPoint;
 import omr.stick.StickSection;
 
 import java.awt.*;
+import java.lang.reflect.Constructor;
 
 /**
  * Class {@code BasicStick} is the Stick implementation for a standard glyph
@@ -29,13 +32,15 @@ public class BasicStick
     extends BasicGlyph
     implements Stick
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(BasicStick.class);
+
     //~ Instance fields --------------------------------------------------------
 
     /** GlyphAlignment facet */
-    final GlyphAlignment alignment;
-
-    /** Best line equation */
-    protected Line line;
+    private final GlyphAlignment alignment;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -50,6 +55,35 @@ public class BasicStick
     {
         super(interline);
         addFacet(alignment = new BasicAlignment(this));
+    }
+
+    //------------//
+    // BasicStick //
+    //------------//
+    /**
+     * Create a stick with the interline value and specific alignment class
+     * @param interline the very important scaling information
+     * @param alignmentClass the specific alignment class
+     */
+    protected BasicStick (int                            interline,
+                          Class<?extends GlyphAlignment> alignmentClass)
+    {
+        super(interline);
+
+        GlyphAlignment theAlignment = null;
+
+        try {
+            Constructor constructor = alignmentClass.getConstructor(
+                new Class[] { Glyph.class });
+            theAlignment = (GlyphAlignment) constructor.newInstance(
+                new Object[] { this });
+        } catch (Exception ex) {
+            logger.severe(
+                "Cannot instantiate BasicStick with " + alignmentClass +
+                " ex:" + ex);
+        }
+
+        addFacet(alignment = theAlignment);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -105,14 +139,17 @@ public class BasicStick
         return alignment.getAspect();
     }
 
-    public boolean isExtensionOf (Stick  other,
-                                  int    maxDeltaCoord,
-                                  int    maxDeltaPos)
+    public void setEndingPoints (PixelPoint pStart,
+                                 PixelPoint pStop)
     {
-        return alignment.isExtensionOf(
-            other,
-            maxDeltaCoord,
-            maxDeltaPos);
+        alignment.setEndingPoints(pStart, pStop);
+    }
+
+    public boolean isExtensionOf (Stick other,
+                                  int   maxDeltaCoord,
+                                  int   maxDeltaPos)
+    {
+        return alignment.isExtensionOf(other, maxDeltaCoord, maxDeltaPos);
     }
 
     public int getFirstPos ()
@@ -123,6 +160,11 @@ public class BasicStick
     public int getFirstStuck ()
     {
         return alignment.getFirstStuck();
+    }
+
+    public int getIntPositionAt (double coord)
+    {
+        return alignment.getIntPositionAt(coord);
     }
 
     public int getLastPos ()
@@ -140,14 +182,24 @@ public class BasicStick
         return alignment.getLength();
     }
 
-    public Line getOrientedLine ()
+    public double getMeanDistance ()
     {
-        return alignment.getOrientedLine();
+        return alignment.getMeanDistance();
     }
 
     public int getMidPos ()
     {
         return alignment.getMidPos();
+    }
+
+    public Line getOrientedLine ()
+    {
+        return alignment.getOrientedLine();
+    }
+
+    public double getPositionAt (double coord)
+    {
+        return alignment.getPositionAt(coord);
     }
 
     public int getStart ()
@@ -185,6 +237,11 @@ public class BasicStick
         return alignment.getThickness();
     }
 
+    public double getThicknessAt (int coord)
+    {
+        return alignment.getThicknessAt(coord);
+    }
+
     //------------//
     // addSection //
     //------------//
@@ -204,21 +261,6 @@ public class BasicStick
             .includeLine(section.getLine());
     }
 
-    public void computeLine ()
-    {
-        alignment.computeLine();
-    }
-
-    //-----------------//
-    // invalidateCache //
-    //-----------------//
-    @Override
-    public void invalidateCache ()
-    {
-        super.invalidateCache();
-        line = null;
-    }
-
     public boolean overlapsWith (Stick other)
     {
         return alignment.overlapsWith(other);
@@ -227,6 +269,14 @@ public class BasicStick
     public void renderLine (Graphics2D g)
     {
         alignment.renderLine(g);
+    }
+
+    //--------------//
+    // getAlignment //
+    //--------------//
+    protected GlyphAlignment getAlignment ()
+    {
+        return alignment;
     }
 
     //-----------------//
@@ -266,34 +316,33 @@ public class BasicStick
               .append("%");
         }
 
-        if ((line != null) && (line.getNumberOfPoints() > 1)) {
-            try {
-                sb.append(" start[");
-
-                PixelPoint start = getStartPoint();
-                sb.append(start.x)
-                  .append(",")
-                  .append(start.y);
-            } catch (Exception ignored) {
-                sb.append("INVALID");
-            } finally {
-                sb.append("]");
-            }
-
-            try {
-                sb.append(" stop[");
-
-                PixelPoint stop = getStopPoint();
-                sb.append(stop.x)
-                  .append(",")
-                  .append(stop.y);
-            } catch (Exception ignored) {
-                sb.append("INVALID");
-            } finally {
-                sb.append("]");
-            }
-        }
-
+        //        if ((line != null) && (line.getNumberOfPoints() > 1)) {
+        //            try {
+        //                sb.append(" start[");
+        //
+        //                PixelPoint start = getStartPoint();
+        //                sb.append(start.x)
+        //                  .append(",")
+        //                  .append(start.y);
+        //            } catch (Exception ignored) {
+        //                sb.append("INVALID");
+        //            } finally {
+        //                sb.append("]");
+        //            }
+        //
+        //            try {
+        //                sb.append(" stop[");
+        //
+        //                PixelPoint stop = getStopPoint();
+        //                sb.append(stop.x)
+        //                  .append(",")
+        //                  .append(stop.y);
+        //            } catch (Exception ignored) {
+        //                sb.append("INVALID");
+        //            } finally {
+        //                sb.append("]");
+        //            }
+        //        }
         return sb.toString();
     }
 }

@@ -554,15 +554,15 @@ public class GlyphLagView
             if (Math.abs(absoluteLine.getSlope()) <= (Math.PI / 4)) {
                 // Rather horizontal
                 a.x = box.x - ext;
-                a.y = absoluteLine.yAt(a.x);
+                a.y = absoluteLine.yAtX(a.x);
                 b.x = box.x + box.width + ext;
-                b.y = absoluteLine.yAt(b.x);
+                b.y = absoluteLine.yAtX(b.x);
             } else {
                 // Rather vertical
                 a.y = box.y - ext;
-                a.x = absoluteLine.xAt(a.y);
+                a.x = absoluteLine.xAtY(a.y);
                 b.y = box.y + box.height + ext;
-                b.x = absoluteLine.xAt(b.y);
+                b.x = absoluteLine.xAtY(b.y);
             }
 
             g.drawLine(a.x, a.y, b.x, b.y);

@@ -17,12 +17,12 @@ import omr.constant.ConstantSet;
 import omr.glyph.*;
 import omr.glyph.facets.Glyph;
 
-import omr.run.Orientation;
-import omr.run.Oriented;
-
 import omr.log.Logger;
 
 import omr.math.Histogram;
+
+import omr.run.Orientation;
+import omr.run.Oriented;
 
 import omr.score.common.PixelRectangle;
 
@@ -528,7 +528,7 @@ public class TextArea
                 system,
                 this,
                 lag.createAbsoluteRoi(
-                    new Rectangle(
+                    new PixelRectangle(
                         contour.x + packetStart,
                         contour.y,
                         gapStart - packetStart,
@@ -539,7 +539,7 @@ public class TextArea
                 system,
                 this,
                 lag.createAbsoluteRoi(
-                    new Rectangle(
+                    new PixelRectangle(
                         contour.x,
                         contour.y + packetStart,
                         contour.width,

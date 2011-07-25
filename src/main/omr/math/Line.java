@@ -13,45 +13,15 @@ package omr.math;
 
 
 /**
- * Interface <code>Line</code> handles the equation of a line, whatever its
- * orientation, using the form : a*x + b*y + c = 0. The equation is normalized,
- * in other words, we always have a**2 + b**2 = 1.
+ * Interface <code>Line</code> handles the equation of a line (or more
+ * generally some curved line for which Y can be computed from X), whatever its
+ * orientation
  *
  * @author Hervé Bitteur
  */
 public interface Line
 {
     //~ Methods ----------------------------------------------------------------
-
-    //------//
-    // getA //
-    //------//
-    /**
-     * Return a, the coefficient of x in a*x + b*y +c
-     *
-     * @return x coefficient
-     */
-    double getA ();
-
-    //------//
-    // getB //
-    //------//
-    /**
-     * Return b, the coefficient of y in a*x + b*y +c
-     *
-     * @return y coefficient
-     */
-    double getB ();
-
-    //------//
-    // getC //
-    //------//
-    /**
-     * Return c, the coefficient of 1 in a*x + b*y +c
-     *
-     * @return 1 coefficient
-     */
-    double getC ();
 
     //--------------//
     // isHorizontal //
@@ -173,9 +143,9 @@ public interface Line
      */
     Line swappedCoordinates ();
 
-    //-----//
-    // xAt //
-    //-----//
+    //------//
+    // xAtY //
+    //------//
     /**
      * Retrieve the abscissa where the line crosses the given ordinate y.
      * Beware of horizontal lines !!!
@@ -184,11 +154,11 @@ public interface Line
      *
      * @return the corresponding x value
      */
-    double xAt (double y);
+    double xAtY (double y);
 
-    //-----//
-    // xAt //
-    //-----//
+    //------//
+    // xAtY //
+    //------//
     /**
      * Retrieve the abscissa where the line crosses the given ordinate y,
      * rounded to the nearest integer value.  Beware of horizontal lines !!!
@@ -197,11 +167,11 @@ public interface Line
      *
      * @return the corresponding x value
      */
-    int xAt (int y);
+    int xAtY (int y);
 
-    //-----//
-    // yAt //
-    //-----//
+    //------//
+    // yAtX //
+    //------//
     /**
      * Retrieve the ordinate where the line crosses the given abscissa x.
      * Beware of vertical lines !!!
@@ -210,11 +180,11 @@ public interface Line
      *
      * @return the corresponding y value
      */
-    double yAt (double x);
+    double yAtX (double x);
 
-    //-----//
-    // yAt //
-    //-----//
+    //------//
+    // yAtX //
+    //------//
     /**
      * Retrieve the ordinate where the line crosses the given abscissa x,
      * rounded to the nearest integer value.  Beware of vertical lines !!!
@@ -223,7 +193,7 @@ public interface Line
      *
      * @return the corresponding y value
      */
-    int yAt (int x);
+    int yAtX (int x);
 
     //~ Inner Classes ----------------------------------------------------------
 

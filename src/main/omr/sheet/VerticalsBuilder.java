@@ -36,7 +36,7 @@ import omr.selection.UserEvent;
 import omr.step.StepException;
 
 import omr.stick.SticksBuilder;
-import omr.stick.SticksSource;
+import omr.stick.SectionsSource;
 
 import omr.util.Implement;
 import omr.util.Predicate;
@@ -156,7 +156,7 @@ public class VerticalsBuilder
         SticksBuilder verticalsArea = new SticksBuilder(
             scale,
             lag,
-            new SticksSource(
+            new SectionsSource(
                 system.getVerticalSections(),
                 new MySectionPredicate()),
             false);
@@ -189,7 +189,7 @@ public class VerticalsBuilder
             SticksBuilder verticalsArea = new SticksBuilder(
                 scale,
                 lag,
-                new SticksSource(sections, new MySectionPredicate()),
+                new SectionsSource(sections, new MySectionPredicate()),
                 false);
             verticalsArea.setMaxThickness(constants.maxStemThickness);
 

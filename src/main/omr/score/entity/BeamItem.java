@@ -115,8 +115,8 @@ public class BeamItem
         Stick          stick = (Stick) glyph;
         PixelRectangle box = stick.getContourBox();
         Line           absoluteLine = stick.getAbsoluteLine();
-        double         yMidLeft = absoluteLine.yAt((double) box.x);
-        double         yMidRight = absoluteLine.yAt(
+        double         yMidLeft = absoluteLine.yAtX((double) box.x);
+        double         yMidRight = absoluteLine.yAtX(
             (double) (box.x + box.width));
         double         deltaMid1 = Math.min(yMidLeft, yMidRight) - box.y;
         double         deltaMid2 = (box.y + box.height) -

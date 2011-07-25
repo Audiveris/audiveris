@@ -62,7 +62,7 @@ import omr.step.Steps;
 
 import omr.stick.StickSection;
 import omr.stick.SticksBuilder;
-import omr.stick.SticksSource;
+import omr.stick.SectionsSource;
 import omr.stick.UnknownSectionPredicate;
 
 import omr.ui.BoardsPane;
@@ -206,7 +206,7 @@ public class SystemsBuilder
             SticksBuilder barsArea = new SticksBuilder(
                 scale,
                 lag,
-                new SticksSource(
+                new SectionsSource(
                     lag.getVertices(),
                     new UnknownSectionPredicate()),
                 false);

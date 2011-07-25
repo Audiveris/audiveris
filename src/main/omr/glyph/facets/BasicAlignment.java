@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.glyph.facets;
 
+import omr.constant.ConstantSet;
+
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 
@@ -19,17 +21,16 @@ import omr.log.Logger;
 import omr.math.BasicLine;
 import omr.math.Line;
 
+import omr.run.Orientation;
 import omr.run.Run;
 
 import omr.score.common.PixelPoint;
 
+import omr.sheet.Scale;
+
 import omr.stick.StickSection;
 
-import java.awt.BasicStroke;
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Stroke;
+import java.awt.*;
 import java.util.List;
 
 /**
@@ -37,19 +38,28 @@ import java.util.List;
  *
  * @author Hervé Bitteur
  */
-class BasicAlignment
+public class BasicAlignment
     extends BasicFacet
     implements GlyphAlignment
 {
     //~ Static fields/initializers ---------------------------------------------
+
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(BasicAlignment.class);
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Best line equation */
-    private Line line;
+    /** Best (curved or straight) line equation */
+    protected Line line;
+
+    /** Absolute beginning point */
+    protected PixelPoint pStart;
+
+    /** Absolute ending point */
+    protected PixelPoint pStop;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -203,18 +213,29 @@ class BasicAlignment
         return (double) getLength() / (double) getThickness();
     }
 
+    //-----------------//
+    // setEndingPoints //
+    //-----------------//
+    public void setEndingPoints (PixelPoint pStart,
+                                 PixelPoint pStop)
+    {
+        glyph.invalidateCache();
+        this.pStart = pStart;
+        this.pStop = pStop;
+    }
+
     //---------------//
     // isExtensionOf //
     //---------------//
-    public boolean isExtensionOf (Stick  that,
-                                  int    maxDeltaCoord,
-                                  int    maxDeltaPos)
+    public boolean isExtensionOf (Stick that,
+                                  int   maxDeltaCoord,
+                                  int   maxDeltaPos)
     {
-        GlyphLag   lag = glyph.getLag();
-        PixelPoint thisStart = lag.switchRef(this.getStartPoint(), null);
-        PixelPoint thisStop = lag.switchRef(this.getStopPoint(), null);
-        PixelPoint thatStart = lag.switchRef(that.getStartPoint(), null);
-        PixelPoint thatStop = lag.switchRef(that.getStopPoint(), null);
+        GlyphLag lag = glyph.getLag();
+        Point    thisStart = lag.oriented(this.getStartPoint());
+        Point    thisStop = lag.oriented(this.getStopPoint());
+        Point    thatStart = lag.oriented(that.getStartPoint());
+        Point    thatStop = lag.oriented(that.getStopPoint());
 
         if (Math.abs(thisStop.x - thatStart.x) <= maxDeltaCoord) {
             // Case: this ... that
@@ -261,6 +282,14 @@ class BasicAlignment
         return stuck;
     }
 
+    //------------------//
+    // getIntPositionAt //
+    //------------------//
+    public int getIntPositionAt (double coord)
+    {
+        return (int) Math.rint(getPositionAt(coord));
+    }
+
     //------------//
     // getLastPos //
     //------------//
@@ -297,6 +326,18 @@ class BasicAlignment
         return glyph.getOrientedBounds().width;
     }
 
+    //-----------------//
+    // getMeanDistance //
+    //-----------------//
+    public double getMeanDistance ()
+    {
+        if (line == null) {
+            computeLine();
+        }
+
+        return line.getMeanDistance();
+    }
+
     //-----------//
     // getMidPos //
     //-----------//
@@ -308,7 +349,7 @@ class BasicAlignment
             return (int) Math.rint((getFirstPos() + getLastPos()) / 2.0);
         } else {
             return (int) Math.rint(
-                getOrientedLine().yAt((getStart() + getStop()) / 2.0));
+                getIntPositionAt((getStart() + getStop()) / 2.0));
         }
     }
 
@@ -324,6 +365,27 @@ class BasicAlignment
         return line;
     }
 
+    //---------------//
+    // getPositionAt //
+    //---------------//
+    public double getPositionAt (double coord)
+    {
+        return getOrientedLine()
+                   .yAtX(coord);
+    }
+
+    //---------------//
+    // getProbeWidth //
+    //---------------//
+    /**
+     * Report the width of the window used to determine filament ordinate
+     * @return the scale-independent probe width
+     */
+    public static Scale.Fraction getProbeWidth ()
+    {
+        return constants.probeWidth;
+    }
+
     //----------//
     // getStart //
     //----------//
@@ -337,12 +399,13 @@ class BasicAlignment
     //---------------//
     public PixelPoint getStartPoint ()
     {
-        Point start = glyph.getLag()
-                           .switchRef(
-            new Point(getStart(), line.yAt(getStart())),
-            null);
+        if (pStart == null) {
+            pStart = glyph.getLag()
+                          .absolute(
+                new Point(getStart(), getIntPositionAt(getStart())));
+        }
 
-        return new PixelPoint(start.x, start.y);
+        return pStart;
     }
 
     //----------------//
@@ -352,8 +415,7 @@ class BasicAlignment
     {
         if ((getThickness() >= 2) && !getOrientedLine()
                                           .isVertical()) {
-            return getOrientedLine()
-                       .yAt(getStart());
+            return getIntPositionAt(getStart());
         } else {
             return getFirstPos() + (getThickness() / 2);
         }
@@ -372,12 +434,13 @@ class BasicAlignment
     //--------------//
     public PixelPoint getStopPoint ()
     {
-        Point stop = glyph.getLag()
-                          .switchRef(
-            new Point(getStop(), line.yAt(getStop())),
-            null);
+        if (pStop == null) {
+            pStop = glyph.getLag()
+                         .absolute(
+                new Point(getStop(), getIntPositionAt(getStop())));
+        }
 
-        return new PixelPoint(stop.x, stop.y);
+        return pStop;
     }
 
     //----------------//
@@ -387,8 +450,7 @@ class BasicAlignment
     {
         if ((getThickness() >= 2) && !getOrientedLine()
                                           .isVertical()) {
-            return getOrientedLine()
-                       .yAt(getStop());
+            return getIntPositionAt(getStop());
         } else {
             return getFirstPos() + (getThickness() / 2);
         }
@@ -402,23 +464,91 @@ class BasicAlignment
         return glyph.getOrientedBounds().height;
     }
 
-    //-------------//
-    // computeLine //
-    //-------------//
-    public void computeLine ()
+    //----------------//
+    // getThicknessAt //
+    //----------------//
+    /**
+     * Report the stick mean thickness at the provided coordinate
+     * @param coord the desired abscissa
+     * @return the mean thickness measured, expressed in number of pixels.
+     * Beware, this number will be zero if the probe falls entirely in a hole
+     * between two sections.
+     */
+    public double getThicknessAt (int coord)
     {
-        line = new BasicLine();
+        final Rectangle bounds = glyph.getOrientedBounds();
+        Scale           scale = new Scale(glyph.getInterline());
+
+        if ((coord < bounds.x) || (coord >= (bounds.x + bounds.width))) {
+            logger.warning(this + " bounds:" + bounds + " coord:" + coord);
+            throw new IllegalArgumentException(
+                "Coordinate not within filament range");
+        }
+
+        // Use a large-enough collector
+        final Rectangle roi = new Rectangle(coord, bounds.y, 0, bounds.height);
+        final int       probeHalfWidth = scale.toPixels(constants.probeWidth) / 2;
+        roi.grow(probeHalfWidth, 0);
+
+        //        boolean[] matched = new boolean[roi.width];
+        //        Arrays.fill(matched, false);
+        //
+        //        final PointsCollector collector = new PointsCollector(roi);
+        //
+        //        for (GlyphSection section : glyph.getMembers()) {
+        //            Rectangle inter = roi.intersection(section.getOrientedBounds());
+        //
+        //            for (int c = (inter.x + inter.width) - 1; c >= inter.x; c--) {
+        //                matched[c - roi.x] = true;
+        //            }
+        //
+        //            section.cumulate(collector);
+        //        }
+        //
+        //        int count = collector.getCount();
+        //
+        //        if (count == 0) {
+        //            if (logger.isFineEnabled()) {
+        //                logger.warning(
+        //                    "Thickness " + this + " coord:" + coord + " nopoints");
+        //            }
+        //
+        //            return 0;
+        //        } else {
+        //            // Return MEAN thickness on MATCHED probe width
+        //            int width = 0;
+        //
+        //            for (boolean bool : matched) {
+        //                if (bool) {
+        //                    width++;
+        //                }
+        //            }
+        //
+        //            double thickness = (double) count / width;
+        //
+        //            if (logger.isFineEnabled()) {
+        //                logger.fine(
+        //                    this + " coord:" + coord + " pos:" +
+        //                    (float) getPositionAt(coord) + " thickness:" + thickness);
+        //            }
+        //
+        //            return thickness;
+        //        }
+
+        //
+        Rectangle common = null;
 
         for (GlyphSection section : glyph.getMembers()) {
-            StickSection ss = (StickSection) section;
-            line.includeLine(ss.getLine());
+            Rectangle inter = roi.intersection(section.getOrientedBounds());
+
+            if (common == null) {
+                common = inter;
+            } else {
+                common = common.union(inter);
+            }
         }
 
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                line + " pointNb=" + line.getNumberOfPoints() +
-                " meanDistance=" + (float) line.getMeanDistance());
-        }
+        return (common == null) ? 0 : common.height;
     }
 
     //------//
@@ -430,7 +560,27 @@ class BasicAlignment
     @Override
     public void dump ()
     {
+        System.out.println("   start=" + getStartPoint());
+        System.out.println("   stop=" + getStopPoint());
         System.out.println("   line=" + getOrientedLine());
+        System.out.println("   dist=" + getMeanDistance());
+        System.out.println("   length=" + getLength());
+        System.out.println(
+            "   meanThickness=" + ((double) glyph.getWeight() / getLength()));
+        System.out.println(
+            "   magic=" +
+            ((getMeanDistance() * getMeanDistance()) / (Math.sqrt(
+                glyph.getWeight()) * getLength())));
+    }
+
+    //-----------------//
+    // invalidateCache //
+    //-----------------//
+    @Override
+    public void invalidateCache ()
+    {
+        line = null;
+        pStart = pStop = null;
     }
 
     //--------------//
@@ -460,19 +610,59 @@ class BasicAlignment
                     ((BasicStroke) stroke).getLineWidth() / 2);
             }
 
-            Point start = glyph.getLag()
-                               .switchRef(
+            Orientation orientation = glyph.getLag()
+                                           .getOrientation();
+            PixelPoint  start = orientation.absolute(
                 new Point(
                     getStart() + halfLine,
-                    (int) Math.rint(line.yAt((double) getStart()))),
-                null);
-            Point stop = glyph.getLag()
-                              .switchRef(
+                    (int) Math.rint(line.yAtX((double) getStart()))));
+            PixelPoint  stop = orientation.absolute(
                 new Point(
                     (getStop() + 1) - halfLine,
-                    (int) Math.rint(line.yAt((double) getStop() + 1))),
-                null);
+                    (int) Math.rint(line.yAtX((double) getStop() + 1))));
             g.drawLine(start.x, start.y, stop.x, stop.y);
         }
+    }
+
+    //---------//
+    // getLine //
+    //---------//
+    protected Line getLine ()
+    {
+        return line;
+    }
+
+    //-------------//
+    // computeLine //
+    //-------------//
+    protected void computeLine ()
+    {
+        line = new BasicLine();
+
+        for (GlyphSection section : glyph.getMembers()) {
+            StickSection ss = (StickSection) section;
+            line.includeLine(ss.getLine());
+        }
+
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                line + " pointNb=" + line.getNumberOfPoints() +
+                " meanDistance=" + (float) line.getMeanDistance());
+        }
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final Scale.Fraction probeWidth = new Scale.Fraction(
+            0.5,
+            "Width of probing window to retrieve stick ordinate");
     }
 }

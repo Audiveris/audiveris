@@ -15,6 +15,8 @@ import omr.lag.PixelSource;
 
 import omr.log.Logger;
 
+import omr.score.common.PixelRectangle;
+
 import omr.util.Implement;
 
 import java.awt.*;
@@ -103,7 +105,7 @@ public class RunsTableFactory
             new MyAdapter());
 
         retriever.retrieveRuns(
-            new Rectangle(0, 0, source.getWidth(), source.getHeight()));
+            new PixelRectangle(0, 0, source.getWidth(), source.getHeight()));
 
         return table;
     }

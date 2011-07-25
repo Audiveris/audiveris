@@ -30,10 +30,42 @@ import java.awt.Rectangle;
  *
  * @author Hervé Bitteur
  */
-interface GlyphAlignment
+public interface GlyphAlignment
     extends GlyphFacet
 {
     //~ Methods ----------------------------------------------------------------
+
+    //------------------//
+    // getIntPositionAt //
+    //------------------//
+    /**
+     * Report the precise stick position for the provided coordinate .
+     * @param coord the coord value (x for horizontal fil, y for vertical fil)
+     * @return the integer pos value (y for horizontal fil, x for vertical fil)
+     */
+    public int getIntPositionAt (double coord);
+
+    //---------------//
+    // getPositionAt //
+    //---------------//
+    /**
+     * Report the precise stick position for the provided coordinate .
+     * @param coord the coord value (x for horizontal fil, y for vertical fil)
+     * @return the pos value (y for horizontal fil, x for vertical fil)
+     */
+    public double getPositionAt (double coord);
+
+    //----------------//
+    // getThicknessAt //
+    //----------------//
+    /**
+     * Report the stick mean thickness at the provided coordinate
+     * @param coord the desired abscissa
+     * @return the mean thickness measured, expressed in number of pixels.
+     * Beware, this number will be zero if the probe falls entirely in a hole
+     * between two sections.
+     */
+    public double getThicknessAt (int coord);
 
     //-----------------//
     // getAbsoluteLine //
@@ -189,6 +221,17 @@ interface GlyphAlignment
      */
     double getAspect ();
 
+    //-----------------//
+    // setEndingPoints //
+    //-----------------//
+    /**
+     * Force the locations of start point and stop points
+     * @param pStart new start point
+     * @param pStop new stop point
+     */
+    void setEndingPoints (PixelPoint pStart,
+                          PixelPoint pStop);
+
     //---------------//
     // isExtensionOf //
     //---------------//
@@ -204,9 +247,9 @@ interface GlyphAlignment
      *
      * @return The result of the test
      */
-    boolean isExtensionOf (Stick  other,
-                           int    maxDeltaCoord,
-                           int    maxDeltaPos);
+    boolean isExtensionOf (Stick other,
+                           int   maxDeltaCoord,
+                           int   maxDeltaPos);
 
     //-------------//
     // getFirstPos //
@@ -259,6 +302,18 @@ interface GlyphAlignment
      * @return the stick length in pixels
      */
     int getLength ();
+
+    //-----------------//
+    // getMeanDistance //
+    //-----------------//
+    /**
+     * Return the mean quadratic distance of the defining population of points
+     * to the resulting line. This can be used to measure how well the line fits
+     * the points.
+     *
+     * @return the absolute value of the mean distance
+     */
+    double getMeanDistance ();
 
     //-----------//
     // getMidPos //
@@ -358,15 +413,6 @@ interface GlyphAlignment
      * @return the thickness in pixels
      */
     int getThickness ();
-
-    //-------------//
-    // computeLine //
-    //-------------//
-    /**
-     * Computes the least-square fitted line among all the section points of the
-     * stick.
-     */
-    void computeLine ();
 
     //--------------//
     // overlapsWith //

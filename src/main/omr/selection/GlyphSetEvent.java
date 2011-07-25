@@ -75,6 +75,10 @@ public class GlyphSetEvent
     @Override
     protected String internalString ()
     {
-        return Glyphs.toString(glyphs);
+        if (glyphs != null) {
+            return Glyphs.toString(glyphs);
+        } else {
+            return "";
+        }
     }
 }

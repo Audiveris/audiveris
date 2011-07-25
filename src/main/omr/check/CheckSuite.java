@@ -250,11 +250,12 @@ public class CheckSuite<C extends Checkable>
      */
     public double pass (C object)
     {
+        boolean       debug = logger.isFineEnabled() || object.isVip();
         double        grade = 0.0d;
         CheckResult   result = new CheckResult();
         StringBuilder sb = null;
 
-        if (logger.isFineEnabled()) {
+        if (debug) {
             sb = new StringBuilder(512);
             sb.append(name)
               .append(" ")
@@ -267,15 +268,15 @@ public class CheckSuite<C extends Checkable>
         for (Check<C> check : checks) {
             check.pass(object, result, true);
 
-            if (logger.isFineEnabled()) {
+            if (debug) {
                 sb.append(
                     String.format("%15s :%5.2f", check.getName(), result.value));
             }
 
             if (result.flag == Check.RED) {
                 // The check totally failed, we give up immediately!
-                if (logger.isFineEnabled()) {
-                    logger.fine(sb.toString());
+                if (debug) {
+                    logger.info(sb.toString());
                 }
 
                 return result.flag;
@@ -291,9 +292,9 @@ public class CheckSuite<C extends Checkable>
         // Final grade
         grade /= totalWeight;
 
-        if (logger.isFineEnabled()) {
-            sb.append(String.format("=> %5.2f ", grade));
-            logger.fine(sb.toString());
+        if (debug) {
+            sb.append(String.format(" => %5.2f ", grade));
+            logger.info(sb.toString());
         }
 
         return grade;

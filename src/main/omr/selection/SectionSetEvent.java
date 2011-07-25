@@ -74,6 +74,10 @@ public class SectionSetEvent<S extends Section>
     @Override
     protected String internalString ()
     {
-        return Sections.toString(sections);
+        if (sections != null) {
+            return Sections.toString(sections);
+        } else {
+            return "";
+        }
     }
 }

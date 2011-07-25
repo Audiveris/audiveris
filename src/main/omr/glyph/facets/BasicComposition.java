@@ -114,6 +114,20 @@ class BasicComposition
         return null;
     }
 
+    //-------------//
+    // getAncestor //
+    //-------------//
+    public Glyph getAncestor ()
+    {
+        Glyph glyph = this.glyph;
+
+        while (glyph.getPartOf() != null) {
+            glyph = glyph.getPartOf();
+        }
+
+        return glyph;
+    }
+
     //-----------------//
     // getFirstSection //
     //-----------------//
@@ -275,4 +289,19 @@ class BasicComposition
             section.translate(vector);
         }
     }
+
+    //-----------------//
+    // containsSection //
+    //-----------------//
+    public boolean containsSection (int id)
+    {
+        for (GlyphSection section : getMembers()) {
+            if (section.getId() == id) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    
 }

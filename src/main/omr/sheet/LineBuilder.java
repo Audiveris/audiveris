@@ -486,8 +486,8 @@ public class LineBuilder
             scanRect(
                 holeLeft,
                 holeRight,
-                line.yAt((double) holeLeft),
-                rightStick.getOrientedLine().yAt((double) holeRight));
+                line.yAtX((double) holeLeft),
+                rightStick.getPositionAt(holeRight));
         }
     }
 
@@ -508,8 +508,8 @@ public class LineBuilder
             scanRect(
                 holeLeft,
                 holeRight,
-                leftStick.getOrientedLine().yAt((double) holeLeft),
-                line.yAt((double) holeRight));
+                leftStick.getPositionAt(holeLeft),
+                line.yAtX((double) holeRight));
         }
     }
 
@@ -531,8 +531,8 @@ public class LineBuilder
             scanRect(
                 holeLeft,
                 holeRight,
-                leftStick.getOrientedLine().yAt((double) holeLeft),
-                rightStick.getOrientedLine().yAt((double) holeRight));
+                leftStick.getPositionAt(holeLeft),
+                rightStick.getPositionAt(holeRight));
         }
     }
 
@@ -606,7 +606,7 @@ public class LineBuilder
                 true);
             holeArea.setMinCoreLength(0);
             holeArea.setMaxThickness(constants.maxThickness);
-            
+
             holeArea.createSticks(holeCandidates);
             holeAreas.add(holeArea);
         }
@@ -649,7 +649,7 @@ public class LineBuilder
     // LineSource //
     //------------//
     private static class LineSource
-        extends SticksSource
+        extends SectionsSource
     {
         //~ Instance fields ----------------------------------------------------
 

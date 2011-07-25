@@ -43,6 +43,7 @@ import omr.ui.util.UIUtilities;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import omr.score.common.PixelPoint;
 
 /**
  * Class {@code GridView} is a special {@link GlyphLagView}, meant as a
@@ -307,13 +308,13 @@ public class GridView
             publish(new GlyphEvent(this, hint, movement, glyph));
         } else {
             // This is just a point, look for section & glyph
-            Point        pt = rect.getLocation();
+            PixelPoint        pt = rect.getLocation();
 
             // No specifics, look into lag
             GlyphSection section = vLag.lookupSection(vLag.getVertices(), pt);
 
             // Publish Run information
-            Point orientedPt = vLag.switchRef(pt, null);
+            Point orientedPt = vLag.oriented(pt);
             Run   run = (section != null) ? section.getRunAt(orientedPt.y) : null;
             ////////////////////////////////vLag.getSelectionService().
             publish(new RunEvent(this, hint, movement, run));

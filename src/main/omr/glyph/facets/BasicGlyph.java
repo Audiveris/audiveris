@@ -125,6 +125,11 @@ public class BasicGlyph
         return composition.getAlienSystem(system);
     }
 
+    public Glyph getAncestor ()
+    {
+        return composition.getAncestor();
+    }
+
     public PixelPoint getAreaCenter ()
     {
         return geometry.getAreaCenter();
@@ -138,11 +143,6 @@ public class BasicGlyph
     public boolean isBar ()
     {
         return recognition.isBar();
-    }
-
-    public Rectangle getOrientedBounds ()
-    {
-        return geometry.getOrientedBounds();
     }
 
     public PixelPoint getCentroid ()
@@ -268,6 +268,11 @@ public class BasicGlyph
     public double getNormalizedWidth ()
     {
         return geometry.getNormalizedWidth();
+    }
+
+    public Rectangle getOrientedBounds ()
+    {
+        return geometry.getOrientedBounds();
     }
 
     public void setPartOf (Glyph compound)
@@ -420,6 +425,16 @@ public class BasicGlyph
         return translation.getTranslations();
     }
 
+    public void setVip ()
+    {
+        administration.setVip();
+    }
+
+    public boolean isVip ()
+    {
+        return administration.isVip();
+    }
+
     public boolean isVirtual ()
     {
         return administration.isVirtual();
@@ -501,6 +516,11 @@ public class BasicGlyph
     public void computeMoments ()
     {
         geometry.computeMoments();
+    }
+
+    public boolean containsSection (int id)
+    {
+        return composition.containsSection(id);
     }
 
     public void copyStemInformation (Glyph glyph)

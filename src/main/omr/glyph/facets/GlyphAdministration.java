@@ -13,6 +13,8 @@ package omr.glyph.facets;
 
 import omr.glyph.GlyphLag;
 
+import omr.util.Vip;
+
 /**
  * Interface {@code GlyphAdministration} defines the administration facet of a
  * glyph, handling the glyph id and its related containing lag.
@@ -20,7 +22,7 @@ import omr.glyph.GlyphLag;
  * @author Hervé Bitteur
  */
 interface GlyphAdministration
-    extends GlyphFacet
+    extends GlyphFacet, Vip
 {
     //~ Methods ----------------------------------------------------------------
 

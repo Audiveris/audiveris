@@ -20,6 +20,7 @@ import omr.run.Run;
 import omr.score.common.PixelPoint;
 
 import omr.sheet.Scale;
+import omr.sheet.grid.Filament;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -27,6 +28,8 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.awt.Point;
 
 /**
  * Unitary tests for {@link Filament} class.
@@ -98,12 +101,12 @@ public class FilamentTest
     }
 
     /**
-     * Test of containsSID method, of class Filament.
+     * Test of containsSection method, of class Filament.
      */
     @Test
-    public void testContainsSID ()
+    public void testContainsSection ()
     {
-        System.out.println("+++ containsSID");
+        System.out.println("+++ containsSection");
 
         for (Orientation ori : Orientation.values()) {
             setOrientation(ori);
@@ -111,7 +114,7 @@ public class FilamentTest
             Filament instance = createFil();
             int      id = 2;
             boolean  expResult = true;
-            boolean  result = instance.containsSID(id);
+            boolean  result = instance.containsSection(id);
             assertEquals(expResult, result);
         }
     }
@@ -147,24 +150,6 @@ public class FilamentTest
             Filament instance = createFil();
             Filament expResult = instance;
             Filament result = instance.getAncestor();
-            assertEquals(expResult, result);
-        }
-    }
-
-    /**
-     * Test of getParent method, of class Filament.
-     */
-    @Test
-    public void testGetParent ()
-    {
-        System.out.println("+++ getParent");
-
-        for (Orientation ori : Orientation.values()) {
-            setOrientation(ori);
-
-            Filament instance = createFil();
-            Filament expResult = null;
-            Filament result = instance.getParent();
             assertEquals(expResult, result);
         }
     }
@@ -239,9 +224,7 @@ public class FilamentTest
             setOrientation(ori);
 
             Filament   instance = createFil();
-            PixelPoint expResult = orientation.switchRef(
-                new PixelPoint(100, 26),
-                null);
+            PixelPoint expResult = orientation.absolute(new Point(100, 26));
             PixelPoint result = instance.getStartPoint();
             instance.drawAscii();
             assertEquals(expResult, result);
@@ -260,9 +243,7 @@ public class FilamentTest
             setOrientation(ori);
 
             Filament   instance = createFil();
-            PixelPoint expResult = orientation.switchRef(
-                new PixelPoint(171, 28),
-                null);
+            PixelPoint expResult = orientation.absolute(new Point(171, 28));
             PixelPoint result = instance.getStopPoint();
             assertEquals(expResult, result);
         }
@@ -343,28 +324,6 @@ public class FilamentTest
     }
 
     /**
-     * Test of internalsString method, of class Filament.
-     */
-    @Test
-    public void testInternalsString ()
-    {
-        System.out.println("+++ internalsString");
-
-        for (Orientation ori : Orientation.values()) {
-            setOrientation(ori);
-
-            Filament instance = createFil();
-            String   expResult = (orientation == Orientation.HORIZONTAL)
-                                 ? " start[x=100,y=26] stop[x=171,y=28]"
-                                 : " start[x=26,y=100] stop[x=28,y=171]";
-            String   result = instance.internalsString();
-            System.out.println("expResult: '" + expResult + "'");
-            System.out.println("   result: '" + result + "'");
-            assertEquals(expResult, result);
-        }
-    }
-
-    /**
      * Test of invalidateCache method, of class Filament.
      */
     @Test
@@ -381,12 +340,12 @@ public class FilamentTest
     }
 
     /**
-     * Test of positionAt method, of class Filament.
+     * Test of getPositionAt method, of class Filament.
      */
     @Test
-    public void testPositionAt ()
+    public void testGetPositionAt ()
     {
-        System.out.println("+++ positionAt");
+        System.out.println("+++ getPositionAt");
 
         for (Orientation ori : Orientation.values()) {
             setOrientation(ori);
@@ -396,43 +355,38 @@ public class FilamentTest
 
             double coord = 100;
             double expResult = 26;
-            double result = instance.positionAt(coord);
+            double result = instance.getPositionAt(coord);
             assertEquals(expResult, result, 0.0);
 
             coord = 115;
             expResult = 29;
-            result = instance.positionAt(coord);
+            result = instance.getPositionAt(coord);
             assertEquals(expResult, result, 0.1);
 
             coord = 119;
             expResult = 29.7;
-            result = instance.positionAt(coord);
+            result = instance.getPositionAt(coord);
             assertEquals(expResult, result, 0.1);
 
             coord = 158;
             expResult = 30;
-            result = instance.positionAt(coord);
+            result = instance.getPositionAt(coord);
             assertEquals(expResult, result, 0.1);
 
             coord = 160;
             expResult = 29.7;
-            result = instance.positionAt(coord);
+            result = instance.getPositionAt(coord);
             assertEquals(expResult, result, 0.1);
 
             coord = 170;
             expResult = 28.2;
-            result = instance.positionAt(coord);
+            result = instance.getPositionAt(coord);
             assertEquals(expResult, result, 0.1);
 
-            try {
-                coord = 180;
-                expResult = 28.2;
-                result = instance.positionAt(coord);
-                assertEquals(expResult, result, 0.1);
-                fail("Should raise exception not in spline range");
-            } catch (RuntimeException ex) {
-                System.out.println("Raised: " + ex);
-            }
+            coord = 180;
+            expResult = 28.2;
+            result = instance.getPositionAt(coord);
+            assertEquals(expResult, result, 0.1);
         }
     }
 

@@ -340,9 +340,9 @@ public class TextBlob
 
         Line2D.Double l2D = new Line2D.Double(
             blobBox.x,
-            average.yAt(blobBox.x),
+            average.yAtX(blobBox.x),
             blobBox.x + blobBox.width,
-            average.yAt(blobBox.x + blobBox.width));
+            average.yAtX(blobBox.x + blobBox.width));
 
         if (l2D.intersects(fatBox.x, fatBox.y, fatBox.width, fatBox.height)) {
             glyphs.add(glyph);

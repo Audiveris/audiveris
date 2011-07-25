@@ -29,9 +29,7 @@ import omr.lag.SectionsBuilder;
 import omr.log.Logger;
 
 import omr.run.Orientation;
-import omr.run.Run;
 import omr.run.RunsTable;
-import omr.run.RunsTableFactory;
 
 import omr.score.common.PixelPoint;
 import omr.score.ui.PagePainter;
@@ -42,14 +40,10 @@ import omr.sheet.Sheet;
 
 import omr.step.StepException;
 
-import omr.stick.Filament;
-import omr.stick.FilamentsFactory;
 import omr.stick.StickSection;
-import omr.stick.SticksSource;
 
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
-import omr.util.Predicate;
 
 import java.awt.*;
 import java.awt.geom.Line2D;
@@ -59,7 +53,7 @@ import java.util.List;
 /**
  * Class <code>BarsRetriever</code> focuses on the retrieval of vertical bars
  * to determine the horizontal limits of staves and the gathering of staves
- * into system frames.
+ * into system.
  *
  * @author Hervé Bitteur
  */
@@ -172,14 +166,22 @@ public class BarsRetriever
         try {
             // Retrieve initial barline candidates
             retrieveBars();
+        } catch (Exception ex) {
+            logger.warning("BarsRetriever cannot retrieveBars", ex);
+        }
 
+        try {
             // Detect systems of staves aggregated via barlines
             retrieveSystems();
+        } catch (Exception ex) {
+            logger.warning("BarsRetriever cannot retrieveSystems", ex);
+        }
 
+        try {
             // Adjust precise sides for systems, staves & lines
             adjustSides();
         } catch (Exception ex) {
-            logger.warning("BarsRetriever cannot buildInfo", ex);
+            logger.warning("BarsRetriever cannot adjustSides", ex);
         }
     }
 
@@ -291,8 +293,7 @@ public class BarsRetriever
         PixelPoint linePt = line.getEndPoint(side);
         int        staffX = staff.getAbscissa(side);
         double     y = linePt.y - ((linePt.x - staffX) * slope);
-        double     x = (stick == null) ? staffX : stick.getAbsoluteLine()
-                                                       .xAt(y);
+        double     x = (stick == null) ? staffX : stick.getIntPositionAt(y);
 
         return new PixelPoint((int) Math.rint(x), (int) Math.rint(y));
     }
@@ -334,7 +335,7 @@ public class BarsRetriever
     //----------------------//
     /**
      * Adjust the precise side of a system, for which we have some staves with
-     * long reliable bar (and other staves without such bars)
+     * long reliable bar (and perhaps other staves without such bars)
      * @param system the system to process
      * @param side the desired side
      */
@@ -567,6 +568,12 @@ public class BarsRetriever
     //-------------------//
     // canConnectSystems //
     //-------------------//
+    /**
+     * Try to merge the two provided systems into a single one
+     * @param prevSystem the system above
+     * @param nextSystem the system below
+     * @return true if left bars have been merged
+     */
     private boolean canConnectSystems (SystemFrame prevSystem,
                                        SystemFrame nextSystem)
     {
@@ -579,22 +586,53 @@ public class BarsRetriever
             "(" + nextSystem.getStaves().size() + ")");
 
         StaffInfo prevStaff = prevSystem.getLastStaff();
-        BarInfo   prevBar = prevStaff.getBar(LEFT);
+        BarInfo   prevBar = prevStaff.getBar(LEFT); // Perhaps null
+
+        if (prevBar == null) {
+            logger.info("No left bar for system#" + prevSystem.getId());
+
+            return false;
+        }
+
         StaffInfo nextStaff = nextSystem.getFirstStaff();
-        BarInfo   nextBar = nextStaff.getBar(LEFT);
+        BarInfo   nextBar = nextStaff.getBar(LEFT); // Perhaps null
+
+        if (nextBar == null) {
+            logger.info("No left bar for system#" + nextSystem.getId());
+
+            return false;
+        }
 
         // Check vertical connections
         for (Stick prevStick : prevBar.getSticks()) {
             PixelPoint prevPoint = prevStick.getStopPoint();
 
             for (Stick nextStick : nextBar.getSticks()) {
+                // Special case
+                //                if (nextStick == prevStick) {
+                //                    // Force the merge, find out the proper other stick
+                //                    int dx = Integer.MAX_VALUE;
+                //                    Stick other = null;
+                //                    for (Stick p : prevBar.getSticks()) {
+                //                        if (p != prevStick) {
+                //                            
+                //                        }
+                //                    }
+                //                    
+                //                }
                 PixelPoint nextPoint = nextStick.getStartPoint();
 
                 // Check dx
                 int dx = Math.abs(nextPoint.x - prevPoint.x);
 
                 // Check dy
-                int dy = Math.abs(nextPoint.y - prevPoint.y);
+                int prevY = prevStaff.getLastLine()
+                                     .getEndPoint(LEFT).y;
+                int nextY = nextStaff.getFirstLine()
+                                     .getEndPoint(LEFT).y;
+                int dy = Math.abs(
+                    Math.min(nextY, nextPoint.y) -
+                    Math.max(prevY, prevPoint.y));
                 logger.info(
                     "F" + prevStick.getId() + "-F" + nextStick.getId() +
                     " dx:" + dx + " dy:" + dy);
@@ -623,7 +661,7 @@ public class BarsRetriever
     //---------------//
     /**
      * Build the frame of each system
-     * @param tops the starting staff for each system
+     * @param tops the starting staff id for each system
      * @return the sequence of system physical frames
      */
     private List<SystemFrame> createSystems (Integer[] tops)
@@ -672,21 +710,22 @@ public class BarsRetriever
             vLag,
             Filament.class);
 
+        ///factory.setVipGlyphs(540, 11, 12); // BINGO
+
         // Factory parameters adjustment
         factory.setMaxSectionThickness(constants.maxSectionThickness);
         factory.setMaxFilamentThickness(constants.maxFilamentThickness);
         factory.setMaxCoordGap(constants.maxCoordGap);
 
-        // Create filaments out of vertical sections
-        for (Filament fil : factory.retrieveFilaments(
-            new SticksSource(vLag.getVertices()))) {
+        // Retrieve filaments out of vertical sections
+        for (Filament fil : factory.retrieveFilaments(vLag.getVertices(), true)) {
             filaments.add(fil);
         }
 
         BarsChecker barsChecker = new BarsChecker(
             sheet,
             vLag,
-            -globalSlope,
+            globalSlope,
             true);
         barsChecker.retrieveCandidates(filaments);
 
@@ -763,8 +802,7 @@ public class BarsRetriever
 
         if (bar != null) {
             Stick stick = bar.getStick(RIGHT);
-            barX = stick.getAbsoluteLine()
-                        .xAt(staff.getMidOrdinate(side));
+            barX = stick.getIntPositionAt(staff.getMidOrdinate(side));
 
             if ((dir * (barX - staffX)) <= params.maxBarOffset) {
                 staffX = barX;
@@ -903,7 +941,7 @@ public class BarsRetriever
     //--------------------//
     /**
      * Retrieve for each staff the staff that starts its containing system
-     * @return the (index of) system starting staff for each staff
+     * @return the (id of) system starting staff for each staff
      */
     private Integer[] retrieveSystemTops ()
     {
@@ -918,17 +956,17 @@ public class BarsRetriever
             PixelPoint stop = stick.getStopPoint();
             StaffInfo  botStaff = staffManager.getStaffAt(stop);
 
-            if (logger.isFineEnabled()) {
-                logger.fine(
+            if (logger.isFineEnabled() || stick.isVip()) {
+                logger.info(
                     "Bar#" + stick.getId() + " top:" + topStaff.getId() +
                     " bot:" + botStaff.getId());
             }
 
-            int top = topStaff.getId() - 1;
-            int bot = botStaff.getId() - 1;
+            int top = topStaff.getId();
+            int bot = botStaff.getId();
 
-            for (int i = top; i <= bot; i++) {
-                StaffInfo    staff = staffManager.getStaff(i);
+            for (int id = top; id <= bot; id++) {
+                StaffInfo    staff = staffManager.getStaff(id - 1);
                 List<StickX> staffSticks = barSticks.get(staff);
 
                 if (staffSticks == null) {
@@ -939,16 +977,17 @@ public class BarsRetriever
                 PixelPoint inter = staff.intersection(stick);
                 staffSticks.add(new StickX(inter.x, stick));
 
-                if ((tops[i] == null) || (top < tops[i])) {
-                    tops[i] = top;
+                ///if ((tops[id - 1] == null) || (top < tops[id - 1])) {
+                if (tops[id - 1] == null) {
+                    tops[id - 1] = top;
                 }
             }
         }
 
-        if (logger.isFineEnabled()) {
-            logger.info("top indices: " + Arrays.toString(tops));
-        }
+        ///if (logger.isFineEnabled()) {
+        logger.info("top staff ids: " + Arrays.toString(tops));
 
+        ///}
         return tops;
     }
 
@@ -1001,11 +1040,7 @@ public class BarsRetriever
         boolean modified = false;
 
         // Consistency of system lengths
-        //        for (SystemFrame system : systems) {
-        //            logger.warning(
-        //                "System#" + system.getId() + " staves: " +
-        //                system.getStaves().size());
-        //        }
+        // TBD
 
         // Check connection of left bars across systems
         for (int i = 1; i < systems.size(); i++) {
@@ -1043,7 +1078,7 @@ public class BarsRetriever
             0.5,
             "Maximum delta coordinate for a gap between filaments");
         Scale.Fraction  maxBarCoordGap = new Scale.Fraction(
-            2.5,
+            2, // 2.5
             "Maximum delta coordinate for a vertical gap between bars");
         Scale.Fraction  maxBarPosGap = new Scale.Fraction(
             0.2,

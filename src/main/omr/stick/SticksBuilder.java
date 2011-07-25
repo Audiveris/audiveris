@@ -122,7 +122,7 @@ public class SticksBuilder
     protected final Parameters params;
 
     /** The source adapter to retrieve sections from */
-    protected final SticksSource source;
+    protected final SectionsSource source;
 
     /** A flag used to trigger processing specific to very long (and not totally
        straight) alignments. */
@@ -153,10 +153,10 @@ public class SticksBuilder
      * @param source An adaptor to get access to participating sections
      * @param longAlignment specific flag to indicate long filament retrieval
      */
-    public SticksBuilder (Scale        scale,
-                          GlyphLag     lag,
-                          SticksSource source,
-                          boolean      longAlignment)
+    public SticksBuilder (Scale          scale,
+                          GlyphLag       lag,
+                          SectionsSource source,
+                          boolean        longAlignment)
     {
         // Cache computing parameters
         this.scale = scale;
@@ -355,8 +355,8 @@ public class SticksBuilder
                 members.size() + Sections.toString(" total sections", members));
         }
 
-        // Aggregate member sections into as few sticks as possible. This
-        // creates instances in sticks list.
+        // Aggregate member sections into as few sticks as possible.
+        // This creates instances in sticks list.
         aggregateMemberSections();
 
         // Compute stick lines and check the resulting slope. This may result in
@@ -381,16 +381,16 @@ public class SticksBuilder
                 // Stick slope must be close to expected value
                 double stickSlope = stick.getOrientedLine()
                                          .getSlope();
-//                logger.info(
-//                    "BINGO expected:" + params.expectedSlope + " actual:" +
-//                    stickSlope);
 
+                //                logger.info(
+                //                    "BINGO expected:" + params.expectedSlope + " actual:" +
+                //                    stickSlope);
                 if (Math.abs(stickSlope - params.expectedSlope) > params.slopeMargin) {
                     stick.setResult(NOT_STRAIGHT);
-//                    logger.warning(
-//                        "BINGO expected:" + params.expectedSlope + " actual:" +
-//                        stickSlope);
 
+                    //                    logger.warning(
+                    //                        "BINGO expected:" + params.expectedSlope + " actual:" +
+                    //                        stickSlope);
                     for (GlyphSection section : stick.getMembers()) {
                         if (logger.isFineEnabled()) {
                             logger.fine(

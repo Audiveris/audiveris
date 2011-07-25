@@ -262,6 +262,6 @@ public class FilamentLine
     //-----//
     public double yAt (double x)
     {
-        return fil.positionAt(x);
+        return fil.getPositionAt(x);
     }
 }

@@ -29,7 +29,7 @@ import java.util.SortedSet;
  *
  * @author Hervé Bitteur
  */
-interface GlyphComposition
+public interface GlyphComposition
     extends GlyphFacet
 {
     //~ Enumerations -----------------------------------------------------------
@@ -46,6 +46,16 @@ interface GlyphComposition
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-------------//
+    // getAncestor //
+    //-------------//
+    /**
+     * Report the top ancestor of this glyph (which is this glyph itself,
+     * when it has no parent (i.e. not been included into another one))
+     * @return the glyph ancestor
+     */
+    public Glyph getAncestor ();
 
     //-----------//
     // setPartOf //
@@ -178,6 +188,17 @@ interface GlyphComposition
      */
     void addSection (GlyphSection section,
                      Linking      link);
+
+    //-----------------//
+    // containsSection //
+    //-----------------//
+    /**
+     * Debug function that returns true if this glyph contains the section
+     * whose ID is provided
+     * @param id the ID of interesting section
+     * @return true if such section exists among glyph sections
+     */
+    boolean containsSection (int id);
 
     //-------------//
     // cutSections //

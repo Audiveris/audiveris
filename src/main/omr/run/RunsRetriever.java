@@ -21,6 +21,7 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import omr.score.common.PixelRectangle;
 
 /**
  * Class <code>RunsRetriever</code> is in charge of reading a source of pixels
@@ -75,9 +76,9 @@ public class RunsRetriever
      *
      * @param area the ABSOLUTE rectangular area  to explore
      */
-    public void retrieveRuns (Rectangle area)
+    public void retrieveRuns (PixelRectangle area)
     {
-        Rectangle rect = orientation.switchRef(area, null);
+        Rectangle rect = orientation.oriented(area);
         final int cMin = rect.x;
         final int cMax = (rect.x + rect.width) - 1;
         final int pMin = rect.y;

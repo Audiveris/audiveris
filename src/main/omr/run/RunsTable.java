@@ -24,6 +24,8 @@ import omr.util.Predicate;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
+import java.awt.geom.Point2D.Double;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -73,9 +75,8 @@ public class RunsTable
         this.dimension = dimension;
 
         // Allocate the runs, according to orientation
-        Rectangle rect = orientation.switchRef(
-            new Rectangle(0, 0, dimension.width, dimension.height),
-            null);
+        Rectangle rect = orientation.oriented(
+            new PixelRectangle(0, 0, dimension.width, dimension.height));
 
         // Prepare the collections of runs, one collection per pos value
         runs = new ArrayList<List<Run>>(rect.height);
@@ -281,7 +282,7 @@ public class RunsTable
     public int getPixel (int x,
                          int y)
     {
-        Point     pt = orientation.switchRef(new Point(x, y), null);
+        Point     pt = orientation.oriented(new PixelPoint(x, y));
         List<Run> seq = getSequence(pt.y);
 
         for (Run run : seq) {
@@ -312,6 +313,30 @@ public class RunsTable
     public int getWidth ()
     {
         return dimension.width;
+    }
+
+    //----------//
+    // absolute //
+    //----------//
+    public Double absolute (Point2D cp)
+    {
+        return orientation.absolute(cp);
+    }
+
+    //----------//
+    // absolute //
+    //----------//
+    public PixelPoint absolute (Point cp)
+    {
+        return orientation.absolute(cp);
+    }
+
+    //-----------//
+    // absolute //
+    //-----------//
+    public PixelRectangle absolute (Rectangle cplt)
+    {
+        return orientation.absolute(cplt);
     }
 
     //-------//
@@ -394,6 +419,22 @@ public class RunsTable
         out.println('+');
     }
 
+    //----------//
+    // oriented //
+    //----------//
+    public Point oriented (PixelPoint xy)
+    {
+        return orientation.oriented(xy);
+    }
+
+    //----------//
+    // oriented //
+    //----------//
+    public Rectangle oriented (PixelRectangle xywh)
+    {
+        return orientation.oriented(xywh);
+    }
+
     //-------//
     // purge //
     //-------//
@@ -438,24 +479,6 @@ public class RunsTable
         }
 
         return this;
-    }
-
-    //-----------//
-    // switchRef //
-    //-----------//
-    public PixelPoint switchRef (Point      cp,
-                                 PixelPoint xy)
-    {
-        return orientation.switchRef(cp, xy);
-    }
-
-    //-----------//
-    // switchRef //
-    //-----------//
-    public PixelRectangle switchRef (Rectangle      cplt,
-                                     PixelRectangle xywh)
-    {
-        return orientation.switchRef(cplt, xywh);
     }
 
     //-----------//

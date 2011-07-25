@@ -55,7 +55,7 @@ import omr.step.Steps;
 
 import omr.stick.LineCleaner;
 import omr.stick.SticksBuilder;
-import omr.stick.SticksSource;
+import omr.stick.SectionsSource;
 
 import omr.ui.BoardsPane;
 
@@ -241,7 +241,7 @@ public class HorizontalsBuilder
         horizontalsArea = new SticksBuilder(
             sheet.getScale(),
             lag,
-            new SticksSource(lag.getVertices()),
+            new SectionsSource(lag.getVertices()),
             false);
         horizontalsArea.setMaxThickness(constants.maxThicknessHigh);
         horizontalsArea.retrieveSticks();

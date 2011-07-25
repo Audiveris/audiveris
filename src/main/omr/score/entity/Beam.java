@@ -303,9 +303,9 @@ public class Beam
                 int x = chord.getStem()
                              .getLocation().x;
                 int y = getLine()
-                            .yAt(x);
+                            .yAtX(x);
                 int yOther = other.getLine()
-                                  .yAt(x);
+                                  .yAtX(x);
                 int yHead = chord.getHeadLocation().y;
 
                 int result = Integer.signum(

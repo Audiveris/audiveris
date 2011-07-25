@@ -15,8 +15,6 @@ import omr.log.Logger;
 
 import omr.sheet.Scale;
 
-import omr.stick.Filament;
-
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -52,12 +50,12 @@ public class LineFilament
     /**
      * Creates a new LineFilament object.
      *
-     * 
+     *
      * @param scale scaling data
      */
     public LineFilament (Scale scale)
     {
-        super(scale);
+        super(scale, LineFilamentAlignment.class);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -113,9 +111,9 @@ public class LineFilament
     // getParent //
     //-----------//
     @Override
-    public LineFilament getParent ()
+    public LineFilament getPartOf ()
     {
-        return (LineFilament) super.getParent();
+        return (LineFilament) super.getPartOf();
     }
 
     //-------------//
@@ -174,7 +172,8 @@ public class LineFilament
      */
     public void fillHoles (List<LineFilament> fils)
     {
-        super.fillHoles(clusterPos, fils);
+        getAlignment()
+            .fillHoles(clusterPos, fils);
     }
 
     //---------//
@@ -190,6 +189,15 @@ public class LineFilament
 
         that.cluster = this.cluster;
         that.clusterPos = this.clusterPos;
+    }
+
+    //--------------//
+    // getAlignment //
+    //--------------//
+    @Override
+    protected LineFilamentAlignment getAlignment ()
+    {
+        return (LineFilamentAlignment) super.getAlignment();
     }
 
     //-----------------//

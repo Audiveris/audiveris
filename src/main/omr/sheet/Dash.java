@@ -174,10 +174,10 @@ public abstract class Dash
 
             Point start = new Point(
                 box.x,
-                (int) Math.rint(line.yAt((double) box.x)));
+                (int) Math.rint(line.yAtX((double) box.x)));
             Point stop = new Point(
                 box.x + box.width,
-                (int) Math.rint(line.yAt((double) box.x + box.width + 1)));
+                (int) Math.rint(line.yAtX((double) box.x + box.width + 1)));
 
             g.drawLine(start.x, start.y, stop.x, stop.y);
             ///((Graphics2D) g).setStroke(oldStroke);

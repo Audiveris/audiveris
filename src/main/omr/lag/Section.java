@@ -183,7 +183,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
             orientedPoint.y /= (2 * getWeight());
 
             centroid = getGraph()
-                           .switchRef(orientedPoint, null);
+                           .absolute(orientedPoint);
 
             if (logger.isFineEnabled()) {
                 logger.fine("Centroid of " + this + " is " + centroid);
@@ -457,7 +457,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
     {
         if (orientedBounds == null) {
             orientedBounds = new Rectangle(
-                graph.switchRef(getContourBox(), null));
+                graph.oriented(getContourBox()));
         }
 
         return orientedBounds;
@@ -533,7 +533,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
             roi.width = 3;
 
             Point pt = getRectangleCentroid(roi);
-            startPoint = graph.switchRef(new Point(getStart(), pt.y), null);
+            startPoint = graph.absolute(new Point(getStart(), pt.y));
         }
 
         return startPoint;
@@ -569,7 +569,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
             roi.width = 3;
 
             Point pt = getRectangleCentroid(roi);
-            stopPoint = graph.switchRef(new Point(getStop(), pt.y), null);
+            stopPoint = graph.absolute(new Point(getStop(), pt.y));
         }
 
         return stopPoint;
@@ -685,10 +685,10 @@ public class Section<L extends Lag, S extends Section<L, S>>
             throw new IllegalArgumentException("Rectangle of Interest is null");
         }
 
-        Rectangle rect = graph.switchRef(roi, null);
+        Rectangle rect = graph.oriented(roi);
         Point     point = getRectangleCentroid(rect);
 
-        return graph.switchRef(point, null);
+        return graph.absolute(point);
     }
 
     //--------//
@@ -1256,7 +1256,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
     public void translate (PixelPoint vector)
     {
         // Get the coord/pos equivalent of dx/dy vector
-        Point cp = graph.switchRef(vector, null);
+        Point cp = graph.oriented(vector);
         int   dc = cp.x;
         int   dp = cp.y;
 
@@ -1310,7 +1310,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
                              Point   cp,
                              int     val)
     {
-        picture.setPixel(graph.switchRef(cp, null), val);
+        picture.setPixel(graph.absolute(cp), val);
     }
 
     //----------------//
