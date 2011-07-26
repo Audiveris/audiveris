@@ -59,6 +59,9 @@ public class LineCluster
     /** (Cached) bounding box of this cluster */
     private PixelRectangle contourBox;
 
+    /** CLuster true length */
+    private Integer trueLength;
+
     /** For debugging */
     private boolean vip = false;
 
@@ -334,6 +337,35 @@ public class LineCluster
         }
 
         return points;
+    }
+
+    //---------------//
+    // getTrueLength //
+    //---------------//
+    /**
+     * Report a measurement of the cluster length
+     * @return the mean true length of cluster lines
+     */
+    public int getTrueLength ()
+    {
+        if (trueLength == null) {
+            // Determine mean true line length in this cluster
+            int meanTrueLength = 0;
+
+            for (FilamentLine line : lines.values()) {
+                meanTrueLength += line.fil.trueLength();
+            }
+
+            meanTrueLength /= lines.size();
+
+            if (logger.isFineEnabled()) {
+                logger.info("TrueLength: " + meanTrueLength + " for " + this);
+            }
+
+            trueLength = meanTrueLength;
+        }
+
+        return trueLength;
     }
 
     //    //-----------//
@@ -688,5 +720,6 @@ public class LineCluster
     private void invalidateCache ()
     {
         contourBox = null;
+        trueLength = null;
     }
 }

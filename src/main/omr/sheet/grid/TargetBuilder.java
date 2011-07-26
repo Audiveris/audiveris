@@ -157,7 +157,7 @@ public class TargetBuilder
         }
 
         Stroke systemStroke = new BasicStroke(
-            2,
+            0.5f,
             BasicStroke.CAP_ROUND,
             BasicStroke.JOIN_ROUND);
 

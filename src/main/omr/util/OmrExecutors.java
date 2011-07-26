@@ -47,6 +47,14 @@ public class OmrExecutors
     private static final int cpuCount = Runtime.getRuntime()
                                                .availableProcessors();
 
+    static {
+        if (constants.printEnvironment.getValue()) {
+            logger.info(
+                "Environment. CPU count: " + cpuCount +
+                ", Use of parallelism: " + useParallelism());
+        }
+    }
+
     // Specific pools
     private static final Pool       highs = new Highs();
     private static final Pool       lows = new Lows();
@@ -275,6 +283,11 @@ public class OmrExecutors
     {
         //~ Instance fields ----------------------------------------------------
 
+        Constant.Boolean printEnvironment = new Constant.Boolean(
+            true,
+            "Should we print out current environment?");
+
+        //
         Constant.Boolean useParallelism = new Constant.Boolean(
             true,
             "Should we use parallelism when we have several processors?");
@@ -412,7 +425,7 @@ public class OmrExecutors
     //------//
     // Ocrs //
     //------//
-    /** One-thread pool with high priority */
+    /** One-thread pool with high priority, and large stack size */
     private static class Ocrs
         extends Pool
     {

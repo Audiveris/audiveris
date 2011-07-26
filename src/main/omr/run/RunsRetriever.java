@@ -13,6 +13,8 @@ package omr.run;
 
 import omr.log.Logger;
 
+import omr.score.common.PixelRectangle;
+
 import omr.step.ProcessingCancellationException;
 
 import omr.util.OmrExecutors;
@@ -21,7 +23,6 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import omr.score.common.PixelRectangle;
 
 /**
  * Class <code>RunsRetriever</code> is in charge of reading a source of pixels
@@ -55,7 +56,7 @@ public class RunsRetriever
      *
      * @param orientation the desired orientation
      * @param adapter an adapter to provide pixel access as well as specific
-     * call-back actions when a run (either foreground or background) has just 
+     * call-back actions when a run (either foreground or background) has just
      * been read.
      */
     public RunsRetriever (Orientation orientation,
@@ -169,7 +170,7 @@ public class RunsRetriever
                                     final int cMin,
                                     final int cMax)
     {
-        if (true) {
+        if (!OmrExecutors.useParallelism()) {
             // Sequential
             for (int p = pMin; p <= pMax; p++) {
                 final int pp = p;

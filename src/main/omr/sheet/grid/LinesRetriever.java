@@ -405,10 +405,10 @@ public class LinesRetriever
         staffManager.reset();
 
         for (LineCluster cluster : allClusters) {
-            if (logger.isFineEnabled()) {
-                logger.fine(cluster.toString());
-            }
+            ///if (logger.isFineEnabled()) {
+            logger.info(cluster.toString());
 
+            ///}
             List<LineInfo> lines = new ArrayList<LineInfo>(cluster.getLines());
             int            left = Integer.MAX_VALUE;
             int            right = Integer.MIN_VALUE;

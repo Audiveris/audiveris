@@ -445,6 +445,40 @@ public class ClustersRetriever
         }
     }
 
+    //-------------------------//
+    // destroySpuriousClusters //
+    //-------------------------//
+    private void destroySpuriousClusters ()
+    {
+        // Determine minimum true length for valid clusters
+        List<Integer> lengths = new ArrayList<Integer>();
+
+        for (LineCluster cluster : clusters) {
+            lengths.add(cluster.getTrueLength());
+        }
+
+        Collections.sort(lengths);
+
+        int medianLength = lengths.get(lengths.size() / 2);
+        int minLength = (int) Math.rint(
+            medianLength * constants.minClusterLengthRatio.getValue());
+
+        if (logger.isFineEnabled()) {
+            logger.info(
+                "medianLength: " + medianLength + " minLength: " + minLength);
+        }
+
+        for (Iterator<LineCluster> it = clusters.iterator(); it.hasNext();) {
+            LineCluster cluster = it.next();
+
+            if (cluster.getTrueLength() < minLength) {
+                logger.info("Destroying spurious " + cluster);
+                cluster.destroy();
+                it.remove();
+            }
+        }
+    }
+
     //------------------------------//
     // discardNonClusteredFilaments //
     //------------------------------//
@@ -457,6 +491,16 @@ public class ClustersRetriever
                 it.remove();
                 discardedFilaments.add(fil);
             }
+        }
+    }
+
+    //--------------//
+    // dumpClusters //
+    //--------------//
+    private void dumpClusters ()
+    {
+        for (LineCluster cluster : clusters) {
+            logger.info(cluster.toString());
         }
     }
 
@@ -751,11 +795,16 @@ public class ClustersRetriever
         // Discard non standard clusters
         destroyNonStandardClusters();
 
+        // Discard spurious clusters
+        destroySpuriousClusters();
+
         // Discard non-clustered filaments
         discardNonClusteredFilaments();
 
-        // Register clusters as staves
-        ///registerStaves();
+        // Debug
+        if (logger.isFineEnabled()) {
+            dumpClusters();
+        }
     }
 
     //----------------------//
@@ -947,6 +996,9 @@ public class ClustersRetriever
             "line-count",
             4,
             "Minimum ");
+        Constant.Ratio   minClusterLengthRatio = new Constant.Ratio(
+            0.3,
+            "Minimum cluster length (as ratio of median length)");
     }
 
     //------//
