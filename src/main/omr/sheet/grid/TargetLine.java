@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.sheet.grid;
 
-import omr.score.common.PixelPoint;
 import static omr.util.HorizontalSide.*;
 
 import java.awt.geom.Point2D;
@@ -33,7 +32,7 @@ public class TargetLine
     public final int id;
 
     /** Ordinate in containing page */
-    public final int y;
+    public final double y;
 
     /** Containing staff */
     public final TargetStaff staff;
@@ -57,7 +56,7 @@ public class TargetLine
      * @param staff the containing staff
      */
     public TargetLine (LineInfo    info,
-                       int         y,
+                       double      y,
                        TargetStaff staff)
     {
         this.info = info;
@@ -67,11 +66,11 @@ public class TargetLine
         id = info.getId();
 
         // Compute sin & cos values
-        PixelPoint left = info.getEndPoint(LEFT);
-        PixelPoint right = info.getEndPoint(RIGHT);
-        double     dx = right.x - left.x;
-        double     dy = right.y - left.y;
-        double     hypot = Math.hypot(dx, dy);
+        Point2D left = info.getEndPoint(LEFT);
+        Point2D right = info.getEndPoint(RIGHT);
+        double  dx = right.getX() - left.getX();
+        double  dy = right.getY() - left.getY();
+        double  hypot = Math.hypot(dx, dy);
         sin = dy / hypot;
         cos = dx / hypot;
     }
@@ -109,11 +108,13 @@ public class TargetLine
      */
     public Point2D sourceOf (double dstX)
     {
-        int    left = staff.system.left;
-        int    right = staff.system.right;
+        double left = staff.system.left;
+        double right = staff.system.right;
         double xRatio = (dstX - left) / (right - left);
-        double srcX = ((1 - xRatio) * info.getEndPoint(LEFT).x) +
-                      (xRatio * info.getEndPoint(RIGHT).x);
+        double srcX = ((1 - xRatio) * info.getEndPoint(LEFT)
+                                          .getX()) +
+                      (xRatio * info.getEndPoint(RIGHT)
+                                    .getX());
         double srcY = info.yAt(srcX);
 
         return new Point2D.Double(srcX, srcY);

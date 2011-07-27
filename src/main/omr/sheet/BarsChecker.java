@@ -28,7 +28,6 @@ import omr.glyph.facets.Stick;
 
 import omr.log.Logger;
 
-import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
 import omr.sheet.grid.Filament;
@@ -41,6 +40,7 @@ import omr.util.Implement;
 
 import net.jcip.annotations.NotThreadSafe;
 
+import java.awt.geom.Point2D;
 import java.util.*;
 
 /**
@@ -509,17 +509,17 @@ public class BarsChecker
         @Implement(Check.class)
         protected double getValue (GlyphContext context)
         {
-            Stick      stick = context.stick;
-            PixelPoint stop = stick.getStopPoint();
+            Stick     stick = context.stick;
+            Point2D   stop = stick.getStopPoint();
 
             // Which staff area contains the bottom of the stick?
             StaffInfo staff = staffManager.getStaffAt(stop);
 
             // How far are we from the stop of the staff?
-            int    staffBottom = staff.getLastLine()
-                                      .yAt(stop.x);
+            double staffBottom = staff.getLastLine()
+                                      .yAt(stop.getX());
             double dy = sheet.getScale()
-                             .pixelsToFrac(Math.abs(staffBottom - stop.y));
+                             .pixelsToFrac(Math.abs(staffBottom - stop.getY()));
 
             // Change limits according to rough & partDefining
             if (rough && context.isPartDefining) {
@@ -708,10 +708,10 @@ public class BarsChecker
         @Override
         protected PixelRectangle getBox (Stick stick)
         {
-            PixelPoint     bottom = stick.getStopPoint();
+            Point2D        bottom = stick.getStopPoint();
             PixelRectangle box = new PixelRectangle(
-                bottom.x - nWidth,
-                bottom.y - ((3 * nHeight) / 2),
+                (int) Math.rint(bottom.getX() - nWidth),
+                (int) Math.rint(bottom.getY() - (1.5 * nHeight)),
                 nWidth,
                 2 * nHeight);
             stick.addAttachment("BL", box);
@@ -744,10 +744,10 @@ public class BarsChecker
         @Override
         protected PixelRectangle getBox (Stick stick)
         {
-            PixelPoint     bottom = stick.getStopPoint();
+            Point2D        bottom = stick.getStopPoint();
             PixelRectangle box = new PixelRectangle(
-                bottom.x,
-                bottom.y - ((3 * nHeight) / 2),
+                (int) Math.rint(bottom.getX()),
+                (int) Math.rint(bottom.getY() - (1.5 * nHeight)),
                 nWidth,
                 2 * nHeight);
             stick.addAttachment("BR", box);
@@ -827,14 +827,14 @@ public class BarsChecker
 
             // Check wrt every staff in the stick getRange
             for (int i = context.topArea; i <= context.bottomArea; i++) {
-                StaffInfo  staff = staffManager.getStaff(i);
-                PixelPoint top = staff.getFirstLine()
-                                      .getEndPoint(LEFT);
-                PixelPoint bot = staff.getLastLine()
-                                      .getEndPoint(LEFT);
-                int        y = (top.y + bot.y) / 2;
-                double     x = stick.getPositionAt(y);
-                double     dx = x - staff.getAbscissa(LEFT);
+                StaffInfo staff = staffManager.getStaff(i);
+                Point2D   top = staff.getFirstLine()
+                                     .getEndPoint(LEFT);
+                Point2D   bot = staff.getLastLine()
+                                     .getEndPoint(LEFT);
+                double    y = (top.getY() + bot.getY()) / 2;
+                double    x = stick.getPositionAt(y);
+                double    dx = x - staff.getAbscissa(LEFT);
                 dist = Math.min(dist, dx);
             }
 
@@ -914,16 +914,16 @@ public class BarsChecker
 
             // Check wrt every staff in the stick getRange
             for (int i = context.topArea; i <= context.bottomArea; i++) {
-                StaffInfo  staff = staffManager.getStaff(i);
-                PixelPoint top = staff.getFirstLine()
-                                      .getEndPoint(RIGHT);
-                PixelPoint bot = staff.getLastLine()
-                                      .getEndPoint(RIGHT);
-                int        y = (top.y + bot.y) / 2;
-                double     x = (stick instanceof Filament)
-                               ? ((Filament) stick).getPositionAt(y)
-                               : stick.getAbsoluteLine()
-                                      .xAtY(y);
+                StaffInfo staff = staffManager.getStaff(i);
+                Point2D   top = staff.getFirstLine()
+                                     .getEndPoint(RIGHT);
+                Point2D   bot = staff.getLastLine()
+                                     .getEndPoint(RIGHT);
+                double    y = (top.getY() + bot.getY()) / 2;
+                double    x = (stick instanceof Filament)
+                              ? ((Filament) stick).getPositionAt(y)
+                              : stick.getAbsoluteLine()
+                                     .xAtY(y);
                 dist = Math.min(dist, staff.getAbscissa(RIGHT) - x);
             }
 
@@ -989,17 +989,17 @@ public class BarsChecker
         @Implement(Check.class)
         protected double getValue (GlyphContext context)
         {
-            Stick      stick = context.stick;
-            PixelPoint start = stick.getStartPoint();
+            Stick     stick = context.stick;
+            Point2D   start = stick.getStartPoint();
 
             // Which staff area contains the top of the stick?
             StaffInfo staff = staffManager.getStaffAt(start);
 
             // How far are we from the start of the staff?
-            int    staffTop = staff.getFirstLine()
-                                   .yAt(start.x);
+            double staffTop = staff.getFirstLine()
+                                   .yAt(start.getX());
             double dy = sheet.getScale()
-                             .pixelsToFrac(Math.abs(staffTop - start.y));
+                             .pixelsToFrac(Math.abs(staffTop - start.getY()));
 
             // Change limits according to rough & partDefining
             if (rough && context.isPartDefining) {
@@ -1045,10 +1045,10 @@ public class BarsChecker
         @Override
         protected PixelRectangle getBox (Stick stick)
         {
-            PixelPoint     top = stick.getStartPoint();
+            Point2D        top = stick.getStartPoint();
             PixelRectangle box = new PixelRectangle(
-                top.x - nWidth,
-                top.y - (nHeight / 2),
+                (int) Math.rint(top.getX() - nWidth),
+                (int) Math.rint(top.getY() - (nHeight / 2)),
                 nWidth,
                 2 * nHeight);
             stick.addAttachment("TL", box);
@@ -1081,10 +1081,10 @@ public class BarsChecker
         @Override
         protected PixelRectangle getBox (Stick stick)
         {
-            PixelPoint     top = stick.getStartPoint();
+            Point2D        top = stick.getStartPoint();
             PixelRectangle box = new PixelRectangle(
-                top.x,
-                top.y - (nHeight / 2),
+                (int) Math.rint(top.getX()),
+                (int) Math.rint(top.getY() - (nHeight / 2)),
                 nWidth,
                 2 * nHeight);
             stick.addAttachment("TR", box);
@@ -1118,13 +1118,13 @@ public class BarsChecker
         @Implement(Check.class)
         protected double getValue (GlyphContext context)
         {
-            Stick      stick = context.stick;
-            PixelPoint start = stick.getStartPoint();
-            PixelPoint stop = stick.getStopPoint();
+            Stick   stick = context.stick;
+            Point2D start = stick.getStartPoint();
+            Point2D stop = stick.getStopPoint();
 
             // Beware of sign of stickSlope (it is opposite of globalSlope)
-            double stickSlope = -(double) (stop.x - start.x) / (stop.y -
-                                                               start.y);
+            double stickSlope = -(double) (stop.getX() - start.getX()) / (stop.getY() -
+                                                                         start.getY());
 
             return Math.abs(stickSlope - globalSlope);
         }

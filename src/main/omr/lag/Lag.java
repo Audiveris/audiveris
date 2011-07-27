@@ -35,7 +35,6 @@ import omr.util.Predicate;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
-import java.awt.geom.Point2D.Double;
 import java.util.*;
 import java.util.List;
 
@@ -296,7 +295,7 @@ public class Lag<L extends Lag<L, S>, S extends Section>
      * @return the absolute abscissa and ordinate values
      */
     @Implement(Oriented.class)
-    public Double absolute (Point2D cp)
+    public Point2D.Double absolute (Point2D cp)
     {
         return orientation.absolute(cp);
     }
@@ -440,6 +439,15 @@ public class Lag<L extends Lag<L, S>, S extends Section>
     //----------//
     @Implement(Oriented.class)
     public Point oriented (PixelPoint cp)
+    {
+        return orientation.oriented(cp);
+    }
+
+    //----------//
+    // oriented //
+    //----------//
+    @Implement(Oriented.class)
+    public Point2D oriented (Point2D cp)
     {
         return orientation.oriented(cp);
     }

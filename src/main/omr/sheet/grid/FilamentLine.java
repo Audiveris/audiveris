@@ -13,12 +13,12 @@ package omr.sheet.grid;
 
 import omr.glyph.GlyphSection;
 
-import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
 import omr.util.HorizontalSide;
 
 import java.awt.Graphics2D;
+import java.awt.geom.Point2D;
 import java.util.*;
 
 /**
@@ -51,17 +51,6 @@ public class FilamentLine
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------//
-    // getCenter //
-    //-----------//
-    public PixelPoint getCenter ()
-    {
-        PixelPoint left = getStartPoint();
-        PixelPoint right = getStopPoint();
-
-        return new PixelPoint((left.x + right.x) / 2, (left.y + right.y) / 2);
-    }
-
     //---------------//
     // getContourBox //
     //---------------//
@@ -73,7 +62,7 @@ public class FilamentLine
     //-------------//
     // getEndPoint //
     //-------------//
-    public PixelPoint getEndPoint (HorizontalSide side)
+    public Point2D getEndPoint (HorizontalSide side)
     {
         if (side == HorizontalSide.LEFT) {
             return getStartPoint();
@@ -85,8 +74,8 @@ public class FilamentLine
     //-----------------//
     // setEndingPoints //
     //-----------------//
-    public void setEndingPoints (PixelPoint pStart,
-                                 PixelPoint pStop)
+    public void setEndingPoints (Point2D pStart,
+                                 Point2D pStop)
     {
         fil.setEndingPoints(pStart, pStop);
     }
@@ -102,7 +91,7 @@ public class FilamentLine
     //--------------//
     // getLeftPoint //
     //--------------//
-    public PixelPoint getLeftPoint ()
+    public Point2D getLeftPoint ()
     {
         return getStartPoint();
     }
@@ -110,7 +99,7 @@ public class FilamentLine
     //---------------//
     // getRightPoint //
     //---------------//
-    public PixelPoint getRightPoint ()
+    public Point2D getRightPoint ()
     {
         return getStopPoint();
     }
@@ -128,15 +117,13 @@ public class FilamentLine
     //----------//
     public double getSlope (HorizontalSide side)
     {
-        PixelPoint pt = getEndPoint(side);
-
-        return fil.slopeAt(pt.x);
+        return fil.slopeAt(getEndPoint(side).getX());
     }
 
     //---------------//
     // getStartPoint //
     //---------------//
-    public PixelPoint getStartPoint ()
+    public Point2D getStartPoint ()
     {
         return fil.getStartPoint();
     }
@@ -146,15 +133,13 @@ public class FilamentLine
     //---------------//
     public double getStartSlope ()
     {
-        PixelPoint pt = getStartPoint();
-
-        return fil.slopeAt(pt.x);
+        return fil.slopeAt(getStartPoint().getX());
     }
 
     //--------------//
     // getStopPoint //
     //--------------//
-    public PixelPoint getStopPoint ()
+    public Point2D getStopPoint ()
     {
         return fil.getStopPoint();
     }
@@ -164,22 +149,22 @@ public class FilamentLine
     //--------------//
     public double getStopSlope ()
     {
-        PixelPoint pt = getStopPoint();
-
-        return fil.slopeAt(pt.x);
+        return fil.slopeAt(getStopPoint().getX());
     }
 
     //---------------//
     // isWithinRange //
     //---------------//
     /**
-     * Report wheter the provided abscissa lies within the line range
+     * Report whether the provided abscissa lies within the line range
      * @param x the provided abscissa
      * @return true if within range
      */
-    public boolean isWithinRange (int x)
+    public boolean isWithinRange (double x)
     {
-        return (x >= getStartPoint().x) && (x <= getStopPoint().x);
+        return (x >= getStartPoint()
+                         .getX()) && (x <= getStopPoint()
+                                               .getX());
     }
 
     //-----//

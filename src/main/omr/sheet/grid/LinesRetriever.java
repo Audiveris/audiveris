@@ -31,7 +31,6 @@ import omr.run.Run;
 import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
 
-import omr.score.common.PixelPoint;
 import omr.score.ui.PagePainter;
 
 import omr.sheet.Scale;
@@ -44,6 +43,7 @@ import omr.util.StopWatch;
 
 import java.awt.*;
 import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.util.*;
 import java.util.List;
 
@@ -361,12 +361,22 @@ public class LinesRetriever
                          .toPixels(constants.tangentLg);
 
         for (Filament filament : allFils) {
-            PixelPoint p = filament.getStartPoint();
-            double     der = filament.slopeAt(p.x);
-            g.draw(new Line2D.Double(p.x, p.y, p.x - dx, p.y - (der * dx)));
+            Point2D p = filament.getStartPoint();
+            double  der = filament.slopeAt(p.getX());
+            g.draw(
+                new Line2D.Double(
+                    p.getX(),
+                    p.getY(),
+                    p.getX() - dx,
+                    p.getY() - (der * dx)));
             p = filament.getStopPoint();
-            der = filament.slopeAt(p.x);
-            g.draw(new Line2D.Double(p.x, p.y, p.x + dx, p.y + (der * dx)));
+            der = filament.slopeAt(p.getX());
+            g.draw(
+                new Line2D.Double(
+                    p.getX(),
+                    p.getY(),
+                    p.getX() + dx,
+                    p.getY() + (der * dx)));
         }
 
         g.setStroke(oldStroke);
@@ -410,12 +420,12 @@ public class LinesRetriever
 
             ///}
             List<LineInfo> lines = new ArrayList<LineInfo>(cluster.getLines());
-            int            left = Integer.MAX_VALUE;
-            int            right = Integer.MIN_VALUE;
+            double         left = Integer.MAX_VALUE;
+            double         right = Integer.MIN_VALUE;
 
             for (LineInfo line : lines) {
-                left = Math.min(left, line.getEndPoint(LEFT).x);
-                right = Math.max(right, line.getEndPoint(RIGHT).x);
+                left = Math.min(left, line.getEndPoint(LEFT).getX());
+                right = Math.max(right, line.getEndPoint(RIGHT).getX());
             }
 
             StaffInfo staff = new StaffInfo(
@@ -450,9 +460,10 @@ public class LinesRetriever
 
         for (int i = 0; i < topCount; i++) {
             Filament fil = filaments.get(i);
-            Point    start = fil.getStartPoint();
-            Point    stop = fil.getStopPoint();
-            slopes += ((double) (stop.y - start.y) / (stop.x - start.x));
+            Point2D  start = fil.getStartPoint();
+            Point2D  stop = fil.getStopPoint();
+            slopes += ((double) (stop.getY() - start.getY()) / (stop.getX() -
+                                                               start.getX()));
         }
 
         return slopes / topCount;

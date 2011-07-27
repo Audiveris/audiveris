@@ -42,7 +42,9 @@ public class Filament
                             Filament f2)
         {
             // Sort on start
-            return Integer.signum(f1.getStartPoint().x - f2.getStartPoint().x);
+            return Double.compare(
+                f1.getStartPoint().getX(),
+                f2.getStartPoint().getX());
         }
     };
 
@@ -54,7 +56,9 @@ public class Filament
                             Filament f2)
         {
             // Sort on stop
-            return Integer.signum(f1.getStopPoint().x - f2.getStopPoint().x);
+            return Double.compare(
+                f1.getStopPoint().getX(),
+                f2.getStopPoint().getX());
         }
     };
 
@@ -183,16 +187,16 @@ public class Filament
         addSection(section, Linking.LINK_BACK);
     }
 
-//    //------//
-//    // dump //
-//    //------//
-//    @Override
-//    public void dump ()
-//    {
-//        super.dump();
-//        System.out.println("   refDist=" + getRefDistance());
-//    }
-//
+    //    //------//
+    //    // dump //
+    //    //------//
+    //    @Override
+    //    public void dump ()
+    //    {
+    //        super.dump();
+    //        System.out.println("   refDist=" + getRefDistance());
+    //    }
+    //
     //---------//
     // include //
     //---------//
@@ -273,15 +277,15 @@ public class Filament
         StringBuilder sb = new StringBuilder();
 
         sb.append(" start[x=")
-          .append(getStartPoint().x)
+          .append(getStartPoint().getX())
           .append(",y=")
-          .append(getStartPoint().y)
+          .append(getStartPoint().getY())
           .append("]");
 
         sb.append(" stop[x=")
-          .append(getStopPoint().x)
+          .append(getStopPoint().getX())
           .append(",y=")
-          .append(getStopPoint().y)
+          .append(getStopPoint().getY())
           .append("]");
 
         sb.append("meanDist:")

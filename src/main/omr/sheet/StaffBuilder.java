@@ -105,8 +105,10 @@ public class StaffBuilder
         List<Integer> rights = new ArrayList<Integer>();
 
         for (LineInfo line : lines) {
-            lefts.add(line.getEndPoint(HorizontalSide.LEFT).x);
-            rights.add(line.getEndPoint(HorizontalSide.RIGHT).x);
+            lefts.add(
+                (int) Math.rint(line.getEndPoint(HorizontalSide.LEFT).getX()));
+            rights.add(
+                (int) Math.rint(line.getEndPoint(HorizontalSide.RIGHT).getX()));
         }
 
         Collections.sort(lefts);

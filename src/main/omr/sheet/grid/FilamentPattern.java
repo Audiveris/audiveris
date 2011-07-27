@@ -31,7 +31,7 @@ public class FilamentPattern
     private final List<LineFilament> filaments;
 
     /** Ordinate value for each filament */
-    private final List<Integer> ys;
+    private final List<Double> ys;
 
     /** To save processing */
     private boolean processed = false;
@@ -50,7 +50,7 @@ public class FilamentPattern
         this.col = col;
 
         filaments = new ArrayList<LineFilament>();
-        ys = new ArrayList<Integer>();
+        ys = new ArrayList<Double>();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -126,7 +126,7 @@ public class FilamentPattern
     //------//
     // getY //
     //------//
-    public int getY (int index)
+    public double getY (int index)
     {
         return ys.get(index);
     }
@@ -140,7 +140,7 @@ public class FilamentPattern
      * @param y the filament ordinate at x abscissa
      */
     public void append (LineFilament filament,
-                        int      y)
+                        double       y)
     {
         filaments.add(filament);
         ys.add(y);
@@ -164,8 +164,8 @@ public class FilamentPattern
 
         for (int i = 0; i < filaments.size(); i++) {
             LineFilament fil = filaments.get(i)
-                                    .getAncestor();
-            int      y = ys.get(i);
+                                        .getAncestor();
+            double       y = ys.get(i);
             sb.append(" F#")
               .append(fil.getId())
               .append("@")

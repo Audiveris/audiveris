@@ -229,11 +229,12 @@ public class ClustersRetriever
 
             for (FilamentPattern pattern : entry.getValue()) {
                 ///if (pattern.getCount() == popLength) {
-                g.drawLine(
-                    x,
-                    pattern.getY(0),
-                    x,
-                    pattern.getY(pattern.getCount() - 1));
+                g.draw(
+                    new Line2D.Double(
+                        x,
+                        pattern.getY(0),
+                        x,
+                        pattern.getY(pattern.getCount() - 1)));
 
                 ///}
             }
@@ -539,14 +540,14 @@ public class ClustersRetriever
 
             if (clusterBox.contains(middle)) {
                 // Check if this filament matches a cluster line ordinate
-                List<PixelPoint> points = cluster.getPointsAt(
+                List<Point2D> points = cluster.getPointsAt(
                     middle.x,
                     interline,
                     globalSlope);
 
-                for (PixelPoint point : points) {
+                for (Point2D point : points) {
                     // Check vertical distance
-                    int dy = middle.y - point.y;
+                    double dy = middle.y - point.getY();
 
                     if (Math.abs(dy) <= maxClusterDy) {
                         int index = points.indexOf(point);
@@ -710,7 +711,7 @@ public class ClustersRetriever
      * Report the orthogonal distance of the provided point
      * to the sheet top edge tilted with global slope.
      */
-    private double ordinateOf (Point point)
+    private double ordinateOf (Point2D point)
     {
         return getSheetTopEdge()
                    .ptLineDist(point);
@@ -731,12 +732,12 @@ public class ClustersRetriever
     //-------------//
     // ordinatesOf //
     //-------------//
-    private double[] ordinatesOf (Collection<PixelPoint> points)
+    private double[] ordinatesOf (Collection<Point2D> points)
     {
         double[] ys = new double[points.size()];
         int      index = 0;
 
-        for (Point p : points) {
+        for (Point2D p : points) {
             ys[index++] = ordinateOf(p);
         }
 
@@ -816,13 +817,16 @@ public class ClustersRetriever
      * @param x the desired abscissa
      * @return the sorted list of structures (Fil + Y), perhaps empty
      */
-    private List<FilY> retrieveFilamentsAtX (int x)
+    private List<FilY> retrieveFilamentsAtX (double x)
     {
         List<FilY> list = new ArrayList<FilY>();
 
         for (LineFilament fil : filaments) {
-            if ((x >= fil.getStartPoint().x) && (x <= fil.getStopPoint().x)) {
-                list.add(new FilY(fil, (int) Math.rint(fil.getPositionAt(x))));
+            if ((x >= fil.getStartPoint()
+                         .getX()) &&
+                (x <= fil.getStopPoint()
+                         .getX())) {
+                list.add(new FilY(fil, fil.getPositionAt(x)));
             }
         }
 
@@ -1014,12 +1018,12 @@ public class ClustersRetriever
         //~ Instance fields ----------------------------------------------------
 
         final LineFilament filament;
-        final int          y;
+        final double       y;
 
         //~ Constructors -------------------------------------------------------
 
         public FilY (LineFilament filament,
-                     int          y)
+                     double       y)
         {
             this.filament = filament;
             this.y = y;
@@ -1029,7 +1033,7 @@ public class ClustersRetriever
 
         public int compareTo (FilY that)
         {
-            return Integer.signum(this.y - that.y);
+            return Double.compare(this.y, that.y);
         }
 
         @Override

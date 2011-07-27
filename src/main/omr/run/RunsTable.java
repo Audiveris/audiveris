@@ -435,6 +435,14 @@ public class RunsTable
         return orientation.oriented(xywh);
     }
 
+    //----------//
+    // oriented //
+    //----------//
+    public Point2D oriented (Point2D cp)
+    {
+        return orientation.oriented(cp);
+    }
+
     //-------//
     // purge //
     //-------//

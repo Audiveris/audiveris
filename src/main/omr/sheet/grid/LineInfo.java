@@ -13,12 +13,12 @@ package omr.sheet.grid;
 
 import omr.glyph.GlyphSection;
 
-import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
 import omr.util.HorizontalSide;
 
 import java.awt.Graphics2D;
+import java.awt.geom.Point2D;
 import java.util.Collection;
 
 /**
@@ -47,7 +47,7 @@ public interface LineInfo
      * @param side proper horizontal side
      * @return left point
      */
-    public PixelPoint getEndPoint (HorizontalSide side);
+    public Point2D getEndPoint (HorizontalSide side);
 
     //-------//
     // getId //
@@ -65,7 +65,7 @@ public interface LineInfo
      * Selector for the left point of the line
      * @return left point
      */
-    public PixelPoint getLeftPoint ();
+    public Point2D getLeftPoint ();
 
     //---------------//
     // getRightPoint //
@@ -74,7 +74,7 @@ public interface LineInfo
      * Selector for the right point of the line
      * @return right point
      */
-    public PixelPoint getRightPoint ();
+    public Point2D getRightPoint ();
 
     //-------------//
     // getSections //

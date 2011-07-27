@@ -110,7 +110,8 @@ public class ClefPattern
             staffId++;
 
             // Define the inner box to intersect clef glyph(s)
-            int            left = staff.getAbscissa(HorizontalSide.LEFT);
+            int            left = (int) Math.rint(
+                staff.getAbscissa(HorizontalSide.LEFT));
             PixelRectangle inner = new PixelRectangle(
                 left + (2 * xOffset) + (clefWidth / 2),
                 staff.getFirstLine().yAt(left) + (staff.getHeight() / 2),

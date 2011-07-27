@@ -25,10 +25,10 @@ public class TargetPage
     //~ Instance fields --------------------------------------------------------
 
     /** Page width */
-    public final int width;
+    public final double width;
 
     /** Page height */
-    public final int height;
+    public final double height;
 
     /** Sequence of systems */
     public final List<TargetSystem> systems = new ArrayList<TargetSystem>();
@@ -44,8 +44,8 @@ public class TargetPage
      * @param width page width
      * @param height page height
      */
-    public TargetPage (int width,
-                       int height)
+    public TargetPage (double width,
+                       double height)
     {
         this.width = width;
         this.height = height;

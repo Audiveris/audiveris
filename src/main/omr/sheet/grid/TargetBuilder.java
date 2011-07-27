@@ -17,10 +17,10 @@ import omr.constant.ConstantSet;
 import omr.log.Logger;
 
 import omr.score.ScoresManager;
-import omr.score.common.PixelPoint;
 
 import omr.selection.SheetLocationEvent;
 
+import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.picture.Picture;
 
@@ -70,10 +70,10 @@ public class TargetBuilder
     private final BarsRetriever barsRetriever;
 
     /** Target width */
-    private int targetWidth;
+    private double targetWidth;
 
     /** Target height */
-    private int targetHeight;
+    private double targetHeight;
 
     /** Transform from initial point to deskewed point */
     private AffineTransform at;
@@ -166,13 +166,13 @@ public class TargetBuilder
 
         for (SystemFrame system : barsRetriever.getSystems()) {
             for (HorizontalSide side : HorizontalSide.values()) {
-                PixelPoint top = system.getFirstStaff()
-                                       .getFirstLine()
-                                       .getEndPoint(side);
-                PixelPoint bot = system.getLastStaff()
-                                       .getLastLine()
-                                       .getEndPoint(side);
-                g.drawLine(top.x, top.y, bot.x, bot.y);
+                Point2D top = system.getFirstStaff()
+                                    .getFirstLine()
+                                    .getEndPoint(side);
+                Point2D bot = system.getLastStaff()
+                                    .getLastLine()
+                                    .getEndPoint(side);
+                g.draw(new Line2D.Double(top, bot));
             }
         }
     }
@@ -193,16 +193,21 @@ public class TargetBuilder
             return;
         }
 
+        Graphics2D    g2 = (Graphics2D) g;
         List<Point2D> points = useSource ? srcPoints : dstPoints;
-        int           radius = 1;
-        g.setColor(Color.RED);
+        double        radius = sheet.getScale()
+                                    .toPixelsDouble(constants.gridPointSize);
+        g2.setColor(Color.RED);
+
+        Rectangle2D rect = new Rectangle2D.Double();
 
         for (Point2D pt : points) {
-            g.fillRect(
-                (int) Math.rint(pt.getX()) - radius,
-                (int) Math.rint(pt.getY()) - radius,
+            rect.setRect(
+                pt.getX() - radius,
+                pt.getY() - radius,
                 2 * radius,
                 2 * radius);
+            g2.fill(rect);
         }
     }
 
@@ -226,27 +231,29 @@ public class TargetBuilder
 
         // Target system parameters
         for (SystemFrame system : barsRetriever.getSystems()) {
-            StaffInfo  firstStaff = system.getFirstStaff();
-            LineInfo   firstLine = firstStaff.getFirstLine();
-            PixelPoint dskLeft = deskew(firstLine.getEndPoint(LEFT));
-            PixelPoint dskRight = deskew(firstLine.getEndPoint(RIGHT));
+            StaffInfo firstStaff = system.getFirstStaff();
+            LineInfo  firstLine = firstStaff.getFirstLine();
+            Point2D   dskLeft = deskew(firstLine.getEndPoint(LEFT));
+            Point2D   dskRight = deskew(firstLine.getEndPoint(RIGHT));
 
             if (prevLine != null) {
                 // Preserve position relative to bottom right of previous system
-                PixelPoint   prevDskRight = deskew(
+                Point2D      prevDskRight = deskew(
                     prevLine.info.getEndPoint(RIGHT));
                 TargetSystem prevSystem = prevLine.staff.system;
-                int          dx = prevSystem.right - prevDskRight.x;
-                int          dy = prevLine.y - prevDskRight.y;
-                dskRight.translate(dx, dy);
-                dskLeft.translate(dx, dy);
+                double       dx = prevSystem.right - prevDskRight.getX();
+                double       dy = prevLine.y - prevDskRight.getY();
+                dskRight.setLocation(
+                    dskRight.getX() + dx,
+                    dskRight.getY() + dy);
+                dskLeft.setLocation(dskLeft.getX() + dx, dskLeft.getY() + dy);
             }
 
             TargetSystem targetSystem = new TargetSystem(
                 system,
-                dskRight.y,
-                dskLeft.x,
-                dskRight.x);
+                dskRight.getY(),
+                dskLeft.getX(),
+                dskRight.getX());
             targetPage.systems.add(targetSystem);
 
             // Target staff parameters
@@ -255,14 +262,16 @@ public class TargetBuilder
 
                 if (prevLine != null) {
                     // Preserve inter-staff vertical gap
-                    PixelPoint prevDskRight = deskew(
+                    Point2D prevDskRight = deskew(
                         prevLine.info.getEndPoint(RIGHT));
-                    dskRight.y += (prevLine.y - prevDskRight.y);
+                    dskRight.setLocation(
+                        dskRight.getX(),
+                        dskRight.getY() + (prevLine.y - prevDskRight.getY()));
                 }
 
                 TargetStaff targetStaff = new TargetStaff(
                     staff,
-                    dskRight.y,
+                    dskRight.getY(),
                     targetSystem);
                 targetSystem.staves.add(targetStaff);
 
@@ -343,13 +352,13 @@ public class TargetBuilder
         double  dy = 0;
 
         if (deskewAngle <= 0) { // Counter-clockwise deskew
-            targetWidth = (int) Math.ceil(bottomRight.getX());
+            targetWidth = bottomRight.getX();
             dy = -topRight.getY();
-            targetHeight = (int) Math.ceil(bottomLeft.getY() + dy);
+            targetHeight = bottomLeft.getY() + dy;
         } else { // Clockwise deskew
             dx = -bottomLeft.getX();
-            targetWidth = (int) Math.ceil(topRight.getX() + dx);
-            targetHeight = (int) Math.ceil(bottomRight.getY());
+            targetWidth = topRight.getX() + dx;
+            targetHeight = bottomRight.getY();
         }
 
         at.translate(dx, dy);
@@ -365,13 +374,9 @@ public class TargetBuilder
      * @param pt the initial (skewed) point
      * @return the deskewed point
      */
-    private PixelPoint deskew (Point2D pt)
+    private Point2D deskew (Point2D pt)
     {
-        Point2D p = at.transform(pt, null);
-
-        return new PixelPoint(
-            (int) Math.rint(p.getX()),
-            (int) Math.rint(p.getY()));
+        return at.transform(pt, null);
     }
 
     //-------------//
@@ -470,9 +475,16 @@ public class TargetBuilder
     {
         //~ Instance fields ----------------------------------------------------
 
-        Constant.Boolean displayGrid = new Constant.Boolean(
+        Constant.Boolean   displayGrid = new Constant.Boolean(
             true,
             "Should we display the dewarp grid?");
+
+        //
+        Scale.LineFraction gridPointSize = new Scale.LineFraction(
+            0.2,
+            "Size of displayed grid points");
+
+        //
         Constant.Boolean storeDewarp = new Constant.Boolean(
             false,
             "Should we store the dewarped image on disk?");

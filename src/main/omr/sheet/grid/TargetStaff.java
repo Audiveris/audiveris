@@ -11,8 +11,7 @@
 // </editor-fold>
 package omr.sheet.grid;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Class {@code TargetStaff} is an immutable perfect destination object for a
@@ -31,7 +30,7 @@ public class TargetStaff
     public final int id;
 
     /** Ordinate of top in containing page */
-    public final int top;
+    public final double top;
 
     /** Sequence of staff lines */
     public final List<TargetLine> lines = new ArrayList<TargetLine>();
@@ -51,7 +50,7 @@ public class TargetStaff
      * @param top Ordinate of top in containing page
      */
     public TargetStaff (StaffInfo    info,
-                        int          top,
+                        double       top,
                         TargetSystem system)
     {
         this.info = info;

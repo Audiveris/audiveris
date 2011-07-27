@@ -40,6 +40,7 @@ import omr.stick.StickSection;
 import omr.util.StopWatch;
 
 import java.awt.*;
+import java.awt.geom.Point2D;
 import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.List;
@@ -370,15 +371,15 @@ public class FilamentsFactory
 
         try {
             // Start & Stop points for each filament
-            Point oneStart = orientation.oriented(one.getStartPoint());
-            Point oneStop = orientation.oriented(one.getStopPoint());
-            Point twoStart = orientation.oriented(two.getStartPoint());
-            Point twoStop = orientation.oriented(two.getStopPoint());
+            Point2D oneStart = orientation.oriented(one.getStartPoint());
+            Point2D oneStop = orientation.oriented(one.getStopPoint());
+            Point2D twoStart = orientation.oriented(two.getStartPoint());
+            Point2D twoStop = orientation.oriented(two.getStopPoint());
 
             // coord gap?
-            int overlapStart = Math.max(oneStart.x, twoStart.x);
-            int overlapStop = Math.min(oneStop.x, twoStop.x);
-            int coordGap = (overlapStart - overlapStop) - 1;
+            double overlapStart = Math.max(oneStart.getX(), twoStart.getX());
+            double overlapStop = Math.min(oneStop.getX(), twoStop.getX());
+            double coordGap = (overlapStart - overlapStop) - 1;
 
             if (coordGap > params.maxCoordGap) {
                 if (logger.isFineEnabled()) {
@@ -395,7 +396,7 @@ public class FilamentsFactory
                 // Overlap between the two filaments
                 // Measure thickness at various coord values of overlap
                 for (int iq = 1; iq < 4; iq++) {
-                    int    midCoord = overlapStart - ((iq * coordGap) / 4);
+                    double midCoord = overlapStart - ((iq * coordGap) / 4);
                     double onePos = one.getPositionAt(midCoord);
                     double twoPos = two.getPositionAt(midCoord);
                     double posGap = Math.abs(onePos - twoPos);
@@ -443,10 +444,10 @@ public class FilamentsFactory
                 }
             } else {
                 // No overlap, it's a true gap
-                Point start;
-                Point stop;
+                Point2D start;
+                Point2D stop;
 
-                if (oneStart.x < twoStart.x) {
+                if (oneStart.getX() < twoStart.getX()) {
                     // one - two
                     start = oneStop;
                     stop = twoStart;
@@ -461,7 +462,8 @@ public class FilamentsFactory
                 double twoThickness = two.getWeight() / two.getLength();
                 int    posMargin = (int) Math.rint(
                     Math.max(oneThickness, twoThickness) / 2);
-                int    posGap = Math.abs(stop.y - start.y) - posMargin;
+                double posGap = Math.abs(stop.getY() - start.getY()) -
+                                posMargin;
 
                 if (posGap > params.maxPosGap) {
                     if (logger.isFineEnabled()) {

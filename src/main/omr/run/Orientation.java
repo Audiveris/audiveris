@@ -59,6 +59,14 @@ public enum Orientation
     //----------//
     // absolute //
     //----------//
+    public Point2D oriented (Point2D xy)
+    {
+        return absolute(xy); // Since involutive
+    }
+
+    //----------//
+    // absolute //
+    //----------//
     public PixelPoint absolute (Point cp)
     {
         if (cp == null) {

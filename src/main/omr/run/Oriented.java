@@ -85,9 +85,9 @@ public interface Oriented
      */
     PixelRectangle absolute (Rectangle cplt);
 
-    //-----------//
+    //----------//
     // oriented //
-    //-----------//
+    //----------//
     /**
      * Given a point (x, y) in the absolute space, return the corresponding
      * (coord, pos) oriented point taking the lag orientation into account.
@@ -96,6 +96,18 @@ public interface Oriented
      * @return the corresponding absolute (x, y) point
      */
     Point oriented (PixelPoint cp);
+
+    //----------//
+    // oriented //
+    //----------//
+    /**
+     * Given a point (x, y) in the absolute space, return the corresponding
+     * (coord, pos) oriented point taking the lag orientation into account.
+     *
+     * @param cp the oriented (coord, pos) point
+     * @return the corresponding absolute (x, y) point
+     */
+    Point2D oriented (Point2D cp);
 
     //----------//
     // oriented //

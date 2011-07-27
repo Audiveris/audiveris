@@ -24,17 +24,11 @@ import omr.math.NaturalSpline;
 
 import omr.run.Orientation;
 
-import omr.score.common.PixelPoint;
-
 import omr.sheet.Scale;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.geom.Line2D;
-import java.awt.geom.Point2D;
-import java.util.ArrayList;
+import java.awt.*;
+import java.awt.geom.*;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -92,8 +86,8 @@ public class FilamentAlignment
     // setEndingPoints //
     //-----------------//
     @Override
-    public void setEndingPoints (PixelPoint pStart,
-                                 PixelPoint pStop)
+    public void setEndingPoints (Point2D pStart,
+                                 Point2D pStop)
     {
         super.setEndingPoints(pStart, pStop);
         computeLine();
@@ -141,20 +135,20 @@ public class FilamentAlignment
                                        .getOrientation();
 
         if (orientation.isVertical()) {
-            if ((coord < pStart.y) || (coord > pStop.y)) {
-                double slope = (double) (pStop.x - pStart.x) / (double) (pStop.y -
-                               pStart.y);
+            if ((coord < pStart.getY()) || (coord > pStop.getY())) {
+                double slope = (double) (pStop.getX() - pStart.getX()) / (double) (pStop.getY() -
+                               pStart.getY());
 
-                return pStart.x + (slope * (coord - pStart.y));
+                return pStart.getX() + (slope * (coord - pStart.getY()));
             } else {
                 return line.xAtY(coord);
             }
         } else {
-            if ((coord < pStart.x) || (coord > pStop.x)) {
-                double slope = (double) (pStop.y - pStart.y) / (double) (pStop.x -
-                               pStart.x);
+            if ((coord < pStart.getX()) || (coord > pStop.getX())) {
+                double slope = (double) (pStop.getY() - pStart.getY()) / (double) (pStop.getX() -
+                               pStart.getX());
 
-                return pStart.y + (slope * (coord - pStart.x));
+                return pStart.getY() + (slope * (coord - pStart.getX()));
             } else {
                 return line.yAtX(coord);
             }
@@ -165,7 +159,7 @@ public class FilamentAlignment
     // getStartPoint //
     //---------------//
     @Override
-    public PixelPoint getStartPoint ()
+    public Point2D getStartPoint ()
     {
         if (pStart == null) {
             computeLine();
@@ -178,7 +172,7 @@ public class FilamentAlignment
     // getStopPoint //
     //--------------//
     @Override
-    public PixelPoint getStopPoint ()
+    public Point2D getStopPoint ()
     {
         if (pStop == null) {
             computeLine();
@@ -206,17 +200,15 @@ public class FilamentAlignment
     {
         // Draw the absolute defining points
         if (points != null) {
-            double r = Math.max(1, glyph.getInterline() * 0.1); // Point radius
-            Color  oldColor = g.getColor();
+            // Point radius
+            double    r = glyph.getInterline() * constants.filamentPointSize.getValue();
+            Color     oldColor = g.getColor();
+            Ellipse2D ellipse = new Ellipse2D.Double();
 
             for (Point2D p : points) {
+                ellipse.setFrame(p.getX() - r, p.getY() - r, 2 * r, 2 * r);
                 g.setColor(getPointColor(p));
-
-                g.drawOval(
-                    (int) Math.rint(p.getX() - r),
-                    (int) Math.rint(p.getY() - r),
-                    (int) Math.rint(2 * r),
-                    (int) Math.rint(2 * r));
+                g.fill(ellipse);
             }
 
             g.setColor(oldColor);
@@ -294,19 +286,19 @@ public class FilamentAlignment
             Orientation orientation = glyph.getLag()
                                            .getOrientation();
 
-            Point       orientedStart = (pStart == null) ? null
+            Point2D     orientedStart = (pStart == null) ? null
                                         : orientation.oriented(pStart);
-            Point       orientedStop = (pStop == null) ? null
+            Point2D     orientedStop = (pStop == null) ? null
                                        : orientation.oriented(pStop);
             Rectangle   bounds = glyph.getOrientedBounds();
-            int         start = (orientedStart != null) ? orientedStart.x
+            double      start = (orientedStart != null) ? orientedStart.getX()
                                 : bounds.x;
-            int         stop = (orientedStop != null) ? orientedStop.x
+            double      stop = (orientedStop != null) ? orientedStop.getX()
                                : (bounds.x + (bounds.width - 1));
-            int         length = stop - start + 1;
+            double      length = stop - start + 1;
 
             Rectangle   probe = new Rectangle(bounds);
-            probe.x = start;
+            probe.x = (int) Math.ceil(start);
             probe.width = probeWidth;
 
             // Determine the number of segments and their precise length
@@ -318,14 +310,14 @@ public class FilamentAlignment
             if (pStart == null) {
                 Point2D p = getRectangleCentroid(probe);
                 pStart = orientation.absolute(
-                    new Point(start, (int) Math.rint(p.getY())));
+                    new Point2D.Double(start, p.getY()));
             }
 
             newPoints.add(pStart);
 
             // Intermediate points (perhaps none)
             for (int i = 1; i < segCount; i++) {
-                probe.x = start + (int) Math.rint(i * segLength);
+                probe.x = (int) Math.rint(start + (i * segLength));
 
                 Point2D pt = getRectangleCentroid(probe);
 
@@ -337,11 +329,11 @@ public class FilamentAlignment
 
             // Last point
             if (pStop == null) {
-                probe.x = stop - probe.width + 1;
+                probe.x = (int) Math.floor(stop - probe.width + 1);
 
                 Point2D p = getRectangleCentroid(probe);
                 pStop = orientation.absolute(
-                    new Point(stop, (int) Math.rint(p.getY())));
+                    new Point2D.Double(stop, p.getY()));
             }
 
             newPoints.add(pStop);
@@ -415,5 +407,10 @@ public class FilamentAlignment
         final Scale.Fraction segmentLength = new Scale.Fraction(
             2,
             "Typical length between filament curve intermediate points");
+
+        //
+        Scale.Fraction filamentPointSize = new Scale.Fraction(
+            0.1,
+            "Size of displayed filament points");
     }
 }

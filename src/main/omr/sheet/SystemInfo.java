@@ -566,30 +566,31 @@ public class SystemInfo
 
         // Remember left side
         if (left == -1) {
-            left = staff.getAbscissa(LEFT);
+            left = (int) Math.rint(staff.getAbscissa(LEFT));
         } else {
-            left = Math.min(left, staff.getAbscissa(LEFT));
+            left = (int) Math.rint(Math.min(left, staff.getAbscissa(LEFT)));
         }
 
         // Remember width
         if (width == -1) {
-            width = staff.getAbscissa(RIGHT) - left + 1;
+            width = (int) Math.rint(staff.getAbscissa(RIGHT) - left + 1);
         } else {
-            width = Math.max(width, staff.getAbscissa(RIGHT) - left + 1);
+            width = (int) Math.rint(
+                Math.max(width, staff.getAbscissa(RIGHT) - left + 1));
         }
 
         // First staff ?
         if (startStaff == null) {
             startStaff = staff;
-            top = firstLine.getEndPoint(LEFT).y;
+            top = (int) Math.rint(firstLine.getEndPoint(LEFT).getY());
         }
 
         // Last staff (so far)
         stopStaff = staff;
-        deltaY = firstLine.getEndPoint(LEFT).y - top;
+        deltaY = (int) Math.rint(firstLine.getEndPoint(LEFT).getY() - top);
 
         LineInfo lastLine = staff.getLastLine();
-        bottom = lastLine.getEndPoint(LEFT).y;
+        bottom = (int) Math.rint(lastLine.getEndPoint(LEFT).getY());
     }
 
     //-----------------------//
@@ -622,11 +623,11 @@ public class SystemInfo
             new PixelDimension(getWidth(), getDeltaY()));
 
         // Allocate the parts in the system
-        int id = 0;
+        int partId = 0;
 
         for (PartInfo partInfo : getParts()) {
             SystemPart part = new SystemPart(scoreSystem);
-            part.setId(--id); // Temporary id
+            part.setId(--partId); // Temporary id
 
             // Allocate the staves in this part
             for (StaffInfo staffInfo : partInfo.getStaves()) {
@@ -636,7 +637,7 @@ public class SystemInfo
                     staffInfo,
                     part,
                     new PixelPoint(left, firstLine.yAt(left)),
-                    staffInfo.getAbscissa(RIGHT) - left,
+                    (int) Math.rint(staffInfo.getAbscissa(RIGHT) - left),
                     lastLine.yAt(left) - firstLine.yAt(left));
             }
         }

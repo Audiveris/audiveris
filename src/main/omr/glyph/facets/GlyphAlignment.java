@@ -13,10 +13,9 @@ package omr.glyph.facets;
 
 import omr.math.Line;
 
-import omr.score.common.PixelPoint;
-
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 
 /**
  * Interface {@code GlyphAlignment} describes glyph alignment, either
@@ -65,7 +64,7 @@ public interface GlyphAlignment
      * Beware, this number will be zero if the probe falls entirely in a hole
      * between two sections.
      */
-    public double getThicknessAt (int coord);
+    public double getThicknessAt (double coord);
 
     //-----------------//
     // getAbsoluteLine //
@@ -229,8 +228,8 @@ public interface GlyphAlignment
      * @param pStart new start point
      * @param pStop new stop point
      */
-    void setEndingPoints (PixelPoint pStart,
-                          PixelPoint pStop);
+    void setEndingPoints (Point2D pStart,
+                          Point2D pStop);
 
     //---------------//
     // isExtensionOf //
@@ -363,7 +362,7 @@ public interface GlyphAlignment
      * Report the point at the beginning of the approximating line
      * @return the starting point of the stick line
      */
-    PixelPoint getStartPoint ();
+    Point2D getStartPoint ();
 
     //----------------//
     // getStartingPos //
@@ -392,7 +391,7 @@ public interface GlyphAlignment
      * Report the point at the end of the approximating line
      * @return the ending point of the line
      */
-    PixelPoint getStopPoint ();
+    Point2D getStopPoint ();
 
     //----------------//
     // getStoppingPos //

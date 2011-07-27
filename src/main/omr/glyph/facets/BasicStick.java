@@ -15,11 +15,10 @@ import omr.log.Logger;
 
 import omr.math.Line;
 
-import omr.score.common.PixelPoint;
-
 import omr.stick.StickSection;
 
 import java.awt.*;
+import java.awt.geom.Point2D;
 import java.lang.reflect.Constructor;
 
 /**
@@ -139,8 +138,8 @@ public class BasicStick
         return alignment.getAspect();
     }
 
-    public void setEndingPoints (PixelPoint pStart,
-                                 PixelPoint pStop)
+    public void setEndingPoints (Point2D pStart,
+                                 Point2D pStop)
     {
         alignment.setEndingPoints(pStart, pStop);
     }
@@ -207,7 +206,7 @@ public class BasicStick
         return alignment.getStart();
     }
 
-    public PixelPoint getStartPoint ()
+    public Point2D getStartPoint ()
     {
         return alignment.getStartPoint();
     }
@@ -222,7 +221,7 @@ public class BasicStick
         return alignment.getStop();
     }
 
-    public PixelPoint getStopPoint ()
+    public Point2D getStopPoint ()
     {
         return alignment.getStopPoint();
     }
@@ -237,7 +236,7 @@ public class BasicStick
         return alignment.getThickness();
     }
 
-    public double getThicknessAt (int coord)
+    public double getThicknessAt (double coord)
     {
         return alignment.getThicknessAt(coord);
     }

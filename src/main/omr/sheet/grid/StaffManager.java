@@ -17,8 +17,6 @@ import omr.log.Logger;
 
 import omr.math.GeoPath;
 
-import omr.score.common.PixelPoint;
-
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 
@@ -123,16 +121,16 @@ public class StaffManager
      * @param point the provided point
      * @return the nearest staff, or null if none found
      */
-    public StaffInfo getStaffAt (PixelPoint point)
+    public StaffInfo getStaffAt (Point2D point)
     {
         for (StaffInfo staff : staves) {
             Rectangle2D box = staff.getAreaBounds();
 
-            if (point.y > box.getMaxY()) {
+            if (point.getY() > box.getMaxY()) {
                 continue;
             }
 
-            if (point.y < box.getMinY()) {
+            if (point.getY() < box.getMinY()) {
                 break;
             }
 

@@ -31,6 +31,7 @@ import omr.sheet.Scale;
 import omr.stick.StickSection;
 
 import java.awt.*;
+import java.awt.geom.Point2D;
 import java.util.List;
 
 /**
@@ -56,10 +57,10 @@ public class BasicAlignment
     protected Line line;
 
     /** Absolute beginning point */
-    protected PixelPoint pStart;
+    protected Point2D pStart;
 
     /** Absolute ending point */
-    protected PixelPoint pStop;
+    protected Point2D pStop;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -216,8 +217,8 @@ public class BasicAlignment
     //-----------------//
     // setEndingPoints //
     //-----------------//
-    public void setEndingPoints (PixelPoint pStart,
-                                 PixelPoint pStop)
+    public void setEndingPoints (Point2D pStart,
+                                 Point2D pStop)
     {
         glyph.invalidateCache();
         this.pStart = pStart;
@@ -232,21 +233,21 @@ public class BasicAlignment
                                   int   maxDeltaPos)
     {
         GlyphLag lag = glyph.getLag();
-        Point    thisStart = lag.oriented(this.getStartPoint());
-        Point    thisStop = lag.oriented(this.getStopPoint());
-        Point    thatStart = lag.oriented(that.getStartPoint());
-        Point    thatStop = lag.oriented(that.getStopPoint());
+        Point2D  thisStart = lag.oriented(this.getStartPoint());
+        Point2D  thisStop = lag.oriented(this.getStopPoint());
+        Point2D  thatStart = lag.oriented(that.getStartPoint());
+        Point2D  thatStop = lag.oriented(that.getStopPoint());
 
-        if (Math.abs(thisStop.x - thatStart.x) <= maxDeltaCoord) {
+        if (Math.abs(thisStop.getX() - thatStart.getX()) <= maxDeltaCoord) {
             // Case: this ... that
-            if (Math.abs(thatStart.y - thisStop.y) <= maxDeltaPos) {
+            if (Math.abs(thatStart.getY() - thisStop.getY()) <= maxDeltaPos) {
                 return true;
             }
         }
 
-        if (Math.abs(thatStop.x - thisStart.x) <= maxDeltaCoord) {
+        if (Math.abs(thatStop.getX() - thisStart.getX()) <= maxDeltaCoord) {
             // Case: that ... this
-            if (Math.abs(thatStop.y - thisStart.y) <= maxDeltaPos) {
+            if (Math.abs(thatStop.getY() - thisStart.getY()) <= maxDeltaPos) {
                 return true;
             }
         }
@@ -397,7 +398,7 @@ public class BasicAlignment
     //---------------//
     // getStartPoint //
     //---------------//
-    public PixelPoint getStartPoint ()
+    public Point2D getStartPoint ()
     {
         if (pStart == null) {
             pStart = glyph.getLag()
@@ -432,7 +433,7 @@ public class BasicAlignment
     //--------------//
     // getStopPoint //
     //--------------//
-    public PixelPoint getStopPoint ()
+    public Point2D getStopPoint ()
     {
         if (pStop == null) {
             pStop = glyph.getLag()
@@ -474,7 +475,7 @@ public class BasicAlignment
      * Beware, this number will be zero if the probe falls entirely in a hole
      * between two sections.
      */
-    public double getThicknessAt (int coord)
+    public double getThicknessAt (double coord)
     {
         final Rectangle bounds = glyph.getOrientedBounds();
         Scale           scale = new Scale(glyph.getInterline());
@@ -486,7 +487,11 @@ public class BasicAlignment
         }
 
         // Use a large-enough collector
-        final Rectangle roi = new Rectangle(coord, bounds.y, 0, bounds.height);
+        final Rectangle roi = new Rectangle(
+            (int) Math.rint(coord),
+            bounds.y,
+            0,
+            bounds.height);
         final int       probeHalfWidth = scale.toPixels(constants.probeWidth) / 2;
         roi.grow(probeHalfWidth, 0);
 
@@ -568,7 +573,7 @@ public class BasicAlignment
         System.out.println(
             "   meanThickness=" + ((double) glyph.getWeight() / getLength()));
         System.out.println(
-            "   magic=" +
+            "   straightness=" +
             ((getMeanDistance() * getMeanDistance()) / (Math.sqrt(
                 glyph.getWeight()) * getLength())));
     }

@@ -11,8 +11,7 @@
 // </editor-fold>
 package omr.sheet.grid;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Class {@code TargetSystem} is an immutable perfect destination object for a
@@ -31,13 +30,13 @@ public class TargetSystem
     public final int id;
 
     /** Ordinate of top of first staff in containing page */
-    public final int top;
+    public final double top;
 
     /** Left abscissa in containing page */
-    public final int left;
+    public final double left;
 
     /** Right abscissa in containing page */
-    public final int right;
+    public final double right;
 
     /** Sequence of staves */
     public final List<TargetStaff> staves = new ArrayList<TargetStaff>();
@@ -56,9 +55,9 @@ public class TargetSystem
      * @param right abscissa of right
      */
     public TargetSystem (SystemFrame info,
-                         int         top,
-                         int         left,
-                         int         right)
+                         double      top,
+                         double      left,
+                         double      right)
     {
         this.info = info;
         this.top = top;

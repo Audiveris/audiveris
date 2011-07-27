@@ -17,10 +17,8 @@ import omr.glyph.facets.Stick;
 import omr.log.Logger;
 
 import omr.math.GeoPath;
+import omr.math.LineUtilities;
 import omr.math.ReversePathIterator;
-
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 
 import omr.sheet.Ledger;
 import omr.sheet.Scale;
@@ -32,7 +30,7 @@ import omr.util.VerticalSide;
 import static omr.util.VerticalSide.*;
 
 import java.awt.*;
-import java.awt.geom.Rectangle2D;
+import java.awt.geom.*;
 import java.util.*;
 import java.util.List;
 
@@ -73,13 +71,13 @@ public class StaffInfo
     private BarInfo leftBar;
 
     /** Left extrema */
-    private int left;
+    private double left;
 
     /** Information about right bar line */
     private BarInfo rightBar;
 
     /** Right extrema */
-    private int right;
+    private double right;
 
     /** The staff area */
     private GeoPath area;
@@ -99,14 +97,14 @@ public class StaffInfo
      * @param lines the sequence of contained staff lines
      */
     public StaffInfo (int            id,
-                      int            left,
-                      int            right,
+                      double         left,
+                      double         right,
                       Scale          specificScale,
                       List<LineInfo> lines)
     {
         this.id = id;
-        this.left = left;
-        this.right = right;
+        this.left = (int) Math.rint(left);
+        this.right = (int) Math.rint(right);
         this.specificScale = specificScale;
         this.lines = lines;
     }
@@ -117,7 +115,7 @@ public class StaffInfo
     // setAbscissa //
     //-------------//
     public void setAbscissa (HorizontalSide side,
-                             int            val)
+                             double         val)
     {
         if (side == HorizontalSide.LEFT) {
             left = val;
@@ -129,7 +127,7 @@ public class StaffInfo
     //-------------//
     // getAbscissa //
     //-------------//
-    public int getAbscissa (HorizontalSide side)
+    public double getAbscissa (HorizontalSide side)
     {
         if (side == HorizontalSide.LEFT) {
             return left;
@@ -301,32 +299,44 @@ public class StaffInfo
      * @param system the containing system
      * @return the set (perhaps empty) of ledgers found
      */
-    public Set<Ledger> getLedgersToStaff (PixelPoint pt,
+    public Set<Ledger> getLedgersToStaff (Point2D    pt,
                                           SystemInfo system)
     {
         Set<Ledger> ledgers = new HashSet<Ledger>();
-        int         top = getFirstLine()
-                              .yAt(pt.x);
-        int         bottom = getLastLine()
-                                 .yAt(pt.x);
-
-        double      rawPitch = (4.0d * ((2 * pt.y) - bottom - top)) / (bottom -
-                                                                      top);
+        double      top = getFirstLine()
+                              .yAt(pt.getX());
+        double      bottom = getLastLine()
+                                 .yAt(pt.getX());
+        double      rawPitch = (4.0d * ((2 * pt.getY()) - bottom - top)) / (bottom -
+                                                                           top);
 
         if (Math.abs(rawPitch) <= 6) {
             return ledgers;
         }
 
-        int            interline = specificScale.interline();
-        PixelRectangle searchBox;
+        int         interline = specificScale.interline();
+        Rectangle2D searchBox;
 
         if (rawPitch < 0) {
-            searchBox = new PixelRectangle(pt.x, pt.y, 0, top - pt.y + 1);
+            searchBox = new Rectangle2D.Double(
+                pt.getX(),
+                pt.getY(),
+                0,
+                top - pt.getY() + 1);
         } else {
-            searchBox = new PixelRectangle(pt.x, bottom, 0, pt.y - bottom + 1);
+            searchBox = new Rectangle2D.Double(
+                pt.getX(),
+                bottom,
+                0,
+                pt.getY() - bottom + 1);
         }
 
-        searchBox.grow(interline / 2, interline / 2);
+        //searchBox.grow(interline / 2, interline / 2);
+        searchBox.setRect(
+            searchBox.getX() - (interline / 2),
+            searchBox.getY() - (interline / 2),
+            searchBox.getWidth() + interline,
+            searchBox.getHeight() + interline);
 
         for (Ledger ledger : system.getLedgers()) {
             if (ledger.getContourBox()
@@ -378,21 +388,23 @@ public class StaffInfo
      * @param side desired horizontal side
      * @return the abscissa corresponding to lines extrema
      */
-    public int getLinesEnd (HorizontalSide side)
+    public double getLinesEnd (HorizontalSide side)
     {
         if (side == HorizontalSide.LEFT) {
-            int linesLeft = Integer.MAX_VALUE;
+            double linesLeft = Integer.MAX_VALUE;
 
             for (LineInfo line : lines) {
-                linesLeft = Math.min(linesLeft, line.getEndPoint(LEFT).x);
+                linesLeft = Math.min(linesLeft, line.getEndPoint(LEFT).getX());
             }
 
             return linesLeft;
         } else {
-            int linesRight = Integer.MIN_VALUE;
+            double linesRight = Integer.MIN_VALUE;
 
             for (LineInfo line : lines) {
-                linesRight = Math.max(linesRight, line.getEndPoint(RIGHT).x);
+                linesRight = Math.max(
+                    linesRight,
+                    line.getEndPoint(RIGHT).getX());
             }
 
             return linesRight;
@@ -402,10 +414,13 @@ public class StaffInfo
     //----------------//
     // getMidOrdinate //
     //----------------//
-    public int getMidOrdinate (HorizontalSide side)
+    public double getMidOrdinate (HorizontalSide side)
     {
-        return (getFirstLine().getEndPoint(side).y +
-               getLastLine().getEndPoint(side).y) / 2;
+        return (getFirstLine()
+                    .getEndPoint(side)
+                    .getY() + getLastLine()
+                                  .getEndPoint(side)
+                                  .getY()) / 2;
     }
 
     //------------------//
@@ -470,11 +485,11 @@ public class StaffInfo
      * @param stick the rather vertical stick
      * @return the crossing point
      */
-    public PixelPoint intersection (Stick stick)
+    public Point2D intersection (Stick stick)
     {
         LineInfo midLine = lines.get(lines.size() / 2);
 
-        return PixelPoint.lineIntersection(
+        return LineUtilities.intersection(
             midLine.getEndPoint(LEFT),
             midLine.getEndPoint(RIGHT),
             stick.getStartPoint(),
@@ -491,14 +506,14 @@ public class StaffInfo
      * @param pt the pixel point
      * @return the pitch position
      */
-    public double pitchPositionOf (PixelPoint pt)
+    public double pitchPositionOf (Point2D pt)
     {
-        int top = getFirstLine()
-                      .yAt(pt.x);
-        int bottom = getLastLine()
-                         .yAt(pt.x);
+        double top = getFirstLine()
+                         .yAt(pt.getX());
+        double bottom = getLastLine()
+                            .yAt(pt.getX());
 
-        return (4.0d * ((2 * pt.y) - bottom - top)) / (bottom - top);
+        return (4.0d * ((2 * pt.getY()) - bottom - top)) / (bottom - top);
     }
 
     //------------------------//
@@ -512,15 +527,15 @@ public class StaffInfo
      * @param system the containing system
      * @return the pitch position
      */
-    public double precisePitchPositionOf (PixelPoint pt,
+    public double precisePitchPositionOf (Point2D    pt,
                                           SystemInfo system)
     {
-        int    top = getFirstLine()
-                         .yAt(pt.x);
-        int    bottom = getLastLine()
-                            .yAt(pt.x);
+        double top = getFirstLine()
+                         .yAt(pt.getX());
+        double bottom = getLastLine()
+                            .yAt(pt.getX());
 
-        double raw = (4.0d * ((2 * pt.y) - bottom - top)) / (bottom - top);
+        double raw = (4.0d * ((2 * pt.getY()) - bottom - top)) / (bottom - top);
 
         if (Math.abs(raw) <= 6) {
             return raw;
@@ -534,9 +549,9 @@ public class StaffInfo
         Ledger      bestLedger = null;
 
         for (Ledger ledger : system.getLedgers()) {
-            Glyph      glyph = ledger.getStick();
-            PixelPoint center = glyph.getAreaCenter();
-            double     dist = Math.abs(center.y - pt.y);
+            Glyph   glyph = ledger.getStick();
+            Point2D center = glyph.getAreaCenter();
+            double  dist = Math.abs(center.getY() - pt.getY());
 
             if (dist < bestDist) {
                 bestDist = dist;
@@ -549,13 +564,12 @@ public class StaffInfo
         }
 
         // Force an even position for the ledger
-        Glyph      glyph = bestLedger.getStick();
-        PixelPoint center = glyph.getAreaCenter();
-        int        ledgerPitch = 2 * (int) Math.rint(
-            pitchPositionOf(center) / 2);
-        int        deltaPitch = (int) Math.rint(
-            (2d * (pt.y - center.y)) / specificScale.interline());
-        int        pitch = ledgerPitch + deltaPitch;
+        Glyph   glyph = bestLedger.getStick();
+        Point2D center = glyph.getAreaCenter();
+        int     ledgerPitch = 2 * (int) Math.rint(pitchPositionOf(center) / 2);
+        int     deltaPitch = (int) Math.rint(
+            (2d * (pt.getY() - center.getY())) / specificScale.interline());
+        int     pitch = ledgerPitch + deltaPitch;
 
         if (logger.isFineEnabled()) {
             logger.fine(
@@ -590,9 +604,9 @@ public class StaffInfo
 
                 // Draw the left and right vertical lines
                 for (HorizontalSide side : HorizontalSide.values()) {
-                    PixelPoint first = firstLine.getEndPoint(side);
-                    PixelPoint last = lastLine.getEndPoint(side);
-                    g.drawLine(first.x, first.y, last.x, last.y);
+                    Point2D first = firstLine.getEndPoint(side);
+                    Point2D last = lastLine.getEndPoint(side);
+                    g.draw(new Line2D.Double(first, last));
                 }
 
                 return true;

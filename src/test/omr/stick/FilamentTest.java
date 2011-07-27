@@ -29,7 +29,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.awt.Point;
+import java.awt.geom.Point2D;
 
 /**
  * Unitary tests for {@link Filament} class.
@@ -155,6 +155,57 @@ public class FilamentTest
     }
 
     /**
+     * Test of getPositionAt method, of class Filament.
+     */
+    @Test
+    public void testGetPositionAt ()
+    {
+        System.out.println("+++ getPositionAt");
+
+        for (Orientation ori : Orientation.values()) {
+            setOrientation(ori);
+
+            Filament instance = createFil();
+            instance.drawAscii();
+
+            double coord = 100;
+            double expResult = 25.5;
+            double result = instance.getPositionAt(coord);
+            assertEquals(expResult, result, 0.0);
+
+            coord = 115;
+            expResult = 28.9;
+            result = instance.getPositionAt(coord);
+            assertEquals(expResult, result, 0.1);
+
+            coord = 119;
+            expResult = 29.5;
+            result = instance.getPositionAt(coord);
+            assertEquals(expResult, result, 0.1);
+
+            coord = 158;
+            expResult = 30;
+            result = instance.getPositionAt(coord);
+            assertEquals(expResult, result, 0.1);
+
+            coord = 160;
+            expResult = 29.7;
+            result = instance.getPositionAt(coord);
+            assertEquals(expResult, result, 0.1);
+
+            coord = 170;
+            expResult = 28;
+            result = instance.getPositionAt(coord);
+            assertEquals(expResult, result, 0.1);
+
+            coord = 180;
+            expResult = 28;
+            result = instance.getPositionAt(coord);
+            assertEquals(expResult, result, 0.1);
+        }
+    }
+
+    /**
      * Test of getProbeWidth method, of class Filament.
      */
     @Test
@@ -223,9 +274,10 @@ public class FilamentTest
         for (Orientation ori : Orientation.values()) {
             setOrientation(ori);
 
-            Filament   instance = createFil();
-            PixelPoint expResult = orientation.absolute(new Point(100, 26));
-            PixelPoint result = instance.getStartPoint();
+            Filament instance = createFil();
+            Point2D  expResult = orientation.absolute(
+                new Point2D.Double(100, 25.5));
+            Point2D  result = instance.getStartPoint();
             instance.drawAscii();
             assertEquals(expResult, result);
         }
@@ -242,10 +294,12 @@ public class FilamentTest
         for (Orientation ori : Orientation.values()) {
             setOrientation(ori);
 
-            Filament   instance = createFil();
-            PixelPoint expResult = orientation.absolute(new Point(171, 28));
-            PixelPoint result = instance.getStopPoint();
-            assertEquals(expResult, result);
+            Filament instance = createFil();
+            Point2D  expResult = orientation.absolute(
+                new Point2D.Double(171, 27.8));
+            Point2D  result = instance.getStopPoint();
+            assertEquals(expResult.getX(), result.getX(), 0.1);
+            assertEquals(expResult.getY(), result.getY(), 0.1);
         }
     }
 
@@ -281,17 +335,17 @@ public class FilamentTest
             assertEquals(expResult, result, delta);
 
             coord = 111;
-            expResult = 1;
+            expResult = 2;
             result = instance.getThicknessAt(coord);
             assertEquals(expResult, result, delta);
 
             coord = 115;
-            expResult = 1;
+            expResult = 2;
             result = instance.getThicknessAt(coord);
             assertEquals(expResult, result, delta);
 
             coord = 125;
-            expResult = 0;
+            expResult = 8;
             result = instance.getThicknessAt(coord);
             assertEquals(expResult, result, delta);
         }
@@ -340,57 +394,6 @@ public class FilamentTest
     }
 
     /**
-     * Test of getPositionAt method, of class Filament.
-     */
-    @Test
-    public void testGetPositionAt ()
-    {
-        System.out.println("+++ getPositionAt");
-
-        for (Orientation ori : Orientation.values()) {
-            setOrientation(ori);
-
-            Filament instance = createFil();
-            instance.drawAscii();
-
-            double coord = 100;
-            double expResult = 26;
-            double result = instance.getPositionAt(coord);
-            assertEquals(expResult, result, 0.0);
-
-            coord = 115;
-            expResult = 29;
-            result = instance.getPositionAt(coord);
-            assertEquals(expResult, result, 0.1);
-
-            coord = 119;
-            expResult = 29.7;
-            result = instance.getPositionAt(coord);
-            assertEquals(expResult, result, 0.1);
-
-            coord = 158;
-            expResult = 30;
-            result = instance.getPositionAt(coord);
-            assertEquals(expResult, result, 0.1);
-
-            coord = 160;
-            expResult = 29.7;
-            result = instance.getPositionAt(coord);
-            assertEquals(expResult, result, 0.1);
-
-            coord = 170;
-            expResult = 28.2;
-            result = instance.getPositionAt(coord);
-            assertEquals(expResult, result, 0.1);
-
-            coord = 180;
-            expResult = 28.2;
-            result = instance.getPositionAt(coord);
-            assertEquals(expResult, result, 0.1);
-        }
-    }
-
-    /**
      * Test of renderLine method, of class Filament.
      */
     @Test
@@ -420,7 +423,7 @@ public class FilamentTest
             instance.include(createFilFour());
 
             PixelPoint pStart = new PixelPoint(80, 26);
-            PixelPoint pStop = instance.getStopPoint();
+            Point2D    pStop = instance.getStopPoint();
             instance.setEndingPoints(pStart, pStop);
 
             instance.drawAscii();

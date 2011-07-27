@@ -15,12 +15,12 @@ import omr.glyph.GlyphSection;
 
 import omr.log.Logger;
 
-import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
 import omr.util.Vip;
 
 import java.awt.Graphics2D;
+import java.awt.geom.Point2D;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -121,11 +121,11 @@ public class LineCluster
      * Report the center of cluster
      * @return the center
      */
-    public PixelPoint getCenter ()
+    public Point2D getCenter ()
     {
         PixelRectangle box = getContourBox();
 
-        return new PixelPoint(
+        return new Point2D.Double(
             box.x + (box.width / 2),
             box.y + (box.height / 2));
     }
@@ -222,19 +222,21 @@ public class LineCluster
      * @param interline the standard interline value, used for extrapolations
      * @return the sequence of cluster points, from top to bottom
      */
-    public List<PixelPoint> getPointsAt (int    x,
-                                         int    interline,
-                                         double globalSlope)
+    public List<Point2D> getPointsAt (double x,
+                                      int    interline,
+                                      double globalSlope)
     {
-        SortedMap<Integer, PixelPoint> points = new TreeMap<Integer, PixelPoint>();
-        List<Integer>                  holes = new ArrayList<Integer>();
+        SortedMap<Integer, Point2D> points = new TreeMap<Integer, Point2D>();
+        List<Integer>               holes = new ArrayList<Integer>();
 
         for (Entry<Integer, FilamentLine> entry : lines.entrySet()) {
             int          pos = entry.getKey();
             FilamentLine line = entry.getValue();
 
             if (line.isWithinRange(x)) {
-                points.put(pos, new PixelPoint(x, line.yAt(x)));
+                points.put(
+                    pos,
+                    new Point2D.Double(x, line.yAt(x)));
             } else {
                 holes.add(pos);
             }
@@ -243,34 +245,34 @@ public class LineCluster
         // Interpolate or extrapolate the missing values if any
         for (int pos : holes) {
             Integer prevPos = null;
-            Integer prevVal = null;
+            Double  prevVal = null;
 
             for (int p = pos - 1; p >= lines.firstKey(); p--) {
-                PixelPoint pt = points.get(p);
+                Point2D pt = points.get(p);
 
                 if (pt != null) {
                     prevPos = p;
-                    prevVal = pt.y;
+                    prevVal = pt.getY();
 
                     break;
                 }
             }
 
             Integer nextPos = null;
-            Integer nextVal = null;
+            Double  nextVal = null;
 
             for (int p = pos + 1; p <= lines.lastKey(); p++) {
-                PixelPoint pt = points.get(p);
+                Point2D pt = points.get(p);
 
                 if (pt != null) {
                     nextPos = p;
-                    nextVal = pt.y;
+                    nextVal = pt.getY();
 
                     break;
                 }
             }
 
-            int y;
+            double y;
 
             // Interpolate
             if ((prevPos != null) && (nextPos != null)) {
@@ -290,17 +292,18 @@ public class LineCluster
                 // We assume the delta abscissa is small enough to allow
                 // rather horizontal extrapolation
                 FilamentLine line = lines.get(pos);
-                PixelPoint   point = (x <= line.getStartPoint().x)
-                                     ? line.getStartPoint() : line.getStopPoint();
-                y = (int) Math.rint(point.y + ((x - point.x) * globalSlope));
+                Point2D      point = (x <= line.getStartPoint()
+                                               .getX()) ? line.getStartPoint()
+                                     : line.getStopPoint();
+                y = point.getY() + ((x - point.getX()) * globalSlope);
 
                 //                }
             }
 
-            points.put(pos, new PixelPoint(x, y));
+            points.put(pos, new Point2D.Double(x, y));
         }
 
-        return new ArrayList<PixelPoint>(points.values());
+        return new ArrayList<Point2D>(points.values());
     }
 
     //---------//
@@ -314,9 +317,9 @@ public class LineCluster
     //-----------//
     // getStarts //
     //-----------//
-    public List<PixelPoint> getStarts ()
+    public List<Point2D> getStarts ()
     {
-        List<PixelPoint> points = new ArrayList<PixelPoint>(getSize());
+        List<Point2D> points = new ArrayList<Point2D>(getSize());
 
         for (FilamentLine line : lines.values()) {
             points.add(line.getStartPoint());
@@ -328,9 +331,9 @@ public class LineCluster
     //----------//
     // getStops //
     //----------//
-    public List<PixelPoint> getStops ()
+    public List<Point2D> getStops ()
     {
-        List<PixelPoint> points = new ArrayList<PixelPoint>(getSize());
+        List<Point2D> points = new ArrayList<Point2D>(getSize());
 
         for (FilamentLine line : lines.values()) {
             points.add(line.getStopPoint());

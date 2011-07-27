@@ -31,7 +31,6 @@ import omr.log.Logger;
 import omr.run.Orientation;
 import omr.run.RunsTable;
 
-import omr.score.common.PixelPoint;
 import omr.score.ui.PagePainter;
 
 import omr.sheet.BarsChecker;
@@ -47,6 +46,7 @@ import static omr.util.HorizontalSide.*;
 
 import java.awt.*;
 import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.util.*;
 import java.util.List;
 
@@ -239,12 +239,22 @@ public class BarsRetriever
                          .toPixels(constants.maxCoordGap);
 
         for (Filament filament : filaments) {
-            PixelPoint p = filament.getStartPoint();
-            double     der = filament.slopeAt(p.y);
-            g.draw(new Line2D.Double(p.x, p.y, p.x - (der * dy), p.y - dy));
+            Point2D p = filament.getStartPoint();
+            double  der = filament.slopeAt(p.getY());
+            g.draw(
+                new Line2D.Double(
+                    p.getX(),
+                    p.getY(),
+                    p.getX() - (der * dy),
+                    p.getY() - dy));
             p = filament.getStopPoint();
-            der = filament.slopeAt(p.y);
-            g.draw(new Line2D.Double(p.x, p.y, p.x + (der * dy), p.y + dy));
+            der = filament.slopeAt(p.getY());
+            g.draw(
+                new Line2D.Double(
+                    p.getX(),
+                    p.getY(),
+                    p.getX() + (der * dy),
+                    p.getY() + dy));
         }
 
         g.setStroke(oldStroke);
@@ -254,14 +264,14 @@ public class BarsRetriever
     // getBestStick //
     //--------------//
     private StickX getBestStick (StaffInfo staff,
-                                 int       x,
-                                 int       maxDx)
+                                 double    x,
+                                 double    maxDx)
     {
         StickX best = null;
-        int    bestDx = Integer.MAX_VALUE;
+        double bestDx = Integer.MAX_VALUE;
 
         for (StickX sx : barSticks.get(staff)) {
-            int dx = Math.abs(x - sx.x);
+            double dx = Math.abs(x - sx.x);
 
             if ((dx < maxDx) && (dx < bestDx)) {
                 bestDx = dx;
@@ -282,20 +292,20 @@ public class BarsRetriever
      * @param side the desired ending
      * @return the computed ending point
      */
-    private PixelPoint getLineEnding (StaffInfo      staff,
-                                      LineInfo       line,
-                                      HorizontalSide side)
+    private Point2D getLineEnding (StaffInfo      staff,
+                                   LineInfo       line,
+                                   HorizontalSide side)
     {
-        double     slope = staff.getEndingSlope(side);
-        Stick      stick = (staff.getBar(side) == null) ? null
-                           : staff.getBar(side)
-                                  .getStick(RIGHT);
-        PixelPoint linePt = line.getEndPoint(side);
-        int        staffX = staff.getAbscissa(side);
-        double     y = linePt.y - ((linePt.x - staffX) * slope);
-        double     x = (stick == null) ? staffX : stick.getIntPositionAt(y);
+        double  slope = staff.getEndingSlope(side);
+        Stick   stick = (staff.getBar(side) == null) ? null
+                        : staff.getBar(side)
+                               .getStick(RIGHT);
+        Point2D linePt = line.getEndPoint(side);
+        double  staffX = staff.getAbscissa(side);
+        double  y = linePt.getY() - ((linePt.getX() - staffX) * slope);
+        double  x = (stick == null) ? staffX : stick.getPositionAt(y);
 
-        return new PixelPoint((int) Math.rint(x), (int) Math.rint(y));
+        return new Point2D.Double(x, y);
     }
 
     //----------------------//
@@ -313,8 +323,8 @@ public class BarsRetriever
         double deltas = 0;
 
         for (StaffInfo staff : system.getStaves()) {
-            int x = staff.getLinesEnd(side);
-            int y = staff.getMidOrdinate(side);
+            double x = staff.getLinesEnd(side);
+            double y = staff.getMidOrdinate(side);
             deltas += (x + (y * globalSlope));
         }
 
@@ -323,8 +333,8 @@ public class BarsRetriever
 
         // Enforce this pseudo-vertical line
         for (StaffInfo staff : system.getStaves()) {
-            int y = staff.getMidOrdinate(side);
-            int x = (int) Math.rint(b - (y * globalSlope));
+            double y = staff.getMidOrdinate(side);
+            double x = b - (y * globalSlope);
             staff.setBar(side, null);
             staff.setAbscissa(side, x);
         }
@@ -368,27 +378,26 @@ public class BarsRetriever
                 }
             }
 
-            int staffY = staff.getMidOrdinate(side);
-            int staffX;
+            double staffY = staff.getMidOrdinate(side);
+            double staffX;
 
             if ((prevLong != null) && (nextLong != null)) {
                 // Interpolate
-                PixelPoint prev = prevLong.intersection(
+                Point2D prev = prevLong.intersection(
                     prevLong.getBar(side).getStick(RIGHT));
-                PixelPoint next = nextLong.intersection(
+                Point2D next = nextLong.intersection(
                     nextLong.getBar(side).getStick(RIGHT));
-                staffX = prev.x +
-                         ((staffY - prev.y) * ((next.x - prev.x) / (next.y -
-                                                                   prev.y)));
+                staffX = prev.getX() +
+                         ((staffY - prev.getY()) * ((next.getX() - prev.getX()) / (next.getY() -
+                                                                                  prev.getY())));
             } else {
                 // Extrapolate using global slope
-                PixelPoint pt = (prevLong != null)
-                                ? prevLong.intersection(
+                Point2D pt = (prevLong != null)
+                             ? prevLong.intersection(
                     prevLong.getBar(side).getStick(RIGHT))
-                                : nextLong.intersection(
+                             : nextLong.intersection(
                     nextLong.getBar(side).getStick(RIGHT));
-                staffX = pt.x -
-                         (int) Math.rint(((staffY - pt.y) * globalSlope));
+                staffX = pt.getX() - ((staffY - pt.getY()) * globalSlope);
             }
 
             // Use staffX to check existing bar stick
@@ -605,7 +614,7 @@ public class BarsRetriever
 
         // Check vertical connections
         for (Stick prevStick : prevBar.getSticks()) {
-            PixelPoint prevPoint = prevStick.getStopPoint();
+            Point2D prevPoint = prevStick.getStopPoint();
 
             for (Stick nextStick : nextBar.getSticks()) {
                 // Special case
@@ -620,19 +629,21 @@ public class BarsRetriever
                 //                    }
                 //                    
                 //                }
-                PixelPoint nextPoint = nextStick.getStartPoint();
+                Point2D nextPoint = nextStick.getStartPoint();
 
                 // Check dx
-                int dx = Math.abs(nextPoint.x - prevPoint.x);
+                double dx = Math.abs(nextPoint.getX() - prevPoint.getX());
 
                 // Check dy
-                int prevY = prevStaff.getLastLine()
-                                     .getEndPoint(LEFT).y;
-                int nextY = nextStaff.getFirstLine()
-                                     .getEndPoint(LEFT).y;
-                int dy = Math.abs(
-                    Math.min(nextY, nextPoint.y) -
-                    Math.max(prevY, prevPoint.y));
+                double prevY = prevStaff.getLastLine()
+                                        .getEndPoint(LEFT)
+                                        .getY();
+                double nextY = nextStaff.getFirstLine()
+                                        .getEndPoint(LEFT)
+                                        .getY();
+                double dy = Math.abs(
+                    Math.min(nextY, nextPoint.getY()) -
+                    Math.max(prevY, prevPoint.getY()));
                 logger.info(
                     "F" + prevStick.getId() + "-F" + nextStick.getId() +
                     " dx:" + dx + " dy:" + dy);
@@ -762,10 +773,10 @@ public class BarsRetriever
         final int    firstIdx = (dir > 0) ? 0 : (staffSticks.size() - 1);
         final int    breakIdx = (dir > 0) ? staffSticks.size() : (-1);
 
-        int          staffX = staff.getAbscissa(side);
-        final int    xBreak = staffX + (dir * params.maxDistanceFromStaffSide);
+        double       staffX = staff.getAbscissa(side);
+        final double xBreak = staffX + (dir * params.maxDistanceFromStaffSide);
         BarInfo      bar = null;
-        Integer      barX = null;
+        Double       barX = null;
 
         // Reset
         staff.setBar(side, null);
@@ -773,7 +784,7 @@ public class BarsRetriever
         // Browsing bar sticks using 'dir' direction
         for (int i = firstIdx; i != breakIdx; i += dir) {
             StickX sx = staffSticks.get(i);
-            int    x = sx.x;
+            double x = sx.x;
 
             if ((dir * (xBreak - x)) < 0) {
                 break; // Speed up
@@ -802,7 +813,7 @@ public class BarsRetriever
 
         if (bar != null) {
             Stick stick = bar.getStick(RIGHT);
-            barX = stick.getIntPositionAt(staff.getMidOrdinate(side));
+            barX = stick.getPositionAt(staff.getMidOrdinate(side));
 
             if ((dir * (barX - staffX)) <= params.maxBarOffset) {
                 staffX = barX;
@@ -951,10 +962,10 @@ public class BarsRetriever
         Integer[] tops = new Integer[staffManager.getStaffCount()];
 
         for (Stick stick : bars) {
-            PixelPoint start = stick.getStartPoint();
-            StaffInfo  topStaff = staffManager.getStaffAt(start);
-            PixelPoint stop = stick.getStopPoint();
-            StaffInfo  botStaff = staffManager.getStaffAt(stop);
+            Point2D   start = stick.getStartPoint();
+            StaffInfo topStaff = staffManager.getStaffAt(start);
+            Point2D   stop = stick.getStopPoint();
+            StaffInfo botStaff = staffManager.getStaffAt(stop);
 
             if (logger.isFineEnabled() || stick.isVip()) {
                 logger.info(
@@ -974,8 +985,8 @@ public class BarsRetriever
                     barSticks.put(staff, staffSticks);
                 }
 
-                PixelPoint inter = staff.intersection(stick);
-                staffSticks.add(new StickX(inter.x, stick));
+                Point2D inter = staff.intersection(stick);
+                staffSticks.add(new StickX(inter.getX(), stick));
 
                 ///if ((tops[id - 1] == null) || (top < tops[id - 1])) {
                 if (tops[id - 1] == null) {
@@ -1194,15 +1205,15 @@ public class BarsRetriever
         //~ Instance fields ----------------------------------------------------
 
         /** Abscissa where the stick intersects a staff */
-        final int x;
+        final double x;
 
         /** The (bar) stick */
         final Stick stick;
 
         //~ Constructors -------------------------------------------------------
 
-        public StickX (int   x,
-                       Stick stick)
+        public StickX (double x,
+                       Stick  stick)
         {
             this.x = x;
             this.stick = stick;
@@ -1213,7 +1224,7 @@ public class BarsRetriever
         /** For sorting sticks on abscissa, for a given staff */
         public int compareTo (StickX that)
         {
-            return x - that.x;
+            return Double.compare(x, that.x);
         }
 
         /** Conversion to a sequence of sticks */
