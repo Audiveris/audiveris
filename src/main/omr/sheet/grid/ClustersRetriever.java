@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.sheet.grid;
 
+import omr.Main;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -86,6 +88,9 @@ public class ClustersRetriever
     /** Desired interline */
     private final int interline;
 
+    /** Scale-dependent constants */
+    private final Parameters params;
+
     /** Picture width to sample for patterns */
     private final int pictureWidth;
 
@@ -148,6 +153,8 @@ public class ClustersRetriever
         pictureWidth = sheet.getWidth();
         scale = sheet.getScale();
         colPatterns = new TreeMap<Integer, List<FilamentPattern>>();
+
+        params = new Parameters(scale);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -269,14 +276,15 @@ public class ClustersRetriever
     // bestMatch //
     //-----------//
     /**
-     * Find the best match between provided sequences
+     * Find the best match between provided sequences (which may contain null
+     * values when related data is not available)
      * @param one first sequence
      * @param two second sequence
      * @param bestDelta output: best delta between the two sequences
      * @return the best distance found
      */
-    private double bestMatch (double[]         one,
-                              double[]         two,
+    private double bestMatch (Double[]         one,
+                              Double[]         two,
                               Wrapper<Integer> bestDelta)
     {
         final int deltaMax = one.length - 1;
@@ -293,8 +301,13 @@ public class ClustersRetriever
                 int twoIdx = oneIdx + delta;
 
                 if ((twoIdx >= 0) && (twoIdx < two.length)) {
-                    count++;
-                    distSum += Math.abs(two[twoIdx] - one[oneIdx]);
+                    Double oneVal = one[oneIdx];
+                    Double twoVal = two[twoIdx];
+
+                    if ((oneVal != null) && (twoVal != null)) {
+                        count++;
+                        distSum += Math.abs(twoVal - oneVal);
+                    }
                 }
             }
 
@@ -326,9 +339,6 @@ public class ClustersRetriever
                               LineCluster      two,
                               Wrapper<Integer> deltaPos)
     {
-        final int       maxMergeDy = scale.toPixels(constants.maxMergeDy);
-        final int       maxMergeDx = scale.toPixels(constants.maxMergeDx);
-
         final Rectangle oneBox = one.getContourBox();
         final Rectangle twoBox = two.getContourBox();
 
@@ -350,10 +360,20 @@ public class ClustersRetriever
             // Overlap: use middle of common part
             int xMid = (maxLeft + minRight) / 2;
             dist = bestMatch(
-                ordinatesOf(one.getPointsAt(xMid, interline, globalSlope)),
-                ordinatesOf(two.getPointsAt(xMid, interline, globalSlope)),
+                ordinatesOf(
+                    one.getPointsAt(
+                        xMid,
+                        params.maxExpandDx,
+                        interline,
+                        globalSlope)),
+                ordinatesOf(
+                    two.getPointsAt(
+                        xMid,
+                        params.maxExpandDx,
+                        interline,
+                        globalSlope)),
                 deltaPos);
-        } else if (gap > maxMergeDx) {
+        } else if (gap > params.maxMergeDx) {
             if (logger.isFineEnabled()) {
                 logger.fine("Gap too wide between " + one + " & " + two);
             }
@@ -380,7 +400,7 @@ public class ClustersRetriever
                 "canMerge dist: " + dist + " one:" + one + " two:" + two);
         }
 
-        return dist <= maxMergeDy;
+        return dist <= params.maxMergeDy;
     }
 
     //------------------//
@@ -460,9 +480,8 @@ public class ClustersRetriever
 
         Collections.sort(lengths);
 
-        int medianLength = lengths.get(lengths.size() / 2);
-        int minLength = (int) Math.rint(
-            medianLength * constants.minClusterLengthRatio.getValue());
+        int    medianLength = lengths.get(lengths.size() / 2);
+        double minLength = medianLength * constants.minClusterLengthRatio.getValue();
 
         if (logger.isFineEnabled()) {
             logger.info(
@@ -517,20 +536,18 @@ public class ClustersRetriever
     private void expandCluster (LineCluster        cluster,
                                 List<LineFilament> fils)
     {
-        final int marginX = scale.toPixels(constants.clusterXMargin);
-        final int marginY = scale.toPixels(constants.clusterYMargin);
-        final int maxClusterDy = scale.toPixels(constants.maxClusterDy);
-
         Rectangle clusterBox = null;
 
         for (LineFilament fil : fils) {
+            fil = fil.getAncestor();
+
             if (fil.getCluster() != null) {
                 continue;
             }
 
             if (clusterBox == null) {
                 clusterBox = cluster.getContourBox();
-                clusterBox.grow(marginX, marginY);
+                clusterBox.grow(params.clusterXMargin, params.clusterYMargin);
             }
 
             PixelRectangle filBox = fil.getContourBox();
@@ -539,24 +556,35 @@ public class ClustersRetriever
             middle.y = (int) Math.rint(fil.getPositionAt(middle.x));
 
             if (clusterBox.contains(middle)) {
-                // Check if this filament matches a cluster line ordinate
+                // Check if this filament matches a cluster line
                 List<Point2D> points = cluster.getPointsAt(
                     middle.x,
+                    params.maxExpandDx,
                     interline,
                     globalSlope);
 
                 for (Point2D point : points) {
-                    // Check vertical distance
+                    // Check vertical distance, if point is available
+                    if (point == null) {
+                        continue;
+                    }
+
                     double dy = middle.y - point.getY();
 
-                    if (Math.abs(dy) <= maxClusterDy) {
+                    if (Math.abs(dy) <= params.maxExpandDy) {
                         int index = points.indexOf(point);
 
                         if (cluster.includeFilamentByIndex(fil, index)) {
-                            if (logger.isFineEnabled()) {
-                                logger.fine(
-                                    "Aggregate dy:" + dy + " " + fil + " to " +
-                                    cluster + " at index " + index);
+                            if (logger.isFineEnabled() ||
+                                fil.isVip() ||
+                                cluster.isVip()) {
+                                logger.info(
+                                    "Aggregated " + fil + " to " + cluster +
+                                    " at index " + index);
+
+                                if (fil.isVip()) {
+                                    cluster.setVip();
+                                }
                             }
 
                             clusterBox = null; // Invalidate cluster box
@@ -583,7 +611,14 @@ public class ClustersRetriever
         List<LineFilament> stopFils = new ArrayList<LineFilament>(startFils);
         Collections.sort(stopFils, LineFilament.stopComparator);
 
+        // Browse clusters, starting with the longest ones
+        Collections.sort(clusters, LineCluster.reverseLengthComparator);
+
         for (LineCluster cluster : clusters) {
+            if (logger.isFineEnabled()) {
+                logger.fine("Expanding " + cluster);
+            }
+
             // Expanding on left side
             expandCluster(cluster, stopFils);
             // Expanding on right side
@@ -645,9 +680,6 @@ public class ClustersRetriever
         // Sort clusters according to their ordinate in page
         Collections.sort(clusters, ordinateComparator);
 
-        int marginX = scale.toPixels(constants.clusterXMargin);
-        int marginY = scale.toPixels(constants.clusterYMargin);
-
         for (LineCluster current : clusters) {
             LineCluster candidate = current;
 
@@ -656,7 +688,7 @@ public class ClustersRetriever
             while (true) {
                 Wrapper<Integer> deltaPos = new Wrapper<Integer>();
                 Rectangle        candidateBox = candidate.getContourBox();
-                candidateBox.grow(marginX, marginY);
+                candidateBox.grow(params.clusterXMargin, params.clusterYMargin);
 
                 // Check the candidate vs all clusters until current excluded
                 for (LineCluster head : clusters) {
@@ -711,10 +743,14 @@ public class ClustersRetriever
      * Report the orthogonal distance of the provided point
      * to the sheet top edge tilted with global slope.
      */
-    private double ordinateOf (Point2D point)
+    private Double ordinateOf (Point2D point)
     {
-        return getSheetTopEdge()
-                   .ptLineDist(point);
+        if (point != null) {
+            return getSheetTopEdge()
+                       .ptLineDist(point);
+        } else {
+            return null;
+        }
     }
 
     //------------//
@@ -732,9 +768,9 @@ public class ClustersRetriever
     //-------------//
     // ordinatesOf //
     //-------------//
-    private double[] ordinatesOf (Collection<Point2D> points)
+    private Double[] ordinatesOf (Collection<Point2D> points)
     {
-        double[] ys = new double[points.size()];
+        Double[] ys = new Double[points.size()];
         int      index = 0;
 
         for (Point2D p : points) {
@@ -855,7 +891,7 @@ public class ClustersRetriever
         /** Number of vertical samples to collect */
         int sampleCount = -1 +
                           (int) Math.rint(
-            (double) pictureWidth / scale.toPixels(constants.samplingDx));
+            (double) pictureWidth / params.samplingDx);
 
         /** Exact columns abscissae */
         colX = new int[sampleCount + 1];
@@ -965,42 +1001,47 @@ public class ClustersRetriever
     {
         //~ Instance fields ----------------------------------------------------
 
-        Scale.Fraction   samplingDx = new Scale.Fraction(
+        Scale.Fraction samplingDx = new Scale.Fraction(
             1,
             "Typical delta X between two vertical samplings");
-        Scale.Fraction   lookupDx = new Scale.Fraction(
-            8,
-            "Window width when looking for connections");
-        Scale.Fraction   lookupDy = new Scale.Fraction(
-            1,
-            "Window height when looking for connections");
-        Scale.Fraction   maxClusterDy = new Scale.Fraction(
+
+        //
+        Scale.Fraction maxExpandDx = new Scale.Fraction(
+            2,
+            "Maximum dx to aggregate a filament to a cluster");
+
+        //
+        Scale.Fraction maxExpandDy = new Scale.Fraction(
             0.15,
             "Maximum dy to aggregate a filament to a cluster");
-        Scale.Fraction   maxMergeDx = new Scale.Fraction(
+
+        //
+        Scale.Fraction maxMergeDx = new Scale.Fraction(
             10,
             "Maximum dx to merge two clusters");
-        Scale.Fraction   maxMergeDy = new Scale.Fraction(
-            0.5,
+
+        //
+        Scale.Fraction maxMergeDy = new Scale.Fraction(
+            0.4,
             "Maximum dy to merge two clusters");
-        Scale.Fraction   clusterXMargin = new Scale.Fraction(
-            4, // 10
+
+        //
+        Scale.Fraction clusterXMargin = new Scale.Fraction(
+            4,
             "Rough margin around cluster abscissa");
-        Scale.Fraction   clusterYMargin = new Scale.Fraction(
+
+        //
+        Scale.Fraction clusterYMargin = new Scale.Fraction(
             2,
             "Rough margin around cluster ordinate");
-        Constant.Double  tangentMargin = new Constant.Double(
-            "tangent",
-            0.08,
-            "Maximum slope of gap between filaments");
-        Constant.Ratio   maxJitter = new Constant.Ratio(
+
+        //
+        Constant.Ratio maxJitter = new Constant.Ratio(
             0.1,
             "Maximum gap from standard pattern dy");
-        Constant.Integer minPatternLength = new Constant.Integer(
-            "line-count",
-            4,
-            "Minimum ");
-        Constant.Ratio   minClusterLengthRatio = new Constant.Ratio(
+
+        //
+        Constant.Ratio minClusterLengthRatio = new Constant.Ratio(
             0.3,
             "Minimum cluster length (as ratio of median length)");
     }
@@ -1040,6 +1081,47 @@ public class ClustersRetriever
         public String toString ()
         {
             return "{F" + filament.getId() + " y:" + y + "}";
+        }
+    }
+
+    //------------//
+    // Parameters //
+    //------------//
+    /**
+     * Class {@code Parameters} gathers all constants related to horizontal frames
+     */
+    private static class Parameters
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final int samplingDx;
+        final int maxExpandDx;
+        final int maxExpandDy;
+        final int maxMergeDx;
+        final int maxMergeDy;
+        final int clusterXMargin;
+        final int clusterYMargin;
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a new Parameters object.
+         *
+         * @param scale the scaling factor
+         */
+        public Parameters (Scale scale)
+        {
+            samplingDx = scale.toPixels(constants.samplingDx);
+            maxExpandDx = scale.toPixels(constants.maxExpandDx);
+            maxExpandDy = scale.toPixels(constants.maxExpandDy);
+            maxMergeDx = scale.toPixels(constants.maxMergeDx);
+            maxMergeDy = scale.toPixels(constants.maxMergeDy);
+            clusterXMargin = scale.toPixels(constants.clusterXMargin);
+            clusterYMargin = scale.toPixels(constants.clusterYMargin);
+
+            if (logger.isFineEnabled()) {
+                Main.dumping.dump(this);
+            }
         }
     }
 }

@@ -34,38 +34,6 @@ public interface GlyphAlignment
 {
     //~ Methods ----------------------------------------------------------------
 
-    //------------------//
-    // getIntPositionAt //
-    //------------------//
-    /**
-     * Report the precise stick position for the provided coordinate .
-     * @param coord the coord value (x for horizontal fil, y for vertical fil)
-     * @return the integer pos value (y for horizontal fil, x for vertical fil)
-     */
-    public int getIntPositionAt (double coord);
-
-    //---------------//
-    // getPositionAt //
-    //---------------//
-    /**
-     * Report the precise stick position for the provided coordinate .
-     * @param coord the coord value (x for horizontal fil, y for vertical fil)
-     * @return the pos value (y for horizontal fil, x for vertical fil)
-     */
-    public double getPositionAt (double coord);
-
-    //----------------//
-    // getThicknessAt //
-    //----------------//
-    /**
-     * Report the stick mean thickness at the provided coordinate
-     * @param coord the desired abscissa
-     * @return the mean thickness measured, expressed in number of pixels.
-     * Beware, this number will be zero if the probe falls entirely in a hole
-     * between two sections.
-     */
-    public double getThicknessAt (double coord);
-
     //-----------------//
     // getAbsoluteLine //
     //-----------------//
@@ -271,6 +239,16 @@ public interface GlyphAlignment
      */
     int getFirstStuck ();
 
+    //------------------//
+    // getIntPositionAt //
+    //------------------//
+    /**
+     * Report the precise stick position for the provided coordinate .
+     * @param coord the coord value (x for horizontal fil, y for vertical fil)
+     * @return the integer pos value (y for horizontal fil, x for vertical fil)
+     */
+    int getIntPositionAt (double coord);
+
     //------------//
     // getLastPos //
     //------------//
@@ -344,6 +322,16 @@ public interface GlyphAlignment
      */
     Line getOrientedLine ();
 
+    //---------------//
+    // getPositionAt //
+    //---------------//
+    /**
+     * Report the precise stick position for the provided coordinate .
+     * @param coord the coord value (x for horizontal fil, y for vertical fil)
+     * @return the pos value (y for horizontal fil, x for vertical fil)
+     */
+    double getPositionAt (double coord);
+
     //----------//
     // getStart //
     //----------//
@@ -412,6 +400,17 @@ public interface GlyphAlignment
      * @return the thickness in pixels
      */
     int getThickness ();
+
+    //----------------//
+    // getThicknessAt //
+    //----------------//
+    /**
+     * Report the resulting thickness of this stick at the provided coordinate,
+     * using a predefined probe width
+     * @param coord the desired abscissa
+     * @return the thickness measured, expressed in number of pixels.
+     */
+    double getThicknessAt (double coord);
 
     //--------------//
     // overlapsWith //

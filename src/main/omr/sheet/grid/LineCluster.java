@@ -42,6 +42,17 @@ public class LineCluster
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(LineCluster.class);
 
+    /** For comparing LineCluster instances on their true length */
+    public static final Comparator<LineCluster> reverseLengthComparator = new Comparator<LineCluster>() {
+        public int compare (LineCluster c1,
+                            LineCluster c2)
+        {
+            // Sort on reverse length
+            return Double.compare(c2.getTrueLength(), c1.getTrueLength());
+        }
+    };
+
+
     //~ Instance fields --------------------------------------------------------
 
     /** Id for debug */
@@ -219,10 +230,14 @@ public class LineCluster
     /**
      * Report the sequence of points that correspond to a provided abscissa
      * @param x the provided abscissa
-     * @param interline the standard interline value, used for extrapolations
-     * @return the sequence of cluster points, from top to bottom
+     * @param xMargin maximum abscissa margin for horizontal extrapolation
+     * @param interline the standard interline value, used for vertical 
+     * extrapolations
+     * @return the sequence of cluster points, from top to bottom, with perhaps
+     * some holes indicated by null values
      */
     public List<Point2D> getPointsAt (double x,
+                                      int    xMargin,
                                       int    interline,
                                       double globalSlope)
     {
@@ -272,35 +287,35 @@ public class LineCluster
                 }
             }
 
-            double y;
+            Double y = null;
 
-            // Interpolate
+            // Interpolate vertically
             if ((prevPos != null) && (nextPos != null)) {
                 y = prevVal +
                     (((pos - prevPos) * (nextVal - prevVal)) / (nextPos -
                                                                prevPos));
             } else {
-                // Extrapolate
+                // Extrapolate vertically, only for one interline max
+                if ((prevPos != null) && ((pos - prevPos) == 1)) {
+                    y = prevVal + interline;
+                } else if ((nextPos != null) && ((nextPos - pos) == 1)) {
+                    y = nextVal - interline;
+                } else {
+                    // Extrapolate horizontally on a short distance
+                    FilamentLine line = lines.get(pos);
+                    Point2D      point = (x <= line.getStartPoint()
+                                                   .getX())
+                                         ? line.getStartPoint()
+                                         : line.getStopPoint();
+                    double       dx = x - point.getX();
 
-                //                if (prevPos != null) {
-                //                    y = prevVal + ((pos - prevPos) * interline);
-                //                } else if (nextPos != null) {
-                //                    y = nextVal + ((pos - nextPos) * interline);
-                //                } else {
-
-                // Here, we are beyond cluster left or right sides.
-                // We assume the delta abscissa is small enough to allow
-                // rather horizontal extrapolation
-                FilamentLine line = lines.get(pos);
-                Point2D      point = (x <= line.getStartPoint()
-                                               .getX()) ? line.getStartPoint()
-                                     : line.getStopPoint();
-                y = point.getY() + ((x - point.getX()) * globalSlope);
-
-                //                }
+                    if (Math.abs(dx) <= xMargin) {
+                        y = point.getY() + (dx * globalSlope);
+                    }
+                }
             }
 
-            points.put(pos, new Point2D.Double(x, y));
+            points.put(pos, (y != null) ? new Point2D.Double(x, y) : null);
         }
 
         return new ArrayList<Point2D>(points.values());

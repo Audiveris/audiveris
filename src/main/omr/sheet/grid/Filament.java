@@ -276,30 +276,33 @@ public class Filament
     {
         StringBuilder sb = new StringBuilder();
 
+        sb.append(" lg:")
+          .append(getLength());
+
         sb.append(" start[x=")
-          .append(getStartPoint().getX())
+          .append((float) getStartPoint().getX())
           .append(",y=")
-          .append(getStartPoint().getY())
+          .append((float) getStartPoint().getY())
           .append("]");
 
         sb.append(" stop[x=")
-          .append(getStopPoint().getX())
+          .append((float) getStopPoint().getX())
           .append(",y=")
-          .append(getStopPoint().getY())
+          .append((float) getStopPoint().getY())
           .append("]");
 
-        sb.append("meanDist:")
-          .append(getMeanDistance());
-
+        //        sb.append(" meanDist:")
+        //          .append((float) getMeanDistance());
+        //
         if (getPartOf() != null) {
             sb.append(" anc:")
               .append(getAncestor());
         }
 
-        if (refDist != null) {
-            sb.append(" refDist:")
-              .append(refDist);
-        }
+//        if (refDist != null) {
+//            sb.append(" refDist:")
+//              .append(refDist);
+//        }
 
         return sb.toString();
     }

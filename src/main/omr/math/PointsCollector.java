@@ -24,9 +24,6 @@ public class PointsCollector
     /** The region of interest, if any */
     private Rectangle roi;
 
-    /** The maximum possible number of points */
-    private int capacity;
-
     /** The current number of points in this collector */
     private int count;
 
@@ -62,7 +59,6 @@ public class PointsCollector
                             int       capacity)
     {
         this.roi = roi;
-        this.capacity = capacity;
         xx = new int[capacity];
         yy = new int[capacity];
     }

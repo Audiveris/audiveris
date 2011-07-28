@@ -11,15 +11,21 @@
 // </editor-fold>
 package omr.glyph;
 
+import omr.glyph.facets.BasicAlignment;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
+import omr.math.PointsCollector;
+
 import omr.score.common.PixelRectangle;
+
+import omr.sheet.Scale;
 
 import omr.util.Predicate;
 
 import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.util.*;
 
 /**
@@ -78,6 +84,70 @@ public class Glyphs
         }
 
         return box;
+    }
+
+    //----------------//
+    // getThicknessAt //
+    //----------------//
+    /**
+     * Report the resulting thickness of the collection of sticks at the
+     * provided coordinate
+     * @param intCoord the desired coordinate
+     * @param glyphs glyphs contributing to the resulting thickness
+     * @return the thickness measured, expressed in number of pixels.
+     */
+    public static double getThicknessAt (double   coord,
+                                         Glyph... glyphs)
+    {
+        if (glyphs.length == 0) {
+            return 0;
+        }
+
+        // Retrieve global bounds
+        final Rectangle bounds = new Rectangle(-1, -1);
+
+        for (Glyph g : glyphs) {
+            bounds.add(g.getOrientedBounds());
+        }
+
+        int intCoord = (int) Math.rint(coord);
+
+        if ((intCoord < bounds.x) || (intCoord >= (bounds.x + bounds.width))) {
+            return 0;
+        }
+
+        // Use a large-enough collector
+        final Rectangle roi = new Rectangle(
+            intCoord,
+            bounds.y,
+            0,
+            bounds.height);
+        final Scale     scale = new Scale(glyphs[0].getInterline());
+        final int       probeHalfWidth = scale.toPixels(
+            BasicAlignment.getProbeWidth()) / 2;
+        roi.grow(probeHalfWidth, 0);
+
+        PointsCollector collector = new PointsCollector(roi);
+
+        // Collect sections contribution
+        for (Glyph g : glyphs) {
+            for (GlyphSection section : g.getMembers()) {
+                section.cumulate(collector);
+            }
+        }
+
+        // Analyze range of Y values
+        int   minVal = Integer.MAX_VALUE;
+        int   maxVal = Integer.MIN_VALUE;
+        int[] vals = collector.getYValues();
+
+        for (int i = 0, iBreak = collector.getCount(); i < iBreak; i++) {
+            int val = vals[i];
+            minVal = Math.min(minVal, val);
+            maxVal = Math.max(maxVal, val);
+        }
+
+        return maxVal - minVal + 1;
     }
 
     //----------//

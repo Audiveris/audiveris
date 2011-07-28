@@ -18,6 +18,8 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
+import omr.glyph.Glyphs;
+import omr.glyph.facets.BasicAlignment;
 import omr.glyph.facets.BasicStick;
 import omr.glyph.facets.Glyph;
 import omr.glyph.facets.GlyphComposition;
@@ -363,8 +365,12 @@ public class FilamentsFactory
     private boolean canMerge (Stick one,
                               Stick two)
     {
-        if (logger.isFineEnabled()) {
-            logger.info("testMerge " + one + " & " + two);
+        // For VIP debugging
+        final boolean areVips = one.isVip() && two.isVip();
+        String        vips = null;
+
+        if (areVips) {
+            vips = one.getId() + "&" + two.getId() + ": "; // BP here!
         }
 
         Orientation orientation = lag.getOrientation();
@@ -382,9 +388,9 @@ public class FilamentsFactory
             double coordGap = (overlapStart - overlapStop) - 1;
 
             if (coordGap > params.maxCoordGap) {
-                if (logger.isFineEnabled()) {
+                if (logger.isFineEnabled() || areVips) {
                     logger.info(
-                        "Gap too long: " + coordGap + " vs " +
+                        vips + "Gap too long: " + coordGap + " vs " +
                         params.maxCoordGap);
                 }
 
@@ -402,41 +408,43 @@ public class FilamentsFactory
                     double posGap = Math.abs(onePos - twoPos);
 
                     if (posGap > params.maxOverlapDeltaPos) {
-                        if (logger.isFineEnabled()) {
+                        if (logger.isFineEnabled() || areVips) {
                             logger.info(
-                                "Delta pos too high for overlap: " + posGap +
-                                " vs " + params.maxOverlapDeltaPos);
+                                vips + "Delta pos too high for overlap: " +
+                                posGap + " vs " + params.maxOverlapDeltaPos);
                         }
 
                         return false;
                     }
 
                     // Check resulting thickness at middle of overlap
-                    double oneThickness = one.getThicknessAt(midCoord);
-                    double twoThickness = two.getThicknessAt(midCoord);
-                    double thickness = posGap +
-                                       ((oneThickness + twoThickness) / 2);
+                    double thickness = Glyphs.getThicknessAt(
+                        midCoord,
+                        one,
+                        two);
 
                     if (thickness > params.maxFilamentThickness) {
-                        if (logger.isFineEnabled()) {
+                        if (logger.isFineEnabled() || areVips) {
                             logger.info(
-                                "Too thick: " + (float) thickness + " vs " +
-                                params.maxFilamentThickness + " " + one + " " +
-                                two);
+                                vips + "Too thick: " + (float) thickness +
+                                " vs " + params.maxFilamentThickness + " " +
+                                one + " " + two);
                         }
 
                         return false;
                     }
 
                     // Check space between overlapped filaments
-                    double space = posGap -
-                                   ((oneThickness + twoThickness) / 2);
+                    double space = thickness -
+                                   (one.getThicknessAt(midCoord) +
+                                   two.getThicknessAt(midCoord));
 
                     if (space > params.maxSpace) {
-                        if (logger.isFineEnabled()) {
+                        if (logger.isFineEnabled() || areVips) {
                             logger.info(
-                                "Space too large: " + (float) space + " vs " +
-                                params.maxSpace + " " + one + " " + two);
+                                vips + "Space too large: " + (float) space +
+                                " vs " + params.maxSpace + " " + one + " " +
+                                two);
                         }
 
                         return false;
@@ -466,10 +474,10 @@ public class FilamentsFactory
                                 posMargin;
 
                 if (posGap > params.maxPosGap) {
-                    if (logger.isFineEnabled()) {
+                    if (logger.isFineEnabled() || areVips) {
                         logger.info(
-                            "Delta pos too high for gap: " + posGap + " vs " +
-                            params.maxPosGap);
+                            vips + "Delta pos too high for gap: " +
+                            (float) posGap + " vs " + params.maxPosGap);
                     }
 
                     return false;
@@ -480,10 +488,10 @@ public class FilamentsFactory
                     double gapSlope = (double) posGap / coordGap;
 
                     if (gapSlope > params.maxGapSlope) {
-                        if (logger.isFineEnabled()) {
+                        if (logger.isFineEnabled() || areVips) {
                             logger.info(
-                                "Slope too high for gap: " + (float) gapSlope +
-                                " vs " + params.maxGapSlope);
+                                vips + "Slope too high for gap: " +
+                                (float) gapSlope + " vs " + params.maxGapSlope);
                         }
 
                         return false;
@@ -491,8 +499,8 @@ public class FilamentsFactory
                 }
             }
 
-            if (logger.isFineEnabled()) {
-                logger.info("Compatible!");
+            if (logger.isFineEnabled() || areVips) {
+                logger.info(vips + "Compatible!");
             }
 
             return true;
@@ -699,11 +707,11 @@ public class FilamentsFactory
 
                                 break HeadsLoop;
                             } else {
-                                if (head.isVip() || candidate.isVip()) {
-                                    logger.info(
-                                        "Could not merge " + candidate +
-                                        " into " + head);
-                                }
+                                //                                if (head.isVip() || candidate.isVip()) {
+                                //                                    logger.info(
+                                //                                        "Could not merge " + candidate +
+                                //                                        " into " + head);
+                                //                                }
                             }
                         } else {
                             if (head.isVip() && candidate.isVip()) {
@@ -849,7 +857,7 @@ public class FilamentsFactory
             setMaxOverlapDeltaPos(constants.maxOverlapDeltaPos);
             setMaxGapSlope(constants.maxGapSlope.getValue());
 
-            probeWidth = scale.toPixels(FilamentAlignment.getProbeWidth());
+            probeWidth = scale.toPixels(BasicAlignment.getProbeWidth());
 
             if (logger.isFineEnabled()) {
                 dump();

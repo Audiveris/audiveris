@@ -284,7 +284,7 @@ public class OmrExecutors
         //~ Instance fields ----------------------------------------------------
 
         Constant.Boolean printEnvironment = new Constant.Boolean(
-            true,
+            false,
             "Should we print out current environment?");
 
         //

@@ -15,6 +15,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
+import omr.glyph.Glyphs;
 
 import omr.log.Logger;
 
@@ -468,92 +469,9 @@ public class BasicAlignment
     //----------------//
     // getThicknessAt //
     //----------------//
-    /**
-     * Report the stick mean thickness at the provided coordinate
-     * @param coord the desired abscissa
-     * @return the mean thickness measured, expressed in number of pixels.
-     * Beware, this number will be zero if the probe falls entirely in a hole
-     * between two sections.
-     */
     public double getThicknessAt (double coord)
     {
-        final Rectangle bounds = glyph.getOrientedBounds();
-        Scale           scale = new Scale(glyph.getInterline());
-
-        if ((coord < bounds.x) || (coord >= (bounds.x + bounds.width))) {
-            logger.warning(this + " bounds:" + bounds + " coord:" + coord);
-            throw new IllegalArgumentException(
-                "Coordinate not within filament range");
-        }
-
-        // Use a large-enough collector
-        final Rectangle roi = new Rectangle(
-            (int) Math.rint(coord),
-            bounds.y,
-            0,
-            bounds.height);
-        final int       probeHalfWidth = scale.toPixels(constants.probeWidth) / 2;
-        roi.grow(probeHalfWidth, 0);
-
-        //        boolean[] matched = new boolean[roi.width];
-        //        Arrays.fill(matched, false);
-        //
-        //        final PointsCollector collector = new PointsCollector(roi);
-        //
-        //        for (GlyphSection section : glyph.getMembers()) {
-        //            Rectangle inter = roi.intersection(section.getOrientedBounds());
-        //
-        //            for (int c = (inter.x + inter.width) - 1; c >= inter.x; c--) {
-        //                matched[c - roi.x] = true;
-        //            }
-        //
-        //            section.cumulate(collector);
-        //        }
-        //
-        //        int count = collector.getCount();
-        //
-        //        if (count == 0) {
-        //            if (logger.isFineEnabled()) {
-        //                logger.warning(
-        //                    "Thickness " + this + " coord:" + coord + " nopoints");
-        //            }
-        //
-        //            return 0;
-        //        } else {
-        //            // Return MEAN thickness on MATCHED probe width
-        //            int width = 0;
-        //
-        //            for (boolean bool : matched) {
-        //                if (bool) {
-        //                    width++;
-        //                }
-        //            }
-        //
-        //            double thickness = (double) count / width;
-        //
-        //            if (logger.isFineEnabled()) {
-        //                logger.fine(
-        //                    this + " coord:" + coord + " pos:" +
-        //                    (float) getPositionAt(coord) + " thickness:" + thickness);
-        //            }
-        //
-        //            return thickness;
-        //        }
-
-        //
-        Rectangle common = null;
-
-        for (GlyphSection section : glyph.getMembers()) {
-            Rectangle inter = roi.intersection(section.getOrientedBounds());
-
-            if (common == null) {
-                common = inter;
-            } else {
-                common = common.union(inter);
-            }
-        }
-
-        return (common == null) ? 0 : common.height;
+        return Glyphs.getThicknessAt(coord, glyph);
     }
 
     //------//

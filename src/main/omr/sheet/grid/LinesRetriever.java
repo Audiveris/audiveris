@@ -298,9 +298,10 @@ public class LinesRetriever
             new JunctionRatioPolicy(params.maxLengthRatio));
         sectionsBuilder.createSections(longHoriTable);
 
-        // BINGO
-        //        hLag.getVertexById(337)
-        //            .setVip();
+        //        hLag.getVertexById(2500)
+        //            .setVip(); // BINGO
+        //        hLag.getVertexById(2506)
+        //            .setVip(); // BINGO
 
         // Purge hLag of too short sections
         //        final int minSectionLength = factory.getMinSectionLength();
@@ -415,10 +416,10 @@ public class LinesRetriever
         staffManager.reset();
 
         for (LineCluster cluster : allClusters) {
-            ///if (logger.isFineEnabled()) {
-            logger.info(cluster.toString());
+            if (logger.isFineEnabled()) {
+                logger.fine(cluster.toString());
+            }
 
-            ///}
             List<LineInfo> lines = new ArrayList<LineInfo>(cluster.getLines());
             double         left = Integer.MAX_VALUE;
             double         right = Integer.MIN_VALUE;

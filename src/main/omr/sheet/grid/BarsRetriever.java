@@ -203,6 +203,11 @@ public class BarsRetriever
             vLag,
             new JunctionRatioPolicy(params.maxLengthRatio));
         sectionsBuilder.createSections(vertTable);
+
+        //                vLag.getVertexById(942)
+        //                    .setVip(); // BINGO
+        //                vLag.getVertexById(923)
+        //                    .setVip(); // BINGO
     }
 
     //-----------//
@@ -646,7 +651,7 @@ public class BarsRetriever
                     Math.max(prevY, prevPoint.getY()));
                 logger.info(
                     "F" + prevStick.getId() + "-F" + nextStick.getId() +
-                    " dx:" + dx + " dy:" + dy);
+                    " dx:" + (float) dx + " dy:" + (float) dy);
 
                 if ((dx <= maxBarPosGap) && (dy <= maxBarCoordGap)) {
                     logger.warning(
@@ -721,12 +726,15 @@ public class BarsRetriever
             vLag,
             Filament.class);
 
-        ///factory.setVipGlyphs(540, 11, 12); // BINGO
+        //factory.setVipGlyphs(9, 2); // BINGO
 
         // Factory parameters adjustment
         factory.setMaxSectionThickness(constants.maxSectionThickness);
         factory.setMaxFilamentThickness(constants.maxFilamentThickness);
         factory.setMaxCoordGap(constants.maxCoordGap);
+        factory.setMaxPosGap(constants.maxPosGap);
+
+        ///factory.setMaxOverlapDeltaPos(constants.maxOverlapDeltaPos);
 
         // Retrieve filaments out of vertical sections
         for (Filament fil : factory.retrieveFilaments(vLag.getVertices(), true)) {
@@ -1083,11 +1091,17 @@ public class BarsRetriever
             0.8,
             "Maximum horizontal section thickness WRT mean line height");
         Scale.Fraction  maxFilamentThickness = new Scale.Fraction(
-            0.8,
+            1.0,
             "Maximum filament thickness WRT mean line height");
+        Scale.Fraction  maxOverlapDeltaPos = new Scale.Fraction(
+            1.0,
+            "Maximum delta position between two overlapping filaments");
         Scale.Fraction  maxCoordGap = new Scale.Fraction(
             0.5,
             "Maximum delta coordinate for a gap between filaments");
+        Scale.Fraction  maxPosGap = new Scale.Fraction(
+            0.3,
+            "Maximum delta abscissa for a gap between filaments");
         Scale.Fraction  maxBarCoordGap = new Scale.Fraction(
             2, // 2.5
             "Maximum delta coordinate for a vertical gap between bars");
