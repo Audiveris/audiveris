@@ -195,7 +195,7 @@ public class SkewBuilder
         }
 
         // Report the computed info
-        return new Skew(angle);
+        return new Skew(slope, sheet);
     }
 
     //--------------//

@@ -121,9 +121,6 @@ public class BarsChecker
     /** Related vertical lag */
     private final GlyphLag lag;
 
-    /** Global sheet  slope */
-    private final double globalSlope;
-
     /** Related staves */
     private final StaffManager staffManager;
 
@@ -143,18 +140,15 @@ public class BarsChecker
      *
      * @param sheet the sheet to process
      * @param lag the sheet vertical lag
-     * @param globalSlope global sheet slope
      * @param rough true for rough tests (when retrieving staff frames),
      * false for precise tests
      */
     public BarsChecker (Sheet    sheet,
                         GlyphLag lag,
-                        double   globalSlope,
                         boolean  rough)
     {
         this.sheet = sheet;
         this.lag = lag;
-        this.globalSlope = globalSlope;
         this.rough = rough;
 
         scale = sheet.getScale();
@@ -1123,10 +1117,10 @@ public class BarsChecker
             Point2D stop = stick.getStopPoint();
 
             // Beware of sign of stickSlope (it is opposite of globalSlope)
-            double stickSlope = -(double) (stop.getX() - start.getX()) / (stop.getY() -
-                                                                         start.getY());
+            double stickSlope = -(stop.getX() - start.getX()) / (stop.getY() -
+                                                                start.getY());
 
-            return Math.abs(stickSlope - globalSlope);
+            return Math.abs(stickSlope - sheet.getSkew().getSlope());
         }
     }
 }

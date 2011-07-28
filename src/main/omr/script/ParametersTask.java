@@ -15,7 +15,7 @@ import omr.score.Score;
 import omr.score.entity.ScorePart;
 import omr.score.entity.SlotPolicy;
 
-import omr.sheet.Scale.InterlineFraction;
+import omr.sheet.Scale;
 import omr.sheet.Sheet;
 
 import omr.step.Step;
@@ -55,7 +55,7 @@ public class ParametersTask
 
     /** Slot horizontal margin */
     @XmlElement(name = "slot-margin")
-    private InterlineFraction slotMargin;
+    private Scale.Fraction slotMargin;
 
     /** Slot policy */
     @XmlAttribute(name = "slot-policy")
@@ -132,7 +132,7 @@ public class ParametersTask
      */
     public void setSlotMargin (double slotMargin)
     {
-        this.slotMargin = new InterlineFraction(slotMargin);
+        this.slotMargin = new Scale.Fraction(slotMargin, null);
     }
 
     //---------------//

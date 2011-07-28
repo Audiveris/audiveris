@@ -150,6 +150,9 @@ public class Sheet
     /** Related verticals model */
     private volatile VerticalsController verticalsController;
 
+    /** Related target builder */
+    private volatile TargetBuilder targetBuilder;
+
     /** Related symbols editor */
     private SymbolsEditor editor;
 
@@ -164,7 +167,6 @@ public class Sheet
 
     /** All steps already done on this sheet */
     private Set<Step> doneSteps = new HashSet<Step>();
-    private TargetBuilder targetBuilder;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -702,7 +704,6 @@ public class Sheet
     public void setSkew (Skew skew)
     {
         this.skew = skew;
-        page.setSkewAngle(getSkew().angle());
 
         // Update displayed image if any
         if (getPicture()

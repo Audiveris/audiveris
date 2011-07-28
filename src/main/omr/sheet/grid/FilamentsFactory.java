@@ -485,7 +485,7 @@ public class FilamentsFactory
 
                 // Check slope (relevant only for significant dy)
                 if (posGap > params.maxPosGapForSlope) {
-                    double gapSlope = (double) posGap / coordGap;
+                    double gapSlope = posGap / coordGap;
 
                     if (gapSlope > params.maxGapSlope) {
                         if (logger.isFineEnabled() || areVips) {

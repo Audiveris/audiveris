@@ -50,7 +50,7 @@ public class LineFilamentAlignment
     /**
      * Creates a new LineFilamentAlignment object.
      *
-     * @param filament the containing filament
+     * @param glyph the containing filament
      */
     public LineFilamentAlignment (Glyph glyph)
     {

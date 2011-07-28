@@ -52,7 +52,7 @@ public class SkewStep
         sheet.setSkewBuilder(new SkewBuilder(sheet));
         sheet.setSkew(sheet.getSkewBuilder().buildInfo());
         sheet.getBench()
-             .recordSkew(sheet.getSkew().angle());
+             .recordSkew(sheet.getSkew().getAngle());
 
         //        // If rotated, rescale the sheet
         //        if (sheet.getPicture()

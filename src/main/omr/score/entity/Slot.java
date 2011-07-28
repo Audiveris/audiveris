@@ -19,9 +19,8 @@ import omr.math.InjectionSolver;
 import omr.math.Rational;
 
 import omr.score.common.PixelPoint;
-import omr.score.entity.TimeSignature.InvalidTimeSignature;
 
-import omr.sheet.Scale.InterlineFraction;
+import omr.sheet.Scale;
 
 import omr.util.Navigable;
 import omr.util.TreeNode;
@@ -123,8 +122,8 @@ public abstract class Slot
     {
         this.measure = measure;
 
-        InterlineFraction slotMargin = measure.getPage()
-                                              .getSlotMargin();
+        Scale.Fraction slotMargin = measure.getPage()
+                                           .getSlotMargin();
         xUnitsMargin = measure.getScale()
                               .toPixels(slotMargin);
     }

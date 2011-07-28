@@ -90,9 +90,6 @@ public class BarsRetriever
     /** Long filaments found, non sorted */
     private final List<Filament> filaments = new ArrayList<Filament>();
 
-    /** Global slope of the sheet */
-    private double globalSlope;
-
     /** Related staff manager */
     private final StaffManager staffManager;
 
@@ -156,13 +153,10 @@ public class BarsRetriever
     /**
      * Use the long vertical sections to retrieve the barlines that limit the
      * staves
-     * @param globalSlope the sheet global slope
      */
-    public void buildInfo (double globalSlope)
+    public void buildInfo ()
         throws StepException
     {
-        this.globalSlope = globalSlope;
-
         try {
             // Retrieve initial barline candidates
             retrieveBars();
@@ -326,6 +320,8 @@ public class BarsRetriever
     {
         // Compute theoretical bar line equation x = -y*slope + b;
         double deltas = 0;
+        double globalSlope = sheet.getSkew()
+                                  .getSlope();
 
         for (StaffInfo staff : system.getStaves()) {
             double x = staff.getLinesEnd(side);
@@ -357,6 +353,8 @@ public class BarsRetriever
     private void adjustLongSystemSide (SystemFrame    system,
                                        HorizontalSide side)
     {
+        double          globalSlope = sheet.getSkew()
+                                           .getSlope();
         List<StaffInfo> staves = system.getStaves();
         StaffInfo       prevLong = null;
 
@@ -741,11 +739,7 @@ public class BarsRetriever
             filaments.add(fil);
         }
 
-        BarsChecker barsChecker = new BarsChecker(
-            sheet,
-            vLag,
-            globalSlope,
-            true);
+        BarsChecker barsChecker = new BarsChecker(sheet, vLag, true);
         barsChecker.retrieveCandidates(filaments);
 
         bars = new ArrayList<Stick>();

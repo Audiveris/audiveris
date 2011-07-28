@@ -344,6 +344,7 @@ public class ActionManager
     @SuppressWarnings("unchecked")
     private ApplicationAction registerAction (ActionDescriptor desc)
     {
+        ///logger.info("registerAction. " + desc);
         ApplicationAction action = null;
 
         try {

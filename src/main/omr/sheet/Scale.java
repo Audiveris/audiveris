@@ -280,21 +280,21 @@ public class Scale
         return (int) Math.rint(toPixelsDouble(lFrac));
     }
 
-    //----------//
-    // toPixels //
-    //----------//
-    /**
-     * Compute the number of pixels that corresponds to the fraction of
-     * interline provided, according to the scale.
-     *
-     * @param frac a measure based on interline (1 = one interline)
-     *
-     * @return the actual number of pixels with the current scale
-     */
-    public int toPixels (InterlineFraction frac)
-    {
-        return (int) Math.rint(toPixelsDouble(frac));
-    }
+    //    //----------//
+    //    // toPixels //
+    //    //----------//
+    //    /**
+    //     * Compute the number of pixels that corresponds to the fraction of
+    //     * interline provided, according to the scale.
+    //     *
+    //     * @param frac a measure based on interline (1 = one interline)
+    //     *
+    //     * @return the actual number of pixels with the current scale
+    //     */
+    //    public int toPixels (InterlineFraction frac)
+    //    {
+    //        return (int) Math.rint(toPixelsDouble(frac));
+    //    }
 
     //----------//
     // toPixels //
@@ -311,20 +311,20 @@ public class Scale
         return (int) Math.rint(interline * interline * areaFrac.getValue());
     }
 
-    //----------------//
-    // toPixelsDouble //
-    //----------------//
-    /**
-     * Same as toPixels, but the result is a double instead of a rounded int.
-     *
-     * @param frac the interline fraction
-     * @return the equivalent in number of pixels
-     * @see #toPixels
-     */
-    public double toPixelsDouble (InterlineFraction frac)
-    {
-        return (double) interline * frac.doubleValue();
-    }
+    //    //----------------//
+    //    // toPixelsDouble //
+    //    //----------------//
+    //    /**
+    //     * Same as toPixels, but the result is a double instead of a rounded int.
+    //     *
+    //     * @param frac the interline fraction
+    //     * @return the equivalent in number of pixels
+    //     * @see #toPixels
+    //     */
+    //    public double toPixelsDouble (InterlineFraction frac)
+    //    {
+    //        return (double) interline * frac.doubleValue();
+    //    }
 
     //----------------//
     // toPixelsDouble //
@@ -339,7 +339,8 @@ public class Scale
      */
     public double toPixelsDouble (Fraction frac)
     {
-        return toPixelsDouble(frac.getWrappedValue());
+        return (double) interline * frac.getWrappedValue()
+                                        .doubleValue();
     }
 
     //----------------//
@@ -439,77 +440,81 @@ public class Scale
             super("Interline", defaultValue, description);
         }
 
+        // Meant for JAXB
+        private Fraction ()
+        {
+            this(0d, null);
+        }
+
         //~ Methods ------------------------------------------------------------
 
         @Override
         public void setValue (double val)
         {
-            setTuple(
-                java.lang.Double.toString(val),
-                new InterlineFraction(val));
+            setTuple(java.lang.Double.toString(val), new DoubleValue(val));
         }
 
         @Override
-        public InterlineFraction getWrappedValue ()
+        public DoubleValue getWrappedValue ()
         {
-            return (InterlineFraction) getCachedValue();
+            return (DoubleValue) getCachedValue();
         }
 
         @Override
-        protected InterlineFraction decode (java.lang.String str)
+        protected DoubleValue decode (java.lang.String str)
         {
-            return new InterlineFraction(java.lang.Double.valueOf(str));
+            return new DoubleValue(java.lang.Double.valueOf(str));
         }
     }
 
-    //-------------------//
-    // InterlineFraction //
-    //-------------------//
-    /**
-     * Class meant to host a double value, specified in fraction of interline.
-     */
-    public static class InterlineFraction
-        extends DoubleValue
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public InterlineFraction (double val)
-        {
-            super(val);
-        }
-
-        // Meant for JAXB
-        private InterlineFraction ()
-        {
-            super(0d);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        //--------//
-        // equals //
-        //--------//
-        @Override
-        public boolean equals (Object obj)
-        {
-            if (obj instanceof InterlineFraction) {
-                return ((InterlineFraction) obj).value == value;
-            } else {
-                return false;
-            }
-        }
-
-        //----------//
-        // hashCode //
-        //----------//
-        @Override
-        public int hashCode ()
-        {
-            int hash = 7;
-
-            return hash;
-        }
-    }
+    //    //-------------------//
+    //    // InterlineFraction //
+    //    //-------------------//
+    //    /**
+    //     * Class meant to host a double value, specified in fraction of interline.
+    //     */
+    //    public static class InterlineFraction
+    //        extends DoubleValue
+    //    {
+    //        //~ Constructors -------------------------------------------------------
+    //
+    //        public InterlineFraction (double val)
+    //        {
+    //            super(val);
+    //        }
+    //
+    //        // Meant for JAXB
+    //        private InterlineFraction ()
+    //        {
+    //            super(0d);
+    //        }
+    //
+    //        //~ Methods ------------------------------------------------------------
+    //
+    //        //--------//
+    //        // equals //
+    //        //--------//
+    //        @Override
+    //        public boolean equals (Object obj)
+    //        {
+    //            if (obj instanceof InterlineFraction) {
+    //                return ((InterlineFraction) obj).value == value;
+    //            } else {
+    //                return false;
+    //            }
+    //        }
+    //
+    //        //----------//
+    //        // hashCode //
+    //        //----------//
+    //        @Override
+    //        public int hashCode ()
+    //        {
+    //            int hash = 7;
+    //
+    //            return hash;
+    //        }
+    //    }
 
     //--------------//
     // LineFraction //

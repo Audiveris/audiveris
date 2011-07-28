@@ -25,7 +25,6 @@ import omr.score.Score;
 import omr.score.ScoreExporter;
 import omr.score.ScoresManager;
 import omr.score.midi.MidiAgent;
-import omr.ui.symbol.MusicFont;
 
 import omr.selection.MouseMovement;
 import omr.selection.SheetEvent;
@@ -38,6 +37,7 @@ import omr.step.StepMenu;
 import omr.step.Stepping;
 
 import omr.ui.dnd.GhostGlassPane;
+import omr.ui.symbol.MusicFont;
 import omr.ui.util.ModelessOptionPane;
 import omr.ui.util.Panel;
 import omr.ui.util.SeparableMenu;

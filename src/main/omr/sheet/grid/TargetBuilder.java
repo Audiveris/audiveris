@@ -22,6 +22,7 @@ import omr.selection.SheetLocationEvent;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
+import omr.sheet.Skew;
 import omr.sheet.picture.Picture;
 
 import omr.ui.view.RubberPanel;
@@ -221,8 +222,7 @@ public class TargetBuilder
      */
     private void buildTarget ()
     {
-        // Set up rotation + origin translation
-        computeDeskew();
+        final Skew skew = sheet.getSkew();
 
         // Target page parameters
         targetPage = new TargetPage(targetWidth, targetHeight);
@@ -233,12 +233,12 @@ public class TargetBuilder
         for (SystemFrame system : barsRetriever.getSystems()) {
             StaffInfo firstStaff = system.getFirstStaff();
             LineInfo  firstLine = firstStaff.getFirstLine();
-            Point2D   dskLeft = deskew(firstLine.getEndPoint(LEFT));
-            Point2D   dskRight = deskew(firstLine.getEndPoint(RIGHT));
+            Point2D   dskLeft = skew.deskewed(firstLine.getEndPoint(LEFT));
+            Point2D   dskRight = skew.deskewed(firstLine.getEndPoint(RIGHT));
 
             if (prevLine != null) {
                 // Preserve position relative to bottom right of previous system
-                Point2D      prevDskRight = deskew(
+                Point2D      prevDskRight = skew.deskewed(
                     prevLine.info.getEndPoint(RIGHT));
                 TargetSystem prevSystem = prevLine.staff.system;
                 double       dx = prevSystem.right - prevDskRight.getX();
@@ -258,11 +258,12 @@ public class TargetBuilder
 
             // Target staff parameters
             for (StaffInfo staff : system.getStaves()) {
-                dskRight = deskew(staff.getFirstLine().getEndPoint(RIGHT));
+                dskRight = skew.deskewed(
+                    staff.getFirstLine().getEndPoint(RIGHT));
 
                 if (prevLine != null) {
                     // Preserve inter-staff vertical gap
-                    Point2D prevDskRight = deskew(
+                    Point2D prevDskRight = skew.deskewed(
                         prevLine.info.getEndPoint(RIGHT));
                     dskRight.setLocation(
                         dskRight.getX(),
@@ -331,52 +332,6 @@ public class TargetBuilder
             yStep,
             yNumCells,
             warpPositions);
-    }
-
-    //---------------//
-    // computeDeskew //
-    //---------------//
-    private void computeDeskew ()
-    {
-        double globalSlope = linesRetriever.getGlobalSlope();
-        double deskewAngle = -Math.atan(globalSlope);
-        at = AffineTransform.getRotateInstance(deskewAngle);
-
-        // Compute topLeft origin translation
-        int     w = sheet.getWidth();
-        int     h = sheet.getHeight();
-        Point2D topRight = at.transform(new Point(w, 0), null);
-        Point2D bottomLeft = at.transform(new Point(0, h), null);
-        Point2D bottomRight = at.transform(new Point(w, h), null);
-        double  dx = 0;
-        double  dy = 0;
-
-        if (deskewAngle <= 0) { // Counter-clockwise deskew
-            targetWidth = bottomRight.getX();
-            dy = -topRight.getY();
-            targetHeight = bottomLeft.getY() + dy;
-        } else { // Clockwise deskew
-            dx = -bottomLeft.getX();
-            targetWidth = topRight.getX() + dx;
-            targetHeight = bottomRight.getY();
-        }
-
-        at.translate(dx, dy);
-    }
-
-    //--------//
-    // deskew //
-    //--------//
-    /**
-     * Apply rotation OPPOSITE to the measured global angle and use the new
-     * origin
-     *
-     * @param pt the initial (skewed) point
-     * @return the deskewed point
-     */
-    private Point2D deskew (Point2D pt)
-    {
-        return at.transform(pt, null);
     }
 
     //-------------//

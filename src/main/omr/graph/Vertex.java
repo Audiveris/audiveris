@@ -396,6 +396,7 @@ public abstract class Vertex<D extends Digraph, V extends Vertex<D, V, SIG>, SIG
      * @param target arrival vertex
      * @param strict throw RuntimeException if the edge does not exist
      */
+    @SuppressWarnings("unchecked")
     public static <V extends Vertex> void removeEdge (V       source,
                                                       V       target,
                                                       boolean strict)

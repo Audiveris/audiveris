@@ -135,7 +135,7 @@ public class GridBuilder
 
             // Retrieve the vertical barlines
             watch.start("barsRetriever");
-            barsRetriever.buildInfo(linesRetriever.getGlobalSlope());
+            barsRetriever.buildInfo();
 
             // Define the destination grid
             watch.start("targetBuilder");

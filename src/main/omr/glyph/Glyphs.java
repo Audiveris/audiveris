@@ -92,7 +92,7 @@ public class Glyphs
     /**
      * Report the resulting thickness of the collection of sticks at the
      * provided coordinate
-     * @param intCoord the desired coordinate
+     * @param coord the desired coordinate
      * @param glyphs glyphs contributing to the resulting thickness
      * @return the thickness measured, expressed in number of pixels.
      */

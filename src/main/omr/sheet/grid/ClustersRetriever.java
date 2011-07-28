@@ -25,11 +25,11 @@ import omr.score.common.PixelRectangle;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
+import omr.sheet.Skew;
 
 import omr.util.Wrapper;
 
 import java.awt.*;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.*;
@@ -100,11 +100,8 @@ public class ClustersRetriever
     /** Filaments discarded */
     private final List<LineFilament> discardedFilaments = new ArrayList<LineFilament>();
 
-    /** Global slope of the sheet */
-    private final double globalSlope;
-
-    /** Sheet top edge, tilted as global slope */
-    private Line2D.Double sheetTopEdge;
+    /** Skew of the sheet */
+    private final Skew skew;
 
     /** A map (colIndex -> vertical list of samples), sorted on colIndex */
     private Map<Integer, List<FilamentPattern>> colPatterns;
@@ -135,21 +132,19 @@ public class ClustersRetriever
      * @param sheet the sheet to process
      * @param filaments the current collection of filaments
      * @param interline the precise interline to be processed
-     * @param globalSlope the global scope detected for the sheet
      * @param patternColor color to be used for patterns display
      */
     public ClustersRetriever (Sheet              sheet,
                               List<LineFilament> filaments,
                               int                interline,
-                              double             globalSlope,
                               Color              patternColor)
     {
         this.sheet = sheet;
         this.filaments = filaments;
         this.interline = interline;
-        this.globalSlope = globalSlope;
         this.patternColor = patternColor;
 
+        skew = sheet.getSkew();
         pictureWidth = sheet.getWidth();
         scale = sheet.getScale();
         colPatterns = new TreeMap<Integer, List<FilamentPattern>>();
@@ -250,28 +245,6 @@ public class ClustersRetriever
         g.setStroke(oldStroke);
     }
 
-    //-----------------//
-    // getSheetTopEdge //
-    //-----------------//
-    /**
-     * Report the top edge of sheet, parallel to the global slope
-     * @return the tilted top line reference
-     */
-    private Line2D.Double getSheetTopEdge ()
-    {
-        if (sheetTopEdge == null) {
-            // Build this reference line
-            double          angleRad = Math.atan(globalSlope);
-            AffineTransform at = AffineTransform.getRotateInstance(angleRad);
-            Point2D         right = new Point(sheet.getWidth(), 0);
-            right = at.transform(right, right);
-
-            sheetTopEdge = new Line2D.Double(0, 0, right.getX(), right.getY());
-        }
-
-        return sheetTopEdge;
-    }
-
     //-----------//
     // bestMatch //
     //-----------//
@@ -358,20 +331,14 @@ public class ClustersRetriever
 
         if (gap <= 0) {
             // Overlap: use middle of common part
-            int xMid = (maxLeft + minRight) / 2;
+            final int    xMid = (maxLeft + minRight) / 2;
+            final double slope = sheet.getSkew()
+                                      .getSlope();
             dist = bestMatch(
                 ordinatesOf(
-                    one.getPointsAt(
-                        xMid,
-                        params.maxExpandDx,
-                        interline,
-                        globalSlope)),
+                    one.getPointsAt(xMid, params.maxExpandDx, interline, slope)),
                 ordinatesOf(
-                    two.getPointsAt(
-                        xMid,
-                        params.maxExpandDx,
-                        interline,
-                        globalSlope)),
+                    two.getPointsAt(xMid, params.maxExpandDx, interline, slope)),
                 deltaPos);
         } else if (gap > params.maxMergeDx) {
             if (logger.isFineEnabled()) {
@@ -536,7 +503,9 @@ public class ClustersRetriever
     private void expandCluster (LineCluster        cluster,
                                 List<LineFilament> fils)
     {
-        Rectangle clusterBox = null;
+        final double slope = sheet.getSkew()
+                                  .getSlope();
+        Rectangle    clusterBox = null;
 
         for (LineFilament fil : fils) {
             fil = fil.getAncestor();
@@ -561,7 +530,7 @@ public class ClustersRetriever
                     middle.x,
                     params.maxExpandDx,
                     interline,
-                    globalSlope);
+                    slope);
 
                 for (Point2D point : points) {
                     // Check vertical distance, if point is available
@@ -746,8 +715,9 @@ public class ClustersRetriever
     private Double ordinateOf (Point2D point)
     {
         if (point != null) {
-            return getSheetTopEdge()
-                       .ptLineDist(point);
+            return sheet.getSkew()
+                        .deskewed(point)
+                        .getY();
         } else {
             return null;
         }

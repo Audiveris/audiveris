@@ -294,6 +294,7 @@ public abstract class Constant
                 setTuple(prop, decode(prop));
             } else {
                 // Use source value
+                ///logger.info("setUnitAndName. unit:" + unit + " name:" + name);
                 setTuple(sourceString, decode(sourceString));
             }
 

@@ -136,8 +136,8 @@ public class FilamentAlignment
 
         if (orientation.isVertical()) {
             if ((coord < pStart.getY()) || (coord > pStop.getY())) {
-                double slope = (double) (pStop.getX() - pStart.getX()) / (double) (pStop.getY() -
-                               pStart.getY());
+                double slope = (pStop.getX() - pStart.getX()) / (pStop.getY() -
+                                                                pStart.getY());
 
                 return pStart.getX() + (slope * (coord - pStart.getY()));
             } else {
@@ -145,8 +145,8 @@ public class FilamentAlignment
             }
         } else {
             if ((coord < pStart.getX()) || (coord > pStop.getX())) {
-                double slope = (double) (pStop.getY() - pStart.getY()) / (double) (pStop.getX() -
-                               pStart.getX());
+                double slope = (pStop.getY() - pStart.getY()) / (pStop.getX() -
+                                                                pStart.getX());
 
                 return pStart.getY() + (slope * (coord - pStart.getX()));
             } else {
@@ -303,7 +303,7 @@ public class FilamentAlignment
 
             // Determine the number of segments and their precise length
             int           segCount = (int) Math.rint(length / typicalLength);
-            double        segLength = (double) length / segCount;
+            double        segLength = length / segCount;
             List<Point2D> newPoints = new ArrayList<Point2D>(segCount + 1);
 
             // First point

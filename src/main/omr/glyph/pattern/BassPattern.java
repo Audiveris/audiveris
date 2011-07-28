@@ -27,7 +27,6 @@ import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
 import omr.sheet.Scale;
-import omr.sheet.Scale.InterlineFraction;
 import omr.sheet.SystemInfo;
 import omr.sheet.grid.StaffInfo;
 
@@ -167,8 +166,8 @@ public class BassPattern
             PixelRectangle pixRect = new PixelRectangle(seed.getCentroid());
             pixRect.add(
                 new PixelPoint(
-                    pixRect.x - scale.toPixels(new InterlineFraction(2)),
-                    pixRect.y + scale.toPixels(new InterlineFraction(3))));
+                    pixRect.x - scale.toPixels(new Scale.Fraction(2, null)),
+                    pixRect.y + scale.toPixels(new Scale.Fraction(3, null))));
 
             return pixRect;
         }

@@ -649,7 +649,7 @@ public class Lag<L extends Lag<L, S>, S extends Section>
             final List<Run>     runList = new ArrayList<Run>();
             final List<Integer> posList = new ArrayList<Integer>();
 
-            for (S section : sections) {
+            for (Section section : sections) {
                 final List<Run> sectionRuns = section.getRuns();
                 int             pos = section.getFirstPos();
 

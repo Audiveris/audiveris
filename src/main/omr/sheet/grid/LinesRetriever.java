@@ -35,6 +35,7 @@ import omr.score.ui.PagePainter;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
+import omr.sheet.Skew;
 
 import omr.stick.StickSection;
 import static omr.util.HorizontalSide.*;
@@ -127,18 +128,6 @@ public class LinesRetriever
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------------//
-    // getGlobalSlope //
-    //----------------//
-    /**
-     * Report the measured global slope of the sheet
-     * @return the sheet global slope
-     */
-    public double getGlobalSlope ()
-    {
-        return globalSlope;
-    }
-
     //--------//
     // getLag //
     //--------//
@@ -179,6 +168,7 @@ public class LinesRetriever
             // Compute global slope out of longest filaments
             watch.start("retrieveGlobalSlope");
             globalSlope = retrieveGlobalSlope();
+            sheet.setSkew(new Skew(globalSlope, sheet));
             logger.info(
                 sheet.getLogPrefix() + "Global slope: " + (float) globalSlope);
 
@@ -187,7 +177,6 @@ public class LinesRetriever
                 sheet,
                 filaments,
                 scale.interline(),
-                globalSlope,
                 mainPatternColor);
             watch.start("clustersRetriever");
 
@@ -207,7 +196,6 @@ public class LinesRetriever
                     sheet,
                     secondFilaments,
                     secondInterline,
-                    globalSlope,
                     secondPatternColor);
                 watch.start("secondClustersRetriever");
                 secondClustersRetriever.buildInfo();
@@ -463,8 +451,8 @@ public class LinesRetriever
             Filament fil = filaments.get(i);
             Point2D  start = fil.getStartPoint();
             Point2D  stop = fil.getStopPoint();
-            slopes += ((double) (stop.getY() - start.getY()) / (stop.getX() -
-                                                               start.getX()));
+            slopes += ((stop.getY() - start.getY()) / (stop.getX() -
+                                                      start.getX()));
         }
 
         return slopes / topCount;

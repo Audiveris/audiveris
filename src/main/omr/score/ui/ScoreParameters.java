@@ -1196,8 +1196,8 @@ public class ScoreParameters
                 (int) (constants.maxSlotMargin.getValue() * 100),
                 ((score != null) && score.getFirstPage()
                                          .hasSlotMargin())
-                                ? score.getFirstPage().getSlotMargin().doubleValue()
-                                : Page.getDefaultSlotMargin().doubleValue());
+                                ? score.getFirstPage().getSlotMargin().getValue()
+                                : Page.getDefaultSlotMargin().getValue());
             policyCombo = createPolicyCombo();
             policyDefaultBox.setText("Set as default");
             policyDefaultBox.setToolTipText(
@@ -1235,7 +1235,7 @@ public class ScoreParameters
             double val = dblValue();
 
             if (defaultBox.isSelected() &&
-                (Math.abs(Page.getDefaultSlotMargin().doubleValue() - val) > .001)) {
+                (Math.abs(Page.getDefaultSlotMargin().getValue() - val) > .001)) {
                 logger.info("Default slot margin is now " + val);
                 Page.setDefaultSlotMargin(val);
             }

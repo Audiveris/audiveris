@@ -60,9 +60,9 @@ import omr.step.Step;
 import omr.step.StepException;
 import omr.step.Steps;
 
+import omr.stick.SectionsSource;
 import omr.stick.StickSection;
 import omr.stick.SticksBuilder;
-import omr.stick.SectionsSource;
 import omr.stick.UnknownSectionPredicate;
 
 import omr.ui.BoardsPane;
@@ -161,7 +161,7 @@ public class SystemsBuilder
         systems = sheet.getSystems();
 
         // BarsChecker companion, in charge of purely physical tests
-        barsChecker = new BarsChecker(sheet, lag, 0, false);
+        barsChecker = new BarsChecker(sheet, lag, false);
     }
 
     //~ Methods ----------------------------------------------------------------

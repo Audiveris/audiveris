@@ -21,7 +21,6 @@ import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
-import omr.sheet.Scale.InterlineFraction;
 import omr.sheet.Sheet;
 
 import omr.step.StepException;
@@ -70,7 +69,7 @@ public class Page
     private SlotPolicy slotPolicy;
 
     /** The page slot horizontal margin, expressed in interline fraction */
-    private InterlineFraction slotMargin;
+    private Scale.Fraction slotMargin;
 
     /** Average beam thickness, if known */
     private Integer beamThickness;
@@ -148,9 +147,9 @@ public class Page
      * Report the default horizontal Slot margin
      * @return the slotMargin (in interline fraction)
      */
-    public static InterlineFraction getDefaultSlotMargin ()
+    public static Scale.Fraction getDefaultSlotMargin ()
     {
-        return constants.defaultSlotMargin.getWrappedValue();
+        return constants.defaultSlotMargin;
     }
 
     //----------------------//
@@ -267,9 +266,9 @@ public class Page
      * Report the minimum acceptable spacing between slots
      * @return the minimum spacing (in interline fraction)
      */
-    public static InterlineFraction getMinSlotSpacing ()
+    public static Scale.Fraction getMinSlotSpacing ()
     {
-        return constants.minSlotSpacing.getWrappedValue();
+        return constants.minSlotSpacing;
     }
 
     //----------------//
@@ -398,31 +397,6 @@ public class Page
         return sheet;
     }
 
-    //--------------//
-    // setSkewAngle //
-    //--------------//
-    /**
-     * Assign score global skew angle
-     * @param skewAngle the detected skew angle, in radians, clockwise
-     */
-    public void setSkewAngle (double skewAngle)
-    {
-        this.skewAngle = skewAngle;
-    }
-
-    //--------------//
-    // getSkewAngle //
-    //--------------//
-    /**
-     * Report the score skew angle
-     *
-     * @return skew angle, in radians, clock-wise
-     */
-    public double getSkewAngle ()
-    {
-        return skewAngle;
-    }
-
     //---------------//
     // setSlotMargin //
     //---------------//
@@ -430,9 +404,9 @@ public class Page
      * Assign the slot margin for this score
      * @param fraction the horizontal margin, expressed in interline fraction
      */
-    public void setSlotMargin (InterlineFraction fraction)
+    public void setSlotMargin (Scale.Fraction fraction)
     {
-        this.slotMargin = new InterlineFraction(fraction.doubleValue());
+        slotMargin = fraction;
     }
 
     //---------------//
@@ -443,7 +417,7 @@ public class Page
      * If the value is not yet set, it is set to the default value and returned.
      * @return the slotMargin (in interline fraction)
      */
-    public InterlineFraction getSlotMargin ()
+    public Scale.Fraction getSlotMargin ()
     {
         if (!hasSlotMargin()) {
             slotMargin = getDefaultSlotMargin();
