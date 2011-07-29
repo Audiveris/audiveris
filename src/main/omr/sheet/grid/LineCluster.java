@@ -15,6 +15,7 @@ import omr.glyph.GlyphSection;
 
 import omr.log.Logger;
 
+import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
 import omr.util.Vip;
@@ -132,11 +133,11 @@ public class LineCluster
      * Report the center of cluster
      * @return the center
      */
-    public Point2D getCenter ()
+    public PixelPoint getCenter ()
     {
         PixelRectangle box = getContourBox();
 
-        return new Point2D.Double(
+        return new PixelPoint(
             box.x + (box.width / 2),
             box.y + (box.height / 2));
     }
@@ -231,7 +232,7 @@ public class LineCluster
      * Report the sequence of points that correspond to a provided abscissa
      * @param x the provided abscissa
      * @param xMargin maximum abscissa margin for horizontal extrapolation
-     * @param interline the standard interline value, used for vertical 
+     * @param interline the standard interline value, used for vertical
      * extrapolations
      * @return the sequence of cluster points, from top to bottom, with perhaps
      * some holes indicated by null values
@@ -709,10 +710,14 @@ public class LineCluster
     private void include (LineCluster that,
                           int         deltaPos)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine(
+        if (logger.isFineEnabled() || isVip() || that.isVip()) {
+            logger.info(
                 "Inclusion of " + that + " into " + this + " deltaPos:" +
                 deltaPos);
+
+            if (that.isVip()) {
+                setVip();
+            }
         }
 
         for (Entry<Integer, FilamentLine> entry : that.lines.entrySet()) {

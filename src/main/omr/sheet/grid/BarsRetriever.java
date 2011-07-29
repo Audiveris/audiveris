@@ -36,6 +36,7 @@ import omr.score.ui.PagePainter;
 import omr.sheet.BarsChecker;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
+import omr.sheet.Skew;
 
 import omr.step.StepException;
 
@@ -589,8 +590,9 @@ public class BarsRetriever
     private boolean canConnectSystems (SystemFrame prevSystem,
                                        SystemFrame nextSystem)
     {
-        int maxBarPosGap = scale.toPixels(constants.maxBarPosGap);
-        int maxBarCoordGap = scale.toPixels(constants.maxBarCoordGap);
+        int  maxBarPosGap = scale.toPixels(constants.maxBarPosGap);
+        int  maxBarCoordGap = scale.toPixels(constants.maxBarCoordGap);
+        Skew skew = sheet.getSkew();
 
         logger.info(
             "Checking S#" + prevSystem.getId() + "(" +
@@ -617,7 +619,7 @@ public class BarsRetriever
 
         // Check vertical connections
         for (Stick prevStick : prevBar.getSticks()) {
-            Point2D prevPoint = prevStick.getStopPoint();
+            Point2D prevPoint = skew.deskewed(prevStick.getStopPoint());
 
             for (Stick nextStick : nextBar.getSticks()) {
                 // Special case
@@ -632,24 +634,25 @@ public class BarsRetriever
                 //                    }
                 //                    
                 //                }
-                Point2D nextPoint = nextStick.getStartPoint();
+                Point2D nextPoint = skew.deskewed(nextStick.getStartPoint());
 
                 // Check dx
                 double dx = Math.abs(nextPoint.getX() - prevPoint.getX());
 
                 // Check dy
-                double prevY = prevStaff.getLastLine()
-                                        .getEndPoint(LEFT)
-                                        .getY();
-                double nextY = nextStaff.getFirstLine()
-                                        .getEndPoint(LEFT)
-                                        .getY();
+                double prevY = skew.deskewed(
+                    prevStaff.getLastLine().getEndPoint(LEFT))
+                                   .getY();
+                double nextY = skew.deskewed(
+                    nextStaff.getFirstLine().getEndPoint(LEFT))
+                                   .getY();
                 double dy = Math.abs(
                     Math.min(nextY, nextPoint.getY()) -
                     Math.max(prevY, prevPoint.getY()));
                 logger.info(
                     "F" + prevStick.getId() + "-F" + nextStick.getId() +
-                    " dx:" + (float) dx + " dy:" + (float) dy);
+                    " dx:" + (float) dx + " vs " + maxBarPosGap + ", dy:" +
+                    (float) dy + " vs " + maxBarCoordGap);
 
                 if ((dx <= maxBarPosGap) && (dy <= maxBarCoordGap)) {
                     logger.warning(
@@ -1100,7 +1103,7 @@ public class BarsRetriever
             2, // 2.5
             "Maximum delta coordinate for a vertical gap between bars");
         Scale.Fraction  maxBarPosGap = new Scale.Fraction(
-            0.2,
+            0.3,
             "Maximum delta position for a vertical gap between bars");
         Scale.Fraction  minRunLength = new Scale.Fraction(
             1.5,

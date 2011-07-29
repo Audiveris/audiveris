@@ -110,10 +110,10 @@ public class ClustersRetriever
     private final Color patternColor;
 
     /**
-     * The popular length of patterns detected for the specified interline
+     * The popular size of patterns detected for the specified interline
      * (typically: 4, 5 or 6)
      */
-    private int popLength;
+    private int popSize;
 
     /** X values per column index */
     private int[] colX;
@@ -188,12 +188,11 @@ public class ClustersRetriever
         retrievePatterns();
 
         // Remember the most popular length 
-        retrievePopularLength();
+        retrievePopularSize();
 
         // Check relevance
-        if ((popLength < 4) || (popLength > 6)) {
-            logger.warning(
-                "Giving up spurious line pattern length: " + popLength);
+        if ((popSize < 4) || (popSize > 6)) {
+            logger.warning("Giving up spurious line pattern size: " + popSize);
 
             return discardedFilaments;
         }
@@ -206,7 +205,7 @@ public class ClustersRetriever
 
         logger.info(
             sheet.getLogPrefix() + "Retrieved line clusters: " +
-            clusters.size() + " of length: " + popLength + " with interline: " +
+            clusters.size() + " of size: " + popSize + " with interline: " +
             interline);
 
         return discardedFilaments;
@@ -370,6 +369,31 @@ public class ClustersRetriever
         return dist <= params.maxMergeDy;
     }
 
+    //-------------------------//
+    // computeAcceptableLength //
+    //-------------------------//
+    private double computeAcceptableLength ()
+    {
+        // Determine minimum true length for valid clusters
+        List<Integer> lengths = new ArrayList<Integer>();
+
+        for (LineCluster cluster : clusters) {
+            lengths.add(cluster.getTrueLength());
+        }
+
+        Collections.sort(lengths);
+
+        int    medianLength = lengths.get(lengths.size() / 2);
+        double minLength = medianLength * constants.minClusterLengthRatio.getValue();
+
+        if (logger.isFineEnabled()) {
+            logger.info(
+                "medianLength: " + medianLength + " minLength: " + minLength);
+        }
+
+        return minLength;
+    }
+
     //------------------//
     // connectAncestors //
     //------------------//
@@ -422,44 +446,11 @@ public class ClustersRetriever
         for (Iterator<LineCluster> it = clusters.iterator(); it.hasNext();) {
             LineCluster cluster = it.next();
 
-            if (cluster.getSize() != popLength) {
+            if (cluster.getSize() != popSize) {
                 if (logger.isFineEnabled()) {
                     logger.info("Destroying non standard " + cluster);
                 }
 
-                cluster.destroy();
-                it.remove();
-            }
-        }
-    }
-
-    //-------------------------//
-    // destroySpuriousClusters //
-    //-------------------------//
-    private void destroySpuriousClusters ()
-    {
-        // Determine minimum true length for valid clusters
-        List<Integer> lengths = new ArrayList<Integer>();
-
-        for (LineCluster cluster : clusters) {
-            lengths.add(cluster.getTrueLength());
-        }
-
-        Collections.sort(lengths);
-
-        int    medianLength = lengths.get(lengths.size() / 2);
-        double minLength = medianLength * constants.minClusterLengthRatio.getValue();
-
-        if (logger.isFineEnabled()) {
-            logger.info(
-                "medianLength: " + medianLength + " minLength: " + minLength);
-        }
-
-        for (Iterator<LineCluster> it = clusters.iterator(); it.hasNext();) {
-            LineCluster cluster = it.next();
-
-            if (cluster.getTrueLength() < minLength) {
-                logger.info("Destroying spurious " + cluster);
                 cluster.destroy();
                 it.remove();
             }
@@ -487,7 +478,7 @@ public class ClustersRetriever
     private void dumpClusters ()
     {
         for (LineCluster cluster : clusters) {
-            logger.info(cluster.toString());
+            logger.info(cluster.getCenter() + " " + cluster.toString());
         }
     }
 
@@ -637,12 +628,58 @@ public class ClustersRetriever
         removeMergedFilaments();
     }
 
+    //-------------------//
+    // mergeClusterPairs //
+    //-------------------//
+    /**
+     * Merge clusters horizontally or destroy short clusters
+     */
+    private void mergeClusterPairs ()
+    {
+        // Sort clusters according to their ordinate in page
+        Collections.sort(clusters, ordinateComparator);
+
+        double minLength = computeAcceptableLength();
+        WholeLoop: 
+        for (int idx = 0; idx < clusters.size();) {
+            LineCluster cluster = clusters.get(idx);
+            Point2D     dskCenter = skew.deskewed(cluster.getCenter());
+            double      yMax = dskCenter.getY() + params.maxMergeCenterDy;
+
+            for (LineCluster cl : clusters.subList(idx + 1, clusters.size())) {
+                // Check dy
+                if (skew.deskewed(cl.getCenter())
+                        .getY() > yMax) {
+                    break;
+                }
+
+                // Merge
+                logger.info(
+                    "Pairing clusters C" + cluster.getId() + " & C" +
+                    cl.getId());
+                cluster.mergeWith(cl, 0);
+                clusters.remove(cl);
+
+                continue WholeLoop; // Recheck at same index
+            }
+
+            // Short isolated?
+            if (cluster.getTrueLength() < minLength) {
+                logger.info("Destroying spurious " + cluster);
+                clusters.remove(cluster);
+            } else {
+                idx++; // Move forward
+            }
+        }
+
+        removeMergedFilaments();
+    }
+
     //---------------//
     // mergeClusters //
     //---------------//
     /**
-     * Assuming the clusters list is sorted according to their ordinate, merge
-     * compatible clusters as much as possible
+     * Merge compatible clusters as much as possible
      */
     private void mergeClusters ()
     {
@@ -675,16 +712,10 @@ public class ClustersRetriever
                     if (headBox.intersects(candidateBox)) {
                         // Try a merge
                         if (canMerge(head, candidate, deltaPos)) {
-                            if (logger.isFineEnabled() ||
-                                head.isVip() ||
-                                candidate.isVip()) {
-                                logger.info(
+                            if (logger.isFineEnabled()) {
+                                logger.fine(
                                     "Merging " + candidate + " with " + head +
                                     " delta:" + deltaPos.value);
-
-                                if (head.isVip()) {
-                                    candidate.setVip();
-                                }
                             }
 
                             // Do the merge
@@ -692,10 +723,6 @@ public class ClustersRetriever
 
                             break;
                         }
-
-                        //                    } else if (headBox.y > (candidateBox.y +
-                        //                                           candidateBox.height)) {
-                        //                        break CandidateLoop; // No more possibility (TBC)
                     }
                 }
             }
@@ -802,16 +829,17 @@ public class ClustersRetriever
         // Discard non standard clusters
         destroyNonStandardClusters();
 
-        // Discard spurious clusters
-        destroySpuriousClusters();
+        // Merge clusters horizontally
+        mergeClusterPairs();
 
         // Discard non-clustered filaments
         discardNonClusteredFilaments();
 
         // Debug
-        if (logger.isFineEnabled()) {
-            dumpClusters();
-        }
+        ///if (logger.isFineEnabled()) {
+        dumpClusters();
+
+        ///}
     }
 
     //----------------------//
@@ -919,13 +947,13 @@ public class ClustersRetriever
         }
     }
 
-    //-----------------------//
-    // retrievePopularLength //
-    //-----------------------//
+    //---------------------//
+    // retrievePopularSize //
+    //---------------------//
     /**
-     * Retrieve the most popular length (line count) among all patterns
+     * Retrieve the most popular size (line count) among all patterns
      */
-    private void retrievePopularLength ()
+    private void retrievePopularSize ()
     {
         // Build histogram of patterns lengths
         Histogram<Integer> histo = new Histogram<Integer>();
@@ -938,11 +966,11 @@ public class ClustersRetriever
 
         // Use the most popular length
         // Should be 4 for bass tab, 5 for standard notation, 6 for guitar tab
-        popLength = histo.getMaxBucket();
+        popSize = histo.getMaxBucket();
 
         if (logger.isFineEnabled()) {
             logger.fine(
-                sheet.getLogPrefix() + "Popular line pattern: " + popLength +
+                sheet.getLogPrefix() + "Popular line pattern: " + popSize +
                 " histo:" + histo.dataString());
         }
     }
@@ -957,7 +985,7 @@ public class ClustersRetriever
         // Trim clusters with too many lines
         for (Iterator<LineCluster> it = clusters.iterator(); it.hasNext();) {
             LineCluster cluster = it.next();
-            cluster.trim(popLength);
+            cluster.trim(popSize);
         }
     }
 
@@ -994,6 +1022,11 @@ public class ClustersRetriever
         Scale.Fraction maxMergeDy = new Scale.Fraction(
             0.4,
             "Maximum dy to merge two clusters");
+
+        //
+        Scale.Fraction maxMergeCenterDy = new Scale.Fraction(
+            1.0,
+            "Maximum center dy to merge two clusters");
 
         //
         Scale.Fraction clusterXMargin = new Scale.Fraction(
@@ -1069,6 +1102,7 @@ public class ClustersRetriever
         final int maxExpandDy;
         final int maxMergeDx;
         final int maxMergeDy;
+        final int maxMergeCenterDy;
         final int clusterXMargin;
         final int clusterYMargin;
 
@@ -1086,6 +1120,7 @@ public class ClustersRetriever
             maxExpandDy = scale.toPixels(constants.maxExpandDy);
             maxMergeDx = scale.toPixels(constants.maxMergeDx);
             maxMergeDy = scale.toPixels(constants.maxMergeDy);
+            maxMergeCenterDy = scale.toPixels(constants.maxMergeCenterDy);
             clusterXMargin = scale.toPixels(constants.clusterXMargin);
             clusterYMargin = scale.toPixels(constants.clusterYMargin);
 
