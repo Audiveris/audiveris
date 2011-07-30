@@ -64,9 +64,6 @@ public class TargetBuilder
     /** Related sheet */
     private final Sheet sheet;
 
-    /** Companion in charge of staff lines */
-    private final LinesRetriever linesRetriever;
-
     /** Companion in charge of bar lines */
     private final BarsRetriever barsRetriever;
 
@@ -105,16 +102,13 @@ public class TargetBuilder
     /**
      * Creates a new TargetBuilder object.
      *
-     * @param sheet DOCUMENT ME!
-     * @param linesRetriever DOCUMENT ME!
-     * @param barsRetriever DOCUMENT ME!
+     * @param sheet the related sheet
+     * @param barsRetriever the bars companion
      */
-    public TargetBuilder (Sheet          sheet,
-                          LinesRetriever linesRetriever,
-                          BarsRetriever  barsRetriever)
+    public TargetBuilder (Sheet         sheet,
+                          BarsRetriever barsRetriever)
     {
         this.sheet = sheet;
-        this.linesRetriever = linesRetriever;
         this.barsRetriever = barsRetriever;
     }
 
@@ -157,8 +151,12 @@ public class TargetBuilder
             return;
         }
 
+        Scale  scale = sheet.getScale();
+        double absDx = scale.toPixelsDouble(constants.systemMarkWidth);
+        double absDy = sheet.getSkew()
+                            .getSlope() * absDx;
         Stroke systemStroke = new BasicStroke(
-            0.5f,
+            (float) scale.toPixelsDouble(constants.systemMarkStroke),
             BasicStroke.CAP_ROUND,
             BasicStroke.JOIN_ROUND);
 
@@ -173,7 +171,16 @@ public class TargetBuilder
                 Point2D bot = system.getLastStaff()
                                     .getLastLine()
                                     .getEndPoint(side);
-                g.draw(new Line2D.Double(top, bot));
+
+                // Draw something like a vertical bracket
+                double dx = (side == LEFT) ? (-absDx) : absDx;
+                double dy = (side == LEFT) ? (-absDy) : absDy;
+                Path2D p = new Path2D.Double();
+                p.moveTo(top.getX(), top.getY());
+                p.lineTo(top.getX() + dx, top.getY() + dy);
+                p.lineTo(bot.getX() + dx, bot.getY() + dy);
+                p.lineTo(bot.getX(), bot.getY());
+                g.draw(p);
             }
         }
     }
@@ -438,6 +445,16 @@ public class TargetBuilder
         Scale.LineFraction gridPointSize = new Scale.LineFraction(
             0.2,
             "Size of displayed grid points");
+
+        //
+        Scale.Fraction     systemMarkWidth = new Scale.Fraction(
+            2.0,
+            "Width of system marks");
+
+        //
+        Scale.LineFraction systemMarkStroke = new Scale.LineFraction(
+            2.0,
+            "Thickness of system marks");
 
         //
         Constant.Boolean storeDewarp = new Constant.Boolean(

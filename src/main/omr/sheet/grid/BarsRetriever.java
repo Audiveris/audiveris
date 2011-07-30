@@ -100,6 +100,9 @@ public class BarsRetriever
     /** Collection of bar sticks that intersect a staff */
     private Map<StaffInfo, List<StickX>> barSticks;
 
+    /** System tops */
+    private Integer[] systemTops;
+
     /** Sequence of systems */
     private List<SystemFrame> systems;
 
@@ -199,10 +202,14 @@ public class BarsRetriever
             new JunctionRatioPolicy(params.maxLengthRatio));
         sectionsBuilder.createSections(vertTable);
 
-        //                vLag.getVertexById(942)
-        //                    .setVip(); // BINGO
-        //                vLag.getVertexById(923)
-        //                    .setVip(); // BINGO
+        // Debug sections VIPs
+        for (int id : params.vipSections) {
+            GlyphSection sect = vLag.getVertexById(id);
+
+            if (sect != null) {
+                sect.setVip();
+            }
+        }
     }
 
     //-----------//
@@ -727,7 +734,8 @@ public class BarsRetriever
             vLag,
             Filament.class);
 
-        //factory.setVipGlyphs(9, 2); // BINGO
+        // Debug VIP sticks
+        factory.setVipGlyphs(params.vipSticks);
 
         // Factory parameters adjustment
         factory.setMaxSectionThickness(constants.maxSectionThickness);
@@ -964,7 +972,7 @@ public class BarsRetriever
         Collections.sort(bars, Stick.reverseLengthComparator);
         barSticks = new HashMap<StaffInfo, List<StickX>>();
 
-        Integer[] tops = new Integer[staffManager.getStaffCount()];
+        systemTops = new Integer[staffManager.getStaffCount()];
 
         for (Stick stick : bars) {
             Point2D   start = stick.getStartPoint();
@@ -994,17 +1002,13 @@ public class BarsRetriever
                 staffSticks.add(new StickX(inter.getX(), stick));
 
                 ///if ((tops[id - 1] == null) || (top < tops[id - 1])) {
-                if (tops[id - 1] == null) {
-                    tops[id - 1] = top;
+                if (systemTops[id - 1] == null) {
+                    systemTops[id - 1] = top;
                 }
             }
         }
 
-        ///if (logger.isFineEnabled()) {
-        logger.info("top staff ids: " + Arrays.toString(tops));
-
-        ///}
-        return tops;
+        return systemTops;
     }
 
     //-----------------//
@@ -1018,10 +1022,14 @@ public class BarsRetriever
     {
         do {
             // Retrieve the staves that start systems
-            Integer[] tops = retrieveSystemTops();
+            if (systemTops == null) {
+                systemTops = retrieveSystemTops();
+            }
+
+            logger.info("top staff ids: " + Arrays.toString(systemTops));
 
             // Create system frames using staves tops
-            systems = createSystems(tops);
+            systems = createSystems(systemTops);
 
             // Retrieve left bar of each system
             for (SystemFrame system : systems) {
@@ -1055,9 +1063,6 @@ public class BarsRetriever
     {
         boolean modified = false;
 
-        // Consistency of system lengths
-        // TBD
-
         // Check connection of left bars across systems
         for (int i = 1; i < systems.size(); i++) {
             if (canConnectSystems(systems.get(i - 1), systems.get(i))) {
@@ -1065,7 +1070,94 @@ public class BarsRetriever
             }
         }
 
+        // More touchy decisions here
+        if (!modified) {
+            if (constants.smartStavesConnections.getValue()) {
+                return trySmartConnections();
+            }
+        } else {
+            systemTops = null; // To force recomputation
+        }
+
         return modified;
+    }
+
+    //--------------------//
+    // tryRangeConnection //
+    //--------------------//
+    /**
+     * Try to connect all systems in the provided range
+     * @param range sublist of systems
+     * @return true if OK
+     */
+    private boolean tryRangeConnection (List<SystemFrame> range)
+    {
+        final SystemFrame firstSystem = range.get(0);
+        final StaffInfo   firstStaff = firstSystem.getFirstStaff();
+        final int         topId = firstStaff.getId();
+        int               idx = staffManager.getStaves()
+                                            .indexOf(firstStaff);
+
+        for (SystemFrame system : range) {
+            for (StaffInfo staff : system.getStaves()) {
+                systemTops[idx++] = topId;
+            }
+        }
+
+        logger.warning(
+            "Smart staves connection from " + topId + " to " +
+            range.get(range.size() - 1).getLastStaff().getId());
+
+        return true;
+    }
+
+    //---------------------//
+    // trySmartConnections //
+    //---------------------//
+    /**
+     * Method to try system connections not based on local bar connections
+     * @return true if connection decided
+     */
+    private boolean trySmartConnections ()
+    {
+        // Valuable hints: 
+        // - Significant differences in systems lengths
+        // - System w/o left bar, while others have some
+
+        // Systems lengths
+        List<Integer> lengths = new ArrayList<Integer>(systems.size());
+
+        // Extrema
+        int smallestLength = Integer.MAX_VALUE;
+        int largestLength = Integer.MIN_VALUE;
+
+        for (SystemFrame system : systems) {
+            int length = system.getStaves()
+                               .size();
+            lengths.add(length);
+            smallestLength = Math.min(smallestLength, length);
+            largestLength = Math.max(largestLength, length);
+        }
+
+        // If all systems are equal in length, there is nothing to try
+        if (smallestLength == largestLength) {
+            return false;
+        }
+
+        if ((2 * largestLength) == staffManager.getStaffCount()) {
+            // Check that we can add up to largest size
+            if (lengths.get(0) == largestLength) {
+                return tryRangeConnection(systems.subList(1, lengths.size()));
+            } else if (lengths.get(lengths.size() - 1) == largestLength) {
+                return tryRangeConnection(
+                    systems.subList(0, lengths.size() - 1));
+            }
+        } else if ((3 * largestLength) == staffManager.getStaffCount()) {
+            // Check that we can add up to largest size
+            // TBD
+        }
+
+        return false;
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -1078,64 +1170,78 @@ public class BarsRetriever
     {
         //~ Instance fields ----------------------------------------------------
 
-        Constant.Ratio  maxLengthRatio = new Constant.Ratio(
+        Constant.Ratio   maxLengthRatio = new Constant.Ratio(
             1.5,
             "Maximum ratio in length for a run to be combined with an existing section");
 
         // Constants specified WRT mean interline
         // --------------------------------------
-        Scale.Fraction  maxSectionThickness = new Scale.Fraction(
+        Scale.Fraction   maxSectionThickness = new Scale.Fraction(
             0.8,
             "Maximum horizontal section thickness WRT mean line height");
-        Scale.Fraction  maxFilamentThickness = new Scale.Fraction(
+        Scale.Fraction   maxFilamentThickness = new Scale.Fraction(
             1.0,
             "Maximum filament thickness WRT mean line height");
-        Scale.Fraction  maxOverlapDeltaPos = new Scale.Fraction(
+        Scale.Fraction   maxOverlapDeltaPos = new Scale.Fraction(
             1.0,
             "Maximum delta position between two overlapping filaments");
-        Scale.Fraction  maxCoordGap = new Scale.Fraction(
+        Scale.Fraction   maxCoordGap = new Scale.Fraction(
             0.5,
             "Maximum delta coordinate for a gap between filaments");
-        Scale.Fraction  maxPosGap = new Scale.Fraction(
+        Scale.Fraction   maxPosGap = new Scale.Fraction(
             0.3,
             "Maximum delta abscissa for a gap between filaments");
-        Scale.Fraction  maxBarCoordGap = new Scale.Fraction(
+        Scale.Fraction   maxBarCoordGap = new Scale.Fraction(
             2, // 2.5
             "Maximum delta coordinate for a vertical gap between bars");
-        Scale.Fraction  maxBarPosGap = new Scale.Fraction(
+        Scale.Fraction   maxBarPosGap = new Scale.Fraction(
             0.3,
             "Maximum delta position for a vertical gap between bars");
-        Scale.Fraction  minRunLength = new Scale.Fraction(
+        Scale.Fraction   minRunLength = new Scale.Fraction(
             1.5,
             "Minimum length for a vertical run to be considered");
-        Scale.Fraction  minLongLength = new Scale.Fraction(
+        Scale.Fraction   minLongLength = new Scale.Fraction(
             8,
             "Minimum length for a long vertical bar");
-        Scale.Fraction  maxDistanceFromStaffSide = new Scale.Fraction(
+        Scale.Fraction   maxDistanceFromStaffSide = new Scale.Fraction(
             4,
             "Max abscissa delta when looking for left or right side bars");
-        Scale.Fraction  maxLeftBarPackWidth = new Scale.Fraction(
-            1.5,
+        Scale.Fraction   maxLeftBarPackWidth = new Scale.Fraction(
+            2.0,
             "Max width of a pack of vertical barlines");
-        Scale.Fraction  maxRightBarPackWidth = new Scale.Fraction(
+        Scale.Fraction   maxRightBarPackWidth = new Scale.Fraction(
             0.5,
             "Max width of a pack of vertical barlines");
-        Scale.Fraction  maxBarOffset = new Scale.Fraction(
+        Scale.Fraction   maxBarOffset = new Scale.Fraction(
             4,
             "Max abscissa offset of a bar candidate within staff width");
-        Scale.Fraction  maxSideDx = new Scale.Fraction(
+        Scale.Fraction   maxSideDx = new Scale.Fraction(
             .5,
             "Max difference on theoretical bar abscissa");
-        Scale.Fraction  maxLineExtension = new Scale.Fraction(
+        Scale.Fraction   maxLineExtension = new Scale.Fraction(
             .5,
             "Max extension of line beyond staff bar");
 
         // Constants for display
         //
-        Constant.Double splineThickness = new Constant.Double(
+        Constant.Double  splineThickness = new Constant.Double(
             "thickness",
             0.5,
             "Stroke thickness to draw filaments curves");
+
+        //
+        Constant.Boolean smartStavesConnections = new Constant.Boolean(
+            true,
+            "(beta) Should we try smart staves connections into systems?");
+
+        // Constants for debugging
+        //
+        Constant.String verticalVipSections = new Constant.String(
+            "",
+            "(Debug) Comma-separated list of VIP sections");
+        Constant.String verticalVipSticks = new Constant.String(
+            "",
+            "(Debug) Comma-separated list of VIP sticks");
     }
 
     //------------//
@@ -1180,6 +1286,10 @@ public class BarsRetriever
         /** Max extension of line beyond staff bar */
         final int maxLineExtension;
 
+        // Debug
+        final List<Integer> vipSections;
+        final List<Integer> vipSticks;
+
         //~ Constructors -------------------------------------------------------
 
         /**
@@ -1201,9 +1311,41 @@ public class BarsRetriever
             maxSideDx = scale.toPixels(constants.maxSideDx);
             maxLineExtension = scale.toPixels(constants.maxLineExtension);
 
+            // VIPs
+            vipSections = decode(constants.verticalVipSections.getValue());
+            vipSticks = decode(constants.verticalVipSticks.getValue());
+
             if (logger.isFineEnabled()) {
                 Main.dumping.dump(this);
             }
+
+            if (!vipSections.isEmpty()) {
+                logger.info("Vertical VIP sections: " + vipSections);
+            }
+
+            if (!vipSticks.isEmpty()) {
+                logger.info("Vertical VIP sticks: " + vipSticks);
+            }
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        private List<Integer> decode (String str)
+        {
+            List<Integer>   ids = new ArrayList<Integer>();
+
+            // Retrieve the list of ids
+            StringTokenizer st = new StringTokenizer(str, ",");
+
+            while (st.hasMoreTokens()) {
+                try {
+                    ids.add(Integer.decode(st.nextToken().trim()));
+                } catch (Exception ex) {
+                    logger.warning("Illegal id", ex);
+                }
+            }
+
+            return ids;
         }
     }
 
@@ -1248,6 +1390,12 @@ public class BarsRetriever
             }
 
             return sticks;
+        }
+
+        @Override
+        public String toString ()
+        {
+            return "Stick#" + stick.getId() + "@" + (float) x;
         }
     }
 }

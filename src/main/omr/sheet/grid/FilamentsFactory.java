@@ -281,10 +281,10 @@ public class FilamentsFactory
      * Debug method to flag certain glyphs as VIPs
      * @param ids the VIP glyphs ids
      */
-    public void setVipGlyphs (Integer... ids)
+    public void setVipGlyphs (Collection<Integer> ids)
     {
         vipGlyphs = new HashSet<Integer>();
-        vipGlyphs.addAll(Arrays.asList(ids));
+        vipGlyphs.addAll(ids);
     }
 
     //------//

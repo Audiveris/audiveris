@@ -836,10 +836,9 @@ public class ClustersRetriever
         discardNonClusteredFilaments();
 
         // Debug
-        ///if (logger.isFineEnabled()) {
-        dumpClusters();
-
-        ///}
+        if (logger.isFineEnabled()) {
+            dumpClusters();
+        }
     }
 
     //----------------------//

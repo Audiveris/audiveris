@@ -411,7 +411,7 @@ public class BarsChecker
             add(1, new RightCheck());
             add(1, new HeightDiffCheck());
             add(1, new AnchorCheck());
-            add(1, new StraightCheck());
+            ///add(1, new StraightCheck());
 
             if (!rough) {
                 add(1, new TopLeftChunkCheck());
@@ -603,7 +603,7 @@ public class BarsChecker
             0.0006,
             "Low maximum distance from straight line");
         Constant.Ratio  maxStraightHigh = new Constant.Ratio(
-            0.0007,
+            0.0015, // was 0.0007
             "High maximum distance from straight line");
         Scale.Fraction  maxThinWidth = new Scale.Fraction(
             0.3,

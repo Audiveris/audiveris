@@ -227,6 +227,9 @@ public class LinesRetriever
         // Create filament factory
         try {
             factory = new FilamentsFactory(scale, hLag, LineFilament.class);
+
+            // Debug VIP sticks
+            factory.setVipGlyphs(params.vipSticks);
         } catch (Exception ex) {
             logger.warning("Cannot create lines filament factory", ex);
         }
@@ -286,10 +289,14 @@ public class LinesRetriever
             new JunctionRatioPolicy(params.maxLengthRatio));
         sectionsBuilder.createSections(longHoriTable);
 
-        //        hLag.getVertexById(2500)
-        //            .setVip(); // BINGO
-        //        hLag.getVertexById(2506)
-        //            .setVip(); // BINGO
+        // Debug sections VIPs
+        for (int id : params.vipSections) {
+            GlyphSection sect = hLag.getVertexById(id);
+
+            if (sect != null) {
+                sect.setVip();
+            }
+        }
 
         // Purge hLag of too short sections
         //        final int minSectionLength = factory.getMinSectionLength();
@@ -499,6 +506,15 @@ public class LinesRetriever
         Constant.Boolean printWatch = new Constant.Boolean(
             false,
             "Should we print out the stop watch?");
+
+        // Constants for debugging
+        //
+        Constant.String horizontalVipSections = new Constant.String(
+            "",
+            "(Debug) Comma-separated list of VIP sections");
+        Constant.String horizontalVipSticks = new Constant.String(
+            "",
+            "(Debug) Comma-separated list of VIP sticks");
     }
 
     //------------//
@@ -523,6 +539,10 @@ public class LinesRetriever
         /** Percentage of top filaments used to retrieve global slope */
         final double topRatioForSlope;
 
+        // Debug
+        final List<Integer> vipSections;
+        final List<Integer> vipSticks;
+
         //~ Constructors -------------------------------------------------------
 
         /**
@@ -538,9 +558,41 @@ public class LinesRetriever
             maxLengthRatio = constants.maxLengthRatio.getValue();
             topRatioForSlope = constants.topRatioForSlope.getValue();
 
+            // VIPs
+            vipSections = decode(constants.horizontalVipSections.getValue());
+            vipSticks = decode(constants.horizontalVipSticks.getValue());
+
             if (logger.isFineEnabled()) {
                 Main.dumping.dump(this);
             }
+
+            if (!vipSections.isEmpty()) {
+                logger.info("Horizontal VIP sections: " + vipSections);
+            }
+
+            if (!vipSticks.isEmpty()) {
+                logger.info("Horizontal VIP sticks: " + vipSticks);
+            }
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        private List<Integer> decode (String str)
+        {
+            List<Integer>   ids = new ArrayList<Integer>();
+
+            // Retrieve the list of ids
+            StringTokenizer st = new StringTokenizer(str, ",");
+
+            while (st.hasMoreTokens()) {
+                try {
+                    ids.add(Integer.decode(st.nextToken().trim()));
+                } catch (Exception ex) {
+                    logger.warning("Illegal id", ex);
+                }
+            }
+
+            return ids;
         }
     }
 }

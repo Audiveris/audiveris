@@ -100,7 +100,7 @@ public class GridBuilder
 
         linesRetriever = new LinesRetriever(sheet);
         barsRetriever = new BarsRetriever(sheet);
-        targetBuilder = new TargetBuilder(sheet, linesRetriever, barsRetriever);
+        targetBuilder = new TargetBuilder(sheet, barsRetriever);
 
         sheet.setTargetBuilder(targetBuilder);
     }
