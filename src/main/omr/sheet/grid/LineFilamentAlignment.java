@@ -111,18 +111,17 @@ public class LineFilamentAlignment
                                 fils,
                                 virtualLength / 2).findInsertion();
 
-                            if (pt != null) {
-                                if (logger.isFineEnabled()) {
-                                    logger.info("Inserted " + pt);
-                                }
-
-                                points.add(ip++, pt);
-                                modified = true;
-                            } else {
-                                if (logger.isFineEnabled()) {
-                                    logger.info("No insertion at x: " + x);
-                                }
+                            if (pt == null) {
+                                // Take default line point instead
+                                pt = new VirtualPoint(x, getPositionAt(x));
                             }
+
+                            if (logger.isFineEnabled()) {
+                                logger.info("Inserted " + pt);
+                            }
+
+                            points.add(ip++, pt);
+                            modified = true;
                         }
                     }
                 }

@@ -597,16 +597,16 @@ public class StaffInfo
         if ((firstLine != null) && (lastLine != null)) {
             if (g.getClipBounds()
                  .intersects(getAreaBounds())) {
-                // Draw each horizontal line in the set
-                for (LineInfo line : lines) {
-                    line.render(g);
-                }
-
                 // Draw the left and right vertical lines
                 for (HorizontalSide side : HorizontalSide.values()) {
                     Point2D first = firstLine.getEndPoint(side);
                     Point2D last = lastLine.getEndPoint(side);
                     g.draw(new Line2D.Double(first, last));
+                }
+
+                // Draw each horizontal line in the set
+                for (LineInfo line : lines) {
+                    line.render(g);
                 }
 
                 return true;

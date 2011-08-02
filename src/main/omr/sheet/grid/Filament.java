@@ -124,6 +124,15 @@ public class Filament
         return (Filament) super.getAncestor();
     }
 
+    //------------------//
+    // getMeanCurvature //
+    //------------------//
+    public double getMeanCurvature ()
+    {
+        return getAlignment()
+                   .getMeanCurvature();
+    }
+
     //-----------//
     // getParent //
     //-----------//
@@ -224,6 +233,19 @@ public class Filament
         refDist = null;
     }
 
+    //-----------------//
+    // polishCurvature //
+    //-----------------//
+    /**
+     * Polish the filament by looking at local curvatures and removing sections
+     * when necessary.
+     */
+    public void polishCurvature ()
+    {
+        getAlignment()
+            .polishCurvature();
+    }
+
     //---------------//
     // getPositionAt //
     //---------------//
@@ -299,11 +321,10 @@ public class Filament
               .append(getAncestor());
         }
 
-//        if (refDist != null) {
-//            sb.append(" refDist:")
-//              .append(refDist);
-//        }
-
+        //        if (refDist != null) {
+        //            sb.append(" refDist:")
+        //              .append(refDist);
+        //        }
         return sb.toString();
     }
 }

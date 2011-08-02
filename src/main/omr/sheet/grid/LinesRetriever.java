@@ -435,9 +435,13 @@ public class LinesRetriever
 
         staffManager.computeStaffLimits();
 
-        // Cache (not really needed)
+        // Polish staff lines
         for (StaffInfo staff : staffManager.getStaves()) {
             staff.getArea();
+            for (LineInfo l : staff.getLines()) {
+                FilamentLine line = (FilamentLine) l;
+                line.fil.polishCurvature();
+            }
         }
     }
 

@@ -223,7 +223,10 @@ public class BarsChecker
             double res = suite.pass(context);
 
             if (logger.isFineEnabled() || stick.isVip()) {
-                logger.info("suite => " + res + " for " + stick);
+                logger.info(
+                    "suite => " + (float) res +
+                    ((stick.getResult() != null) ? (" " + stick.getResult()) : "") +
+                    " for " + stick);
             }
 
             if (res >= minResult) {
@@ -404,16 +407,17 @@ public class BarsChecker
 
             // Be very careful with check order, because of side-effects
             // topArea, bottomArea, isPartDefining, isThick are already set
-            add(1, new TopCheck()); // set topStaff?
-            add(1, new BottomCheck()); // set botStaff?
+            //
+            add(1, new TopCheck()); // May set topStaff
+            add(1, new BottomCheck()); // May set botStaff
             add(1, new VerticalCheck());
             add(1, new LeftCheck());
             add(1, new RightCheck());
             add(1, new HeightDiffCheck());
-            add(1, new AnchorCheck());
-            ///add(1, new StraightCheck());
+            add(1, new RadiusCheck());
 
             if (!rough) {
+                add(1, new AnchorCheck());
                 add(1, new TopLeftChunkCheck());
                 add(1, new TopRightChunkCheck());
                 add(1, new BottomLeftChunkCheck());
@@ -599,12 +603,12 @@ public class BarsChecker
             "slope",
             0.2,
             "High maximum difference with global slope");
-        Constant.Ratio  maxStraightLow = new Constant.Ratio(
-            0.0006,
-            "Low maximum distance from straight line");
-        Constant.Ratio  maxStraightHigh = new Constant.Ratio(
-            0.0015, // was 0.0007
-            "High maximum distance from straight line");
+        Scale.Fraction  minRadiusLow = new Scale.Fraction(
+            35,
+            "Low minimum radius");
+        Scale.Fraction  minRadiusHigh = new Scale.Fraction(
+            60,
+            "High minimum radius");
         Scale.Fraction  maxThinWidth = new Scale.Fraction(
             0.3,
             "Maximum width of a normal bar, versus a thick bar");
@@ -878,6 +882,44 @@ public class BarsChecker
         }
     }
 
+    //-------------//
+    // RadiusCheck //
+    //-------------//
+    private class RadiusCheck
+        extends Check<GlyphContext>
+    {
+        //~ Constructors -------------------------------------------------------
+
+        protected RadiusCheck ()
+        {
+            super(
+                "Radius",
+                "Check mean stick radius of curvature",
+                constants.minRadiusLow,
+                constants.minRadiusHigh,
+                true,
+                NON_STRAIGHT);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        // Retrieve a measure of x variance
+        @Implement(Check.class)
+        protected double getValue (GlyphContext context)
+        {
+            Stick stick = context.stick;
+
+            if (stick instanceof Filament) {
+                Filament fil = (Filament) stick;
+
+                return sheet.getScale()
+                            .pixelsToFrac(fil.getMeanCurvature());
+            } else {
+                return getHigh(); // A pass-through check
+            }
+        }
+    }
+
     //------------//
     // RightCheck //
     //------------//
@@ -923,38 +965,6 @@ public class BarsChecker
 
             return sheet.getScale()
                         .pixelsToFrac(dist);
-        }
-    }
-
-    //---------------//
-    // StraightCheck //
-    //---------------//
-    private class StraightCheck
-        extends Check<GlyphContext>
-    {
-        //~ Constructors -------------------------------------------------------
-
-        protected StraightCheck ()
-        {
-            super(
-                "Straight",
-                "Check that stick is close to a straight line",
-                constants.maxStraightLow,
-                constants.maxStraightHigh,
-                false,
-                NON_STRAIGHT);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        // Retrieve a measure of x variance
-        @Implement(Check.class)
-        protected double getValue (GlyphContext context)
-        {
-            Stick  stick = context.stick;
-            double meanDist = stick.getMeanDistance();
-
-            return (meanDist * meanDist) / (Math.sqrt(stick.getWeight()) * stick.getLength());
         }
     }
 

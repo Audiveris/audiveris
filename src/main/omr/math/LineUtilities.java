@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.math;
 
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
 /**
@@ -21,6 +23,34 @@ import java.awt.geom.Point2D;
 public class LineUtilities
 {
     //~ Methods ----------------------------------------------------------------
+
+    //----------//
+    // bisector //
+    //----------//
+    /**
+     * Return the bisector (french: médiatrice) of the provided segment
+     * @param segment the provided segment
+     * @return (a segment on) the bisector
+     */
+    public static Line2D bisector (Line2D segment)
+    {
+        double x1 = segment.getX1();
+        double y1 = segment.getY1();
+
+        double hdx = (segment.getX2() - x1) / 2;
+        double hdy = (segment.getY2() - y1) / 2;
+
+        // Use middle as reference point
+        double mx = x1 + hdx;
+        double my = y1 + hdy;
+
+        double x3 = mx + hdy;
+        double y3 = my - hdx;
+        double x4 = mx - hdy;
+        double y4 = my + hdx;
+
+        return new Line2D.Double(x3, y3, x4, y4);
+    }
 
     //--------------//
     // intersection //

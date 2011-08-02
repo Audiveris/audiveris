@@ -761,7 +761,8 @@ public class BarsRetriever
 
             if ((shape == Shape.THICK_BARLINE) ||
                 (shape == Shape.THIN_BARLINE)) {
-                bars.add((Stick) glyph);
+                Filament fil = (Filament) glyph;
+                bars.add(fil);
             }
         }
     }
@@ -867,20 +868,36 @@ public class BarsRetriever
         }
 
         // 1st pass w/ long bars, 2nd pass w/ shorter bars if needed
+        Set<Stick> longSticks = new HashSet<Stick>();
+
         for (boolean takeAllSticks : new boolean[] { false, true }) {
             boolean hasLongBar = false;
 
             for (StaffInfo staff : system.getStaves()) {
                 BarInfo bar = retrieveStaffSide(staff, LEFT, takeAllSticks);
 
-                if ((bar != null) && isLongBar(bar.getStick(RIGHT))) {
-                    hasLongBar = true;
+                if (bar != null) {
+                    Stick stick = bar.getStick(RIGHT);
+
+                    if (isLongBar(stick)) {
+                        hasLongBar = true;
+                        longSticks.add(stick);
+                    }
                 }
             }
 
             if (hasLongBar) {
                 break;
             }
+        }
+
+        // Polish long bars, if any
+        for (Stick stick : longSticks) {
+            if (logger.isFineEnabled() || stick.isVip()) {
+                logger.info("Polishing long bar#" + stick.getId());
+            }
+
+            ((Filament) stick).polishCurvature();
         }
     }
 
