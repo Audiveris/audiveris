@@ -148,6 +148,10 @@ public class GridBuilder
                 // Update the display
                 gridView.refresh();
             }
+            if (barsView != null) {
+                // Update the display
+                barsView.refresh();
+            }
 
             if (constants.printWatch.getValue()) {
                 watch.print();

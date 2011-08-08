@@ -632,9 +632,9 @@ public class StaffInfo
           .append(" id=")
           .append(getId())
           .append(" left=")
-          .append(left)
+          .append((float) left)
           .append(" right=")
-          .append(right);
+          .append((float) right);
 
         if (specificScale != null) {
             sb.append(" specificScale=")

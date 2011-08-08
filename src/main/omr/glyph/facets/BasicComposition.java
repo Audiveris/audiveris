@@ -43,10 +43,10 @@ class BasicComposition
      * Sections that compose this glyph. The collection is kept sorted
      * on GlyphSection order (TODO: check this statement)
      */
-    private SortedSet<GlyphSection> members = new TreeSet<GlyphSection>();
+    private final SortedSet<GlyphSection> members = new TreeSet<GlyphSection>();
 
     /** Contained parts, if this glyph is a compound */
-    private Set<Glyph> parts = new LinkedHashSet<Glyph>();
+    private final Set<Glyph> parts = new LinkedHashSet<Glyph>();
 
     /** Link to the compound, if any, this one is a part of */
     private Glyph partOf;
@@ -242,6 +242,20 @@ class BasicComposition
         glyph.invalidateCache();
     }
 
+    //-----------------//
+    // containsSection //
+    //-----------------//
+    public boolean containsSection (int id)
+    {
+        for (GlyphSection section : getMembers()) {
+            if (section.getId() == id) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     //-------------//
     // cutSections //
     //-------------//
@@ -289,19 +303,4 @@ class BasicComposition
             section.translate(vector);
         }
     }
-
-    //-----------------//
-    // containsSection //
-    //-----------------//
-    public boolean containsSection (int id)
-    {
-        for (GlyphSection section : getMembers()) {
-            if (section.getId() == id) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-    
 }

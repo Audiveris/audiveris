@@ -16,6 +16,8 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
+import omr.glyph.Shape;
+import omr.glyph.facets.Glyph;
 import omr.glyph.ui.GlyphLagView;
 import omr.glyph.ui.GlyphsController;
 
@@ -43,13 +45,13 @@ public class BarsView
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(GridBuilder.class);
 
+    /** Color for barline-shape glyphs */
+    public static final Color shapeColor = new Color(150, 150, 255);
+
     //~ Instance fields --------------------------------------------------------
 
     // Companion for verticals (barlines)
     private final BarsRetriever barsRetriever;
-
-    // Max section length 
-    private int maxLength;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -71,13 +73,35 @@ public class BarsView
     {
         super(vLag, specifics, constants.displaySpecifics, controller, null);
 
-        maxLength = maxLengthOf(vLag);
-
         setName("Bars-View");
         this.barsRetriever = barsRetriever;
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-------------------//
+    // colorizeAllGlyphs //
+    //-------------------//
+    @Override
+    public void colorizeAllGlyphs ()
+    {
+        int viewIndex = lag.viewIndexOf(this);
+
+        // All bar glyphs candidates
+        for (Glyph glyph : lag.getActiveGlyphs()) {
+            Shape shape = glyph.getShape();
+
+            Color color = ((shape == Shape.THICK_BARLINE) ||
+                          (shape == Shape.THIN_BARLINE)) ? shapeColor
+                          : GridView.verticalColor;
+            glyph.colorize(viewIndex, color);
+        }
+
+        // Glyphs actually parts of true bar lines
+        for (Glyph glyph : barsRetriever.getBarlineGlyphs()) {
+            glyph.colorize(viewIndex, Color.BLUE);
+        }
+    }
 
     //-----------------//
     // colorizeSection //
@@ -86,24 +110,18 @@ public class BarsView
     protected void colorizeSection (GlyphSection section,
                                     int          viewIndex)
     {
-        int   length = section.getLength();
-        Color color;
+        Glyph glyph = section.getGlyph();
+        Color color = GridView.verticalColor;
+
+        if (glyph != null) {
+            Shape shape = glyph.getShape();
+
+            color = ((shape == Shape.THICK_BARLINE) ||
+                    (shape == Shape.THIN_BARLINE)) ? shapeColor
+                    : GridView.verticalColor;
+        }
 
         // vLag
-        int level = (int) Math.rint(240 * (1 - (length / (double) maxLength)));
-        color = new Color(level, level, 255); // Blue gradient
-
-        //        } else {
-        //            // hLag
-        //            // Flag too thick sections
-        //            if (linesRetriever.isSectionFat(section)) {
-        //                color = Color.GRAY;
-        //            } else {
-        //                int level = (int) Math.rint(
-        //                    200 * (1 - (length / (double) maxLength)));
-        //                color = new Color(255, level, level); // Red Gradient
-        //            }
-        //        }
         SectionView view = (SectionView) section.getView(viewIndex);
         view.setColor(color);
     }
@@ -115,21 +133,6 @@ public class BarsView
     protected void renderItems (Graphics2D g)
     {
         barsRetriever.renderItems(g);
-    }
-
-    //-------------//
-    // maxLengthOf //
-    //-------------//
-    private int maxLengthOf (GlyphLag lag)
-    {
-        // Retrieve max section length in the lag
-        int maxLength = 0;
-
-        for (GlyphSection section : lag.getVertices()) {
-            maxLength = Math.max(maxLength, section.getLength());
-        }
-
-        return maxLength;
     }
 
     //~ Inner Classes ----------------------------------------------------------

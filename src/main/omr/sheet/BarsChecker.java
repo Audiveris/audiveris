@@ -408,8 +408,6 @@ public class BarsChecker
             // Be very careful with check order, because of side-effects
             // topArea, bottomArea, isPartDefining, isThick are already set
             //
-            add(1, new TopCheck()); // May set topStaff
-            add(1, new BottomCheck()); // May set botStaff
             add(1, new VerticalCheck());
             add(1, new LeftCheck());
             add(1, new RightCheck());
@@ -417,7 +415,9 @@ public class BarsChecker
             add(1, new RadiusCheck());
 
             if (!rough) {
-                add(1, new AnchorCheck());
+                add(1, new TopCheck()); // May set topStaff
+                add(1, new BottomCheck()); // May set botStaff
+                add(1, new AnchorCheck()); // Reads topStaff & botStaff
                 add(1, new TopLeftChunkCheck());
                 add(1, new TopRightChunkCheck());
                 add(1, new BottomLeftChunkCheck());
@@ -604,7 +604,7 @@ public class BarsChecker
             0.2,
             "High maximum difference with global slope");
         Scale.Fraction  minRadiusLow = new Scale.Fraction(
-            35,
+            25,
             "Low minimum radius");
         Scale.Fraction  minRadiusHigh = new Scale.Fraction(
             60,

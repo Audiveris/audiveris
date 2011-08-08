@@ -785,7 +785,7 @@ public class FilamentsFactory
             0.2,
             "Maximum delta position for a gap between filaments");
         Scale.Fraction maxSpace = new Scale.Fraction(
-            0.2,
+            0.175,
             "Maximum space between overlapping filaments");
         Scale.Fraction maxPosGapForSlope = new Scale.Fraction(
             0.1,

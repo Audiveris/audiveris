@@ -123,4 +123,25 @@ public class Barycenter
     {
         include(1, x, y);
     }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder("{");
+        sb.append(getClass().getSimpleName())
+          .append(" weight:")
+          .append(weight);
+
+        if (weight > 0) {
+            sb.append(" x:")
+              .append((float) getX())
+              .append(" y:")
+              .append((float) getY());
+        }
+
+        return sb.toString();
+    }
 }

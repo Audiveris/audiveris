@@ -144,7 +144,7 @@ public class LineFilamentAlignment
     protected Color getPointColor (Point2D p)
     {
         if (p instanceof VirtualPoint) {
-            return Color.RED;
+            return Color.ORANGE;
         } else {
             return super.getPointColor(p);
         }

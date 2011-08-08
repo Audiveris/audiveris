@@ -16,6 +16,9 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.Shape;
+import omr.glyph.facets.Glyph;
+
 import omr.log.Logger;
 
 import omr.math.Histogram;
@@ -209,6 +212,26 @@ public class ClustersRetriever
             interline);
 
         return discardedFilaments;
+    }
+
+    //--------------------//
+    // getStafflineGlyphs //
+    //--------------------//
+    /**
+     * Report the glyphs that are part of actual cluster lines
+     * @return the collection of glyphs actually used for retained cluster
+     */
+    Collection<Glyph> getStafflineGlyphs ()
+    {
+        List<Glyph> glyphs = new ArrayList<Glyph>();
+
+        for (LineCluster cluster : clusters) {
+            for (FilamentLine line : cluster.getLines()) {
+                glyphs.add(line.fil);
+            }
+        }
+
+        return glyphs;
     }
 
     //-------------//
@@ -468,6 +491,8 @@ public class ClustersRetriever
             if (fil.getCluster() == null) {
                 it.remove();
                 discardedFilaments.add(fil);
+            } else {
+                fil.setShape(Shape.STAFF_LINE);
             }
         }
     }
@@ -505,6 +530,14 @@ public class ClustersRetriever
                 continue;
             }
 
+            // For VIP debugging
+            final boolean areVips = cluster.isVip() && fil.isVip();
+            String        vips = null;
+
+            if (areVips) {
+                vips = "F" + fil.getId() + "&C" + cluster.getId() + ": "; // BP here!
+            }
+
             if (clusterBox == null) {
                 clusterBox = cluster.getContourBox();
                 clusterBox.grow(params.clusterXMargin, params.clusterYMargin);
@@ -529,9 +562,9 @@ public class ClustersRetriever
                         continue;
                     }
 
-                    double dy = middle.y - point.getY();
+                    double dy = Math.abs(middle.y - point.getY());
 
-                    if (Math.abs(dy) <= params.maxExpandDy) {
+                    if (dy <= params.maxExpandDy) {
                         int index = points.indexOf(point);
 
                         if (cluster.includeFilamentByIndex(fil, index)) {
@@ -539,8 +572,8 @@ public class ClustersRetriever
                                 fil.isVip() ||
                                 cluster.isVip()) {
                                 logger.info(
-                                    "Aggregated " + fil + " to " + cluster +
-                                    " at index " + index);
+                                    "Aggregated F" + fil.getId() + " to C" +
+                                    cluster.getId() + " at index " + index);
 
                                 if (fil.isVip()) {
                                     cluster.setVip();
@@ -551,7 +584,17 @@ public class ClustersRetriever
 
                             break;
                         }
+                    } else {
+                        if (areVips) {
+                            logger.info(
+                                vips + "dy=" + dy + " vs " +
+                                params.maxExpandDy);
+                        }
                     }
+                }
+            } else {
+                if (areVips) {
+                    logger.info(vips + "No box intersection");
                 }
             }
         }
@@ -817,7 +860,7 @@ public class ClustersRetriever
         // Create clusters recursively out of filements
         createClusters();
 
-        // Aggregate filaments left over when possible
+        // Aggregate filaments left over when possible (first)
         expandClusters();
 
         // Merge clusters
@@ -831,6 +874,9 @@ public class ClustersRetriever
 
         // Merge clusters horizontally
         mergeClusterPairs();
+
+        // Aggregate filaments left over when possible (second)
+        expandClusters();
 
         // Discard non-clustered filaments
         discardNonClusteredFilaments();
@@ -1009,7 +1055,7 @@ public class ClustersRetriever
 
         //
         Scale.Fraction maxExpandDy = new Scale.Fraction(
-            0.15,
+            0.175,
             "Maximum dy to aggregate a filament to a cluster");
 
         //

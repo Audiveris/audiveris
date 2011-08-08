@@ -85,7 +85,7 @@ public class BasicLine
     //-----------//
     /**
      * Creates a line, for which we already know the coefficients. The
-     * coeeficients don't have to be normalized, the constructor takes care of
+     * coefficients don't have to be normalized, the constructor takes care of
      * this. This line is not meant to be modified by including additional
      * points (although this is doable), since it contains no defining points.
      *

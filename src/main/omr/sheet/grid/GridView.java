@@ -16,8 +16,8 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
+import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
-import omr.glyph.facets.Stick;
 import omr.glyph.ui.GlyphLagView;
 import omr.glyph.ui.GlyphsController;
 import omr.glyph.ui.ViewParameters;
@@ -28,6 +28,7 @@ import omr.log.Logger;
 
 import omr.run.Run;
 
+import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
 import omr.selection.GlyphEvent;
@@ -43,7 +44,6 @@ import omr.ui.util.UIUtilities;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
-import omr.score.common.PixelPoint;
 
 /**
  * Class {@code GridView} is a special {@link GlyphLagView}, meant as a
@@ -69,19 +69,31 @@ public class GridView
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(GridBuilder.class);
 
+    /** Level for minor color */
+    private static final int minor = 220;
+
+    /** Default color for vertical stuff */
+    public static final Color verticalColor = new Color(minor, minor, 255);
+
+    /** Color for barline-shape glyphs */
+    public static final Color vertShapeColor = new Color(150, 150, 255);
+
+    /** Default color for horizontal stuff */
+    private static final Color horizontalColor = new Color(255, minor, minor);
+
+    /** Color for staffline-shape glyphs */
+    public static final Color horiShapeColor = new Color(255, 150, 150);
+
     //~ Instance fields --------------------------------------------------------
 
     // Companion for horizontals (staff lines)
-    private final LinesRetriever   linesRetriever;
+    private final LinesRetriever linesRetriever;
 
     // Companion for verticals (barlines)
-    private final BarsRetriever    barsRetriever;
+    private final BarsRetriever barsRetriever;
 
     // Additional lag (Vertical)
-    private final GlyphLag         vLag;
-
-    /** Record precise max section length per lag */
-    private Map<GlyphLag, Integer> maxLengths = new LinkedHashMap<GlyphLag, Integer>();
+    private final GlyphLag vLag;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -117,10 +129,6 @@ public class GridView
         for (GlyphSection section : vLag.getVertices()) {
             addSectionView(section);
         }
-
-        // Remember max section length, per lag
-        maxLengths.put(hLag, maxLengthOf(hLag));
-        maxLengths.put(vLag, maxLengthOf(vLag));
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -131,20 +139,36 @@ public class GridView
     @Override
     public void colorizeAllGlyphs ()
     {
-        int viewIndex = vLag.viewIndexOf(this);
+        { // Horizontal:
 
-        // Recognized bar lines
-        for (Glyph glyph : vLag.getAllGlyphs()) {
-            Stick stick = (Stick) glyph;
+            int viewIndex = lag.viewIndexOf(this);
 
-            if (barsRetriever.isLongBar(stick)) {
-                ///logger.info("long: " + stick);
-                stick.colorize(vLag, viewIndex, Color.red);
-            } else if (stick.getShape() != null) {
-                ///logger.info("shaped: " + stick);
-                stick.colorize(vLag, viewIndex, Color.yellow);
-            } else {
-                ///logger.info("none: " + stick);
+            // All staff glyphs candidates
+            for (Glyph glyph : lag.getActiveGlyphs()) {
+                Color color = (glyph.getShape() == Shape.STAFF_LINE)
+                              ? horiShapeColor : horizontalColor;
+                glyph.colorize(viewIndex, color);
+            }
+
+            // Glyphs actually parts of true staff lines
+            for (Glyph glyph : linesRetriever.getStafflineGlyphs()) {
+                glyph.colorize(viewIndex, Color.RED);
+            }
+        }
+
+        { // Vertical:
+
+            int viewIndex = vLag.viewIndexOf(this);
+
+            // All bar glyphs candidates
+            for (Glyph glyph : vLag.getActiveGlyphs()) {
+                Color color = glyph.isBar() ? vertShapeColor : verticalColor;
+                glyph.colorize(viewIndex, color);
+            }
+
+            // Glyphs actually parts of true bar lines
+            for (Glyph glyph : barsRetriever.getBarlineGlyphs()) {
+                glyph.colorize(viewIndex, Color.BLUE);
             }
         }
     }
@@ -225,24 +249,19 @@ public class GridView
                                     int          viewIndex)
     {
         GlyphLag theLag = section.getGraph();
-        int      maxLength = maxLengths.get(theLag);
-        int      length = section.getLength();
+
         Color    color;
 
         if (theLag.isVertical()) {
             // vLag
-            int level = (int) Math.rint(
-                240 * (1 - (length / (double) maxLength)));
-            color = new Color(level, level, 255); // Blue gradient
+            color = verticalColor;
         } else {
             // hLag
             // Flag too thick sections
             if (linesRetriever.isSectionFat(section)) {
                 color = Color.GRAY;
             } else {
-                int level = (int) Math.rint(
-                    200 * (1 - (length / (double) maxLength)));
-                color = new Color(255, level, level); // Red Gradient
+                color = horizontalColor;
             }
         }
 
@@ -308,7 +327,7 @@ public class GridView
             publish(new GlyphEvent(this, hint, movement, glyph));
         } else {
             // This is just a point, look for section & glyph
-            PixelPoint        pt = rect.getLocation();
+            PixelPoint   pt = rect.getLocation();
 
             // No specifics, look into lag
             GlyphSection section = vLag.lookupSection(vLag.getVertices(), pt);
@@ -331,27 +350,6 @@ public class GridView
                 publish(new GlyphEvent(this, hint, movement, glyph));
             }
         }
-    }
-
-    //-------------//
-    // maxLengthOf //
-    //-------------//
-    private int maxLengthOf (GlyphLag lag)
-    {
-        // Retrieve max section length in the lag
-        int maxLength = 0;
-
-        for (GlyphSection section : lag.getVertices()) {
-            maxLength = Math.max(maxLength, section.getLength());
-        }
-
-        maxLengths.put(lag, maxLength);
-
-        if (logger.isFineEnabled()) {
-            logger.info(lag + " maxLength:" + maxLength);
-        }
-
-        return maxLength;
     }
 
     //~ Inner Classes ----------------------------------------------------------

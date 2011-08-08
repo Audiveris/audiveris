@@ -325,6 +325,24 @@ public class LinesRetriever
         return factory.isSectionFat(section);
     }
 
+    //--------------------//
+    // getStafflineGlyphs //
+    //--------------------//
+    Iterable<Glyph> getStafflineGlyphs ()
+    {
+        List<Glyph> glyphs = new ArrayList<Glyph>();
+
+        if (clustersRetriever != null) {
+            glyphs.addAll(clustersRetriever.getStafflineGlyphs());
+
+            if (secondClustersRetriever != null) {
+                glyphs.addAll(secondClustersRetriever.getStafflineGlyphs());
+            }
+        }
+
+        return glyphs;
+    }
+
     //-------------//
     // renderItems //
     //-------------//
@@ -438,6 +456,7 @@ public class LinesRetriever
         // Polish staff lines
         for (StaffInfo staff : staffManager.getStaves()) {
             staff.getArea();
+
             for (LineInfo l : staff.getLines()) {
                 FilamentLine line = (FilamentLine) l;
                 line.fil.polishCurvature();

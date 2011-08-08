@@ -577,7 +577,7 @@ public class MainGui
         horiSplitPane = new JSplitPane(
             JSplitPane.HORIZONTAL_SPLIT,
             vertSplitPane,
-            boardsPane);
+            new JScrollPane(boardsPane));
         horiSplitPane.setName("horiSplitPane");
         horiSplitPane.setBorder(null);
         horiSplitPane.setDividerSize(2);
