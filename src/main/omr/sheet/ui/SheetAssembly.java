@@ -30,6 +30,7 @@ import omr.ui.BoardsPane;
 import omr.ui.GuiActions;
 import omr.ui.MainGui;
 import omr.ui.util.Panel;
+import omr.ui.util.UIUtilities;
 import omr.ui.view.LogSlider;
 import omr.ui.view.Rubber;
 import omr.ui.view.RubberPanel;
@@ -41,12 +42,19 @@ import omr.util.WeakPropertyChangeListener;
 
 import org.bushe.swing.event.EventService;
 
-import java.awt.*;
-import java.beans.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Container;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.HashMap;
+import java.util.Map;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.JComponent;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * Class <code>SheetAssembly</code> is a UI assembly dedicated to the display of
@@ -256,6 +264,9 @@ public class SheetAssembly
                             ScrollView sv,
                             BoardsPane boardsPane)
     {
+        JScrollPane scroll = sv.getComponent();
+        UIUtilities.suppressBorders(scroll);
+
         if (boardsPane != null) {
             boardsPane.setName(sheet.getId() + ":" + label);
         }
@@ -263,7 +274,7 @@ public class SheetAssembly
         if (logger.isFineEnabled()) {
             logger.fine(
                 "addViewTab begin " + label + " boardsPane=" + boardsPane +
-                " comp=@" + Integer.toHexString(sv.getComponent().hashCode()));
+                " comp=@" + Integer.toHexString(scroll.hashCode()));
         }
 
         // Remove any existing viewTab with the same label
@@ -276,13 +287,13 @@ public class SheetAssembly
         }
 
         // Register the component
-        tabs.put(sv.getComponent(), new ViewTab(label, boardsPane, sv));
+        tabs.put(scroll, new ViewTab(label, boardsPane, sv));
 
         // Actually insert the related Swing tab
-        viewsPane.addTab(label, sv.getComponent());
+        viewsPane.addTab(label, scroll);
 
         // Select this new tab
-        viewsPane.setSelectedComponent(sv.getComponent());
+        viewsPane.setSelectedComponent(scroll);
 
         if (logger.isFineEnabled()) {
             logger.fine(
@@ -462,8 +473,8 @@ public class SheetAssembly
     //--------------//
     private void defineLayout ()
     {
-        component.setNoInsets();
         component.setLayout(new BorderLayout());
+        component.setNoInsets();
         component.add(slider, BorderLayout.WEST);
         component.add(viewsPane, BorderLayout.CENTER);
     }

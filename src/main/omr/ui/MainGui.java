@@ -17,7 +17,9 @@ import omr.WellKnowns;
 import omr.action.ActionManager;
 import omr.action.Actions;
 
-import omr.constant.*;
+import omr.constant.Constant;
+import omr.constant.ConstantManager;
+import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
@@ -53,13 +55,29 @@ import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.SingleFrameApplication;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.EventObject;
 import java.util.concurrent.Callable;
 
-import javax.swing.*;
+import javax.swing.Action;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JEditorPane;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
 
 /**
  * Class <code>MainGui</code> is the Java User Interface, the main class for
@@ -561,26 +579,28 @@ public class MainGui
             sheetsController.getComponent(),
             bottomPane);
         vertSplitPane.setName("vertSplitPane");
-        vertSplitPane.setBorder(null);
-        vertSplitPane.setDividerSize(2);
+        vertSplitPane.setDividerSize(1);
         vertSplitPane.setResizeWeight(1d); // Give extra space to upper part
 
         // toolKeyPanel = progress & memory
         JPanel toolKeyPanel = new JPanel();
         toolKeyPanel.setLayout(new BorderLayout());
-        toolKeyPanel.add(
-            Stepping.createMonitor().getComponent(),
-            BorderLayout.CENTER);
-        toolKeyPanel.add(new MemoryMeter().getComponent(), BorderLayout.EAST);
+
+        JComponent stepPanel = Stepping.createMonitor()
+                                       .getComponent();
+        toolKeyPanel.add(stepPanel, BorderLayout.CENTER);
+
+        JComponent memoryPanel = new MemoryMeter().getComponent();
+        toolKeyPanel.add(memoryPanel, BorderLayout.EAST);
 
         // horiSplitPane = splitPane | boards
+        JScrollPane boardsScrollPane = new JScrollPane(boardsPane);
         horiSplitPane = new JSplitPane(
             JSplitPane.HORIZONTAL_SPLIT,
             vertSplitPane,
-            new JScrollPane(boardsPane));
+            boardsScrollPane);
         horiSplitPane.setName("horiSplitPane");
-        horiSplitPane.setBorder(null);
-        horiSplitPane.setDividerSize(2);
+        horiSplitPane.setDividerSize(1);
         horiSplitPane.setResizeWeight(1d); // Give extra space to left part
 
         // Global layout: Use a toolbar on top and a double split pane below
@@ -591,6 +611,9 @@ public class MainGui
              .add(toolBar, BorderLayout.NORTH);
         frame.getContentPane()
              .add(horiSplitPane, BorderLayout.CENTER);
+
+        // Suppress all internal borders, recursively
+        UIUtilities.suppressBorders(frame.getContentPane());
     }
 
     //-------------//
@@ -628,7 +651,9 @@ public class MainGui
         mgr.loadAllDescriptors();
         mgr.registerAllActions();
         toolBar = mgr.getToolBar();
-        frame.setJMenuBar(mgr.getMenuBar());
+
+        JMenuBar menuBar = mgr.getMenuBar();
+        frame.setJMenuBar(menuBar);
 
         // Mac Application menu
         if (WellKnowns.MAC_OS_X) {
@@ -696,8 +721,7 @@ public class MainGui
         public BottomPane (JComponent left)
         {
             super(JSplitPane.HORIZONTAL_SPLIT, left, null);
-            setBorder(null);
-            setDividerSize(2);
+            setDividerSize(1);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -705,6 +729,7 @@ public class MainGui
         public void addErrors (JComponent errorsPane)
         {
             removeErrors(null);
+            errorsPane.setBorder(null);
             setRightComponent(errorsPane);
 
             if (dividerLocation == -1) {

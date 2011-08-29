@@ -13,15 +13,14 @@ package omr.ui;
 
 import omr.log.Logger;
 
-import omr.sheet.Sheet;
-
 import omr.ui.util.Panel;
-import omr.ui.view.RubberPanel;
 
-import com.jgoodies.forms.builder.*;
-import com.jgoodies.forms.layout.*;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
-import javax.swing.*;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 
 /**
  * Class {@code BoardsPane} defines a comprehensive user board, where data
@@ -186,6 +185,9 @@ public class BoardsPane
             r += 2;
         }
 
-        return builder.getPanel();
+        JPanel boardsPanel = builder.getPanel();
+        boardsPanel.setBorder(null);
+
+        return boardsPanel;
     }
 }

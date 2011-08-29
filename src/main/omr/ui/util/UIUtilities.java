@@ -20,11 +20,18 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.geom.AffineTransform;
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.Collection;
+import java.util.Iterator;
 
-import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JToggleButton;
+import javax.swing.border.Border;
 
 /**
  * Class <code>UIUtilities</code> gathers utilities related to User Interface
@@ -44,6 +51,7 @@ public class UIUtilities
      */
     private static Border toolBorder;
     public static final WindowListener closeWindow = new WindowAdapter() {
+        @Override
         public void windowClosing (WindowEvent e)
         {
             e.getWindow()
@@ -244,5 +252,37 @@ public class UIUtilities
         }
 
         return file;
+    }
+
+    //-----------------//
+    // suppressBorders //
+    //-----------------//
+    /**
+     * Browse the whole hierarchy of components and nullify their borders
+     */
+    public static void suppressBorders (Container container)
+    {
+        for (Component comp : container.getComponents()) {
+            if (comp instanceof JComponent) {
+                suppressBorders((JComponent) comp);
+            } else if (comp instanceof Container) {
+                suppressBorders((Container) comp);
+            }
+        }
+    }
+
+    //-----------------//
+    // suppressBorders //
+    //-----------------//
+    /**
+     * Nullify the border of this JComponent, as well as its subcomponents
+     */
+    public static void suppressBorders (JComponent comp)
+    {
+        if (!(comp instanceof JButton) && !(comp instanceof JToggleButton)) {
+            comp.setBorder(null);
+        }
+
+        suppressBorders((Container) comp);
     }
 }

@@ -34,8 +34,10 @@ import org.jdesktop.application.Action;
 
 import java.util.ArrayList;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.JComponent;
+import javax.swing.JTabbedPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * Class <code>SheetsController</code> is the UI Controller in charge of user
@@ -206,10 +208,11 @@ public class SheetsController
             // Insert in tabbed pane
             assemblies.add(assembly);
 
+            JComponent comp = assembly.getComponent();
             tabbedPane.addTab(
                 defineTitleFor(sheet),
                 null,
-                assembly.getComponent(),
+                comp,
                 sheet.getScore().getImagePath());
             sheetIndex = tabbedPane.indexOfComponent(assembly.getComponent());
         }

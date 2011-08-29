@@ -66,6 +66,7 @@ public class Panel
     {
         // Note: Uncomment following line for FormDebugPanel
         //setPaintInBackground(true);
+        setBorder(null);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -232,9 +233,9 @@ public class Panel
                                              String labelWidth,
                                              String fieldWidth)
     {
-        final String labelInterval = Panel.getLabelInterval();
-        final String fieldInterval = Panel.getFieldInterval();
-        final String fieldInterline = Panel.getFieldInterline();
+        final String  labelInterval = Panel.getLabelInterval();
+        final String  fieldInterval = Panel.getFieldInterval();
+        final String  fieldInterline = Panel.getFieldInterline();
 
         // Columns
         StringBuilder sbc = new StringBuilder();
