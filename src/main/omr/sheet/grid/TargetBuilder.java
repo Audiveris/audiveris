@@ -31,19 +31,32 @@ import omr.ui.view.ScrollView;
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
 
-import java.awt.*;
-import java.awt.geom.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Stroke;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Path2D;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.imageio.ImageIO;
-import javax.media.jai.*;
+import javax.media.jai.InterpolationBilinear;
+import javax.media.jai.JAI;
+import javax.media.jai.PlanarImage;
+import javax.media.jai.Warp;
+import javax.media.jai.WarpGrid;
 
 /**
- * Class {@code TargetBuilder} is in charge of building a perfect definition
+ * Class {@code TargetBuilder} is in charge of building a "perfect" definition
  * of target systems, staves and lines as well as the dewarp grid that allows to
  * transform the original image in to the perfect image.
  *
@@ -234,7 +247,7 @@ public class TargetBuilder
         // Target page parameters
         targetPage = new TargetPage(targetWidth, targetHeight);
 
-        TargetLine prevLine = null;
+        TargetLine prevLine = null; // Latest staff line
 
         // Target system parameters
         for (SystemFrame system : barsRetriever.getSystems()) {
@@ -244,42 +257,42 @@ public class TargetBuilder
             Point2D   dskRight = skew.deskewed(firstLine.getEndPoint(RIGHT));
 
             if (prevLine != null) {
-                // Preserve position relative to bottom right of previous system
-                Point2D      prevDskRight = skew.deskewed(
-                    prevLine.info.getEndPoint(RIGHT));
+                // Preserve position relative to bottom left of previous system
+                Point2D      prevDskLeft = skew.deskewed(
+                    prevLine.info.getEndPoint(LEFT));
                 TargetSystem prevSystem = prevLine.staff.system;
-                double       dx = prevSystem.right - prevDskRight.getX();
-                double       dy = prevLine.y - prevDskRight.getY();
+                double       dx = prevSystem.left - prevDskLeft.getX();
+                double       dy = prevLine.y - prevDskLeft.getY();
+                dskLeft.setLocation(dskLeft.getX() + dx, dskLeft.getY() + dy);
                 dskRight.setLocation(
                     dskRight.getX() + dx,
                     dskRight.getY() + dy);
-                dskLeft.setLocation(dskLeft.getX() + dx, dskLeft.getY() + dy);
             }
 
             TargetSystem targetSystem = new TargetSystem(
                 system,
-                dskRight.getY(),
+                dskLeft.getY(),
                 dskLeft.getX(),
                 dskRight.getX());
             targetPage.systems.add(targetSystem);
 
             // Target staff parameters
             for (StaffInfo staff : system.getStaves()) {
-                dskRight = skew.deskewed(
-                    staff.getFirstLine().getEndPoint(RIGHT));
+                dskLeft = skew.deskewed(
+                    staff.getFirstLine().getEndPoint(LEFT));
 
                 if (prevLine != null) {
                     // Preserve inter-staff vertical gap
-                    Point2D prevDskRight = skew.deskewed(
-                        prevLine.info.getEndPoint(RIGHT));
-                    dskRight.setLocation(
-                        dskRight.getX(),
-                        dskRight.getY() + (prevLine.y - prevDskRight.getY()));
+                    Point2D prevDskLeft = skew.deskewed(
+                        prevLine.info.getEndPoint(LEFT));
+                    dskLeft.setLocation(
+                        dskLeft.getX(),
+                        dskLeft.getY() + (prevLine.y - prevDskLeft.getY()));
                 }
 
                 TargetStaff targetStaff = new TargetStaff(
                     staff,
-                    dskRight.getY(),
+                    dskLeft.getY(),
                     targetSystem);
                 targetSystem.staves.add(targetStaff);
 
