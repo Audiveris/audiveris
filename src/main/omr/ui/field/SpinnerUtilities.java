@@ -14,7 +14,13 @@ package omr.ui.field;
 import java.awt.event.ActionEvent;
 import java.util.List;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.JFormattedTextField;
+import javax.swing.JSpinner;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+import javax.swing.SpinnerListModel;
+import javax.swing.SpinnerModel;
 
 /**
  * Class <code>SpinnerUtilities</code> gathers a few utilities for JSpinner

@@ -24,11 +24,12 @@ import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphLagView;
 import omr.glyph.ui.GlyphsController;
 
-import omr.run.RunBoard;
 import omr.lag.ui.ScrollLagView;
 import omr.lag.ui.SectionBoard;
 
 import omr.log.Logger;
+
+import omr.run.RunBoard;
 
 import omr.selection.GlyphEvent;
 import omr.selection.MouseMovement;
@@ -43,8 +44,10 @@ import omr.step.Steps;
 
 import omr.ui.BoardsPane;
 
-import java.awt.*;
-import java.util.*;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * Class <code>VerticalsController</code> is in charge of handling assignment

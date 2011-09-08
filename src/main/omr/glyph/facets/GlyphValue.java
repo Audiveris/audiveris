@@ -16,7 +16,9 @@ import omr.glyph.Shape;
 
 import java.util.SortedSet;
 
-import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code GlyphValue} is used to map a Glyph with its XML representation

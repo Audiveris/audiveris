@@ -19,7 +19,15 @@ import omr.log.Logger;
 import omr.score.entity.LyricsItem;
 import omr.score.entity.Note;
 
-import proxymusic.*;
+import proxymusic.AccidentalText;
+import proxymusic.BarStyle;
+import proxymusic.Empty;
+import proxymusic.EmptyPlacement;
+import proxymusic.ObjectFactory;
+import proxymusic.Step;
+import proxymusic.StrongAccent;
+import proxymusic.Syllabic;
+import proxymusic.UpDown;
 
 import java.lang.String; // Do not remove this line!
 
@@ -65,10 +73,10 @@ public class MusicXML
     public static JAXBElement<?> getArticulationObject (Shape shape)
     {
         //<!ELEMENT articulations
-        //	((accent | strong-accent | staccato | tenuto |
-        //	  detached-legato | staccatissimo | spiccato |
-        //	  scoop | plop | doit | falloff | breath-mark | 
-        //	  caesura | stress | unstress | other-articulation)*)>
+        //      ((accent | strong-accent | staccato | tenuto |
+        //        detached-legato | staccatissimo | spiccato |
+        //        scoop | plop | doit | falloff | breath-mark |
+        //        caesura | stress | unstress | other-articulation)*)>
         ObjectFactory  factory = new ObjectFactory();
         EmptyPlacement ep = factory.createEmptyPlacement();
 

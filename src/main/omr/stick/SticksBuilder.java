@@ -34,7 +34,14 @@ import omr.sheet.Scale;
 import static omr.stick.SectionRole.*;
 
 import java.awt.Rectangle;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Class <code>SticksBuilder</code> introduces the scanning of a source of

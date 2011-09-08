@@ -27,7 +27,9 @@ import omr.sheet.SystemInfo;
 
 import omr.util.Implement;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Class {@code HiddenSlurPattern} processes the significant glyphs which have

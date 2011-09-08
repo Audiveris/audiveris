@@ -1,7 +1,14 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                         R u n s T a b l e V i e w                          //
+//                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
+//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  This software is released under the GNU General Public License.           //
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
+//----------------------------------------------------------------------------//
+// </editor-fold>
 package omr.run;
 
 import omr.log.Logger;
@@ -43,6 +50,9 @@ public class RunsTableView
 
     //~ Constructors -----------------------------------------------------------
 
+    //---------------//
+    // RunsTableView //
+    //---------------//
     /**
      * Creates a new RunsTableView object.
      *

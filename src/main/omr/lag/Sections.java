@@ -15,7 +15,8 @@ import omr.log.Logger;
 
 import omr.score.common.PixelRectangle;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * Class <code>Sections</code> handles features related to a collection of

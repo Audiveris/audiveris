@@ -13,7 +13,7 @@ package omr.ui.field;
 
 import java.awt.event.ActionListener;
 
-import javax.swing.*;
+import javax.swing.JComboBox;
 
 /**
  * Class <code>LComboBox</code> is a logical combination of a JLabel and a

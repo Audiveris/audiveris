@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
@@ -30,14 +29,23 @@ import omr.sheet.grid.LineInfo;
 
 import omr.step.StepException;
 
-import omr.stick.*;
+import omr.stick.LineCleaner;
+import omr.stick.SectionRole;
+import omr.stick.SectionsSource;
+import omr.stick.StickSection;
+import omr.stick.SticksBuilder;
 
 import omr.util.Implement;
 
-import java.awt.*;
+import java.awt.Rectangle;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 /**
  * Class <code>LineBuilder</code> processes the horizontal area that corresponds

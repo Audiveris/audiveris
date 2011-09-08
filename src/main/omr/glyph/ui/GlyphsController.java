@@ -11,7 +11,12 @@
 // </editor-fold>
 package omr.glyph.ui;
 
-import omr.glyph.*;
+import omr.glyph.Evaluation;
+import omr.glyph.GlyphLag;
+import omr.glyph.Glyphs;
+import omr.glyph.GlyphsModel;
+import omr.glyph.Shape;
+import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -29,7 +34,9 @@ import omr.sheet.Sheet;
 
 import org.jdesktop.application.Task;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * Class <code>GlyphsController</code> is a common basis for glyph handling,

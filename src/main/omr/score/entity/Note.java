@@ -31,7 +31,13 @@ import omr.sheet.Scale;
 
 import omr.util.TreeNode;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Class <code>Note</code> represents the characteristics of a note. Besides a

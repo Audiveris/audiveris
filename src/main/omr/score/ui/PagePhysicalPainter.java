@@ -46,7 +46,11 @@ import omr.ui.util.UIUtilities;
 
 import omr.util.VerticalSide;
 
-import java.awt.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.Stroke;
 import java.util.ConcurrentModificationException;
 
 /**

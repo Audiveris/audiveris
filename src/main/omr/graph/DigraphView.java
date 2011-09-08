@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.graph;
 
-import java.awt.*;
+import java.awt.Graphics2D;
 
 /**
  * Interface <code>DigraphView</code> defines what is needed to view a graph.

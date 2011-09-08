@@ -48,13 +48,23 @@ import omr.ui.util.Panel;
 import omr.ui.view.RubberPanel;
 import omr.ui.view.ScrollView;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.lang.ref.WeakReference;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JFrame;
 
 /**
  * Class {@code ShapeBoard} hosts a palette of shapes for insertion and
@@ -437,7 +447,7 @@ public class ShapeBoard
 
         public MyDropListener ()
         {
-            // Target will be any view of sheet assembly 
+            // Target will be any view of sheet assembly
             super(null);
         }
 

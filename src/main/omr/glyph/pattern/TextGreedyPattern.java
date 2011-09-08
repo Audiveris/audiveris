@@ -27,7 +27,9 @@ import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
 import java.awt.Polygon;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Class {@code TextGreedyPattern} tries to build long series of unassigned
@@ -142,7 +144,6 @@ public class TextGreedyPattern
                 }
 
                 ///logger.warning("Greedy text#" + compound.getId());
-
                 return true;
             } else {
                 return false;

@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.run;
 
-import omr.lag.*;
+import omr.lag.Lag;
 
 import omr.log.Logger;
 

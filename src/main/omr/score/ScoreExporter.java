@@ -15,7 +15,6 @@ import omr.Main;
 
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
-import omr.ui.symbol.TextFont;
 
 import omr.log.Logger;
 
@@ -61,22 +60,93 @@ import omr.score.visitor.AbstractScoreVisitor;
 
 import omr.sheet.Scale;
 
+import omr.ui.symbol.TextFont;
+
 import omr.util.OmrExecutors;
 import omr.util.TreeNode;
 
 import org.w3c.dom.Node;
 
-import proxymusic.*;
+import proxymusic.AboveBelow;
+import proxymusic.Accidental;
+import proxymusic.Articulations;
+import proxymusic.Attributes;
+import proxymusic.Backup;
+import proxymusic.BackwardForward;
+import proxymusic.BarStyle;
+import proxymusic.BeamValue;
+import proxymusic.ClefSign;
+import proxymusic.Credit;
+import proxymusic.Defaults;
+import proxymusic.Direction;
+import proxymusic.DirectionType;
+import proxymusic.DisplayStepOctave;
+import proxymusic.Empty;
+import proxymusic.EmptyPrintStyle;
+import proxymusic.Encoding;
+import proxymusic.FontStyle;
+import proxymusic.FormattedText;
+import proxymusic.Forward;
+import proxymusic.Identification;
+import proxymusic.Key;
+import proxymusic.Lyric;
+import proxymusic.LyricFont;
+import proxymusic.MarginType;
+import proxymusic.MidiInstrument;
+import proxymusic.Notations;
+import proxymusic.NoteType;
+import proxymusic.Notehead;
+import proxymusic.NoteheadValue;
+import proxymusic.Ornaments;
+import proxymusic.OverUnder;
+import proxymusic.PageLayout;
+import proxymusic.PageMargins;
+import proxymusic.PartList;
+import proxymusic.PartName;
+import proxymusic.Pitch;
+import proxymusic.Repeat;
+import proxymusic.RightLeftMiddle;
+import proxymusic.Scaling;
+import proxymusic.ScoreInstrument;
+import proxymusic.ScorePartwise;
+import proxymusic.Sound;
+import proxymusic.StaffDetails;
+import proxymusic.StaffLayout;
+import proxymusic.StartStop;
+import proxymusic.StartStopChange;
+import proxymusic.StartStopContinue;
+import proxymusic.Stem;
+import proxymusic.StemValue;
+import proxymusic.SystemLayout;
+import proxymusic.SystemMargins;
+import proxymusic.TextElementData;
+import proxymusic.Tie;
+import proxymusic.Tied;
+import proxymusic.Time;
+import proxymusic.TimeModification;
+import proxymusic.TimeSymbol;
+import proxymusic.TypedText;
+import proxymusic.UprightInverted;
+import proxymusic.WedgeType;
+import proxymusic.Work;
+import proxymusic.YesNo;
 
 import proxymusic.util.Marshalling;
 
 import java.awt.Font;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -936,7 +1006,7 @@ public class ScoreExporter
                         systemLayout.setTopSystemDistance(
                             toTenths(current.system.getTopLeft().y));
 
-                        // Tempo? 
+                        // Tempo?
                         if (score.hasTempo()) {
                             Direction direction = factory.createDirection();
                             current.pmMeasure.getNoteOrBackupOrForward()

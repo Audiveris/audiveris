@@ -19,7 +19,10 @@ import omr.step.StepException;
 
 import omr.util.DoubleValue;
 
-import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class <code>Scale</code> encapsulates what drives the scale of a given sheet,

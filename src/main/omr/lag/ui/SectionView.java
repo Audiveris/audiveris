@@ -16,13 +16,17 @@ import omr.constant.ConstantSet;
 
 import omr.graph.VertexView;
 
-import omr.lag.*;
+import omr.lag.Lag;
+import omr.lag.Section;
 
 import omr.log.Logger;
 
 import omr.util.Implement;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;

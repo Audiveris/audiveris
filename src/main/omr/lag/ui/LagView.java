@@ -17,7 +17,8 @@ import omr.glyph.ui.ViewParameters;
 
 import omr.graph.DigraphView;
 
-import omr.lag.*;
+import omr.lag.Lag;
+import omr.lag.Section;
 
 import omr.log.Logger;
 

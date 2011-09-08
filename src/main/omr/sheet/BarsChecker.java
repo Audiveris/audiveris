@@ -41,7 +41,9 @@ import omr.util.Implement;
 import net.jcip.annotations.NotThreadSafe;
 
 import java.awt.geom.Point2D;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Class <code>BarsChecker</code> is dedicated to physical checks of vertical

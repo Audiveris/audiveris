@@ -13,7 +13,10 @@ package omr.util;
 
 import java.awt.Rectangle;
 
-import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class <code>RectangleFacade</code> is a (hopefully temporary) fix to allow Xml
@@ -59,6 +62,23 @@ public class RectangleFacade
 
     //~ Methods ----------------------------------------------------------------
 
+    //-----------//
+    // setHeight //
+    //-----------//
+    @XmlElement
+    public void setHeight (int height)
+    {
+        rectangle.height = height;
+    }
+
+    //-----------//
+    // getHeight //
+    //-----------//
+    public int getHeight ()
+    {
+        return rectangle.height;
+    }
+
     //--------------//
     // getRectangle //
     //--------------//
@@ -87,23 +107,6 @@ public class RectangleFacade
     public int getWidth ()
     {
         return rectangle.width;
-    }
-
-    //-----------//
-    // setHeight //
-    //-----------//
-    @XmlElement
-    public void setHeight (int height)
-    {
-        rectangle.height = height;
-    }
-
-    //-----------//
-    // getHeight //
-    //-----------//
-    public int getHeight ()
-    {
-        return rectangle.height;
     }
 
     //------//

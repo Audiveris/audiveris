@@ -11,9 +11,9 @@
 // </editor-fold>
 package omr.ui.field;
 
-import java.util.List;
-
-import javax.swing.*;
+import javax.swing.JSpinner;
+import javax.swing.JTextField;
+import javax.swing.SpinnerListModel;
 
 /**
  * Class <code>IntegerListSpinner</code> is a spinner whose model is a list of

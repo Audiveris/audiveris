@@ -14,7 +14,9 @@ package omr.glyph.ui;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.*;
+import omr.glyph.GlyphLag;
+import omr.glyph.GlyphSection;
+import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 import omr.glyph.facets.Stick;
@@ -50,11 +52,20 @@ import omr.ui.util.UIUtilities;
 import omr.util.Implement;
 import omr.util.WeakPropertyChangeListener;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.Stroke;
 import java.awt.geom.CubicCurve2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Class <code>GlyphLagView</code> is a specific {@link omr.lag.ui.LagView}

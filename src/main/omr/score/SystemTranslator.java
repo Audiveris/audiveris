@@ -54,7 +54,8 @@ import omr.sheet.SystemInfo;
 
 import omr.util.TreeNode;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Class <code>SystemTranslator</code> performs all translation tasks for one
@@ -120,7 +121,7 @@ public class SystemTranslator
         final Page  page = system.getPage();
         final Sheet sheet = page.getSheet();
 
-        // Connect parts across systems 
+        // Connect parts across systems
         new PageReduction(page).reduce();
 
         // Get the (sub) list of all systems for final processing

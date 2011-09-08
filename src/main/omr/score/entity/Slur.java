@@ -29,9 +29,14 @@ import omr.sheet.Scale;
 import omr.util.Predicate;
 import omr.util.TreeNode;
 
-import java.awt.geom.*;
+import java.awt.geom.CubicCurve2D;
+import java.awt.geom.Point2D;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Class <code>Slur</code> encapsulates a slur (a curve) in a system.

@@ -27,7 +27,12 @@ import omr.sheet.SystemInfo;
 import omr.util.Implement;
 import omr.util.Predicate;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Class <code>StemPattern</code> is a GlyphInspector dedicated to the

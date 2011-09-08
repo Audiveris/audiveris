@@ -19,8 +19,9 @@ import omr.selection.UserEvent;
 
 import omr.ui.Board;
 
-import com.jgoodies.forms.builder.*;
-import com.jgoodies.forms.layout.*;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import java.util.Collection;
 

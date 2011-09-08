@@ -13,7 +13,8 @@ package omr.ui.view;
 
 import omr.selection.MouseMovement;
 
-import java.awt.*;
+import java.awt.Point;
+import java.awt.Rectangle;
 
 /**
  * Interface <code>MouseMonitor</code> defines the entries of an entity to

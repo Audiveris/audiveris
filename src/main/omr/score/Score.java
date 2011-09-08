@@ -42,8 +42,10 @@ import omr.util.TreeNode;
 
 import java.awt.image.RenderedImage;
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map.Entry;
+import java.util.SortedMap;
 
 import javax.swing.JFrame;
 

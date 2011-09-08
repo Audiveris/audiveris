@@ -26,7 +26,11 @@ import omr.score.visitor.AbstractScoreVisitor;
 import omr.util.TreeNode;
 import omr.util.WrappedBoolean;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * Class <code>TimeSignatureFixer</code> can visit the score hierarchy to
@@ -81,7 +85,7 @@ public class TimeSignatureFixer
     public boolean visit (Page page)
     {
         try {
-            // We cannot rely on standard browsing part by part, since we need to 
+            // We cannot rely on standard browsing part by part, since we need to
             // address all vertical measures (of same Id), regardless of their
             // containing part
             ScoreSystem    system = page.getFirstSystem();

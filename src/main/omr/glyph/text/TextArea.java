@@ -14,7 +14,13 @@ package omr.glyph.text;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.*;
+import omr.glyph.Evaluation;
+import omr.glyph.GlyphEvaluator;
+import omr.glyph.GlyphInspector;
+import omr.glyph.GlyphLag;
+import omr.glyph.GlyphNetwork;
+import omr.glyph.Glyphs;
+import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -33,7 +39,10 @@ import omr.sheet.SystemInfo;
 import omr.util.Navigable;
 
 import java.awt.Rectangle;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Class <code>TextArea</code> handles a rectangular area likely to contain

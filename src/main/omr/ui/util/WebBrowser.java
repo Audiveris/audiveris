@@ -17,7 +17,7 @@ import omr.log.Logger;
 
 import com.centerkey.utils.BareBonesBrowserLaunch;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Method;
 
 /**
  * Class <code>WebBrowser</code> gathers functionality to

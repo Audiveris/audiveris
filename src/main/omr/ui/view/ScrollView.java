@@ -13,9 +13,11 @@ package omr.ui.view;
 
 import omr.log.Logger;
 
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
 
-import javax.swing.*;
+import javax.swing.JScrollPane;
 
 /**
  * Class <code>ScrollView</code> contains a JScrollPane, which provides a

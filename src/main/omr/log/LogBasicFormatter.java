@@ -11,12 +11,14 @@
 // </editor-fold>
 package omr.log;
 
-import omr.util.*;
+import omr.util.ClassUtil;
 
-import java.io.*;
-import java.text.*;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.text.MessageFormat;
 import java.util.Date;
-import java.util.logging.*;
+import java.util.logging.Formatter;
+import java.util.logging.LogRecord;
 
 /**
  * Class <code>LogBasicFormatter</code> formats a log record.

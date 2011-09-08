@@ -15,10 +15,15 @@ import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
 
-import java.awt.*;
-import java.awt.font.*;
-import java.awt.geom.*;
-import java.util.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.font.FontRenderContext;
+import java.awt.font.TextLayout;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.util.ConcurrentModificationException;
 
 /**
  * Class <code>OmrFont</code> is meant to simplify the use of rendering symbols

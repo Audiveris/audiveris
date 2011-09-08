@@ -13,10 +13,19 @@ package omr.math;
 
 import omr.log.Logger;
 
-import java.io.*;
+import java.io.InputStream;
+import java.io.OutputStream;
 
-import javax.xml.bind.*;
-import javax.xml.bind.annotation.*;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class <code>NeuralNetwork</code> implements a back-propagation neural

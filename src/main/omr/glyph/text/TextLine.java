@@ -23,11 +23,11 @@ import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.run.Orientation;
-
 import omr.log.Logger;
 
 import omr.math.Population;
+
+import omr.run.Orientation;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -39,7 +39,12 @@ import omr.sheet.SystemInfo;
 
 import omr.util.Navigable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Class <code>TextLine</code> encapsulates a growing ordered set of text

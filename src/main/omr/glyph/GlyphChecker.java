@@ -16,7 +16,6 @@ import omr.constant.ConstantSet;
 import static omr.glyph.Shape.*;
 import static omr.glyph.ShapeRange.*;
 import omr.glyph.facets.Glyph;
-import omr.glyph.facets.Stick;
 import omr.glyph.text.Language;
 import omr.glyph.text.OcrLine;
 import omr.glyph.text.TextLine;
@@ -37,7 +36,13 @@ import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 import omr.sheet.grid.StaffInfo;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Class <code>GlyphChecker</code> gathers additional specific glyph checks,

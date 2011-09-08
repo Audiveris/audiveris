@@ -23,10 +23,17 @@ import omr.sheet.SystemInfo;
 
 import omr.util.PointFacade;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
-import javax.xml.bind.*;
-import javax.xml.bind.annotation.*;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 
 /**
  * Class {@code DeleteTask} deletes a set of (virtual) glyphs from the sheet
@@ -61,7 +68,7 @@ public class DeleteTask
      * @throws IllegalArgumentException if any of the arguments is not valid
      */
     public DeleteTask (Sheet             sheet,
-                       Orientation    orientation,
+                       Orientation       orientation,
                        Collection<Glyph> glyphs)
     {
         super(sheet, orientation, glyphs);

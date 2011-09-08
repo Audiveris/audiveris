@@ -15,10 +15,18 @@ import omr.log.Logger;
 
 import net.jcip.annotations.ThreadSafe;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.regex.Pattern;
 
 /**
  * Class <code>UnitManager</code> manages all units (aka classes), for which we

@@ -19,7 +19,7 @@ import omr.score.ui.PaintingParameters;
 
 import omr.selection.SheetLocationEvent;
 
-import omr.sheet.*;
+import omr.sheet.Sheet;
 
 import omr.ui.view.RubberPanel;
 import omr.ui.view.ScrollView;

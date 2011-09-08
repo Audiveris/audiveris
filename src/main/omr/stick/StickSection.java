@@ -13,12 +13,12 @@ package omr.stick;
 
 import omr.glyph.GlyphSection;
 
-import omr.run.Run;
-
 import omr.math.BasicLine;
 import omr.math.Line;
 
-import java.awt.*;
+import omr.run.Run;
+
+import java.awt.Color;
 
 /**
  * Class <code>StickSection</code> implements a specific class of {@link

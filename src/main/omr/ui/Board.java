@@ -26,11 +26,17 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import org.bushe.swing.event.EventSubscriber;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.util.Collection;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 /**
  * Class <code>Board</code> defines the common properties of any user board
@@ -168,15 +174,14 @@ public abstract class Board
     {
         if ((eventList != null) && groom.expanded) {
             ///logger.warning("connect " + this + " on " + selectionService);
-
             for (Class eventClass : eventList) {
                 selectionService.subscribeStrongly(eventClass, this);
 
                 // Refresh with latest data for this event class
                 UserEvent event = (UserEvent) selectionService.getLastEvent(
                     eventClass);
-                ///logger.warning("reading (" + eventClass.getSimpleName() + ") " + event);
 
+                ///logger.warning("reading (" + eventClass.getSimpleName() + ") " + event);
                 if (event != null) {
                     event.movement = null;
                     output(event);
@@ -196,7 +201,6 @@ public abstract class Board
     {
         if ((eventList != null) && groom.expanded) {
             ///logger.warning("disconnect " + this + " from " + selectionService);
-
             for (Class eventClass : eventList) {
                 selectionService.unsubscribe(eventClass, this);
             }

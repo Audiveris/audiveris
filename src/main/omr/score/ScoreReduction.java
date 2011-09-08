@@ -22,8 +22,14 @@ import omr.score.entity.SystemPart;
 
 import omr.util.TreeNode;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * Class {@code ScoreReduction} is the "reduce" part of a MapReduce Job for a
@@ -104,7 +110,7 @@ public class ScoreReduction
         /* Connect parts across the pages */
         connection = PartConnection.connectScorePages(pages);
 
-        // Force the ids of all ScorePart's 
+        // Force the ids of all ScorePart's
         numberResults();
 
         // Create score part-list and connect to pages and systems parts

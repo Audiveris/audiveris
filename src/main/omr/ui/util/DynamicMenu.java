@@ -11,7 +11,8 @@
 // </editor-fold>
 package omr.ui.util;
 
-import javax.swing.*;
+import javax.swing.Action;
+import javax.swing.JMenu;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 

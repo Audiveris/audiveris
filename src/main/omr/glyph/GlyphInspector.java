@@ -25,7 +25,9 @@ import omr.sheet.SystemInfo;
 
 import omr.util.Implement;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Class <code>GlyphInspector</code> is at a System level, dedicated to the

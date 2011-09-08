@@ -25,7 +25,8 @@ import omr.sheet.SystemInfo;
 
 import omr.step.Step;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * Class <code>GlyphsModel</code> is a common model for synchronous glyph

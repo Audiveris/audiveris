@@ -16,7 +16,8 @@ import omr.constant.ConstantSet;
 import omr.glyph.Evaluation;
 import omr.glyph.GlyphEvaluator;
 import omr.glyph.facets.Glyph;
-import omr.glyph.ui.*;
+import omr.glyph.ui.GlyphRepository;
+import omr.glyph.ui.GlyphVerifier;
 
 import omr.log.Logger;
 
@@ -30,12 +31,20 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import java.awt.event.*;
-import java.util.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JProgressBar;
 
 /**
  * Class <code>ValidationPanel</code> handles the validation of an evaluator

@@ -38,13 +38,18 @@ import omr.util.OmrExecutors;
 
 import org.jdesktop.application.Application;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import javax.swing.*;
+import javax.swing.JFrame;
 
 /**
  * Class <code>Main</code> is the main class for OMR application. It deals with

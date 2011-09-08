@@ -29,7 +29,9 @@ import omr.sheet.Scale;
 
 import omr.util.TreeNode;
 
-import java.util.*;
+import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Class <code>Beam</code> represents a beam hook or a beam line, that may be
@@ -85,7 +87,7 @@ public class Beam
     public Beam (Measure measure)
     {
         super(measure);
-        
+
         id = 1 + getChildIndex();
     }
 

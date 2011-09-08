@@ -65,7 +65,10 @@ import omr.util.WeakPropertyChangeListener;
 import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.Action;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collection;

@@ -19,13 +19,21 @@ import omr.constant.ConstantSet;
 import omr.log.Logger;
 import static omr.selection.MouseMovement.*;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Stroke;
 import static java.awt.event.InputEvent.*;
+import java.awt.event.MouseEvent;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
+import javax.swing.event.MouseInputAdapter;
 
 /**
  * Class <code>Rubber</code> keeps track of nothing more than a rectangle,

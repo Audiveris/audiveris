@@ -16,7 +16,8 @@ import omr.math.Line;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
-import java.awt.*;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 
 /**

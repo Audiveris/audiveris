@@ -35,7 +35,10 @@ import omr.util.HorizontalSide;
 import omr.util.Implement;
 import omr.util.Predicate;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Class {@code ClefPattern} verifies all the initial clefs of a system, using

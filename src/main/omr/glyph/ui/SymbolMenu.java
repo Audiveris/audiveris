@@ -19,8 +19,9 @@ import omr.glyph.facets.Glyph;
 
 import omr.sheet.SystemInfo;
 
-import java.awt.event.*;
-import java.util.*;
+import java.awt.event.ActionEvent;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * Class <code>SymbolMenu</code> defines the menu menu which is linked to the

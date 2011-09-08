@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.stick;
 
-import java.awt.*;
+import java.awt.Color;
 import static java.awt.Color.*;
 
 /**

@@ -13,7 +13,8 @@ package omr.util;
 
 import omr.log.Logger;
 
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 
 /**
  * Class <code>JaiLoader</code> is designed to speed up the load time of the

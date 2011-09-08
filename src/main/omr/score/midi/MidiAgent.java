@@ -31,11 +31,17 @@ import com.xenoage.zong.musicxml.MusicXMLDocument;
 
 import org.w3c.dom.Document;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 
-import javax.sound.midi.*;
+import javax.sound.midi.MidiSystem;
+import javax.sound.midi.Sequence;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -372,9 +378,9 @@ public class MidiAgent
         /*
          *
          * So here are the functions you need for Audiveris:
-                                                   1) call com.xenoage.zong.musicxml.MusicXMLDocument.read(org.w3c.dom.Document doc)
+                                                     1) call com.xenoage.zong.musicxml.MusicXMLDocument.read(org.w3c.dom.Document doc)
          * to get an instance of a MusicXMLDocument out of your DOM document
-                                                   2) handle this document to
+                                                     2) handle this document to
          * com.xenoage.zong.player.gui.Controller.loadScore(MxlScorePartwise doc, boolean ignoreErrors)
          * (set ignoreErrors to true, of course)
          */

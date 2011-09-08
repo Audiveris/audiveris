@@ -21,10 +21,14 @@ import omr.sheet.ui.SheetsController;
 import omr.util.BasicTask;
 import omr.util.Implement;
 
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.AbstractAction;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 
 /**
  * Class <code>StepMenu</code> encapsulates the user interface needed to deal

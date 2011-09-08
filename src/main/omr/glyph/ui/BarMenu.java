@@ -13,8 +13,8 @@ package omr.glyph.ui;
 
 import omr.glyph.ShapeRange;
 
-import javax.swing.*;
 import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 
 /**
  * Class <code>BarMenu</code> defines the popup menu to interact with barlines

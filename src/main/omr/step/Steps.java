@@ -13,7 +13,14 @@ package omr.step;
 
 import omr.log.Logger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Class <code>Steps</code> handles the (ordered) set of all defined steps

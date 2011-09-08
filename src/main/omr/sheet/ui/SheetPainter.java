@@ -16,7 +16,6 @@ import omr.glyph.facets.Stick;
 
 import omr.log.Logger;
 
-import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.entity.Measure;
 import omr.score.entity.Page;
@@ -27,8 +26,8 @@ import omr.score.visitor.AbstractScoreVisitor;
 import omr.sheet.Ending;
 import omr.sheet.Ledger;
 import omr.sheet.Sheet;
-import omr.sheet.grid.StaffInfo;
 import omr.sheet.SystemInfo;
+import omr.sheet.grid.StaffInfo;
 
 import omr.ui.symbol.Alignment;
 import omr.ui.symbol.MusicFont;
@@ -36,7 +35,10 @@ import omr.ui.symbol.ShapeSymbol;
 import omr.ui.symbol.Symbols;
 import omr.ui.util.UIUtilities;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Stroke;
 
 /**
  * Class <code>SheetPainter</code> defines for every node in Page hierarchy

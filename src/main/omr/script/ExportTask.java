@@ -17,7 +17,9 @@ import omr.sheet.Sheet;
 
 import java.io.File;
 
-import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 
 /**
  * Class {@code ExportTask} exports score entities to a MusicXML file
@@ -70,7 +72,7 @@ public class ExportTask
     public void core (Sheet sheet)
     {
         ScoresManager.getInstance()
-                    .export(
+                     .export(
             sheet.getScore(),
             (path != null) ? new File(path) : null,
             injectSignature);

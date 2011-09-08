@@ -22,7 +22,8 @@ import omr.sheet.SystemInfo;
 
 import omr.util.Implement;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class <code>SentencePattern</code> gathers text-shaped glyphs found within

@@ -25,7 +25,13 @@ import omr.sheet.Scale;
 import omr.util.Navigable;
 import omr.util.TreeNode;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * Class <code>Slot</code> represents a roughly defined time slot within a

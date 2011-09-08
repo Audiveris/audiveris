@@ -11,9 +11,11 @@
 // </editor-fold>
 package omr.ui.dnd;
 
-import java.awt.event.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Class {@code GhostDropAdapter} is a MouseAdapter specifically meant for

@@ -40,7 +40,7 @@ import omr.util.WrappedBoolean;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
 
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;

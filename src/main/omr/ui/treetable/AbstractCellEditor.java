@@ -10,7 +10,7 @@ package omr.ui.treetable;
 
 import java.util.EventObject;
 
-import javax.swing.*;
+import javax.swing.CellEditor;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.EventListenerList;

@@ -11,7 +11,8 @@
 // </editor-fold>
 package omr.ui.util;
 
-import javax.swing.*;
+import javax.swing.JSeparator;
+import javax.swing.JToolBar;
 
 /**
  * Class <code>SeparableToolBar</code> is a tool bar which is able to collapse

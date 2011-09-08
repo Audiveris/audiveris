@@ -19,15 +19,18 @@ import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
-import omr.math.Rational;
-
 import omr.score.common.PixelPoint;
 
 import omr.sheet.Scale;
 
 import omr.util.TreeNode;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * Class <code>DotTranslation</code> is a set of functions forassigning a dot

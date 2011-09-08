@@ -22,7 +22,10 @@ import omr.score.visitor.ScoreVisitor;
 import omr.util.Predicate;
 import omr.util.TreeNode;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Class <code>SystemPart</code> handles each of the various parts found in

@@ -15,9 +15,10 @@ import omr.glyph.GlyphSection;
 
 import omr.lag.Lag;
 
-import java.awt.*;
+import java.awt.Color;
 import java.awt.image.BufferedImage;
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * Interface {@code GlyphDisplay} defines the facet which handles the way a

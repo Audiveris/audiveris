@@ -29,9 +29,13 @@ import omr.score.midi.MidiAgent;
 import omr.sheet.SystemInfo;
 
 import java.awt.event.ActionEvent;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 
 /**
  * Class {@code PageMenu} defines the popup menu which is linked to the
@@ -138,7 +142,7 @@ public class PageMenu
 
         // Update symbol menu
         symbolMenu.updateMenu();
-        
+
         //        // Update all dynamic items accordingly
         //        for (DynItem item : dynItems) {
         //            item.update();

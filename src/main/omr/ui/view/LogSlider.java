@@ -11,11 +11,13 @@
 // </editor-fold>
 package omr.ui.view;
 
-import omr.constant.*;
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
 
 import java.util.Hashtable;
 
-import javax.swing.*;
+import javax.swing.JLabel;
+import javax.swing.JSlider;
 
 /**
  * Class <code>LogSlider</code> is a specific {@link JSlider} which handles

@@ -19,7 +19,9 @@ import omr.score.entity.Chord;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
 import omr.score.visitor.AbstractScoreVisitor;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Class <code>ScoreReductor</code> can visit the score hierarchy to simplify

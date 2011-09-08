@@ -19,8 +19,15 @@ import omr.sheet.Bench;
 
 import omr.step.Step;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Class {@code ScoreBench} is in charge of recording all important information

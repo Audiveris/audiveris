@@ -20,12 +20,12 @@ import static omr.glyph.Shape.*;
 import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
 
-import omr.run.Orientation;
-
 import omr.log.Logger;
 
 import omr.math.Histogram;
 import omr.math.Histogram.Pair;
+
+import omr.run.Orientation;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -37,7 +37,8 @@ import omr.sheet.SystemInfo;
 
 import omr.util.TreeNode;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class <code>KeySignature</code> encapsulates a key signature, which may be

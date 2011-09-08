@@ -13,7 +13,7 @@ package omr.stick;
 
 import omr.glyph.GlyphSection;
 
-import java.awt.*;
+import java.awt.Color;
 
 /**
  * Class <code>StickRelation</code> implements a specific class of {@link

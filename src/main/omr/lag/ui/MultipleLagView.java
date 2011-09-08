@@ -15,15 +15,19 @@ import omr.glyph.ui.ViewParameters;
 
 import omr.graph.DigraphView;
 
-import omr.lag.*;
+import omr.lag.Lag;
+import omr.lag.Section;
 
 import omr.log.Logger;
 
 import omr.ui.util.UIUtilities;
 import omr.ui.view.RubberPanel;
 
-import java.awt.*;
-import java.util.*;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.Stroke;
+import java.util.Collection;
 import java.util.List;
 
 /**

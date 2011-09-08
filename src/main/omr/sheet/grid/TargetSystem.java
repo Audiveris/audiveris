@@ -11,7 +11,8 @@
 // </editor-fold>
 package omr.sheet.grid;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class {@code TargetSystem} is an immutable perfect destination object for a

@@ -11,10 +11,17 @@
 // </editor-fold>
 package omr.ui;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
 
-import javax.swing.*;
+import javax.swing.KeyStroke;
+import javax.swing.UIDefaults;
 
 /**
  * Class <code>OmrUIDefaults</code> handles all the user interface defaults for
@@ -96,10 +103,10 @@ public class OmrUIDefaults
     public void loadFrom (File file)
         throws FileNotFoundException, IOException
     {
-        String       path = file.getPath();
+        String        path = file.getPath();
         StringBuilder b = new StringBuilder(path);
-        Locale       locale = Locale.getDefault();
-        String       language = locale.getLanguage();
+        Locale        locale = Locale.getDefault();
+        String        language = locale.getLanguage();
 
         if ((language != null) && (language.length() > 0)) {
             b.append('_')

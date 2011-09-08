@@ -34,12 +34,23 @@ import org.bushe.swing.event.EventSubscriber;
 import org.jdesktop.application.ApplicationAction;
 import org.jdesktop.application.ResourceMap;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
-import javax.swing.*;
+import javax.swing.AbstractButton;
+import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.Box;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JToolBar;
 
 /**
  * Class <code>ActionManager</code> handles the instantiation and dressing of

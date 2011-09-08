@@ -13,9 +13,13 @@ package omr.script;
 
 import omr.log.Logger;
 
-import java.io.*;
+import java.io.InputStream;
+import java.io.OutputStream;
 
-import javax.xml.bind.*;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 
 /**
  * Class {@code ScriptManager} is in charge of handling the storing and loading

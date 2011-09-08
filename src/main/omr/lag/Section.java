@@ -27,13 +27,22 @@ import omr.score.common.PixelRectangle;
 
 import omr.sheet.picture.Picture;
 
-import java.awt.*;
+import java.awt.Point;
+import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
-import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 
 /**
  * Class <code>Section</code> handles a section of contiguous and
@@ -456,8 +465,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
     public Rectangle getOrientedBounds ()
     {
         if (orientedBounds == null) {
-            orientedBounds = new Rectangle(
-                graph.oriented(getContourBox()));
+            orientedBounds = new Rectangle(graph.oriented(getContourBox()));
         }
 
         return orientedBounds;
@@ -940,7 +948,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
     public void drawAscii ()
     {
         System.out.println("Section#" + getId());
-        
+
         // Determine the absolute bounds
         Rectangle box = getContourBox();
 
@@ -1433,7 +1441,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
     {
         // Invalidate cached data
         invalidateCache();
-        
+
         // Link back from run to section
         run.setSection(this);
 

@@ -19,7 +19,7 @@ import omr.util.HorizontalSide;
 
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
-import java.util.*;
+import java.util.Collection;
 
 /**
  * Class {@code FilamentLine} implements a staff line (or a part of it),

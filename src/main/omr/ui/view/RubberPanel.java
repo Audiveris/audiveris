@@ -32,7 +32,11 @@ import omr.util.Implement;
 
 import org.bushe.swing.event.EventSubscriber;
 
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.ConcurrentModificationException;
 
 import javax.swing.JPanel;

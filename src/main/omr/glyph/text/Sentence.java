@@ -26,7 +26,8 @@ import omr.sheet.SystemInfo;
 
 import omr.util.Navigable;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.SortedSet;
 
 /**
  * Class <code>Sentence</code> encapsulates a consistent ordered set of text

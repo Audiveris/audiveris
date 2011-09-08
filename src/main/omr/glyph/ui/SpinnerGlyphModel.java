@@ -20,9 +20,11 @@ import static omr.ui.field.SpinnerUtilities.*;
 import omr.util.Implement;
 import omr.util.Predicate;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
 
-import javax.swing.*;
+import javax.swing.AbstractSpinnerModel;
+import javax.swing.SpinnerModel;
 
 /**
  * Class <code>SpinnerGlyphModel</code> is a spinner model backed by a {@link

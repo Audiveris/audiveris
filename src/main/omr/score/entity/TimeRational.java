@@ -13,7 +13,10 @@ package omr.score.entity;
 
 import omr.math.Rational;
 
-import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code TimeRational} is a marshallable and non-mutable structure,

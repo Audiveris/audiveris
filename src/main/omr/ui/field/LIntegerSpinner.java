@@ -11,8 +11,8 @@
 // </editor-fold>
 package omr.ui.field;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.event.ChangeListener;
 
 /**
  * Class <code>LSpinner</code> is a logical combination of a JLabel and a

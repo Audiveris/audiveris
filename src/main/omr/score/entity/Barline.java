@@ -24,8 +24,12 @@ import omr.score.visitor.ScoreVisitor;
 
 import omr.util.Predicate;
 
-import java.awt.*;
-import java.util.*;
+import java.awt.BasicStroke;
+import java.awt.Graphics2D;
+import java.awt.Stroke;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Class <code>Barline</code> encapsulates a logical bar line, that may be

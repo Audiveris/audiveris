@@ -12,8 +12,16 @@
 package omr.math;
 
 import java.io.PrintStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * Class {@code Histogram} is an histogram implementation which handles integer
@@ -151,7 +159,7 @@ public class Histogram<K>
         // Compute min count
         final int         minCount = (int) Math.rint(quorum * getTotalCount());
 
-        ///System.out.println("minCount: " + minCount); 
+        ///System.out.println("minCount: " + minCount);
 
         // Current status WRT min count threshold
         boolean           isAbove = false;

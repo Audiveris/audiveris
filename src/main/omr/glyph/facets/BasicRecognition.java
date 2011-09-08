@@ -20,7 +20,8 @@ import omr.log.Logger;
 
 import omr.score.entity.TimeRational;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Class {@code BasicRecognition} is the basic implementation of a recognition

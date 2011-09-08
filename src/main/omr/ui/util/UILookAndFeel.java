@@ -18,9 +18,6 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
-// import com.jgoodies.looks.windows.*;
-// import com.jgoodies.looks.plastic.*;
-// import com.jgoodies.looks.plastic.theme.*;
 import javax.swing.UIManager;
 
 /**

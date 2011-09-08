@@ -13,7 +13,8 @@ package omr.script;
 
 import omr.sheet.Sheet;
 
-import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 
 /**
  * Class {@code RemoveTask} removes a page from its containing score

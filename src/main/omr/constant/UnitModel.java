@@ -20,7 +20,7 @@ import omr.sheet.ui.SheetsController;
 import omr.ui.treetable.AbstractTreeTableModel;
 import omr.ui.treetable.TreeTableModel;
 
-import javax.swing.*;
+import javax.swing.JOptionPane;
 
 /**
  * Class <code>UnitModel</code> implements a data model for units suitable for

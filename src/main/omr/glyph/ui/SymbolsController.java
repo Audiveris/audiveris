@@ -11,15 +11,15 @@
 // </editor-fold>
 package omr.glyph.ui;
 
-import omr.glyph.*;
+import omr.glyph.SymbolsModel;
 import omr.glyph.facets.Glyph;
 import omr.glyph.text.TextRole;
 
 import omr.log.Logger;
 
-
 import omr.score.entity.Note;
 import omr.score.entity.Text.CreatorText.CreatorType;
+import omr.score.entity.TimeRational;
 
 import omr.script.RationalTask;
 import omr.script.SegmentTask;
@@ -28,9 +28,8 @@ import omr.script.TextTask;
 
 import org.jdesktop.application.Task;
 
-import java.awt.*;
-import java.util.*;
-import omr.score.entity.TimeRational;
+import java.awt.Color;
+import java.util.Collection;
 
 /**
  * Class <code>SymbolsController</code> is a GlyphsController specifically
@@ -92,8 +91,8 @@ public class SymbolsController
      * @param timeRational the time sig rational value
      * @return the task that carries out the processing
      */
-    public Task asyncAssignRationals (Collection<Glyph> glyphs,
-                                      final TimeRational    timeRational)
+    public Task asyncAssignRationals (Collection<Glyph>  glyphs,
+                                      final TimeRational timeRational)
     {
         return new RationalTask(sheet, timeRational, glyphs).launch(sheet);
     }

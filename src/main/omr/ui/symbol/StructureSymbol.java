@@ -16,7 +16,6 @@ import omr.glyph.Shape;
 import omr.score.common.PixelPoint;
 import static omr.ui.symbol.Alignment.*;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Polygon;

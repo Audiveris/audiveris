@@ -22,15 +22,19 @@ import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
-import omr.math.Rational;
-
 import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Class <code>TimeSignature</code> encapsulates a time signature, which may be

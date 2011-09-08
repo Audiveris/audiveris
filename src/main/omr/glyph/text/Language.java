@@ -22,8 +22,12 @@ import omr.log.Logger;
 
 import omr.util.ClassUtil;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * Class <code>Language</code> handles the collection of language codes with

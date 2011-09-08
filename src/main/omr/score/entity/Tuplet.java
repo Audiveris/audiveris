@@ -24,7 +24,10 @@ import omr.score.visitor.ScoreVisitor;
 
 import omr.util.TreeNode;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Class <code>Tuplet</code> represents a tuplet notation and encapsulates the

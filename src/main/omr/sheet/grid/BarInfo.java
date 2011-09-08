@@ -15,7 +15,10 @@ import omr.glyph.facets.Stick;
 
 import omr.util.HorizontalSide;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Class {@code BarInfo} records the physical information about a bar line,

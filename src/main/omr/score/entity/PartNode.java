@@ -19,7 +19,9 @@ import omr.score.visitor.ScoreVisitor;
 
 import omr.util.TreeNode;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.SortedSet;
 
 /**
  * Class <code>PartNode</code> is an abstract class that is subclassed for any

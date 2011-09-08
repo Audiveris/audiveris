@@ -16,7 +16,7 @@ import omr.glyph.ui.panel.TrainingPanel.DumpAction;
 
 import omr.log.Logger;
 
-import javax.swing.*;
+import javax.swing.JButton;
 
 /**
  * Class <code>RegressionPanel</code> is the user interface that handles the

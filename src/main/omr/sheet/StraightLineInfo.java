@@ -26,7 +26,9 @@ import omr.util.Implement;
 
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Class <code>StraightLineInfo</code> implements the LineInfo interface with

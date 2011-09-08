@@ -23,7 +23,12 @@ import omr.util.Predicate;
 
 import java.awt.Point;
 import java.awt.Polygon;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Class {@code AbstractBlobPattern} is the basis for text patterns that use

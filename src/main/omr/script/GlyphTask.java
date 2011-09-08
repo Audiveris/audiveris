@@ -23,9 +23,15 @@ import omr.sheet.SystemInfo;
 import omr.step.Stepping;
 import omr.step.Steps;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
-import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 
 /**
  * Class {@code  GlyphTask} handles a collection of glyphs.
@@ -67,11 +73,11 @@ public abstract class GlyphTask
      * @param glyphs the collection of glyphs concerned by this task
      */
     protected GlyphTask (Sheet             sheet,
-                         Orientation    orientation,
+                         Orientation       orientation,
                          Collection<Glyph> glyphs)
     {
         super(sheet);
-        
+
         // Check parameters
         if (orientation == null) {
             throw new IllegalArgumentException(
@@ -112,7 +118,7 @@ public abstract class GlyphTask
      * @param sheet the sheet impacted
      * @param orientation the specified lag orientation
      */
-    protected GlyphTask (Sheet          sheet,
+    protected GlyphTask (Sheet       sheet,
                          Orientation orientation)
     {
         super(sheet);

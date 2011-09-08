@@ -35,13 +35,13 @@ import omr.selection.UserEvent;
 
 import omr.step.StepException;
 
-import omr.stick.SticksBuilder;
 import omr.stick.SectionsSource;
+import omr.stick.SticksBuilder;
 
 import omr.util.Implement;
 import omr.util.Predicate;
 
-import java.awt.*;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 

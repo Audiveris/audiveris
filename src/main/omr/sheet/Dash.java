@@ -19,8 +19,14 @@ import omr.math.Line;
 
 import omr.ui.util.UIUtilities;
 
-import java.awt.*;
-import java.util.*;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Stroke;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Class <code>Dash</code> is used to handle a horizontal segment, which can
@@ -169,7 +175,6 @@ public abstract class Dash
     {
         if (box.intersects(g.getClipBounds())) {
             ///Stroke oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
-
             line = getLine();
 
             Point start = new Point(
@@ -180,6 +185,7 @@ public abstract class Dash
                 (int) Math.rint(line.yAtX((double) box.x + box.width + 1)));
 
             g.drawLine(start.x, start.y, stop.x, stop.y);
+
             ///((Graphics2D) g).setStroke(oldStroke);
         }
     }

@@ -23,7 +23,9 @@ import omr.sheet.Scale;
 
 import omr.util.TreeNode;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Class <code>LyricsLine</code> gathers one line of lyrics within a system part.

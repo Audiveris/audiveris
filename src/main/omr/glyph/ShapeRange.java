@@ -17,9 +17,17 @@ import static omr.glyph.Shape.*;
 import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import javax.swing.*;
+import javax.swing.JComponent;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 
 /**
  * Class {@code ShapeRange} defines a set of related shapes, for example

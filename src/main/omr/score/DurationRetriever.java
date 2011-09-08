@@ -26,7 +26,8 @@ import omr.score.visitor.AbstractScoreVisitor;
 
 import omr.util.TreeNode;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Class <code>DurationRetriever</code> can visit a page hierarchy to compute

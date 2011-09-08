@@ -21,9 +21,12 @@ import omr.run.Orientation;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.TreeSet;
 
-import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
 
 /**
  * Class {@code GlyphUpdateTask} is applied to a collection of existing glyphs.
@@ -66,7 +69,7 @@ public abstract class GlyphUpdateTask
      * @param glyphs the collection of glyphs concerned by this task
      */
     public GlyphUpdateTask (Sheet             sheet,
-                            Orientation    orientation,
+                            Orientation       orientation,
                             Collection<Glyph> glyphs)
     {
         super(sheet, orientation, glyphs);

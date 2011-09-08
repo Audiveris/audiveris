@@ -20,7 +20,9 @@ import omr.step.Steps;
 
 import java.util.Collections;
 
-import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 
 /**
  * Class {@code StepTask} performs a step on a whole score

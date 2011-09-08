@@ -39,7 +39,8 @@ import omr.util.BrokenLine;
 import omr.util.VerticalSide;
 
 import java.awt.Polygon;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class {@code TextBorderPattern} directly uses OCR on specific regions around
@@ -403,7 +404,7 @@ public class TextBorderPattern
                 return false;
             }
 
-            // We remove candidates that are stuck to a stem that goes into a 
+            // We remove candidates that are stuck to a stem that goes into a
             // staff because these glyphs are not likely to be text items
             Glyph[] stems = new Glyph[] {
                                 glyph.getLeftStem(), glyph.getRightStem()

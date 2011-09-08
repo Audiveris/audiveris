@@ -18,7 +18,7 @@ import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphRegression;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
-import omr.glyph.ui.*;
+import omr.glyph.ui.GlyphRepository;
 import static omr.glyph.ui.panel.GlyphTrainer.Task.Activity.*;
 
 import omr.log.Logger;
@@ -28,14 +28,32 @@ import omr.ui.util.Panel;
 
 import omr.util.Implement;
 
-import com.jgoodies.forms.builder.*;
-import com.jgoodies.forms.layout.*;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
-import java.awt.event.*;
-import java.util.*;
-import java.util.concurrent.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JProgressBar;
+import javax.swing.KeyStroke;
 
 /**
  * Class <code>SelectionPanel</code> handles a user panel to select <B>names</B>

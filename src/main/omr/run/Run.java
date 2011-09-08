@@ -13,7 +13,9 @@ package omr.run;
 
 import omr.lag.Section;
 
-import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 
 /**
  * Class <code>Run</code> implements a contiguous run of pixels of the same

@@ -19,7 +19,7 @@ import omr.score.common.PixelRectangle;
 
 import omr.util.Implement;
 
-import java.awt.*;
+import java.awt.Dimension;
 
 /**
  * Class {@code RunsTableFactory} retrieves the runs structure out of a given

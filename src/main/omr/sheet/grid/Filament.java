@@ -19,7 +19,7 @@ import omr.log.Logger;
 
 import omr.sheet.Scale;
 
-import java.util.*;
+import java.util.Comparator;
 
 /**
  * Class {@code Filament} represents a long glyph that can be far from being a

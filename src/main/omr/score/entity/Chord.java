@@ -34,7 +34,15 @@ import omr.util.Implement;
 import omr.util.TreeNode;
 
 import java.awt.Polygon;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Class <code>Chord</code> represents an ensemble of entities (rests, notes)
@@ -328,6 +336,34 @@ public class Chord
         }
     }
 
+    //--------------//
+    // getFlagShape //
+    //--------------//
+    public static Shape getFlagShape (int     fn,
+                                      boolean up)
+    {
+        switch (fn) {
+        case 1 :
+            return up ? COMBINING_FLAG_1_UP : COMBINING_FLAG_1;
+
+        case 2 :
+            return up ? COMBINING_FLAG_2_UP : COMBINING_FLAG_2;
+
+        case 3 :
+            return up ? COMBINING_FLAG_3_UP : COMBINING_FLAG_3;
+
+        case 4 :
+            return up ? COMBINING_FLAG_4_UP : COMBINING_FLAG_4;
+
+        case 5 :
+            return up ? COMBINING_FLAG_5_UP : COMBINING_FLAG_5;
+        }
+
+        logger.severe("Illegal flag number: " + fn);
+
+        return null;
+    }
+
     //----------------//
     // getFlagsNumber //
     //----------------//
@@ -449,6 +485,63 @@ public class Chord
     public Chord getPreviousChordInVoice ()
     {
         return voice.getPreviousChord(this);
+    }
+
+    //----------------//
+    // getRawDuration //
+    //---------------//
+    /**
+     * Report the intrinsic duration of this chord, taking flag/beams and dots
+     * into account, but not the tuplet impact if any.
+     * The duration is assumed to be the same for all notes of this chord,
+     * otherwise the chord must be split.
+     * This includes the local information (flags, dots) but not the tuplet
+     * impact if any.
+     * A specific value (WHOLE_DURATION) indicates the whole/multi rest chord.
+     *
+     * Nota: this value is not cached, but computed at every call
+     *
+     * @return the intrinsic chord duration
+     * @see #getDuration
+     */
+    public Rational getRawDuration ()
+    {
+        Rational rawDuration = null;
+
+        if (!getNotes()
+                 .isEmpty()) {
+            // All note heads are assumed to be the same within one chord
+            Note note = (Note) getNotes()
+                                   .get(0);
+
+            if (!note.getShape()
+                     .isMeasureRest()) {
+                // Duration (with flags/beams applied for non-rests)
+                rawDuration = note.getNoteDuration();
+
+                // Apply augmentation (applies to rests as well)
+                if (dotsNumber == 1) {
+                    rawDuration = rawDuration.times(new Rational(3, 2));
+                } else if (dotsNumber == 2) {
+                    rawDuration = rawDuration.times(new Rational(7, 4));
+                }
+            }
+        }
+
+        return rawDuration;
+    }
+
+    //---------//
+    // getSlot //
+    //---------//
+    /**
+     * Report the slot this chord belongs to
+     *
+     * @return the containing slot (or null if not found)
+     */
+    public Slot getSlot ()
+    {
+        return slot;
     }
 
     //----------//
@@ -1088,63 +1181,6 @@ public class Chord
         }
     }
 
-    //----------------//
-    // getRawDuration //
-    //---------------//
-    /**
-     * Report the intrinsic duration of this chord, taking flag/beams and dots
-     * into account, but not the tuplet impact if any.
-     * The duration is assumed to be the same for all notes of this chord,
-     * otherwise the chord must be split.
-     * This includes the local information (flags, dots) but not the tuplet
-     * impact if any.
-     * A specific value (WHOLE_DURATION) indicates the whole/multi rest chord.
-     *
-     * Nota: this value is not cached, but computed at every call
-     *
-     * @return the intrinsic chord duration
-     * @see #getDuration
-     */
-    public Rational getRawDuration ()
-    {
-        Rational rawDuration = null;
-
-        if (!getNotes()
-                 .isEmpty()) {
-            // All note heads are assumed to be the same within one chord
-            Note note = (Note) getNotes()
-                                   .get(0);
-
-            if (!note.getShape()
-                     .isMeasureRest()) {
-                // Duration (with flags/beams applied for non-rests)
-                rawDuration = note.getNoteDuration();
-
-                // Apply augmentation (applies to rests as well)
-                if (dotsNumber == 1) {
-                    rawDuration = rawDuration.times(new Rational(3, 2));
-                } else if (dotsNumber == 2) {
-                    rawDuration = rawDuration.times(new Rational(7, 4));
-                }
-            }
-        }
-
-        return rawDuration;
-    }
-
-    //---------//
-    // getSlot //
-    //---------//
-    /**
-     * Report the slot this chord belongs to
-     *
-     * @return the containing slot (or null if not found)
-     */
-    public Slot getSlot ()
-    {
-        return slot;
-    }
-
     //--------------//
     // toLongString //
     //--------------//
@@ -1369,34 +1405,6 @@ public class Chord
         headLocation = null;
         tailLocation = null;
         startTime = null;
-    }
-
-    //--------------//
-    // getFlagShape //
-    //--------------//
-    public static Shape getFlagShape (int     fn,
-                                       boolean up)
-    {
-        switch (fn) {
-        case 1 :
-            return up ? COMBINING_FLAG_1_UP : COMBINING_FLAG_1;
-
-        case 2 :
-            return up ? COMBINING_FLAG_2_UP : COMBINING_FLAG_2;
-
-        case 3 :
-            return up ? COMBINING_FLAG_3_UP : COMBINING_FLAG_3;
-
-        case 4 :
-            return up ? COMBINING_FLAG_4_UP : COMBINING_FLAG_4;
-
-        case 5 :
-            return up ? COMBINING_FLAG_5_UP : COMBINING_FLAG_5;
-        }
-
-        logger.severe("Illegal flag number: " + fn);
-
-        return null;
     }
 
     //--------------//

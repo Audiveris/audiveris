@@ -31,7 +31,11 @@ import omr.score.common.PixelRectangle;
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphSetEvent;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 

@@ -39,7 +39,10 @@ import omr.sheet.picture.Picture;
 
 import net.jcip.annotations.ThreadSafe;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * Class <code>LineCleaner</code> is in charge of removing (staff or ledger)

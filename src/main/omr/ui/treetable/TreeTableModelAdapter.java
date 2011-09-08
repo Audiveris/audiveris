@@ -19,7 +19,8 @@ package omr.ui.treetable;
  * it only in accordance with the terms of the license agreement
  * you entered into with Sun.
  */
-import javax.swing.*;
+import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeModelEvent;
@@ -218,6 +219,23 @@ public class TreeTableModelAdapter
         return treeTableModel.getValueAt(nodeForRow(row), column);
     }
 
+    //------------//
+    // nodeForRow //
+    //------------//
+    /**
+     * DOCUMENT ME!
+     *
+     * @param row DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    public Object nodeForRow (int row)
+    {
+        TreePath treePath = tree.getPathForRow(row);
+
+        return treePath.getLastPathComponent();
+    }
+
     //-----------------------------//
     // delayedFireTableDataChanged //
     //-----------------------------//
@@ -234,22 +252,5 @@ public class TreeTableModelAdapter
                         fireTableDataChanged();
                     }
                 });
-    }
-
-    //------------//
-    // nodeForRow //
-    //------------//
-    /**
-     * DOCUMENT ME!
-     *
-     * @param row DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public Object nodeForRow (int row)
-    {
-        TreePath treePath = tree.getPathForRow(row);
-
-        return treePath.getLastPathComponent();
     }
 }

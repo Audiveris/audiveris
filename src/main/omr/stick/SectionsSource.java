@@ -15,7 +15,9 @@ import omr.glyph.GlyphSection;
 
 import omr.util.Predicate;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.ListIterator;
 
 /**
  * Class <code>Source</code> allows to formalize the way relevant sections are

@@ -13,7 +13,9 @@ package omr.step;
 
 import omr.log.LogLevelsFilter;
 
-import java.util.logging.*;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 
 /**
  * <p>Class <code>LogStepMonitorHandler</code> provides a connection between

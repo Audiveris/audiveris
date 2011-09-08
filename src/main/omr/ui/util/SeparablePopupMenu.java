@@ -11,7 +11,8 @@
 // </editor-fold>
 package omr.ui.util;
 
-import javax.swing.*;
+import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 
 /**
  * Class <code>SeparablePopupMenu</code> is a popup menu which is able to

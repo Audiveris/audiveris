@@ -64,9 +64,19 @@ import omr.ui.symbol.ShapeSymbol;
 import omr.ui.symbol.Symbols;
 import static omr.ui.symbol.Symbols.*;
 
-import java.awt.*;
-import java.awt.font.*;
-import java.awt.geom.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Polygon;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.Stroke;
+import java.awt.font.FontRenderContext;
+import java.awt.font.TextLayout;
+import java.awt.geom.AffineTransform;
 import java.util.ConcurrentModificationException;
 
 /**

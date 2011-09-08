@@ -15,7 +15,8 @@ import omr.score.midi.MidiActions;
 
 import omr.sheet.Sheet;
 
-import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 
 /**
  * Class {@code PlayTask} plays the Midi sequence of a score

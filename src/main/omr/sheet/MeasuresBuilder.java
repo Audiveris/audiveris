@@ -34,7 +34,10 @@ import omr.util.TreeNode;
 
 import net.jcip.annotations.NotThreadSafe;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Class <code>MeasuresBuilder</code> is in charge, at system info level, of

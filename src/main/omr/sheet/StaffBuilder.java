@@ -22,7 +22,9 @@ import omr.step.StepException;
 
 import omr.util.HorizontalSide;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Class <code>StaffBuilder</code> processes the (five) line areas, according to

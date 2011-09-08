@@ -14,7 +14,6 @@ package omr.glyph.ui.panel;
 import omr.constant.ConstantManager;
 
 import omr.glyph.GlyphNetwork;
-import static omr.glyph.Shape.*;
 
 import omr.log.Logger;
 
@@ -22,16 +21,20 @@ import omr.ui.MainGui;
 import omr.ui.util.Panel;
 import omr.ui.util.UILookAndFeel;
 
-import com.jgoodies.forms.builder.*;
-import com.jgoodies.forms.layout.*;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import org.jdesktop.application.ResourceMap;
 
-import java.awt.event.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.Observable;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * Class <code>GlyphTrainer</code> handles a User Interface dedicated to the

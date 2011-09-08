@@ -33,9 +33,14 @@ import omr.sheet.SystemInfo;
 
 import omr.util.Predicate;
 
-import java.awt.*;
-import java.awt.image.*;
-import java.util.*;
+import java.awt.Color;
+import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
 
 /**
  * Class {@code BasicGlyph} is the basic Glyph implementation for any glyph

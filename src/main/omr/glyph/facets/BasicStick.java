@@ -17,7 +17,8 @@ import omr.math.Line;
 
 import omr.stick.StickSection;
 
-import java.awt.*;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.lang.reflect.Constructor;
 

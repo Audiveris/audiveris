@@ -18,9 +18,13 @@ import omr.lag.Lag;
 import omr.lag.Section;
 import omr.lag.ui.SectionView;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Class {@code BasicDisplay} is the basic implementation of a display facet
@@ -159,7 +163,7 @@ class BasicDisplay
     public void drawAscii ()
     {
         System.out.println(glyph.toString());
-        
+
         // Determine the bounding box
         Rectangle box = glyph.getContourBox();
 

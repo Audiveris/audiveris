@@ -19,9 +19,9 @@ import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 import omr.glyph.text.TextRole.RoleInfo;
 
-import omr.run.Orientation;
-
 import omr.log.Logger;
+
+import omr.run.Orientation;
 
 import omr.score.common.PixelPoint;
 import omr.score.entity.Text.CreatorText.CreatorType;
@@ -30,9 +30,13 @@ import omr.sheet.SystemInfo;
 
 import omr.ui.symbol.TextFont;
 
-import java.awt.*;
-import java.util.*;
+import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Class <code>TextInfo</code> handles the textual aspects of a glyph.

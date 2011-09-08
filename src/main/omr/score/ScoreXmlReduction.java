@@ -37,10 +37,25 @@ import proxymusic.YesNo;
 
 import proxymusic.util.Marshalling;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FilenameFilter;
+import java.io.IOException;
 import java.math.BigInteger;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import javax.xml.bind.JAXBException;
 
@@ -162,11 +177,11 @@ public class ScoreXmlReduction
     public static void main (String... args)
         throws FileNotFoundException, IOException, JAXBException
     {
-//        // BINGO QUICK & DIRTY HACK!!!!!!!!!!!!!!!!!!!!!!!!
-//        String[] args = new String[] {
-//                            "u:/soft/audi-bugs/multipage-bis/haffner", "p",
-//                            "^Smartscore-10.2.1.xml"
-//                        };
+        //        // BINGO QUICK & DIRTY HACK!!!!!!!!!!!!!!!!!!!!!!!!
+        //        String[] args = new String[] {
+        //                            "u:/soft/audi-bugs/multipage-bis/haffner", "p",
+        //                            "^Smartscore-10.2.1.xml"
+        //                        };
         watch = new StopWatch("Global measurement");
 
         // Checking parameters
@@ -200,9 +215,9 @@ public class ScoreXmlReduction
 
         logger.info("Output.length: " + output.length());
 
-//        if (logger.isFineEnabled()) {
-//            logger.fine("Output:\n" + output);
-//        }
+        //        if (logger.isFineEnabled()) {
+        //            logger.fine("Output:\n" + output);
+        //        }
 
         // For debugging
         watch.start("Writing output file");
@@ -470,8 +485,11 @@ public class ScoreXmlReduction
             for (Part part : page.getPart()) {
                 ScorePart oldScorePart = (ScorePart) part.getId();
                 ScorePart newScorePart = newParts.get(oldScorePart);
-                logger.info("page:" + entry.getKey() + " old:" + oldScorePart.getId() + " new:" + newScorePart.getId());
-                Part      globalPart = partData.get(newScorePart);
+                logger.info(
+                    "page:" + entry.getKey() + " old:" + oldScorePart.getId() +
+                    " new:" + newScorePart.getId());
+
+                Part globalPart = partData.get(newScorePart);
 
                 if (newScorePart != oldScorePart) {
                     part.setId(newScorePart);

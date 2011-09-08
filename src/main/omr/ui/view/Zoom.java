@@ -22,7 +22,8 @@ import java.awt.Rectangle;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.swing.event.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * Class <code>Zoom</code> encapsulates a zoom ratio, which is typically

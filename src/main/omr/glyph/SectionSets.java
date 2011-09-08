@@ -13,17 +13,24 @@ package omr.glyph;
 
 import omr.glyph.facets.Glyph;
 
-import omr.run.Orientation;
 import omr.lag.Sections;
 
 import omr.log.Logger;
 
+import omr.run.Orientation;
+
 import omr.sheet.Sheet;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import javax.xml.bind.Marshaller;
-import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlList;
+import javax.xml.bind.annotation.XmlValue;
 
 /**
  * Class <code>SectionSets</code> handles a  collection of section sets,
@@ -121,7 +128,7 @@ public class SectionSets
      * @param orientation orientation of the containing lag
      * @return the collection of section sets
      */
-    public Collection<Collection<GlyphSection>> getSets (Sheet          sheet,
+    public Collection<Collection<GlyphSection>> getSets (Sheet       sheet,
                                                          Orientation orientation)
     {
         if (sets == null) {

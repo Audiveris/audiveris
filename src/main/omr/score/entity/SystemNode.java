@@ -21,7 +21,8 @@ import omr.score.visitor.ScoreVisitor;
 import omr.util.Navigable;
 import omr.util.TreeNode;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Class <code>SystemNode</code> is an abstract class that is subclassed

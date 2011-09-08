@@ -21,25 +21,28 @@ import omr.selection.SelectionHint;
 import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
 
-import omr.sheet.*;
+import omr.sheet.Sheet;
 
-import omr.ui.*;
+import omr.ui.Board;
 import omr.ui.field.LIntegerField;
 import omr.ui.util.Panel;
 
 import omr.util.Implement;
 
-import com.jgoodies.forms.builder.*;
-import com.jgoodies.forms.layout.*;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import org.bushe.swing.event.EventSubscriber;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.JComponent;
+import javax.swing.KeyStroke;
 
 /**
  * Class <code>PixelBoard</code> is a board that displays pixel information as

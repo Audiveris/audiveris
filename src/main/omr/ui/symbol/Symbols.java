@@ -16,9 +16,7 @@ import static omr.glyph.Shape.*;
 
 import omr.log.Logger;
 
-import omr.ui.symbol.ShapeSymbol.*;
-
-import java.util.*;
+import java.util.EnumMap;
 
 /**
  * Class {@code Symbols} manages all {@link ShapeSymbol} instances, both

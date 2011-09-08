@@ -11,7 +11,8 @@
 // </editor-fold>
 package omr.math;
 
-import Jama.*;
+import Jama.EigenvalueDecomposition;
+import Jama.Matrix;
 
 import java.awt.geom.Point2D;
 import static java.lang.Math.*;

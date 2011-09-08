@@ -19,11 +19,13 @@ import omr.log.Logger;
 
 import omr.score.common.PixelDimension;
 
-import java.awt.*;
-import java.awt.font.*;
-import java.awt.geom.*;
+import java.awt.Font;
+import java.awt.font.TextLayout;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Class <code>MusicFont</code> is meant to simplify the use of the underlying

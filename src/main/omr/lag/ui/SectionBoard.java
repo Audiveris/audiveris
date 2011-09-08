@@ -16,7 +16,8 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphSection;
 
-import omr.lag.*;
+import omr.lag.Lag;
+import omr.lag.Section;
 
 import omr.log.Logger;
 
@@ -37,19 +38,27 @@ import omr.ui.util.Panel;
 
 import omr.util.Implement;
 
-import com.jgoodies.forms.builder.*;
-import com.jgoodies.forms.layout.*;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import org.bushe.swing.event.EventSubscriber;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JSpinner;
+import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * Class <code>SectionBoard</code> defines a board dedicated to the display of
@@ -476,7 +485,7 @@ public class SectionBoard
         //~ Instance fields ----------------------------------------------------
 
         Constant.Boolean hideRelationFields = new Constant.Boolean(
-            false,
+            true,
             "Should we hide section relation fields when empty?");
     }
 }

@@ -21,7 +21,10 @@ import omr.sheet.SystemInfo;
 
 import omr.util.Predicate;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Class {@code CompoundBuilder} defines a generic way to smartly build glyph
@@ -34,7 +37,8 @@ public class CompoundBuilder
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(CompoundBuilder.class);
+    private static final Logger logger = Logger.getLogger(
+        CompoundBuilder.class);
 
     //~ Instance fields --------------------------------------------------------
 

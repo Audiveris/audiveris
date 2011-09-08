@@ -25,8 +25,18 @@ import proxymusic.PartName;
 import proxymusic.ScorePartwise;
 
 import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * Class {@code PartConnection} is in charge of finding the connections of parts
@@ -575,8 +585,8 @@ public class PartConnection
                 staffCount = 1; // Default value
 
                 String id = scorePart.getId();
-                ///logger.fine("scorePart id:" + id);
 
+                ///logger.fine("scorePart id:" + id);
                 for (ScorePartwise.Part part : scorePartwise.getPart()) {
                     if (part.getId() != scorePart) {
                         continue;

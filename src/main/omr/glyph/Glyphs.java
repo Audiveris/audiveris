@@ -26,7 +26,15 @@ import omr.util.Predicate;
 
 import java.awt.Polygon;
 import java.awt.Rectangle;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Class <code>Glyphs</code> is just a collection of static convenient methods,

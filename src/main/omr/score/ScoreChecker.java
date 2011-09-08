@@ -45,7 +45,13 @@ import omr.util.Predicate;
 import omr.util.TreeNode;
 import omr.util.WrappedBoolean;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.SortedSet;
 
 /**
  * Class <code>ScoreChecker</code> can visit the score hierarchy and perform

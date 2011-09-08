@@ -15,7 +15,11 @@ import omr.log.Logger;
 
 import omr.ui.symbol.SymbolImage;
 
-import java.awt.*;
+import java.awt.AlphaComposite;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
 import javax.swing.JPanel;

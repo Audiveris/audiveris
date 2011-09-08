@@ -17,7 +17,7 @@ import omr.score.Score;
 
 import omr.step.Step;
 
-import java.util.*;
+import java.util.Date;
 
 /**
  * Class {@code SheetBench} records all important information related to the

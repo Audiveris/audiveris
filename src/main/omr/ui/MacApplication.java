@@ -24,7 +24,9 @@ import omr.util.Implement;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.lang.reflect.*;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 
 import javax.swing.SwingWorker;
 

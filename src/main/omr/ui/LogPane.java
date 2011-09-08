@@ -16,12 +16,20 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Insets;
 import java.util.concurrent.BlockingQueue;
-import java.util.logging.*;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 
-import javax.swing.*;
-import javax.swing.text.*;
+import javax.swing.JComponent;
+import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 
 /**
  * Class <code>LogPane</code> defines the pane dedicated to application-level

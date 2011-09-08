@@ -36,7 +36,12 @@ import omr.sheet.SystemInfo;
 import omr.util.Implement;
 import omr.util.Wrapper;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Class <code>SlurInspector</code> encapsulates physical processing dedicated

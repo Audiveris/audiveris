@@ -16,8 +16,17 @@ import omr.log.Logger;
 import omr.step.Step;
 import omr.step.Steps;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Class <code>CLI</code> handles the parameters of the command line interface

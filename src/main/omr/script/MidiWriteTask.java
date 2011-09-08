@@ -17,7 +17,9 @@ import omr.sheet.Sheet;
 
 import java.io.File;
 
-import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 
 /**
  * Class {@code MidiWriteTask} writes the Midi file of a score
@@ -67,7 +69,7 @@ public class MidiWriteTask
         throws Exception
     {
         ScoresManager.getInstance()
-                    .midiWrite(
+                     .midiWrite(
             sheet.getScore(),
             (path != null) ? new File(path) : null);
     }

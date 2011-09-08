@@ -11,7 +11,9 @@
 // </editor-fold>
 package omr.ui.util;
 
-import javax.swing.*;
+import javax.swing.Action;
+import javax.swing.JMenu;
+import javax.swing.JSeparator;
 
 /**
  * Class <code>SeparableMenu</code> is a menu which is able to collapse unneeded
@@ -109,7 +111,8 @@ public class SeparableMenu
     {
         int count = menu.getMenuComponentCount();
 
-        if ((count > 0) && menu.getMenuComponent(count - 1) instanceof JSeparator) {
+        if ((count > 0) &&
+            menu.getMenuComponent(count - 1) instanceof JSeparator) {
             menu.remove(count - 1);
         }
     }

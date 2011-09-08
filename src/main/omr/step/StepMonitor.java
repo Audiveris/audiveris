@@ -25,7 +25,8 @@ import omr.util.Implement;
 
 import java.awt.Graphics;
 
-import javax.swing.*;
+import javax.swing.JProgressBar;
+import javax.swing.SwingUtilities;
 
 /**
  * Class <code>StepMonitor</code> is the user interface entity that allows to

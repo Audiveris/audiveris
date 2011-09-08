@@ -11,7 +11,8 @@
 // </editor-fold>
 package omr.graph;
 
-import java.awt.*;
+import java.awt.Graphics;
+import java.awt.Rectangle;
 
 /**
  * Interface <code>VertexView</code> defines the interface needed to handle the

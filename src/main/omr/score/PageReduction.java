@@ -19,7 +19,9 @@ import omr.score.entity.Page;
 import omr.score.entity.ScorePart;
 import omr.score.entity.SystemPart;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Class {@code PageReduction} reduces the parts of each system to a list of

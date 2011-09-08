@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.util;
 
-import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.XmlValue;
 
 /**
  * Class <code>DoubleValue</code> is a "poor man" version of java.lang.Double,

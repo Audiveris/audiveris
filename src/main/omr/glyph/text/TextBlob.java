@@ -31,7 +31,9 @@ import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
 import java.awt.geom.Line2D;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Class {@code TextBlob} handles a growing sequence of glyphs that could form
